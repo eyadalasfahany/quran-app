@@ -264,7 +264,7 @@ Verses use QF's integer id (1–6,236) as the primary key, with `verse_key` (`2:
 | Table | Columns | Keys and indexes |
 | --- | --- | --- |
 | `content_sources` | `id` bigint, `code` varchar(32), `name` varchar(120), `licence_url` varchar(500), `attribution_ar` text, `attribution_en` text, `permission_status` enum(`granted`,`pending`,`not_required`,`denied`), `notes` text, timestamps | PK `id`; unique `code` |
-| `resources` | `id` bigint, `source_id` FK, `group` enum(`quran_core`,`mushafs`,`translations`,`tafsirs`,`word_by_word`,`chapter_recitations`,`hadith`), `source_key` varchar(64), `name` varchar(200), `author_name` varchar(200) null, `language_code` varchar(8), `direction` enum(`rtl`,`ltr`), `version` int unsigned, `checksum` char(64) null, `is_active` bool, `synced_at` datetime(6) | PK `id`; unique (`source_id`,`group`,`source_key`); index (`group`,`language_code`) |
+| `resources` | `id` bigint, `source_id` FK, `group` enum(`quran_core`,`mushafs`,`translations`,`tafsirs`,`word_by_word_translations`,`word_by_word_transliterations`,`recitations`,`chapter_recitations`,`hadith`) (QF's names, ADR 0008), `source_key` varchar(64), `name` varchar(200), `author_name` varchar(200) null, `language_code` varchar(8), `direction` enum(`rtl`,`ltr`), `version` int unsigned, `checksum` char(64) null, `is_active` bool, `synced_at` datetime(6) | PK `id`; unique (`source_id`,`group`,`source_key`); index (`group`,`language_code`) |
 | `sync_states` | `id`, `environment` enum(`prelive`,`production`), `resource_group` varchar(32), `sync_token` text, `last_sequence` bigint unsigned, `last_success_at` datetime(6) null, `last_error` text null | unique (`environment`,`resource_group`) |
 | `sync_runs` | `id`, `resource_group`, `started_at`, `finished_at` null, `status` enum(`running`,`ok`,`failed`), `mutations_applied` int, `error` text null | index (`resource_group`,`started_at`) |
 | `content_packs` | `id`, `resource_id` FK, `version` int unsigned, `path` varchar(500), `size_bytes` bigint, `sha256` char(64), `row_count` int, `schema_version` smallint, `built_at` | unique (`resource_id`,`version`) |
@@ -779,7 +779,9 @@ One question blocks the build: whether QF accepts device copies served from our 
 
 **Questions**
 
-- [ ] QF: may the app keep its offline copy by syncing from our backend mirror? (Blocks Phase 2.)
+- **The QF questions below are not being sent (developer decision, ADR 0008).** Each one is an accepted risk; the design follows our reading of the Developer Terms.
+- [ ] QF: may the app keep its offline copy by syncing from our backend mirror?
+- [ ] QF: `quran_core` returns no resources for our client in Content Sync. Without it there is no QF verse text offline (Phase 1 step 9 is gated).
 - [ ] QF: what must happen to QF content on a device that has been offline for more than 7 days?
 - [ ] QF: may downloaded recitation audio be kept beyond 7 days?
 - [ ] QF: production rate limits for Content Sync and the Content API.

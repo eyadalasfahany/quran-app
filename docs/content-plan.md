@@ -30,6 +30,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Long lists | `@shopify/flash-list` | 2.3.2 | Virtualized vertical mushaf and surah lists |
 | Audio | `expo-audio` | \~58.0.10 | Background playback, lock-screen controls and playlists built in |
 | Downloads | `expo-file-system` | \~58.0.11 | Audio and pack downloads with progress |
+| Pack decompression | `fflate` | 0.8.3 | Gunzips content packs on the device; pure JS, fastest available (ADR 0008) |
 | Server data | `@tanstack/react-query` | 5.105.0 | Caching, retries and background refetch for API calls |
 | App state | `zustand` | 5.0.16 | Small global state: player, reader settings |
 | Preferences | `react-native-mmkv` + `react-native-nitro-modules` | 4.3.2; 0.37.1 | Fast synchronous key-value storage; MMKV 4 runs on Nitro modules |
@@ -120,7 +121,7 @@ This lists every external source the app could pull from, and which one we use f
 | --- | --- | --- | --- | --- |
 | QF chapter recitations | Per-surah audio with ayah and word timing | Through QF | QF terms; keeping downloads past 7 days is an open question | **Primary** |
 | [MP3Quran](https://www.mp3quran.net/eng/api) API v3 | Large reciter catalogue across riwayat, live Quran radio, audio tafsir, ayah timing for some readings | No key | No API terms published | **Later**: more reciters, other riwayat and radio, after written permission |
-| [QuranicAudio](https://www.quranicaudio.com/about) | Per-surah MP3 archive | Direct files | Personal use only; no commercial use | **Not used** directly; we play only the audio links QF gives us, under QF's terms |
+| [QuranicAudio](https://www.quranicaudio.com/about) | Per-surah MP3 archive | Direct files | Personal use only; no commercial use | **Not used** directly; we play only the audio links QF gives us, under QF's terms. QF's chapter audio URLs point at `download.quranicaudio.com` (ADR 0008) |
 | AlQuran Cloud audio CDN | Per-ayah MP3s | No key | As above | **Not used** |
 
 **Hadith** (details in the Hadith section)

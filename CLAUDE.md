@@ -32,7 +32,7 @@ npm workspaces cover `apps/mobile` and `packages/*`. Composer lives inside `apps
 ## Non-negotiables
 
 1. **Quran text is never altered.** Store and render source text byte-for-byte. Never trim, normalize, re-encode or hand-edit it. Only the derived `text_search` column is normalized. The checksum test must pass.
-2. **QF credentials live only in `apps/api` env.** The app calls only our API and the QF audio CDN.
+2. **QF credentials live only in `apps/api` env.** The app calls only our API and the audio URLs QF's API returns (ADR 0008).
 3. **No QF data in the app binary.** The only bundled Quran text is the Tanzil seed. QF content reaches devices through packs and the change feed.
 4. **Offline-first.** Every personal write goes to `user.db` + outbox first. The network is never on the path of a tap.
 5. **Layout follows window size, never device model.** Use `useWindowClass()`; never branch on `Platform.isPad` or a device name.
@@ -62,7 +62,7 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
 
 ## How to work here
 
-- **Current phase: Phase 0, Setup and foundations** (spec §15). The step-by-step plan is `docs/plans/phase-0.md`. Work one step at a time and keep each change small enough to review.
+- **Current phase: Phase 1, Content pipeline** (spec §15). The step-by-step plan is `docs/plans/phase-1.md`; Phase 0 is done (`docs/plans/phase-0.md`). Work one step at a time and keep each change small enough to review.
 - Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the Figma file above (tokens are transcribed from `quran-app-design-system.html` until Figma can be read, ADR 0005).
 - The developer commits and pushes. Don't commit unless asked.
 - Plan before coding anything that touches the schema, sync, the API contract or the reader.
