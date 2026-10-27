@@ -9,4 +9,9 @@ export const storageKeys = {
   directionReloadPending: 'directionReloadPending',
   selectedResourceIds: 'content.selectedResourceIds',
   contentLastSyncAt: 'content.lastSyncAt',
+  appearance: 'appearance',
+  darkAfterMaghrib: 'darkAfterMaghrib',
+  readerLastVerseKey: 'reader.lastVerseKey',
+  readerLastPage: 'reader.lastPage',
+  readerMode: 'reader.mode',
 } as const;

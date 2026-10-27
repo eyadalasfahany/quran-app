@@ -1,7 +1,5 @@
 import type { FontWeight } from '@quran/design-tokens';
 
-// One family name per weight. Text styles set the family and never `fontWeight`:
-// on Android a weight on top of a bold face can pick the wrong file or fake-bold it.
 export const uiFontFamilies: Record<FontWeight, string> = {
   400: 'IBMPlexSansArabic-Regular',
   500: 'IBMPlexSansArabic-Medium',
@@ -9,10 +7,26 @@ export const uiFontFamilies: Record<FontWeight, string> = {
   700: 'IBMPlexSansArabic-Bold',
 };
 
-// Only the weights the type scale uses. Quran and display fonts arrive with the reader (Phase 1).
 export const uiFonts = {
   'IBMPlexSansArabic-Regular': require('../../../assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Regular.ttf'),
   'IBMPlexSansArabic-Medium': require('../../../assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Medium.ttf'),
   'IBMPlexSansArabic-SemiBold': require('../../../assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-SemiBold.ttf'),
   'IBMPlexSansArabic-Bold': require('../../../assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Bold.ttf'),
 };
+
+// Amiri ships Regular and Bold only; display styles use one of the two.
+export const displayFontFamilies = {
+  400: 'Amiri-Regular',
+  700: 'Amiri-Bold',
+} as const;
+
+// Uthmani ayah text in Reading and Focus modes (ADR 0011). Page-exact Mushaf uses the QCF page fonts instead.
+export const quranFontFamily = 'AmiriQuran';
+
+export const readingFonts = {
+  'Amiri-Regular': require('../../../assets/fonts/Amiri/Amiri-Regular.ttf'),
+  'Amiri-Bold': require('../../../assets/fonts/Amiri/Amiri-Bold.ttf'),
+  AmiriQuran: require('../../../assets/fonts/Amiri/AmiriQuran.ttf'),
+};
+
+export const bundledFonts = { ...uiFonts, ...readingFonts };

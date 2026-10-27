@@ -1,30 +1,34 @@
-import type { ThemeName } from '@quran/design-tokens';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 
 import { useContentDb } from '@/core/db/content/open';
+import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { useContentSync } from '@/core/sync/use-content-sync';
-import { ThemeProvider, themes, uiFonts } from '@/core/theme';
+import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 
 void SplashScreen.preventAutoHideAsync();
-
-// Theme stays on light until a later step reads the saved choice.
-const themeName: ThemeName = 'light';
 
 // A direction mismatch reloads before paint, so the splash stays up.
 const directionCheck = ensureDirection();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts(uiFonts);
+  const themeName = useResolvedTheme();
+  const [loaded, error] = useFonts(bundledFonts);
   const [directionReady, setDirectionReady] = useState(directionCheck.ready);
   const content = useContentDb();
+  const user = useUserDb();
   useContentSync();
   // A font that fails to load falls back to the system font rather than holding the splash.
   // A database error is logged and the reader deals with an empty database later.
-  const ready = (loaded || error !== null) && directionReady && (content.ready || content.error !== null);
+  const ready =
+    (loaded || error !== null) &&
+    directionReady &&
+    (content.ready || content.error !== null) &&
+    (user.ready || user.error !== null);
 
   useEffect(() => {
     if (directionCheck.ready) {
@@ -45,6 +49,12 @@ export default function RootLayout() {
   }, [content.error]);
 
   useEffect(() => {
+    if (user.error) {
+      console.error(user.error);
+    }
+  }, [user.error]);
+
+  useEffect(() => {
     if (ready) {
       void SplashScreen.hideAsync();
     }
@@ -56,6 +66,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider name={themeName}>
+      <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themes[themeName].colors.surface } }}
       />

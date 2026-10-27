@@ -3,7 +3,7 @@
 Follow [README.md](README.md). Needs steps 1 and 4 committed. Read also:
 - The `Reader settings` phone frame in `quran-app-screens.html`.
 - Spec §12 (motion: cross-fade on mode and script change; haptics).
-- `src/core/theme` (themes: light, sepia, dark).
+- `src/core/theme` (themes: light, sepia, dark; appearance is already resolved).
 
 **Goal:** the reader-settings sheet, persisted settings, and the reader applying them live.
 
@@ -12,13 +12,13 @@ Follow [README.md](README.md). Needs steps 1 and 4 committed. Read also:
 - **A Zustand store persisted to MMKV** (key `reader.settings`), versioned for migrations:
   - `mode`: `'mushaf' | 'reading' | 'focus'`
   - `fontScale`: 0.8–1.6, step 0.1
-  - `theme`: `'system' | 'light' | 'sepia' | 'dark'`
   - `showTranslations`: boolean
   - `translationIds`: number[]
   - `tafsirId`: number | null
+- **Appearance is not in this blob.** It is the MMKV key `appearance` (`'automatic' | 'light' | 'sepia' | 'dark'`), read and written through `src/core/theme/appearance.ts`. The picker calls `saveAppearance`. Dark after Maghrib is the separate MMKV boolean `darkAfterMaghrib`.
 - **Reads are synchronous** at start (MMKV), so the first frame uses them (cold-start budget, spec §4).
 - **Changing `translationIds`** (or any downloaded-resource choice) also updates `content.selectedResourceIds` and **clears `meta.manifest_etag`**. Otherwise a 304 manifest would skip installing the newly chosen resources until the server's manifest changes (Phase 1 step 8 review).
-- **The theme setting drives `ThemeProvider`**, which today is hard-coded `light` in `app/_layout.tsx`. Make it read the store, with `system` following the OS appearance.
+- **Appearance already drives `ThemeProvider`** through `useResolvedTheme()` in `app/_layout.tsx`. Automatic follows `useColorScheme`. Do not store a second theme field.
 
 ## Components (`src/features/reader/settings/components/`, each with its own test)
 

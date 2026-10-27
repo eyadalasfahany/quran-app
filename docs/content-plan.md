@@ -26,6 +26,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Language | TypeScript | \~6.0.3 | The version in Expo's SDK 58 template; TypeScript 7.0 is out but not yet in Expo's template |
 | Navigation | Expo Router | \~58.0.26 | Native tabs and stacks, sheets as routes, deep links |
 | Liquid Glass | `expo-glass-effect` | \~58.0.5 | Native iOS 26 glass with automatic fallback |
+| Haptics | `expo-haptics` | \~58.0.7 | Selection feedback on segmented controls (iOS `UISelectionFeedbackGenerator`, Android haptics) |
 | Local database | `expo-sqlite` + Drizzle ORM | \~58.0.14; `drizzle-orm` 0.45.4, `drizzle-kit` 0.31.11 | Offline Quran, translation and tafsir packs with typed queries and migrations |
 | Migrations in the bundle | `babel-plugin-inline-import` | 3.0.0 | Inlines Drizzle's `.sql` migrations into the bundle |
 | Long lists | `@shopify/flash-list` | 2.3.2 | Virtualized vertical mushaf and surah lists |

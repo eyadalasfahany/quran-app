@@ -7,5 +7,15 @@
   },
   "nav": {
     "main": "Main navigation"
+  },
+  "ui": {
+    "ayahNumber": "Ayah {{number}}",
+    "clearSearch": "Clear search",
+    "highlight": {
+      "gold": "Gold highlight",
+      "green": "Green highlight",
+      "blue": "Blue highlight",
+      "rose": "Rose highlight"
+    }
   }
 }

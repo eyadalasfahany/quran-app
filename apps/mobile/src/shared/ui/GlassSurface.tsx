@@ -1,0 +1,60 @@
+import type { RadiusToken } from '@quran/design-tokens';
+import { GlassView } from 'expo-glass-effect';
+import type { ReactNode } from 'react';
+import { StyleSheet, View, type StyleProp, type ViewProps, type ViewStyle } from 'react-native';
+
+import { useGlass, useTheme } from '@/core/theme';
+
+import { useContrastColors } from './useContrastColors';
+
+// Switches between native glass and the solid fallback; it never fades between them.
+export function GlassSurface({
+  children,
+  radius = 'xl',
+  style,
+  accessibilityLabel,
+  accessibilityRole,
+  testID,
+}: {
+  children?: ReactNode;
+  radius?: RadiusToken;
+  style?: StyleProp<ViewStyle>;
+} & Pick<ViewProps, 'accessibilityLabel' | 'accessibilityRole' | 'testID'>) {
+  const theme = useTheme();
+  const colors = useContrastColors();
+  const nativeGlass = useGlass();
+  const shape = { borderRadius: theme.radius[radius] };
+
+  if (nativeGlass) {
+    return (
+      <GlassView
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole={accessibilityRole}
+        glassEffectStyle="regular"
+        style={[shape, style]}
+        testID={testID}
+      >
+        {children}
+      </GlassView>
+    );
+  }
+
+  return (
+    <View
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole={accessibilityRole}
+      style={[
+        shape,
+        {
+          backgroundColor: theme.colors.glassFallback,
+          borderColor: colors.line,
+          borderWidth: StyleSheet.hairlineWidth,
+        },
+        style,
+      ]}
+      testID={testID}
+    >
+      {children}
+    </View>
+  );
+}

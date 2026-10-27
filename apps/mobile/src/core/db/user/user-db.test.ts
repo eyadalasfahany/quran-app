@@ -1,0 +1,168 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
+import type { SqlExecutor } from '@/core/db/sql-executor';
+
+import { applyContentMigrations } from '../../../../jest/apply-content-migrations';
+import { openNodeSqlite } from '../../../../jest/node-sqlite-executor';
+import { USER_DATABASE } from './constants';
+import { configureUserDatabase } from './pragmas';
+
+const migrationsDir = join(process.cwd(), 'src/core/db/user/migrations');
+
+function openMigrated(path = ':memory:'): { database: DatabaseSync; executor: SqlExecutor } {
+  const opened = openNodeSqlite(path);
+  configureUserDatabase(opened.executor);
+  applyContentMigrations(opened.executor, migrationsDir);
+  return opened;
+}
+
+function tableNames(database: DatabaseSync): string[] {
+  return (
+    database
+      .prepare(
+        `SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name`,
+      )
+      .all() as { name: string }[]
+  ).map((row) => row.name);
+}
+
+function indexSql(database: DatabaseSync, name: string): string {
+  const row = database.prepare(`SELECT sql FROM sqlite_master WHERE type = 'index' AND name = ?`).get(name) as
+    | { sql: string }
+    | undefined;
+  if (row === undefined) {
+    throw new Error(`Missing index ${name}.`);
+  }
+  return row.sql;
+}
+
+describe('user.db schema', () => {
+  let database: DatabaseSync;
+
+  beforeEach(() => {
+    database = openMigrated().database;
+  });
+
+  afterEach(() => {
+    database.close();
+  });
+
+  it('creates the personal tables and no content tables', () => {
+    expect(tableNames(database)).toEqual(['bookmarks', 'highlights', 'notes', 'outbox', 'sync_meta']);
+    expect(USER_DATABASE).toBe('user.db');
+  });
+
+  it('indexes verse_id and keeps one live highlight and one live bookmark per kind', () => {
+    expect(indexSql(database, 'bookmarks_verse_id_idx')).toContain('verse_id');
+    expect(indexSql(database, 'highlights_verse_id_idx')).toContain('verse_id');
+    expect(indexSql(database, 'notes_verse_id_idx')).toContain('verse_id');
+
+    const liveBookmarks = indexSql(database, 'bookmarks_live_kind_verse_idx');
+    expect(liveBookmarks).toContain('UNIQUE');
+    expect(liveBookmarks.toLowerCase()).toContain('deleted_at');
+    expect(liveBookmarks).toContain('kind');
+
+    const liveHighlights = indexSql(database, 'highlights_live_verse_idx');
+    expect(liveHighlights).toContain('UNIQUE');
+    expect(liveHighlights.toLowerCase()).toContain('deleted_at');
+
+    database.prepare(
+      `INSERT INTO bookmarks (id, verse_id, kind, page, client_updated_at, deleted_at, dirty)
+       VALUES ('verse', 1, 'verse', NULL, 1, NULL, 1)`,
+    ).run();
+    database.prepare(
+      `INSERT INTO bookmarks (id, verse_id, kind, page, client_updated_at, deleted_at, dirty)
+       VALUES ('page', 1, 'page', 1, 1, NULL, 1)`,
+    ).run();
+    expect(() => {
+      database.prepare(
+        `INSERT INTO bookmarks (id, verse_id, kind, page, client_updated_at, deleted_at, dirty)
+         VALUES ('verse-2', 1, 'verse', NULL, 2, NULL, 1)`,
+      ).run();
+    }).toThrow(/unique/i);
+
+    database.prepare(
+      `INSERT INTO highlights (id, verse_id, color, client_updated_at, deleted_at, dirty)
+       VALUES ('gold', 1, 'gold', 1, NULL, 1)`,
+    ).run();
+    expect(() => {
+      database.prepare(
+        `INSERT INTO highlights (id, verse_id, color, client_updated_at, deleted_at, dirty)
+         VALUES ('blue', 1, 'blue', 2, NULL, 1)`,
+      ).run();
+    }).toThrow(/unique/i);
+
+    database.prepare(`UPDATE highlights SET deleted_at = 3 WHERE id = 'gold'`).run();
+    database.prepare(
+      `INSERT INTO highlights (id, verse_id, color, client_updated_at, deleted_at, dirty)
+       VALUES ('blue', 1, 'blue', 4, NULL, 1)`,
+    ).run();
+  });
+
+  it('rejects an empty note body and a body over 10,000 characters', () => {
+    const insert = database.prepare(
+      `INSERT INTO notes (id, verse_id, body, client_updated_at, deleted_at, dirty) VALUES (?, 1, ?, 1, NULL, 1)`,
+    );
+    expect(() => insert.run('empty', '')).toThrow(/check/i);
+    expect(() => insert.run('long', 'ا'.repeat(10_001))).toThrow(/check/i);
+    insert.run('ok', 'ا'.repeat(10_000));
+  });
+
+  it('opens user.db in WAL mode beside content.db', () => {
+    const source = readFileSync(join(process.cwd(), 'src/core/db/user/open.ts'), 'utf8');
+    expect(source).toContain('USER_DATABASE');
+    expect(source).toContain('configureUserDatabase');
+    expect(source).not.toContain('content.db');
+
+    const directory = mkdtempSync(join(tmpdir(), 'user-db-wal-'));
+    const path = join(directory, USER_DATABASE);
+    const opened = openMigrated(path);
+    try {
+      const journal = opened.executor.get<{ journal_mode: string }>('PRAGMA journal_mode');
+      const foreignKeys = opened.executor.get<{ foreign_keys: number }>('PRAGMA foreign_keys');
+      expect(journal?.journal_mode).toBe('wal');
+      expect(foreignKeys?.foreign_keys).toBe(1);
+    } finally {
+      opened.database.close();
+      rmSync(directory, { force: true, recursive: true });
+    }
+  });
+
+  it('keeps bookmarks when content.db is deleted', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'user-db-separate-'));
+    const userPath = join(directory, USER_DATABASE);
+    const contentPath = join(directory, 'content.db');
+    const content = new DatabaseSync(contentPath);
+    content.exec('CREATE TABLE verses (id integer primary key, text_uthmani text not null)');
+    content.prepare(`INSERT INTO verses (id, text_uthmani) VALUES (1, 'بِسْمِ ٱللَّهِ')`).run();
+    content.close();
+
+    const user = openMigrated(userPath);
+    user.executor.run(
+      `INSERT INTO bookmarks (id, verse_id, kind, page, client_updated_at, deleted_at, dirty)
+       VALUES ('kept', 262, 'verse', NULL, 1, NULL, 1)`,
+    );
+    user.database.close();
+
+    rmSync(contentPath);
+
+    const reopened = new DatabaseSync(userPath);
+    try {
+      expect(existsSync(contentPath)).toBe(false);
+      expect(existsSync(userPath)).toBe(true);
+      expect(userPath).not.toBe(contentPath);
+      const bookmark = reopened.prepare(`SELECT id, verse_id FROM bookmarks WHERE deleted_at IS NULL`).get() as {
+        id: string;
+        verse_id: number;
+      };
+      expect(bookmark).toEqual({ id: 'kept', verse_id: 262 });
+      expect(tableNames(reopened)).not.toContain('verses');
+    } finally {
+      reopened.close();
+      rmSync(directory, { force: true, recursive: true });
+    }
+  });
+});
