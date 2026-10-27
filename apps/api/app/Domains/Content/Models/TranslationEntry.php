@@ -28,7 +28,9 @@ final class TranslationEntry extends Model
     protected function casts(): array
     {
         return [
+            'verse_id' => 'integer',
             'footnotes' => 'array',
+            'source_record_id' => 'integer',
         ];
     }
 

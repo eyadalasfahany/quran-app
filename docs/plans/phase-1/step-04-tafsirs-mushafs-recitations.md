@@ -102,7 +102,7 @@ The snapshot has two record types:
 Add to `config('quran.sync.groups')`:
 - `tafsirs => 'tafsirs:*'`
 - `mushafs => 'mushafs:1'` (QCF V2 only for Phase 1)
-- `chapter_recitations => 'chapter_recitations:6;chapter_recitations:7'`
+- `chapter_recitations => 'chapter_recitations:6,7'`. **Filter format:** several IDs of one group are comma-separated (`group:6,7`). QF rejects a repeated group (`group:6;group:7`) with "Duplicate resource group"; `;` separates different groups only.
 
 Prelive has 100+ chapter recitations, about 3.8 MB each, so only two are synced by default.
 

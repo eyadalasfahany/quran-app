@@ -23,6 +23,23 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - API base URL comes from `EXPO_PUBLIC_API_URL` in `apps/mobile/.env` (copy `.env.example`): `http://localhost:8000` on iOS simulators, `http://10.0.2.2:8000` on Android emulators.
 - API types come from `@quran/api-contract`. Never hand-write a type for an API payload. Type route paths with `satisfies keyof paths`, so a renamed route fails `tsc`.
 
+## Components and screens (rule)
+
+- **Components:** every UI component lives in its own file:
+  - Design-system pieces in `src/shared/ui/<ComponentName>.tsx`.
+  - Feature pieces in `src/features/<feature>/components/<ComponentName>.tsx`.
+- **Tests:** each component has its own colocated test, `<ComponentName>.test.tsx` (React Native Testing Library). It covers:
+  - Render with default props, and each variant.
+  - Interaction: presses and callbacks.
+  - RTL: render under Arabic and English.
+  - Accessibility: role, label and state.
+  - Theme tokens: no raw hex values.
+- **Screens:** screens (`app/` routes and `src/features/<feature>/screens/`) only compose components and wire data. Layout containers are fine; one-off styled UI blocks inside a screen are not. Extract them into a component with its own test.
+- **Design:** all UI follows the `apple-design` skill (`.agents/skills/apple-design/SKILL.md`, Apple HIG), as interpreted by spec §12.
+  - Read it before building UI, and check against it before done.
+  - That means 44 pt touch targets, Dynamic Type, contrast, RTL mirroring, Reduce Motion and Reduce Transparency, and VoiceOver and TalkBack labels.
+- **Existing gap:** `Sidebar` and `SidebarItem` (Phase 0) are tested through `__tests__/sidebar-glass.test.tsx` and the router test, not by colocated per-component tests. Add those the next time either component changes.
+
 ## Where state lives
 
 | State | Home |

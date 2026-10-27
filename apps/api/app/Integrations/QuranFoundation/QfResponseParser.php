@@ -29,6 +29,48 @@ final class QfResponseParser
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return list<CatalogEntry>
+     */
+    public function catalog(array $payload, string $key): array
+    {
+        $entries = [];
+
+        foreach ($this->objectList($payload, $key) as $item) {
+            $entries[] = new CatalogEntry(
+                id: $this->integer($item, 'id'),
+                name: $this->string($item, 'name'),
+                authorName: $this->nullableString($item, 'author_name'),
+                languageName: $this->nullableString($item, 'language_name'),
+                slug: $this->nullableString($item, 'slug'),
+            );
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return list<ReciterCatalogEntry>
+     */
+    public function reciters(array $payload): array
+    {
+        $entries = [];
+
+        foreach ($this->objectList($payload, 'reciters') as $item) {
+            $entries[] = new ReciterCatalogEntry(
+                id: $this->integer($item, 'id'),
+                name: $this->string($item, 'name'),
+                style: $this->nestedName($item, 'style'),
+                qirat: $this->nestedName($item, 'qirat'),
+                translatedName: $this->nestedName($item, 'translated_name'),
+            );
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
      */
     public function snapshot(array $payload): Snapshot
     {
@@ -182,6 +224,25 @@ final class QfResponseParser
         }
 
         return $this->objectField($payload, $key);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function nestedName(array $payload, string $key): ?string
+    {
+        if (! array_key_exists($key, $payload) || $payload[$key] === null) {
+            return null;
+        }
+
+        $value = $payload[$key];
+
+        if (! is_array($value) || array_is_list($value)) {
+            throw new QuranFoundationException('Quran Foundation response field ['.$key.'] must be an object.');
+        }
+
+        /** @var array<string, mixed> $value */
+        return $this->nullableString($value, 'name');
     }
 
     /**

@@ -37,4 +37,23 @@ return [
         'per_page' => 100,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Content sync
+    |--------------------------------------------------------------------------
+    |
+    | One filter per resource group. The daily job and `content:sync` use
+    | these unless a run passes its own resources filter.
+    |
+    */
+
+    'sync' => [
+        'groups' => [
+            'translations' => 'translations:*',
+            'tafsirs' => 'tafsirs:*',
+            'mushafs' => 'mushafs:1',
+            'chapter_recitations' => 'chapter_recitations:6,7',
+        ],
+    ],
+
 ];

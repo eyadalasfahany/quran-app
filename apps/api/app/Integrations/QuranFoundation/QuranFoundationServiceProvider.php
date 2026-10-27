@@ -21,10 +21,19 @@ final class QuranFoundationServiceProvider extends ServiceProvider
             $this->app->make(QfHttp::class),
         ));
 
-        $this->app->singleton(ContentSyncClient::class, fn (): ContentSyncClient => new ContentSyncClient(
+        $this->app->singleton(QfApi::class, fn (): QfApi => new QfApi(
             $this->app->make(OAuthTokenProvider::class),
             $this->app->make(QfConfig::class),
             $this->app->make(QfHttp::class),
+        ));
+
+        $this->app->singleton(ContentSyncClient::class, fn (): ContentSyncClient => new ContentSyncClient(
+            $this->app->make(QfApi::class),
+            $this->app->make(QfConfig::class),
+        ));
+
+        $this->app->singleton(ContentCatalogClient::class, fn (): ContentCatalogClient => new ContentCatalogClient(
+            $this->app->make(QfApi::class),
         ));
     }
 

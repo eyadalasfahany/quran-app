@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Integrations\QuranFoundation\ContentCatalogClient;
 use App\Integrations\QuranFoundation\ContentSyncClient;
 use App\Integrations\QuranFoundation\OAuthTokenProvider;
+use App\Integrations\QuranFoundation\QfApi;
 use App\Integrations\QuranFoundation\QfConfig;
 use App\Integrations\QuranFoundation\QfHttp;
 use JsonException;
@@ -44,6 +46,8 @@ final class QuranFoundationFixture
         app()->forgetInstance(QfConfig::class);
         app()->forgetInstance(QfHttp::class);
         app()->forgetInstance(OAuthTokenProvider::class);
+        app()->forgetInstance(QfApi::class);
         app()->forgetInstance(ContentSyncClient::class);
+        app()->forgetInstance(ContentCatalogClient::class);
     }
 }

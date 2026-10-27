@@ -69,3 +69,8 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
 - An endpoint change ships with its OpenAPI update and the app-side types in the same change.
 - New dependency: check the content plan's version table first; no package without a release in the last 12 months.
 - Write the tests the spec lists for a feature (§11 sync cases, §14 matrix) alongside the feature, not after.
+- **Frontend rule (every agent, every phase):**
+  - **Components:** every UI component is its own file, in `apps/mobile/src/shared/ui/` (design system) or `src/features/<feature>/components/`.
+  - **Tests:** each component has its own colocated test file (`ComponentName.test.tsx`) covering render, variants and props, interaction, RTL, and its accessibility role and label.
+  - **Screens:** screens (`app/` routes and feature screens) only compose these components, with no one-off styled UI built inside a screen.
+  - **Design:** all UI work follows the `apple-design` skill (`.agents/skills/apple-design/SKILL.md`, Apple HIG). Read it before building UI, and check the result against it before calling the work done.

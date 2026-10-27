@@ -37,7 +37,8 @@ Remove `.gitkeep`.
 
 **`ContentSyncClient`:**
 - `sync(string $resources, ?string $syncToken = null, bool $bootstrap = false)` yields one typed page per response, following `next_page_url` until `has_more` is false.
-  - First request: `GET {api}/api/v4/resources/sync` with `resources` (`group:id;group:id` or `group:*`), `per_page`, and either `bootstrap=true` or `sync_token=<token>`.
+  - First request: `GET {api}/api/v4/resources/sync` with `resources`, `per_page`, and either `bootstrap=true` or `sync_token=<token>`.
+  - `resources` format: `group:*`, `group:6,7` (IDs of one group comma-separated), or several groups separated by `;` (`translations:85;tafsirs:169`). Repeating a group is rejected by QF.
   - Envelope:
     ```json
     {"sync": {"sync_until_sequence": 247, "has_more": false, "next_page_url": null,

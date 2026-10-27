@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @property SyncEnvironment $environment
+ * @property SyncRunStatus $status
+ * @property int<0, max> $mutations_applied
  * @property CarbonImmutable $started_at
  * @property CarbonImmutable|null $finished_at
  */
@@ -35,6 +38,7 @@ final class SyncRun extends Model
         return [
             'environment' => SyncEnvironment::class,
             'status' => SyncRunStatus::class,
+            'mutations_applied' => 'integer',
             'started_at' => 'immutable_datetime',
             'finished_at' => 'immutable_datetime',
         ];

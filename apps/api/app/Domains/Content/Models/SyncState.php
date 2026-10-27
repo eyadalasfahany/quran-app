@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @property SyncEnvironment $environment
+ * @property int<0, max> $last_sequence
  * @property CarbonImmutable|null $last_success_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -32,6 +34,7 @@ final class SyncState extends Model
     {
         return [
             'environment' => SyncEnvironment::class,
+            'last_sequence' => 'integer',
             'last_success_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',

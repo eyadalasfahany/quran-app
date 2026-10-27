@@ -1,9 +1,12 @@
-export class NotImplementedError extends Error {
-  override readonly name = 'NotImplementedError';
-}
-
-// The checksum lands with the Tanzil seed in Phase 1. Until then this throws, so no
-// caller can mistake the stub for a passing integrity check.
-export function verify(): never {
-  throw new NotImplementedError('quran-text-check is not implemented yet (Phase 1)');
-}
+export { ayahChecksum } from './checksum.ts';
+export {
+  AYAH_COUNT,
+  SURAH_COUNT,
+  TANZIL_FILE_SHA256,
+  TANZIL_METADATA_SHA256,
+  TANZIL_UTHMANI_CHECKSUM,
+} from './constants.ts';
+export { loadTanzil, parseTanzilMetadata, parseTanzilText } from './tanzil.ts';
+export type { Ayah, Sajda, SuraMetadata, TanzilLoad, TanzilMetadata, VerseStart } from './tanzil.ts';
+export { verifyTanzil } from './verify.ts';
+export type { VerifyResult } from './verify.ts';

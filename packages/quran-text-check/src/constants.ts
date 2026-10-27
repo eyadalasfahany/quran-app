@@ -1,0 +1,12 @@
+export const AYAH_COUNT = 6236;
+
+export const SURAH_COUNT = 114;
+
+export const TANZIL_FILE_SHA256 =
+  '7f30c647331a61100ebf24a80507dc0fcdd9f2df97f1312b5b2dfcb982a7f326';
+
+export const TANZIL_METADATA_SHA256 =
+  '8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a';
+
+export const TANZIL_UTHMANI_CHECKSUM =
+  '32cc746d817cad9fd4366c7597bfceb177e7649233616c0a80309074b2eb99ee';

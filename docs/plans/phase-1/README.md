@@ -75,6 +75,11 @@ Where the brief and the spec disagree, **stop and report**; don't pick one.
 - **Packages:** add Expo-managed packages with `npx expo install`. Any other new package must already be in the `docs/content-plan.md` version table, or the brief must say to add it there.
 - **Types:** API types come from `@quran/api-contract`; never hand-write an API payload type.
 - **Strings:** no hard-coded UI strings (i18n files only).
+- **UI components (rule):** see `apps/mobile/CLAUDE.md`, "Components and screens":
+  - Every component is its own file, with its own colocated test.
+  - Screens only compose components.
+  - All UI follows the `apple-design` skill (`.agents/skills/apple-design/SKILL.md`).
+  - Phase 1 adds no UI. If a step needs any, this rule applies.
 
 **Dependencies:** add only what the brief names. No other packages.
 

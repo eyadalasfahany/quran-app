@@ -1,0 +1,22 @@
+{
+  "translations": [
+    {
+      "id": 85,
+      "name": "M.A.S. Abdel Haleem",
+      "author_name": "Abdul Haleem",
+      "slug": "en-haleem",
+      "language_name": "english",
+      "translated_name": {
+        "name": "Abdel Haleem",
+        "language_name": "english"
+      }
+    },
+    {
+      "id": 131,
+      "name": "Some Urdu",
+      "author_name": null,
+      "slug": "ur-sample",
+      "language_name": "urdu"
+    }
+  ]
+}

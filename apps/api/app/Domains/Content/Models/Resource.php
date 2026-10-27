@@ -17,6 +17,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
+ * @property ResourceGroup $group
+ * @property TextDirection|null $direction
+ * @property int<0, max> $version
+ * @property int<0, max> $changes_floor_version
+ * @property int<0, max>|null $source_content_id
+ * @property int<0, max>|null $source_sequence
  * @property CarbonImmutable|null $synced_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
@@ -53,6 +59,10 @@ final class Resource extends Model
         return [
             'group' => ResourceGroup::class,
             'direction' => TextDirection::class,
+            'version' => 'integer',
+            'changes_floor_version' => 'integer',
+            'source_content_id' => 'integer',
+            'source_sequence' => 'integer',
             'is_active' => 'boolean',
             'synced_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
