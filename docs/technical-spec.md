@@ -655,6 +655,7 @@ For each change, in one transaction per request:
 | Auto-scroll to the active ayah | FlashList | Animated scroll | Jump |
 | Glass show or hide | `GlassView` style | Switch `regular` ↔ `none` (never fade its opacity) | Switch without animating; no animated blur |
 | Reading mode or script change | Segmented control + content | Cross-fade, `standard` | Same |
+| Focus: next or previous ayah | Reanimated layout animation (`focus-turn.ts`) | Cross-fade: the leaving ayah fades out (`standard`) and drifts 56 pt the way of the turn while the next fades in (`slow`) from the other side; position on `spring()` | Cross-fade only |
 | Surah cartouche, Continue reading rosette | `react-native-svg` + Reanimated dash offset (`useDrawOnView`) | Gold outline draws in, `draw` (700 ms), the first time it scrolls into view; each surah's cartouche once per session | Shown drawn, no motion |
 
 - **Cancelling motion:** any touch on the reader stops auto-scroll at once and shows a pill to return to the current ayah; following resumes only when it is tapped.

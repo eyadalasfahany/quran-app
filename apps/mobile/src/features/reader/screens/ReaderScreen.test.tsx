@@ -1,14 +1,49 @@
-import { act } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { useSegments } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import type { SqlExecutor } from '@/core/db/sql-executor';
+import { formatNumber } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { themes } from '@/core/theme';
+import { pageForVerse } from '@/features/reader/anchor/page';
 
+import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { resetReaderSelection } from '../selection';
 import { resetReaderSettingsStore, useReaderSettings } from '../settings';
 import { ReaderScreen } from './ReaderScreen';
+
+// Only the tests that need content open it, so the others keep rendering the reader shell alone.
+let mockExecutor: SqlExecutor | undefined;
+
+// The Mushaf list stands in for FlashList, which doesn't report visible pages under Jest; a test reports
+// them through the props it was given.
+let mockMushafProps: { anchorVerseKey: string; onVisiblePage?: (page: number, verseKey: string) => void } | undefined;
+jest.mock('../HafsMushafList', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    HafsMushafList: (props: { anchorVerseKey: string; testID?: string; topInset?: number }) => {
+      mockMushafProps = props;
+      return createElement(View, { style: { paddingTop: props.topInset }, testID: props.testID });
+    },
+  };
+});
+jest.mock('@/core/db/content/open', () => ({
+  openContentDb: () => {
+    if (mockExecutor === undefined) {
+      throw new Error('openContentDb is unavailable under Jest.');
+    }
+    return { db: {}, executor: mockExecutor };
+  },
+}));
+
+jest.mock('expo-router', () => ({
+  ...jest.requireActual('expo-router'),
+  useSegments: jest.fn(() => []),
+}));
 
 // The app root provides the insets; the toolbar clears the top inset itself, so the screen adds none.
 const metrics = { frame: { height: 844, width: 390, x: 0, y: 0 }, insets: { bottom: 34, left: 0, right: 0, top: 59 } };
@@ -29,6 +64,8 @@ describe('ReaderScreen', () => {
     storage.remove(storageKeys.readerMode);
     resetReaderSettingsStore();
     resetReaderSelection();
+    jest.mocked(useSegments).mockReturnValue([] as unknown as ReturnType<typeof useSegments>);
+    mockExecutor = undefined;
   });
 
   it('keeps the anchor ayah when the reading mode changes', async () => {
@@ -54,6 +91,49 @@ describe('ReaderScreen', () => {
     expect(view.getByTestId('reader-back')).toBeOnTheScreen();
     expect(view.getByTestId('reader-tools')).toBeOnTheScreen();
     expect(view.queryByTestId('reader-resume-slot')).toBeNull();
+  });
+
+  it.each(['ayah', 'tafsir', 'reader-settings'])('leaves the page and toolbar as they were under the %s sheet', async (sheet) => {
+    mockExecutor = (await openReaderTestContent()).executor;
+    useReaderSettings.getState().setMode('mushaf');
+    const closed = await renderUi(reader());
+    const inset = flatStyle(closed.getByTestId('reader-mushaf').props.style).paddingTop;
+    await closed.unmount();
+
+    jest.mocked(useSegments).mockReturnValue([sheet] as unknown as ReturnType<typeof useSegments>);
+    const open = await renderUi(reader());
+
+    expect(flatStyle(open.getByTestId('reader-mushaf').props.style).paddingTop).toBe(inset);
+    expect(open.getByTestId('reader-back')).toBeOnTheScreen();
+    expect(open.getByTestId('reader-tools')).toBeOnTheScreen();
+  });
+
+  it('saves and shows the page the Mushaf scrolls to after an ayah was turned in Focus', async () => {
+    const { executor } = await openReaderTestContent();
+    mockExecutor = executor;
+    useReaderSettings.getState().setMode('focus');
+    const view = await renderUi(reader());
+
+    await fireEvent.press(view.getByTestId('focus-transport-next'));
+    expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
+
+    await act(async () => {
+      useReaderSettings.getState().setMode('mushaf');
+    });
+    expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
+
+    const page = pageForVerse(executor, '3:1')!;
+    await act(async () => {
+      mockMushafProps?.onVisiblePage?.(page, '3:1');
+    });
+
+    expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('3:1');
+    expect(view.getByTestId('reader-title')).toHaveTextContent(new RegExp(formatNumber(page, 'ar')));
+
+    // Saves are batched to one a second; leaving the reader writes the last one.
+    await view.unmount();
+    expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('3:1');
+    expect(storage.getString(storageKeys.readerLastPage)).toBe(String(page));
   });
 
   it.each(locales)('puts the Quran on the page surface, as the design does, in %s', async (locale) => {

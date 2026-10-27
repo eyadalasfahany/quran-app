@@ -1,5 +1,5 @@
 import { router, useSegments } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -12,7 +12,13 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
   const { t } = useTranslation();
   const theme = useTheme();
   const segments: readonly string[] = useSegments();
-  const active = destinations.find((item) => segments.includes(item.name))?.name ?? '(home)';
+  const current = destinations.find((item) => segments.includes(item.name))?.name;
+  // A sheet's route names no tab; the tab under it stays the selected one.
+  const [lastActive, setLastActive] = useState(current ?? '(home)');
+  if (current !== undefined && current !== lastActive) {
+    setLastActive(current);
+  }
+  const active = current ?? lastActive;
 
   return (
     <View style={{ backgroundColor: theme.colors.surface, flex: 1, flexDirection: 'row' }} testID="main-shell">

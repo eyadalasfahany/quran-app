@@ -71,6 +71,13 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
   const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
+  // A pin (Focus's current ayah, or the resume pill's target) belongs to the mode that set it. Another
+  // mode opens at the saved place, which already holds that ayah.
+  const [pinMode, setPinMode] = useState(mode);
+  if (pinMode !== mode) {
+    setPinMode(mode);
+    setPinnedVerseKey(null);
+  }
 
   const executor = useMemo(() => {
     try {
@@ -82,9 +89,13 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
 
   const placement = panelPlacementFor(width, windowClass);
   const listAnchor = pinnedVerseKey ?? anchor.verseKey;
+  // The toolbar names the saved place, which follows the scroll even while the list is pinned.
   const chrome = useMemo(
-    () => (executor === null ? { juz: null, page: null, title: listAnchor, verseId: null } : loadChrome(executor, listAnchor, locale)),
-    [executor, listAnchor, locale],
+    () =>
+      executor === null
+        ? { juz: null, page: null, title: anchor.verseKey, verseId: null }
+        : loadChrome(executor, anchor.verseKey, locale),
+    [executor, anchor.verseKey, locale],
   );
   const subtitle =
     chrome.page === null || chrome.juz === null
@@ -138,18 +149,21 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     }
   };
 
+  // A sheet covers the reader without changing it: the toolbar stays, the page keeps its inset and scroll,
+  // and the resume pill doesn't appear for the ayah the sheet was opened on.
+  const sheetOpen = segments.some((segment) => segment === 'reader-settings' || segment === 'ayah' || segment === 'tafsir');
   // Focus pages one ayah at a time with its own transport, so the resume pill has nothing to return to.
   const focus = mode === 'focus';
   const showResume =
     !focus &&
+    !sheetOpen &&
     selection.verseKey !== null &&
     visibleVerseKey !== null &&
     visibleVerseKey !== selection.verseKey &&
     pinnedVerseKey !== selection.verseKey;
 
   const gutter = placement === 'docked' ? panelStripWidth() : 0;
-  const sheetOpen = segments.some((segment) => segment === 'reader-settings' || segment === 'ayah' || segment === 'tafsir');
-  const topInset = insets.top + (sheetOpen ? 0 : READER_TOOLBAR_CLEARANCE);
+  const topInset = insets.top + READER_TOOLBAR_CLEARANCE;
 
   return (
     <Screen accessibilityLabel={anchor.verseKey} surface="surfacePage" testID="reader-screen" topInset={false}>
@@ -194,8 +208,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           ) : null
         }
         toolbar={
-          sheetOpen ? null : (
-            <ReaderToolbar
+          <ReaderToolbar
               bookmarked={bookmarked}
               expanded={windowClass === 'expanded'}
               onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? anchor.verseKey)}
@@ -216,7 +229,6 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               subtitle={subtitle}
               title={chrome.title}
             />
-          )
         }
         topInset={insets.top}
         verseKey={selection.verseKey}

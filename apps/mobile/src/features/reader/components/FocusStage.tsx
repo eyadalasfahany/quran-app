@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View, type NativeSyntheticEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { LayoutAnimationConfig, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 
 import { formatNumber, type Locale } from '@/core/i18n';
-import { timing, useTheme } from '@/core/theme';
+import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
+import { focusTurnAnimations, type FocusTurnDirection } from '../focus-turn';
 import { FocusAside } from './FocusAside';
 import { FocusAyah } from './FocusAyah';
 import { FocusProgress } from './FocusProgress';
@@ -76,33 +77,17 @@ export function FocusStage({
   const theme = useTheme();
   const reduceMotion = useReducedMotion();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
-  const travel = useSharedValue(0);
-  const [turn, setTurn] = useState(0);
-
-  useEffect(() => {
-    if (turn === 0 || reduceMotion) {
-      return;
-    }
-    travel.value = Math.sign(turn);
-    travel.value = withTiming(0, timing('standard'));
-  }, [reduceMotion, travel, turn]);
+  const direction = useSharedValue<FocusTurnDirection>(1);
+  const turn = useMemo(() => focusTurnAnimations(direction, reduceMotion), [direction, reduceMotion]);
 
   const position = t('reader.focus.position', {
     current: formatNumber(verseNumber, locale),
     surah: surahName,
     total: formatNumber(versesCount, locale),
   });
-  const slideStyle = useAnimatedStyle(() => ({
-    opacity: 1 - Math.abs(travel.value) * 0.35,
-    transform: [{ translateY: travel.value * 120 }],
-  }));
 
   const turnTo = (way: 'next' | 'previous', move: () => void) => {
-    setTurn((current) => {
-      const step = way === 'next' ? 1 : -1;
-      const next = current + step;
-      return next === 0 ? step : next;
-    });
+    direction.set(way === 'next' ? 1 : -1);
     move();
   };
 
@@ -134,44 +119,47 @@ export function FocusStage({
       </UiText>
       <View style={{ flex: 1, overflow: 'hidden' }}>
         <FocusProgress onSelect={onSelectVerse === undefined ? undefined : selectPage} verseNumber={verseNumber} versesCount={versesCount} />
-        <Animated.View key={verseNumber} style={[{ flex: 1 }, slideStyle]}>
-          <ScrollView
-            alwaysBounceVertical
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: 'space-evenly',
-              paddingHorizontal: PAGE_GUTTER,
-              paddingVertical: theme.space[4],
-            }}
-            onScrollEndDrag={onDragEnd}
-            showsVerticalScrollIndicator={false}
-            testID={`${testID}-scroll`}
-          >
-            {previousText !== null && previousNumber !== null ? (
-              <FocusAside
+        {/* The ayah shown when Focus opens is already in place; only a turn animates. */}
+        <LayoutAnimationConfig skipEntering>
+          <Animated.View entering={turn.entering} exiting={turn.exiting} key={verseNumber} style={{ flex: 1 }}>
+            <ScrollView
+              alwaysBounceVertical
+              contentContainerStyle={{
+                flexGrow: 1,
+                justifyContent: 'space-evenly',
+                paddingHorizontal: PAGE_GUTTER,
+                paddingVertical: theme.space[4],
+              }}
+              onScrollEndDrag={onDragEnd}
+              showsVerticalScrollIndicator={false}
+              testID={`${testID}-scroll`}
+            >
+              {previousText !== null && previousNumber !== null ? (
+                <FocusAside
+                  fontScale={fontScale}
+                  testID={`${testID}-previous`}
+                  textUthmani={previousText}
+                  verseNumber={previousNumber}
+                />
+              ) : (
+                <View />
+              )}
+              <FocusAyah
                 fontScale={fontScale}
-                testID={`${testID}-previous`}
-                textUthmani={previousText}
-                verseNumber={previousNumber}
+                onOpenActions={onOpenActions}
+                testID={testID}
+                textImlaei={textImlaei}
+                textUthmani={textUthmani}
+                verseNumber={verseNumber}
               />
-            ) : (
-              <View />
-            )}
-            <FocusAyah
-              fontScale={fontScale}
-              onOpenActions={onOpenActions}
-              testID={testID}
-              textImlaei={textImlaei}
-              textUthmani={textUthmani}
-              verseNumber={verseNumber}
-            />
-            {nextText !== null && nextNumber !== null ? (
-              <FocusAside fontScale={fontScale} testID={`${testID}-next`} textUthmani={nextText} verseNumber={nextNumber} />
-            ) : (
-              <View />
-            )}
-          </ScrollView>
-        </Animated.View>
+              {nextText !== null && nextNumber !== null ? (
+                <FocusAside fontScale={fontScale} testID={`${testID}-next`} textUthmani={nextText} verseNumber={nextNumber} />
+              ) : (
+                <View />
+              )}
+            </ScrollView>
+          </Animated.View>
+        </LayoutAnimationConfig>
       </View>
       <UiText align="center" style={{ marginBottom: theme.space[3] }} tone="muted" variant="label">
         {t('reader.focus.nextHint')}

@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../jest/ui-source';
-import { themes } from '@/core/theme';
+import { ThemeProvider, themes } from '@/core/theme';
 
 import { MainShell } from './MainShell';
 
@@ -67,6 +67,17 @@ describe('MainShell', () => {
   it('selects the destination of the current route', async () => {
     jest.mocked(useSegments).mockReturnValue(['(main)', '(mushaf)']);
     const view = await renderUi(shell(true));
+
+    expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
+    expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it('keeps the tab under a sheet selected while the sheet is open', async () => {
+    jest.mocked(useSegments).mockReturnValue(['(main)', '(mushaf)']);
+    const view = await renderUi(shell(true));
+
+    jest.mocked(useSegments).mockReturnValue(['reader-settings'] as unknown as ReturnType<typeof useSegments>);
+    await view.rerender(<ThemeProvider name="light">{shell(true)}</ThemeProvider>);
 
     expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
     expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: false });
