@@ -81,6 +81,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // Release builds reload through expo-updates after a language change.
       // No update URL until EAS exists, so this does not check for remote updates.
       'expo-updates',
+      'expo-sqlite',
     ],
     experiments: {
       typedRoutes: true,

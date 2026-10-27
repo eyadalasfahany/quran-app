@@ -1,0 +1,17 @@
+[
+  {
+    "verse_key": "2:181",
+    "merged_positions": [3, 4],
+    "reason": "QF timing data treats بَعْدَ مَا as one segment; QF layout has two words"
+  },
+  {
+    "verse_key": "8:6",
+    "merged_positions": [4, 5],
+    "reason": "QF timing data treats بَعْدَ مَا as one segment; the word map keeps Tanzil's two words"
+  },
+  {
+    "verse_key": "13:37",
+    "merged_positions": [8, 9],
+    "reason": "QF timing data treats بَعْدَ مَا as one segment; the word map keeps Tanzil's two words"
+  }
+]

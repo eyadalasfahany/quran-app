@@ -4,6 +4,8 @@ import {
   SURAH_COUNT,
   TANZIL_FILE_SHA256,
   TANZIL_METADATA_SHA256,
+  TANZIL_SIMPLE_CHECKSUM,
+  TANZIL_SIMPLE_SHA256,
   TANZIL_UTHMANI_CHECKSUM,
 } from './constants.ts';
 import { loadTanzil, type Ayah, type TanzilLoad, type TanzilMetadata } from './tanzil.ts';
@@ -25,9 +27,19 @@ export function verifyTanzil(loaded?: TanzilLoad): VerifyResult {
     failures.push(`metadata file hash is ${source.metadataSha256}, expected ${TANZIL_METADATA_SHA256}`);
   }
 
+  if (source.simpleFileSha256 !== TANZIL_SIMPLE_SHA256) {
+    failures.push(`simple text file hash is ${source.simpleFileSha256}, expected ${TANZIL_SIMPLE_SHA256}`);
+  }
+
   if (source.ayahs.length !== AYAH_COUNT) {
     failures.push(`ayah count is ${source.ayahs.length}, expected ${AYAH_COUNT}`);
   }
+
+  if (source.simpleAyahs.length !== AYAH_COUNT) {
+    failures.push(`simple ayah count is ${source.simpleAyahs.length}, expected ${AYAH_COUNT}`);
+  }
+
+  failures.push(...verseKeyFailures(source.ayahs, source.simpleAyahs));
 
   const counts = suraCounts(source.ayahs);
 
@@ -45,10 +57,39 @@ export function verifyTanzil(loaded?: TanzilLoad): VerifyResult {
     failures.push(`checksum is ${checksum}, expected ${TANZIL_UTHMANI_CHECKSUM}`);
   }
 
+  const simpleChecksum = ayahChecksum(source.simpleAyahs.map((ayah) => ayah.text));
+
+  if (simpleChecksum !== TANZIL_SIMPLE_CHECKSUM) {
+    failures.push(`simple checksum is ${simpleChecksum}, expected ${TANZIL_SIMPLE_CHECKSUM}`);
+  }
+
   return {
     ok: failures.length === 0,
     failures,
   };
+}
+
+function verseKeyFailures(uthmani: readonly Ayah[], simple: readonly Ayah[]): string[] {
+  const failures: string[] = [];
+  const length = Math.min(uthmani.length, simple.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const left = uthmani[index];
+    const right = simple[index];
+
+    if (left === undefined || right === undefined) {
+      continue;
+    }
+
+    if (left.sura !== right.sura || left.aya !== right.aya) {
+      failures.push(
+        `simple verse ${right.sura}:${right.aya} does not match Uthmani ${left.sura}:${left.aya} at index ${index}`,
+      );
+      break;
+    }
+  }
+
+  return failures;
 }
 
 function suraCounts(ayahs: readonly Ayah[]): Map<number, number> {

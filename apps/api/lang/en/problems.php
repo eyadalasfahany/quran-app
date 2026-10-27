@@ -7,6 +7,8 @@ return [
     'unauthenticated' => 'Sign-in required',
     'forbidden' => 'Not allowed',
     'not_found' => 'Not found',
+    'changes_gone' => 'Gone',
+    'changes_gone_detail' => 'The change feed no longer covers this version. Download the pack.',
     'method_not_allowed' => 'Method not allowed',
     'conflict' => 'Conflict',
     'payload_too_large' => 'Request too large',

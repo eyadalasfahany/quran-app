@@ -4,7 +4,9 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 
+import { useContentDb } from '@/core/db/content/open';
 import { ensureDirection } from '@/core/i18n';
+import { useContentSync } from '@/core/sync/use-content-sync';
 import { ThemeProvider, themes, uiFonts } from '@/core/theme';
 
 void SplashScreen.preventAutoHideAsync();
@@ -18,8 +20,11 @@ const directionCheck = ensureDirection();
 export default function RootLayout() {
   const [loaded, error] = useFonts(uiFonts);
   const [directionReady, setDirectionReady] = useState(directionCheck.ready);
+  const content = useContentDb();
+  useContentSync();
   // A font that fails to load falls back to the system font rather than holding the splash.
-  const ready = (loaded || error !== null) && directionReady;
+  // A database error is logged and the reader deals with an empty database later.
+  const ready = (loaded || error !== null) && directionReady && (content.ready || content.error !== null);
 
   useEffect(() => {
     if (directionCheck.ready) {
@@ -32,6 +37,12 @@ export default function RootLayout() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (content.error) {
+      console.error(content.error);
+    }
+  }, [content.error]);
 
   useEffect(() => {
     if (ready) {

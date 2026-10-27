@@ -11,6 +11,209 @@
         }
     ],
     "paths": {
+        "/content/changes": {
+            "get": {
+                "operationId": "v1.content.changes",
+                "tags": [
+                    "ContentChanges"
+                ],
+                "parameters": [
+                    {
+                        "name": "resource_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "since_version",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 500
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`ContentChangesResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContentChangesResource"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "410": {
+                        "description": "The change feed no longer covers this version.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "title",
+                                        "status",
+                                        "code"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/content/manifest": {
+            "get": {
+                "operationId": "v1.content.manifest",
+                "tags": [
+                    "ContentManifest"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`ContentManifestResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ContentManifestResource"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Not modified.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/content/packs/{resource}/{version}": {
+            "get": {
+                "operationId": "v1.content.packs.show",
+                "tags": [
+                    "ContentPack"
+                ],
+                "parameters": [
+                    {
+                        "name": "resource",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "version",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/gzip": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The resource or pack version was not found.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "title",
+                                        "status",
+                                        "code"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "operationId": "v1.health",
@@ -45,6 +248,172 @@
     },
     "components": {
         "schemas": {
+            "ContentChangesResource": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "version": {
+                                    "type": "integer"
+                                },
+                                "entity": {
+                                    "type": "string"
+                                },
+                                "entity_key": {
+                                    "type": "string"
+                                },
+                                "op": {
+                                    "type": "string",
+                                    "enum": [
+                                        "upsert",
+                                        "delete"
+                                    ]
+                                },
+                                "payload": {
+                                    "type": [
+                                        "object",
+                                        "null"
+                                    ],
+                                    "additionalProperties": {}
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "version",
+                                "entity",
+                                "entity_key",
+                                "op",
+                                "payload"
+                            ]
+                        }
+                    },
+                    "next_cursor": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "data",
+                    "next_cursor"
+                ],
+                "title": "ContentChangesResource"
+            },
+            "ContentManifestResource": {
+                "type": "object",
+                "properties": {
+                    "generated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "pack_schema_version": {
+                        "type": "integer"
+                    },
+                    "resources": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "group": {
+                                    "type": "string",
+                                    "enum": [
+                                        "quran_core",
+                                        "mushafs",
+                                        "translations",
+                                        "tafsirs",
+                                        "word_by_word_translations",
+                                        "word_by_word_transliterations",
+                                        "recitations",
+                                        "chapter_recitations",
+                                        "hadith"
+                                    ]
+                                },
+                                "name": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "author_name": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "language_code": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "direction": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "enum": [
+                                        "rtl",
+                                        "ltr",
+                                        null
+                                    ]
+                                },
+                                "version": {
+                                    "type": "integer"
+                                },
+                                "pack": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {
+                                            "type": "string"
+                                        },
+                                        "size_bytes": {
+                                            "type": "integer"
+                                        },
+                                        "sha256": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "url",
+                                        "size_bytes",
+                                        "sha256"
+                                    ]
+                                },
+                                "changes_since_min_version": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "group",
+                                "name",
+                                "author_name",
+                                "language_code",
+                                "direction",
+                                "version",
+                                "pack",
+                                "changes_since_min_version"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "generated_at",
+                    "pack_schema_version",
+                    "resources"
+                ],
+                "title": "ContentManifestResource"
+            },
             "HealthResource": {
                 "type": "object",
                 "properties": {
@@ -85,6 +454,38 @@
                     "unavailable"
                 ],
                 "title": "HealthStatus"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
             }
         }
     }

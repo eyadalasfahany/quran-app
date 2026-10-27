@@ -209,7 +209,7 @@ apps/mobile/
     │   ├── db/         content/schema.ts, user/schema.ts, migrations/, open.ts (two databases)
     │   ├── sync/       content-sync.ts, user-sync.ts, outbox.ts
     │   ├── layout/     useWindowClass, AdaptiveSplit, ContentColumn, useReadingAnchor
-    │   ├── theme/      tokens from @quran/design-tokens; light, sepia, dark
+    │   ├── theme/      tokens from @quran/design-tokens; Automatic (system light/dark) by default, light, sepia, dark; Increase Contrast and Bold Text (ADR 0012)
     │   ├── i18n/       ar.json, en.json, RTL switch
     │   ├── storage/    mmkv.ts (prefs, last-read cache), secure.ts (token)
     │   └── telemetry/  Sentry init, performance marks
@@ -615,9 +615,9 @@ For each change, in one transaction per request:
 - **One list, three modes.** Every mode is a vertical FlashList. Mushaf mode's items are pages (604); Reading and Focus modes' items are ayahs (6,236). Switching mode keeps the anchor verse.
 - **Item sizing:** Mushaf pages have a known height for a given width (15 lines × line height derived from the page width), so `overrideItemLayout` gives exact offsets and jump-to-ayah lands without measuring. Reading-mode rows are measured and cached per (window width, font scale, translations) key; a fold, unfold or rotation clears the cache and restores the anchor.
 - **Mushaf rendering:** each line is one `Text` run of QCF v2 glyph codes in that page's font, justified by the font itself. The page font is loaded with `expo-font` when the page is within two of the viewport and released past ten. KFGQPC Hafs, IndoPak and Tajweed scripts render ayah text in the bundled fonts and flow lines by width instead.
-- **Ayah hit-testing:** each word is a nested `Text` with an `onPress` that resolves to its `verse_id`; long-press opens ayah actions (sheet on compact, side panel on expanded).
-- **Highlights:** user highlights and the audio-active ayah are background spans on the same nested `Text`, coloured from theme tokens; the active ayah wins.
-- **Accessibility:** each ayah exposes its Imla'i text plus "الآية ٥" as its accessibility label, as the content plan requires.
+- **Ayah hit-testing:** each word is a nested `Text` with an `onPress` that resolves to its `verse_id`. Ayah actions (sheet on compact, side panel on expanded) open on long-press, on a tap on the ayah marker, and from the ayah-actions glass button; each ayah also exposes them as accessibility actions (ADR 0012).
+- **Highlights:** user highlights are background spans on the same nested `Text`, coloured from theme tokens. The audio-active ayah adds the `highlight-active` wash (or keeps the user highlight), fills its marker with `brand` and, in Reading mode, draws a leading `brand` rule; the glyphs never change (ADR 0012).
+- **Accessibility:** each ayah exposes its Imla'i text plus "الآية ٥" as its accessibility label, as the content plan requires, followed by its highlight colour name when it has one.
 
 **Audio (`features/audio`)**
 

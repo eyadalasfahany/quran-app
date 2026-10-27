@@ -1,5 +1,12 @@
 import { deviceLanguageCode } from './jest/device-language';
 
+jest.mock('@/core/db/content/open', () => ({
+  useContentDb: () => ({ ready: true, error: null }),
+  openContentDb: () => {
+    throw new Error('openContentDb is unavailable under Jest.');
+  },
+}));
+
 const mockDeviceLanguageCode = deviceLanguageCode;
 
 jest.mock('expo-localization', () => ({

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Support\Env;
+use App\Support\ProblemDetails\ProblemDetailsResourceTypeToSchema;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Dedoc\Scramble\OpenApiVersion;
 
@@ -166,7 +167,9 @@ return [
         RestrictedDocsAccess::class,
     ],
 
-    'extensions' => [],
+    'extensions' => [
+        ProblemDetailsResourceTypeToSchema::class,
+    ],
 
     /*
      * Automatically document API security (OpenAPI `security` / `securitySchemes`) based on route

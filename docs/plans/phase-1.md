@@ -14,6 +14,23 @@ Same rules as Phase 0:
 - CI is paused (phase-0 step 10), so these local checks are the only gate.
 - An endpoint step ships its `openapi.json` and TS types in the same change.
 
+## Status (27 Oct 2026)
+
+Built by Cursor agents from the step briefs, reviewed and live-verified by Claude, uncommitted until the developer commits.
+
+| Step | Result |
+| --- | --- |
+| 1 QF client | ✅ `qf:ping` live: 1 mutation, 293 records; `Retry-After` capped at 30 s |
+| 2 Mirror schema | ✅ 14 tables. Enumerated columns are `varchar` plus PHP enums (ADR 0009) |
+| 3–4 Sync engine and handlers | ✅ Live prelive: 14 translations (4,102 rows), 7 tafsirs, mushaf 1 (6,488 rows), 2 chapter recitations (114 files, 6,236 timings). Byte-exact against QF snapshots. Resume proven. Three review fixes (filter format, missing catalogue entry, events after a failed run) |
+| 5 Text integrity | ✅ Tanzil pinned; the TS and PHP checksums agree (`32cc746d…`) |
+| 6 Packs and endpoints | ✅ Real packs match the contract column for column; manifest 200/304, packs 200/404, changes 200/410/422 |
+| 7 Device database | ✅ Seed of 114 chapters and 6,236 verses, byte-identical to Tanzil |
+| 8 Device sync | ✅ Live end to end (real API, packs, gzip, SHA-256, ATTACH): 4 packs imported, byte-exact, the second run unchanged |
+| 11 Word map and Basmala | ✅ 77,433 words plus 6,236 end rows; every verse rejoins byte for byte; 112 Basmala splits; Imla'i search (1:2 → «الحمد لله رب العالمين»). Review fix: QF numbering follows the layout, and audio merges for 2:181, 8:6 and 13:37 are listed separately for Phase 3 |
+| 9 `quran_core` | Superseded (ADR 0010) |
+| 10 Exit check | See `phase-1/step-10-exit-check.md` |
+
 ## What QF prelive actually gives us (probed 27 Oct 2026)
 
 Calls made with our prelive keys.

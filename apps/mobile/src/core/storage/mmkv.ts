@@ -7,4 +7,6 @@ export const storage = createMMKV({ id: 'quran-prefs' });
 export const storageKeys = {
   locale: 'locale',
   directionReloadPending: 'directionReloadPending',
+  selectedResourceIds: 'content.selectedResourceIds',
+  contentLastSyncAt: 'content.lastSyncAt',
 } as const;

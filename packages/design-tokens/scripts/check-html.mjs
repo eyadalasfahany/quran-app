@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 
 const [html, pkg] = process.argv.slice(2);
 const src = (f) => import(pathToFileURL(`${pkg}/src/${f}`).href);
-const { colors, shadows } = await src('colors.ts');
+const { colors, shadows, highContrast } = await src('colors.ts');
 const { space, radius, blur } = await src('scale.ts');
 const { fontFamilies, typeScale, quranTypeScale } = await src('typography.ts');
 const { duration, easing, spring } = await src('motion.ts');
@@ -57,6 +57,15 @@ for (const theme of ['light', 'sepia', 'dark']) {
     }
   }
   for (const k of Object.keys(colors[theme])) if (!seen.has(k)) check(`${theme}.${k} (extra in ts)`, 'absent', colors[theme][k]);
+}
+
+// Increase Contrast blocks: [data-theme=X][data-contrast=more]{...}
+for (const theme of ['light', 'sepia', 'dark']) {
+  const m = style.match(new RegExp(`\\[data-theme=${theme}\\]\\[data-contrast=more\\]\\{([^}]*)\\}`));
+  if (!m) { check(`${theme}.contrast-more`, 'present', 'missing'); continue; }
+  const vars = Object.fromEntries(m[1].split(';').filter(Boolean).map((d) => [d.slice(2, d.indexOf(':')), d.slice(d.indexOf(':') + 1).trim()]));
+  for (const [k, v] of Object.entries(vars)) check(`${theme}.contrast-more.${k}`, v, highContrast[theme][camel(k)]);
+  for (const k of Object.keys(highContrast[theme])) if (!(k in Object.fromEntries(Object.keys(vars).map((v) => [camel(v), 1])))) check(`${theme}.contrast-more.${k} (extra in ts)`, 'absent', highContrast[theme][k]);
 }
 
 // Type specimens: <code>name</code> <span ...>size / lineHeight / weight</span>

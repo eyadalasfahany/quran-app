@@ -1,4 +1,7 @@
 const { defineConfig, globalIgnores } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 
-module.exports = defineConfig([expoConfig, globalIgnores(['dist/*', '.expo/*'])]);
+module.exports = defineConfig([
+  expoConfig,
+  globalIgnores(['dist/*', '.expo/*', 'src/core/db/content/migrations/**']),
+]);

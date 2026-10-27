@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/content/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.content.changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/content/manifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.content.manifest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/content/packs/{resource}/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.content.packs.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -25,6 +73,44 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ContentChangesResource */
+        ContentChangesResource: {
+            data: {
+                id: number;
+                version: number;
+                entity: string;
+                entity_key: string;
+                /** @enum {string} */
+                op: "upsert" | "delete";
+                payload: {
+                    [key: string]: unknown;
+                } | null;
+            }[];
+            next_cursor: string | null;
+        };
+        /** ContentManifestResource */
+        ContentManifestResource: {
+            /** Format: date-time */
+            generated_at: string;
+            pack_schema_version: number;
+            resources: {
+                id: number;
+                /** @enum {string} */
+                group: "quran_core" | "mushafs" | "translations" | "tafsirs" | "word_by_word_translations" | "word_by_word_transliterations" | "recitations" | "chapter_recitations" | "hadith";
+                name: string | null;
+                author_name: string | null;
+                language_code: string | null;
+                /** @enum {string|null} */
+                direction: "rtl" | "ltr" | null;
+                version: number;
+                pack: {
+                    url: string;
+                    size_bytes: number;
+                    sha256: string;
+                };
+                changes_since_min_version: number;
+            }[];
+        };
         /** HealthResource */
         HealthResource: {
             status: components["schemas"]["HealthStatus"];
@@ -41,7 +127,24 @@ export interface components {
          */
         HealthStatus: "ok" | "unavailable";
     };
-    responses: never;
+    responses: {
+        /** @description Validation error */
+        ValidationException: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    /** @description Errors overview. */
+                    message: string;
+                    /** @description A detailed description of each field that failed validation. */
+                    errors: {
+                        [key: string]: string[];
+                    };
+                };
+            };
+        };
+    };
     parameters: never;
     requestBodies: never;
     headers: never;
@@ -49,6 +152,113 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "v1.content.changes": {
+        parameters: {
+            query: {
+                resource_id: number;
+                since_version: number;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `ContentChangesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentChangesResource"];
+                };
+            };
+            /** @description The change feed no longer covers this version. */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.content.manifest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `ContentManifestResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentManifestResource"];
+                };
+            };
+            /** @description Not modified. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null;
+                };
+            };
+        };
+    };
+    "v1.content.packs.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resource: number;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/gzip": string;
+                };
+            };
+            /** @description The resource or pack version was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+        };
+    };
     "v1.health": {
         parameters: {
             query?: never;

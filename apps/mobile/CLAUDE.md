@@ -69,7 +69,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 
 - Quran text renders only in its Quran font, exactly as stored. Never ellipsize, truncate or reflow an ayah into the UI font.
 - Each ayah's accessibility label is its Imla'i text plus the ayah number.
-- Media controls and progress bars are never mirrored in RTL.
+- Audio follows RTL (ADR 0012): progress bars fill from the right with elapsed time on the right, and next ayah sits on the left with its glyph flipped. Play and pause glyphs never flip.
 
 ## Dependencies and checks
 

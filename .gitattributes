@@ -1,2 +1,3 @@
 packages/quran-text-check/data/*.txt -text
 packages/quran-text-check/data/*.xml -text
+apps/mobile/assets/db/*.db binary

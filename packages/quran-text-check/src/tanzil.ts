@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const TEXT_FILE = 'tanzil-quran-uthmani-1.1.txt';
+const SIMPLE_FILE = 'tanzil-quran-simple-1.1.txt';
 const METADATA_FILE = 'tanzil-quran-data-1.0.xml';
 
 export type Ayah = {
@@ -47,8 +48,10 @@ export type TanzilMetadata = {
 
 export type TanzilLoad = {
   fileSha256: string;
+  simpleFileSha256: string;
   metadataSha256: string;
   ayahs: Ayah[];
+  simpleAyahs: Ayah[];
   metadata: TanzilMetadata;
 };
 
@@ -96,12 +99,15 @@ export function parseTanzilMetadata(xml: string): TanzilMetadata {
 export function loadTanzil(dataDir?: string): TanzilLoad {
   const dir = dataDir ?? packageDataDir();
   const textBytes = readFileSync(join(dir, TEXT_FILE));
+  const simpleBytes = readFileSync(join(dir, SIMPLE_FILE));
   const metadataBytes = readFileSync(join(dir, METADATA_FILE));
 
   return {
     fileSha256: createHash('sha256').update(textBytes).digest('hex'),
+    simpleFileSha256: createHash('sha256').update(simpleBytes).digest('hex'),
     metadataSha256: createHash('sha256').update(metadataBytes).digest('hex'),
     ayahs: parseTanzilText(textBytes.toString('utf8')),
+    simpleAyahs: parseTanzilText(simpleBytes.toString('utf8')),
     metadata: parseTanzilMetadata(metadataBytes.toString('utf8')),
   };
 }

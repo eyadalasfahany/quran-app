@@ -7,6 +7,8 @@ return [
     'unauthenticated' => 'يلزم تسجيل الدخول',
     'forbidden' => 'غير مسموح',
     'not_found' => 'غير موجود',
+    'changes_gone' => 'غير متاح',
+    'changes_gone_detail' => 'سجل التغييرات لم يعد يغطي هذا الإصدار. نزّل الحزمة.',
     'method_not_allowed' => 'الطريقة غير مسموح بها',
     'conflict' => 'تعارض في البيانات',
     'payload_too_large' => 'الطلب أكبر من المسموح',

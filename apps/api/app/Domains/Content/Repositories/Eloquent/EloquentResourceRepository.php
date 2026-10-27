@@ -9,12 +9,34 @@ use App\Domains\Content\Models\ContentSource;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Support\Repositories\EloquentRepository;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * @extends EloquentRepository<resource>
  */
 final class EloquentResourceRepository extends EloquentRepository implements ResourceRepository
 {
+    public function find(int $id): ?Resource
+    {
+        $resource = $this->query()->find($id);
+
+        return $resource instanceof Resource ? $resource : null;
+    }
+
+    public function activeWithPacks(): Collection
+    {
+        /** @var Collection<int, resource> $resources */
+        $resources = $this->query()
+            ->where('is_active', true)
+            ->whereHas('contentPacks')
+            ->with('contentPacks')
+            ->orderBy('group')
+            ->orderBy('id')
+            ->get();
+
+        return $resources;
+    }
+
     public function sourceId(string $code): ?int
     {
         $id = ContentSource::query()->where('code', $code)->value('id');

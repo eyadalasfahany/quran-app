@@ -79,7 +79,7 @@ Update `data/TANZIL-LICENSE.md` with the Simple file (version 1.1, the URL `http
   - Generate the Drizzle migration (`npm run db:generate`).
 - **Seed builder:**
   - `verses.text_uthmani` = the post-Basmala text; `verses.text_imlaei` = the post-Basmala Simple text.
-  - `text_search` = `normalizeForSearch(text_uthmani)`, without the Basmala.
+  - `text_search` = `normalizeForSearch(text_imlaei)`. **This changes step 7, which normalized Uthmani:** stripping Uthmani's dagger alef turns «ٱلْعَـٰلَمِينَ» into «العلمين», so a user typing «العالمين» finds nothing. The Imla'i spelling matches what people type. Rebuild `search_quran` from the new `text_search`. Test that 1:2 gives `الحمد لله رب العالمين` and 1:1 gives `بسم الله الرحمن الرحيم`.
   - `chapters.bismillah_text` and `chapters.bismillah_imlaei` filled from the split.
   - `words` from `buildWordMap()`.
   - `meta.word_map_version` = `1`.

@@ -13,7 +13,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
     "test": "node --test",
-    "check": "node src/cli.ts"
+    "check": "node src/cli.ts",
+    "word-map:report": "node src/word-map-cli.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5"

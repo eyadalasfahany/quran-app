@@ -24,6 +24,12 @@ export type ColorTokens = {
   highlightBlue: string;
   highlightRose: string;
   danger: string;
+  fillSecondary: string;
+  lineStrong: string;
+  onBrandSurfaceMuted: string;
+  chartBlue: string;
+  chartGray: string;
+  playerLine: string;
   focusRing: string;
   glassFill: string;
   glassStroke: string;
@@ -55,12 +61,18 @@ export const colors: Record<ThemeName, ColorTokens> = {
     onBrandSurface: '#f7f3ea',
     gold: '#a07c33',
     goldInk: '#7e5f1e',
-    highlightActive: '#efe2c2',
+    highlightActive: '#ecece5',
     highlightGold: '#f3e3b5',
-    highlightGreen: '#d6e8dc',
-    highlightBlue: '#d7e3f0',
-    highlightRose: '#f2dada',
+    highlightGreen: '#c4dfcc',
+    highlightBlue: '#b7cde6',
+    highlightRose: '#e8b9b9',
     danger: '#a3392b',
+    fillSecondary: '#efe8d8',
+    lineStrong: '#d9d0bc',
+    onBrandSurfaceMuted: '#d9e2dd',
+    chartBlue: '#4f86a8',
+    chartGray: '#78877f',
+    playerLine: '#24352f',
     focusRing: '#1f4d40',
     glassFill: 'rgba(255, 253, 248, 0.72)',
     glassStroke: 'rgba(255, 255, 255, 0.75)',
@@ -85,12 +97,18 @@ export const colors: Record<ThemeName, ColorTokens> = {
     onBrandSurface: '#f7f3ea',
     gold: '#8c6a2b',
     goldInk: '#6e521c',
-    highlightActive: '#e2cfa4',
+    highlightActive: '#e5dfcb',
     highlightGold: '#ead39b',
-    highlightGreen: '#cfdfc3',
-    highlightBlue: '#cdd9dd',
-    highlightRose: '#ecd0c4',
+    highlightGreen: '#c3d6b4',
+    highlightBlue: '#b4c9d1',
+    highlightRose: '#e2b6a6',
     danger: '#963425',
+    fillSecondary: '#e8dcc2',
+    lineStrong: '#cfbf9f',
+    onBrandSurfaceMuted: '#d9e2dd',
+    chartBlue: '#4f86a8',
+    chartGray: '#78877f',
+    playerLine: '#24352f',
     focusRing: '#1f4d40',
     glassFill: 'rgba(248, 239, 220, 0.72)',
     glassStroke: 'rgba(255, 250, 238, 0.75)',
@@ -115,12 +133,18 @@ export const colors: Record<ThemeName, ColorTokens> = {
     onBrandSurface: '#f7f3ea',
     gold: '#c9a961',
     goldInk: '#e6c77e',
-    highlightActive: '#3a3420',
+    highlightActive: '#2b2f2d',
     highlightGold: '#3d3519',
     highlightGreen: '#1e3a2e',
     highlightBlue: '#1e2d3f',
     highlightRose: '#3f2427',
     danger: '#f0a493',
+    fillSecondary: '#24342f',
+    lineStrong: '#3c4f48',
+    onBrandSurfaceMuted: '#d9e2dd',
+    chartBlue: '#7fb0cf',
+    chartGray: '#8a9a93',
+    playerLine: '#24352f',
     focusRing: '#8cc5af',
     glassFill: 'rgba(23, 36, 33, 0.62)',
     glassStroke: 'rgba(255, 255, 255, 0.14)',
@@ -132,6 +156,16 @@ export const colors: Record<ThemeName, ColorTokens> = {
     playerMuted: '#a7b3ad',
     playerAccent: '#e6c77e',
   },
+};
+
+// Increase Contrast overrides per theme (iOS isDarkerSystemColorsEnabled, Android isHighTextContrastEnabled).
+// The theme stays the app's choice; these replace a few of its values.
+export type HighContrastTokens = Pick<ColorTokens, 'line' | 'lineStrong' | 'inkMuted' | 'glassStroke'>;
+
+export const highContrast: Record<ThemeName, HighContrastTokens> = {
+  light: { line: '#8a816d', lineStrong: '#787060', inkMuted: '#44524d', glassStroke: 'rgba(19, 35, 31, 0.30)' },
+  sepia: { line: '#85735a', lineStrong: '#756445', inkMuted: '#54452f', glassStroke: 'rgba(43, 33, 22, 0.30)' },
+  dark: { line: '#71867e', lineStrong: '#8a9e96', inkMuted: '#c3cdc8', glassStroke: 'rgba(255, 255, 255, 0.40)' },
 };
 
 // CSS box-shadow strings; React Native's `boxShadow` style takes them as-is.

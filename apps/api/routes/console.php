@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Content\Enums\ResourceGroup;
+use App\Domains\Content\Jobs\PruneContentChangesJob;
 use App\Domains\Content\Jobs\SyncQuranFoundationJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -31,3 +32,7 @@ if (is_array($groups)) {
             ->timezone('UTC');
     }
 }
+
+Schedule::job(new PruneContentChangesJob)
+    ->daily()
+    ->timezone('UTC');

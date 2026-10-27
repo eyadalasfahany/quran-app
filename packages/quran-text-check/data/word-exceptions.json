@@ -1,0 +1,98 @@
+[
+  {
+    "verse_key": "17:110",
+    "no_vocative": [
+      "أَيًّا"
+    ],
+    "reason": "أَيًّا مَّا means whichever. The vocative test ignores diacritics, so أَيًّا looks like أيا, but Uthmani keeps the two words. Do not merge them."
+  },
+  {
+    "verse_key": "20:94",
+    "simple_groups": [
+      [
+        0
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        3
+      ],
+      [
+        4
+      ],
+      [
+        5
+      ],
+      [
+        6
+      ],
+      [
+        7
+      ],
+      [
+        8
+      ],
+      [
+        9
+      ],
+      [
+        10
+      ],
+      [
+        11
+      ],
+      [
+        12
+      ],
+      [
+        13
+      ],
+      [
+        14
+      ],
+      [
+        15
+      ],
+      [
+        16
+      ],
+      [
+        17
+      ],
+      [
+        18
+      ]
+    ],
+    "reason": "Simple «يَا ابْنَ أُمَّ» against Uthmani «يَبْنَؤُمَّ». Indexes are after the vocative merge, so group [1, 2] joins «يَا ابْنَ» with «أُمَّ»."
+  },
+  {
+    "verse_key": "72:16",
+    "simple_groups": [
+      [
+        0,
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ],
+      [
+        4
+      ],
+      [
+        5
+      ],
+      [
+        6
+      ],
+      [
+        7
+      ]
+    ],
+    "reason": "Simple «وَأَن لَّوِ» against Uthmani «وَأَلَّوِ»."
+  }
+]

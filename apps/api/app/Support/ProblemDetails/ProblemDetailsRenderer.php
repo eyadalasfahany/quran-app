@@ -28,6 +28,7 @@ final readonly class ProblemDetailsRenderer
         Response::HTTP_FORBIDDEN => 'forbidden',
         Response::HTTP_NOT_FOUND => 'not_found',
         Response::HTTP_METHOD_NOT_ALLOWED => 'method_not_allowed',
+        Response::HTTP_GONE => 'changes_gone',
         Response::HTTP_CONFLICT => 'conflict',
         Response::HTTP_REQUEST_ENTITY_TOO_LARGE => 'payload_too_large',
         Response::HTTP_UNPROCESSABLE_ENTITY => 'validation_failed',

@@ -27,9 +27,13 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Navigation | Expo Router | \~58.0.26 | Native tabs and stacks, sheets as routes, deep links |
 | Liquid Glass | `expo-glass-effect` | \~58.0.5 | Native iOS 26 glass with automatic fallback |
 | Local database | `expo-sqlite` + Drizzle ORM | \~58.0.14; `drizzle-orm` 0.45.4, `drizzle-kit` 0.31.11 | Offline Quran, translation and tafsir packs with typed queries and migrations |
+| Migrations in the bundle | `babel-plugin-inline-import` | 3.0.0 | Inlines Drizzle's `.sql` migrations into the bundle |
 | Long lists | `@shopify/flash-list` | 2.3.2 | Virtualized vertical mushaf and surah lists |
 | Audio | `expo-audio` | \~58.0.10 | Background playback, lock-screen controls and playlists built in |
-| Downloads | `expo-file-system` | \~58.0.11 | Audio and pack downloads with progress |
+| Downloads | `expo-file-system` | \~58.0.12 | Audio and pack downloads with progress |
+| Pack checksum | `expo-crypto` | \~58.0.7 | SHA-256 of downloaded packs |
+| Reading fonts | Amiri and Amiri Quran (bundled assets, SIL OFL) | 1.003 | Uthmani ayah text in Reading and Focus modes, surah names and display type. Older than 12 months: accepted for a stable typeface (ADR 0011) |
+| Mushaf fonts | QCF V2 page fonts, loaded at runtime from `verses.quran.foundation` | QF CDN | Fetched on first use, cached on the device, revalidated every 30 days; never served by our API; credit "Quran fonts provided by Quran Foundation" (ADR 0011) |
 | Pack decompression | `fflate` | 0.8.3 | Gunzips content packs on the device; pure JS, fastest available (ADR 0008) |
 | Server data | `@tanstack/react-query` | 5.105.0 | Caching, retries and background refetch for API calls |
 | App state | `zustand` | 5.0.16 | Small global state: player, reader settings |
