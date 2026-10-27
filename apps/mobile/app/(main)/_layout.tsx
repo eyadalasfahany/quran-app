@@ -15,7 +15,7 @@ export default function MainLayout() {
   const { t } = useTranslation();
   const theme = useTheme();
   const expanded = useWindowClass() === 'expanded';
-  const segments = useSegments();
+  const segments: readonly string[] = useSegments();
   const active = destinations.find((item) => segments.includes(item.name))?.name ?? '(home)';
 
   return (

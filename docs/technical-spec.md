@@ -784,9 +784,10 @@ One question blocks the build: whether QF accepts device copies served from our 
 - [ ] QF: may downloaded recitation audio be kept beyond 7 days?
 - [ ] QF: production rate limits for Content Sync and the Content API.
 - [ ] QF: approved QCF and IndoPak font files and exact credit wording.
+- [ ] QF: prelive returns only Al-Fatihah and Al-Baqarah. Is there a full prelive dataset, or when can we get production access to run the 6,236-ayah checksum? (Blocks the Phase 1 exit check.)
 - [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player, Settings and the sidebar. The 30 current screens are phone-only (390 pt).
 - [ ] Design: confirm the 640-wide page cap for Mushaf mode on large iPads, or design a larger page.
-- [ ] Product: app name and bundle ID, needed before the first TestFlight build.
+- [x] Product: app name and bundle ID: **Taybah** («طيبة»), `com.taybahapp.taybah` (27 Oct 2026). Register `taybahapp.com` before launch.
 - [ ] HadeethEnc: written confirmation of app use (blocks Hadith launch only).
 
 **Risks**

@@ -15,7 +15,7 @@ Each step is one reviewable change. After each step the checks below run and the
 | Laravel standards | `laravel-standards` skill adopted; spec wins on envelope, pagination, collections, test DB | ADR 0002 |
 | Contract tools | `dedoc/scramble` 0.13.51, `openapi-typescript` 7.13.0 | content plan |
 | Design | Tokens and UI components pulled from the Figma file; the HTML design system is a cross-check. Tokens come from the HTML for now, because the Figma MCP quota ran out | spec §1, ADR 0005 |
-| Bundle ID | Placeholder `com.example.quran` (`.dev`, `.preview` variants) until the real one is chosen | spec §13 |
+| App name and bundle ID | **Taybah** (Arabic «طيبة»), `com.taybahapp.taybah` (`.dev`, `.preview` variants), schemes `taybah`, `taybah-dev`, `taybah-preview`. Chosen 27 Oct 2026, replacing the `com.example.quran` placeholder | spec §16 |
 | Git | The developer commits and pushes; Claude doesn't commit | — |
 
 Host ports (MAMP-style services already use 3306 and 8080): MySQL 33306, Redis 16379, Mailpit 18025 (SMTP 11025), API 8000.
@@ -254,7 +254,36 @@ Built as planned, with these changes:
 - Left out until they can work: staging deploy, EAS build and submit, `release-api.yml`.
 - Verify: `actionlint` locally; a real run after the developer pushes.
 
-### 11. Exit check
+### 11. Exit check — done; the exit criterion is met (27 Oct 2026)
+
+- **Devices:**
+  - iOS 26.4 simulators, iPhone 17 Pro and iPad Pro 13-inch (M5), through `expo run:ios`.
+  - Pixel Fold emulator, API 37 arm64, through `expo run:android`. Gradle 9.4.1 built with Android Studio's bundled JDK 25 in 12m43s.
+- **Results** (each in English and Arabic):
+
+  | Device | Window | Navigation | Result |
+  | --- | --- | --- | --- |
+  | iPhone 17 Pro | Compact | Native tabs (Liquid Glass) | ✅ RTL mirrored, Arabic-Indic digits |
+  | iPad Pro 13-inch, portrait (1032 pt) | Expanded | Sidebar, tab bar hidden | ✅ Sidebar on the right in Arabic |
+  | Pixel Fold, folded (outer display) | Compact | Material bottom bar | ✅ |
+  | Pixel Fold, unfolded (≈ 841 dp) | Expanded | Sidebar | ✅ |
+
+  - Fold and unfold switch the layout live, in both directions, without a restart.
+  - On Android, Arabic was set per app (`cmd locale set-app-locales`). On iOS it was set for the whole simulator.
+- **Fixed during the check:** route hrefs now use full group paths (`/(main)/(home)`).
+  - Metro generates typed routes (`.expo/types`), and with them `tsc` rejected `/(home)`, because all four tabs' index is `/`.
+  - A fresh clone has no generated types, which is why CI-style checks had passed.
+- **Open, Android only:**
+  - The status-bar icons are light on the light surface.
+  - The Material bottom bar labels only the selected tab, and its active pill is the default lavender.
+  - When the bar is hidden (expanded), a strip at the bottom keeps the bar's background.
+  - The obvious fixes did not take effect after a reload, so they were reverted: `expo-status-bar` style, and `NativeTabs` `labelVisibilityMode`, `indicatorColor` and `backgroundColor`. These need a proper look before Phase 2's UI work.
+- **Emulator:** API 37 needs GLES 3.1.
+  - The default software rendering hung at boot, and `-gpu host` crashed.
+  - `-gpu swiftshader_indirect -no-snapshot-load` boots reliably.
+- **Still the developer's to check by hand:** iPad Split View and Stage Manager live resize, and the medium class (600–839), which none of these windows hit.
+
+### 11 (original plan)
 
 - Claude runs:
   - `expo run:ios` on an iPhone and an iPad simulator.

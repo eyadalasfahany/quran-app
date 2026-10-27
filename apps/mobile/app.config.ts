@@ -1,10 +1,16 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 // APP_VARIANT is set per EAS build profile (eas.json). Local runs default to development.
+// The bundle ID can never change after the first store build.
 const VARIANTS = {
-  development: { id: 'com.example.quran.dev', name: 'Quran (Dev)', scheme: 'quran-dev' },
-  preview: { id: 'com.example.quran.preview', name: 'Quran (Preview)', scheme: 'quran-preview' },
-  production: { id: 'com.example.quran', name: 'Quran', scheme: 'quran' },
+  development: { id: 'com.taybahapp.taybah.dev', name: 'Taybah (Dev)', nameAr: 'طيبة (تطوير)', scheme: 'taybah-dev' },
+  preview: {
+    id: 'com.taybahapp.taybah.preview',
+    name: 'Taybah (Preview)',
+    nameAr: 'طيبة (معاينة)',
+    scheme: 'taybah-preview',
+  },
+  production: { id: 'com.taybahapp.taybah', name: 'Taybah', nameAr: 'طيبة', scheme: 'taybah' },
 } as const;
 
 type Variant = keyof typeof VARIANTS;
@@ -23,9 +29,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   return {
     ...config,
     name: variant.name,
-    slug: 'quran',
+    slug: 'taybah',
     version: '1.0.0',
     scheme: variant.scheme,
+    // The home-screen name follows the device language.
+    locales: {
+      ar: { ios: { CFBundleDisplayName: variant.nameAr }, android: { app_name: variant.nameAr } },
+    },
     // Layout follows window size; no orientation lock anywhere (spec §4).
     orientation: 'default',
     icon: './assets/images/icon.png',

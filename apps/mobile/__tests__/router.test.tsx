@@ -35,7 +35,7 @@ describe('adaptive nav', () => {
     expect(screen.queryByTestId('sidebar')).not.toBeOnTheScreen();
 
     await act(async () => {
-      router.navigate('/(mushaf)');
+      router.navigate('/(main)/(mushaf)');
     });
 
     expect(view.getSegments()).toEqual(['(main)', '(mushaf)']);

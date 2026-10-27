@@ -22,9 +22,9 @@ function configFor(variant: string | undefined): ExpoConfig {
 
 describe('app.config', () => {
   it.each([
-    ['development', 'com.example.quran.dev', 'quran-dev'],
-    ['preview', 'com.example.quran.preview', 'quran-preview'],
-    ['production', 'com.example.quran', 'quran'],
+    ['development', 'com.taybahapp.taybah.dev', 'taybah-dev'],
+    ['preview', 'com.taybahapp.taybah.preview', 'taybah-preview'],
+    ['production', 'com.taybahapp.taybah', 'taybah'],
   ])('uses the %s bundle id and scheme', (variant: string, id: string, scheme: string) => {
     const config = configFor(variant);
 
@@ -34,7 +34,17 @@ describe('app.config', () => {
   });
 
   it('defaults to development when APP_VARIANT is unset', () => {
-    expect(configFor(undefined).ios?.bundleIdentifier).toBe('com.example.quran.dev');
+    expect(configFor(undefined).ios?.bundleIdentifier).toBe('com.taybahapp.taybah.dev');
+  });
+
+  it('names the app Taybah, and طيبة on Arabic devices', () => {
+    const config = configFor('production');
+
+    expect(config.name).toBe('Taybah');
+    expect(config.locales?.ar).toEqual({
+      ios: { CFBundleDisplayName: 'طيبة' },
+      android: { app_name: 'طيبة' },
+    });
   });
 
   it('rejects an unknown variant', () => {

@@ -1,6 +1,6 @@
 # Quran App — monorepo
 
-Free, Arabic-first Quran app. Expo app for iOS and Android (phones, iPads, foldables) plus a self-hosted Laravel API. Built by one developer.
+**Taybah** («طيبة»): a free, Arabic-first Quran app. Bundle ID `com.taybahapp.taybah`. Expo app for iOS and Android (phones, iPads, foldables) plus a self-hosted Laravel API. Built by one developer.
 
 ## Source of truth
 

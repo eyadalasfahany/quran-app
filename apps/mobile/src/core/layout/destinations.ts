@@ -12,11 +12,12 @@ export type Destination = {
   testID: 'home' | 'mushaf' | 'listen' | 'my-quran';
 };
 
+// Full group paths: every tab's index is `/`, so typed routes need the group to tell them apart.
 export const destinations = [
-  { name: '(home)', href: '/(home)', label: 'tabs.home', symbol: 'house', androidIcon: 'home', testID: 'home' },
+  { name: '(home)', href: '/(main)/(home)', label: 'tabs.home', symbol: 'house', androidIcon: 'home', testID: 'home' },
   {
     name: '(mushaf)',
-    href: '/(mushaf)',
+    href: '/(main)/(mushaf)',
     label: 'tabs.mushaf',
     symbol: 'book',
     androidIcon: 'menu_book',
@@ -24,7 +25,7 @@ export const destinations = [
   },
   {
     name: '(listen)',
-    href: '/(listen)',
+    href: '/(main)/(listen)',
     label: 'tabs.listen',
     symbol: 'headphones',
     androidIcon: 'headphones',
@@ -32,7 +33,7 @@ export const destinations = [
   },
   {
     name: '(my-quran)',
-    href: '/(my-quran)',
+    href: '/(main)/(my-quran)',
     label: 'tabs.myQuran',
     symbol: 'pencil',
     androidIcon: 'edit',

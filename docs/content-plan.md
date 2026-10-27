@@ -377,6 +377,13 @@ QF credentials never leave the backend, and prelive and production are kept full
 
 Endpoints from the [QF quickstart](https://api-docs.quran.foundation/docs/quickstart).
 
+- **Prelive keys verified on 27 Oct 2026:**
+  - Token: `POST /oauth2/token` with HTTP Basic auth, `grant_type=client_credentials&scope=content`. The token lasts 3,599 s.
+  - Content API calls send `x-auth-token` and `x-client-id`.
+- **Prelive holds sample data only:** `GET /content/api/v4/chapters` returns 2 chapters (Al-Fatihah, Al-Baqarah), not 114.
+  - The pipeline can be built and tested on prelive.
+  - The full 6,236-ayah checksum and the Phase 1 exit check ("fresh install reaches QF text offline") need the full dataset, through production access or a full prelive dataset. Asked of QF (spec section 16).
+
 - **Secrets:** client ID and secret in the secrets manager per environment; rotated on a schedule; never in the app binary or the repo.
 - **Separate stores:** sync tokens, mirrors and caches are kept per environment, as the Content Sync docs require.
 - **Transport and storage:** TLS 1.2+ everywhere, encryption at rest for the database and backups, least-privilege service accounts.
