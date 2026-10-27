@@ -72,7 +72,7 @@ Built as planned, plus three fixes found while testing: the renderer unwraps `Mo
     - Mockery unit test for `HealthService`.
 - Verify: `composer qa`.
 
-### 4. Local services — Docker deferred (ADR 0004)
+### 4. Local services — done (Docker deferred, ADR 0004)
 
 - Written but unused for now: `infra/docker-compose.yml`, `infra/mysql/init/01-testing-database.sql`, `apps/api/Dockerfile` (dev image builds: PHP 8.5.12, OPcache built in).
 - Instead: Homebrew MySQL 9.2 (3306) with a `quran` user and `quran`/`quran_testing` databases (`docs/runbooks/local-setup.md`), Homebrew Redis 8.0 (6379), mail to the log.
