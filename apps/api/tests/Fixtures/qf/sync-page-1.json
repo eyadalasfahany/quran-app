@@ -1,0 +1,24 @@
+{
+  "sync": {
+    "sync_until_sequence": 10,
+    "has_more": true,
+    "next_page_url": "/api/v4/resources/sync?page=2",
+    "next_sync_token": "sync-token-page-1",
+    "mutations": [
+      {
+        "sequence": 10,
+        "type": "RESOURCE_CREATE",
+        "resource_group": "translations",
+        "resource_id": 85,
+        "resource_content_id": null,
+        "record_type": null,
+        "record_key": null,
+        "source_record_id": null,
+        "changed_at": "2026-10-27T12:00:00.000Z",
+        "data": null,
+        "snapshot_url": "/api/v4/resources/snapshots/translations/85",
+        "unavailable_reason": null
+      }
+    ]
+  }
+}

@@ -2,6 +2,11 @@
 
 Spec §15. Exit criterion: a fresh install reaches QF text offline, and the checksum passes.
 
+**Implementation briefs:** one self-contained file per step in [`phase-1/`](phase-1/README.md). Give an agent: *"Implement `docs/plans/phase-1/step-NN-….md`. Follow `docs/plans/phase-1/README.md`."* The briefs refine the steps below with QF's real data (ADR 0009):
+- The per-ayah `recitations` group isn't synced in Phase 1.
+- `user.db` moves to Phase 4.
+- Step 5 pins the Tanzil files by hash.
+
 Same rules as Phase 0:
 - Each step is one reviewable change.
 - After each step, the checks for every app it touched run, and their real output is shown. A check that can't run is reported as N/A, never as passed.

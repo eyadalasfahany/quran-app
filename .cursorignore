@@ -1,0 +1,7 @@
+# Secrets never go to Cursor's model: real env files hold QF and database credentials.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example

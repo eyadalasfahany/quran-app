@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "type": "unprocessable_entity",
+  "message": "resources is required",
+  "details": {
+    "resources": [
+      "The resources field is required."
+    ]
+  }
+}

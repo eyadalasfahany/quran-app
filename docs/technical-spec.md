@@ -255,6 +255,12 @@ Layout is driven by the window's width class from `useWindowDimensions`, never b
 
 ## 5. Backend database schema (MySQL 9.7)
 
+> **Phase 1 shape (ADR 0009).** QF's real data differs from some tables below. For the content mirror, the column-level source of truth is `docs/plans/phase-1/step-02-mirror-schema.md`:
+> - `resources` gains columns; `mushaf_pages` is new.
+> - `word_layouts` carries glyph and position; `tafsir_entries` is keyed by `group_tafsir_id`.
+> - `recitations` replaces `reciters`.
+> - `chapters`, `verses` and `words` wait for `quran_core`.
+
 The schema has four groups: the QF content mirror, hadith, identity and devices, and synced user data. All tables are InnoDB, `utf8mb4` with `utf8mb4_0900_bin` on Quran text columns (byte-exact, so no collation ever folds a diacritic) and `utf8mb4_0900_ai_ci` elsewhere. Timestamps are `datetime(6)` in UTC.
 
 Verses use QF's integer id (1–6,236) as the primary key, with `verse_key` (`2:255`) kept as a unique lookup. Every foreign key from user data points at `verse_id`, so a content re-sync can never orphan a bookmark.
@@ -330,6 +336,12 @@ Every table below shares the same sync columns: `id` uuid (client-generated, PK)
 Account deletion hard-deletes the user; cascades remove every row above, and `devices.user_id` is set to null.
 
 ## 6. Device database schema (SQLite)
+
+> **Phase 1 shape (ADR 0009):**
+> - Device and pack tables follow the contract in `docs/plans/phase-1/README.md`.
+> - The Tanzil seed is a separate bundled `tanzil-seed.db`, attached and copied on first launch.
+> - Script columns other than `text_uthmani` are nullable.
+> - `user.db` arrives in Phase 4.
 
 The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`, which can be deleted and rebuilt from packs at any time, and `user.db`, which holds everything personal and is never touched by content updates. Both run in WAL mode.
 
