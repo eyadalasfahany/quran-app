@@ -1,9 +1,14 @@
 import type { QuranTypeToken } from '@quran/design-tokens';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { QuranText } from '@/shared/ui';
+import { ORNATE_CLOSE, ORNATE_OPEN, QuranText } from '@/shared/ui';
 
+// Keeps the ornaments off the first and last letters. Kept outside the stored text.
+const WORD_SPACE = ' ';
+
+// The Basmala between the gold ornate parentheses of the end-of-ayah mark. The app draws the ornaments;
+// they are never part of the stored text, and screen readers hear only the text.
 export function BismillahLine({
   text,
   fontScale = 1,
@@ -16,6 +21,7 @@ export function BismillahLine({
   testID?: string;
 }) {
   const theme = useTheme();
+  const ornament = { color: theme.colors.gold };
 
   return (
     <View
@@ -27,8 +33,18 @@ export function BismillahLine({
       }}
       testID={testID}
     >
-      <QuranText align="center" fontScale={fontScale} variant={typeToken}>
-        {text}
+      <QuranText
+        accessibilityLabel={text}
+        align="center"
+        fontScale={fontScale}
+        testID={testID ? `${testID}-text` : undefined}
+        variant={typeToken}
+      >
+        <Text style={ornament}>{ORNATE_OPEN}</Text>
+        {WORD_SPACE}
+        <Text>{text}</Text>
+        {WORD_SPACE}
+        <Text style={ornament}>{ORNATE_CLOSE}</Text>
       </QuranText>
     </View>
   );

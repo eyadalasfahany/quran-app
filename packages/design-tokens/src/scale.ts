@@ -66,6 +66,8 @@ export const opacity = {
   disabled: 0.45,
   grabber: 0.35,
   focusAside: 0.22,
+  // The gold rosette behind the Continue reading card's text.
+  ornament: 0.35,
 } as const;
 
 export type SpaceToken = keyof typeof space;

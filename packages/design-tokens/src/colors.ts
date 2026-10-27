@@ -27,6 +27,7 @@ export type ColorTokens = {
   fillSecondary: string;
   lineStrong: string;
   onBrandSurfaceMuted: string;
+  goldOnBrandSurface: string;
   chartBlue: string;
   chartGray: string;
   playerLine: string;
@@ -70,6 +71,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     fillSecondary: '#efe8d8',
     lineStrong: '#d9d0bc',
     onBrandSurfaceMuted: '#d9e2dd',
+    goldOnBrandSurface: '#c9a961',
     chartBlue: '#4f86a8',
     chartGray: '#78877f',
     playerLine: '#24352f',
@@ -106,6 +108,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     fillSecondary: '#e8dcc2',
     lineStrong: '#cfbf9f',
     onBrandSurfaceMuted: '#d9e2dd',
+    goldOnBrandSurface: '#c9a961',
     chartBlue: '#4f86a8',
     chartGray: '#78877f',
     playerLine: '#24352f',
@@ -142,6 +145,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     fillSecondary: '#24342f',
     lineStrong: '#3c4f48',
     onBrandSurfaceMuted: '#d9e2dd',
+    goldOnBrandSurface: '#c9a961',
     chartBlue: '#7fb0cf',
     chartGray: '#8a9a93',
     playerLine: '#24352f',

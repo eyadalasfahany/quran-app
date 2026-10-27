@@ -7,8 +7,9 @@ import { quranFontFamily, useTheme } from '@/core/theme';
 // The brackets and digits carry no strong direction, so standing alone they would lay out left to right
 // and swap sides. A leading right-to-left mark sets the direction on iOS and Android alike.
 const RTL_MARK = '\u200F';
-const OPEN = '\uFD3F';
-const CLOSE = '\uFD3E';
+// Amiri Quran's ornate parentheses, in logical order for right-to-left text.
+export const ORNATE_OPEN = '\uFD3F';
+export const ORNATE_CLOSE = '\uFD3E';
 // The ornaments reach above and below the digits, so a standalone mark needs a taller line.
 const MARK_LINE_HEIGHT = 1.5;
 
@@ -55,9 +56,9 @@ export function AyahEndMark({
       testID={testID}
     >
       {RTL_MARK}
-      {OPEN}
+      {ORNATE_OPEN}
       <Text style={{ color: active ? theme.colors.brand : theme.colors.ink }}>{formatNumber(number, 'ar')}</Text>
-      {CLOSE}
+      {ORNATE_CLOSE}
     </Text>
   );
 }

@@ -77,7 +77,7 @@ export function HafsMushafPage({
               />
             ) : null}
             <QuranText
-              align="center"
+              align="justify"
               fontScale={fontScale}
               style={{ width: '100%' }}
               testID={testID ? `${testID}-text-${first.verseKey}` : undefined}

@@ -1,6 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 
-import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi, svgPaint } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { themes } from '@/core/theme';
 
@@ -41,6 +41,24 @@ describe('ContinueReadingCard', () => {
         : 'Continue reading, Surah البقرة, Ayah 255 · page 42 · juz 3',
     );
     expect(button.props.accessibilityHint).toBe(locale === 'ar' ? 'قرأت ٧٪ من المصحف' : '7% of the Quran read');
+  });
+
+  it.each(locales)('sets the gold rosette over the top trailing corner, out of the label (%s)', async (locale) => {
+    const view = await renderUi(<ContinueReadingCard {...props} />, { locale });
+    const rosette = view.getByTestId('home-continue-reading-rosette', { includeHiddenElements: true });
+
+    expect(flatStyle(view.getByTestId('home-continue-reading').props.style).overflow).toBe('hidden');
+    expect(flatStyle(rosette.props.style)).toMatchObject({
+      end: -40,
+      height: 180,
+      opacity: themes.light.opacity.ornament,
+      position: 'absolute',
+      top: -40,
+    });
+    expect(view.getByTestId('home-continue-reading-rosette-stroke-0', { includeHiddenElements: true }).props.stroke).toEqual(
+      svgPaint(colors.goldOnBrandSurface),
+    );
+    expect(rosette.props.accessibilityElementsHidden).toBe(true);
   });
 
   it('calls onPress', async () => {

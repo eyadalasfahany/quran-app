@@ -9,6 +9,8 @@ export const duration = {
   fast: 150,
   standard: 200,
   slow: 300,
+  // An ornament's gold outline drawing itself in, once, when it first scrolls into view.
+  draw: 700,
 } as const;
 
 // Cubic bezier control points (x1, y1, x2, y2); easeOut matches CSS `ease-out`.

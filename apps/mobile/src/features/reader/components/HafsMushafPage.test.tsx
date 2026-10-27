@@ -89,7 +89,7 @@ describe('HafsMushafPage', () => {
       color: themes.light.colors.ink,
       fontSize: 25,
       lineHeight: 59,
-      textAlign: 'center',
+      textAlign: 'justify',
     });
     expect(view.getByTestId('page-marker-1:1')).toBeOnTheScreen();
   });

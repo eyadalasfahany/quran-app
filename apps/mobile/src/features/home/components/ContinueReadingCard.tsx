@@ -3,11 +3,13 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { UiText } from '@/shared/ui';
+import { Rosette, UiText } from '@/shared/ui';
 
 const MUSHAF_PAGES = 604;
 const TRACK_HEIGHT = 4;
 const TRACK_OPACITY = 0.2;
+// The rosette overhangs the card's top trailing corner, as in the Home frame.
+const ROSETTE = { offset: -40, size: 180 } as const;
 
 // Home's Continue reading card: the surah in Amiri on the brand surface, where the reader stopped,
 // and how far through the mushaf that page is.
@@ -45,10 +47,18 @@ export function ContinueReadingCard({
         borderRadius: theme.radius.lg,
         gap: theme.space[2],
         opacity: pressed ? theme.opacity.pressed : 1,
+        overflow: 'hidden',
         padding: theme.space[5],
       })}
       testID={testID}
     >
+      <Rosette
+        color={theme.colors.goldOnBrandSurface}
+        drawKey="continue-reading"
+        size={ROSETTE.size}
+        style={{ end: ROSETTE.offset, opacity: theme.opacity.ornament, position: 'absolute', top: ROSETTE.offset }}
+        testID={`${testID}-rosette`}
+      />
       <UiText tone="onBrandMuted" variant="label">
         {t('home.continueReading')}
       </UiText>

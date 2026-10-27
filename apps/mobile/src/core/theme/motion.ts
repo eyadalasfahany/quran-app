@@ -13,7 +13,7 @@ import {
 const [x1, y1, x2, y2] = easing.easeOut;
 export const easeOut = Easing.bezier(x1, y1, x2, y2);
 
-// Opacity and color only: `withTiming(opacity, timing('fast'))`.
+// Opacity, color and stroke drawing only: `withTiming(opacity, timing('fast'))`.
 export function timing(speed: DurationToken): WithTimingConfig {
   return { duration: duration[speed], easing: easeOut };
 }

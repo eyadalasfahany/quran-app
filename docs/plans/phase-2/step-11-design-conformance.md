@@ -43,13 +43,14 @@ Each fix lands in the component that owns the visual. Order: shared components (
 - Reader: Back points to the leading edge; Reading starts below the toolbar with the 20 pt gutter; Focus hides the toolbar and resume pill and insets its exit bar.
 - Sheets: a `scrim` behind every reader sheet; tafsir and translation take the full-width sheet at 52 pt (`AyahSheetScreen` sizes the sheet by tab).
 - Index: `SurahRow` (medallion, Amiri name, «مدنية · ٢٨٦ آية», «ص ٢», no chevron), the last-read card.
-- Home: the brand Continue reading card.
+- Home: the brand Continue reading card, with the design's gold rosette (`Rosette`, `goldOnBrandSurface` at `opacity.ornament`).
+- Surah cartouche: the pointed double frame from the design, with an eight-pointed star (۞) in each end, in `react-native-svg` (needs a native rebuild). It and the rosette draw in once when they first scroll into view (spec §12 Motion).
+- Basmala: set between the gold ornate parentheses of the end-of-ayah mark (﴿ ﴾), drawn by the app outside the stored text.
 - Search: Cancel beside the field (`SearchBar`), card results, matches outlined (`stroke.match`).
 - Numbers go through `formatNumber` with `useLocale()`; Arabic plurals work on Hermes (`plural-rules.ts`).
 
 Open:
 - Resource names: `installed_resources` keeps no name, so tafsir and translation labels fall back to «تفسير {id}». The manifest already sends `name`, `author_name`, `language_code` and `direction`; storing them is a `content.db` schema change.
-- The surah cartouche's pointed frame needs `react-native-svg` (a native rebuild).
 - Ayah sheet highlight row, reader settings, the tafsir panel (header, named chips, source credit, download), the Reading ayah header row with its actions, the Index and Home headers, and the tablet frames.
 
 ## Tests

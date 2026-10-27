@@ -19,8 +19,9 @@ export function QuranText({
   variant: QuranTypeToken;
   fontScale?: number;
   tone?: TextTone;
-  // 'start' is the physical right: Quran text runs right to left in every locale.
-  align?: 'start' | 'center';
+  // 'start' is the physical right: Quran text runs right to left in every locale. 'justify' runs each
+  // full line from edge to edge; a paragraph's last line keeps to the start.
+  align?: 'start' | 'center' | 'justify';
   style?: StyleProp<TextStyle>;
 } & Omit<TextProps, 'style' | 'allowFontScaling' | 'numberOfLines' | 'ellipsizeMode'>) {
   const colors = useContrastColors();
@@ -32,7 +33,7 @@ export function QuranText({
       style={[
         quranText(variant, fontScale),
         { color: textToneColor(colors, tone) },
-        align === 'center' ? { textAlign: 'center' } : null,
+        align === 'start' ? null : { textAlign: align },
         style,
       ]}
     >

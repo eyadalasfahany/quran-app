@@ -28,6 +28,16 @@ describe('QuranText', () => {
     expect(flatStyle(text.props.style).fontSize).toBeCloseTo(38 * 1.2);
   });
 
+  it.each(locales)('justifies right to left (%s)', async (locale) => {
+    const view = await renderUi(
+      <QuranText align="justify" variant="quranMushaf">
+        {ayah}
+      </QuranText>,
+      { locale },
+    );
+    expect(flatStyle(view.getByText(ayah).props.style)).toMatchObject({ textAlign: 'justify', writingDirection: 'rtl' });
+  });
+
   it.each(locales)('keeps the right edge as the start and can centre (%s)', async (locale) => {
     const start = await renderUi(<QuranText variant="quranMushaf">{ayah}</QuranText>, { locale });
     expect(flatStyle(start.getByText(ayah).props.style)).toMatchObject({ textAlign: 'right', writingDirection: 'rtl' });
