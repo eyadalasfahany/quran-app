@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Resources\Json\JsonResource;
 use Spatie\LaravelData\Data;
 
 // Layering rules from spec section 3 and ADR 0002.
@@ -33,6 +34,15 @@ arch('repository contracts are interfaces')
 arch('data objects extend laravel-data')
     ->expect('App\Domains\*\Data')
     ->toExtend(Data::class);
+
+// ADR 0006: Data objects carry values between layers; API Resources shape responses, so Scramble can read them.
+arch('data objects never shape HTTP responses')
+    ->expect('App\Domains\*\Data')
+    ->not->toUse(['Illuminate\Http', 'Symfony\Component\HttpFoundation']);
+
+arch('responses are API resources')
+    ->expect('App\Domains\*\Http\Resources')
+    ->toExtend(JsonResource::class);
 
 arch('integrations never import domains')
     ->expect('App\Integrations')

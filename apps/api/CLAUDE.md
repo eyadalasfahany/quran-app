@@ -10,9 +10,10 @@ Spec: `docs/technical-spec.md` §3 (structure), §5 (schema), §7 (pipeline), §
 
 ## Layering (enforced by Pest `arch()` tests)
 
-Controller → FormRequest → Data object (`spatie/laravel-data`) → Service → Repository contract → Eloquent repository → Model.
+Controller → FormRequest → Data object (`spatie/laravel-data`) → Service → Repository contract → Eloquent repository → Model. Responses go out through an API Resource (ADR 0006).
 
-- Controllers are thin: validate, call one service method, return a Data object. No Eloquent in controllers.
+- Controllers are thin: validate, call one service method, return `new XResource($data)`. No Eloquent in controllers.
+- Resources live in `Domains/*/Http/Resources`: explicit `toArray()` fields, `$wrap = null`, `@property` naming the wrapped Data object. Data objects never touch HTTP.
 - Services own business rules and transactions. Services never touch `Request` or HTTP.
 - Repositories do persistence only. No transactions, no business rules.
 - Each domain's service provider binds its repository contracts and registers its routes.
@@ -25,8 +26,8 @@ Follow `.claude/skills/laravel-standards`, except where this file or the spec sa
 - `declare(strict_types=1)` and full typing in every PHP file, tests included. No `mixed` or loose arrays across layers.
 - One shared FormRequest per entity unless store and update genuinely differ.
 - Domain exceptions, never bare `\Exception`. Not-found errors carry a friendly message and render as problem details.
-- Enums and value objects instead of primitives; eager-load every relation a Data object or loop touches.
-- The spec wins on: Data objects (not API Resources or the skill's envelope), cursor pagination (not `per_page`), the generated OpenAPI file (not hand-kept Postman collections), MySQL for tests (not SQLite).
+- Enums and value objects instead of primitives; eager-load every relation a Data object, Resource or loop touches.
+- The spec wins on: API Resources without the skill's envelope (ADR 0006), cursor pagination (not `per_page`), the generated OpenAPI file (not hand-kept Postman collections), MySQL for tests (not SQLite).
 - Repositories: extend the Eloquent base class in `app/Support/Repositories` and implement the domain's contract.
 
 ## Database
@@ -43,7 +44,7 @@ Follow `.claude/skills/laravel-standards`, except where this file or the spec sa
 - Errors under `/api/*` are rendered by `App\Support\ProblemDetails\ProblemDetailsRenderer`; titles come from `lang/{ar,en}/problems.php`. Throw exceptions, don't build error responses by hand.
 - Each domain registers its routes in its own `routes.php` from its service provider (prefix `api/v1`, name `v1.`). There is no `routes/api.php`.
 - Rate limits per spec §8. `Accept-Language` localizes messages and emails only, never content.
-- OpenAPI is generated from routes, FormRequests and Data objects. Keep them accurate; CI fails on drift.
+- OpenAPI is generated from routes, FormRequests and API Resources (free Scramble can't read Data objects). Regenerate with `npm run generate -w @quran/api-contract` from the repo root; `--fail-on-unknown` fails the export on any field Scramble can't type. A status set in `withResponse()` needs `#[Dedoc\Scramble\Attributes\Response]` on the controller method. CI fails on drift.
 
 ## Content and QF
 
@@ -62,7 +63,7 @@ Follow `.claude/skills/laravel-standards`, except where this file or the spec sa
 ## Laravel Boost
 
 - Everything inside `<laravel-boost-guidelines>` below is generated from `boost.json`. Don't edit it by hand; change `boost.json` and rerun `php artisan boost:install --guidelines --skills --no-interaction`.
-- Where Boost conflicts with this file, the spec or ADR 0002, they win. In particular: responses are `spatie/laravel-data` objects, not Eloquent API Resources; we self-host, so ignore Laravel Cloud; there is no frontend bundle, so ignore the Vite notes; the done check is `composer qa`, not only `php artisan test`.
+- Where Boost conflicts with this file, the spec or ADR 0002, they win. In particular: responses are API Resources without a wrapper key (ADR 0006); we self-host, so ignore Laravel Cloud; there is no frontend bundle, so ignore the Vite notes; the done check is `composer qa`, not only `php artisan test`.
 - The Boost MCP server is registered in the repo-root `.mcp.json` (Claude Code opens at the repo root) and in `apps/api/.mcp.json`.
 
 ===

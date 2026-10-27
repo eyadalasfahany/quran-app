@@ -1,0 +1,91 @@
+{
+    "openapi": "3.1.2",
+    "info": {
+        "title": "Quran API",
+        "version": "1.0.0",
+        "description": "Quran app API. Generated from the code; sections 8 and 9 of the technical spec describe the conventions."
+    },
+    "servers": [
+        {
+            "url": "/api/v1"
+        }
+    ],
+    "paths": {
+        "/health": {
+            "get": {
+                "operationId": "v1.health",
+                "summary": "API, database and Redis reachability. 200 when all pass, 503 otherwise",
+                "tags": [
+                    "Health"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`HealthResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthResource"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "The database or Redis is unreachable.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthResource"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "HealthResource": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "$ref": "#/components/schemas/HealthStatus"
+                    },
+                    "time": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "checks": {
+                        "type": "object",
+                        "properties": {
+                            "database": {
+                                "type": "boolean"
+                            },
+                            "redis": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "database",
+                            "redis"
+                        ]
+                    }
+                },
+                "required": [
+                    "status",
+                    "time",
+                    "checks"
+                ],
+                "title": "HealthResource"
+            },
+            "HealthStatus": {
+                "type": "string",
+                "enum": [
+                    "ok",
+                    "unavailable"
+                ],
+                "title": "HealthStatus"
+            }
+        }
+    }
+}

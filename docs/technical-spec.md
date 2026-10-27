@@ -53,7 +53,7 @@ quran/
 - **Workspaces:** npm workspaces, matching the content plan's `npm ci` and committed lockfile. Expo SDK 58 detects the monorepo and configures Metro automatically; no custom `metro.config.js` watch folders are needed unless a package is outside `packages/`.
 - **No Turborepo or Nx:** with one app and one API, path-filtered CI jobs are enough. Add a task runner only if a second app (web, admin) joins.
 - **CI path filters:** `apps/api/**` runs Pint, Larastan, Pest; `apps/mobile/**` and `packages/**` run ESLint, `tsc`, Jest and `expo-doctor`; any change to `packages/api-contract/**` runs both.
-- **Contract flow:** a CI step regenerates `openapi.json` from the API (`dedoc/scramble`, which reads routes, FormRequests and Data objects) and fails if the committed file differs. `openapi-typescript` then regenerates the TS types.
+- **Contract flow:** a CI step regenerates `openapi.json` from the API (`dedoc/scramble`, which reads routes, FormRequests and API Resources; ADR 0006) and fails if the committed file differs. `openapi-typescript` then regenerates the TS types.
 - **EAS:** builds run with `apps/mobile` as the project root; EAS uploads the whole repo, so `.easignore` excludes `apps/api` and `infra`.
 - **Docker:** the API image builds with `apps/api` as its context only.
 
@@ -110,7 +110,7 @@ The scheduler pulls from QF, HadeethEnc and AlAdhan and sends pushes through Exp
 
 ## 3. Backend code structure (`apps/api`)
 
-The API is split into domain modules, each layered Controller → FormRequest → Data object → Service → Repository → Model. Controllers never touch Eloquent, and services never touch HTTP.
+The API is split into domain modules, each layered Controller → FormRequest → Data object → Service → Repository → Model, with an API Resource shaping each response (ADR 0006). Controllers never touch Eloquent, and services never touch HTTP.
 
 ```
 apps/api/app/
@@ -135,9 +135,10 @@ apps/api/app/
 
 ```
 Sync/
-├── Http/Controllers/SyncController.php      thin: validate, call service, return Data
+├── Http/Controllers/SyncController.php      thin: validate, call service, return a Resource
 ├── Http/Requests/PushChangesRequest.php
-├── Data/PushChangeData.php, PullResponseData.php   spatie/laravel-data DTOs
+├── Http/Resources/PullResponseResource.php  explicit response fields
+├── Data/PushChangeData.php, PullResultData.php   spatie/laravel-data DTOs
 ├── Services/SyncService.php                 transactions, LWW rule, version bump
 ├── Repositories/Contracts/UserItemRepository.php
 ├── Repositories/Eloquent/EloquentUserItemRepository.php
@@ -150,14 +151,14 @@ Sync/
 **Conventions**
 
 - **Binding:** each domain's service provider binds repository contracts to Eloquent implementations. Tests can swap them.
-- **Data objects in, Data objects out:** FormRequests validate; controllers convert to Data and back. Scramble reads both to produce the OpenAPI file.
+- **Data objects between layers, Resources at the edge (ADR 0006):** FormRequests validate and become Data objects; services return Data objects; controllers wrap them in API Resources with explicit fields and no wrapper key. Scramble reads FormRequests and Resources to produce the OpenAPI file; free Scramble can't read Data objects.
 - **Transactions live in services**, never in repositories or controllers.
 - **Provider adapters** implement `ContentSource` (`fetchChanges`, `fetchSnapshot`, `currentVersion`, `normalize`). Adding or removing a provider never touches a domain service.
 - **HTTP clients** use Laravel's client with `retry(3, backoff)`, a User-Agent with the app name and contact email, and 429 handling that respects `Retry-After`.
 - **Config:** `config/quran.php` holds QF environment URLs, sync groups, pack settings and limits; secrets come only from env.
 - **Quality gates:** Pint (Laravel preset), Larastan level 8, Pest with `--parallel`; architecture tests (`arch()`) enforce that controllers don't use models and that `Integrations` never import `Domains`. `composer qa` runs all three.
-- **Team standards (ADR 0002):** the `laravel-standards` skill applies where it doesn't conflict with this spec: `declare(strict_types=1)` and full typing in every file, one shared FormRequest per entity, thin controllers, domain exceptions (rendered as problem details), enums and value objects, eager loading with no N+1, Pest functional tests and Mockery unit tests that mock I/O only. Where they conflict, this spec wins: Data objects instead of API Resources and the envelope of section 8, cursor pagination only, OpenAPI instead of hand-kept Postman collections, MySQL (not SQLite) for tests. Repositories combine both: a shared Eloquent base class in `Support/Repositories`, with each domain's contract bound to its Eloquent implementation.
-- **Phase 0 example:** `Domains/Sync` carries `GET /health` through every layer (provider, contract, Eloquent repository, service, controller, Data object) until the sync endpoints arrive in Phase 4.
+- **Team standards (ADR 0002):** the `laravel-standards` skill applies where it doesn't conflict with this spec: `declare(strict_types=1)` and full typing in every file, one shared FormRequest per entity, thin controllers, domain exceptions (rendered as problem details), enums and value objects, eager loading with no N+1, Pest functional tests and Mockery unit tests that mock I/O only. Where they conflict, this spec wins: the envelope of section 8 (API Resources without a wrapper, ADR 0006), cursor pagination only, OpenAPI instead of hand-kept Postman collections, MySQL (not SQLite) for tests. Repositories combine both: a shared Eloquent base class in `Support/Repositories`, with each domain's contract bound to its Eloquent implementation.
+- **Phase 0 example:** `Domains/Sync` carries `GET /health` through every layer (provider, contract, Eloquent repository, service, Data object, controller, API Resource) until the sync endpoints arrive in Phase 4.
 
 **Jobs and schedule**
 
@@ -702,7 +703,7 @@ The Quran text checksum is the one test that blocks everything; layout checks ac
 | API unit and feature | Pest, `Http::fake` with recorded QF fixtures | Every endpoint, sync rules, auth providers, pack builder, sanitizer | Every PR touching `apps/api` |
 | API architecture | Pest `arch()` | Layering rules from section 3 | Every PR |
 | Static analysis | Larastan level 8, `tsc --noEmit`, ESLint | Types across both apps | Every PR |
-| Contract | Scramble export + `git diff --exit-code`, then `openapi-typescript` | API and app agree | Every PR touching either app |
+| Contract | `npm run generate -w @quran/api-contract` (Scramble export, then `openapi-typescript`) + `git diff --exit-code` | API and app agree | Every PR touching either app |
 | App unit and component | Jest, `jest-expo`, React Native Testing Library | Repositories, sync engine, timing search, window classes, RTL | Every PR touching `apps/mobile` |
 | Text integrity | `packages/quran-text-check` | 6,236-ayah checksum per script on the backend mirror and inside a built pack | Every content sync and every release |
 | End-to-end | Maestro | Onboarding, read and resume, play and highlight, search, sign-in, delete account, offline | Nightly on staging builds, and before release |

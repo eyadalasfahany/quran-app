@@ -21,7 +21,7 @@ Where they conflict, the spec wins:
 
 | Topic | Skill | This project |
 | --- | --- | --- |
-| Response shape | API Resources and a `{code, errors, data, message, meta}` envelope | `spatie/laravel-data` objects; the resource directly or `{data, next_cursor}`; RFC 9457 problem details for errors (section 8) |
+| Response shape | API Resources and a `{code, errors, data, message, meta}` envelope | API Resources without a wrapper (ADR 0006); the resource directly or `{data, next_cursor}`; RFC 9457 problem details for errors (section 8) |
 | Pagination | Page-number paginator with `per_page` | Opaque cursors only; the admin panel is Filament, so there is no admin list API |
 | Repositories | Concrete `BaseRepository` | Shared Eloquent base class in `Support/Repositories` plus one contract per repository, bound in the domain's service provider |
 | API collections | Hand-kept Postman and Hoppscotch files | The generated `openapi.json` is the collection; both tools import it, and CI fails on drift |

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domains\Sync\Http\Controllers;
 
-use App\Domains\Sync\Data\HealthData;
+use App\Domains\Sync\Http\Resources\HealthResource;
 use App\Domains\Sync\Services\HealthService;
 use App\Http\Controllers\Controller;
+use Dedoc\Scramble\Attributes\Response;
 
 final class HealthController extends Controller
 {
@@ -15,8 +16,9 @@ final class HealthController extends Controller
     /**
      * API, database and Redis reachability. 200 when all pass, 503 otherwise.
      */
-    public function __invoke(): HealthData
+    #[Response(503, 'The database or Redis is unreachable.', type: 'HealthResource')]
+    public function __invoke(): HealthResource
     {
-        return $this->health->check();
+        return new HealthResource($this->health->check());
     }
 }

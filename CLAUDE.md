@@ -57,7 +57,7 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
 - Before calling work done, run the checks for every app you touched:
   - API: `composer qa` (runs `pint --test`, `phpstan analyse`, `pest --parallel`)
   - Mobile: `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`
-  - Contract (any endpoint change): regenerate `packages/api-contract/openapi.json` from the API, regenerate TS types, commit both.
+  - Contract (any endpoint change): `npm run generate -w @quran/api-contract` (Scramble export, then `openapi-typescript`), commit `openapi.json` and `src/schema.d.ts`.
 
 ## How to work here
 

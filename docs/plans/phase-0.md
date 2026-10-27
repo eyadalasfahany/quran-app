@@ -167,7 +167,29 @@ The Figma MCP server hit the Starter plan's call limit, and the variables couldn
   - Router test: switching tabs and sidebar keeps the active tab.
   - Mobile checks.
 
-### 9. Contract flow
+### 9. Contract flow — done (responses are API Resources, ADR 0006)
+
+Built as planned, with these changes:
+
+- **Resources instead of Data in responses:** free Scramble can't read laravel-data objects. It exported `HealthData` as an empty object, which made the TS type `Record<string, unknown>`. The developer chose API Resources over writing an extension or buying PRO.
+  - `HealthResource` shapes `/health` and sets the 503 in `withResponse()`.
+  - `HealthData` stays as the service's return value.
+  - The 503 is declared with Scramble's `#[Response]` attribute.
+- **Deterministic export:**
+  - The server is the relative `/api/v1`, set in `AppServiceProvider`, not built from APP_URL.
+  - The title and version are pinned, and `export_path` is absolute.
+  - `--fail-on-unknown` fails the export on any field Scramble can't type. It caught a Carbon chain on the first run.
+- **One command:** `npm run generate -w @quran/api-contract` (export, then types).
+- **Dependencies:**
+  - Scramble is a production Composer dependency, because `config/scramble.php` reads a Scramble enum on every boot. Its docs UI stays closed outside `local`.
+  - `openapi-typescript` 7.13.0 declares a `typescript ^5` peer, so npm nests TS 5.9.3 for it. The repo stays on TS 6.
+- **App:**
+  - `src/core/api/health.ts` returns the body for 200 and 503 and throws otherwise.
+  - The route path is typed with `satisfies keyof paths`.
+  - `EXPO_PUBLIC_API_URL` comes from `apps/mobile/.env` (`.env.example` added).
+- **Verified:**
+  - Regenerating changes neither file (hashes match).
+  - Renaming `redis` → `cache` in the resource made `tsc` fail in the app test. Reverted and regenerated afterwards.
 
 - Creates:
   - Scramble limited to `api/v1`.
