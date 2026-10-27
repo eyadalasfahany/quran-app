@@ -48,9 +48,24 @@ describe('IconButton', () => {
       <IconButton icon={back} label="Back" onPress={() => undefined} testID="back" variant="glass" />,
     );
 
-    const surface = view.getByTestId('back').parent;
+    const layer = view.getByTestId('back-glass');
+    const [surface] = layer.children;
 
-    expect(flatStyle(surface?.props.style)).toMatchObject({ backgroundColor: colors.glassFallback });
+    expect(flatStyle(typeof surface === 'object' ? surface.props.style : undefined)).toMatchObject({
+      backgroundColor: colors.glassFallback,
+    });
+  });
+
+  it('draws the glass inside the button, where it never takes the touch', async () => {
+    const onPress = jest.fn();
+    const view = await renderUi(
+      <IconButton icon={back} label="Back" onPress={onPress} testID="back" variant="glass" />,
+    );
+
+    expect(view.getByTestId('back-glass').props.pointerEvents).toBe('none');
+    expect(view.getByTestId('back')).toContainElement(view.getByTestId('back-glass'));
+    await fireEvent.press(view.getByTestId('back'));
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 
   it('marks a toggled-on button as selected and tints it brand', async () => {

@@ -1,5 +1,5 @@
 import { size } from '@quran/design-tokens';
-import { Pressable } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
@@ -31,7 +31,7 @@ export function IconButton({
   const color = pressed ? theme.colors.brand : theme.colors.ink;
   const resting = variant === 'filled' ? theme.colors.fillSecondary : 'transparent';
 
-  const button = (
+  return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
@@ -47,12 +47,14 @@ export function IconButton({
       })}
       testID={testID}
     >
+      {variant === 'glass' ? (
+        // The glass is drawn inside the button and never takes a touch, so every tap on it lands in the
+        // Pressable. With the button inside the glass, taps on the standalone glass buttons were lost on iOS 26.
+        <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={testID ? `${testID}-glass` : undefined}>
+          <GlassSurface radius="pill" style={StyleSheet.absoluteFill} />
+        </View>
+      ) : null}
       <Icon color={color} mirrorInRtl={mirrorInRtl} name={icon} />
     </Pressable>
   );
-
-  if (variant === 'glass') {
-    return <GlassSurface radius="pill">{button}</GlassSurface>;
-  }
-  return button;
 }

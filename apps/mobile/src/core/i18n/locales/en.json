@@ -51,7 +51,6 @@
     },
     "surahTitle": "Surah {{name}}",
     "focus": {
-      "exit": "Leave focus",
       "position": "{{surah}} · Ayah {{current}} of {{total}}",
       "nextHint": "Swipe up for the next ayah",
       "previous": "Previous ayah",

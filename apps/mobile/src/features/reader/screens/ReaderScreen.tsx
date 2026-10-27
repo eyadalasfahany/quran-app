@@ -138,7 +138,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     }
   };
 
-  // Focus draws its own exit bar and transport, so the toolbar and the resume pill stay out of its way.
+  // Focus pages one ayah at a time with its own transport, so the resume pill has nothing to return to.
   const focus = mode === 'focus';
   const showResume =
     !focus &&
@@ -194,7 +194,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           ) : null
         }
         toolbar={
-          sheetOpen || focus ? null : (
+          sheetOpen ? null : (
             <ReaderToolbar
               bookmarked={bookmarked}
               expanded={windowClass === 'expanded'}
@@ -231,8 +231,11 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onOpenAyahActions={selectVerse}
                 onSelectVerseKey={selectVerse}
                 onVisiblePage={(page, key) => {
-                  setVisibleVerseKey(key);
-                  anchor.setVisible({ page, verseKey: key });
+                  // The page holding the ayah the reader is at keeps that ayah, not the page's first one, so a
+                  // surah opened halfway down a page stays the saved place and the title.
+                  const verseKey = pageForVerse(executor, anchor.verseKey) === page ? anchor.verseKey : key;
+                  setVisibleVerseKey(verseKey);
+                  anchor.setVisible({ page, verseKey });
                 }}
                 selectedVerseKey={selection.verseKey}
                 testID="reader-mushaf"
@@ -242,12 +245,12 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
             {executor !== null && mode === 'focus' ? (
               <FocusReader
                 fontScale={fontScale}
-                onClose={() => useReaderSettings.getState().setMode('mushaf')}
                 onOpenActions={selectVerse}
                 onVerseChange={(key) => {
                   setPinnedVerseKey(key);
                   anchor.setVisible({ verseKey: key });
                 }}
+                topInset={topInset}
                 verseKey={listAnchor}
               />
             ) : null}

@@ -44,15 +44,15 @@ describe('ReaderScreen', () => {
     expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:255');
   });
 
-  it('gives Focus the screen: no reader toolbar, no resume pill', async () => {
+  it('keeps the reader toolbar in Focus, so Back and the other modes stay in reach, and drops the resume pill', async () => {
     const view = await renderUi(reader());
-    expect(view.getByTestId('reader-toolbar')).toBeOnTheScreen();
 
     await act(async () => {
       useReaderSettings.getState().setMode('focus');
     });
 
-    expect(view.queryByTestId('reader-toolbar')).toBeNull();
+    expect(view.getByTestId('reader-back')).toBeOnTheScreen();
+    expect(view.getByTestId('reader-tools')).toBeOnTheScreen();
     expect(view.queryByTestId('reader-resume-slot')).toBeNull();
   });
 

@@ -118,3 +118,18 @@ function groupTranslations(
 
   return grouped;
 }
+
+/**
+ * The row the list opens at for a verse. Opening a surah at its first ayah shows its title and
+ * bismillah too, so it opens at the surah header; any other ayah opens at its own row.
+ */
+export function anchorRowIndex(rows: readonly ReadingRow[], verseKey: string): number {
+  const [chapter, verse] = verseKey.split(':').map(Number);
+  if (verse === 1) {
+    const header = rows.findIndex((row) => row.type === 'surah-header' && row.chapter.id === chapter);
+    if (header >= 0) {
+      return header;
+    }
+  }
+  return rows.findIndex((row) => row.type === 'ayah' && row.verse.verseKey === verseKey);
+}

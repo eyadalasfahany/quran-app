@@ -1,5 +1,5 @@
 import { FlashList, type FlashListRef, type ListRenderItemInfo } from '@shopify/flash-list';
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -8,6 +8,10 @@ import { firstVerseOfPage, pageForVerse } from '@/features/reader/anchor/page';
 
 import { HafsPage } from './components/HafsPage';
 import { listChapters } from './data/chapters';
+import { extendPageWindow, pageWindowFrom, pagesIn, type PageWindow } from './page-window';
+
+// Longest the list waits for the opened page to measure before it settles anyway.
+const SETTLE_MS = 1500;
 
 export type HafsMushafListProps = {
   anchorVerseKey: string;
@@ -20,8 +24,6 @@ export type HafsMushafListProps = {
   onOpenAyahActions?: (verseKey: string) => void;
   testID?: string;
 };
-
-const PAGE_NUMBERS = Array.from({ length: 604 }, (_, index) => index + 1);
 
 export function HafsMushafList({
   anchorVerseKey,
@@ -41,14 +43,68 @@ export function HafsMushafList({
   const initialPage = pageForVerse(executor, anchorVerseKey) ?? 1;
   const visiblePageRef = useRef(initialPage);
 
+  // The list starts at the opened page, so nothing above it has to be estimated: mushaf pages are far
+  // taller than any first estimate, and a jump by estimate lands many pages away. Earlier pages are added
+  // as the reader scrolls up, and the list keeps its place while they arrive.
+  const [pageWindow, setPageWindow] = useState<PageWindow>(() => pageWindowFrom(initialPage));
+  const pages = useMemo(() => pagesIn(pageWindow), [pageWindow]);
+
+  // A surah can start halfway down its page. The ayah the reader opened at stays the focus until that page
+  // has measured where the ayah's surah starts; the list then scrolls the rest of the way, and until then it
+  // reports no visible page, so a page it passes can't become the saved place.
+  const [focusVerseKey, setFocusVerseKey] = useState<string | null>(anchorVerseKey);
+  const settlingRef = useRef(true);
+
+  // Settled: visible pages count again, and the pages before the opened one are added (the list keeps its
+  // place), so a surah that starts at the top of its page can still be scrolled back from.
+  const settle = useCallback(() => {
+    if (!settlingRef.current) {
+      return;
+    }
+    settlingRef.current = false;
+    setFocusVerseKey(null);
+    setPageWindow((current) => extendPageWindow(current, 'start'));
+  }, []);
+
+  // If the opened page never measures (it failed to render), the list still settles.
+  useEffect(() => {
+    if (focusVerseKey === null) {
+      return;
+    }
+    const timer = setTimeout(settle, SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [focusVerseKey, settle]);
+
   useLayoutEffect(() => {
     const page = pageForVerse(executor, anchorVerseKey);
     if (page === undefined || page === visiblePageRef.current) {
       return;
     }
     visiblePageRef.current = page;
-    listRef.current?.scrollToIndex({ animated: false, index: page - 1 });
+    settlingRef.current = true;
+    setFocusVerseKey(anchorVerseKey);
+    setPageWindow(pageWindowFrom(page));
+    listRef.current?.scrollToOffset({ animated: false, offset: 0 });
   }, [anchorVerseKey, executor]);
+
+  const scrollToFocus = useCallback(
+    (page: number, offset: number) => {
+      const index = page - pageWindow.from;
+      // The page measures while the list is still laying out; a scroll in the same frame is overridden.
+      // FlashList holds its position correction until a scroll finishes, so the earlier pages are added only
+      // after it has: added during the scroll, they would push the opened page down out of view.
+      requestAnimationFrame(() => {
+        const list = listRef.current;
+        const scrolled =
+          offset > 0 && index >= 0 && list !== null
+            ? list.scrollToIndex({ animated: false, index, viewOffset: offset })
+            : Promise.resolve();
+        void Promise.resolve(scrolled).then(() => requestAnimationFrame(settle));
+      });
+    },
+    [pageWindow.from, settle],
+  );
+  const focusPage = focusVerseKey === null ? undefined : pageForVerse(executor, focusVerseKey);
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: { isViewable: boolean; item: number; index: number | null }[] }) => {
@@ -56,7 +112,7 @@ export function HafsMushafList({
         (token): token is { isViewable: boolean; item: number; index: number } =>
           token.isViewable && token.index !== null,
       );
-      if (viewable.length === 0) {
+      if (viewable.length === 0 || settlingRef.current) {
         return;
       }
       const primary = viewable.reduce((best, token) => (token.index < best.index ? token : best));
@@ -74,7 +130,9 @@ export function HafsMushafList({
       <HafsPage
         chapters={chapters}
         executor={executor}
+        focusVerseKey={page === focusPage ? focusVerseKey : null}
         fontScale={fontScale}
+        onFocusOffset={scrollToFocus}
         onOpenAyahActions={onOpenAyahActions}
         onSelectVerseKey={onSelectVerseKey}
         page={page}
@@ -82,16 +140,24 @@ export function HafsMushafList({
         testID={testID}
       />
     ),
-    [chapters, executor, fontScale, onOpenAyahActions, onSelectVerseKey, selectedVerseKey, testID],
+    [chapters, executor, focusPage, focusVerseKey, fontScale, onOpenAyahActions, onSelectVerseKey, scrollToFocus, selectedVerseKey, testID],
   );
 
   return (
     <View style={{ flex: 1, paddingBottom: bottomInset, paddingTop: topInset }} testID={testID}>
       <FlashList
         contentContainerStyle={{ paddingHorizontal: theme.space[4] }}
-        data={PAGE_NUMBERS}
-        initialScrollIndex={Math.max(0, initialPage - 1)}
+        data={pages}
         keyExtractor={(page) => String(page)}
+        maintainVisibleContentPosition={{}}
+        onEndReached={() => setPageWindow((current) => extendPageWindow(current, 'end'))}
+        onEndReachedThreshold={0.6}
+        onStartReached={() => {
+          if (!settlingRef.current) {
+            setPageWindow((current) => extendPageWindow(current, 'start'));
+          }
+        }}
+        onStartReachedThreshold={0.6}
         onViewableItemsChanged={onViewableItemsChanged}
         ref={listRef}
         renderItem={renderPage}

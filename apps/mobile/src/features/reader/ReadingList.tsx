@@ -20,6 +20,7 @@ import { readingColumnWidth } from './layout';
 import { estimateReadingRowHeight, heightCacheSignature, ReadingHeightCache } from './reading-heights';
 import type { ReadingRow, TranslationResourceMeta } from './reading-list-types';
 import {
+  anchorRowIndex,
   buildReadingRows,
   LAST_VERSE_ID,
   READING_WINDOW_EXTEND,
@@ -117,7 +118,7 @@ export function ReadingList({
     if (!openedChanged && followedVerseKey !== null && anchorVerseKey === openedVerseKey) {
       return;
     }
-    const index = rows.findIndex((row) => row.type === 'ayah' && row.verse.verseKey === anchorVerseKey);
+    const index = anchorRowIndex(rows, anchorVerseKey);
     if (index >= 0 && typeof listRef.current?.scrollToIndex === 'function') {
       topVerseKeyRef.current = anchorVerseKey;
       listRef.current.scrollToIndex({ animated: false, index });

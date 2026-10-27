@@ -13,13 +13,13 @@ function neighbourKey(chapterId: number, verseNumber: number): string {
 export function FocusReader({
   verseKey,
   fontScale = 1,
-  onClose,
+  topInset = 0,
   onVerseChange,
   onOpenActions,
 }: {
   verseKey: string;
   fontScale?: number;
-  onClose: () => void;
+  topInset?: number;
   onVerseChange: (verseKey: string) => void;
   onOpenActions?: (verseKey: string) => void;
 }) {
@@ -57,7 +57,7 @@ export function FocusReader({
       fontScale={fontScale}
       nextNumber={next?.verseNumber ?? null}
       nextText={next?.textUthmani ?? null}
-      onClose={onClose}
+      topInset={topInset}
       onNext={next === undefined ? undefined : () => onVerseChange(next.verseKey)}
       onOpenActions={onOpenActions === undefined ? undefined : () => onOpenActions(verse.verseKey)}
       onPrevious={previous === undefined ? undefined : () => onVerseChange(previous.verseKey)}

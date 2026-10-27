@@ -1,19 +1,17 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View, type NativeSyntheticEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { timing, useTheme } from '@/core/theme';
-import { IconButton, UiText } from '@/shared/ui';
+import { UiText } from '@/shared/ui';
 
 import { FocusAside } from './FocusAside';
 import { FocusAyah } from './FocusAyah';
 import { FocusProgress } from './FocusProgress';
 import { FocusTransport } from './FocusTransport';
 
-const CLOSE = { ios: 'xmark', android: 'close' } as const;
 const PULL = 36;
 const PAGE_GUTTER = 28;
 
@@ -49,7 +47,7 @@ export function FocusStage({
   nextText,
   nextNumber,
   fontScale = 1,
-  onClose,
+  topInset = 0,
   onPrevious,
   onNext,
   onSelectVerse,
@@ -66,7 +64,8 @@ export function FocusStage({
   nextText: string | null;
   nextNumber: number | null;
   fontScale?: number;
-  onClose: () => void;
+  /** Room for the reader toolbar, which floats over the top of Focus as it does over every mode. */
+  topInset?: number;
   onPrevious?: () => void;
   onNext?: () => void;
   onSelectVerse?: (verseNumber: number) => void;
@@ -128,25 +127,11 @@ export function FocusStage({
     }
   };
 
-  const topInset = (useContext(SafeAreaInsetsContext) ?? { top: 0 }).top;
-
   return (
-    // Focus replaces the reader toolbar, so its exit bar sits where the toolbar would, below the status bar.
-    <View style={{ flex: 1, paddingBottom: theme.space[8], paddingTop: topInset + theme.space[2] }} testID={testID}>
-      <View
-        style={{
-          alignItems: 'center',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          paddingHorizontal: theme.space[4],
-        }}
-      >
-        <IconButton icon={CLOSE} label={t('reader.focus.exit')} onPress={onClose} testID={`${testID}-close`} variant="glass" />
-        <UiText align="center" tone="muted" variant="caption">
-          {position}
-        </UiText>
-        <View style={{ width: theme.size.touchTarget }} />
-      </View>
+    <View style={{ flex: 1, paddingBottom: theme.space[8], paddingTop: topInset }} testID={testID}>
+      <UiText align="center" tone="muted" variant="caption">
+        {position}
+      </UiText>
       <View style={{ flex: 1, overflow: 'hidden' }}>
         <FocusProgress onSelect={onSelectVerse === undefined ? undefined : selectPage} verseNumber={verseNumber} versesCount={versesCount} />
         <Animated.View key={verseNumber} style={[{ flex: 1 }, slideStyle]}>

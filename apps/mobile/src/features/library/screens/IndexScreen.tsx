@@ -13,7 +13,7 @@ import { SurahRow } from '@/features/library/components/SurahRow';
 import { listJuzStarts } from '@/features/library/data/juz';
 import { getChapter, listChapters, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
-import { useReadingAnchor } from '@/features/reader/anchor/useReadingAnchor';
+import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { Screen, ScreenHeader } from '@/shared/ui';
 
 type ContinueReading = {
@@ -31,7 +31,7 @@ function readHref(verseKey: string): Href {
 export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   const { t } = useTranslation();
   const { ready } = useContentDb();
-  const anchor = useReadingAnchor();
+  const lastReadVerseKey = useLastReadVerseKey();
   const [segment, setSegment] = useState<IndexSegmentKey>('surahs');
 
   const { continueReading, rows } = useMemo(() => {
@@ -48,7 +48,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
     const juzStarts = listJuzStarts(executor);
 
     let continueReading: ContinueReading | undefined;
-    const verse = getVerseByKey(executor, anchor.verseKey);
+    const verse = getVerseByKey(executor, lastReadVerseKey);
     const chapter = verse === undefined ? undefined : getChapter(executor, verse.chapterId);
     if (verse !== undefined && chapter !== undefined) {
       continueReading = { verseKey: verse.verseKey, chapter, ayah: verse.verseNumber };
@@ -60,7 +60,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
         : juzStarts.map((entry) => ({ kind: 'juz' as const, juz: entry.juz, verseKey: entry.verseKey }));
 
     return { continueReading, rows };
-  }, [anchor.verseKey, ready, segment]);
+  }, [lastReadVerseKey, ready, segment]);
 
   const openVerse = useCallback((verseKey: string) => {
     router.push(readHref(verseKey));

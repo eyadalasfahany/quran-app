@@ -185,6 +185,33 @@ describe('HafsMushafPage', () => {
     expect(flatStyle(view.getByTestId('page-text-1:1').props.style)).toMatchObject({ writingDirection: 'rtl' });
   });
 
+  it('reports the paragraph of the surah holding the ayah the reader opened at, once laid out', async () => {
+    const onFocusRunLayout = jest.fn();
+    const view = await renderUi(
+      <HafsMushafPage
+        chapters={new Map([[1, fatiha], [2, baqarah]])}
+        focusVerseKey="2:1"
+        onFocusRunLayout={onFocusRunLayout}
+        testID="page"
+        verses={[
+          verse({ id: 7, verseKey: '1:7', verseNumber: 7 }),
+          verse({ chapterId: 2, id: 8, verseKey: '2:1', verseNumber: 1 }),
+        ]}
+      />,
+    );
+
+    const run = view.getByTestId('page-focus-run');
+    expect(run).toContainElement(view.getByTestId('page-surah-2'));
+    await fireEvent(run, 'layout', { nativeEvent: { layout: { height: 300, width: 320, x: 0, y: 400 } } });
+    expect(onFocusRunLayout).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks no paragraph when the reader has no focus ayah on the page', async () => {
+    const view = await renderUi(fatihaPage());
+
+    expect(view.queryByTestId('page-focus-run')).toBeNull();
+  });
+
   it('uses theme tokens only', () => {
     expect(featureComponentLiterals('features/reader/components/HafsMushafPage.tsx')).toEqual([]);
   });

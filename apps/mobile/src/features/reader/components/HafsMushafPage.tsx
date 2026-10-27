@@ -1,6 +1,6 @@
-import { Fragment } from 'react';
+import { Fragment, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { Text, View, type HostInstance } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import { AyahEndMark, GoldFrame, QuranText, SurahCartouche, useContrastColors } from '@/shared/ui';
@@ -27,6 +27,8 @@ export function HafsMushafPage({
   selectedVerseKey = null,
   onPressVerse,
   onOpenActions,
+  focusVerseKey = null,
+  onFocusRunLayout,
   testID,
 }: {
   verses: readonly VerseRecord[];
@@ -35,9 +37,13 @@ export function HafsMushafPage({
   selectedVerseKey?: string | null;
   onPressVerse?: (verseKey: string) => void;
   onOpenActions?: (verseKey: string) => void;
+  /** The ayah the reader opened at. The surah paragraph holding it reports its view once laid out. */
+  focusVerseKey?: string | null;
+  onFocusRunLayout?: (run: HostInstance | null) => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
+  const focusRunRef = useRef<HostInstance>(null);
   const theme = useTheme();
   const colors = useContrastColors();
 
@@ -47,8 +53,15 @@ export function HafsMushafPage({
         const [first] = run;
         const chapter = first.verseNumber === 1 ? chapters.get(first.chapterId) : undefined;
         const showBismillah = chapter !== undefined && chapter.bismillahPre === 1 && chapter.id !== 1;
+        const holdsFocus = focusVerseKey !== null && run.some((verse) => verse.verseKey === focusVerseKey);
         return (
-          <View key={first.id} style={{ alignItems: 'center', gap: theme.space[3], width: '100%' }}>
+          <View
+            key={first.id}
+            onLayout={holdsFocus ? () => onFocusRunLayout?.(focusRunRef.current) : undefined}
+            ref={holdsFocus ? focusRunRef : undefined}
+            style={{ alignItems: 'center', gap: theme.space[3], width: '100%' }}
+            testID={testID && holdsFocus ? `${testID}-focus-run` : undefined}
+          >
             {chapter === undefined ? null : (
               <SurahCartouche
                 name={t('reader.surahTitle', { name: chapter.nameArabic })}

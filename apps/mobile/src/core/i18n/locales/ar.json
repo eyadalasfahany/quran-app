@@ -51,7 +51,6 @@
     },
     "surahTitle": "سورة {{name}}",
     "focus": {
-      "exit": "خروج من وضع التركيز",
       "position": "{{surah}} · الآية {{current}} من {{total}}",
       "nextHint": "اسحب لأعلى للآية التالية",
       "previous": "الآية السابقة",
