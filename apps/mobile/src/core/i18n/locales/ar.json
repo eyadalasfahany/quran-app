@@ -8,6 +8,60 @@
   "nav": {
     "main": "التنقل الرئيسي"
   },
+  "reader": {
+    "revelation": {
+      "makkah": "مكية",
+      "madinah": "مدنية"
+    },
+    "surahMeta": "{{place}} · {{count}} آية",
+    "translationAttribution": "{{name}}",
+    "translationAttributionWithAuthor": "{{name}} · {{author}}",
+    "mushaf": {
+      "placeholderTitle": "هذه الصفحة غير جاهزة",
+      "placeholderBody": "اتصل بالإنترنت لتحميل هذه الصفحة.",
+      "missingLayoutBody": "لم تُثبَّت هذه الصفحة بعد. يمكنك قراءة الآية نفسها في وضع القراءة.",
+      "switchToReading": "اقرأ في وضع القراءة"
+    },
+    "sources": {
+      "title": "المصادر",
+      "qfFonts": "خطوط القرآن مقدَّمة من Quran Foundation"
+    }
+  },
+  "library": {
+    "index": {
+      "title": "الفهرس",
+      "continueReading": "تابع القراءة",
+      "continueSubtitle": "{{surah}} · {{verseKey}} · {{ayah}}",
+      "segmentLabel": "عرض الفهرس",
+      "segments": {
+        "surahs": "السور",
+        "juz": "الأجزاء"
+      }
+    },
+    "surah": {
+      "meta": "{{place}} · {{count}} آيات",
+      "revelation": {
+        "makkah": "مكية",
+        "madinah": "مدنية"
+      }
+    },
+    "juz": {
+      "title": "الجزء {{number}}",
+      "startVerse": "يبدأ من {{verseKey}}"
+    }
+  },
+  "search": {
+    "title": "البحث",
+    "placeholder": "ابحث في القرآن",
+    "hint": "ابحث بالآية، رقم السورة، أو اسمها",
+    "empty": "ابدأ بالكتابة للبحث في القرآن",
+    "noResults": "لا توجد نتائج",
+    "recentTitle": "عمليات البحث الأخيرة",
+    "removeRecent": "إزالة {{query}}",
+    "showMore": "عرض المزيد",
+    "resultReference": "{{surah}} · {{verseKey}} · {{ayah}}",
+    "surahResultHint": "{{count}} آية"
+  },
   "ui": {
     "ayahNumber": "الآية {{number}}",
     "clearSearch": "مسح البحث",

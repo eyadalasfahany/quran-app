@@ -14,4 +14,12 @@ export const storageKeys = {
   readerLastVerseKey: 'reader.lastVerseKey',
   readerLastPage: 'reader.lastPage',
   readerMode: 'reader.mode',
+  searchRecentQueries: 'search.recentQueries',
+} as const;
+
+/** Per-page QCF V2 font cache metadata (ADR 0011). */
+export const qcfV2FontKeys = {
+  etag: (page: number) => `qcf-v2.p${page}.etag`,
+  lastModified: (page: number) => `qcf-v2.p${page}.lastModified`,
+  revalidatedAt: (page: number) => `qcf-v2.p${page}.revalidatedAt`,
 } as const;

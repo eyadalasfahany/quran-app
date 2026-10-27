@@ -8,6 +8,60 @@
   "nav": {
     "main": "Main navigation"
   },
+  "reader": {
+    "revelation": {
+      "makkah": "Meccan",
+      "madinah": "Medinan"
+    },
+    "surahMeta": "{{place}} · {{count}} ayahs",
+    "translationAttribution": "{{name}}",
+    "translationAttributionWithAuthor": "{{name}} · {{author}}",
+    "mushaf": {
+      "placeholderTitle": "This page is not ready",
+      "placeholderBody": "Connect to load this page.",
+      "missingLayoutBody": "This page is not installed yet. You can read the same ayah in Reading mode.",
+      "switchToReading": "Read in Reading mode"
+    },
+    "sources": {
+      "title": "Sources",
+      "qfFonts": "Quran fonts provided by Quran Foundation"
+    }
+  },
+  "library": {
+    "index": {
+      "title": "Index",
+      "continueReading": "Continue reading",
+      "continueSubtitle": "{{surah}} · {{verseKey}} · ayah {{ayah}}",
+      "segmentLabel": "Index view",
+      "segments": {
+        "surahs": "Surahs",
+        "juz": "Juz"
+      }
+    },
+    "surah": {
+      "meta": "{{place}} · {{count}} ayahs",
+      "revelation": {
+        "makkah": "Meccan",
+        "madinah": "Medinan"
+      }
+    },
+    "juz": {
+      "title": "Juz {{number}}",
+      "startVerse": "Starts at {{verseKey}}"
+    }
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search the Quran",
+    "hint": "Search by ayah text, surah number, or name",
+    "empty": "Type to search the Quran",
+    "noResults": "No results",
+    "recentTitle": "Recent searches",
+    "removeRecent": "Remove {{query}}",
+    "showMore": "Show more",
+    "resultReference": "{{surah}} · {{verseKey}} · {{ayah}}",
+    "surahResultHint": "{{count}} ayahs"
+  },
   "ui": {
     "ayahNumber": "Ayah {{number}}",
     "clearSearch": "Clear search",

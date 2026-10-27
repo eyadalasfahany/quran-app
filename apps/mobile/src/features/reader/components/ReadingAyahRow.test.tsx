@@ -1,0 +1,193 @@
+import { fireEvent } from '@testing-library/react-native';
+
+import { themes } from '@/core/theme';
+
+import { openReaderTestContent } from '../../../../jest/reader-test-db';
+import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { getVerseByKey } from '../data/verses';
+import { ReadingAyahRow } from './ReadingAyahRow';
+
+const colors = themes.light.colors;
+
+const translationMeta = {
+  resourceId: 131,
+  name: 'Sample translation',
+  authorName: 'Author',
+  direction: 'ltr' as const,
+};
+
+describe('ReadingAyahRow', () => {
+  it('renders 2:255 Uthmani text byte for byte', async () => {
+    const { executor } = await openReaderTestContent();
+    const verse = getVerseByKey(executor, '2:255');
+    expect(verse).toBeDefined();
+
+    const view = await renderUi(
+      <ReadingAyahRow
+        fontScale={1}
+        onPress={() => undefined}
+        testID="row"
+        textImlaei={verse!.textImlaei}
+        textUthmani={verse!.textUthmani}
+        translations={[
+          {
+            meta: translationMeta,
+            resourceId: 131,
+            text: 'Ayat al-Kursi',
+          },
+        ]}
+        verseKey="2:255"
+        verseNumber={255}
+      />,
+    );
+
+    expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
+  });
+
+  it.each(locales)('uses the Imla\'i text in the accessibility label (%s)', async (locale) => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="الله لا إله إلا هو"
+        textUthmani="ٱللَّهُ لَآ إِلَـٰهَ إِلَّا هُوَ"
+        translations={[]}
+        verseKey="2:255"
+        verseNumber={255}
+      />,
+      { locale },
+    );
+
+    const label =
+      locale === 'ar' ? 'الله لا إله إلا هو الآية ٢٥٥' : 'الله لا إله إلا هو Ayah 255';
+    expect(view.getByLabelText(label)).toBeOnTheScreen();
+  });
+
+  function quranBlockStyle(view: Awaited<ReturnType<typeof renderUi>>) {
+    const text = view.getByText('ٱللَّهُ');
+    expect(text.parent).toBeDefined();
+    return flatStyle(text.parent!.props.style);
+  }
+
+  it('shows the active wash and brand rule when selected', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        onPress={() => undefined}
+        selected
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        translations={[]}
+        verseKey="2:1"
+        verseNumber={1}
+      />,
+    );
+    expect(quranBlockStyle(view)).toMatchObject({
+      backgroundColor: colors.highlightActive,
+      borderStartColor: colors.brand,
+    });
+    expect(view.getByRole('button').props.accessibilityState).toMatchObject({ selected: true });
+  });
+
+  it('shows the active wash when recited', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        onPress={() => undefined}
+        recited
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        translations={[]}
+        verseKey="2:1"
+        verseNumber={1}
+      />,
+    );
+    expect(quranBlockStyle(view)).toMatchObject({
+      backgroundColor: colors.highlightActive,
+      borderStartColor: colors.brand,
+    });
+  });
+
+  it('fills from the highlight token and names the colour for screen readers', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        highlightColor="gold"
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        translations={[]}
+        verseKey="2:1"
+        verseNumber={1}
+      />,
+    );
+    expect(quranBlockStyle(view)).toMatchObject({
+      backgroundColor: colors.highlightGold,
+      borderStartColor: 'transparent',
+    });
+    expect(view.getByRole('button', { name: 'text الآية ١ تظليل ذهبي' })).toBeOnTheScreen();
+  });
+
+  it('calls onLongPress for ayah actions', async () => {
+    const onLongPress = jest.fn();
+    const view = await renderUi(
+      <ReadingAyahRow
+        onLongPress={onLongPress}
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        translations={[]}
+        verseKey="2:1"
+        verseNumber={1}
+      />,
+    );
+
+    fireEvent(view.getByTestId('row'), 'longPress');
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('aligns Quran text to the reading edge in RTL', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        translations={[]}
+        verseKey="2:1"
+        verseNumber={1}
+      />,
+      { locale: 'ar' },
+    );
+
+    expect(flatStyle(view.getByText('ٱللَّهُ').props.style).textAlign).toBe('right');
+  });
+
+  it('calls onPress and onOpenActions with the expected handlers', async () => {
+    const onPress = jest.fn();
+    const onOpenActions = jest.fn();
+    const view = await renderUi(
+      <ReadingAyahRow
+        onOpenActions={onOpenActions}
+        onPress={onPress}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        translations={[]}
+        verseKey="2:1"
+        verseNumber={1}
+      />,
+    );
+
+    fireEvent.press(view.getByTestId('row'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+    fireEvent.press(view.getByTestId('row-marker'));
+    expect(onOpenActions).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no raw colour literals', () => {
+    expect(rawColorLiteralsInFeature('src/features/reader/components/ReadingAyahRow.tsx')).toEqual([]);
+  });
+});

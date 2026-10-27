@@ -1,5 +1,9 @@
 import { deviceLanguageCode } from './jest/device-language';
 
+jest.mock('@shopify/flash-list', () => ({
+  FlashList: jest.requireActual<typeof import('react-native')>('react-native').FlatList,
+}));
+
 jest.mock('@/core/db/content/open', () => ({
   useContentDb: () => ({ ready: true, error: null }),
   openContentDb: () => {

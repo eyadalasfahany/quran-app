@@ -14,3 +14,7 @@ export function sharedUiFiles(): string[] {
 export function rawColorLiterals(file: string): string[] {
   return readFileSync(join(sharedUiDir, file), 'utf8').match(rawColor) ?? [];
 }
+
+export function featureComponentLiterals(relativePath: string): string[] {
+  return readFileSync(join('src', relativePath), 'utf8').match(rawColor) ?? [];
+}
