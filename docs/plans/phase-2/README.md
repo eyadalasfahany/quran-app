@@ -2,18 +2,20 @@
 
 One file per step of [`../phase-2.md`](../phase-2.md). Use them the same way as Phase 1: send an agent *"Implement `docs/plans/phase-2/step-NN-….md`. Follow `docs/plans/phase-2/README.md`."* Then the reviewer checks the work, and the developer commits.
 
-| Step | Brief | Needs |
-| --- | --- | --- |
-| 1 | [step-01-design-system-components.md](step-01-design-system-components.md) | Design-token work finished |
-| 2 | [step-02-reader-data.md](step-02-reader-data.md) | Phase 1 |
-| 3 | [step-03-local-user-data.md](step-03-local-user-data.md) | — |
-| 4 | [step-04-reading-and-focus-modes.md](step-04-reading-and-focus-modes.md) | 1, 2 |
-| 5 | [step-05-mushaf-mode.md](step-05-mushaf-mode.md) | 1, 2 |
-| 6 | [step-06-reader-shell-and-layout.md](step-06-reader-shell-and-layout.md) | 1, 4 |
-| 7 | [step-07-ayah-panels.md](step-07-ayah-panels.md) | 1, 3, 6 |
-| 8 | [step-08-index-and-search.md](step-08-index-and-search.md) | 1, 2 |
-| 9 | [step-09-reader-settings.md](step-09-reader-settings.md) | 1, 4 |
-| 10 | [step-10-exit-check.md](step-10-exit-check.md) | all |
+Progress and the handoff for the next agent are in [`../phase-2.md`](../phase-2.md) under **Status**. Do not reimplement a step marked done.
+
+| Step | Brief | Needs | Status |
+| --- | --- | --- | --- |
+| 1 | [step-01-design-system-components.md](step-01-design-system-components.md) | Design-token work finished | Done. Committed (`05b931e`) |
+| 2 | [step-02-reader-data.md](step-02-reader-data.md) | Phase 1 | Done. Committed (`05b931e`) |
+| 3 | [step-03-local-user-data.md](step-03-local-user-data.md) | — | Done. Committed (`05b931e`) |
+| 4 | [step-04-reading-and-focus-modes.md](step-04-reading-and-focus-modes.md) | 1, 2 | Done. Working tree, not committed |
+| 5 | [step-05-mushaf-mode.md](step-05-mushaf-mode.md) | 1, 2 | Done. Working tree, not committed |
+| 6 | [step-06-reader-shell-and-layout.md](step-06-reader-shell-and-layout.md) | 1, 4 | Next |
+| 7 | [step-07-ayah-panels.md](step-07-ayah-panels.md) | 1, 3, 6 | |
+| 8 | [step-08-index-and-search.md](step-08-index-and-search.md) | 1, 2 | Done. Working tree, not committed |
+| 9 | [step-09-reader-settings.md](step-09-reader-settings.md) | 1, 4 | Next. Runs with step 6 |
+| 10 | [step-10-exit-check.md](step-10-exit-check.md) | all | |
 
 ## Rules for every step
 

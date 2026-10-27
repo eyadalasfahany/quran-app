@@ -1,5 +1,7 @@
 # Step 1 — Design-system components and reading fonts (App)
 
+**Status: done** (27 Oct 2026, committed in `05b931e`). Do not reimplement.
+
 Follow [README.md](README.md). **Start only after the design-token work (ADR 0012) is committed, including its type-scale step** (text styles mapped to Dynamic Type). It adds `fillSecondary`, `lineStrong`, `onBrandSurfaceMuted`, `playerLine` and a `highContrast` set, and recolours `highlightActive`, and these components read those tokens through `useTheme()`. Read `docs/adr/0012-design-follows-apple-hig.md`. Read also:
 - `apps/mobile/src/core/theme/*`: tokens, `useGlass` and the motion helpers.
 - The existing `Sidebar` and `SidebarItem` as the house style.

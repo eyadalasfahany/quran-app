@@ -1,5 +1,7 @@
 # Step 5 — Mushaf mode with QCF V2 page fonts (App)
 
+**Status: done** (27 Oct 2026). In the working tree, not committed. Do not reimplement. Only `MushafList` sets the font viewport, from the visible page. Do not put QCF glyph bytes in an accessibility label.
+
 Follow [README.md](README.md). Needs steps 1 and 2 committed. Read also:
 - [ADR 0011](../../adr/0011-phase-2-fonts-and-local-user-data.md), D1, and its font terms.
 - Spec §4 ("Mushaf page sizing") and spec §12 ("Mushaf rendering", "Ayah hit-testing").

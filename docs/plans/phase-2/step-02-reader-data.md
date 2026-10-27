@@ -1,5 +1,7 @@
 # Step 2 — Reader data layer (App)
 
+**Status: done** (27 Oct 2026, committed in `05b931e`). Do not reimplement. `useReadingAnchor()` takes no route argument. A route key wins only when it matches `^[1-9]\d*:[1-9]\d*$` after trim, and then `page` is null.
+
 Follow [README.md](README.md). Needs Phase 1 committed: `content.db` with Tanzil verses, `words` and Basmala (step 11), and the pack tables. Read also:
 - Spec §4 ("Where state lives") and spec §12.
 - `apps/mobile/src/core/db/content/*`.

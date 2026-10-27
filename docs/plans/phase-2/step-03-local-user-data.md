@@ -1,5 +1,7 @@
 # Step 3 — Local user data: bookmarks, highlights, notes (App)
 
+**Status: done** (27 Oct 2026, committed in `05b931e`). Do not reimplement. User migrations: `npm run db:generate:user` from `apps/mobile`.
+
 Follow [README.md](README.md). Independent of the other steps. Read also:
 - Spec §6 (`user.db`) and spec §11 (sync model).
 - [ADR 0011](../../adr/0011-phase-2-fonts-and-local-user-data.md), D2.

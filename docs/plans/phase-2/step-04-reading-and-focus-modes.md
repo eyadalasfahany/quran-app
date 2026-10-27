@@ -1,5 +1,7 @@
 # Step 4 — Reading and Focus modes (App)
 
+**Status: done** (27 Oct 2026). In the working tree, not committed. Do not reimplement. Mode switch and resize scroll to the top visible ayah. Selection is a callback; step 6 creates `selection.ts`.
+
 Follow [README.md](README.md), including the **shared reader contract**. Needs steps 1 and 2 committed. Read also:
 - Spec §12 (reader, motion).
 - The `Reading mode` and `Focus mode` phone frames, and `#tablet-reader` → "Reader · expanded · reading mode", in `quran-app-screens.html`.

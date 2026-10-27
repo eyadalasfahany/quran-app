@@ -1,5 +1,7 @@
 # Step 8 — Surah and juz index, and search (App)
 
+**Status: done** (27 Oct 2026). In the working tree, not committed. Do not reimplement. Import `normalizeForSearch` from `@quran/quran-text-check/normalize`. `SearchResultRow` stays a custom row so Quran text is not truncated. The `/read/[verseKey]` route arrives in step 6.
+
 Follow [README.md](README.md). Needs steps 1 and 2 committed. Read also:
 - The `Surah index` and `Search` phone frames in `quran-app-screens.html`.
 - Spec §12 ("Search": the 150 ms budget).
