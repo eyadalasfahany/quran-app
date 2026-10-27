@@ -52,6 +52,7 @@
     "preset": "jest-expo",
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.ts"
-    ]
+    ],
+    "resolver": "react-native-reanimated/jest/resolver"
   }
 }

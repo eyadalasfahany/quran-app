@@ -8,6 +8,7 @@ const src = (f) => import(pathToFileURL(`${pkg}/src/${f}`).href);
 const { colors, shadows } = await src('colors.ts');
 const { space, radius, blur } = await src('scale.ts');
 const { fontFamilies, typeScale, quranTypeScale } = await src('typography.ts');
+const { duration, easing, spring } = await src('motion.ts');
 
 const text = readFileSync(html, 'utf8');
 const style = text.split('\n')[2].replace(/:\{([a-z-]+)\}/g, ':@$1');
@@ -46,6 +47,10 @@ for (const theme of ['light', 'sepia', 'dark']) {
     else if (k.startsWith('radius-')) check(`${theme}.${k}`, val, `${radius[k.slice(7)]}px`);
     else if (k.startsWith('blur-')) check(`${theme}.${k}`, val, `${blur[k.slice(5)]}px`);
     else if (k.startsWith('font-')) check(`${theme}.${k}`, val.split(',')[0].replaceAll('"', ''), fontFamilies[camel(k.slice(5))]);
+    else if (k.startsWith('duration-')) check(`${theme}.${k}`, val, `${duration[k.slice(9)]}ms`);
+    else if (k.startsWith('ease-')) check(`${theme}.${k}`, val, `cubic-bezier(${easing[camel(k)]?.join(', ')})`);
+    else if (k === 'spring-duration') check(`${theme}.${k}`, val, `${spring.duration}ms`);
+    else if (k.startsWith('spring-')) check(`${theme}.${k}`, val, spring[camel(k.slice(7))]);
     else {
       seen.add(camel(k));
       check(`${theme}.${k}`, val, colors[theme][camel(k)]);

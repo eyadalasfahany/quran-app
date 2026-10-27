@@ -9,6 +9,15 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - `src/features/<feature>/` holds `components/`, `hooks/`, `data/` (repositories) and `store.ts` only when needed.
 - `src/shared/ui/` holds design-system components, rebuilt from the Figma file (link in the root CLAUDE.md) when a phase first needs them. Colors, spacing, radii and type come from `@quran/design-tokens`, which is pulled from Figma's variables and text styles (transcribed from `quran-app-design-system.html` until Figma can be read, ADR 0005); no raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
 - Text styles set the per-weight family (`IBMPlexSansArabic-Bold`) and never `fontWeight`; on Android a weight on top of a bold face can fake-bold it.
+- Motion follows spec §12 ("Motion").
+  - Sheets, the full player and tabs are native components with system motion.
+  - Custom motion uses `src/core/theme/motion.ts`:
+    - `timing('instant' | 'fast' | 'standard' | 'slow')` for opacity and color.
+    - `spring()` for position, size and drag release.
+    - `useSlideUp()` for custom overlays; it fades when Reduce Motion is on.
+  - No raw durations in components.
+  - Glass never fades; switch its style, and without animation when Reduce Motion is on.
+- Jest uses `react-native-reanimated/jest/resolver`, so tests import the real Reanimated; mock only `useReducedMotion` when a test needs it.
 - The UI font is IBM Plex Sans Arabic in `assets/fonts/IBMPlexSansArabic/` (OFL, licence alongside). Load only the weights the design uses.
 - Interface copy lives in `src/core/i18n/locales` (`ar.json`, `en.json`). Arabic is the default; English is used when the device language is English or the saved choice is English. The choice is the MMKV key `locale`. Switching calls `I18nManager.allowRTL` and `forceRTL`, then reloads (`DevSettings.reload` in dev, `Updates.reloadAsync` in a release build). `allowRTL(false)` is required for English, because `forceRTL(false)` does not force LTR on an Arabic device.
 - API base URL comes from `EXPO_PUBLIC_API_URL`: `http://localhost:8000` on iOS simulators, `http://10.0.2.2:8000` on Android emulators.
@@ -29,8 +38,10 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 
 ## Responsive layout (phones, iPad, foldables)
 
-- Use `useWindowClass()` → `compact` (< 600), `medium` (600–839), `expanded` (≥ 840). Never `Platform.isPad`, never device names.
-- Compact: bottom tabs, sheets. Medium: tabs, centered column, large sheets. Expanded: sidebar, centered column plus a persistent side panel.
+- Use `useWindowClass()` → `compact` (< 600), `medium` (600–839), `expanded` (≥ 840). Never `Platform.isPad`, never device names. A one-step resize stays in the current class until the width clears the boundary by 16; a jump across both boundaries takes the new class immediately.
+- Compact and medium: native bottom tabs. Expanded: the same tabs with the bar hidden, plus `Sidebar` (300 pt, from the expanded-window drawing). The sidebar navigates the same routes, so the active tab survives the switch. iOS 26's adaptable sidebar is not used; its breakpoint is not 840, and Android tablets share this sidebar.
+- `useGlass()` is true only when Liquid Glass is available and Reduce Transparency is off. Otherwise a glass surface is solid `glassFallback` with a `line` hairline.
+- Compact: sheets. Medium: centered column, large sheets. Expanded: centered column plus a persistent side panel.
 - Ayah actions and tafsir render in the side panel when it exists and as sheets otherwise; the routes are the same.
 - Reading and Focus columns cap at about 720 pt. Mushaf page width is `min(window − gutters, 640)`, font size derived from it.
 - Any resize, rotation, fold or unfold must keep the top visible verse via `useReadingAnchor`.

@@ -110,6 +110,19 @@ The Figma MCP server hit the Starter plan's call limit, and the variables couldn
   - `src/core/theme` resolves only the interface (`ui`) type styles. Text styles set one font family per weight and never `fontWeight`.
   - Quran and display (Amiri) fonts arrive with the reader in Phase 1.
 - **Fonts:** IBM Plex Sans Arabic 400, 500, 600 and 700 load through `useFonts` behind the splash screen. If a font fails to load, the splash still hides.
+- **Motion (added after step 7):**
+  - Tokens were added to the HTML and the package together:
+    - `duration`: instant 80, fast 150, standard 200, slow 300 ms.
+    - `easing.easeOut` (CSS `ease-out`).
+    - `spring`: damping ratio 1, 350 ms.
+  - `src/core/theme/motion.ts` gives `timing()` for opacity and color, `spring()` for position and size, and `useSlideUp()` for custom overlays. Reduce Motion turns slides into fades.
+  - An Apple HIG review set the per-interaction table in spec §12 (motion):
+    - Native sheets, player and tabs.
+    - The word highlight at 80 ms or none.
+    - No animated blur under Reduce Motion.
+    - Touch cancels auto-scroll.
+    - Haptics through `expo-haptics` from Phase 1.
+  - Auto-scroll speed and sheet detents are settled in Phase 1.
 - **Not built: tab and sidebar items.**
   - Native tabs draw their own items, so there is no tab item component. Tab colors are wired in step 8.
   - No sidebar was designed in Figma or the HTML (spec §16 open item). It is now drawn from the tokens in `quran-app-screens.html` ("Expanded window", light and dark), and step 8 builds `SidebarItem` and the sidebar from that drawing.
@@ -137,7 +150,12 @@ The Figma MCP server hit the Starter plan's call limit, and the variables couldn
   - MMKV needs a dev build, so Expo Go is not used.
 - Verify: the two string files have identical keys; RTL switch unit test. Mobile checks.
 
-### 8. Adaptive nav shell
+### 8. Adaptive nav shell — done
+
+- **Window class:** compact under 600, medium 600–839, expanded at 840 and up. A one-step resize stays put until the width clears the boundary by 16 (enter medium at 616, leave it below 584; enter expanded at 856, leave it below 824). A jump across both boundaries takes the new class immediately.
+- **Shell:** one `NativeTabs` navigator for every class. Compact and medium show the tab bar. Expanded sets `hidden` and draws `Sidebar` (300 pt, from the expanded-window drawing in `quran-app-screens.html`). The sidebar calls `router.navigate` on the same routes, so the active section survives the switch. iOS 26 `sidebarAdaptable` is not used: its breakpoint is not 840, and Android tablets need the same sidebar. Sidebar icons pass both the SF Symbol and the Material name. `useGlass()` is native glass only when Liquid Glass is available and Reduce Transparency is off; otherwise the sidebar is solid `glassFallback` with a `line` hairline.
+- **Screens:** placeholder Home, Mushaf, Listen and My Quran. Every string comes from i18n. `ContentColumn` caps the column at 720.
+- **Not built:** search, the extra links, and the mini-player in that drawing. Those routes do not exist yet. Tab colors are wired (brand and inkMuted). On iOS 26 the system glass ignores `backgroundColor`; it is set for Android.
 
 - Creates:
   - `useWindowClass`: compact under 600, medium 600–839, expanded 840 and up, with ±16 hysteresis.

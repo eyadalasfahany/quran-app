@@ -624,6 +624,32 @@ For each change, in one transaction per request:
 - **Root search** (shown in the search screen's hint) needs word-root data, which QF exposes as a separate resource; it is post-launch.
 - **Budget:** results for a three-letter query in under 150 ms on a mid-range Android, measured in the release build.
 
+**Motion (reviewed against Apple's HIG on motion, accessibility and Liquid Glass)**
+
+- **Native first:** sheets, the full player and the tab bar use native components (Expo Router `formSheet` with detents, a modal, native tabs), which bring system motion, gesture tracking and Reduce Motion handling.
+- **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
+  - `timing(duration)` with ease-out for opacity and color.
+  - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
+
+| Interaction | Component | Motion | Reduce Motion |
+| --- | --- | --- | --- |
+| Ayah actions, tafsir, reader settings | Native form sheet | System | System |
+| Mini-player → full player | Pan gesture + `spring()` | Tracks the finger; springs open or closed on release | Fade, `slow` |
+| Tab change | Native tabs | System | System |
+| Tab bar minimize on scroll | Native tabs (iOS 26); Android's bar stays fixed | System | System |
+| Ayah highlight (audio) | Reanimated opacity | Cross-fade, `fast` (150 ms) | Same (a fade) |
+| Word highlight | Reanimated | `instant` (80 ms) or none, so it keeps up with the 150 ms sync budget | None |
+| Auto-scroll to the active ayah | FlashList | Animated scroll | Jump |
+| Glass show or hide | `GlassView` style | Switch `regular` ↔ `none` (never fade its opacity) | Switch without animating; no animated blur |
+| Reading mode or script change | Segmented control + content | Cross-fade, `standard` | Same |
+
+- **Cancelling motion:** any touch on the reader stops auto-scroll at once and shows a pill to return to the current ayah; following resumes only when it is tapped.
+- **Haptics** (`expo-haptics`, added to the content plan when Phase 1 first uses it):
+  - Selection feedback when the reading mode, script or reciter changes.
+  - Success when a khatma day is completed.
+  - None on scrolling or page changes, which happen too often.
+  - The system haptics setting turns them off.
+
 ## 13. Notifications, environments and monitoring
 
 Reminders are local; only the daily hadith and rare announcements come from the server. Three environments keep QF prelive and production keys apart.
