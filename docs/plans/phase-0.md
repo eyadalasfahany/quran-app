@@ -72,13 +72,11 @@ Built as planned, plus three fixes found while testing: the renderer unwraps `Mo
     - Mockery unit test for `HealthService`.
 - Verify: `composer qa`.
 
-### 4. Docker Compose
+### 4. Local services — Docker deferred (ADR 0004)
 
-- Creates `infra/docker-compose.yml`:
-  - `mysql:9.7`, `redis:8.10` and Mailpit, with healthchecks.
-  - An `app` service (PHP 8.5 image running `artisan serve`) for anyone who prefers the container.
-  - `horizon` and `scheduler`, both from the same image.
-- Verify: `docker compose config`; all services healthy; `php artisan migrate` (and `quran_testing` created for Pest); `php artisan horizon:status`; scheduler logs a tick; `curl localhost:8000/api/v1/health` returns 200 with both checks true.
+- Written but unused for now: `infra/docker-compose.yml`, `infra/mysql/init/01-testing-database.sql`, `apps/api/Dockerfile` (dev image builds: PHP 8.5.12, OPcache built in).
+- Instead: Homebrew MySQL 9.2 (3306) with a `quran` user and `quran`/`quran_testing` databases (`docs/runbooks/local-setup.md`), Homebrew Redis 8.0 (6379), mail to the log.
+- Verify: `php artisan migrate`; reachable-path repository tests added and passing; `composer qa`; live `curl localhost:8000/api/v1/health` returns 200 with both checks true; `php artisan horizon` processes and `php artisan schedule:work` ticks.
 
 ### 5. Expo SDK 58 app
 

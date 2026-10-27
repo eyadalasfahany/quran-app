@@ -46,12 +46,12 @@ Local toolchain: PHP 8.5 from Homebrew (`php`), Node 26 through nvm (`nvm use` r
 
 ```bash
 npm ci                                              # JS workspaces
-docker compose -f infra/docker-compose.yml up -d    # MySQL, Redis, Mailpit, Horizon, scheduler
+brew services start mysql redis                     # Homebrew MySQL (3306) and Redis (6379)
 cd apps/api && composer install && php artisan migrate && php artisan serve   # http://localhost:8000
 cd apps/mobile && npx expo start
 ```
 
-No Caddy locally (ADR 0003). Host ports: MySQL 33306, Redis 16379, Mailpit 18025 (SMTP 11025), API 8000.
+No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup is in `docs/runbooks/local-setup.md`. Mail goes to the log. `infra/docker-compose.yml` is kept but unused.
 
 - Add Expo-managed packages with `npx expo install <pkg>`, never `npm install`.
 - Before calling work done, run the checks for every app you touched:

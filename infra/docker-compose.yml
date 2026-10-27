@@ -1,0 +1,94 @@
+# Local services for the API (spec section 13, ADR 0003).
+#   docker compose -f infra/docker-compose.yml up -d            MySQL, Redis, Mailpit, Horizon, scheduler
+#   docker compose -f infra/docker-compose.yml --profile app up -d   also runs the API in a container on :8000
+# Host ports avoid ones already used on this Mac: MySQL 33306, Redis 16379, Mailpit 18025 (SMTP 11025).
+# Credentials here are local-only.
+
+name: quran
+
+x-api: &api
+  build:
+    context: ../apps/api
+  image: quran-api-dev
+  volumes:
+    - ../apps/api:/app
+  environment:
+    DB_HOST: mysql
+    DB_PORT: "3306"
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+    MAIL_HOST: mailpit
+    MAIL_PORT: "1025"
+  depends_on:
+    mysql:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  mysql:
+    image: mysql:9.7
+    environment:
+      MYSQL_DATABASE: quran
+      MYSQL_USER: quran
+      MYSQL_PASSWORD: quran
+      MYSQL_ROOT_PASSWORD: root
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    ports:
+      - "33306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uquran", "-pquran"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  redis:
+    image: redis:8.10
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "16379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:v1.32
+    ports:
+      - "18025:8025"
+      - "11025:1025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  horizon:
+    <<: *api
+    command: ["php", "artisan", "horizon"]
+    stop_signal: SIGTERM
+
+  scheduler:
+    <<: *api
+    command: ["php", "artisan", "schedule:work"]
+
+  app:
+    <<: *api
+    profiles: ["app"]
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+    ports:
+      - "8000:8000"
+
+volumes:
+  mysql-data:
+  redis-data:

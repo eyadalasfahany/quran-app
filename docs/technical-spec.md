@@ -639,11 +639,11 @@ Reminders are local; only the daily hadith and rare announcements come from the 
 
 |  | Local | Staging | Production |
 | --- | --- | --- | --- |
-| API | `php artisan serve` (local PHP 8.5) with `docker compose` for MySQL, Redis, Mailpit, Horizon and the scheduler; no Caddy (ADR 0003) | Small VPS behind Caddy | Production VPS (4 vCPU, 8 GB, 80 GB) behind Caddy |
+| API | `php artisan serve` on local PHP 8.5 with Homebrew MySQL and Redis; no Docker or Caddy for now (ADR 0003, 0004) | Small VPS behind Caddy | Production VPS (4 vCPU, 8 GB, 80 GB) behind Caddy |
 | QF keys | Prelive | Prelive | Production |
 | EAS channel | `development` | `preview` | `production` |
 | App variant | `com.<org>.quran.dev` | `com.<org>.quran.preview` | `com.<org>.quran` |
-| Mail | Mailpit | Transactional provider, sandbox | Transactional provider |
+| Mail | Log driver (Mailpit once Docker returns, ADR 0004) | Transactional provider, sandbox | Transactional provider |
 | Push | Expo push to dev builds | Expo push to TestFlight / internal testing | Expo push to store builds |
 
 Three bundle IDs let dev, preview and production builds sit side by side on one test iPad or foldable.

@@ -1,6 +1,6 @@
 # 0003 — Local API runs on `php artisan serve`, not Caddy
 
-Date: 2026-10-27 · Status: accepted
+Date: 2026-10-27 · Status: accepted; Docker part deferred by ADR 0004 (Homebrew MySQL and Redis for now)
 
 ## Context
 

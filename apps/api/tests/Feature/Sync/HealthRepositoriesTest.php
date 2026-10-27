@@ -7,7 +7,7 @@ use App\Domains\Sync\Repositories\Predis\PredisRedisHealthRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
-// Reachable paths need the compose MySQL and Redis; they are covered once infra exists (Phase 0, step 4).
+// Reachable paths are in HealthRepositoriesReachableTest.
 
 it('reports the database as unreachable when MySQL refuses the connection', function (): void {
     config(['database.connections.mysql.host' => '127.0.0.1', 'database.connections.mysql.port' => 1]);
