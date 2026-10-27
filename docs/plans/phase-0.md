@@ -14,7 +14,7 @@ Each step is one reviewable change. After each step the checks below run and the
 | Health route | `GET /api/v1/health` in `Domains/Sync`, added to spec §9 | ADR 0001 |
 | Laravel standards | `laravel-standards` skill adopted; spec wins on envelope, pagination, collections, test DB | ADR 0002 |
 | Contract tools | `dedoc/scramble` 0.13.51, `openapi-typescript` 7.13.0 | content plan |
-| Design | Tokens and UI components pulled from the Figma file; the HTML design system is a cross-check | spec §1 |
+| Design | Tokens and UI components pulled from the Figma file; the HTML design system is a cross-check. Tokens come from the HTML for now, because the Figma MCP quota ran out | spec §1, ADR 0005 |
 | Bundle ID | Placeholder `com.example.quran` (`.dev`, `.preview` variants) until the real one is chosen | spec §13 |
 | Git | The developer commits and pushes; Claude doesn't commit | — |
 
@@ -99,7 +99,21 @@ Built as planned, with these changes:
 - Packages: every Expo-managed package via `npx expo install`. `ios/` and `android/` are generated and ignored.
 - Verify: `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`.
 
-### 6. Design tokens from Figma
+### 6. Design tokens from Figma — tokens and theme done (source: HTML, ADR 0005)
+
+The Figma MCP server hit the Starter plan's call limit, and the variables couldn't be exported by hand. So the tokens were transcribed from `quran-app-design-system.html`.
+
+- **Fidelity check:** `npm run check:html -w @quran/design-tokens` parses the HTML's CSS and type specimens and compares them with the TS exports: 180 values, 0 mismatches.
+- **Tokens:**
+  - Quran type styles keep `lineHeightRatio`, because reader scaling (80–160%) changes the size.
+  - Shadows are CSS `boxShadow` strings, defined per theme.
+  - `src/core/theme` resolves only the interface (`ui`) type styles. Text styles set one font family per weight and never `fontWeight`.
+  - Quran and display (Amiri) fonts arrive with the reader in Phase 1.
+- **Fonts:** IBM Plex Sans Arabic 400, 500, 600 and 700 load through `useFonts` behind the splash screen. If a font fails to load, the splash still hides.
+- **Not built: tab and sidebar items.**
+  - Native tabs draw their own items, so there is no tab item component. Tab colors are wired in step 8.
+  - No sidebar was designed in Figma or the HTML (spec §16 open item). It is now drawn from the tokens in `quran-app-screens.html` ("Expanded window", light and dark), and step 8 builds `SidebarItem` and the sidebar from that drawing.
+- **Open:** diff the tokens against Figma once the MCP quota allows; raise every disagreement.
 
 - Creates:
   - `@quran/design-tokens` built from Figma variables and text styles: colors for light, sepia and dark (aliases resolved), spacing, radii, glass and shadow, type scale.

@@ -7,6 +7,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "check:html": "node scripts/check-html.mjs ../../quran-app-design-system.html ."
   }
 }

@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@quran/design-tokens": "*",
     "expo": "~58.0.19",
     "expo-constants": "~58.0.13",
     "expo-dev-client": "~58.0.15",

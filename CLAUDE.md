@@ -62,7 +62,7 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
 ## How to work here
 
 - **Current phase: Phase 0, Setup and foundations** (spec §15). The step-by-step plan is `docs/plans/phase-0.md`. Work one step at a time and keep each change small enough to review.
-- Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the Figma file above.
+- Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the Figma file above (tokens are transcribed from `quran-app-design-system.html` until Figma can be read, ADR 0005).
 - The developer commits and pushes. Don't commit unless asked.
 - Plan before coding anything that touches the schema, sync, the API contract or the reader.
 - An endpoint change ships with its OpenAPI update and the app-side types in the same change.
