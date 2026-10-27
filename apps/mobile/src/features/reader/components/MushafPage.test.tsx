@@ -2,6 +2,7 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { themes } from '@/core/theme';
 import { MUSHAF_PAGE_MAX } from '@/features/reader/layout';
 import { mushafFontSize } from '@/features/reader/mushaf/page-metrics';
 import { buildMushafLineSlots } from '@/features/reader/mushaf/page-slots';
@@ -70,6 +71,33 @@ describe('MushafPage', () => {
     expect(mushafFontSize(width)).toBe(width / 25);
   });
 
+  it('draws the shared double gold page frame', async () => {
+    const view = await renderUi(
+      <MushafPage
+        chapterForVerse={chapterForVerse}
+        chapterStarts={[chapterOneStart]}
+        contentWidth={360}
+        fontFamily="qcf-v2-p1"
+        lines={pageOneLines}
+        testID="page"
+      />,
+    );
+
+    expect(flatStyle(view.getByTestId('page').props.style)).toMatchObject({
+      borderColor: themes.light.colors.gold,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      padding: 6,
+    });
+    expect(flatStyle(view.getByTestId('page-inner').props.style)).toMatchObject({
+      borderColor: themes.light.colors.gold,
+      borderRadius: 3,
+      borderWidth: 0.75,
+      padding: 8,
+    });
+    expect(view.getByRole('header', { name: chapterOneStart.nameArabic })).toBeOnTheScreen();
+  });
+
   it('forwards presses to the verse id', async () => {
     const onPress = jest.fn();
     const view = await renderUi(
@@ -82,7 +110,7 @@ describe('MushafPage', () => {
         onVersePress={onPress}
       />,
     );
-    fireEvent.press(view.getByText(GLYPH_AL_FATIHA_1));
+    await fireEvent.press(view.getByText(GLYPH_AL_FATIHA_1));
     expect(onPress).toHaveBeenCalledWith(1);
   });
 

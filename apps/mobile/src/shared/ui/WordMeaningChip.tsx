@@ -1,9 +1,8 @@
-import { Text, View } from 'react-native';
-
 import { useTheme } from '@/core/theme';
 
-import { quranText, uiTextProps } from './textStyles';
-import { useContrastColors } from './useContrastColors';
+import { Card } from './Card';
+import { QuranText } from './QuranText';
+import { UiText } from './UiText';
 
 export function WordMeaningChip({
   word,
@@ -12,54 +11,48 @@ export function WordMeaningChip({
   fontScale = 1,
   testID,
 }: {
-  // Uthmani text, rendered exactly as stored.
   word: string;
   meaning: string;
-  // Word meanings are English (LTR) unless the resource says otherwise.
   meaningDirection?: 'ltr' | 'rtl';
   fontScale?: number;
   testID?: string;
 }) {
   const theme = useTheme();
-  const colors = useContrastColors();
 
   return (
-    <View
+    <Card
       accessibilityLabel={`${word}, ${meaning}`}
       accessible
+      padding={2}
+      radius="md"
       style={{
         alignItems: 'center',
         backgroundColor: theme.colors.surface,
-        borderColor: colors.line,
-        borderRadius: theme.radius.md,
-        borderWidth: 1,
         gap: 2,
         paddingHorizontal: theme.space[3],
-        paddingVertical: theme.space[2],
       }}
       testID={testID}
     >
-      <Text
+      <QuranText
         accessible={false}
-        allowFontScaling={false}
+        fontScale={fontScale}
         importantForAccessibility="no"
-        style={[quranText('quranWord', fontScale), { color: theme.colors.ink, writingDirection: 'rtl' }]}
         testID={testID ? `${testID}-word` : undefined}
+        variant="quranWord"
       >
         {word}
-      </Text>
-      <Text
-        {...uiTextProps('caption')}
+      </QuranText>
+      <UiText
         accessible={false}
+        align="center"
         importantForAccessibility="no"
-        style={[
-          theme.text.caption,
-          { color: colors.inkMuted, textAlign: 'center', writingDirection: meaningDirection },
-        ]}
+        style={{ writingDirection: meaningDirection }}
         testID={testID ? `${testID}-meaning` : undefined}
+        tone="muted"
+        variant="caption"
       >
         {meaning}
-      </Text>
-    </View>
+      </UiText>
+    </Card>
   );
 }

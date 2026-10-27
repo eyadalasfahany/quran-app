@@ -5,10 +5,8 @@ import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { uiFontFamilies, useTheme } from '@/core/theme';
-import { Chip, EmptyState, maxFontScale, quranText, uiTextProps } from '@/shared/ui';
-import { useContrastColors } from '@/shared/ui/useContrastColors';
+import { Button, Card, Chip, EmptyState, maxFontScale, QuranText, UiText } from '@/shared/ui';
 
-import { PanelButton } from './PanelButton';
 import type { TextDirection } from './panel-text';
 
 const PREVIOUS = { ios: 'chevron.backward', android: 'chevron_left' } as const;
@@ -69,7 +67,6 @@ export function TafsirPanel({
 }) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
-  const colors = useContrastColors();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const windowWidth = useWindowDimensions().width;
   const [width, setWidth] = useState<number | null>(null);
@@ -87,7 +84,7 @@ export function TafsirPanel({
 
   const navigation = (
     <View style={{ flexDirection: 'row', gap: theme.space[2], justifyContent: 'space-between' }}>
-      <PanelButton
+      <Button
         disabled={!onPrevious}
         icon={PREVIOUS}
         label={t('reader.tafsir.previous')}
@@ -95,7 +92,7 @@ export function TafsirPanel({
         onPress={() => onPrevious?.()}
         testID={`${testID}-previous`}
       />
-      <PanelButton
+      <Button
         disabled={!onNext}
         icon={NEXT}
         label={t('reader.tafsir.next')}
@@ -146,36 +143,19 @@ export function TafsirPanel({
           />
         ))}
       </View>
-      <View
-        accessibilityLabel={ayahLabel}
-        accessible={ayahLabel !== undefined}
-        style={{
-          backgroundColor: theme.colors.surfaceRaised,
-          borderColor: colors.line,
-          borderRadius: theme.radius.lg,
-          borderWidth: 1,
-          padding: theme.space[4],
-        }}
-        testID={`${testID}-ayah`}
-      >
-        <Text
-          allowFontScaling={false}
-          style={[quranText('quranReading', fontScale), { color: theme.colors.ink, textAlign: 'right', writingDirection: 'rtl' }]}
-          testID={`${testID}-ayah-block`}
-        >
+      <Card accessibilityLabel={ayahLabel} accessible={ayahLabel !== undefined} testID={`${testID}-ayah`}>
+        <QuranText fontScale={fontScale} testID={`${testID}-ayah-block`} variant="quranReading">
           <Text testID={`${testID}-ayah-text`}>{textUthmani}</Text>
           {` ﴿${formatNumber(verseNumber, 'ar')}﴾`}
-        </Text>
-      </View>
+        </QuranText>
+      </Card>
       {selected === null ? null : (
         <View style={{ gap: 2 }}>
-          <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-            {selected.name}
-          </Text>
+          <UiText variant="headline">{selected.name}</UiText>
           {coverage === null ? null : (
-            <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: colors.inkMuted }]} testID={`${testID}-coverage`}>
+            <UiText testID={`${testID}-coverage`} tone="muted" variant="caption">
               {t('reader.tafsir.coverage', { from: formatNumber(coverage.from, locale), to: formatNumber(coverage.to, locale) })}
-            </Text>
+            </UiText>
           )}
         </View>
       )}
@@ -185,9 +165,9 @@ export function TafsirPanel({
         testID={`${testID}-body`}
       >
         {html === null ? (
-          <Text {...uiTextProps('body')} style={[theme.text.body, { color: colors.inkMuted }]} testID={`${testID}-no-entry`}>
+          <UiText testID={`${testID}-no-entry`} tone="muted">
             {t('reader.tafsir.noEntry')}
-          </Text>
+          </UiText>
         ) : (
           <RenderHtml
             baseStyle={baseStyle}
@@ -200,9 +180,9 @@ export function TafsirPanel({
         )}
       </View>
       {selected === null ? null : (
-        <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: colors.inkMuted }]} testID={`${testID}-source`}>
+        <UiText testID={`${testID}-source`} tone="muted" variant="caption">
           {t('reader.tafsir.source', { author: source })}
-        </Text>
+        </UiText>
       )}
       {navigation}
     </ScrollView>

@@ -1,3 +1,5 @@
+import { size, space, stroke } from '@quran/design-tokens';
+
 import { MUSHAF_PAGE_MAX } from '@/features/reader/layout';
 
 import { MUSHAF_LINES_PER_PAGE } from './constants';
@@ -16,9 +18,11 @@ export function mushafLineHeight(contentWidth: number): number {
   return contentWidth / MUSHAF_LINES_PER_PAGE;
 }
 
-/** Outer frame padding plus 15 line slots (FlashList item height). */
+/** Vertical chrome of `GoldFrame variant="page"` around the lines, with the page's inner padding. */
+export const MUSHAF_FRAME_CHROME = 2 * (size.frameInset + stroke.frame + stroke.frameInner + space[2]);
+
+/** List padding, the page frame and 15 line slots (FlashList item height). */
 export function mushafPageHeight(contentWidth: number, framePadding: number): number {
   const lineHeight = mushafLineHeight(contentWidth);
-  const frame = framePadding * 2 + 4;
-  return frame + lineHeight * MUSHAF_LINES_PER_PAGE;
+  return framePadding * 2 + MUSHAF_FRAME_CHROME + lineHeight * MUSHAF_LINES_PER_PAGE;
 }

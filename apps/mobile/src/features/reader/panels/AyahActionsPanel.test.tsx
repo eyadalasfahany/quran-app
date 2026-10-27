@@ -2,6 +2,7 @@ import { act, fireEvent } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Share } from 'react-native';
 
+import { themes } from '@/core/theme';
 import { getHighlights, listBookmarks } from '@/features/library/data';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -121,6 +122,10 @@ describe('AyahActionsPanel', () => {
     const encoder = new TextEncoder();
     expect([...encoder.encode(copied)]).toEqual([...encoder.encode(expected)]);
     expect(view.getByTestId('ayah-actions-panel-copied')).toHaveTextContent('Ayah copied');
+    expect(flatStyle(view.getByTestId('ayah-actions-panel-copied').props.style)).toMatchObject({
+      color: themes.light.colors.inkMuted,
+      textAlign: 'center',
+    });
   });
 
   it('shares the same text through the native share sheet', async () => {

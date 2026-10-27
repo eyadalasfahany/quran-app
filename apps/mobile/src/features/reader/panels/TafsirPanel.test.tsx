@@ -1,4 +1,8 @@
+import { quranTypeScale } from '@quran/design-tokens';
 import { fireEvent } from '@testing-library/react-native';
+
+import { quranFontFamily, themes } from '@/core/theme';
+
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { TafsirPanel, type TafsirOption } from './TafsirPanel';
@@ -75,6 +79,22 @@ describe('TafsirPanel', () => {
 
     expect(screen.getByTestId('tafsir-panel-ayah-text').props.children).toBe(AYAH_1_2);
     expect(textContent(screen.getByTestId('tafsir-panel-ayah-block'))).toBe(`${AYAH_1_2} ﴿٢﴾`);
+  });
+
+  it('draws the ayah in a raised card, in the Quran font at the reader scale', async () => {
+    const screen = await renderPanel({ fontScale: 1.2 }).view;
+    const block = screen.getByTestId('tafsir-panel-ayah-block');
+
+    expect(flatStyle(screen.getByTestId('tafsir-panel-ayah').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.surfaceRaised,
+      borderColor: themes.light.colors.line,
+      borderRadius: themes.light.radius.lg,
+    });
+    expect(block.props.allowFontScaling).toBe(false);
+    expect(flatStyle(block.props.style)).toMatchObject({
+      fontFamily: quranFontFamily,
+      fontSize: quranTypeScale.quranReading.size * 1.2,
+    });
   });
 
   it.each(locales)('sets the ayah block right to left and right-aligned in %s', async (locale) => {

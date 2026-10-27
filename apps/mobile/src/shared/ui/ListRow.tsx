@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
 import { Icon } from './Icon';
-import { uiTextProps } from './textStyles';
+import { UiText } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
@@ -22,29 +22,28 @@ export function ListRow({
   subtitle?: string;
   leading?: ReactNode;
   trailing?: ReactNode;
-  // A pressable row navigates, so it ends in a chevron that points forward in either direction.
   onPress?: () => void;
-  // 'strong' for separators that must stay visible over fillSecondary or busy surfaces (ADR 0012).
   separator?: 'line' | 'strong';
   testID?: string;
 }) {
   const theme = useTheme();
   const colors = useContrastColors();
   const separatorStyle = separator
-    ? { borderBottomColor: separator === 'strong' ? colors.lineStrong : colors.line, borderBottomWidth: 1 }
+    ? {
+        borderBottomColor: separator === 'strong' ? colors.lineStrong : colors.line,
+        borderBottomWidth: theme.stroke.hairline,
+      }
     : null;
 
   const content = (
     <>
       {leading}
       <View style={{ flex: 1, gap: 2 }}>
-        <Text {...uiTextProps('body')} style={[theme.text.body, { color: theme.colors.ink }]}>
-          {title}
-        </Text>
+        <UiText variant="body">{title}</UiText>
         {subtitle ? (
-          <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: colors.inkMuted }]}>
+          <UiText tone="muted" variant="caption">
             {subtitle}
-          </Text>
+          </UiText>
         ) : null}
       </View>
       {trailing}

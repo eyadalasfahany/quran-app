@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { I18nManager, Text, TextInput, View } from 'react-native';
+import { I18nManager, TextInput, View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
@@ -12,11 +12,11 @@ import {
   type Note,
   type UserStore,
 } from '@/features/library/data';
-import { uiTextProps } from '@/shared/ui';
-import { useContrastColors } from '@/shared/ui/useContrastColors';
+import { Button, Card, uiTextProps, UiText, useContrastColors } from '@/shared/ui';
 
-import { PanelButton } from './PanelButton';
 import { textDirection } from './panel-text';
+
+const NOTE_FIELD_MIN_HEIGHT = 120;
 
 export function NoteEditor({
   verseId,
@@ -80,56 +80,54 @@ export function NoteEditor({
 
   return (
     <View style={{ gap: theme.space[2] }} testID={testID}>
-      <TextInput
-        {...uiTextProps('body')}
-        accessibilityHint={counter}
-        accessibilityLabel={t('reader.note.label')}
-        multiline
-        onChangeText={setBody}
-        placeholder={t('reader.note.placeholder')}
-        placeholderTextColor={colors.inkMuted}
-        style={[
-          theme.text.body,
-          {
-            backgroundColor: theme.colors.surfaceRaised,
-            borderColor: tooLong ? theme.colors.danger : colors.line,
-            borderRadius: theme.radius.md,
-            borderWidth: 1,
-            color: theme.colors.ink,
-            minHeight: 120,
-            padding: theme.space[3],
-            textAlign: direction === 'rtl' ? 'right' : 'left',
-            textAlignVertical: 'top',
-            writingDirection: direction,
-          },
-        ]}
-        testID={`${testID}-input`}
-        value={body}
-      />
-      <Text
-        {...uiTextProps('caption')}
+      {/* The input carries the padding, so a tap anywhere in the box focuses it. */}
+      <Card
+        radius="md"
+        style={[{ padding: 0 }, tooLong ? { borderColor: theme.colors.danger } : null]}
+        testID={`${testID}-box`}
+      >
+        <TextInput
+          {...uiTextProps('body')}
+          accessibilityHint={counter}
+          accessibilityLabel={t('reader.note.label')}
+          multiline
+          onChangeText={setBody}
+          placeholder={t('reader.note.placeholder')}
+          placeholderTextColor={colors.inkMuted}
+          style={[
+            theme.text.body,
+            {
+              color: theme.colors.ink,
+              minHeight: NOTE_FIELD_MIN_HEIGHT,
+              padding: theme.space[3],
+              textAlign: direction === 'rtl' ? 'right' : 'left',
+              textAlignVertical: 'top',
+              writingDirection: direction,
+            },
+          ]}
+          testID={`${testID}-input`}
+          value={body}
+        />
+      </Card>
+      <UiText
         accessibilityLiveRegion="polite"
-        style={[theme.text.caption, { color: tooLong ? theme.colors.danger : colors.inkMuted }]}
         testID={`${testID}-counter`}
+        tone={tooLong ? 'danger' : 'muted'}
+        variant="caption"
       >
         {tooLong ? t('reader.note.tooLong', { max }) : counter}
-      </Text>
+      </UiText>
       {failed ? (
-        <Text
-          {...uiTextProps('caption')}
-          accessibilityLiveRegion="assertive"
-          style={[theme.text.caption, { color: theme.colors.danger }]}
-          testID={`${testID}-error`}
-        >
+        <UiText accessibilityLiveRegion="assertive" testID={`${testID}-error`} tone="danger" variant="caption">
           {t('reader.note.saveFailed')}
-        </Text>
+        </UiText>
       ) : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-        <PanelButton disabled={!canSave} label={t('reader.note.save')} onPress={save} testID={`${testID}-save`} variant="primary" />
+        <Button disabled={!canSave} label={t('reader.note.save')} onPress={save} testID={`${testID}-save`} variant="primary" />
         {note === null ? null : (
-          <PanelButton label={t('reader.note.delete')} onPress={remove} testID={`${testID}-delete`} variant="danger" />
+          <Button label={t('reader.note.delete')} onPress={remove} testID={`${testID}-delete`} variant="danger" />
         )}
-        {onDone ? <PanelButton label={t('reader.note.cancel')} onPress={onDone} testID={`${testID}-cancel`} /> : null}
+        {onDone ? <Button label={t('reader.note.cancel')} onPress={onDone} testID={`${testID}-cancel`} /> : null}
       </View>
     </View>
   );

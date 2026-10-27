@@ -1,8 +1,8 @@
 import { act, fireEvent } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { I18nManager } from 'react-native';
+import { I18nManager, Text } from 'react-native';
 
-import { ThemeProvider } from '@/core/theme';
+import { ThemeProvider, themes } from '@/core/theme';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -80,6 +80,33 @@ describe('AdaptiveReaderLayout', () => {
       view.rerender(themed(layout(1366, { onMoveToPanel, onMoveToSheet, verseKey: '2:255' })));
     });
     expect(onMoveToPanel).toHaveBeenCalledWith('2:255');
+  });
+
+  it('draws the panel at the side-panel width token', async () => {
+    const view = await renderUi(layout(1366));
+
+    expect(flatStyle(view.getByTestId('reader-panel-host').props.style).width).toBe(themes.light.size.sidePanel);
+  });
+
+  it.each(locales)('floats the resume slot centred at the bottom of the stage in %s', async (locale) => {
+    const view = await renderUi(layout(375, { resume: <Text>resume</Text> }), { locale });
+    const slot = view.getByTestId('reader-resume-slot');
+
+    expect(flatStyle(slot.props.style)).toMatchObject({
+      alignItems: 'center',
+      bottom: themes.light.space[4],
+      left: 0,
+      position: 'absolute',
+      right: 0,
+    });
+    expect(slot.props.pointerEvents).toBe('box-none');
+    expect(view.getByText('resume')).toBeOnTheScreen();
+  });
+
+  it('leaves out the resume slot when there is nothing to resume', async () => {
+    const view = await renderUi(layout(375));
+
+    expect(view.queryByTestId('reader-resume-slot')).toBeNull();
   });
 
   it('has no raw colour literals', () => {

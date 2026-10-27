@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
+import { useContrastColors } from '@/shared/ui';
 
 import { SHEET_MARGIN, SHEET_RADIUS } from '../form-sheet';
 
@@ -11,6 +12,7 @@ import { SHEET_MARGIN, SHEET_RADIUS } from '../form-sheet';
  */
 export function SheetFrame({ children, testID }: { children: ReactNode; testID?: string }) {
   const theme = useTheme();
+  const colors = useContrastColors();
 
   return (
     <View
@@ -34,11 +36,11 @@ export function SheetFrame({ children, testID }: { children: ReactNode; testID?:
         <View style={{ alignItems: 'center', paddingTop: theme.space[2] }}>
           <View
             style={{
-              backgroundColor: theme.colors.inkMuted,
+              backgroundColor: colors.inkMuted,
               borderRadius: theme.radius.pill,
-              height: 5,
-              opacity: 0.4,
-              width: 36,
+              height: theme.size.grabberHeight,
+              opacity: theme.opacity.grabber,
+              width: theme.size.grabberWidth,
             }}
             testID={testID === undefined ? undefined : `${testID}-grabber`}
           />

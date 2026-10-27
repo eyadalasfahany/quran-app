@@ -12,7 +12,7 @@ Follow [README.md](README.md), including the **shared reader contract**. Needs s
 ## Routes
 
 - **`app/read/[verseKey].tsx`:** stack screen above the tabs, full window (tabs and sidebar hidden while reading). It renders `ReaderScreen` (`src/features/reader/screens/ReaderScreen.tsx`).
-- **`app/ayah/[verseKey].tsx` and `app/tafsir/[verseKey].tsx`:** `formSheet` with detents (spec §12 motion: native sheets). They render the step 7 panels inside `SheetContainer` (a feature component). Placeholders are fine until step 7 lands.
+- **`app/ayah/[verseKey].tsx` and `app/tafsir/[verseKey].tsx`:** a transparent modal with a custom card drawn per frame (ADR 0013). They render the step 7 panels inside `SheetContainer` (a feature component). Placeholders are fine until step 7 lands.
 - **Home and index wiring:** the Home "continue reading" card and the surah index (step 8) navigate to `read/[verseKey]`.
 
 ## Components (`src/features/reader/components/`, each with its own test)

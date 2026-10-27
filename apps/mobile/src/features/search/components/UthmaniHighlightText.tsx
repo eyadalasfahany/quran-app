@@ -2,7 +2,7 @@ import { Text, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import type { WordRecord } from '@/features/reader/data/words';
-import { quranText } from '@/shared/ui';
+import { QuranText } from '@/shared/ui';
 
 export function UthmaniHighlightText({
   words,
@@ -18,11 +18,11 @@ export function UthmaniHighlightText({
 
   return (
     <View accessible={false} importantForAccessibility="no" testID={testID}>
-      <Text
+      <QuranText
         accessible={false}
         importantForAccessibility="no"
-        style={[quranText('quranReading'), { color: theme.colors.ink, writingDirection: 'rtl' }]}
         testID={testID ? `${testID}-body` : undefined}
+        variant="quranReading"
       >
         {words.map((word, index) => {
           const active = highlighted.has(word.position);
@@ -38,7 +38,7 @@ export function UthmaniHighlightText({
                       backgroundColor: theme.colors.highlightActive,
                       borderColor: theme.colors.brand,
                       borderRadius: theme.radius.sm,
-                      borderWidth: 1,
+                      borderWidth: theme.stroke.hairline,
                     }
                   : undefined
               }
@@ -48,7 +48,7 @@ export function UthmaniHighlightText({
             </Text>
           );
         })}
-      </Text>
+      </QuranText>
     </View>
   );
 }

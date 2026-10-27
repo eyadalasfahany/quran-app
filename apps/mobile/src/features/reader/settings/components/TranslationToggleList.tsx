@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { uiTextProps } from '@/shared/ui';
-import { useContrastColors } from '@/shared/ui/useContrastColors';
+import { ToggleRow, UiText } from '@/shared/ui';
 
 export type TranslationChoice = {
   id: number;
@@ -24,68 +23,28 @@ export function TranslationToggleList({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const colors = useContrastColors();
 
-  const toggle = (id: number) => {
-    if (selectedIds.includes(id)) {
-      onChange(selectedIds.filter((selected) => selected !== id));
-      return;
-    }
-    onChange([...selectedIds, id]);
+  const toggle = (id: number, on: boolean) => {
+    const without = selectedIds.filter((selected) => selected !== id);
+    onChange(on ? [...without, id] : without);
   };
 
   return (
     <View style={{ gap: theme.space[2] }} testID={testID}>
-      <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-        {t('reader.settings.translations')}
-      </Text>
+      <UiText variant="headline">{t('reader.settings.translations')}</UiText>
       {translations.length === 0 ? (
-        <Text {...uiTextProps('body')} style={[theme.text.body, { color: colors.inkMuted }]}>
-          {t('reader.settings.translationsEmpty')}
-        </Text>
+        <UiText tone="muted">{t('reader.settings.translationsEmpty')}</UiText>
       ) : (
-        translations.map((translation) => {
-          const checked = selectedIds.includes(translation.id);
-          const label = translation.authorName === null ? translation.name : `${translation.name} · ${translation.authorName}`;
-          return (
-            <Pressable
-              key={translation.id}
-              accessibilityLabel={label}
-              accessibilityRole="switch"
-              accessibilityState={{ checked }}
-              onPress={() => toggle(translation.id)}
-              style={({ pressed }) => ({
-                alignItems: 'center',
-                backgroundColor: pressed ? theme.colors.fillSecondary : 'transparent',
-                borderRadius: theme.radius.md,
-                flexDirection: 'row',
-                gap: theme.space[3],
-                minHeight: 44,
-                paddingHorizontal: theme.space[2],
-              })}
-              testID={`reader-translation-${translation.id}`}
-            >
-              <View style={{ flex: 1 }}>
-                <Text {...uiTextProps('body')} style={[theme.text.body, { color: theme.colors.ink }]}>
-                  {translation.name}
-                </Text>
-                {translation.authorName ? (
-                  <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: colors.inkMuted }]}>
-                    {translation.authorName}
-                  </Text>
-                ) : null}
-              </View>
-              <View
-                style={{
-                  backgroundColor: checked ? theme.colors.brand : theme.colors.fillSecondary,
-                  borderRadius: theme.radius.pill,
-                  height: 28,
-                  width: 44,
-                }}
-              />
-            </Pressable>
-          );
-        })
+        translations.map((translation) => (
+          <ToggleRow
+            key={translation.id}
+            onValueChange={(on) => toggle(translation.id, on)}
+            subtitle={translation.authorName ?? undefined}
+            testID={`reader-translation-${translation.id}`}
+            title={translation.name}
+            value={selectedIds.includes(translation.id)}
+          />
+        ))
       )}
     </View>
   );

@@ -11,7 +11,7 @@ describe('MushafPagePlaceholder', () => {
     const view = await renderUi(<MushafPagePlaceholder onSwitchToReading={onSwitch} testID="ph" />);
 
     expect(view.getByRole('header', { name: 'هذه الصفحة غير جاهزة' })).toBeOnTheScreen();
-    fireEvent.press(view.getByRole('button', { name: 'اقرأ في وضع القراءة' }));
+    await fireEvent.press(view.getByRole('button', { name: 'اقرأ في وضع القراءة' }));
     expect(onSwitch).toHaveBeenCalled();
   });
 

@@ -1,9 +1,11 @@
 import { SymbolView } from 'expo-symbols';
 import type { AndroidSymbol, SFSymbol } from 'expo-symbols';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
+
+import { UiText } from './UiText';
 
 export function SidebarItem({
   label,
@@ -22,7 +24,7 @@ export function SidebarItem({
 }) {
   const theme = useTheme();
   const [hovered, setHovered] = useState(false);
-  const color = selected ? theme.colors.brand : theme.colors.ink;
+  const iconSize = theme.size.iconLg;
 
   return (
     <Pressable
@@ -43,12 +45,14 @@ export function SidebarItem({
       testID={testID}
     >
       <SymbolView
-        fallback={<View style={{ height: 24, width: 24 }} />}
+        fallback={<View style={{ height: iconSize, width: iconSize }} />}
         name={{ ios: symbol, android: androidIcon }}
-        size={24}
-        tintColor={color}
+        size={iconSize}
+        tintColor={selected ? theme.colors.brand : theme.colors.ink}
       />
-      <Text style={[theme.text.headline, { color }]}>{label}</Text>
+      <UiText tone={selected ? 'brand' : 'ink'} variant="headline">
+        {label}
+      </UiText>
     </Pressable>
   );
 }

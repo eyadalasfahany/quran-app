@@ -1,53 +1,73 @@
-import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
+import { fireEvent } from '@testing-library/react-native';
+
+import { themes } from '@/core/theme';
+
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { FocusAyah } from './FocusAyah';
 
-const baseProps = {
-  blockHeight: 640,
-  onPress: () => undefined,
-  testID: 'focus',
-  textImlaei: 'الحمد لله',
-  textUthmani: 'ٱلْحَمْدُ لِلَّهِ',
-  verseNumber: 2,
+const ayah = {
+  textImlaei: 'إياك نعبد وإياك نستعين',
+  textUthmani: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
+  verseNumber: 5,
 } as const;
 
 describe('FocusAyah', () => {
-  it.each(locales)('centres one ayah in a screen-height block (%s)', async (locale) => {
-    const view = await renderUi(
-      <FocusAyah
-        blockHeight={640}
-        onPress={() => undefined}
-        testID="focus"
-        textImlaei="الحمد لله"
-        textUthmani="ٱلْحَمْدُ لِلَّهِ"
-        verseNumber={2}
-      />,
-      { locale },
-    );
+  it.each(locales)('centres the ayah exactly as stored in its Quran font (%s)', async (locale) => {
+    const view = await renderUi(<FocusAyah {...ayah} testID="focus" />, { locale });
 
-    expect(flatStyle(view.getByTestId('focus').props.style).height).toBe(640);
-    expect(view.getByText('ٱلْحَمْدُ لِلَّهِ')).toBeOnTheScreen();
-    expect(flatStyle(view.getByText('ٱلْحَمْدُ لِلَّهِ').props.style)).toMatchObject({
+    const text = view.getByTestId('focus-current');
+    expect(text.props.children).toBe(ayah.textUthmani);
+    expect(text.props.allowFontScaling).toBe(false);
+    expect(flatStyle(text.props.style)).toMatchObject({
+      color: themes.light.colors.ink,
+      fontSize: 38,
+      lineHeight: 80,
       textAlign: 'center',
       writingDirection: 'rtl',
     });
   });
 
-  it.each(locales)('labels the ayah with Imla\'i text and the ayah number (%s)', async (locale) => {
-    const view = await renderUi(<FocusAyah {...baseProps} />, { locale });
+  it('follows the reader font scale', async () => {
+    const view = await renderUi(<FocusAyah {...ayah} fontScale={1.5} testID="focus" />);
 
-    const label =
-      locale === 'ar' ? 'الحمد لله الآية ٢' : 'الحمد لله Ayah 2';
-    expect(view.getByRole('button', { name: label })).toBeOnTheScreen();
+    expect(flatStyle(view.getByTestId('focus-current').props.style)).toMatchObject({ fontSize: 57, lineHeight: 120 });
   });
 
-  it('marks the selected state for screen readers', async () => {
-    const view = await renderUi(<FocusAyah {...baseProps} selected />);
+  it('draws the filled Focus marker', async () => {
+    const view = await renderUi(<FocusAyah {...ayah} testID="focus" />);
 
-    expect(view.getByRole('button').props.accessibilityState).toMatchObject({ selected: true });
+    expect(flatStyle(view.getByTestId('focus-marker').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.brand,
+      height: themes.light.size.focusMarker,
+      width: themes.light.size.focusMarker,
+    });
+  });
+
+  it.each(locales)('labels the ayah with its Imla\'i text and number (%s)', async (locale) => {
+    const view = await renderUi(<FocusAyah {...ayah} testID="focus" />, { locale });
+
+    const label = locale === 'ar' ? 'إياك نعبد وإياك نستعين الآية ٥' : 'إياك نعبد وإياك نستعين Ayah 5';
+    expect(view.getByLabelText(label).props.accessibilityRole).toBe('text');
+  });
+
+  it('opens ayah actions from the marker', async () => {
+    const onOpenActions = jest.fn();
+    const view = await renderUi(<FocusAyah {...ayah} onOpenActions={onOpenActions} testID="focus" />);
+
+    const marker = view.getByTestId('focus-marker');
+    expect(marker.props.accessibilityRole).toBe('button');
+    await fireEvent.press(marker);
+    expect(onOpenActions).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the marker as plain text without an actions handler', async () => {
+    const view = await renderUi(<FocusAyah {...ayah} testID="focus" />);
+
+    expect(view.getByTestId('focus-marker').props.accessibilityRole).toBe('text');
   });
 
   it('has no raw colour literals', () => {
-    expect(rawColorLiteralsInFeature('src/features/reader/components/FocusAyah.tsx')).toEqual([]);
+    expect(featureComponentLiterals('features/reader/components/FocusAyah.tsx')).toEqual([]);
   });
 });

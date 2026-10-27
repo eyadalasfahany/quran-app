@@ -17,15 +17,18 @@ describe('text styles', () => {
     expect(quranText('quranReading')).toEqual({
       direction: 'ltr',
       fontFamily: 'AmiriQuran',
-      fontSize: 28,
-      lineHeight: 62,
+      fontSize: 27,
+      lineHeight: 57,
       textAlign: 'right',
       writingDirection: 'rtl',
     });
     const small = quranText('quranReading', 0.8);
-    expect(small.fontSize).toBeCloseTo(22.4);
-    expect(small.lineHeight).toBe(49);
+    expect(small.fontSize).toBeCloseTo(21.6);
+    expect(small.lineHeight).toBe(45);
     expect(Object.keys(bundledFonts)).toContain(quranText('quranWord').fontFamily);
+    expect(quranText('quranMushaf')).toMatchObject({ fontSize: 25, lineHeight: 59 });
+    expect(quranText('quranFocus')).toMatchObject({ fontSize: 38, lineHeight: 80 });
+    expect(quranText('quranFocusAside')).toMatchObject({ fontSize: 24, lineHeight: 48 });
   });
 
   it('ties interface text to its Dynamic Type style with a growth cap', () => {

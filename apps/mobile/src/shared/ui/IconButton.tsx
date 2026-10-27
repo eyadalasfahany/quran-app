@@ -1,3 +1,4 @@
+import { size } from '@quran/design-tokens';
 import { Pressable } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -5,7 +6,7 @@ import { useTheme } from '@/core/theme';
 import { GlassSurface } from './GlassSurface';
 import { Icon, type IconName } from './Icon';
 
-export const ICON_BUTTON_SIZE = 44;
+export const ICON_BUTTON_SIZE = size.touchTarget;
 
 export type IconButtonVariant = 'plain' | 'filled' | 'glass';
 
@@ -21,7 +22,6 @@ export function IconButton({
   icon: IconName;
   label: string;
   onPress: () => void;
-  // A toggle's on state (for example, the page is bookmarked), not the touch-down state.
   pressed?: boolean;
   variant?: IconButtonVariant;
   mirrorInRtl?: boolean;
@@ -41,9 +41,9 @@ export function IconButton({
         alignItems: 'center',
         backgroundColor: pressed || touching ? theme.colors.glassSelected : resting,
         borderRadius: theme.radius.pill,
-        height: ICON_BUTTON_SIZE,
+        height: theme.size.touchTarget,
         justifyContent: 'center',
-        width: ICON_BUTTON_SIZE,
+        width: theme.size.touchTarget,
       })}
       testID={testID}
     >

@@ -2,6 +2,7 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { themes } from '@/core/theme';
 import type { ChapterRecord } from '@/features/reader/data/chapters';
 
 import { ContinueReadingRow } from './ContinueReadingRow';
@@ -32,6 +33,17 @@ describe('ContinueReadingRow', () => {
     expect(view.getByText(/2:255/)).toBeOnTheScreen();
   });
 
+  it('draws the section title as an ink headline', async () => {
+    const view = await renderUi(
+      <ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} verseKey="2:255" />,
+    );
+
+    expect(flatStyle(view.getByText('تابع القراءة').props.style)).toMatchObject({
+      ...themes.light.text.headline,
+      color: themes.light.colors.ink,
+    });
+  });
+
   it('calls onPress when the row is pressed', async () => {
     const onPress = jest.fn();
     const view = await renderUi(
@@ -43,12 +55,23 @@ describe('ContinueReadingRow', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('labels the row button with the surah and position', async () => {
+    const view = await renderUi(
+      <ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} verseKey="2:255" />,
+    );
+
+    expect(view.getByTestId('index-continue-reading').props.accessibilityLabel).toBe(
+      'Al-Baqarah, البقرة · 2:255 · 255',
+    );
+  });
+
   it.each(locales)('renders under %s locale', async (locale) => {
     const view = await renderUi(
       <ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} verseKey="2:255" />,
       { locale },
     );
 
+    expect(view.getByText(locale === 'ar' ? 'تابع القراءة' : 'Continue reading')).toBeOnTheScreen();
     expect(flatStyle(view.getByText('Al-Baqarah').props.style).fontFamily).toBeDefined();
   });
 

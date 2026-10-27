@@ -3,22 +3,11 @@ import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
+import { highlightFill, type HighlightColor } from './highlight';
 import { Icon } from './Icon';
 import { useContrastColors } from './useContrastColors';
 
-export type HighlightColor = 'gold' | 'green' | 'blue' | 'rose';
-
-const DOT = 28;
-const RING_GAP = 3;
-const RING_WIDTH = 2;
 const CHECK = { ios: 'checkmark', android: 'check' } as const;
-
-const fills = {
-  gold: 'highlightGold',
-  green: 'highlightGreen',
-  blue: 'highlightBlue',
-  rose: 'highlightRose',
-} as const;
 
 // Selection is a ring and a check mark, never colour alone; the label names the colour.
 export function HighlightSwatch({
@@ -35,7 +24,9 @@ export function HighlightSwatch({
   const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
-  const ring = DOT + 2 * (RING_GAP + RING_WIDTH);
+  const dot = theme.size.swatch;
+  const ringWidth = theme.stroke.selectedRing;
+  const ring = dot + 2 * (theme.size.selectedRingGap + ringWidth);
 
   return (
     <Pressable
@@ -43,7 +34,12 @@ export function HighlightSwatch({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={{ alignItems: 'center', height: 44, justifyContent: 'center', width: 44 }}
+      style={{
+        alignItems: 'center',
+        height: theme.size.touchTarget,
+        justifyContent: 'center',
+        width: theme.size.touchTarget,
+      }}
       testID={testID}
     >
       <View
@@ -51,7 +47,7 @@ export function HighlightSwatch({
           alignItems: 'center',
           borderColor: selected ? theme.colors.ink : 'transparent',
           borderRadius: ring / 2,
-          borderWidth: RING_WIDTH,
+          borderWidth: ringWidth,
           height: ring,
           justifyContent: 'center',
           width: ring,
@@ -61,17 +57,17 @@ export function HighlightSwatch({
         <View
           style={{
             alignItems: 'center',
-            backgroundColor: theme.colors[fills[color]],
+            backgroundColor: highlightFill(theme.colors, color),
             borderColor: colors.lineStrong,
-            borderRadius: DOT / 2,
-            borderWidth: 1.5,
-            height: DOT,
+            borderRadius: dot / 2,
+            borderWidth: theme.stroke.swatch,
+            height: dot,
             justifyContent: 'center',
-            width: DOT,
+            width: dot,
           }}
           testID={testID ? `${testID}-dot` : undefined}
         >
-          {selected ? <Icon color={theme.colors.ink} name={CHECK} size={17} testID="highlight-swatch-check" /> : null}
+          {selected ? <Icon color={theme.colors.ink} name={CHECK} size={theme.size.swatchCheck} testID="highlight-swatch-check" /> : null}
         </View>
       </View>
     </Pressable>

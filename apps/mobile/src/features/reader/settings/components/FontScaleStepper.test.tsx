@@ -1,5 +1,8 @@
+import { quranTypeScale } from '@quran/design-tokens';
 import * as Haptics from 'expo-haptics';
 import { fireEvent } from '@testing-library/react-native';
+
+import { quranFontFamily, themes } from '@/core/theme';
 
 import { rawColorLiteralsInFeature } from '../../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../../jest/render-ui';
@@ -40,6 +43,28 @@ describe('FontScaleStepper', () => {
   it('disables the ends of the range', async () => {
     const view = await renderUi(<FontScaleStepper onChange={() => undefined} value={0.8} />);
     expect(view.getByTestId('reader-font-decrease').props.accessibilityState).toEqual({ disabled: true });
+    expect(view.getByTestId('reader-font-increase').props.accessibilityState).toEqual({ disabled: false });
+  });
+
+  it('draws round 44 pt step buttons and dims the disabled end', async () => {
+    const { size, opacity, radius } = themes.light;
+    const view = await renderUi(<FontScaleStepper onChange={() => undefined} value={0.8} />);
+    const decrease = flatStyle(view.getByTestId('reader-font-decrease').props.style);
+    const increase = flatStyle(view.getByTestId('reader-font-increase').props.style);
+
+    expect(increase).toMatchObject({ borderRadius: radius.pill, height: size.touchTarget, opacity: 1, width: size.touchTarget });
+    expect(decrease.opacity).toBe(opacity.disabled);
+  });
+
+  it('previews the ayah in the Quran font at the chosen scale, unscaled by the system size', async () => {
+    const view = await renderUi(<FontScaleStepper onChange={() => undefined} previewText="ٱلْحَمْدُ" value={1.2} />);
+    const preview = view.getByTestId('reader-font-preview');
+
+    expect(preview.props.allowFontScaling).toBe(false);
+    expect(flatStyle(preview.props.style)).toMatchObject({
+      fontFamily: quranFontFamily,
+      fontSize: quranTypeScale.quranReading.size * 1.2,
+    });
   });
 
   it('has no raw colour literals', () => {

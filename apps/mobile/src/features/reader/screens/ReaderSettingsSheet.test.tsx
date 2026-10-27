@@ -3,7 +3,8 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
-import { renderUi } from '../../../../jest/render-ui';
+import { locales, renderUi } from '../../../../jest/render-ui';
+import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { resetReaderSettingsStore, useReaderSettings } from '../settings';
 import { ReaderSettingsSheet } from './ReaderSettingsSheet';
 
@@ -32,9 +33,16 @@ describe('ReaderSettingsSheet', () => {
     expect(useReaderSettings.getState().fontScale).toBe(1.1);
     expect(view.getByTestId('reader-font-preview')).toHaveTextContent('ٱلْحَمْدُ');
 
-    await fireEvent.press(view.getByTestId('reader-translation-12'));
+    await fireEvent(view.getByTestId('reader-translation-12'), 'valueChange', true);
     expect(useReaderSettings.getState().translationIds).toEqual([12]);
     expect(useReaderSettings.getState().translationsChosen).toBe(true);
+  });
+
+  it.each(locales)('titles the sheet and labels its close button in %s', async (locale) => {
+    const view = await renderUi(<ReaderSettingsSheet previewText="ٱلْحَمْدُ" translations={translations} />, { locale });
+
+    expect(view.getByTestId('reader-settings-title')).toHaveTextContent(locale === 'ar' ? 'إعدادات القراءة' : 'Reading settings');
+    expect(view.getByTestId('reader-settings-close').props.accessibilityRole).toBe('button');
   });
 
   it('closes with the sheet close button', async () => {
@@ -43,5 +51,9 @@ describe('ReaderSettingsSheet', () => {
     await fireEvent.press(view.getByTestId('reader-settings-close'));
 
     expect(router.back).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses theme tokens only', () => {
+    expect(featureComponentLiterals('features/reader/screens/ReaderSettingsSheet.tsx')).toEqual([]);
   });
 });

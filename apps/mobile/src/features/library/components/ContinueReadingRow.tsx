@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import type { ChapterRecord } from '@/features/reader/data/chapters';
-import { ListRow, uiTextProps } from '@/shared/ui';
+import { ListRow, UiText } from '@/shared/ui';
 
 export function ContinueReadingRow({
   chapter,
@@ -23,9 +23,7 @@ export function ContinueReadingRow({
 
   return (
     <View style={{ gap: theme.space[2], paddingBottom: theme.space[3] }}>
-      <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-        {t('library.index.continueReading')}
-      </Text>
+      <UiText variant="headline">{t('library.index.continueReading')}</UiText>
       <ListRow
         onPress={onPress}
         separator="strong"

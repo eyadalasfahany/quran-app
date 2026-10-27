@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { ListRow, uiTextProps, useContrastColors } from '@/shared/ui';
+import { IconButton, ListRow, UiText } from '@/shared/ui';
+
+const REMOVE = { ios: 'xmark', android: 'close' } as const;
 
 export function RecentSearches({
   queries,
@@ -17,7 +19,6 @@ export function RecentSearches({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const colors = useContrastColors();
 
   if (queries.length === 0) {
     return null;
@@ -25,9 +26,7 @@ export function RecentSearches({
 
   return (
     <View style={{ gap: theme.space[2] }} testID={testID}>
-      <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-        {t('search.recentTitle')}
-      </Text>
+      <UiText variant="headline">{t('search.recentTitle')}</UiText>
       {queries.map((query) => (
         <ListRow
           key={query}
@@ -36,18 +35,12 @@ export function RecentSearches({
           testID={testID ? `${testID}-${query}` : undefined}
           title={query}
           trailing={
-            <Pressable
-              accessibilityLabel={t('search.removeRecent', { query })}
-              accessibilityRole="button"
-              hitSlop={8}
+            <IconButton
+              icon={REMOVE}
+              label={t('search.removeRecent', { query })}
               onPress={() => onRemove(query)}
-              style={{ alignItems: 'center', justifyContent: 'center', minHeight: 44, minWidth: 44 }}
               testID={testID ? `${testID}-remove-${query}` : undefined}
-            >
-              <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: colors.inkMuted }]}>
-                ×
-              </Text>
-            </Pressable>
+            />
           }
         />
       ))}

@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View, type PressableStateCallbackType, type ViewStyle } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { quranText, uiTextProps } from '@/shared/ui';
+import { QuranText, UiText } from '@/shared/ui';
 
 import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP } from '../../settings-model';
+
+const PERCENT_MIN_WIDTH = 64;
 
 export function FontScaleStepper({
   value,
@@ -31,11 +33,21 @@ export function FontScaleStepper({
     onChange(next);
   };
 
+  const stepStyle =
+    (disabled: boolean) =>
+    ({ pressed }: PressableStateCallbackType): ViewStyle => ({
+      alignItems: 'center',
+      backgroundColor: pressed ? theme.colors.glassSelected : theme.colors.fillSecondary,
+      borderRadius: theme.radius.pill,
+      height: theme.size.touchTarget,
+      justifyContent: 'center',
+      opacity: disabled ? theme.opacity.disabled : 1,
+      width: theme.size.touchTarget,
+    });
+
   return (
     <View style={{ gap: theme.space[3] }} testID={testID}>
-      <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-        {t('reader.settings.fontScale')}
-      </Text>
+      <UiText variant="headline">{t('reader.settings.fontScale')}</UiText>
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3] }}>
         <Pressable
           accessibilityLabel={t('reader.settings.decreaseFont')}
@@ -43,57 +55,35 @@ export function FontScaleStepper({
           accessibilityState={{ disabled: atMin }}
           disabled={atMin}
           onPress={() => step(-1)}
-          style={{
-            alignItems: 'center',
-            backgroundColor: theme.colors.fillSecondary,
-            borderRadius: theme.radius.pill,
-            height: 44,
-            justifyContent: 'center',
-            width: 44,
-          }}
+          style={stepStyle(atMin)}
           testID="reader-font-decrease"
         >
-          <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-            أ−
-          </Text>
+          <UiText variant="headline">أ−</UiText>
         </Pressable>
-        <Text
-          {...uiTextProps('body')}
+        <UiText
           accessibilityLabel={percentLabel}
-          style={[theme.text.body, { color: theme.colors.ink, minWidth: 64, textAlign: 'center' }]}
+          align="center"
+          style={{ minWidth: PERCENT_MIN_WIDTH }}
           testID="reader-font-percent"
         >
           {percentLabel}
-        </Text>
+        </UiText>
         <Pressable
           accessibilityLabel={t('reader.settings.increaseFont')}
           accessibilityRole="button"
           accessibilityState={{ disabled: atMax }}
           disabled={atMax}
           onPress={() => step(1)}
-          style={{
-            alignItems: 'center',
-            backgroundColor: theme.colors.fillSecondary,
-            borderRadius: theme.radius.pill,
-            height: 44,
-            justifyContent: 'center',
-            width: 44,
-          }}
+          style={stepStyle(atMax)}
           testID="reader-font-increase"
         >
-          <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-            أ+
-          </Text>
+          <UiText variant="headline">أ+</UiText>
         </Pressable>
       </View>
       {previewText ? (
-        <Text
-          allowFontScaling={false}
-          style={[quranText('quranReading', value), { color: theme.colors.ink, textAlign: 'center', writingDirection: 'rtl' }]}
-          testID="reader-font-preview"
-        >
+        <QuranText align="center" fontScale={value} testID="reader-font-preview" variant="quranReading">
           {previewText}
-        </Text>
+        </QuranText>
       ) : null}
     </View>
   );

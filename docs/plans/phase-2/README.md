@@ -16,6 +16,7 @@ Progress and the handoff for the next agent are in [`../phase-2.md`](../phase-2.
 | 8 | [step-08-index-and-search.md](step-08-index-and-search.md) | 1, 2 | Done. Working tree, not committed |
 | 9 | [step-09-reader-settings.md](step-09-reader-settings.md) | 1, 4 | Next. Runs with step 6 |
 | 10 | [step-10-exit-check.md](step-10-exit-check.md) | all | |
+| 11 | [step-11-design-conformance.md](step-11-design-conformance.md) | 1–9 | 11a done; 11b next |
 
 ## Rules for every step
 
@@ -65,7 +66,7 @@ The `#tablet-reader` drawings predate ADR 0012 and are being updated. Where a fr
 | Name | Value | Meaning |
 | --- | --- | --- |
 | `READING_COLUMN_MAX` | 720 | Reading and Focus column cap (spec §4) |
-| `MUSHAF_PAGE_MAX` | 640 | Mushaf page width cap |
+| `MUSHAF_PAGE_MAX` | 600 | Mushaf page width cap (ADR 0013) |
 | `SIDE_PANEL_WIDTH` | 380 | Expanded side panel |
 | `PANEL_DOCK_MIN_WIDTH` | 1100 | At or above: the panel docks beside the page; 840–1,099: it overlays the page |
 

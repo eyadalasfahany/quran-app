@@ -18,7 +18,23 @@ describe('SurahCartouche', () => {
     const view = await renderUi(<SurahCartouche name="سورة البقرة" testID="banner" />, { theme });
 
     expect(flatStyle(view.getByTestId('banner').props.style).borderColor).toBe(themes[theme].colors.gold);
-    expect(flatStyle(view.getByTestId('banner-frame').props.style).borderColor).toBe(themes[theme].colors.gold);
+    expect(flatStyle(view.getByTestId('banner-inner').props.style).borderColor).toBe(themes[theme].colors.gold);
+  });
+
+  it('draws the band frame: hairline outer ring and a thinner inner ring', async () => {
+    const view = await renderUi(<SurahCartouche name="سورة البقرة" testID="banner" />);
+    const { size, stroke } = themes.light;
+
+    expect(flatStyle(view.getByTestId('banner').props.style)).toMatchObject({
+      borderRadius: size.bandRadius,
+      borderWidth: stroke.hairline,
+      padding: size.bandInset,
+    });
+    expect(flatStyle(view.getByTestId('banner-inner').props.style)).toMatchObject({
+      borderRadius: size.bandInnerRadius,
+      borderWidth: stroke.frameInner,
+      minHeight: 44,
+    });
   });
 
   it.each(locales)('centres the name right to left in %s', async (locale) => {

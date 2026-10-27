@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { GlassSurface, uiTextProps } from '@/shared/ui';
+import { GlassSurface, UiText } from '@/shared/ui';
 
 export function ResumePill({ onPress, testID = 'reader-resume' }: { onPress: () => void; testID?: string }) {
   const { t } = useTranslation();
@@ -18,13 +18,13 @@ export function ResumePill({ onPress, testID = 'reader-resume' }: { onPress: () 
         style={{
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: 44,
+          minHeight: theme.size.touchTarget,
           paddingHorizontal: theme.space[4],
         }}
       >
-        <Text {...uiTextProps('subhead', 'bar')} style={[theme.text.subhead, { color: theme.colors.ink }]}>
+        <UiText scale="bar" variant="subhead">
           {label}
-        </Text>
+        </UiText>
       </Pressable>
     </GlassSurface>
   );

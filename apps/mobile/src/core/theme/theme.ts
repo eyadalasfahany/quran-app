@@ -1,9 +1,12 @@
 import {
   blur,
   colors,
+  opacity,
   radius,
   shadows,
+  size,
   space,
+  stroke,
   themeNames,
   typeScale,
   type ColorTokens,
@@ -25,6 +28,9 @@ export type Theme = {
   shadows: ShadowTokens;
   space: typeof space;
   radius: typeof radius;
+  size: typeof size;
+  stroke: typeof stroke;
+  opacity: typeof opacity;
   blur: typeof blur;
   text: Record<UiTypeToken, TextStyle>;
 };
@@ -36,14 +42,25 @@ const uiTypeTokens = (Object.keys(typeScale) as TypeToken[]).filter(
 function uiText(): Record<UiTypeToken, TextStyle> {
   return Object.fromEntries(
     uiTypeTokens.map((token) => {
-      const { size, lineHeight, weight } = typeScale[token];
-      return [token, { fontFamily: uiFontFamilies[weight], fontSize: size, lineHeight }];
+      const { size: fontSize, lineHeight, weight } = typeScale[token];
+      return [token, { fontFamily: uiFontFamilies[weight], fontSize, lineHeight }];
     }),
   ) as Record<UiTypeToken, TextStyle>;
 }
 
 function createTheme(name: ThemeName): Theme {
-  return { name, colors: colors[name], shadows: shadows[name], space, radius, blur, text: uiText() };
+  return {
+    name,
+    colors: colors[name],
+    shadows: shadows[name],
+    space,
+    radius,
+    size,
+    stroke,
+    opacity,
+    blur,
+    text: uiText(),
+  };
 }
 
 export const themes = Object.fromEntries(themeNames.map((name) => [name, createTheme(name)])) as Record<

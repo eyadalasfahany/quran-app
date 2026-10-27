@@ -1,0 +1,42 @@
+import { fireEvent } from '@testing-library/react-native';
+
+import { locales, renderUi } from '../../../jest/render-ui';
+import { rawColorLiterals } from '../../../jest/ui-source';
+
+import { ToggleRow } from './ToggleRow';
+
+describe('ToggleRow', () => {
+  it('renders a labelled platform switch with its state', async () => {
+    const view = await renderUi(<ToggleRow onValueChange={() => undefined} testID="toggle" title="ترجمة ٢٠" value />);
+    const toggle = view.getByRole('switch', { name: 'ترجمة ٢٠' });
+
+    expect(toggle.props.value).toBe(true);
+    expect(toggle.props.accessibilityState).toEqual({ checked: true });
+  });
+
+  it('includes the subtitle in the label', async () => {
+    const view = await renderUi(
+      <ToggleRow onValueChange={() => undefined} subtitle="صحيح انترناشونال" title="الإنجليزية" value={false} />,
+    );
+
+    expect(view.getByRole('switch', { name: 'الإنجليزية, صحيح انترناشونال' })).toBeOnTheScreen();
+  });
+
+  it('reports a change', async () => {
+    const onValueChange = jest.fn();
+    const view = await renderUi(<ToggleRow onValueChange={onValueChange} testID="toggle" title="t" value={false} />);
+
+    await fireEvent(view.getByTestId('toggle'), 'valueChange', true);
+    expect(onValueChange).toHaveBeenCalledWith(true);
+  });
+
+  it.each(locales)('renders under %s', async (locale) => {
+    const view = await renderUi(<ToggleRow onValueChange={() => undefined} title="title" value />, { locale });
+
+    expect(view.getByRole('switch')).toBeOnTheScreen();
+  });
+
+  it('has no raw colour literals', () => {
+    expect(rawColorLiterals('ToggleRow.tsx')).toEqual([]);
+  });
+});

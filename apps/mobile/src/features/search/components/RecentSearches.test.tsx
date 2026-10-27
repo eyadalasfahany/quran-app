@@ -1,7 +1,8 @@
 import { fireEvent } from '@testing-library/react-native';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { themes } from '@/core/theme';
 
 import { RecentSearches } from './RecentSearches';
 
@@ -12,6 +13,19 @@ describe('RecentSearches', () => {
     );
 
     expect(view.queryByTestId('recent')).toBeNull();
+  });
+
+  it('renders the section title and one row per query', async () => {
+    const view = await renderUi(
+      <RecentSearches onRemove={() => undefined} onSelect={() => undefined} queries={['الرحمن', 'الكهف']} />,
+    );
+
+    expect(flatStyle(view.getByText('عمليات البحث الأخيرة').props.style)).toMatchObject({
+      ...themes.light.text.headline,
+      color: themes.light.colors.ink,
+    });
+    expect(view.getByText('الرحمن')).toBeOnTheScreen();
+    expect(view.getByText('الكهف')).toBeOnTheScreen();
   });
 
   it('calls onSelect when a query row is pressed', async () => {
@@ -36,6 +50,20 @@ describe('RecentSearches', () => {
     expect(onRemove).toHaveBeenCalledWith('الرحمن');
   });
 
+  it('draws the remove control as a labelled icon button with a touch-sized target', async () => {
+    const view = await renderUi(
+      <RecentSearches onRemove={() => undefined} onSelect={() => undefined} queries={['الرحمن']} testID="recent" />,
+    );
+    const remove = view.getByRole('button', { name: 'إزالة الرحمن' });
+
+    expect(remove.props.testID).toBe('recent-remove-الرحمن');
+    expect(flatStyle(remove.props.style)).toMatchObject({
+      height: themes.light.size.touchTarget,
+      width: themes.light.size.touchTarget,
+    });
+    expect(view.queryByText('×')).toBeNull();
+  });
+
   it.each(locales)('renders under %s', async (locale) => {
     const view = await renderUi(
       <RecentSearches onRemove={() => undefined} onSelect={() => undefined} queries={['الرحمن']} />,
@@ -43,6 +71,7 @@ describe('RecentSearches', () => {
     );
 
     expect(view.getByText('الرحمن')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: locale === 'ar' ? 'إزالة الرحمن' : 'Remove الرحمن' })).toBeOnTheScreen();
   });
 
   it('has no raw colour literals', () => {

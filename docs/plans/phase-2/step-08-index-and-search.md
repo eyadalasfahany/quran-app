@@ -15,7 +15,7 @@ Follow [README.md](README.md). Needs steps 1 and 2 committed. Read also:
 ## Index (`src/features/library/`)
 
 **Components, each with its own test:**
-- **`SurahRow`:** number, Arabic name (Amiri), transliterated name, revelation place and ayah count, as a `ListRow`.
+- **`SurahRow`:** number, Arabic name (Amiri) as the title, revelation place and ayah count, as a `ListRow`. No transliterated name (the frame, ADR 0013).
 - **`JuzRow`:** juz number and start verse.
 - **`IndexSegment`:** a `SegmentedControl` switching surahs and juz.
 

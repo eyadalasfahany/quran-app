@@ -1,13 +1,13 @@
 import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
 import { useTheme } from '@/core/theme';
 import { listInstalledTranslations } from '@/features/reader/data/translations';
 import { getVerseByKey } from '@/features/reader/data/verses';
-import { IconButton, uiTextProps } from '@/shared/ui';
+import { SheetHeader } from '@/shared/ui';
 
 import { SheetFrame } from '../components/SheetFrame';
 import { useReaderSettings } from '../settings';
@@ -15,8 +15,6 @@ import { FontScaleStepper } from '../settings/components/FontScaleStepper';
 import { ModePicker } from '../settings/components/ModePicker';
 import { ThemePicker } from '../settings/components/ThemePicker';
 import { TranslationToggleList, type TranslationChoice } from '../settings/components/TranslationToggleList';
-
-const CLOSE = { ios: 'xmark', android: 'close' } as const;
 
 function loadInstalledTranslations(labelFor: (id: number) => string): TranslationChoice[] {
   try {
@@ -61,24 +59,13 @@ export function ReaderSettingsSheet({
 
   return (
     <SheetFrame testID="reader-settings-sheet">
-      <View
-        style={{
-          alignItems: 'center',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          paddingHorizontal: theme.space[4],
-          paddingTop: theme.space[5],
-        }}
-      >
-        <Text {...uiTextProps('title')} accessibilityRole="header" style={[theme.text.title, { color: theme.colors.ink }]}>
-          {t('reader.settings.title')}
-        </Text>
-        <IconButton
-          icon={CLOSE}
-          label={t('reader.settings.close')}
-          onPress={() => router.back()}
-          testID="reader-settings-close"
-          variant="filled"
+      <View style={{ paddingHorizontal: theme.space[4], paddingTop: theme.space[5] }}>
+        <SheetHeader
+          closeLabel={t('reader.settings.close')}
+          onClose={() => router.back()}
+          size="large"
+          testID="reader-settings"
+          title={t('reader.settings.title')}
         />
       </View>
       <ScrollView

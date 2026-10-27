@@ -2,6 +2,7 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { themes } from '@/core/theme';
 
 import { SearchShowMore } from './SearchShowMore';
 
@@ -10,6 +11,17 @@ describe('SearchShowMore', () => {
     const view = await renderUi(<SearchShowMore onPress={() => undefined} />);
 
     expect(view.getByText(/Show more|عرض المزيد/)).toBeOnTheScreen();
+  });
+
+  it('is a full-width ghost button with a touch-sized target', async () => {
+    const view = await renderUi(<SearchShowMore onPress={() => undefined} />);
+
+    expect(flatStyle(view.getByTestId('search-show-more').props.style)).toMatchObject({
+      alignSelf: 'stretch',
+      backgroundColor: 'transparent',
+      minHeight: themes.light.size.touchTarget,
+      paddingVertical: themes.light.space[4],
+    });
   });
 
   it('calls onPress when pressed', async () => {
@@ -21,11 +33,15 @@ describe('SearchShowMore', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it.each(locales)('uses brand colour for the label (%s)', async (locale) => {
+  it.each(locales)('labels the button and draws the label in brand (%s)', async (locale) => {
+    const label = locale === 'ar' ? 'عرض المزيد' : 'Show more';
     const view = await renderUi(<SearchShowMore onPress={() => undefined} />, { locale });
 
-    const label = view.getByText(/Show more|عرض المزيد/);
-    expect(flatStyle(label.props.style).color).toBeDefined();
+    expect(view.getByRole('button', { name: label })).toBeOnTheScreen();
+    expect(flatStyle(view.getByText(label).props.style)).toMatchObject({
+      ...themes.light.text.headline,
+      color: themes.light.colors.brand,
+    });
   });
 
   it('has no raw colour literals', () => {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
@@ -8,7 +8,7 @@ import { openUserDb } from '@/core/db/user/open';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import type { UserStore } from '@/features/library/data';
-import { uiTextProps } from '@/shared/ui';
+import { UiText } from '@/shared/ui';
 
 import type { PanelTab } from '../selection';
 import { useReaderSettings } from '../settings';
@@ -113,9 +113,9 @@ export function AyahPanelContent({
   if (executor === null || data === null) {
     return (
       <View testID={testID}>
-        <Text {...uiTextProps('headline')} accessibilityRole="header" style={[theme.text.headline, { color: theme.colors.ink }]}>
+        <UiText accessibilityRole="header" variant="headline">
           {verseKey}
-        </Text>
+        </UiText>
       </View>
     );
   }

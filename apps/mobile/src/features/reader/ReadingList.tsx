@@ -4,21 +4,20 @@ import {
   type ListRenderItemInfo,
   type ViewToken,
 } from '@shopify/flash-list';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
-import { timing } from '@/core/theme';
 import type { HighlightColor } from '@/features/library/data/model';
 
 import { BismillahLine } from './components/BismillahLine';
-import { FocusAyah } from './components/FocusAyah';
+import { MeasuredRow } from './components/MeasuredRow';
+import { ReaderModeFade } from './components/ReaderModeFade';
 import { ReadingAyahRow } from './components/ReadingAyahRow';
 import { SurahHeader } from './components/SurahHeader';
 import { readingColumnWidth } from './layout';
 import { estimateReadingRowHeight, heightCacheSignature, ReadingHeightCache } from './reading-heights';
-import type { ReadingListMode, ReadingRow, TranslationResourceMeta } from './reading-list-types';
+import type { ReadingRow, TranslationResourceMeta } from './reading-list-types';
 import {
   buildReadingRows,
   LAST_VERSE_ID,
@@ -29,7 +28,8 @@ import {
 } from './reading-window';
 
 export type ReadingListProps = {
-  mode: ReadingListMode;
+  // Focus mode renders FocusReader; this list only reads.
+  mode?: 'reading';
   anchorVerseKey: string;
   fontScale?: number;
   translationResourceIds?: readonly number[];
@@ -47,7 +47,6 @@ export type ReadingListProps = {
 };
 
 export function ReadingList({
-  mode,
   anchorVerseKey,
   fontScale = 1,
   translationResourceIds = [],
@@ -68,7 +67,6 @@ export function ReadingList({
   const listRef = useRef<FlashListRef<ReadingRow>>(null);
   const heightCache = useRef(new ReadingHeightCache());
   const topVerseKeyRef = useRef<string | null>(null);
-  const modeRef = useRef(mode);
   const [openedVerseKey, setOpenedVerseKey] = useState(anchorVerseKey);
   const [followedVerseKey, setFollowedVerseKey] = useState<string | null>(null);
   if (anchorVerseKey !== followedVerseKey && anchorVerseKey !== openedVerseKey) {
@@ -95,7 +93,7 @@ export function ReadingList({
     };
   }, [centerId, endExtendCount, startExtendCount]);
 
-  const signature = heightCacheSignature(columnWidth, fontScale, translationResourceIds, mode);
+  const signature = heightCacheSignature(columnWidth, fontScale, translationResourceIds, 'reading');
   useEffect(() => {
     heightCache.current.clearForSignature(signature);
   }, [signature]);
@@ -104,40 +102,25 @@ export function ReadingList({
     return buildReadingRows(executor, windowRange.fromId, windowRange.toId, translationResourceIds, translationMetaMap);
   }, [executor, translationMetaMap, translationResourceIds, windowRange.fromId, windowRange.toId]);
 
-  const focusBlockHeight = Math.max(320, windowHeight - topInset - bottomInset);
-  const modeOpacity = useSharedValue(1);
-
-  useEffect(() => {
-    modeOpacity.value = 0;
-    modeOpacity.value = withTiming(1, timing('standard'));
-  }, [mode, modeOpacity]);
-
-  const fadeStyle = useAnimatedStyle(() => ({
-    opacity: modeOpacity.value,
-  }));
+  const viewportHeight = Math.max(320, windowHeight - topInset - bottomInset);
 
   useLayoutEffect(() => {
-    const modeChanged = modeRef.current !== mode;
-    modeRef.current = mode;
     const openedChanged = openedVerseRef.current !== openedVerseKey;
     openedVerseRef.current = openedVerseKey;
     // The screen echoes the ayah a scroll just revealed. Pinning that ayah to the
     // top is what made a small drag jump.
-    if (!modeChanged && !openedChanged && followedVerseKey !== null && anchorVerseKey === followedVerseKey) {
+    if (!openedChanged && followedVerseKey !== null && anchorVerseKey === followedVerseKey) {
       return;
     }
-    if (!modeChanged && !openedChanged && followedVerseKey !== null && anchorVerseKey === openedVerseKey) {
+    if (!openedChanged && followedVerseKey !== null && anchorVerseKey === openedVerseKey) {
       return;
     }
-    const targetKey = modeChanged ? (topVerseKeyRef.current ?? anchorVerseKey) : anchorVerseKey;
-    const index = rows.findIndex((row) => row.type === 'ayah' && row.verse.verseKey === targetKey);
+    const index = rows.findIndex((row) => row.type === 'ayah' && row.verse.verseKey === anchorVerseKey);
     if (index >= 0 && typeof listRef.current?.scrollToIndex === 'function') {
-      if (!modeChanged) {
-        topVerseKeyRef.current = anchorVerseKey;
-      }
+      topVerseKeyRef.current = anchorVerseKey;
       listRef.current.scrollToIndex({ animated: false, index });
     }
-  }, [anchorVerseKey, followedVerseKey, mode, openedVerseKey, rows]);
+  }, [anchorVerseKey, followedVerseKey, openedVerseKey, rows]);
 
   const prevLayoutSignature = useRef<string | null>(null);
   useLayoutEffect(() => {
@@ -208,41 +191,18 @@ export function ReadingList({
     }
 
     const { verse } = item;
-    const highlightColor = highlightsByVerseId.get(verse.id) ?? null;
     const selected = selectedVerseKey === verse.verseKey;
     const recited = recitedVerseKey === verse.verseKey;
     const openActions = () => onOpenAyahActions(verse.verseKey);
-    const select = () => onSelectVerseKey(verse.verseKey);
-
-    if (mode === 'focus') {
-      return (
-        <MeasuredRow fixedHeight={focusBlockHeight} rowKey={item.key} onHeight={recordHeight}>
-          <FocusAyah
-            blockHeight={focusBlockHeight}
-            fontScale={fontScale}
-            highlightColor={highlightColor}
-            onLongPress={openActions}
-            onOpenActions={openActions}
-            onPress={select}
-            recited={recited}
-            selected={selected}
-            testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
-            textImlaei={verse.textImlaei}
-            textUthmani={verse.textUthmani}
-            verseNumber={verse.verseNumber}
-          />
-        </MeasuredRow>
-      );
-    }
 
     return (
       <MeasuredRow rowKey={item.key} onHeight={recordHeight}>
         <ReadingAyahRow
           fontScale={fontScale}
-          highlightColor={highlightColor}
+          highlightColor={highlightsByVerseId.get(verse.id) ?? null}
           onLongPress={openActions}
           onOpenActions={openActions}
-          onPress={select}
+          onPress={() => onSelectVerseKey(verse.verseKey)}
           recited={recited}
           selected={selected}
           testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
@@ -258,17 +218,16 @@ export function ReadingList({
 
   const overrideItemLayout = (layout: { span?: number; size?: number }, item: ReadingRow) => {
     const cached = heightCache.current.get(item.key);
-    layout.size = cached ?? estimateReadingRowHeight(mode, focusBlockHeight);
+    layout.size = cached ?? estimateReadingRowHeight('reading', viewportHeight);
   };
 
   return (
-    <Animated.View style={[{ flex: 1, width: '100%' }, fadeStyle]}>
+    <ReaderModeFade mode="reading" testID={`${testID ?? 'reading-list'}-fade`}>
       <View style={{ alignItems: 'center', flex: 1, width: '100%' }}>
         <View style={{ flex: 1, maxWidth: columnWidth, width: '100%' }}>
           <FlashList
             data={rows}
-            drawDistance={focusBlockHeight * 2}
-            key={mode}
+            drawDistance={viewportHeight * 2}
             keyExtractor={(item) => item.key}
             maintainVisibleContentPosition={{ autoscrollToTopThreshold: 10 }}
             onEndReached={extendEnd}
@@ -284,29 +243,6 @@ export function ReadingList({
           />
         </View>
       </View>
-    </Animated.View>
-  );
-}
-
-function MeasuredRow({
-  rowKey,
-  onHeight,
-  fixedHeight,
-  children,
-}: {
-  rowKey: string;
-  onHeight: (rowKey: string, height: number) => void;
-  fixedHeight?: number;
-  children: ReactNode;
-}) {
-  return (
-    <View
-      onLayout={(event) => {
-        onHeight(rowKey, fixedHeight ?? event.nativeEvent.layout.height);
-      }}
-      style={fixedHeight === undefined ? undefined : { height: fixedHeight }}
-    >
-      {children}
-    </View>
+    </ReaderModeFade>
   );
 }

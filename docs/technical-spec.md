@@ -238,13 +238,13 @@ Layout is driven by the window's width class from `useWindowDimensions`, never b
 | Window class | Width (dp/pt) | Typical cases | Navigation | Reader | Ayah actions, tafsir, translations | Player |
 | --- | --- | --- | --- | --- | --- | --- |
 | Compact | under 600 | Phones, folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs | Full width | Bottom sheets | Mini-player bar, full-screen player |
-| Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (formSheet on iPad) | Mini-player bar, full-screen player |
+| Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (a 560-wide card, ADR 0013) | Mini-player bar, full-screen player |
 | Expanded | 840 and up | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | Sidebar | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player in the sidebar footer; full player as a modal |
 
 - **`useWindowClass()`** returns `compact | medium | expanded` with a small hysteresis (±16) so a resize near a boundary doesn't flicker.
 - **`AdaptiveSplit`** renders one pane in compact and medium, and two panes in expanded. The ayah and tafsir routes render into the side pane when it exists and as sheets otherwise, so the routes don't change between form factors.
 - **Reading column width:** Reading and Focus modes cap the Quran text column at about 720 pt and center it; long Arabic lines on a 13-inch iPad are hard to track.
-- **Mushaf page sizing:** page-exact mode keeps 15 lines per page. Page width is `min(window width − gutters, 640)` and the QCF font size is derived from that width, so a page never re-wraps; wide windows show the page centered with margin, not stretched.
+- **Mushaf page sizing:** page-exact mode keeps 15 lines per page. Page width is `min(window width − gutters, 600)` (the tablet frames, ADR 0013) and the QCF font size is derived from that width, so a page never re-wraps; wide windows show the page centered with margin, not stretched.
 - **Fold, unfold, rotate and resize keep your place.** `useReadingAnchor` records the top visible verse key; on a size change the FlashList re-measures and scrolls back to that verse. Nothing is reloaded.
 - **Hinge:** v1 treats an unfolded foldable as a normal medium or expanded window. A hinge-aware two-pane split, which needs a small native module wrapping Jetpack WindowManager, is a post-launch item (section 15).
 - **Orientation and multitasking config:** `orientation: "default"`, `ios.supportsTablet: true`, all four iPad orientations declared (required for Split View and Stage Manager), Android `resizeableActivity` left on. No orientation lock anywhere.
@@ -639,14 +639,14 @@ For each change, in one transaction per request:
 
 **Motion (reviewed against Apple's HIG on motion, accessibility and Liquid Glass)**
 
-- **Native first:** sheets, the full player and the tab bar use native components (Expo Router `formSheet` with detents, a modal, native tabs), which bring system motion, gesture tracking and Reduce Motion handling.
+- **Native first:** the full player and the tab bar use native components (a modal, native tabs), which bring system motion, gesture tracking and Reduce Motion handling. The reader sheets are custom cards drawn per frame, presented as a transparent modal with the stack's slide-up and swipe to dismiss (ADR 0013).
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
 
 | Interaction | Component | Motion | Reduce Motion |
 | --- | --- | --- | --- |
-| Ayah actions, tafsir, reader settings | Native form sheet | System | System |
+| Ayah actions, tafsir, reader settings | Transparent modal with a custom card (ADR 0013) | Stack slide-up | Stack handling |
 | Mini-player → full player | Pan gesture + `spring()` | Tracks the finger; springs open or closed on release | Fade, `slow` |
 | Tab change | Native tabs | System | System |
 | Tab bar minimize on scroll | Native tabs (iOS 26); Android's bar stays fixed | System | System |
@@ -800,7 +800,7 @@ One question blocks the build: whether QF accepts device copies served from our 
 - [ ] QF: approved QCF and IndoPak font files and exact credit wording.
 - [ ] QF: prelive returns only Al-Fatihah and Al-Baqarah. Is there a full prelive dataset, or when can we get production access to run the 6,236-ayah checksum? (Blocks the Phase 1 exit check.)
 - [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player, Settings and the sidebar. The 30 current screens are phone-only (390 pt).
-- [ ] Design: confirm the 640-wide page cap for Mushaf mode on large iPads, or design a larger page.
+- [x] Design: the Mushaf page cap on large iPads is 600, as drawn in the tablet frames (ADR 0013).
 - [x] Product: app name and bundle ID: **Taybah** («طيبة»), `com.taybahapp.taybah` (27 Oct 2026). Register `taybahapp.com` before launch.
 - [ ] HadeethEnc: written confirmation of app use (blocks Hadith launch only).
 

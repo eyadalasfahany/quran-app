@@ -1,9 +1,9 @@
 import * as Haptics from 'expo-haptics';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
-import { uiTextProps } from './textStyles';
+import { UiText } from './UiText';
 
 export type SegmentedOption<K extends string> = { key: K; label: string };
 
@@ -61,17 +61,14 @@ export function SegmentedControl<K extends string>({
               boxShadow: selected ? theme.shadows.raised : undefined,
               flex: 1,
               justifyContent: 'center',
-              minHeight: 44,
+              minHeight: theme.size.touchTarget,
               paddingHorizontal: theme.space[2],
             })}
             testID={testID ? `${testID}-${option.key}` : undefined}
           >
-            <Text
-              {...uiTextProps('subhead')}
-              style={[theme.text.subhead, { color: selected ? theme.colors.brand : theme.colors.ink, textAlign: 'center' }]}
-            >
+            <UiText align="center" tone={selected ? 'brand' : 'ink'} variant="subhead">
               {option.label}
-            </Text>
+            </UiText>
           </Pressable>
         );
       })}

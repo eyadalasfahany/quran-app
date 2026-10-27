@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { I18nManager, Pressable, View, useWindowDimensions } from 'react-native';
 
 import { useWindowClass, windowClassFor, type WindowClass } from '@/core/layout';
+import { useTheme } from '@/core/theme';
 
-import { PANEL_INSET, panelPlacementFor, panelStripWidth, SIDE_PANEL_WIDTH, type PanelPlacement } from '../layout';
+import { PANEL_INSET, panelPlacementFor, panelStripWidth, type PanelPlacement } from '../layout';
 
 export function AdaptiveReaderLayout({
   width,
@@ -18,6 +19,7 @@ export function AdaptiveReaderLayout({
   onCloseOverlay,
   toolbar,
   panel,
+  resume,
   children,
 }: {
   width?: number;
@@ -31,9 +33,12 @@ export function AdaptiveReaderLayout({
   onCloseOverlay: () => void;
   toolbar?: ReactNode;
   panel?: ReactNode;
+  // Floats centred at the bottom of the reading stage, above the mini player.
+  resume?: ReactNode;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const measuredWidth = useWindowDimensions().width;
   const liveClass = useWindowClass();
   const resolvedWidth = width ?? measuredWidth;
@@ -84,7 +89,18 @@ export function AdaptiveReaderLayout({
         }}
         testID="reader-stage"
       >
-        <View style={{ flex: 1 }}>{children}</View>
+        <View style={{ flex: 1 }}>
+          {children}
+          {resume ? (
+            <View
+              pointerEvents="box-none"
+              style={{ alignItems: 'center', bottom: theme.space[4], left: 0, position: 'absolute', right: 0 }}
+              testID="reader-resume-slot"
+            >
+              {resume}
+            </View>
+          ) : null}
+        </View>
         <View testID="reader-mini-player-slot" style={{ height: bottomInset }} />
       </View>
       {placement === 'overlay' && showPanel ? (
@@ -102,7 +118,7 @@ export function AdaptiveReaderLayout({
             bottom: bottomInset + PANEL_INSET,
             position: 'absolute',
             top: topInset + PANEL_INSET,
-            width: SIDE_PANEL_WIDTH,
+            width: theme.size.sidePanel,
             [trailing]: PANEL_INSET,
           }}
           testID="reader-panel-host"

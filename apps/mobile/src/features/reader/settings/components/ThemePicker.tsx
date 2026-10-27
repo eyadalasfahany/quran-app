@@ -1,10 +1,12 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { readAppearance, saveAppearance, themes, useTheme, type Appearance } from '@/core/theme';
-import { uiTextProps } from '@/shared/ui';
+import { UiText, useContrastColors } from '@/shared/ui';
+
+const OPTION_MIN_WIDTH = 64;
 
 const options = ['automatic', 'light', 'sepia', 'dark'] as const satisfies readonly Appearance[];
 
@@ -26,6 +28,7 @@ function useAppearance(): Appearance {
 export function ThemePicker({ testID = 'reader-theme-picker' }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const colors = useContrastColors();
   const appearance = useAppearance();
   const swatch = {
     automatic: theme.colors.fillSecondary,
@@ -36,9 +39,7 @@ export function ThemePicker({ testID = 'reader-theme-picker' }: { testID?: strin
 
   return (
     <View accessibilityLabel={t('reader.settings.themeLabel')} style={{ gap: theme.space[3] }} testID={testID}>
-      <Text {...uiTextProps('headline')} style={[theme.text.headline, { color: theme.colors.ink }]}>
-        {t('reader.settings.themeLabel')}
-      </Text>
+      <UiText variant="headline">{t('reader.settings.themeLabel')}</UiText>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[3] }}>
         {options.map((option) => {
           const selected = option === appearance;
@@ -53,8 +54,8 @@ export function ThemePicker({ testID = 'reader-theme-picker' }: { testID?: strin
               style={{
                 alignItems: 'center',
                 gap: theme.space[1],
-                minHeight: 44,
-                minWidth: 64,
+                minHeight: theme.size.touchTarget,
+                minWidth: OPTION_MIN_WIDTH,
                 paddingVertical: theme.space[1],
               }}
               testID={`reader-theme-${option}`}
@@ -62,16 +63,15 @@ export function ThemePicker({ testID = 'reader-theme-picker' }: { testID?: strin
               <View
                 style={{
                   backgroundColor: swatch[option],
-                  borderColor: selected ? theme.colors.brand : theme.colors.line,
+                  borderColor: selected ? theme.colors.brand : colors.line,
                   borderRadius: theme.radius.pill,
-                  borderWidth: selected ? 2 : 1,
-                  height: 28,
-                  width: 28,
+                  borderWidth: selected ? theme.stroke.selectedRing : theme.stroke.hairline,
+                  height: theme.size.swatch,
+                  width: theme.size.swatch,
                 }}
+                testID={`reader-theme-${option}-swatch`}
               />
-              <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: theme.colors.ink }]}>
-                {label}
-              </Text>
+              <UiText variant="caption">{label}</UiText>
             </Pressable>
           );
         })}

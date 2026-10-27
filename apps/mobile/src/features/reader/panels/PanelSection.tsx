@@ -1,19 +1,17 @@
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { uiTextProps } from '@/shared/ui';
-import { useContrastColors } from '@/shared/ui/useContrastColors';
+import { UiText } from '@/shared/ui';
 
 export function PanelSection({ title, children, testID }: { title: string; children: ReactNode; testID?: string }) {
   const theme = useTheme();
-  const colors = useContrastColors();
 
   return (
     <View style={{ gap: theme.space[2] }} testID={testID}>
-      <Text {...uiTextProps('caption')} accessibilityRole="header" style={[theme.text.caption, { color: colors.inkMuted }]}>
+      <UiText accessibilityRole="header" tone="muted" variant="caption">
         {title}
-      </Text>
+      </UiText>
       {children}
     </View>
   );

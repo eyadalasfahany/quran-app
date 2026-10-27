@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, ScrollView, Share, Text, View } from 'react-native';
+import { AccessibilityInfo, ScrollView, Share, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import { setHighlight, toggleBookmark, type Note, type UserStore } from '@/features/library/data';
-import { ActionTile, HighlightSwatch, type HighlightColor, type IconName, uiTextProps, WordMeaningChip } from '@/shared/ui';
-import { useContrastColors } from '@/shared/ui/useContrastColors';
+import {
+  ActionTile,
+  highlightColors,
+  HighlightSwatch,
+  type HighlightColor,
+  type IconName,
+  UiText,
+  WordMeaningChip,
+} from '@/shared/ui';
 
 import { NoteEditor } from './NoteEditor';
 import { PanelSection } from './PanelSection';
@@ -14,7 +21,6 @@ import { ayahShareText } from './panel-text';
 // Recitation arrives in Phase 3. Until then play and repeat stay visible but disabled.
 const AUDIO_AVAILABLE = false;
 
-const HIGHLIGHT_COLORS: readonly HighlightColor[] = ['gold', 'green', 'blue', 'rose'];
 const GRID_COLUMNS = 4;
 
 const icons = {
@@ -78,7 +84,6 @@ export function AyahActionsPanel({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const colors = useContrastColors();
   const [isBookmarked, setIsBookmarked] = useState(bookmarked);
   const [color, setColor] = useState<HighlightColor | null>(highlight);
   const [editingNote, setEditingNote] = useState(false);
@@ -201,7 +206,7 @@ export function AyahActionsPanel({
       )}
       <PanelSection title={t('reader.ayahPanel.highlightTitle')}>
         <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
-          {HIGHLIGHT_COLORS.map((swatch) => (
+          {highlightColors.map((swatch) => (
             <HighlightSwatch
               color={swatch}
               key={swatch}
@@ -235,14 +240,9 @@ export function AyahActionsPanel({
         ))}
       </View>
       {copied ? (
-        <Text
-          {...uiTextProps('caption')}
-          accessibilityLiveRegion="polite"
-          style={[theme.text.caption, { color: colors.inkMuted, textAlign: 'center' }]}
-          testID={`${testID}-copied`}
-        >
+        <UiText accessibilityLiveRegion="polite" align="center" testID={`${testID}-copied`} tone="muted" variant="caption">
           {t('reader.ayahPanel.copied')}
-        </Text>
+        </UiText>
       ) : null}
       {editingNote ? (
         <NoteEditor

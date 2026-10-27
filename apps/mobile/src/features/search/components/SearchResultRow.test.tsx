@@ -2,6 +2,7 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { themes } from '@/core/theme';
 import type { ChapterRecord } from '@/features/reader/data/chapters';
 import type { VerseRecord } from '@/features/reader/data/verses';
 import type { WordRecord } from '@/features/reader/data/words';
@@ -45,6 +46,8 @@ const words: WordRecord[] = [
   { verseId: 2, position: 2, charType: 'word', textUthmani: 'لِلَّهِ', textImlaei: 'لله' },
   { verseId: 2, position: 3, charType: 'end', textUthmani: '٢', textImlaei: '٢' },
 ];
+
+const hidden = { includeHiddenElements: true };
 
 describe('SearchResultRow', () => {
   it('renders Uthmani text and a reference line', async () => {
@@ -95,6 +98,77 @@ describe('SearchResultRow', () => {
     await fireEvent.press(view.getByRole('button'));
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws the reference as a muted caption', async () => {
+    const view = await renderUi(
+      <SearchResultRow
+        chapter={chapter}
+        highlightedPositions={[]}
+        onPress={() => undefined}
+        verse={verse}
+        words={words}
+      />,
+    );
+
+    expect(flatStyle(view.getByText(/1:2/).props.style)).toMatchObject({
+      ...themes.light.text.caption,
+      color: themes.light.colors.inkMuted,
+    });
+  });
+
+  it.each([
+    ['line', themes.light.colors.line],
+    ['strong', themes.light.colors.lineStrong],
+  ] as const)('draws a %s separator with Divider', async (separator, color) => {
+    const view = await renderUi(
+      <SearchResultRow
+        chapter={chapter}
+        highlightedPositions={[]}
+        onPress={() => undefined}
+        separator={separator}
+        testID="search-result"
+        verse={verse}
+        words={words}
+      />,
+    );
+
+    expect(flatStyle(view.getByTestId('search-result-separator', hidden).props.style)).toMatchObject({
+      backgroundColor: color,
+      height: 1,
+    });
+  });
+
+  it('has no separator by default', async () => {
+    const view = await renderUi(
+      <SearchResultRow
+        chapter={chapter}
+        highlightedPositions={[]}
+        onPress={() => undefined}
+        testID="search-result"
+        verse={verse}
+        words={words}
+      />,
+    );
+
+    expect(view.queryByTestId('search-result-separator', hidden)).toBeNull();
+  });
+
+  it.each(locales)('points the chevron forward in the reading direction (%s)', async (locale) => {
+    const view = await renderUi(
+      <SearchResultRow
+        chapter={chapter}
+        highlightedPositions={[]}
+        onPress={() => undefined}
+        verse={verse}
+        words={words}
+      />,
+      { locale },
+    );
+
+    expect(flatStyle(view.getByTestId('search-result-chevron', hidden).props.style).transform).toEqual(
+      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
+    );
   });
 
   it.each(locales)('outlines highlighted words in %s', async (locale) => {

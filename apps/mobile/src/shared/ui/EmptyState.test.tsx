@@ -19,7 +19,7 @@ describe('EmptyState', () => {
     expect(view.queryByRole('button')).toBeNull();
   });
 
-  it('renders the action as a 48 pt brand button and calls it', async () => {
+  it('renders the action as a 44 pt brand button and calls it', async () => {
     const onPress = jest.fn();
     const view = await renderUi(
       <EmptyState
@@ -32,11 +32,16 @@ describe('EmptyState', () => {
     const button = view.getByRole('button', { name: 'افتح المصحف' });
 
     expect(flatStyle(view.getByTestId('empty-action').props.style)).toMatchObject({
+      alignSelf: 'center',
       backgroundColor: colors.brand,
-      minHeight: 48,
+      borderRadius: themes.light.radius.pill,
+      minHeight: themes.light.size.touchTarget,
+      opacity: 1,
     });
-    expect(flatStyle(view.getByTestId('empty-action').props.style).opacity).toBeUndefined();
-    expect(flatStyle(view.getByText('افتح المصحف').props.style).color).toBe(colors.onBrand);
+    expect(flatStyle(view.getByText('افتح المصحف').props.style)).toMatchObject({
+      ...themes.light.text.headline,
+      color: colors.onBrand,
+    });
 
     await fireEvent.press(button);
 

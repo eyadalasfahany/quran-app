@@ -134,6 +134,8 @@ describe('ReadingList', () => {
     await waitFor(() => {
       expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
     });
+    expect(view.getByTestId('list-fade')).toBeOnTheScreen();
+    expect(view.queryByTestId('reader-mode-fade')).toBeNull();
   });
 
   it('extends the window when the list reaches an edge', async () => {
@@ -187,57 +189,6 @@ describe('ReadingList', () => {
     });
 
     mockDimensions.width = 390;
-  });
-
-  it('scrolls to the top visible ayah when switching between reading and focus', async () => {
-    const view = await renderUi(
-      <ReadingList anchorVerseKey="18:10" mode="reading" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />,
-    );
-
-    const anchorVerse = getVerseByKey(mockTestExecutor, '18:10');
-    const topVerse = getVerseByKey(mockTestExecutor, '18:12');
-    expect(anchorVerse).toBeDefined();
-    expect(topVerse).toBeDefined();
-
-    await waitFor(() => {
-      expect(view.getByText(anchorVerse!.textUthmani)).toBeOnTheScreen();
-    });
-
-    simulateTopVisibleVerse('18:12');
-    const topIndex = ayahRowIndex('18:12');
-    flashListTestState.scrollCalls.length = 0;
-
-    view.rerender(
-      <ThemeProvider name="light">
-        <ReadingList anchorVerseKey="18:10" mode="focus" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />
-      </ThemeProvider>,
-    );
-
-    await waitFor(() => {
-      expect(flashListTestState.scrollCalls.some((call) => call.index === topIndex)).toBe(true);
-      expect(view.getByText(topVerse!.textUthmani)).toBeOnTheScreen();
-    });
-  });
-
-  it('keeps the anchor when switching between reading and focus', async () => {
-    const view = await renderUi(
-      <ReadingList anchorVerseKey="18:10" mode="reading" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />,
-    );
-
-    const verse = getVerseByKey(mockTestExecutor, '18:10');
-    await waitFor(() => {
-      expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
-    });
-
-    view.rerender(
-      <ThemeProvider name="light">
-        <ReadingList anchorVerseKey="18:10" mode="focus" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />
-      </ThemeProvider>,
-    );
-
-    await waitFor(() => {
-      expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
-    });
   });
 
   it('does not pin the ayah to the top when scrolling updates the anchor', async () => {

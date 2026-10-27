@@ -28,7 +28,7 @@ describe('MushafLine', () => {
     );
 
     expect(view.getByText(GLYPH_AL_FATIHA_1)).toBeOnTheScreen();
-    fireEvent.press(view.getByText(GLYPH_AL_FATIHA_1));
+    await fireEvent.press(view.getByText(GLYPH_AL_FATIHA_1));
     expect(onPress).toHaveBeenCalledWith(42);
   });
 
@@ -37,6 +37,38 @@ describe('MushafLine', () => {
       <MushafLine activeVerseId={42} fontFamily="qcf-v2-p1" fontSize={20} lineHeight={32} testID="line" words={words} />,
     );
     expect(flatStyle(view.getByTestId('line').props.style).borderStartWidth).toBe(3);
+  });
+
+  it('fills a highlighted ayah with its shared highlight colour, over the active fill', async () => {
+    const view = await renderUi(
+      <MushafLine activeVerseId={42} fontFamily="qcf-v2-p1" fontSize={20} highlightByVerse={new Map([[42, 'rose']])} lineHeight={32} words={words} />,
+    );
+    expect(flatStyle(view.getByText(GLYPH_AL_FATIHA_1).props.style).backgroundColor).toBe(
+      themes.light.colors.highlightRose,
+    );
+
+    const active = await renderUi(
+      <MushafLine activeVerseId={42} fontFamily="qcf-v2-p1" fontSize={20} lineHeight={32} words={words} />,
+    );
+    expect(flatStyle(active.getByText(GLYPH_AL_FATIHA_1).props.style).backgroundColor).toBe(
+      themes.light.colors.highlightActive,
+    );
+  });
+
+  it('opens actions on long press', async () => {
+    const onLongPress = jest.fn();
+    const view = await renderUi(
+      <MushafLine fontFamily="qcf-v2-p1" fontSize={20} lineHeight={32} onVerseLongPress={onLongPress} words={words} />,
+    );
+    await fireEvent(view.getByText(GLYPH_AL_FATIHA_1), 'longPress');
+    expect(onLongPress).toHaveBeenCalledWith(42);
+  });
+
+  it('draws no rule on a line without the active ayah', async () => {
+    const view = await renderUi(
+      <MushafLine activeVerseId={7} fontFamily="qcf-v2-p1" fontSize={20} lineHeight={32} testID="line" words={words} />,
+    );
+    expect(flatStyle(view.getByTestId('line').props.style).borderStartWidth).toBe(0);
   });
 
   it('never recolours the ayah marker glyph', async () => {

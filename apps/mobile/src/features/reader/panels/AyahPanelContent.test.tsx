@@ -47,15 +47,18 @@ describe('AyahPanelContent', () => {
     resetReaderSettingsStore();
   });
 
-  it.each(locales)('shows the header with the Arabic surah name right to left in %s', async (locale) => {
+  it.each(locales)('shows the header with the Arabic surah name in %s', async (locale) => {
     const view = await renderUi(
       <AyahPanelContent executor={withTafsir} onVerseChange={jest.fn()} store={openUserTestStore().store} tab="actions" verseKey="1:2" />,
       { locale },
     );
 
-    expect(view.getByTestId('ayah-panel-content-header-surah')).toHaveTextContent('الفاتحة');
-    expect(flatStyle(view.getByTestId('ayah-panel-content-header-surah').props.style).writingDirection).toBe('rtl');
-    expect(view.getByRole('header', { name: locale === 'ar' ? 'الفاتحة · الآية ٢' : 'الفاتحة · Ayah 2' })).toBeOnTheScreen();
+    const title = locale === 'ar' ? 'الفاتحة · الآية ٢' : 'الفاتحة · Ayah 2';
+    expect(view.getByTestId('ayah-panel-content-header-title')).toHaveTextContent(title);
+    expect(view.getByRole('header', { name: title })).toBeOnTheScreen();
+    expect(view.getByTestId('ayah-panel-content-header-subtitle')).toHaveTextContent(
+      locale === 'ar' ? 'صفحة ١ · الجزء ١' : 'Page 1 · Juz 1',
+    );
   });
 
   it('bookmarks the ayah through the user.db repository', async () => {

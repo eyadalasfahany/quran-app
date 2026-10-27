@@ -1,14 +1,11 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
-import { displayText, maxFontScale, uiTextProps } from './textStyles';
-import { useContrastColors } from './useContrastColors';
+import { UiText } from './UiText';
 
-// The reader's top-bar title: not a control, so touches pass through to the page.
 export function TitlePill({ title, subtitle, testID }: { title: string; subtitle?: string; testID?: string }) {
   const theme = useTheme();
-  const colors = useContrastColors();
   return (
     <View
       accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
@@ -23,21 +20,13 @@ export function TitlePill({ title, subtitle, testID }: { title: string; subtitle
       }}
       testID={testID}
     >
-      <Text
-        maxFontSizeMultiplier={maxFontScale.bar}
-        numberOfLines={1}
-        style={[displayText('displaySm'), { color: theme.colors.ink }]}
-      >
+      <UiText numberOfLines={1} scale="bar" variant="displaySm">
         {title}
-      </Text>
+      </UiText>
       {subtitle ? (
-        <Text
-          {...uiTextProps('caption', 'bar')}
-          numberOfLines={1}
-          style={[theme.text.caption, { color: colors.inkMuted }]}
-        >
+        <UiText numberOfLines={1} scale="bar" tone="muted" variant="caption">
           {subtitle}
-        </Text>
+        </UiText>
       ) : null}
     </View>
   );

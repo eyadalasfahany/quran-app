@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 
+import { themes } from '@/core/theme';
 import { getNotes, NOTE_MAX_CHARACTERS, saveNote } from '@/features/library/data';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -64,6 +65,31 @@ describe('NoteEditor', () => {
 
     await fireEvent.press(save);
     expect(getNotes(2, store)).toEqual([]);
+  });
+
+  it('draws the field in a raised card that turns red past the limit', async () => {
+    const { store } = openUserTestStore();
+    const view = await renderUi(<NoteEditor note={null} store={store} verseId={2} />, { locale: 'en' });
+
+    expect(flatStyle(view.getByTestId('note-editor-box').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.surfaceRaised,
+      borderColor: themes.light.colors.line,
+      borderRadius: themes.light.radius.md,
+    });
+    expect(flatStyle(view.getByTestId('note-editor-counter').props.style).color).toBe(themes.light.colors.inkMuted);
+
+    await fireEvent.changeText(view.getByLabelText('Note on this ayah'), 'ب'.repeat(NOTE_MAX_CHARACTERS + 1));
+    expect(flatStyle(view.getByTestId('note-editor-box').props.style).borderColor).toBe(themes.light.colors.danger);
+    expect(flatStyle(view.getByTestId('note-editor-counter').props.style).color).toBe(themes.light.colors.danger);
+  });
+
+  it('cancels through onDone', async () => {
+    const { store } = openUserTestStore();
+    const onDone = jest.fn();
+    const view = await renderUi(<NoteEditor note={null} onDone={onDone} store={store} verseId={2} />, { locale: 'en' });
+
+    await fireEvent.press(view.getByRole('button', { name: 'Cancel' }));
+    expect(onDone).toHaveBeenCalledTimes(1);
   });
 
   it.each(locales)('follows the typed text direction, not the interface, in %s', async (locale) => {

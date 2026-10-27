@@ -1,5 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 
+import { themes } from '@/core/theme';
+
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { TranslationPanel, type AyahTranslation } from './TranslationPanel';
@@ -43,6 +45,21 @@ describe('TranslationPanel', () => {
       textAlign: 'right',
       writingDirection: 'rtl',
     });
+  });
+
+  it('draws each translation in a raised card with muted captions', async () => {
+    const view = await renderUi(
+      <TranslationPanel onShowInlineChange={jest.fn()} showInline translations={translations} />,
+      { locale: 'en' },
+    );
+
+    expect(flatStyle(view.getByTestId('translation-panel-item-20').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.surfaceRaised,
+      borderColor: themes.light.colors.line,
+      borderRadius: themes.light.radius.lg,
+    });
+    expect(flatStyle(view.getByTestId('translation-panel-source-20').props.style).color).toBe(themes.light.colors.inkMuted);
+    expect(flatStyle(view.getByTestId('translation-panel-text-20').props.style).color).toBe(themes.light.colors.ink);
   });
 
   it('says when a translation has no text for the ayah', async () => {

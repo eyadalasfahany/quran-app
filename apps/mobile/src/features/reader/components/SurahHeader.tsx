@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { SurahCartouche } from '@/shared/ui';
-import { uiTextProps } from '@/shared/ui/textStyles';
+import { SurahCartouche, UiText } from '@/shared/ui';
 
 import type { ChapterRecord } from '../data/chapters';
 
@@ -25,15 +24,12 @@ export function SurahHeader({ chapter, testID }: { chapter: ChapterRecord; testI
       testID={testID}
     >
       <SurahCartouche name={chapter.nameArabic} testID={testID ? `${testID}-cartouche` : undefined} />
-      <Text
-        {...uiTextProps('caption')}
-        style={[theme.text.caption, { color: theme.colors.inkMuted, textAlign: 'center' }]}
-      >
+      <UiText align="center" tone="muted" variant="caption">
         {t('reader.surahMeta', {
           place: t(placeKey),
           count: formatNumber(chapter.versesCount, locale),
         })}
-      </Text>
+      </UiText>
     </View>
   );
 }

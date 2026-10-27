@@ -2,12 +2,10 @@ import { FlashList } from '@shopify/flash-list';
 import { type Href, router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { ContentColumn } from '@/core/layout';
-import { useTheme } from '@/core/theme';
 import { ContinueReadingRow } from '@/features/library/components/ContinueReadingRow';
 import { IndexSegment, type IndexSegmentKey } from '@/features/library/components/IndexSegment';
 import { JuzRow } from '@/features/library/components/JuzRow';
@@ -16,7 +14,7 @@ import { listJuzStarts } from '@/features/library/data/juz';
 import { getChapter, listChapters, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useReadingAnchor } from '@/features/reader/anchor/useReadingAnchor';
-import { uiTextProps } from '@/shared/ui';
+import { Screen, ScreenHeader } from '@/shared/ui';
 
 type ContinueReading = {
   verseKey: string;
@@ -32,8 +30,6 @@ function readHref(verseKey: string): Href {
 
 export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const { ready } = useContentDb();
   const anchor = useReadingAnchor();
   const [segment, setSegment] = useState<IndexSegmentKey>('surahs');
@@ -108,17 +104,11 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   ) : null;
 
   return (
-    <View
-      style={{ backgroundColor: theme.colors.surface, flex: 1, paddingTop: insets.top }}
-      testID={testID}
-    >
+    <Screen testID={testID}>
       <ContentColumn>
-        <View style={{ gap: theme.space[3], paddingBottom: theme.space[2], paddingTop: theme.space[4] }}>
-          <Text {...uiTextProps('title')} style={[theme.text.title, { color: theme.colors.ink }]}>
-            {t('library.index.title')}
-          </Text>
+        <ScreenHeader title={t('library.index.title')}>
           <IndexSegment onChange={setSegment} testID="index-segment" value={segment} />
-        </View>
+        </ScreenHeader>
         <View style={{ flex: 1, minHeight: 200 }}>
           <FlashList
             data={rows}
@@ -129,6 +119,6 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
           />
         </View>
       </ContentColumn>
-    </View>
+    </Screen>
   );
 }

@@ -86,8 +86,21 @@ describe('ReadingAyahRow', () => {
     expect(quranBlockStyle(view)).toMatchObject({
       backgroundColor: colors.highlightActive,
       borderStartColor: colors.brand,
+      borderStartWidth: themes.light.stroke.activeRule,
     });
     expect(view.getByRole('button').props.accessibilityState).toMatchObject({ selected: true });
+  });
+
+  it('closes the row with a hairline divider', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" translations={[]} verseKey="2:1" verseNumber={1} />,
+    );
+
+    expect(flatStyle(view.getByTestId('row-divider', { includeHiddenElements: true }).props.style)).toMatchObject({
+      backgroundColor: colors.line,
+      height: themes.light.stroke.hairline,
+      marginTop: themes.light.space[4],
+    });
   });
 
   it('shows the active wash when recited', async () => {

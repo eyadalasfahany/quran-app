@@ -2,21 +2,21 @@ import { FlashList } from '@shopify/flash-list';
 import { type Href, router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { getWords, type WordRecord } from '@/features/reader/data/words';
 import { RecentSearches } from '@/features/search/components/RecentSearches';
+import { SearchMessage } from '@/features/search/components/SearchMessage';
 import { SearchResultRow } from '@/features/search/components/SearchResultRow';
 import { SearchShowMore } from '@/features/search/components/SearchShowMore';
 import { SurahResultRow } from '@/features/search/components/SurahResultRow';
 import { useDebouncedValue } from '@/features/search/hooks/useDebouncedValue';
 import { addRecentSearch, readRecentSearches, removeRecentSearch } from '@/features/search/recentSearches';
 import { searchQuran, type SearchResult, SEARCH_PAGE_SIZE } from '@/features/search/searchQuran';
-import { SearchField, uiTextProps, useContrastColors } from '@/shared/ui';
+import { Screen, ScreenHeader, SearchField } from '@/shared/ui';
 
 const SEARCH_DEBOUNCE_MS = 150;
 
@@ -27,8 +27,6 @@ function readHref(verseKey: string): Href {
 export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const colors = useContrastColors();
-  const insets = useSafeAreaInsets();
   const { ready } = useContentDb();
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState(() => readRecentSearches());
@@ -139,15 +137,9 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
     page.parsed.kind !== 'empty';
 
   return (
-    <View
-      style={{ backgroundColor: theme.colors.surface, flex: 1, paddingTop: insets.top }}
-      testID={testID}
-    >
+    <Screen testID={testID}>
       <ContentColumn>
-        <View style={{ gap: theme.space[3], paddingBottom: theme.space[2], paddingTop: theme.space[4] }}>
-          <Text {...uiTextProps('title')} style={[theme.text.title, { color: theme.colors.ink }]}>
-            {t('search.title')}
-          </Text>
+        <ScreenHeader hint={t('search.hint')} title={t('search.title')}>
           <SearchField
             autoFocus
             onChangeText={(text) => {
@@ -159,10 +151,7 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
             testID="search-field"
             value={query}
           />
-          <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: colors.inkMuted }]}>
-            {t('search.hint')}
-          </Text>
-        </View>
+        </ScreenHeader>
 
         {showRecent ? (
           <View style={{ gap: theme.space[4] }}>
@@ -172,16 +161,14 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
               queries={recent}
               testID="search-recent"
             />
-            <Text {...uiTextProps('body')} style={[theme.text.body, { color: colors.inkMuted }]}>
-              {t('search.empty')}
-            </Text>
+            <SearchMessage message={t('search.empty')} testID="search-empty" />
           </View>
         ) : null}
 
         {showNoResults ? (
-          <Text {...uiTextProps('body')} style={[theme.text.body, { color: colors.inkMuted, paddingTop: theme.space[4] }]}>
-            {t('search.noResults')}
-          </Text>
+          <View style={{ paddingTop: theme.space[4] }}>
+            <SearchMessage message={t('search.noResults')} testID="search-no-results" />
+          </View>
         ) : null}
 
         {!showRecent && page.results.length > 0 ? (
@@ -200,6 +187,6 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
           </View>
         ) : null}
       </ContentColumn>
-    </View>
+    </Screen>
   );
 }

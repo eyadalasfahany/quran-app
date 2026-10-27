@@ -1,10 +1,20 @@
-import { Text, View } from 'react-native';
+import type { QuranTypeToken } from '@quran/design-tokens';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
+import { QuranText } from '@/shared/ui';
 
-import { quranText } from '@/shared/ui/textStyles';
-
-export function BismillahLine({ text, fontScale = 1, testID }: { text: string; fontScale?: number; testID?: string }) {
+export function BismillahLine({
+  text,
+  fontScale = 1,
+  typeToken = 'quranReading',
+  testID,
+}: {
+  text: string;
+  fontScale?: number;
+  typeToken?: Extract<QuranTypeToken, 'quranReading' | 'quranMushaf'>;
+  testID?: string;
+}) {
   const theme = useTheme();
 
   return (
@@ -17,12 +27,9 @@ export function BismillahLine({ text, fontScale = 1, testID }: { text: string; f
       }}
       testID={testID}
     >
-      <Text
-        allowFontScaling={false}
-        style={[quranText('quranReading', fontScale), { color: theme.colors.ink, textAlign: 'center', writingDirection: 'rtl' }]}
-      >
+      <QuranText align="center" fontScale={fontScale} variant={typeToken}>
         {text}
-      </Text>
+      </QuranText>
     </View>
   );
 }

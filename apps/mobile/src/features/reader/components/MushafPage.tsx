@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import type { HighlightColor } from '@/features/library/data/model';
@@ -7,7 +7,7 @@ import type { ChapterRecord } from '@/features/reader/data/chapters';
 import type { MushafLine as MushafLineData } from '@/features/reader/data/mushaf';
 import { mushafFontSize, mushafLineHeight } from '@/features/reader/mushaf/page-metrics';
 import { buildMushafLineSlots } from '@/features/reader/mushaf/page-slots';
-import { SurahCartouche } from '@/shared/ui';
+import { GoldFrame, SurahCartouche } from '@/shared/ui';
 
 import { MushafLine } from './MushafLine';
 
@@ -42,67 +42,52 @@ export function MushafPage({
   const slots = buildMushafLineSlots(lines, chapterStarts, chapterForVerse);
 
   return (
-    <View
-      style={{
-        alignSelf: 'center',
-        borderColor: theme.colors.gold,
-        borderRadius: theme.radius.sm / 2,
-        borderWidth: 1,
-        padding: 3,
-        width: contentWidth,
-      }}
+    <GoldFrame
+      contentStyle={{ padding: theme.space[2] }}
+      style={{ alignSelf: 'center', width: contentWidth }}
       testID={testID}
+      variant="page"
     >
-      <View
-        style={{
-          borderColor: theme.colors.gold,
-          borderRadius: theme.radius.sm / 4,
-          borderWidth: StyleSheet.hairlineWidth,
-          paddingHorizontal: theme.space[2],
-          paddingVertical: theme.space[2],
-        }}
-      >
-        {slots.map((slot) => {
-          if (slot.kind === 'words') {
-            return (
-              <MushafLine
-                activeVerseId={activeVerseId}
-                fontFamily={fontFamily}
-                fontSize={fontSize}
-                highlightByVerse={highlightByVerse}
-                key={`line-${slot.line}`}
-                lineHeight={lineHeight}
-                onVerseLongPress={onVerseLongPress}
-                onVersePress={onVersePress}
-                selectedVerseId={selectedVerseId}
-                testID={testID ? `${testID}-line-${slot.line}` : undefined}
-                words={slot.words}
-              />
-            );
-          }
-          if (slot.kind === 'surah-header') {
-            return (
-              <SurahCartouche
-                key={`header-${slot.line}`}
-                name={slot.nameArabic}
-                testID={testID ? `${testID}-header-${slot.line}` : undefined}
-              />
-            );
-          }
-          if (slot.kind === 'bismillah') {
-            const text = bismillahTextForLine(slot.line, chapterStarts, lines, chapterForVerse);
-            return (
-              <BismillahLine
-                key={`bismillah-${slot.line}`}
-                testID={testID ? `${testID}-bismillah-${slot.line}` : undefined}
-                text={text}
-              />
-            );
-          }
-          return <View key={`empty-${slot.line}`} style={{ height: lineHeight }} />;
-        })}
-      </View>
-    </View>
+      {slots.map((slot) => {
+        if (slot.kind === 'words') {
+          return (
+            <MushafLine
+              activeVerseId={activeVerseId}
+              fontFamily={fontFamily}
+              fontSize={fontSize}
+              highlightByVerse={highlightByVerse}
+              key={`line-${slot.line}`}
+              lineHeight={lineHeight}
+              onVerseLongPress={onVerseLongPress}
+              onVersePress={onVersePress}
+              selectedVerseId={selectedVerseId}
+              testID={testID ? `${testID}-line-${slot.line}` : undefined}
+              words={slot.words}
+            />
+          );
+        }
+        if (slot.kind === 'surah-header') {
+          return (
+            <SurahCartouche
+              key={`header-${slot.line}`}
+              name={slot.nameArabic}
+              testID={testID ? `${testID}-header-${slot.line}` : undefined}
+            />
+          );
+        }
+        if (slot.kind === 'bismillah') {
+          const text = bismillahTextForLine(slot.line, chapterStarts, lines, chapterForVerse);
+          return (
+            <BismillahLine
+              key={`bismillah-${slot.line}`}
+              testID={testID ? `${testID}-bismillah-${slot.line}` : undefined}
+              text={text}
+            />
+          );
+        }
+        return <View key={`empty-${slot.line}`} style={{ height: lineHeight }} />;
+      })}
+    </GoldFrame>
   );
 }
 

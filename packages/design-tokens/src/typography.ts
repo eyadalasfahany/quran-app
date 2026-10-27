@@ -33,9 +33,12 @@ export type TextStyleToken = {
 };
 
 export const quranTypeScale = {
+  // Phone frames in quran-app-screens.html (ADR 0013). Focus current ayah is 38 / 2.1;
+  // the ayahs before and after it are 24 / 2 at 22% opacity.
   quranMushaf: { family: 'quran', size: 25, lineHeightRatio: 2.35, weight: 400 },
-  quranReading: { family: 'quran', size: 28, lineHeightRatio: 2.2, weight: 400 },
-  quranFocus: { family: 'quran', size: 36, lineHeightRatio: 2, weight: 400 },
+  quranReading: { family: 'quran', size: 27, lineHeightRatio: 2.1, weight: 400 },
+  quranFocus: { family: 'quran', size: 38, lineHeightRatio: 2.1, weight: 400 },
+  quranFocusAside: { family: 'quran', size: 24, lineHeightRatio: 2, weight: 400 },
   quranWord: { family: 'quran', size: 20, lineHeightRatio: 1.7, weight: 400 },
 } as const satisfies Record<string, QuranTextStyle>;
 

@@ -3,13 +3,7 @@ import type { MushafWord } from '@/features/reader/data/mushaf';
 import { Text, View } from 'react-native';
 
 import { useTheme, type Theme } from '@/core/theme';
-
-const HIGHLIGHT_TOKEN: Record<HighlightColor, keyof ReturnType<typeof useTheme>['colors']> = {
-  gold: 'highlightGold',
-  green: 'highlightGreen',
-  blue: 'highlightBlue',
-  rose: 'highlightRose',
-};
+import { highlightFill } from '@/shared/ui';
 
 export function MushafLine({
   words,
@@ -43,7 +37,7 @@ export function MushafLine({
     <View
       style={{
         borderStartColor: activeOnLine ? theme.colors.brand : 'transparent',
-        borderStartWidth: activeOnLine ? 3 : 0,
+        borderStartWidth: activeOnLine ? theme.stroke.activeRule : 0,
         justifyContent: 'center',
         minHeight: lineHeight,
         paddingStart: activeOnLine ? theme.space[1] : 0,
@@ -88,10 +82,9 @@ function wordStyle(
   if (word.charType === 'end') {
     return { color };
   }
-  const highlight = ctx.highlightByVerse?.get(word.verseId);
+  const highlight = highlightFill(ctx.theme.colors, ctx.highlightByVerse?.get(word.verseId));
   if (highlight !== undefined) {
-    const token = HIGHLIGHT_TOKEN[highlight];
-    return { backgroundColor: ctx.theme.colors[token], color };
+    return { backgroundColor: highlight, color };
   }
   if (word.verseId === ctx.activeVerseId || word.verseId === ctx.selectedVerseId) {
     return { backgroundColor: ctx.theme.colors.highlightActive, color };

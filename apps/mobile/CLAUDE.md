@@ -11,7 +11,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - Colors, spacing, radii and type come from `@quran/design-tokens`, which is transcribed from the HTML design system. No raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
 - Text styles set the per-weight family (`IBMPlexSansArabic-Bold`) and never `fontWeight`; on Android a weight on top of a bold face can fake-bold it.
 - Motion follows spec §12 ("Motion").
-  - Sheets, the full player and tabs are native components with system motion.
+  - The full player and tabs are native components with system motion. Reader sheets are custom cards in a transparent modal (ADR 0013).
   - Custom motion uses `src/core/theme/motion.ts`:
     - `timing('instant' | 'fast' | 'standard' | 'slow')` for opacity and color.
     - `spring()` for position, size and drag release.
@@ -61,7 +61,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - `useGlass()` is true only when Liquid Glass is available and Reduce Transparency is off. Otherwise a glass surface is solid `glassFallback` with a `line` hairline.
 - Compact: sheets. Medium: centered column, large sheets. Expanded: centered column plus a persistent side panel.
 - Ayah actions and tafsir render in the side panel when it exists and as sheets otherwise; the routes are the same.
-- Reading and Focus columns cap at about 720 pt. Mushaf page width is `min(window − gutters, 640)`, font size derived from it.
+- Reading and Focus columns cap at about 720 pt. Mushaf page width is `min(window − gutters, 600)`, font size derived from it.
 - Any resize, rotation, fold or unfold must keep the top visible verse via `useReadingAnchor`.
 - No orientation locks. iPad declares all four orientations.
 

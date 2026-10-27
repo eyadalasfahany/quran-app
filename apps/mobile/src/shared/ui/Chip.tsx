@@ -1,8 +1,8 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
-import { uiTextProps } from './textStyles';
+import { UiText } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
 export function Chip({
@@ -17,13 +17,11 @@ export function Chip({
   caption?: string;
   selected: boolean;
   onPress: () => void;
-  // 'radio' inside a single-choice group (the tafsir picker); 'button' for filters.
   role?: 'radio' | 'button';
   testID?: string;
 }) {
   const theme = useTheme();
   const colors = useContrastColors();
-  const ink = selected ? theme.colors.onBrandSurface : theme.colors.ink;
 
   return (
     <Pressable
@@ -40,25 +38,26 @@ export function Chip({
             : theme.colors.surfaceRaised,
         borderColor: selected ? theme.colors.brandSurface : colors.line,
         borderRadius: theme.radius.pill,
-        borderWidth: 1,
+        borderWidth: theme.stroke.hairline,
         flexDirection: 'row',
         gap: theme.space[2],
-        minHeight: 44,
+        minHeight: theme.size.touchTarget,
         paddingHorizontal: theme.space[4],
       })}
       testID={testID}
     >
       <View style={{ alignItems: 'baseline', flexDirection: 'row', gap: theme.space[2] }}>
-        <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: ink }]}>
+        <UiText style={selected ? { color: theme.colors.onBrandSurface } : null} variant="caption">
           {label}
-        </Text>
+        </UiText>
         {caption ? (
-          <Text
-            {...uiTextProps('label')}
-            style={[theme.text.label, { color: selected ? theme.colors.onBrandSurfaceMuted : colors.inkMuted }]}
+          <UiText
+            style={selected ? { color: theme.colors.onBrandSurfaceMuted } : null}
+            tone="muted"
+            variant="label"
           >
             {caption}
-          </Text>
+          </UiText>
         ) : null}
       </View>
     </Pressable>

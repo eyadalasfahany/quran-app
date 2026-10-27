@@ -1,6 +1,8 @@
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { themes } from '@/core/theme';
 import type { WordRecord } from '@/features/reader/data/words';
+import { quranText } from '@/shared/ui';
 
 import { UthmaniHighlightText } from './UthmaniHighlightText';
 
@@ -38,6 +40,29 @@ describe('UthmaniHighlightText', () => {
     );
 
     expect(flatStyle(view.getByTestId('uthmani-highlight-body').props.style).writingDirection).toBe('rtl');
+  });
+
+  it('renders the words in the Reading Quran style, unscaled by the system text size', async () => {
+    const view = await renderUi(
+      <UthmaniHighlightText highlightedPositions={[]} testID="uthmani-highlight" words={words} />,
+    );
+    const body = view.getByTestId('uthmani-highlight-body');
+
+    expect(flatStyle(body.props.style)).toMatchObject({
+      ...quranText('quranReading'),
+      color: themes.light.colors.ink,
+    });
+    expect(body.props.allowFontScaling).toBe(false);
+  });
+
+  it('keeps every word exactly as stored', async () => {
+    const view = await renderUi(
+      <UthmaniHighlightText highlightedPositions={[1]} testID="uthmani-highlight" words={words} />,
+    );
+
+    for (const word of words) {
+      expect(view.getByText(word.textUthmani, { exact: false })).toBeOnTheScreen();
+    }
   });
 
   it('does not expose its own accessibility label', async () => {

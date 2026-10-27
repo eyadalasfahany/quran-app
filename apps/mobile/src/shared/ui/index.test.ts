@@ -14,7 +14,7 @@ describe('shared ui', () => {
     expect(ui).toHaveProperty(name);
   });
 
-  it.each(components.filter((name) => !name.startsWith('Sidebar')))('gives %s a colocated test', (name) => {
+  it.each(components)('gives %s a colocated test', (name) => {
     expect(sharedUiFiles()).toContain(`${name}.test.tsx`);
   });
 

@@ -49,6 +49,18 @@
     "resume": {
       "label": "Back to the current ayah"
     },
+    "surahTitle": "Surah {{name}}",
+    "focus": {
+      "exit": "Leave focus",
+      "position": "{{surah}} · Ayah {{current}} of {{total}}",
+      "nextHint": "Swipe up for the next ayah",
+      "previous": "Previous ayah",
+      "next": "Next ayah",
+      "play": "Play",
+      "repeat": "Repeat the ayah 3 times",
+      "repeatShort": "{{count}}×",
+      "memorize": "Test your memorization"
+    },
     "sheet": {
       "label": "Ayah actions",
       "close": "Close"

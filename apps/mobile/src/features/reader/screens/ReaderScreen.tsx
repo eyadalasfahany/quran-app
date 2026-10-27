@@ -8,21 +8,22 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useWindowClass } from '@/core/layout';
-import { useTheme } from '@/core/theme';
 import { listBookmarks, toggleBookmark } from '@/features/library/data';
+import { Screen } from '@/shared/ui';
 
 import { resolveInitialAnchor, writeReadingAnchor } from '../anchor/reading-anchor';
 import { pageForVerse } from '../anchor/page';
 import { useReadingAnchor } from '../anchor/useReadingAnchor';
 import { AdaptiveReaderLayout } from '../components/AdaptiveReaderLayout';
+import { FocusReader } from '../components/FocusReader';
 import { ReaderModeFade } from '../components/ReaderModeFade';
 import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToolbar';
 import { ResumePill } from '../components/ResumePill';
 import { SidePanel } from '../components/SidePanel';
 import { getChapter } from '../data/chapters';
-import { getVerseByKey, idToVerseKey, verseKeyToId } from '../data/verses';
-import { mushafSideGutter, panelPlacementFor, panelStripWidth } from '../layout';
-import { MushafList } from '../MushafList';
+import { getVerseByKey } from '../data/verses';
+import { HafsMushafList } from '../HafsMushafList';
+import { panelPlacementFor, panelStripWidth } from '../layout';
 import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
 import { useReaderSelection } from '../selection';
@@ -51,7 +52,6 @@ function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): Re
 
 export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const { t, i18n } = useTranslation();
-  const theme = useTheme();
   const insets = useContext(SafeAreaInsetsContext) ?? { bottom: 0, left: 0, right: 0, top: 0 };
   const segments = useSegments();
   const width = useWindowDimensions().width;
@@ -140,11 +140,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const topInset = insets.top + (sheetOpen ? 0 : READER_TOOLBAR_CLEARANCE);
 
   return (
-    <View
-      accessibilityLabel={anchor.verseKey}
-      style={{ backgroundColor: theme.colors.surface, flex: 1 }}
-      testID="reader-screen"
-    >
+    <Screen accessibilityLabel={anchor.verseKey} surface="surface" testID="reader-screen" topInset={false}>
       <AdaptiveReaderLayout
         bottomInset={insets.bottom}
         onCloseOverlay={() => useReaderSelection.getState().closePanel()}
@@ -174,6 +170,17 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           </SidePanel>
         }
         panelOpen={selection.panelOpen}
+        resume={
+          showResume ? (
+            <ResumePill
+              onPress={() => {
+                if (selection.verseKey !== null) {
+                  setPinnedVerseKey(selection.verseKey);
+                }
+              }}
+            />
+          ) : null
+        }
         toolbar={
           sheetOpen ? null : (
             <ReaderToolbar
@@ -205,39 +212,40 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
         <View style={{ flex: 1 }}>
           <ReaderModeFade mode={mode === 'mushaf' ? 'mushaf' : 'text'}>
             {executor !== null && mode === 'mushaf' ? (
-              <MushafList
+              <HafsMushafList
                 anchorVerseKey={listAnchor}
                 bottomInset={0}
-                horizontalGutter={mushafSideGutter(gutter)}
-                onOpenAyahActions={(verseId) => {
-                  const key = idToVerseKey(executor, verseId);
-                  if (key !== undefined) {
-                    selectVerse(key);
-                  }
-                }}
-                onSelectVerseId={(verseId) => {
-                  const key = idToVerseKey(executor, verseId);
-                  if (key !== undefined) {
-                    selectVerse(key);
-                  }
-                }}
-                onSwitchToReading={() => useReaderSettings.getState().setMode('reading')}
+                fontScale={fontScale}
+                onOpenAyahActions={selectVerse}
+                onSelectVerseKey={selectVerse}
                 onVisiblePage={(page, key) => {
                   setVisibleVerseKey(key);
                   anchor.setVisible({ page, verseKey: key });
                 }}
-                selectedVerseId={selection.verseKey === null ? null : (verseKeyToId(executor, selection.verseKey) ?? null)}
+                selectedVerseKey={selection.verseKey}
                 testID="reader-mushaf"
                 topInset={topInset}
               />
             ) : null}
-            {executor !== null && mode !== 'mushaf' ? (
+            {executor !== null && mode === 'focus' ? (
+              <FocusReader
+                fontScale={fontScale}
+                onClose={() => useReaderSettings.getState().setMode('mushaf')}
+                onOpenActions={selectVerse}
+                onVerseChange={(key) => {
+                  setPinnedVerseKey(key);
+                  anchor.setVisible({ verseKey: key });
+                }}
+                verseKey={listAnchor}
+              />
+            ) : null}
+            {executor !== null && mode === 'reading' ? (
               <ReadingList
                 anchorVerseKey={listAnchor}
                 bottomInset={0}
                 fontScale={fontScale}
                 horizontalGutter={gutter}
-                mode={mode}
+                mode="reading"
                 onOpenAyahActions={selectVerse}
                 onSelectVerseKey={selectVerse}
                 onVisibleVerseKey={(key) => {
@@ -251,22 +259,8 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               />
             ) : null}
           </ReaderModeFade>
-          {showResume ? (
-            <View
-              pointerEvents="box-none"
-              style={{ alignItems: 'center', bottom: theme.space[4], left: 0, position: 'absolute', right: 0 }}
-            >
-              <ResumePill
-                onPress={() => {
-                  if (selection.verseKey !== null) {
-                    setPinnedVerseKey(selection.verseKey);
-                  }
-                }}
-              />
-            </View>
-          ) : null}
         </View>
       </AdaptiveReaderLayout>
-    </View>
+    </Screen>
   );
 }

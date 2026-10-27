@@ -1,3 +1,4 @@
+import { size as sizeTokens } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text } from 'react-native';
 
@@ -6,32 +7,28 @@ import { useTheme } from '@/core/theme';
 
 import { displayText } from './textStyles';
 
-const SIZE = 28;
-const MIN_TARGET = 44;
+export const FOCUS_MARKER_SIZE = sizeTokens.focusMarker;
 
-// The app-drawn ayah number (Reading, Focus and non-QCF Mushaf). Page-exact QCF pages use the font's
-// own marker glyph, which is never recoloured.
 export function AyahMarker({
   number,
   active = false,
   onPress,
   fontScale = 1,
+  markerSize = sizeTokens.ayahMarker,
   testID,
 }: {
   number: number;
-  // Recited or selected: a filled brand marker, never gold (ADR 0012).
   active?: boolean;
-  // Opens ayah actions.
   onPress?: () => void;
-  // The reader's Quran font scale, so the marker keeps pace with the ayah text.
   fontScale?: number;
+  markerSize?: number;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
-  const size = SIZE * fontScale;
-  const slop = Math.max(0, (MIN_TARGET - size) / 2);
+  const size = markerSize * fontScale;
+  const slop = Math.max(0, (theme.size.touchTarget - size) / 2);
 
   return (
     <Pressable
@@ -46,7 +43,7 @@ export function AyahMarker({
         backgroundColor: active ? theme.colors.brand : 'transparent',
         borderColor: active ? theme.colors.brand : theme.colors.gold,
         borderRadius: size / 2,
-        borderWidth: 1.25,
+        borderWidth: theme.stroke.marker,
         height: size,
         justifyContent: 'center',
         marginHorizontal: theme.space[1],

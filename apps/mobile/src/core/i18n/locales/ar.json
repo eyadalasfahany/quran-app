@@ -49,6 +49,18 @@
     "resume": {
       "label": "العودة إلى الآية الحالية"
     },
+    "surahTitle": "سورة {{name}}",
+    "focus": {
+      "exit": "خروج من وضع التركيز",
+      "position": "{{surah}} · الآية {{current}} من {{total}}",
+      "nextHint": "اسحب لأعلى للآية التالية",
+      "previous": "الآية السابقة",
+      "next": "الآية التالية",
+      "play": "تشغيل",
+      "repeat": "تكرار الآية ٣ مرات",
+      "repeatShort": "{{count}}×",
+      "memorize": "اختبر حفظك"
+    },
     "sheet": {
       "label": "خيارات الآية",
       "close": "إغلاق"

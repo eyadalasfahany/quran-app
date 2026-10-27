@@ -1,21 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import type { HighlightColor } from '@/features/library/data/model';
-import { AyahMarker } from '@/shared/ui';
-import { quranText, uiTextProps } from '@/shared/ui/textStyles';
-import { useContrastColors } from '@/shared/ui/useContrastColors';
+import { AyahMarker, Divider, highlightFill, QuranText, useContrastColors, type HighlightColor } from '@/shared/ui';
 
 import type { VerseTranslationBlock } from '../reading-list-types';
-
-const highlightFill = {
-  gold: 'highlightGold',
-  green: 'highlightGreen',
-  blue: 'highlightBlue',
-  rose: 'highlightRose',
-} as const;
+import { TranslationBlock } from './TranslationBlock';
 
 export function ReadingAyahRow({
   verseKey,
@@ -58,11 +49,7 @@ export function ReadingAyahRow({
       ? `${labelText} ${ayahLabel}`
       : `${labelText} ${ayahLabel} ${t(`ui.highlight.${highlightColor}`)}`;
 
-  const quranBackground = active
-    ? colors.highlightActive
-    : highlightColor === null
-      ? 'transparent'
-      : colors[highlightFill[highlightColor]];
+  const quranBackground = active ? colors.highlightActive : (highlightFill(colors, highlightColor) ?? 'transparent');
 
   return (
     <Pressable
@@ -71,12 +58,7 @@ export function ReadingAyahRow({
       accessibilityState={{ selected: active }}
       onLongPress={onLongPress}
       onPress={onPress}
-      style={{
-        borderBottomColor: colors.line,
-        borderBottomWidth: 1,
-        paddingBottom: theme.space[4],
-        paddingTop: theme.space[3],
-      }}
+      style={{ paddingTop: theme.space[3] }}
       testID={testID}
     >
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: theme.space[2] }}>
@@ -85,21 +67,15 @@ export function ReadingAyahRow({
             backgroundColor: quranBackground,
             borderRadius: theme.radius.sm,
             borderStartColor: active ? colors.brand : 'transparent',
-            borderStartWidth: active ? 3 : 0,
+            borderStartWidth: active ? theme.stroke.activeRule : 0,
             flex: 1,
             paddingHorizontal: theme.space[1],
             paddingVertical: theme.space[1],
           }}
         >
-          <Text
-            allowFontScaling={false}
-            style={[
-              quranText('quranReading', fontScale),
-              { color: theme.colors.ink, textAlign: 'right', writingDirection: 'rtl' },
-            ]}
-          >
+          <QuranText fontScale={fontScale} variant="quranReading">
             {textUthmani}
-          </Text>
+          </QuranText>
         </View>
         <AyahMarker
           active={active}
@@ -110,47 +86,13 @@ export function ReadingAyahRow({
         />
       </View>
       {translations.map((block) => (
-        <TranslationBlock block={block} key={`${verseKey}-${block.resourceId}`} locale={locale} testID={testID} />
+        <TranslationBlock
+          block={block}
+          key={`${verseKey}-${block.resourceId}`}
+          testID={testID ? `${testID}-translation-${block.resourceId}` : undefined}
+        />
       ))}
+      <Divider style={{ marginTop: theme.space[4] }} testID={testID ? `${testID}-divider` : undefined} />
     </Pressable>
-  );
-}
-
-function TranslationBlock({
-  block,
-  locale,
-  testID,
-}: {
-  block: VerseTranslationBlock;
-  locale: Locale;
-  testID?: string;
-}) {
-  const { t } = useTranslation();
-  const theme = useTheme();
-  const colors = useContrastColors();
-  const attribution =
-    block.meta.authorName === null
-      ? t('reader.translationAttribution', { name: block.meta.name })
-      : t('reader.translationAttributionWithAuthor', { author: block.meta.authorName, name: block.meta.name });
-
-  return (
-    <View style={{ gap: theme.space[1], marginTop: theme.space[2] }} testID={testID ? `${testID}-translation-${block.resourceId}` : undefined}>
-      <Text
-        {...uiTextProps('subhead')}
-        style={[
-          theme.text.subhead,
-          {
-            color: theme.colors.inkMuted,
-            textAlign: block.meta.direction === 'rtl' ? 'right' : 'left',
-            writingDirection: block.meta.direction,
-          },
-        ]}
-      >
-        {block.text}
-      </Text>
-      <Text {...uiTextProps('caption')} style={[theme.text.caption, { color: colors.inkMuted }]}>
-        {attribution}
-      </Text>
-    </View>
   );
 }

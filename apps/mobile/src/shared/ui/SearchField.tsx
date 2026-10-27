@@ -22,7 +22,6 @@ export function SearchField({
 }: {
   value: string;
   onChangeText: (text: string) => void;
-  // From i18n; it is also the field's accessibility label.
   placeholder: string;
   onSubmit: (text: string) => void;
   autoFocus?: boolean;
@@ -40,7 +39,7 @@ export function SearchField({
         backgroundColor: theme.colors.surfaceRaised,
         borderColor: focused ? theme.colors.brand : colors.line,
         borderRadius: theme.radius.pill,
-        borderWidth: 1.5,
+        borderWidth: theme.stroke.focus,
         flexDirection: 'row',
         gap: theme.space[2],
         minHeight: 48,
@@ -49,7 +48,7 @@ export function SearchField({
       }}
       testID={testID}
     >
-      <Icon color={colors.inkMuted} name={MAGNIFIER} size={20} />
+      <Icon color={colors.inkMuted} name={MAGNIFIER} size={theme.size.iconMd} />
       <TextInput
         {...uiTextProps('body')}
         accessibilityLabel={placeholder}
@@ -64,7 +63,10 @@ export function SearchField({
         placeholder={placeholder}
         placeholderTextColor={colors.inkMuted}
         returnKeyType="search"
-        style={[theme.text.body, { color: theme.colors.ink, flex: 1, minHeight: 44, paddingVertical: 0 }]}
+        style={[
+          theme.text.body,
+          { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0 },
+        ]}
         testID={testID ? `${testID}-input` : undefined}
         value={value}
       />

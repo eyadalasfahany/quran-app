@@ -13,6 +13,12 @@ import { sheetScreenOptions } from '@/features/reader/form-sheet';
 
 void SplashScreen.preventAutoHideAsync();
 
+// Sheets are transparent modals. A modal that is the first native-stack screen
+// is drawn as a card, so the tabs stay underneath every sheet.
+export const unstable_settings = {
+  anchor: '(main)',
+};
+
 // A direction mismatch reloads before paint, so the splash stays up.
 const directionCheck = ensureDirection();
 

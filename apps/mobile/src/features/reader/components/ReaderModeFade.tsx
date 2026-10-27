@@ -3,7 +3,16 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 
 import { timing } from '@/core/theme';
 
-export function ReaderModeFade({ mode, children }: { mode: string; children: ReactNode }) {
+// Fades its content in on mount and whenever `mode` changes.
+export function ReaderModeFade({
+  mode,
+  children,
+  testID = 'reader-mode-fade',
+}: {
+  mode: string;
+  children: ReactNode;
+  testID?: string;
+}) {
   const opacity = useSharedValue(1);
 
   useEffect(() => {
@@ -14,7 +23,7 @@ export function ReaderModeFade({ mode, children }: { mode: string; children: Rea
   const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View style={[{ flex: 1 }, style]} testID="reader-mode-fade">
+    <Animated.View style={[{ flex: 1 }, style]} testID={testID}>
       {children}
     </Animated.View>
   );

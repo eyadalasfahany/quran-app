@@ -1,9 +1,11 @@
+import { size } from '@quran/design-tokens';
+
 export const READING_COLUMN_MAX = 720;
 
 /** Mushaf page width cap (spec §4, phase-2 README). */
 export const MUSHAF_PAGE_MAX = 640;
 
-export const SIDE_PANEL_WIDTH = 380;
+export const SIDE_PANEL_WIDTH = size.sidePanel;
 export const PANEL_DOCK_MIN_WIDTH = 1100;
 export const PANEL_INSET = 16;
 
