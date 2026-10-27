@@ -4,6 +4,9 @@ import { initReactI18next } from 'react-i18next';
 import ar from './locales/ar.json';
 import en from './locales/en.json';
 import { getLocale } from './locale';
+import { installPluralRules } from './plural-rules';
+
+installPluralRules();
 
 export const i18n = createInstance();
 

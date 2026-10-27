@@ -9,6 +9,7 @@ import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { getWords, type WordRecord } from '@/features/reader/data/words';
 import { RecentSearches } from '@/features/search/components/RecentSearches';
+import { SearchBar } from '@/features/search/components/SearchBar';
 import { SearchMessage } from '@/features/search/components/SearchMessage';
 import { SearchResultRow } from '@/features/search/components/SearchResultRow';
 import { SearchShowMore } from '@/features/search/components/SearchShowMore';
@@ -16,7 +17,7 @@ import { SurahResultRow } from '@/features/search/components/SurahResultRow';
 import { useDebouncedValue } from '@/features/search/hooks/useDebouncedValue';
 import { addRecentSearch, readRecentSearches, removeRecentSearch } from '@/features/search/recentSearches';
 import { searchQuran, type SearchResult, SEARCH_PAGE_SIZE } from '@/features/search/searchQuran';
-import { Screen, ScreenHeader, SearchField } from '@/shared/ui';
+import { Screen, UiText } from '@/shared/ui';
 
 const SEARCH_DEBOUNCE_MS = 150;
 
@@ -99,7 +100,6 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
           <SurahResultRow
             chapter={item.chapter}
             onPress={() => openVerse(`${item.chapter.id}:1`)}
-            separator="line"
             testID={`search-surah-${item.chapter.id}`}
           />
         );
@@ -112,7 +112,6 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
             commitSearch(query);
             openVerse(item.verse.verseKey);
           }}
-          separator="line"
           testID={`search-verse-${item.verse.id}`}
           verse={item.verse}
           words={verseWordsById.get(item.verse.id) ?? []}
@@ -139,19 +138,20 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
   return (
     <Screen testID={testID}>
       <ContentColumn>
-        <ScreenHeader hint={t('search.hint')} title={t('search.title')}>
-          <SearchField
-            autoFocus
+        <View style={{ gap: theme.space[2], paddingTop: theme.space[2] }}>
+          <SearchBar
+            onCancel={() => router.back()}
             onChangeText={(text) => {
               setQuery(text);
               setResultLimit(SEARCH_PAGE_SIZE);
             }}
             onSubmit={commitSearch}
-            placeholder={t('search.placeholder')}
-            testID="search-field"
             value={query}
           />
-        </ScreenHeader>
+          <UiText tone="muted" variant="label">
+            {t('search.hint')}
+          </UiText>
+        </View>
 
         {showRecent ? (
           <View style={{ gap: theme.space[4] }}>
@@ -175,6 +175,7 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
           <View style={{ flex: 1, minHeight: 240 }}>
             <FlashList
               data={page.results}
+              ItemSeparatorComponent={() => <View style={{ height: theme.space[2] }} />}
               keyExtractor={keyExtractor}
               ListFooterComponent={
                 page.hasMore ? (

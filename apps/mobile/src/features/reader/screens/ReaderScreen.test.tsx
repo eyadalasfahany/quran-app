@@ -44,6 +44,18 @@ describe('ReaderScreen', () => {
     expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:255');
   });
 
+  it('gives Focus the screen: no reader toolbar, no resume pill', async () => {
+    const view = await renderUi(reader());
+    expect(view.getByTestId('reader-toolbar')).toBeOnTheScreen();
+
+    await act(async () => {
+      useReaderSettings.getState().setMode('focus');
+    });
+
+    expect(view.queryByTestId('reader-toolbar')).toBeNull();
+    expect(view.queryByTestId('reader-resume-slot')).toBeNull();
+  });
+
   it.each(locales)('puts the Quran on the page surface, as the design does, in %s', async (locale) => {
     const view = await renderUi(reader(), { locale });
 

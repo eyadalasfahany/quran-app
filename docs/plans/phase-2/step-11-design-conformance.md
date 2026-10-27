@@ -38,6 +38,20 @@ Gaps carried into 11b: `IconButton` has no tone, size or disabled prop; `Card` h
 
 Each fix lands in the component that owns the visual. Order: shared components (segmented control, chips, action tiles, sheet card, title pill, toolbar), then the Mushaf page, the ayah and settings sheets, the index and search, Reading, Focus and Tafsir, and the tablet layouts. The 27 Oct audit's findings per frame are the checklist.
 
+**Status: in progress** (28 Oct 2026, working tree). Done:
+- Mushaf page: ayahs flow inline per surah; ayah numbers are the `﴿n﴾` mark (`AyahEndMark`, ADR 0012 amended) in every view.
+- Reader: Back points to the leading edge; Reading starts below the toolbar with the 20 pt gutter; Focus hides the toolbar and resume pill and insets its exit bar.
+- Sheets: a `scrim` behind every reader sheet; tafsir and translation take the full-width sheet at 52 pt (`AyahSheetScreen` sizes the sheet by tab).
+- Index: `SurahRow` (medallion, Amiri name, «مدنية · ٢٨٦ آية», «ص ٢», no chevron), the last-read card.
+- Home: the brand Continue reading card.
+- Search: Cancel beside the field (`SearchBar`), card results, matches outlined (`stroke.match`).
+- Numbers go through `formatNumber` with `useLocale()`; Arabic plurals work on Hermes (`plural-rules.ts`).
+
+Open:
+- Resource names: `installed_resources` keeps no name, so tafsir and translation labels fall back to «تفسير {id}». The manifest already sends `name`, `author_name`, `language_code` and `direction`; storing them is a `content.db` schema change.
+- The surah cartouche's pointed frame needs `react-native-svg` (a native rebuild).
+- Ayah sheet highlight row, reader settings, the tafsir panel (header, named chips, source credit, download), the Reading ayah header row with its actions, the Index and Home headers, and the tablet frames.
+
 ## Tests
 
 Each new component gets the README checklist. Existing tests keep passing; a test that pinned a value the frame changes is updated with the frame's value.

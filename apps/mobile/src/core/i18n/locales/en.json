@@ -144,10 +144,18 @@
       "segments": {
         "surahs": "Surahs",
         "juz": "Juz"
-      }
+      },
+      "lastRead": "Last read: {{surah}} · ayah {{ayah}}",
+      "resume": "Continue"
     },
     "surah": {
-      "meta": "{{place}} · {{count}} ayahs",
+      "meta_zero": "{{place}} · {{n}} ayahs",
+      "meta_one": "{{place}} · {{n}} ayah",
+      "meta_two": "{{place}} · {{n}} ayahs",
+      "meta_few": "{{place}} · {{n}} ayahs",
+      "meta_many": "{{place}} · {{n}} ayahs",
+      "meta_other": "{{place}} · {{n}} ayahs",
+      "page": "p. {{page}}",
       "revelation": {
         "makkah": "Meccan",
         "madinah": "Medinan"
@@ -161,14 +169,21 @@
   "search": {
     "title": "Search",
     "placeholder": "Search the Quran",
+    "cancel": "Cancel",
     "hint": "Search by ayah text, surah number, or name",
     "empty": "Type to search the Quran",
     "noResults": "No results",
     "recentTitle": "Recent searches",
     "removeRecent": "Remove {{query}}",
     "showMore": "Show more",
-    "resultReference": "{{surah}} · {{verseKey}} · {{ayah}}",
-    "surahResultHint": "{{count}} ayahs"
+    "resultReference": "{{surah}} · {{ayah}}",
+    "surahResultHint_zero": "{{n}} ayahs · starts on page {{page}}",
+    "surahResultHint_one": "{{n}} ayah · starts on page {{page}}",
+    "surahResultHint_two": "{{n}} ayahs · starts on page {{page}}",
+    "surahResultHint_few": "{{n}} ayahs · starts on page {{page}}",
+    "surahResultHint_many": "{{n}} ayahs · starts on page {{page}}",
+    "surahResultHint_other": "{{n}} ayahs · starts on page {{page}}",
+    "surahTag": "Surah"
   },
   "ui": {
     "ayahNumber": "Ayah {{number}}",
@@ -179,5 +194,11 @@
       "blue": "Blue highlight",
       "rose": "Rose highlight"
     }
+  },
+  "home": {
+    "continueReading": "Continue reading",
+    "place": "Ayah {{ayah}} · page {{page}} · juz {{juz}}",
+    "resume": "Continue",
+    "progress": "{{percent}}% of the Quran read"
   }
 }

@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { fireEvent } from '@testing-library/react-native';
 import { Text, useWindowDimensions } from 'react-native';
 
+import { themes } from '@/core/theme';
+
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { SETTINGS_SHEET_TOP, sheetHeight } from '../form-sheet';
@@ -46,6 +48,16 @@ describe('SheetHost', () => {
     await fireEvent.press(view.getByTestId('sheet-backdrop'));
     expect(router.back).toHaveBeenCalledTimes(1);
     expect(view.getByTestId('sheet-backdrop').props.accessibilityLabel).toBe(locale === 'ar' ? 'إغلاق' : 'Close');
+  });
+
+  it('dims the page behind the sheet with the scrim', async () => {
+    const view = await renderUi(
+      <SheetHost topGap={SETTINGS_SHEET_TOP}>
+        <Text>إعدادات</Text>
+      </SheetHost>,
+    );
+
+    expect(flatStyle(view.getByTestId('sheet-scrim').props.style).backgroundColor).toBe(themes.light.colors.scrim);
   });
 
   it('has no raw colour literals', () => {

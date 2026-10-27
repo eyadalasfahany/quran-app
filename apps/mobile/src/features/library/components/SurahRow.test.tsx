@@ -4,73 +4,72 @@ import { AccessibilityInfo } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
-import { themes } from '@/core/theme';
 import type { ChapterRecord } from '@/features/reader/data/chapters';
 
 import { SurahRow } from './SurahRow';
 
-const colors = themes.light.colors;
+const hidden = { includeHiddenElements: true } as const;
 
 const chapter: ChapterRecord = {
-  id: 1,
-  nameArabic: 'الفاتحة',
-  nameSimple: 'Al-Fatihah',
-  nameEn: 'The Opening',
-  revelationPlace: 'makkah',
-  revelationOrder: 5,
-  versesCount: 7,
+  id: 2,
+  nameArabic: 'البقرة',
+  nameSimple: 'Al-Baqarah',
+  nameEn: 'The Cow',
+  revelationPlace: 'madinah',
+  revelationOrder: 87,
+  versesCount: 286,
   bismillahPre: 1,
   bismillahText: null,
   bismillahImlaei: null,
-  pageStart: 1,
-  pageEnd: 1,
+  pageStart: 2,
+  pageEnd: 49,
 };
 
 describe('SurahRow', () => {
-  beforeEach(() => {
-    jest.mocked(AccessibilityInfo.isDarkerSystemColorsEnabled).mockResolvedValue(false);
-  });
-
-  it('renders the surah names and metadata', async () => {
-    const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} testID="surah-row" />);
-
-    expect(view.getByText('Al-Fatihah')).toBeOnTheScreen();
-    expect(view.getByText('الفاتحة')).toBeOnTheScreen();
-    expect(view.getByText('1')).toBeOnTheScreen();
-    expect(view.getByText('مكية · 7 آيات')).toBeOnTheScreen();
-  });
-
-  it('draws the index number as a muted caption', async () => {
+  it('shows the Arabic name only, never the transliteration (Surah index frame)', async () => {
     const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} />);
 
-    expect(flatStyle(view.getByText('1').props.style)).toMatchObject({
-      ...themes.light.text.caption,
-      color: colors.inkMuted,
-      textAlign: 'center',
-    });
+    expect(view.getByText('البقرة')).toBeOnTheScreen();
+    expect(view.queryByText('Al-Baqarah')).toBeNull();
+    expect(flatStyle(view.getByText('البقرة').props.style)).toMatchObject({ fontFamily: 'Amiri-Bold', fontSize: 20 });
   });
 
-  it('uses the high-contrast muted ink for the number when Increase Contrast is on', async () => {
+  it('writes every number in Arabic-Indic digits: medallion, ayah count and start page', async () => {
+    const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} testID="row" />);
+
+    expect(view.getByText('٢', hidden)).toBeOnTheScreen();
+    expect(view.getByTestId('row-number', hidden)).toBeOnTheScreen();
+    expect(view.getByText('مدنية · ٢٨٦ آية')).toBeOnTheScreen();
+    expect(view.getByText('ص ٢')).toBeOnTheScreen();
+  });
+
+  it.each([
+    [7, 'مكية · ٧ آيات'],
+    [286, 'مدنية · ٢٨٦ آية'],
+  ] as const)('uses the Arabic plural for %i ayahs', async (count, meta) => {
+    const view = await renderUi(
+      <SurahRow
+        chapter={{ ...chapter, revelationPlace: count === 7 ? 'makkah' : 'madinah', versesCount: count }}
+        onPress={() => undefined}
+      />,
+    );
+
+    expect(view.getByText(meta)).toBeOnTheScreen();
+  });
+
+  it('ends with the start page instead of a chevron in the index', async () => {
+    const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} />);
+
+    expect(view.queryByTestId('list-row-chevron', hidden)).toBeNull();
+  });
+
+  it('uses the high-contrast muted ink for the meta when Increase Contrast is on', async () => {
     jest.mocked(AccessibilityInfo.isDarkerSystemColorsEnabled).mockResolvedValue(true);
     const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} />, { theme: 'sepia' });
 
     await waitFor(() =>
-      expect(flatStyle(view.getByText('1').props.style).color).toBe(highContrast.sepia.inkMuted),
+      expect(flatStyle(view.getByText('مدنية · ٢٨٦ آية').props.style).color).toBe(highContrast.sepia.inkMuted),
     );
-  });
-
-  it('draws the result variant with a brand number and a custom subtitle', async () => {
-    const view = await renderUi(
-      <SurahRow chapter={chapter} onPress={() => undefined} subtitle="hint" variant="result" />,
-    );
-
-    expect(flatStyle(view.getByText('1').props.style)).toMatchObject({
-      ...themes.light.text.headline,
-      color: colors.brand,
-    });
-    expect(view.getByText('hint')).toBeOnTheScreen();
-    expect(view.queryByText('مكية · 7 آيات')).toBeNull();
-    expect(view.getByText('الفاتحة')).toBeOnTheScreen();
   });
 
   it('calls onPress when the row is pressed', async () => {
@@ -82,20 +81,11 @@ describe('SurahRow', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it('labels the row button with the name and metadata', async () => {
-    const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} />);
-
-    expect(view.getByRole('button', { name: 'Al-Fatihah, مكية · 7 آيات' })).toBeOnTheScreen();
-  });
-
-  it.each(locales)('uses Amiri for the Arabic name (%s)', async (locale) => {
+  it.each(locales)('labels the row with the name and metadata (%s)', async (locale) => {
     const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} />, { locale });
+    const meta = locale === 'ar' ? 'مدنية · ٢٨٦ آية' : 'Medinan · 286 ayahs';
 
-    expect(flatStyle(view.getByText('الفاتحة').props.style)).toMatchObject({
-      fontFamily: 'Amiri-Bold',
-      textAlign: 'center',
-      writingDirection: 'rtl',
-    });
+    expect(view.getByRole('button', { name: `البقرة, ${meta}` })).toBeOnTheScreen();
   });
 
   it('has no raw colour literals', () => {

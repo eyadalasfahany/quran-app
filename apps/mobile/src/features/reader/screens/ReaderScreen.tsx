@@ -138,7 +138,10 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     }
   };
 
+  // Focus draws its own exit bar and transport, so the toolbar and the resume pill stay out of its way.
+  const focus = mode === 'focus';
   const showResume =
+    !focus &&
     selection.verseKey !== null &&
     visibleVerseKey !== null &&
     visibleVerseKey !== selection.verseKey &&
@@ -191,7 +194,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           ) : null
         }
         toolbar={
-          sheetOpen ? null : (
+          sheetOpen || focus ? null : (
             <ReaderToolbar
               bookmarked={bookmarked}
               expanded={windowClass === 'expanded'}

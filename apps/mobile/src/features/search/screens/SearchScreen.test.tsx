@@ -15,7 +15,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
+  router: { back: jest.fn(), push: jest.fn() },
 }));
 
 let mockExecutor: SqlExecutor | undefined;
@@ -43,15 +43,16 @@ beforeEach(() => {
 });
 
 describe('SearchScreen', () => {
-  it('renders the header: title, search field, then the hint', async () => {
+  it('opens on the search bar, field and Cancel, then the hint, with no title (the Search frame)', async () => {
     const view = await renderUi(<SearchScreen />);
 
     expect(flatStyle(view.getByTestId('screen-search').props.style)).toMatchObject({
       backgroundColor: themes.light.colors.surface,
       paddingTop: 59,
     });
-    expect(view.getByRole('header', { name: 'البحث' })).toBeOnTheScreen();
+    expect(view.queryByRole('header', { name: 'البحث' })).toBeNull();
     expect(view.getByTestId('search-field-input')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'إلغاء' })).toBeOnTheScreen();
     expect(view.getByText('ابحث بالآية، رقم السورة، أو اسمها')).toBeOnTheScreen();
   });
 
@@ -77,7 +78,7 @@ describe('SearchScreen', () => {
 
     await fireEvent.changeText(view.getByTestId('search-field-input'), '2:255');
     await waitFor(() => expect(view.getByTestId('search-results')).toBeOnTheScreen());
-    await fireEvent.press(view.getByRole('button', { name: /2:255/ }));
+    await fireEvent.press(view.getByRole('button', { name: /البقرة · ٢٥٥/ }));
 
     expect(router.push).toHaveBeenCalledWith('/read/2:255');
   });
@@ -99,10 +100,11 @@ describe('SearchScreen', () => {
     expect(view.queryByTestId('search-empty')).toBeNull();
   });
 
-  it.each(locales)('renders the title in %s', async (locale) => {
+  it.each(locales)('leaves search through Cancel in %s', async (locale) => {
     const view = await renderUi(<SearchScreen />, { locale });
 
-    expect(view.getByRole('header', { name: locale === 'ar' ? 'البحث' : 'Search' })).toBeOnTheScreen();
+    await fireEvent.press(view.getByRole('button', { name: locale === 'ar' ? 'إلغاء' : 'Cancel' }));
+    expect(router.back).toHaveBeenCalled();
     expect(view.getByLabelText(locale === 'ar' ? 'ابحث في القرآن' : 'Search the Quran')).toBeOnTheScreen();
   });
 });

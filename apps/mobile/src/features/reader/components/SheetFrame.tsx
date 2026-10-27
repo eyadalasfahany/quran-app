@@ -4,13 +4,23 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { useContrastColors } from '@/shared/ui';
 
-import { SHEET_MARGIN, SHEET_RADIUS } from '../form-sheet';
+import { FULL_SHEET_RADIUS, SHEET_MARGIN, SHEET_RADIUS, type SheetShape } from '../form-sheet';
 
 /**
- * The phone frames draw every reader sheet as a card: 8pt from the sides and
- * the bottom, 36pt corners, the page still visible above it.
+ * The phone frames draw the ayah and settings sheets as a card: 8pt from the
+ * sides and the bottom, 36pt corners. Tafsir is a full-width sheet with
+ * rounded top corners only.
  */
-export function SheetFrame({ children, testID }: { children: ReactNode; testID?: string }) {
+export function SheetFrame({
+  children,
+  shape = 'card',
+  testID,
+}: {
+  children: ReactNode;
+  shape?: SheetShape;
+  testID?: string;
+}) {
+  const card = shape === 'card';
   const theme = useTheme();
   const colors = useContrastColors();
 
@@ -19,15 +29,17 @@ export function SheetFrame({ children, testID }: { children: ReactNode; testID?:
       style={{
         backgroundColor: 'transparent',
         flex: 1,
-        paddingBottom: SHEET_MARGIN,
-        paddingHorizontal: SHEET_MARGIN,
+        paddingBottom: card ? SHEET_MARGIN : 0,
+        paddingHorizontal: card ? SHEET_MARGIN : 0,
       }}
       testID={testID}
     >
       <View
         style={{
           backgroundColor: theme.colors.surfaceRaised,
-          borderRadius: SHEET_RADIUS,
+          ...(card
+            ? { borderRadius: SHEET_RADIUS }
+            : { borderTopLeftRadius: FULL_SHEET_RADIUS, borderTopRightRadius: FULL_SHEET_RADIUS }),
           flex: 1,
           overflow: 'hidden',
         }}

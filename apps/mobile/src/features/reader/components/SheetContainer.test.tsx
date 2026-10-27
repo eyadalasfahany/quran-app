@@ -30,6 +30,18 @@ describe('SheetContainer', () => {
     expect(view.getByText('No translation chosen')).toBeOnTheScreen();
   });
 
+  it('reports tab changes and takes the full sheet away from the actions tab', async () => {
+    const onTabChange = jest.fn();
+    const view = await renderUi(
+      <SheetContainer executor={executor} onTabChange={onTabChange} tab="actions" verseKey="1:2" />,
+      { locale: 'en' },
+    );
+
+    await fireEvent.press(view.getByRole('tab', { name: 'Tafsir' }));
+
+    expect(onTabChange).toHaveBeenCalledWith('tafsir');
+  });
+
   it('moves to the next ayah inside the sheet', async () => {
     const view = await renderUi(<SheetContainer executor={executor} tab="tafsir" verseKey="1:2" />, { locale: 'en' });
 

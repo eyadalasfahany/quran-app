@@ -144,10 +144,18 @@
       "segments": {
         "surahs": "السور",
         "juz": "الأجزاء"
-      }
+      },
+      "lastRead": "آخر قراءة: {{surah}} · الآية {{ayah}}",
+      "resume": "متابعة"
     },
     "surah": {
-      "meta": "{{place}} · {{count}} آيات",
+      "meta_zero": "{{place}} · {{n}} آية",
+      "meta_one": "{{place}} · آية واحدة",
+      "meta_two": "{{place}} · آيتان",
+      "meta_few": "{{place}} · {{n}} آيات",
+      "meta_many": "{{place}} · {{n}} آية",
+      "meta_other": "{{place}} · {{n}} آية",
+      "page": "ص {{page}}",
       "revelation": {
         "makkah": "مكية",
         "madinah": "مدنية"
@@ -161,14 +169,21 @@
   "search": {
     "title": "البحث",
     "placeholder": "ابحث في القرآن",
+    "cancel": "إلغاء",
     "hint": "ابحث بالآية، رقم السورة، أو اسمها",
     "empty": "ابدأ بالكتابة للبحث في القرآن",
     "noResults": "لا توجد نتائج",
     "recentTitle": "عمليات البحث الأخيرة",
     "removeRecent": "إزالة {{query}}",
     "showMore": "عرض المزيد",
-    "resultReference": "{{surah}} · {{verseKey}} · {{ayah}}",
-    "surahResultHint": "{{count}} آية"
+    "resultReference": "{{surah}} · {{ayah}}",
+    "surahResultHint_zero": "{{n}} آية · تبدأ صفحة {{page}}",
+    "surahResultHint_one": "آية واحدة · تبدأ صفحة {{page}}",
+    "surahResultHint_two": "آيتان · تبدأ صفحة {{page}}",
+    "surahResultHint_few": "{{n}} آيات · تبدأ صفحة {{page}}",
+    "surahResultHint_many": "{{n}} آية · تبدأ صفحة {{page}}",
+    "surahResultHint_other": "{{n}} آية · تبدأ صفحة {{page}}",
+    "surahTag": "سورة"
   },
   "ui": {
     "ayahNumber": "الآية {{number}}",
@@ -179,5 +194,11 @@
       "blue": "تظليل أزرق",
       "rose": "تظليل وردي"
     }
+  },
+  "home": {
+    "continueReading": "تابع القراءة",
+    "place": "الآية {{ayah}} · صفحة {{page}} · الجزء {{juz}}",
+    "resume": "متابعة",
+    "progress": "قرأت {{percent}}٪ من المصحف"
   }
 }

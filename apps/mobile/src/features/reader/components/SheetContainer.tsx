@@ -7,6 +7,7 @@ import { useTheme } from '@/core/theme';
 
 import { AyahPanelContent } from '../panels/AyahPanelContent';
 import type { PanelTab } from '../selection';
+import { sheetShapeFor } from '../form-sheet';
 import { PanelTabs } from './PanelTabs';
 import { SheetFrame } from './SheetFrame';
 
@@ -14,12 +15,15 @@ export function SheetContainer({
   verseKey,
   tab,
   onClose,
+  onTabChange,
   executor,
   testID = 'sheet-container',
 }: {
   verseKey: string;
   tab: PanelTab;
   onClose?: () => void;
+  /** Reports the tab the reader switched to, so the sheet around it can resize. */
+  onTabChange?: (tab: PanelTab) => void;
   executor?: SqlExecutor | null;
   testID?: string;
 }) {
@@ -27,9 +31,13 @@ export function SheetContainer({
   const theme = useTheme();
   const [currentTab, setCurrentTab] = useState<PanelTab>(tab);
   const [currentKey, setCurrentKey] = useState(verseKey);
+  const changeTab = (next: PanelTab) => {
+    setCurrentTab(next);
+    onTabChange?.(next);
+  };
 
   return (
-    <SheetFrame>
+    <SheetFrame shape={sheetShapeFor(currentTab)}>
       <View
         accessibilityLabel={t('reader.sheet.label')}
         style={{
@@ -40,11 +48,11 @@ export function SheetContainer({
         }}
         testID={testID}
       >
-        <PanelTabs onChange={setCurrentTab} testID={`${testID}-tabs`} value={currentTab} />
+        <PanelTabs onChange={changeTab} testID={`${testID}-tabs`} value={currentTab} />
         <AyahPanelContent
           executor={executor}
           onClose={onClose}
-          onTabChange={setCurrentTab}
+          onTabChange={changeTab}
           onVerseChange={setCurrentKey}
           tab={currentTab}
           testID={`${testID}-content`}

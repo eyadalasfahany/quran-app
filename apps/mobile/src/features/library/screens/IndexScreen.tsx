@@ -99,7 +99,6 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
       ayah={continueReading.ayah}
       chapter={continueReading.chapter}
       onPress={() => openVerse(continueReading.verseKey)}
-      verseKey={continueReading.verseKey}
     />
   ) : null;
 

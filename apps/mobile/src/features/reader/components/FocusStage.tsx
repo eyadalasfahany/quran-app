@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View, type NativeSyntheticEvent } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { timing, useTheme } from '@/core/theme';
@@ -127,8 +128,11 @@ export function FocusStage({
     }
   };
 
+  const topInset = (useContext(SafeAreaInsetsContext) ?? { top: 0 }).top;
+
   return (
-    <View style={{ flex: 1, paddingBottom: theme.space[8], paddingTop: theme.space[6] }} testID={testID}>
+    // Focus replaces the reader toolbar, so its exit bar sits where the toolbar would, below the status bar.
+    <View style={{ flex: 1, paddingBottom: theme.space[8], paddingTop: topInset + theme.space[2] }} testID={testID}>
       <View
         style={{
           alignItems: 'center',

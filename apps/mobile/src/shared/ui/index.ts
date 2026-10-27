@@ -13,6 +13,7 @@ export { HighlightSwatch } from './HighlightSwatch';
 export { Icon, type IconName } from './Icon';
 export { IconButton, ICON_BUTTON_SIZE, type IconButtonVariant } from './IconButton';
 export { ListRow } from './ListRow';
+export { NumberMedallion } from './NumberMedallion';
 export { PageDivider } from './PageDivider';
 export { QuranText } from './QuranText';
 export { Screen } from './Screen';

@@ -1,40 +1,47 @@
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
+import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import type { ChapterRecord } from '@/features/reader/data/chapters';
-import { ListRow, UiText } from '@/shared/ui';
+import { Card, UiText } from '@/shared/ui';
 
+// The Surah index's last-read card: «آخر قراءة: البقرة · الآية ٢٥٥» with «متابعة» on its trailing side.
 export function ContinueReadingRow({
   chapter,
-  verseKey,
   ayah,
   onPress,
   testID = 'index-continue-reading',
 }: {
   chapter: ChapterRecord;
-  verseKey: string;
   ayah: number;
   onPress: () => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const locale = useLocale();
+  const label = t('library.index.lastRead', { ayah: formatNumber(ayah, locale), surah: chapter.nameArabic });
+  const resume = t('library.index.resume');
 
   return (
-    <View style={{ gap: theme.space[2], paddingBottom: theme.space[3] }}>
-      <UiText variant="headline">{t('library.index.continueReading')}</UiText>
-      <ListRow
-        onPress={onPress}
-        separator="strong"
-        subtitle={t('library.index.continueSubtitle', {
-          ayah,
-          surah: chapter.nameArabic,
-          verseKey,
-        })}
-        testID={testID}
-        title={chapter.nameSimple}
-      />
-    </View>
+    <Pressable
+      accessibilityLabel={`${label}, ${resume}`}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => ({ opacity: pressed ? theme.opacity.pressed : 1 })}
+      testID={testID}
+    >
+      <Card padding={3} radius="md" style={{ marginBottom: theme.space[3] }}>
+        <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3] }}>
+          <UiText numberOfLines={1} style={{ flex: 1 }} variant="subhead">
+            {label}
+          </UiText>
+          <UiText tone="brand" variant="label">
+            {resume}
+          </UiText>
+        </View>
+      </Card>
+    </Pressable>
   );
 }

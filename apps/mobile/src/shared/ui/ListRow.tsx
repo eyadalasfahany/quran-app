@@ -16,6 +16,8 @@ export function ListRow({
   trailing,
   onPress,
   separator,
+  titleVariant = 'body',
+  chevron = true,
   testID,
 }: {
   title: string;
@@ -24,6 +26,10 @@ export function ListRow({
   trailing?: ReactNode;
   onPress?: () => void;
   separator?: 'line' | 'strong';
+  /** `displaySm` sets the title in Amiri, as the surah index does. */
+  titleVariant?: 'body' | 'displaySm';
+  /** Rows whose trailing content already reads as the destination (the index's page) drop the chevron. */
+  chevron?: boolean;
   testID?: string;
 }) {
   const theme = useTheme();
@@ -39,7 +45,7 @@ export function ListRow({
     <>
       {leading}
       <View style={{ flex: 1, gap: 2 }}>
-        <UiText variant="body">{title}</UiText>
+        <UiText variant={titleVariant}>{title}</UiText>
         {subtitle ? (
           <UiText tone="muted" variant="caption">
             {subtitle}
@@ -47,7 +53,7 @@ export function ListRow({
         ) : null}
       </View>
       {trailing}
-      {onPress ? <Icon color={colors.inkMuted} mirrorInRtl name={CHEVRON} size={16} testID="list-row-chevron" /> : null}
+      {onPress && chevron ? <Icon color={colors.inkMuted} mirrorInRtl name={CHEVRON} size={16} testID="list-row-chevron" /> : null}
     </>
   );
 

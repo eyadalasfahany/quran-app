@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { themes } from '@/core/theme';
 
@@ -19,6 +20,16 @@ const stage = {
 };
 
 describe('FocusStage', () => {
+  it('puts the exit bar below the status bar, where the reader toolbar sits', async () => {
+    const view = await renderUi(
+      <SafeAreaProvider initialMetrics={{ frame: { height: 844, width: 390, x: 0, y: 0 }, insets: { bottom: 34, left: 0, right: 0, top: 59 } }}>
+        <FocusStage {...stage} onClose={() => undefined} testID="focus-stage" />
+      </SafeAreaProvider>,
+    );
+
+    expect(flatStyle(view.getByTestId('focus-stage').props.style).paddingTop).toBe(59 + 8);
+  });
+
   it.each(locales)('dims the ayah before and after the current one in %s', async (locale) => {
     const view = await renderUi(
       <FocusStage {...stage} onClose={() => undefined} onNext={() => undefined} onPrevious={() => undefined} />,

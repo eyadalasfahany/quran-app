@@ -23,56 +23,31 @@ const chapter: ChapterRecord = {
 };
 
 describe('ContinueReadingRow', () => {
-  it('renders the section title and continue row', async () => {
-    const view = await renderUi(
-      <ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} verseKey="2:255" />,
-    );
+  it('reads «آخر قراءة: البقرة · الآية ٢٥٥» with «متابعة» in brand, on a raised card', async () => {
+    const view = await renderUi(<ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} />);
 
-    expect(view.getByText(/Continue reading|تابع القراءة/)).toBeOnTheScreen();
-    expect(view.getByText('Al-Baqarah')).toBeOnTheScreen();
-    expect(view.getByText(/2:255/)).toBeOnTheScreen();
+    expect(view.getByText('آخر قراءة: البقرة · الآية ٢٥٥')).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('متابعة').props.style).color).toBe(themes.light.colors.brand);
+    expect(view.queryByText('Al-Baqarah')).toBeNull();
   });
 
-  it('draws the section title as an ink headline', async () => {
-    const view = await renderUi(
-      <ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} verseKey="2:255" />,
-    );
-
-    expect(flatStyle(view.getByText('تابع القراءة').props.style)).toMatchObject({
-      ...themes.light.text.headline,
-      color: themes.light.colors.ink,
+  it.each(locales)('is one button with the whole line as its label (%s)', async (locale) => {
+    const view = await renderUi(<ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} />, {
+      locale,
     });
+    const name =
+      locale === 'ar' ? 'آخر قراءة: البقرة · الآية ٢٥٥, متابعة' : 'Last read: البقرة · ayah 255, Continue';
+
+    expect(view.getByRole('button', { name })).toBeOnTheScreen();
   });
 
-  it('calls onPress when the row is pressed', async () => {
+  it('calls onPress', async () => {
     const onPress = jest.fn();
-    const view = await renderUi(
-      <ContinueReadingRow ayah={255} chapter={chapter} onPress={onPress} verseKey="2:255" />,
-    );
+    const view = await renderUi(<ContinueReadingRow ayah={255} chapter={chapter} onPress={onPress} />);
 
     await fireEvent.press(view.getByRole('button'));
 
     expect(onPress).toHaveBeenCalledTimes(1);
-  });
-
-  it('labels the row button with the surah and position', async () => {
-    const view = await renderUi(
-      <ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} verseKey="2:255" />,
-    );
-
-    expect(view.getByTestId('index-continue-reading').props.accessibilityLabel).toBe(
-      'Al-Baqarah, البقرة · 2:255 · 255',
-    );
-  });
-
-  it.each(locales)('renders under %s locale', async (locale) => {
-    const view = await renderUi(
-      <ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} verseKey="2:255" />,
-      { locale },
-    );
-
-    expect(view.getByText(locale === 'ar' ? 'تابع القراءة' : 'Continue reading')).toBeOnTheScreen();
-    expect(flatStyle(view.getByText('Al-Baqarah').props.style).fontFamily).toBeDefined();
   });
 
   it('has no raw colour literals', () => {

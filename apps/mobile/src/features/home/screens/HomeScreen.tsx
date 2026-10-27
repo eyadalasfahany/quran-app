@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { SectionScreen } from '@/core/layout';
-import { ContinueReadingRow } from '@/features/library/components/ContinueReadingRow';
+import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
 import { useReadingAnchor } from '@/features/reader/anchor/useReadingAnchor';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
@@ -25,7 +25,7 @@ export function HomeScreen() {
       if (verse === undefined || chapter === undefined) {
         return undefined;
       }
-      return { ayah: verse.verseNumber, chapter, verseKey: verse.verseKey };
+      return { chapter, verse };
     } catch {
       return undefined;
     }
@@ -34,12 +34,12 @@ export function HomeScreen() {
   return (
     <SectionScreen testID="screen-home" title={t('tabs.home')}>
       {continueReading ? (
-        <ContinueReadingRow
-          ayah={continueReading.ayah}
-          chapter={continueReading.chapter}
-          onPress={() => router.push(`/read/${continueReading.verseKey}` as Href)}
-          testID="home-continue-reading"
-          verseKey={continueReading.verseKey}
+        <ContinueReadingCard
+          ayah={continueReading.verse.verseNumber}
+          juz={continueReading.verse.juz}
+          onPress={() => router.push(`/read/${continueReading.verse.verseKey}` as Href)}
+          page={continueReading.verse.page}
+          surahName={continueReading.chapter.nameArabic}
         />
       ) : null}
     </SectionScreen>

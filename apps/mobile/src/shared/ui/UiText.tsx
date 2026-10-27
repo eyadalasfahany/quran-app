@@ -6,7 +6,7 @@ import { displayFontFamilies, uiFontFamilies } from '@/core/theme';
 import { maxFontScale } from './textStyles';
 import { useContrastColors } from './useContrastColors';
 
-export type TextTone = 'ink' | 'muted' | 'brand' | 'danger' | 'onBrand' | 'goldInk';
+export type TextTone = 'ink' | 'muted' | 'brand' | 'danger' | 'onBrand' | 'onBrandMuted' | 'goldInk';
 
 const toneColor: Record<TextTone, keyof ColorTokens> = {
   ink: 'ink',
@@ -14,6 +14,7 @@ const toneColor: Record<TextTone, keyof ColorTokens> = {
   brand: 'brand',
   danger: 'danger',
   onBrand: 'onBrand',
+  onBrandMuted: 'onBrandSurfaceMuted',
   goldInk: 'goldInk',
 };
 

@@ -72,6 +72,19 @@ describe('ListRow', () => {
     expect(flatStyle(view.getByTestId('row').props.style).borderBottomWidth).toBeUndefined();
   });
 
+  it('can drop the chevron when the trailing content already says where it goes', async () => {
+    const view = await renderUi(<ListRow chevron={false} onPress={() => undefined} title="البقرة" />);
+
+    expect(view.getByRole('button')).toBeOnTheScreen();
+    expect(view.queryByTestId('list-row-chevron', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('sets the title in Amiri with the display variant', async () => {
+    const view = await renderUi(<ListRow title="البقرة" titleVariant="displaySm" />);
+
+    expect(flatStyle(view.getByText('البقرة').props.style)).toMatchObject({ fontFamily: 'Amiri-Bold', fontSize: 20 });
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('ListRow.tsx')).toEqual([]);
   });

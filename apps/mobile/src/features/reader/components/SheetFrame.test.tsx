@@ -4,7 +4,7 @@ import { themes } from '@/core/theme';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
-import { SHEET_MARGIN, SHEET_RADIUS } from '../form-sheet';
+import { FULL_SHEET_RADIUS, SHEET_MARGIN, SHEET_RADIUS } from '../form-sheet';
 import { SheetFrame } from './SheetFrame';
 
 describe('SheetFrame', () => {
@@ -76,6 +76,19 @@ describe('SheetFrame', () => {
 
     expect(view.getByTestId('sheet-frame-grabber').props.accessibilityRole).toBeUndefined();
     expect(view.getByTestId('sheet-frame-grabber').props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('draws the full-width sheet edge to edge with rounded top corners only', async () => {
+    const view = await renderUi(
+      <SheetFrame shape="full" testID="sheet-frame">
+        <Text>التفسير</Text>
+      </SheetFrame>,
+    );
+
+    expect(flatStyle(view.getByTestId('sheet-frame').props.style)).toMatchObject({ paddingBottom: 0, paddingHorizontal: 0 });
+    const card = flatStyle(view.getByTestId('sheet-frame-card').props.style);
+    expect(card).toMatchObject({ borderTopLeftRadius: FULL_SHEET_RADIUS, borderTopRightRadius: FULL_SHEET_RADIUS });
+    expect(card.borderRadius).toBeUndefined();
   });
 
   it('has no raw colour literals', () => {

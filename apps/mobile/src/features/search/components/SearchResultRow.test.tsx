@@ -1,6 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 
-import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { themes } from '@/core/theme';
 import type { ChapterRecord } from '@/features/reader/data/chapters';
@@ -47,52 +47,47 @@ const words: WordRecord[] = [
   { verseId: 2, position: 3, charType: 'end', textUthmani: '٢', textImlaei: '٢' },
 ];
 
-const hidden = { includeHiddenElements: true };
+const hidden = { includeHiddenElements: true } as const;
 
 describe('SearchResultRow', () => {
-  it('renders Uthmani text and a reference line', async () => {
+  it('draws the Search frame card: the reference «الفاتحة · ٢» above the ayah', async () => {
     const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[1, 2]}
-        onPress={() => undefined}
-        testID="search-result"
-        verse={verse}
-        words={words}
-      />,
+      <SearchResultRow chapter={chapter} highlightedPositions={[]} onPress={() => undefined} testID="result" verse={verse} words={words} />,
     );
 
-    expect(view.getByText(/ٱلْحَمْدُ/)).toBeOnTheScreen();
-    expect(view.getByText(/1:2/)).toBeOnTheScreen();
+    expect(view.getByText('الفاتحة · ٢')).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('الفاتحة · ٢').props.style)).toMatchObject({
+      color: themes.light.colors.inkMuted,
+      fontSize: 12,
+    });
+    expect(view.getByText('ٱلْحَمْدُ', hidden)).toBeOnTheScreen();
+    expect(view.queryByTestId('search-result-chevron', hidden)).toBeNull();
   });
 
-  it('exposes one accessibility label on the row button', async () => {
+  it('outlines the matched words', async () => {
     const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[]}
-        onPress={() => undefined}
-        testID="search-result"
-        verse={verse}
-        words={words}
-      />,
+      <SearchResultRow chapter={chapter} highlightedPositions={[1]} onPress={() => undefined} testID="result" verse={verse} words={words} />,
     );
 
-    const button = view.getByRole('button');
-    expect(button.props.accessibilityLabel).toContain('الحمد لله رب العالمين');
-    expect(view.queryAllByLabelText(button.props.accessibilityLabel)).toHaveLength(1);
+    expect(view.getByTestId('result-text-match-1', hidden)).toBeOnTheScreen();
   });
 
-  it('calls onPress when the row is pressed', async () => {
+  it.each([
+    ['ar', 'الحمد لله رب العالمين الآية ٢, الفاتحة · ٢'],
+    ['en', 'الحمد لله رب العالمين Ayah 2, الفاتحة · 2'],
+  ] as const)('labels the ayah with its Imla\'i text, number and reference in %s', async (locale, name) => {
+    const view = await renderUi(
+      <SearchResultRow chapter={chapter} highlightedPositions={[]} onPress={() => undefined} verse={verse} words={words} />,
+      { locale },
+    );
+
+    expect(view.getByRole('button', { name })).toBeOnTheScreen();
+  });
+
+  it('calls onPress', async () => {
     const onPress = jest.fn();
     const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[]}
-        onPress={onPress}
-        verse={verse}
-        words={words}
-      />,
+      <SearchResultRow chapter={chapter} highlightedPositions={[]} onPress={onPress} verse={verse} words={words} />,
     );
 
     await fireEvent.press(view.getByRole('button'));
@@ -100,96 +95,7 @@ describe('SearchResultRow', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it('draws the reference as a muted caption', async () => {
-    const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[]}
-        onPress={() => undefined}
-        verse={verse}
-        words={words}
-      />,
-    );
-
-    expect(flatStyle(view.getByText(/1:2/).props.style)).toMatchObject({
-      ...themes.light.text.caption,
-      color: themes.light.colors.inkMuted,
-    });
-  });
-
-  it.each([
-    ['line', themes.light.colors.line],
-    ['strong', themes.light.colors.lineStrong],
-  ] as const)('draws a %s separator with Divider', async (separator, color) => {
-    const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[]}
-        onPress={() => undefined}
-        separator={separator}
-        testID="search-result"
-        verse={verse}
-        words={words}
-      />,
-    );
-
-    expect(flatStyle(view.getByTestId('search-result-separator', hidden).props.style)).toMatchObject({
-      backgroundColor: color,
-      height: 1,
-    });
-  });
-
-  it('has no separator by default', async () => {
-    const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[]}
-        onPress={() => undefined}
-        testID="search-result"
-        verse={verse}
-        words={words}
-      />,
-    );
-
-    expect(view.queryByTestId('search-result-separator', hidden)).toBeNull();
-  });
-
-  it.each(locales)('points the chevron forward in the reading direction (%s)', async (locale) => {
-    const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[]}
-        onPress={() => undefined}
-        verse={verse}
-        words={words}
-      />,
-      { locale },
-    );
-
-    expect(flatStyle(view.getByTestId('search-result-chevron', hidden).props.style).transform).toEqual(
-      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
-    );
-  });
-
-  it.each(locales)('outlines highlighted words in %s', async (locale) => {
-    const view = await renderUi(
-      <SearchResultRow
-        chapter={chapter}
-        highlightedPositions={[1]}
-        onPress={() => undefined}
-        testID="search-result"
-        verse={verse}
-        words={words}
-      />,
-      { locale },
-    );
-
-    const highlighted = view.getByText(/ٱلْحَمْدُ/);
-    expect(flatStyle(highlighted.props.style).borderWidth).toBe(1);
-  });
-
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/search/components/SearchResultRow.tsx')).toEqual([]);
-    expect(featureComponentLiterals('features/search/components/UthmaniHighlightText.tsx')).toEqual([]);
   });
 });

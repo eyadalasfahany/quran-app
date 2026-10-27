@@ -12,68 +12,57 @@ const words: WordRecord[] = [
   { verseId: 2, position: 3, charType: 'end', textUthmani: '٢', textImlaei: '٢' },
 ];
 
+const hidden = { includeHiddenElements: true } as const;
+
 describe('UthmaniHighlightText', () => {
-  it('outlines highlighted words by position', async () => {
-    const view = await renderUi(
-      <UthmaniHighlightText highlightedPositions={[1]} testID="uthmani-highlight" words={words} />,
-    );
+  it('outlines matched words in brand, with no fill (ADR 0012)', async () => {
+    const view = await renderUi(<UthmaniHighlightText highlightedPositions={[1]} testID="uthmani" words={words} />);
 
-    const highlighted = view.getByText(/ٱلْحَمْدُ/);
-    const plain = view.getByText(/لِلَّهِ/);
-    expect(flatStyle(highlighted.props.style).borderWidth).toBe(1);
-    expect(flatStyle(plain.props.style).borderWidth).toBeUndefined();
-  });
-
-  it('renders without highlight styling when positions are empty', async () => {
-    const view = await renderUi(
-      <UthmaniHighlightText highlightedPositions={[]} testID="uthmani-highlight" words={words} />,
-    );
-
-    expect(flatStyle(view.getByText(/ٱلْحَمْدُ/).props.style).borderWidth).toBeUndefined();
-    expect(flatStyle(view.getByText(/لِلَّهِ/).props.style).borderWidth).toBeUndefined();
-  });
-
-  it.each(locales)('uses RTL writing direction (%s)', async (locale) => {
-    const view = await renderUi(
-      <UthmaniHighlightText highlightedPositions={[]} testID="uthmani-highlight" words={words} />,
-      { locale },
-    );
-
-    expect(flatStyle(view.getByTestId('uthmani-highlight-body').props.style).writingDirection).toBe('rtl');
-  });
-
-  it('renders the words in the Reading Quran style, unscaled by the system text size', async () => {
-    const view = await renderUi(
-      <UthmaniHighlightText highlightedPositions={[]} testID="uthmani-highlight" words={words} />,
-    );
-    const body = view.getByTestId('uthmani-highlight-body');
-
-    expect(flatStyle(body.props.style)).toMatchObject({
-      ...quranText('quranReading'),
-      color: themes.light.colors.ink,
+    expect(flatStyle(view.getByTestId('uthmani-match-1', hidden).props.style)).toMatchObject({
+      borderColor: themes.light.colors.brand,
+      borderWidth: themes.light.stroke.match,
     });
-    expect(body.props.allowFontScaling).toBe(false);
+    expect(flatStyle(view.getByTestId('uthmani-match-1', hidden).props.style).backgroundColor).toBeUndefined();
+    expect(view.queryByTestId('uthmani-match-2', hidden)).toBeNull();
+  });
+
+  it('draws nothing around words when nothing matched', async () => {
+    const view = await renderUi(<UthmaniHighlightText highlightedPositions={[]} testID="uthmani" words={words} />);
+
+    expect(view.queryByTestId(/uthmani-match/, hidden)).toBeNull();
+  });
+
+  it.each(locales)('lays the words out right to left in %s', async (locale) => {
+    const view = await renderUi(<UthmaniHighlightText highlightedPositions={[]} testID="uthmani" words={words} />, {
+      locale,
+    });
+
+    expect(flatStyle(view.getByTestId('uthmani', hidden).props.style)).toMatchObject({
+      flexDirection: locale === 'ar' ? 'row' : 'row-reverse',
+      flexWrap: 'wrap',
+    });
+  });
+
+  it('sets each word in the result Quran style, unscaled by the system text size', async () => {
+    const view = await renderUi(<UthmaniHighlightText highlightedPositions={[]} words={words} />);
+    const word = view.getByText('لِلَّهِ', hidden);
+
+    expect(flatStyle(word.props.style)).toMatchObject(quranText('quranResult'));
+    expect(word.props.allowFontScaling).toBe(false);
   });
 
   it('keeps every word exactly as stored', async () => {
-    const view = await renderUi(
-      <UthmaniHighlightText highlightedPositions={[1]} testID="uthmani-highlight" words={words} />,
-    );
+    const view = await renderUi(<UthmaniHighlightText highlightedPositions={[2]} words={words} />);
 
     for (const word of words) {
-      expect(view.getByText(word.textUthmani, { exact: false })).toBeOnTheScreen();
+      expect(view.getByText(word.textUthmani, hidden).props.children).toBe(word.textUthmani);
     }
   });
 
-  it('does not expose its own accessibility label', async () => {
-    const view = await renderUi(
-      <UthmaniHighlightText highlightedPositions={[]} testID="uthmani-highlight" words={words} />,
-    );
+  it('is hidden from screen readers; its row carries the label', async () => {
+    const view = await renderUi(<UthmaniHighlightText highlightedPositions={[]} testID="uthmani" words={words} />);
 
-    const container = view.getByTestId('uthmani-highlight');
-    expect(container.props.accessible).toBe(false);
-    expect(container.props.accessibilityLabel).toBeUndefined();
-    expect(container.props.importantForAccessibility).toBe('no');
+    expect(view.getByTestId('uthmani', hidden).props.importantForAccessibility).toBe('no-hide-descendants');
   });
 
   it('has no raw colour literals', () => {

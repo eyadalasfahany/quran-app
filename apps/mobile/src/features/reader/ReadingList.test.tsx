@@ -5,7 +5,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { ThemeProvider } from '@/core/theme';
 
 import { openReaderTestContent } from '../../../jest/reader-test-db';
-import { renderUi } from '../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../jest/render-ui';
 import { getVerseByKey, getVerseRange } from './data/verses';
 import { ReadingList } from './ReadingList';
 import type { ReadingRow } from './reading-list-types';
@@ -136,6 +136,28 @@ describe('ReadingList', () => {
     });
     expect(view.getByTestId('list-fade')).toBeOnTheScreen();
     expect(view.queryByTestId('reader-mode-fade')).toBeNull();
+  });
+
+  it('starts below the floating toolbar and keeps the frame gutter', async () => {
+    const view = await renderUi(
+      <ReadingList
+        anchorVerseKey="18:10"
+        bottomInset={34}
+        mode="reading"
+        onOpenAyahActions={() => undefined}
+        onSelectVerseKey={() => undefined}
+        testID="list"
+        topInset={123}
+      />,
+    );
+
+    const list = view.getByTestId('list');
+    let wrapper = list.parent;
+    while (wrapper !== null && flatStyle(wrapper.props.style).paddingTop === undefined) {
+      wrapper = wrapper.parent;
+    }
+    expect(flatStyle(wrapper?.props.style)).toMatchObject({ paddingBottom: 34, paddingTop: 123 });
+    expect(flatStyle(list.props.contentContainerStyle).paddingHorizontal).toBe(20);
   });
 
   it('extends the window when the list reaches an edge', async () => {

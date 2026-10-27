@@ -1,9 +1,8 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 
-import { SheetContainer } from '@/features/reader/components/SheetContainer';
-import { SheetHost } from '@/features/reader/components/SheetHost';
-import { TAFSIR_SHEET_TOP, sheetScreenOptions } from '@/features/reader/form-sheet';
+import { sheetScreenOptions } from '@/features/reader/form-sheet';
 import { useReaderSelection } from '@/features/reader/selection';
+import { AyahSheetScreen } from '@/features/reader/screens/AyahSheetScreen';
 
 function routeVerseKey(value: string | string[] | undefined): string {
   if (Array.isArray(value)) {
@@ -18,13 +17,7 @@ export default function TafsirRoute() {
   return (
     <>
       <Stack.Screen options={sheetScreenOptions} />
-      <SheetHost topGap={TAFSIR_SHEET_TOP}>
-        <SheetContainer
-          onClose={() => router.back()}
-          tab={tab === 'actions' ? 'tafsir' : tab}
-          verseKey={routeVerseKey(params.verseKey)}
-        />
-      </SheetHost>
+      <AyahSheetScreen initialTab={tab === 'actions' ? 'tafsir' : tab} verseKey={routeVerseKey(params.verseKey)} />
     </>
   );
 }

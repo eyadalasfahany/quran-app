@@ -57,6 +57,8 @@ export const stroke = {
   frame: 1.5,
   frameInner: 0.75,
   activeRule: 3,
+  // The outline around a matched word in search results (ADR 0012: matches are outlined, not filled).
+  match: 1.5,
 } as const;
 
 export const opacity = {

@@ -23,43 +23,43 @@ const chapter: ChapterRecord = {
 };
 
 describe('SurahResultRow', () => {
-  it('renders the surah number and names', async () => {
+  it('draws the Search frame card: brand number tile, «سورة البقرة» in Amiri, the count and start page, a gold tag', async () => {
     const view = await renderUi(<SurahResultRow chapter={chapter} onPress={() => undefined} testID="surah-result" />);
 
-    expect(view.getByText('Al-Baqarah')).toBeOnTheScreen();
-    expect(view.getByText('البقرة')).toBeOnTheScreen();
-    expect(view.getByText('2')).toBeOnTheScreen();
-  });
-
-  it('leads with the number in brand and shows the ayah count hint', async () => {
-    const view = await renderUi(<SurahResultRow chapter={chapter} onPress={() => undefined} />);
-
-    expect(flatStyle(view.getByText('2').props.style)).toMatchObject({
-      ...themes.light.text.headline,
-      color: themes.light.colors.brand,
+    expect(flatStyle(view.getByTestId('surah-result-number').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.brandSurface,
+      height: 44,
+      width: 44,
     });
-    expect(view.getByText('286 آية')).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('٢').props.style).color).toBe(themes.light.colors.onBrand);
+    expect(flatStyle(view.getByText('سورة البقرة').props.style)).toMatchObject({ fontFamily: 'Amiri-Bold', fontSize: 20 });
+    expect(view.getByText('٢٨٦ آية · تبدأ صفحة ٢')).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('سورة').props.style).color).toBe(themes.light.colors.goldInk);
+    expect(view.queryByText('Al-Baqarah')).toBeNull();
   });
 
-  it('calls onPress when the row is pressed', async () => {
+  it('uses the Arabic plural for a short surah', async () => {
+    const view = await renderUi(
+      <SurahResultRow chapter={{ ...chapter, id: 1, nameArabic: 'الفاتحة', pageStart: 1, versesCount: 7 }} onPress={() => undefined} />,
+    );
+
+    expect(view.getByText('٧ آيات · تبدأ صفحة ١')).toBeOnTheScreen();
+  });
+
+  it.each(locales)('is one button labelled with the title and hint (%s)', async (locale) => {
+    const view = await renderUi(<SurahResultRow chapter={chapter} onPress={() => undefined} />, { locale });
+    const name = locale === 'ar' ? 'سورة البقرة, ٢٨٦ آية · تبدأ صفحة ٢' : 'Surah البقرة, 286 ayahs · starts on page 2';
+
+    expect(view.getByRole('button', { name })).toBeOnTheScreen();
+  });
+
+  it('calls onPress', async () => {
     const onPress = jest.fn();
     const view = await renderUi(<SurahResultRow chapter={chapter} onPress={onPress} />);
 
     await fireEvent.press(view.getByRole('button'));
 
     expect(onPress).toHaveBeenCalledTimes(1);
-  });
-
-  it('labels the row button with the name and hint', async () => {
-    const view = await renderUi(<SurahResultRow chapter={chapter} onPress={() => undefined} />, { locale: 'en' });
-
-    expect(view.getByRole('button', { name: 'Al-Baqarah, 286 ayahs' })).toBeOnTheScreen();
-  });
-
-  it.each(locales)('uses Amiri for the Arabic name (%s)', async (locale) => {
-    const view = await renderUi(<SurahResultRow chapter={chapter} onPress={() => undefined} />, { locale });
-
-    expect(flatStyle(view.getByText('البقرة').props.style).fontFamily).toBe('Amiri-Bold');
   });
 
   it('has no raw colour literals', () => {

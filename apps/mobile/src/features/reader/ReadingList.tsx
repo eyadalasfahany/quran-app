@@ -8,6 +8,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { View, useWindowDimensions } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
+import { useTheme } from '@/core/theme';
 import type { HighlightColor } from '@/features/library/data/model';
 
 import { BismillahLine } from './components/BismillahLine';
@@ -62,6 +63,7 @@ export function ReadingList({
   onVisibleVerseKey,
   testID,
 }: ReadingListProps) {
+  const theme = useTheme();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const columnWidth = readingColumnWidth(windowWidth, horizontalGutter);
   const listRef = useRef<FlashListRef<ReadingRow>>(null);
@@ -223,9 +225,11 @@ export function ReadingList({
 
   return (
     <ReaderModeFade mode="reading" testID={`${testID ?? 'reading-list'}-fade`}>
-      <View style={{ alignItems: 'center', flex: 1, width: '100%' }}>
+      {/* The toolbar floats over the top inset, so the list starts below it like the Mushaf list. */}
+      <View style={{ alignItems: 'center', flex: 1, paddingBottom: bottomInset, paddingTop: topInset, width: '100%' }}>
         <View style={{ flex: 1, maxWidth: columnWidth, width: '100%' }}>
           <FlashList
+            contentContainerStyle={{ paddingHorizontal: theme.space[5] }}
             data={rows}
             drawDistance={viewportHeight * 2}
             keyExtractor={(item) => item.key}
