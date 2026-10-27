@@ -1,21 +1,24 @@
 name: Contract
 
+# Paused: runs only when started by hand (Actions tab → Run workflow).
+# To turn automatic runs back on, uncomment push and pull_request and delete workflow_dispatch.
 on:
-  push:
-    branches: [main]
-    paths:
-      - apps/api/**
-      - apps/mobile/**
-      - packages/api-contract/**
-      - package-lock.json
-      - .github/workflows/contract.yml
-  pull_request:
-    paths:
-      - apps/api/**
-      - apps/mobile/**
-      - packages/api-contract/**
-      - package-lock.json
-      - .github/workflows/contract.yml
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - apps/api/**
+  #     - apps/mobile/**
+  #     - packages/api-contract/**
+  #     - package-lock.json
+  #     - .github/workflows/contract.yml
+  # pull_request:
+  #   paths:
+  #     - apps/api/**
+  #     - apps/mobile/**
+  #     - packages/api-contract/**
+  #     - package-lock.json
+  #     - .github/workflows/contract.yml
 
 permissions:
   contents: read

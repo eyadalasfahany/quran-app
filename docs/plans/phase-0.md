@@ -201,7 +201,11 @@ Built as planned, with these changes:
   - Change a field on purpose to confirm `tsc` fails, then revert.
   - API and mobile checks.
 
-### 10. CI — written; first real run after the developer pushes
+### 10. CI — written, paused by the developer
+
+- **Paused (27 Oct 2026):** all three workflows run only when started by hand (`workflow_dispatch`, from the Actions tab).
+  - The `push` and `pull_request` triggers are commented out in each file. Uncomment them and remove `workflow_dispatch` to turn automatic runs back on.
+  - The checks still run locally (root `CLAUDE.md`).
 
 Built as planned, with these changes:
 
@@ -229,6 +233,10 @@ Built as planned, with these changes:
   - The audit gate passes with the allowlist and its tests pass.
   - `renovate-config-validator` passes.
   - Every job's steps also passed in a fresh clone, without the gitignored `expo-env.d.ts` and `.expo/`. That covers mobile, the export with MySQL and Redis unreachable, and `composer qa`. The API tests there used the local MySQL user, because the CI `quran`/`quran` user exists only in the service container.
+- **First CI run (`api.yml`):** Pest failed on MySQL 9.7.
+  - Pulse's migration hashes `key_hash` with `md5()`, which MySQL 9.6 removed from generated columns. Local MySQL 9.2 still allows it.
+  - The published migration now uses the first 16 bytes of `sha2(key, 256)` (ADR 0007).
+  - A unit test blocks `md5()` and `sha1()` in migrations.
 - **Not run:** `actionlint`. The sandbox blocked downloading its binary. Run `brew install actionlint && actionlint` at the repo root.
 
 - Creates:

@@ -1,27 +1,30 @@
 name: Mobile
 
+# Paused: runs only when started by hand (Actions tab → Run workflow).
+# To turn automatic runs back on, uncomment push and pull_request and delete workflow_dispatch.
 on:
-  push:
-    branches: [main]
-    paths:
-      - apps/mobile/**
-      - packages/**
-      - package.json
-      - package-lock.json
-      - quran-app-design-system.html
-      - .github/audit-allowlist.json
-      - .github/scripts/**
-      - .github/workflows/mobile.yml
-  pull_request:
-    paths:
-      - apps/mobile/**
-      - packages/**
-      - package.json
-      - package-lock.json
-      - quran-app-design-system.html
-      - .github/audit-allowlist.json
-      - .github/scripts/**
-      - .github/workflows/mobile.yml
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - apps/mobile/**
+  #     - packages/**
+  #     - package.json
+  #     - package-lock.json
+  #     - quran-app-design-system.html
+  #     - .github/audit-allowlist.json
+  #     - .github/scripts/**
+  #     - .github/workflows/mobile.yml
+  # pull_request:
+  #   paths:
+  #     - apps/mobile/**
+  #     - packages/**
+  #     - package.json
+  #     - package-lock.json
+  #     - quran-app-design-system.html
+  #     - .github/audit-allowlist.json
+  #     - .github/scripts/**
+  #     - .github/workflows/mobile.yml
 
 permissions:
   contents: read

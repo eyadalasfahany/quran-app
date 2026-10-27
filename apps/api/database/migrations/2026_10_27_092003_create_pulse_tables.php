@@ -6,6 +6,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Pulse\Support\PulseMigration;
 
+/**
+ * Published from laravel/pulse 1.8.1, with one change: MySQL 9.6 removed MD5() from the built-in
+ * functions, so a generated column can't use it. key_hash is the first 16 bytes of SHA-256 instead.
+ * On MySQL only the database computes key_hash (Pulse hashes in PHP only on SQLite), so any
+ * deterministic 16-byte hash works. ADR 0007.
+ */
 return new class extends PulseMigration
 {
     /**
@@ -23,7 +29,7 @@ return new class extends PulseMigration
             $table->string('type');
             $table->mediumText('key');
             match ($this->driver()) {
-                'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(md5(`key`))'),
+                'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(left(sha2(`key`, 256), 32))'),
                 'pgsql' => $table->uuid('key_hash')->storedAs('md5("key")::uuid'),
                 'sqlite' => $table->string('key_hash'),
                 default => throw new LogicException("Pulse has no key_hash column definition for the [{$this->driver()}] driver."),
@@ -41,7 +47,7 @@ return new class extends PulseMigration
             $table->string('type');
             $table->mediumText('key');
             match ($this->driver()) {
-                'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(md5(`key`))'),
+                'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(left(sha2(`key`, 256), 32))'),
                 'pgsql' => $table->uuid('key_hash')->storedAs('md5("key")::uuid'),
                 'sqlite' => $table->string('key_hash'),
                 default => throw new LogicException("Pulse has no key_hash column definition for the [{$this->driver()}] driver."),
@@ -61,7 +67,7 @@ return new class extends PulseMigration
             $table->string('type');
             $table->mediumText('key');
             match ($this->driver()) {
-                'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(md5(`key`))'),
+                'mariadb', 'mysql' => $table->char('key_hash', 16)->charset('binary')->virtualAs('unhex(left(sha2(`key`, 256), 32))'),
                 'pgsql' => $table->uuid('key_hash')->storedAs('md5("key")::uuid'),
                 'sqlite' => $table->string('key_hash'),
                 default => throw new LogicException("Pulse has no key_hash column definition for the [{$this->driver()}] driver."),
