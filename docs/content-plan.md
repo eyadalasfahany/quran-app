@@ -44,7 +44,9 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Fonts | `expo-font` | \~58.0.10 | Bundles KFGQPC Quran fonts, Amiri, IBM Plex Sans Arabic |
 | Errors | `@sentry/react-native` | \~8.28.0 | Crash and error reporting, at the version SDK 58 pins |
 | Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0 | Over-the-air JavaScript fixes and store builds |
+| Development builds | `expo-dev-client` | \~58.0.15 | The EAS development profile; MMKV and other native modules don't run in Expo Go |
 | Tests | Jest + `jest-expo` + React Native Testing Library; Maestro | 30.5.2; \~58.0.12; 14.1.0; latest Maestro CLI | Unit and component tests; end-to-end flows on devices |
+| Lint | `eslint` + `eslint-config-expo` | 9.39.5; \~58.0.4 | Expo's flat config; ESLint 9 is the line `eslint-config-expo` supports |
 | API types | `openapi-typescript` | 7.13.0 | Generates the TypeScript types in `packages/api-contract` from `openapi.json` |
 
 **Backend (Laravel)**

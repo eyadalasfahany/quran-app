@@ -42,7 +42,9 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 
 ## Dependencies and checks
 
-- Add Expo-managed packages with `npx expo install`. Expo's pinned version wins over npm's latest.
+- Add Expo-managed packages with `npx expo install`. Expo's pinned version wins over npm's latest. Dev tools still go in `devDependencies` (`npx expo install` drops `--dev` here).
+- React and `react-dom` are pinned by `overrides` in the root `package.json`, so npm workspaces can't hoist a second React. Update them there whenever an SDK upgrade moves React.
+- `app.config.ts` reads `APP_VARIANT` (`development` by default, set per profile in `eas.json`) to choose the bundle ID and scheme.
 - Budgets: cold start to last-read ayah < 1.5 s on a mid-range Android, audio start < 1 s, 60 fps scrolling, search < 150 ms.
 - Run: `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`.
 - Every user-facing flow is checked in Arabic and English, and on compact and expanded windows.

@@ -78,7 +78,17 @@ Built as planned, plus three fixes found while testing: the renderer unwraps `Mo
 - Instead: Homebrew MySQL 9.2 (3306) with a `quran` user and `quran`/`quran_testing` databases (`docs/runbooks/local-setup.md`), Homebrew Redis 8.0 (6379), mail to the log.
 - Verify: `php artisan migrate`; reachable-path repository tests added and passing; `composer qa`; live `curl localhost:8000/api/v1/health` returns 200 with both checks true; `php artisan horizon` processes and `php artisan schedule:work` ticks.
 
-### 5. Expo SDK 58 app
+### 5. Expo SDK 58 app — done
+
+Built as planned, with these changes:
+
+- **Routes:** in `app/`, as spec §4 says, not in the template's `src/app/`.
+- **Removed from the template:** the web target (`react-native-web`, `react-dom`), the demo screens and the template's AGENTS, `.vscode` and `.claude` files.
+- **Lint:** `npm run lint` runs `eslint .`, because `expo lint` fails while `src/` holds only `.gitkeep` files.
+- **React:** pinned to 19.3.0 by root `overrides`. Without them, `expo-router`'s peer `react-dom@19.3.1` hoisted a second React and `expo-doctor` failed.
+- **`@quran/*` in Jest:** jest-expo's default transform list already transforms these packages, because their symlinks resolve outside `node_modules`.
+- **New dependency:** `expo-dev-client` for the development profile, added to the content-plan table.
+- **Open:** `npm audit --audit-level=high` reports `zod` <4.6.6 through `@expo/cli`. `@expo/cli` needs zod 3, and the fix ships only in zod 4, so this is unresolved until step 10.
 
 - Creates:
   - SDK 58 template moved into `apps/mobile` (keeping `CLAUDE.md` and `assets/fonts`).
