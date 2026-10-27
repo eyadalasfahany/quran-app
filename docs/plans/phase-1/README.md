@@ -20,8 +20,9 @@ One file per step of [`../phase-1.md`](../phase-1.md). Each brief is written so 
 | 6 | [step-06-packs-manifest-changes.md](step-06-packs-manifest-changes.md) | 3, 4 |
 | 7 | [step-07-device-database.md](step-07-device-database.md) | 5 |
 | 8 | [step-08-device-content-sync.md](step-08-device-content-sync.md) | 6, 7 |
-| 9 | [step-09-quran-core.md](step-09-quran-core.md) | **Blocked**: no `quran_core` access (ADR 0008) |
-| 10 | [step-10-exit-check.md](step-10-exit-check.md) | 8 |
+| 9 | [step-09-quran-core.md](step-09-quran-core.md) | **Superseded** by step 11: Tanzil supplies verse and word text (ADR 0010) |
+| 11 | [step-11-word-map-and-basmala.md](step-11-word-map-and-basmala.md) | 5, 7 (can run alongside 8) |
+| 10 | [step-10-exit-check.md](step-10-exit-check.md) | 8, 11 |
 
 ## Shared contract: pack tables and change-feed entities
 

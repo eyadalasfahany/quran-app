@@ -1,4 +1,6 @@
-# Step 9 — `quran_core` (API + App): BLOCKED
+# Step 9 — `quran_core` (API + App): SUPERSEDED
+
+**Superseded by [step 11](step-11-word-map-and-basmala.md) and [ADR 0010](../../adr/0010-html-designs-and-tanzil-text.md).** v1 takes verse and word text from Tanzil, aligned to QF word positions. What follows is kept only for history.
 
 **Do not implement this step yet.** As of 27 Oct 2026, our QF client gets no `quran_core` resources from Content Sync (`resources=quran_core:*` returns zero mutations). The developer decided not to contact QF (ADR 0008).
 

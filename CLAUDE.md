@@ -12,8 +12,11 @@
 - `docs/content-plan.md` covers licensing, content sources and pinned library versions. On versions and licence rules it wins over the spec.
 - If the code and the spec disagree, stop and ask. Don't silently pick one. When a decision changes, update the spec in the same change and add a short ADR in `docs/adr/`.
 
-## Figma
-https://www.figma.com/design/nwU9tRr75v8RrHunlKaA9U/Quran-App-%E2%80%94-Design?node-id=0-1&p=f&t=plhQVDpch4MTFQl4-0
+## Design source (ADR 0010)
+- `quran-app-design-system.html`: tokens and components.
+- `quran-app-screens.html`: phone screens, states, and the expanded-window sidebar.
+- Layouts these don't cover are drawn there from the existing tokens and approved before code.
+- Figma (https://www.figma.com/design/nwU9tRr75v8RrHunlKaA9U/Quran-App-%E2%80%94-Design) is optional reference only.
 
 ## Layout
 
@@ -63,7 +66,7 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
 ## How to work here
 
 - **Current phase: Phase 1, Content pipeline** (spec §15). The step-by-step plan is `docs/plans/phase-1.md`; Phase 0 is done (`docs/plans/phase-0.md`). Work one step at a time and keep each change small enough to review.
-- Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the Figma file above (tokens are transcribed from `quran-app-design-system.html` until Figma can be read, ADR 0005).
+- Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the HTML design files above (ADR 0010).
 - The developer commits and pushes. Don't commit unless asked.
 - Plan before coding anything that touches the schema, sync, the API contract or the reader.
 - An endpoint change ships with its OpenAPI update and the app-side types in the same change.

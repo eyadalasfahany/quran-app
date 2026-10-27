@@ -15,7 +15,7 @@ Not an agent coding task. The reviewer runs this after step 8 (and step 9, if it
 | 7 | Change feed | Simulate a `ROW_UPDATE` in a test sync, then foreground the app | The device row is updated with no pack download |
 | 8 | Atomicity | Corrupt a pack's hash on the server | The device keeps its old rows and reports `failed` |
 | 9 | All gates | `composer qa`, the mobile gates, `npm run typecheck`, the package tests | Green |
-| 10 | **QF text offline** | Needs step 9 | **Blocked** unless `quran_core` access exists |
-| 11 | **QF checksum over 6,236 ayahs** | Needs step 9 and the full dataset | **Blocked** |
+| 10 | Word map and Basmala | `npm run word-map:report -w @quran/quran-text-check`; the seed `words` table | 0 unexpected mismatches against QF word positions; 112 Basmala splits; every verse rejoins byte for byte |
+| 11 | Tanzil Simple (Imla'i) | The seed tests | Checksum rebuilt from the original lines |
 
-If rows 10 and 11 are still blocked, Phase 1 closes **partially**. Record that in `../phase-1.md` and spec §15, and Phase 2 starts on the Tanzil text (ADR 0008).
+The exit criterion is ADR 0010's: a fresh install reads Tanzil offline, the checksums pass, and QF content syncs. `quran_core` is no longer required.

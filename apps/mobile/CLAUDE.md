@@ -7,7 +7,8 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - `app/` holds Expo Router routes only. Routes stay thin: read params, render a feature screen.
 - `src/core/` holds api, db, sync, layout, theme, i18n, storage, telemetry.
 - `src/features/<feature>/` holds `components/`, `hooks/`, `data/` (repositories) and `store.ts` only when needed.
-- `src/shared/ui/` holds design-system components, rebuilt from the Figma file (link in the root CLAUDE.md) when a phase first needs them. Colors, spacing, radii and type come from `@quran/design-tokens`, which is pulled from Figma's variables and text styles (transcribed from `quran-app-design-system.html` until Figma can be read, ADR 0005); no raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
+- `src/shared/ui/` holds design-system components, built from `quran-app-design-system.html` and `quran-app-screens.html` (ADR 0010) when a phase first needs them.
+- Colors, spacing, radii and type come from `@quran/design-tokens`, which is transcribed from the HTML design system. No raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
 - Text styles set the per-weight family (`IBMPlexSansArabic-Bold`) and never `fontWeight`; on Android a weight on top of a bold face can fake-bold it.
 - Motion follows spec §12 ("Motion").
   - Sheets, the full player and tabs are native components with system motion.
