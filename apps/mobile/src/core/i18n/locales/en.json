@@ -25,6 +25,55 @@
     "sources": {
       "title": "Sources",
       "qfFonts": "Quran fonts provided by Quran Foundation"
+    },
+    "toolbar": {
+      "back": "Back",
+      "bookmarkPage": "Bookmark page",
+      "settings": "Reading settings",
+      "ayahActions": "Ayah actions",
+      "togglePanel": "Side panel",
+      "tools": "Reading tools",
+      "place": "Page {{page}} · Juz {{juz}}"
+    },
+    "panel": {
+      "label": "Side panel",
+      "close": "Close panel",
+      "dismiss": "Close panel",
+      "tabsLabel": "Panel contents",
+      "tabs": {
+        "actions": "Options",
+        "tafsir": "Tafsir",
+        "translation": "Translation"
+      }
+    },
+    "resume": {
+      "label": "Back to the current ayah"
+    },
+    "sheet": {
+      "label": "Ayah actions"
+    },
+    "settings": {
+      "title": "Reading settings",
+      "close": "Close",
+      "modeLabel": "Reading mode",
+      "modes": {
+        "mushaf": "Mushaf",
+        "reading": "Reading",
+        "focus": "Focus"
+      },
+      "fontScale": "Text size",
+      "decreaseFont": "Decrease text size",
+      "increaseFont": "Increase text size",
+      "themeLabel": "Appearance",
+      "themes": {
+        "automatic": "System",
+        "light": "Light",
+        "sepia": "Sepia",
+        "dark": "Dark"
+      },
+      "translations": "Translations",
+      "translationsEmpty": "No translations installed",
+      "translationFallback": "Translation {{id}}"
     }
   },
   "library": {

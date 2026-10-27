@@ -25,6 +25,55 @@
     "sources": {
       "title": "المصادر",
       "qfFonts": "خطوط القرآن مقدَّمة من Quran Foundation"
+    },
+    "toolbar": {
+      "back": "رجوع",
+      "bookmarkPage": "حفظ الصفحة",
+      "settings": "إعدادات القراءة",
+      "ayahActions": "خيارات الآية",
+      "togglePanel": "اللوحة الجانبية",
+      "tools": "أدوات القراءة",
+      "place": "صفحة {{page}} · الجزء {{juz}}"
+    },
+    "panel": {
+      "label": "اللوحة الجانبية",
+      "close": "إغلاق اللوحة",
+      "dismiss": "إغلاق اللوحة",
+      "tabsLabel": "محتوى اللوحة",
+      "tabs": {
+        "actions": "خيارات",
+        "tafsir": "التفسير",
+        "translation": "الترجمة"
+      }
+    },
+    "resume": {
+      "label": "العودة إلى الآية الحالية"
+    },
+    "sheet": {
+      "label": "خيارات الآية"
+    },
+    "settings": {
+      "title": "إعدادات القراءة",
+      "close": "إغلاق",
+      "modeLabel": "طريقة العرض",
+      "modes": {
+        "mushaf": "المصحف",
+        "reading": "القراءة",
+        "focus": "التركيز"
+      },
+      "fontScale": "حجم الخط",
+      "decreaseFont": "تصغير الخط",
+      "increaseFont": "تكبير الخط",
+      "themeLabel": "المظهر",
+      "themes": {
+        "automatic": "تلقائي",
+        "light": "فاتح",
+        "sepia": "سيبيا",
+        "dark": "داكن"
+      },
+      "translations": "الترجمات",
+      "translationsEmpty": "لا توجد ترجمات مثبتة",
+      "translationFallback": "ترجمة {{id}}"
     }
   },
   "library": {

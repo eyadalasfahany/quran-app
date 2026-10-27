@@ -1,8 +1,5 @@
-import { useTranslation } from 'react-i18next';
+import { HomeScreen } from '@/features/home/screens/HomeScreen';
 
-import { SectionScreen } from '@/core/layout';
-
-export default function HomeScreen() {
-  const { t } = useTranslation();
-  return <SectionScreen testID="screen-home" title={t('tabs.home')} />;
+export default function HomeRoute() {
+  return <HomeScreen />;
 }

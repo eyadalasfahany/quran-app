@@ -14,6 +14,7 @@ export const storageKeys = {
   readerLastVerseKey: 'reader.lastVerseKey',
   readerLastPage: 'reader.lastPage',
   readerMode: 'reader.mode',
+  readerSettings: 'reader.settings',
   searchRecentQueries: 'search.recentQueries',
 } as const;
 

@@ -2,14 +2,21 @@ import type { ContentManifestResource } from '@quran/api-contract';
 
 import { getLocale, type Locale } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
+import { readReaderResourceOverride } from '@/features/reader/settings-model';
 
 // Provisional until the Settings and download UI in Phase 2/3 choose resources.
 export function selectedResourceIds(resources: readonly ContentManifestResource[]): number[] {
   const saved = readSavedSelection();
-  if (saved !== undefined) {
-    return saved;
-  }
-  return defaultSelectedResourceIds(resources, getLocale());
+  const base = saved ?? defaultSelectedResourceIds(resources, getLocale());
+  return applyReaderResourceOverride(base, resources);
+}
+
+export function readSavedSelectionIds(): number[] | undefined {
+  return readSavedSelection();
+}
+
+export function writeSavedSelectionIds(ids: readonly number[]): void {
+  storage.set(storageKeys.selectedResourceIds, JSON.stringify([...ids]));
 }
 
 export function defaultSelectedResourceIds(
@@ -46,6 +53,40 @@ function firstByLanguage(
     return undefined;
   }
   return inGroup.find((resource) => resource.language_code === 'en')?.id;
+}
+
+function applyReaderResourceOverride(
+  base: readonly number[],
+  resources: readonly ContentManifestResource[],
+): number[] {
+  const override = readReaderResourceOverride();
+  if (override.translationIds === null && !override.tafsirChosen) {
+    return [...base];
+  }
+
+  const translations = new Set(
+    resources.filter((resource) => resource.group === 'translations').map((resource) => resource.id),
+  );
+  const tafsirs = new Set(resources.filter((resource) => resource.group === 'tafsirs').map((resource) => resource.id));
+  let next = [...base];
+
+  if (override.translationIds !== null) {
+    next = next.filter((id) => !translations.has(id));
+    for (const id of override.translationIds) {
+      if (!next.includes(id)) {
+        next.push(id);
+      }
+    }
+  }
+
+  if (override.tafsirChosen) {
+    next = next.filter((id) => !tafsirs.has(id));
+    if (override.tafsirId !== null && !next.includes(override.tafsirId)) {
+      next.push(override.tafsirId);
+    }
+  }
+
+  return next;
 }
 
 function readSavedSelection(): number[] | undefined {

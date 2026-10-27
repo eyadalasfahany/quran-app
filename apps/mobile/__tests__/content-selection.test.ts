@@ -34,6 +34,7 @@ describe('content selection', () => {
   afterEach(() => {
     storage.remove(storageKeys.selectedResourceIds);
     storage.remove(storageKeys.locale);
+    storage.remove(storageKeys.readerSettings);
   });
 
   it('picks every mushaf, the locale translation and tafsir, and the first recitation', () => {
