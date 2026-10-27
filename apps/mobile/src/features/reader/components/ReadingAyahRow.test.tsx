@@ -148,7 +148,7 @@ describe('ReadingAyahRow', () => {
     expect(onLongPress).toHaveBeenCalledTimes(1);
   });
 
-  it('aligns Quran text to the reading edge in RTL', async () => {
+  it.each(locales)('lays Quran text out right to left whatever the locale (%s)', async (locale) => {
     const view = await renderUi(
       <ReadingAyahRow
         onPress={() => undefined}
@@ -159,10 +159,27 @@ describe('ReadingAyahRow', () => {
         verseKey="2:1"
         verseNumber={1}
       />,
-      { locale: 'ar' },
+      { locale },
     );
 
-    expect(flatStyle(view.getByText('ٱللَّهُ').props.style).textAlign).toBe('right');
+    expect(flatStyle(view.getByText('ٱللَّهُ').props.style)).toMatchObject({ textAlign: 'right', writingDirection: 'rtl' });
+  });
+
+  it('keeps a left-to-right translation in its own direction in English', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        translations={[{ meta: translationMeta, resourceId: 131, text: 'Allah' }]}
+        verseKey="2:1"
+        verseNumber={1}
+      />,
+      { locale: 'en' },
+    );
+
+    expect(flatStyle(view.getByText('Allah').props.style)).toMatchObject({ textAlign: 'left', writingDirection: 'ltr' });
   });
 
   it('calls onPress and onOpenActions with the expected handlers', async () => {

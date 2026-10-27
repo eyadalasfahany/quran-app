@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { fireEvent } from '@testing-library/react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../../jest/feature-ui-source';
-import { locales, renderUi } from '../../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../../jest/render-ui';
 import { FontScaleStepper } from './FontScaleStepper';
 
 jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(() => Promise.resolve()) }));
@@ -19,6 +19,10 @@ describe('FontScaleStepper', () => {
     );
     expect(view.getByTestId('reader-font-percent')).toHaveTextContent(locale === 'ar' ? '١٠٠٪' : '100%');
     expect(view.getByTestId('reader-font-preview')).toHaveTextContent('ٱلْحَمْدُ');
+    expect(flatStyle(view.getByTestId('reader-font-preview').props.style)).toMatchObject({
+      textAlign: 'center',
+      writingDirection: 'rtl',
+    });
     expect(view.getByTestId('reader-font-decrease')).toHaveTextContent('أ−');
     expect(view.getByTestId('reader-font-increase')).toHaveTextContent('أ+');
     expect(view.getByLabelText(locale === 'ar' ? 'تصغير الخط' : 'Decrease text size')).toBeOnTheScreen();

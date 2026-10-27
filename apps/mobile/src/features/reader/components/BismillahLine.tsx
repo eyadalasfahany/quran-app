@@ -17,7 +17,10 @@ export function BismillahLine({ text, fontScale = 1, testID }: { text: string; f
       }}
       testID={testID}
     >
-      <Text allowFontScaling={false} style={[quranText('quranReading', fontScale), { color: theme.colors.ink, textAlign: 'center' }]}>
+      <Text
+        allowFontScaling={false}
+        style={[quranText('quranReading', fontScale), { color: theme.colors.ink, textAlign: 'center', writingDirection: 'rtl' }]}
+      >
         {text}
       </Text>
     </View>

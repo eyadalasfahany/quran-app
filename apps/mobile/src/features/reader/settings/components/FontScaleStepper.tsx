@@ -89,7 +89,7 @@ export function FontScaleStepper({
       {previewText ? (
         <Text
           allowFontScaling={false}
-          style={[quranText('quranReading', value), { color: theme.colors.ink, textAlign: 'center' }]}
+          style={[quranText('quranReading', value), { color: theme.colors.ink, textAlign: 'center', writingDirection: 'rtl' }]}
           testID="reader-font-preview"
         >
           {previewText}

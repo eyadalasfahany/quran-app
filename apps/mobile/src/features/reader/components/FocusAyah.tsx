@@ -84,7 +84,10 @@ export function FocusAyah({
             paddingVertical: theme.space[2],
           }}
         >
-          <Text allowFontScaling={false} style={[quranText('quranFocus', fontScale), { color: theme.colors.ink, textAlign: 'center' }]}>
+          <Text
+            allowFontScaling={false}
+            style={[quranText('quranFocus', fontScale), { color: theme.colors.ink, textAlign: 'center', writingDirection: 'rtl' }]}
+          >
             {textUthmani}
           </Text>
         </View>

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { I18nManager, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
@@ -95,7 +95,7 @@ export function ReadingAyahRow({
             allowFontScaling={false}
             style={[
               quranText('quranReading', fontScale),
-              { color: theme.colors.ink, textAlign: I18nManager.isRTL ? 'right' : 'left' },
+              { color: theme.colors.ink, textAlign: 'right', writingDirection: 'rtl' },
             ]}
           >
             {textUthmani}

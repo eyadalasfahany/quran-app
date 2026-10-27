@@ -16,7 +16,10 @@ describe('BismillahLine', () => {
 
   it.each(locales)('centres Quran text (%s)', async (locale) => {
     const view = await renderUi(<BismillahLine text="بِسْمِ ٱللَّهِ" testID="bismillah" />, { locale });
-    expect(flatStyle(view.getByText('بِسْمِ ٱللَّهِ').props.style).textAlign).toBe('center');
+    expect(flatStyle(view.getByText('بِسْمِ ٱللَّهِ').props.style)).toMatchObject({
+      textAlign: 'center',
+      writingDirection: 'rtl',
+    });
   });
 
   it('has no raw colour literals', () => {

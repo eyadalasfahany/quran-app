@@ -21,10 +21,13 @@ describe('SurahCartouche', () => {
     expect(flatStyle(view.getByTestId('banner-frame').props.style).borderColor).toBe(themes[theme].colors.gold);
   });
 
-  it.each(locales)('centres the name in %s', async (locale) => {
-    const view = await renderUi(<SurahCartouche name="name" />, { locale });
+  it.each(locales)('centres the name right to left in %s', async (locale) => {
+    const view = await renderUi(<SurahCartouche name="سورة الفاتحة" />, { locale });
 
-    expect(flatStyle(view.getByText('name').props.style).textAlign).toBe('center');
+    expect(flatStyle(view.getByText('سورة الفاتحة').props.style)).toMatchObject({
+      textAlign: 'center',
+      writingDirection: 'rtl',
+    });
   });
 
   it('has no raw colour literals', () => {

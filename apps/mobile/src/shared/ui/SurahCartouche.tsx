@@ -35,7 +35,7 @@ export function SurahCartouche({ name, testID }: { name: string; testID?: string
       >
         <Text
           maxFontSizeMultiplier={maxFontScale.content}
-          style={[displayText('displaySm'), { color: theme.colors.ink, textAlign: 'center' }]}
+          style={[displayText('displaySm'), { color: theme.colors.ink, textAlign: 'center', writingDirection: 'rtl' }]}
         >
           {name}
         </Text>

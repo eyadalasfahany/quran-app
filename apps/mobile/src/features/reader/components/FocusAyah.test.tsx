@@ -27,6 +27,10 @@ describe('FocusAyah', () => {
 
     expect(flatStyle(view.getByTestId('focus').props.style).height).toBe(640);
     expect(view.getByText('ٱلْحَمْدُ لِلَّهِ')).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('ٱلْحَمْدُ لِلَّهِ').props.style)).toMatchObject({
+      textAlign: 'center',
+      writingDirection: 'rtl',
+    });
   });
 
   it.each(locales)('labels the ayah with Imla\'i text and the ayah number (%s)', async (locale) => {
