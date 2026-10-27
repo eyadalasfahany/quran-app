@@ -1,0 +1,95 @@
+name: API
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/api/**
+      - packages/api-contract/**
+      - infra/mysql/init/**
+      - .github/workflows/api.yml
+  pull_request:
+    paths:
+      - apps/api/**
+      - packages/api-contract/**
+      - infra/mysql/init/**
+      - .github/workflows/api.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    name: Pint, Larastan, Pest, composer audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/api
+
+    services:
+      mysql:
+        image: mysql:9.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: quran
+          MYSQL_USER: quran
+          MYSQL_PASSWORD: quran
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+      redis:
+        image: redis:8.10
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer:v2
+
+      - name: Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('apps/api/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # Same script the local setup uses: quran_testing, plus the grant --parallel needs for quran_testing_test_N.
+      - name: Create the test databases
+        working-directory: .
+        run: mysql -h 127.0.0.1 -uroot -proot < infra/mysql/init/01-testing-database.sql
+
+      - name: Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      - name: composer qa
+        run: composer qa
+
+      - name: composer audit
+        run: composer audit --no-interaction

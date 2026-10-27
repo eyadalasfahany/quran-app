@@ -725,7 +725,7 @@ For each window, Maestro runs "open reader at 2:255 → rotate or resize → ass
 **CI pipelines (GitHub Actions, path-filtered)**
 
 - `api.yml`: Composer install, Pint, Larastan, Pest (MySQL 9.7 and Redis 8.10 service containers), `composer audit`; on `main`, build and push the Docker image, deploy to staging.
-- `mobile.yml`: `npm ci`, ESLint, `tsc`, Jest, `npx expo-doctor`, `npm audit --audit-level=high`; on tags `mobile-v*`, `eas build` for the `production` profile and `eas submit`.
+- `mobile.yml`: `npm ci`, ESLint, `tsc`, Jest, `npx expo-doctor`, and an npm audit gate that fails on high or critical advisories unless `.github/audit-allowlist.json` lists them with a reason and a review date; on tags `mobile-v*`, `eas build` for the `production` profile and `eas submit`.
 - `contract.yml`: regenerate OpenAPI and TS types, fail on drift.
 - `release-api.yml`: on tags `api-v*`, deploy to production (migrations, container swap, Horizon restart).
 - OTA: `eas update --channel production` for JavaScript-only fixes, guarded by the same checks.

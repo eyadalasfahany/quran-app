@@ -1,0 +1,80 @@
+name: Contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/api/**
+      - apps/mobile/**
+      - packages/api-contract/**
+      - package-lock.json
+      - .github/workflows/contract.yml
+  pull_request:
+    paths:
+      - apps/api/**
+      - apps/mobile/**
+      - packages/api-contract/**
+      - package-lock.json
+      - .github/workflows/contract.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  drift:
+    name: OpenAPI and TS types match the code
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: composer:v2
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Composer cache directory
+        id: composer-cache
+        working-directory: apps/api
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('apps/api/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          composer install --working-dir=apps/api --no-interaction --no-progress --prefer-dist
+          npm ci
+
+      # The export boots Laravel but never touches MySQL or Redis, so no services are needed.
+      - name: Environment
+        working-directory: apps/api
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      - name: Regenerate openapi.json and schema.d.ts
+        run: npm run generate -w @quran/api-contract
+
+      - name: Fail on drift
+        run: |
+          if [ -n "$(git status --porcelain -- packages/api-contract)" ]; then
+            git status --short -- packages/api-contract
+            git diff -- packages/api-contract
+            echo "::error::The API contract is out of date. Run 'npm run generate -w @quran/api-contract' and commit the result."
+            exit 1
+          fi

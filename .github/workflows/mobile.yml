@@ -1,0 +1,72 @@
+name: Mobile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/mobile/**
+      - packages/**
+      - package.json
+      - package-lock.json
+      - quran-app-design-system.html
+      - .github/audit-allowlist.json
+      - .github/scripts/**
+      - .github/workflows/mobile.yml
+  pull_request:
+    paths:
+      - apps/mobile/**
+      - packages/**
+      - package.json
+      - package-lock.json
+      - quran-app-design-system.html
+      - .github/audit-allowlist.json
+      - .github/scripts/**
+      - .github/workflows/mobile.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: ESLint, tsc, Jest, expo-doctor, npm audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint -w @quran/mobile
+
+      # Every workspace: the app plus the design-tokens and api-contract packages.
+      - name: tsc
+        run: npm run typecheck
+
+      - name: Jest
+        run: npm test -w @quran/mobile -- --ci
+
+      - name: Design tokens match the HTML design system
+        run: npm run check:html -w @quran/design-tokens
+
+      - name: expo-doctor
+        working-directory: apps/mobile
+        run: npx expo-doctor
+
+      - name: Audit gate tests
+        run: node --test .github/scripts/
+
+      # High and critical advisories fail unless .github/audit-allowlist.json lists them with a review date.
+      - name: npm audit
+        run: node .github/scripts/npm-audit.mjs

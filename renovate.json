@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "enabledManagers": ["npm", "composer"],
+  "enabledManagers": ["npm", "composer", "github-actions"],
   "schedule": ["before 6am on monday"],
   "packageRules": [
     {
@@ -17,6 +17,12 @@
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "composer non-major",
       "automerge": true
+    },
+    {
+      "description": "Workflow actions are pinned to commit SHAs; one weekly grouped PR, merged by hand because it changes CI itself",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "automerge": false
     },
     {
       "description": "Major updates are merged by hand",

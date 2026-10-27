@@ -88,7 +88,7 @@ Built as planned, with these changes:
 - **React:** pinned to 19.3.0 by root `overrides`. Without them, `expo-router`'s peer `react-dom@19.3.1` hoisted a second React and `expo-doctor` failed.
 - **`@quran/*` in Jest:** jest-expo's default transform list already transforms these packages, because their symlinks resolve outside `node_modules`.
 - **New dependency:** `expo-dev-client` for the development profile, added to the content-plan table.
-- **Open:** `npm audit --audit-level=high` reports `zod` <4.6.6 through `@expo/cli`. `@expo/cli` needs zod 3, and the fix ships only in zod 4, so this is unresolved until step 10.
+- **Was open, handled in step 10:** `npm audit --audit-level=high` reports `zod` <4.6.6 through `@expo/cli`. `@expo/cli` needs zod 3, and the fix ships only in zod 4. CI allowlists it until 2027-01-31 (see step 10).
 
 - Creates:
   - SDK 58 template moved into `apps/mobile` (keeping `CLAUDE.md` and `assets/fonts`).
@@ -201,7 +201,35 @@ Built as planned, with these changes:
   - Change a field on purpose to confirm `tsc` fails, then revert.
   - API and mobile checks.
 
-### 10. CI
+### 10. CI — written; first real run after the developer pushes
+
+Built as planned, with these changes:
+
+- **npm audit gate:** the developer chose an allowlist over a red build or forcing zod 4.
+  - `.github/scripts/npm-audit.mjs` runs `npm audit --json` and fails on any high or critical advisory missing from `.github/audit-allowlist.json`.
+  - Each entry needs a reason and a `reviewBy` date. An expired or unused entry also fails.
+  - The one entry is zod GHSA-mrhx-c7xc-m3w5, until 2027-01-31. zod 3 arrives only through `@expo/cli` and `eslint-plugin-react-hooks` (build and lint time). `@expo/cli` 58.1.15, the latest for SDK 58, still requires zod ^3.25.76.
+  - `node --test .github/scripts/` covers the gate (6 tests).
+- **`api.yml`:**
+  - Test databases are created by the same `infra/mysql/init/01-testing-database.sql` as local setup, including the grant `--parallel` needs.
+  - `.env` comes from `.env.example`, whose hosts and credentials match the service containers.
+- **`mobile.yml`:**
+  - `npm run typecheck` covers every workspace, so the contract and token packages are checked too.
+  - It also runs the design-token fidelity check against the HTML (`check:html`).
+- **`contract.yml`:**
+  - No MySQL or Redis: the export boots Laravel but never connects (checked with both ports pointed at 1).
+  - Drift is checked with `git status --porcelain`, so a new untracked file also fails.
+- **All three:**
+  - Actions are pinned to commit SHAs: checkout v7.0.1, setup-node v7.1.0, setup-php 2.40.0, cache v6.1.0.
+  - Renovate now updates those pins in one grouped weekly PR, merged by hand.
+  - Runner `ubuntu-24.04`; jobs for the same branch cancel the older run.
+- **Verified locally:**
+  - The YAML parses, and every action is SHA-pinned.
+  - The drift step passes on the committed tree, fails after renaming a resource field, and passes after the revert.
+  - The audit gate passes with the allowlist and its tests pass.
+  - `renovate-config-validator` passes.
+  - Every job's steps also passed in a fresh clone, without the gitignored `expo-env.d.ts` and `.expo/`. That covers mobile, the export with MySQL and Redis unreachable, and `composer qa`. The API tests there used the local MySQL user, because the CI `quran`/`quran` user exists only in the service container.
+- **Not run:** `actionlint`. The sandbox blocked downloading its binary. Run `brew install actionlint && actionlint` at the repo root.
 
 - Creates:
   - `.github/workflows/api.yml`:

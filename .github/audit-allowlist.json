@@ -1,0 +1,10 @@
+{
+  "advisories": [
+    {
+      "id": "GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "reason": "zod 3 arrives only through @expo/cli and eslint-plugin-react-hooks, which run at build and lint time and are not in the app bundle. The fix ships only in zod 4, and @expo/cli 58.1.15 (latest for SDK 58) still requires zod ^3.25.76.",
+      "reviewBy": "2027-01-31"
+    }
+  ]
+}
