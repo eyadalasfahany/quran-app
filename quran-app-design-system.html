@@ -57,7 +57,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -83,7 +83,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -95,7 +95,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -103,7 +103,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -217,7 +217,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 <li>Quran text uses the <code>quran</code> family. The user chooses the script in settings (Uthmani Hafs, Madani page-exact, IndoPak via <code>quran-indopak</code>, Uthmani Tajweed). Production fonts are the King Fahd Complex and Quran Foundation font files bundled in the app; Amiri Quran is only the design-time fallback.</li>
 <li>Sizes: <code>quran-mushaf</code> in Mushaf mode, <code>quran-reading</code> in Reading mode, <code>quran-focus</code> in Focus mode and the player, <code>quran-word</code> in word chips. Let readers scale Quran text from 80% to 160% without scaling the interface.</li>
 <li>Surah names and greetings use <code>display-sm</code>, <code>display-md</code> and <code>display-lg</code> (Amiri). Ayah and page numbers use <code>numeral</code>.</li>
-<li>Everything else uses the <code>ui</code> family (IBM Plex Sans Arabic): <code>title</code>, <code>headline</code>, <code>body</code>, <code>caption</code>, <code>label</code>. Support Dynamic Type for interface text.</li><li><strong>Bold Text.</strong> When the system Bold Text setting is on (iOS), every <code>ui</code> style moves up one weight (400→500, 500→600, 600→700, 700 stays). The UI font is custom, so the app does this itself. Quran fonts never change weight.</li>
+<li>Everything else uses the <code>ui</code> family (IBM Plex Sans Arabic): <code>title</code> 22, <code>headline</code> 17, <code>body</code> 17, <code>subhead</code> 15, <code>caption</code> 13, <code>label</code> 12. No other interface sizes, and nothing below 12.</li><li><strong>Dynamic Type.</strong> Each <code>ui</code> style scales with its iOS text style (RN <code>dynamicTypeRamp</code>): title→title2, headline→headline, body→body, subhead→subheadline, caption→footnote, label→caption1. Content text (body, translations, tafsir, row titles) is uncapped; tab and sidebar labels and segment labels cap at <code>maxFontSizeMultiplier</code> 1.3 and use the large-content viewer instead. At accessibility sizes, rows stack their trailing value under the title rather than truncating. Quran text keeps its own 80–160% reader scale.</li><li><strong>Bold Text.</strong> When the system Bold Text setting is on (iOS), every <code>ui</code> style moves up one weight (400→500, 500→600, 600→700, 700 stays). The UI font is custom, so the app does this itself. Quran fonts never change weight.</li>
 </ul>
 <h2>Display modes and scrolling</h2>
 <ul>
@@ -261,7 +261,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 <li>The previews are HTML with the classes in <code>components/bundle.css</code> (prefix <code>qa-</code>). The React Native app implements the same tokens and anatomy natively.</li>
 </ul></div>
 <h2 id="color">Color</h2><p class="muted">Each swatch shows light, sepia, dark.</p><div class="sw"><span class="chip" style="background:#f7f3ea" title="light: #f7f3ea"></span><span class="chip" style="background:#f1e6cf" title="sepia: #f1e6cf"></span><span class="chip" style="background:#0e1715" title="dark: #0e1715"></span><div><code>surface</code><div class="muted mono">#f7f3ea · #f1e6cf · #0e1715</div><div class="muted">App background behind every screen.</div></div></div><div class="sw"><span class="chip" style="background:#fbf8f1" title="light: #fbf8f1"></span><span class="chip" style="background:#f4ead5" title="sepia: #f4ead5"></span><span class="chip" style="background:#121d1a" title="dark: #121d1a"></span><div><code>surface-page</code><div class="muted mono">#fbf8f1 · #f4ead5 · #121d1a</div><div class="muted">Ground of the Quran reading surface: mushaf pages and the reading list.</div></div></div><div class="sw"><span class="chip" style="background:#fffdf8" title="light: #fffdf8"></span><span class="chip" style="background:#f8efdc" title="sepia: #f8efdc"></span><span class="chip" style="background:#172421" title="dark: #172421"></span><div><code>surface-raised</code><div class="muted mono">#fffdf8 · #f8efdc · #172421</div><div class="muted">Cards, list rows, option cards and quick tiles.</div></div></div><div class="sw"><span class="chip" style="background:#e7dfcc" title="light: #e7dfcc"></span><span class="chip" style="background:#e0d0b0" title="sepia: #e0d0b0"></span><span class="chip" style="background:#2a3a34" title="dark: #2a3a34"></span><div><code>line</code><div class="muted mono">#e7dfcc · #e0d0b0 · #2a3a34</div><div class="muted">Hairline borders on cards and dividers. Decorative only, never the sole cue for state.</div></div></div><div class="sw"><span class="chip" style="background:#13231f" title="light: #13231f"></span><span class="chip" style="background:#2b2116" title="sepia: #2b2116"></span><span class="chip" style="background:#ece6d8" title="dark: #ece6d8"></span><div><code>ink</code><div class="muted mono">#13231f · #2b2116 · #ece6d8</div><div class="muted">Primary text and Quran text on surface, surface-page, surface-raised and every highlight token, in every theme.</div></div></div><div class="sw"><span class="chip" style="background:#5b6a64" title="light: #5b6a64"></span><span class="chip" style="background:#6b5a44" title="sepia: #6b5a44"></span><span class="chip" style="background:#a7b3ad" title="dark: #a7b3ad"></span><div><code>ink-muted</code><div class="muted mono">#5b6a64 · #6b5a44 · #a7b3ad</div><div class="muted">Secondary text (meta lines, captions, inactive tabs) on surface, surface-page and surface-raised; 4.5:1 or better in every theme.</div></div></div><div class="sw"><span class="chip" style="background:#1f4d40" title="light: #1f4d40"></span><span class="chip" style="background:#1f4d40" title="sepia: #1f4d40"></span><span class="chip" style="background:#8cc5af" title="dark: #8cc5af"></span><div><code>brand</code><div class="muted mono">#1f4d40 · #1f4d40 · #8cc5af</div><div class="muted">Primary buttons, the active tab and progress fills. As text it reads on surface and surface-raised.</div></div></div><div class="sw"><span class="chip" style="background:#f7f3ea" title="light: #f7f3ea"></span><span class="chip" style="background:#f7f3ea" title="sepia: #f7f3ea"></span><span class="chip" style="background:#0e1715" title="dark: #0e1715"></span><div><code>on-brand</code><div class="muted mono">#f7f3ea · #f7f3ea · #0e1715</div><div class="muted">Text and icons on a brand fill.</div></div></div><div class="sw"><span class="chip" style="background:#1f4d40" title="light: #1f4d40"></span><span class="chip" style="background:#1f4d40" title="sepia: #1f4d40"></span><span class="chip" style="background:#1f4d40" title="dark: #1f4d40"></span><div><code>brand-surface</code><div class="muted mono">#1f4d40 · #1f4d40 · #1f4d40</div><div class="muted">The continue-reading card. Deep green in every theme, so the card reads the same in dark.</div></div></div><div class="sw"><span class="chip" style="background:#f7f3ea" title="light: #f7f3ea"></span><span class="chip" style="background:#f7f3ea" title="sepia: #f7f3ea"></span><span class="chip" style="background:#f7f3ea" title="dark: #f7f3ea"></span><div><code>on-brand-surface</code><div class="muted mono">#f7f3ea · #f7f3ea · #f7f3ea</div><div class="muted">Text and icons on brand-surface.</div></div></div><div class="sw"><span class="chip" style="background:#a07c33" title="light: #a07c33"></span><span class="chip" style="background:#8c6a2b" title="sepia: #8c6a2b"></span><span class="chip" style="background:#c9a961" title="dark: #c9a961"></span><div><code>gold</code><div class="muted mono">#a07c33 · #8c6a2b · #c9a961</div><div class="muted">Mushaf ornaments: page frame, surah cartouche, ayah marker rings, the progress accent. A mark at 3:1 or better on surface-page.</div></div></div><div class="sw"><span class="chip" style="background:#7e5f1e" title="light: #7e5f1e"></span><span class="chip" style="background:#6e521c" title="sepia: #6e521c"></span><span class="chip" style="background:#e6c77e" title="dark: #e6c77e"></span><div><code>gold-ink</code><div class="muted mono">#7e5f1e · #6e521c · #e6c77e</div><div class="muted">Gold-coloured text such as eyebrow labels, on surface and surface-raised.</div></div></div><div class="sw"><span class="chip" style="background:#ecece5" title="light: #ecece5"></span><span class="chip" style="background:#e5dfcb" title="sepia: #e5dfcb"></span><span class="chip" style="background:#2b2f2d" title="dark: #2b2f2d"></span><div><code>highlight-active</code><div class="muted mono">#ecece5 · #e5dfcb · #2b2f2d</div><div class="muted">Near-neutral wash behind the ayah being recited (a faint brand tint in light and sepia, neutral in dark), never gold. The filled marker and the Reading-mode rule carry the recited state; the wash alone is not the cue. Ink stays on top.</div></div></div><div class="sw"><span class="chip" style="background:#f3e3b5" title="light: #f3e3b5"></span><span class="chip" style="background:#ead39b" title="sepia: #ead39b"></span><span class="chip" style="background:#3d3519" title="dark: #3d3519"></span><div><code>highlight-gold</code><div class="muted mono">#f3e3b5 · #ead39b · #3d3519</div><div class="muted">User highlight 1 («ذهبي»), the lightest. Ink 12.8:1 in light.</div></div></div><div class="sw"><span class="chip" style="background:#c4dfcc" title="light: #c4dfcc"></span><span class="chip" style="background:#c3d6b4" title="sepia: #c3d6b4"></span><span class="chip" style="background:#1e3a2e" title="dark: #1e3a2e"></span><div><code>highlight-green</code><div class="muted mono">#c4dfcc · #c3d6b4 · #1e3a2e</div><div class="muted">User highlight 2 («أخضر»), a step darker than gold.</div></div></div><div class="sw"><span class="chip" style="background:#b7cde6" title="light: #b7cde6"></span><span class="chip" style="background:#b4c9d1" title="sepia: #b4c9d1"></span><span class="chip" style="background:#1e2d3f" title="dark: #1e2d3f"></span><div><code>highlight-blue</code><div class="muted mono">#b7cde6 · #b4c9d1 · #1e2d3f</div><div class="muted">User highlight 3 («أزرق»), a step darker than green.</div></div></div><div class="sw"><span class="chip" style="background:#e8b9b9" title="light: #e8b9b9"></span><span class="chip" style="background:#e2b6a6" title="sepia: #e2b6a6"></span><span class="chip" style="background:#3f2427" title="dark: #3f2427"></span><div><code>highlight-rose</code><div class="muted mono">#e8b9b9 · #e2b6a6 · #3f2427</div><div class="muted">User highlight 4 («وردي»), the darkest. In dark the four share one lightness, so their names carry the difference.</div></div></div><div class="sw"><span class="chip" style="background:#a3392b" title="light: #a3392b"></span><span class="chip" style="background:#963425" title="sepia: #963425"></span><span class="chip" style="background:#f0a493" title="dark: #f0a493"></span><div><code>danger</code><div class="muted mono">#a3392b · #963425 · #f0a493</div><div class="muted">Destructive actions such as deleting downloads, always with a word, on surface and surface-raised.</div></div></div><div class="sw"><span class="chip" style="background:#efe8d8" title="light: #efe8d8"></span><span class="chip" style="background:#e8dcc2" title="sepia: #e8dcc2"></span><span class="chip" style="background:#24342f" title="dark: #24342f"></span><div><code>fill-secondary</code><div class="muted mono">#efe8d8 · #e8dcc2 · #24342f</div><div class="muted">Segment tracks, input fills, progress tracks, monogram tiles and disabled buttons.</div></div></div><div class="sw"><span class="chip" style="background:#d9d0bc" title="light: #d9d0bc"></span><span class="chip" style="background:#cfbf9f" title="sepia: #cfbf9f"></span><span class="chip" style="background:#3c4f48" title="dark: #3c4f48"></span><div><code>line-strong</code><div class="muted mono">#d9d0bc · #cfbf9f · #3c4f48</div><div class="muted">Control borders: inputs, code boxes, unselected chips, page dots.</div></div></div><div class="sw"><span class="chip" style="background:#d9e2dd" title="light: #d9e2dd"></span><span class="chip" style="background:#d9e2dd" title="sepia: #d9e2dd"></span><span class="chip" style="background:#d9e2dd" title="dark: #d9e2dd"></span><div><code>on-brand-surface-muted</code><div class="muted mono">#d9e2dd · #d9e2dd · #d9e2dd</div><div class="muted">Secondary text and eyebrows on brand-surface (7.2:1).</div></div></div><div class="sw"><span class="chip" style="background:#4f86a8" title="light: #4f86a8"></span><span class="chip" style="background:#4f86a8" title="sepia: #4f86a8"></span><span class="chip" style="background:#7fb0cf" title="dark: #7fb0cf"></span><div><code>chart-blue</code><div class="muted mono">#4f86a8 · #4f86a8 · #7fb0cf</div><div class="muted">Third chart series, after brand and gold. Always with a text legend.</div></div></div><div class="sw"><span class="chip" style="background:#78877f" title="light: #78877f"></span><span class="chip" style="background:#78877f" title="sepia: #78877f"></span><span class="chip" style="background:#8a9a93" title="dark: #8a9a93"></span><div><code>chart-gray</code><div class="muted mono">#78877f · #78877f · #8a9a93</div><div class="muted">Fourth chart series. Always with a text legend.</div></div></div><div class="sw"><span class="chip" style="background:#24352f" title="light: #24352f"></span><span class="chip" style="background:#24352f" title="sepia: #24352f"></span><span class="chip" style="background:#24352f" title="dark: #24352f"></span><div><code>player-line</code><div class="muted mono">#24352f · #24352f · #24352f</div><div class="muted">Rims and dividers on player-bg.</div></div></div><div class="sw"><span class="chip" style="background:{brand}" title="light: {brand}"></span><span class="chip" style="background:{brand}" title="sepia: {brand}"></span><span class="chip" style="background:{brand}" title="dark: {brand}"></span><div><code>focus-ring</code><div class="muted mono">{brand} · {brand} · {brand}</div><div class="muted">Solid 2px keyboard and switch-control focus outline at a 2px offset; 3:1 or better on every surface.</div></div></div><div class="sw"><span class="chip" style="background:rgba(255, 253, 248, 0.72)" title="light: rgba(255, 253, 248, 0.72)"></span><span class="chip" style="background:rgba(248, 239, 220, 0.72)" title="sepia: rgba(248, 239, 220, 0.72)"></span><span class="chip" style="background:rgba(23, 36, 33, 0.62)" title="dark: rgba(23, 36, 33, 0.62)"></span><div><code>glass-fill</code><div class="muted mono">rgba(255, 253, 248, 0.72) · rgba(248, 239, 220, 0.72) · rgba(23, 36, 33, 0.62)</div><div class="muted">Design and web approximation of Liquid Glass for the tab bar, mini-player, floating buttons and sheets. On iOS 26 the native glass view replaces it.</div></div></div><div class="sw"><span class="chip" style="background:rgba(255, 255, 255, 0.75)" title="light: rgba(255, 255, 255, 0.75)"></span><span class="chip" style="background:rgba(255, 250, 238, 0.75)" title="sepia: rgba(255, 250, 238, 0.75)"></span><span class="chip" style="background:rgba(255, 255, 255, 0.14)" title="dark: rgba(255, 255, 255, 0.14)"></span><div><code>glass-stroke</code><div class="muted mono">rgba(255, 255, 255, 0.75) · rgba(255, 250, 238, 0.75) · rgba(255, 255, 255, 0.14)</div><div class="muted">1px rim on glass elements, the light-catching edge.</div></div></div><div class="sw"><span class="chip" style="background:rgba(31, 77, 64, 0.10)" title="light: rgba(31, 77, 64, 0.10)"></span><span class="chip" style="background:rgba(31, 77, 64, 0.10)" title="sepia: rgba(31, 77, 64, 0.10)"></span><span class="chip" style="background:rgba(140, 197, 175, 0.16)" title="dark: rgba(140, 197, 175, 0.16)"></span><div><code>glass-selected</code><div class="muted mono">rgba(31, 77, 64, 0.10) · rgba(31, 77, 64, 0.10) · rgba(140, 197, 175, 0.16)</div><div class="muted">Selected pill inside a glass control: the active tab or the chosen segment.</div></div></div><div class="sw"><span class="chip" style="background:{surface-raised}" title="light: {surface-raised}"></span><span class="chip" style="background:{surface-raised}" title="sepia: {surface-raised}"></span><span class="chip" style="background:{surface-raised}" title="dark: {surface-raised}"></span><div><code>glass-fallback</code><div class="muted mono">{surface-raised} · {surface-raised} · {surface-raised}</div><div class="muted">Solid replacement for glass-fill when Reduce Transparency is on, on Android and on iOS below 26.</div></div></div><div class="sw"><span class="chip" style="background:rgba(19, 35, 31, 0.40)" title="light: rgba(19, 35, 31, 0.40)"></span><span class="chip" style="background:rgba(43, 33, 22, 0.40)" title="sepia: rgba(43, 33, 22, 0.40)"></span><span class="chip" style="background:rgba(0, 0, 0, 0.55)" title="dark: rgba(0, 0, 0, 0.55)"></span><div><code>scrim</code><div class="muted mono">rgba(19, 35, 31, 0.40) · rgba(43, 33, 22, 0.40) · rgba(0, 0, 0, 0.55)</div><div class="muted">Dims content behind a full-height sheet.</div></div></div><div class="sw"><span class="chip" style="background:#0e1b18" title="light: #0e1b18"></span><span class="chip" style="background:#0e1b18" title="sepia: #0e1b18"></span><span class="chip" style="background:#0e1b18" title="dark: #0e1b18"></span><div><code>player-bg</code><div class="muted mono">#0e1b18 · #0e1b18 · #0e1b18</div><div class="muted">Full-screen player ground in every theme.</div></div></div><div class="sw"><span class="chip" style="background:#f3eee2" title="light: #f3eee2"></span><span class="chip" style="background:#f3eee2" title="sepia: #f3eee2"></span><span class="chip" style="background:#f3eee2" title="dark: #f3eee2"></span><div><code>player-ink</code><div class="muted mono">#f3eee2 · #f3eee2 · #f3eee2</div><div class="muted">Text on player-bg.</div></div></div><div class="sw"><span class="chip" style="background:#a7b3ad" title="light: #a7b3ad"></span><span class="chip" style="background:#a7b3ad" title="sepia: #a7b3ad"></span><span class="chip" style="background:#a7b3ad" title="dark: #a7b3ad"></span><div><code>player-muted</code><div class="muted mono">#a7b3ad · #a7b3ad · #a7b3ad</div><div class="muted">Secondary text on player-bg.</div></div></div><div class="sw"><span class="chip" style="background:#e6c77e" title="light: #e6c77e"></span><span class="chip" style="background:#e6c77e" title="sepia: #e6c77e"></span><span class="chip" style="background:#e6c77e" title="dark: #e6c77e"></span><div><code>player-accent</code><div class="muted mono">#e6c77e · #e6c77e · #e6c77e</div><div class="muted">The word being recited and the play button fill on player-bg; text and icons on it use player-bg.</div></div></div>
-<h2 id="type">Type</h2><h3>Quran</h3><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:25px;line-height:2.35;font-weight:400">ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ</div><div><code>quran-mushaf</code> <span class="muted mono">25px / 2.35 / 400</span><div class="muted">Mushaf mode on phones. Line breaks come from the mushaf layout data, never from text wrapping.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:28px;line-height:2.2;font-weight:400">ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div><div><code>quran-reading</code> <span class="muted mono">28px / 2.2 / 400</span><div class="muted">Reading mode: one ayah per block above its translation.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:36px;line-height:2;font-weight:400">مَـٰلِكِ يَوْمِ ٱلدِّينِ</div><div><code>quran-focus</code> <span class="muted mono">36px / 2 / 400</span><div class="muted">Focus mode and the current ayah in the player.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:20px;line-height:1.7;font-weight:400">ٱلْحَمْدُ</div><div><code>quran-word</code> <span class="muted mono">20px / 1.7 / 400</span><div class="muted">Word-by-word chips.</div></div></div><h3>Display</h3><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:34px;line-height:46px;font-weight:700">سورة البقرة</div><div><code>display-lg</code> <span class="muted mono">34px / 46px / 700</span><div class="muted">Surah name on the continue-reading card.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:28px;line-height:36px;font-weight:700">السلام عليكم</div><div><code>display-md</code> <span class="muted mono">28px / 36px / 700</span><div class="muted">Screen greetings and section heroes.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:20px;line-height:26px;font-weight:700">الفاتحة</div><div><code>display-sm</code> <span class="muted mono">20px / 26px / 700</span><div class="muted">Surah name in the reading header and the surah cartouche.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:14px;line-height:14px;font-weight:400">١٢٣</div><div><code>numeral</code> <span class="muted mono">14px / 14px / 400</span><div class="muted">Numbers inside ayah markers and page numbers.</div></div></div><h3>Interface</h3><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:21px;line-height:28px;font-weight:700">مشاري راشد العفاسي</div><div><code>title</code> <span class="muted mono">21px / 28px / 700</span><div class="muted">Screen titles and the reciter name in the player.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:16px;line-height:24px;font-weight:600">ختمتي</div><div><code>headline</code> <span class="muted mono">16px / 24px / 600</span><div class="muted">Card titles and list row titles.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:15px;line-height:22px;font-weight:400">وِردك اليوم: ٤ صفحات</div><div><code>body</code> <span class="muted mono">15px / 22px / 400</span><div class="muted">Default interface text and translations.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:13px;line-height:18px;font-weight:400">الآية ٢٥٥ · صفحة ٤٢ · الجزء ٣</div><div><code>caption</code> <span class="muted mono">13px / 18px / 400</span><div class="muted">Meta lines: ayah, page, juz.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:12px;line-height:16px;font-weight:500">الرئيسية</div><div><code>label</code> <span class="muted mono">12px / 16px / 500</span><div class="muted">Tab labels, action tile labels and chips.</div></div></div>
+<h2 id="type">Type</h2><h3>Quran</h3><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:25px;line-height:2.35;font-weight:400">ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ</div><div><code>quran-mushaf</code> <span class="muted mono">25px / 2.35 / 400</span><div class="muted">Mushaf mode on phones. Line breaks come from the mushaf layout data, never from text wrapping.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:28px;line-height:2.2;font-weight:400">ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div><div><code>quran-reading</code> <span class="muted mono">28px / 2.2 / 400</span><div class="muted">Reading mode: one ayah per block above its translation.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:36px;line-height:2;font-weight:400">مَـٰلِكِ يَوْمِ ٱلدِّينِ</div><div><code>quran-focus</code> <span class="muted mono">36px / 2 / 400</span><div class="muted">Focus mode and the current ayah in the player.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;font-size:20px;line-height:1.7;font-weight:400">ٱلْحَمْدُ</div><div><code>quran-word</code> <span class="muted mono">20px / 1.7 / 400</span><div class="muted">Word-by-word chips.</div></div></div><h3>Display</h3><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:34px;line-height:46px;font-weight:700">سورة البقرة</div><div><code>display-lg</code> <span class="muted mono">34px / 46px / 700</span><div class="muted">Surah name on the continue-reading card.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:28px;line-height:36px;font-weight:700">السلام عليكم</div><div><code>display-md</code> <span class="muted mono">28px / 36px / 700</span><div class="muted">Screen greetings and section heroes.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:20px;line-height:26px;font-weight:700">الفاتحة</div><div><code>display-sm</code> <span class="muted mono">20px / 26px / 700</span><div class="muted">Surah name in the reading header and the surah cartouche.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;Amiri&quot;, serif;font-size:14px;line-height:14px;font-weight:400">١٢٣</div><div><code>numeral</code> <span class="muted mono">14px / 14px / 400</span><div class="muted">Numbers inside ayah markers and page numbers.</div></div></div><h3>Interface</h3><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:22px;line-height:30px;font-weight:700">مشاري راشد العفاسي</div><div><code>title</code> <span class="muted mono">22px / 30px / 700</span><div class="muted">Screen titles and the reciter name in the player. Dynamic Type: Title 2.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:17px;line-height:24px;font-weight:600">ختمتي</div><div><code>headline</code> <span class="muted mono">17px / 24px / 600</span><div class="muted">Card titles, list row titles and button labels. Dynamic Type: Headline.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:17px;line-height:26px;font-weight:400">وِردك اليوم: ٤ صفحات</div><div><code>body</code> <span class="muted mono">17px / 26px / 400</span><div class="muted">Default interface text, translations and tafsir (the HIG 17pt default). Dynamic Type: Body.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:15px;line-height:22px;font-weight:400">سجّل الدخول للمزامنة، أو استمر بدون حساب</div><div><code>subhead</code> <span class="muted mono">15px / 22px / 400</span><div class="muted">Secondary lines in rows and cards, hints under controls, segment and chip labels. Dynamic Type: Subheadline.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:13px;line-height:18px;font-weight:400">الآية ٢٥٥ · صفحة ٤٢ · الجزء ٣</div><div><code>caption</code> <span class="muted mono">13px / 18px / 400</span><div class="muted">Meta lines: ayah, page, juz. Dynamic Type: Footnote.</div></div></div><div class="ty"><div class="sample" dir="rtl" style="font-family:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;font-size:12px;line-height:16px;font-weight:500">الرئيسية</div><div><code>label</code> <span class="muted mono">12px / 16px / 500</span><div class="muted">Tab labels, action tile labels, tags and word glosses. The smallest interface size: nothing is set below 12px. Dynamic Type: Caption 1.</div></div></div>
 <h2 id="scale">Spacing, radius, effects</h2><h3>Spacing</h3><table><tr><td><code>space-1</code></td><td class="mono">4px</td><td class="muted">Icon-to-label gap inside tabs and tiles.</td></tr><tr><td><code>space-2</code></td><td class="mono">8px</td><td class="muted">Gap between chips and between grid tiles.</td></tr><tr><td><code>space-3</code></td><td class="mono">12px</td><td class="muted">Gap inside list rows; mini-player inner padding.</td></tr><tr><td><code>space-4</code></td><td class="mono">16px</td><td class="muted">Screen side gutter; floating glass inset from screen edges.</td></tr><tr><td><code>space-5</code></td><td class="mono">20px</td><td class="muted">Card padding and the gap between home sections.</td></tr><tr><td><code>space-6</code></td><td class="mono">24px</td><td class="muted">Player side padding; space above section titles.</td></tr><tr><td><code>space-8</code></td><td class="mono">32px</td><td class="muted">Separation between unrelated blocks.</td></tr></table><h3>Radius</h3><table><tr><td><code>radius-sm</code></td><td class="mono">8px</td><td class="muted">Ayah highlight backgrounds and small chips.</td></tr><tr><td><code>radius-md</code></td><td class="mono">14px</td><td class="muted">Quick tiles, word chips, reciter monograms.</td></tr><tr><td><code>radius-lg</code></td><td class="mono">20px</td><td class="muted">Cards, option cards and the mini-player.</td></tr><tr><td><code>radius-xl</code></td><td class="mono">28px</td><td class="muted">Sheets and player artwork.</td></tr><tr><td><code>radius-pill</code></td><td class="mono">999px</td><td class="muted">Buttons, the tab bar and segmented controls.</td></tr></table><h3>Shadow</h3><table><tr><td><code>shadow-glass</code></td><td class="mono">0 8px 32px rgba(19, 35, 31, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6) · 0 8px 32px rgba(43, 33, 22, 0.14), inset 0 1px 0 rgba(255, 250, 238, 0.6) · 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08)</td><td class="muted">Lift and inner highlight on glass elements in the design approximation.</td></tr><tr><td><code>shadow-raised</code></td><td class="mono">0 1px 2px rgba(19, 35, 31, 0.06) · 0 1px 2px rgba(43, 33, 22, 0.08) · 0 1px 2px rgba(0, 0, 0, 0.4)</td><td class="muted">The selected segment inside a segmented control.</td></tr></table><h3>Blur</h3><table><tr><td><code>blur-glass</code></td><td class="mono">24px</td><td class="muted">Backdrop blur radius for the design and web glass approximation.</td></tr></table>
 <h2 id="components">Components</h2><nav class="toc"><a href="#c-Ayah">Ayah</a><a href="#c-BottomSheet">BottomSheet</a><a href="#c-Button">Button</a><a href="#c-GlassButton">GlassButton</a><a href="#c-HighlightSwatch">HighlightSwatch</a><a href="#c-MiniPlayer">MiniPlayer</a><a href="#c-ReciterRow">ReciterRow</a><a href="#c-ScriptPicker">ScriptPicker</a><a href="#c-SegmentedControl">SegmentedControl</a><a href="#c-SurahHeader">SurahHeader</a><a href="#c-TabBar">TabBar</a><a href="#c-WordChip">WordChip</a></nav><article class="card" id="c-Ayah"><h3>Ayah</h3><p class="muted">Mushaf mode with the recited ayah and a user highlight; Reading mode</p><iframe class="pv" style="height:338px" srcdoc="&lt;!doctype html&gt;&lt;html dir=&quot;rtl&quot; data-theme=&quot;light&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;:root,[data-theme=light]{--surface:#f7f3ea;--surface-page:#fbf8f1;--surface-raised:#fffdf8;--line:#e7dfcc;--ink:#13231f;--ink-muted:#5b6a64;--brand:#1f4d40;--on-brand:#f7f3ea;--brand-surface:#1f4d40;--on-brand-surface:#f7f3ea;--gold:#a07c33;--gold-ink:#7e5f1e;--highlight-active:#ecece5;--highlight-gold:#f3e3b5;--highlight-green:#c4dfcc;--highlight-blue:#b7cde6;--highlight-rose:#e8b9b9;--danger:#a3392b;--fill-secondary:#efe8d8;--line-strong:#d9d0bc;--on-brand-surface-muted:#d9e2dd;--chart-blue:#4f86a8;--chart-gray:#78877f;--player-line:#24352f;--focus-ring:{brand};--glass-fill:rgba(255, 253, 248, 0.72);--glass-stroke:rgba(255, 255, 255, 0.75);--glass-selected:rgba(31, 77, 64, 0.10);--glass-fallback:{surface-raised};--scrim:rgba(19, 35, 31, 0.40);--player-bg:#0e1b18;--player-ink:#f3eee2;--player-muted:#a7b3ad;--player-accent:#e6c77e;--shadow-glass:0 8px 32px rgba(19, 35, 31, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);--shadow-raised:0 1px 2px rgba(19, 35, 31, 0.06);--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--radius-pill:999px;--blur-glass:24px;--duration-instant:80ms;--duration-fast:150ms;--duration-standard:200ms;--duration-slow:300ms;--ease-out:cubic-bezier(0, 0, 0.58, 1);--spring-duration:350ms;--spring-damping-ratio:1;--font-quran:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;--font-quran-indopak:&quot;IndoPak Nastaleeq&quot;, &quot;Amiri Quran&quot;, serif;--font-display:&quot;Amiri&quot;, serif;--font-ui:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;}[data-theme=sepia]{--surface:#f1e6cf;--surface-page:#f4ead5;--surface-raised:#f8efdc;--line:#e0d0b0;--ink:#2b2116;--ink-muted:#6b5a44;--brand:#1f4d40;--on-brand:#f7f3ea;--brand-surface:#1f4d40;--on-brand-surface:#f7f3ea;--gold:#8c6a2b;--gold-ink:#6e521c;--highlight-active:#e5dfcb;--highlight-gold:#ead39b;--highlight-green:#c3d6b4;--highlight-blue:#b4c9d1;--highlight-rose:#e2b6a6;--danger:#963425;--fill-secondary:#e8dcc2;--line-strong:#cfbf9f;--on-brand-surface-muted:#d9e2dd;--chart-blue:#4f86a8;--chart-gray:#78877f;--player-line:#24352f;--focus-ring:{brand};--glass-fill:rgba(248, 239, 220, 0.72);--glass-stroke:rgba(255, 250, 238, 0.75);--glass-selected:rgba(31, 77, 64, 0.10);--glass-fallback:{surface-raised};--scrim:rgba(43, 33, 22, 0.40);--player-bg:#0e1b18;--player-ink:#f3eee2;--player-muted:#a7b3ad;--player-accent:#e6c77e;--shadow-glass:0 8px 32px rgba(43, 33, 22, 0.14), inset 0 1px 0 rgba(255, 250, 238, 0.6);--shadow-raised:0 1px 2px rgba(43, 33, 22, 0.08);}[data-theme=dark]{--surface:#0e1715;--surface-page:#121d1a;--surface-raised:#172421;--line:#2a3a34;--ink:#ece6d8;--ink-muted:#a7b3ad;--brand:#8cc5af;--on-brand:#0e1715;--brand-surface:#1f4d40;--on-brand-surface:#f7f3ea;--gold:#c9a961;--gold-ink:#e6c77e;--highlight-active:#2b2f2d;--highlight-gold:#3d3519;--highlight-green:#1e3a2e;--highlight-blue:#1e2d3f;--highlight-rose:#3f2427;--danger:#f0a493;--fill-secondary:#24342f;--line-strong:#3c4f48;--on-brand-surface-muted:#d9e2dd;--chart-blue:#7fb0cf;--chart-gray:#8a9a93;--player-line:#24352f;--focus-ring:{brand};--glass-fill:rgba(23, 36, 33, 0.62);--glass-stroke:rgba(255, 255, 255, 0.14);--glass-selected:rgba(140, 197, 175, 0.16);--glass-fallback:{surface-raised};--scrim:rgba(0, 0, 0, 0.55);--player-bg:#0e1b18;--player-ink:#f3eee2;--player-muted:#a7b3ad;--player-accent:#e6c77e;--shadow-glass:0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);--shadow-raised:0 1px 2px rgba(0, 0, 0, 0.4);}:root[data-contrast=more],[data-theme=light][data-contrast=more]{--line:#8a816d;--line-strong:#787060;--ink-muted:#44524d;--glass-stroke:rgba(19, 35, 31, 0.30);}[data-theme=sepia][data-contrast=more]{--line:#85735a;--line-strong:#756445;--ink-muted:#54452f;--glass-stroke:rgba(43, 33, 22, 0.30);}[data-theme=dark][data-contrast=more]{--line:#71867e;--line-strong:#8a9e96;--ink-muted:#c3cdc8;--glass-stroke:rgba(255, 255, 255, 0.40);}&lt;/style&gt;&lt;style&gt;@import url(&#x27;https://fonts.googleapis.com/css2?family=Amiri+Quran&amp;family=Amiri:wght@400;700&amp;family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap&#x27;);
 
@@ -295,7 +295,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -321,7 +321,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -333,7 +333,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -341,7 +341,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -439,7 +439,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -465,7 +465,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -477,7 +477,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -485,7 +485,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -588,7 +588,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -614,7 +614,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -626,7 +626,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -634,7 +634,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -724,7 +724,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -750,7 +750,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -762,7 +762,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -770,7 +770,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -869,7 +869,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -895,7 +895,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -907,7 +907,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -915,7 +915,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -1012,7 +1012,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -1038,7 +1038,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1050,7 +1050,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -1058,7 +1058,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -1154,7 +1154,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -1180,7 +1180,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1192,7 +1192,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -1200,7 +1200,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -1268,7 +1268,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 <li>Classes: <code>qa-reciter</code> with <code>qa-mono</code> (first letter of the family name in <code>display</code> type), <code>qa-reciter-text</code>, a <code>qa-tag</code> for the style and an icon button.</li>
 <li>The row currently playing uses the prominent <code>brand</code> button; others use a secondary outlined button.</li>
 <li>Use a monogram, not a photo, unless the content source supplies an approved reciter image.</li>
-<li>Long-press, and the row's «المزيد» (···) button, offer: preview 10 seconds, download all, set as default reciter.</li>
+<li>In the Listen tab, long-press and the row's 44pt ··· button («خيارات القارئ») offer: preview 10 seconds, download all, set as default reciter. Onboarding rows only preview (play) and select, so they have no menu.</li>
 </ul></div></article><article class="card" id="c-ScriptPicker"><h3>ScriptPicker</h3><p class="muted">Choose the Quran font and script</p><iframe class="pv" style="height:408px" srcdoc="&lt;!doctype html&gt;&lt;html dir=&quot;rtl&quot; data-theme=&quot;light&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;style&gt;:root,[data-theme=light]{--surface:#f7f3ea;--surface-page:#fbf8f1;--surface-raised:#fffdf8;--line:#e7dfcc;--ink:#13231f;--ink-muted:#5b6a64;--brand:#1f4d40;--on-brand:#f7f3ea;--brand-surface:#1f4d40;--on-brand-surface:#f7f3ea;--gold:#a07c33;--gold-ink:#7e5f1e;--highlight-active:#ecece5;--highlight-gold:#f3e3b5;--highlight-green:#c4dfcc;--highlight-blue:#b7cde6;--highlight-rose:#e8b9b9;--danger:#a3392b;--fill-secondary:#efe8d8;--line-strong:#d9d0bc;--on-brand-surface-muted:#d9e2dd;--chart-blue:#4f86a8;--chart-gray:#78877f;--player-line:#24352f;--focus-ring:{brand};--glass-fill:rgba(255, 253, 248, 0.72);--glass-stroke:rgba(255, 255, 255, 0.75);--glass-selected:rgba(31, 77, 64, 0.10);--glass-fallback:{surface-raised};--scrim:rgba(19, 35, 31, 0.40);--player-bg:#0e1b18;--player-ink:#f3eee2;--player-muted:#a7b3ad;--player-accent:#e6c77e;--shadow-glass:0 8px 32px rgba(19, 35, 31, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6);--shadow-raised:0 1px 2px rgba(19, 35, 31, 0.06);--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--radius-pill:999px;--blur-glass:24px;--duration-instant:80ms;--duration-fast:150ms;--duration-standard:200ms;--duration-slow:300ms;--ease-out:cubic-bezier(0, 0, 0.58, 1);--spring-duration:350ms;--spring-damping-ratio:1;--font-quran:&quot;KFGQPC HAFS Uthmanic Script&quot;, &quot;Amiri Quran&quot;, serif;--font-quran-indopak:&quot;IndoPak Nastaleeq&quot;, &quot;Amiri Quran&quot;, serif;--font-display:&quot;Amiri&quot;, serif;--font-ui:&quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;}[data-theme=sepia]{--surface:#f1e6cf;--surface-page:#f4ead5;--surface-raised:#f8efdc;--line:#e0d0b0;--ink:#2b2116;--ink-muted:#6b5a44;--brand:#1f4d40;--on-brand:#f7f3ea;--brand-surface:#1f4d40;--on-brand-surface:#f7f3ea;--gold:#8c6a2b;--gold-ink:#6e521c;--highlight-active:#e5dfcb;--highlight-gold:#ead39b;--highlight-green:#c3d6b4;--highlight-blue:#b4c9d1;--highlight-rose:#e2b6a6;--danger:#963425;--fill-secondary:#e8dcc2;--line-strong:#cfbf9f;--on-brand-surface-muted:#d9e2dd;--chart-blue:#4f86a8;--chart-gray:#78877f;--player-line:#24352f;--focus-ring:{brand};--glass-fill:rgba(248, 239, 220, 0.72);--glass-stroke:rgba(255, 250, 238, 0.75);--glass-selected:rgba(31, 77, 64, 0.10);--glass-fallback:{surface-raised};--scrim:rgba(43, 33, 22, 0.40);--player-bg:#0e1b18;--player-ink:#f3eee2;--player-muted:#a7b3ad;--player-accent:#e6c77e;--shadow-glass:0 8px 32px rgba(43, 33, 22, 0.14), inset 0 1px 0 rgba(255, 250, 238, 0.6);--shadow-raised:0 1px 2px rgba(43, 33, 22, 0.08);}[data-theme=dark]{--surface:#0e1715;--surface-page:#121d1a;--surface-raised:#172421;--line:#2a3a34;--ink:#ece6d8;--ink-muted:#a7b3ad;--brand:#8cc5af;--on-brand:#0e1715;--brand-surface:#1f4d40;--on-brand-surface:#f7f3ea;--gold:#c9a961;--gold-ink:#e6c77e;--highlight-active:#2b2f2d;--highlight-gold:#3d3519;--highlight-green:#1e3a2e;--highlight-blue:#1e2d3f;--highlight-rose:#3f2427;--danger:#f0a493;--fill-secondary:#24342f;--line-strong:#3c4f48;--on-brand-surface-muted:#d9e2dd;--chart-blue:#7fb0cf;--chart-gray:#8a9a93;--player-line:#24352f;--focus-ring:{brand};--glass-fill:rgba(23, 36, 33, 0.62);--glass-stroke:rgba(255, 255, 255, 0.14);--glass-selected:rgba(140, 197, 175, 0.16);--glass-fallback:{surface-raised};--scrim:rgba(0, 0, 0, 0.55);--player-bg:#0e1b18;--player-ink:#f3eee2;--player-muted:#a7b3ad;--player-accent:#e6c77e;--shadow-glass:0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);--shadow-raised:0 1px 2px rgba(0, 0, 0, 0.4);}:root[data-contrast=more],[data-theme=light][data-contrast=more]{--line:#8a816d;--line-strong:#787060;--ink-muted:#44524d;--glass-stroke:rgba(19, 35, 31, 0.30);}[data-theme=sepia][data-contrast=more]{--line:#85735a;--line-strong:#756445;--ink-muted:#54452f;--glass-stroke:rgba(43, 33, 22, 0.30);}[data-theme=dark][data-contrast=more]{--line:#71867e;--line-strong:#8a9e96;--ink-muted:#c3cdc8;--glass-stroke:rgba(255, 255, 255, 0.40);}&lt;/style&gt;&lt;style&gt;@import url(&#x27;https://fonts.googleapis.com/css2?family=Amiri+Quran&amp;family=Amiri:wght@400;700&amp;family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap&#x27;);
 
 /* Quran App design system: component classes for previews and web. Prefix qa-. Values come from tokens.css. */
@@ -1301,7 +1301,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -1327,7 +1327,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1339,7 +1339,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -1347,7 +1347,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -1462,7 +1462,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -1488,7 +1488,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1500,7 +1500,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -1508,7 +1508,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -1619,7 +1619,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -1645,7 +1645,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1657,7 +1657,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -1665,7 +1665,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -1756,7 +1756,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -1782,7 +1782,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1794,7 +1794,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -1802,7 +1802,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
@@ -1898,7 +1898,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-stage-band { height: 56px; background: var(--brand); border-radius: var(--radius-lg); margin: 0 var(--space-4); }
 
 /* Buttons */
-.qa-btn { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
+.qa-btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 44px; padding: 0 var(--space-5); border-radius: var(--radius-pill); border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); cursor: pointer; text-decoration: none; }
 .qa-btn-primary { background: var(--brand); color: var(--on-brand); }
 .qa-btn-secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line); }
 .qa-btn-ghost { background: transparent; color: var(--brand); }
@@ -1924,7 +1924,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-mini-progress { position: absolute; top: 0; right: 0; height: 3px; background: var(--gold); }
 .qa-mono { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--highlight-gold); color: var(--brand); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 22px; font-weight: 700; flex-shrink: 0; }
 .qa-mini-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-mini-title { font-size: 15px; line-height: 22px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qa-mini-title { font-size: 17px; line-height: 24px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom sheet */
 .qa-sheet { border-radius: var(--radius-xl); padding: 8px var(--space-5) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
@@ -1936,7 +1936,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 
 /* Segmented control */
 .qa-seg { display: flex; padding: 4px; gap: 4px; border-radius: var(--radius-pill); }
-.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.qa-seg button { flex: 1; min-height: 40px; border: none; border-radius: var(--radius-pill); background: transparent; color: var(--ink-muted); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .qa-seg button[aria-pressed=&quot;true&quot;] { background: var(--surface-raised); color: var(--ink); font-weight: 600; box-shadow: var(--shadow-raised); }
 
 /* Option cards (script picker) */
@@ -1944,7 +1944,7 @@ body { margin: 0; font-family: var(--font-ui); color: var(--ink); background: va
 .qa-option:has(input:checked) { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
 .qa-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); flex-shrink: 0; }
 .qa-option-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.qa-option-name { font-size: 15px; line-height: 22px; font-weight: 600; }
+.qa-option-name { font-size: 17px; line-height: 24px; font-weight: 600; }
 .qa-option-sample { font-family: var(--font-quran); font-size: 22px; line-height: 1.8; color: var(--ink); }
 .qa-option:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 

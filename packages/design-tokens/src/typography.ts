@@ -21,11 +21,15 @@ export type QuranTextStyle = {
   weight: FontWeight;
 };
 
+// iOS text style each interface style scales with (React Native `dynamicTypeRamp`).
+export type DynamicTypeRamp = 'title2' | 'headline' | 'body' | 'subheadline' | 'footnote' | 'caption1';
+
 export type TextStyleToken = {
   family: 'display' | 'ui';
   size: number;
   lineHeight: number;
   weight: FontWeight;
+  ramp?: DynamicTypeRamp;
 };
 
 export const quranTypeScale = {
@@ -40,11 +44,12 @@ export const typeScale = {
   displayMd: { family: 'display', size: 28, lineHeight: 36, weight: 700 },
   displaySm: { family: 'display', size: 20, lineHeight: 26, weight: 700 },
   numeral: { family: 'display', size: 14, lineHeight: 14, weight: 400 },
-  title: { family: 'ui', size: 21, lineHeight: 28, weight: 700 },
-  headline: { family: 'ui', size: 16, lineHeight: 24, weight: 600 },
-  body: { family: 'ui', size: 15, lineHeight: 22, weight: 400 },
-  caption: { family: 'ui', size: 13, lineHeight: 18, weight: 400 },
-  label: { family: 'ui', size: 12, lineHeight: 16, weight: 500 },
+  title: { family: 'ui', size: 22, lineHeight: 30, weight: 700, ramp: 'title2' },
+  headline: { family: 'ui', size: 17, lineHeight: 24, weight: 600, ramp: 'headline' },
+  body: { family: 'ui', size: 17, lineHeight: 26, weight: 400, ramp: 'body' },
+  subhead: { family: 'ui', size: 15, lineHeight: 22, weight: 400, ramp: 'subheadline' },
+  caption: { family: 'ui', size: 13, lineHeight: 18, weight: 400, ramp: 'footnote' },
+  label: { family: 'ui', size: 12, lineHeight: 16, weight: 500, ramp: 'caption1' },
 } as const satisfies Record<string, TextStyleToken>;
 
 export type QuranTypeToken = keyof typeof quranTypeScale;
