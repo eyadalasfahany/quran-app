@@ -1,0 +1,41 @@
+# EAS uploads the whole repo for builds. When this file exists EAS ignores .gitignore,
+# so it repeats the secret and generated-file rules from .gitignore.
+
+# Not part of the app build
+apps/api/
+infra/
+docs/
+.github/
+/*.html
+/IBM-Plex-Sans-Arabic/
+.agents/
+.claude/
+.cursor/
+.qodo/
+graphify-out/
+
+# OS and editors
+.DS_Store
+.idea/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+
+# Generated
+node_modules/
+coverage/
+dist/
+*.tsbuildinfo
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+apps/mobile/web-build/

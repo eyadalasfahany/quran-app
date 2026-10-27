@@ -1,0 +1,12 @@
+{
+  "name": "@quran/api-contract",
+  "version": "0.0.0",
+  "private": true,
+  "description": "OpenAPI document generated from apps/api and the TypeScript types generated from it.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  }
+}

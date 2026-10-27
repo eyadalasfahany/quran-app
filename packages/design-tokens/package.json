@@ -1,0 +1,12 @@
+{
+  "name": "@quran/design-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Colors, spacing, radii and type scale pulled from the Figma design file.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["npm", "composer"],
+  "schedule": ["before 6am on monday"],
+  "packageRules": [
+    {
+      "description": "Weekly grouped npm PR for patch and minor updates; merges itself when CI passes",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "npm non-major",
+      "automerge": true
+    },
+    {
+      "description": "Weekly grouped Composer PR for patch and minor updates; merges itself when CI passes",
+      "matchManagers": ["composer"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "composer non-major",
+      "automerge": true
+    },
+    {
+      "description": "Major updates are merged by hand",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "Expo pins these versions; upgrade them with npx expo install --fix on an SDK branch, merged by hand",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "expo",
+        "/^expo-/",
+        "/^@expo//",
+        "jest-expo",
+        "react",
+        "react-dom",
+        "react-native",
+        "/^react-native-/",
+        "/^@react-native//",
+        "@shopify/flash-list",
+        "@sentry/react-native",
+        "typescript"
+      ],
+      "groupName": "expo sdk",
+      "automerge": false
+    }
+  ]
+}

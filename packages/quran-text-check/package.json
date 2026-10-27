@@ -1,0 +1,16 @@
+{
+  "name": "@quran/quran-text-check",
+  "version": "0.0.0",
+  "private": true,
+  "description": "6,236-ayah checksum tool used by API CI and app CI.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5"
+  }
+}

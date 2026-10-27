@@ -28,7 +28,7 @@ Host ports (MAMP-style services already use 3306 and 8080): MySQL 33306, Redis 1
 - Done early: IBM Plex Sans Arabic copied to `apps/mobile/assets/fonts/IBMPlexSansArabic/` with its OFL licence; root `.gitignore` written.
 - Open: delete the root `IBM-Plex-Sans-Arabic/` copy (`git rm -r`) once the app copy is committed.
 
-### 1. Monorepo skeleton
+### 1. Monorepo skeleton — done
 
 - Creates:
   - Root `package.json` with workspaces `apps/mobile` and `packages/*`, plus `engines.node` and `.nvmrc` (26).
@@ -38,15 +38,18 @@ Host ports (MAMP-style services already use 3306 and 8080): MySQL 33306, Redis 1
   - `.easignore` (excludes `apps/api`, `infra`).
 - Verify: `npm install` writes the lockfile, `npm ls --workspaces`, `npx renovate-config-validator`. App checks are N/A.
 
-### 2. Laravel 13 skeleton
+### 2. Laravel 13 skeleton — done
 
 - Creates:
   - `composer create-project laravel/laravel` in the scratchpad, moved into `apps/api`, keeping `apps/api/CLAUDE.md`.
-  - Sanctum (`install:api`), Horizon, Pulse, `spatie/laravel-data`, `predis/predis`.
-  - Pest 5 replacing PHPUnit examples, Larastan level 8 (`phpstan.neon`), Pint (Laravel preset).
-  - `composer qa` script.
+  - Frontend scaffolding removed (Vite, `package.json`, `resources/css|js`, welcome page); `/` returns 404.
+  - Sanctum (`install:api`, `HasApiTokens` on `User`), Horizon, Pulse, `spatie/laravel-data`, `predis/predis`.
+  - Pest 5.3.0 replacing PHPUnit examples (5.3.3 is blocked by a PHPUnit security advisory), Larastan level 8 (`phpstan.neon`), Pint (Laravel preset plus `declare_strict_types`).
+  - `App\Support\Env::string()` so config files read env values type-safely under `strict_types`.
+  - `composer qa` script; tests run against MySQL `quran_testing`.
   - `.env.example` pointing at the compose services and port 8000; `.env` stays out of git.
-- Verify: `composer qa`, `php artisan migrate` against compose MySQL, `curl localhost:8000/up`.
+  - Laravel Boost 2.10.3: guidelines appended to `apps/api/CLAUDE.md` and `AGENTS.md`, five skills, MCP config for Claude Code (repo-root `.mcp.json`), Codex, Cursor and OpenCode. Laravel Cloud guidance switched off.
+- Verify: `composer qa`, `php artisan serve` then `curl localhost:8000/up`. `php artisan migrate` moves to step 4, when compose MySQL exists.
 
 ### 3. Domains and the Sync example
 
@@ -73,7 +76,7 @@ Host ports (MAMP-style services already use 3306 and 8080): MySQL 33306, Redis 1
   - `mysql:9.7`, `redis:8.10` and Mailpit, with healthchecks.
   - An `app` service (PHP 8.5 image running `artisan serve`) for anyone who prefers the container.
   - `horizon` and `scheduler`, both from the same image.
-- Verify: `docker compose config`; all services healthy; `php artisan horizon:status`; scheduler logs a tick; `curl localhost:8000/api/v1/health` returns 200 with both checks true.
+- Verify: `docker compose config`; all services healthy; `php artisan migrate` (and `quran_testing` created for Pest); `php artisan horizon:status`; scheduler logs a tick; `curl localhost:8000/api/v1/health` returns 200 with both checks true.
 
 ### 5. Expo SDK 58 app
 

@@ -61,10 +61,11 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Scheduled jobs | Laravel scheduler | Built in | Daily Quran Foundation and hadith sync, reminder sends |
 | Push | Expo Push API through a queued custom notification channel | HTTP API | One endpoint for iOS and Android push; no extra dependency |
 | Admin | `filament/filament` | 5.10.3 | Daily hadith rotation, content sources, user support |
-| Data objects | `spatie/laravel-data` | 4.23.0 | Typed request and response objects |
+| Data objects | `spatie/laravel-data` | 4.23.1 | Typed request and response objects |
 | Backups | `spatie/laravel-backup` | 10.3.3 | Database backups to off-site storage |
 | Monitoring | `laravel/pulse` + `sentry/sentry-laravel` | 1.8.1; 4.29.0 | Performance, slow queries, errors |
-| Quality | Pest, Larastan, Pint | 5.3.3; 3.13.2; 1.32.1 | Tests, static analysis, code style |
+| Quality | Pest, Larastan, Pint | 5.3.0; 3.13.2; 1.32.1 | Tests, static analysis, code style. Pest 5.3.3 needs PHPUnit 13.4.3, which Composer blocks for security advisory PKSA-qhjm-rpqc-qkn6, so Pest stays on 5.3.0 (PHPUnit 13.3.6) until a fixed pair ships |
+| AI tooling (dev) | `laravel/boost` | 2.10.3 | Agent guidelines, skills and an MCP server with docs search, schema and log tools |
 | API contract | `dedoc/scramble` | 0.13.51 | Generates `openapi.json` from routes, FormRequests and Data objects |
 | Data | MySQL, Redis | 9.7 LTS (9.7.4); 8.10 (8.10.3) | Main database, cache and queues. MySQL 9.7 is the current LTS series |
 | Tooling | Node.js | 26 (26.12.1; LTS promotion due late October 2026) | CI, EAS CLI and local builds; pinned in `.nvmrc` |
