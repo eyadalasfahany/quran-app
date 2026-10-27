@@ -1,0 +1,46 @@
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Local AI and agent tooling (project skills in .claude/skills stay tracked)
+.claude/settings.local.json
+.qodo/
+graphify-out/
+
+# Secrets: env files and signing keys never enter git
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.keystore
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+
+# Node workspaces
+node_modules/
+npm-debug.log*
+*.tsbuildinfo
+coverage/
+dist/
+
+# Expo app (continuous native generation: ios/ and android/ are generated)
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+apps/mobile/web-build/
+apps/mobile/expo-env.d.ts
+
+# Laravel API (apps/api keeps its own .gitignore for storage, cache and logs)
+apps/api/vendor/
+apps/api/.phpunit.result.cache
+apps/api/.phpunit.cache/
+
+# Docker volumes kept on disk
+infra/data/

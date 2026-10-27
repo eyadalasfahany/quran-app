@@ -42,22 +42,28 @@ npm workspaces cover `apps/mobile` and `packages/*`. Composer lives inside `apps
 
 ## Commands
 
+Local toolchain: PHP 8.5 from Homebrew (`php`), Node 26 through nvm (`nvm use` reads `.nvmrc`).
+
 ```bash
 npm ci                                              # JS workspaces
-docker compose -f infra/docker-compose.yml up -d    # MySQL, Redis, Mailpit
-cd apps/api && composer install && php artisan migrate
+docker compose -f infra/docker-compose.yml up -d    # MySQL, Redis, Mailpit, Horizon, scheduler
+cd apps/api && composer install && php artisan migrate && php artisan serve   # http://localhost:8000
 cd apps/mobile && npx expo start
 ```
 
+No Caddy locally (ADR 0003). Host ports: MySQL 33306, Redis 16379, Mailpit 18025 (SMTP 11025), API 8000.
+
 - Add Expo-managed packages with `npx expo install <pkg>`, never `npm install`.
 - Before calling work done, run the checks for every app you touched:
-  - API: `./vendor/bin/pint --test && ./vendor/bin/phpstan analyse && ./vendor/bin/pest --parallel`
+  - API: `composer qa` (runs `pint --test`, `phpstan analyse`, `pest --parallel`)
   - Mobile: `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`
   - Contract (any endpoint change): regenerate `packages/api-contract/openapi.json` from the API, regenerate TS types, commit both.
 
 ## How to work here
 
-- **Current phase: Phase 0, Setup and foundations** (spec §15). Work one deliverable at a time and keep each change small enough to review.
+- **Current phase: Phase 0, Setup and foundations** (spec §15). The step-by-step plan is `docs/plans/phase-0.md`. Work one step at a time and keep each change small enough to review.
+- Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the Figma file above.
+- The developer commits and pushes. Don't commit unless asked.
 - Plan before coding anything that touches the schema, sync, the API contract or the reader.
 - An endpoint change ships with its OpenAPI update and the app-side types in the same change.
 - New dependency: check the content plan's version table first; no package without a release in the last 12 months.

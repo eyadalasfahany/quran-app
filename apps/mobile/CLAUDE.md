@@ -7,7 +7,9 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - `app/` holds Expo Router routes only. Routes stay thin: read params, render a feature screen.
 - `src/core/` holds api, db, sync, layout, theme, i18n, storage, telemetry.
 - `src/features/<feature>/` holds `components/`, `hooks/`, `data/` (repositories) and `store.ts` only when needed.
-- `src/shared/ui/` holds design-system components. Colors, spacing and radii come from `@quran/design-tokens`; no raw hex values in components.
+- `src/shared/ui/` holds design-system components, rebuilt from the Figma file (link in the root CLAUDE.md) when a phase first needs them. Colors, spacing, radii and type come from `@quran/design-tokens`, which is pulled from Figma's variables and text styles; no raw hex values in components.
+- The UI font is IBM Plex Sans Arabic in `assets/fonts/IBMPlexSansArabic/` (OFL, licence alongside). Load only the weights the design uses.
+- API base URL comes from `EXPO_PUBLIC_API_URL`: `http://localhost:8000` on iOS simulators, `http://10.0.2.2:8000` on Android emulators.
 - API types come from `@quran/api-contract`. Never hand-write a type for an API payload.
 
 ## Where state lives

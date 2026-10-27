@@ -45,6 +45,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Errors | `@sentry/react-native` | \~8.28.0 | Crash and error reporting, at the version SDK 58 pins |
 | Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0 | Over-the-air JavaScript fixes and store builds |
 | Tests | Jest + `jest-expo` + React Native Testing Library; Maestro | 30.5.2; \~58.0.12; 14.1.0; latest Maestro CLI | Unit and component tests; end-to-end flows on devices |
+| API types | `openapi-typescript` | 7.13.0 | Generates the TypeScript types in `packages/api-contract` from `openapi.json` |
 
 **Backend (Laravel)**
 
@@ -56,6 +57,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Google sign-in | `google/apiclient` | 2.20.1 | Verifies the Google ID token from the app |
 | Apple sign-in | `firebase/php-jwt` | 7.2.1 | Verifies Apple identity tokens; signs the client secret for token revocation |
 | Queues | Redis + `laravel/horizon` | 8.10; 5.50.1 | Content sync, emails, push sends, with a dashboard |
+| Redis client | `predis/predis` | 3.7.0 | Pure-PHP Redis client; no `phpredis` extension needed on the Mac or in the image |
 | Scheduled jobs | Laravel scheduler | Built in | Daily Quran Foundation and hadith sync, reminder sends |
 | Push | Expo Push API through a queued custom notification channel | HTTP API | One endpoint for iOS and Android push; no extra dependency |
 | Admin | `filament/filament` | 5.10.3 | Daily hadith rotation, content sources, user support |
@@ -63,8 +65,9 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Backups | `spatie/laravel-backup` | 10.3.3 | Database backups to off-site storage |
 | Monitoring | `laravel/pulse` + `sentry/sentry-laravel` | 1.8.1; 4.29.0 | Performance, slow queries, errors |
 | Quality | Pest, Larastan, Pint | 5.3.3; 3.13.2; 1.32.1 | Tests, static analysis, code style |
+| API contract | `dedoc/scramble` | 0.13.51 | Generates `openapi.json` from routes, FormRequests and Data objects |
 | Data | MySQL, Redis | 9.7 LTS (9.7.4); 8.10 (8.10.3) | Main database, cache and queues. MySQL 9.7 is the current LTS series |
-| Tooling | Node.js | 26 LTS | CI, EAS CLI and local builds |
+| Tooling | Node.js | 26 (26.12.1; LTS promotion due late October 2026) | CI, EAS CLI and local builds; pinned in `.nvmrc` |
 
 **Keeping versions current**
 
