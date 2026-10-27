@@ -8,7 +8,8 @@ import { IconButton, TitlePill, ToolbarPill } from '@/shared/ui';
 
 export const READER_TOOLBAR_CLEARANCE = 64;
 
-const BACK = { ios: 'chevron.right', android: 'chevron_right' } as const;
+// Points left and mirrors in Arabic, so Back always points toward the leading edge.
+const BACK = { ios: 'chevron.left', android: 'chevron_left' } as const;
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 const SETTINGS = { ios: 'slider.horizontal.3', android: 'tune' } as const;
 const ACTIONS = { ios: 'ellipsis.circle', android: 'more_horiz' } as const;

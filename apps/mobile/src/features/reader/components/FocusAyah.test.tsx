@@ -34,13 +34,13 @@ describe('FocusAyah', () => {
     expect(flatStyle(view.getByTestId('focus-current').props.style)).toMatchObject({ fontSize: 57, lineHeight: 120 });
   });
 
-  it('draws the filled Focus marker', async () => {
+  it('draws the active Focus marker at its size', async () => {
     const view = await renderUi(<FocusAyah {...ayah} testID="focus" />);
+    const [mark] = view.getByTestId('focus-marker').children;
 
-    expect(flatStyle(view.getByTestId('focus-marker').props.style)).toMatchObject({
-      backgroundColor: themes.light.colors.brand,
-      height: themes.light.size.focusMarker,
-      width: themes.light.size.focusMarker,
+    expect(flatStyle(typeof mark === 'object' ? mark.props.style : undefined)).toMatchObject({
+      color: themes.light.colors.brand,
+      fontSize: themes.light.size.focusMarker,
     });
   });
 

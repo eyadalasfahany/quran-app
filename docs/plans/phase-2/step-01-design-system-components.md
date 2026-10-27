@@ -34,7 +34,7 @@ Visual source is the frame where each first appears in `quran-app-screens.html` 
 | `SegmentedControl` track and `ListRow` separators | — | — | Use `fillSecondary` for tracks and `lineStrong` for separators that must stay visible, as ADR 0012 specifies |
 | `HighlightSwatch` | Ayah actions colours | `color: 'gold' \| 'green' \| 'blue' \| 'rose'`, `selected`, `onPress` | 44 pt hit area, 28 pt dot. The selected ring is not colour-only: also `accessibilityState.selected`, and the label names the colour |
 | `EmptyState` | Empty My Quran | `title`, `body`, `action?` | |
-| `AyahMarker` | Mushaf ayah numbers | `number`, `active?`, `onPress?` | Arabic-Indic digits through `formatNumber`. Amiri; gold ring at rest; **`active` = filled brand marker** (ADR 0012). Pressable: opens ayah actions. Used in Reading and Focus modes; page-exact QCF uses the font's own marker glyph |
+| `AyahMarker` | Mushaf ayah numbers | `number`, `active?`, `onPress?` | Arabic-Indic digits through `formatNumber`. Drawn as the end-of-ayah mark `﴿١﴾` in Amiri Quran (`AyahEndMark`): gold at rest, **`active` = brand** (ADR 0012, amended 2026-10-28). Pressable: opens ayah actions. Used in Reading and Focus modes; page-exact QCF uses the font's own marker glyph |
 | `SurahCartouche` | Mushaf surah banner | `name` | Amiri bold, gold frame |
 | `WordMeaningChip` | Ayah actions word chips | `word` (Uthmani), `meaning` | The word in Amiri Quran **byte for byte**; the meaning is LTR text when it's English |
 

@@ -20,7 +20,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
   - Glass never fades; switch its style, and without animation when Reduce Motion is on.
 - Jest uses `react-native-reanimated/jest/resolver`, so tests import the real Reanimated; mock only `useReducedMotion` when a test needs it.
 - The UI font is IBM Plex Sans Arabic in `assets/fonts/IBMPlexSansArabic/` (OFL, licence alongside). Load only the weights the design uses.
-- Interface copy lives in `src/core/i18n/locales` (`ar.json`, `en.json`). Arabic is the default; English is used when the device language is English or the saved choice is English. The choice is the MMKV key `locale`. Switching calls `I18nManager.allowRTL` and `forceRTL`, then reloads (`DevSettings.reload` in dev, `Updates.reloadAsync` in a release build). `allowRTL(false)` is required for English, because `forceRTL(false)` does not force LTR on an Arabic device.
+- Interface copy lives in `src/core/i18n/locales` (`ar.json`, `en.json`). Arabic is the default for now, whatever the device language; English is used only when the reader has saved it. The choice is the MMKV key `locale`. Switching calls `I18nManager.allowRTL` and `forceRTL`, then reloads (`DevSettings.reload` in dev, `Updates.reloadAsync` in a release build). `allowRTL(false)` is required for English, because `forceRTL(false)` does not force LTR on an Arabic device.
 - API base URL comes from `EXPO_PUBLIC_API_URL` in `apps/mobile/.env` (copy `.env.example`): `http://localhost:8000` on iOS simulators, `http://10.0.2.2:8000` on Android emulators.
 - API types come from `@quran/api-contract`. Never hand-write a type for an API payload. Type route paths with `satisfies keyof paths`, so a renamed route fails `tsc`.
 

@@ -66,7 +66,7 @@ describe('Sidebar', () => {
     mockLiquidGlass.mockReturnValue(true);
     const view = await renderUi(sidebar());
 
-    expect(view.getByTestId('sidebar').props.glassEffectStyle).toBe('regular');
+    expect(view.getByTestId('sidebar-glass').props.glassEffectStyle).toBe('regular');
     expect(flatStyle(view.getByTestId('sidebar').props.style).width).toBe(themes.light.size.sidebar);
   });
 

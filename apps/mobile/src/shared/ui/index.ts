@@ -1,4 +1,5 @@
 export { ActionTile } from './ActionTile';
+export { AyahEndMark } from './AyahEndMark';
 export { AyahMarker, FOCUS_MARKER_SIZE } from './AyahMarker';
 export { Button, type ButtonSize, type ButtonVariant } from './Button';
 export { Card, type CardTone } from './Card';

@@ -26,16 +26,18 @@ export function GlassSurface({
   const shape = { borderRadius: theme.radius[radius] };
 
   if (nativeGlass) {
+    // The glass is a background layer that never receives touches. With the controls as its children,
+    // the native glass view sat between the finger and the Pressable on iOS 26.
     return (
-      <GlassView
-        accessibilityLabel={accessibilityLabel}
-        accessibilityRole={accessibilityRole}
-        glassEffectStyle="regular"
-        style={[shape, style]}
-        testID={testID}
-      >
+      <View accessibilityLabel={accessibilityLabel} accessibilityRole={accessibilityRole} style={[shape, style]} testID={testID}>
+        <GlassView
+          glassEffectStyle="regular"
+          pointerEvents="none"
+          style={[StyleSheet.absoluteFill, shape]}
+          testID={testID === undefined ? undefined : `${testID}-glass`}
+        />
         {children}
-      </GlassView>
+      </View>
     );
   }
 

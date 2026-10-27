@@ -1,8 +1,9 @@
+import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { AyahMarker, GoldFrame, QuranText, SurahCartouche } from '@/shared/ui';
+import { AyahEndMark, GoldFrame, QuranText, SurahCartouche, useContrastColors } from '@/shared/ui';
 
 import type { ChapterRecord } from '../data/chapters';
 import type { VerseRecord } from '../data/verses';
@@ -15,6 +16,9 @@ const FRAME_CONTENT = {
   paddingHorizontal: 18,
   paddingTop: 22,
 } as const;
+
+// Separates an ayah from its end mark and from the next ayah. Kept outside the stored ayah text.
+const WORD_SPACE = ' ';
 
 export function HafsMushafPage({
   verses,
@@ -35,14 +39,16 @@ export function HafsMushafPage({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const colors = useContrastColors();
 
   return (
     <GoldFrame contentStyle={{ alignItems: 'center', ...FRAME_CONTENT }} testID={testID} variant="page">
-      {verses.map((verse) => {
-        const chapter = verse.verseNumber === 1 ? chapters.get(verse.chapterId) : undefined;
+      {surahRuns(verses).map((run) => {
+        const [first] = run;
+        const chapter = first.verseNumber === 1 ? chapters.get(first.chapterId) : undefined;
         const showBismillah = chapter !== undefined && chapter.bismillahPre === 1 && chapter.id !== 1;
         return (
-          <View key={verse.id} style={{ alignItems: 'center', gap: theme.space[3], width: '100%' }}>
+          <View key={first.id} style={{ alignItems: 'center', gap: theme.space[3], width: '100%' }}>
             {chapter === undefined ? null : (
               <SurahCartouche
                 name={t('reader.surahTitle', { name: chapter.nameArabic })}
@@ -57,29 +63,56 @@ export function HafsMushafPage({
                 typeToken="quranMushaf"
               />
             ) : null}
-            <View style={{ alignItems: 'center', width: '100%' }}>
-              <QuranText
-                align="center"
-                fontScale={fontScale}
-                onLongPress={onOpenActions ? () => onOpenActions(verse.verseKey) : undefined}
-                onPress={onPressVerse ? () => onPressVerse(verse.verseKey) : undefined}
-                style={{ width: '100%' }}
-                testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
-                variant="quranMushaf"
-              >
-                {verse.textUthmani}
-              </QuranText>
-              <AyahMarker
-                active={selectedVerseKey === verse.verseKey}
-                fontScale={fontScale}
-                number={verse.verseNumber}
-                onPress={onOpenActions ? () => onOpenActions(verse.verseKey) : undefined}
-                testID={testID ? `${testID}-marker-${verse.verseKey}` : undefined}
-              />
-            </View>
+            <QuranText
+              align="center"
+              fontScale={fontScale}
+              style={{ width: '100%' }}
+              testID={testID ? `${testID}-text-${first.verseKey}` : undefined}
+              variant="quranMushaf"
+            >
+              {run.map((verse, index) => {
+                const selected = selectedVerseKey === verse.verseKey;
+                return (
+                  <Fragment key={verse.id}>
+                    {index > 0 ? WORD_SPACE : null}
+                    <Text
+                      onLongPress={onOpenActions ? () => onOpenActions(verse.verseKey) : undefined}
+                      onPress={onPressVerse ? () => onPressVerse(verse.verseKey) : undefined}
+                      style={selected ? { backgroundColor: colors.highlightActive } : null}
+                      testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
+                    >
+                      {verse.textUthmani}
+                    </Text>
+                    {WORD_SPACE}
+                    <AyahEndMark
+                      active={selected}
+                      number={verse.verseNumber}
+                      onPress={onOpenActions ? () => onOpenActions(verse.verseKey) : undefined}
+                      testID={testID ? `${testID}-marker-${verse.verseKey}` : undefined}
+                    />
+                  </Fragment>
+                );
+              })}
+            </QuranText>
           </View>
         );
       })}
     </GoldFrame>
   );
+}
+
+// Splits a page's verses where a surah starts, so each surah's ayahs flow as one paragraph under its cartouche.
+type SurahRun = [VerseRecord, ...VerseRecord[]];
+
+function surahRuns(verses: readonly VerseRecord[]): SurahRun[] {
+  const runs: SurahRun[] = [];
+  for (const verse of verses) {
+    const current = runs.at(-1);
+    if (current === undefined || verse.verseNumber === 1) {
+      runs.push([verse]);
+    } else {
+      current.push(verse);
+    }
+  }
+  return runs;
 }

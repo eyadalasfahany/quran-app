@@ -50,16 +50,20 @@ describe('locale', () => {
     I18nManager.isRTL = false;
   });
 
-  it('uses English when the device language is English and nothing is saved', () => {
-    expect(getLocale()).toBe('en');
-  });
+  it('uses Arabic when nothing is saved, even on an English device', () => {
+    expect(getLocale()).toBe('ar');
 
-  it('defaults to Arabic for any other device language', () => {
     setDeviceLanguageCode('fr');
     expect(getLocale()).toBe('ar');
 
     setDeviceLanguageCode(null);
     expect(getLocale()).toBe('ar');
+  });
+
+  it('uses English only once the reader has saved it', () => {
+    storage.set(storageKeys.locale, 'en');
+
+    expect(getLocale()).toBe('en');
   });
 
   it('prefers the saved language over the device language', () => {
@@ -73,7 +77,7 @@ describe('locale', () => {
     storage.set(storageKeys.locale, 'fr');
     setDeviceLanguageCode('en');
 
-    expect(getLocale()).toBe('en');
+    expect(getLocale()).toBe('ar');
   });
 });
 
@@ -135,6 +139,8 @@ describe('direction', () => {
   });
 
   it('leaves startup alone when the layout direction already matches', () => {
+    storage.set(storageKeys.locale, 'en');
+
     expect(ensureDirection().ready).toBe(true);
     expect(forceRTL).not.toHaveBeenCalled();
     expect(reload).not.toHaveBeenCalled();

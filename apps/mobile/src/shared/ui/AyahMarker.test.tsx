@@ -7,15 +7,20 @@ import { themes } from '@/core/theme';
 import { AyahMarker } from './AyahMarker';
 
 const colors = themes.light.colors;
+// The ornament is hidden from screen readers (the marker carries the label), so queries opt in to see it.
+const hidden = { includeHiddenElements: true };
 
 describe('AyahMarker', () => {
-  it.each(locales)('always draws Arabic-Indic digits in Amiri (%s)', async (locale) => {
-    const view = await renderUi(<AyahMarker number={255} />, { locale });
-    const numeral = view.getByText('٢٥٥');
+  it.each(locales)('draws the end-of-ayah ornament around Arabic-Indic digits (%s)', async (locale) => {
+    const view = await renderUi(<AyahMarker number={255} testID="marker" />, { locale });
+    const [mark] = view.getByTestId('marker').children;
+    const markProps = typeof mark === 'object' ? mark.props : {};
 
-    expect(flatStyle(numeral.props.style)).toMatchObject({ fontFamily: 'Amiri-Regular', fontSize: 14 });
-    expect(flatStyle(numeral.props.style).fontWeight).toBeUndefined();
-    expect(numeral.props.allowFontScaling).toBe(false);
+    expect(markProps.children.slice(0, 2)).toEqual(['\u200F', '\uFD3F']);
+    expect(markProps.children[3]).toBe('\uFD3E');
+    expect(view.getByText('٢٥٥', hidden)).toBeOnTheScreen();
+    expect(flatStyle(markProps.style)).toMatchObject({ fontFamily: 'AmiriQuran', fontSize: 28 });
+    expect(markProps.allowFontScaling).toBe(false);
   });
 
   it.each([
@@ -27,27 +32,28 @@ describe('AyahMarker', () => {
     expect(view.getByRole('button', { name: label })).toBeOnTheScreen();
   });
 
-  it('rests as a gold ring', async () => {
+  it('rests with gold ornaments and an ink number', async () => {
     const view = await renderUi(<AyahMarker number={1} testID="marker" />);
+    const [mark] = view.getByTestId('marker').children;
 
-    expect(flatStyle(view.getByTestId('marker').props.style)).toMatchObject({
-      backgroundColor: 'transparent',
-      borderColor: colors.gold,
-      height: 28,
-      width: 28,
-    });
-    expect(flatStyle(view.getByText('١').props.style).color).toBe(colors.ink);
+    expect(flatStyle(typeof mark === 'object' ? mark.props.style : undefined).color).toBe(colors.gold);
+    expect(flatStyle(view.getByText('١', hidden).props.style).color).toBe(colors.ink);
   });
 
-  it('fills with brand when active, never gold', async () => {
+  it('turns brand when active, never gold', async () => {
     const view = await renderUi(<AyahMarker active number={5} onPress={() => undefined} testID="marker" />);
+    const [mark] = view.getByTestId('marker').children;
 
-    expect(flatStyle(view.getByTestId('marker').props.style)).toMatchObject({
-      backgroundColor: colors.brand,
-      borderColor: colors.brand,
-    });
-    expect(flatStyle(view.getByText('٥').props.style).color).toBe(colors.onBrand);
+    expect(flatStyle(typeof mark === 'object' ? mark.props.style : undefined).color).toBe(colors.brand);
+    expect(flatStyle(view.getByText('٥', hidden).props.style).color).toBe(colors.brand);
     expect(view.getByRole('button').props.accessibilityState).toMatchObject({ selected: true });
+  });
+
+  it('is one element for screen readers: the ornament inside is hidden', async () => {
+    const view = await renderUi(<AyahMarker number={4} onPress={() => undefined} />);
+
+    expect(view.getAllByLabelText('الآية ٤')).toHaveLength(1);
+    expect(view.queryByText('٤')).toBeNull();
   });
 
   it('opens ayah actions on press through a 44 pt target', async () => {
@@ -72,8 +78,10 @@ describe('AyahMarker', () => {
   it('follows the reader font scale', async () => {
     const view = await renderUi(<AyahMarker fontScale={1.5} number={7} testID="marker" />);
 
-    expect(flatStyle(view.getByTestId('marker').props.style)).toMatchObject({ height: 42, width: 42 });
-    expect(flatStyle(view.getByText('٧').props.style).fontSize).toBe(21);
+    const [mark] = view.getByTestId('marker').children;
+
+    expect(flatStyle(view.getByTestId('marker').props.style).minHeight).toBe(42);
+    expect(flatStyle(typeof mark === 'object' ? mark.props.style : undefined).fontSize).toBe(42);
   });
 
   it('has no raw colour literals', () => {

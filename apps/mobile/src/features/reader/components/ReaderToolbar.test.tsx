@@ -28,9 +28,11 @@ describe('ReaderToolbar', () => {
     expect(expanded.getByTestId('reader-panel-toggle').props.accessibilityState).toEqual({ selected: true });
   });
 
-  it.each(locales)('mirrors the back chevron only in Arabic (%s)', async (locale) => {
+  it.each(locales)('points Back toward the leading edge: left in English, mirrored right in Arabic (%s)', async (locale) => {
     const view = await renderUi(<ReaderToolbar {...props} />, { locale });
     const [icon] = view.getByTestId('reader-back').children;
+    const [symbol] = typeof icon === 'object' ? icon.children : [];
+    expect(typeof symbol === 'object' ? symbol.props.name : undefined).toBe('chevron.left');
     expect(flatStyle(typeof icon === 'object' ? icon.props.style : undefined).transform).toEqual(
       locale === 'ar' ? [{ scaleX: -1 }] : undefined,
     );

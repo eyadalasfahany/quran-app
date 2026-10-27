@@ -128,7 +128,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
 .xr-scrim{position:absolute;inset:0;background:var(--scrim);z-index:4}
 .xr-sheet{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:560px;top:300px;box-sizing:border-box;border-radius:36px 36px 0 0;padding:10px 22px 24px;display:flex;flex-direction:column;gap:14px;background:var(--surface-raised);z-index:5}
 .xr-grab{align-self:center;width:40px;height:5px;border-radius:3px;background:var(--line)}
-</style></head><body><header class="gx-head"><h1>Quran App — Screens</h1><p>32 screens · static export of the design canvas, 2026-10-26, plus the expanded-window sidebar and the proposed tablet reader, drawn from the design tokens. All screens revised for ADR 0012 (Apple HIG) on 2026-10-27: Automatic appearance, recited ayah with a neutral wash and brand marker, outlined search matches, 44pt targets, previous/next in Focus, RTL audio controls, one glyph per destination. Links between screens jump to the target screen.</p></header><section class="gx-sec"><h2 class="gx-h2">Core flow — home, mushaf, ayah actions, player</h2><div class="gx-row"><div class="gx-fig" id="Main"><div class="gx-cap">Home</div><div class="device"><div class="screen"><div class="sc-host" data-sc-name="Main"><div data-dc-tpl="3" dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; background: rgb(247, 243, 234); color: rgb(19, 35, 31); font-family: &quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;">
+</style></head><body><header class="gx-head"><h1>Quran App — Screens</h1><p>32 screens · static export of the design canvas, 2026-10-26, plus the expanded-window sidebar and the proposed tablet reader, drawn from the design tokens. All screens revised for ADR 0012 (Apple HIG) on 2026-10-27: Automatic appearance, recited ayah with a neutral wash and brand marker; ayah numbers drawn as the ﴿ ﴾ end-of-ayah mark (2026-10-28), outlined search matches, 44pt targets, previous/next in Focus, RTL audio controls, one glyph per destination. Links between screens jump to the target screen.</p></header><section class="gx-sec"><h2 class="gx-h2">Core flow — home, mushaf, ayah actions, player</h2><div class="gx-row"><div class="gx-fig" id="Main"><div class="gx-cap">Home</div><div class="device"><div class="screen"><div class="sc-host" data-sc-name="Main"><div data-dc-tpl="3" dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; background: rgb(247, 243, 234); color: rgb(19, 35, 31); font-family: &quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;">
 
   <div data-dc-tpl="4" style="display: flex; flex-direction: column; gap: 18px; padding: 56px 20px 0px;">
 
@@ -242,7 +242,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
       <svg data-dc-tpl="95" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="96" d="M6 4h12v17l-6-4-6 4z"></path><path data-dc-tpl="97" d=""></path></svg>
       مصحفي
     </a>
-  </nav></div></div></div></div></div><div class="gx-fig" id="Mushaf"><div class="gx-cap">Mushaf page · Uthmani Hafs (the app draws the ayah markers, so the recited one fills)</div><div class="device"><div class="screen"><div class="sc-host" data-sc-name="Mushaf"><div data-dc-tpl="3" dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; background: rgb(251, 248, 241); color: rgb(19, 35, 31); font-family: &quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;">
+  </nav></div></div></div></div></div><div class="gx-fig" id="Mushaf"><div class="gx-cap">Mushaf page · Uthmani Hafs (the app draws the ﴿ ﴾ end-of-ayah marks inline, so the recited one turns brand)</div><div class="device"><div class="screen"><div class="sc-host" data-sc-name="Mushaf"><div data-dc-tpl="3" dir="rtl" style="width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; background: rgb(251, 248, 241); color: rgb(19, 35, 31); font-family: &quot;IBM Plex Sans Arabic&quot;, system-ui, sans-serif;">
 
   <div data-dc-tpl="4" style="position: absolute; top: 0px; left: 0px; right: 0px; display: flex; flex-direction: column; align-items: stretch; padding: 0px 16px;">
 
@@ -254,19 +254,19 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
         </div>
         <p data-dc-tpl="12" style="margin: 0px; font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 25px; line-height: 2.35; text-align: center;">
           <span data-dc-tpl="13">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</span>
-          <span data-dc-tpl="14" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">١</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">١</span>﴾</span>
           <span data-dc-tpl="15">ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ</span>
-          <span data-dc-tpl="16" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">٢</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٢</span>﴾</span>
           <span data-dc-tpl="17">ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</span>
-          <span data-dc-tpl="18" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">٣</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٣</span>﴾</span>
           <span data-dc-tpl="19">مَـٰلِكِ يَوْمِ ٱلدِّينِ</span>
-          <span data-dc-tpl="20" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">٤</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٤</span>﴾</span>
           <span data-dc-tpl="21" style="background: rgb(236, 236, 229); border-radius: 8px; padding: 2px 4px; box-decoration-break: clone; -webkit-box-decoration-break: clone;">إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ</span>
-          <span data-dc-tpl="22" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(31, 77, 64); background: rgb(31, 77, 64); color: rgb(247, 243, 234); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px; ;">٥</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(31, 77, 64);">﴿<span style="color: rgb(31, 77, 64);">٥</span>﴾</span>
           <span data-dc-tpl="23">ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ</span>
-          <span data-dc-tpl="24" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">٦</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٦</span>﴾</span>
           <span data-dc-tpl="25">صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ</span>
-          <span data-dc-tpl="26" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">٧</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٧</span>﴾</span>
         </p>
       </div>
     </div>
@@ -286,11 +286,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
         <p data-dc-tpl="38" style="margin: 0px; font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 25px; line-height: 2.35; text-align: center;">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p>
         <p data-dc-tpl="39" style="margin: 0px; font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 25px; line-height: 2.35; text-align: center;">
           <span data-dc-tpl="40">الٓمٓ</span>
-          <span data-dc-tpl="41" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">١</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">١</span>﴾</span>
           <span data-dc-tpl="42">ذَٰلِكَ ٱلْكِتَـٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ</span>
-          <span data-dc-tpl="43" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">٢</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٢</span>﴾</span>
           <span data-dc-tpl="44">ٱلَّذِينَ يُؤْمِنُونَ بِٱلْغَيْبِ وَيُقِيمُونَ ٱلصَّلَوٰةَ وَمِمَّا رَزَقْنَـٰهُمْ يُنفِقُونَ</span>
-          <span data-dc-tpl="45" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1.25px solid rgb(160, 124, 51); border-radius: 14px; font-family: Amiri, serif; font-size: 14px; line-height: 1; vertical-align: middle; margin: 0px 4px;">٣</span>
+          <span style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٣</span>﴾</span>
         </p>
       </div>
     </div>
@@ -864,7 +864,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
     
       <article data-dc-tpl="6" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0px 16px; border-bottom: 1px solid rgb(231, 223, 204);">
         <div data-dc-tpl="7" style="display: flex; align-items: center; justify-content: space-between;">
-          <span data-dc-tpl="8" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1.25px solid rgb(160, 124, 51); border-radius: 15px; font-family: Amiri, serif; font-size: 14px; background: transparent;"><span class="sc-interp">١</span></span>
+          <span data-dc-tpl="8" style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 28px; line-height: 1.5; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">١</span>﴾</span>
           <div data-dc-tpl="9" style="display: flex; gap: 0px;">
             <button data-dc-tpl="10" aria-label="تشغيل الآية" style="width: 44px; height: 44px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; background: none; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0px;"><svg data-dc-tpl="11" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path data-dc-tpl="12" d="M8 5v14l11-7z"></path></svg></button>
             <a data-dc-tpl="13" href="#Tafsir" aria-label="التفسير" style="width: 44px; height: 44px; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="14" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="15" d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path data-dc-tpl="16" d="M9 9h6M9 13h6"></path></svg></a>
@@ -877,7 +877,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
     
       <article data-dc-tpl="6" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0px 16px; border-bottom: 1px solid rgb(231, 223, 204);">
         <div data-dc-tpl="7" style="display: flex; align-items: center; justify-content: space-between;">
-          <span data-dc-tpl="8" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1.25px solid rgb(160, 124, 51); border-radius: 15px; font-family: Amiri, serif; font-size: 14px; background: transparent;"><span class="sc-interp">٢</span></span>
+          <span data-dc-tpl="8" style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 28px; line-height: 1.5; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٢</span>﴾</span>
           <div data-dc-tpl="9" style="display: flex; gap: 0px;">
             <button data-dc-tpl="10" aria-label="تشغيل الآية" style="width: 44px; height: 44px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; background: none; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0px;"><svg data-dc-tpl="11" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path data-dc-tpl="12" d="M8 5v14l11-7z"></path></svg></button>
             <a data-dc-tpl="13" href="#Tafsir" aria-label="التفسير" style="width: 44px; height: 44px; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="14" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="15" d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path data-dc-tpl="16" d="M9 9h6M9 13h6"></path></svg></a>
@@ -890,7 +890,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
     
       <article data-dc-tpl="6" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0px 16px; border-bottom: 1px solid rgb(231, 223, 204);">
         <div data-dc-tpl="7" style="display: flex; align-items: center; justify-content: space-between;">
-          <span data-dc-tpl="8" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1.25px solid rgb(31, 77, 64); color: rgb(247, 243, 234); border-radius: 15px; font-family: Amiri, serif; font-size: 14px; background: rgb(31, 77, 64);"><span class="sc-interp">٣</span></span>
+          <span data-dc-tpl="8" style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 28px; line-height: 1.5; color: rgb(31, 77, 64);">﴿<span style="color: rgb(31, 77, 64);">٣</span>﴾</span>
           <div data-dc-tpl="9" style="display: flex; gap: 0px;">
             <button data-dc-tpl="10" aria-label="تشغيل الآية" style="width: 44px; height: 44px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; background: none; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0px;"><svg data-dc-tpl="11" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path data-dc-tpl="12" d="M8 5v14l11-7z"></path></svg></button>
             <a data-dc-tpl="13" href="#Tafsir" aria-label="التفسير" style="width: 44px; height: 44px; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="14" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="15" d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path data-dc-tpl="16" d="M9 9h6M9 13h6"></path></svg></a>
@@ -903,7 +903,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
     
       <article data-dc-tpl="6" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0px 16px; border-bottom: 1px solid rgb(231, 223, 204);">
         <div data-dc-tpl="7" style="display: flex; align-items: center; justify-content: space-between;">
-          <span data-dc-tpl="8" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1.25px solid rgb(160, 124, 51); border-radius: 15px; font-family: Amiri, serif; font-size: 14px; background: transparent;"><span class="sc-interp">٤</span></span>
+          <span data-dc-tpl="8" style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 28px; line-height: 1.5; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٤</span>﴾</span>
           <div data-dc-tpl="9" style="display: flex; gap: 0px;">
             <button data-dc-tpl="10" aria-label="تشغيل الآية" style="width: 44px; height: 44px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; background: none; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0px;"><svg data-dc-tpl="11" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path data-dc-tpl="12" d="M8 5v14l11-7z"></path></svg></button>
             <a data-dc-tpl="13" href="#Tafsir" aria-label="التفسير" style="width: 44px; height: 44px; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="14" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="15" d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path data-dc-tpl="16" d="M9 9h6M9 13h6"></path></svg></a>
@@ -916,7 +916,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
     
       <article data-dc-tpl="6" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0px 16px; border-bottom: 1px solid rgb(231, 223, 204);">
         <div data-dc-tpl="7" style="display: flex; align-items: center; justify-content: space-between;">
-          <span data-dc-tpl="8" style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 1.25px solid rgb(160, 124, 51); border-radius: 15px; font-family: Amiri, serif; font-size: 14px; background: transparent;"><span class="sc-interp">٥</span></span>
+          <span data-dc-tpl="8" style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 28px; line-height: 1.5; color: rgb(160, 124, 51);">﴿<span style="color: rgb(19, 35, 31);">٥</span>﴾</span>
           <div data-dc-tpl="9" style="display: flex; gap: 0px;">
             <button data-dc-tpl="10" aria-label="تشغيل الآية" style="width: 44px; height: 44px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; background: none; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0px;"><svg data-dc-tpl="11" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path data-dc-tpl="12" d="M8 5v14l11-7z"></path></svg></button>
             <a data-dc-tpl="13" href="#Tafsir" aria-label="التفسير" style="width: 44px; height: 44px; color: rgb(91, 106, 100); display: flex; align-items: center; justify-content: center;"><svg data-dc-tpl="14" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path data-dc-tpl="15" d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"></path><path data-dc-tpl="16" d="M9 9h6M9 13h6"></path></svg></a>
@@ -982,7 +982,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
       </p>
     
     
-    <span data-dc-tpl="32" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1.25px solid rgb(31, 77, 64); background: rgb(31, 77, 64); color: rgb(247, 243, 234); border-radius: 17px; font-family: Amiri, serif; font-size: 15px;">٥</span>
+    <span data-dc-tpl="32" style="font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 32px; line-height: 1.5; color: rgb(31, 77, 64);">﴿<span style="color: rgb(31, 77, 64);">٥</span>﴾</span>
   </div>
 
   <p data-dc-tpl="33" aria-hidden="true" style="position: absolute; top: 590px; right: 32px; left: 32px; margin: 0px; text-align: center; font-family: &quot;Amiri Quran&quot;, Amiri, serif; font-size: 24px; line-height: 2; color: rgb(19, 35, 31); opacity: 0.22;">ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ ﴿٦﴾</p>

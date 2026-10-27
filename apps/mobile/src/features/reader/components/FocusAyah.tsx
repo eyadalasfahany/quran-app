@@ -5,7 +5,7 @@ import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { AyahMarker, QuranText } from '@/shared/ui';
 
-// The current ayah of the Focus frame: centred Quran text over its filled marker.
+// The current ayah of the Focus frame: centred Quran text over its active marker.
 export function FocusAyah({
   verseNumber,
   textUthmani,

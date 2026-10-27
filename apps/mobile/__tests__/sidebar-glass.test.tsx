@@ -53,7 +53,7 @@ describe('sidebar glass', () => {
     const view = await renderSidebar(<Sidebar items={[item]} label="Main" />);
     const style = flatten(view.getByTestId('sidebar').props.style);
 
-    expect(view.getByTestId('sidebar').props.glassEffectStyle).toBe('regular');
+    expect(view.getByTestId('sidebar-glass').props.glassEffectStyle).toBe('regular');
     expect(style.backgroundColor).toBeUndefined();
     expect(style.borderWidth).toBeUndefined();
     expect(style.boxShadow).toBeUndefined();
@@ -82,7 +82,7 @@ describe('sidebar glass', () => {
       .mocked(AccessibilityInfo.addEventListener)
       .mock.calls.find(([event]) => event === 'reduceTransparencyChanged')?.[1];
 
-    expect(view.getByTestId('sidebar').props.glassEffectStyle).toBe('regular');
+    expect(view.getByTestId('sidebar-glass').props.glassEffectStyle).toBe('regular');
 
     await act(async () => {
       listener?.(true);

@@ -1,14 +1,25 @@
-import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
-import { router } from 'expo-router';
-import type { ComponentProps } from 'react';
-import { Dimensions } from 'react-native';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+} from "expo-router/testing-library";
+import { router } from "expo-router";
+import type { ComponentProps } from "react";
+import { Dimensions, I18nManager } from "react-native";
 
-jest.mock('expo-symbols', () => {
-  const { createElement } = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+import { i18n } from "@/core/i18n";
+import { storage, storageKeys } from "@/core/storage/mmkv";
+
+jest.mock("expo-symbols", () => {
+  const { createElement } = jest.requireActual<typeof import("react")>("react");
+  const { View } =
+    jest.requireActual<typeof import("react-native")>("react-native");
   return {
     SymbolView: ({ name }: { name: { ios: string; android: string } }) =>
-      createElement(View, { name, testID: 'sidebar-symbol' } as ComponentProps<typeof View>),
+      createElement(View, { name, testID: "sidebar-symbol" } as ComponentProps<
+        typeof View
+      >),
   };
 });
 
@@ -19,7 +30,14 @@ function setWidth(width: number): void {
   });
 }
 
-describe('adaptive nav', () => {
+describe("adaptive nav", () => {
+  // The app starts in Arabic; these tests use the English labels, so they save English first (as a reader would).
+  beforeEach(async () => {
+    storage.set(storageKeys.locale, "en");
+    I18nManager.isRTL = false;
+    await i18n.changeLanguage("en");
+  });
+
   afterEach(() => {
     act(() => {
       setWidth(390);
@@ -27,51 +45,59 @@ describe('adaptive nav', () => {
     jest.useRealTimers();
   });
 
-  it('keeps the active section when the window class switches between tabs and the sidebar', async () => {
+  it("keeps the active section when the window class switches between tabs and the sidebar", async () => {
     setWidth(390);
-    const view = await renderRouter('./app');
+    const view = await renderRouter("./app");
 
-    expect(view.getSegments()).toEqual(['(main)', '(home)']);
-    expect(screen.queryByTestId('sidebar')).not.toBeOnTheScreen();
+    expect(view.getSegments()).toEqual(["(main)", "(home)"]);
+    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
 
     await act(async () => {
-      router.navigate('/(main)/(mushaf)');
+      router.navigate("/(main)/(mushaf)");
     });
 
-    expect(view.getSegments()).toEqual(['(main)', '(mushaf)']);
+    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
 
     await act(async () => {
       setWidth(700);
     });
 
-    expect(view.getSegments()).toEqual(['(main)', '(mushaf)']);
-    expect(screen.queryByTestId('sidebar')).not.toBeOnTheScreen();
+    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
+    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
 
     await act(async () => {
       setWidth(900);
     });
 
-    expect(view.getSegments()).toEqual(['(main)', '(mushaf)']);
-    expect(screen.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
-    expect(screen.getAllByTestId('sidebar-symbol').map((symbol) => symbol.props.name)).toEqual([
-      { ios: 'house', android: 'home' },
-      { ios: 'book', android: 'menu_book' },
-      { ios: 'headphones', android: 'headphones' },
-      { ios: 'pencil', android: 'edit' },
+    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
+    expect(
+      screen.getByTestId("sidebar-mushaf").props.accessibilityState,
+    ).toEqual({ selected: true });
+    expect(
+      screen
+        .getAllByTestId("sidebar-symbol")
+        .map((symbol) => symbol.props.name),
+    ).toEqual([
+      { ios: "house", android: "home" },
+      { ios: "book", android: "menu_book" },
+      { ios: "headphones", android: "headphones" },
+      { ios: "pencil", android: "edit" },
     ]);
 
     await act(async () => {
-      fireEvent.press(screen.getByTestId('sidebar-home'));
+      fireEvent.press(screen.getByTestId("sidebar-home"));
     });
 
-    expect(view.getSegments()).toEqual(['(main)', '(home)']);
-    expect(screen.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: true });
+    expect(view.getSegments()).toEqual(["(main)", "(home)"]);
+    expect(screen.getByTestId("sidebar-home").props.accessibilityState).toEqual(
+      { selected: true },
+    );
 
     await act(async () => {
       setWidth(390);
     });
 
-    expect(view.getSegments()).toEqual(['(main)', '(home)']);
-    expect(screen.queryByTestId('sidebar')).not.toBeOnTheScreen();
+    expect(view.getSegments()).toEqual(["(main)", "(home)"]);
+    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
   });
 });

@@ -122,6 +122,15 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
       ? bookmarkOverride.value
       : storedBookmarked;
 
+  // Opened by a deep link or restored at launch, the reader has nothing under it to go back to.
+  const leaveReader = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+    router.replace('/(main)/(home)' as Href);
+  };
+
   const selectVerse = (key: string) => {
     useReaderSelection.getState().selectVerse(key, placement);
     if (placement === 'sheet') {
@@ -140,7 +149,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const topInset = insets.top + (sheetOpen ? 0 : READER_TOOLBAR_CLEARANCE);
 
   return (
-    <Screen accessibilityLabel={anchor.verseKey} surface="surface" testID="reader-screen" topInset={false}>
+    <Screen accessibilityLabel={anchor.verseKey} surface="surfacePage" testID="reader-screen" topInset={false}>
       <AdaptiveReaderLayout
         bottomInset={insets.bottom}
         onCloseOverlay={() => useReaderSelection.getState().closePanel()}
@@ -187,7 +196,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               bookmarked={bookmarked}
               expanded={windowClass === 'expanded'}
               onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? anchor.verseKey)}
-              onBack={() => router.back()}
+              onBack={leaveReader}
               onBookmarkPage={() => {
                 if (chrome.verseId === null) {
                   return;

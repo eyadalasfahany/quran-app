@@ -85,7 +85,7 @@ describe('HafsMushafPage', () => {
       paddingHorizontal: 18,
       paddingTop: 22,
     });
-    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style)).toMatchObject({
+    expect(flatStyle(view.getByTestId('page-text-1:1').props.style)).toMatchObject({
       color: themes.light.colors.ink,
       fontSize: 25,
       lineHeight: 59,
@@ -96,11 +96,47 @@ describe('HafsMushafPage', () => {
 
   it('renders the ayah byte for byte in its Quran font, never scaled by the system', async () => {
     const view = await renderUi(fatihaPage({ fontScale: 1.2 }));
-    const ayah = view.getByTestId('page-ayah-1:1');
+    const paragraph = view.getByTestId('page-text-1:1');
 
-    expect(ayah.props.children).toBe(ayahText);
-    expect(ayah.props.allowFontScaling).toBe(false);
-    expect(flatStyle(ayah.props.style).fontSize).toBeCloseTo(25 * 1.2);
+    expect(view.getByTestId('page-ayah-1:1').props.children).toBe(ayahText);
+    expect(paragraph.props.allowFontScaling).toBe(false);
+    expect(flatStyle(paragraph.props.style).fontSize).toBeCloseTo(25 * 1.2);
+  });
+
+  it('flows the ayahs of a surah next to each other in one paragraph, each followed by its end mark', async () => {
+    const view = await renderUi(
+      fatihaPage({
+        verses: [
+          verse({ id: 1, verseKey: '1:1', verseNumber: 1 }),
+          verse({ id: 2, textUthmani: 'ٱلْحَمْدُ لِلَّهِ', verseKey: '1:2', verseNumber: 2 }),
+        ],
+      }),
+    );
+    const paragraph = view.getByTestId('page-text-1:1');
+
+    expect(paragraph).toContainElement(view.getByTestId('page-ayah-1:2'));
+    expect(paragraph).toContainElement(view.getByTestId('page-marker-1:2'));
+    expect(view.getByTestId('page-ayah-1:2').props.children).toBe('ٱلْحَمْدُ لِلَّهِ');
+    expect(view.queryByTestId('page-text-1:2')).toBeNull();
+  });
+
+  it('starts a new paragraph under the cartouche where the next surah begins', async () => {
+    const view = await renderUi(
+      <HafsMushafPage
+        chapters={new Map([[1, fatiha], [2, baqarah]])}
+        testID="page"
+        verses={[
+          verse({ id: 7, verseKey: '1:7', verseNumber: 7 }),
+          verse({ chapterId: 2, id: 8, verseKey: '2:1', verseNumber: 1 }),
+          verse({ chapterId: 2, id: 9, verseKey: '2:2', verseNumber: 2 }),
+        ]}
+      />,
+    );
+
+    expect(view.getByTestId('page-text-1:7')).not.toContainElement(view.getByTestId('page-ayah-2:1'));
+    expect(view.getByTestId('page-text-2:1')).toContainElement(view.getByTestId('page-ayah-2:2'));
+    expect(view.getByTestId('page-surah-2')).toBeOnTheScreen();
+    expect(view.queryByTestId('page-surah-1')).toBeNull();
   });
 
   it('shows the bismillah before the first ayah of a surah other than al-Fatihah', async () => {
@@ -137,13 +173,16 @@ describe('HafsMushafPage', () => {
     expect(view.getByRole('header', { name: 'سورة الفاتحة' })).toBeOnTheScreen();
     const marker = view.getByRole('button', { name: 'الآية ١' });
     expect(marker.props.accessibilityState).toMatchObject({ selected: true });
+    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightActive,
+    );
   });
 
   it.each(locales)('keeps the Quran text right to left in %s', async (locale) => {
     const view = await renderUi(fatihaPage(), { locale });
 
     expect(view.getByTestId('page-surah-1')).toBeOnTheScreen();
-    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style)).toMatchObject({ writingDirection: 'rtl' });
+    expect(flatStyle(view.getByTestId('page-text-1:1').props.style)).toMatchObject({ writingDirection: 'rtl' });
   });
 
   it('uses theme tokens only', () => {

@@ -34,6 +34,7 @@ An `apple-design` skill review of the HTML design files and tokens found problem
 3. **Highlights**
    - Light and sepia user highlights step down in lightness: gold, green, blue, rose.
    - The recited ayah uses a near-neutral wash, never gold. The filled `brand` marker and, in Reading mode, a leading `brand` rule carry the state.
+   - *Amended 2026-10-28:* the ayah marker is the end-of-ayah mark, Amiri Quran's ornate parentheses around the number (`﴿١﴾`), in place of the ring, in every view the app draws markers in. In the Tanzil Mushaf page it sits inline, with the ayahs flowing as one paragraph per surah; in Reading and Focus it stands alone with a 44 pt target. It rests gold with an ink number and turns `brand` when active, since a text mark can't fill.
    - In page-exact Mushaf (QCF) the ayah marker is a font glyph, so it is never recoloured. A `brand` rule in the page margin beside each line of the recited ayah carries the state instead.
    - In dark the fills can't differ in lightness and keep ink at 7:1. Names carry the difference instead: the swatch check mark, the list labels, and each ayah's accessibility label.
    - None of these cues touch the Quran glyphs.

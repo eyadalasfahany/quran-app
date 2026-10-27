@@ -38,7 +38,8 @@ describe('GlassSurface', () => {
     );
     const surface = view.getByTestId('surface');
 
-    expect(surface.props.glassEffectStyle).toBe('regular');
+    expect(view.getByTestId('surface-glass').props.glassEffectStyle).toBe('regular');
+    expect(view.getByTestId('surface-glass').props.pointerEvents).toBe('none');
     expect(flatStyle(surface.props.style)).toMatchObject({ borderRadius: themes.light.radius.xl });
     expect(flatStyle(surface.props.style).backgroundColor).toBeUndefined();
     expect(view.getByText('محتوى')).toBeOnTheScreen();

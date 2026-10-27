@@ -44,11 +44,11 @@ describe('ReaderScreen', () => {
     expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:255');
   });
 
-  it.each(locales)('fills the screen with the reader surface in %s', async (locale) => {
+  it.each(locales)('puts the Quran on the page surface, as the design does, in %s', async (locale) => {
     const view = await renderUi(reader(), { locale });
 
     expect(flatStyle(view.getByTestId('reader-screen').props.style)).toMatchObject({
-      backgroundColor: themes.light.colors.surface,
+      backgroundColor: themes.light.colors.surfacePage,
       flex: 1,
       paddingTop: 0,
     });

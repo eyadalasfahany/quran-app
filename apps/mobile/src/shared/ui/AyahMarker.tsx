@@ -1,14 +1,16 @@
 import { size as sizeTokens } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 
-import { displayText } from './textStyles';
+import { AyahEndMark } from './AyahEndMark';
 
 export const FOCUS_MARKER_SIZE = sizeTokens.focusMarker;
 
+// A standalone ayah marker (Reading and Focus): the end-of-ayah ornament as its own control,
+// with a 44 pt target. Inside a Mushaf line use AyahEndMark directly.
 export function AyahMarker({
   number,
   active = false,
@@ -40,23 +42,13 @@ export function AyahMarker({
       onPress={onPress}
       style={{
         alignItems: 'center',
-        backgroundColor: active ? theme.colors.brand : 'transparent',
-        borderColor: active ? theme.colors.brand : theme.colors.gold,
-        borderRadius: size / 2,
-        borderWidth: theme.stroke.marker,
-        height: size,
         justifyContent: 'center',
         marginHorizontal: theme.space[1],
-        width: size,
+        minHeight: size,
       }}
       testID={testID}
     >
-      <Text
-        allowFontScaling={false}
-        style={[displayText('numeral', fontScale), { color: active ? theme.colors.onBrand : theme.colors.ink }]}
-      >
-        {formatNumber(number, 'ar')}
-      </Text>
+      <AyahEndMark active={active} decorative number={number} size={size} />
     </Pressable>
   );
 }
