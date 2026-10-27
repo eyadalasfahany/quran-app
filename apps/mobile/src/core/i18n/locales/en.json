@@ -1,0 +1,11 @@
+{
+  "tabs": {
+    "home": "Home",
+    "mushaf": "Mushaf",
+    "listen": "Listen",
+    "myQuran": "My Quran"
+  },
+  "nav": {
+    "main": "Main navigation"
+  }
+}

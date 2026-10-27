@@ -53,4 +53,11 @@ describe('app.config', () => {
   it('keeps RTL support on', () => {
     expect(configFor('production').plugins).toContainEqual(['expo-localization', { supportsRTL: true }]);
   });
+
+  it('installs expo-updates without a remote update url', () => {
+    const config = configFor('production');
+
+    expect(config.plugins).toContain('expo-updates');
+    expect(config.updates?.url).toBeUndefined();
+  });
 });

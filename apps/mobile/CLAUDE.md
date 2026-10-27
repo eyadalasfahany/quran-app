@@ -10,6 +10,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - `src/shared/ui/` holds design-system components, rebuilt from the Figma file (link in the root CLAUDE.md) when a phase first needs them. Colors, spacing, radii and type come from `@quran/design-tokens`, which is pulled from Figma's variables and text styles (transcribed from `quran-app-design-system.html` until Figma can be read, ADR 0005); no raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
 - Text styles set the per-weight family (`IBMPlexSansArabic-Bold`) and never `fontWeight`; on Android a weight on top of a bold face can fake-bold it.
 - The UI font is IBM Plex Sans Arabic in `assets/fonts/IBMPlexSansArabic/` (OFL, licence alongside). Load only the weights the design uses.
+- Interface copy lives in `src/core/i18n/locales` (`ar.json`, `en.json`). Arabic is the default; English is used when the device language is English or the saved choice is English. The choice is the MMKV key `locale`. Switching calls `I18nManager.allowRTL` and `forceRTL`, then reloads (`DevSettings.reload` in dev, `Updates.reloadAsync` in a release build). `allowRTL(false)` is required for English, because `forceRTL(false)` does not force LTR on an Arabic device.
 - API base URL comes from `EXPO_PUBLIC_API_URL`: `http://localhost:8000` on iOS simulators, `http://10.0.2.2:8000` on Android emulators.
 - API types come from `@quran/api-contract`. Never hand-write a type for an API payload.
 

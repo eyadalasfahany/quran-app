@@ -68,6 +68,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       ['expo-localization', { supportsRTL: true }],
+      // Release builds reload through expo-updates after a language change.
+      // No update URL until EAS exists, so this does not check for remote updates.
+      'expo-updates',
     ],
     experiments: {
       typedRoutes: true,

@@ -122,7 +122,13 @@ The Figma MCP server hit the Starter plan's call limit, and the variables couldn
   - Only the components the nav shell needs (tab and sidebar items) go into `src/shared/ui`; the rest arrive with the phase that uses them.
 - Verify: every theme has the same keys; values cross-checked against `quran-app-design-system.html`; any disagreement is raised, not resolved silently. Mobile checks.
 
-### 7. i18n and RTL
+### 7. i18n and RTL — done
+
+- **Language:** `ar` and `en`. Arabic is the default. A saved MMKV value wins; otherwise English is used only when the device language is English.
+- **Direction:** Arabic calls `allowRTL(true)` and `forceRTL(true)`. English calls both with `false`. `forceRTL(false)` only clears the force flag, so an Arabic device would stay RTL without `allowRTL(false)`. A mismatch reloads before paint (`DevSettings.reload` in dev, `Updates.reloadAsync` in a release build) and the splash stays up until the direction matches. The MMKV key `directionReloadPending` allows one reload. If the direction still disagrees on the next launch, the app shows anyway and warns, rather than looping. If `Updates.reloadAsync` fails, the failure is logged and the app shows in the current direction instead of staying on the splash.
+- **Strings:** tab labels and the main-nav label, copied from `quran-app-screens.html`. `formatNumber` maps digits to Arabic-Indic in Arabic. Counts will use i18next's Arabic plural forms when a screen needs them.
+- **Updates:** `expo-updates` is installed for the release reload. No update URL until EAS, so remote checks stay off. The disabled controller still relaunches.
+- **Expo Go:** not used. MMKV needs the dev client from step 5.
 
 - Creates:
   - `src/core/i18n` with `ar.json` and `en.json`, i18next, `expo-localization` detection; Arabic is the default.
