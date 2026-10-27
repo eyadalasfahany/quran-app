@@ -14,7 +14,14 @@ describe('text styles', () => {
   });
 
   it('scales Quran text and its line height with the reader setting', () => {
-    expect(quranText('quranReading')).toEqual({ fontFamily: 'AmiriQuran', fontSize: 28, lineHeight: 62 });
+    expect(quranText('quranReading')).toEqual({
+      direction: 'ltr',
+      fontFamily: 'AmiriQuran',
+      fontSize: 28,
+      lineHeight: 62,
+      textAlign: 'right',
+      writingDirection: 'rtl',
+    });
     const small = quranText('quranReading', 0.8);
     expect(small.fontSize).toBeCloseTo(22.4);
     expect(small.lineHeight).toBe(49);

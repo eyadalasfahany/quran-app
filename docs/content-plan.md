@@ -47,6 +47,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Notifications | `expo-notifications` | \~58.1.6 | Local reminders and push tokens |
 | Prayer times | `adhan` + `expo-location` | 4.4.6; \~58.0.19 | On-device prayer times for "dark mode after Maghrib" and reminders |
 | Tafsir rendering | `@native-html/render` | 1.0.4 | Renders sanitized tafsir HTML. Replaces `react-native-render-html`, which has had no release since January 2022 |
+| Clipboard | `expo-clipboard` | \~58.0.4 | Copies an ayah, exactly as stored, with its marker and reference from the ayah actions |
 | Fonts | `expo-font` | \~58.0.10 | Bundles KFGQPC Quran fonts, Amiri, IBM Plex Sans Arabic |
 | Errors | `@sentry/react-native` | \~8.28.0 | Crash and error reporting, at the version SDK 58 pins |
 | Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0 | Over-the-air JavaScript fixes and store builds |

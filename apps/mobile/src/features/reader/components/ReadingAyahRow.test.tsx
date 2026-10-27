@@ -162,7 +162,11 @@ describe('ReadingAyahRow', () => {
       { locale },
     );
 
-    expect(flatStyle(view.getByText('ٱللَّهُ').props.style)).toMatchObject({ textAlign: 'right', writingDirection: 'rtl' });
+    expect(flatStyle(view.getByText('ٱللَّهُ').props.style)).toMatchObject({
+      direction: 'ltr',
+      textAlign: 'right',
+      writingDirection: 'rtl',
+    });
   });
 
   it('keeps a left-to-right translation in its own direction in English', async () => {

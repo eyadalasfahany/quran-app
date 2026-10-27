@@ -1,5 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 
+import { themes } from '@/core/theme';
+
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 
@@ -51,6 +53,15 @@ describe('MushafLine', () => {
       { locale },
     );
     expect(flatStyle(view.getByTestId('line').props.style).borderStartWidth).toBe(3);
+  });
+
+  it('paints glyphs with the dark ink, not black', async () => {
+    const view = await renderUi(
+      <MushafLine fontFamily="qcf-v2-p1" fontSize={20} lineHeight={32} words={words} />,
+      { theme: 'dark' },
+    );
+    expect(flatStyle(view.getByText(GLYPH_AL_FATIHA_1).props.style).color).toBe(themes.dark.colors.ink);
+    expect(flatStyle(view.getByText(GLYPH_END_1).props.style).color).toBe(themes.dark.colors.ink);
   });
 
   it('uses theme tokens only', () => {

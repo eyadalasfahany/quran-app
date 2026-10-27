@@ -20,7 +20,7 @@ QF's font documentation (`api-docs.quran.com/docs/tutorials/fonts/font-rendering
 
 1. **Mushaf fonts load from QF's CDN on first use.**
    - **Source:** the app fetches `…/hafs/v2/ttf/p{page}.ttf` directly from `verses.quran.foundation`, for the visible page and the two pages either side. **Our API never serves, mirrors or repackages them.**
-   - **Cache:** each file is kept in the app's document directory and loaded with `expo-font`.
+   - **Cache:** each file is kept in the app's document directory and loaded with `expo-font`. expo-font 58 can unload a family on web only. On iOS and Android a loaded page font stays registered for the process; scrolling away does not call `unloadAsync`, which the native module does not provide.
    - **Offline:** an optional "download all mushaf pages" action fetches the rest in the background, so Mushaf mode works offline.
    - **Refresh:** the cached `ETag` and `Last-Modified` are revalidated with a conditional request at most once every 30 days per file, when online.
    - **Credit:** "Quran fonts provided by Quran Foundation" appears in Settings → Sources and in the store description.

@@ -1,5 +1,5 @@
 import { FlashList, type FlashListRef, type ListRenderItemInfo } from '@shopify/flash-list';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -58,21 +58,16 @@ export function MushafList({
   const chapterStartsByPage = useMemo(() => chaptersByStartPage(chapters), [chapters]);
   const initialPage = pageForVerse(executor, anchorVerseKey) ?? 1;
   const initialIndex = Math.max(0, initialPage - 1);
+  const visiblePageRef = useRef(initialPage);
 
-  const scrollToVerseKey = useCallback(
-    (verseKey: string, animated = false) => {
-      const page = pageForVerse(executor, verseKey);
-      if (page === undefined) {
-        return;
-      }
-      listRef.current?.scrollToIndex({ animated, index: page - 1 });
-    },
-    [executor],
-  );
-
-  useEffect(() => {
-    scrollToVerseKey(anchorVerseKey, false);
-  }, [anchorVerseKey, scrollToVerseKey]);
+  useLayoutEffect(() => {
+    const page = pageForVerse(executor, anchorVerseKey);
+    if (page === undefined || page === visiblePageRef.current) {
+      return;
+    }
+    visiblePageRef.current = page;
+    listRef.current?.scrollToIndex({ animated: false, index: page - 1 });
+  }, [anchorVerseKey, executor]);
 
   useEffect(() => {
     void revalidatePageFonts().catch(() => {});
@@ -88,6 +83,7 @@ export function MushafList({
         return;
       }
       const primary = viewable.reduce((best, token) => (token.index < best.index ? token : best));
+      visiblePageRef.current = primary.item;
       setMushafFontViewport(primary.item);
       const verseKey = firstVerseOfPage(executor, primary.item);
       if (verseKey !== undefined) {

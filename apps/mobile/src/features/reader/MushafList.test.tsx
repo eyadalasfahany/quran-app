@@ -1,6 +1,5 @@
 import { render, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { ScrollView } from 'react-native';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { ThemeProvider } from '@/core/theme';
@@ -10,16 +9,25 @@ import { pageForVerse } from './anchor/page';
 import { MushafList, mushafPageIndexForVerseKey, verseKeyForMushafPage } from './MushafList';
 
 const mockScrollToIndex = jest.fn();
+let lastInitialScrollIndex: number | undefined;
+let viewableHandler:
+  | ((info: { viewableItems: { isViewable: boolean; item: number; index: number | null }[] }) => void)
+  | undefined;
 
 jest.mock('@shopify/flash-list', () => {
   const React = require('react');
   const { ScrollView } = require('react-native');
   const FlashList = React.forwardRef(function MockFlashList(props: Record<string, unknown>, ref: unknown) {
-    const { data, renderItem, initialScrollIndex, ...rest } = props as {
+    const { data, renderItem, initialScrollIndex, onViewableItemsChanged, ...rest } = props as {
       data?: number[];
       initialScrollIndex?: number;
+      onViewableItemsChanged?: (info: {
+        viewableItems: { isViewable: boolean; item: number; index: number | null }[];
+      }) => void;
       renderItem: (info: { item: number; index: number }) => ReactNode;
     };
+    lastInitialScrollIndex = initialScrollIndex;
+    viewableHandler = onViewableItemsChanged;
     React.useImperativeHandle(ref, () => ({
       scrollToIndex: (args: { index: number }) => {
         mockScrollToIndex(args);
@@ -44,6 +52,11 @@ jest.mock('@/features/reader/mushaf/useMushafPageFont', () => ({
   useMushafPageFont: () => ({ status: 'error' as const }),
 }));
 
+jest.mock('@/features/reader/mushaf/fonts', () => ({
+  revalidatePageFonts: () => Promise.resolve(),
+  setMushafFontViewport: () => undefined,
+}));
+
 jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
   __esModule: true,
   default: () => ({ width: 390, height: 844 }),
@@ -64,20 +77,55 @@ beforeAll(async () => {
   mockTestExecutor = opened.executor;
 });
 
+function mushafList(verseKey: string) {
+  return (
+    <ThemeProvider name="light">
+      <MushafList anchorVerseKey={verseKey} onSwitchToReading={() => undefined} testID="mushaf" />
+    </ThemeProvider>
+  );
+}
+
 describe('MushafList', () => {
-  it('scrolls to the mushaf page for 2:255', async () => {
+  beforeEach(() => {
+    mockScrollToIndex.mockClear();
+    lastInitialScrollIndex = undefined;
+    viewableHandler = undefined;
+  });
+
+  it('opens on the mushaf page for 2:255 without snapping', async () => {
     const page = pageForVerse(mockTestExecutor, '2:255');
     expect(page).toBeDefined();
     expect(mushafPageIndexForVerseKey(mockTestExecutor, '2:255')).toBe((page ?? 1) - 1);
 
-    await render(
-      <ThemeProvider name="light">
-        <MushafList anchorVerseKey="2:255" onSwitchToReading={() => undefined} testID="mushaf" />
-      </ThemeProvider>,
-    );
+    await render(mushafList('2:255'));
+
+    expect(lastInitialScrollIndex).toBe(mushafPageIndexForVerseKey(mockTestExecutor, '2:255'));
+    expect(mockScrollToIndex).not.toHaveBeenCalled();
+  });
+
+  it('stays where the finger stopped when the next page becomes current', async () => {
+    const view = await render(mushafList('1:1'));
+    const nextKey = verseKeyForMushafPage(mockTestExecutor, 2);
+    expect(nextKey).toEqual(expect.any(String));
+    mockScrollToIndex.mockClear();
+
+    viewableHandler?.({ viewableItems: [{ index: 1, isViewable: true, item: 2 }] });
+    view.rerender(mushafList(nextKey!));
+
+    expect(mockScrollToIndex).not.toHaveBeenCalled();
+  });
+
+  it('scrolls when the anchor moves to a different page', async () => {
+    const view = await render(mushafList('1:1'));
+    mockScrollToIndex.mockClear();
+
+    view.rerender(mushafList('2:255'));
 
     await waitFor(() => {
-      expect(mockScrollToIndex).toHaveBeenCalledWith({ animated: false, index: mushafPageIndexForVerseKey(mockTestExecutor, '2:255') });
+      expect(mockScrollToIndex).toHaveBeenCalledWith({
+        animated: false,
+        index: mushafPageIndexForVerseKey(mockTestExecutor, '2:255'),
+      });
     });
   });
 

@@ -1,7 +1,6 @@
 import { type Href, router, useSegments } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useContext } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
@@ -16,7 +15,6 @@ import { resolveInitialAnchor, writeReadingAnchor } from '../anchor/reading-anch
 import { pageForVerse } from '../anchor/page';
 import { useReadingAnchor } from '../anchor/useReadingAnchor';
 import { AdaptiveReaderLayout } from '../components/AdaptiveReaderLayout';
-import { AyahPanelPlaceholder } from '../components/AyahPanelPlaceholder';
 import { ReaderModeFade } from '../components/ReaderModeFade';
 import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToolbar';
 import { ResumePill } from '../components/ResumePill';
@@ -25,6 +23,7 @@ import { getChapter } from '../data/chapters';
 import { getVerseByKey, idToVerseKey, verseKeyToId } from '../data/verses';
 import { mushafSideGutter, panelPlacementFor, panelStripWidth } from '../layout';
 import { MushafList } from '../MushafList';
+import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
 import { useReaderSelection } from '../selection';
 import { useReaderSettings } from '../settings';
@@ -58,8 +57,8 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const width = useWindowDimensions().width;
   const windowClass = useWindowClass();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
-  const seeded = useRef(false);
-  if (!seeded.current) {
+  const seeded = useRef<boolean | null>(null);
+  if (seeded.current == null) {
     writeReadingAnchor(resolveInitialAnchor({ verseKey }));
     seeded.current = true;
   }
@@ -71,7 +70,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const selection = useReaderSelection();
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
-  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
 
   const executor = useMemo(() => {
     try {
@@ -108,16 +107,20 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     }
   }, [anchor, executor, mode]);
 
-  useEffect(() => {
+  const storedBookmarked = useMemo(() => {
     if (chrome.verseId === null) {
-      return;
+      return false;
     }
     try {
-      setBookmarked(listBookmarks().some((bookmark) => bookmark.verseId === chrome.verseId));
+      return listBookmarks().some((bookmark) => bookmark.verseId === chrome.verseId);
     } catch {
-      setBookmarked(false);
+      return false;
     }
   }, [chrome.verseId]);
+  const bookmarked =
+    bookmarkOverride !== null && bookmarkOverride.verseId === chrome.verseId
+      ? bookmarkOverride.value
+      : storedBookmarked;
 
   const selectVerse = (key: string) => {
     useReaderSelection.getState().selectVerse(key, placement);
@@ -133,7 +136,8 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     pinnedVerseKey !== selection.verseKey;
 
   const gutter = placement === 'docked' ? panelStripWidth() : 0;
-  const topInset = insets.top + READER_TOOLBAR_CLEARANCE;
+  const sheetOpen = segments.some((segment) => segment === 'reader-settings' || segment === 'ayah' || segment === 'tafsir');
+  const topInset = insets.top + (sheetOpen ? 0 : READER_TOOLBAR_CLEARANCE);
 
   return (
     <View
@@ -160,32 +164,40 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
             onTabChange={(tab) => useReaderSelection.getState().setPanelTab(tab)}
             tab={selection.panelTab}
           >
-            <AyahPanelPlaceholder tab={selection.panelTab} />
+            <AyahPanelContent
+              executor={executor}
+              onTabChange={(tab) => useReaderSelection.getState().setPanelTab(tab)}
+              onVerseChange={(key) => useReaderSelection.getState().selectVerse(key, placement)}
+              tab={selection.panelTab}
+              verseKey={selection.verseKey ?? visibleVerseKey ?? anchor.verseKey}
+            />
           </SidePanel>
         }
         panelOpen={selection.panelOpen}
         toolbar={
-          <ReaderToolbar
-            bookmarked={bookmarked}
-            expanded={windowClass === 'expanded'}
-            onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? anchor.verseKey)}
-            onBack={() => router.back()}
-            onBookmarkPage={() => {
-              if (chrome.verseId === null) {
-                return;
-              }
-              try {
-                setBookmarked(toggleBookmark(chrome.verseId) !== null);
-              } catch {
-                setBookmarked(false);
-              }
-            }}
-            onOpenSettings={() => router.push('/reader-settings' as Href)}
-            onTogglePanel={() => useReaderSelection.getState().setPanelOpen(!useReaderSelection.getState().panelOpen)}
-            panelOpen={selection.panelOpen}
-            subtitle={subtitle}
-            title={chrome.title}
-          />
+          sheetOpen ? null : (
+            <ReaderToolbar
+              bookmarked={bookmarked}
+              expanded={windowClass === 'expanded'}
+              onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? anchor.verseKey)}
+              onBack={() => router.back()}
+              onBookmarkPage={() => {
+                if (chrome.verseId === null) {
+                  return;
+                }
+                try {
+                  setBookmarkOverride({ verseId: chrome.verseId, value: toggleBookmark(chrome.verseId) !== null });
+                } catch {
+                  setBookmarkOverride({ verseId: chrome.verseId, value: false });
+                }
+              }}
+              onOpenSettings={() => router.push('/reader-settings' as Href)}
+              onTogglePanel={() => useReaderSelection.getState().setPanelOpen(!useReaderSelection.getState().panelOpen)}
+              panelOpen={selection.panelOpen}
+              subtitle={subtitle}
+              title={chrome.title}
+            />
+          )
         }
         topInset={insets.top}
         verseKey={selection.verseKey}

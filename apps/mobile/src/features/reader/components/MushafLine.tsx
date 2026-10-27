@@ -50,7 +50,10 @@ export function MushafLine({
       }}
       testID={testID}
     >
-      <Text allowFontScaling={false} style={{ fontFamily, fontSize, lineHeight, textAlign: 'center' }}>
+      <Text
+        allowFontScaling={false}
+        style={{ color: theme.colors.ink, fontFamily, fontSize, lineHeight, textAlign: 'center' }}
+      >
         {words.map((word) => (
           <Text
             key={word.wordId}
@@ -81,16 +84,17 @@ function wordStyle(
     theme: Theme;
   },
 ) {
+  const color = ctx.theme.colors.ink;
   if (word.charType === 'end') {
-    return undefined;
+    return { color };
   }
   const highlight = ctx.highlightByVerse?.get(word.verseId);
   if (highlight !== undefined) {
     const token = HIGHLIGHT_TOKEN[highlight];
-    return { backgroundColor: ctx.theme.colors[token] };
+    return { backgroundColor: ctx.theme.colors[token], color };
   }
   if (word.verseId === ctx.activeVerseId || word.verseId === ctx.selectedVerseId) {
-    return { backgroundColor: ctx.theme.colors.highlightActive };
+    return { backgroundColor: ctx.theme.colors.highlightActive, color };
   }
-  return undefined;
+  return { color };
 }

@@ -50,7 +50,54 @@
       "label": "العودة إلى الآية الحالية"
     },
     "sheet": {
-      "label": "خيارات الآية"
+      "label": "خيارات الآية",
+      "close": "إغلاق"
+    },
+    "ayahPanel": {
+      "ayah": "الآية {{number}}",
+      "wordsTitle": "معاني الكلمات",
+      "highlightTitle": "تظليل",
+      "actionsLabel": "إجراءات الآية",
+      "play": "تشغيل من هنا",
+      "audioUnavailable": "التلاوة غير متاحة بعد",
+      "tafsir": "التفسير",
+      "translation": "الترجمة",
+      "bookmark": "حفظ",
+      "bookmarked": "محفوظة",
+      "repeat": "تكرار",
+      "note": "ملاحظة",
+      "copy": "نسخ",
+      "share": "مشاركة",
+      "copied": "نُسخت الآية",
+      "reference": "{{surah}} · الآية {{ayah}}"
+    },
+    "note": {
+      "label": "ملاحظة على الآية",
+      "placeholder": "اكتب ملاحظتك",
+      "counter": "{{count}} / {{max}}",
+      "tooLong": "يمكن أن تصل الملاحظة إلى {{max}} حرف",
+      "save": "حفظ الملاحظة",
+      "delete": "حذف الملاحظة",
+      "saveFailed": "تعذّر حفظ الملاحظة. حاول مرة أخرى.",
+      "cancel": "إلغاء"
+    },
+    "tafsir": {
+      "pickerLabel": "اختيار التفسير",
+      "coverage": "يغطي هذا المقطع الآيات {{from}}–{{to}}",
+      "source": "المصدر: {{author}} · عبر Quran Foundation",
+      "previous": "الآية السابقة",
+      "next": "الآية التالية",
+      "emptyTitle": "لا يوجد تفسير محمّل",
+      "emptyBody": "نزّل تفسيرًا لقراءته بدون إنترنت.",
+      "download": "تنزيل هذا التفسير للقراءة بدون إنترنت",
+      "noEntry": "لا يوجد في هذا التفسير مقطع لهذه الآية.",
+      "fallbackName": "تفسير {{id}}"
+    },
+    "translationPanel": {
+      "showInline": "إظهار الترجمة في وضع القراءة",
+      "emptyTitle": "لم تختر ترجمة بعد",
+      "emptyBody": "اختر ترجمة من إعدادات القراءة.",
+      "missing": "لا يوجد نص لهذه الآية في هذه الترجمة."
     },
     "settings": {
       "title": "إعدادات القراءة",

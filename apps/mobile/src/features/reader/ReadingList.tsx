@@ -46,11 +46,7 @@ export type ReadingListProps = {
   testID?: string;
 };
 
-export function ReadingList(props: ReadingListProps) {
-  return <ReadingListBody key={props.anchorVerseKey} {...props} />;
-}
-
-function ReadingListBody({
+export function ReadingList({
   mode,
   anchorVerseKey,
   fontScale = 1,
@@ -72,6 +68,13 @@ function ReadingListBody({
   const listRef = useRef<FlashListRef<ReadingRow>>(null);
   const heightCache = useRef(new ReadingHeightCache());
   const topVerseKeyRef = useRef<string | null>(null);
+  const modeRef = useRef(mode);
+  const [openedVerseKey, setOpenedVerseKey] = useState(anchorVerseKey);
+  const [followedVerseKey, setFollowedVerseKey] = useState<string | null>(null);
+  if (anchorVerseKey !== followedVerseKey && anchorVerseKey !== openedVerseKey) {
+    setOpenedVerseKey(anchorVerseKey);
+  }
+  const openedVerseRef = useRef(openedVerseKey);
   const onVisibleRef = useRef(onVisibleVerseKey);
   useEffect(() => {
     onVisibleRef.current = onVisibleVerseKey;
@@ -82,7 +85,7 @@ function ReadingListBody({
 
   const translationMetaMap = useMemo(() => new Map(translationMeta.map((meta) => [meta.resourceId, meta])), [translationMeta]);
   const executor = useMemo(() => openContentDb().executor, []);
-  const centerId = useMemo(() => resolveCenterId(executor, anchorVerseKey), [anchorVerseKey, executor]);
+  const centerId = useMemo(() => resolveCenterId(executor, openedVerseKey), [executor, openedVerseKey]);
 
   const windowRange = useMemo(() => {
     const base = verseWindowBounds(centerId);
@@ -114,12 +117,27 @@ function ReadingListBody({
   }));
 
   useLayoutEffect(() => {
-    const targetKey = topVerseKeyRef.current ?? anchorVerseKey;
+    const modeChanged = modeRef.current !== mode;
+    modeRef.current = mode;
+    const openedChanged = openedVerseRef.current !== openedVerseKey;
+    openedVerseRef.current = openedVerseKey;
+    // The screen echoes the ayah a scroll just revealed. Pinning that ayah to the
+    // top is what made a small drag jump.
+    if (!modeChanged && !openedChanged && followedVerseKey !== null && anchorVerseKey === followedVerseKey) {
+      return;
+    }
+    if (!modeChanged && !openedChanged && followedVerseKey !== null && anchorVerseKey === openedVerseKey) {
+      return;
+    }
+    const targetKey = modeChanged ? (topVerseKeyRef.current ?? anchorVerseKey) : anchorVerseKey;
     const index = rows.findIndex((row) => row.type === 'ayah' && row.verse.verseKey === targetKey);
     if (index >= 0 && typeof listRef.current?.scrollToIndex === 'function') {
+      if (!modeChanged) {
+        topVerseKeyRef.current = anchorVerseKey;
+      }
       listRef.current.scrollToIndex({ animated: false, index });
     }
-  }, [anchorVerseKey, mode, rows]);
+  }, [anchorVerseKey, followedVerseKey, mode, openedVerseKey, rows]);
 
   const prevLayoutSignature = useRef<string | null>(null);
   useLayoutEffect(() => {
@@ -155,9 +173,10 @@ function ReadingListBody({
 
     if (topVerseKey !== undefined) {
       topVerseKeyRef.current = topVerseKey;
+      setFollowedVerseKey(topVerseKey);
       onVisibleRef.current?.(topVerseKey);
     }
-  }, []);
+  }, [setFollowedVerseKey]);
 
   const extendStart = () => {
     setStartExtendCount((count) => count + 1);

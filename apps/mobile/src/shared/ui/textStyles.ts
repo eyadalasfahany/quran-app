@@ -29,5 +29,14 @@ export function displayText(token: DisplayTypeToken, scale = 1): TextStyle {
 export function quranText(token: QuranTypeToken, fontScale = 1): TextStyle {
   const { size, lineHeightRatio } = quranTypeScale[token];
   const fontSize = size * fontScale;
-  return { fontFamily: quranFontFamily, fontSize, lineHeight: Math.round(fontSize * lineHeightRatio) };
+  return {
+    // iOS mirrors textAlign left/right to the layout direction. Keeping this
+    // node LTR leaves 'right' on the physical right; the words still run RTL.
+    direction: 'ltr',
+    fontFamily: quranFontFamily,
+    fontSize,
+    lineHeight: Math.round(fontSize * lineHeightRatio),
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  };
 }

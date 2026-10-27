@@ -50,7 +50,54 @@
       "label": "Back to the current ayah"
     },
     "sheet": {
-      "label": "Ayah actions"
+      "label": "Ayah actions",
+      "close": "Close"
+    },
+    "ayahPanel": {
+      "ayah": "Ayah {{number}}",
+      "wordsTitle": "Word meanings",
+      "highlightTitle": "Highlight",
+      "actionsLabel": "Ayah actions",
+      "play": "Play from here",
+      "audioUnavailable": "Recitation isn't available yet",
+      "tafsir": "Tafsir",
+      "translation": "Translation",
+      "bookmark": "Bookmark",
+      "bookmarked": "Bookmarked",
+      "repeat": "Repeat",
+      "note": "Note",
+      "copy": "Copy",
+      "share": "Share",
+      "copied": "Ayah copied",
+      "reference": "{{surah}} · Ayah {{ayah}}"
+    },
+    "note": {
+      "label": "Note on this ayah",
+      "placeholder": "Write your note",
+      "counter": "{{count}} / {{max}}",
+      "tooLong": "Notes can be up to {{max}} characters",
+      "save": "Save note",
+      "delete": "Delete note",
+      "saveFailed": "The note couldn't be saved. Try again.",
+      "cancel": "Cancel"
+    },
+    "tafsir": {
+      "pickerLabel": "Choose a tafsir",
+      "coverage": "This passage covers ayahs {{from}}–{{to}}",
+      "source": "Source: {{author}} · via Quran Foundation",
+      "previous": "Previous ayah",
+      "next": "Next ayah",
+      "emptyTitle": "No tafsir downloaded",
+      "emptyBody": "Download a tafsir to read it offline.",
+      "download": "Download this tafsir for offline reading",
+      "noEntry": "This tafsir has no passage for this ayah.",
+      "fallbackName": "Tafsir {{id}}"
+    },
+    "translationPanel": {
+      "showInline": "Show translations in Reading mode",
+      "emptyTitle": "No translation chosen",
+      "emptyBody": "Choose a translation in Reading settings.",
+      "missing": "This translation has no text for this ayah."
     },
     "settings": {
       "title": "Reading settings",

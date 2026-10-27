@@ -1,19 +1,16 @@
 import { Stack } from 'expo-router';
 
+import { SheetHost } from '@/features/reader/components/SheetHost';
+import { SETTINGS_SHEET_TOP, sheetScreenOptions } from '@/features/reader/form-sheet';
 import { ReaderSettingsSheet } from '@/features/reader/screens/ReaderSettingsSheet';
-
-const sheetOptions = {
-  headerShown: false,
-  presentation: 'formSheet' as const,
-  sheetAllowedDetents: [0.5, 1],
-  sheetGrabberVisible: true,
-};
 
 export default function ReaderSettingsRoute() {
   return (
     <>
-      <Stack.Screen options={sheetOptions} />
-      <ReaderSettingsSheet />
+      <Stack.Screen options={sheetScreenOptions} />
+      <SheetHost topGap={SETTINGS_SHEET_TOP}>
+        <ReaderSettingsSheet />
+      </SheetHost>
     </>
   );
 }

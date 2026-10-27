@@ -9,6 +9,7 @@ import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
+import { sheetScreenOptions } from '@/features/reader/form-sheet';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -69,7 +70,11 @@ export default function RootLayout() {
       <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themes[themeName].colors.surface } }}
-      />
+      >
+        <Stack.Screen name="reader-settings" options={sheetScreenOptions} />
+        <Stack.Screen name="ayah/[verseKey]" options={sheetScreenOptions} />
+        <Stack.Screen name="tafsir/[verseKey]" options={sheetScreenOptions} />
+      </Stack>
     </ThemeProvider>
   );
 }

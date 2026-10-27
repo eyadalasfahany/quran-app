@@ -18,9 +18,9 @@ Work method as in Phase 1: one brief per step in `docs/plans/phase-2/`, parallel
 
 ## Status (27 Oct 2026)
 
-Steps 1–3 are on `main` (`05b931e`). Steps 4, 5 and 8 are implemented and review-fixed in the working tree, and not committed yet. Do not reimplement them. Commit that tree before starting step 6 if you are not already in it.
+Steps 1–3 are on `main` (`05b931e`), and steps 4, 5 and 8 are committed (`46c2758`). Steps 6 and 9 are implemented in local commit `04c650a`, not pushed. Step 7 is implemented in the working tree and not committed. Do not reimplement any of them.
 
-**Next:** Wave C, steps 6 and 9, in parallel. Then Wave D (step 7), then the exit check (step 10, a person on device). The reader route does not exist until step 6, so the index and search screens navigate to `/read/[verseKey]` but nothing opens it yet.
+**Next:** step 10, the exit check, done by a person on device. It is not done.
 
 | Step | Result |
 | --- | --- |
@@ -30,9 +30,20 @@ Steps 1–3 are on `main` (`05b931e`). Steps 4, 5 and 8 are implemented and revi
 | 4 Reading and Focus | ✅ `ReadingList` windows ayahs, restores the top visible ayah on mode switch and resize, and uses FlashList `maintainVisibleContentPosition` when the window grows upward. Selection is a callback. Step 6 adds `selection.ts` |
 | 5 Mushaf | ✅ QCF V2 fonts from `verses.quran.foundation` only. The visible page, not each mounted row, decides which fonts stay loaded. `revalidatePageFonts()` runs when `MushafList` mounts. A failed check does not move the 30-day clock |
 | 8 Index and search | ✅ Mushaf tab index and `app/search.tsx`. Search normalizes through `@quran/quran-text-check/normalize` (not the package root; that entry pulls Node-only files). A three-letter query was 4 ms in Node |
-| 6, 7, 9, 10 | Not started |
+| 6 Reader shell | ✅ `read/[verseKey]`, the glass toolbar, `selection.ts`, `AdaptiveReaderLayout` and `SidePanel`, the `ayah/[verseKey]` and `tafsir/[verseKey]` sheets. Local commit `04c650a`, not pushed |
+| 9 Reader settings | ✅ The settings sheet: mode, font scale, theme, translations, in one `reader.settings` MMKV blob. Local commit `04c650a`, not pushed |
+| 7 Ayah panels | ✅ Working tree. `src/features/reader/panels/`: `PanelHeader`, `AyahActionsPanel` (with `LiveAyahActionsPanel` on the `user.db` live queries), `NoteEditor`, `TafsirPanel` (`@native-html/render` 1.0.4), `TranslationPanel`, `PanelButton`, `PanelSection`, and `AyahPanelContent`, which `SidePanel` and `SheetContainer` both render by tab. `expo-clipboard` added. Play and repeat stay disabled (`AUDIO_AVAILABLE` in the actions panel) |
+| 10 Exit check | Not started. A person on device |
 
-**Carry into step 6**
+**Carry into step 10 and later**
+
+- The device has no resource catalogue (names, authors, direction). The panels show "Translation 20" or "Tafsir 16", infer a translation's direction from its text, and leave the tafsir length tag empty. Wire the catalogue when it reaches the device.
+- Word chips stay hidden: the device has no word-by-word table yet. `loadWordMeanings` takes the meanings when it does.
+- The tafsir empty state offers a download only for the tafsir already chosen in reader settings (`setTafsirId`). With nothing chosen there is no id to offer.
+- Switching tafsir in the panel is local to the panel. Saving it with `setTafsirId` would drop the other installed tafsir at the next sync.
+- Saving an edited note writes a new note and then deletes the old one, because the step 3 repository has no update.
+
+**Carry into step 6 (done)**
 
 - Call `resolveInitialAnchor({ verseKey })` for the route. A route ayah comes back with `page: null`. In Mushaf mode fill the page with `pageForVerse`.
 - Create `src/features/reader/selection.ts`. Steps 4 and 5 do not own it.
@@ -67,18 +78,18 @@ Each step becomes a brief in `docs/plans/phase-2/`. The *Needs* column shows wha
 | 3 | **Local user data** (if D2 = yes) | `user.db` schema (spec §6) for bookmarks, highlights and notes. Repositories, with an outbox table written but not yet sent | — | Done |
 | 4 | **Reading and Focus modes** | `ReadingAyahRow` (Uthmani plus the selected translations), `FocusAyah`. FlashList of 6,236 ayahs with measured, cached heights. Mode switching keeps the anchor ayah | 1, 2 | Done |
 | 5 | **Mushaf mode** | Font pack (D1), `MushafPage` (15 lines from `word_layouts`, one QCF run per line), FlashList of 604 pages with `overrideItemLayout`. Falls back to Reading mode when a page's layout or font isn't installed | 1, 2 | Done |
-| 6 | **Reader shell and adaptive layout** | The `read/[verseKey]` route, the glass toolbar, ayah selection, and `AdaptiveSplit` / `SidePanel`: docked at ≥ 1,100 pt, overlaying the page from 840 to 1,099 pt, a sheet on compact and medium. The `ayah/[verseKey]` and `tafsir/[verseKey]` routes render in the panel or a sheet | 1, 4 | Next |
-| 7 | **Ayah actions, tafsir and translation panels** | `AyahActionsPanel` (word meanings, highlight colours, action tiles), `TafsirPanel` (picker, ayah card, text with its source credit, previous and next), `TranslationPanel`. Play-from-here is wired in Phase 3 | 1, 3, 6 | |
+| 6 | **Reader shell and adaptive layout** | The `read/[verseKey]` route, the glass toolbar, ayah selection, and `AdaptiveSplit` / `SidePanel`: docked at ≥ 1,100 pt, overlaying the page from 840 to 1,099 pt, a sheet on compact and medium. The `ayah/[verseKey]` and `tafsir/[verseKey]` routes render in the panel or a sheet | 1, 4 | Done |
+| 7 | **Ayah actions, tafsir and translation panels** | `AyahActionsPanel` (word meanings, highlight colours, action tiles), `TafsirPanel` (picker, ayah card, text with its source credit, previous and next), `TranslationPanel`. Play-from-here is wired in Phase 3 | 1, 3, 6 | Done (working tree) |
 | 8 | **Surah and juz index, and search** | The Mushaf tab's index (surah and juz lists, jump to an ayah). Search screen: FTS5 over `search_quran` (Imla'i-based, from step 11 of Phase 1), surah-name prefix matching, results with matched words highlighted, under 150 ms | 1, 2 | Done |
-| 9 | **Reader settings** | Settings sheet: mode, font scale (80–160%), theme (light, sepia, dark), translations on or off. Persisted in MMKV and applied without a reload. Appearance is already resolved; do not add a second theme field | 1, 4 | Next |
+| 9 | **Reader settings** | Settings sheet: mode, font scale (80–160%), theme (light, sepia, dark), translations on or off. Persisted in MMKV and applied without a reload. Appearance is already resolved; do not add a second theme field | 1, 4 | Done |
 | 10 | **Exit check** | Device matrix (spec §14): phone, iPad and foldable, in Arabic and English. The resize and fold keep-position test. The 604-page pass needs QF's full mushaf layout | all | |
 
 **Parallel waves:**
 - **A:** 1, 2, 3. Done. Committed.
-- **B:** 4, 5, 8. Done. In the working tree, not committed.
-- **C:** 6, 9. Next.
-- **D:** 7.
-- **E:** the exit check.
+- **B:** 4, 5, 8. Done. Committed.
+- **C:** 6, 9. Done. Local commit `04c650a`, not pushed.
+- **D:** 7. Done. In the working tree, not committed.
+- **E:** the exit check. Next.
 
 ## Known limits
 

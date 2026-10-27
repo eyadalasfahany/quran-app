@@ -19,7 +19,7 @@ Follow [README.md](README.md). Needs steps 1 and 2 committed. Read also:
   - Download with `expo-file-system` to `documentDirectory/qcf-v2/p{page}.ttf` if missing, storing `ETag` and `Last-Modified` in MMKV.
   - Load with `expo-font` as family `qcf-v2-p{page}`.
   - Concurrent calls for the same page share one promise.
-- **Window:** prefetch pages within ±2 of the viewport, and release loaded fonts more than 10 pages away (spec §12). Files stay on disk.
+- **Window:** prefetch pages within ±2 of the viewport. On web, unload families more than 10 pages away. On iOS and Android, expo-font has no unload, so loaded families stay registered (ADR 0011, spec §12). Files stay on disk.
 - **`revalidatePageFonts()`:** when online, at most once every 30 days per file, send a conditional GET (`If-None-Match` / `If-Modified-Since`). On 200 replace the file; on 304 just update the timestamp.
 - **`downloadAllPageFonts(onProgress)`:** the optional offline action, run in the background, resumable, and cancellable. The Settings UI for it comes later; expose the function and a hook now.
 - **Offline or failed font:** the page shows a calm placeholder ("Connect to load this page"), with a button to switch to Reading mode at the same ayah. Never a broken glyph page.

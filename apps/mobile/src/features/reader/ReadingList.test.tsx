@@ -240,6 +240,43 @@ describe('ReadingList', () => {
     });
   });
 
+  it('does not pin the ayah to the top when scrolling updates the anchor', async () => {
+    const onVisibleVerseKey = jest.fn();
+    const view = await renderUi(
+      <ReadingList
+        anchorVerseKey="18:10"
+        mode="reading"
+        onOpenAyahActions={() => undefined}
+        onSelectVerseKey={() => undefined}
+        onVisibleVerseKey={onVisibleVerseKey}
+        testID="list"
+      />,
+    );
+
+    const verse = getVerseByKey(mockTestExecutor, '18:12');
+    await waitFor(() => {
+      expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
+    });
+
+    flashListTestState.scrollCalls.length = 0;
+    simulateTopVisibleVerse('18:12');
+    view.rerender(
+      <ThemeProvider name="light">
+        <ReadingList
+          anchorVerseKey="18:12"
+          mode="reading"
+          onOpenAyahActions={() => undefined}
+          onSelectVerseKey={() => undefined}
+          onVisibleVerseKey={onVisibleVerseKey}
+          testID="list"
+        />
+      </ThemeProvider>,
+    );
+
+    expect(onVisibleVerseKey).toHaveBeenCalledWith('18:12');
+    expect(flashListTestState.scrollCalls).toEqual([]);
+  });
+
   it('passes the verse key to the selection callback', async () => {
     const onSelectVerseKey = jest.fn();
     const view = await renderUi(

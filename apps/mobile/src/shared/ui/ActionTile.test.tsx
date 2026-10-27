@@ -41,6 +41,33 @@ describe('ActionTile', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('disables the tile with a hint and ignores presses', async () => {
+    const onPress = jest.fn();
+    const view = await renderUi(
+      <ActionTile accessibilityHint="Not yet" disabled icon={play} label="Play" onPress={onPress} variant="primary" />,
+      { locale: 'en' },
+    );
+    const tile = view.getByRole('button', { name: 'Play' });
+
+    await fireEvent.press(tile);
+
+    expect(onPress).not.toHaveBeenCalled();
+    expect(tile.props.accessibilityState).toMatchObject({ disabled: true });
+    expect(tile.props.accessibilityHint).toBe('Not yet');
+    expect(flatStyle(tile.props.style).opacity).toBeLessThan(1);
+  });
+
+  it('reports the selected state of a toggle tile', async () => {
+    const view = await renderUi(<ActionTile icon={copy} label="Save" onPress={() => undefined} selected />, {
+      locale: 'en',
+    });
+
+    expect(view.getByRole('button', { name: 'Save' }).props.accessibilityState).toEqual({
+      disabled: false,
+      selected: true,
+    });
+  });
+
   it.each(locales)('centres the label under the icon in %s', async (locale) => {
     const view = await renderUi(<ActionTile icon={copy} label="label" onPress={() => undefined} />, { locale });
 

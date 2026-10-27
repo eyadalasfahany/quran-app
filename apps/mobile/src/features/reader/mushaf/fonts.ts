@@ -25,6 +25,8 @@ const inflight = new Map<number, Promise<string>>();
 const loadedFamilies = new Set<string>();
 let viewportPage = 1;
 let downloadAll: DownloadAllState | null = null;
+/** expo-font 58 exposes unloadAsync on web only. Native calls reject with ERR_UNAVAILABLE. */
+let fontUnloadAvailable = true;
 
 export function pageFontUrl(page: number): string {
   return `https://${QCF_V2_FONT_HOST}/fonts/quran/hafs/v2/ttf/p${page}.ttf`;
@@ -85,8 +87,9 @@ export async function releasePageFont(page: number): Promise<void> {
   if (!loadedFamilies.has(family)) {
     return;
   }
-  await Font.unloadAsync(family);
-  loadedFamilies.delete(family);
+  if (await unloadLoadedFamily(family)) {
+    loadedFamilies.delete(family);
+  }
 }
 
 export async function revalidatePageFonts(now = Date.now()): Promise<void> {
@@ -181,8 +184,9 @@ async function revalidatePageFont(page: number, now: number): Promise<void> {
   await file.write(bytes);
   const family = fontFamilyForPage(page);
   if (loadedFamilies.has(family)) {
-    await Font.unloadAsync(family);
-    loadedFamilies.delete(family);
+    if (await unloadLoadedFamily(family)) {
+      loadedFamilies.delete(family);
+    }
     await Font.loadAsync({ [family]: file.uri });
     loadedFamilies.add(family);
   }
@@ -246,6 +250,26 @@ function pagesWithLoadedFonts(): number[] {
   return pages;
 }
 
+async function unloadLoadedFamily(family: string): Promise<boolean> {
+  if (!fontUnloadAvailable) {
+    return false;
+  }
+  try {
+    await Font.unloadAsync(family);
+    return true;
+  } catch (error) {
+    if (isFontUnloadUnavailable(error)) {
+      fontUnloadAvailable = false;
+      return false;
+    }
+    throw error;
+  }
+}
+
+function isFontUnloadUnavailable(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'ERR_UNAVAILABLE';
+}
+
 function assertValidPage(page: number): void {
   if (!Number.isInteger(page) || page < 1 || page > MUSHAF_PAGE_COUNT) {
     throw new Error(`Invalid mushaf page ${page}.`);
@@ -264,6 +288,7 @@ export function resetMushafFontsForTests(): void {
   inflight.clear();
   loadedFamilies.clear();
   viewportPage = 1;
+  fontUnloadAvailable = true;
   downloadAll?.abort.abort();
   downloadAll = null;
 }

@@ -48,9 +48,12 @@ export function AdaptiveReaderLayout({
   const verseKeyRef = useRef(verseKey);
   const onSheetRef = useRef(onMoveToSheet);
   const onPanelRef = useRef(onMoveToPanel);
-  verseKeyRef.current = verseKey;
-  onSheetRef.current = onMoveToSheet;
-  onPanelRef.current = onMoveToPanel;
+
+  useEffect(() => {
+    verseKeyRef.current = verseKey;
+    onSheetRef.current = onMoveToSheet;
+    onPanelRef.current = onMoveToPanel;
+  });
 
   useEffect(() => {
     const from = placementRef.current;
