@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Spatie\LaravelData\Data;
 
@@ -47,3 +48,7 @@ arch('responses are API resources')
 arch('integrations never import domains')
     ->expect('App\Integrations')
     ->not->toUse('App\Domains');
+
+arch('content models extend eloquent')
+    ->expect('App\Domains\Content\Models')
+    ->toExtend(Model::class);

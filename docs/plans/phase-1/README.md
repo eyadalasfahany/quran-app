@@ -68,6 +68,7 @@ Where the brief and the spec disagree, **stop and report**; don't pick one.
 - **Config:** config files read env through `App\Support\Env`.
 - **Errors:** named exceptions, never bare `\Exception`.
 - **Text columns:** Quran and QF text columns use collation `utf8mb4_0900_bin`.
+- **Enumerated columns:** `varchar` plus a PHP backed enum cast on the model, never MySQL `ENUM` (ADR 0009).
 - **Formatting:** run `vendor/bin/pint` before finishing.
 
 **App code** (`apps/mobile`):

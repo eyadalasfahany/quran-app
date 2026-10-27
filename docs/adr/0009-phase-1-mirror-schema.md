@@ -30,6 +30,12 @@ Spec §5 and §6 were written before we could call QF. Probing prelive (see `doc
 - **Not yet:** `chapters`, `verses` and `words` (and the foreign keys to them) wait for `quran_core` (Phase 1 step 9).
 - **Not synced in Phase 1:** the per-ayah `recitations` group.
 
+**Enumerated columns are `varchar` plus a PHP backed enum, not MySQL `ENUM`:**
+- Applies to `group`, `permission_status`, `direction`, `environment`, `status` and `op`. The model casts to `App\Domains\Content\Enums\*`.
+- **Why:** production migrations must stay additive, and adding a value to a MySQL `ENUM` means an `ALTER … MODIFY` on a large table. A new value here is a code change only.
+- **The cost:** a value written by raw SQL isn't checked. All writes go through models or repositories, so that's acceptable.
+- **Applies to every later table.** Spec §5's `enum(…)` notation means "one of these values", not the MySQL type.
+
 **Device (spec §6):**
 - **The Tanzil seed** is a separate bundled SQLite asset (`tanzil-seed.db`), attached and copied into `content.db` on first launch, the same way packs are. `content.db` itself is always created by migrations.
 - **Verse text columns:** `text_imlaei` and the other scripts are nullable, since Tanzil supplies only Uthmani.

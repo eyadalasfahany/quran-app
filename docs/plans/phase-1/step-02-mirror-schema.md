@@ -19,6 +19,8 @@ Follow [README.md](README.md). Needs step 1 committed. Read also:
 
 ## Tables
 
+**Enumerated columns are `varchar` plus a PHP backed enum cast, not MySQL `ENUM`** (ADR 0009). The `enum(…)` lists below give the allowed values.
+
 All InnoDB, `utf8mb4`. Default collation `utf8mb4_0900_ai_ci`. **Columns marked "bin" use `utf8mb4_0900_bin`**, because they hold Quran or QF text stored byte for byte. Timestamps are `datetime(6)`. Each table gets its own migration file, in this order.
 
 **`content_sources`:**
