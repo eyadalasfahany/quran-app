@@ -39,7 +39,9 @@ Follow `.claude/skills/laravel-standards`, except where this file or the spec sa
 ## API rules
 
 - All routes under `/api/v1`. Errors are RFC 9457 problem details with a stable `code`.
-- Cursor pagination only. Content endpoints send `ETag`; user endpoints send `Cache-Control: no-store`.
+- Cursor pagination only. Content endpoints send `ETag`; user endpoints send `Cache-Control: no-store` through the `no-store` middleware (Laravel's `cache.headers` skips non-2xx responses).
+- Errors under `/api/*` are rendered by `App\Support\ProblemDetails\ProblemDetailsRenderer`; titles come from `lang/{ar,en}/problems.php`. Throw exceptions, don't build error responses by hand.
+- Each domain registers its routes in its own `routes.php` from its service provider (prefix `api/v1`, name `v1.`). There is no `routes/api.php`.
 - Rate limits per spec §8. `Accept-Language` localizes messages and emails only, never content.
 - OpenAPI is generated from routes, FormRequests and Data objects. Keep them accurate; CI fails on drift.
 

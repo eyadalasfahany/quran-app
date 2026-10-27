@@ -51,7 +51,9 @@ Host ports (MAMP-style services already use 3306 and 8080): MySQL 33306, Redis 1
   - Laravel Boost 2.10.3: guidelines appended to `apps/api/CLAUDE.md` and `AGENTS.md`, five skills, MCP config for Claude Code (repo-root `.mcp.json`), Codex, Cursor and OpenCode. Laravel Cloud guidance switched off.
 - Verify: `composer qa`, `php artisan serve` then `curl localhost:8000/up`. `php artisan migrate` moves to step 4, when compose MySQL exists.
 
-### 3. Domains and the Sync example
+### 3. Domains and the Sync example — done
+
+Built as planned, plus three fixes found while testing: the renderer unwraps `ModelNotFoundException` (Laravel wraps it before render callbacks), laravel-data's structure cache uses the file store (on Redis it turned a Redis outage into a 500 on `/health`), and a `no-store` middleware replaces `cache.headers:no_store` (which skips 503s). Reachable-path repository tests wait for step 4.
 
 - Creates:
   - The §3 tree: `Domains/*`, `Integrations/*`, `Support/` (`.gitkeep` where empty).
