@@ -62,13 +62,7 @@ Follow `.claude/skills/laravel-standards`, except where this file or the spec sa
 
 ## Laravel Boost
 
-- Everything inside `<laravel-boost-guidelines>` below is generated from `boost.json`. Don't edit it by hand; change `boost.json` and rerun `php artisan boost:install --guidelines --skills --no-interaction`.
-- Where Boost conflicts with this file, the spec or ADR 0002, they win. In particular: responses are API Resources without a wrapper key (ADR 0006); we self-host, so ignore Laravel Cloud; there is no frontend bundle, so ignore the Vite notes; the done check is `composer qa`, not only `php artisan test`.
-- The Boost MCP server is registered in the repo-root `.mcp.json` (Claude Code opens at the repo root) and in `apps/api/.mcp.json`.
-
-===
-
-<laravel-boost-guidelines>
+- Everything inside `<laravel-boost-guidelines>
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -167,6 +161,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
 
+=== tests rules ===
+
+# Test Enforcement
+
+- Add or update tests for behavior and logic changes when a test provides meaningful regression coverage.
+- Pure copy, styling, and layout-only changes do not require new or updated tests.
+- When test coverage applies, run the affected tests and ensure they pass.
+- Test the changed behavior and its important failure modes, but do not add tests beyond them.
+- Read the `testing-best-practices` skill before writing tests.
+
 === laravel/core rules ===
 
 # Do Things the Laravel Way
@@ -215,5 +219,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Rerun a test after each change to it.
 - Run `vendor/bin/pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
 - After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
+
+=== dedoc/scramble/core rules ===
+
+## Scramble
+
+This project uses `dedoc/scramble` to generate OpenAPI documentation from application code. Prefer inference over redundant annotations.
+
+Follow the `scramble-development` skill when changing API endpoints or the resources, FormRequests, shared types, and authentication they use, or when configuring or troubleshooting Scramble documentation.
 
 </laravel-boost-guidelines>
