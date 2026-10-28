@@ -82,7 +82,7 @@ Each step becomes a brief in `docs/plans/phase-2/`. The *Needs* column shows wha
 | 7 | **Ayah actions and tafsir panels** | `AyahActionsPanel` (highlight colours, action tiles), `TafsirPanel` (picker, ayah card, text with its source credit, previous and next). Play-from-here is wired in Phase 3. Translation panel and word meanings removed by ADR 0014 | 1, 3, 6 | Done (working tree) |
 | 8 | **Surah and juz index, and search** | The Mushaf tab's index (surah and juz lists, jump to an ayah). Search screen: FTS5 over `search_quran` (Imla'i-based, from step 11 of Phase 1), surah-name prefix matching, results with matched words highlighted, under 150 ms | 1, 2 | Done |
 | 9 | **Reader settings** | Settings sheet: mode, font scale (80–160%), theme (light, sepia, dark). Translations on or off removed by ADR 0014. Persisted in MMKV and applied without a reload. Appearance is already resolved; do not add a second theme field | 1, 4 | Done |
-| 10 | **Exit check** | Device matrix (spec §14): phone, iPad and foldable, in Arabic and English. The resize and fold keep-position test. The 604-page pass needs QF's full mushaf layout | all | |
+| 10 | **Exit check** | Exit check on the iPhone 17 simulator, portrait and landscape (developer, 28 Oct 2026: no real devices in Phase 2). Arabic and English. The resize keep-position test. The 604-page pass needs QF's full mushaf layout. iPad, foldable and Split View deferred | all | |
 
 **Parallel waves:**
 - **A:** 1, 2, 3. Done. Committed.

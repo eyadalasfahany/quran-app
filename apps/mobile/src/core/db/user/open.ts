@@ -24,7 +24,8 @@ export function openUserDb(): OpenedUserDb {
     return opened;
   }
 
-  const sqlite = openDatabaseSync(USER_DATABASE);
+  // Drizzle's useLiveQuery re-runs only on expo-sqlite change events, which need this flag.
+  const sqlite = openDatabaseSync(USER_DATABASE, { enableChangeListener: true });
   const executor = createExpoSqlExecutor(sqlite);
   configureUserDatabase(executor);
 

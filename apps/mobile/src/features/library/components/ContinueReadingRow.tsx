@@ -1,12 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import type { ChapterRecord } from '@/features/reader/data/chapters';
-import { Card, UiText } from '@/shared/ui';
+import { Card, Icon, UiText } from '@/shared/ui';
 
-// The Surah index's last-read card: «آخر قراءة: البقرة · الآية ٢٥٥» with «متابعة» on its trailing side.
+const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
+
+// The Surah index's last-read card (quran-app-screens.html, #SurahIndex): a bookmark, «آخر قراءة: البقرة · الآية ٢٥٥»,
+// and «متابعة» on the trailing side.
 export function ContinueReadingRow({
   chapter,
   ayah,
@@ -29,18 +32,27 @@ export function ContinueReadingRow({
       accessibilityLabel={`${label}, ${resume}`}
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => ({ opacity: pressed ? theme.opacity.pressed : 1 })}
+      style={({ pressed }) => ({ marginBottom: theme.size.blockGap, opacity: pressed ? theme.opacity.pressed : 1 })}
       testID={testID}
     >
-      <Card padding={3} radius="md" style={{ marginBottom: theme.space[3] }}>
-        <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3] }}>
-          <UiText numberOfLines={1} style={{ flex: 1 }} variant="subhead">
-            {label}
-          </UiText>
-          <UiText tone="brand" variant="label">
-            {resume}
-          </UiText>
-        </View>
+      <Card
+        padding={2}
+        radius="tile"
+        style={{
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: theme.size.lastReadGap,
+          paddingHorizontal: theme.size.lastReadPaddingX,
+          paddingVertical: theme.size.lastReadPaddingY,
+        }}
+      >
+        <Icon color={theme.colors.brand} name={BOOKMARK} size={theme.size.iconMd} />
+        <UiText numberOfLines={1} style={{ flex: 1 }} variant="subhead" weight={500}>
+          {label}
+        </UiText>
+        <UiText tone="brand" variant="caption" weight={600}>
+          {resume}
+        </UiText>
       </Card>
     </Pressable>
   );

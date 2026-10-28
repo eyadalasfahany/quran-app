@@ -23,10 +23,12 @@ export function ScreenHeader({
   const theme = useTheme();
 
   return (
-    <View style={{ gap: theme.space[3], paddingBottom: theme.space[2], paddingTop: theme.space[4] }} testID={testID}>
+    // The Screen already sits below the safe area, so the title starts at its top edge (the frames' 56 pt
+    // is the status bar). The blocks under the title are spaced by the parent.
+    <View style={{ gap: theme.size.blockGap }} testID={testID}>
       {title ? (
         <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3] }}>
-          <UiText accessibilityRole="header" style={{ flex: 1 }} variant="title">
+          <UiText accessibilityRole="header" style={{ flex: 1 }} variant="displayMd">
             {title}
           </UiText>
           {trailing}

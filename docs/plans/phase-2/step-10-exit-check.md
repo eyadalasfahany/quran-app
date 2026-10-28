@@ -2,6 +2,8 @@
 
 Not an agent coding task. The reviewer runs this on real builds and records the results in [`../phase-2.md`](../phase-2.md). The device matrix is spec §14.
 
+**Changed 28 Oct 2026 (developer):** no real-device pass for Phase 2. The reviewer runs the checks on the **iPhone 17 simulator** (portrait and landscape, which covers the compact and expanded windows) and records the results. iPad, foldable and Split View rows are deferred to a later phase; the device matrix in spec §14 still applies before release.
+
 | # | Check | Devices and windows | Expected |
 | --- | --- | --- | --- |
 | 1 | Reading mode, all 6,236 ayahs scroll from Tanzil | iPhone, iPad, Pixel Fold | Smooth (60 fps target); no truncated ayah |

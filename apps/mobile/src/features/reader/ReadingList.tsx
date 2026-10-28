@@ -47,12 +47,14 @@ export type ReadingListProps = {
   testID?: string;
 };
 
+const NO_HIGHLIGHTS: ReadonlyMap<number, HighlightColor> = new Map();
+
 export function ReadingList({
   anchorVerseKey,
   fontScale = 1,
   selectedVerseKey = null,
   recitedVerseKey = null,
-  highlightsByVerseId = new Map(),
+  highlightsByVerseId = NO_HIGHLIGHTS,
   horizontalGutter = 0,
   topInset = 0,
   bottomInset = 0,
@@ -173,6 +175,12 @@ export function ReadingList({
     heightCache.current.set(rowKey, height);
   };
 
+  // FlashList repaints rows only when data or extraData changes; renderItem reads these three.
+  const rowExtraData = useMemo(
+    () => ({ highlightsByVerseId, recitedVerseKey, selectedVerseKey }),
+    [highlightsByVerseId, recitedVerseKey, selectedVerseKey],
+  );
+
   const renderItem = ({ item }: ListRenderItemInfo<ReadingRow>) => {
     if (item.type === 'surah-header') {
       return (
@@ -230,6 +238,7 @@ export function ReadingList({
             contentContainerStyle={{ paddingHorizontal: theme.space[5] }}
             data={rows}
             drawDistance={viewportHeight * 2}
+            extraData={rowExtraData}
             keyExtractor={(item) => item.key}
             maintainVisibleContentPosition={{ autoscrollToTopThreshold: 10 }}
             onEndReached={extendEnd}

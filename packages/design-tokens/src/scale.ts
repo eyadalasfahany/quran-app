@@ -17,7 +17,12 @@ export const radius = {
   lg: 20,
   // Action tiles and the highlight row in the ayah sheet.
   tile: 16,
+  // The progress bar's ends and the stop button's glyph (Downloads and TafsirDownload frames).
+  progress: 2,
+  glyph: 1,
   card: 18,
+  // Home's continue reading card (quran-app-screens.html, #Main).
+  hero: 24,
   // Tafsir chips: the phone sheet's chip and the side panel's chip differ in radius.
   chipSheet: 19,
   chipPanel: 22,
@@ -79,6 +84,32 @@ export const size = {
   focusLabelLineHeight: 19,
   // The gap from the «اسحب لأعلى» hint's bottom edge (694) to the transport bar's top edge (750).
   focusHintGap: 56,
+  // Download rows (Downloads and TafsirDownload frames): the row's minimum height and side inset (14, not a space step),
+  // the progress bar's height and gap under the subtitle, and the 7 pt stop glyph.
+  downloadRowMinHeight: 56,
+  downloadRowInset: 14,
+  progressHeight: 4,
+  progressGap: 6,
+  stopGlyph: 7,
+  // Home and the surah index (quran-app-screens.html, #Main and #SurahIndex).
+  // The continue reading card's padding; the gap inside its text column.
+  cardPadding: 22,
+  stackGap: 6,
+  // The gap between a screen's header and the blocks under it (index), and between Home's blocks.
+  blockGap: 14,
+  sectionGap: 18,
+  // Home's gutter; the index list uses gutterList.
+  gutterHome: 20,
+  gutterList: 16,
+  // The index's last-read card: padding, and the gap between its icon, text and resume label.
+  lastReadPaddingX: 14,
+  lastReadPaddingY: 10,
+  lastReadGap: 10,
+  // The index rows: 60 pt minimum, a 14 pt gap, and a surah name in Amiri 19 at 1.4.
+  indexRowMinHeight: 60,
+  indexRowGap: 14,
+  indexNameSize: 19,
+  indexNameLineHeight: 26.6,
 } as const;
 
 export const stroke = {

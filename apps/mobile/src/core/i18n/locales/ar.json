@@ -179,6 +179,11 @@
     "surahTag": "سورة"
   },
   "ui": {
+    "download": {
+      "start": "تنزيل",
+      "cancel": "إيقاف التنزيل",
+      "open": "عرض"
+    },
     "ayahNumber": "الآية {{number}}",
     "clearSearch": "مسح البحث",
     "highlight": {

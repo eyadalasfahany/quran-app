@@ -9,7 +9,8 @@ import { useContrastColors } from './useContrastColors';
 
 export const ICON_BUTTON_SIZE = size.touchTarget;
 
-export type IconButtonVariant = 'plain' | 'filled' | 'track' | 'surface' | 'glass';
+// `raised`: a surfaceRaised disc with a hairline, the header search button (quran-app-screens.html, #Main).
+export type IconButtonVariant = 'plain' | 'filled' | 'track' | 'surface' | 'glass' | 'raised';
 export type IconButtonTone = 'ink' | 'muted';
 
 export function IconButton({
@@ -49,7 +50,9 @@ export function IconButton({
     surface: theme.colors.surface,
     plain: 'transparent',
     glass: 'transparent',
+    raised: theme.colors.surfaceRaised,
   }[variant];
+  const raised = variant === 'raised';
 
   return (
     <Pressable
@@ -62,7 +65,9 @@ export function IconButton({
       style={({ pressed: touching }) => ({
         alignItems: 'center',
         backgroundColor: pressed || touching ? theme.colors.glassSelected : resting,
+        borderColor: raised ? colors.line : undefined,
         borderRadius: theme.radius.pill,
+        borderWidth: raised ? theme.stroke.hairline : 0,
         height: theme.size.touchTarget,
         justifyContent: 'center',
         opacity: disabled ? theme.opacity.disabled : 1,

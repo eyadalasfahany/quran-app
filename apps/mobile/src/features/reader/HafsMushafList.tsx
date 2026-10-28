@@ -128,6 +128,12 @@ export function HafsMushafList({
     [executor, onVisiblePage],
   );
 
+  // FlashList repaints pages only when data or extraData changes; renderPage reads these from props.
+  const pageExtraData = useMemo(
+    () => ({ focusVerseKey, highlightsByVerseId, selectedVerseKey }),
+    [focusVerseKey, highlightsByVerseId, selectedVerseKey],
+  );
+
   const renderPage = useCallback(
     ({ item: page }: ListRenderItemInfo<number>) => (
       <HafsPage
@@ -164,7 +170,7 @@ export function HafsMushafList({
       <FlashList
         contentContainerStyle={{ paddingHorizontal: theme.space[4] }}
         data={pages}
-        extraData={highlightsByVerseId}
+        extraData={pageExtraData}
         keyExtractor={(page) => String(page)}
         maintainVisibleContentPosition={{}}
         onEndReached={() => setPageWindow((current) => extendPageWindow(current, 'end'))}

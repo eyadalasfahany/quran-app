@@ -230,13 +230,33 @@ describe('HafsMushafPage', () => {
     expect(flatStyle(view.getByTestId('page-ayah-1:2').props.style).backgroundColor).toBeUndefined();
   });
 
-  it('keeps the selection wash over a saved highlight on the same ayah', async () => {
+  // ADR 0012: a saved colour fills the ayah even when it is selected; the selected marker carries the selection.
+  it.each(locales)('selected and highlighted: fills with the colour and marks it selected (%s)', async (locale) => {
     const view = await renderUi(
-      fatihaPage({ highlightsByVerseId: new Map([[1, 'gold']]), onOpenActions: () => undefined, selectedVerseKey: '1:1' }),
+      fatihaPage({ highlightsByVerseId: new Map([[1, 'green']]), onOpenActions: () => undefined, selectedVerseKey: '1:1' }),
+      { locale },
     );
 
     expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightGreen,
+    );
+    const marker = view.getByRole('button', { name: i18n.t('ui.ayahNumber', { number: formatNumber(1, locale) }) });
+    expect(marker.props.accessibilityState).toMatchObject({ selected: true });
+  });
+
+  it.each(locales)('selected only: shows the selection wash (%s)', async (locale) => {
+    const view = await renderUi(fatihaPage({ onOpenActions: () => undefined, selectedVerseKey: '1:1' }), { locale });
+
+    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
       themes.light.colors.highlightActive,
+    );
+  });
+
+  it.each(locales)('highlighted only: fills with the colour (%s)', async (locale) => {
+    const view = await renderUi(fatihaPage({ highlightsByVerseId: new Map([[1, 'rose']]) }), { locale });
+
+    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightRose,
     );
   });
 

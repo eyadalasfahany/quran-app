@@ -28,6 +28,7 @@ export type MushafListProps = {
 };
 
 const PAGE_NUMBERS = Array.from({ length: 604 }, (_, index) => index + 1);
+const NO_HIGHLIGHTS: ReadonlyMap<number, HighlightColor> = new Map();
 
 export function MushafList({
   anchorVerseKey,
@@ -36,7 +37,7 @@ export function MushafList({
   bottomInset = 0,
   selectedVerseId = null,
   activeVerseId = null,
-  highlightsByVerseId = new Map(),
+  highlightsByVerseId = NO_HIGHLIGHTS,
   onVisiblePage,
   onSelectVerseId,
   onOpenAyahActions,
@@ -128,10 +129,17 @@ export function MushafList({
     ],
   );
 
+  // FlashList repaints pages only when data or extraData changes; renderPage reads these three.
+  const pageExtraData = useMemo(
+    () => ({ activeVerseId, highlightsByVerseId, selectedVerseId }),
+    [activeVerseId, highlightsByVerseId, selectedVerseId],
+  );
+
   return (
     <View style={{ flex: 1, paddingTop: topInset, paddingBottom: bottomInset }} testID={testID}>
       <FlashList
         data={PAGE_NUMBERS}
+        extraData={pageExtraData}
         initialScrollIndex={initialIndex}
         keyExtractor={(page) => String(page)}
         onViewableItemsChanged={onViewableItemsChanged}

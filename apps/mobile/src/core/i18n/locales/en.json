@@ -179,6 +179,11 @@
     "surahTag": "Surah"
   },
   "ui": {
+    "download": {
+      "start": "Download",
+      "cancel": "Stop download",
+      "open": "Open"
+    },
     "ayahNumber": "Ayah {{number}}",
     "clearSearch": "Clear search",
     "highlight": {

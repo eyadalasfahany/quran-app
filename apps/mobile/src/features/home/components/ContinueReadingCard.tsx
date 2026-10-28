@@ -44,11 +44,11 @@ export function ContinueReadingCard({
       onPress={onPress}
       style={({ pressed }) => ({
         backgroundColor: theme.colors.brandSurface,
-        borderRadius: theme.radius.lg,
-        gap: theme.space[2],
+        borderRadius: theme.radius.hero,
+        gap: theme.size.stackGap,
         opacity: pressed ? theme.opacity.pressed : 1,
         overflow: 'hidden',
-        padding: theme.space[5],
+        padding: theme.size.cardPadding,
       })}
       testID={testID}
     >
@@ -59,7 +59,7 @@ export function ContinueReadingCard({
         style={{ end: ROSETTE.offset, opacity: theme.opacity.ornament, position: 'absolute', top: ROSETTE.offset }}
         testID={`${testID}-rosette`}
       />
-      <UiText tone="onBrandMuted" variant="label">
+      <UiText tone="onBrandMuted" variant="caption" weight={500}>
         {t('home.continueReading')}
       </UiText>
       <UiText tone="onBrand" variant="displayLg">
@@ -68,12 +68,12 @@ export function ContinueReadingCard({
       <UiText tone="onBrandMuted" variant="subhead">
         {place}
       </UiText>
-      <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3], marginTop: theme.space[1] }}>
+      <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3], marginTop: theme.space[3] }}>
         <View style={[track, { flex: 1, overflow: 'hidden' }]} testID={`${testID}-track`}>
           <View style={[track, { backgroundColor: theme.colors.onBrandSurface, opacity: TRACK_OPACITY }, StyleSheet.absoluteFill]} />
           <View style={[track, { backgroundColor: theme.colors.gold, width: `${percent}%` }]} testID={`${testID}-progress`} />
         </View>
-        <UiText tone="onBrand" variant="label">
+        <UiText tone="onBrand" variant="caption" weight={600}>
           {t('home.resume')}
         </UiText>
       </View>

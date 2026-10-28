@@ -4,12 +4,27 @@ import type { SqlExecutor, SqlValue } from '@/core/db/sql-executor';
 
 import { packUrl, type ChangesQuery, type ChangesResult, type ManifestResult } from '../api/content';
 import { columnList, contentGroup, type ContentColumn, type ContentGroupSchema, type ContentTable } from './content-tables';
+import { onDemandResourceIds } from './on-demand';
+
+export type PackDownloadOptions = {
+  /** Fraction 0..1 of the download, when the platform reports bytes. */
+  onProgress?: (fraction: number) => void;
+  signal?: AbortSignal;
+};
 
 export type ContentApi = {
   getManifest: (etag?: string) => Promise<ManifestResult>;
   getChanges: (query: ChangesQuery) => Promise<ChangesResult>;
-  downloadPack: (url: string, toPath: string) => Promise<void>;
+  downloadPack: (url: string, toPath: string, options?: PackDownloadOptions) => Promise<void>;
 };
+
+/** A pack download failed before any bytes were trusted. Used to tell network errors from import errors. */
+export class PackDownloadError extends Error {
+  constructor(message: string) {
+    super(message);
+    Object.setPrototypeOf(this, PackDownloadError.prototype);
+  }
+}
 
 export type FileStore = {
   cacheDir: string;
@@ -91,8 +106,12 @@ export async function syncContent(deps: ContentSyncDeps): Promise<ContentSyncRep
   let retryable = false;
   // Groups without a device schema (for example the retired translations) are ignored, not failed.
   const resources = manifest.manifest.resources.filter((resource) => contentGroup(resource.group) !== undefined);
-  const selected = new Set(deps.selection(resources));
   const published = new Set(resources.map((resource) => resource.id));
+  // Tafsirs installed on demand stay selected, even though the reader's tafsir choice drops the others.
+  const selected = new Set([
+    ...deps.selection(resources),
+    ...onDemandResourceIds(deps.db).filter((id) => published.has(id)),
+  ]);
 
   for (const installed of listInstalled(deps.db)) {
     if (published.has(installed.resourceId) && selected.has(installed.resourceId)) {
@@ -236,20 +255,37 @@ function applyChange(db: SqlExecutor, group: ContentGroupSchema, resourceId: num
   db.run(`INSERT OR REPLACE INTO ${table.name} (${names}) VALUES (${placeholders})`, bindRow(table, change.payload));
 }
 
-async function importPack(
-  deps: ContentSyncDeps,
+/**
+ * The shared pack path: download, verify the SHA-256, gunzip and import into content.db.
+ * Temp files are removed on every outcome, so a cancelled or failed install leaves nothing behind.
+ */
+export async function importPack(
+  deps: Omit<ContentSyncDeps, 'selection'>,
   resource: ContentManifestResource,
   checkedAt: number,
+  options?: PackDownloadOptions,
 ): Promise<'pack-imported' | 'skipped'> {
   const gzipPath = packPath(deps.files.cacheDir, resource.id, resource.version, 'sqlite.gz');
   const sqlitePath = packPath(deps.files.cacheDir, resource.id, resource.version, 'sqlite');
 
   try {
-    await deps.api.downloadPack(packUrl(resource.pack.url), gzipPath);
+    try {
+      const url = packUrl(resource.pack.url);
+      if (options === undefined) {
+        await deps.api.downloadPack(url, gzipPath);
+      } else {
+        await deps.api.downloadPack(url, gzipPath, options);
+      }
+    } catch (error) {
+      throw new PackDownloadError(errorReason(error));
+    }
     const gzipped = await deps.files.readBytes(gzipPath);
     const actual = await deps.sha256(gzipped);
     if (actual !== resource.pack.sha256) {
       return 'skipped';
+    }
+    if (options?.signal?.aborted) {
+      throw new Error('Pack install was cancelled.');
     }
     await deps.files.writeBytes(sqlitePath, deps.gunzip(gzipped));
     copyPack(deps.db, databasePath(sqlitePath), resource, checkedAt);
@@ -338,7 +374,7 @@ function upsertInstalled(db: SqlExecutor, resource: ContentManifestResource, che
  * Rewrites the device catalogue from a manifest read and refreshes the display
  * names of installed resources, so a renamed resource does not need a pack download.
  */
-function writeCatalog(db: SqlExecutor, resources: readonly ContentManifestResource[]): void {
+export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifestResource[]): void {
   db.transaction(() => {
     db.run('DELETE FROM catalog_resources');
     for (const resource of resources) {

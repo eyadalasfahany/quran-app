@@ -4,13 +4,16 @@ import { useTranslation } from 'react-i18next';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { SectionScreen } from '@/core/layout';
+import { useTheme } from '@/core/theme';
 import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
+import { SearchButton } from '@/shared/ui';
 
 export function HomeScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
 
@@ -32,7 +35,7 @@ export function HomeScreen() {
   }, [lastReadVerseKey, ready]);
 
   return (
-    <SectionScreen testID="screen-home" title={t('tabs.home')}>
+    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={<SearchButton testID="home-search" />}>
       {continueReading ? (
         <ContinueReadingCard
           ayah={continueReading.verse.verseNumber}

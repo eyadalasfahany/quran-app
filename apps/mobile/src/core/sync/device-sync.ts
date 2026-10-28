@@ -5,7 +5,8 @@ import { gunzipSync } from 'fflate';
 import { openContentDb } from '@/core/db/content/open';
 
 import { getChanges, getManifest } from '../api/content';
-import { syncContent, type ContentSyncReport, type FileStore } from './content-sync';
+import { syncContent, type ContentSyncDeps, type ContentSyncReport, type FileStore, type PackDownloadOptions } from './content-sync';
+import { installResourceWith, type InstallOptions, type InstallResult } from './install-resource';
 import { selectedResourceIds } from './selection';
 
 export function expoFileStore(): FileStore {
@@ -33,10 +34,18 @@ export function expoFileStore(): FileStore {
   };
 }
 
-export async function downloadPack(url: string, toPath: string): Promise<void> {
+export async function downloadPack(url: string, toPath: string, options: PackDownloadOptions = {}): Promise<void> {
   const destination = new File(toPath);
   ensureParent(destination.parentDirectory);
-  await File.downloadFileAsync(url, destination, { idempotent: true });
+  const { onProgress, signal } = options;
+  await File.downloadFileAsync(url, destination, {
+    idempotent: true,
+    signal,
+    onProgress:
+      onProgress === undefined
+        ? undefined
+        : ({ bytesWritten, totalBytes }) => onProgress(totalBytes > 0 ? bytesWritten / totalBytes : 0),
+  });
 }
 
 export async function sha256Bytes(bytes: Uint8Array): Promise<string> {
@@ -56,9 +65,9 @@ export function gunzipPack(bytes: Uint8Array): Uint8Array {
   return gunzipSync(bytes);
 }
 
-export async function runDeviceContentSync(): Promise<ContentSyncReport> {
+function deviceContentDeps(): ContentSyncDeps {
   const { executor } = openContentDb();
-  return syncContent({
+  return {
     db: executor,
     api: { getManifest, getChanges, downloadPack },
     files: expoFileStore(),
@@ -66,7 +75,16 @@ export async function runDeviceContentSync(): Promise<ContentSyncReport> {
     gunzip: gunzipPack,
     now: () => Date.now(),
     selection: selectedResourceIds,
-  });
+  };
+}
+
+export async function runDeviceContentSync(): Promise<ContentSyncReport> {
+  return syncContent(deviceContentDeps());
+}
+
+/** Installs one catalogue resource on demand. Concurrent calls for the same id share one promise. */
+export function installResource(resourceId: number, options: InstallOptions = {}): Promise<InstallResult> {
+  return installResourceWith(deviceContentDeps(), resourceId, options);
 }
 
 function ensureParent(directory: Directory): void {

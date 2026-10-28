@@ -6,7 +6,8 @@ import { useTheme } from '@/core/theme';
 // Reading and Focus cap the text column at about 720 (spec §4).
 export const CONTENT_COLUMN_MAX_WIDTH = 720;
 
-export function ContentColumn({ children }: { children: ReactNode }) {
+// The side gutter defaults to space[6] (24). Home and the surah index pass their frame's gutter.
+export function ContentColumn({ children, gutter }: { children: ReactNode; gutter?: number }) {
   const theme = useTheme();
 
   return (
@@ -15,7 +16,7 @@ export function ContentColumn({ children }: { children: ReactNode }) {
         alignSelf: 'center',
         flex: 1,
         maxWidth: CONTENT_COLUMN_MAX_WIDTH,
-        paddingHorizontal: theme.space[6],
+        paddingHorizontal: gutter ?? theme.space[6],
         width: '100%',
       }}
     >

@@ -2,7 +2,8 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-import { ThemeProvider } from '@/core/theme';
+import { ThemeProvider, themes } from '@/core/theme';
+import type { HighlightColor } from '@/features/library/data/model';
 
 import { openReaderTestContent } from '../../../jest/reader-test-db';
 import { flatStyle, renderUi } from '../../../jest/render-ui';
@@ -14,6 +15,7 @@ import { resolveCenterId, verseWindowBounds } from './reading-window';
 type FlashListTestState = {
   scrollCalls: { index: number; animated?: boolean }[];
   lastData: ReadingRow[] | undefined;
+  lastExtraData: unknown;
   onViewableItemsChanged:
     | ((info: { viewableItems: { item: unknown; index: number; isViewable: boolean; key: string }[] }) => void)
     | undefined;
@@ -22,6 +24,7 @@ type FlashListTestState = {
 const flashListTestState: FlashListTestState = {
   scrollCalls: [],
   lastData: undefined,
+  lastExtraData: undefined,
   onViewableItemsChanged: undefined,
 };
 
@@ -32,6 +35,7 @@ jest.mock('@shopify/flash-list', () => {
     (
       {
         data,
+        extraData,
         renderItem,
         onEndReached,
         onStartReached,
@@ -39,6 +43,7 @@ jest.mock('@shopify/flash-list', () => {
         ...rest
       }: {
         data?: ReadingRow[];
+        extraData?: unknown;
         renderItem: (info: { item: unknown; index: number }) => React.ReactNode;
         onEndReached?: () => void;
         onStartReached?: () => void;
@@ -51,6 +56,7 @@ jest.mock('@shopify/flash-list', () => {
       const state = require('./ReadingList.test').flashListTestState as FlashListTestState;
 
       state.lastData = data;
+      state.lastExtraData = extraData;
       state.onViewableItemsChanged = onViewableItemsChanged;
 
       React.useImperativeHandle(ref, () => ({
@@ -99,6 +105,7 @@ beforeAll(async () => {
 beforeEach(() => {
   flashListTestState.scrollCalls.length = 0;
   flashListTestState.lastData = undefined;
+  flashListTestState.lastExtraData = undefined;
   flashListTestState.onViewableItemsChanged = undefined;
 });
 
@@ -268,5 +275,57 @@ describe('ReadingList', () => {
 
     fireEvent.press(view.getByTestId('list-ayah-18:10'));
     expect(onSelectVerseKey).toHaveBeenCalledWith('18:10');
+  });
+
+  // FlashList repaints rows only when extraData changes, so the list must hand it the colours and selection.
+  it('repaints a row with its new colour when the highlights change', async () => {
+    const verse = getVerseByKey(mockTestExecutor, '18:10');
+    const list = (highlights: ReadonlyMap<number, HighlightColor>) => (
+      <ReadingList
+        anchorVerseKey="18:10"
+        highlightsByVerseId={highlights}
+        mode="reading"
+        onOpenAyahActions={() => undefined}
+        onSelectVerseKey={() => undefined}
+        testID="list"
+      />
+    );
+    const view = await renderUi(list(new Map()));
+    await waitFor(() => {
+      expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
+    });
+    const before = flashListTestState.lastExtraData;
+
+    view.rerender(<ThemeProvider name="light">{list(new Map([[verse!.id, 'green']]))}</ThemeProvider>);
+
+    await waitFor(() => {
+      expect(flashListTestState.lastExtraData).not.toBe(before);
+      expect(flatStyle(view.getByText(verse!.textUthmani).parent!.props.style).backgroundColor).toBe(
+        themes.light.colors.highlightGreen,
+      );
+    });
+  });
+
+  it('passes the selected ayah through extraData so the selection repaints', async () => {
+    const list = (selectedVerseKey: string | null) => (
+      <ReadingList
+        anchorVerseKey="18:10"
+        mode="reading"
+        onOpenAyahActions={() => undefined}
+        onSelectVerseKey={() => undefined}
+        selectedVerseKey={selectedVerseKey}
+        testID="list"
+      />
+    );
+    const view = await renderUi(list(null));
+    await waitFor(() => {
+      expect(view.getByTestId('list-ayah-18:10')).toBeOnTheScreen();
+    });
+
+    view.rerender(<ThemeProvider name="light">{list('18:10')}</ThemeProvider>);
+
+    await waitFor(() => {
+      expect(flashListTestState.lastExtraData).toMatchObject({ selectedVerseKey: '18:10' });
+    });
   });
 });
