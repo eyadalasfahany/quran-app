@@ -11,7 +11,27 @@ export function ayahShareText(textUthmani: string, verseNumber: number, referenc
 }
 
 // Hebrew, Arabic, Syriac, Thaana, NKo and the Arabic presentation forms.
-const rtlStrong = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/u;
+/**
+ * The name a tafsir shows in the interface language: its Arabic name in Arabic and its English
+ * name in English, falling back to the other one, then to the caller's placeholder.
+ */
+export function tafsirDisplayName(
+  names: { name: string | null; nameAr: string | null },
+  locale: 'ar' | 'en',
+  fallback: string,
+): string {
+  const primary = locale === 'ar' ? names.nameAr : names.name;
+  const secondary = locale === 'ar' ? names.name : names.nameAr;
+  if (primary !== null && primary.trim() !== '') {
+    return primary;
+  }
+  if (secondary !== null && secondary.trim() !== '') {
+    return secondary;
+  }
+  return fallback;
+}
+
+const rtlStrong =/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/u;
 const ltrStrong = /[A-Za-z\u00C0-\u024F\u0370-\u03FF\u0400-\u04FF]/u;
 
 /** Direction of the first strong character, so a field follows what the reader types. */

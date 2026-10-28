@@ -1,4 +1,4 @@
-export { useBookmarks, useHighlights, useNotes } from './hooks';
+export { useBookmarks, useHighlights, useHighlightsByVerseId, useNotes } from './hooks';
 export {
   HighlightValidationError,
   NOTE_MAX_CHARACTERS,

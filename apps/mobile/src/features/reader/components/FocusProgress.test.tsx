@@ -40,10 +40,20 @@ describe('FocusProgress', () => {
     expect(onSelect.mock.calls).toEqual([[2]]);
   });
 
-  it.each(locales)('sits on the physical left edge in %s', async (locale) => {
+  it.each(locales)('sits on the trailing edge, 10 in from it, in %s', async (locale) => {
     const view = await renderUi(<FocusProgress verseNumber={5} versesCount={7} />, { locale });
+    const style = flatStyle(view.getByTestId('focus-progress', hidden).props.style);
 
-    expect(flatStyle(view.getByTestId('focus-progress', hidden).props.style)).toMatchObject({ left: 10, position: 'absolute' });
+    expect(style).toMatchObject({ end: 10, position: 'absolute' });
+    expect(style).not.toHaveProperty('left');
+    expect(style).not.toHaveProperty('right');
+  });
+
+  it('spaces the marks 8 apart from one edge to the next', async () => {
+    const view = await renderUi(<FocusProgress verseNumber={5} versesCount={7} />);
+
+    expect(flatStyle(view.getByTestId('focus-progress', hidden).props.style)).toMatchObject({ gap: 8 });
+    expect(flatStyle(view.getByTestId('focus-progress-page-5', hidden).props.style)).toMatchObject({ width: 6 });
   });
 
   it('is hidden from screen readers, which page with the transport instead', async () => {

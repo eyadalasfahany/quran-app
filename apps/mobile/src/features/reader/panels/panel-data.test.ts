@@ -51,8 +51,18 @@ describe('panel data', () => {
     expect(loadTafsirPassage(db, 99, verse)).toBeNull();
   });
 
-  it('lists installed tafsirs', () => {
-    expect(loadTafsirOptions(db, (id) => `Tafsir ${id}`)).toEqual([{ authorName: null, name: 'Tafsir 16', resourceId: 16 }]);
+  it('lists installed tafsirs with their names, author and direction', () => {
+    expect(loadTafsirOptions(db)).toEqual([
+      { authorName: null, direction: null, name: null, nameAr: null, resourceId: 16 },
+    ]);
+
+    db.run(
+      'UPDATE installed_resources SET name = ?, name_ar = ?, author_name = ?, direction = ? WHERE resource_id = ?',
+      ['Al-Muyassar', 'التفسير الميسر', 'نخبة من العلماء', 'rtl', 16],
+    );
+    expect(loadTafsirOptions(db)).toEqual([
+      { authorName: 'نخبة من العلماء', direction: 'rtl', name: 'Al-Muyassar', nameAr: 'التفسير الميسر', resourceId: 16 },
+    ]);
   });
 
   it('reads the ayah bookmark, highlight and latest note from user.db', () => {

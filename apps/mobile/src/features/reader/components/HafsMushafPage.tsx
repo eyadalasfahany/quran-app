@@ -2,8 +2,17 @@ import { Fragment, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, View, type HostInstance } from 'react-native';
 
+import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { AyahEndMark, GoldFrame, QuranText, SurahCartouche, useContrastColors } from '@/shared/ui';
+import {
+  AyahEndMark,
+  GoldFrame,
+  highlightFill,
+  QuranText,
+  SurahCartouche,
+  useContrastColors,
+  type HighlightColor,
+} from '@/shared/ui';
 
 import type { ChapterRecord } from '../data/chapters';
 import type { VerseRecord } from '../data/verses';
@@ -25,6 +34,7 @@ export function HafsMushafPage({
   chapters,
   fontScale = 1,
   selectedVerseKey = null,
+  highlightsByVerseId,
   onPressVerse,
   onOpenActions,
   focusVerseKey = null,
@@ -35,6 +45,8 @@ export function HafsMushafPage({
   chapters: ReadonlyMap<number, ChapterRecord>;
   fontScale?: number;
   selectedVerseKey?: string | null;
+  /** The reader's saved highlight colour per verse id. */
+  highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onPressVerse?: (verseKey: string) => void;
   onOpenActions?: (verseKey: string) => void;
   /** The ayah the reader opened at. The surah paragraph holding it reports its view once laid out. */
@@ -42,7 +54,8 @@ export function HafsMushafPage({
   onFocusRunLayout?: (run: HostInstance | null) => void;
   testID?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const focusRunRef = useRef<HostInstance>(null);
   const theme = useTheme();
   const colors = useContrastColors();
@@ -85,13 +98,22 @@ export function HafsMushafPage({
             >
               {run.map((verse, index) => {
                 const selected = selectedVerseKey === verse.verseKey;
+                // The reader's highlight colour fills the ayah; the selection wash shows only without one (ADR 0012).
+                const highlight = highlightsByVerseId?.get(verse.id) ?? null;
+                const background = highlightFill(colors, highlight) ?? (selected ? colors.highlightActive : undefined);
+                const ayahLabel = t('ui.ayahNumber', { number: formatNumber(verse.verseNumber, locale) });
+                const accessibilityLabel =
+                  highlight === null
+                    ? `${verse.textUthmani} ${ayahLabel}`
+                    : `${verse.textUthmani} ${ayahLabel} ${t(`ui.highlight.${highlight}`)}`;
                 return (
                   <Fragment key={verse.id}>
                     {index > 0 ? WORD_SPACE : null}
                     <Text
+                      accessibilityLabel={accessibilityLabel}
                       onLongPress={onOpenActions ? () => onOpenActions(verse.verseKey) : undefined}
                       onPress={onPressVerse ? () => onPressVerse(verse.verseKey) : undefined}
-                      style={selected ? { backgroundColor: colors.highlightActive } : null}
+                      style={background === undefined ? null : { backgroundColor: background }}
                       testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
                     >
                       {verse.textUthmani}

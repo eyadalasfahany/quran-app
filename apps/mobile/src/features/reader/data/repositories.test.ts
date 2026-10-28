@@ -11,7 +11,7 @@ import { applyContentMigrations } from '../../../../jest/apply-content-migration
 import { openNodeSqlite } from '../../../../jest/node-sqlite-executor';
 import { getChapter, listChapters } from './chapters';
 import { getMushafPage, isPageInstalled } from './mushaf';
-import { getTafsirForVerse, listInstalledTafsirs } from './tafsir';
+import { getTafsirForVerse, listCatalogTafsirs, listInstalledTafsirs } from './tafsir';
 import { getVerseByKey, getVerseRange, getVersesByPage, getVersesBySurah, idToVerseKey, verseKeyToId } from './verses';
 import { getWords } from './words';
 
@@ -265,6 +265,58 @@ describe('tafsir', () => {
         sha256: SHA_TAFSIR,
         lastCheckedAt: CHECKED_AT,
         changeCursor: null,
+        name: null,
+        nameAr: null,
+        authorName: null,
+        languageCode: null,
+        direction: null,
+      },
+    ]);
+  });
+
+  it('reads the stored names of installed tafsirs and the Arabic catalogue with installed flags', () => {
+    executor.run(
+      'UPDATE installed_resources SET name = ?, name_ar = ?, author_name = ?, language_code = ?, direction = ? WHERE resource_id = ?',
+      ['Ibn Kathir', 'تفسير ابن كثير', 'Ibn Kathir', 'ar', 'rtl', TAFSIR_ID],
+    );
+    const insertCatalog =
+      'INSERT INTO catalog_resources (resource_id, "group", name, name_ar, author_name, language_code, direction, version, pack_size_bytes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    executor.run(insertCatalog, [TAFSIR_ID, 'tafsirs', 'Ibn Kathir', 'تفسير ابن كثير', 'Ibn Kathir', 'ar', 'rtl', 3, 4096]);
+    executor.run(insertCatalog, [170, 'tafsirs', "Al-Sa'di", 'تفسير السعدي', null, 'ar', 'rtl', 1, 2048]);
+    executor.run(insertCatalog, [MUSHAF_RESOURCE, 'mushafs', 'Uthmani', null, null, 'ar', 'rtl', 1, 8]);
+
+    expect(listInstalledTafsirs(executor)).toEqual([
+      expect.objectContaining({
+        resourceId: TAFSIR_ID,
+        name: 'Ibn Kathir',
+        nameAr: 'تفسير ابن كثير',
+        authorName: 'Ibn Kathir',
+        languageCode: 'ar',
+        direction: 'rtl',
+      }),
+    ]);
+    expect(listCatalogTafsirs(executor)).toEqual([
+      {
+        resourceId: TAFSIR_ID,
+        name: 'Ibn Kathir',
+        nameAr: 'تفسير ابن كثير',
+        authorName: 'Ibn Kathir',
+        languageCode: 'ar',
+        direction: 'rtl',
+        version: 3,
+        packSizeBytes: 4096,
+        installed: true,
+      },
+      {
+        resourceId: 170,
+        name: "Al-Sa'di",
+        nameAr: 'تفسير السعدي',
+        authorName: null,
+        languageCode: 'ar',
+        direction: 'rtl',
+        version: 1,
+        packSizeBytes: 2048,
+        installed: false,
       },
     ]);
   });

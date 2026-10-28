@@ -49,7 +49,8 @@ export function ReadingAyahRow({
       ? `${labelText} ${ayahLabel}`
       : `${labelText} ${ayahLabel} ${t(`ui.highlight.${highlightColor}`)}`;
 
-  const quranBackground = active ? colors.highlightActive : (highlightFill(colors, highlightColor) ?? 'transparent');
+  // The user's colour wins the fill; the selection wash shows only on an ayah without one (ADR 0012).
+  const quranBackground = highlightFill(colors, highlightColor) ?? (active ? colors.highlightActive : 'transparent');
 
   // The header's buttons sit outside the text's Pressable, so each one stays reachable by screen readers.
   return (

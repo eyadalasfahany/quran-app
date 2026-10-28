@@ -1,6 +1,6 @@
-import { renderHook } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
 
-import { useBookmarks, useHighlights, useNotes } from './hooks';
+import { useBookmarks, useHighlights, useHighlightsByVerseId, useNotes } from './hooks';
 
 type CapturedQuery = {
   sql: string;
@@ -9,12 +9,14 @@ type CapturedQuery = {
 };
 
 const mockQueries: CapturedQuery[] = [];
+// The rows the next live-query render sees; the highlight tests swap them to mimic a write.
+let mockLiveRows: unknown[] = [];
 
 jest.mock('drizzle-orm/expo-sqlite', () => ({
   useLiveQuery: (query: { toSQL: () => { sql: string; params: unknown[] } }, deps?: unknown[]) => {
     const built = query.toSQL();
     mockQueries.push({ sql: built.sql, params: built.params, deps });
-    return { data: [], error: undefined, updatedAt: undefined };
+    return { data: mockLiveRows, error: undefined, updatedAt: undefined };
   },
 }));
 
@@ -34,6 +36,61 @@ jest.mock('@/core/db/user/open', () => {
 describe('user data hooks', () => {
   beforeEach(() => {
     mockQueries.length = 0;
+    mockLiveRows = [];
+  });
+
+  it('maps every live highlight to its verse, and keeps the map until the rows change', async () => {
+    const rows = [
+      { id: 'a', verseId: 2, color: 'gold', clientUpdatedAt: 1 },
+      { id: 'b', verseId: 5, color: 'rose', clientUpdatedAt: 2 },
+    ];
+    mockLiveRows = rows;
+    const view = await renderHook((_props: { tick: number }) => useHighlightsByVerseId(), {
+      initialProps: { tick: 0 },
+    });
+
+    expect(view.result.current).toEqual(
+      new Map([
+        [2, 'gold'],
+        [5, 'rose'],
+      ]),
+    );
+    expect(mockQueries.at(-1)?.sql.toLowerCase()).toContain('deleted_at');
+
+    const first = view.result.current;
+    await act(async () => {
+      await view.rerender({ tick: 1 });
+    });
+    expect(view.result.current).toBe(first);
+  });
+
+  it('updates the map when a highlight is set, changed or cleared', async () => {
+    mockLiveRows = [{ id: 'a', verseId: 2, color: 'gold', clientUpdatedAt: 1 }];
+    // A changing prop makes each rerender run the hook again.
+    const view = await renderHook((_props: { tick: number }) => useHighlightsByVerseId(), {
+      initialProps: { tick: 0 },
+    });
+
+    mockLiveRows = [
+      { id: 'a', verseId: 2, color: 'green', clientUpdatedAt: 3 },
+      { id: 'c', verseId: 9, color: 'blue', clientUpdatedAt: 4 },
+    ];
+    await act(async () => {
+      await view.rerender({ tick: 1 });
+    });
+    expect(view.result.current).toEqual(
+      new Map([
+        [2, 'green'],
+        [9, 'blue'],
+      ]),
+    );
+
+    mockLiveRows = [{ id: 'c', verseId: 9, color: 'blue', clientUpdatedAt: 4 }];
+    await act(async () => {
+      await view.rerender({ tick: 2 });
+    });
+    expect(view.result.current.has(2)).toBe(false);
+    expect(view.result.current.get(9)).toBe('blue');
   });
 
   it('watches live bookmarks, highlights and notes', async () => {

@@ -35,6 +35,7 @@ final class ContentManifestEntryResource extends JsonResource
             'id' => $this->resource->id,
             'group' => ServedResourceGroup::fromResourceGroup($this->resource->group),
             'name' => $this->resource->name,
+            'name_ar' => $this->resource->nameAr,
             'author_name' => $this->resource->authorName,
             'language_code' => $this->resource->languageCode,
             'direction' => $this->resource->direction?->value,

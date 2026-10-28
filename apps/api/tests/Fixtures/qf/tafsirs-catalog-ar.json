@@ -1,0 +1,37 @@
+{
+  "tafsirs": [
+    {
+      "id": 169,
+      "name": "Ibn Kathir",
+      "author_name": "Ibn Kathir",
+      "slug": "ibn-kathir",
+      "language_name": "english",
+      "translated_name": {
+        "name": "تفسير ابن كثير",
+        "language_name": "arabic"
+      }
+    },
+    {
+      "id": 170,
+      "name": "Al-Qurtubi",
+      "author_name": null,
+      "slug": "al-qurtubi",
+      "language_name": "arabic",
+      "translated_name": {
+        "name": "Al-Qurtubi",
+        "language_name": "english"
+      }
+    },
+    {
+      "id": 14,
+      "name": "Ibn Kathir (Urdu)",
+      "author_name": "Ibn Kathir",
+      "slug": "ibn-kathir-ur",
+      "language_name": "urdu",
+      "translated_name": {
+        "name": "تفسیر ابنِ کثیر",
+        "language_name": "arabic"
+      }
+    }
+  ]
+}

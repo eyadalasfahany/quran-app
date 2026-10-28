@@ -18,7 +18,24 @@ final class ContentCatalogClient
      */
     public function tafsirs(): array
     {
-        return $this->parser->catalog($this->api->get('/api/v4/resources/tafsirs'), 'tafsirs');
+        $entries = $this->parser->catalog($this->api->get('/api/v4/resources/tafsirs'), 'tafsirs');
+        $arabicNames = [];
+
+        foreach ($this->parser->catalog($this->api->get('/api/v4/resources/tafsirs', ['language' => 'ar']), 'tafsirs') as $arabic) {
+            $arabicNames[$arabic->id] = $arabic->nameAr;
+        }
+
+        return array_map(
+            static fn (CatalogEntry $entry): CatalogEntry => new CatalogEntry(
+                id: $entry->id,
+                name: $entry->name,
+                authorName: $entry->authorName,
+                languageName: $entry->languageName,
+                slug: $entry->slug,
+                nameAr: $arabicNames[$entry->id] ?? null,
+            ),
+            $entries,
+        );
     }
 
     /**

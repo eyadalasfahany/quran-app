@@ -57,7 +57,8 @@
       "play": "Play",
       "repeat": "Repeat the ayah 3 times",
       "repeatShort": "{{count}}×",
-      "memorize": "Test your memorization"
+      "memorize": "Test your memorization",
+      "memorizeLabel": "Test your\nmemory"
     },
     "sheet": {
       "label": "Ayah actions",

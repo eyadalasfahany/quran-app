@@ -8,6 +8,7 @@ function resource(
 ): ContentManifestResource {
   return {
     name: null,
+    name_ar: null,
     author_name: null,
     language_code: null,
     direction: null,

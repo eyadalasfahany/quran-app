@@ -18,9 +18,22 @@ import { ReaderScreen } from './ReaderScreen';
 // Only the tests that need content open it, so the others keep rendering the reader shell alone.
 let mockExecutor: SqlExecutor | undefined;
 
+// The user database is not open under Jest, so the screen's highlight hook is stubbed here.
+let mockHighlights: ReadonlyMap<number, 'gold' | 'green' | 'blue' | 'rose'> = new Map();
+jest.mock('@/features/library/data/hooks', () => ({
+  ...jest.requireActual<typeof import('@/features/library/data/hooks')>('@/features/library/data/hooks'),
+  useHighlightsByVerseId: () => mockHighlights,
+}));
+
 // The Mushaf list stands in for FlashList, which doesn't report visible pages under Jest; a test reports
 // them through the props it was given.
-let mockMushafProps: { anchorVerseKey: string; onVisiblePage?: (page: number, verseKey: string) => void } | undefined;
+let mockMushafProps:
+  | {
+      anchorVerseKey: string;
+      highlightsByVerseId?: ReadonlyMap<number, string>;
+      onVisiblePage?: (page: number, verseKey: string) => void;
+    }
+  | undefined;
 jest.mock('../HafsMushafList', () => {
   const { createElement } = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -79,6 +92,18 @@ describe('ReaderScreen', () => {
     expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:255');
     expect(storage.getString(storageKeys.readerMode)).toBe('focus');
     expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:255');
+  });
+
+  it('passes the saved highlights to the Mushaf list', async () => {
+    const { executor } = await openReaderTestContent();
+    mockExecutor = executor;
+    mockHighlights = new Map([[1, 'green']]);
+    useReaderSettings.getState().setMode('mushaf');
+
+    await renderUi(reader());
+
+    expect(mockMushafProps?.highlightsByVerseId).toBe(mockHighlights);
+    mockHighlights = new Map();
   });
 
   it('draws only the Focus chrome in Focus, with the position of the Focus ayah, and drops the resume pill', async () => {

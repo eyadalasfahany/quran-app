@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { getTableColumns } from 'drizzle-orm';
 
-import { chapters, meta, verses, words } from '@/core/db/content/schema';
+import { catalogResources, chapters, installedResources, meta, verses, words } from '@/core/db/content/schema';
 import { importSeedIfNeeded, type SeedSource } from '@/core/db/content/seed';
 import { CHAPTER_COLUMNS, META_COLUMNS, SEED_TABLES, VERSE_COLUMNS, WORD_COLUMNS } from '@/core/db/content/seed-schema';
 import { getVerse, getVersesByPage } from '@/core/db/content/verses';
@@ -189,6 +189,34 @@ describe('content migrations', () => {
       expect(names).toEqual(expect.arrayContaining([...SEED_TABLES, 'search_quran']));
       expect(names).not.toContain('translation_entries');
       expect(count(database, 'verses')).toBe(0);
+    } finally {
+      database.close();
+    }
+  });
+});
+
+describe('resource names migration (0004)', () => {
+  it('adds the name columns to installed_resources and creates the catalogue', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      applyContentMigrations(executor, migrationsDir);
+      expect(columnNames(database, 'installed_resources')).toEqual(drizzleColumnNames(installedResources));
+      expect(columnNames(database, 'installed_resources')).toEqual(
+        expect.arrayContaining(['name', 'name_ar', 'author_name', 'language_code', 'direction']),
+      );
+      expect(columnNames(database, 'catalog_resources')).toEqual([
+        'resource_id',
+        'group',
+        'name',
+        'name_ar',
+        'author_name',
+        'language_code',
+        'direction',
+        'version',
+        'pack_size_bytes',
+      ]);
+      expect(columnNames(database, 'catalog_resources')).toEqual(drizzleColumnNames(catalogResources));
+      expect(count(database, 'catalog_resources')).toBe(0);
     } finally {
       database.close();
     }

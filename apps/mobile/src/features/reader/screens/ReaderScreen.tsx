@@ -8,7 +8,7 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useWindowClass } from '@/core/layout';
-import { listBookmarks, toggleBookmark } from '@/features/library/data';
+import { listBookmarks, toggleBookmark, useHighlightsByVerseId } from '@/features/library/data';
 import { Screen } from '@/shared/ui';
 
 import { resolveInitialAnchor, writeReadingAnchor } from '../anchor/reading-anchor';
@@ -70,6 +70,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const mode = useReaderSettings((state) => state.mode);
   const fontScale = useReaderSettings((state) => state.fontScale);
   const selection = useReaderSelection();
+  const highlights = useHighlightsByVerseId();
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
   const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
@@ -273,6 +274,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 anchorVerseKey={listAnchor}
                 bottomInset={0}
                 fontScale={fontScale}
+                highlightsByVerseId={highlights}
                 onOpenAyahActions={selectVerse}
                 onSelectVerseKey={selectVerse}
                 onVisiblePage={(page, key) => {
@@ -290,6 +292,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
             {executor !== null && mode === 'focus' ? (
               <FocusReader
                 fontScale={fontScale}
+                highlightsByVerseId={highlights}
                 onOpenActions={selectVerse}
                 onVerseChange={(key) => {
                   setPinnedVerseKey(key);
@@ -304,6 +307,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 anchorVerseKey={listAnchor}
                 bottomInset={0}
                 fontScale={fontScale}
+                highlightsByVerseId={highlights}
                 horizontalGutter={gutter}
                 mode="reading"
                 onOpenAyahActions={selectVerse}

@@ -4,7 +4,7 @@ import { View, type HostInstance } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import type { SqlExecutor } from '@/core/db/sql-executor';
-import { PageDivider } from '@/shared/ui';
+import { PageDivider, type HighlightColor } from '@/shared/ui';
 
 import type { ChapterRecord } from '../data/chapters';
 import { getVersesByPage } from '../data/verses';
@@ -17,6 +17,7 @@ export function HafsPage({
   chapters,
   fontScale,
   selectedVerseKey,
+  highlightsByVerseId,
   onSelectVerseKey,
   onOpenAyahActions,
   focusVerseKey = null,
@@ -28,6 +29,7 @@ export function HafsPage({
   chapters: ReadonlyMap<number, ChapterRecord>;
   fontScale: number;
   selectedVerseKey: string | null;
+  highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
   /** The ayah the reader opened at, when it is on this page. */
@@ -60,6 +62,7 @@ export function HafsPage({
         chapters={chapters}
         focusVerseKey={focusVerseKey}
         fontScale={fontScale}
+        highlightsByVerseId={highlightsByVerseId}
         onFocusRunLayout={measureFocus}
         onOpenActions={onOpenAyahActions}
         onPressVerse={onSelectVerseKey}

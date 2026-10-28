@@ -50,6 +50,19 @@ describe('FocusTransport', () => {
     expect(flatStyle(view.getByTestId('focus-transport-next').props.style).width).toBe(theme.size.touchTarget);
   });
 
+  it('breaks the memorize label onto two lines in Arabic, as the frame does', async () => {
+    const view = await renderUi(<FocusTransport />, { locale: 'ar' });
+    const label = view.getByText('اختبر\nحفظك');
+
+    expect(flatStyle(label.props.style)).toMatchObject({ fontSize: 13, lineHeight: theme.size.focusLabelLineHeight });
+  });
+
+  it('sets the transport labels in the 600 weight face', async () => {
+    const view = await renderUi(<FocusTransport />, { locale: 'en' });
+
+    expect(flatStyle(view.getByText('3×').props.style).fontFamily).toBe('IBMPlexSansArabic-SemiBold');
+  });
+
   it.each(locales)('keeps the up and down chevrons unflipped in %s', async (locale) => {
     const view = await renderUi(<FocusTransport onNext={() => undefined} onPrevious={() => undefined} />, { locale });
 

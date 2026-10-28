@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domains\Content\Data\SyncRunResult;
 use App\Domains\Content\Enums\ChangeOperation;
 use App\Domains\Content\Enums\ResourceGroup;
+use App\Domains\Content\Enums\SyncEnvironment;
 use App\Domains\Content\Enums\SyncRunStatus;
 use App\Domains\Content\Enums\TextDirection;
 use App\Domains\Content\Events\ResourceContentChanged;
@@ -14,6 +15,7 @@ use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Models\SyncRun;
 use App\Domains\Content\Models\SyncState;
 use App\Domains\Content\Models\TafsirEntry;
+use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Domains\Content\Services\ContentSyncService;
 use App\Domains\Content\Sync\SyncException;
 use App\Integrations\QuranFoundation\ContentCatalogClient;
@@ -43,6 +45,8 @@ beforeEach(function (): void {
     config()->set('quran.qf.client_id', 'test-client-id');
     config()->set('quran.qf.client_secret', 'test-client-secret');
     config()->set('quran.qf.contact_email', 'ops@taybah.test');
+    // These tests cover sync mechanics with the English fixture tafsir. The Arabic-only rule has its own tests below.
+    config()->set('quran.tafsir_languages', ['english', 'arabic']);
 
     QuranFoundationFixture::forgetBindings();
     $this->seed(ContentSourceSeeder::class);
@@ -397,7 +401,88 @@ it('reads the tafsir catalog', function (): void {
         ->and($entries[0]->languageName)->toBe('english')
         ->and($entries[0]->slug)->toBe('ibn-kathir')
         ->and($entries[1]->authorName)->toBeNull()
-        ->and($entries[1]->languageName)->toBe('arabic');
+        ->and($entries[1]->languageName)->toBe('arabic')
+        ->and($entries[0]->nameAr)->toBe('تفسير ابن كثير')
+        ->and($entries[1]->nameAr)->toBeNull();
+});
+
+it('stores the catalogue Arabic name as received', function (): void {
+    syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
+
+    expect(Resource::query()->where('source_key', '169')->value('name_ar'))->toBe('تفسير ابن كثير');
+});
+
+it('deactivates a non-Arabic tafsir and syncs only the Arabic tafsir ids', function (): void {
+    config()->set('quran.tafsir_languages', ['arabic']);
+    $english = Resource::factory()->create([
+        'source_id' => app(ResourceRepository::class)->sourceId('qf'),
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '169',
+        'language_code' => 'en',
+        'is_active' => true,
+    ]);
+
+    syncTafsirs([]);
+
+    expect($english->fresh()->is_active)->toBeFalse();
+
+    Http::assertSent(function (Request $request): bool {
+        if (! str_contains($request->url(), '/api/v4/resources/sync?')) {
+            return false;
+        }
+
+        parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+
+        return ($query['resources'] ?? null) === 'tafsirs:170';
+    });
+});
+
+it('skips mutations for a tafsir that is not an Arabic tafsir', function (): void {
+    config()->set('quran.tafsir_languages', ['arabic']);
+
+    $result = syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
+
+    expect($result->mutationsApplied)->toBe(0)
+        ->and(Resource::query()->where('source_key', '169')->exists())->toBeFalse();
+});
+
+it('clears the stored token when the resolved tafsir filter changes to the Arabic tafsir', function (): void {
+    config()->set('quran.tafsir_languages', ['arabic']);
+    SyncState::query()->create([
+        'environment' => SyncEnvironment::Prelive,
+        'resource_group' => ResourceGroup::Tafsirs->value,
+        'resources_filter' => 'tafsirs:*',
+        'sync_token' => 'token-old',
+        'last_sequence' => 12,
+    ]);
+
+    $arabic = ['tafsirs' => [['id' => 926, 'name' => 'Muyassar', 'author_name' => null, 'slug' => 'muyassar', 'language_name' => 'arabic']]];
+
+    fakeFoundation([
+        CONTENT_API.'/api/v4/resources/tafsirs' => $arabic,
+        CONTENT_API.'/api/v4/resources/tafsirs?language=ar' => $arabic,
+        'sync' => syncPage([], 'token-new'),
+    ]);
+
+    $result = app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
+
+    $state = SyncState::query()->sole();
+
+    expect($result->mutationsApplied)->toBe(0)
+        ->and($state->resources_filter)->toBe('tafsirs:926')
+        ->and($state->sync_token)->toBe('token-new')
+        ->and($state->last_sequence)->toBe(0);
+
+    Http::assertSent(function (Request $request): bool {
+        if (! str_contains($request->url(), '/api/v4/resources/sync?')) {
+            return false;
+        }
+
+        parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+
+        return ($query['resources'] ?? null) === 'tafsirs:926'
+            && ! array_key_exists('sync_token', $query);
+    });
 });
 
 it('prints a sync summary and never the record text', function (): void {
@@ -501,6 +586,7 @@ function fakeFoundation(array $routes = []): void
                 ['id' => 170, 'name' => 'Al-Qurtubi', 'author_name' => null, 'slug' => 'al-qurtubi', 'language_name' => 'arabic'],
             ],
         ]),
+        CONTENT_API.'/api/v4/resources/tafsirs?language=ar' => Http::response(QuranFoundationFixture::load('tafsirs-catalog-ar.json')),
         CONTENT_API.'/api/v4/resources/snapshots/tafsirs/169' => Http::response(is_array($snapshot) ? $snapshot : []),
         CONTENT_API.'/api/v4/resources/sync*' => $sync instanceof ResponseSequence
             ? $sync

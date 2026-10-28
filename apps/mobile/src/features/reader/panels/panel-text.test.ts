@@ -1,4 +1,4 @@
-import { ayahShareText, textDirection } from './panel-text';
+import { ayahShareText, tafsirDisplayName, textDirection } from './panel-text';
 
 const AYAH_1_2 = 'ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ';
 
@@ -25,5 +25,24 @@ describe('textDirection', () => {
   it('falls back when there is no strong character', () => {
     expect(textDirection('123 …', 'rtl')).toBe('rtl');
     expect(textDirection('', 'ltr')).toBe('ltr');
+  });
+});
+
+describe('tafsirDisplayName', () => {
+  const both = { name: 'Al-Muyassar', nameAr: 'التفسير الميسر' };
+
+  it('shows the Arabic name in Arabic and the English name in English', () => {
+    expect(tafsirDisplayName(both, 'ar', 'تفسير 16')).toBe('التفسير الميسر');
+    expect(tafsirDisplayName(both, 'en', 'Tafsir 16')).toBe('Al-Muyassar');
+  });
+
+  it('falls back to the other name when the interface one is missing or blank', () => {
+    expect(tafsirDisplayName({ name: 'Al-Sa\'di', nameAr: null }, 'ar', 'تفسير 170')).toBe("Al-Sa'di");
+    expect(tafsirDisplayName({ name: ' ', nameAr: 'تفسير السعدي' }, 'en', 'Tafsir 170')).toBe('تفسير السعدي');
+  });
+
+  it('falls back to the placeholder when both names are null', () => {
+    expect(tafsirDisplayName({ name: null, nameAr: null }, 'ar', 'تفسير 16')).toBe('تفسير 16');
+    expect(tafsirDisplayName({ name: null, nameAr: null }, 'en', 'Tafsir 16')).toBe('Tafsir 16');
   });
 });

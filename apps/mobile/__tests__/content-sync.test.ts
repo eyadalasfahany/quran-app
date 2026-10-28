@@ -7,7 +7,13 @@ import { DatabaseSync } from 'node:sqlite';
 import { gzipSync, gunzipSync } from 'fflate';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
-import { syncContent, type ContentApi, type ContentSyncDeps, type FileStore } from '@/core/sync/content-sync';
+import {
+  catalogNeedsManifest,
+  syncContent,
+  type ContentApi,
+  type ContentSyncDeps,
+  type FileStore,
+} from '@/core/sync/content-sync';
 import { contentContract } from '@/core/sync/content-tables';
 
 import { applyContentMigrations } from '../jest/apply-content-migrations';
@@ -103,6 +109,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
   return {
     group: 'tafsirs',
     name: 'Test',
+    name_ar: null,
     author_name: null,
     language_code: 'ar',
     direction: 'rtl',
@@ -363,6 +370,7 @@ describe('content sync', () => {
     await withContentDb(async ({ executor, cacheDir }) => {
       installTafsir(executor, 85, 2, [{ groupTafsirId: 1, html: 'kept' }], 10);
       installTafsir(executor, 86, 1, [{ groupTafsirId: 1, html: 'also' }], 10);
+      seedCatalog(executor, [85, 86]);
       executor.run('INSERT INTO meta (key, value) VALUES (?, ?)', ['manifest_etag', '"same"']);
 
       const report = await syncContent({
@@ -388,6 +396,66 @@ describe('content sync', () => {
       expect(tafsirHtml(executor, 85, 1)).toBe('kept');
       expect(downloadPack).not.toHaveBeenCalled();
       expect(selection).not.toHaveBeenCalled();
+    });
+  });
+
+  it('with a stored ETag and a filled catalogue, a 304 leaves the catalogue as it is', async () => {
+    const downloadPack = jest.fn();
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'kept' }], 10);
+      seedCatalog(executor, [85]);
+      const before = catalogRows(executor);
+      executor.run('INSERT INTO meta (key, value) VALUES (?, ?)', ['manifest_etag', '"same"']);
+      const getManifest = jest.fn(async (_etag?: string) => ({ status: 304 as const }));
+
+      await syncContent(
+        await deps(executor, cacheDir, {
+          getManifest,
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        }),
+      );
+
+      expect(getManifest).toHaveBeenCalledWith('"same"');
+      expect(catalogRows(executor)).toEqual(before);
+      expect(catalogRows(executor)).toHaveLength(1);
+      expect(downloadPack).not.toHaveBeenCalled();
+    });
+  });
+
+  it('with a stored ETag and an empty catalogue, asks without If-None-Match and writes the catalogue from the 200', async () => {
+    const entry = resource({ id: 85, version: 1, name: 'Al-Muyassar', name_ar: 'التفسير الميسر' });
+    const published = manifest([entry], '"fresh"');
+    const downloadPack = jest.fn();
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'kept' }], 10);
+      executor.run('INSERT INTO meta (key, value) VALUES (?, ?)', ['manifest_etag', '"stale"']);
+      const getManifest = jest.fn(async (_etag?: string) => ({
+        status: 200 as const,
+        etag: published.etag,
+        manifest: published.body,
+      }));
+
+      await syncContent(
+        await deps(executor, cacheDir, {
+          getManifest,
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        }),
+      );
+
+      expect(getManifest).toHaveBeenCalledTimes(1);
+      expect(getManifest).toHaveBeenCalledWith(undefined);
+      expect(catalogRows(executor).map((row) => row.resourceId)).toEqual([85]);
+      expect(installedNames(executor, 85)).toMatchObject({ name: 'Al-Muyassar', nameAr: 'التفسير الميسر' });
+      expect(executor.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])?.value).toBe('"fresh"');
+      expect(downloadPack).not.toHaveBeenCalled();
     });
   });
 
@@ -443,7 +511,8 @@ describe('content sync', () => {
       expect(installedVersion(executor, 85)).toBe(1);
       expect(existsSync(join(cacheDir, 'packs', '85-2.sqlite.gz'))).toBe(false);
       expect(existsSync(join(cacheDir, 'packs', '85-2.sqlite'))).toBe(false);
-      expect(transactions()).toBe(0);
+      // Only the catalogue rewrite ran; the rejected pack opened no transaction.
+      expect(transactions()).toBe(1);
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
     });
   });
@@ -477,7 +546,8 @@ describe('content sync', () => {
       expect(report.resources[0]?.status).toBe('failed');
       expect(tafsirHtml(executor, 85, 1)).toBe('old');
       expect(installedVersion(executor, 85)).toBe(1);
-      expect(transactions()).toBe(1);
+      // Catalogue rewrite, then the pack import.
+      expect(transactions()).toBe(2);
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
     });
   });
@@ -548,7 +618,8 @@ describe('content sync', () => {
       expect(bytesOf(tafsirHtml(executor, 85, 1))).toEqual(bytesOf(EXACT));
       expect(tafsirHtml(executor, 85, 2)).toBeUndefined();
       expect(installedVersion(executor, 85)).toBe(5);
-      expect(transactions()).toBe(1);
+      // Catalogue rewrite, then the changes transaction.
+      expect(transactions()).toBe(2);
       expect(getChanges).toHaveBeenCalledTimes(2);
     });
   });
@@ -637,7 +708,8 @@ describe('content sync', () => {
       expect(report.resources).toEqual([{ resourceId: 85, status: 'pack-imported' }]);
       expect(tafsirHtml(executor, 85, 1)).toBe(EXACT);
       expect(installedVersion(executor, 85)).toBe(4);
-      expect(transactions()).toBe(1);
+      // Catalogue rewrite, then the pack fallback.
+      expect(transactions()).toBe(2);
       expect(getChanges).toHaveBeenCalledTimes(2);
     });
   });
@@ -753,6 +825,54 @@ describe('content sync', () => {
   });
 });
 
+describe('catalogNeedsManifest', () => {
+  it('is true while the catalogue is empty', async () => {
+    await withContentDb(async ({ executor }) => {
+      expect(catalogNeedsManifest(executor)).toBe(true);
+    });
+  });
+
+  it('is true when an installed resource has neither a name nor an Arabic name', async () => {
+    await withContentDb(async ({ executor }) => {
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'kept' }]);
+      seedCatalog(executor, [85]);
+      executor.run('UPDATE installed_resources SET name = NULL, name_ar = NULL WHERE resource_id = ?', [85]);
+
+      expect(catalogNeedsManifest(executor)).toBe(true);
+    });
+  });
+
+  it('is false when the catalogue is filled and every installed resource is named', async () => {
+    await withContentDb(async ({ executor }) => {
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'kept' }]);
+      seedCatalog(executor, [85]);
+
+      expect(catalogNeedsManifest(executor)).toBe(false);
+    });
+  });
+
+  it('is false when only the English name is missing', async () => {
+    await withContentDb(async ({ executor }) => {
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'kept' }]);
+      seedCatalog(executor, [85]);
+      executor.run('UPDATE installed_resources SET name = NULL WHERE resource_id = ?', [85]);
+
+      expect(catalogNeedsManifest(executor)).toBe(false);
+    });
+  });
+});
+
+function seedCatalog(executor: SqlExecutor, resourceIds: number[]): void {
+  for (const resourceId of resourceIds) {
+    executor.run(
+      `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, author_name, language_code, direction, version, pack_size_bytes)
+       VALUES (?, 'tafsirs', 'Test', 'اختبار', NULL, 'ar', 'rtl', 1, 1)`,
+      [resourceId],
+    );
+    executor.run('UPDATE installed_resources SET name = ?, name_ar = ? WHERE resource_id = ?', ['Test', 'اختبار', resourceId]);
+  }
+}
+
 function bytesOf(value: string | undefined): number[] {
   return [...new TextEncoder().encode(value ?? '')];
 }
@@ -780,3 +900,181 @@ async function deps(executor: SqlExecutor, cacheDir: string, api: ContentApi): P
     selection: () => [85],
   };
 }
+
+type CatalogRow = {
+  resourceId: number;
+  group: string;
+  name: string | null;
+  nameAr: string | null;
+  authorName: string | null;
+  languageCode: string | null;
+  direction: string | null;
+  version: number;
+  packSizeBytes: number;
+};
+
+function catalogRows(executor: SqlExecutor): CatalogRow[] {
+  return executor.all<CatalogRow>(
+    `SELECT resource_id AS resourceId, "group" AS "group", name, name_ar AS nameAr, author_name AS authorName,
+            language_code AS languageCode, direction, version, pack_size_bytes AS packSizeBytes
+     FROM catalog_resources ORDER BY resource_id`,
+  );
+}
+
+function installedNames(executor: SqlExecutor, resourceId: number): Omit<CatalogRow, 'resourceId' | 'group' | 'version' | 'packSizeBytes'> | undefined {
+  return executor.get(
+    `SELECT name, name_ar AS nameAr, author_name AS authorName, language_code AS languageCode, direction
+     FROM installed_resources WHERE resource_id = ?`,
+    [resourceId],
+  );
+}
+
+function downloadInto(bytes: Uint8Array): (url: string, toPath: string) => Promise<void> {
+  return async (_url, toPath) => {
+    mkdirSync(parentDir(toPath), { recursive: true });
+    writeFileSync(toPath, bytes);
+  };
+}
+
+describe('device catalogue and resource names', () => {
+  const originalUrl = process.env.EXPO_PUBLIC_API_URL;
+
+  beforeEach(() => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://localhost:8000';
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    if (originalUrl === undefined) {
+      delete process.env.EXPO_PUBLIC_API_URL;
+    } else {
+      process.env.EXPO_PUBLIC_API_URL = originalUrl;
+    }
+    jest.restoreAllMocks();
+  });
+
+  it('writes the manifest to the catalogue and the names to the installed tafsir', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const installed = resource({
+      id: 85,
+      name: 'Al-Muyassar',
+      name_ar: 'التفسير الميسر',
+      author_name: 'نخبة من العلماء',
+      language_code: 'ar',
+      direction: 'rtl',
+      version: 3,
+      pack: { url: '/api/v1/content/packs/85/3', size_bytes: bytes.byteLength, sha256: await sha256(bytes) },
+    });
+    const available = resource({
+      id: 170,
+      name: "Al-Sa'di",
+      name_ar: 'تفسير السعدي',
+      author_name: null,
+      language_code: 'ar',
+      direction: 'rtl',
+      version: 1,
+      pack: { url: '/api/v1/content/packs/170/1', size_bytes: 2048, sha256: 'unused' },
+    });
+    const published = manifest([installed, available]);
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const report = await syncContent(
+        await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack: downloadInto(bytes),
+        }),
+      );
+
+      expect(report.resources).toEqual([{ resourceId: 85, status: 'pack-imported' }]);
+      expect(catalogRows(executor)).toEqual([
+        {
+          resourceId: 85,
+          group: 'tafsirs',
+          name: 'Al-Muyassar',
+          nameAr: 'التفسير الميسر',
+          authorName: 'نخبة من العلماء',
+          languageCode: 'ar',
+          direction: 'rtl',
+          version: 3,
+          packSizeBytes: bytes.byteLength,
+        },
+        {
+          resourceId: 170,
+          group: 'tafsirs',
+          name: "Al-Sa'di",
+          nameAr: 'تفسير السعدي',
+          authorName: null,
+          languageCode: 'ar',
+          direction: 'rtl',
+          version: 1,
+          packSizeBytes: 2048,
+        },
+      ]);
+      expect(installedNames(executor, 85)).toEqual({
+        name: 'Al-Muyassar',
+        nameAr: 'التفسير الميسر',
+        authorName: 'نخبة من العلماء',
+        languageCode: 'ar',
+        direction: 'rtl',
+      });
+    });
+  });
+
+  it('renames an installed tafsir from a later manifest without downloading its pack', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const hash = await sha256(bytes);
+    const pack = { url: '/api/v1/content/packs/85/3', size_bytes: bytes.byteLength, sha256: hash };
+    const before = manifest([resource({ id: 85, version: 3, name: 'Old name', name_ar: null, pack })], '"v1"');
+    const after = manifest([resource({ id: 85, version: 3, name: 'Al-Muyassar', name_ar: 'التفسير الميسر', pack })], '"v2"');
+    let current = before;
+    const downloadPack = jest.fn(downloadInto(bytes));
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const api: ContentApi = {
+        getManifest: async () => ({ status: 200, etag: current.etag, manifest: current.body }),
+        getChanges: async () => {
+          throw new Error('changes');
+        },
+        downloadPack,
+      };
+      await syncContent(await deps(executor, cacheDir, api));
+      expect(installedNames(executor, 85)?.name).toBe('Old name');
+
+      current = after;
+      const report = await syncContent(await deps(executor, cacheDir, api));
+
+      expect(report.resources).toEqual([{ resourceId: 85, status: 'unchanged' }]);
+      expect(downloadPack).toHaveBeenCalledTimes(1);
+      expect(installedNames(executor, 85)).toMatchObject({ name: 'Al-Muyassar', nameAr: 'التفسير الميسر' });
+      expect(catalogRows(executor)).toEqual([expect.objectContaining({ resourceId: 85, name: 'Al-Muyassar', nameAr: 'التفسير الميسر' })]);
+    });
+  });
+
+  it('removes a resource from the catalogue when a later manifest no longer lists it', async () => {
+    const keep = resource({ id: 85, version: 1, pack: { url: '/api/v1/content/packs/85/1', size_bytes: 1, sha256: 'x' } });
+    const gone = resource({ id: 170, version: 1, pack: { url: '/api/v1/content/packs/170/1', size_bytes: 2, sha256: 'y' } });
+    const first = manifest([keep, gone], '"v1"');
+    const second = manifest([keep], '"v2"');
+    let current = first;
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const api: ContentApi = {
+        getManifest: async () => ({ status: 200, etag: current.etag, manifest: current.body }),
+        getChanges: async () => {
+          throw new Error('changes');
+        },
+        downloadPack: downloadInto(new Uint8Array()),
+      };
+      await syncContent(await deps(executor, cacheDir, { ...api }));
+      expect(catalogRows(executor).map((row) => row.resourceId)).toEqual([85, 170]);
+
+      current = second;
+      await syncContent(await deps(executor, cacheDir, api));
+      expect(catalogRows(executor).map((row) => row.resourceId)).toEqual([85]);
+    });
+  });
+});
+

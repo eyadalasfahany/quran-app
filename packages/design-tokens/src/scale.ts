@@ -69,6 +69,16 @@ export const size = {
   bandInset: 3,
   bandRadius: 4,
   bandInnerRadius: 2,
+  // Focus (quran-app-screens.html, #Focus): the progress marks sit 10 from the trailing edge, 6 wide,
+  // 18 tall when active, with radius 3 and an 8 gap (space[2]).
+  focusDot: 6,
+  focusDotActive: 18,
+  focusDotRadius: 3,
+  focusDotInset: 10,
+  // Focus transport labels: 13 px at weight 600 with a 19 line pitch (line-height normal).
+  focusLabelLineHeight: 19,
+  // The gap from the «اسحب لأعلى» hint's bottom edge (694) to the transport bar's top edge (750).
+  focusHintGap: 56,
 } as const;
 
 export const stroke = {

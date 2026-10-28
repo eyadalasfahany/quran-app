@@ -29,6 +29,13 @@
       "when": 1793192858463,
       "tag": "0003_drop_translation_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793206864781,
+      "tag": "0004_resource_names_catalog",
+      "breakpoints": true
     }
   ]
 }

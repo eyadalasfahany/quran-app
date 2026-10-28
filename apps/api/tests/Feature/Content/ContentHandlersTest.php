@@ -51,13 +51,14 @@ it('stores one tafsir row per group with sanitized html and a raw source hash', 
     $other = '<p>Other</p>';
 
     runContent(ResourceGroup::Tafsirs, 'tafsirs:*', [
+        CONTENT_HOST.'/api/v4/resources/tafsirs?language=ar' => ['tafsirs' => []],
         CONTENT_HOST.'/api/v4/resources/tafsirs' => [
             'tafsirs' => [[
                 'id' => 169,
                 'name' => 'Sample tafsir',
                 'author_name' => null,
                 'slug' => 'sample',
-                'language_name' => 'english',
+                'language_name' => 'arabic',
             ]],
         ],
         CONTENT_HOST.'/api/v4/resources/snapshots/tafsirs/169' => contentSnapshot('tafsirs', 169, [
@@ -125,59 +126,28 @@ it('writes a tafsir change row with the shared-contract columns', function (): v
         ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('source_hash'))->toBe(hash('sha256', $updated));
 });
 
-it('stores a tafsir missing from the catalog and fills its name on a later update', function (): void {
-    $raw = '<p>Catalog gap QF816RAW</p>';
-    /** @var list<MessageLogged> $warnings */
-    $warnings = [];
+it('skips a tafsir missing from the Arabic catalog without storing it or failing the run', function (): void {
+    /** @var list<MessageLogged> $infos */
+    $infos = [];
 
-    Log::listen(function (MessageLogged $event) use (&$warnings): void {
-        if ($event->level === 'warning') {
-            $warnings[] = $event;
+    Log::listen(function (MessageLogged $event) use (&$infos): void {
+        if ($event->level === 'info' && $event->message === 'Quran Foundation sync skipped tafsirs that are not active Arabic tafsirs.') {
+            $infos[] = $event;
         }
     });
 
     runContent(ResourceGroup::Tafsirs, 'tafsirs:*', [
-        CONTENT_HOST.'/api/v4/resources/tafsirs' => ['tafsirs' => []],
-        CONTENT_HOST.'/api/v4/resources/snapshots/tafsirs/816' => contentSnapshot('tafsirs', 816, [
-            tafsirRecord(9001, $raw),
-        ]),
-    ], [contentResourceMutation('tafsirs', 816, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/tafsirs/816')]);
+        CONTENT_HOST.'/api/v4/resources/tafsirs?language=ar' => ['tafsirs' => []],
+        CONTENT_HOST.'/api/v4/resources/tafsirs' => ['tafsirs' => [['id' => 170, 'name' => 'Other Arabic tafsir', 'author_name' => null, 'slug' => 'other', 'language_name' => 'arabic']]],
+    ], [
+        contentResourceMutation('tafsirs', 816, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/tafsirs/816'),
+        contentResourceMutation('tafsirs', 816, 11, 'RESOURCE_UPDATE', null),
+    ]);
 
-    $resource = Resource::query()->where('source_key', '816')->firstOrFail();
-    $run = SyncRun::query()->sole();
-
-    expect($run->status)->toBe(SyncRunStatus::Ok)
-        ->and(TafsirEntry::query()->where('resource_id', $resource->id)->count())->toBe(1)
-        ->and(TafsirEntry::query()->where('group_tafsir_id', 9001)->value('html'))->toBe('<p>Catalog gap QF816RAW</p>')
-        ->and($resource->name)->toBeNull()
-        ->and($resource->author_name)->toBeNull()
-        ->and($resource->language_name)->toBeNull()
-        ->and($resource->language_code)->toBeNull()
-        ->and($resource->direction)->toBeNull()
-        ->and($warnings)->toHaveCount(1)
-        ->and($warnings[0]->context)->toMatchArray([
-            'resource_group' => 'tafsirs',
-            'resource_id' => 816,
-        ])
-        ->and(json_encode($warnings[0]->context))->not->toContain('QF816RAW');
-
-    runContent(ResourceGroup::Tafsirs, 'tafsirs:*', [
-        CONTENT_HOST.'/api/v4/resources/tafsirs' => [
-            'tafsirs' => [[
-                'id' => 816,
-                'name' => 'Missing tafsir',
-                'author_name' => 'A commentator',
-                'slug' => 'missing',
-                'language_name' => 'english',
-            ]],
-        ],
-    ], [contentResourceMutation('tafsirs', 816, 11, 'RESOURCE_UPDATE', null)], 'token-catalog');
-
-    $filled = Resource::query()->where('source_key', '816')->firstOrFail();
-
-    expect($filled->name)->toBe('Missing tafsir')
-        ->and(TafsirEntry::query()->where('resource_id', $filled->id)->count())->toBe(1)
-        ->and(SyncRun::query()->orderByDesc('id')->first()?->status)->toBe(SyncRunStatus::Ok);
+    expect(SyncRun::query()->sole()->status)->toBe(SyncRunStatus::Ok)
+        ->and(Resource::query()->where('source_key', '816')->exists())->toBeFalse()
+        ->and(TafsirEntry::query()->count())->toBe(0)
+        ->and($infos)->toHaveCount(1);
 });
 
 it('stores a mushaf, its pages and byte-exact glyphs', function (): void {
@@ -530,13 +500,14 @@ function tafsirRecord(int $groupId, string $text, int $verseId = 1): array
 function tafsirRoutes(string $text): array
 {
     return [
+        CONTENT_HOST.'/api/v4/resources/tafsirs?language=ar' => ['tafsirs' => []],
         CONTENT_HOST.'/api/v4/resources/tafsirs' => [
             'tafsirs' => [[
                 'id' => 169,
                 'name' => 'Sample tafsir',
                 'author_name' => null,
                 'slug' => 'sample',
-                'language_name' => 'english',
+                'language_name' => 'arabic',
             ]],
         ],
         CONTENT_HOST.'/api/v4/resources/snapshots/tafsirs/169' => contentSnapshot('tafsirs', 169, [

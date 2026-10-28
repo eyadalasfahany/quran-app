@@ -57,7 +57,8 @@
       "play": "تشغيل",
       "repeat": "تكرار الآية ٣ مرات",
       "repeatShort": "{{count}}×",
-      "memorize": "اختبر حفظك"
+      "memorize": "اختبر حفظك",
+      "memorizeLabel": "اختبر\nحفظك"
     },
     "sheet": {
       "label": "خيارات الآية",

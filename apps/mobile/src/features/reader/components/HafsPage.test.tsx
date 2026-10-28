@@ -63,6 +63,16 @@ describe('HafsPage', () => {
     expect(onOpenAyahActions).toHaveBeenCalledWith('1:3');
   });
 
+  it('fills each highlighted ayah on the page with its saved colour', async () => {
+    const second = getVersesByPage(executor, 1).find((verse) => verse.verseKey === '1:2');
+    const view = await renderUi(hafsPage(1, { highlightsByVerseId: new Map([[second!.id, 'rose']]) }));
+
+    expect(flatStyle(view.getByTestId('hafs-page-1-ayah-1:2').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightRose,
+    );
+    expect(flatStyle(view.getByTestId('hafs-page-1-ayah-1:1').props.style).backgroundColor).toBeUndefined();
+  });
+
   it('marks the selected ayah for assistive tech', async () => {
     const view = await renderUi(hafsPage(1, { onOpenAyahActions: () => undefined, selectedVerseKey: '1:2' }));
 

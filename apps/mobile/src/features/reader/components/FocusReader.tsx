@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { openContentDb } from '@/core/db/content/open';
+import type { HighlightColor } from '@/shared/ui';
 
 import { getChapter } from '../data/chapters';
 import { getVerseByKey } from '../data/verses';
@@ -13,12 +14,14 @@ function neighbourKey(chapterId: number, verseNumber: number): string {
 export function FocusReader({
   verseKey,
   fontScale = 1,
+  highlightsByVerseId,
   topInset = 0,
   onVerseChange,
   onOpenActions,
 }: {
   verseKey: string;
   fontScale?: number;
+  highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   topInset?: number;
   onVerseChange: (verseKey: string) => void;
   onOpenActions?: (verseKey: string) => void;
@@ -55,6 +58,7 @@ export function FocusReader({
   return (
     <FocusStage
       fontScale={fontScale}
+      highlightColor={highlightsByVerseId?.get(verse.id) ?? null}
       nextNumber={next?.verseNumber ?? null}
       nextText={next?.textUthmani ?? null}
       topInset={topInset}

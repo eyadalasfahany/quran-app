@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 /**
  * @property int $id
  * @property string|null $name
+ * @property string|null $name_ar
  * @property string|null $author_name
  * @property string|null $language_code
  * @property bool $is_active
@@ -38,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'source_key',
     'source_content_id',
     'name',
+    'name_ar',
     'author_name',
     'language_name',
     'language_code',

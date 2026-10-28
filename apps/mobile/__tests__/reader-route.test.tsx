@@ -10,6 +10,12 @@ import { I18nManager } from "react-native";
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
 
+// The user database is not open under Jest; the reader's highlight hook gets an empty map.
+jest.mock("@/features/library/data/hooks", () => ({
+  ...jest.requireActual("@/features/library/data/hooks"),
+  useHighlightsByVerseId: () => new Map(),
+}));
+
 describe("reader route", () => {
   // The app starts in Arabic; these tests use the English labels, so they save English first (as a reader would).
   beforeEach(async () => {

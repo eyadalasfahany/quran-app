@@ -42,6 +42,11 @@ final class ContentSyncService
      */
     private array $reportedMissingCatalog = [];
 
+    /**
+     * The configured filter that means every tafsir. It is narrowed to the Arabic tafsirs (ADR 0015).
+     */
+    private const string ALL_TAFSIRS_FILTER = 'tafsirs:*';
+
     public function __construct(
         private readonly ContentSyncClient $client,
         private readonly GroupHandlers $handlers,
@@ -70,6 +75,16 @@ final class ContentSyncService
             throw new SyncException('Quran Foundation content source is not seeded.');
         }
 
+        $served = null;
+
+        if ($group === ResourceGroup::Tafsirs) {
+            $served = $this->reconcileTafsirs($handler, $sourceId);
+
+            if ($resourcesFilter === self::ALL_TAFSIRS_FILTER) {
+                $resourcesFilter = 'tafsirs:'.implode(',', array_keys($served));
+            }
+        }
+
         $state = $this->states->find($environment, $group) ?? $this->states->create([
             'environment' => $environment,
             'resource_group' => $group->value,
@@ -77,6 +92,14 @@ final class ContentSyncService
             'sync_token' => null,
             'last_sequence' => 0,
         ]);
+
+        if ($state->resources_filter !== $resourcesFilter) {
+            // A sync token is only valid for the filter it was issued under; re-bootstrap when the resolved filter changes.
+            $state->resources_filter = $resourcesFilter;
+            $state->sync_token = null;
+            $state->last_sequence = 0;
+            $this->states->save($state);
+        }
 
         $run = $this->runs->create([
             'environment' => $environment,
@@ -102,6 +125,7 @@ final class ContentSyncService
                 $sourceId,
                 $resourcesFilter,
                 $state->sync_token === null,
+                $served,
                 $applied,
                 $rows,
                 $touched,
@@ -125,6 +149,7 @@ final class ContentSyncService
     }
 
     /**
+     * @param  array<int, CatalogEntry>|null  $served
      * @param  array<int, int<0, max>>  $touched
      * @param  array<int, int<0, max>>  $versions
      * @param  int<0, max>  $applied
@@ -137,6 +162,7 @@ final class ContentSyncService
         int $sourceId,
         string $resourcesFilter,
         bool $bootstrap,
+        ?array $served,
         int &$applied,
         int &$rows,
         array &$touched,
@@ -144,9 +170,10 @@ final class ContentSyncService
     ): string {
         $sawPage = false;
         $loggedIgnoredMutation = false;
+        $loggedUnservedMutation = false;
         $token = '';
         /** @var array<int, CatalogEntry>|null $catalog */
-        $catalog = null;
+        $catalog = $served;
 
         foreach ($this->client->sync($resourcesFilter, $state->sync_token, $bootstrap) as $page) {
             $sawPage = true;
@@ -164,6 +191,15 @@ final class ContentSyncService
                         Log::info('Quran Foundation sync skipped mutations for an ignored resource group.', [
                             'resource_group' => $mutation->resourceGroup,
                         ]);
+                    }
+
+                    continue;
+                }
+
+                if ($served !== null && ! isset($served[$mutation->resourceId])) {
+                    if (! $loggedUnservedMutation) {
+                        $loggedUnservedMutation = true;
+                        Log::info('Quran Foundation sync skipped tafsirs that are not active Arabic tafsirs.');
                     }
 
                     continue;
@@ -346,6 +382,49 @@ final class ContentSyncService
     }
 
     /**
+     * Catalogue sync for tafsirs: refreshes metadata of Arabic tafsir rows and deactivates every other row.
+     *
+     * @return array<int, CatalogEntry> Arabic tafsirs from the catalogue, keyed by QF id.
+     */
+    private function reconcileTafsirs(GroupHandler $handler, int $sourceId): array
+    {
+        $served = [];
+
+        foreach ($handler->catalog() as $entry) {
+            if ($this->isArabicTafsirLanguage($entry->languageName)) {
+                $served[$entry->id] = $entry;
+            }
+        }
+
+        if ($served === []) {
+            throw new SyncException('Quran Foundation catalog has no Arabic tafsir.');
+        }
+
+        foreach ($this->resources->forGroup($sourceId, ResourceGroup::Tafsirs) as $resource) {
+            $entry = $served[(int) $resource->source_key] ?? null;
+
+            if ($entry === null) {
+                if ($resource->is_active) {
+                    $resource->is_active = false;
+                    $this->resources->save($resource);
+                }
+
+                continue;
+            }
+
+            $this->applyMetadata($resource, $entry);
+            $this->resources->save($resource);
+        }
+
+        return $served;
+    }
+
+    private function isArabicTafsirLanguage(?string $languageName): bool
+    {
+        return $languageName !== null && in_array($languageName, config('quran.tafsir_languages', []), true);
+    }
+
+    /**
      * @param  array<int, CatalogEntry>|null  $catalog
      */
     private function catalogEntry(GroupHandler $handler, int $sourceKey, ?array &$catalog): ?CatalogEntry
@@ -412,6 +491,7 @@ final class ContentSyncService
 
         $code = $entry->languageName === null ? null : LanguageCode::fromQfName($entry->languageName);
         $resource->name = $entry->name;
+        $resource->name_ar = $entry->nameAr;
         $resource->author_name = $entry->authorName;
         $resource->language_name = $entry->languageName;
         $resource->language_code = $code?->value;

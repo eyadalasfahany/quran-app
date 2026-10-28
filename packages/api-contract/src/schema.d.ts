@@ -97,6 +97,7 @@ export interface components {
                 id: number;
                 group: components["schemas"]["ServedResourceGroup"];
                 name: string | null;
+                name_ar: string | null;
                 author_name: string | null;
                 language_code: string | null;
                 /** @enum {string|null} */

@@ -57,8 +57,23 @@ type InstalledResource = {
 const MANIFEST_ETAG = 'manifest_etag';
 const HASH_MISMATCH = 'Pack SHA-256 does not match the manifest.';
 
+/**
+ * True when the device has no catalogue yet, or an installed resource has no display name.
+ * Installs from before the catalogue existed stored an ETag, so the server would answer 304
+ * and the catalogue would never be written. Such a sync must ask for the manifest without it.
+ */
+export function catalogNeedsManifest(db: SqlExecutor): boolean {
+  const row = db.get<{ catalogCount: number; unnamed: number }>(
+    `SELECT
+       (SELECT COUNT(*) FROM catalog_resources) AS catalogCount,
+       (SELECT COUNT(*) FROM installed_resources WHERE name IS NULL AND name_ar IS NULL) AS unnamed`,
+  );
+  return row === undefined || row.catalogCount === 0 || row.unnamed > 0;
+}
+
 export async function syncContent(deps: ContentSyncDeps): Promise<ContentSyncReport> {
-  const manifest = await deps.api.getManifest(readEtag(deps.db));
+  const etag = catalogNeedsManifest(deps.db) ? undefined : readEtag(deps.db);
+  const manifest = await deps.api.getManifest(etag);
   if (manifest.status === 304) {
     const checkedAt = deps.now();
     deps.db.run('UPDATE installed_resources SET last_checked_at = ?', [checkedAt]);
@@ -69,6 +84,8 @@ export async function syncContent(deps: ContentSyncDeps): Promise<ContentSyncRep
       })),
     });
   }
+
+  writeCatalog(deps.db, manifest.manifest.resources);
 
   const report: ContentSyncResourceReport[] = [];
   let retryable = false;
@@ -293,16 +310,61 @@ function removeResource(db: SqlExecutor, installed: InstalledResource): void {
 
 function upsertInstalled(db: SqlExecutor, resource: ContentManifestResource, checkedAt: number): void {
   db.run(
-    `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, change_cursor)
-     VALUES (?, ?, ?, ?, ?, NULL)
+    `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, change_cursor, name, name_ar, author_name, language_code, direction)
+     VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?)
      ON CONFLICT(resource_id) DO UPDATE SET
        "group" = excluded."group",
        version = excluded.version,
        sha256 = excluded.sha256,
        last_checked_at = excluded.last_checked_at,
-       change_cursor = NULL`,
-    [resource.id, resource.group, resource.version, resource.pack.sha256, checkedAt],
+       change_cursor = NULL,
+       name = excluded.name,
+       name_ar = excluded.name_ar,
+       author_name = excluded.author_name,
+       language_code = excluded.language_code,
+       direction = excluded.direction`,
+    [
+      resource.id,
+      resource.group,
+      resource.version,
+      resource.pack.sha256,
+      checkedAt,
+      ...namesValues(resource),
+    ],
   );
+}
+
+/**
+ * Rewrites the device catalogue from a manifest read and refreshes the display
+ * names of installed resources, so a renamed resource does not need a pack download.
+ */
+function writeCatalog(db: SqlExecutor, resources: readonly ContentManifestResource[]): void {
+  db.transaction(() => {
+    db.run('DELETE FROM catalog_resources');
+    for (const resource of resources) {
+      db.run(
+        `INSERT OR REPLACE INTO catalog_resources (resource_id, "group", name, name_ar, author_name, language_code, direction, version, pack_size_bytes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          resource.id,
+          resource.group,
+          ...namesValues(resource),
+          resource.version,
+          resource.pack.size_bytes,
+        ],
+      );
+      db.run(
+        `UPDATE installed_resources
+         SET name = ?, name_ar = ?, author_name = ?, language_code = ?, direction = ?
+         WHERE resource_id = ?`,
+        [...namesValues(resource), resource.id],
+      );
+    }
+  });
+}
+
+function namesValues(resource: ContentManifestResource): [string | null, string | null, string | null, string | null, string | null] {
+  return [resource.name, resource.name_ar, resource.author_name, resource.language_code, resource.direction];
 }
 
 function listInstalled(db: SqlExecutor): InstalledResource[] {

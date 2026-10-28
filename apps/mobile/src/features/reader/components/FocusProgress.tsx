@@ -4,9 +4,6 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import { timing, useTheme } from '@/core/theme';
 import { useContrastColors } from '@/shared/ui';
 
-const DOT = 6;
-const ACTIVE_HEIGHT = 18;
-const MARK_WIDTH = 28;
 const WINDOW = 7;
 
 const { duration: fast = 0 } = timing('fast');
@@ -43,7 +40,8 @@ export function FocusProgress({
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={{ gap: theme.space[2], left: 10, position: 'absolute', top: '38%' }}
+      // `end` is the trailing edge: the left in Arabic (the frame's left: 10), the right in English.
+      style={{ end: theme.size.focusDotInset, gap: theme.space[2], position: 'absolute', top: '38%' }}
       testID={testID}
     >
       {Array.from({ length: count }, (_, index) => {
@@ -52,19 +50,20 @@ export function FocusProgress({
         return (
           <Pressable
             accessibilityElementsHidden
+            hitSlop={theme.space[2]}
             importantForAccessibility="no-hide-descendants"
             key={number}
             onPress={onSelect === undefined || active ? undefined : () => onSelect(number)}
+            style={{ width: theme.size.focusDot }}
             testID={`${testID}-page-${number}`}
-            style={{ alignItems: 'center', height: ACTIVE_HEIGHT, justifyContent: 'center', width: MARK_WIDTH }}
           >
             <Animated.View
               layout={markLayout}
               style={{
                 backgroundColor: active ? colors.brand : colors.lineStrong,
-                borderRadius: theme.radius.sm,
-                height: active ? ACTIVE_HEIGHT : DOT,
-                width: DOT,
+                borderRadius: theme.size.focusDotRadius,
+                height: active ? theme.size.focusDotActive : theme.size.focusDot,
+                width: theme.size.focusDot,
               }}
               testID={active ? `${testID}-active` : `${testID}-dot-${number}`}
             />

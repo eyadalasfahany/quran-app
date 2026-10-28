@@ -4,7 +4,7 @@ import { ScrollView, View, type NativeSyntheticEvent } from 'react-native';
 import Animated, { LayoutAnimationConfig, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 
 import { useTheme } from '@/core/theme';
-import { UiText } from '@/shared/ui';
+import { UiText, type HighlightColor } from '@/shared/ui';
 
 import { focusTurnAnimations, type FocusTurnDirection } from '../focus-turn';
 import { FocusAside } from './FocusAside';
@@ -46,6 +46,7 @@ export function FocusStage({
   nextText,
   nextNumber,
   fontScale = 1,
+  highlightColor = null,
   topInset = 0,
   onPrevious,
   onNext,
@@ -62,6 +63,8 @@ export function FocusStage({
   nextText: string | null;
   nextNumber: number | null;
   fontScale?: number;
+  /** The reader's saved highlight for the current ayah. */
+  highlightColor?: HighlightColor | null;
   /** Room for FocusChrome, which floats over the top of Focus. */
   topInset?: number;
   onPrevious?: () => void;
@@ -133,6 +136,7 @@ export function FocusStage({
               )}
               <FocusAyah
                 fontScale={fontScale}
+                highlightColor={highlightColor}
                 onOpenActions={onOpenActions}
                 testID={testID}
                 textImlaei={textImlaei}
@@ -148,7 +152,7 @@ export function FocusStage({
           </Animated.View>
         </LayoutAnimationConfig>
       </View>
-      <UiText align="center" style={{ marginBottom: theme.space[3] }} tone="muted" variant="label">
+      <UiText align="center" style={{ marginBottom: theme.size.focusHintGap }} tone="muted" variant="label" weight={400}>
         {t('reader.focus.nextHint')}
       </UiText>
       <FocusTransport onNext={onNext === undefined ? undefined : () => go('next')} onPrevious={onPrevious === undefined ? undefined : () => go('previous')} />

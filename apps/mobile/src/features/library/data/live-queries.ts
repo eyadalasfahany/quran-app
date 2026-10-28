@@ -45,6 +45,14 @@ export function liveHighlightsQuery(db: UserDatabase, verseIds: readonly number[
     .orderBy(asc(highlights.verseId), asc(highlights.id));
 }
 
+export function liveAllHighlightsQuery(db: UserDatabase) {
+  return db
+    .select(highlightColumns)
+    .from(highlights)
+    .where(isNull(highlights.deletedAt))
+    .orderBy(asc(highlights.verseId), asc(highlights.id));
+}
+
 export function liveNotesQuery(db: UserDatabase, verseId: number) {
   return db
     .select(noteColumns)

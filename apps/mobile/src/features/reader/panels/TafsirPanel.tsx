@@ -8,7 +8,7 @@ import { uiFontFamilies, useTheme } from '@/core/theme';
 import { Card, Chip, EmptyState, maxFontScale, QuranText, UiText } from '@/shared/ui';
 
 import { AyahStepper } from './AyahStepper';
-import type { TextDirection } from './panel-text';
+import { tafsirDisplayName, type TextDirection } from './panel-text';
 
 const EMPTY_ICON = { ios: 'book.closed', android: 'menu_book' } as const;
 const SYSTEM_FONTS = Object.values(uiFontFamilies);
@@ -20,10 +20,9 @@ const TAGS_STYLES: MixedStyleRecord = {
 
 export type TafsirOption = {
   resourceId: number;
-  name: string;
+  name: string | null;
+  nameAr: string | null;
   authorName: string | null;
-  // «مختصر» or «مفصّل» when the catalogue says so.
-  lengthTag?: string | null;
   direction?: TextDirection | null;
 };
 
@@ -73,6 +72,8 @@ export function TafsirPanel({
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
+  const displayName = (tafsir: TafsirOption): string =>
+    tafsirDisplayName(tafsir, locale, t('reader.tafsir.fallbackName', { id: tafsir.resourceId }));
   const windowWidth = useWindowDimensions().width;
   const [width, setWidth] = useState<number | null>(null);
   const selected = tafsirs.find((tafsir) => tafsir.resourceId === selectedId) ?? null;
@@ -126,9 +127,8 @@ export function TafsirPanel({
       : { variant: 'caption' as const };
   const chips = tafsirs.map((tafsir) => (
     <Chip
-      caption={tafsir.lengthTag ?? undefined}
       key={tafsir.resourceId}
-      label={tafsir.name}
+      label={displayName(tafsir)}
       layout={layout}
       onPress={() => onSelect(tafsir.resourceId)}
       role="radio"
@@ -183,8 +183,8 @@ export function TafsirPanel({
         </Card>
         {selected === null ? null : (
           <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2], justifyContent: 'space-between' }}>
-            <UiText variant="caption" weight={600}>
-              {selected.name}
+            <UiText testID={`${testID}-name`} variant="caption" weight={600}>
+              {displayName(selected)}
             </UiText>
             {coverageLabel === null ? null : (
               <UiText testID={`${testID}-coverage`} tone="muted" {...credit}>
@@ -216,7 +216,7 @@ export function TafsirPanel({
           </View>
           {selected === null ? null : (
             <UiText testID={`${testID}-source`} tone="muted" {...credit}>
-              {t('reader.tafsir.source', { author: selected.authorName ?? selected.name })}
+              {t('reader.tafsir.source', { author: selected.authorName ?? displayName(selected) })}
             </UiText>
           )}
         </View>

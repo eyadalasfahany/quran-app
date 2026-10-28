@@ -38,6 +38,18 @@ final class EloquentResourceRepository extends EloquentRepository implements Res
         return $resources;
     }
 
+    public function forGroup(int $sourceId, ResourceGroup $group): Collection
+    {
+        /** @var Collection<int, resource> $resources */
+        $resources = $this->query()
+            ->where('source_id', $sourceId)
+            ->where('group', $group)
+            ->orderBy('id')
+            ->get();
+
+        return $resources;
+    }
+
     public function sourceId(string $code): ?int
     {
         $id = ContentSource::query()->where('code', $code)->value('id');

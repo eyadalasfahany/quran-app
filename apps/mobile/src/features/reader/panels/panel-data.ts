@@ -26,8 +26,14 @@ export function loadAyahPanelData(db: SqlExecutor, verseKey: string): AyahPanelD
   };
 }
 
-export function loadTafsirOptions(db: SqlExecutor, nameFor: (resourceId: number) => string): TafsirOption[] {
-  return listInstalledTafsirs(db).map((row) => ({ authorName: null, name: nameFor(row.resourceId), resourceId: row.resourceId }));
+export function loadTafsirOptions(db: SqlExecutor): TafsirOption[] {
+  return listInstalledTafsirs(db).map((row) => ({
+    authorName: row.authorName,
+    direction: row.direction,
+    name: row.name,
+    nameAr: row.nameAr,
+    resourceId: row.resourceId,
+  }));
 }
 
 export type TafsirPassage = { html: string; coverage: { from: number; to: number } | null };

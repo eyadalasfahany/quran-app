@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { openContentDb } from '@/core/db/content/open';
 import { useTheme } from '@/core/theme';
 import { firstVerseOfPage, pageForVerse } from '@/features/reader/anchor/page';
+import type { HighlightColor } from '@/shared/ui';
 
 import { HafsPage } from './components/HafsPage';
 import { listChapters } from './data/chapters';
@@ -19,6 +20,7 @@ export type HafsMushafListProps = {
   topInset?: number;
   bottomInset?: number;
   selectedVerseKey?: string | null;
+  highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onVisiblePage?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
@@ -31,6 +33,7 @@ export function HafsMushafList({
   topInset = 0,
   bottomInset = 0,
   selectedVerseKey = null,
+  highlightsByVerseId,
   onVisiblePage,
   onSelectVerseKey,
   onOpenAyahActions,
@@ -132,6 +135,7 @@ export function HafsMushafList({
         executor={executor}
         focusVerseKey={page === focusPage ? focusVerseKey : null}
         fontScale={fontScale}
+        highlightsByVerseId={highlightsByVerseId}
         onFocusOffset={scrollToFocus}
         onOpenAyahActions={onOpenAyahActions}
         onSelectVerseKey={onSelectVerseKey}
@@ -140,7 +144,19 @@ export function HafsMushafList({
         testID={testID}
       />
     ),
-    [chapters, executor, focusPage, focusVerseKey, fontScale, onOpenAyahActions, onSelectVerseKey, scrollToFocus, selectedVerseKey, testID],
+    [
+      chapters,
+      executor,
+      focusPage,
+      focusVerseKey,
+      fontScale,
+      highlightsByVerseId,
+      onOpenAyahActions,
+      onSelectVerseKey,
+      scrollToFocus,
+      selectedVerseKey,
+      testID,
+    ],
   );
 
   return (
@@ -148,6 +164,7 @@ export function HafsMushafList({
       <FlashList
         contentContainerStyle={{ paddingHorizontal: theme.space[4] }}
         data={pages}
+        extraData={highlightsByVerseId}
         keyExtractor={(page) => String(page)}
         maintainVisibleContentPosition={{}}
         onEndReached={() => setPageWindow((current) => extendPageWindow(current, 'end'))}

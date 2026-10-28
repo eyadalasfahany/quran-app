@@ -16,6 +16,7 @@ function resource(
     direction: null,
     language_code: null,
     name: null,
+    name_ar: null,
     pack: { sha256: 'abc', size_bytes: 1, url: '/api/v1/content/packs/1/1' },
     version: 1,
     ...overrides,

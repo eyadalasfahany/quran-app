@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 
+import { formatNumber, i18n } from '@/core/i18n';
 import { themes } from '@/core/theme';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -210,6 +211,42 @@ describe('HafsMushafPage', () => {
     const view = await renderUi(fatihaPage());
 
     expect(view.queryByTestId('page-focus-run')).toBeNull();
+  });
+
+  it('fills a highlighted ayah with its colour and leaves the others unfilled', async () => {
+    const view = await renderUi(
+      fatihaPage({
+        highlightsByVerseId: new Map([[1, 'green']]),
+        verses: [
+          verse({ id: 1, verseKey: '1:1', verseNumber: 1 }),
+          verse({ id: 2, textUthmani: 'ٱلْحَمْدُ لِلَّهِ', verseKey: '1:2', verseNumber: 2 }),
+        ],
+      }),
+    );
+
+    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightGreen,
+    );
+    expect(flatStyle(view.getByTestId('page-ayah-1:2').props.style).backgroundColor).toBeUndefined();
+  });
+
+  it('keeps the selection wash over a saved highlight on the same ayah', async () => {
+    const view = await renderUi(
+      fatihaPage({ highlightsByVerseId: new Map([[1, 'gold']]), onOpenActions: () => undefined, selectedVerseKey: '1:1' }),
+    );
+
+    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightActive,
+    );
+  });
+
+  it.each(locales)('names the highlight colour in the ayah label in %s', async (locale) => {
+    const view = await renderUi(fatihaPage({ highlightsByVerseId: new Map([[1, 'rose']]) }), { locale });
+    const ayahNumber = i18n.t('ui.ayahNumber', { number: formatNumber(1, locale) });
+
+    expect(view.getByTestId('page-ayah-1:1').props.accessibilityLabel).toBe(
+      `${ayahText} ${ayahNumber} ${i18n.t('ui.highlight.rose')}`,
+    );
   });
 
   it('uses theme tokens only', () => {

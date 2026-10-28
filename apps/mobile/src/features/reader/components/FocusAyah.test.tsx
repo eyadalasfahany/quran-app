@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 
+import { i18n } from '@/core/i18n';
 import { themes } from '@/core/theme';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -49,6 +50,21 @@ describe('FocusAyah', () => {
 
     const label = locale === 'ar' ? 'إياك نعبد وإياك نستعين الآية ٥' : 'إياك نعبد وإياك نستعين Ayah 5';
     expect(view.getByLabelText(label).props.accessibilityRole).toBe('text');
+  });
+
+  it('fills the ayah text with the reader highlight and names its colour in the label', async () => {
+    const view = await renderUi(<FocusAyah {...ayah} highlightColor="blue" testID="focus" />);
+
+    expect(flatStyle(view.getByTestId('focus-current').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightBlue,
+    );
+    expect(view.getByLabelText(`${ayah.textImlaei} ${i18n.t('ui.ayahNumber', { number: '٥' })} ${i18n.t('ui.highlight.blue')}`)).toBeOnTheScreen();
+  });
+
+  it('leaves the ayah text unfilled without a highlight', async () => {
+    const view = await renderUi(<FocusAyah {...ayah} testID="focus" />);
+
+    expect(flatStyle(view.getByTestId('focus-current').props.style).backgroundColor).toBeUndefined();
   });
 
   it('opens ayah actions from the marker', async () => {

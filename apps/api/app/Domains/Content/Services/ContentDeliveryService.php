@@ -10,9 +10,12 @@ use App\Domains\Content\Data\ContentChangesQueryData;
 use App\Domains\Content\Data\ContentManifestData;
 use App\Domains\Content\Data\ContentManifestEntryData;
 use App\Domains\Content\Data\ContentPackData;
+use App\Domains\Content\Enums\LanguageCode;
+use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Exceptions\ChangesGoneException;
 use App\Domains\Content\Models\ContentChange;
 use App\Domains\Content\Models\ContentPack;
+use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\ChangeCursor;
 use App\Domains\Content\Packs\PackSchema;
 use App\Domains\Content\Repositories\Contracts\ContentChangeRepository;
@@ -36,6 +39,10 @@ final class ContentDeliveryService
         $newest = null;
 
         foreach ($this->resources->activeWithPacks() as $resource) {
+            if (! $this->isServed($resource)) {
+                continue;
+            }
+
             $pack = $resource->contentPacks->sortByDesc(fn (ContentPack $pack): int => $pack->version)->first();
 
             if (! $pack instanceof ContentPack) {
@@ -50,6 +57,7 @@ final class ContentDeliveryService
                 id: $resource->id,
                 group: $resource->group,
                 name: $resource->name,
+                nameAr: $this->servedArabicName($resource),
                 authorName: $resource->author_name,
                 languageCode: $resource->language_code,
                 direction: $resource->direction,
@@ -71,7 +79,7 @@ final class ContentDeliveryService
     {
         $resource = $this->resources->find($resourceId);
 
-        if ($resource === null || ! $resource->is_active || $resource->group->isIgnored()) {
+        if ($resource === null || ! $resource->is_active || $resource->group->isIgnored() || ! $this->isServed($resource)) {
             throw new ModelNotFoundException('Content pack not found.');
         }
 
@@ -102,7 +110,7 @@ final class ContentDeliveryService
     {
         $resource = $this->resources->find($query->resourceId);
 
-        if ($resource === null || ! $resource->is_active || $resource->group->isIgnored()) {
+        if ($resource === null || ! $resource->is_active || $resource->group->isIgnored() || ! $this->isServed($resource)) {
             throw new ModelNotFoundException('Resource not found.');
         }
 
@@ -137,6 +145,31 @@ final class ContentDeliveryService
             items: $items,
             nextCursor: $hasMore && $last instanceof ContentChange ? ChangeCursor::encode($last->id) : null,
         );
+    }
+
+    /**
+     * ADR 0015: only Arabic tafsirs are served.
+     */
+    private function isServed(Resource $resource): bool
+    {
+        return $resource->group !== ResourceGroup::Tafsirs || $resource->language_code === LanguageCode::Arabic->value;
+    }
+
+    /**
+     * The config override for a QF source id wins over the catalogue's name_ar (names are not Quran text).
+     */
+    private function servedArabicName(Resource $resource): ?string
+    {
+        if ($resource->group === ResourceGroup::Tafsirs) {
+            $overrides = config('quran.display_names.ar', []);
+            $override = $overrides[(int) $resource->source_key] ?? null;
+
+            if (is_string($override)) {
+                return $override;
+            }
+        }
+
+        return $resource->name_ar;
     }
 
     private function item(ContentChange $change): ContentChangeItemData

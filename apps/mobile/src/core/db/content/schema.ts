@@ -66,6 +66,23 @@ export const installedResources = sqliteTable('installed_resources', {
   sha256: text('sha256').notNull(),
   lastCheckedAt: integer('last_checked_at').notNull(),
   changeCursor: text('change_cursor'),
+  name: text('name'),
+  nameAr: text('name_ar'),
+  authorName: text('author_name'),
+  languageCode: text('language_code'),
+  direction: text('direction', { enum: ['rtl', 'ltr'] }),
+});
+
+export const catalogResources = sqliteTable('catalog_resources', {
+  resourceId: integer('resource_id').primaryKey(),
+  group: text('group').notNull(),
+  name: text('name'),
+  nameAr: text('name_ar'),
+  authorName: text('author_name'),
+  languageCode: text('language_code'),
+  direction: text('direction', { enum: ['rtl', 'ltr'] }),
+  version: integer('version').notNull(),
+  packSizeBytes: integer('pack_size_bytes').notNull(),
 });
 
 export const tafsirEntries = sqliteTable(

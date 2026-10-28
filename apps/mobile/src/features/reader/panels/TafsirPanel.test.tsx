@@ -11,8 +11,14 @@ const AYAH_1_2 = 'ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰل�
 const HTML = '<p>الحمد لله: الثناء على الله بصفاته <b>التي كلها أوصاف كمال</b>.</p><p>وبنعمه الظاهرة والباطنة.</p>';
 
 const tafsirs: TafsirOption[] = [
-  { authorName: 'نخبة من العلماء', lengthTag: 'مختصر', name: 'التفسير الميسر', resourceId: 16, direction: 'rtl' },
-  { authorName: 'ابن كثير', lengthTag: 'مفصّل', name: 'ابن كثير', resourceId: 14 },
+  {
+    authorName: 'نخبة من العلماء',
+    name: 'Al-Muyassar',
+    nameAr: 'التفسير الميسر',
+    resourceId: 16,
+    direction: 'rtl',
+  },
+  { authorName: 'ابن كثير', name: 'Ibn Kathir', nameAr: 'ابن كثير', resourceId: 14 },
 ];
 
 type TextNode = string | { children: readonly TextNode[] };
@@ -53,8 +59,8 @@ describe('TafsirPanel', () => {
 
     const radios = screen.getAllByRole('radio');
     expect(radios).toHaveLength(2);
-    expect(screen.getByRole('radio', { name: 'التفسير الميسر, مختصر' }).props.accessibilityState).toEqual({ checked: true });
-    expect(screen.getByRole('radio', { name: 'ابن كثير, مفصّل' }).props.accessibilityState).toEqual({ checked: false });
+    expect(screen.getByRole('radio', { name: 'التفسير الميسر' }).props.accessibilityState).toEqual({ checked: true });
+    expect(screen.getByRole('radio', { name: 'ابن كثير' }).props.accessibilityState).toEqual({ checked: false });
   });
 
   it('calls onSelect with the resource id', async () => {
@@ -169,6 +175,47 @@ describe('TafsirPanel', () => {
     const column = screen.getByTestId('tafsir-panel-body').parent;
 
     expect(flatStyle(column?.props.style).gap).toBe(themes.light.size.bodyCreditGap);
+  });
+
+  it.each([
+    ['ar', 'التفسير الميسر', 'ابن كثير'],
+    ['en', 'Al-Muyassar', 'Ibn Kathir'],
+  ] as const)('shows the %s name on the chips and in the name row', async (locale, selectedName, otherName) => {
+    const screen = await renderPanel({}, locale).view;
+
+    expect(screen.getByRole('radio', { name: selectedName })).toBeOnTheScreen();
+    expect(screen.getByRole('radio', { name: otherName })).toBeOnTheScreen();
+    expect(screen.getByTestId('tafsir-panel-name')).toHaveTextContent(selectedName);
+  });
+
+  it('falls back to the other name, then to the numbered placeholder, when a name is missing', async () => {
+    const onlyEnglish = await renderPanel(
+      { tafsirs: [{ authorName: null, name: 'Al-Muyassar', nameAr: null, resourceId: 16 }] },
+      'ar',
+    ).view;
+    expect(onlyEnglish.getByTestId('tafsir-panel-name')).toHaveTextContent('Al-Muyassar');
+
+    const unnamed = await renderPanel({ tafsirs: [{ authorName: null, name: null, nameAr: null, resourceId: 16 }] }, 'ar').view;
+    expect(unnamed.getByTestId('tafsir-panel-name')).toHaveTextContent('تفسير 16');
+    expect(unnamed.getByTestId('tafsir-panel-source')).toHaveTextContent('المصدر: تفسير 16 · عبر Quran Foundation');
+  });
+
+  it('credits the display name when the tafsir has no author', async () => {
+    const screen = await renderPanel(
+      { tafsirs: [{ authorName: null, name: 'Al-Muyassar', nameAr: 'التفسير الميسر', resourceId: 16 }] },
+      'en',
+    ).view;
+
+    expect(screen.getByTestId('tafsir-panel-source')).toHaveTextContent('Source: Al-Muyassar · via Quran Foundation');
+  });
+
+  it('sets the passage direction from the tafsir', async () => {
+    const screen = await renderPanel(
+      { tafsirs: [{ authorName: null, direction: 'ltr', name: 'Ibn Kathir', nameAr: null, resourceId: 14 }], selectedId: 14 },
+      'en',
+    ).view;
+
+    expect(flatStyle(screen.getByTestId('tafsir-panel-body').props.style)).toMatchObject({ direction: 'ltr' });
   });
 
   it('has no raw colour literals', () => {

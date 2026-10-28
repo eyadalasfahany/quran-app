@@ -76,10 +76,7 @@ export function AyahPanelContent({
   );
   const live = useMemo(() => store === undefined && userDbAvailable(), [store]);
   const data = useMemo(() => (executor === null ? null : loadAyahPanelData(executor, verseKey)), [executor, verseKey]);
-  const tafsirs = useMemo(
-    () => (executor === null ? [] : loadTafsirOptions(executor, (id) => t('reader.tafsir.fallbackName', { id }))),
-    [executor, t],
-  );
+  const tafsirs = useMemo(() => (executor === null ? [] : loadTafsirOptions(executor)), [executor]);
   const installedTafsirIds = new Set(tafsirs.map((tafsir) => tafsir.resourceId));
   const tafsirIdInUse =
     (pickedTafsirId !== null && installedTafsirIds.has(pickedTafsirId) ? pickedTafsirId : null) ??

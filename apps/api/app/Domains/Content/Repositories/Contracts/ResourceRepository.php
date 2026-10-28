@@ -21,6 +21,11 @@ interface ResourceRepository
 
     public function sourceId(string $code): ?int;
 
+    /**
+     * @return Collection<int, resource>
+     */
+    public function forGroup(int $sourceId, ResourceGroup $group): Collection;
+
     public function findBySource(int $sourceId, ResourceGroup $group, string $sourceKey): ?Resource;
 
     /**

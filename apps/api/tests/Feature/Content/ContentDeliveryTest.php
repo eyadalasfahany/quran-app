@@ -43,7 +43,7 @@ it('returns the manifest for active resources that have a pack', function (): vo
         'group' => ResourceGroup::Tafsirs,
         'name' => 'Haleem',
         'author_name' => 'Abdul Haleem',
-        'language_code' => 'en',
+        'language_code' => 'ar',
         'direction' => TextDirection::Ltr,
         'version' => 2,
         'changes_floor_version' => 1,
@@ -53,7 +53,7 @@ it('returns the manifest for active resources that have a pack', function (): vo
         'group' => ResourceGroup::Tafsirs,
         'name' => 'Bridges',
         'author_name' => null,
-        'language_code' => 'en',
+        'language_code' => 'ar',
         'direction' => TextDirection::Ltr,
         'version' => 8,
         'changes_floor_version' => 8,
@@ -377,3 +377,64 @@ function contentChange(int $resourceId, int $version, int $verseId): ContentChan
         ],
     ]);
 }
+
+it('lists and serves only Arabic tafsirs', function (): void {
+    $arabic = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'language_code' => 'ar',
+        'version' => 1,
+        'is_active' => true,
+    ]);
+    $english = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'language_code' => 'en',
+        'version' => 1,
+        'is_active' => true,
+    ]);
+    app(PackBuilder::class)->build($arabic);
+    app(PackBuilder::class)->build($english);
+
+    $response = $this->getJson('/api/v1/content/manifest');
+
+    expect(collect($response->json('resources'))->pluck('id')->all())->toBe([$arabic->id])
+        ->and($this->getJson('/api/v1/content/packs/'.$english->id.'/'.$english->version)->status())->toBe(404)
+        ->and($this->getJson('/api/v1/content/changes?resource_id='.$arabic->id.'&since_version=1')->status())->toBe(200)
+        ->and($this->getJson('/api/v1/content/changes?resource_id='.$english->id.'&since_version=1')->status())->toBe(404);
+});
+
+it('serves the configured Arabic name for a QF id and the catalogue name otherwise', function (): void {
+    $overridden = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '14',
+        'name_ar' => 'تفسیر ابنِ کثیر',
+        'language_code' => 'ar',
+        'version' => 1,
+    ]);
+    $catalogue = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '16',
+        'name_ar' => 'التفسير الميسر',
+        'language_code' => 'ar',
+        'version' => 1,
+    ]);
+    $none = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '15',
+        'name_ar' => null,
+        'language_code' => 'ar',
+        'version' => 1,
+    ]);
+    foreach ([$overridden, $catalogue, $none] as $resource) {
+        app(PackBuilder::class)->build($resource);
+    }
+
+    $names = collect($this->getJson('/api/v1/content/manifest')->json('resources'))
+        ->mapWithKeys(fn (array $entry): array => [$entry['id'] => $entry['name_ar']])
+        ->all();
+
+    expect($names)->toBe([
+        $overridden->id => 'تفسير ابن كثير',
+        $catalogue->id => 'التفسير الميسر',
+        $none->id => null,
+    ]);
+});
