@@ -416,13 +416,12 @@ Quran text integrity is the one test that blocks every release; everything else 
 
 ## Release pipeline
 
-Builds, store submission and over-the-air fixes all run through EAS, with three channels mapped to three backend environments.
+Builds, store submission and over-the-air fixes all run through EAS, with two channels. TestFlight and store users get the same app and build (ADR 0016).
 
 | Channel | Backend | Who gets it |
 | --- | --- | --- |
 | `development` | Local / staging, QF prelive keys | Developers (development builds) |
-| `preview` | Staging, QF prelive keys | Internal testers: TestFlight and Play internal testing |
-| `production` | Production, QF production keys | Store users |
+| `production` | Production, QF production keys (staging and prelive until the production server exists) | TestFlight and Play internal testers, then store users |
 
 - **Builds:** EAS Build per channel; version numbers bumped automatically by EAS.
 - **Submission:** EAS Submit to App Store Connect and Google Play, with Play staged rollout at 10% → 50% → 100%.

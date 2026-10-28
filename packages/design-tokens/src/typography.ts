@@ -32,6 +32,10 @@ export type TextStyleToken = {
   ramp?: DynamicTypeRamp;
 };
 
+// Amiri's natural leading: hhea ascender 1124 + descender 634 per 1000 em. A display line
+// shorter than this clips marks above letters (the madda in «آل», the hamza in «أ») on iOS.
+export const amiriNaturalLeading = 1.758;
+
 export const quranTypeScale = {
   // Phone frames in quran-app-screens.html (ADR 0013). Focus current ayah is 38 / 2.1;
   // the ayahs before and after it are 24 / 2 at 22% opacity.
@@ -50,7 +54,8 @@ export const typeScale = {
   displayLg: { family: 'display', size: 34, lineHeight: 46, weight: 700 },
   displayMd: { family: 'display', size: 28, lineHeight: 36, weight: 700 },
   displaySm: { family: 'display', size: 20, lineHeight: 26, weight: 700 },
-  numeral: { family: 'display', size: 14, lineHeight: 14, weight: 400 },
+  // round(14 × amiriNaturalLeading); the medallion number is the only user of this token.
+  numeral: { family: 'display', size: 14, lineHeight: 25, weight: 400 },
   title: { family: 'ui', size: 22, lineHeight: 30, weight: 700, ramp: 'title2' },
   headline: { family: 'ui', size: 17, lineHeight: 24, weight: 600, ramp: 'headline' },
   body: { family: 'ui', size: 17, lineHeight: 26, weight: 400, ramp: 'body' },

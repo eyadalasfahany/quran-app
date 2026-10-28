@@ -3,13 +3,26 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { SectionScreen } from '@/core/layout';
+import { destinations, type Destination, SectionScreen } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
+import { HomeTileRow } from '@/features/home/components/HomeTileRow';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
-import { SearchButton } from '@/shared/ui';
+import { SearchButton, type IconName } from '@/shared/ui';
+
+// Home's tiles open the tabs they name. Only shipped features get a tile (ADR 0017).
+function tabHref(name: Destination['name']): Href {
+  const destination = destinations.find((item) => item.name === name);
+  if (destination === undefined) {
+    throw new Error(`Unknown tab ${name}`);
+  }
+  return destination.href;
+}
+
+const SURAHS_ICON: IconName = { ios: 'list.bullet', android: 'format_list_bulleted' };
+const SAVED_ICON: IconName = { ios: 'bookmark', android: 'bookmark' };
 
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -35,7 +48,7 @@ export function HomeScreen() {
   }, [lastReadVerseKey, ready]);
 
   return (
-    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={<SearchButton testID="home-search" />}>
+    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={<SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
       {continueReading ? (
         <ContinueReadingCard
           ayah={continueReading.verse.verseNumber}
@@ -45,6 +58,12 @@ export function HomeScreen() {
           surahName={continueReading.chapter.nameArabic}
         />
       ) : null}
+      <HomeTileRow
+        tiles={[
+          { icon: SURAHS_ICON, key: 'surahs', label: t('home.tiles.surahs'), onPress: () => router.navigate(tabHref('(mushaf)')) },
+          { icon: SAVED_ICON, key: 'saved', label: t('home.tiles.saved'), onPress: () => router.navigate(tabHref('(my-quran)')) },
+        ]}
+      />
     </SectionScreen>
   );
 }

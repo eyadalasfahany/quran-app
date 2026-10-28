@@ -81,7 +81,7 @@ describe("adaptive nav", () => {
       { ios: "house", android: "home" },
       { ios: "book", android: "menu_book" },
       { ios: "headphones", android: "headphones" },
-      { ios: "pencil", android: "edit" },
+      { ios: "bookmark", android: "bookmark" },
     ]);
 
     await act(async () => {

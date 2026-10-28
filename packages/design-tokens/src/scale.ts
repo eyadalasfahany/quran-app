@@ -105,11 +105,16 @@ export const size = {
   lastReadPaddingX: 14,
   lastReadPaddingY: 10,
   lastReadGap: 10,
-  // The index rows: 60 pt minimum, a 14 pt gap, and a surah name in Amiri 19 at 1.4.
+  // The index rows: 60 pt minimum, a 14 pt gap, and a surah name in Amiri 19 at round(19 × 1.758) = 33,
+  // so the madda in «آل» is not clipped.
   indexRowMinHeight: 60,
   indexRowGap: 14,
   indexNameSize: 19,
-  indexNameLineHeight: 26.6,
+  indexNameLineHeight: 33,
+  // Home's quick-access tile row: the gap between tiles, and each tile's vertical and horizontal padding.
+  homeTileGridGap: 10,
+  homeTilePaddingY: 14,
+  homeTilePaddingX: 4,
 } as const;
 
 export const stroke = {

@@ -14,7 +14,8 @@ import { listJuzStarts } from '@/features/library/data/juz';
 import { getChapter, listChapters, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
-import { Screen, ScreenHeader } from '@/shared/ui';
+import { useTheme } from '@/core/theme';
+import { Screen, ScreenHeader, SearchButton } from '@/shared/ui';
 
 type ContinueReading = {
   verseKey: string;
@@ -30,6 +31,7 @@ function readHref(verseKey: string): Href {
 
 export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
   const [segment, setSegment] = useState<IndexSegmentKey>('surahs');
@@ -104,11 +106,11 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
 
   return (
     <Screen testID={testID}>
-      <ContentColumn>
-        <ScreenHeader title={t('library.index.title')}>
+      <ContentColumn gutter={theme.size.gutterList}>
+        <ScreenHeader title={t('library.index.title')} trailing={<SearchButton onPress={() => router.push('/search')} testID="index-search" />}>
           <IndexSegment onChange={setSegment} testID="index-segment" value={segment} />
         </ScreenHeader>
-        <View style={{ flex: 1, minHeight: 200 }}>
+        <View style={{ flex: 1, marginTop: theme.size.blockGap, minHeight: 200 }}>
           <FlashList
             data={rows}
             keyExtractor={keyExtractor}

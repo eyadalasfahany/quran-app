@@ -23,7 +23,6 @@ function configFor(variant: string | undefined): ExpoConfig {
 describe('app.config', () => {
   it.each([
     ['development', 'com.taybahapp.taybah.dev', 'taybah-dev'],
-    ['preview', 'com.taybahapp.taybah.preview', 'taybah-preview'],
     ['production', 'com.taybahapp.taybah', 'taybah'],
   ])('uses the %s bundle id and scheme', (variant: string, id: string, scheme: string) => {
     const config = configFor(variant);
@@ -47,8 +46,17 @@ describe('app.config', () => {
     });
   });
 
-  it('rejects an unknown variant', () => {
-    expect(() => configFor('staging')).toThrow('Unknown APP_VARIANT "staging"');
+  // TestFlight and the store share the production variant (ADR 0016).
+  it.each(['staging', 'preview'])('rejects the unknown variant %s', (variant: string) => {
+    expect(() => configFor(variant)).toThrow(`Unknown APP_VARIANT "${variant}"`);
+  });
+
+  it('links the EAS project and skips the export-compliance question', () => {
+    const config = configFor('production');
+
+    expect(config.owner).toBe('themayman');
+    expect(config.extra?.eas?.projectId).toBe('e58e645e-5912-4da1-8ea8-7bdb73d93f64');
+    expect(config.ios?.infoPlist?.ITSAppUsesNonExemptEncryption).toBe(false);
   });
 
   it('never locks orientation and declares every iPad orientation', () => {

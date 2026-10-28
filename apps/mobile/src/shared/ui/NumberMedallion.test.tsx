@@ -13,6 +13,12 @@ describe('NumberMedallion', () => {
     expect(flatStyle(view.getByText('١١٤', hidden).props.style)).toMatchObject({ fontFamily: 'Amiri-Regular', fontSize: 14 });
   });
 
+  it('sets the number at round(14 × 1.758) = 25 and centres it in the star', async () => {
+    const view = await renderUi(<NumberMedallion number={114} testID="medallion" />);
+
+    expect(flatStyle(view.getByText('١١٤', hidden).props.style)).toMatchObject({ lineHeight: 25, textAlign: 'center' });
+  });
+
   it('draws the gold eight-point star from two squares, one turned 45°', async () => {
     const view = await renderUi(<NumberMedallion number={1} testID="medallion" />);
     const medallion = view.getByTestId('medallion', hidden);

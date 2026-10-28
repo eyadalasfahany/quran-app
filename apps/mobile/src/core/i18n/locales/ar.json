@@ -186,6 +186,7 @@
     },
     "ayahNumber": "الآية {{number}}",
     "clearSearch": "مسح البحث",
+    "search": "بحث",
     "highlight": {
       "gold": "تظليل ذهبي",
       "green": "تظليل أخضر",
@@ -194,9 +195,11 @@
     }
   },
   "home": {
+    "greeting": "السلام عليكم",
     "continueReading": "تابع القراءة",
     "place": "الآية {{ayah}} · صفحة {{page}} · الجزء {{juz}}",
     "resume": "متابعة",
-    "progress": "قرأت {{percent}}٪ من المصحف"
+    "progress": "قرأت {{percent}}٪ من المصحف",
+    "tiles": { "surahs": "السور", "saved": "المحفوظات" }
   }
 }

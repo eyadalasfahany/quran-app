@@ -15,15 +15,9 @@
         "APP_VARIANT": "development"
       }
     },
-    "preview": {
-      "extends": "base",
-      "distribution": "internal",
-      "env": {
-        "APP_VARIANT": "preview"
-      }
-    },
     "production": {
       "extends": "base",
+      "environment": "production",
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production"
@@ -31,6 +25,10 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6828097265"
+      }
+    }
   }
 }

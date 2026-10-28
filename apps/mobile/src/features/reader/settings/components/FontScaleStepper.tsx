@@ -1,3 +1,4 @@
+import { amiriNaturalLeading } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View, type PressableStateCallbackType, type ViewStyle } from 'react-native';
 
@@ -10,18 +11,13 @@ import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP } from '../../settings-
 /** The "أ−" and "أ+" glyph sizes on quran-app-screens.html (Reader settings). */
 export const STEP_GLYPH_SMALL = 16;
 export const STEP_GLYPH_LARGE = 20;
-/**
- * Amiri's normal leading (hhea ascender 1124 + descender 634, per 1000 em): the frame's glyph buttons use
- * `font-family: Amiri` with no line-height, so the line is 1.758 × size. A shorter line clips the hamza of «أ».
- */
-const AMIRI_NORMAL_LEADING = (1124 + 634) / 1000;
 /** Minimum width of the percent label (frame: min-width 52px). */
 export const PERCENT_MIN_WIDTH = 52;
 /** Inner padding of the track (frame: padding 2px). */
 const TRACK_PADDING = 2;
 
 function glyphStyle(size: number): { fontSize: number; lineHeight: number } {
-  return { fontSize: size, lineHeight: Math.round(size * AMIRI_NORMAL_LEADING) };
+  return { fontSize: size, lineHeight: Math.round(size * amiriNaturalLeading) };
 }
 
 export function FontScaleStepper({

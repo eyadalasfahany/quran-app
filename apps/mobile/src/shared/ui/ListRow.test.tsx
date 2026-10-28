@@ -85,6 +85,41 @@ describe('ListRow', () => {
     expect(flatStyle(view.getByText('البقرة').props.style)).toMatchObject({ fontFamily: 'Amiri-Bold', fontSize: 20 });
   });
 
+  it('keeps the default density at 52 pt minimum with an inset', async () => {
+    const view = await renderUi(<ListRow testID="row" title="row" />);
+
+    expect(flatStyle(view.getByTestId('row').props.style)).toMatchObject({ minHeight: 52, paddingHorizontal: 16 });
+  });
+
+  it('draws the index density at the surah index frame: 60 pt minimum, no inset, 14 pt gap', async () => {
+    const view = await renderUi(<ListRow density="index" subtitle="مكية · ٧ آية" testID="row" title="الفاتحة" />);
+    const style = flatStyle(view.getByTestId('row').props.style);
+
+    expect(style).toMatchObject({ flexDirection: 'row', gap: 14, minHeight: 60 });
+    expect(style.paddingHorizontal).toBeUndefined();
+    expect(style.paddingVertical).toBeUndefined();
+  });
+
+  it('sets the index name at Amiri 19 / 33 and the meta at 12 pt, weight 400', async () => {
+    const view = await renderUi(<ListRow density="index" subtitle="مكية · ٧ آية" title="الفاتحة" titleVariant="displaySm" />);
+
+    expect(flatStyle(view.getByText('الفاتحة').props.style)).toMatchObject({
+      fontFamily: 'Amiri-Bold',
+      fontSize: 19,
+      lineHeight: 33,
+    });
+    expect(flatStyle(view.getByText('مكية · ٧ آية').props.style)).toMatchObject({
+      fontFamily: 'IBMPlexSansArabic-Regular',
+      fontSize: 12,
+    });
+  });
+
+  it('keeps the Amiri display size for a default-density display title', async () => {
+    const view = await renderUi(<ListRow title="البقرة" titleVariant="displaySm" />);
+
+    expect(flatStyle(view.getByText('البقرة').props.style).fontSize).toBe(20);
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('ListRow.tsx')).toEqual([]);
   });

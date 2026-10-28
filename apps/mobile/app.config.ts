@@ -1,15 +1,10 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 // APP_VARIANT is set per EAS build profile (eas.json). Local runs default to development.
+// TestFlight and the App Store share the production bundle ID (ADR 0016).
 // The bundle ID can never change after the first store build.
 const VARIANTS = {
   development: { id: 'com.taybahapp.taybah.dev', name: 'Taybah (Dev)', nameAr: 'طيبة (تطوير)', scheme: 'taybah-dev' },
-  preview: {
-    id: 'com.taybahapp.taybah.preview',
-    name: 'Taybah (Preview)',
-    nameAr: 'طيبة (معاينة)',
-    scheme: 'taybah-preview',
-  },
   production: { id: 'com.taybahapp.taybah', name: 'Taybah', nameAr: 'طيبة', scheme: 'taybah' },
 } as const;
 
@@ -18,7 +13,7 @@ type Variant = keyof typeof VARIANTS;
 function resolveVariant(value: string | undefined): Variant {
   const variant = value ?? 'development';
   if (!(variant in VARIANTS)) {
-    throw new Error(`Unknown APP_VARIANT "${variant}". Use development, preview or production.`);
+    throw new Error(`Unknown APP_VARIANT "${variant}". Use development or production.`);
   }
   return variant as Variant;
 }
@@ -30,6 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: variant.name,
     slug: 'taybah',
+    owner: 'themayman',
     version: '1.0.0',
     scheme: variant.scheme,
     // The home-screen name follows the device language.
@@ -61,6 +57,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         // iOS applies RTL only for languages the app declares.
         CFBundleLocalizations: ['ar', 'en'],
         CFBundleAllowMixedLocalizations: true,
+        // HTTPS only through the OS, which is exempt; skips the export-compliance question per build.
+        ITSAppUsesNonExemptEncryption: false,
       },
     },
     android: {
@@ -88,10 +86,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // No update URL until EAS exists, so this does not check for remote updates.
       'expo-updates',
       'expo-sqlite',
+      'expo-font',
     ],
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
+    },
+    extra: {
+      eas: { projectId: 'e58e645e-5912-4da1-8ea8-7bdb73d93f64' },
     },
   };
 };

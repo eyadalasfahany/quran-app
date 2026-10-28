@@ -18,7 +18,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn() },
+  router: { navigate: jest.fn(), push: jest.fn() },
 }));
 
 jest.mock('@/core/db/content/open', () => ({
@@ -72,6 +72,7 @@ describe('HomeScreen', () => {
   beforeEach(() => {
     storage.remove(storageKeys.readerLastVerseKey);
     jest.mocked(router.push).mockClear();
+    jest.mocked(router.navigate).mockClear();
     jest.mocked(openContentDb).mockImplementation(() => {
       throw new Error('openContentDb is unavailable under Jest.');
     });
@@ -79,12 +80,20 @@ describe('HomeScreen', () => {
     jest.mocked(getChapter).mockReset();
   });
 
-  it('renders the home title without a continue row when the content database is closed', async () => {
+  it('renders the greeting title and the search button without a continue row when the content database is closed', async () => {
     const view = await renderUi(<HomeScreen />);
 
     expect(view.getByTestId('screen-home')).toBeOnTheScreen();
-    expect(view.getByText('الرئيسية')).toBeOnTheScreen();
+    expect(view.getByRole('header', { name: 'السلام عليكم' })).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'بحث' })).toBeOnTheScreen();
     expect(view.queryByTestId('home-continue-reading')).toBeNull();
+  });
+
+  it('opens the search screen from the header button', async () => {
+    const view = await renderUi(<HomeScreen />);
+    await fireEvent.press(view.getByRole('button', { name: 'بحث' }));
+
+    expect(router.push).toHaveBeenCalledWith('/search');
   });
 
   it('opens the saved ayah from the continue row', async () => {
@@ -97,5 +106,26 @@ describe('HomeScreen', () => {
     await fireEvent.press(view.getByTestId('home-continue-reading'));
 
     expect(router.push).toHaveBeenCalledWith('/read/2:255');
+  });
+
+  it('renders the Surahs and Saved tiles without a last-read verse', async () => {
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByTestId('home-tiles-surahs')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'السور' })).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'المحفوظات' })).toBeOnTheScreen();
+    expect(view.queryByRole('button', { name: 'الحديث' })).toBeNull();
+    expect(view.queryByRole('button', { name: 'القرّاء' })).toBeNull();
+  });
+
+  it('navigates to the Mushaf and My Quran tabs from the tiles', async () => {
+    const view = await renderUi(<HomeScreen />);
+
+    await fireEvent.press(view.getByRole('button', { name: 'السور' }));
+    expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(mushaf)');
+
+    await fireEvent.press(view.getByRole('button', { name: 'المحفوظات' }));
+    expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(my-quran)');
+    expect(router.navigate).toHaveBeenCalledTimes(2);
   });
 });

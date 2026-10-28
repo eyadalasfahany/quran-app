@@ -30,7 +30,9 @@ export function NumberMedallion({ number, testID }: { number: number; testID?: s
     >
       <View style={square} />
       <View style={[square, { transform: [{ rotate: '45deg' }] }]} />
-      <UiText variant="numeral">{formatNumber(number, 'ar')}</UiText>
+      <UiText align="center" variant="numeral">
+        {formatNumber(number, 'ar')}
+      </UiText>
     </View>
   );
 }

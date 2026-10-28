@@ -678,12 +678,12 @@ Reminders are local; only the daily hadith and rare announcements come from the 
 | --- | --- | --- | --- |
 | API | `php artisan serve` on local PHP 8.5 with Homebrew MySQL and Redis; no Docker or Caddy for now (ADR 0003, 0004) | Small VPS behind Caddy | Production VPS (4 vCPU, 8 GB, 80 GB) behind Caddy |
 | QF keys | Prelive | Prelive | Production |
-| EAS channel | `development` | `preview` | `production` |
-| App variant | `com.<org>.quran.dev` | `com.<org>.quran.preview` | `com.<org>.quran` |
+| EAS channel | `development` | — | `production` |
+| App variant | `com.taybahapp.taybah.dev` | — | `com.taybahapp.taybah` (TestFlight and App Store) |
 | Mail | Log driver (Mailpit once Docker returns, ADR 0004) | Transactional provider, sandbox | Transactional provider |
-| Push | Expo push to dev builds | Expo push to TestFlight / internal testing | Expo push to store builds |
+| Push | Expo push to dev builds | — | Expo push to TestFlight and store builds |
 
-Three bundle IDs let dev, preview and production builds sit side by side on one test iPad or foldable.
+One App Store app (ADR 0016): TestFlight and store builds share `com.taybahapp.taybah` and the `production` EAS profile. The `.dev` bundle ID keeps development builds beside it on a test device. The profile's `EXPO_PUBLIC_API_URL` is an EAS environment variable (`production` environment); it points at a staging API until the production server exists, then at production.
 
 **Configuration and secrets**
 
@@ -774,7 +774,7 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 
 | Item | Status | Saves | Reason |
 | --- | --- | --- | --- |
-| Hadith section and daily hadith push | v1.1 | \~3 weeks | Needs HadeethEnc confirmation and reviewer sign-off anyway |
+| Hadith section and daily hadith push | v1.1, after listening | \~3 weeks | Needs HadeethEnc confirmation and reviewer sign-off anyway. Home's الحديث tile comes with it (ADR 0017) |
 | IndoPak and Tajweed scripts | v1.1 | \~1.5 weeks | Uthmani Hafs and Madani page-exact cover most readers |
 | Quran translations and word-by-word meanings | Removed (ADR 0014) | — | Not built in any version |
 | Hinge-aware foldable split, keyboard shortcuts | v1.1 | \~1 week | Needs a native module; the base responsive layout already works |

@@ -76,6 +76,25 @@ describe('IconButton', () => {
     });
   });
 
+  it('draws the raised variant as a surfaceRaised disc with a hairline, at 44 pt', async () => {
+    const view = await renderUi(<IconButton icon={bookmark} label="بحث" onPress={() => undefined} variant="raised" />);
+
+    expect(flatStyle(view.getByRole('button').props.style)).toMatchObject({
+      backgroundColor: colors.surfaceRaised,
+      borderColor: colors.line,
+      borderRadius: themes.light.radius.pill,
+      borderWidth: themes.light.stroke.hairline,
+      height: ICON_BUTTON_SIZE,
+      width: ICON_BUTTON_SIZE,
+    });
+  });
+
+  it('draws no border on the plain variant', async () => {
+    const view = await renderUi(<IconButton icon={bookmark} label="Plain" onPress={() => undefined} />);
+
+    expect(flatStyle(view.getByRole('button').props.style).borderWidth).toBe(0);
+  });
+
   it('shows the pressed glass tint on the track variant when toggled on', async () => {
     const view = await renderUi(
       <IconButton icon={bookmark} label="Bookmark" onPress={() => undefined} pressed variant="track" />,

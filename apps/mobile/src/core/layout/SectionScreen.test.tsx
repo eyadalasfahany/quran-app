@@ -20,8 +20,10 @@ describe('SectionScreen', () => {
 
     expect(view.getByRole('header', { name: 'الاستماع' })).toBeOnTheScreen();
     expect(flatStyle(view.getByText('الاستماع').props.style)).toMatchObject({
-      ...themes.light.text.title,
       color: themes.light.colors.ink,
+      fontFamily: 'Amiri-Bold',
+      fontSize: 28,
+      lineHeight: 36,
     });
     expect(flatStyle(view.getByTestId('screen').props.style)).toMatchObject({
       backgroundColor: themes.light.colors.surface,
@@ -38,6 +40,12 @@ describe('SectionScreen', () => {
     );
 
     expect(view.getByText('محتوى')).toBeOnTheScreen();
+  });
+
+  it('renders the trailing control beside the title', async () => {
+    const view = await renderUi(<SectionScreen testID="screen" title="الرئيسية" trailing={<Text>بحث</Text>} />);
+
+    expect(view.getByText('بحث')).toBeOnTheScreen();
   });
 
   it.each(['light', 'sepia', 'dark'] as const)('draws the title in ink in %s', async (theme) => {

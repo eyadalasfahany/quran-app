@@ -25,6 +25,7 @@ export function SurahRow({
   return (
     <ListRow
       chevron={false}
+      density="index"
       leading={<NumberMedallion number={chapter.id} testID={testID ? `${testID}-number` : undefined} />}
       onPress={onPress}
       separator={separator}
@@ -33,7 +34,7 @@ export function SurahRow({
       title={chapter.nameArabic}
       titleVariant="displaySm"
       trailing={
-        <UiText tone="muted" variant="label">
+        <UiText tone="muted" variant="label" weight={400}>
           {t('library.surah.page', { page: formatNumber(chapter.pageStart, locale) })}
         </UiText>
       }

@@ -31,6 +31,15 @@ describe('ContinueReadingRow', () => {
     expect(view.queryByText('Al-Baqarah')).toBeNull();
   });
 
+  it('draws the frame card: 10 / 14 padding, radius 16, a 10 pt gap and a bookmark at 20 pt', async () => {
+    const view = await renderUi(<ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} testID="row" />);
+    const card = flatStyle(view.getByTestId('row-card').props.style);
+
+    expect(card).toMatchObject({ borderRadius: themes.light.radius.tile, gap: 10, paddingHorizontal: 14, paddingVertical: 10 });
+    expect(flatStyle(view.getByText('متابعة').props.style)).toMatchObject({ fontFamily: 'IBMPlexSansArabic-SemiBold', fontSize: 13 });
+    expect(flatStyle(view.getByTestId('row').props.style).marginBottom).toBe(14);
+  });
+
   it.each(locales)('is one button with the whole line as its label (%s)', async (locale) => {
     const view = await renderUi(<ContinueReadingRow ayah={255} chapter={chapter} onPress={() => undefined} />, {
       locale,

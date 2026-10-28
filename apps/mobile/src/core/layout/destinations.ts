@@ -8,7 +8,7 @@ export type Destination = {
   href: Href;
   label: DestinationLabel;
   symbol: SFSymbol;
-  androidIcon: 'home' | 'menu_book' | 'headphones' | 'edit';
+  androidIcon: 'home' | 'menu_book' | 'headphones' | 'bookmark';
   testID: 'home' | 'mushaf' | 'listen' | 'my-quran';
 };
 
@@ -35,8 +35,8 @@ export const destinations = [
     name: '(my-quran)',
     href: '/(main)/(my-quran)',
     label: 'tabs.myQuran',
-    symbol: 'pencil',
-    androidIcon: 'edit',
+    symbol: 'bookmark',
+    androidIcon: 'bookmark',
     testID: 'my-quran',
   },
 ] as const satisfies readonly Destination[];

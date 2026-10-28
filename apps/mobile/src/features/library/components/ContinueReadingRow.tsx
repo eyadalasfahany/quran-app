@@ -38,6 +38,7 @@ export function ContinueReadingRow({
       <Card
         padding={2}
         radius="tile"
+        testID={`${testID}-card`}
         style={{
           alignItems: 'center',
           flexDirection: 'row',

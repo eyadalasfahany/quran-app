@@ -186,6 +186,7 @@
     },
     "ayahNumber": "Ayah {{number}}",
     "clearSearch": "Clear search",
+    "search": "Search",
     "highlight": {
       "gold": "Gold highlight",
       "green": "Green highlight",
@@ -194,9 +195,11 @@
     }
   },
   "home": {
+    "greeting": "Assalamu alaikum",
     "continueReading": "Continue reading",
     "place": "Ayah {{ayah}} · page {{page}} · juz {{juz}}",
     "resume": "Continue",
-    "progress": "{{percent}}% of the Quran read"
+    "progress": "{{percent}}% of the Quran read",
+    "tiles": { "surahs": "Surahs", "saved": "Saved" }
   }
 }

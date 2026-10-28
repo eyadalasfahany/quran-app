@@ -31,7 +31,29 @@ describe('SurahRow', () => {
 
     expect(view.getByText('البقرة')).toBeOnTheScreen();
     expect(view.queryByText('Al-Baqarah')).toBeNull();
-    expect(flatStyle(view.getByText('البقرة').props.style)).toMatchObject({ fontFamily: 'Amiri-Bold', fontSize: 20 });
+    expect(flatStyle(view.getByText('البقرة').props.style)).toMatchObject({
+      fontFamily: 'Amiri-Bold',
+      fontSize: 19,
+      lineHeight: 33,
+    });
+  });
+
+  it('draws the index row at the frame metrics: 60 pt minimum, no inset, 14 pt gap', async () => {
+    const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} testID="row" />);
+
+    expect(flatStyle(view.getByTestId('row').props.style)).toMatchObject({
+      flexDirection: 'row',
+      gap: 14,
+      minHeight: 60,
+    });
+    expect(flatStyle(view.getByTestId('row').props.style).paddingHorizontal).toBeUndefined();
+  });
+
+  it('draws the start page and the meta line at 12 pt, weight 400', async () => {
+    const view = await renderUi(<SurahRow chapter={chapter} onPress={() => undefined} />);
+
+    expect(flatStyle(view.getByText('ص ٢').props.style)).toMatchObject({ fontFamily: 'IBMPlexSansArabic-Regular', fontSize: 12 });
+    expect(flatStyle(view.getByText('مدنية · ٢٨٦ آية').props.style)).toMatchObject({ fontSize: 12 });
   });
 
   it('writes every number in Arabic-Indic digits: medallion, ayah count and start page', async () => {

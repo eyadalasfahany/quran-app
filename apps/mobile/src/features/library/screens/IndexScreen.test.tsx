@@ -52,6 +52,17 @@ describe('IndexScreen', () => {
     expect(view.getByTestId('index-segment')).toBeOnTheScreen();
   });
 
+  it.each([
+    ['ar', 'بحث'],
+    ['en', 'Search'],
+  ] as const)('puts the search button in the header and opens the search screen (%s)', async (locale, label) => {
+    const view = await renderUi(<IndexScreen />, { locale });
+
+    await fireEvent.press(view.getByRole('button', { name: label }));
+
+    expect(router.push).toHaveBeenCalledWith('/search');
+  });
+
   it('lists the surahs and opens the first ayah of a surah', async () => {
     const view = await renderUi(<IndexScreen />);
 

@@ -18,6 +18,7 @@ export function JuzRow({
 
   return (
     <ListRow
+      density="index"
       onPress={onPress}
       separator={separator}
       subtitle={t('library.juz.startVerse', { verseKey: juz.verseKey })}

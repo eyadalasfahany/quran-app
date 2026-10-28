@@ -15,11 +15,21 @@ describe('ContinueReadingCard', () => {
 
     expect(flatStyle(view.getByTestId('home-continue-reading').props.style)).toMatchObject({
       backgroundColor: colors.brandSurface,
-      padding: 20,
+      borderRadius: 24,
+      gap: 6,
+      padding: 22,
     });
     expect(flatStyle(view.getByText('سورة البقرة').props.style)).toMatchObject({ color: colors.onBrand, fontSize: 34 });
     expect(view.getByText('الآية ٢٥٥ · صفحة ٤٢ · الجزء ٣')).toBeOnTheScreen();
-    expect(flatStyle(view.getByText('تابع القراءة').props.style).color).toBe(colors.onBrandSurfaceMuted);
+    expect(flatStyle(view.getByText('تابع القراءة').props.style)).toMatchObject({
+      color: colors.onBrandSurfaceMuted,
+      fontFamily: 'IBMPlexSansArabic-Medium',
+      fontSize: 13,
+    });
+    expect(flatStyle(view.getByText('متابعة').props.style)).toMatchObject({
+      fontFamily: 'IBMPlexSansArabic-SemiBold',
+      fontSize: 13,
+    });
   });
 
   it('fills the progress bar to the page’s share of the mushaf', async () => {
