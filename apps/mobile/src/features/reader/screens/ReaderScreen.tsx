@@ -21,7 +21,7 @@ import { ReaderModeFade } from '../components/ReaderModeFade';
 import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToolbar';
 import { ResumePill } from '../components/ResumePill';
 import { SidePanel } from '../components/SidePanel';
-import { getChapter } from '../data/chapters';
+import { getChapter, listChapters } from '../data/chapters';
 import { getVerseByKey } from '../data/verses';
 import { HafsMushafList } from '../HafsMushafList';
 import { panelPlacementFor, panelStripWidth } from '../layout';
@@ -29,6 +29,7 @@ import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
 import type { ReaderMode } from '../anchor/reading-anchor';
 import { useReaderSelection } from '../selection';
+import { useScrollHaptics } from '../scroll-haptics';
 import { useReaderSettings } from '../settings';
 
 type ReaderChrome = {
@@ -71,6 +72,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const fontScale = useReaderSettings((state) => state.fontScale);
   const selection = useReaderSelection();
   const highlights = useHighlightsByVerseId();
+  const haptics = useScrollHaptics(mode);
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
   const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
@@ -89,6 +91,10 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
       return null;
     }
   }, []);
+  const surahStartPages = useMemo(
+    () => new Set(executor ? listChapters(executor).map((chapter) => chapter.pageStart) : []),
+    [executor],
+  );
 
   const placement = panelPlacementFor(width, windowClass);
   const listAnchor = pinnedVerseKey ?? anchor.verseKey;
@@ -283,6 +289,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                   const verseKey = pageForVerse(executor, anchor.verseKey) === page ? anchor.verseKey : key;
                   setVisibleVerseKey(verseKey);
                   anchor.setVisible({ page, verseKey });
+                  haptics.onPage(page, surahStartPages.has(page));
                 }}
                 selectedVerseKey={selection.verseKey}
                 testID="reader-mushaf"
@@ -316,6 +323,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);
                   anchor.setVisible({ verseKey: key });
+                  haptics.onVerse(key);
                 }}
                 selectedVerseKey={selection.verseKey}
                 testID="reader-reading"

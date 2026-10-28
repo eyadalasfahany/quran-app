@@ -38,7 +38,7 @@ export function HomeTile({
       testID={testID}
     >
       <Icon color={theme.colors.brand} name={icon} size={theme.size.icon} />
-      <UiText align="center" variant="caption" weight={500}>
+      <UiText align="center" style={{ lineHeight: theme.size.homeTileLabelLineHeight }} variant="caption" weight={500}>
         {label}
       </UiText>
     </Pressable>

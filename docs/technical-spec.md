@@ -658,7 +658,7 @@ For each change, in one transaction per request:
 - **Haptics** (`expo-haptics`, added to the content plan when Phase 1 first uses it):
   - Selection feedback when the reading mode, script or reciter changes.
   - Success when a khatma day is completed.
-  - None on scrolling or page changes, which happen too often.
+  - Scrolling (ADR 0018): in Reading mode, a selection tick each time the top ayah changes, and a light impact instead when that ayah starts a new surah; in Mushaf mode, a light impact when the top page holds the start of a surah. Programmatic moves (opening at the last-read ayah, resize restore, audio follow) tick too, except the first position after opening or switching mode. At most one scroll haptic per 80 ms; a surah tick wins over an ayah tick. None in Focus mode.
   - The system haptics setting turns them off.
 
 ## 13. Notifications, environments and monitoring

@@ -1,4 +1,5 @@
 import { act, fireEvent } from '@testing-library/react-native';
+import * as Haptics from 'expo-haptics';
 import { useSegments } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -51,6 +52,12 @@ jest.mock('@/core/db/content/open', () => ({
     }
     return { db: {}, executor: mockExecutor };
   },
+}));
+
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  ImpactFeedbackStyle: { Light: 'light' },
 }));
 
 jest.mock('expo-router', () => ({
@@ -177,6 +184,26 @@ describe('ReaderScreen', () => {
     await view.unmount();
     expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('3:1');
     expect(storage.getString(storageKeys.readerLastPage)).toBe(String(page));
+  });
+
+  it('ticks light in Mushaf only when the top page starts a surah', async () => {
+    mockExecutor = (await openReaderTestContent()).executor;
+    useReaderSettings.getState().setMode('mushaf');
+    await renderUi(reader());
+    jest.mocked(Haptics.impactAsync).mockClear();
+
+    // Page 2 sets the baseline, page 3 holds no surah start, page 50 starts Al Imran.
+    await act(async () => {
+      mockMushafProps?.onVisiblePage?.(2, '2:1');
+      mockMushafProps?.onVisiblePage?.(3, '2:6');
+    });
+    expect(Haptics.impactAsync).not.toHaveBeenCalled();
+
+    await act(async () => {
+      mockMushafProps?.onVisiblePage?.(50, '3:1');
+    });
+    expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
+    expect(Haptics.impactAsync).toHaveBeenCalledWith('light');
   });
 
   it.each(locales)('puts the Quran on the page surface, as the design does, in %s', async (locale) => {

@@ -115,6 +115,8 @@ export const size = {
   homeTileGridGap: 10,
   homeTilePaddingY: 14,
   homeTilePaddingX: 4,
+  // 13 px label at line-height normal (19), as in #Main.
+  homeTileLabelLineHeight: 19,
 } as const;
 
 export const stroke = {

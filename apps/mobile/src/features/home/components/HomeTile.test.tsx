@@ -31,7 +31,7 @@ describe('HomeTile', () => {
     const view = await renderUi(<HomeTile icon={list} label="المحفوظات" onPress={() => undefined} />);
     const label = flatStyle(view.getByText('المحفوظات').props.style);
 
-    expect(label).toMatchObject({ color: colors.ink, fontSize: 13, textAlign: 'center' });
+    expect(label).toMatchObject({ color: colors.ink, fontSize: 13, lineHeight: 19, textAlign: 'center' });
     expect(label.fontFamily).toBe('IBMPlexSansArabic-Medium');
     expect(label.fontWeight).toBeUndefined();
   });

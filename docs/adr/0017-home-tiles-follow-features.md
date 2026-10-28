@@ -14,6 +14,8 @@ The design system gives My Quran and Saved the `bookmark` glyph and keeps `penci
 2. القرّاء is added in Phase 3 step 6, with the reciters screen. الحديث is added with the v1.1 hadith section, which comes after listening.
 3. The tiles share the row equally (each `flex: 1`). With all four they match the frame's four columns; with fewer, each is wider.
 4. The مصحفي tab uses `bookmark` (Android `bookmark`), the same glyph as the المحفوظات tile.
+5. The السور glyph (`list.bullet`) uses the system's RTL variant, with the bullets on the right, per the HIG ("flip interface icons that represent text or reading direction"). The Arabic Home frames (#Main, HomeDark, HomeAndroid, and the expanded Home) now draw it that way; HomeEnglish keeps the bullets on the left.
+6. The tile label is 13 px at a 19 line pitch: the frame sets no line-height, and 13 px Plex at `normal` gives 19 (as `focusLabelLineHeight` records).
 
 ## Consequences
 
