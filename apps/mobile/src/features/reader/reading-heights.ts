@@ -1,15 +1,15 @@
+import { size } from '@quran/design-tokens';
+
 import type { ReadingListMode } from './reading-list-types';
+
+// Reading rows: the ayah's text estimate plus the 44 pt header row above it.
+const READING_ROW_TEXT_ESTIMATE = 160;
+export const READING_ROW_ESTIMATE = READING_ROW_TEXT_ESTIMATE + size.touchTarget;
 
 export type HeightCacheKey = string;
 
-export function heightCacheSignature(
-  width: number,
-  fontScale: number,
-  translationResourceIds: readonly number[],
-  mode: ReadingListMode,
-): string {
-  const translations = translationResourceIds.length === 0 ? '-' : translationResourceIds.join(',');
-  return `${mode}:${width}:${fontScale}:${translations}`;
+export function heightCacheSignature(width: number, fontScale: number, mode: ReadingListMode): string {
+  return `${mode}:${width}:${fontScale}`;
 }
 
 export class ReadingHeightCache {
@@ -41,5 +41,5 @@ export function estimateReadingRowHeight(mode: ReadingListMode, viewportHeight: 
   if (mode === 'focus') {
     return viewportHeight;
   }
-  return 160;
+  return READING_ROW_ESTIMATE;
 }

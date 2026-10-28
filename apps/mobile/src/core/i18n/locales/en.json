@@ -14,8 +14,6 @@
       "madinah": "Medinan"
     },
     "surahMeta": "{{place}} · {{count}} ayahs",
-    "translationAttribution": "{{name}}",
-    "translationAttributionWithAuthor": "{{name}} · {{author}}",
     "mushaf": {
       "placeholderTitle": "This page is not ready",
       "placeholderBody": "Connect to load this page.",
@@ -33,7 +31,8 @@
       "ayahActions": "Ayah actions",
       "togglePanel": "Side panel",
       "tools": "Reading tools",
-      "place": "Page {{page}} · Juz {{juz}}"
+      "place": "Page {{page}} · Juz {{juz}}",
+      "readingSubtitle": "Reading mode"
     },
     "panel": {
       "label": "Side panel",
@@ -42,8 +41,7 @@
       "tabsLabel": "Panel contents",
       "tabs": {
         "actions": "Options",
-        "tafsir": "Tafsir",
-        "translation": "Translation"
+        "tafsir": "Tafsir"
       }
     },
     "resume": {
@@ -66,13 +64,11 @@
     },
     "ayahPanel": {
       "ayah": "Ayah {{number}}",
-      "wordsTitle": "Word meanings",
       "highlightTitle": "Highlight",
       "actionsLabel": "Ayah actions",
       "play": "Play from here",
       "audioUnavailable": "Recitation isn't available yet",
       "tafsir": "Tafsir",
-      "translation": "Translation",
       "bookmark": "Bookmark",
       "bookmarked": "Bookmarked",
       "repeat": "Repeat",
@@ -104,12 +100,6 @@
       "noEntry": "This tafsir has no passage for this ayah.",
       "fallbackName": "Tafsir {{id}}"
     },
-    "translationPanel": {
-      "showInline": "Show translations in Reading mode",
-      "emptyTitle": "No translation chosen",
-      "emptyBody": "Choose a translation in Reading settings.",
-      "missing": "This translation has no text for this ayah."
-    },
     "settings": {
       "title": "Reading settings",
       "close": "Close",
@@ -128,10 +118,11 @@
         "light": "Light",
         "sepia": "Sepia",
         "dark": "Dark"
-      },
-      "translations": "Translations",
-      "translationsEmpty": "No translations installed",
-      "translationFallback": "Translation {{id}}"
+      }
+    },
+    "ayahRow": {
+      "play": "Play ayah",
+      "more": "More"
     }
   },
   "library": {

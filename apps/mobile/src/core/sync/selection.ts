@@ -24,10 +24,6 @@ export function defaultSelectedResourceIds(
   locale: Locale,
 ): number[] {
   const ids = resources.filter((resource) => resource.group === 'mushafs').map((resource) => resource.id);
-  const translation = firstByLanguage(resources, 'translations', locale);
-  if (translation !== undefined) {
-    ids.push(translation);
-  }
   const tafsir = firstByLanguage(resources, 'tafsirs', locale);
   if (tafsir !== undefined) {
     ids.push(tafsir);
@@ -41,7 +37,7 @@ export function defaultSelectedResourceIds(
 
 function firstByLanguage(
   resources: readonly ContentManifestResource[],
-  group: 'translations' | 'tafsirs',
+  group: 'tafsirs',
   locale: Locale,
 ): number | undefined {
   const inGroup = resources.filter((resource) => resource.group === group);
@@ -60,30 +56,14 @@ function applyReaderResourceOverride(
   resources: readonly ContentManifestResource[],
 ): number[] {
   const override = readReaderResourceOverride();
-  if (override.translationIds === null && !override.tafsirChosen) {
+  if (!override.tafsirChosen) {
     return [...base];
   }
 
-  const translations = new Set(
-    resources.filter((resource) => resource.group === 'translations').map((resource) => resource.id),
-  );
   const tafsirs = new Set(resources.filter((resource) => resource.group === 'tafsirs').map((resource) => resource.id));
-  let next = [...base];
-
-  if (override.translationIds !== null) {
-    next = next.filter((id) => !translations.has(id));
-    for (const id of override.translationIds) {
-      if (!next.includes(id)) {
-        next.push(id);
-      }
-    }
-  }
-
-  if (override.tafsirChosen) {
-    next = next.filter((id) => !tafsirs.has(id));
-    if (override.tafsirId !== null && !next.includes(override.tafsirId)) {
-      next.push(override.tafsirId);
-    }
+  const next = base.filter((id) => !tafsirs.has(id));
+  if (override.tafsirId !== null && !next.includes(override.tafsirId)) {
+    next.push(override.tafsirId);
   }
 
   return next;

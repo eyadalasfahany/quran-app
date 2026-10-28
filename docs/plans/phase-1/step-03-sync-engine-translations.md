@@ -1,5 +1,7 @@
 # Step 3 — Sync engine, proven on translations (API)
 
+> **Removed by ADR 0014 (28 Oct 2026):** Quran translations, word-by-word meanings, word chips and the translation panel, tab and settings. Lines below that mention them are history; do not build them.
+
 Follow [README.md](README.md), especially the **shared contract** table. Needs steps 1 and 2 committed. Read also:
 - Spec §7, hop 1.
 - [`../phase-1.md`](../phase-1.md): the "What QF prelive actually gives us" section.

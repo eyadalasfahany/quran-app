@@ -6,7 +6,7 @@ import { themes } from '@/core/theme';
 import { getHighlights, listBookmarks } from '@/features/library/data';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { openUserTestStore } from '../../../../jest/user-test-db';
 import { AyahActionsPanel } from './AyahActionsPanel';
 
@@ -15,6 +15,9 @@ jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resol
 
 const AYAH_1_2 = 'ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ';
 const REFERENCE = 'الفاتحة · الآية ٢';
+
+// The seven action tiles, in the order the ayah sheet shows them (ADR 0014).
+const TILE_KEYS = ['play', 'tafsir', 'bookmark', 'repeat', 'note', 'copy', 'share'] as const;
 
 function panel(overrides: Partial<Parameters<typeof AyahActionsPanel>[0]> = {}) {
   return (
@@ -26,7 +29,6 @@ function panel(overrides: Partial<Parameters<typeof AyahActionsPanel>[0]> = {}) 
       textUthmani={AYAH_1_2}
       verseId={2}
       verseNumber={2}
-      words={[]}
       {...overrides}
     />
   );
@@ -47,27 +49,19 @@ describe('AyahActionsPanel', () => {
     }
   });
 
-  it('hides the word chips without word-by-word meanings', async () => {
-    const view = await renderUi(panel());
+  it('shows exactly seven tiles in order, with no translation tile and no word chips', async () => {
+    const view = await renderUi(panel({ onOpenTafsir: jest.fn() }), { locale: 'en' });
 
+    const tileIds = TILE_KEYS.map((key) => `ayah-actions-panel-${key}`);
+    const shownTileIds = view
+      .getAllByRole('button')
+      .map((button) => button.props.testID as string | undefined)
+      .filter((id): id is string => id !== undefined && tileIds.includes(id));
+
+    expect(shownTileIds).toEqual(tileIds);
+    expect(view.queryByTestId('ayah-actions-panel-translation')).toBeNull();
+    expect(view.queryByRole('button', { name: 'Translation' })).toBeNull();
     expect(view.queryByTestId('ayah-actions-panel-words')).toBeNull();
-    expect(view.queryByText('معاني الكلمات')).toBeNull();
-  });
-
-  it.each(locales)('shows word chips right to left in %s', async (locale) => {
-    const view = await renderUi(
-      panel({
-        words: [
-          { meaning: 'All praise', position: 1, word: 'ٱلْحَمْدُ' },
-          { meaning: 'to Allah', position: 2, word: 'لِلَّهِ' },
-        ],
-      }),
-      { locale },
-    );
-
-    expect(view.getByTestId('ayah-actions-panel-word-1-word').props.children).toBe('ٱلْحَمْدُ');
-    expect(flatStyle(view.getByTestId('ayah-actions-panel-word-1-word').props.style).writingDirection).toBe('rtl');
-    expect(flatStyle(view.getByTestId('ayah-actions-panel-words').props.style).direction).toBe('rtl');
   });
 
   it('keeps play and repeat disabled with a hint while audio is unavailable', async () => {
@@ -146,16 +140,15 @@ describe('AyahActionsPanel', () => {
     expect(view.getByTestId('ayah-actions-panel-note-editor')).toBeOnTheScreen();
   });
 
-  it('shows tafsir and translation tiles only when they can open', async () => {
+  it('shows the tafsir tile only when it can open', async () => {
     const onOpenTafsir = jest.fn();
-    const onOpenTranslation = jest.fn();
-    const view = await renderUi(panel({ onOpenTafsir, onOpenTranslation }), { locale: 'en' });
+    const withTafsir = await renderUi(panel({ onOpenTafsir }), { locale: 'en' });
 
-    await fireEvent.press(view.getByRole('button', { name: 'Tafsir' }));
-    await fireEvent.press(view.getByRole('button', { name: 'Translation' }));
-
+    await fireEvent.press(withTafsir.getByRole('button', { name: 'Tafsir' }));
     expect(onOpenTafsir).toHaveBeenCalledTimes(1);
-    expect(onOpenTranslation).toHaveBeenCalledTimes(1);
+
+    const withoutTafsir = await renderUi(panel(), { locale: 'en' });
+    expect(withoutTafsir.queryByRole('button', { name: 'Tafsir' })).toBeNull();
   });
 
   it('has no raw colour literals', () => {

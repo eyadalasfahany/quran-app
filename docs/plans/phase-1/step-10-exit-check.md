@@ -8,10 +8,10 @@ Not an agent coding task. The reviewer runs this after step 8 (and step 9, if it
 | --- | --- | --- | --- |
 | 1 | Fresh install, offline, reads Tanzil | Delete the app, install a dev build, airplane mode, launch | 1:1 and 2:255 readable; `meta.bundled_text = tanzil-uthmani-1.1` |
 | 2 | Tanzil checksum | `npm run check -w @quran/quran-text-check`; the step 7 seed tests | `ok`; seed checksum = `32cc746d…2eb99ee` |
-| 3 | API sync on prelive | `content:sync` for translations, tafsirs, mushafs and chapter_recitations | Counts as in steps 3 and 4; every `sync_runs` row `ok` |
+| 3 | API sync on prelive | `content:sync` for translations, tafsirs, mushafs and chapter_recitations | Counts as in steps 3 and 4; every `sync_runs` row `ok` Translation parts removed by ADR 0014 (28 Oct 2026). |
 | 4 | Resume | Kill a sync in the middle, then rerun | Completes, no duplicate rows, token stored once |
 | 5 | Packs and manifest | `curl` the manifest (200, then 304), download a pack, check its sha256 | Matches `content_packs` |
-| 6 | Device sync | Online launch, then airplane mode | Translation 85 offline for both sample surahs; tafsir and mushaf layout rows present |
+| 6 | Device sync | Online launch, then airplane mode | Translation 85 offline for both sample surahs; tafsir and mushaf layout rows present Translation parts removed by ADR 0014 (28 Oct 2026). |
 | 7 | Change feed | Simulate a `ROW_UPDATE` in a test sync, then foreground the app | The device row is updated with no pack download |
 | 8 | Atomicity | Corrupt a pack's hash on the server | The device keeps its old rows and reports `failed` |
 | 9 | All gates | `composer qa`, the mobile gates, `npm run typecheck`, the package tests | Green |

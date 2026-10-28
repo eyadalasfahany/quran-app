@@ -22,10 +22,9 @@ describe('sheet presentation', () => {
     expect(sheetHeight(0, SETTINGS_SHEET_TOP)).toBe(844 - SETTINGS_SHEET_TOP);
   });
 
-  it('gives tafsir and translations the tall sheet, taller than settings', () => {
+  it('gives the tafsir the tall sheet, taller than settings', () => {
     expect(sheetTopFor('actions')).toBe(AYAH_SHEET_TOP);
     expect(sheetTopFor('tafsir')).toBe(TAFSIR_SHEET_TOP);
-    expect(sheetTopFor('translation')).toBe(TAFSIR_SHEET_TOP);
     expect(sheetHeight(844, TAFSIR_SHEET_TOP)).toBeGreaterThan(sheetHeight(844, SETTINGS_SHEET_TOP));
     expect(sheetShapeFor('actions')).toBe('card');
     expect(sheetShapeFor('tafsir')).toBe('full');

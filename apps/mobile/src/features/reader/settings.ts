@@ -20,15 +20,11 @@ export type { ReaderSettings } from './settings-model';
 type ReaderSettingsStore = LoadedReaderSettings & {
   setMode: (mode: ReaderMode) => void;
   setFontScale: (fontScale: number) => void;
-  setShowTranslations: (showTranslations: boolean) => void;
-  setTranslationIds: (translationIds: number[]) => void;
   setTafsirId: (tafsirId: number | null) => void;
 };
 
 function choiceOf(settings: LoadedReaderSettings): ReaderChoice {
   return {
-    translationsChosen: settings.translationsChosen,
-    translationIds: settings.translationIds,
     tafsirChosen: settings.tafsirChosen,
     tafsirId: settings.tafsirId,
   };
@@ -44,23 +40,11 @@ function openExecutor(): SqlExecutor | null {
 
 export function rewriteSavedSelection(saved: readonly number[], previous: ReaderChoice, next: ReaderChoice): number[] {
   const drop = new Set<number>();
-  if (previous.translationsChosen) {
-    for (const id of previous.translationIds) {
-      drop.add(id);
-    }
-  }
   if (previous.tafsirChosen && previous.tafsirId !== null) {
     drop.add(previous.tafsirId);
   }
 
   const ids = saved.filter((id) => !drop.has(id));
-  if (next.translationsChosen) {
-    for (const id of next.translationIds) {
-      if (!ids.includes(id)) {
-        ids.push(id);
-      }
-    }
-  }
   if (next.tafsirChosen && next.tafsirId !== null && !ids.includes(next.tafsirId)) {
     ids.push(next.tafsirId);
   }
@@ -96,13 +80,6 @@ export const useReaderSettings = create<ReaderSettingsStore>(() => ({
   },
   setFontScale: (fontScale) => {
     commit(useReaderSettings.getState(), { ...useReaderSettings.getState(), fontScale });
-  },
-  setShowTranslations: (showTranslations) => {
-    commit(useReaderSettings.getState(), { ...useReaderSettings.getState(), showTranslations });
-  },
-  setTranslationIds: (translationIds) => {
-    const current = useReaderSettings.getState();
-    commit(current, { ...current, translationIds, translationsChosen: true });
   },
   setTafsirId: (tafsirId) => {
     const current = useReaderSettings.getState();

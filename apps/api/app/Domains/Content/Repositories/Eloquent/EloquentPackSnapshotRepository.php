@@ -10,7 +10,6 @@ use App\Domains\Content\Models\MushafPage;
 use App\Domains\Content\Models\Recitation;
 use App\Domains\Content\Models\RecitationTiming;
 use App\Domains\Content\Models\TafsirEntry;
-use App\Domains\Content\Models\TranslationEntry;
 use App\Domains\Content\Models\WordLayout;
 use App\Domains\Content\Packs\PackBuildException;
 use App\Domains\Content\Packs\PackColumn;
@@ -41,8 +40,6 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
     private function query(int $resourceId, PackTable $table): Builder
     {
         $query = match ($table->name) {
-            'translation_entries' => TranslationEntry::query()->toBase()
-                ->where('translation_entries.resource_id', $resourceId),
             'tafsir_entries' => TafsirEntry::query()->toBase()
                 ->where('tafsir_entries.resource_id', $resourceId),
             'mushafs' => Mushaf::query()->toBase()

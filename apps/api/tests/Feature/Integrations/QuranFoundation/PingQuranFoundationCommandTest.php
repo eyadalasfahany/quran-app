@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -29,6 +30,13 @@ it('prints the environment and counts without secrets or record text', function 
     ]);
 
     $status = Artisan::call('qf:ping');
+
+    Http::assertSent(function (Request $request): bool {
+        parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+
+        return str_contains($request->url(), '/api/v4/resources/sync')
+            && ($query['resources'] ?? null) === 'tafsirs:16';
+    });
 
     expect($status)->toBe(0)
         ->and(Artisan::output())->toBe("environment: prelive\nhttp: 200\nmutations: 2\nsnapshot_records: 3\n")

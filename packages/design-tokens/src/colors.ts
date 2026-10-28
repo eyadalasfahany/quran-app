@@ -25,6 +25,8 @@ export type ColorTokens = {
   highlightRose: string;
   danger: string;
   fillSecondary: string;
+  /** Segmented-control and stepper track (quran-app-screens.html, Reader settings). */
+  fillTrack: string;
   lineStrong: string;
   onBrandSurfaceMuted: string;
   goldOnBrandSurface: string;
@@ -69,6 +71,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     highlightRose: '#e8b9b9',
     danger: '#a3392b',
     fillSecondary: '#efe8d8',
+    fillTrack: 'rgba(19, 35, 31, 0.06)',
     lineStrong: '#d9d0bc',
     onBrandSurfaceMuted: '#d9e2dd',
     goldOnBrandSurface: '#c9a961',
@@ -106,6 +109,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     highlightRose: '#e2b6a6',
     danger: '#963425',
     fillSecondary: '#e8dcc2',
+    fillTrack: 'rgba(43, 33, 22, 0.06)',
     lineStrong: '#cfbf9f',
     onBrandSurfaceMuted: '#d9e2dd',
     goldOnBrandSurface: '#c9a961',
@@ -143,6 +147,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     highlightRose: '#3f2427',
     danger: '#f0a493',
     fillSecondary: '#24342f',
+    fillTrack: 'rgba(236, 230, 216, 0.06)',
     lineStrong: '#3c4f48',
     onBrandSurfaceMuted: '#d9e2dd',
     goldOnBrandSurface: '#c9a961',
@@ -176,7 +181,7 @@ export const highContrast: Record<ThemeName, HighContrastTokens> = {
 export const shadows: Record<ThemeName, ShadowTokens> = {
   light: {
     glass: '0 8px 32px rgba(19, 35, 31, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
-    raised: '0 1px 2px rgba(19, 35, 31, 0.06)',
+    raised: '0 1px 2px rgba(19, 35, 31, 0.08)',
   },
   sepia: {
     glass: '0 8px 32px rgba(43, 33, 22, 0.14), inset 0 1px 0 rgba(255, 250, 238, 0.6)',

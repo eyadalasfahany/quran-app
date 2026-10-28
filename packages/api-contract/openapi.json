@@ -325,18 +325,7 @@
                                     "type": "integer"
                                 },
                                 "group": {
-                                    "type": "string",
-                                    "enum": [
-                                        "quran_core",
-                                        "mushafs",
-                                        "translations",
-                                        "tafsirs",
-                                        "word_by_word_translations",
-                                        "word_by_word_transliterations",
-                                        "recitations",
-                                        "chapter_recitations",
-                                        "hadith"
-                                    ]
+                                    "$ref": "#/components/schemas/ServedResourceGroup"
                                 },
                                 "name": {
                                     "type": [
@@ -454,6 +443,18 @@
                     "unavailable"
                 ],
                 "title": "HealthStatus"
+            },
+            "ServedResourceGroup": {
+                "type": "string",
+                "enum": [
+                    "quran_core",
+                    "mushafs",
+                    "tafsirs",
+                    "recitations",
+                    "chapter_recitations",
+                    "hadith"
+                ],
+                "title": "ServedResourceGroup"
             }
         },
         "responses": {

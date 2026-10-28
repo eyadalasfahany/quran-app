@@ -63,8 +63,9 @@ describe("reader route", () => {
     await act(async () => {
       router.back();
     });
+    // The reader's list needs the content database, which Jest doesn't open; each row's More button is covered by ReadingAyahHeader.test.tsx.
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("Ayah actions"));
+      router.push("/ayah/2:255");
     });
 
     expect(screen.getByTestId("sheet-container")).toBeOnTheScreen();

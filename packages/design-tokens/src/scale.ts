@@ -15,6 +15,8 @@ export const radius = {
   sm: 8,
   md: 14,
   lg: 20,
+  // Action tiles and the highlight row in the ayah sheet.
+  tile: 16,
   xl: 28,
   pill: 999,
 } as const;
@@ -27,6 +29,8 @@ export const blur = {
 export const size = {
   touchTarget: 44,
   iconSm: 18,
+  // The sheet close glyph. SF Symbol `xmark` at 12 pt draws about 9 pt across, the frame's 18 px svg × (path 6 to 18 of 24).
+  closeGlyph: 12,
   icon: 22,
   iconMd: 20,
   iconLg: 24,
@@ -36,7 +40,10 @@ export const size = {
   swatchCheck: 17,
   selectedRingGap: 3,
   grabberWidth: 40,
+  // The Reader settings sheet's narrower grabber.
+  grabberWidthCompact: 36,
   grabberHeight: 5,
+  grabberRadius: 3,
   sidebar: 300,
   sidePanel: 380,
   // The Mushaf page's double gold rule, and the tighter rule around a surah name.
@@ -64,7 +71,8 @@ export const stroke = {
 export const opacity = {
   pressed: 0.7,
   disabled: 0.45,
-  grabber: 0.35,
+  // The Reader settings grabber (muted variant). Only SheetFrame uses it.
+  grabber: 0.4,
   focusAside: 0.22,
   // The gold rosette behind the Continue reading card's text.
   ornament: 0.35,

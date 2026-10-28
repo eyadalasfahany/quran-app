@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
+import type { ComponentProps } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
@@ -6,6 +7,15 @@ import { rawColorLiterals } from '../../../jest/ui-source';
 import { themes } from '@/core/theme';
 
 import { IconButton, ICON_BUTTON_SIZE } from './IconButton';
+
+jest.mock('expo-symbols', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    SymbolView: (props: { tintColor: string }) =>
+      createElement(View, { testID: 'symbol', tintColor: props.tintColor } as ComponentProps<typeof View>),
+  };
+});
 
 const mockLiquidGlass = jest.fn(() => false);
 
@@ -41,6 +51,31 @@ describe('IconButton', () => {
     const view = await renderUi(<IconButton icon={bookmark} label="Close" onPress={() => undefined} variant="filled" />);
 
     expect(flatStyle(view.getByRole('button').props.style).backgroundColor).toBe(colors.fillSecondary);
+  });
+
+  it('fills the track variant with fillTrack, at the same 44 pt size and radius as filled', async () => {
+    const view = await renderUi(<IconButton icon={bookmark} label="Close" onPress={() => undefined} variant="track" />);
+    const filled = await renderUi(<IconButton icon={bookmark} label="Close" onPress={() => undefined} variant="filled" />);
+
+    expect(flatStyle(view.getByRole('button').props.style)).toMatchObject({
+      backgroundColor: colors.fillTrack,
+      borderRadius: themes.light.radius.pill,
+      height: ICON_BUTTON_SIZE,
+      width: ICON_BUTTON_SIZE,
+    });
+    expect(flatStyle(filled.getByRole('button').props.style)).toMatchObject({
+      borderRadius: themes.light.radius.pill,
+      height: ICON_BUTTON_SIZE,
+      width: ICON_BUTTON_SIZE,
+    });
+  });
+
+  it('shows the pressed glass tint on the track variant when toggled on', async () => {
+    const view = await renderUi(
+      <IconButton icon={bookmark} label="Bookmark" onPress={() => undefined} pressed variant="track" />,
+    );
+
+    expect(flatStyle(view.getByRole('button').props.style).backgroundColor).toBe(colors.glassSelected);
   });
 
   it('puts the glass variant on a glass surface, solid when glass is unavailable', async () => {
@@ -104,6 +139,57 @@ describe('IconButton', () => {
     expect(flatStyle(typeof icon === 'object' ? icon.props.style : undefined).transform).toEqual(
       locale === 'ar' ? [{ scaleX: -1 }] : undefined,
     );
+  });
+
+  it('draws the glyph at the 22 pt default unless an icon size is given', async () => {
+    const view = await renderUi(<IconButton icon={bookmark} label="Bookmark" onPress={() => undefined} testID="bm" />);
+
+    expect(flatStyle(view.getByTestId('bm-icon', { includeHiddenElements: true }).props.style)).toMatchObject({
+      height: 22,
+      width: 22,
+    });
+  });
+
+  it('draws the glyph at the iconSize it is given', async () => {
+    const view = await renderUi(
+      <IconButton icon={bookmark} iconSize={12} label="Close" onPress={() => undefined} testID="close" />,
+    );
+
+    expect(flatStyle(view.getByTestId('close-icon', { includeHiddenElements: true }).props.style)).toMatchObject({
+      height: 12,
+      width: 12,
+    });
+  });
+
+  it('draws a muted glyph in ink-muted, and keeps the ink glyph by default', async () => {
+    const muted = await renderUi(
+      <IconButton icon={bookmark} label="Muted" onPress={() => undefined} testID="muted" tone="muted" />,
+    );
+    const ink = await renderUi(<IconButton icon={bookmark} label="Ink" onPress={() => undefined} testID="ink" />);
+
+    expect(JSON.stringify(muted.toJSON())).toContain(colors.inkMuted);
+    expect(JSON.stringify(ink.toJSON())).toContain(colors.ink);
+  });
+
+  it('disables the press and fades the button when disabled', async () => {
+    const onPress = jest.fn();
+    const view = await renderUi(
+      <IconButton disabled icon={bookmark} label="Play" onPress={onPress} testID="play" />,
+    );
+    const button = view.getByRole('button', { name: 'Play' });
+
+    expect(button.props.accessibilityState).toMatchObject({ disabled: true });
+    expect(flatStyle(button.props.style).opacity).toBe(themes.light.opacity.disabled);
+    await fireEvent.press(button);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('exposes the hint for screen readers when given one', async () => {
+    const view = await renderUi(
+      <IconButton disabled hint="Recitation isn't available yet" icon={bookmark} label="Play" onPress={() => undefined} />,
+    );
+
+    expect(view.getByRole('button', { name: 'Play' }).props.accessibilityHint).toBe("Recitation isn't available yet");
   });
 
   it('has no raw colour literals', () => {

@@ -1,11 +1,12 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, within } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
+import { Text } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 import { themes } from '@/core/theme';
 
-import { SegmentedControl } from './SegmentedControl';
+import { SEGMENT_GAP, SEGMENT_HIT_SLOP, SEGMENT_MIN_HEIGHT, SegmentedControl } from './SegmentedControl';
 
 jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(() => Promise.resolve()) }));
 
@@ -43,24 +44,61 @@ describe('SegmentedControl', () => {
     expect(view.getByRole('tab', { name: 'الخيارات' }).props.accessibilityState).toMatchObject({ selected: false });
   });
 
-  it('draws the track in fillSecondary and the selected segment raised', async () => {
+  it('draws the track in fillTrack with a 4 pt gap and padding', async () => {
     const view = await renderUi(control('tafsir'));
 
-    expect(flatStyle(view.getByTestId('seg').props.style).backgroundColor).toBe(themes.light.colors.fillSecondary);
+    expect(flatStyle(view.getByTestId('seg').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.fillTrack,
+      gap: themes.light.space[1],
+      padding: themes.light.space[1],
+    });
+  });
+
+  it('raises the selected segment in surface-raised with ink semibold text', async () => {
+    const view = await renderUi(control('tafsir'));
+    const selected = view.getByText('التفسير');
+
     expect(flatStyle(view.getByTestId('seg-tafsir').props.style)).toMatchObject({
       backgroundColor: themes.light.colors.surfaceRaised,
       boxShadow: themes.light.shadows.raised,
     });
-    expect(flatStyle(view.getByText('التفسير').props.style).color).toBe(themes.light.colors.brand);
+    expect(flatStyle(selected.props.style).color).toBe(themes.light.colors.ink);
+    expect(flatStyle(selected.props.style).fontFamily).toBe('IBMPlexSansArabic-SemiBold');
     expect(flatStyle(view.getByTestId('seg-actions').props.style).backgroundColor).toBe('transparent');
   });
 
-  it('gives every segment at least a 44 pt target', async () => {
+  it('sets unselected labels in muted ink, medium weight, at subhead size', async () => {
+    const view = await renderUi(control('tafsir'));
+    const unselected = flatStyle(view.getByText('الخيارات').props.style);
+
+    expect(unselected.color).toBe(themes.light.colors.inkMuted);
+    expect(unselected.fontFamily).toBe('IBMPlexSansArabic-Medium');
+    expect(unselected.fontSize).toBe(15);
+  });
+
+  it('keeps each segment 40 pt tall with a 2 pt top and bottom hit slop, a 44 pt target', async () => {
     const view = await renderUi(control());
 
+    expect(SEGMENT_MIN_HEIGHT + SEGMENT_HIT_SLOP * 2).toBeGreaterThanOrEqual(44);
     for (const tab of view.getAllByRole('tab')) {
-      expect(flatStyle(tab.props.style).minHeight).toBeGreaterThanOrEqual(44);
+      expect(flatStyle(tab.props.style).minHeight).toBe(SEGMENT_MIN_HEIGHT);
+      expect(tab.props.hitSlop).toEqual({ bottom: SEGMENT_HIT_SLOP, top: SEGMENT_HIT_SLOP });
     }
+  });
+
+  it('renders a leading glyph before the label in a row with a 6 pt gap', async () => {
+    const leadingOptions = [
+      { key: 'actions', label: 'الخيارات', leading: <Text testID="lead-actions">•</Text> },
+      { key: 'tafsir', label: 'التفسير' },
+    ] as const;
+    const view = await renderUi(
+      <SegmentedControl label="لوحة الآية" onChange={() => undefined} options={leadingOptions} testID="seg" value="actions" />,
+    );
+
+    const tab = view.getByTestId('seg-actions');
+    expect(within(tab).getByTestId('lead-actions')).toBeOnTheScreen();
+    expect(flatStyle(tab.props.style)).toMatchObject({ flexDirection: 'row', gap: SEGMENT_GAP });
+    expect(view.queryByTestId('lead-tafsir')).toBeNull();
   });
 
   it('calls onChange with the key and plays a selection haptic', async () => {

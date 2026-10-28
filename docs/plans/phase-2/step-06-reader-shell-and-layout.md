@@ -1,5 +1,7 @@
 # Step 6 — Reader shell and adaptive layout (App)
 
+> **Removed by ADR 0014 (28 Oct 2026):** Quran translations, word-by-word meanings, word chips and the translation panel, tab and settings. Lines below that mention them are history; do not build them.
+
 Follow [README.md](README.md), including the **shared reader contract**. Needs steps 1 and 4 committed (step 5 if already merged; otherwise wire Mushaf mode behind its mode switch). Read also:
 - Spec §4 ("Responsive layout", the window-class table).
 - The approved `#tablet-reader` section of `quran-app-screens.html`, **especially its notes**.
@@ -20,7 +22,7 @@ Follow [README.md](README.md), including the **shared reader contract**. Needs s
 | Component | Content |
 | --- | --- |
 | `ReaderToolbar` | Back (`IconButton` glass; the chevron mirrors in RTL), plus **one** glass group on the top edge (ADR 0012: at most one group per edge plus Back). That group holds the title (surah name; page and juz caption), **ayah actions** (opens actions for the selected or first visible ayah), bookmark-page, reader-settings (opens `reader-settings`) and, on expanded only, the **side-panel toggle** (`accessibilityState.selected` = panel open). Floats over content on the glass layer. Safe-area aware |
-| `SidePanel` | 380 pt (`SIDE_PANEL_WIDTH`), on the trailing edge (left in Arabic, right in English), a glass surface, rounded, inset 16. Hosts a `SegmentedControl` (Options / Tafsir / Translation) and the step 7 panel for `selection.panelTab`. Close button. Labelled as a complementary region for screen readers |
+| `SidePanel` | 380 pt (`SIDE_PANEL_WIDTH`), on the trailing edge (left in Arabic, right in English), a glass surface, rounded, inset 16. Hosts a `SegmentedControl` (Options / Tafsir; Translation removed by ADR 0014) and the step 7 panel for `selection.panelTab`. Close button. Labelled as a complementary region for screen readers |
 | `AdaptiveReaderLayout` | Decides **docked** vs **overlay** vs **sheet**: expanded with window ≥ `PANEL_DOCK_MIN_WIDTH` (1,100) → docked beside the content, which recentres in the remaining width while the background extends under the panel. Expanded and < 1,100 → overlay over the page, with a tap outside closing it. Compact and medium → no panel: selecting pushes the sheet route. Switching classes while a selection exists moves it between panel and sheet without losing it |
 | `ResumePill` | "Back to the current ayah" pill (spec §12 cancelling motion), shown when the user scrolled away from the selection or audio ayah. Used by Phase 3; build and test it now |
 

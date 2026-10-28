@@ -60,6 +60,14 @@ describe('app.config', () => {
     expect(config.ios?.infoPlist?.UIRequiresFullScreen).toBe(false);
   });
 
+  it('declares Arabic as the iOS development region and both languages, with mixed localizations', () => {
+    const infoPlist = configFor('production').ios?.infoPlist;
+
+    expect(infoPlist?.CFBundleDevelopmentRegion).toBe('ar');
+    expect(infoPlist?.CFBundleLocalizations).toEqual(['ar', 'en']);
+    expect(infoPlist?.CFBundleAllowMixedLocalizations).toBe(true);
+  });
+
   it('keeps RTL support on', () => {
     expect(configFor('production').plugins).toContainEqual(['expo-localization', { supportsRTL: true }]);
   });

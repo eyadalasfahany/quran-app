@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import type { PanelPlacement } from './layout';
 
-export type PanelTab = 'actions' | 'tafsir' | 'translation';
+export type PanelTab = 'actions' | 'tafsir';
 
 type ReaderSelectionState = {
   verseKey: string | null;

@@ -45,9 +45,9 @@ Also add:
 
 **From packs:**
 - `installed_resources`: `resource_id` int PK, `group` TEXT, `version` int, `sha256` TEXT, `last_checked_at` int (ms), `change_cursor` TEXT null.
-- The shared-contract tables: `translation_entries`, `tafsir_entries`, `mushafs`, `mushaf_pages`, `word_layouts`, `recitations`, `chapter_audio_files`, `recitation_timings`. Same columns and primary keys as the pack schema in step 6.
+- The shared-contract tables: `translation_entries`, `tafsir_entries`, `mushafs`, `mushaf_pages`, `word_layouts`, `recitations`, `chapter_audio_files`, `recitation_timings`. Same columns and primary keys as the pack schema in step 6. Translation parts removed by ADR 0014 (28 Oct 2026).
 - Indexes: `word_layouts` (`mushaf_id`,`page`,`line`); `tafsir_entries` (`resource_id`,`first_verse_id`).
-- **Not yet:** `words`, `word_translations`, `search_study` and the hadith tables arrive with their phases.
+- **Not yet:** `words`, `word_translations`, `search_study` and the hadith tables arrive with their phases. Translation parts removed by ADR 0014 (28 Oct 2026).
 
 ## Text normalization (shared)
 

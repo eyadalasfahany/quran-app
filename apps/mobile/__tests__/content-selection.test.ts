@@ -21,9 +21,6 @@ function resource(
 const resources: ContentManifestResource[] = [
   resource({ id: 1, group: 'mushafs' }),
   resource({ id: 2, group: 'mushafs' }),
-  resource({ id: 10, group: 'translations', language_code: 'en' }),
-  resource({ id: 11, group: 'translations', language_code: 'ar' }),
-  resource({ id: 12, group: 'translations', language_code: 'ar' }),
   resource({ id: 20, group: 'tafsirs', language_code: 'fr' }),
   resource({ id: 21, group: 'tafsirs', language_code: 'en' }),
   resource({ id: 30, group: 'chapter_recitations' }),
@@ -37,14 +34,14 @@ describe('content selection', () => {
     storage.remove(storageKeys.readerSettings);
   });
 
-  it('picks every mushaf, the locale translation and tafsir, and the first recitation', () => {
-    expect(defaultSelectedResourceIds(resources, 'ar')).toEqual([1, 2, 11, 21, 30]);
-    expect(defaultSelectedResourceIds(resources, 'en')).toEqual([1, 2, 10, 21, 30]);
+  it('picks every mushaf, the locale tafsir and the first recitation', () => {
+    expect(defaultSelectedResourceIds(resources, 'ar')).toEqual([1, 2, 21, 30]);
+    expect(defaultSelectedResourceIds(resources, 'en')).toEqual([1, 2, 21, 30]);
   });
 
-  it('falls back to English when the locale has no translation or tafsir', () => {
-    const englishOnly = resources.filter((item) => item.language_code !== 'ar');
-    expect(defaultSelectedResourceIds(englishOnly, 'ar')).toEqual([1, 2, 10, 21, 30]);
+  it('falls back to English when the locale has no tafsir', () => {
+    const withoutFrench = resources.filter((item) => item.language_code !== 'fr');
+    expect(defaultSelectedResourceIds(withoutFrench, 'ar')).toEqual([1, 2, 21, 30]);
   });
 
   it('uses the saved ids when the reader has chosen', () => {

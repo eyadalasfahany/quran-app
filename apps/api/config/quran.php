@@ -49,7 +49,6 @@ return [
 
     'sync' => [
         'groups' => [
-            'translations' => 'translations:*',
             'tafsirs' => 'tafsirs:*',
             'mushafs' => 'mushafs:1',
             'chapter_recitations' => 'chapter_recitations:6,7',

@@ -36,7 +36,7 @@ class ResourceFactory extends Factory
 
                 return $source->id;
             },
-            'group' => ResourceGroup::Translations,
+            'group' => ResourceGroup::Tafsirs,
             'source_key' => fake()->unique()->numerify('####'),
             'name' => fake()->words(3, true),
             'language_code' => 'ar',

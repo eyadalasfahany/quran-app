@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Content\Http\Resources;
 
 use App\Domains\Content\Data\ContentManifestData;
+use App\Domains\Content\Enums\ServedResourceGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -22,7 +23,7 @@ final class ContentManifestResource extends JsonResource
      *     pack_schema_version: int,
      *     resources: list<array{
      *         id: int,
-     *         group: string,
+     *         group: ServedResourceGroup,
      *         name: string|null,
      *         author_name: string|null,
      *         language_code: string|null,

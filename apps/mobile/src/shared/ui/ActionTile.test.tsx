@@ -20,7 +20,18 @@ describe('ActionTile', () => {
       borderColor: colors.line,
     });
     expect(flatStyle(view.getByText('نسخ').props.style).color).toBe(colors.ink);
-    expect(flatStyle(tile.props.style).minHeight).toBeGreaterThanOrEqual(44);
+    expect(flatStyle(tile.props.style)).toMatchObject({ borderRadius: 16, gap: 6, paddingHorizontal: 2 });
+    expect(flatStyle(view.getByText('نسخ').props.style).fontWeight).toBeUndefined();
+  });
+
+  it('sets the primary label at weight 600 and the default label at 500', async () => {
+    const primary = await renderUi(
+      <ActionTile icon={play} label="تشغيل" onPress={() => undefined} variant="primary" />,
+    );
+    const standard = await renderUi(<ActionTile icon={copy} label="نسخ" onPress={() => undefined} />);
+
+    expect(flatStyle(primary.getByText('تشغيل').props.style).fontFamily).toBe('IBMPlexSansArabic-SemiBold');
+    expect(flatStyle(standard.getByText('نسخ').props.style).fontFamily).toBe('IBMPlexSansArabic-Medium');
   });
 
   it('renders the primary tile in brandSurface and onBrandSurface', async () => {

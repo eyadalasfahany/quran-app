@@ -15,16 +15,8 @@ import { useReaderSettings } from '../settings';
 import { AyahActionsPanel } from './AyahActionsPanel';
 import { LiveAyahActionsPanel } from './LiveAyahActionsPanel';
 import { PanelHeader } from './PanelHeader';
-import {
-  loadAyahPanelData,
-  loadAyahTranslations,
-  loadTafsirOptions,
-  loadTafsirPassage,
-  loadWordMeanings,
-  readAyahUserState,
-} from './panel-data';
+import { loadAyahPanelData, loadTafsirOptions, loadTafsirPassage, readAyahUserState } from './panel-data';
 import { TafsirPanel } from './TafsirPanel';
-import { TranslationPanel } from './TranslationPanel';
 
 function openContentExecutor(): SqlExecutor | null {
   try {
@@ -56,7 +48,7 @@ export function AyahPanelContent({
 }: {
   verseKey: string;
   tab: PanelTab;
-  // Lets the actions grid open the tafsir and translation tabs.
+  // Lets the actions grid open the tafsir tab.
   onTabChange?: (tab: PanelTab) => void;
   // Previous and next ayah in the tafsir tab.
   onVerseChange: (verseKey: string) => void;
@@ -71,8 +63,6 @@ export function AyahPanelContent({
   const theme = useTheme();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const fontScale = useReaderSettings((state) => state.fontScale);
-  const showTranslations = useReaderSettings((state) => state.showTranslations);
-  const translationIds = useReaderSettings((state) => state.translationIds);
   const savedTafsirId = useReaderSettings((state) => state.tafsirId);
   // Switching tafsir here is a reading choice, not a download choice, so it stays out of the settings.
   const [pickedTafsirId, setPickedTafsirId] = useState<number | null>(null);
@@ -100,15 +90,6 @@ export function AyahPanelContent({
         : loadTafsirPassage(executor, tafsirIdInUse, data.verse),
     [data, executor, tafsirIdInUse],
   );
-  const translations = useMemo(
-    () =>
-      executor === null || data === null
-        ? []
-        : loadAyahTranslations(executor, data.verse.id, translationIds, (id) =>
-            t('reader.settings.translationFallback', { id }),
-          ),
-    [data, executor, t, translationIds],
-  );
 
   if (executor === null || data === null) {
     return (
@@ -127,16 +108,12 @@ export function AyahPanelContent({
     surah: chapter === undefined ? verseKey : locale === 'ar' ? chapter.nameArabic : chapter.nameEn,
   });
   const actionsProps = {
-    fontScale,
     onOpenTafsir: onTabChange ? () => onTabChange('tafsir') : undefined,
-    onOpenTranslation: onTabChange ? () => onTabChange('translation') : undefined,
     reference,
     testID: `${testID}-actions`,
     textUthmani: verse.textUthmani,
     verseId: verse.id,
     verseNumber: verse.verseNumber,
-    // The device has no word-by-word resource yet, so the chips stay hidden.
-    words: loadWordMeanings(executor, verse.id, null),
   };
 
   return (
@@ -173,14 +150,6 @@ export function AyahPanelContent({
             testID={`${testID}-tafsir`}
             textUthmani={verse.textUthmani}
             verseNumber={verse.verseNumber}
-          />
-        ) : null}
-        {tab === 'translation' ? (
-          <TranslationPanel
-            onShowInlineChange={(value) => useReaderSettings.getState().setShowTranslations(value)}
-            showInline={showTranslations}
-            testID={`${testID}-translation`}
-            translations={translations}
           />
         ) : null}
       </View>

@@ -84,14 +84,6 @@ final class Resource extends Model
     }
 
     /**
-     * @return HasMany<TranslationEntry, $this>
-     */
-    public function translationEntries(): HasMany
-    {
-        return $this->hasMany(TranslationEntry::class);
-    }
-
-    /**
      * @return HasMany<TafsirEntry, $this>
      */
     public function tafsirEntries(): HasMany

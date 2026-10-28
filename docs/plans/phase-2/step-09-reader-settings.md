@@ -1,5 +1,7 @@
 # Step 9 — Reader settings (App)
 
+> **Removed by ADR 0014 (28 Oct 2026):** Quran translations, word-by-word meanings, word chips and the translation panel, tab and settings. Lines below that mention them are history; do not build them.
+
 Follow [README.md](README.md). Needs steps 1 and 4 committed. Read also:
 - The `Reader settings` phone frame in `quran-app-screens.html`.
 - Spec §12 (motion: cross-fade on mode and script change; haptics).
@@ -12,12 +14,12 @@ Follow [README.md](README.md). Needs steps 1 and 4 committed. Read also:
 - **A Zustand store persisted to MMKV** (key `reader.settings`), versioned for migrations:
   - `mode`: `'mushaf' | 'reading' | 'focus'`
   - `fontScale`: 0.8–1.6, step 0.1
-  - `showTranslations`: boolean
-  - `translationIds`: number[]
+  - `showTranslations`: boolean (removed by ADR 0014)
+  - `translationIds`: number[] (removed by ADR 0014)
   - `tafsirId`: number | null
 - **Appearance is not in this blob.** It is the MMKV key `appearance` (`'automatic' | 'light' | 'sepia' | 'dark'`), read and written through `src/core/theme/appearance.ts`. The picker calls `saveAppearance`. Dark after Maghrib is the separate MMKV boolean `darkAfterMaghrib`.
 - **Reads are synchronous** at start (MMKV), so the first frame uses them (cold-start budget, spec §4).
-- **Changing `translationIds`** (or any downloaded-resource choice) also updates `content.selectedResourceIds` and **clears `meta.manifest_etag`**. Otherwise a 304 manifest would skip installing the newly chosen resources until the server's manifest changes (Phase 1 step 8 review).
+- **Changing a downloaded-resource choice** (tafsir; `translationIds` was removed by ADR 0014) also updates `content.selectedResourceIds` and **clears `meta.manifest_etag`**. Otherwise a 304 manifest would skip installing the newly chosen resources until the server's manifest changes (Phase 1 step 8 review).
 - **Appearance already drives `ThemeProvider`** through `useResolvedTheme()` in `app/_layout.tsx`. Automatic follows `useColorScheme`. Do not store a second theme field.
 
 ## Components (`src/features/reader/settings/components/`, each with its own test)
@@ -25,7 +27,7 @@ Follow [README.md](README.md). Needs steps 1 and 4 committed. Read also:
 - **`ModePicker`:** a `SegmentedControl` (Mushaf / Reading / Focus) with haptic selection.
 - **`FontScaleStepper`:** − and + buttons and a live preview ayah. Arabic-Indic percentage in Arabic.
 - **`ThemePicker`:** swatches for System, Light, Sepia and Dark. Not colour-only: labels too.
-- **`TranslationToggleList`:** the installed translations, as toggle rows.
+- **`TranslationToggleList`:** the installed translations, as toggle rows. Removed by ADR 0014.
 
 ## Screen
 

@@ -1,13 +1,20 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-import type { InstalledContentResource } from './translations';
-
 export type TafsirEntry = {
   resourceId: number;
   groupTafsirId: number;
   firstVerseId: number;
   lastVerseId: number;
   html: string;
+};
+
+export type InstalledContentResource = {
+  resourceId: number;
+  group: string;
+  version: number;
+  sha256: string;
+  lastCheckedAt: number;
+  changeCursor: string | null;
 };
 
 type InstalledRow = Omit<InstalledContentResource, 'group'> & { resourceGroup: string };

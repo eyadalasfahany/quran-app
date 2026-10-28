@@ -31,14 +31,14 @@ Steps 1–3 are on `main` (`05b931e`), and steps 4, 5 and 8 are committed (`46c2
 | 5 Mushaf | ✅ QCF V2 fonts from `verses.quran.foundation` only. The visible page, not each mounted row, decides which fonts stay loaded. `revalidatePageFonts()` runs when `MushafList` mounts. A failed check does not move the 30-day clock |
 | 8 Index and search | ✅ Mushaf tab index and `app/search.tsx`. Search normalizes through `@quran/quran-text-check/normalize` (not the package root; that entry pulls Node-only files). A three-letter query was 4 ms in Node |
 | 6 Reader shell | ✅ `read/[verseKey]`, the glass toolbar, `selection.ts`, `AdaptiveReaderLayout` and `SidePanel`, the `ayah/[verseKey]` and `tafsir/[verseKey]` sheets. Local commit `04c650a`, not pushed |
-| 9 Reader settings | ✅ The settings sheet: mode, font scale, theme, translations, in one `reader.settings` MMKV blob. Local commit `04c650a`, not pushed |
-| 7 Ayah panels | ✅ Working tree. `src/features/reader/panels/`: `PanelHeader`, `AyahActionsPanel` (with `LiveAyahActionsPanel` on the `user.db` live queries), `NoteEditor`, `TafsirPanel` (`@native-html/render` 1.0.4), `TranslationPanel`, `PanelButton`, `PanelSection`, and `AyahPanelContent`, which `SidePanel` and `SheetContainer` both render by tab. `expo-clipboard` added. Play and repeat stay disabled (`AUDIO_AVAILABLE` in the actions panel) |
+| 9 Reader settings | ✅ The settings sheet: mode, font scale, theme, in one `reader.settings` MMKV blob (translations removed by ADR 0014). Local commit `04c650a`, not pushed |
+| 7 Ayah panels | ✅ Working tree. `src/features/reader/panels/`: `PanelHeader`, `AyahActionsPanel` (with `LiveAyahActionsPanel` on the `user.db` live queries), `NoteEditor`, `TafsirPanel` (`@native-html/render` 1.0.4), `PanelButton`, `PanelSection`, and `AyahPanelContent`, which `SidePanel` and `SheetContainer` both render by tab. `expo-clipboard` added. `TranslationPanel` and word chips removed by ADR 0014 (28 Oct 2026). Play and repeat stay disabled (`AUDIO_AVAILABLE` in the actions panel) |
 | 10 Exit check | Not started. A person on device |
 
 **Carry into step 10 and later**
 
-- The device has no resource catalogue (names, authors, direction). The panels show "Translation 20" or "Tafsir 16", infer a translation's direction from its text, and leave the tafsir length tag empty. Wire the catalogue when it reaches the device.
-- Word chips stay hidden: the device has no word-by-word table yet. `loadWordMeanings` takes the meanings when it does.
+- The device has no resource catalogue (names, authors). The panels show "Tafsir 16" and leave the tafsir length tag empty. Wire the catalogue when it reaches the device.
+- Translations, word-by-word meanings and word chips are removed; see ADR 0014.
 - The tafsir empty state offers a download only for the tafsir already chosen in reader settings (`setTafsirId`). With nothing chosen there is no id to offer.
 - Switching tafsir in the panel is local to the panel. Saving it with `setTafsirId` would drop the other installed tafsir at the next sync.
 - Saving an edited note writes a new note and then deletes the old one, because the step 3 repository has no update.
@@ -47,7 +47,7 @@ Steps 1–3 are on `main` (`05b931e`), and steps 4, 5 and 8 are committed (`46c2
 
 - Call `resolveInitialAnchor({ verseKey })` for the route. A route ayah comes back with `page: null`. In Mushaf mode fill the page with `pageForVerse`.
 - Create `src/features/reader/selection.ts`. Steps 4 and 5 do not own it.
-- `ReadingList` takes translation name, author and direction as props. There is no `resources` table on the device. Wire that from the catalogue.
+- `ReadingList` takes translation name, author and direction as props. There is no `resources` table on the device. Wire that from the catalogue. Removed by ADR 0014 (28 Oct 2026).
 - Do not speak QCF glyph bytes. A Mushaf line has no Imla'i text yet. Pass the Imla'i ayah in when you add its accessibility label.
 - `SearchResultRow` is not a `ListRow`. Quran text must not be truncated.
 - Opening the app needs a dev-client rebuild (`npx expo run:ios` or `run:android`). Expo Go has no Nitro module, and MMKV 4 will crash without it. `expo-haptics` is already installed.
@@ -74,14 +74,14 @@ Each step becomes a brief in `docs/plans/phase-2/`. The *Needs* column shows wha
 | # | Step | Contents | Needs | Status |
 | --- | --- | --- | --- | --- |
 | 1 | **Design-system components** | `src/shared/ui`, each with its own test: `GlassSurface`, `IconButton`, `ToolbarPill`, `TitlePill`, `SegmentedControl`, `Chip` / `RadioChip`, `ListRow`, `SearchField`, `ActionTile`, `HighlightSwatch`, `EmptyState`, `AyahMarker`, `SurahCartouche`. Taken from the HTML designs, theme tokens only | — | Done |
-| 2 | **Reader data layer** | Repositories over `content.db`: verses by page and surah, words, mushaf pages and word layouts, translations, tafsir. Reading-position store (MMKV, last-read). `useReadingAnchor` | Phase 1 | Done |
+| 2 | **Reader data layer** | Repositories over `content.db`: verses by page and surah, words, mushaf pages and word layouts, tafsir (translations removed by ADR 0014). Reading-position store (MMKV, last-read). `useReadingAnchor` | Phase 1 | Done |
 | 3 | **Local user data** (if D2 = yes) | `user.db` schema (spec §6) for bookmarks, highlights and notes. Repositories, with an outbox table written but not yet sent | — | Done |
-| 4 | **Reading and Focus modes** | `ReadingAyahRow` (Uthmani plus the selected translations), `FocusAyah`. FlashList of 6,236 ayahs with measured, cached heights. Mode switching keeps the anchor ayah | 1, 2 | Done |
+| 4 | **Reading and Focus modes** | `ReadingAyahRow` (Uthmani only; translations removed by ADR 0014), `FocusAyah`. FlashList of 6,236 ayahs with measured, cached heights. Mode switching keeps the anchor ayah | 1, 2 | Done |
 | 5 | **Mushaf mode** | Font pack (D1), `MushafPage` (15 lines from `word_layouts`, one QCF run per line), FlashList of 604 pages with `overrideItemLayout`. Falls back to Reading mode when a page's layout or font isn't installed | 1, 2 | Done |
 | 6 | **Reader shell and adaptive layout** | The `read/[verseKey]` route, the glass toolbar, ayah selection, and `AdaptiveSplit` / `SidePanel`: docked at ≥ 1,100 pt, overlaying the page from 840 to 1,099 pt, a sheet on compact and medium. The `ayah/[verseKey]` and `tafsir/[verseKey]` routes render in the panel or a sheet | 1, 4 | Done |
-| 7 | **Ayah actions, tafsir and translation panels** | `AyahActionsPanel` (word meanings, highlight colours, action tiles), `TafsirPanel` (picker, ayah card, text with its source credit, previous and next), `TranslationPanel`. Play-from-here is wired in Phase 3 | 1, 3, 6 | Done (working tree) |
+| 7 | **Ayah actions and tafsir panels** | `AyahActionsPanel` (highlight colours, action tiles), `TafsirPanel` (picker, ayah card, text with its source credit, previous and next). Play-from-here is wired in Phase 3. Translation panel and word meanings removed by ADR 0014 | 1, 3, 6 | Done (working tree) |
 | 8 | **Surah and juz index, and search** | The Mushaf tab's index (surah and juz lists, jump to an ayah). Search screen: FTS5 over `search_quran` (Imla'i-based, from step 11 of Phase 1), surah-name prefix matching, results with matched words highlighted, under 150 ms | 1, 2 | Done |
-| 9 | **Reader settings** | Settings sheet: mode, font scale (80–160%), theme (light, sepia, dark), translations on or off. Persisted in MMKV and applied without a reload. Appearance is already resolved; do not add a second theme field | 1, 4 | Done |
+| 9 | **Reader settings** | Settings sheet: mode, font scale (80–160%), theme (light, sepia, dark). Translations on or off removed by ADR 0014. Persisted in MMKV and applied without a reload. Appearance is already resolved; do not add a second theme field | 1, 4 | Done |
 | 10 | **Exit check** | Device matrix (spec §14): phone, iPad and foldable, in Arabic and English. The resize and fold keep-position test. The 604-page pass needs QF's full mushaf layout | all | |
 
 **Parallel waves:**
@@ -93,5 +93,5 @@ Each step becomes a brief in `docs/plans/phase-2/`. The *Needs* column shows wha
 
 ## Known limits
 
-- **Prelive data:** QF prelive has the mushaf layout and translations for only 2 surahs. Mushaf mode is built and tested on those pages, and the full 604-page check needs production QF data. Reading mode works for all 6,236 ayahs from Tanzil.
+- **Prelive data:** QF prelive has the mushaf layout for only 2 surahs (translations removed by ADR 0014). Mushaf mode is built and tested on those pages, and the full 604-page check needs production QF data. Reading mode works for all 6,236 ayahs from Tanzil.
 - **Audio** (play from here, highlight sync, the mini-player's live state) is Phase 3. The UI shows the controls, wired to no-ops behind a feature flag.

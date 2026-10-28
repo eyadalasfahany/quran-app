@@ -21,7 +21,7 @@ final class PingQuranFoundationCommand extends Command
         try {
             $snapshotUrl = null;
 
-            foreach ($client->sync(resources: 'translations:85', bootstrap: true) as $page) {
+            foreach ($client->sync(resources: 'tafsirs:16', bootstrap: true) as $page) {
                 $mutations += count($page->mutations);
 
                 foreach ($page->mutations as $mutation) {

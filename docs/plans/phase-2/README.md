@@ -34,6 +34,9 @@ Everything in [`../phase-1/README.md`](../phase-1/README.md), "Rules for every s
 - **Feature folders:** feature code lives in `src/features/reader/`, `src/features/search/` and so on. Routes in `app/` stay thin: read params, render a feature screen.
 
 ### Design: the `apple-design` skill and the HTML sources
+- **Identical to the HTML:** the reviewer compares every change with its frame in `quran-app-screens.html`. The built UI matches the frame exactly unless the developer has approved a difference (an ADR or the step brief).
+- **Delegation:** implementation goes to a subagent on the cheapest available model (Haiku); the orchestrator writes the brief and reviews.
+- **Visual check:** the reviewer screenshots the running app on the iPhone 17 simulator and compares it with the frame rendered at 390 × 844.
 - **Before building UI,** read `.agents/skills/apple-design/SKILL.md`. Then read the references it routes to: at minimum `references/hig/accessibility.md`, `color.md`, `layout.md`, `typography.md` and `right-to-left.md`, plus `liquid-glass.md` for glass surfaces and `modality.md` for sheets.
 - **Design sources** (ADR 0010):
   - `quran-app-screens.html`: the phone frames (Mushaf page, Ayah actions, Reading mode, Focus mode, Tafsir, Reader settings, Surah index, Search) and the **approved** tablet section `#tablet-reader`.
@@ -71,7 +74,7 @@ The `#tablet-reader` drawings predate ADR 0012 and are being updated. Where a fr
 | `PANEL_DOCK_MIN_WIDTH` | 1100 | At or above: the panel docks beside the page; 840–1,099: it overlays the page |
 
 **Reader selection** (`src/features/reader/selection.ts`, a small Zustand store, version-table pin 5.0.16):
-- State: `{ verseKey: string | null; panelTab: 'actions' | 'tafsir' | 'translation'; panelOpen: boolean }`.
+- State: `{ verseKey: string | null; panelTab: 'actions' | 'tafsir'; panelOpen: boolean }` (the 'translation' tab was removed by ADR 0014).
 - Selecting an ayah sets `verseKey`.
   - On expanded windows it opens the panel.
   - On compact and medium windows it pushes the `ayah/[verseKey]` sheet route.

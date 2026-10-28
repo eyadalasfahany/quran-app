@@ -3,17 +3,17 @@ import { Pressable, View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { AyahMarker, Divider, highlightFill, QuranText, useContrastColors, type HighlightColor } from '@/shared/ui';
+import { Divider, highlightFill, QuranText, useContrastColors, type HighlightColor } from '@/shared/ui';
 
-import type { VerseTranslationBlock } from '../reading-list-types';
-import { TranslationBlock } from './TranslationBlock';
+import { ReadingAyahHeader } from './ReadingAyahHeader';
+
+// The frame's article padding: 14 above the header, 16 above the hairline.
+const ROW_PADDING_TOP = 14;
 
 export function ReadingAyahRow({
-  verseKey,
   verseNumber,
   textUthmani,
   textImlaei,
-  translations,
   fontScale = 1,
   selected = false,
   recited = false,
@@ -21,13 +21,12 @@ export function ReadingAyahRow({
   onPress,
   onLongPress,
   onOpenActions,
+  onOpenTafsir,
   testID,
 }: {
-  verseKey: string;
   verseNumber: number;
   textUthmani: string;
   textImlaei: string | null;
-  translations: readonly VerseTranslationBlock[];
   fontScale?: number;
   selected?: boolean;
   recited?: boolean;
@@ -35,6 +34,7 @@ export function ReadingAyahRow({
   onPress?: () => void;
   onLongPress?: () => void;
   onOpenActions?: () => void;
+  onOpenTafsir?: () => void;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -51,24 +51,31 @@ export function ReadingAyahRow({
 
   const quranBackground = active ? colors.highlightActive : (highlightFill(colors, highlightColor) ?? 'transparent');
 
+  // The header's buttons sit outside the text's Pressable, so each one stays reachable by screen readers.
   return (
-    <Pressable
-      accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
-      accessibilityState={{ selected: active }}
-      onLongPress={onLongPress}
-      onPress={onPress}
-      style={{ paddingTop: theme.space[3] }}
-      testID={testID}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: theme.space[2] }}>
+    <View style={{ gap: theme.space[2], paddingTop: ROW_PADDING_TOP }}>
+      <ReadingAyahHeader
+        active={active}
+        fontScale={fontScale}
+        onOpenActions={onOpenActions}
+        onOpenTafsir={onOpenTafsir}
+        testID={testID ? `${testID}-header` : undefined}
+        verseNumber={verseNumber}
+      />
+      <Pressable
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+        onLongPress={onLongPress}
+        onPress={onPress}
+        testID={testID}
+      >
         <View
           style={{
             backgroundColor: quranBackground,
             borderRadius: theme.radius.sm,
             borderStartColor: active ? colors.brand : 'transparent',
             borderStartWidth: active ? theme.stroke.activeRule : 0,
-            flex: 1,
             paddingHorizontal: theme.space[1],
             paddingVertical: theme.space[1],
           }}
@@ -77,22 +84,8 @@ export function ReadingAyahRow({
             {textUthmani}
           </QuranText>
         </View>
-        <AyahMarker
-          active={active}
-          fontScale={fontScale}
-          number={verseNumber}
-          onPress={onOpenActions}
-          testID={testID ? `${testID}-marker` : undefined}
-        />
-      </View>
-      {translations.map((block) => (
-        <TranslationBlock
-          block={block}
-          key={`${verseKey}-${block.resourceId}`}
-          testID={testID ? `${testID}-translation-${block.resourceId}` : undefined}
-        />
-      ))}
+      </Pressable>
       <Divider style={{ marginTop: theme.space[4] }} testID={testID ? `${testID}-divider` : undefined} />
-    </Pressable>
+    </View>
   );
 }

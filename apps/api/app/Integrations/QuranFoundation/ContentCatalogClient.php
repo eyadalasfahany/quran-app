@@ -16,14 +16,6 @@ final class ContentCatalogClient
     /**
      * @return list<CatalogEntry>
      */
-    public function translations(): array
-    {
-        return $this->parser->catalog($this->api->get('/api/v4/resources/translations'), 'translations');
-    }
-
-    /**
-     * @return list<CatalogEntry>
-     */
     public function tafsirs(): array
     {
         return $this->parser->catalog($this->api->get('/api/v4/resources/tafsirs'), 'tafsirs');

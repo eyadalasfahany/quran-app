@@ -4,14 +4,7 @@ import { saveNote, setHighlight, toggleBookmark } from '@/features/library/data'
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { openUserTestStore } from '../../../../jest/user-test-db';
 import { getVerseByKey } from '../data/verses';
-import {
-  loadAyahPanelData,
-  loadAyahTranslations,
-  loadTafsirOptions,
-  loadTafsirPassage,
-  loadWordMeanings,
-  readAyahUserState,
-} from './panel-data';
+import { loadAyahPanelData, loadTafsirOptions, loadTafsirPassage, readAyahUserState } from './panel-data';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
 
@@ -29,16 +22,10 @@ describe('panel data', () => {
   beforeAll(async () => {
     db = (await openReaderTestContent()).executor;
     install(db, 16, 'tafsirs');
-    install(db, 20, 'translations');
-    install(db, 97, 'translations');
     // Al-Baqarah 2:3–5 is one passage (verse ids 10–12); 2:1 stands alone.
     db.run(
       `INSERT INTO tafsir_entries (resource_id, group_tafsir_id, first_verse_id, last_verse_id, html)
        VALUES (16, 1, 8, 8, '<p>الم</p>'), (16, 2, 10, 12, '<p>الذين يؤمنون بالغيب</p>')`,
-    );
-    db.run(
-      `INSERT INTO translation_entries (resource_id, verse_id, text, footnotes)
-       VALUES (20, 2, 'All praise is due to Allah', NULL), (97, 2, 'سب تعریفیں اللہ کے لیے ہیں', NULL)`,
     );
   });
 
@@ -66,24 +53,6 @@ describe('panel data', () => {
 
   it('lists installed tafsirs', () => {
     expect(loadTafsirOptions(db, (id) => `Tafsir ${id}`)).toEqual([{ authorName: null, name: 'Tafsir 16', resourceId: 16 }]);
-  });
-
-  it('returns the selected installed translations in the reader order with their direction', () => {
-    const translations = loadAyahTranslations(db, 2, [97, 20, 55], (id) => `T${id}`);
-
-    expect(translations.map((item) => [item.meta.resourceId, item.meta.direction, item.text])).toEqual([
-      [97, 'rtl', 'سب تعریفیں اللہ کے لیے ہیں'],
-      [20, 'ltr', 'All praise is due to Allah'],
-    ]);
-  });
-
-  it('pairs Uthmani words with meanings only when every word has one', () => {
-    const words = loadWordMeanings(db, 1, new Map([[1, 'In the name'], [2, 'of Allah'], [3, 'the Most Gracious'], [4, 'the Most Merciful']]));
-
-    expect(loadWordMeanings(db, 1, null)).toEqual([]);
-    expect(loadWordMeanings(db, 1, new Map([[1, 'In the name']]))).toEqual([]);
-    expect(words.map((word) => word.meaning)).toEqual(['In the name', 'of Allah', 'the Most Gracious', 'the Most Merciful']);
-    expect(words[0]?.word).toBe(getVerseByKey(db, '1:1')?.textUthmani.split(' ')[0]);
   });
 
   it('reads the ayah bookmark, highlight and latest note from user.db', () => {

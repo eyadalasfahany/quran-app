@@ -12,7 +12,7 @@ The final brief is written then, from a recorded real response, never from guess
 
 - **API:**
   - Migrations for `chapters`, `verses` and `words` (spec §5).
-  - Foreign keys from `translation_entries`, `tafsir_entries`, `word_layouts` and `recitation_timings` to them.
+  - Foreign keys from `translation_entries`, `tafsir_entries`, `word_layouts` and `recitation_timings` to them. Translation parts removed by ADR 0014 (28 Oct 2026).
   - A `QuranCoreHandler` on the step 3 engine, storing text columns byte for byte.
   - `text_search` derived with a PHP `App\Support\ArabicNormalizer`, matching `normalizeForSearch` from step 7 (a parity test on shared vectors).
 - **API, integrity:**

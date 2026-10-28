@@ -14,16 +14,11 @@ import { applyContentMigrations } from '../jest/apply-content-migrations';
 import { openNodeSqlite } from '../jest/node-sqlite-executor';
 
 const migrationsDir = join(process.cwd(), 'src/core/db/content/migrations');
-const EXACT = 'ٱلرَّحْمَـٰنِ\u200Fٱلرَّحِيمِ';
-const REPLACEMENT = 'بِسْمِ\u200Fٱللَّهِ';
+const EXACT = 'ٱلرَّحْمَـٰنِ‏ٱلرَّحِيمِ';
+const REPLACEMENT = 'بِسْمِ‏ٱللَّهِ';
 const NOW = 1_700_000_000_000;
 
 const README_CONTRACT = [
-  {
-    group: 'translations',
-    tables: [{ name: 'translation_entries', columns: ['resource_id', 'verse_id', 'text', 'footnotes'] }],
-    entities: [{ entity: 'translation_entry', key: 'verse_id' }],
-  },
   {
     group: 'tafsirs',
     tables: [
@@ -98,17 +93,19 @@ const README_CONTRACT = [
   },
 ];
 
+type TafsirRow = { groupTafsirId: number; html: string };
+
 function sha256(bytes: Uint8Array): Promise<string> {
   return Promise.resolve(createHash('sha256').update(bytes).digest('hex'));
 }
 
 function resource(overrides: Partial<ContentManifestResource> & Pick<ContentManifestResource, 'id'>): ContentManifestResource {
   return {
-    group: 'translations',
+    group: 'tafsirs',
     name: 'Test',
     author_name: null,
-    language_code: 'en',
-    direction: 'ltr',
+    language_code: 'ar',
+    direction: 'rtl',
     version: 1,
     pack: { url: `/api/v1/content/packs/${overrides.id}/1`, size_bytes: 1, sha256: 'abc' },
     changes_since_min_version: 1,
@@ -127,22 +124,23 @@ function manifest(resources: ContentManifestResource[], etag = '"manifest"'): { 
   };
 }
 
-function gzipPack(resourceId: number, rows: { verseId: number; text: string }[]): Uint8Array {
+function gzipPack(resourceId: number, rows: TafsirRow[]): Uint8Array {
   return gzipDatabase(resourceId, (database) => {
     database.exec(
-      `CREATE TABLE translation_entries (
+      `CREATE TABLE tafsir_entries (
         resource_id INTEGER NOT NULL,
-        verse_id INTEGER NOT NULL,
-        text TEXT NOT NULL,
-        footnotes TEXT,
-        PRIMARY KEY (resource_id, verse_id)
+        group_tafsir_id INTEGER NOT NULL,
+        first_verse_id INTEGER NOT NULL,
+        last_verse_id INTEGER NOT NULL,
+        html TEXT NOT NULL,
+        PRIMARY KEY (resource_id, group_tafsir_id)
       )`,
     );
     const insert = database.prepare(
-      'INSERT INTO translation_entries (resource_id, verse_id, text, footnotes) VALUES (?, ?, ?, NULL)',
+      'INSERT INTO tafsir_entries (resource_id, group_tafsir_id, first_verse_id, last_verse_id, html) VALUES (?, ?, 1, 7, ?)',
     );
     for (const row of rows) {
-      insert.run(resourceId, row.verseId, row.text);
+      insert.run(resourceId, row.groupTafsirId, row.html);
     }
   });
 }
@@ -187,31 +185,30 @@ function parentDir(path: string): string {
   return index === -1 ? '.' : path.slice(0, index);
 }
 
-function installTranslation(
+function installTafsir(
   executor: SqlExecutor,
   resourceId: number,
   version: number,
-  rows: { verseId: number; text: string }[],
+  rows: TafsirRow[],
   checkedAt = 1,
 ): void {
   executor.run(
     'INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, change_cursor) VALUES (?, ?, ?, ?, ?, NULL)',
-    [resourceId, 'translations', version, 'old-hash', checkedAt],
+    [resourceId, 'tafsirs', version, 'old-hash', checkedAt],
   );
   for (const row of rows) {
-    executor.run('INSERT INTO translation_entries (resource_id, verse_id, text, footnotes) VALUES (?, ?, ?, NULL)', [
-      resourceId,
-      row.verseId,
-      row.text,
-    ]);
+    executor.run(
+      'INSERT INTO tafsir_entries (resource_id, group_tafsir_id, first_verse_id, last_verse_id, html) VALUES (?, ?, 1, 7, ?)',
+      [resourceId, row.groupTafsirId, row.html],
+    );
   }
 }
 
-function translationText(executor: SqlExecutor, resourceId: number, verseId: number): string | undefined {
-  return executor.get<{ text: string }>('SELECT text FROM translation_entries WHERE resource_id = ? AND verse_id = ?', [
-    resourceId,
-    verseId,
-  ])?.text;
+function tafsirHtml(executor: SqlExecutor, resourceId: number, groupTafsirId: number): string | undefined {
+  return executor.get<{ html: string }>(
+    'SELECT html FROM tafsir_entries WHERE resource_id = ? AND group_tafsir_id = ?',
+    [resourceId, groupTafsirId],
+  )?.html;
 }
 
 async function withContentDb(
@@ -257,8 +254,8 @@ describe('content sync', () => {
     expect(contentContract()).toEqual(README_CONTRACT);
   });
 
-  it('imports a fresh translation pack and leaves other resources alone', async () => {
-    const bytes = gzipPack(85, [{ verseId: 1, text: EXACT }]);
+  it('imports a fresh tafsir pack and leaves other resources alone', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
     const hash = await sha256(bytes);
     const entry = resource({
       id: 85,
@@ -273,7 +270,7 @@ describe('content sync', () => {
 
     await withContentDb(async ({ executor, cacheDir }) => {
       executor.run(
-        'INSERT INTO translation_entries (resource_id, verse_id, text, footnotes) VALUES (?, ?, ?, NULL)',
+        'INSERT INTO tafsir_entries (resource_id, group_tafsir_id, first_verse_id, last_verse_id, html) VALUES (?, ?, 1, 7, ?)',
         [99, 1, 'keep'],
       );
       const report = await syncContent(
@@ -287,21 +284,73 @@ describe('content sync', () => {
       );
 
       expect(report.resources).toEqual([{ resourceId: 85, status: 'pack-imported' }]);
-      expect(translationText(executor, 85, 1)).toBe(EXACT);
-      expect(translationText(executor, 99, 1)).toBe('keep');
-      expect(bytesOf(translationText(executor, 85, 1))).toEqual(bytesOf(EXACT));
+      expect(tafsirHtml(executor, 85, 1)).toBe(EXACT);
+      expect(tafsirHtml(executor, 99, 1)).toBe('keep');
+      expect(bytesOf(tafsirHtml(executor, 85, 1))).toEqual(bytesOf(EXACT));
       expect(
         executor.get<{ version: number; sha256: string; lastCheckedAt: number; group: string }>(
           'SELECT version, sha256, last_checked_at AS lastCheckedAt, "group" AS "group" FROM installed_resources WHERE resource_id = ?',
           [85],
         ),
-      ).toEqual({ version: 3, sha256: hash, lastCheckedAt: NOW, group: 'translations' });
+      ).toEqual({ version: 3, sha256: hash, lastCheckedAt: NOW, group: 'tafsirs' });
       expect(executor.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])?.value).toBe(
         published.etag,
       );
       expect(downloadPack).toHaveBeenCalledWith('http://localhost:8000/api/v1/content/packs/85/3', expect.any(String));
       expect(existsSync(join(cacheDir, 'packs', '85-3.sqlite.gz'))).toBe(false);
       expect(existsSync(join(cacheDir, 'packs', '85-3.sqlite'))).toBe(false);
+    });
+  });
+
+  it('skips a resource in a retired group, keeps syncing the others, and removes its installed row', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const hash = await sha256(bytes);
+    const current = resource({
+      id: 85,
+      version: 1,
+      pack: { url: '/api/v1/content/packs/85/1', size_bytes: bytes.byteLength, sha256: hash },
+    });
+    // An older server may still send a retired group that the current contract no longer lists.
+    const retired = {
+      ...resource({
+        id: 88,
+        version: 2,
+        pack: { url: '/api/v1/content/packs/88/2', size_bytes: 1, sha256: 'retired-hash' },
+      }),
+      group: 'translations',
+    } as unknown as ContentManifestResource;
+    const published = manifest([retired, current]);
+    const downloadPack = jest.fn(async (_url: string, toPath: string) => {
+      mkdirSync(parentDir(toPath), { recursive: true });
+      writeFileSync(toPath, bytes);
+    });
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      executor.run(
+        'INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, change_cursor) VALUES (?, ?, ?, ?, ?, NULL)',
+        [88, 'translations', 1, 'old-hash', 1],
+      );
+      const report = await syncContent(
+        await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        }),
+      );
+
+      expect(report.resources).toEqual([
+        { resourceId: 88, status: 'removed' },
+        { resourceId: 85, status: 'pack-imported' },
+      ]);
+      expect(downloadPack).toHaveBeenCalledTimes(1);
+      expect(downloadPack).toHaveBeenCalledWith('http://localhost:8000/api/v1/content/packs/85/1', expect.any(String));
+      expect(tafsirHtml(executor, 85, 1)).toBe(EXACT);
+      expect(executor.get('SELECT resource_id FROM installed_resources WHERE resource_id = ?', [88])).toBeUndefined();
+      expect(executor.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])?.value).toBe(
+        published.etag,
+      );
     });
   });
 
@@ -312,8 +361,8 @@ describe('content sync', () => {
     });
 
     await withContentDb(async ({ executor, cacheDir }) => {
-      installTranslation(executor, 85, 2, [{ verseId: 1, text: 'kept' }], 10);
-      installTranslation(executor, 86, 1, [{ verseId: 1, text: 'also' }], 10);
+      installTafsir(executor, 85, 2, [{ groupTafsirId: 1, html: 'kept' }], 10);
+      installTafsir(executor, 86, 1, [{ groupTafsirId: 1, html: 'also' }], 10);
       executor.run('INSERT INTO meta (key, value) VALUES (?, ?)', ['manifest_etag', '"same"']);
 
       const report = await syncContent({
@@ -336,7 +385,7 @@ describe('content sync', () => {
       ]);
       expect(checkedAt(executor, 85)).toBe(NOW);
       expect(checkedAt(executor, 86)).toBe(NOW);
-      expect(translationText(executor, 85, 1)).toBe('kept');
+      expect(tafsirHtml(executor, 85, 1)).toBe('kept');
       expect(downloadPack).not.toHaveBeenCalled();
       expect(selection).not.toHaveBeenCalled();
     });
@@ -349,7 +398,7 @@ describe('content sync', () => {
     const published = manifest([entry]);
 
     await withContentDb(async ({ executor, cacheDir }) => {
-      installTranslation(executor, 85, 4, [{ verseId: 1, text: 'kept' }], 10);
+      installTafsir(executor, 85, 4, [{ groupTafsirId: 1, html: 'kept' }], 10);
       const report = await syncContent(
         await deps(executor, cacheDir, {
           getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
@@ -366,7 +415,7 @@ describe('content sync', () => {
   });
 
   it('skips a pack whose SHA-256 does not match and deletes the temp file', async () => {
-    const bytes = gzipPack(85, [{ verseId: 1, text: 'new' }]);
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: 'new' }]);
     const entry = resource({
       id: 85,
       version: 2,
@@ -375,7 +424,7 @@ describe('content sync', () => {
     const published = manifest([entry]);
 
     await withContentDb(async ({ executor, cacheDir, transactions }) => {
-      installTranslation(executor, 85, 1, [{ verseId: 1, text: 'old' }], 10);
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'old' }], 10);
       const report = await syncContent(
         await deps(executor, cacheDir, {
           getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
@@ -390,7 +439,7 @@ describe('content sync', () => {
       expect(report.resources).toEqual([
         { resourceId: 85, status: 'skipped', reason: 'Pack SHA-256 does not match the manifest.' },
       ]);
-      expect(translationText(executor, 85, 1)).toBe('old');
+      expect(tafsirHtml(executor, 85, 1)).toBe('old');
       expect(installedVersion(executor, 85)).toBe(1);
       expect(existsSync(join(cacheDir, 'packs', '85-2.sqlite.gz'))).toBe(false);
       expect(existsSync(join(cacheDir, 'packs', '85-2.sqlite'))).toBe(false);
@@ -411,7 +460,7 @@ describe('content sync', () => {
     const published = manifest([entry]);
 
     await withContentDb(async ({ executor, cacheDir, transactions }) => {
-      installTranslation(executor, 85, 1, [{ verseId: 1, text: 'old' }], 10);
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'old' }], 10);
       const report = await syncContent(
         await deps(executor, cacheDir, {
           getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
@@ -426,7 +475,7 @@ describe('content sync', () => {
       );
 
       expect(report.resources[0]?.status).toBe('failed');
-      expect(translationText(executor, 85, 1)).toBe('old');
+      expect(tafsirHtml(executor, 85, 1)).toBe('old');
       expect(installedVersion(executor, 85)).toBe(1);
       expect(transactions()).toBe(1);
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
@@ -445,10 +494,10 @@ describe('content sync', () => {
               {
                 id: 1,
                 version: 4,
-                entity: 'translation_entry',
+                entity: 'tafsir_entry',
                 entity_key: '1',
                 op: 'upsert' as const,
-                payload: { resource_id: 85, verse_id: 1, text: EXACT, footnotes: null },
+                payload: { resource_id: 85, group_tafsir_id: 1, first_verse_id: 1, last_verse_id: 7, html: EXACT },
               },
             ],
             next_cursor: 'page-2',
@@ -462,7 +511,7 @@ describe('content sync', () => {
             {
               id: 2,
               version: 5,
-              entity: 'translation_entry',
+              entity: 'tafsir_entry',
               entity_key: '2',
               op: 'delete' as const,
               payload: null,
@@ -474,13 +523,13 @@ describe('content sync', () => {
     });
 
     await withContentDb(async ({ executor, cacheDir, transactions }) => {
-      installTranslation(
+      installTafsir(
         executor,
         85,
         3,
         [
-          { verseId: 1, text: 'old' },
-          { verseId: 2, text: 'gone' },
+          { groupTafsirId: 1, html: 'old' },
+          { groupTafsirId: 2, html: 'gone' },
         ],
         10,
       );
@@ -495,21 +544,21 @@ describe('content sync', () => {
       );
 
       expect(report.resources).toEqual([{ resourceId: 85, status: 'changes-applied' }]);
-      expect(translationText(executor, 85, 1)).toBe(EXACT);
-      expect(bytesOf(translationText(executor, 85, 1))).toEqual(bytesOf(EXACT));
-      expect(translationText(executor, 85, 2)).toBeUndefined();
+      expect(tafsirHtml(executor, 85, 1)).toBe(EXACT);
+      expect(bytesOf(tafsirHtml(executor, 85, 1))).toEqual(bytesOf(EXACT));
+      expect(tafsirHtml(executor, 85, 2)).toBeUndefined();
       expect(installedVersion(executor, 85)).toBe(5);
       expect(transactions()).toBe(1);
       expect(getChanges).toHaveBeenCalledTimes(2);
     });
   });
 
-  it('keeps an upserted translation byte for byte', async () => {
+  it('keeps an upserted tafsir byte for byte', async () => {
     const entry = resource({ id: 85, version: 2, changes_since_min_version: 1 });
     const published = manifest([entry]);
 
     await withContentDb(async ({ executor, cacheDir }) => {
-      installTranslation(executor, 85, 1, [{ verseId: 1, text: 'old' }]);
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'old' }]);
       await syncContent(
         await deps(executor, cacheDir, {
           getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
@@ -520,10 +569,10 @@ describe('content sync', () => {
                 {
                   id: 1,
                   version: 2,
-                  entity: 'translation_entry',
+                  entity: 'tafsir_entry',
                   entity_key: '1',
                   op: 'upsert',
-                  payload: { resource_id: 85, verse_id: 1, text: REPLACEMENT, footnotes: null },
+                  payload: { resource_id: 85, group_tafsir_id: 1, first_verse_id: 1, last_verse_id: 7, html: REPLACEMENT },
                 },
               ],
               next_cursor: null,
@@ -535,13 +584,13 @@ describe('content sync', () => {
         }),
       );
 
-      expect(translationText(executor, 85, 1)).toBe(REPLACEMENT);
-      expect(bytesOf(translationText(executor, 85, 1))).toEqual(bytesOf(REPLACEMENT));
+      expect(tafsirHtml(executor, 85, 1)).toBe(REPLACEMENT);
+      expect(bytesOf(tafsirHtml(executor, 85, 1))).toEqual(bytesOf(REPLACEMENT));
     });
   });
 
   it('falls back to the pack when a later changes page is gone', async () => {
-    const bytes = gzipPack(85, [{ verseId: 1, text: EXACT }]);
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
     const hash = await sha256(bytes);
     const entry = resource({
       id: 85,
@@ -559,10 +608,10 @@ describe('content sync', () => {
               {
                 id: 1,
                 version: 3,
-                entity: 'translation_entry',
+                entity: 'tafsir_entry',
                 entity_key: '1',
                 op: 'upsert' as const,
-                payload: { resource_id: 85, verse_id: 1, text: 'partial', footnotes: null },
+                payload: { resource_id: 85, group_tafsir_id: 1, first_verse_id: 1, last_verse_id: 7, html: 'partial' },
               },
             ],
             next_cursor: 'page-2',
@@ -573,7 +622,7 @@ describe('content sync', () => {
     });
 
     await withContentDb(async ({ executor, cacheDir, transactions }) => {
-      installTranslation(executor, 85, 2, [{ verseId: 1, text: 'old' }]);
+      installTafsir(executor, 85, 2, [{ groupTafsirId: 1, html: 'old' }]);
       const report = await syncContent(
         await deps(executor, cacheDir, {
           getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
@@ -586,7 +635,7 @@ describe('content sync', () => {
       );
 
       expect(report.resources).toEqual([{ resourceId: 85, status: 'pack-imported' }]);
-      expect(translationText(executor, 85, 1)).toBe(EXACT);
+      expect(tafsirHtml(executor, 85, 1)).toBe(EXACT);
       expect(installedVersion(executor, 85)).toBe(4);
       expect(transactions()).toBe(1);
       expect(getChanges).toHaveBeenCalledTimes(2);
@@ -594,7 +643,7 @@ describe('content sync', () => {
   });
 
   it('deletes rows when a resource leaves the selection or the manifest', async () => {
-    const kept = gzipPack(86, [{ verseId: 1, text: 'stay' }]);
+    const kept = gzipPack(86, [{ groupTafsirId: 1, html: 'stay' }]);
     const hash = await sha256(kept);
     const entry = resource({
       id: 86,
@@ -604,8 +653,8 @@ describe('content sync', () => {
     const published = manifest([entry]);
 
     await withContentDb(async ({ executor, cacheDir }) => {
-      installTranslation(executor, 85, 1, [{ verseId: 1, text: 'drop-me' }]);
-      installTranslation(executor, 87, 1, [{ verseId: 1, text: 'unpublished' }]);
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'drop-me' }]);
+      installTafsir(executor, 87, 1, [{ groupTafsirId: 1, html: 'unpublished' }]);
       const report = await syncContent({
         ...(await deps(executor, cacheDir, {
           getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
@@ -625,16 +674,16 @@ describe('content sync', () => {
         { resourceId: 87, status: 'removed' },
         { resourceId: 86, status: 'pack-imported' },
       ]);
-      expect(translationText(executor, 85, 1)).toBeUndefined();
-      expect(translationText(executor, 87, 1)).toBeUndefined();
-      expect(translationText(executor, 86, 1)).toBe('stay');
+      expect(tafsirHtml(executor, 85, 1)).toBeUndefined();
+      expect(tafsirHtml(executor, 87, 1)).toBeUndefined();
+      expect(tafsirHtml(executor, 86, 1)).toBe('stay');
       expect(executor.get('SELECT resource_id FROM installed_resources WHERE resource_id = ?', [85])).toBeUndefined();
       expect(executor.get('SELECT resource_id FROM installed_resources WHERE resource_id = ?', [87])).toBeUndefined();
     });
   });
 
   it('continues after one resource fails', async () => {
-    const bytes = gzipPack(86, [{ verseId: 1, text: 'ok' }]);
+    const bytes = gzipPack(86, [{ groupTafsirId: 1, html: 'ok' }]);
     const hash = await sha256(bytes);
     const first = resource({ id: 85, version: 1, pack: { url: '/api/v1/content/packs/85/1', size_bytes: 1, sha256: hash } });
     const second = resource({
@@ -666,14 +715,14 @@ describe('content sync', () => {
         { resourceId: 85, status: 'failed', reason: 'network down' },
         { resourceId: 86, status: 'pack-imported' },
       ]);
-      expect(translationText(executor, 86, 1)).toBe('ok');
+      expect(tafsirHtml(executor, 86, 1)).toBe('ok');
       expect(installedVersion(executor, 85)).toBeUndefined();
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
     });
   });
 
   it('downloads a pack when the installed version is below the change floor', async () => {
-    const bytes = gzipPack(85, [{ verseId: 1, text: 'pack' }]);
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: 'pack' }]);
     const hash = await sha256(bytes);
     const entry = resource({
       id: 85,
@@ -685,7 +734,7 @@ describe('content sync', () => {
     const getChanges = jest.fn();
 
     await withContentDb(async ({ executor, cacheDir }) => {
-      installTranslation(executor, 85, 2, [{ verseId: 1, text: 'old' }]);
+      installTafsir(executor, 85, 2, [{ groupTafsirId: 1, html: 'old' }]);
       const report = await syncContent(
         await deps(executor, cacheDir, {
           getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
@@ -699,7 +748,7 @@ describe('content sync', () => {
 
       expect(getChanges).not.toHaveBeenCalled();
       expect(report.resources).toEqual([{ resourceId: 85, status: 'pack-imported' }]);
-      expect(translationText(executor, 85, 1)).toBe('pack');
+      expect(tafsirHtml(executor, 85, 1)).toBe('pack');
     });
   });
 });

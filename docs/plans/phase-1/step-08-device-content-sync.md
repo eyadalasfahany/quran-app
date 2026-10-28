@@ -70,7 +70,7 @@ type ContentSyncDeps = {
 - The MMKV key `content.selectedResourceIds` (a number array). Add the key to `storageKeys`.
 - When unset, the default is:
   - every `mushafs` resource;
-  - the first `translations` and the first `tafsirs` resource whose `language_code` equals the app locale, falling back to `en`;
+  - the first `translations` and the first `tafsirs` resource whose `language_code` equals the app locale, falling back to `en`; Translation parts removed by ADR 0014 (28 Oct 2026).
   - the first `chapter_recitations` resource.
 - This is **provisional** until the Settings and download UI in Phase 2/3; say so in a comment.
 
@@ -83,7 +83,7 @@ type ContentSyncDeps = {
 
 Jest, with the `node:sqlite` `SqlExecutor` from step 7 and fakes for the API, files and clock. **Build real gzipped SQLite pack fixtures in the test** (node:sqlite plus `fflate.gzipSync`) using the shared-contract tables.
 
-- **Fresh install:** a translation pack imports, its rows match, and `installed_resources` is set.
+- **Fresh install:** a translation pack imports, its rows match, and `installed_resources` is set. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **304:** only `last_checked_at` changes.
 - **Same version:** no download.
 - **Hash mismatch:** nothing changes in the DB and the temp file is removed.
@@ -91,7 +91,7 @@ Jest, with the `node:sqlite` `SqlExecutor` from step 7 and fakes for the API, fi
 - **Changes:** upsert and delete across 2 pages are applied in one transaction, and the version is updated.
 - **410:** falls back to the pack.
 - **Removal:** a resource dropped from the selection has its rows deleted.
-- **Byte-exact:** a translation text with diacritics and an RLM is byte-identical after the pack import and after a change upsert.
+- **Byte-exact:** a translation text with diacritics and an RLM is byte-identical after the pack import and after a change upsert. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **Contract consistency:** `content-tables.ts` lists exactly the README contract (a guard test against drift).
 - **Selection defaults:** for `ar` and `en`.
 
@@ -103,7 +103,7 @@ The mobile gates, `npm run typecheck`, and `node .github/scripts/npm-audit.mjs`.
 
 1. Local API running with packs built (steps 3–6 synced on prelive).
 2. Simulator run: the default resources install.
-3. Airplane mode, then relaunch: translation 85 still reads for Al-Fatihah and Al-Baqarah.
+3. Airplane mode, then relaunch: translation 85 still reads for Al-Fatihah and Al-Baqarah. Translation parts removed by ADR 0014 (28 Oct 2026).
 4. A `ROW_UPDATE` replayed through a test sync updates the device after a foreground.
 
 ## Leave untouched

@@ -26,8 +26,9 @@ describe('SheetContainer', () => {
     const view = await renderUi(<SheetContainer executor={executor} tab="tafsir" verseKey="1:2" />, { locale: 'en' });
 
     expect(view.getByText('No tafsir downloaded')).toBeOnTheScreen();
-    await fireEvent.press(view.getByRole('tab', { name: 'Translation' }));
-    expect(view.getByText('No translation chosen')).toBeOnTheScreen();
+    await fireEvent.press(view.getByRole('tab', { name: 'Options' }));
+    expect(view.queryByText('No tafsir downloaded')).toBeNull();
+    expect(view.getByRole('tab', { name: 'Options' }).props.accessibilityState).toEqual({ selected: true });
   });
 
   it('reports tab changes and takes the full sheet away from the actions tab', async () => {

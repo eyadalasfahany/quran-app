@@ -95,8 +95,7 @@ export interface components {
             pack_schema_version: number;
             resources: {
                 id: number;
-                /** @enum {string} */
-                group: "quran_core" | "mushafs" | "translations" | "tafsirs" | "word_by_word_translations" | "word_by_word_transliterations" | "recitations" | "chapter_recitations" | "hadith";
+                group: components["schemas"]["ServedResourceGroup"];
                 name: string | null;
                 author_name: string | null;
                 language_code: string | null;
@@ -126,6 +125,11 @@ export interface components {
          * @enum {string}
          */
         HealthStatus: "ok" | "unavailable";
+        /**
+         * ServedResourceGroup
+         * @enum {string}
+         */
+        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith";
     };
     responses: {
         /** @description Validation error */

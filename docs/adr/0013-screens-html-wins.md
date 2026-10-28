@@ -2,6 +2,8 @@
 
 Date: 2026-10-27 · Status: accepted · Amends ADR 0010 (design source), spec §4 and §12, Phase 2 step 8
 
+Amended by ADR 0014.
+
 ## Context
 
 A side-by-side check of the built screens against `quran-app-screens.html` (27 Oct 2026) found two kinds of problem.
@@ -21,8 +23,8 @@ A side-by-side check of the built screens against `quran-app-screens.html` (27 O
    - The index row's title is the Arabic name; the transliterated name is not shown.
    - `quran-reading` is 27 / 2.1, `quran-focus` 38 / 2.1, and the Focus neighbours `quran-focus-aside` 24 / 2.
    - The Mushaf page is capped at 600 pt.
-2. **Features the app has but the frames don't draw stay**, styled with the frames' tokens: the tabs inside phone sheets, the "back to the current ayah" pill (spec §12), the translations list in reader settings, and the tafsir and translation action tiles.
-3. **Restyle only.** Elements drawn in the frames for features that aren't built (Home content, the player, the script picker, search filters, the offline banner, word chips) wait for their feature.
+2. **Features the app has but the frames don't draw stay**, styled with the frames' tokens: the tabs inside phone sheets, the "back to the current ayah" pill (spec §12), ~~the translations list in reader settings~~, and the tafsir ~~and translation~~ action tile. *Translation items struck by ADR 0014.*
+3. **Restyle only.** Elements drawn in the frames for features that aren't built (Home content, the player, the script picker, search filters, the offline banner, ~~word chips~~) wait for their feature. *Word chips struck by ADR 0014.*
 4. **One owner per visual.** Each visual pattern lives in one component in `src/shared/ui/`, and screens and feature components compose it:
    - `UiText` for every interface and display string, `QuranText` for every Quran string.
    - `Button`, `Card`, `Divider`, `ScreenHeader`, `SheetHeader`, `GoldFrame`, `PageDivider`, `ToggleRow`.

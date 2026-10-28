@@ -13,7 +13,7 @@ use App\Domains\Content\Models\ContentChange;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Models\SyncRun;
 use App\Domains\Content\Models\SyncState;
-use App\Domains\Content\Models\TranslationEntry;
+use App\Domains\Content\Models\TafsirEntry;
 use App\Domains\Content\Services\ContentSyncService;
 use App\Domains\Content\Sync\SyncException;
 use App\Integrations\QuranFoundation\ContentCatalogClient;
@@ -27,6 +27,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Http\Client\ResponseSequence;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
 use Tests\Support\QuranFoundationFixture;
 
@@ -47,10 +48,10 @@ beforeEach(function (): void {
     $this->seed(ContentSourceSeeder::class);
 });
 
-it('bootstraps a translation from its snapshot and catalog', function (): void {
-    $result = syncTranslations([resourceMutation(10, 'RESOURCE_CREATE')]);
+it('bootstraps a tafsir from its snapshot and catalog', function (): void {
+    $result = syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
 
-    $resource = Resource::query()->where('source_key', '85')->first();
+    $resource = Resource::query()->where('source_key', '169')->first();
 
     expect($result->mutationsApplied)->toBe(1)
         ->and($result->resourcesTouched)->toBe(1)
@@ -58,17 +59,17 @@ it('bootstraps a translation from its snapshot and catalog', function (): void {
         ->and($resource)->not->toBeNull()
         ->and($resource->version)->toBe(1)
         ->and($resource->changes_floor_version)->toBe(1)
-        ->and($resource->name)->toBe('M.A.S. Abdel Haleem')
-        ->and($resource->author_name)->toBe('Abdul Haleem')
+        ->and($resource->name)->toBe('Ibn Kathir')
+        ->and($resource->author_name)->toBe('Ibn Kathir')
         ->and($resource->language_name)->toBe('english')
         ->and($resource->language_code)->toBe('en')
         ->and($resource->direction)->toBe(TextDirection::Ltr)
         ->and($resource->is_active)->toBeTrue()
         ->and($resource->source_sequence)->toBe(42)
-        ->and(TranslationEntry::query()->where('resource_id', $resource->id)->count())->toBe(3)
-        ->and(TranslationEntry::query()->where('verse_id', 1)->first()?->footnotes)->toBeNull()
-        ->and(TranslationEntry::query()->where('verse_id', 2)->first()?->footnotes)->toBe([['text' => 'A note']])
-        ->and(TranslationEntry::query()->where('verse_id', 1)->first()?->source_record_id)->toBe(401704);
+        ->and(TafsirEntry::query()->where('resource_id', $resource->id)->count())->toBe(3)
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html'))->toBe('<p>First tafsir</p>')
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82642)->value('html'))->toBe('<p>Second tafsir</p>')
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('source_hash'))->toBe(hash('sha256', '<p>First tafsir</p>'));
 
     $state = SyncState::query()->first();
     $run = SyncRun::query()->first();
@@ -84,18 +85,18 @@ it('bootstraps a translation from its snapshot and catalog', function (): void {
 });
 
 it('sends the stored token on a rerun and leaves the version unchanged', function (): void {
-    syncTranslations([resourceMutation(10, 'RESOURCE_CREATE')]);
+    syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
 
     fakeFoundation([
         'sync' => syncPage([], 'token-rerun'),
     ]);
 
-    $result = app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*');
+    $result = app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
 
     expect($result->mutationsApplied)->toBe(0)
         ->and($result->resourcesTouched)->toBe(0)
-        ->and(Resource::query()->where('source_key', '85')->value('version'))->toBe(1)
-        ->and(TranslationEntry::query()->count())->toBe(3)
+        ->and(Resource::query()->where('source_key', '169')->value('version'))->toBe(1)
+        ->and(TafsirEntry::query()->count())->toBe(3)
         ->and(SyncState::query()->value('sync_token'))->toBe('token-rerun');
 
     Http::assertSent(function (Request $request): bool {
@@ -111,84 +112,82 @@ it('sends the stored token on a rerun and leaves the version unchanged', functio
 });
 
 it('applies a row update and a row delete at the next version', function (): void {
-    syncTranslations([resourceMutation(10, 'RESOURCE_CREATE')]);
+    syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
 
-    syncTranslations([
-        rowMutation(11, 'ROW_UPDATE', 1, 'Updated name'),
-        rowMutation(12, 'ROW_DELETE', 2),
+    syncTafsirs([
+        rowMutation(11, 'ROW_UPDATE', 82641, '<p>Updated tafsir</p>'),
+        rowMutation(12, 'ROW_DELETE', 82642),
     ], 'token-rows');
 
-    $resource = Resource::query()->where('source_key', '85')->firstOrFail();
+    $resource = Resource::query()->where('source_key', '169')->firstOrFail();
     $changes = ContentChange::query()->orderBy('id')->get();
 
     expect($resource->version)->toBe(2)
-        ->and(TranslationEntry::query()->where('resource_id', $resource->id)->orderBy('verse_id')->pluck('verse_id')->all())->toBe([1, 3])
-        ->and(TranslationEntry::query()->where('verse_id', 1)->value('text'))->toBe('Updated name')
+        ->and(TafsirEntry::query()->where('resource_id', $resource->id)->orderBy('group_tafsir_id')->pluck('group_tafsir_id')->all())->toBe([82641, 82643])
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html'))->toBe('<p>Updated tafsir</p>')
         ->and($changes)->toHaveCount(2)
         ->and($changes[0]->version)->toBe(2)
-        ->and($changes[0]->entity)->toBe('translation_entry')
-        ->and($changes[0]->entity_key)->toBe('1')
+        ->and($changes[0]->entity)->toBe('tafsir_entry')
+        ->and($changes[0]->entity_key)->toBe('82641')
         ->and($changes[0]->op)->toBe(ChangeOperation::Upsert)
         ->and($changes[0]->payload)->toEqual([
             'resource_id' => $resource->id,
-            'verse_id' => 1,
-            'text' => 'Updated name',
-            'footnotes' => null,
+            'group_tafsir_id' => 82641,
+            'first_verse_id' => 1,
+            'last_verse_id' => 1,
+            'html' => '<p>Updated tafsir</p>',
         ])
         ->and($changes[1]->version)->toBe(2)
         ->and($changes[1]->op)->toBe(ChangeOperation::Delete)
-        ->and($changes[1]->entity_key)->toBe('2')
+        ->and($changes[1]->entity_key)->toBe('82642')
         ->and($changes[1]->payload)->toBeNull();
 });
 
 it('bumps a resource version once when several row updates share a run', function (): void {
-    syncTranslations([resourceMutation(10, 'RESOURCE_CREATE')]);
+    syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
 
-    syncTranslations([
-        rowMutation(11, 'ROW_UPDATE', 1, 'First'),
-        rowMutation(12, 'ROW_UPDATE', 2, 'Second'),
+    syncTafsirs([
+        rowMutation(11, 'ROW_UPDATE', 82641, '<p>First</p>'),
+        rowMutation(12, 'ROW_UPDATE', 82642, '<p>Second</p>'),
     ], 'token-bump');
 
     $versions = ContentChange::query()->pluck('version')->all();
 
-    expect(Resource::query()->where('source_key', '85')->value('version'))->toBe(2)
+    expect(Resource::query()->where('source_key', '169')->value('version'))->toBe(2)
         ->and($versions)->toBe([2, 2]);
 });
 
 it('replaces every row and raises the floor when a resource is invalidated', function (): void {
-    syncTranslations([resourceMutation(10, 'RESOURCE_CREATE')]);
+    syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
 
-    $snapshot = QuranFoundationFixture::load('translations-snapshot.json');
-    $snapshot['records'] = [$snapshot['records'][0]];
-
-    syncTranslations([
-        resourceMutation(11, 'RESOURCE_INVALIDATE', snapshotUrl: '/api/v4/resources/snapshots/translations/85?replace=1'),
+    syncTafsirs([
+        resourceMutation(11, 'RESOURCE_INVALIDATE', snapshotUrl: '/api/v4/resources/snapshots/tafsirs/169?replace=1'),
     ], 'token-invalidate', [
-        CONTENT_API.'/api/v4/resources/snapshots/translations/85?replace=1' => $snapshot,
+        CONTENT_API.'/api/v4/resources/snapshots/tafsirs/169?replace=1' => tafsirSnapshot([tafsirSyncRecord(82641, '<p>First tafsir</p>')]),
     ]);
 
-    $resource = Resource::query()->where('source_key', '85')->firstOrFail();
+    $resource = Resource::query()->where('source_key', '169')->firstOrFail();
 
     expect($resource->version)->toBe(2)
         ->and($resource->changes_floor_version)->toBe(2)
-        ->and(TranslationEntry::query()->where('resource_id', $resource->id)->count())->toBe(1)
+        ->and(TafsirEntry::query()->where('resource_id', $resource->id)->count())->toBe(1)
         ->and(ContentChange::query()->count())->toBe(0);
 });
 
 it('deactivates a resource when it is deleted', function (): void {
-    syncTranslations([resourceMutation(10, 'RESOURCE_CREATE')]);
+    syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
 
-    syncTranslations([
+    syncTafsirs([
         resourceMutation(11, 'RESOURCE_DELETE'),
     ], 'token-delete');
 
-    $resource = Resource::query()->where('source_key', '85')->firstOrFail();
+    $resource = Resource::query()->where('source_key', '169')->firstOrFail();
 
     expect($resource->is_active)->toBeFalse()
         ->and($resource->version)->toBe(2)
         ->and($resource->changes_floor_version)->toBe(2)
         ->and(ContentChange::query()->count())->toBe(0)
-        ->and(TranslationEntry::query()->count())->toBe(3);
+        ->and(TafsirEntry::query()->count())->toBe(3);
 });
 
 it('marks an unavailable resource inactive and does not fetch a snapshot', function (): void {
@@ -198,30 +197,30 @@ it('marks an unavailable resource inactive and does not fetch a snapshot', funct
         ]),
     ]);
 
-    app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*');
+    app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
 
-    $resource = Resource::query()->where('source_key', '85')->firstOrFail();
+    $resource = Resource::query()->where('source_key', '169')->firstOrFail();
 
     expect($resource->is_active)->toBeFalse()
         ->and($resource->unavailable_reason)->toBe('not_licensed')
         ->and($resource->version)->toBe(0)
-        ->and(TranslationEntry::query()->count())->toBe(0);
+        ->and(TafsirEntry::query()->count())->toBe(0);
 
     Http::assertNotSent(fn (Request $request): bool => str_contains($request->url(), '/snapshots/'));
 });
 
 it('resumes after the last committed sequence when a later snapshot fails', function (): void {
-    $replace = CONTENT_API.'/api/v4/resources/snapshots/translations/85?replace=1';
+    $replace = CONTENT_API.'/api/v4/resources/snapshots/tafsirs/169?replace=1';
 
     fakeFoundation([
         'sync' => syncPage([
             resourceMutation(10, 'RESOURCE_CREATE'),
-            resourceMutation(11, 'RESOURCE_INVALIDATE', snapshotUrl: '/api/v4/resources/snapshots/translations/85?replace=1'),
+            resourceMutation(11, 'RESOURCE_INVALIDATE', snapshotUrl: '/api/v4/resources/snapshots/tafsirs/169?replace=1'),
         ]),
         $replace => Http::response(['message' => 'down'], 500),
     ]);
 
-    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*'))
+    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*'))
         ->toThrow(QuranFoundationException::class);
 
     $failed = SyncState::query()->first();
@@ -232,20 +231,17 @@ it('resumes after the last committed sequence when a later snapshot fails', func
         ->and($failed->sync_token)->toBeNull()
         ->and($failedRun)->not->toBeNull()
         ->and($failedRun->status)->toBe(SyncRunStatus::Failed)
-        ->and(TranslationEntry::query()->count())->toBe(3);
-
-    $replacement = QuranFoundationFixture::load('translations-snapshot.json');
-    $replacement['records'] = [$replacement['records'][0]];
+        ->and(TafsirEntry::query()->count())->toBe(3);
 
     fakeFoundation([
         'sync' => syncPage([
             resourceMutation(10, 'RESOURCE_CREATE'),
-            resourceMutation(11, 'RESOURCE_INVALIDATE', snapshotUrl: '/api/v4/resources/snapshots/translations/85?replace=1'),
+            resourceMutation(11, 'RESOURCE_INVALIDATE', snapshotUrl: '/api/v4/resources/snapshots/tafsirs/169?replace=1'),
         ], 'token-resumed'),
-        $replace => $replacement,
+        $replace => tafsirSnapshot([tafsirSyncRecord(82641, '<p>First tafsir</p>')]),
     ]);
 
-    app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*');
+    app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
 
     $resumed = SyncState::query()->first();
     $resumedRun = SyncRun::query()->orderByDesc('id')->first();
@@ -255,9 +251,9 @@ it('resumes after the last committed sequence when a later snapshot fails', func
         ->and($resumed->sync_token)->toBe('token-resumed')
         ->and($resumedRun)->not->toBeNull()
         ->and($resumedRun->status)->toBe(SyncRunStatus::Ok)
-        ->and(TranslationEntry::query()->count())->toBe(1);
+        ->and(TafsirEntry::query()->count())->toBe(1);
 
-    Http::assertNotSent(fn (Request $request): bool => $request->url() === CONTENT_API.'/api/v4/resources/snapshots/translations/85');
+    Http::assertNotSent(fn (Request $request): bool => $request->url() === CONTENT_API.'/api/v4/resources/snapshots/tafsirs/169');
     Http::assertSent(fn (Request $request): bool => $request->url() === $replace);
 });
 
@@ -268,13 +264,13 @@ it('applies pages in order and stores only the final token', function (): void {
                 resourceMutation(10, 'RESOURCE_CREATE'),
             ], 'token-page-1', true, '/api/v4/resources/sync?page=2'))
             ->push(syncPage([
-                rowMutation(11, 'ROW_UPDATE', 1, 'Page two'),
+                rowMutation(11, 'ROW_UPDATE', 82641, '<p>Page two</p>'),
             ], 'token-page-2')),
     ]);
 
-    app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*');
+    app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
 
-    expect(TranslationEntry::query()->where('verse_id', 1)->value('text'))->toBe('Page two')
+    expect(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html'))->toBe('<p>Page two</p>')
         ->and(SyncState::query()->value('sync_token'))->toBe('token-page-2')
         ->and(SyncState::query()->value('last_sequence'))->toBe(11);
 });
@@ -287,7 +283,7 @@ it('rejects a page whose sequences are not ascending', function (): void {
         ]),
     ]);
 
-    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*'))
+    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*'))
         ->toThrow(SyncException::class, 'Sync mutations are out of sequence.');
 
     $state = SyncState::query()->first();
@@ -298,32 +294,29 @@ it('rejects a page whose sequences are not ascending', function (): void {
         ->and($state->sync_token)->toBeNull()
         ->and($run)->not->toBeNull()
         ->and($run->status)->toBe(SyncRunStatus::Failed)
-        ->and(TranslationEntry::query()->count())->toBe(0);
+        ->and(TafsirEntry::query()->count())->toBe(0);
 });
 
-it('stores translation text byte for byte and copies it into the change', function (): void {
-    $text = "In the name  of God\u{064E}\u{200D}\u{200F}.";
-    $snapshot = QuranFoundationFixture::load('translations-snapshot.json');
-    $snapshot['records'][0]['text'] = $text;
+it('stores tafsir source text byte for byte and copies it into the change', function (): void {
+    $text = "<p>In the name  of God\u{064E}\u{200D}\u{200F}.</p>";
 
-    syncTranslations([
+    syncTafsirs([
         resourceMutation(10, 'RESOURCE_CREATE'),
-        rowMutation(11, 'ROW_UPDATE', 1, $text),
-    ], 'token-bytes', [
-        'snapshot' => $snapshot,
-    ]);
+        rowMutation(11, 'ROW_UPDATE', 82641, $text),
+    ], 'token-bytes');
 
-    $stored = TranslationEntry::query()->where('verse_id', 1)->value('text');
+    $stored = TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html');
     $payload = ContentChange::query()->first()?->payload;
 
     expect(is_string($stored))->toBeTrue()
         ->and(bin2hex((string) $stored))->toBe(bin2hex($text))
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('source_hash'))->toBe(hash('sha256', $text))
         ->and(is_array($payload))->toBeTrue()
-        ->and(bin2hex((string) $payload['text']))->toBe(bin2hex($text));
+        ->and(bin2hex((string) $payload['html']))->toBe(bin2hex($text));
 });
 
-it('rejects a translation record that has no verse id or text', function (): void {
-    $snapshot = QuranFoundationFixture::load('translations-snapshot.json');
+it('rejects a tafsir record that has no text', function (): void {
+    $snapshot = tafsirSnapshot([tafsirSyncRecord(82641, '<p>First tafsir</p>')]);
     unset($snapshot['records'][0]['text']);
 
     fakeFoundation([
@@ -331,22 +324,22 @@ it('rejects a translation record that has no verse id or text', function (): voi
         'snapshot' => $snapshot,
     ]);
 
-    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*'))
-        ->toThrow(SyncException::class, 'Translation record is missing verse_id or text.');
+    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*'))
+        ->toThrow(SyncException::class, 'Sync record is missing text.');
 
     expect(SyncState::query()->value('sync_token'))->toBeNull()
-        ->and(TranslationEntry::query()->count())->toBe(0);
+        ->and(TafsirEntry::query()->count())->toBe(0);
 });
 
 it('dispatches one content changed event per touched resource', function (): void {
     Event::fake([ResourceContentChanged::class]);
 
-    syncTranslations([
+    syncTafsirs([
         resourceMutation(10, 'RESOURCE_CREATE'),
-        rowMutation(11, 'ROW_UPDATE', 1, 'Touched once'),
+        rowMutation(11, 'ROW_UPDATE', 82641, '<p>Touched once</p>'),
     ]);
 
-    $resource = Resource::query()->where('source_key', '85')->firstOrFail();
+    $resource = Resource::query()->where('source_key', '169')->firstOrFail();
 
     Event::assertDispatchedTimes(ResourceContentChanged::class, 1);
     Event::assertDispatched(
@@ -356,32 +349,32 @@ it('dispatches one content changed event per touched resource', function (): voi
 });
 
 it('dispatches content changed for a committed resource when a later mutation fails', function (): void {
-    syncTranslations([resourceMutation(10, 'RESOURCE_CREATE')]);
+    syncTafsirs([resourceMutation(10, 'RESOURCE_CREATE')]);
 
     Event::fake([ResourceContentChanged::class]);
 
-    $failedSnapshot = CONTENT_API.'/api/v4/resources/snapshots/translations/86';
-    $failedCreate = resourceMutation(12, 'RESOURCE_CREATE', snapshotUrl: '/api/v4/resources/snapshots/translations/86');
-    $failedCreate['resource_id'] = 86;
-    $failedCreate['resource_content_id'] = 86;
+    $failedSnapshot = CONTENT_API.'/api/v4/resources/snapshots/tafsirs/170';
+    $failedCreate = resourceMutation(12, 'RESOURCE_CREATE', snapshotUrl: '/api/v4/resources/snapshots/tafsirs/170');
+    $failedCreate['resource_id'] = 170;
+    $failedCreate['resource_content_id'] = 170;
 
     fakeFoundation([
         'sync' => syncPage([
-            rowMutation(11, 'ROW_UPDATE', 1, 'Committed before failure'),
+            rowMutation(11, 'ROW_UPDATE', 82641, '<p>Committed before failure</p>'),
             $failedCreate,
         ]),
         $failedSnapshot => Http::response(['message' => 'down'], 500),
     ]);
 
-    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*'))
+    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*'))
         ->toThrow(QuranFoundationException::class);
 
-    $resource = Resource::query()->where('source_key', '85')->firstOrFail();
+    $resource = Resource::query()->where('source_key', '169')->firstOrFail();
     $failedRun = SyncRun::query()->orderByDesc('id')->first();
 
     expect($resource->version)->toBe(2)
-        ->and(TranslationEntry::query()->where('verse_id', 1)->value('text'))->toBe('Committed before failure')
-        ->and(Resource::query()->where('source_key', '86')->exists())->toBeFalse()
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html'))->toBe('<p>Committed before failure</p>')
+        ->and(Resource::query()->where('source_key', '170')->exists())->toBeFalse()
         ->and($failedRun)->not->toBeNull()
         ->and($failedRun->status)->toBe(SyncRunStatus::Failed);
 
@@ -392,19 +385,19 @@ it('dispatches content changed for a committed resource when a later mutation fa
     );
 });
 
-it('reads the translation catalog', function (): void {
+it('reads the tafsir catalog', function (): void {
     fakeFoundation();
 
-    $entries = app(ContentCatalogClient::class)->translations();
+    $entries = app(ContentCatalogClient::class)->tafsirs();
 
     expect($entries)->toHaveCount(2)
-        ->and($entries[0]->id)->toBe(85)
-        ->and($entries[0]->name)->toBe('M.A.S. Abdel Haleem')
-        ->and($entries[0]->authorName)->toBe('Abdul Haleem')
+        ->and($entries[0]->id)->toBe(169)
+        ->and($entries[0]->name)->toBe('Ibn Kathir')
+        ->and($entries[0]->authorName)->toBe('Ibn Kathir')
         ->and($entries[0]->languageName)->toBe('english')
-        ->and($entries[0]->slug)->toBe('en-haleem')
+        ->and($entries[0]->slug)->toBe('ibn-kathir')
         ->and($entries[1]->authorName)->toBeNull()
-        ->and($entries[1]->languageName)->toBe('urdu');
+        ->and($entries[1]->languageName)->toBe('arabic');
 });
 
 it('prints a sync summary and never the record text', function (): void {
@@ -412,11 +405,11 @@ it('prints a sync summary and never the record text', function (): void {
         'sync' => syncPage([resourceMutation(10, 'RESOURCE_CREATE')]),
     ]);
 
-    $this->artisan('content:sync', ['group' => 'translations'])
+    $this->artisan('content:sync', ['group' => 'tafsirs'])
         ->expectsOutput('mutations_applied: 1')
         ->expectsOutput('resources_touched: 1')
         ->expectsOutput('rows: 3')
-        ->doesntExpectOutputToContain('In the name of God')
+        ->doesntExpectOutputToContain('First tafsir')
         ->assertSuccessful();
 });
 
@@ -430,25 +423,56 @@ it('schedules each configured group daily at 02:00 UTC', function (): void {
 
     expect($events->every(fn (object $event): bool => $event->expression === '0 2 * * *' && $event->timezone === 'UTC'))->toBeTrue();
 
-    $job = new SyncQuranFoundationJob(ResourceGroup::Translations, 'translations:*');
+    $job = new SyncQuranFoundationJob(ResourceGroup::Tafsirs, 'tafsirs:*');
 
     expect($job->tries)->toBe(1)
         ->and($job->queue)->toBe('sync')
-        ->and($job->uniqueId())->toBe('translations');
+        ->and($job->uniqueId())->toBe('tafsirs');
+});
+
+it('skips translation mutations in a page without writing rows or failing', function (): void {
+    Log::spy();
+
+    $translationCreate = QuranFoundationFixture::load('sync-page-1.json')['sync']['mutations'][0];
+    $translationCreate['sequence'] = 11;
+    $translationRow = QuranFoundationFixture::load('sync-page-2.json')['sync']['mutations'][0];
+    $translationRow['sequence'] = 12;
+
+    $result = syncTafsirs([
+        resourceMutation(10, 'RESOURCE_CREATE'),
+        $translationCreate,
+        $translationRow,
+        rowMutation(13, 'ROW_UPDATE', 82641, '<p>After translations</p>'),
+    ], 'token-mixed');
+
+    expect($result->mutationsApplied)->toBe(2)
+        ->and(TafsirEntry::query()->count())->toBe(3)
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html'))->toBe('<p>After translations</p>')
+        ->and(ContentChange::query()->count())->toBe(1)
+        ->and(Resource::query()->where('source_key', '85')->exists())->toBeFalse()
+        ->and(SyncState::query()->value('sync_token'))->toBe('token-mixed')
+        ->and(SyncState::query()->value('last_sequence'))->toBe(13)
+        ->and(SyncRun::query()->value('status'))->toBe(SyncRunStatus::Ok);
+
+    Http::assertNotSent(fn (Request $request): bool => str_contains($request->url(), '/snapshots/translations/'));
+
+    Log::shouldHaveReceived('info')
+        ->with('Quran Foundation sync skipped mutations for an ignored resource group.', ['resource_group' => 'translations'])
+        ->once();
 });
 
 /**
  * @param  list<array<string, mixed>>  $mutations
  * @param  array<string, mixed>  $extra
  */
-function syncTranslations(array $mutations, string $token = 'token-final', array $extra = []): SyncRunResult
+function syncTafsirs(array $mutations, string $token = 'token-final', array $extra = []): SyncRunResult
 {
     fakeFoundation([
         'sync' => syncPage($mutations, $token),
         ...$extra,
     ]);
 
-    return app(ContentSyncService::class)->run(ResourceGroup::Translations, 'translations:*');
+    return app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
 }
 
 /**
@@ -459,7 +483,11 @@ function fakeFoundation(array $routes = []): void
     Http::swap(new Factory);
     Http::preventStrayRequests();
 
-    $snapshot = $routes['snapshot'] ?? QuranFoundationFixture::load('translations-snapshot.json');
+    $snapshot = $routes['snapshot'] ?? tafsirSnapshot([
+        tafsirSyncRecord(82641, '<p>First tafsir</p>'),
+        tafsirSyncRecord(82642, '<p>Second tafsir</p>'),
+        tafsirSyncRecord(82643, '<p>Third tafsir</p>'),
+    ]);
     unset($routes['snapshot']);
 
     $sync = $routes['sync'] ?? syncPage([]);
@@ -467,8 +495,13 @@ function fakeFoundation(array $routes = []): void
 
     $map = [
         'https://prelive-oauth2.quran.foundation/oauth2/token' => Http::response(QuranFoundationFixture::load('token.json')),
-        CONTENT_API.'/api/v4/resources/translations' => Http::response(QuranFoundationFixture::load('translations-catalog.json')),
-        CONTENT_API.'/api/v4/resources/snapshots/translations/85' => Http::response(is_array($snapshot) ? $snapshot : []),
+        CONTENT_API.'/api/v4/resources/tafsirs' => Http::response([
+            'tafsirs' => [
+                ['id' => 169, 'name' => 'Ibn Kathir', 'author_name' => 'Ibn Kathir', 'slug' => 'ibn-kathir', 'language_name' => 'english'],
+                ['id' => 170, 'name' => 'Al-Qurtubi', 'author_name' => null, 'slug' => 'al-qurtubi', 'language_name' => 'arabic'],
+            ],
+        ]),
+        CONTENT_API.'/api/v4/resources/snapshots/tafsirs/169' => Http::response(is_array($snapshot) ? $snapshot : []),
         CONTENT_API.'/api/v4/resources/sync*' => $sync instanceof ResponseSequence
             ? $sync
             : Http::response(is_array($sync) ? $sync : []),
@@ -485,6 +518,41 @@ function fakeFoundation(array $routes = []): void
     }
 
     Http::fake($map);
+}
+
+/**
+ * @param  list<array<string, mixed>>  $records
+ * @return array<string, mixed>
+ */
+function tafsirSnapshot(array $records): array
+{
+    return [
+        'resource_group' => 'tafsirs',
+        'resource_id' => 169,
+        'resource_content_id' => 169,
+        'schema_version' => 1,
+        'sync_sequence' => 42,
+        'records' => $records,
+    ];
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function tafsirSyncRecord(int $groupTafsirId, string $text, int $verseId = 1): array
+{
+    return [
+        'id' => $groupTafsirId,
+        'verse_id' => $verseId,
+        'verse_key' => '1:'.$verseId,
+        'group_verse_key_from' => '1:1',
+        'group_verse_key_to' => '1:1',
+        'group_verses_count' => 1,
+        'group_tafsir_id' => $groupTafsirId,
+        'start_verse_id' => $verseId,
+        'end_verse_id' => $verseId,
+        'text' => $text,
+    ];
 }
 
 /**
@@ -507,14 +575,14 @@ function syncPage(array $mutations, string $token = 'token-final', bool $hasMore
 /**
  * @return array<string, mixed>
  */
-function resourceMutation(int $sequence, string $type, ?string $unavailable = null, ?string $snapshotUrl = '/api/v4/resources/snapshots/translations/85'): array
+function resourceMutation(int $sequence, string $type, ?string $unavailable = null, ?string $snapshotUrl = '/api/v4/resources/snapshots/tafsirs/169'): array
 {
     return [
         'sequence' => $sequence,
         'type' => $type,
-        'resource_group' => 'translations',
-        'resource_id' => 85,
-        'resource_content_id' => 85,
+        'resource_group' => 'tafsirs',
+        'resource_id' => 169,
+        'resource_content_id' => 169,
         'record_type' => null,
         'record_key' => null,
         'source_record_id' => null,
@@ -528,25 +596,19 @@ function resourceMutation(int $sequence, string $type, ?string $unavailable = nu
 /**
  * @return array<string, mixed>
  */
-function rowMutation(int $sequence, string $type, int $verseId, string $text = 'row'): array
+function rowMutation(int $sequence, string $type, int $groupTafsirId, string $text = '<p>row</p>'): array
 {
     return [
         'sequence' => $sequence,
         'type' => $type,
-        'resource_group' => 'translations',
-        'resource_id' => 85,
-        'resource_content_id' => 85,
+        'resource_group' => 'tafsirs',
+        'resource_id' => 169,
+        'resource_content_id' => 169,
         'record_type' => null,
-        'record_key' => (string) $verseId,
+        'record_key' => (string) $groupTafsirId,
         'source_record_id' => null,
         'changed_at' => '2026-10-27T12:00:00.000Z',
-        'data' => $type === 'ROW_DELETE' ? null : [
-            'id' => 500000 + $verseId,
-            'verse_id' => $verseId,
-            'verse_key' => '1:'.$verseId,
-            'text' => $text,
-            'foot_notes' => [],
-        ],
+        'data' => $type === 'ROW_DELETE' ? null : tafsirSyncRecord($groupTafsirId, $text),
         'snapshot_url' => null,
         'unavailable_reason' => null,
     ];

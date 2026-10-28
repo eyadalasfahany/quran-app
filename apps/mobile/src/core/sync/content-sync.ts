@@ -72,8 +72,10 @@ export async function syncContent(deps: ContentSyncDeps): Promise<ContentSyncRep
 
   const report: ContentSyncResourceReport[] = [];
   let retryable = false;
-  const selected = new Set(deps.selection(manifest.manifest.resources));
-  const published = new Set(manifest.manifest.resources.map((resource) => resource.id));
+  // Groups without a device schema (for example the retired translations) are ignored, not failed.
+  const resources = manifest.manifest.resources.filter((resource) => contentGroup(resource.group) !== undefined);
+  const selected = new Set(deps.selection(resources));
+  const published = new Set(resources.map((resource) => resource.id));
 
   for (const installed of listInstalled(deps.db)) {
     if (published.has(installed.resourceId) && selected.has(installed.resourceId)) {
@@ -88,7 +90,7 @@ export async function syncContent(deps: ContentSyncDeps): Promise<ContentSyncRep
     }
   }
 
-  for (const resource of manifest.manifest.resources) {
+  for (const resource of resources) {
     if (!selected.has(resource.id)) {
       continue;
     }

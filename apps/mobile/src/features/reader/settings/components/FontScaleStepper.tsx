@@ -3,21 +3,34 @@ import { Pressable, View, type PressableStateCallbackType, type ViewStyle } from
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { QuranText, UiText } from '@/shared/ui';
+import { UiText } from '@/shared/ui';
 
 import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP } from '../../settings-model';
 
-const PERCENT_MIN_WIDTH = 64;
+/** The "أ−" and "أ+" glyph sizes on quran-app-screens.html (Reader settings). */
+export const STEP_GLYPH_SMALL = 16;
+export const STEP_GLYPH_LARGE = 20;
+/**
+ * Amiri's normal leading (hhea ascender 1124 + descender 634, per 1000 em): the frame's glyph buttons use
+ * `font-family: Amiri` with no line-height, so the line is 1.758 × size. A shorter line clips the hamza of «أ».
+ */
+const AMIRI_NORMAL_LEADING = (1124 + 634) / 1000;
+/** Minimum width of the percent label (frame: min-width 52px). */
+export const PERCENT_MIN_WIDTH = 52;
+/** Inner padding of the track (frame: padding 2px). */
+const TRACK_PADDING = 2;
+
+function glyphStyle(size: number): { fontSize: number; lineHeight: number } {
+  return { fontSize: size, lineHeight: Math.round(size * AMIRI_NORMAL_LEADING) };
+}
 
 export function FontScaleStepper({
   value,
   onChange,
-  previewText,
   testID = 'reader-font-scale',
 }: {
   value: number;
   onChange: (fontScale: number) => void;
-  previewText?: string;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -37,7 +50,7 @@ export function FontScaleStepper({
     (disabled: boolean) =>
     ({ pressed }: PressableStateCallbackType): ViewStyle => ({
       alignItems: 'center',
-      backgroundColor: pressed ? theme.colors.glassSelected : theme.colors.fillSecondary,
+      backgroundColor: pressed ? theme.colors.glassSelected : 'transparent',
       borderRadius: theme.radius.pill,
       height: theme.size.touchTarget,
       justifyContent: 'center',
@@ -46,45 +59,53 @@ export function FontScaleStepper({
     });
 
   return (
-    <View style={{ gap: theme.space[3] }} testID={testID}>
-      <UiText variant="headline">{t('reader.settings.fontScale')}</UiText>
-      <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3] }}>
-        <Pressable
-          accessibilityLabel={t('reader.settings.decreaseFont')}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: atMin }}
-          disabled={atMin}
-          onPress={() => step(-1)}
-          style={stepStyle(atMin)}
-          testID="reader-font-decrease"
-        >
-          <UiText variant="headline">أ−</UiText>
-        </Pressable>
-        <UiText
-          accessibilityLabel={percentLabel}
-          align="center"
-          style={{ minWidth: PERCENT_MIN_WIDTH }}
-          testID="reader-font-percent"
-        >
-          {percentLabel}
+    <View
+      style={{
+        alignItems: 'center',
+        backgroundColor: theme.colors.fillTrack,
+        borderRadius: theme.radius.pill,
+        flexDirection: 'row',
+        gap: theme.space[1],
+        padding: TRACK_PADDING,
+      }}
+      testID={testID}
+    >
+      <Pressable
+        accessibilityLabel={t('reader.settings.decreaseFont')}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: atMin }}
+        disabled={atMin}
+        onPress={() => step(-1)}
+        style={stepStyle(atMin)}
+        testID="reader-font-decrease"
+      >
+        <UiText style={glyphStyle(STEP_GLYPH_SMALL)} variant="displaySm" weight={400}>
+          أ−
         </UiText>
-        <Pressable
-          accessibilityLabel={t('reader.settings.increaseFont')}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: atMax }}
-          disabled={atMax}
-          onPress={() => step(1)}
-          style={stepStyle(atMax)}
-          testID="reader-font-increase"
-        >
-          <UiText variant="headline">أ+</UiText>
-        </Pressable>
-      </View>
-      {previewText ? (
-        <QuranText align="center" fontScale={value} testID="reader-font-preview" variant="quranReading">
-          {previewText}
-        </QuranText>
-      ) : null}
+      </Pressable>
+      <UiText
+        accessibilityLabel={percentLabel}
+        align="center"
+        style={{ minWidth: PERCENT_MIN_WIDTH, writingDirection: locale === 'ar' ? 'rtl' : 'ltr' }}
+        testID="reader-font-percent"
+        variant="subhead"
+        weight={600}
+      >
+        {percentLabel}
+      </UiText>
+      <Pressable
+        accessibilityLabel={t('reader.settings.increaseFont')}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: atMax }}
+        disabled={atMax}
+        onPress={() => step(1)}
+        style={stepStyle(atMax)}
+        testID="reader-font-increase"
+      >
+        <UiText style={glyphStyle(STEP_GLYPH_LARGE)} variant="displaySm" weight={400}>
+          أ+
+        </UiText>
+      </Pressable>
     </View>
   );
 }

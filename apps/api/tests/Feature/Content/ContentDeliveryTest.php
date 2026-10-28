@@ -40,7 +40,7 @@ it('returns the manifest for active resources that have a pack', function (): vo
         'is_active' => true,
     ]);
     $older = Resource::factory()->create([
-        'group' => ResourceGroup::Translations,
+        'group' => ResourceGroup::Tafsirs,
         'name' => 'Haleem',
         'author_name' => 'Abdul Haleem',
         'language_code' => 'en',
@@ -50,7 +50,7 @@ it('returns the manifest for active resources that have a pack', function (): vo
         'is_active' => true,
     ]);
     $later = Resource::factory()->create([
-        'group' => ResourceGroup::Translations,
+        'group' => ResourceGroup::Tafsirs,
         'name' => 'Bridges',
         'author_name' => null,
         'language_code' => 'en',
@@ -60,7 +60,7 @@ it('returns the manifest for active resources that have a pack', function (): vo
         'is_active' => true,
     ]);
     $inactive = Resource::factory()->create([
-        'group' => ResourceGroup::Translations,
+        'group' => ResourceGroup::Tafsirs,
         'version' => 1,
         'is_active' => false,
     ]);
@@ -102,7 +102,7 @@ it('returns the manifest for active resources that have a pack', function (): vo
         ->assertJsonPath('resources.1.pack.sha256', $olderPack->sha256)
         ->assertJsonPath('resources.1.pack.size_bytes', $olderPack->sizeBytes)
         ->assertJsonPath('resources.2.id', $later->id)
-        ->assertJsonPath('resources.2.group', 'translations');
+        ->assertJsonPath('resources.2.group', 'tafsirs');
 
     $ids = collect($response->json('resources'))->pluck('id')->all();
     expect($ids)->not->toContain($inactive->id)
@@ -133,7 +133,7 @@ it('uses a stable epoch timestamp when no pack has been built', function (): voi
 
 it('streams a pack and rejects an unknown or inactive one', function (): void {
     $resource = Resource::factory()->create([
-        'group' => ResourceGroup::Translations,
+        'group' => ResourceGroup::Tafsirs,
         'version' => 2,
         'is_active' => true,
     ]);
@@ -195,10 +195,10 @@ it('pages changes newer than since_version', function (): void {
         ->assertJsonCount(2, 'data')
         ->assertJsonPath('data.0.id', $kept[0]->id)
         ->assertJsonPath('data.0.version', 2)
-        ->assertJsonPath('data.0.entity', 'translation_entry')
+        ->assertJsonPath('data.0.entity', 'tafsir_entry')
         ->assertJsonPath('data.0.entity_key', '2')
         ->assertJsonPath('data.0.op', 'upsert')
-        ->assertJsonPath('data.0.payload.text', 'ayah 2')
+        ->assertJsonPath('data.0.payload.html', 'ayah 2')
         ->assertJsonPath('data.1.id', $kept[1]->id)
         ->assertJsonPath('next_cursor', ChangeCursor::encode($kept[1]->id));
 
@@ -317,19 +317,63 @@ it('prunes content changes daily at midnight UTC', function (): void {
     expect($events->every(fn (object $event): bool => $event->expression === '0 0 * * *' && $event->timezone === 'UTC'))->toBeTrue();
 });
 
+it('lists no resource in an ignored group even when it is active and packed', function (string $group): void {
+    $ignored = Resource::factory()->create([
+        'group' => $group,
+        'version' => 1,
+        'is_active' => true,
+    ]);
+    app(PackBuilder::class)->build($ignored);
+
+    $tafsir = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'version' => 1,
+        'is_active' => true,
+    ]);
+    app(PackBuilder::class)->build($tafsir);
+
+    $response = $this->getJson('/api/v1/content/manifest')->assertOk();
+    $ids = collect($response->json('resources'))->pluck('id')->all();
+
+    expect($ids)->toContain($tafsir->id)
+        ->and($ids)->not->toContain($ignored->id);
+})->with(ResourceGroup::ignoredValues());
+
+it('returns 404 for the pack and the change feed of an ignored resource even when it is active', function (string $group): void {
+    $ignored = Resource::factory()->create([
+        'group' => $group,
+        'version' => 2,
+        'changes_floor_version' => 0,
+        'is_active' => true,
+    ]);
+    app(PackBuilder::class)->build($ignored);
+    contentChange($ignored->id, 2, 1);
+
+    $this->getJson('/api/v1/content/packs/'.$ignored->id.'/2')
+        ->assertNotFound()
+        ->assertHeader('Content-Type', 'application/problem+json')
+        ->assertJsonPath('code', 'not_found')
+        ->assertJsonPath('detail', 'Content pack not found.');
+
+    $this->getJson('/api/v1/content/changes?resource_id='.$ignored->id.'&since_version=1')
+        ->assertNotFound()
+        ->assertJsonPath('code', 'not_found');
+})->with(ResourceGroup::ignoredValues());
+
 function contentChange(int $resourceId, int $version, int $verseId): ContentChange
 {
     return ContentChange::query()->create([
         'resource_id' => $resourceId,
         'version' => $version,
-        'entity' => 'translation_entry',
+        'entity' => 'tafsir_entry',
         'entity_key' => (string) $verseId,
         'op' => ChangeOperation::Upsert,
         'payload' => [
             'resource_id' => $resourceId,
-            'verse_id' => $verseId,
-            'text' => 'ayah '.$verseId,
-            'footnotes' => null,
+            'group_tafsir_id' => $verseId,
+            'first_verse_id' => $verseId,
+            'last_verse_id' => $verseId,
+            'html' => 'ayah '.$verseId,
         ],
     ]);
 }

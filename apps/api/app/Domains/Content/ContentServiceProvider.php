@@ -20,7 +20,6 @@ use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Domains\Content\Repositories\Contracts\SyncRunRepository;
 use App\Domains\Content\Repositories\Contracts\SyncStateRepository;
 use App\Domains\Content\Repositories\Contracts\TafsirEntryRepository;
-use App\Domains\Content\Repositories\Contracts\TranslationEntryRepository;
 use App\Domains\Content\Repositories\Contracts\WordLayoutRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentChapterAudioFileRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentContentChangeRepository;
@@ -34,13 +33,11 @@ use App\Domains\Content\Repositories\Eloquent\EloquentResourceRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentSyncRunRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentSyncStateRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentTafsirEntryRepository;
-use App\Domains\Content\Repositories\Eloquent\EloquentTranslationEntryRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentWordLayoutRepository;
 use App\Domains\Content\Sync\GroupHandlers;
 use App\Domains\Content\Sync\Handlers\ChapterRecitationsHandler;
 use App\Domains\Content\Sync\Handlers\MushafsHandler;
 use App\Domains\Content\Sync\Handlers\TafsirsHandler;
-use App\Domains\Content\Sync\Handlers\TranslationsHandler;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
@@ -61,7 +58,6 @@ final class ContentServiceProvider extends ServiceProvider
         ContentChangeRepository::class => EloquentContentChangeRepository::class,
         ContentPackRepository::class => EloquentContentPackRepository::class,
         PackSnapshotRepository::class => EloquentPackSnapshotRepository::class,
-        TranslationEntryRepository::class => EloquentTranslationEntryRepository::class,
         TafsirEntryRepository::class => EloquentTafsirEntryRepository::class,
         MushafRepository::class => EloquentMushafRepository::class,
         MushafPageRepository::class => EloquentMushafPageRepository::class,
@@ -75,7 +71,6 @@ final class ContentServiceProvider extends ServiceProvider
     {
         $this->app->singleton(GroupHandlers::class, function (Application $app): GroupHandlers {
             return new GroupHandlers([
-                $app->make(TranslationsHandler::class),
                 $app->make(TafsirsHandler::class),
                 $app->make(MushafsHandler::class),
                 $app->make(ChapterRecitationsHandler::class),

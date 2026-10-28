@@ -10,14 +10,10 @@ export const FONT_SCALE_STEP = 0.1;
 export type ReaderSettings = {
   mode: ReaderMode;
   fontScale: number;
-  showTranslations: boolean;
-  translationIds: number[];
   tafsirId: number | null;
 };
 
 export type ReaderChoice = {
-  translationsChosen: boolean;
-  translationIds: number[];
   tafsirChosen: boolean;
   tafsirId: number | null;
 };
@@ -25,17 +21,16 @@ export type ReaderChoice = {
 export type LoadedReaderSettings = ReaderSettings & ReaderChoice;
 
 export type ReaderResourceOverride = {
-  translationIds: number[] | null;
   tafsirChosen: boolean;
   tafsirId: number | null;
 };
 
+// `translationIds` was removed by ADR 0014. Blobs written before that still carry it; it is ignored on read
+// and dropped on the next write.
 type PersistedReaderSettings = {
   version?: unknown;
   mode?: unknown;
   fontScale?: unknown;
-  showTranslations?: unknown;
-  translationIds?: unknown;
   tafsirChosen?: unknown;
   tafsirId?: unknown;
 };
@@ -44,10 +39,7 @@ export function defaultReaderSettings(): LoadedReaderSettings {
   return {
     mode: 'reading',
     fontScale: 1,
-    showTranslations: true,
-    translationIds: [],
     tafsirId: null,
-    translationsChosen: false,
     tafsirChosen: false,
   };
 }
@@ -67,16 +59,12 @@ export function migrateReaderSettings(raw: unknown): LoadedReaderSettings {
   }
 
   const blob = raw as PersistedReaderSettings;
-  const translationIds = integerList(blob.translationIds);
   const tafsirChosen = blob.tafsirChosen === true;
   const tafsirId = tafsirChosen ? integerOrNull(blob.tafsirId) : null;
 
   return {
     mode: isReaderMode(blob.mode) ? blob.mode : defaults.mode,
     fontScale: clampFontScale(blob.fontScale),
-    showTranslations: typeof blob.showTranslations === 'boolean' ? blob.showTranslations : defaults.showTranslations,
-    translationIds: translationIds ?? [],
-    translationsChosen: translationIds !== null,
     tafsirChosen,
     tafsirId,
   };
@@ -97,7 +85,6 @@ export function readReaderSettings(): LoadedReaderSettings {
 export function readReaderResourceOverride(): ReaderResourceOverride {
   const loaded = readReaderSettings();
   return {
-    translationIds: loaded.translationsChosen ? loaded.translationIds : null,
     tafsirChosen: loaded.tafsirChosen,
     tafsirId: loaded.tafsirId,
   };
@@ -108,31 +95,14 @@ export function writeReaderSettings(settings: LoadedReaderSettings): void {
     version: READER_SETTINGS_VERSION,
     mode: settings.mode,
     fontScale: clampFontScale(settings.fontScale),
-    showTranslations: settings.showTranslations,
     tafsirChosen: settings.tafsirChosen,
     tafsirId: settings.tafsirId,
   };
-  if (settings.translationsChosen) {
-    blob.translationIds = settings.translationIds;
-  }
   storage.set(storageKeys.readerSettings, JSON.stringify(blob));
 }
 
 export function resourceChoiceChanged(previous: ReaderChoice, next: ReaderChoice): boolean {
-  return (
-    previous.translationsChosen !== next.translationsChosen ||
-    previous.tafsirChosen !== next.tafsirChosen ||
-    previous.tafsirId !== next.tafsirId ||
-    previous.translationIds.length !== next.translationIds.length ||
-    previous.translationIds.some((id, index) => id !== next.translationIds[index])
-  );
-}
-
-function integerList(value: unknown): number[] | null {
-  if (!Array.isArray(value) || !value.every((item) => typeof item === 'number' && Number.isInteger(item))) {
-    return null;
-  }
-  return value;
+  return previous.tafsirChosen !== next.tafsirChosen || previous.tafsirId !== next.tafsirId;
 }
 
 function integerOrNull(value: unknown): number | null {

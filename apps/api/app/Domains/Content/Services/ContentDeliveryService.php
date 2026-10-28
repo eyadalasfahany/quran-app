@@ -71,7 +71,7 @@ final class ContentDeliveryService
     {
         $resource = $this->resources->find($resourceId);
 
-        if ($resource === null || ! $resource->is_active) {
+        if ($resource === null || ! $resource->is_active || $resource->group->isIgnored()) {
             throw new ModelNotFoundException('Content pack not found.');
         }
 
@@ -102,7 +102,7 @@ final class ContentDeliveryService
     {
         $resource = $this->resources->find($query->resourceId);
 
-        if ($resource === null || ! $resource->is_active) {
+        if ($resource === null || ! $resource->is_active || $resource->group->isIgnored()) {
             throw new ModelNotFoundException('Resource not found.');
         }
 

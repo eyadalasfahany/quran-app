@@ -6,12 +6,14 @@ import { ReaderToolbar } from './ReaderToolbar';
 
 const props = {
   expanded: false,
+  mode: 'mushaf' as const,
   onAyahActions: () => undefined,
   onBack: () => undefined,
   onBookmarkPage: () => undefined,
   onOpenSettings: () => undefined,
   onTogglePanel: () => undefined,
   panelOpen: false,
+  subtitle: 'صفحة ١ · الجزء ١',
   title: 'الفاتحة',
 };
 
@@ -25,7 +27,45 @@ describe('ReaderToolbar', () => {
     expect(compact.getByLabelText('خيارات الآية')).toBeOnTheScreen();
 
     const expanded = await renderUi(<ReaderToolbar {...props} expanded panelOpen />);
-    expect(expanded.getByTestId('reader-panel-toggle').props.accessibilityState).toEqual({ selected: true });
+    expect(expanded.getByTestId('reader-panel-toggle').props.accessibilityState).toMatchObject({ selected: true });
+  });
+
+  it('keeps the Mushaf subtitle and the tools group on Mushaf', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} />);
+    expect(view.getByText('صفحة ١ · الجزء ١')).toBeOnTheScreen();
+    expect(view.getByTestId('reader-tools')).toBeOnTheScreen();
+  });
+
+  it('shows only Back, the reading subtitle and one settings circle in Reading mode', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} mode="reading" subtitle="صفحة ١ · الجزء ١" />);
+
+    expect(view.getByText('وضع القراءة')).toBeOnTheScreen();
+    expect(view.queryByText('صفحة ١ · الجزء ١')).toBeNull();
+    expect(view.queryByTestId('reader-tools')).toBeNull();
+    expect(view.queryByLabelText('حفظ الصفحة')).toBeNull();
+    expect(view.queryByLabelText('خيارات الآية')).toBeNull();
+    expect(view.getByTestId('reader-settings').props.accessibilityLabel).toBe('إعدادات القراءة');
+    expect(view.getByTestId('reader-settings-glass')).toBeOnTheScreen();
+  });
+
+  it('keeps the panel toggle beside settings in Reading mode on an expanded window', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} expanded mode="reading" />);
+
+    expect(view.getByTestId('reader-tools')).toBeOnTheScreen();
+    expect(view.getByLabelText('إعدادات القراءة')).toBeOnTheScreen();
+    expect(view.getByTestId('reader-panel-toggle')).toBeOnTheScreen();
+    expect(view.queryByLabelText('حفظ الصفحة')).toBeNull();
+    expect(view.queryByLabelText('خيارات الآية')).toBeNull();
+  });
+
+  it.each(locales)('opens reading settings from the Reading mode circle (%s)', async (locale) => {
+    const onOpenSettings = jest.fn();
+    const view = await renderUi(
+      <ReaderToolbar {...props} mode="reading" onOpenSettings={onOpenSettings} />,
+      { locale },
+    );
+    await fireEvent.press(view.getByTestId('reader-settings'));
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 
   it.each(locales)('points Back toward the leading edge: left in English, mirrored right in Arabic (%s)', async (locale) => {

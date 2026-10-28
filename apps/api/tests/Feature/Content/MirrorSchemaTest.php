@@ -10,7 +10,6 @@ use App\Domains\Content\Models\Recitation;
 use App\Domains\Content\Models\RecitationTiming;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Models\TafsirEntry;
-use App\Domains\Content\Models\TranslationEntry;
 use App\Domains\Content\Models\WordLayout;
 use Database\Seeders\ContentSourceSeeder;
 use Illuminate\Database\QueryException;
@@ -28,7 +27,6 @@ it('creates the content mirror tables and seeds two sources idempotently', funct
         'sync_runs',
         'content_changes',
         'content_packs',
-        'translation_entries',
         'tafsir_entries',
         'mushafs',
         'mushaf_pages',
@@ -41,6 +39,8 @@ it('creates the content mirror tables and seeds two sources idempotently', funct
     foreach ($tables as $table) {
         expect(Schema::hasTable($table))->toBeTrue();
     }
+
+    expect(Schema::hasTable('translation_entries'))->toBeFalse();
 
     $this->seed(ContentSourceSeeder::class);
     $this->seed(ContentSourceSeeder::class);
@@ -64,7 +64,6 @@ it('stores quran text in the binary collation and no other text column', functio
 
     expect($binary)->toBe([
         'tafsir_entries.html',
-        'translation_entries.text',
         'word_layouts.glyph',
     ]);
 });
@@ -74,11 +73,6 @@ it('round-trips quran text byte for byte', function (): void {
     $resource = Resource::factory()->create();
     $mushaf = Mushaf::factory()->create(['resource_id' => $resource->id]);
 
-    TranslationEntry::factory()->create([
-        'resource_id' => $resource->id,
-        'verse_id' => 1,
-        'text' => $sample,
-    ]);
     TafsirEntry::factory()->create([
         'resource_id' => $resource->id,
         'html' => $sample,
@@ -89,7 +83,6 @@ it('round-trips quran text byte for byte', function (): void {
     ]);
 
     $stored = [
-        TranslationEntry::query()->where('resource_id', $resource->id)->value('text'),
         TafsirEntry::query()->where('resource_id', $resource->id)->value('html'),
         WordLayout::query()->where('mushaf_id', $mushaf->id)->value('glyph'),
     ];
@@ -121,7 +114,6 @@ it('rejects a duplicate tafsir group within a resource', function (): void {
 
 it('removes mirrored rows when their resource is deleted', function (): void {
     $resource = Resource::factory()->create();
-    TranslationEntry::factory()->create(['resource_id' => $resource->id]);
     TafsirEntry::factory()->create(['resource_id' => $resource->id]);
     $mushaf = Mushaf::factory()->create(['resource_id' => $resource->id]);
     MushafPage::query()->create([
@@ -148,8 +140,7 @@ it('removes mirrored rows when their resource is deleted', function (): void {
 
     $resource->delete();
 
-    expect(TranslationEntry::query()->count())->toBe(0)
-        ->and(TafsirEntry::query()->count())->toBe(0)
+    expect(TafsirEntry::query()->count())->toBe(0)
         ->and(Mushaf::query()->count())->toBe(0)
         ->and(MushafPage::query()->count())->toBe(0)
         ->and(WordLayout::query()->count())->toBe(0)

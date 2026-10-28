@@ -1,7 +1,7 @@
 import { highContrast } from '@quran/design-tokens';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, I18nManager } from 'react-native';
 
 import { featureComponentLiterals } from '../../../jest/ui-source';
 import { ThemeProvider, themes } from '@/core/theme';
@@ -17,6 +17,7 @@ function wrapper(name: 'light' | 'dark') {
 describe('useTabBarStyle', () => {
   beforeEach(() => {
     jest.mocked(AccessibilityInfo.isDarkerSystemColorsEnabled).mockResolvedValue(false);
+    I18nManager.isRTL = false;
   });
 
   it.each(['light', 'dark'] as const)('tints the selected tab brand and the rest muted in %s', async (name) => {
@@ -31,6 +32,7 @@ describe('useTabBarStyle', () => {
         selected: { color: colors.brand, fontFamily: text.headline.fontFamily, fontSize: text.label.fontSize },
       },
       tintColor: colors.brand,
+      unstable_nativeProps: { direction: 'ltr' },
     });
   });
 
@@ -47,6 +49,21 @@ describe('useTabBarStyle', () => {
 
     await waitFor(() => expect(result.current.iconColor).toMatchObject({ default: highContrast.dark.inkMuted }));
     expect(result.current.labelStyle).toMatchObject({ default: { color: highContrast.dark.inkMuted } });
+  });
+
+  it.each([
+    [true, 'rtl'],
+    [false, 'ltr'],
+  ] as const)('passes the layout direction to the native tab host when isRTL is %s', async (isRTL, direction) => {
+    const original = I18nManager.isRTL;
+    I18nManager.isRTL = isRTL;
+    try {
+      const { result } = await renderHook(() => useTabBarStyle(), { wrapper: wrapper('light') });
+
+      expect(result.current.unstable_nativeProps).toEqual({ direction });
+    } finally {
+      I18nManager.isRTL = original;
+    }
   });
 
   it('has no raw colour literals', () => {

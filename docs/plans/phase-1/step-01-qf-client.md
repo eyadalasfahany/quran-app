@@ -38,7 +38,7 @@ Remove `.gitkeep`.
 **`ContentSyncClient`:**
 - `sync(string $resources, ?string $syncToken = null, bool $bootstrap = false)` yields one typed page per response, following `next_page_url` until `has_more` is false.
   - First request: `GET {api}/api/v4/resources/sync` with `resources`, `per_page`, and either `bootstrap=true` or `sync_token=<token>`.
-  - `resources` format: `group:*`, `group:6,7` (IDs of one group comma-separated), or several groups separated by `;` (`translations:85;tafsirs:169`). Repeating a group is rejected by QF.
+  - `resources` format: `group:*`, `group:6,7` (IDs of one group comma-separated), or several groups separated by `;` (`translations:85;tafsirs:169`). Repeating a group is rejected by QF. Translation parts removed by ADR 0014 (28 Oct 2026).
   - Envelope:
     ```json
     {"sync": {"sync_until_sequence": 247, "has_more": false, "next_page_url": null,
@@ -46,7 +46,7 @@ Remove `.gitkeep`.
     ```
 - `snapshot(string $snapshotUrlOrPath)` returns a typed snapshot:
   ```json
-  {"resource_group": "translations", "resource_id": 85, "resource_content_id": 85,
+  {"resource_group": "translations", "resource_id": 85, "resource_content_id": 85, Translation parts removed by ADR 0014 (28 Oct 2026).
    "schema_version": 1, "sync_sequence": 247, "records": [ { … }, … ]}
   ```
   Records are flat objects whose fields vary by resource; keep them as `list<array<string, mixed>>`.
@@ -67,7 +67,7 @@ Remove `.gitkeep`.
 
 **Artisan `qf:ping`:**
 1. Get a token.
-2. `sync("translations:85", bootstrap: true)`.
+2. `sync("translations:85", bootstrap: true)`. Translation parts removed by ADR 0014 (28 Oct 2026).
 3. `snapshot()` the first `RESOURCE_CREATE`'s `snapshot_url`.
 4. Print **only**: the environment, the HTTP outcome, the mutation count and the snapshot record count. Never the token, client id, secret or any record content.
 

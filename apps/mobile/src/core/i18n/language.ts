@@ -1,5 +1,6 @@
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
+import { syncNativeAppLanguage } from './app-language';
 import { applyDirection, directionMatches, reloadApp } from './direction';
 import { i18n } from './i18n';
 import { getLocale, saveLocale, type Locale } from './locale';
@@ -18,6 +19,7 @@ function reloadForDirection(locale: Locale): Promise<boolean> {
 
 export function setLocale(locale: Locale): void {
   saveLocale(locale);
+  syncNativeAppLanguage(locale);
   void i18n.changeLanguage(locale);
   if (directionMatches(locale)) {
     return;
@@ -28,6 +30,7 @@ export function setLocale(locale: Locale): void {
 
 export function ensureDirection(): DirectionCheck {
   const locale = getLocale();
+  syncNativeAppLanguage(locale);
   void i18n.changeLanguage(locale);
   const reloadPending = storage.contains(storageKeys.directionReloadPending);
   storage.remove(storageKeys.directionReloadPending);

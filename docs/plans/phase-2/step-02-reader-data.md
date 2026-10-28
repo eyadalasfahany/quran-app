@@ -1,5 +1,7 @@
 # Step 2 — Reader data layer (App)
 
+> **Removed by ADR 0014 (28 Oct 2026):** Quran translations, word-by-word meanings, word chips and the translation panel, tab and settings. Lines below that mention them are history; do not build them.
+
 **Status: done** (27 Oct 2026, committed in `05b931e`). Do not reimplement. `useReadingAnchor()` takes no route argument. A route key wins only when it matches `^[1-9]\d*:[1-9]\d*$` after trim, and then `page` is null.
 
 Follow [README.md](README.md). Needs Phase 1 committed: `content.db` with Tanzil verses, `words` and Basmala (step 11), and the pack tables. Read also:
@@ -18,7 +20,7 @@ Each is a set of functions over `SqlExecutor`, so they're testable with the `nod
 | `verses.ts` | `getVersesBySurah(chapterId)`, `getVersesByPage(page)`, `getVerseRange(fromId, toId)`, `getVerseByKey(key)`, `verseKeyToId(key)` / `idToVerseKey(id)` |
 | `words.ts` | `getWords(verseId)` (Uthmani and Imla'i per position, plus `end` rows) |
 | `mushaf.ts` | `getMushafPage(mushafId, page)`: lines grouped by `line`, words ordered by `position_in_line`, each with `glyph`, `verse_id`, `char_type`. `isPageInstalled(mushafId, page)` |
-| `translations.ts` | `getTranslations(verseIds, resourceIds)`, `listInstalledTranslations()` |
+| `translations.ts` — Removed by ADR 0014 (28 Oct 2026) | `getTranslations(verseIds, resourceIds)`, `listInstalledTranslations()` |
 | `tafsir.ts` | `getTafsirForVerse(resourceId, verseId)`: the entry whose range covers the verse. `listInstalledTafsirs()` |
 
 **Rules:**
@@ -33,7 +35,7 @@ Each is a set of functions over `SqlExecutor`, so they're testable with the `nod
 
 ## Tests
 
-`node:sqlite` against a test `content.db`. Build it from the Phase 1 seed and a small translation, tafsir and mushaf pack fixture in the shared-contract shape.
+`node:sqlite` against a test `content.db`. Build it from the Phase 1 seed and a small tafsir and mushaf pack fixture (translation fixtures removed by ADR 0014) in the shared-contract shape.
 - Every repository function, including the edges:
   - Surah 1 and surah 9 (no Basmala).
   - A tafsir entry covering a verse range.

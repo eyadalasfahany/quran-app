@@ -18,7 +18,7 @@ import { ReadingAyahRow } from './components/ReadingAyahRow';
 import { SurahHeader } from './components/SurahHeader';
 import { readingColumnWidth } from './layout';
 import { estimateReadingRowHeight, heightCacheSignature, ReadingHeightCache } from './reading-heights';
-import type { ReadingRow, TranslationResourceMeta } from './reading-list-types';
+import type { ReadingRow } from './reading-list-types';
 import {
   anchorRowIndex,
   buildReadingRows,
@@ -34,8 +34,6 @@ export type ReadingListProps = {
   mode?: 'reading';
   anchorVerseKey: string;
   fontScale?: number;
-  translationResourceIds?: readonly number[];
-  translationMeta?: readonly TranslationResourceMeta[];
   selectedVerseKey?: string | null;
   recitedVerseKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
@@ -44,6 +42,7 @@ export type ReadingListProps = {
   bottomInset?: number;
   onSelectVerseKey: (verseKey: string) => void;
   onOpenAyahActions: (verseKey: string) => void;
+  onOpenTafsir?: (verseKey: string) => void;
   onVisibleVerseKey?: (verseKey: string) => void;
   testID?: string;
 };
@@ -51,8 +50,6 @@ export type ReadingListProps = {
 export function ReadingList({
   anchorVerseKey,
   fontScale = 1,
-  translationResourceIds = [],
-  translationMeta = [],
   selectedVerseKey = null,
   recitedVerseKey = null,
   highlightsByVerseId = new Map(),
@@ -61,6 +58,7 @@ export function ReadingList({
   bottomInset = 0,
   onSelectVerseKey,
   onOpenAyahActions,
+  onOpenTafsir,
   onVisibleVerseKey,
   testID,
 }: ReadingListProps) {
@@ -84,7 +82,6 @@ export function ReadingList({
   const [startExtendCount, setStartExtendCount] = useState(0);
   const [endExtendCount, setEndExtendCount] = useState(0);
 
-  const translationMetaMap = useMemo(() => new Map(translationMeta.map((meta) => [meta.resourceId, meta])), [translationMeta]);
   const executor = useMemo(() => openContentDb().executor, []);
   const centerId = useMemo(() => resolveCenterId(executor, openedVerseKey), [executor, openedVerseKey]);
 
@@ -96,14 +93,14 @@ export function ReadingList({
     };
   }, [centerId, endExtendCount, startExtendCount]);
 
-  const signature = heightCacheSignature(columnWidth, fontScale, translationResourceIds, 'reading');
+  const signature = heightCacheSignature(columnWidth, fontScale, 'reading');
   useEffect(() => {
     heightCache.current.clearForSignature(signature);
   }, [signature]);
 
   const rows = useMemo(() => {
-    return buildReadingRows(executor, windowRange.fromId, windowRange.toId, translationResourceIds, translationMetaMap);
-  }, [executor, translationMetaMap, translationResourceIds, windowRange.fromId, windowRange.toId]);
+    return buildReadingRows(executor, windowRange.fromId, windowRange.toId);
+  }, [executor, windowRange.fromId, windowRange.toId]);
 
   const viewportHeight = Math.max(320, windowHeight - topInset - bottomInset);
 
@@ -197,6 +194,7 @@ export function ReadingList({
     const selected = selectedVerseKey === verse.verseKey;
     const recited = recitedVerseKey === verse.verseKey;
     const openActions = () => onOpenAyahActions(verse.verseKey);
+    const openTafsir = onOpenTafsir === undefined ? undefined : () => onOpenTafsir(verse.verseKey);
 
     return (
       <MeasuredRow rowKey={item.key} onHeight={recordHeight}>
@@ -205,14 +203,13 @@ export function ReadingList({
           highlightColor={highlightsByVerseId.get(verse.id) ?? null}
           onLongPress={openActions}
           onOpenActions={openActions}
+          onOpenTafsir={openTafsir}
           onPress={() => onSelectVerseKey(verse.verseKey)}
           recited={recited}
           selected={selected}
           testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
           textImlaei={verse.textImlaei}
           textUthmani={verse.textUthmani}
-          translations={item.translations}
-          verseKey={verse.verseKey}
           verseNumber={verse.verseNumber}
         />
       </MeasuredRow>

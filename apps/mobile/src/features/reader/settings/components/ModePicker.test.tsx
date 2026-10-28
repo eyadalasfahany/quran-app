@@ -14,9 +14,9 @@ describe('ModePicker', () => {
 
   it.each(locales)('renders every mode in %s', async (locale) => {
     const view = await renderUi(<ModePicker onChange={() => undefined} value="reading" />, { locale });
-    expect(view.getByText(locale === 'ar' ? 'المصحف' : 'Mushaf')).toBeOnTheScreen();
-    expect(view.getByText(locale === 'ar' ? 'القراءة' : 'Reading')).toBeOnTheScreen();
-    expect(view.getByText(locale === 'ar' ? 'التركيز' : 'Focus')).toBeOnTheScreen();
+    expect(view.getByText(locale === 'ar' ? 'مصحف' : 'Mushaf')).toBeOnTheScreen();
+    expect(view.getByText(locale === 'ar' ? 'قراءة' : 'Reading')).toBeOnTheScreen();
+    expect(view.getByText(locale === 'ar' ? 'تركيز' : 'Focus')).toBeOnTheScreen();
   });
 
   it('calls haptics when the mode changes', async () => {

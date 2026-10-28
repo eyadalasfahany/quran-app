@@ -1,9 +1,8 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { getChapter } from './data/chapters';
-import { getTranslations } from './data/translations';
 import { getVerseByKey, getVerseRange, verseKeyToId, type VerseRecord } from './data/verses';
-import type { ReadingRow, TranslationResourceMeta, VerseTranslationBlock } from './reading-list-types';
+import type { ReadingRow } from './reading-list-types';
 
 export const READING_WINDOW_HALF = 100;
 export const READING_WINDOW_EXTEND = 50;
@@ -28,25 +27,12 @@ export function shouldShowBismillahRow(chapterId: number, verseNumber: number, b
   return verseNumber === 1 && bismillahPre === 1;
 }
 
-export function buildReadingRows(
-  db: SqlExecutor,
-  fromId: number,
-  toId: number,
-  translationResourceIds: readonly number[],
-  translationMeta: ReadonlyMap<number, TranslationResourceMeta>,
-): ReadingRow[] {
+export function buildReadingRows(db: SqlExecutor, fromId: number, toId: number): ReadingRow[] {
   const verses = getVerseRange(db, fromId, toId);
   if (verses.length === 0) {
     return [];
   }
 
-  const verseIds = verses.map((verse) => verse.id);
-  const translationRows =
-    translationResourceIds.length === 0
-      ? []
-      : getTranslations(db, verseIds, translationResourceIds);
-
-  const translationsByVerse = groupTranslations(translationRows, translationMeta);
   const rows: ReadingRow[] = [];
 
   for (const verse of verses) {
@@ -60,12 +46,7 @@ export function buildReadingRows(
       }
     }
 
-    rows.push({
-      type: 'ayah',
-      key: verse.verseKey,
-      verse,
-      translations: translationsByVerse.get(verse.id) ?? [],
-    });
+    rows.push({ type: 'ayah', key: verse.verseKey, verse });
   }
 
   return rows;
@@ -90,33 +71,6 @@ export function verseKeyFromRow(row: ReadingRow): string | undefined {
 
 export function anchorVerseInSeed(db: SqlExecutor, verseKey: string): VerseRecord | undefined {
   return getVerseByKey(db, verseKey);
-}
-
-function groupTranslations(
-  entries: ReturnType<typeof getTranslations>,
-  translationMeta: ReadonlyMap<number, TranslationResourceMeta>,
-): Map<number, VerseTranslationBlock[]> {
-  const grouped = new Map<number, VerseTranslationBlock[]>();
-
-  for (const entry of entries) {
-    const meta = translationMeta.get(entry.resourceId);
-    if (meta === undefined) {
-      continue;
-    }
-    const block: VerseTranslationBlock = {
-      resourceId: entry.resourceId,
-      text: entry.text,
-      meta,
-    };
-    const list = grouped.get(entry.verseId);
-    if (list === undefined) {
-      grouped.set(entry.verseId, [block]);
-    } else {
-      list.push(block);
-    }
-  }
-
-  return grouped;
 }
 
 /**

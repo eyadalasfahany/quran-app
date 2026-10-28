@@ -31,31 +31,32 @@ beforeEach(function (): void {
     Storage::fake('local');
 });
 
-it('writes a gzipped sqlite pack whose hash, size, and translation rows match the database', function (): void {
+it('writes a gzipped sqlite pack whose hash, size, and tafsir html rows match the database', function (): void {
     $resource = Resource::factory()->create([
-        'group' => ResourceGroup::Translations,
+        'group' => ResourceGroup::Tafsirs,
         'version' => 3,
         'name' => 'Exact',
     ]);
-    $exact = "بِسْمِ ٱللَّهِ \u{200F} ";
-    $footnotes = json_encode([['text' => 'حاشية']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    expect($footnotes)->toBeString();
+    $exact = "<p>بِسْمِ ٱللَّهِ \u{200F} </p>";
 
     $rows = [];
 
-    for ($verse = 1; $verse <= 1001; $verse++) {
+    for ($groupTafsirId = 1; $groupTafsirId <= 1001; $groupTafsirId++) {
+        $html = $groupTafsirId === 1 ? $exact : '<p>tafsir '.$groupTafsirId.'</p>';
         $rows[] = [
             'resource_id' => $resource->id,
-            'verse_id' => $verse,
-            'verse_key' => '1:1',
-            'text' => $verse === 1 ? $exact : 'ayah '.$verse,
-            'footnotes' => $verse === 1 ? $footnotes : null,
-            'source_record_id' => 9000 + $verse,
+            'group_tafsir_id' => $groupTafsirId,
+            'first_verse_id' => $groupTafsirId,
+            'last_verse_id' => $groupTafsirId,
+            'first_verse_key' => '1:1',
+            'last_verse_key' => '1:1',
+            'html' => $html,
+            'source_hash' => hash('sha256', $html),
         ];
     }
 
     foreach (array_chunk($rows, 500) as $chunk) {
-        DB::table('translation_entries')->insert($chunk);
+        DB::table('tafsir_entries')->insert($chunk);
     }
 
     $pack = app(PackBuilder::class)->build($resource);
@@ -73,42 +74,36 @@ it('writes a gzipped sqlite pack whose hash, size, and translation rows match th
         ->and(ContentPack::query()->first()?->row_count)->toBe(1001)
         ->and(ContentPack::query()->first()?->schema_version)->toBe(1);
 
-    $storedText = DB::table('translation_entries')->where('verse_id', 1)->value('text');
-    $storedNotes = DB::table('translation_entries')->where('verse_id', 1)->value('footnotes');
+    $storedHtml = DB::table('tafsir_entries')->where('group_tafsir_id', 1)->value('html');
 
-    expect($storedText)->toBeString()
-        ->and(bin2hex($storedText))->toBe(bin2hex($exact));
+    expect($storedHtml)->toBeString()
+        ->and(bin2hex($storedHtml))->toBe(bin2hex($exact));
 
-    withContentPack($gzipped, function (PDO $pdo) use ($exact, $storedNotes, $resource): void {
+    withContentPack($gzipped, function (PDO $pdo) use ($exact, $resource): void {
         $tables = $pdo->query("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")->fetchAll(PDO::FETCH_COLUMN);
-        expect($tables)->toBe(['meta', 'translation_entries']);
+        expect($tables)->toBe(['meta', 'tafsir_entries']);
 
         $meta = $pdo->query('SELECT key, value FROM meta ORDER BY key')->fetchAll();
         expect(array_column($meta, 'value', 'key'))->toMatchArray([
             'pack_schema_version' => '1',
             'resource_id' => (string) $resource->id,
-            'group' => 'translations',
+            'group' => 'tafsirs',
             'version' => '3',
         ]);
 
-        expectPackTable($pdo, 'translation_entries', [
+        expectPackTable($pdo, 'tafsir_entries', [
             'resource_id' => 'INTEGER',
-            'verse_id' => 'INTEGER',
-            'text' => 'TEXT',
-            'footnotes' => 'TEXT',
-        ], ['resource_id', 'verse_id']);
+            'group_tafsir_id' => 'INTEGER',
+            'first_verse_id' => 'INTEGER',
+            'last_verse_id' => 'INTEGER',
+            'html' => 'TEXT',
+        ], ['resource_id', 'group_tafsir_id']);
 
-        expect((int) $pdo->query('SELECT COUNT(*) FROM translation_entries')->fetchColumn())->toBe(1001);
+        expect((int) $pdo->query('SELECT COUNT(*) FROM tafsir_entries')->fetchColumn())->toBe(1001);
 
-        $row = $pdo->query('SELECT text, footnotes FROM translation_entries WHERE verse_id = 1')->fetch();
+        $row = $pdo->query('SELECT html FROM tafsir_entries WHERE group_tafsir_id = 1')->fetch();
         expect($row)->toBeArray()
-            ->and(bin2hex((string) $row['text']))->toBe(bin2hex($exact))
-            ->and($row['footnotes'])->toBe($storedNotes);
-
-        $columns = $pdo->query('PRAGMA table_info(translation_entries)')->fetchAll();
-        $footnotes = array_values(array_filter($columns, fn (array $column): bool => $column['name'] === 'footnotes'));
-        expect($footnotes)->toHaveCount(1)
-            ->and((int) $footnotes[0]['notnull'])->toBe(0);
+            ->and(bin2hex((string) $row['html']))->toBe(bin2hex($exact));
     });
 });
 
@@ -293,7 +288,7 @@ it('copies chapter recitation columns from the shared contract', function (): vo
 
 it('does not rebuild a pack that already exists for the version', function (): void {
     $resource = Resource::factory()->create([
-        'group' => ResourceGroup::Translations,
+        'group' => ResourceGroup::Tafsirs,
         'version' => 2,
     ]);
 
@@ -323,7 +318,7 @@ it('leaves the previous pack and manifest unchanged when a build cannot be store
         Storage::purge('local');
 
         $resource = Resource::factory()->create([
-            'group' => ResourceGroup::Translations,
+            'group' => ResourceGroup::Tafsirs,
             'version' => 1,
             'name' => 'Stable',
             'author_name' => 'Author',

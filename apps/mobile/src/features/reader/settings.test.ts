@@ -24,8 +24,6 @@ function resource(
 
 const resources: ContentManifestResource[] = [
   resource({ group: 'mushafs', id: 1 }),
-  resource({ group: 'translations', id: 11, language_code: 'ar' }),
-  resource({ group: 'translations', id: 12, language_code: 'en' }),
   resource({ group: 'tafsirs', id: 21, language_code: 'ar' }),
   resource({ group: 'chapter_recitations', id: 30 }),
 ];
@@ -58,26 +56,22 @@ describe('reader settings', () => {
   it('starts from defaults when nothing is stored', () => {
     expect(useReaderSettings.getState().mode).toBe('reading');
     expect(useReaderSettings.getState().fontScale).toBe(1);
-    expect(useReaderSettings.getState().showTranslations).toBe(true);
-    expect(useReaderSettings.getState().translationIds).toEqual([]);
-    expect(useReaderSettings.getState().translationsChosen).toBe(false);
+    expect(useReaderSettings.getState().tafsirId).toBeNull();
+    expect(useReaderSettings.getState().tafsirChosen).toBe(false);
     expect(readReaderSettings().mode).toBe('reading');
   });
 
   it('round-trips through MMKV', () => {
     useReaderSettings.getState().setMode('focus');
-    useReaderSettings.getState().setShowTranslations(false);
+    useReaderSettings.getState().setFontScale(1.2);
     resetReaderSettingsStore();
 
     expect(useReaderSettings.getState().mode).toBe('focus');
-    expect(useReaderSettings.getState().showTranslations).toBe(false);
+    expect(useReaderSettings.getState().fontScale).toBe(1.2);
   });
 
   it('migrates an older blob and clamps font scale', () => {
-    storage.set(
-      storageKeys.readerSettings,
-      JSON.stringify({ fontScale: 2.5, mode: 'mushaf', showTranslations: false, version: 0 }),
-    );
+    storage.set(storageKeys.readerSettings, JSON.stringify({ fontScale: 2.5, mode: 'mushaf', version: 0 }));
     resetReaderSettingsStore();
     expect(useReaderSettings.getState().fontScale).toBe(1.6);
     expect(useReaderSettings.getState().mode).toBe('mushaf');
@@ -88,49 +82,68 @@ describe('reader settings', () => {
     expect(useReaderSettings.getState().fontScale).toBe(1.2);
   });
 
+  it('loads a blob that still carries the removed translation fields and drops them on the next write', () => {
+    storage.set(
+      storageKeys.readerSettings,
+      JSON.stringify({
+        fontScale: 1.2,
+        mode: 'focus',
+        showTranslations: true,
+        tafsirChosen: true,
+        tafsirId: 21,
+        translationIds: [11, 12],
+        version: 1,
+      }),
+    );
+
+    expect(() => resetReaderSettingsStore()).not.toThrow();
+    expect(useReaderSettings.getState().mode).toBe('focus');
+    expect(useReaderSettings.getState().fontScale).toBe(1.2);
+    expect(useReaderSettings.getState().tafsirChosen).toBe(true);
+    expect(useReaderSettings.getState().tafsirId).toBe(21);
+
+    useReaderSettings.getState().setFontScale(1.3);
+
+    expect(JSON.parse(storage.getString(storageKeys.readerSettings) ?? '{}')).toEqual({
+      fontScale: 1.3,
+      mode: 'focus',
+      tafsirChosen: true,
+      tafsirId: 21,
+      version: 1,
+    });
+  });
+
   it('ignores a corrupt blob', () => {
     storage.set(storageKeys.readerSettings, '{');
     resetReaderSettingsStore();
     expect(useReaderSettings.getState().mode).toBe('reading');
   });
 
-  it('applies a chosen translation on read when no selection list is saved', () => {
-    storage.set(storageKeys.locale, 'ar');
-    useReaderSettings.getState().setTranslationIds([12]);
-
-    expect(selectedResourceIds(resources)).toEqual([1, 21, 30, 12]);
-  });
-
   it('leaves the sync selection alone when the mode or font scale changes', () => {
-    storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 11, 21, 30]));
+    storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 21, 30]));
 
     useReaderSettings.getState().setMode('mushaf');
     useReaderSettings.getState().setFontScale(1.2);
 
-    expect(selectedResourceIds(resources)).toEqual([1, 11, 21, 30]);
+    expect(selectedResourceIds(resources)).toEqual([1, 21, 30]);
     expect(useReaderSettings.getState().fontScale).toBe(1.2);
   });
 
   it('replaces the chosen tafsir on read', () => {
-    storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 11, 21, 30]));
+    storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 21, 30]));
 
     useReaderSettings.getState().setTafsirId(99);
 
-    expect(selectedResourceIds(resources)).toEqual([1, 11, 30, 99]);
+    expect(selectedResourceIds(resources)).toEqual([1, 30, 99]);
   });
 
-  it('replaces translations in the sync selection and clears the manifest etag', () => {
-    storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 11, 21, 30]));
+  it('replaces the tafsir in the saved sync selection and clears the manifest etag', () => {
+    storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 21, 30]));
     const { db, sql } = fakeDb();
 
-    useReaderSettings.getState().setTranslationIds([12]);
-    persistResourceChoice(
-      { tafsirChosen: false, tafsirId: null, translationIds: [11], translationsChosen: true },
-      { tafsirChosen: false, tafsirId: null, translationIds: [12], translationsChosen: true },
-      db,
-    );
+    persistResourceChoice({ tafsirChosen: true, tafsirId: 21 }, { tafsirChosen: true, tafsirId: 99 }, db);
 
-    expect(selectedResourceIds(resources)).toEqual([1, 21, 30, 12]);
+    expect(selectedResourceIds(resources)).toEqual([1, 30, 99]);
     expect(sql).toEqual(['DELETE FROM meta WHERE key = ?']);
   });
 });

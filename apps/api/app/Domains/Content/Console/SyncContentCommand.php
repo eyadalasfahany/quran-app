@@ -25,6 +25,12 @@ final class SyncContentCommand extends Command
             return self::FAILURE;
         }
 
+        if ($group->isIgnored()) {
+            $this->line('Skipped '.$group->value.': ignored by ADR 0014.');
+
+            return self::SUCCESS;
+        }
+
         $filter = $this->option('resources');
 
         if (! is_string($filter) || $filter === '') {

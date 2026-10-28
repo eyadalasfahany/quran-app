@@ -4,29 +4,21 @@ import { AccessibilityInfo, ScrollView, Share, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import { setHighlight, toggleBookmark, type Note, type UserStore } from '@/features/library/data';
-import {
-  ActionTile,
-  highlightColors,
-  HighlightSwatch,
-  type HighlightColor,
-  type IconName,
-  UiText,
-  WordMeaningChip,
-} from '@/shared/ui';
+import { ActionTile, HighlightRow, type HighlightColor, type IconName, UiText } from '@/shared/ui';
 
+import { AUDIO_AVAILABLE } from '../audio';
 import { NoteEditor } from './NoteEditor';
-import { PanelSection } from './PanelSection';
 import { ayahShareText } from './panel-text';
 
 // Recitation arrives in Phase 3. Until then play and repeat stay visible but disabled.
-const AUDIO_AVAILABLE = false;
-
 const GRID_COLUMNS = 4;
+
+// Ayah actions frame (quran-app-screens.html): 14 px between the sheet's blocks.
+const SHEET_GAP = 14;
 
 const icons = {
   play: { ios: 'play.fill', android: 'play_arrow' },
   tafsir: { ios: 'book', android: 'menu_book' },
-  translation: { ios: 'character.book.closed', android: 'translate' },
   bookmark: { ios: 'bookmark', android: 'bookmark' },
   bookmarked: { ios: 'bookmark.fill', android: 'bookmark_added' },
   repeat: { ios: 'repeat', android: 'repeat' },
@@ -34,8 +26,6 @@ const icons = {
   copy: { ios: 'doc.on.doc', android: 'content_copy' },
   share: { ios: 'square.and.arrow.up', android: 'share' },
 } as const satisfies Record<string, IconName>;
-
-export type WordMeaning = { position: number; word: string; meaning: string };
 
 type Tile = {
   key: string;
@@ -53,15 +43,11 @@ export function AyahActionsPanel({
   verseNumber,
   textUthmani,
   reference,
-  words,
-  meaningDirection = 'ltr',
-  fontScale = 1,
   bookmarked,
   highlight,
   note,
   store,
   onOpenTafsir,
-  onOpenTranslation,
   testID = 'ayah-actions-panel',
 }: {
   verseId: number;
@@ -70,16 +56,11 @@ export function AyahActionsPanel({
   textUthmani: string;
   // The reference line under copied text, for example «الفاتحة · الآية ٢».
   reference: string;
-  // Word chips need the word-by-word resource; an empty list hides the section.
-  words: readonly WordMeaning[];
-  meaningDirection?: 'rtl' | 'ltr';
-  fontScale?: number;
   bookmarked: boolean;
   highlight: HighlightColor | null;
   note: Note | null;
   store?: UserStore;
   onOpenTafsir?: () => void;
-  onOpenTranslation?: () => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -153,9 +134,6 @@ export function AyahActionsPanel({
     ...(onOpenTafsir
       ? [{ icon: icons.tafsir, key: 'tafsir', label: t('reader.ayahPanel.tafsir'), onPress: onOpenTafsir }]
       : []),
-    ...(onOpenTranslation
-      ? [{ icon: icons.translation, key: 'translation', label: t('reader.ayahPanel.translation'), onPress: onOpenTranslation }]
-      : []),
     {
       icon: isBookmarked ? icons.bookmarked : icons.bookmark,
       key: 'bookmark',
@@ -183,40 +161,13 @@ export function AyahActionsPanel({
   ];
 
   return (
-    <ScrollView contentContainerStyle={{ gap: theme.space[5], paddingBottom: theme.space[6] }} testID={testID}>
-      {words.length === 0 ? null : (
-        <PanelSection title={t('reader.ayahPanel.wordsTitle')}>
-          <View
-            // Quran words read right to left in every interface language.
-            style={{ direction: 'rtl', flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}
-            testID={`${testID}-words`}
-          >
-            {words.map((word) => (
-              <WordMeaningChip
-                fontScale={fontScale}
-                key={word.position}
-                meaning={word.meaning}
-                meaningDirection={meaningDirection}
-                testID={`${testID}-word-${word.position}`}
-                word={word.word}
-              />
-            ))}
-          </View>
-        </PanelSection>
-      )}
-      <PanelSection title={t('reader.ayahPanel.highlightTitle')}>
-        <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
-          {highlightColors.map((swatch) => (
-            <HighlightSwatch
-              color={swatch}
-              key={swatch}
-              onPress={() => onHighlight(swatch)}
-              selected={color === swatch}
-              testID={`${testID}-highlight-${swatch}`}
-            />
-          ))}
-        </View>
-      </PanelSection>
+    <ScrollView contentContainerStyle={{ gap: SHEET_GAP, paddingBottom: theme.space[6] }} testID={testID}>
+      <HighlightRow
+        label={t('reader.ayahPanel.highlightTitle')}
+        onSelect={onHighlight}
+        selected={color}
+        testID={`${testID}-highlight`}
+      />
       <View accessibilityLabel={t('reader.ayahPanel.actionsLabel')} style={{ gap: theme.space[2] }}>
         {rows(tiles).map((row) => (
           <View key={row.map((tile) => tile.key).join('-')} style={{ flexDirection: 'row', gap: theme.space[2] }}>

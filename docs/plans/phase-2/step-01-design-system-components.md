@@ -1,5 +1,7 @@
 # Step 1 — Design-system components and reading fonts (App)
 
+> **Removed by ADR 0014 (28 Oct 2026):** Quran translations, word-by-word meanings, word chips and the translation panel, tab and settings. Lines below that mention them are history; do not build them.
+
 **Status: done** (27 Oct 2026, committed in `05b931e`). Do not reimplement.
 
 Follow [README.md](README.md). **Start only after the design-token work (ADR 0012) is committed, including its type-scale step** (text styles mapped to Dynamic Type). It adds `fillSecondary`, `lineStrong`, `onBrandSurfaceMuted`, `playerLine` and a `highContrast` set, and recolours `highlightActive`, and these components read those tokens through `useTheme()`. Read `docs/adr/0012-design-follows-apple-hig.md`. Read also:
@@ -36,7 +38,7 @@ Visual source is the frame where each first appears in `quran-app-screens.html` 
 | `EmptyState` | Empty My Quran | `title`, `body`, `action?` | |
 | `AyahMarker` | Mushaf ayah numbers | `number`, `active?`, `onPress?` | Arabic-Indic digits through `formatNumber`. Drawn as the end-of-ayah mark `﴿١﴾` in Amiri Quran (`AyahEndMark`): gold at rest, **`active` = brand** (ADR 0012, amended 2026-10-28). Pressable: opens ayah actions. Used in Reading and Focus modes; page-exact QCF uses the font's own marker glyph |
 | `SurahCartouche` | Mushaf surah banner | `name` | Amiri bold, gold frame |
-| `WordMeaningChip` | Ayah actions word chips | `word` (Uthmani), `meaning` | The word in Amiri Quran **byte for byte**; the meaning is LTR text when it's English |
+| `WordMeaningChip` | Ayah actions word chips | `word` (Uthmani), `meaning` | The word in Amiri Quran **byte for byte**; the meaning is LTR text when it's English Removed by ADR 0014 (28 Oct 2026). |
 
 ## Tests
 

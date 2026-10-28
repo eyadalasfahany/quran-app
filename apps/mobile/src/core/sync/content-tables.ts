@@ -1,4 +1,4 @@
-export type PackGroup = 'translations' | 'tafsirs' | 'mushafs' | 'chapter_recitations';
+export type PackGroup = 'tafsirs' | 'mushafs' | 'chapter_recitations';
 
 export type ContentColumn = {
   name: string;
@@ -34,26 +34,6 @@ export type ContentContractGroup = {
 const RESOURCE = 'resource_id = ?';
 
 export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
-  {
-    group: 'translations',
-    tables: [
-      table('translation_entries', [
-        integer('resource_id'),
-        integer('verse_id'),
-        text('text'),
-        text('footnotes', true),
-      ]),
-    ],
-    entities: [
-      entity(
-        'translation_entry',
-        'translation_entries',
-        ['verse_id'],
-        `DELETE FROM translation_entries WHERE verse_id = ? AND ${RESOURCE}`,
-      ),
-    ],
-    deleteResourceSql: [`DELETE FROM translation_entries WHERE ${RESOURCE}`],
-  },
   {
     group: 'tafsirs',
     tables: [

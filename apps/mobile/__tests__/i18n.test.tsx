@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react-native';
 import * as Updates from 'expo-updates';
 import { useTranslation } from 'react-i18next';
-import { DevSettings, I18nManager, Text } from 'react-native';
+import { DevSettings, I18nManager, Settings, Text } from 'react-native';
 
 import { setDeviceLanguageCode } from '../jest/device-language';
 import ar from '../src/core/i18n/locales/ar.json';
@@ -201,6 +201,17 @@ describe('direction', () => {
 
     expect(check.ready).toBe(false);
     await expect(check.ready ? undefined : check.reload).resolves.toBe(true);
+  });
+
+  it('keeps the iOS app language in step with the saved locale at startup and on switch', () => {
+    const setSettings = jest.spyOn(Settings, 'set').mockImplementation(() => {});
+    storage.set(storageKeys.locale, 'en');
+
+    ensureDirection();
+    expect(setSettings).toHaveBeenLastCalledWith({ AppleLanguages: ['en'] });
+
+    setLocale('ar');
+    expect(setSettings).toHaveBeenLastCalledWith({ AppleLanguages: ['ar'] });
   });
 });
 

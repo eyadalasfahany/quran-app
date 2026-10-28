@@ -53,8 +53,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           'UIInterfaceOrientationLandscapeRight',
         ],
         UIRequiresFullScreen: false,
+        // Arabic is the app's own default language, whatever the device language. UIKit takes its
+        // layout direction (and the native tab bar order) from the app's development region and
+        // declared localizations, so the native chrome mirrors even on an English device.
+        // The per-launch language itself is set at runtime (src/core/i18n/app-language.ts).
+        CFBundleDevelopmentRegion: 'ar',
         // iOS applies RTL only for languages the app declares.
         CFBundleLocalizations: ['ar', 'en'],
+        CFBundleAllowMixedLocalizations: true,
       },
     },
     android: {

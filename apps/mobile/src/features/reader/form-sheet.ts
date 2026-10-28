@@ -19,7 +19,7 @@ export const SETTINGS_SHEET_TOP = 170;
 export const AYAH_SHEET_TOP = 330;
 export const TAFSIR_SHEET_TOP = 52;
 
-/** The ayah card floats inset over the page; reading tafsir or a translation takes the tall, full-width sheet. */
+/** The ayah card floats inset over the page; reading tafsir takes the tall, full-width sheet. */
 export type SheetShape = 'card' | 'full';
 
 export function sheetShapeFor(tab: PanelTab): SheetShape {

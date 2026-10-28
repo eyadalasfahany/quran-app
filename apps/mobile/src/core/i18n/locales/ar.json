@@ -14,8 +14,6 @@
       "madinah": "مدنية"
     },
     "surahMeta": "{{place}} · {{count}} آية",
-    "translationAttribution": "{{name}}",
-    "translationAttributionWithAuthor": "{{name}} · {{author}}",
     "mushaf": {
       "placeholderTitle": "هذه الصفحة غير جاهزة",
       "placeholderBody": "اتصل بالإنترنت لتحميل هذه الصفحة.",
@@ -33,7 +31,8 @@
       "ayahActions": "خيارات الآية",
       "togglePanel": "اللوحة الجانبية",
       "tools": "أدوات القراءة",
-      "place": "صفحة {{page}} · الجزء {{juz}}"
+      "place": "صفحة {{page}} · الجزء {{juz}}",
+      "readingSubtitle": "وضع القراءة"
     },
     "panel": {
       "label": "اللوحة الجانبية",
@@ -42,8 +41,7 @@
       "tabsLabel": "محتوى اللوحة",
       "tabs": {
         "actions": "خيارات",
-        "tafsir": "التفسير",
-        "translation": "الترجمة"
+        "tafsir": "التفسير"
       }
     },
     "resume": {
@@ -66,13 +64,11 @@
     },
     "ayahPanel": {
       "ayah": "الآية {{number}}",
-      "wordsTitle": "معاني الكلمات",
       "highlightTitle": "تظليل",
       "actionsLabel": "إجراءات الآية",
       "play": "تشغيل من هنا",
       "audioUnavailable": "التلاوة غير متاحة بعد",
       "tafsir": "التفسير",
-      "translation": "الترجمة",
       "bookmark": "حفظ",
       "bookmarked": "محفوظة",
       "repeat": "تكرار",
@@ -104,22 +100,16 @@
       "noEntry": "لا يوجد في هذا التفسير مقطع لهذه الآية.",
       "fallbackName": "تفسير {{id}}"
     },
-    "translationPanel": {
-      "showInline": "إظهار الترجمة في وضع القراءة",
-      "emptyTitle": "لم تختر ترجمة بعد",
-      "emptyBody": "اختر ترجمة من إعدادات القراءة.",
-      "missing": "لا يوجد نص لهذه الآية في هذه الترجمة."
-    },
     "settings": {
       "title": "إعدادات القراءة",
       "close": "إغلاق",
       "modeLabel": "طريقة العرض",
       "modes": {
-        "mushaf": "المصحف",
-        "reading": "القراءة",
-        "focus": "التركيز"
+        "mushaf": "مصحف",
+        "reading": "قراءة",
+        "focus": "تركيز"
       },
-      "fontScale": "حجم الخط",
+      "fontScale": "حجم خط المصحف",
       "decreaseFont": "تصغير الخط",
       "increaseFont": "تكبير الخط",
       "themeLabel": "المظهر",
@@ -128,10 +118,11 @@
         "light": "فاتح",
         "sepia": "سيبيا",
         "dark": "داكن"
-      },
-      "translations": "الترجمات",
-      "translationsEmpty": "لا توجد ترجمات مثبتة",
-      "translationFallback": "ترجمة {{id}}"
+      }
+    },
+    "ayahRow": {
+      "play": "تشغيل الآية",
+      "more": "المزيد"
     }
   },
   "library": {

@@ -104,7 +104,7 @@ The scheduler pulls from QF, HadeethEnc and AlAdhan and sends pushes through Exp
 | Open the reader | MMKV last-read → `content.db` | No |
 | Bookmark, highlight, note | `user.db` + outbox → later `POST /sync/push` | No (syncs later) |
 | Play a surah | `content.db` timings + audio file (download or CDN stream) | Only to stream |
-| Get a new translation or tafsir | `GET /content/manifest` → pack download → `content.db` | Yes, once |
+| Get a new tafsir | `GET /content/manifest` → pack download → `content.db` | Yes, once |
 | Content update | Daily QF sync → version bump → pack or change feed → device | Yes |
 | Sign in | Provider SDK on device → `/auth/*` → token in secure store | Yes |
 
@@ -115,7 +115,7 @@ The API is split into domain modules, each layered Controller → FormRequest �
 ```
 apps/api/app/
 ├── Domains/
-│   ├── Content/        verses, words, layouts, translations, tafsir, packs, change feed
+│   ├── Content/        verses, words, layouts, tafsir, packs, change feed
 │   ├── Audio/          reciters, recitations, chapter audio, timings
 │   ├── Hadith/         categories, hadiths, translations, daily rotation
 │   ├── Identity/       users, email codes, Google, Apple, tokens, deletion, export
@@ -200,7 +200,7 @@ apps/mobile/
 │   ├── player.tsx                    full-screen player
 │   ├── search.tsx, khatma.tsx
 │   ├── hadith/index.tsx, category/[id].tsx, [id].tsx
-│   ├── settings/index.tsx, translations.tsx, downloads.tsx, account.tsx, sources.tsx
+│   ├── settings/index.tsx, downloads.tsx, account.tsx, sources.tsx
 │   ├── auth/sign-in.tsx, auth/verify.tsx
 │   └── delete-account.tsx            sheet
 └── src/
@@ -224,7 +224,7 @@ apps/mobile/
 
 | State | Home | Why |
 | --- | --- | --- |
-| Quran text, layouts, translations, tafsir, timings | `content.db`, read through feature repositories with Drizzle | Offline, large, read-only on device |
+| Quran text, layouts, tafsir, timings | `content.db`, read through feature repositories with Drizzle | Offline, large, read-only on device |
 | Bookmarks, highlights, notes, khatma, settings, outbox | `user.db`, Drizzle `useLiveQuery` | Reactive lists; survives content re-downloads |
 | Account, online tafsir lookups, hadith browsing | TanStack Query | Caching, retries, background refetch |
 | Player queue, active ayah and word, repeat range | Zustand `playerStore` | Read by reader, mini-player and player at 10 Hz |
@@ -235,7 +235,7 @@ apps/mobile/
 
 Layout is driven by the window's width class from `useWindowDimensions`, never by `Platform.isPad` or the device model. iPad Split View at one third, a folded phone and a phone in portrait all get the compact layout; an unfolded foldable or an iPad in landscape gets the expanded one.
 
-| Window class | Width (dp/pt) | Typical cases | Navigation | Reader | Ayah actions, tafsir, translations | Player |
+| Window class | Width (dp/pt) | Typical cases | Navigation | Reader | Ayah actions and tafsir | Player |
 | --- | --- | --- | --- | --- | --- | --- |
 | Compact | under 600 | Phones, folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs | Full width | Bottom sheets | Mini-player bar, full-screen player |
 | Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (a 560-wide card, ADR 0013) | Mini-player bar, full-screen player |
@@ -270,13 +270,13 @@ Verses use QF's integer id (1–6,236) as the primary key, with `verse_key` (`2:
 | Table | Columns | Keys and indexes |
 | --- | --- | --- |
 | `content_sources` | `id` bigint, `code` varchar(32), `name` varchar(120), `licence_url` varchar(500), `attribution_ar` text, `attribution_en` text, `permission_status` enum(`granted`,`pending`,`not_required`,`denied`), `notes` text, timestamps | PK `id`; unique `code` |
-| `resources` | `id` bigint, `source_id` FK, `group` enum(`quran_core`,`mushafs`,`translations`,`tafsirs`,`word_by_word_translations`,`word_by_word_transliterations`,`recitations`,`chapter_recitations`,`hadith`) (QF's names, ADR 0008), `source_key` varchar(64), `name` varchar(200), `author_name` varchar(200) null, `language_code` varchar(8), `direction` enum(`rtl`,`ltr`), `version` int unsigned, `checksum` char(64) null, `is_active` bool, `synced_at` datetime(6) | PK `id`; unique (`source_id`,`group`,`source_key`); index (`group`,`language_code`) |
+| `resources` | `id` bigint, `source_id` FK, `group` enum(`quran_core`,`mushafs`,`tafsirs`,`recitations`,`chapter_recitations`,`hadith`) (QF's names, ADR 0008; `translations`, `word_by_word_translations` and `word_by_word_transliterations` stay in `ResourceGroup` as ignored cases, never stored, packed or listed, ADR 0014), `source_key` varchar(64), `name` varchar(200), `author_name` varchar(200) null, `language_code` varchar(8), `direction` enum(`rtl`,`ltr`), `version` int unsigned, `checksum` char(64) null, `is_active` bool, `synced_at` datetime(6) | PK `id`; unique (`source_id`,`group`,`source_key`); index (`group`,`language_code`) |
 | `sync_states` | `id`, `environment` enum(`prelive`,`production`), `resource_group` varchar(32), `sync_token` text, `last_sequence` bigint unsigned, `last_success_at` datetime(6) null, `last_error` text null | unique (`environment`,`resource_group`) |
 | `sync_runs` | `id`, `resource_group`, `started_at`, `finished_at` null, `status` enum(`running`,`ok`,`failed`), `mutations_applied` int, `error` text null | index (`resource_group`,`started_at`) |
 | `content_packs` | `id`, `resource_id` FK, `version` int unsigned, `path` varchar(500), `size_bytes` bigint, `sha256` char(64), `row_count` int, `schema_version` smallint, `built_at` | unique (`resource_id`,`version`) |
 | `content_changes` | `id` bigint auto-increment (the device cursor), `resource_id` FK, `version` int unsigned, `entity` varchar(32), `entity_key` varchar(64), `op` enum(`upsert`,`delete`), `payload` json null, `created_at` | PK `id`; index (`resource_id`,`id`) |
 
-**Quran content mirror**
+**Quran content mirror** (translation tables removed by ADR 0014)
 
 | Table | Columns | Keys and indexes |
 | --- | --- | --- |
@@ -285,8 +285,6 @@ Verses use QF's integer id (1–6,236) as the primary key, with `verse_key` (`2:
 | `words` | `id` int (QF word id), `verse_id` FK, `position` smallint, `char_type` enum(`word`,`end`,`pause`,`sajdah`,`rub`), `text_uthmani`, `text_indopak`, `text_imlaei`, `qcf_code_v2` varchar(16) | PK `id`; unique (`verse_id`,`position`) |
 | `mushafs` | `id` smallint, `source_key`, `name`, `pages_count` smallint, `lines_per_page` tinyint, `font_kind` enum(`qcf_v2`,`kfgqpc_hafs`,`indopak`,`tajweed`) | PK `id` |
 | `word_layouts` | `mushaf_id` FK, `word_id` FK, `page` smallint, `line` tinyint | PK (`mushaf_id`,`word_id`); index (`mushaf_id`,`page`,`line`) |
-| `translation_entries` | `resource_id` FK, `verse_id` FK, `text` text, `footnotes` json null | PK (`resource_id`,`verse_id`) |
-| `word_translations` | `resource_id` FK, `word_id` FK, `text` varchar(255), `transliteration` varchar(255) null | PK (`resource_id`,`word_id`) |
 | `tafsir_entries` | `id`, `resource_id` FK, `first_verse_id` FK, `last_verse_id` FK, `html` mediumtext (sanitized), `source_hash` char(64) | index (`resource_id`,`first_verse_id`,`last_verse_id`) |
 | `tafsir_lookups` | `resource_id`, `verse_id`, `html` mediumtext, `fetched_at` | PK (`resource_id`,`verse_id`); rows older than 7 days are purged |
 
@@ -331,7 +329,7 @@ Every table below shares the same sync columns: `id` uuid (client-generated, PK)
 | `khatma_plans` | `duration_days` smallint, `start_verse_id` FK, `start_date` date, `status` enum(`active`,`completed`,`abandoned`), `completed_at` null | one active plan per user |
 | `khatma_logs` | `plan_id` FK, `date` date, `pages_read` smallint, `last_verse_id` FK | unique (`plan_id`,`date`) |
 | `reading_positions` | `verse_id` FK, `page` smallint, `mushaf_id` FK | one row per user (`id` derived from `user_id`) |
-| `user_settings` | `settings` json (script, mode, theme, font scale, translations, default tafsir, default reciter, Wi-Fi-only, dark after Maghrib, reminder time) | one row per user |
+| `user_settings` | `settings` json (script, mode, theme, font scale, default tafsir, default reciter, Wi-Fi-only, dark after Maghrib, reminder time) | one row per user |
 
 Account deletion hard-deletes the user; cascades remove every row above, and `devices.user_id` is set to null.
 
@@ -345,7 +343,7 @@ Account deletion hard-deletes the user; cascades remove every row above, and `de
 
 The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`, which can be deleted and rebuilt from packs at any time, and `user.db`, which holds everything personal and is never touched by content updates. Both run in WAL mode.
 
-**`content.db`** mirrors the backend shape, trimmed to what the device renders.
+**`content.db`** mirrors the backend shape, trimmed to what the device renders. `translation_entries` is dropped by migration `0003_drop_translation_entries` (ADR 0014).
 
 | Table | Columns | Keys and indexes |
 | --- | --- | --- |
@@ -355,14 +353,12 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `verses` | `id`, `verse_key`, `chapter_id`, `verse_number`, `juz`, `hizb`, `rub_el_hizb`, `page`, `sajdah`, `text_uthmani`, `text_uthmani_tajweed` null, `text_indopak` null, `text_imlaei`, `text_search` | PK `id`; unique `verse_key`; index `page`; index (`chapter_id`,`verse_number`) |
 | `words` | `id`, `verse_id`, `position`, `char_type`, `text_uthmani`, `text_indopak` null, `qcf_code_v2` null | PK `id`; index (`verse_id`,`position`) |
 | `word_layouts` | `mushaf_id`, `word_id`, `page`, `line` | PK (`mushaf_id`,`word_id`); index (`mushaf_id`,`page`,`line`) |
-| `translation_entries` | `resource_id`, `verse_id`, `text`, `footnotes` | PK (`resource_id`,`verse_id`) |
-| `word_translations` | `resource_id`, `word_id`, `text`, `transliteration` | PK (`resource_id`,`word_id`) |
 | `tafsir_entries` | `id`, `resource_id`, `first_verse_id`, `last_verse_id`, `html` | index (`resource_id`,`first_verse_id`) |
 | `reciters`, `recitations`, `chapter_audio_files` | as backend | — |
 | `recitation_timings` | `audio_file_id`, `verse_id`, `start_ms`, `end_ms`, `segments` (JSON text) | PK (`audio_file_id`,`verse_id`) |
 | `hadith_categories`, `hadiths`, `hadith_translations`, `hadith_category_hadith` | as backend, `ar` + interface language only | — |
 | `search_quran` | FTS5 virtual table: `verse_id` UNINDEXED, `text_search` | `tokenize='unicode61 remove_diacritics 2'` |
-| `search_study` | FTS5 virtual table: `resource_id` UNINDEXED, `verse_id` UNINDEXED, `body` | filled from downloaded translations and tafsir only |
+| `search_study` | FTS5 virtual table: `resource_id` UNINDEXED, `verse_id` UNINDEXED, `body` | filled from downloaded tafsir only (ADR 0014) |
 
 **`user.db`** stores synced data plus local-only state.
 
@@ -380,7 +376,7 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 1. The binary bundles a small `content.db` seed: chapters, verses with Tanzil Uthmani text, and nothing from QF. The reader works on first launch with no network.
 2. Once online, the app fetches the manifest and downloads the `quran_core` pack (verses, words, layouts for the chosen mushaf). Each pack is a gzipped SQLite file; the app checks its SHA-256, `ATTACH`es it, copies rows into `content.db` in one transaction and detaches it.
 3. After `quran_core` lands, the Tanzil rows are replaced and `meta.bundled_text` is cleared, as the content plan requires.
-4. Further packs (a translation, a tafsir, a recitation's timings, hadith) follow the same path when the reader picks them.
+4. Further packs (a tafsir, a recitation's timings, hadith) follow the same path when the reader picks them.
 5. Migrations: Drizzle migrations run on open for both databases. A `content.db` schema change can simply delete the file and re-import packs; `user.db` migrations are always additive.
 
 ## 7. Content pipeline
@@ -401,7 +397,7 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 
 - **Pack:** `BuildContentPackJob` writes a SQLite file with only that resource's tables, `VACUUM`s it, gzips it, stores it under `storage/packs/{resource}/{version}.sqlite.gz` and records size and SHA-256. Cloudflare caches pack URLs, which are immutable because the version is in the path.
 - **Change feed:** `content_changes` keeps row-level changes for 30 days. A device within that window applies only the delta; an older device gets `410 Gone` and downloads the latest pack.
-- **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `translation:{id}`, `wbw:{lang}`, `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`.
+- **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`. No translation or word-by-word pack exists (ADR 0014).
 
 **Hop 3: device update (`core/sync/content-sync.ts`)**
 
@@ -427,7 +423,7 @@ One JSON API under `/api/v1`, used only by our app. These rules apply to every e
 - **Rate limits (per IP unless noted):** content 300/min; auth code request 5/hour per email and 20/hour per IP; code verify 10 attempts per code; sync 60/min per user; device registration 30/hour per device. Limits return `429` with `Retry-After`.
 - **Time:** all timestamps are ISO 8601 UTC with milliseconds; dates are `YYYY-MM-DD`.
 - **Identifiers:** verses are addressed by `verse_key` in URLs (`2:255`) and by `verse_id` in payloads. User items use client UUIDs.
-- **Localization:** `Accept-Language` picks error messages, email language and hadith translation; it never changes Quran text, translations or tafsir.
+- **Localization:** `Accept-Language` picks error messages, email language and hadith translation; it never changes Quran text or tafsir.
 - **Transport:** HTTPS only (TLS 1.2+), HSTS, gzip/brotli via Caddy, request bodies capped at 1 MB.
 
 ## 9. API endpoints
@@ -442,7 +438,7 @@ Twenty-seven endpoints cover v1. The OpenAPI file generated from the code is the
 | GET | `/content/packs/{resource_id}/{version}` | none | Gzipped SQLite pack (redirect to the cached file) | 302, 404 |
 | GET | `/content/changes` | none | Row changes for one resource since a version (`resource_id`, `since_version`, `cursor`) | 200, 410 |
 | GET | `/content/tafsirs/{resource_id}/verses/{verse_key}` | none | One tafsir entry for an ayah before the pack is downloaded | 200, 404 |
-| GET | `/content/resources` | none | Catalogue of translations, tafsirs, word-by-word languages with names and authors (`?group=&language=`) | 200 |
+| GET | `/content/resources` | none | Catalogue of tafsirs with names and authors (`?group=&language=`); translation groups are never listed (ADR 0014) | 200 |
 | GET | `/reciters` | none | Reciters with style, recitations, word-segment support | 200 |
 | GET | `/reciters/{id}/chapters/{chapter}` | none | Audio URL, size, duration and timings for one surah (streaming before the recitation pack exists) | 200, 404 |
 | GET | `/hadith/categories` | none | Category tree | 200 |
@@ -613,7 +609,7 @@ For each change, in one transaction per request:
 **Reader (`features/reader`)**
 
 - **One list, three modes.** Every mode is a vertical FlashList. Mushaf mode's items are pages (604); Reading and Focus modes' items are ayahs (6,236). Switching mode keeps the anchor verse.
-- **Item sizing:** Mushaf pages have a known height for a given width (15 lines × line height derived from the page width), so `overrideItemLayout` gives exact offsets and jump-to-ayah lands without measuring. Reading-mode rows are measured and cached per (window width, font scale, translations) key; a fold, unfold or rotation clears the cache and restores the anchor.
+- **Item sizing:** Mushaf pages have a known height for a given width (15 lines × line height derived from the page width), so `overrideItemLayout` gives exact offsets and jump-to-ayah lands without measuring. Reading-mode rows are measured and cached per (mode, window width, font scale) key, with no translation part (ADR 0014); a fold, unfold or rotation clears the cache and restores the anchor.
 - **Mushaf rendering:** each line is one `Text` run of QCF v2 glyph codes in that page's font, justified by the font itself. The page font is loaded with `expo-font` when the page is within two of the viewport. On web, a family more than ten pages from the viewport is unloaded. expo-font 58 implements unload on web only, so on iOS and Android the family stays registered for the process and the app does not call `unloadAsync` (ADR 0011). The font file stays on disk either way. KFGQPC Hafs, IndoPak and Tajweed scripts render ayah text in the bundled fonts and flow lines by width instead.
 - **Ayah hit-testing:** each word is a nested `Text` with an `onPress` that resolves to its `verse_id`. Ayah actions (sheet on compact, side panel on expanded) open on long-press, on a tap on the ayah marker, and from the ayah-actions glass button; each ayah also exposes them as accessibility actions (ADR 0012).
 - **Highlights:** user highlights are background spans on the same nested `Text`, coloured from theme tokens. The audio-active ayah adds the `highlight-active` wash (or keeps the user highlight), fills its marker with `brand` and, in Reading mode, draws a leading `brand` rule; the glyphs never change (ADR 0012).
@@ -633,7 +629,7 @@ For each change, in one transaction per request:
 
 - **Quran text:** query and index are normalized with the same rules as `text_search` (no diacritics or tatweel, unified alef and hamza forms, ى → ي, ة → ه) and matched in the `search_quran` FTS5 table. Results show the original Uthmani text with the matched words highlighted by position.
 - **Surahs:** a prefix match on Arabic and transliterated names, plus surah numbers.
-- **Translation and tafsir:** `search_study` FTS5 over downloaded resources only; the filter chip is hidden when nothing is downloaded.
+- **Tafsir:** `search_study` FTS5 over downloaded tafsirs only; the filter chip is hidden when no tafsir is downloaded. There is no translation search (ADR 0014).
 - **Root search** (shown in the search screen's hint) needs word-root data, which QF exposes as a separate resource; it is post-launch.
 - **Budget:** results for a three-letter query in under 150 ms on a mid-range Android, measured in the release build.
 
@@ -769,7 +765,7 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | --- | --- | --- | --- |
 | 0. Setup and foundations | 0–2 | Monorepo, CI, Docker Compose, Laravel and Expo skeletons, design tokens, adaptive nav shell (tabs or sidebar), i18n and RTL, QF prelive keys, questions sent to QF | App runs on phone, iPad and foldable emulator with the window-class switch working |
 | 1. Content pipeline | 2–6 | QF sync jobs, mirror schema, pack builder, manifest and change feed, device content sync, Tanzil seed, text-integrity check | Fresh install reaches QF text offline; checksum passes |
-| 2. Reader + responsive | 6–12 | Mushaf (QCF), Reading and Focus modes, compact/medium/expanded layouts, reading anchor, surah and juz index, ayah actions, tafsir and translations, search, reader settings | All 604 pages verified on phone, iPad and foldable; resize keeps position |
+| 2. Reader + responsive | 6–12 | Mushaf (QCF), Reading and Focus modes, compact/medium/expanded layouts, reading anchor, surah and juz index, ayah actions, tafsir, search, reader settings | All 604 pages verified on phone, iPad and foldable; resize keeps position |
 | 3. Listening and audio | 12–16 | Reciters, player, lock screen, ayah and word highlight, repeat, speed, sleep timer, downloads | Highlight within 150 ms of timings on sample surahs |
 | 4. Accounts and sync | 16–20 | Email, Google, Apple sign-in; bookmarks, highlights, notes; sync engine; khatma; local reminders; export and deletion | Two-device sync tests pass; Apple account deletion revokes the token |
 | 5. Beta and store review | 20–24 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
@@ -780,7 +776,7 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | --- | --- | --- | --- |
 | Hadith section and daily hadith push | v1.1 | \~3 weeks | Needs HadeethEnc confirmation and reviewer sign-off anyway |
 | IndoPak and Tajweed scripts | v1.1 | \~1.5 weeks | Uthmani Hafs and Madani page-exact cover most readers |
-| Word-by-word meanings | v1.1 | \~1 week | Extra packs and UI in the ayah sheet |
+| Quran translations and word-by-word meanings | Removed (ADR 0014) | — | Not built in any version |
 | Hinge-aware foldable split, keyboard shortcuts | v1.1 | \~1 week | Needs a native module; the base responsive layout already works |
 | Root search | v1.1 | \~1 week | Needs extra QF data |
 | Accounts and sync (whole Phase 4) | Optional further cut | \~4 weeks | A local-only v1 is possible; no Google sign-in also removes the Apple sign-in requirement |

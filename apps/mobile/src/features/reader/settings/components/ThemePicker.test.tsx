@@ -27,8 +27,39 @@ describe('ThemePicker', () => {
   it.each(locales)('labels every appearance in %s', async (locale) => {
     const view = await renderUi(<ThemePicker />, { locale });
     for (const label of locale === 'ar' ? ['تلقائي', 'فاتح', 'سيبيا', 'داكن'] : ['System', 'Light', 'Sepia', 'Dark']) {
-      expect(view.getByLabelText(label)).toBeOnTheScreen();
+      expect(view.getByText(label)).toBeOnTheScreen();
     }
+  });
+
+  it('is a labelled tab list with one tab per appearance, in frame order', async () => {
+    const view = await renderUi(<ThemePicker />);
+
+    expect(view.getByTestId('reader-theme').props).toMatchObject({
+      accessibilityLabel: 'المظهر',
+      accessibilityRole: 'tablist',
+    });
+    expect(view.getAllByRole('tab').map((tab) => tab.props.testID)).toEqual([
+      'reader-theme-automatic',
+      'reader-theme-light',
+      'reader-theme-sepia',
+      'reader-theme-dark',
+    ]);
+  });
+
+  it('shows the appearance dot inside each segment', async () => {
+    const view = await renderUi(<ThemePicker />);
+
+    for (const option of ['automatic', 'light', 'sepia', 'dark'] as const) {
+      expect(view.getByTestId(`reader-theme-${option}`)).toContainElement(
+        view.getByTestId(`theme-dot-${option}`, { includeHiddenElements: true }),
+      );
+    }
+  });
+
+  it('drops the headline title, which the settings section label now shows', async () => {
+    const view = await renderUi(<ThemePicker />);
+
+    expect(view.queryByText('المظهر')).toBeNull();
   });
 
   it('saves sepia and the resolved theme follows it', async () => {
@@ -39,24 +70,15 @@ describe('ThemePicker', () => {
     expect(view.getByTestId('theme-ink')).toHaveTextContent(themes.sepia.colors.ink);
   });
 
-  it('rings the selected swatch in brand and the others with a hairline', async () => {
-    const { colors, size, stroke } = themes.light;
+  it('marks only the saved appearance as the selected tab', async () => {
     const view = await renderUi(<ThemePicker />);
     await fireEvent.press(view.getByTestId('reader-theme-dark'));
 
     expect(view.getByTestId('reader-theme-dark').props.accessibilityState).toEqual({ selected: true });
     expect(view.getByTestId('reader-theme-light').props.accessibilityState).toEqual({ selected: false });
-    expect(flatStyle(view.getByTestId('reader-theme-dark-swatch').props.style)).toMatchObject({
-      borderColor: colors.brand,
-      borderWidth: stroke.selectedRing,
-      height: size.swatch,
-      width: size.swatch,
-    });
-    expect(flatStyle(view.getByTestId('reader-theme-light-swatch').props.style)).toMatchObject({
-      borderColor: colors.line,
-      borderWidth: stroke.hairline,
-    });
-    expect(flatStyle(view.getByTestId('reader-theme-light').props.style).minHeight).toBe(size.touchTarget);
+    expect(flatStyle(view.getByTestId('reader-theme-dark').props.style).backgroundColor).toBe(
+      themes.light.colors.surfaceRaised,
+    );
   });
 
   it('has no raw colour literals', () => {

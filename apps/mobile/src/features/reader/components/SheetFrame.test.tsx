@@ -5,7 +5,7 @@ import { themes } from '@/core/theme';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { FULL_SHEET_RADIUS, SHEET_MARGIN, SHEET_RADIUS } from '../form-sheet';
-import { SheetFrame } from './SheetFrame';
+import { GRABBER_TOP, SheetFrame } from './SheetFrame';
 
 describe('SheetFrame', () => {
   it('insets the card like the phone frames and rounds every corner', async () => {
@@ -26,8 +26,8 @@ describe('SheetFrame', () => {
     expect(view.getByText('إعدادات القراءة')).toBeOnTheScreen();
   });
 
-  it('draws the grabber from the size and opacity tokens', async () => {
-    const { size, opacity, colors } = themes.light;
+  it('draws the strong grabber by default: 40 pt, lineStrong, opaque, radius 3', async () => {
+    const { size, colors } = themes.light;
     const view = await renderUi(
       <SheetFrame testID="sheet-frame">
         <Text>إعدادات</Text>
@@ -35,10 +35,29 @@ describe('SheetFrame', () => {
     );
 
     expect(flatStyle(view.getByTestId('sheet-frame-grabber').props.style)).toMatchObject({
-      backgroundColor: colors.inkMuted,
-      height: size.grabberHeight,
-      opacity: opacity.grabber,
+      backgroundColor: colors.lineStrong,
+      borderRadius: 3,
+      height: 5,
+      opacity: 1,
       width: size.grabberWidth,
+    });
+    expect(size.grabberWidth).toBe(40);
+  });
+
+  it('draws the muted grabber: 36 pt, inkMuted at 40%, radius 3', async () => {
+    const { colors } = themes.light;
+    const view = await renderUi(
+      <SheetFrame grabber="muted" testID="sheet-frame">
+        <Text>إعدادات</Text>
+      </SheetFrame>,
+    );
+
+    expect(flatStyle(view.getByTestId('sheet-frame-grabber').props.style)).toMatchObject({
+      backgroundColor: colors.inkMuted,
+      borderRadius: 3,
+      height: 5,
+      opacity: 0.4,
+      width: 36,
     });
   });
 
@@ -76,6 +95,17 @@ describe('SheetFrame', () => {
 
     expect(view.getByTestId('sheet-frame-grabber').props.accessibilityRole).toBeUndefined();
     expect(view.getByTestId('sheet-frame-grabber').props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('starts the grabber 10 pt from the top, as the ayah and settings frames do', async () => {
+    const view = await renderUi(
+      <SheetFrame testID="sheet-frame">
+        <Text>إعدادات</Text>
+      </SheetFrame>,
+    );
+
+    expect(GRABBER_TOP).toBe(10);
+    expect(flatStyle(view.getByTestId('sheet-frame-grabber-area').props.style).paddingTop).toBe(GRABBER_TOP);
   });
 
   it('draws the full-width sheet edge to edge with rounded top corners only', async () => {

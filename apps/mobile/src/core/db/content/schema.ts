@@ -68,17 +68,6 @@ export const installedResources = sqliteTable('installed_resources', {
   changeCursor: text('change_cursor'),
 });
 
-export const translationEntries = sqliteTable(
-  'translation_entries',
-  {
-    resourceId: integer('resource_id').notNull(),
-    verseId: integer('verse_id').notNull(),
-    text: text('text').notNull(),
-    footnotes: text('footnotes'),
-  },
-  (table) => [primaryKey({ columns: [table.resourceId, table.verseId] })],
-);
-
 export const tafsirEntries = sqliteTable(
   'tafsir_entries',
   {

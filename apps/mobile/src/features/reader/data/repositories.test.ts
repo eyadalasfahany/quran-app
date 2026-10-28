@@ -12,30 +12,21 @@ import { openNodeSqlite } from '../../../../jest/node-sqlite-executor';
 import { getChapter, listChapters } from './chapters';
 import { getMushafPage, isPageInstalled } from './mushaf';
 import { getTafsirForVerse, listInstalledTafsirs } from './tafsir';
-import { getTranslations, listInstalledTranslations } from './translations';
 import { getVerseByKey, getVerseRange, getVersesByPage, getVersesBySurah, idToVerseKey, verseKeyToId } from './verses';
 import { getWords } from './words';
 
 const migrationsDir = join(process.cwd(), 'src/core/db/content/migrations');
 const seedPath = join(process.cwd(), 'assets/db/tanzil-seed.db');
 
-const TRANSLATION_A = 131;
-const TRANSLATION_B = 132;
 const TAFSIR_ID = 169;
 const MUSHAF_RESOURCE = 19;
 const MUSHAF_ID = 1;
 const CHECKED_AT = 1_700_000_000_000;
-const SHA_A = 'sha-translation-a';
-const SHA_B = 'sha-translation-b';
 const SHA_TAFSIR = 'sha-tafsir';
 const SHA_MUSHAF = 'sha-mushaf';
-const PADDED_OPENING = ' \u200FMost Merciful ';
-const PADDED_KURSIY = ' \u200FAyat al-Kursi ';
-const FOOTNOTES = '[{"text":" note "}]';
 const TAFSIR_HTML = '<p>تفسير </p>\u200F';
 const NARROW_HTML = '<p>narrow </p>\u200F';
 const AFTER_HTML = '<p>after</p>';
-const CURSOR = 'cur\u200F ';
 const GLYPH_LEADING = ' \u0640\u200F';
 const GLYPH_MIDDLE = 'glyph';
 const GLYPH_END = '\u06DD ';
@@ -43,7 +34,6 @@ const VERSE_MAPPING = '{"boundary":true}\u200F ';
 const MUSHAF_NAME = 'Hafs ';
 
 const PRIMARY_KEYS: Record<string, string> = {
-  translation_entries: 'resource_id, verse_id',
   tafsir_entries: 'resource_id, group_tafsir_id',
   mushafs: 'id',
   mushaf_pages: 'mushaf_id, page_number',
@@ -256,42 +246,7 @@ describe('mushaf pages', () => {
   });
 });
 
-describe('translations and tafsir', () => {
-  it('returns installed translations and stored text, including footnotes', () => {
-    expect(getTranslations(executor, [], [TRANSLATION_A])).toEqual([]);
-    expect(getTranslations(executor, [fixture.kursiyId], [])).toEqual([]);
-    expect(getTranslations(executor, [fixture.kursiyId], [TRANSLATION_A, TRANSLATION_B])).toEqual([
-      { resourceId: TRANSLATION_A, verseId: fixture.kursiyId, text: PADDED_KURSIY, footnotes: FOOTNOTES },
-      { resourceId: TRANSLATION_B, verseId: fixture.kursiyId, text: PADDED_OPENING, footnotes: null },
-    ]);
-
-    const opening = getTranslations(executor, [1, fixture.kursiyId], [TRANSLATION_A]);
-    expect(opening.map((entry) => entry.verseId)).toEqual([1, fixture.kursiyId]);
-    expectSameText(opening[0]?.text ?? null, PADDED_OPENING);
-    expect(opening[0]?.footnotes).toBeNull();
-    expectSameText(opening[1]?.text ?? null, PADDED_KURSIY);
-    expectSameText(opening[1]?.footnotes ?? null, FOOTNOTES);
-
-    expect(listInstalledTranslations(executor)).toEqual([
-      {
-        resourceId: TRANSLATION_A,
-        group: 'translations',
-        version: 2,
-        sha256: SHA_A,
-        lastCheckedAt: CHECKED_AT,
-        changeCursor: null,
-      },
-      {
-        resourceId: TRANSLATION_B,
-        group: 'translations',
-        version: 4,
-        sha256: SHA_B,
-        lastCheckedAt: CHECKED_AT,
-        changeCursor: CURSOR,
-      },
-    ]);
-  });
-
+describe('tafsir', () => {
   it('returns the tafsir entry whose range covers the verse', () => {
     expect(getTafsirForVerse(executor, TAFSIR_ID, fixture.fatihaEndId)).toBeUndefined();
     expect(getTafsirForVerse(executor, TAFSIR_ID, fixture.baqarahStartId)?.html).toBe(TAFSIR_HTML);
@@ -300,7 +255,7 @@ describe('translations and tafsir', () => {
     expectSameText(getTafsirForVerse(executor, TAFSIR_ID, fixture.kursiyId)?.html ?? null, NARROW_HTML);
     expect(getTafsirForVerse(executor, TAFSIR_ID, fixture.afterKursiyId)?.html).toBe(AFTER_HTML);
     expect(getTafsirForVerse(executor, TAFSIR_ID, fixture.afterKursiyId)?.firstVerseId).toBe(fixture.afterKursiyId);
-    expect(getTafsirForVerse(executor, TRANSLATION_A, fixture.kursiyId)).toBeUndefined();
+    expect(getTafsirForVerse(executor, MUSHAF_RESOURCE, fixture.kursiyId)).toBeUndefined();
 
     expect(listInstalledTafsirs(executor)).toEqual([
       {
@@ -322,7 +277,6 @@ describe('query plans', () => {
     getVersesByPage(recorded, fixture.boundaryPage);
     getMushafPage(recorded, MUSHAF_ID, fixture.boundaryPage);
     getTafsirForVerse(recorded, TAFSIR_ID, fixture.kursiyId);
-    getTranslations(recorded, [], [TRANSLATION_A]);
 
     const byKey = recorded.queries[0];
     const byPage = recorded.queries[1];
@@ -368,32 +322,6 @@ function boundaryPageOf(db: SqlExecutor): number {
 }
 
 function installPacks(db: SqlExecutor, rows: Fixture): void {
-  installPack(db, {
-    resourceId: TRANSLATION_A,
-    group: 'translations',
-    version: 2,
-    sha256: SHA_A,
-    fill(pack) {
-      const insert = pack.prepare(
-        'INSERT INTO translation_entries (resource_id, verse_id, text, footnotes) VALUES (?, ?, ?, ?)',
-      );
-      insert.run(TRANSLATION_A, 1, PADDED_OPENING, null);
-      insert.run(TRANSLATION_A, rows.kursiyId, PADDED_KURSIY, FOOTNOTES);
-    },
-  });
-  installPack(db, {
-    resourceId: TRANSLATION_B,
-    group: 'translations',
-    version: 4,
-    sha256: SHA_B,
-    fill(pack) {
-      pack
-        .prepare('INSERT INTO translation_entries (resource_id, verse_id, text, footnotes) VALUES (?, ?, ?, ?)')
-        .run(TRANSLATION_B, rows.kursiyId, PADDED_OPENING, null);
-    },
-  });
-  db.run('UPDATE installed_resources SET change_cursor = ? WHERE resource_id = ?', [CURSOR, TRANSLATION_B]);
-
   installPack(db, {
     resourceId: TAFSIR_ID,
     group: 'tafsirs',
@@ -443,7 +371,7 @@ function installPack(
   db: SqlExecutor,
   spec: {
     resourceId: number;
-    group: Extract<PackGroup, 'translations' | 'tafsirs' | 'mushafs'>;
+    group: Extract<PackGroup, 'tafsirs' | 'mushafs'>;
     version: number;
     sha256: string;
     fill: (pack: DatabaseSync) => void;

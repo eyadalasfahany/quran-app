@@ -186,7 +186,8 @@ describe('content migrations', () => {
     try {
       applyContentMigrations(executor, migrationsDir);
       const names = tableNames(database);
-      expect(names).toEqual(expect.arrayContaining([...SEED_TABLES, 'search_quran', 'translation_entries']));
+      expect(names).toEqual(expect.arrayContaining([...SEED_TABLES, 'search_quran']));
+      expect(names).not.toContain('translation_entries');
       expect(count(database, 'verses')).toBe(0);
     } finally {
       database.close();

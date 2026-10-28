@@ -54,6 +54,14 @@ final class ContentSyncService
 
     public function run(ResourceGroup $group, string $resourcesFilter): SyncRunResult
     {
+        if ($group->isIgnored()) {
+            Log::info('Quran Foundation sync skipped an ignored resource group.', [
+                'resource_group' => $group->value,
+            ]);
+
+            return new SyncRunResult(mutationsApplied: 0, resourcesTouched: 0, rows: 0);
+        }
+
         $handler = $this->handlers->for($group);
         $environment = SyncEnvironment::from($this->config->environment->value);
         $sourceId = $this->resources->sourceId('qf');
@@ -135,6 +143,7 @@ final class ContentSyncService
         array &$versions,
     ): string {
         $sawPage = false;
+        $loggedIgnoredMutation = false;
         $token = '';
         /** @var array<int, CatalogEntry>|null $catalog */
         $catalog = null;
@@ -146,6 +155,17 @@ final class ContentSyncService
 
             foreach ($page->mutations as $mutation) {
                 if ($mutation->sequence <= (int) $state->last_sequence) {
+                    continue;
+                }
+
+                if (ResourceGroup::tryFrom($mutation->resourceGroup)?->isIgnored() === true) {
+                    if (! $loggedIgnoredMutation) {
+                        $loggedIgnoredMutation = true;
+                        Log::info('Quran Foundation sync skipped mutations for an ignored resource group.', [
+                            'resource_group' => $mutation->resourceGroup,
+                        ]);
+                    }
+
                     continue;
                 }
 

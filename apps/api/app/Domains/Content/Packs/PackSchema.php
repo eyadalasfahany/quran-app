@@ -21,27 +21,12 @@ final class PackSchema
     public static function tablesFor(ResourceGroup $group): array
     {
         return match ($group) {
-            ResourceGroup::Translations => [self::translationEntries()],
+            ResourceGroup::Translations, ResourceGroup::WordByWordTranslations, ResourceGroup::WordByWordTransliterations => [],
             ResourceGroup::Tafsirs => [self::tafsirEntries()],
             ResourceGroup::Mushafs => [self::mushafs(), self::mushafPages(), self::wordLayouts()],
             ResourceGroup::ChapterRecitations => [self::recitations(), self::chapterAudioFiles(), self::recitationTimings()],
             default => throw new PackBuildException('Resource group ['.$group->value.'] has no pack schema.'),
         };
-    }
-
-    public static function translationEntries(): PackTable
-    {
-        return new PackTable(
-            name: 'translation_entries',
-            columns: [
-                self::integer('resource_id'),
-                self::integer('verse_id'),
-                self::text('text'),
-                self::text('footnotes', nullable: true),
-            ],
-            primaryKey: ['resource_id', 'verse_id'],
-            orderBy: ['verse_id'],
-        );
     }
 
     public static function tafsirEntries(): PackTable

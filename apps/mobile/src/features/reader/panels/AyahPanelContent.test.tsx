@@ -21,14 +21,11 @@ async function contentWithTafsir(): Promise<SqlExecutor> {
   const { executor } = await openReaderTestContent();
   executor.run(
     `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, change_cursor)
-     VALUES (16, 'tafsirs', 1, 'sha', 0, NULL), (20, 'translations', 1, 'sha', 0, NULL)`,
+     VALUES (16, 'tafsirs', 1, 'sha', 0, NULL)`,
   );
   executor.run(
     `INSERT INTO tafsir_entries (resource_id, group_tafsir_id, first_verse_id, last_verse_id, html) VALUES (16, 1, 2, 2, ?)`,
     [HTML],
-  );
-  executor.run(
-    `INSERT INTO translation_entries (resource_id, verse_id, text, footnotes) VALUES (20, 2, 'All praise is due to Allah', NULL)`,
   );
   return executor;
 }
@@ -133,22 +130,6 @@ describe('AyahPanelContent', () => {
     await fireEvent.press(view.getByRole('button', { name: 'Download this tafsir for offline reading' }));
 
     expect(useReaderSettings.getState()).toMatchObject({ tafsirChosen: true, tafsirId: 16 });
-  });
-
-  it('lists the selected translations and saves the inline toggle in the reader settings', async () => {
-    await act(async () => {
-      useReaderSettings.getState().setTranslationIds([20]);
-    });
-    const view = await renderUi(
-      <AyahPanelContent executor={withTafsir} onVerseChange={jest.fn()} tab="translation" verseKey="1:2" />,
-      { locale: 'en' },
-    );
-
-    expect(view.getByText('All praise is due to Allah')).toBeOnTheScreen();
-    await fireEvent(view.getByRole('switch', { name: 'Show translations in Reading mode' }), 'valueChange', false);
-
-    expect(useReaderSettings.getState().showTranslations).toBe(false);
-    expect(JSON.parse(storage.getString(storageKeys.readerSettings) ?? '{}')).toMatchObject({ showTranslations: false });
   });
 
   it('falls back to the verse key without a content database', async () => {

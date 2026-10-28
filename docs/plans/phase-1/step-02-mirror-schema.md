@@ -13,9 +13,9 @@ Follow [README.md](README.md). Needs step 1 committed. Read also:
 
 - **Domain:** `app/Domains/Content/` (new).
 - **Models:** `app/Domains/Content/Models/`, one per table, with `$casts` (JSON columns to arrays, datetimes to `CarbonImmutable`) and the relations listed below.
-- **Factories:** `database/factories/` for `Resource`, `TranslationEntry`, `TafsirEntry`, `Mushaf`, `WordLayout`, `Recitation`, `ChapterAudioFile`.
+- **Factories:** `database/factories/` for `Resource`, `TranslationEntry`, `TafsirEntry`, `Mushaf`, `WordLayout`, `Recitation`, `ChapterAudioFile`. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **Service provider:** `app/Domains/Content/ContentServiceProvider.php`, registered in `bootstrap/providers.php`. Empty for now: no routes or bindings yet.
-- **Enum:** `app/Domains/Content/Enums/ResourceGroup.php`, backed by these strings: `quran_core`, `mushafs`, `translations`, `tafsirs`, `word_by_word_translations`, `word_by_word_transliterations`, `recitations`, `chapter_recitations`, `hadith`.
+- **Enum:** `app/Domains/Content/Enums/ResourceGroup.php`, backed by these strings: `quran_core`, `mushafs`, `translations`, `tafsirs`, `word_by_word_translations`, `word_by_word_transliterations`, `recitations`, `chapter_recitations`, `hadith`. The translation cases stay as ignored (ADR 0014).
 
 ## Tables
 
@@ -101,7 +101,7 @@ All InnoDB, `utf8mb4`. Default collation `utf8mb4_0900_ai_ci`. **Columns marked 
 - `built_at` datetime(6)
 - Unique (`resource_id`,`version`).
 
-**`translation_entries`:**
+**`translation_entries`:** Translation parts removed by ADR 0014 (28 Oct 2026).
 - `resource_id` FK cascade
 - `verse_id` smallint unsigned
 - `verse_key` varchar(7)
@@ -186,7 +186,7 @@ All InnoDB, `utf8mb4`. Default collation `utf8mb4_0900_ai_ci`. **Columns marked 
 - Add the MySQL check `start_ms < end_ms` with a raw statement.
 
 **Relations:**
-- `Resource` hasMany `TranslationEntry`, `TafsirEntry`, `ContentChange` and `ContentPack`; hasOne `Mushaf` and `Recitation`; belongsTo `ContentSource`.
+- `Resource` hasMany `TranslationEntry`, `TafsirEntry`, `ContentChange` and `ContentPack`; hasOne `Mushaf` and `Recitation`; belongsTo `ContentSource`. Translation parts removed by ADR 0014 (28 Oct 2026).
 - `Mushaf` hasMany `MushafPage` and `WordLayout`.
 - `Recitation` hasMany `ChapterAudioFile`.
 - `ChapterAudioFile` hasMany `RecitationTiming`.
@@ -208,10 +208,10 @@ All InnoDB, `utf8mb4`. Default collation `utf8mb4_0900_ai_ci`. **Columns marked 
 - **Collation:** every column marked **bin** has collation `utf8mb4_0900_bin` (query `information_schema.COLUMNS`), and no other text column does.
 - **Byte-exact round trip:**
   - The test string is `"ٱلرَّحْمَـٰنِ ۞ \u{200F}ﱁ  end "` (diacritics, tatweel, rub mark, an RLM, a QCF glyph, a double space and a trailing space).
-  - Write it to `translation_entries.text`, `tafsir_entries.html` and `word_layouts.glyph`, then read each back.
+  - Write it to `translation_entries.text`, `tafsir_entries.html` and `word_layouts.glyph`, then read each back. Translation parts removed by ADR 0014 (28 Oct 2026).
   - Assert `bin2hex` equality, in each case.
 - **Unique constraints:** `resources` (`source_id`,`group`,`source_key`) and `tafsir_entries` (`resource_id`,`group_tafsir_id`) reject duplicates.
-- **Cascade:** deleting a `Resource` removes its translation, tafsir, mushaf (with pages and layouts) and recitation (with files and timings) rows.
+- **Cascade:** deleting a `Resource` removes its translation, tafsir, mushaf (with pages and layouts) and recitation (with files and timings) rows. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **Check constraint:** `recitation_timings` rejects `start_ms >= end_ms`.
 - **Arch:** add a rule that `App\Domains\Content\Models` classes extend `Illuminate\Database\Eloquent\Model`. The existing rules stay green.
 

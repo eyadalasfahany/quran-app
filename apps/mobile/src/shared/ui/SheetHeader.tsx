@@ -15,6 +15,7 @@ export function SheetHeader({
   size = 'large',
   onClose,
   closeLabel,
+  closeTone = 'fill',
   testID,
 }: {
   title: string;
@@ -22,6 +23,8 @@ export function SheetHeader({
   size?: 'large' | 'compact';
   onClose?: () => void;
   closeLabel?: string;
+  /** Close button fill: `fill` is fillSecondary (Ayah actions, Tafsir); `track` is fillTrack (Reader settings). */
+  closeTone?: 'fill' | 'track';
   testID?: string;
 }) {
   const theme = useTheme();
@@ -45,10 +48,11 @@ export function SheetHeader({
       {onClose && closeLabel ? (
         <IconButton
           icon={CLOSE}
+          iconSize={theme.size.closeGlyph}
           label={closeLabel}
           onPress={onClose}
           testID={testID ? `${testID}-close` : undefined}
-          variant="filled"
+          variant={closeTone === 'track' ? 'track' : 'filled'}
         />
       ) : null}
     </View>

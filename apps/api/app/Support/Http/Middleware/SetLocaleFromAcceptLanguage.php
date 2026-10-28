@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Accept-Language picks the language of error messages and emails, never of
- * Quran text, translations or tafsir (spec section 8). Arabic first.
+ * Quran text or tafsir (spec section 8). Arabic first.
  */
 final readonly class SetLocaleFromAcceptLanguage
 {

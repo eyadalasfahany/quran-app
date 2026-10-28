@@ -2,6 +2,8 @@
 
 Date: 2026-10-27 · Status: accepted · Amends spec §5, §7 and §16, the content plan, and root CLAUDE.md non-negotiable #2
 
+Amended by ADR 0014.
+
 ## Context
 
 Before planning Phase 1, we probed QF prelive with our keys (`docs/plans/phase-1.md`, "What QF prelive actually gives us"):

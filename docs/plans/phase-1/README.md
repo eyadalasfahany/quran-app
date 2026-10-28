@@ -14,7 +14,7 @@ One file per step of [`../phase-1.md`](../phase-1.md). Each brief is written so 
 | --- | --- | --- |
 | 1 | [step-01-qf-client.md](step-01-qf-client.md) | — |
 | 2 | [step-02-mirror-schema.md](step-02-mirror-schema.md) | 1 |
-| 3 | [step-03-sync-engine-translations.md](step-03-sync-engine-translations.md) | 1, 2 |
+| 3 | [step-03-sync-engine-translations.md](step-03-sync-engine-translations.md) | 1, 2 Translation parts removed by ADR 0014 (28 Oct 2026). |
 | 4 | [step-04-tafsirs-mushafs-recitations.md](step-04-tafsirs-mushafs-recitations.md) | 3 |
 | 5 | [step-05-text-integrity-tanzil.md](step-05-text-integrity-tanzil.md) | — (independent) |
 | 6 | [step-06-packs-manifest-changes.md](step-06-packs-manifest-changes.md) | 3, 4 |
@@ -30,7 +30,7 @@ Steps 3, 4, 6, 7 and 8 must agree on these. The API writes `content_changes` row
 
 | Group | Pack and device tables (columns) | Change `entity` | `entity_key` |
 | --- | --- | --- | --- |
-| `translations` | `translation_entries` (`resource_id`, `verse_id`, `text`, `footnotes` JSON text or null) | `translation_entry` | `verse_id` |
+| `translations` | `translation_entries` (`resource_id`, `verse_id`, `text`, `footnotes` JSON text or null) | `translation_entry` | `verse_id` Translation parts removed by ADR 0014 (28 Oct 2026). |
 | `tafsirs` | `tafsir_entries` (`resource_id`, `group_tafsir_id`, `first_verse_id`, `last_verse_id`, `html`) | `tafsir_entry` | `group_tafsir_id` |
 | `mushafs` | `mushafs` (`id`, `resource_id`, `name`, `pages_count`, `lines_per_page`, `default_font_name`); `mushaf_pages` (`mushaf_id`, `page_number`, `first_verse_id`, `last_verse_id`, `first_word_id`, `last_word_id`, `verse_mapping` JSON text); `word_layouts` (`mushaf_id`, `word_id`, `verse_id`, `position_in_verse`, `char_type`, `glyph`, `page`, `line`, `position_in_line`) | `mushaf`, `mushaf_page`, `word_layout` | `id`; `page_number`; `word_id` |
 | `chapter_recitations` | `recitations` (`id`, `resource_id`, `reciter_name`, `reciter_name_ar`, `style`, `qirat`, `has_word_segments`); `chapter_audio_files` (`id`, `recitation_id`, `chapter_id`, `audio_url`, `size_bytes`, `duration_ms`, `format`); `recitation_timings` (`audio_file_id`, `verse_id`, `start_ms`, `end_ms`, `segments` JSON text) | `recitation`, `chapter_audio_file`, `recitation_timing` | `id`; `id`; `"{audio_file_id}:{verse_id}"` |
@@ -55,7 +55,7 @@ Where the brief and the spec disagree, **stop and report**; don't pick one.
 - Live checks against QF prelive are run by the reviewer, never by the agent.
 
 **Quran text is never altered** (non-negotiable #1):
-- **Byte for byte:** QF and Tanzil text (verse text, translations, tafsir words, mushaf glyph codes) is stored and moved exactly as received. Don't trim, normalize, re-encode, or "fix" whitespace or Unicode.
+- **Byte for byte:** QF and Tanzil text (verse text, translations, tafsir words, mushaf glyph codes) is stored and moved exactly as received. Don't trim, normalize, re-encode, or "fix" whitespace or Unicode. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **One derived column:** only `text_search` is normalized.
 - **Test it:** every step that moves text includes a byte-exact round-trip test.
 

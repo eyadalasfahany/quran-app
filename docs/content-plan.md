@@ -6,7 +6,7 @@ Oct 26, 2026 · Eyad Alasfahani
 
 Production content must open instantly, work offline, never alter a letter of the Quran, and stay inside Quran Foundation's licence. Those four constraints drive every decision below.
 
-- **Text integrity:** Quran text, translations and tafsir are rendered exactly as received. No hand edits, no reflowing that changes meaning, no re-encoding.
+- **Text integrity:** Quran text and tafsir are rendered exactly as received. No hand edits, no reflowing that changes meaning, no re-encoding.
 - **Offline-first:** reading, the last-used reciter's downloaded surahs and the user's bookmarks work with no network.
 - **Licence-compliant:** offline copies of QF content come only through QF Content Sync and are refreshed at least every 7 days. A build-time database of QF content may not be shipped in the app.
 - **Fast:** cold start to last-read ayah under 1.5 s on a mid-range Android; audio starts under 1 s on 4G.
@@ -27,7 +27,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Navigation | Expo Router | \~58.0.26 | Native tabs and stacks, sheets as routes, deep links |
 | Liquid Glass | `expo-glass-effect` | \~58.0.5 | Native iOS 26 glass with automatic fallback |
 | Haptics | `expo-haptics` | \~58.0.7 | Selection feedback on segmented controls (iOS `UISelectionFeedbackGenerator`, Android haptics) |
-| Local database | `expo-sqlite` + Drizzle ORM | \~58.0.14; `drizzle-orm` 0.45.4, `drizzle-kit` 0.31.11 | Offline Quran, translation and tafsir packs with typed queries and migrations |
+| Local database | `expo-sqlite` + Drizzle ORM | \~58.0.14; `drizzle-orm` 0.45.4, `drizzle-kit` 0.31.11 | Offline Quran and tafsir packs with typed queries and migrations |
 | Migrations in the bundle | `babel-plugin-inline-import` | 3.0.0 | Inlines Drizzle's `.sql` migrations into the bundle |
 | Long lists | `@shopify/flash-list` | 2.3.2 | Virtualized vertical mushaf and surah lists |
 | Audio | `expo-audio` | \~58.0.10 | Background playback, lock-screen controls and playlists built in |
@@ -98,7 +98,7 @@ Quran Foundation (QF) is the primary source, synced through its Content Sync API
 | --- | --- | --- | --- |
 | Quran text (Uthmani, IndoPak, Tajweed, Imla'i), surah/juz/hizb metadata | QF Content Sync `quran_core` | Synced after install; refreshed at least every 7 days | Offline copies only via Content Sync; no build-time bundle ([terms](https://api-docs.quran.foundation/legal/developer-terms/)) |
 | Mushaf page layouts and word positions | QF Content Sync `mushafs` | Synced | Same as above |
-| Translations, word-by-word, tafsir | QF Content Sync `translations`, `tafsirs` | Synced per language the user picks | Displayed unmodified, in original context |
+| Tafsir | QF Content Sync `tafsirs` | Synced per resource the user picks | Displayed unmodified, in original context. Translations and word-by-word meanings removed (ADR 0014) |
 | Recitation audio + verse/word timing | QF Content Sync `chapter_recitations` | Timing synced; audio streamed or downloaded per surah | Audio is QF content; offline download rules to confirm with QF |
 | Mushaf fonts (KFGQPC, QCF page fonts, IndoPak) | QF font files | Bundled in the app binary | Allowed only inside the app, with an active Developer Console account and visible QF credit ([fonts terms](https://api-docs.quran.com/legal/mushaf-fonts-and-images/)) |
 | Fallback Quran text for first launch with no network | [Tanzil](https://tanzil.net/docs/text_license) Uthmani text | Bundled in the app binary | CC BY 3.0, verbatim copies only, credit and link to tanzil.net |
@@ -109,17 +109,17 @@ Monetization is allowed without a separate licence (paid app, subscriptions, ads
 
 This lists every external source the app could pull from, and which one we use for each kind of content. The app talks only to our backend and to the audio CDNs. Laravel pulls from each provider on a schedule, stores the source and version with every record, and serves the result to the app. A source marked **Later** goes live only once its terms are confirmed or written permission is on file.
 
-**Quran text, layouts, translations and tafsir**
+**Quran text, layouts and tafsir**
 
 | API | Gives us | Access | Terms that matter | Decision |
 | --- | --- | --- | --- | --- |
-| [Quran Foundation](https://api-docs.quran.foundation/) Content API v4 + Content Sync | Text in every script, mushaf layouts, word-by-word, translations, tafsir, recitations with ayah and word timing | OAuth2 client credentials; prelive and production keys | No prepackaged bundle; re-sync at least every 7 days; credit QF | **Primary** for all Quran content |
+| [Quran Foundation](https://api-docs.quran.foundation/) Content API v4 + Content Sync | Text in every script, mushaf layouts, tafsir, recitations with ayah and word timing (translations not used, ADR 0014) | OAuth2 client credentials; prelive and production keys | No prepackaged bundle; re-sync at least every 7 days; credit QF | **Primary** for all Quran content |
 | QF User APIs + OAuth2 login | Bookmarks, collections, notes, reading progress, goals and preferences on a Quran.com account | User signs in with Quran.com | User data lives in Quran.com accounts | **Not used**: our own accounts and sync keep data in-house; a "connect Quran.com" option could come later |
 | [Tanzil](https://tanzil.net/docs/text_license) | Uthmani and simple text, surah metadata | File download, no API | CC BY 3.0; verbatim only; credit and link | **Fallback**, bundled for first launch |
-| [QuranEnc](https://quranenc.com/en/home/api/) API v1 | Reviewed translations with footnotes, tafsir, recited audio for 13 translations; a version and last-update date per translation | No key | No changes; credit QuranEnc and show the version; keep to the latest version; no inappropriate ads | **Later**: translations QF lacks, with a weekly version check |
-| [QUL by Tarteel](https://qul.tarteel.ai/faq) | Downloadable scripts, fonts, layouts, word-by-word, tafsir, similar ayahs (mutashabihat), surah info, topics, grammar data | Downloads only; no API yet | Licence differs per resource; many allow commercial use | **Later**: similar ayahs and topics, after checking each resource's licence |
+| [QuranEnc](https://quranenc.com/en/home/api/) API v1 | Reviewed translations with footnotes, tafsir, recited audio for 13 translations; a version and last-update date per translation | No key | No changes; credit QuranEnc and show the version; keep to the latest version; no inappropriate ads | **Removed** (ADR 0014): no translations |
+| [QUL by Tarteel](https://qul.tarteel.ai/faq) | Downloadable scripts, fonts, layouts, tafsir (word-by-word not used, ADR 0014), similar ayahs (mutashabihat), surah info, topics, grammar data | Downloads only; no API yet | Licence differs per resource; many allow commercial use | **Later**: similar ayahs and topics, after checking each resource's licence |
 | [AlQuran Cloud](https://alquran.cloud/terms-and-conditions) | Text and many editions, per-ayah audio CDN | No key; soft per-IP limit | Credit Tanzil and translators; recitations for personal and educational use; reciters keep copyright | **Not used**: overlaps QF |
-| [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api) | 440+ translations in about 90 languages, static JSON | Public CDN; repo under Unlicense | Some translations are OCR'd; translators' rights not cleared per edition | **Not used** |
+| [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api) | 440+ translations in about 90 languages, static JSON | Public CDN; repo under Unlicense | Some translations are OCR'd; translators' rights not cleared per edition | **Not used** (translations removed, ADR 0014) |
 | [islamic.app](https://docs.islamic.app/llms.txt) | Quran.com-v4-compatible Quran, hadith, prayer times, duas, masajid | No key; 600 requests a minute per IP | Operator and terms not published | **Not used** |
 
 **Recitation audio**
@@ -165,7 +165,6 @@ The Settings design already has "dark mode after Maghrib", and reminders may fol
 
 **Permissions to request**
 
-- [ ] QuranEnc: confirm app use and offline storage of translations
 - [ ] MP3Quran: permission to stream reciters and radio in the app
 - [ ] Hisn al-Muslim: permission to show the adhkar
 - [ ] HadeethEnc: confirm app use in writing
@@ -231,7 +230,7 @@ The backend keeps a mirror of QF content through Content Sync, and the app keeps
 | `qf_resources` | group + resource id | name, language, version, last synced at |
 | `verses` | verse key (e.g. 2:255) | text per script, page, juz, hizb, rub |
 | `words` | verse key + position | text per script, line and page position per mushaf |
-| `translations` / `tafsirs` | resource id + verse key | text, verse range for tafsir |
+| `tafsirs` | resource id + verse key | text, verse range |
 | `recitations` | reciter id + surah | audio URL, duration, verse and word timing segments |
 | `sync_state` | environment + group | sync token, last sequence |
 
@@ -247,7 +246,7 @@ Audio streams from QF's CDN, and ayah and word highlighting is driven by the tim
 - **Range repeat and memorization:** seek to an ayah's start offset, loop between two offsets N times, then continue. Timing data makes this work without per-ayah files.
 - **Downloads:** per-surah download with progress, a storage view, and "delete all for this reciter". Whether downloaded audio may be kept beyond 7 days without re-sync is an open question for QF.
 
-## Tafsir, translations & word-by-word
+## Tafsir
 
 All study content comes from Quran Foundation. It is downloaded per resource the reader picks, and shown exactly as received with its author credited. No resource is preinstalled.
 
@@ -255,25 +254,25 @@ All study content comes from Quran Foundation. It is downloaded per resource the
 | --- | --- | --- | --- |
 | Short tafsir (Arabic) | Al-Muyassar, suggested on first use | Downloaded as a pack when chosen; online lookup until then | Tafsir sheet, opened from the ayah actions |
 | Long tafsir | Ibn Kathir (Arabic; English abridged for English readers) | Download on demand | Same sheet, switched with the tafsir picker |
-| Translations | None preselected; suggested by the app language | Pack per translation | Under each ayah in Reading mode; in the ayah sheet |
-| Word-by-word meaning and transliteration | The app language | Pack per language | Word chips on tap; Focus mode |
 
-The exact tafsir and translation IDs are confirmed by calling `/resources/tafsirs` and `/resources/translations` with our prelive keys. The names above are what Quran.com offers today, not yet verified against the API.
+Translations and word-by-word meanings or transliterations are not offered in any version (ADR 0014). The English interface stays; Hadith translations stay.
+
+The exact tafsir IDs are confirmed by calling `/resources/tafsirs` with our prelive keys. The names above are what Quran.com offers today, not yet verified against the API.
 
 **How it works**
 
 1. **Catalogue:** the backend syncs the resource lists. The app only offers resources present in our mirror, showing QF's name, author and language fields.
-2. **Selection:** the reader picks in Settings or from the tafsir picker. The app downloads that resource's pack from our backend, which keeps it current through the Content Sync `tafsirs` and `translations` groups.
+2. **Selection:** the reader picks in Settings or from the tafsir picker. The app downloads that resource's pack from our backend, which keeps it current through the Content Sync `tafsirs` group.
 3. **Before download or offline:** the app asks our API for one ayah. The backend calls QF's tafsir-by-ayah endpoint (`resource_id` + `ayah_key`) and caches the answer for no more than 7 days.
 4. **Rendering:** tafsir text arrives as HTML. The backend sanitizes it to a short whitelist of tags (paragraphs, line breaks, bold, italic, quote spans) without changing any words, and the app renders it with `@native-html/render` in the interface font, at the reader's chosen size.
 5. **Ranges:** one tafsir entry can cover several ayahs. We store its first and last verse key, title it "تفسير الآيات ٢–٥", and show the same entry for every ayah in the range instead of repeating it.
-6. **Credit:** the resource and author name sit under every tafsir and translation, and Settings lists every source.
-7. **Search:** downloaded translations and tafsirs go into an on-device SQLite FTS5 index for the "translation and tafsir" search filter. Quran text search uses normalized Arabic (no diacritics; alef, hamza and ta marbuta forms unified).
+6. **Credit:** the resource and author name sit under every tafsir, and Settings lists every source.
+7. **Search:** downloaded tafsirs go into an on-device SQLite FTS5 index for the "tafsir" search filter. Quran text search uses normalized Arabic (no diacritics; alef, hamza and ta marbuta forms unified).
 8. **Updates:** Content Sync row changes update the device silently. If QF removes a resource, it is deleted from the device and the reader is told in Settings.
 
-**What we will not do:** summarize, simplify, machine-translate or AI-rewrite any tafsir or translation. The licence requires QF content to be shown unmodified and in context, and using it to train or tune models needs QF's written consent. An AI "explain this ayah" feature would need a separate licence and scholarly review before it is considered.
+**What we will not do:** summarize, simplify, machine-translate or AI-rewrite any tafsir. The licence requires QF content to be shown unmodified and in context, and using it to train or tune models needs QF's written consent. An AI "explain this ayah" feature would need a separate licence and scholarly review before it is considered.
 
-**Tables added:** `tafsir_entries` (resource id, first and last verse key, sanitized HTML), `translation_entries` (resource id, verse key, text, footnotes), `user_resources` (which packs each reader has chosen, synced with their account).
+**Tables added:** `tafsir_entries` (resource id, first and last verse key, sanitized HTML), `user_resources` (which packs each reader has chosen, synced with their account).
 
 ## Hadith
 
@@ -301,7 +300,7 @@ Arabic is the default interface language and English is the second; Quran text i
 - **Strings:** every interface string lives in i18next resource files (`ar.json`, `en.json`); no hard-coded text in components. Arabic plural forms are used where counts appear.
 - **Direction:** switching between Arabic and English flips the layout with `I18nManager.forceRTL` and reloads the app once (`Updates.reloadAsync`). Media controls and audio progress are never mirrored.
 - **Numbers:** Arabic-Indic digits in the Arabic interface, Western digits in English.
-- **Content languages are separate:** the interface language does not change the Quran, tafsir or translation the reader chose.
+- **Content languages are separate:** the interface language does not change the Quran or tafsir the reader chose.
 - **Store listings:** App Store and Google Play pages in both Arabic and English.
 - **Backend:** API errors and emails come in the user's language, sent as an `Accept-Language` header.
 
@@ -369,10 +368,10 @@ All reading is served from the device database; the network is only used for syn
 - **Device storage:** SQLite (`expo-sqlite` or `op-sqlite`) with one content pack per script and per language. Users download only what they pick.
 - **Fonts and display types:** the user picks a script and a display mode in settings, and the choice is applied instantly.
   - Scripts: Uthmani Hafs (KFGQPC), Madani page-exact (QCF page fonts), IndoPak Nastaleeq, Uthmani Tajweed (colour-coded rules).
-  - Display modes: Mushaf (page-exact lines), Reading (ayah list with translation), Focus (one ayah, large).
+  - Display modes: Mushaf (page-exact lines), Reading (ayah list), Focus (one ayah, large).
   - QCF page fonts are one font per page (604 files), so they load lazily per visible page and stay cached.
 - **Vertical scrolling:** every mode scrolls down continuously, with pages stacked and a thin page / juz divider between them. The list is virtualized (FlashList), measured per page so jumping to any ayah lands exactly.
-- **Budgets:** last-read ayah visible within 1.5 s of cold start; 60 fps while scrolling; under 150 MB device storage for one script, one translation and no audio (to verify once packs are built).
+- **Budgets:** last-read ayah visible within 1.5 s of cold start; 60 fps while scrolling; under 150 MB device storage for one script and no audio (to verify once packs are built).
 
 ## Security, environments & monitoring
 
@@ -457,7 +456,7 @@ Four phases take the app to the stores in about 18 weeks. The first gate, QF con
 | Phase | Weeks | Work |
 |---|---|---|
 | Foundations | 1 to 4 | QF access, prelive keys · Laravel 13, sync job · Auth: email, Google, Apple · Expo app, design tokens · Arabic, English, RTL · CI, staging server |
-| Reading | 5 to 9 | Onboarding · Fonts, display modes · Vertical virtual scroll · Tafsir, translations · Search, bookmarks · User data sync |
+| Reading | 5 to 9 | Onboarding · Fonts, display modes · Vertical virtual scroll · Tafsir · Search, bookmarks · User data sync |
 | Listening and Hadith | 10 to 14 | Player, lock screen · Ayah and word highlight · Downloads, range repeat · Notes, khatma planner · Hadith v1 · Push, reminders |
 | Beta and launch | 15 to 18 | TestFlight, Play beta · Accessibility pass · Store pages AR and EN · Production server, keys · Store review · Public launch |
 
@@ -496,7 +495,6 @@ Team split: backend developers own the sync job, mirror and API; the Next.js dev
 - [QF Tafsir for a surah](https://api-docs.quran.foundation/docs/content_apis_versioned/4.0.0/list-surah-tafsirs/)
 - [Tanzil Quran text licence](https://tanzil.net/docs/text_license)
 - [Quran Foundation API docs](https://api-docs.quran.foundation/)
-- [QuranEnc API](https://quranenc.com/en/home/api/)
 - [QUL FAQ](https://qul.tarteel.ai/faq)
 - [AlQuran Cloud terms](https://alquran.cloud/terms-and-conditions)
 - [fawazahmed0/quran-api](https://github.com/fawazahmed0/quran-api)

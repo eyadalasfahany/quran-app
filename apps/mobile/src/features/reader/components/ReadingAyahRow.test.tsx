@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, within } from '@testing-library/react-native';
 
 import { themes } from '@/core/theme';
 
@@ -9,13 +9,6 @@ import { getVerseByKey } from '../data/verses';
 import { ReadingAyahRow } from './ReadingAyahRow';
 
 const colors = themes.light.colors;
-
-const translationMeta = {
-  resourceId: 131,
-  name: 'Sample translation',
-  authorName: 'Author',
-  direction: 'ltr' as const,
-};
 
 describe('ReadingAyahRow', () => {
   it('renders 2:255 Uthmani text byte for byte', async () => {
@@ -30,14 +23,6 @@ describe('ReadingAyahRow', () => {
         testID="row"
         textImlaei={verse!.textImlaei}
         textUthmani={verse!.textUthmani}
-        translations={[
-          {
-            meta: translationMeta,
-            resourceId: 131,
-            text: 'Ayat al-Kursi',
-          },
-        ]}
-        verseKey="2:255"
         verseNumber={255}
       />,
     );
@@ -52,8 +37,6 @@ describe('ReadingAyahRow', () => {
         testID="row"
         textImlaei="الله لا إله إلا هو"
         textUthmani="ٱللَّهُ لَآ إِلَـٰهَ إِلَّا هُوَ"
-        translations={[]}
-        verseKey="2:255"
         verseNumber={255}
       />,
       { locale },
@@ -72,28 +55,19 @@ describe('ReadingAyahRow', () => {
 
   it('shows the active wash and brand rule when selected', async () => {
     const view = await renderUi(
-      <ReadingAyahRow
-        onPress={() => undefined}
-        selected
-        testID="row"
-        textImlaei="text"
-        textUthmani="ٱللَّهُ"
-        translations={[]}
-        verseKey="2:1"
-        verseNumber={1}
-      />,
+      <ReadingAyahRow onPress={() => undefined} selected testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
     );
     expect(quranBlockStyle(view)).toMatchObject({
       backgroundColor: colors.highlightActive,
       borderStartColor: colors.brand,
       borderStartWidth: themes.light.stroke.activeRule,
     });
-    expect(view.getByRole('button').props.accessibilityState).toMatchObject({ selected: true });
+    expect(view.getByRole('button', { name: 'text الآية ١' }).props.accessibilityState).toMatchObject({ selected: true });
   });
 
   it('closes the row with a hairline divider', async () => {
     const view = await renderUi(
-      <ReadingAyahRow onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" translations={[]} verseKey="2:1" verseNumber={1} />,
+      <ReadingAyahRow onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
     );
 
     expect(flatStyle(view.getByTestId('row-divider', { includeHiddenElements: true }).props.style)).toMatchObject({
@@ -105,16 +79,7 @@ describe('ReadingAyahRow', () => {
 
   it('shows the active wash when recited', async () => {
     const view = await renderUi(
-      <ReadingAyahRow
-        onPress={() => undefined}
-        recited
-        testID="row"
-        textImlaei="text"
-        textUthmani="ٱللَّهُ"
-        translations={[]}
-        verseKey="2:1"
-        verseNumber={1}
-      />,
+      <ReadingAyahRow onPress={() => undefined} recited testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
     );
     expect(quranBlockStyle(view)).toMatchObject({
       backgroundColor: colors.highlightActive,
@@ -130,8 +95,6 @@ describe('ReadingAyahRow', () => {
         testID="row"
         textImlaei="text"
         textUthmani="ٱللَّهُ"
-        translations={[]}
-        verseKey="2:1"
         verseNumber={1}
       />,
     );
@@ -151,27 +114,17 @@ describe('ReadingAyahRow', () => {
         testID="row"
         textImlaei="text"
         textUthmani="ٱللَّهُ"
-        translations={[]}
-        verseKey="2:1"
         verseNumber={1}
       />,
     );
 
-    fireEvent(view.getByTestId('row'), 'longPress');
+    await fireEvent(view.getByTestId('row'), 'longPress');
     expect(onLongPress).toHaveBeenCalledTimes(1);
   });
 
   it.each(locales)('lays Quran text out right to left whatever the locale (%s)', async (locale) => {
     const view = await renderUi(
-      <ReadingAyahRow
-        onPress={() => undefined}
-        testID="row"
-        textImlaei="text"
-        textUthmani="ٱللَّهُ"
-        translations={[]}
-        verseKey="2:1"
-        verseNumber={1}
-      />,
+      <ReadingAyahRow onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
       { locale },
     );
 
@@ -182,24 +135,7 @@ describe('ReadingAyahRow', () => {
     });
   });
 
-  it('keeps a left-to-right translation in its own direction in English', async () => {
-    const view = await renderUi(
-      <ReadingAyahRow
-        onPress={() => undefined}
-        testID="row"
-        textImlaei="text"
-        textUthmani="ٱللَّهُ"
-        translations={[{ meta: translationMeta, resourceId: 131, text: 'Allah' }]}
-        verseKey="2:1"
-        verseNumber={1}
-      />,
-      { locale: 'en' },
-    );
-
-    expect(flatStyle(view.getByText('Allah').props.style)).toMatchObject({ textAlign: 'left', writingDirection: 'ltr' });
-  });
-
-  it('calls onPress and onOpenActions with the expected handlers', async () => {
+  it('calls onPress on the text and onOpenActions from the marker', async () => {
     const onPress = jest.fn();
     const onOpenActions = jest.fn();
     const view = await renderUi(
@@ -209,16 +145,62 @@ describe('ReadingAyahRow', () => {
         testID="row"
         textImlaei="text"
         textUthmani="ٱللَّهُ"
-        translations={[]}
-        verseKey="2:1"
         verseNumber={1}
       />,
     );
 
-    fireEvent.press(view.getByTestId('row'));
+    await fireEvent.press(view.getByTestId('row'));
     expect(onPress).toHaveBeenCalledTimes(1);
-    fireEvent.press(view.getByTestId('row-marker'));
+    await fireEvent.press(view.getByTestId('row-header-marker'));
     expect(onOpenActions).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the header buttons outside the text control, so each is reachable on its own', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        onOpenActions={() => undefined}
+        onOpenTafsir={() => undefined}
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        verseNumber={1}
+      />,
+    );
+
+    const text = view.getByTestId('row');
+    expect(within(text).queryByRole('button', { name: 'التفسير' })).toBeNull();
+    expect(view.getByRole('button', { name: 'التفسير' })).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'المزيد' })).toBeOnTheScreen();
+  });
+
+  it('opens tafsir from the header tafsir button', async () => {
+    const onOpenTafsir = jest.fn();
+    const view = await renderUi(
+      <ReadingAyahRow
+        onOpenActions={() => undefined}
+        onOpenTafsir={onOpenTafsir}
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        verseNumber={1}
+      />,
+    );
+
+    await fireEvent.press(view.getByRole('button', { name: 'التفسير' }));
+    expect(onOpenTafsir).toHaveBeenCalledTimes(1);
+  });
+
+  it('pads the row 14 pt above the header and 16 pt above the hairline', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
+    );
+
+    expect(flatStyle(view.getByTestId('row-header').parent!.props.style)).toMatchObject({ paddingTop: 14 });
+    expect(flatStyle(view.getByTestId('row-divider', { includeHiddenElements: true }).props.style).marginTop).toBe(
+      themes.light.space[4],
+    );
   });
 
   it('has no raw colour literals', () => {

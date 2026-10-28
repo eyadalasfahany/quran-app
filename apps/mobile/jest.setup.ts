@@ -33,6 +33,18 @@ jest.mock('expo-localization', () => ({
   },
 }));
 
+// RN's Settings (NSUserDefaults) is a TurboModule that does not exist under Jest. Stub it so Settings.set is safe to call.
+jest.mock('react-native/Libraries/Settings/NativeSettingsManager', () => ({
+  __esModule: true,
+  default: {
+    getConstants: () => ({ settings: {} }),
+    setValues: jest.fn(),
+    deleteValues: jest.fn(),
+    addListener: jest.fn(),
+    removeListeners: jest.fn(),
+  },
+}));
+
 jest.mock('expo-updates', () => ({
   reloadAsync: jest.fn(() => Promise.resolve()),
 }));

@@ -1,11 +1,19 @@
 import * as Haptics from 'expo-haptics';
+import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
 import { UiText } from './UiText';
 
-export type SegmentedOption<K extends string> = { key: K; label: string };
+/** Segment min-height on the frames (quran-app-screens.html: min-height 40px). */
+export const SEGMENT_MIN_HEIGHT = 40;
+/** Top and bottom hit slop, so the hit area is 40 + 2 × 2 = 44 pt. */
+export const SEGMENT_HIT_SLOP = 2;
+/** Gap between a segment's leading glyph and its label (frame: gap 6px). */
+export const SEGMENT_GAP = 6;
+
+export type SegmentedOption<K extends string> = { key: K; label: string; leading?: ReactNode };
 
 export function SegmentedControl<K extends string>({
   options,
@@ -35,9 +43,10 @@ export function SegmentedControl<K extends string>({
       accessibilityLabel={label}
       accessibilityRole="tablist"
       style={{
-        backgroundColor: theme.colors.fillSecondary,
+        backgroundColor: theme.colors.fillTrack,
         borderRadius: theme.radius.pill,
         flexDirection: 'row',
+        gap: theme.space[1],
         padding: theme.space[1],
       }}
       testID={testID}
@@ -49,6 +58,7 @@ export function SegmentedControl<K extends string>({
             key={option.key}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
+            hitSlop={{ bottom: SEGMENT_HIT_SLOP, top: SEGMENT_HIT_SLOP }}
             onPress={() => select(option.key)}
             style={({ pressed }) => ({
               alignItems: 'center',
@@ -60,13 +70,21 @@ export function SegmentedControl<K extends string>({
               borderRadius: theme.radius.pill,
               boxShadow: selected ? theme.shadows.raised : undefined,
               flex: 1,
+              flexDirection: 'row',
+              gap: SEGMENT_GAP,
               justifyContent: 'center',
-              minHeight: theme.size.touchTarget,
+              minHeight: SEGMENT_MIN_HEIGHT,
               paddingHorizontal: theme.space[2],
             })}
             testID={testID ? `${testID}-${option.key}` : undefined}
           >
-            <UiText align="center" tone={selected ? 'brand' : 'ink'} variant="subhead">
+            {option.leading}
+            <UiText
+              align="center"
+              tone={selected ? 'ink' : 'muted'}
+              variant="subhead"
+              weight={selected ? 600 : 500}
+            >
               {option.label}
             </UiText>
           </Pressable>

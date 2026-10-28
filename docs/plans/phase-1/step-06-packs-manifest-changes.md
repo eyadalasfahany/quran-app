@@ -15,7 +15,7 @@ Follow [README.md](README.md), especially the **shared contract** table: pack ta
 2. **Tables:**
    - `meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)` with `pack_schema_version` = `1`, `resource_id`, `group`, `version`, `built_at` (ISO 8601 UTC).
    - The resource group's tables from the shared contract. Integers are `INTEGER`, text and JSON are `TEXT`, flags are `INTEGER` 0/1. Primary keys:
-     - `translation_entries` (`resource_id`,`verse_id`)
+     - `translation_entries` (`resource_id`,`verse_id`) Translation parts removed by ADR 0014 (28 Oct 2026).
      - `tafsir_entries` (`resource_id`,`group_tafsir_id`)
      - `mushafs` (`id`)
      - `mushaf_pages` (`mushaf_id`,`page_number`)
@@ -43,7 +43,7 @@ Domain `Content`, routes in `ContentServiceProvider` (`api/v1` prefix, name `v1.
 ```json
 {"generated_at": "2026-10-27T02:14:00.000Z", "pack_schema_version": 1,
  "resources": [
-   {"id": 12, "group": "translations", "name": "M.A.S. Abdel Haleem", "author_name": "Abdul Haleem",
+   {"id": 12, "group": "translations", "name": "M.A.S. Abdel Haleem", "author_name": "Abdul Haleem", Translation parts removed by ADR 0014 (28 Oct 2026).
     "language_code": "en", "direction": "ltr", "version": 3,
     "pack": {"url": "/api/v1/content/packs/12/3", "size_bytes": 81234, "sha256": "…"},
     "changes_since_min_version": 2}]}
@@ -61,7 +61,7 @@ Domain `Content`, routes in `ContentServiceProvider` (`api/v1` prefix, name `v1.
 **`GET /content/changes?resource_id=&since_version=&cursor=&limit=`**
 - **Validation** (FormRequest): `resource_id` required, an existing active resource. `since_version` required, int ≥ 0. `limit` int 1–500, default 50. `cursor` opaque (base64url of the last change `id`); invalid → 422.
 - **`410` Gone** (problem details, `code` = `changes_gone`) when `since_version < changes_floor_version`, or when changes after `since_version` have been pruned. The device then downloads the pack.
-- **Response:** `{"data": [{"id": 123, "version": 3, "entity": "translation_entry", "entity_key": "5", "op": "upsert", "payload": {…}}], "next_cursor": "…"|null}`. Changes have `version > since_version`, ordered by `id`, after the cursor.
+- **Response:** `{"data": [{"id": 123, "version": 3, "entity": "translation_entry", "entity_key": "5", "op": "upsert", "payload": {…}}], "next_cursor": "…"|null}`. Changes have `version > since_version`, ordered by `id`, after the cursor. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **Caching:** `Cache-Control: public, max-age=60`.
 
 ## Contract
@@ -76,8 +76,8 @@ Feature tests on MySQL. Use `Storage::fake('local')` where needed, and factories
 
 **Pack builder:**
 - **Files and rows:** the pack file exists, its sha256 and size match the `content_packs` row, and gunzipping gives an SQLite database whose `meta` and tables are as specified, with the expected row counts.
-- **Byte-exact:** a translation text with diacritics and an RLM is byte-identical inside the pack (`bin2hex`).
-- **Every group:** one test per group (translations, tafsirs, mushafs, chapter_recitations) checks the table columns equal the shared contract.
+- **Byte-exact:** a translation text with diacritics and an RLM is byte-identical inside the pack (`bin2hex`). Translation parts removed by ADR 0014 (28 Oct 2026).
+- **Every group:** one test per group (translations, tafsirs, mushafs, chapter_recitations) checks the table columns equal the shared contract. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **Idempotent:** building the same version twice keeps one row.
 - **Failure:** a failing build (e.g. an unwritable disk) leaves the previous pack and the manifest unchanged.
 - **Listener:** `ResourceContentChanged` dispatches `BuildContentPackJob` (`Queue::fake`).
@@ -106,7 +106,7 @@ Feature tests on MySQL. Use `Storage::fake('local')` where needed, and factories
 
 ## Reviewer live check (not for the agent)
 
-Run `content:build-pack` for translation 85, then `curl` the manifest (200, then 304 with the ETag), download the pack, and check its sha256 and the 293 rows inside.
+Run `content:build-pack` for translation 85, then `curl` the manifest (200, then 304 with the ETag), download the pack, and check its sha256 and the 293 rows inside. Translation parts removed by ADR 0014 (28 Oct 2026).
 
 ## Leave untouched
 

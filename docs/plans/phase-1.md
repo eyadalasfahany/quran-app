@@ -22,7 +22,7 @@ Built by Cursor agents from the step briefs, reviewed and live-verified by Claud
 | --- | --- |
 | 1 QF client | ✅ `qf:ping` live: 1 mutation, 293 records; `Retry-After` capped at 30 s |
 | 2 Mirror schema | ✅ 14 tables. Enumerated columns are `varchar` plus PHP enums (ADR 0009) |
-| 3–4 Sync engine and handlers | ✅ Live prelive: 14 translations (4,102 rows), 7 tafsirs, mushaf 1 (6,488 rows), 2 chapter recitations (114 files, 6,236 timings). Byte-exact against QF snapshots. Resume proven. Three review fixes (filter format, missing catalogue entry, events after a failed run) |
+| 3–4 Sync engine and handlers | ✅ Live prelive: 14 translations (4,102 rows), 7 tafsirs, mushaf 1 (6,488 rows), 2 chapter recitations (114 files, 6,236 timings). Byte-exact against QF snapshots. Resume proven. Three review fixes (filter format, missing catalogue entry, events after a failed run) Translation parts removed by ADR 0014 (28 Oct 2026). |
 | 5 Text integrity | ✅ Tanzil pinned; the TS and PHP checksums agree (`32cc746d…`) |
 | 6 Packs and endpoints | ✅ Real packs match the contract column for column; manifest 200/304, packs 200/404, changes 200/410/422 |
 | 7 Device database | ✅ Seed of 114 chapters and 6,236 verses, byte-identical to Tanzil |
@@ -44,7 +44,7 @@ Calls made with our prelive keys.
 
 **Snapshots** (`GET /resources/snapshots/{group}/{id}`):
 - **Shape:** `{ resource_group, resource_id, resource_content_id, schema_version, sync_sequence, records[] }`.
-- **Records are flat.** Mushaf records carry a `record_type` (`mushaf`, `mushaf_page`, `mushaf_word`); translation and tafsir records have none.
+- **Records are flat.** Mushaf records carry a `record_type` (`mushaf`, `mushaf_page`, `mushaf_word`); translation and tafsir records have none. Translation parts removed by ADR 0014 (28 Oct 2026).
 
 **What this client can see on prelive:**
 
@@ -52,13 +52,13 @@ Calls made with our prelive keys.
 | --- | --- | --- |
 | `quran_core` | **none** | — |
 | `mushafs` | 13 (QCF V2 = 1 …) | Pages and word positions for the 2 sample surahs. `mushaf_word.text` is a QCF glyph code, not Unicode text |
-| `translations` | 14 | 293 ayahs (Al-Fatihah + Al-Baqarah) |
+| `translations` | 14 | 293 ayahs (Al-Fatihah + Al-Baqarah) Translation parts removed by ADR 0014 (28 Oct 2026). |
 | `tafsirs` | 7 | 293 rows, one per ayah, grouped by `group_tafsir_id` and `start_verse_id`/`end_verse_id` |
-| `word_by_word_translations` / `_transliterations` | 1 / 0 | — |
+| `word_by_word_translations` / `_transliterations` | 1 / 0 | — Translation parts removed by ADR 0014 (28 Oct 2026). |
 | `recitations` (per ayah) | 2 | All 6,236 ayahs, with verse metadata (juz, hizb, rub, manzil, page) |
 | `chapter_recitations` | 100+ (paged) | All 114 surahs, 6,236 timing segments with word-level timings |
 
-**Verse text is not in Content Sync for us.** The regular Content API (`/verses`) returns it for the two sample surahs, but the content plan allows offline QF text only through Content Sync. So the plan neither copies `/verses` into the mirror nor rebuilds verses from the metadata inside translation or recitation records.
+**Verse text is not in Content Sync for us.** The regular Content API (`/verses`) returns it for the two sample surahs, but the content plan allows offline QF text only through Content Sync. So the plan neither copies `/verses` into the mirror nor rebuilds verses from the metadata inside translation or recitation records. Translation parts removed by ADR 0014 (28 Oct 2026).
 
 ## Decisions (answered 27 Oct 2026, ADR 0008)
 
@@ -73,7 +73,7 @@ The original questions:
 | # | Question | Blocks |
 | --- | --- | --- |
 | D1 | **`quran_core` access.** Is there a Content Sync or `quran_core` permission to request in the Developer Console? If not, ask QF (spec §16) | Step 9 and the "QF text offline" exit check |
-| D2 | **Resource groups.** QF has `word_by_word_translations`, `word_by_word_transliterations`, `recitations` (per ayah), `chapter_recitations` and `articles`; spec §5's `resources.group` enum has `word_by_word` and `chapter_recitations`. Proposal: use QF's names, and leave `articles` out | Step 2 |
+| D2 | **Resource groups.** QF has `word_by_word_translations`, `word_by_word_transliterations`, `recitations` (per ayah), `chapter_recitations` and `articles`; spec §5's `resources.group` enum has `word_by_word` and `chapter_recitations`. Proposal: use QF's names, and leave `articles` out | Step 2 Translation parts removed by ADR 0014 (28 Oct 2026). |
 | D3 | **Audio host.** `chapter_audio_file.audio_url` points at `download.quranicaudio.com`, and per-ayah `url`s are relative with no base given. Non-negotiable #2 says the app calls only our API and the QF audio CDN, and the content plan says QuranicAudio is "not used directly". Is that host QF's CDN for our purposes? (Ask QF if unsure) | Audio parts of steps 4 and 6 |
 | D4 | **Pack compression on the device.** Packs are gzipped SQLite, and nothing in the version table gunzips on the device. Options: (a) add a small gunzip library (needs a version-table entry and a release in the last 12 months), (b) serve plain `.sqlite` and rely on HTTP compression (Caddy and Cloudflare), (c) zip through a native module. Proposal: **(b)**, simplest, and the transfer is still compressed | Steps 6 and 8 |
 | D5 | **User-Agent contact email** for QF requests (spec §3). Which address? | Step 1 |
@@ -105,7 +105,7 @@ Also folded into the steps (no decision needed):
 
 - **Creates:** migrations and models for the tables we can fill now (spec §5):
   - Sync state: `content_sources`, `resources`, `sync_states`, `sync_runs`, `content_changes`, `content_packs`.
-  - `translation_entries`, `tafsir_entries`.
+  - `translation_entries`, `tafsir_entries`. Translation parts removed by ADR 0014 (28 Oct 2026).
   - `mushafs`, `mushaf_pages`, `word_layouts`. `word_layouts.word_id` is not a foreign key until `words` exists (step 9).
   - `reciters`, `recitations`, `chapter_audio_files`, `recitation_timings`.
 - **Not yet:** `chapters`, `verses`, `words` (step 9).
@@ -117,7 +117,7 @@ Also folded into the steps (no decision needed):
   - The arch rules still hold.
 - **Verify:** `composer qa`; `php artisan migrate` on the local database.
 
-### 3. Sync engine on translations — API
+### 3. Sync engine on translations — API Translation parts removed by ADR 0014 (28 Oct 2026).
 
 - **Creates:**
   - `Domains/Content` `SyncService` and `SyncQuranFoundationJob`. Spec §7 hop 1 (steps 2–4):
@@ -127,7 +127,7 @@ Also folded into the steps (no decision needed):
     4. Apply mutations in ascending `sequence`, each in its own transaction with `last_sequence`.
     5. Bump `resources.version` once per run.
     6. Write `content_changes` rows.
-  - Handlers per group: `translations` first.
+  - Handlers per group: `translations` first. Translation parts removed by ADR 0014 (28 Oct 2026).
 - **Fixtures:** hand-trimmed from real prelive responses. A few records per `record_type`, never the full 0.2–3.9 MB snapshots. Saved under `tests/Fixtures/qf/`.
 - **Tests** (spec §11 style):
   - A fresh bootstrap fills the rows.
@@ -137,7 +137,7 @@ Also folded into the steps (no decision needed):
   - `RESOURCE_INVALIDATE` replaces all rows.
   - `RESOURCE_DELETE` deactivates the resource.
   - Text is unchanged byte for byte.
-- **Verify:** `composer qa`, then one live prelive run for translation 85: 293 rows, checked with a query.
+- **Verify:** `composer qa`, then one live prelive run for translation 85: 293 rows, checked with a query. Translation parts removed by ADR 0014 (28 Oct 2026).
 
 ### 4. Remaining groups we can reach — API (audio parts need D3)
 
@@ -208,7 +208,7 @@ Also folded into the steps (no decision needed):
   - A hash mismatch discards the pack.
   - 304 does nothing.
   - 410 downloads the pack.
-- **Verify:** mobile checks, then a live run against the local API: translation 85 lands on the device, offline afterwards, on 2 surahs.
+- **Verify:** mobile checks, then a live run against the local API: translation 85 lands on the device, offline afterwards, on 2 surahs. Translation parts removed by ADR 0014 (28 Oct 2026).
 
 ### 9. `quran_core` — API + App (blocked on D1)
 
@@ -227,7 +227,7 @@ Also folded into the steps (no decision needed):
 | Part | Status |
 | --- | --- |
 | Fresh install offline → Tanzil text from the seed, checksum passes | Reachable after step 7 |
-| Backend → pack → device for translations, tafsirs, mushaf layouts and timings, on 2 surahs | Reachable after step 8 |
+| Backend → pack → device for translations, tafsirs, mushaf layouts and timings, on 2 surahs | Reachable after step 8 Translation parts removed by ADR 0014 (28 Oct 2026). |
 | **Fresh install reaches QF text offline** | Needs D1 (step 9) |
 | **QF checksum over 6,236 ayahs** | Needs production access, or a full prelive dataset (asked of QF, spec §16) |
 

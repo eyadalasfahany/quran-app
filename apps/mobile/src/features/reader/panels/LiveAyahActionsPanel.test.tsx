@@ -31,7 +31,6 @@ function panel(verseId: number) {
       textUthmani="ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ"
       verseId={verseId}
       verseNumber={2}
-      words={[]}
     />
   );
 }

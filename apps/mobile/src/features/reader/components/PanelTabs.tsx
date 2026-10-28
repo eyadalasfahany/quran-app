@@ -22,7 +22,6 @@ export function PanelTabs({
       options={[
         { key: 'actions', label: t('reader.panel.tabs.actions') },
         { key: 'tafsir', label: t('reader.panel.tabs.tafsir') },
-        { key: 'translation', label: t('reader.panel.tabs.translation') },
       ]}
       testID={testID}
       value={value}
