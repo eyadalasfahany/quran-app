@@ -5,7 +5,6 @@ import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { ReaderToolbar } from './ReaderToolbar';
 
 const props = {
-  expanded: false,
   mode: 'mushaf' as const,
   onAyahActions: () => undefined,
   onBack: () => undefined,
@@ -15,6 +14,7 @@ const props = {
   panelOpen: false,
   subtitle: 'صفحة ١ · الجزء ١',
   title: 'الفاتحة',
+  windowClass: 'compact' as const,
 };
 
 describe('ReaderToolbar', () => {
@@ -26,7 +26,7 @@ describe('ReaderToolbar', () => {
     expect(compact.getByLabelText('إعدادات القراءة')).toBeOnTheScreen();
     expect(compact.getByLabelText('خيارات الآية')).toBeOnTheScreen();
 
-    const expanded = await renderUi(<ReaderToolbar {...props} expanded panelOpen />);
+    const expanded = await renderUi(<ReaderToolbar {...props} panelOpen windowClass="expanded" />);
     expect(expanded.getByTestId('reader-panel-toggle').props.accessibilityState).toMatchObject({ selected: true });
   });
 
@@ -36,7 +36,7 @@ describe('ReaderToolbar', () => {
     expect(view.getByTestId('reader-tools')).toBeOnTheScreen();
   });
 
-  it('shows only Back, the reading subtitle and one settings circle in Reading mode', async () => {
+  it('shows only Back, the reading subtitle and one settings circle in Reading mode on a phone', async () => {
     const view = await renderUi(<ReaderToolbar {...props} mode="reading" subtitle="صفحة ١ · الجزء ١" />);
 
     expect(view.getByText('وضع القراءة')).toBeOnTheScreen();
@@ -48,14 +48,28 @@ describe('ReaderToolbar', () => {
     expect(view.getByTestId('reader-settings-glass')).toBeOnTheScreen();
   });
 
-  it('keeps the panel toggle beside settings in Reading mode on an expanded window', async () => {
-    const view = await renderUi(<ReaderToolbar {...props} expanded mode="reading" />);
+  it('draws the full glass group in Reading mode on an expanded window, in the frame order', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} mode="reading" windowClass="expanded" />);
 
+    expect(view.queryByText('وضع القراءة')).toBeNull();
+    expect(view.getByText('صفحة ١ · الجزء ١')).toBeOnTheScreen();
+    expect(view.queryByTestId('reader-settings-glass')).toBeNull();
+    // getAllByLabelText returns the host buttons in tree (render) order.
+    const labels = ['حفظ الصفحة', 'إعدادات القراءة', 'خيارات الآية', 'اللوحة الجانبية'];
+    const inOrder = view.getAllByLabelText(new RegExp(`^(${labels.join('|')})$`)).map((node) => node.props.accessibilityLabel);
+    expect(inOrder).toEqual(labels);
+  });
+
+  it('draws the group in Reading mode on a medium window, with no side panel toggle', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} mode="reading" windowClass="medium" />);
+
+    expect(view.queryByText('وضع القراءة')).toBeNull();
+    expect(view.getByText('صفحة ١ · الجزء ١')).toBeOnTheScreen();
     expect(view.getByTestId('reader-tools')).toBeOnTheScreen();
+    expect(view.getByLabelText('حفظ الصفحة')).toBeOnTheScreen();
     expect(view.getByLabelText('إعدادات القراءة')).toBeOnTheScreen();
-    expect(view.getByTestId('reader-panel-toggle')).toBeOnTheScreen();
-    expect(view.queryByLabelText('حفظ الصفحة')).toBeNull();
-    expect(view.queryByLabelText('خيارات الآية')).toBeNull();
+    expect(view.getByLabelText('خيارات الآية')).toBeOnTheScreen();
+    expect(view.queryByTestId('reader-panel-toggle')).toBeNull();
   });
 
   it.each(locales)('opens reading settings from the Reading mode circle (%s)', async (locale) => {

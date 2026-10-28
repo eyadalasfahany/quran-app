@@ -55,4 +55,19 @@ return [
         ],
     ],
 
+    // ADR 0015: tafsir text is Arabic only. QF language_name values from the English catalogue.
+    'tafsir_languages' => ['arabic'],
+
+    // Names are not Quran text, so these may override QF's name. They clean QF's quirks:
+    // Persian letters, tatweel and a trailing U+200E. The served Arabic name is the override
+    // when one exists for the QF source id (resources.source_key), else the catalogue's name_ar.
+    'display_names' => [
+        'ar' => [
+            14 => 'تفسير ابن كثير',
+            93 => 'التفسير الوسيط',
+            90 => 'تفسير القرطبي',
+            94 => 'تفسير البغوي',
+        ],
+    ],
+
 ];

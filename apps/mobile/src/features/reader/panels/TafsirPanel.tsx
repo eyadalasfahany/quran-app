@@ -5,12 +5,11 @@ import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { uiFontFamilies, useTheme } from '@/core/theme';
-import { Button, Card, Chip, EmptyState, maxFontScale, QuranText, UiText } from '@/shared/ui';
+import { Card, Chip, EmptyState, maxFontScale, QuranText, UiText } from '@/shared/ui';
 
+import { AyahStepper } from './AyahStepper';
 import type { TextDirection } from './panel-text';
 
-const PREVIOUS = { ios: 'chevron.backward', android: 'chevron_left' } as const;
-const NEXT = { ios: 'chevron.forward', android: 'chevron_right' } as const;
 const EMPTY_ICON = { ios: 'book.closed', android: 'menu_book' } as const;
 const SYSTEM_FONTS = Object.values(uiFontFamilies);
 // Bold picks the bold face; a fontWeight on top would fake-bold it on Android.
@@ -28,6 +27,10 @@ export type TafsirOption = {
   direction?: TextDirection | null;
 };
 
+// 'sheet' is the phone sheet: a horizontal row of tafsirs and a floating previous and next bar.
+// 'panel' is the side panel: the tafsirs wrap and the previous and next buttons sit at its foot.
+export type TafsirPanelLayout = 'sheet' | 'panel';
+
 export function TafsirPanel({
   tafsirs,
   selectedId,
@@ -42,6 +45,7 @@ export function TafsirPanel({
   onNext,
   downloadTafsirId,
   onDownload,
+  layout = 'panel',
   testID = 'tafsir-panel',
 }: {
   // Installed tafsirs only.
@@ -63,6 +67,7 @@ export function TafsirPanel({
   // The tafsir the empty state offers to download, when one is known.
   downloadTafsirId: number | null;
   onDownload: (resourceId: number) => void;
+  layout?: TafsirPanelLayout;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -82,109 +87,141 @@ export function TafsirPanel({
     ...(direction === null ? {} : { textAlign: direction === 'rtl' ? ('right' as const) : ('left' as const) }),
   };
 
-  const navigation = (
-    <View style={{ flexDirection: 'row', gap: theme.space[2], justifyContent: 'space-between' }}>
-      <Button
-        disabled={!onPrevious}
-        icon={PREVIOUS}
-        label={t('reader.tafsir.previous')}
-        mirrorIconInRtl
-        onPress={() => onPrevious?.()}
-        testID={`${testID}-previous`}
-      />
-      <Button
-        disabled={!onNext}
-        icon={NEXT}
-        label={t('reader.tafsir.next')}
-        mirrorIconInRtl
-        onPress={() => onNext?.()}
-        testID={`${testID}-next`}
-      />
-    </View>
+  // The sheet's floating bar sits over the scroll, so the scroll keeps clear of it.
+  const scrollBottom = layout === 'sheet' ? theme.size.touchTarget * 2 : theme.space[4];
+  const stepper = (
+    <AyahStepper
+      onNext={onNext}
+      onPrevious={onPrevious}
+      testID={`${testID}-steps`}
+      variant={layout === 'sheet' ? 'pill' : 'split'}
+    />
   );
 
   if (tafsirs.length === 0) {
     return (
-      <ScrollView contentContainerStyle={{ gap: theme.space[6], paddingVertical: theme.space[6] }} testID={testID}>
-        <EmptyState
-          action={
-            downloadTafsirId === null
-              ? undefined
-              : { label: t('reader.tafsir.download'), onPress: () => onDownload(downloadTafsirId) }
-          }
-          body={t('reader.tafsir.emptyBody')}
-          icon={EMPTY_ICON}
-          testID={`${testID}-empty`}
-          title={t('reader.tafsir.emptyTitle')}
-        />
-        {navigation}
-      </ScrollView>
+      <View style={{ flex: 1 }} testID={testID}>
+        <ScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom, paddingVertical: theme.space[6] }}>
+          <EmptyState
+            action={
+              downloadTafsirId === null
+                ? undefined
+                : { label: t('reader.tafsir.download'), onPress: () => onDownload(downloadTafsirId) }
+            }
+            body={t('reader.tafsir.emptyBody')}
+            icon={EMPTY_ICON}
+            testID={`${testID}-empty`}
+            title={t('reader.tafsir.emptyTitle')}
+          />
+        </ScrollView>
+        {stepper}
+      </View>
     );
   }
 
-  const source = selected?.authorName ?? selected?.name ?? '';
-
-  return (
-    <ScrollView contentContainerStyle={{ gap: theme.space[4], paddingBottom: theme.space[6] }} testID={testID}>
+  // The credit line is 12 on the phone sheet and 13 in the side panel, weight 400 in both.
+  const credit =
+    layout === 'sheet'
+      ? { style: { lineHeight: theme.size.creditLineHeight }, variant: 'label' as const, weight: 400 as const }
+      : { variant: 'caption' as const };
+  const chips = tafsirs.map((tafsir) => (
+    <Chip
+      caption={tafsir.lengthTag ?? undefined}
+      key={tafsir.resourceId}
+      label={tafsir.name}
+      layout={layout}
+      onPress={() => onSelect(tafsir.resourceId)}
+      role="radio"
+      selected={tafsir.resourceId === selectedId}
+      testID={`${testID}-option-${tafsir.resourceId}`}
+    />
+  ));
+  const picker =
+    layout === 'sheet' ? (
+      <ScrollView
+        accessibilityLabel={t('reader.tafsir.pickerLabel')}
+        accessibilityRole="radiogroup"
+        contentContainerStyle={{ gap: theme.space[2] }}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+      >
+        {chips}
+      </ScrollView>
+    ) : (
       <View
         accessibilityLabel={t('reader.tafsir.pickerLabel')}
         accessibilityRole="radiogroup"
         style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}
       >
-        {tafsirs.map((tafsir) => (
-          <Chip
-            caption={tafsir.lengthTag ?? undefined}
-            key={tafsir.resourceId}
-            label={tafsir.name}
-            onPress={() => onSelect(tafsir.resourceId)}
-            role="radio"
-            selected={tafsir.resourceId === selectedId}
-            testID={`${testID}-option-${tafsir.resourceId}`}
-          />
-        ))}
+        {chips}
       </View>
-      <Card accessibilityLabel={ayahLabel} accessible={ayahLabel !== undefined} testID={`${testID}-ayah`}>
-        <QuranText fontScale={fontScale} testID={`${testID}-ayah-block`} variant="quranReading">
-          <Text testID={`${testID}-ayah-text`}>{textUthmani}</Text>
-          {` ﴿${formatNumber(verseNumber, 'ar')}﴾`}
-        </QuranText>
-      </Card>
-      {selected === null ? null : (
-        <View style={{ gap: 2 }}>
-          <UiText variant="headline">{selected.name}</UiText>
-          {coverage === null ? null : (
-            <UiText testID={`${testID}-coverage`} tone="muted" variant="caption">
-              {t('reader.tafsir.coverage', { from: formatNumber(coverage.from, locale), to: formatNumber(coverage.to, locale) })}
+    );
+  // The passage's own range, or this ayah alone; no passage means no range to name.
+  const coverageLabel =
+    html === null
+      ? null
+      : coverage === null
+        ? t('reader.tafsir.coverageOne', { ayah: formatNumber(verseNumber, locale) })
+        : t('reader.tafsir.coverage', { from: formatNumber(coverage.from, locale), to: formatNumber(coverage.to, locale) });
+
+  return (
+    <View style={{ flex: 1 }} testID={testID}>
+      <ScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom }}>
+        {picker}
+        <Card
+          accessibilityLabel={ayahLabel}
+          accessible={ayahLabel !== undefined}
+          radius="card"
+          style={{ paddingVertical: theme.space[3] }}
+          testID={`${testID}-ayah`}
+          tone="page"
+        >
+          <QuranText fontScale={fontScale} testID={`${testID}-ayah-block`} variant="quranPanel">
+            <Text testID={`${testID}-ayah-text`}>{textUthmani}</Text>
+            {` ﴿${formatNumber(verseNumber, 'ar')}﴾`}
+          </QuranText>
+        </Card>
+        {selected === null ? null : (
+          <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2], justifyContent: 'space-between' }}>
+            <UiText variant="caption" weight={600}>
+              {selected.name}
+            </UiText>
+            {coverageLabel === null ? null : (
+              <UiText testID={`${testID}-coverage`} tone="muted" {...credit}>
+                {coverageLabel}
+              </UiText>
+            )}
+          </View>
+        )}
+        <View style={{ gap: theme.size.bodyCreditGap }}>
+          <View
+            onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+            style={direction === null ? undefined : { direction }}
+            testID={`${testID}-body`}
+          >
+            {html === null ? (
+              <UiText testID={`${testID}-no-entry`} tone="muted">
+                {t('reader.tafsir.noEntry')}
+              </UiText>
+            ) : (
+              <RenderHtml
+                baseStyle={baseStyle}
+                contentWidth={width ?? windowWidth}
+                defaultTextProps={{ maxFontSizeMultiplier: maxFontScale.content }}
+                source={{ html }}
+                systemFonts={SYSTEM_FONTS}
+                tagsStyles={TAGS_STYLES}
+              />
+            )}
+          </View>
+          {selected === null ? null : (
+            <UiText testID={`${testID}-source`} tone="muted" {...credit}>
+              {t('reader.tafsir.source', { author: selected.authorName ?? selected.name })}
             </UiText>
           )}
         </View>
-      )}
-      <View
-        onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-        style={direction === null ? undefined : { direction }}
-        testID={`${testID}-body`}
-      >
-        {html === null ? (
-          <UiText testID={`${testID}-no-entry`} tone="muted">
-            {t('reader.tafsir.noEntry')}
-          </UiText>
-        ) : (
-          <RenderHtml
-            baseStyle={baseStyle}
-            contentWidth={width ?? windowWidth}
-            defaultTextProps={{ maxFontSizeMultiplier: maxFontScale.content }}
-            source={{ html }}
-            systemFonts={SYSTEM_FONTS}
-            tagsStyles={TAGS_STYLES}
-          />
-        )}
-      </View>
-      {selected === null ? null : (
-        <UiText testID={`${testID}-source`} tone="muted" variant="caption">
-          {t('reader.tafsir.source', { author: source })}
-        </UiText>
-      )}
-      {navigation}
-    </ScrollView>
+      </ScrollView>
+      {stepper}
+    </View>
   );
 }

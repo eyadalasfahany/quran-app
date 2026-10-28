@@ -39,6 +39,8 @@ export const quranTypeScale = {
   quranReading: { family: 'quran', size: 27, lineHeightRatio: 2.1, weight: 400 },
   quranFocus: { family: 'quran', size: 38, lineHeightRatio: 2.1, weight: 400 },
   quranFocusAside: { family: 'quran', size: 24, lineHeightRatio: 2, weight: 400 },
+  // The ayah card in the tafsir panel (quran-app-screens.html, Tafsir and ReaderExpandedTafsir).
+  quranPanel: { family: 'quran', size: 24, lineHeightRatio: 2, weight: 400 },
   quranWord: { family: 'quran', size: 20, lineHeightRatio: 1.7, weight: 400 },
   // A search result's ayah (Search frame).
   quranResult: { family: 'quran', size: 21, lineHeightRatio: 1.9, weight: 400 },

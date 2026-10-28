@@ -64,7 +64,6 @@ export function FocusReader({
       onSelectVerse={(number) => onVerseChange(neighbourKey(verse.chapterId, number))}
       previousNumber={previous?.verseNumber ?? null}
       previousText={previous?.textUthmani ?? null}
-      surahName={chapter.nameArabic}
       textImlaei={verse.textImlaei}
       textUthmani={verse.textUthmani}
       verseNumber={verse.verseNumber}

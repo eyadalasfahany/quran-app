@@ -61,6 +61,23 @@ describe('SheetFrame', () => {
     });
   });
 
+  it('draws the compact grabber: 36 pt, lineStrong, opaque, radius 3', async () => {
+    const { colors } = themes.light;
+    const view = await renderUi(
+      <SheetFrame grabber="compact" testID="sheet-frame">
+        <Text>التفسير</Text>
+      </SheetFrame>,
+    );
+
+    expect(flatStyle(view.getByTestId('sheet-frame-grabber').props.style)).toMatchObject({
+      backgroundColor: colors.lineStrong,
+      borderRadius: 3,
+      height: 5,
+      opacity: 1,
+      width: 36,
+    });
+  });
+
   it('uses the raised surface in the dark theme', async () => {
     const view = await renderUi(
       <SheetFrame testID="sheet-frame">

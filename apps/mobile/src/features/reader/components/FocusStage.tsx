@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View, type NativeSyntheticEvent } from 'react-native';
 import Animated, { LayoutAnimationConfig, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 
-import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
@@ -38,7 +37,6 @@ export function focusPageFromDrag(event: PageDrag): 'next' | 'previous' | null {
 }
 
 export function FocusStage({
-  surahName,
   verseNumber,
   versesCount,
   textUthmani,
@@ -55,7 +53,6 @@ export function FocusStage({
   onOpenActions,
   testID = 'focus-stage',
 }: {
-  surahName: string;
   verseNumber: number;
   versesCount: number;
   textUthmani: string;
@@ -65,7 +62,7 @@ export function FocusStage({
   nextText: string | null;
   nextNumber: number | null;
   fontScale?: number;
-  /** Room for the reader toolbar, which floats over the top of Focus as it does over every mode. */
+  /** Room for FocusChrome, which floats over the top of Focus. */
   topInset?: number;
   onPrevious?: () => void;
   onNext?: () => void;
@@ -73,18 +70,11 @@ export function FocusStage({
   onOpenActions?: () => void;
   testID?: string;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const theme = useTheme();
   const reduceMotion = useReducedMotion();
-  const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const direction = useSharedValue<FocusTurnDirection>(1);
   const turn = useMemo(() => focusTurnAnimations(direction, reduceMotion), [direction, reduceMotion]);
-
-  const position = t('reader.focus.position', {
-    current: formatNumber(verseNumber, locale),
-    surah: surahName,
-    total: formatNumber(versesCount, locale),
-  });
 
   const turnTo = (way: 'next' | 'previous', move: () => void) => {
     direction.set(way === 'next' ? 1 : -1);
@@ -114,9 +104,6 @@ export function FocusStage({
 
   return (
     <View style={{ flex: 1, paddingBottom: theme.space[8], paddingTop: topInset }} testID={testID}>
-      <UiText align="center" tone="muted" variant="caption">
-        {position}
-      </UiText>
       <View style={{ flex: 1, overflow: 'hidden' }}>
         <FocusProgress onSelect={onSelectVerse === undefined ? undefined : selectPage} verseNumber={verseNumber} versesCount={versesCount} />
         {/* The ayah shown when Focus opens is already in place; only a turn animates. */}

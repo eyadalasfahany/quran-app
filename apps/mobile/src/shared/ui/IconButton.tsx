@@ -9,7 +9,7 @@ import { useContrastColors } from './useContrastColors';
 
 export const ICON_BUTTON_SIZE = size.touchTarget;
 
-export type IconButtonVariant = 'plain' | 'filled' | 'track' | 'glass';
+export type IconButtonVariant = 'plain' | 'filled' | 'track' | 'surface' | 'glass';
 export type IconButtonTone = 'ink' | 'muted';
 
 export function IconButton({
@@ -43,8 +43,13 @@ export function IconButton({
   const theme = useTheme();
   const colors = useContrastColors();
   const glyph = pressed ? theme.colors.brand : tone === 'muted' ? colors.inkMuted : theme.colors.ink;
-  const resting =
-    variant === 'filled' ? theme.colors.fillSecondary : variant === 'track' ? theme.colors.fillTrack : 'transparent';
+  const resting = {
+    filled: theme.colors.fillSecondary,
+    track: theme.colors.fillTrack,
+    surface: theme.colors.surface,
+    plain: 'transparent',
+    glass: 'transparent',
+  }[variant];
 
   return (
     <Pressable

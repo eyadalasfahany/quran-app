@@ -11,7 +11,6 @@ const stage = {
   nextText: 'ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ',
   previousNumber: 4,
   previousText: 'مَـٰلِكِ يَوْمِ ٱلدِّينِ',
-  surahName: 'الفاتحة',
   textImlaei: 'إياك نعبد وإياك نستعين',
   textUthmani: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
   verseNumber: 5,
@@ -47,16 +46,13 @@ describe('FocusStage', () => {
     expect(view.getByTestId('focus-stage-scroll')).toBeOnTheScreen();
   });
 
-  it.each(locales)('labels the current ayah, its position and the swipe hint in %s', async (locale) => {
+  it.each(locales)('labels the current ayah and the swipe hint in %s', async (locale) => {
     const view = await renderUi(<FocusStage {...stage} />, { locale });
 
     const ayah = locale === 'ar' ? 'الآية ٥' : 'Ayah 5';
     expect(view.getByLabelText(`إياك نعبد وإياك نستعين ${ayah}`)).toBeOnTheScreen();
-    const position = view.getByText(locale === 'ar' ? 'الفاتحة · الآية ٥ من ٧' : 'الفاتحة · Ayah 5 of 7');
     const hint = view.getByText(locale === 'ar' ? 'اسحب لأعلى للآية التالية' : 'Swipe up for the next ayah');
-    for (const text of [position, hint]) {
-      expect(flatStyle(text.props.style)).toMatchObject({ color: themes.light.colors.inkMuted, textAlign: 'center' });
-    }
+    expect(flatStyle(hint.props.style)).toMatchObject({ color: themes.light.colors.inkMuted, textAlign: 'center' });
   });
 
   it('opens ayah actions from the current ayah marker', async () => {
@@ -105,11 +101,10 @@ describe('FocusStage', () => {
     expect(onSelectVerse).toHaveBeenCalledWith(6);
   });
 
-  it('moves to the next ayah from the transport, with no close control of its own (the reader toolbar leaves)', async () => {
+  it('moves to the next ayah from the transport, with no close control of its own (FocusChrome holds the exit)', async () => {
     const onNext = jest.fn();
     const view = await renderUi(<FocusStage {...stage} onNext={onNext} />, { locale: 'ar' });
 
-    expect(view.getByText('الفاتحة · الآية ٥ من ٧')).toBeOnTheScreen();
     await fireEvent.press(view.getByTestId('focus-transport-next'));
     expect(onNext).toHaveBeenCalledTimes(1);
     expect(view.queryByTestId('focus-stage-close')).toBeNull();

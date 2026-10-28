@@ -81,16 +81,34 @@ describe('ReaderScreen', () => {
     expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:255');
   });
 
-  it('keeps the reader toolbar in Focus, so Back and the other modes stay in reach, and drops the resume pill', async () => {
+  it('draws only the Focus chrome in Focus, with the position of the Focus ayah, and drops the resume pill', async () => {
+    mockExecutor = (await openReaderTestContent()).executor;
+    useReaderSettings.getState().setMode('mushaf');
     const view = await renderUi(reader());
 
     await act(async () => {
       useReaderSettings.getState().setMode('focus');
     });
 
-    expect(view.getByTestId('reader-back')).toBeOnTheScreen();
-    expect(view.getByTestId('reader-tools')).toBeOnTheScreen();
+    expect(view.getByTestId('focus-exit')).toBeOnTheScreen();
+    expect(view.getByTestId('focus-position')).toHaveTextContent(new RegExp(formatNumber(255, 'ar')));
+    expect(view.queryByTestId('reader-back')).toBeNull();
+    expect(view.queryByTestId('reader-tools')).toBeNull();
     expect(view.queryByTestId('reader-resume-slot')).toBeNull();
+  });
+
+  it('exits Focus back to the mode it was entered from', async () => {
+    mockExecutor = (await openReaderTestContent()).executor;
+    useReaderSettings.getState().setMode('mushaf');
+    const view = await renderUi(reader());
+
+    await act(async () => {
+      useReaderSettings.getState().setMode('focus');
+    });
+    await fireEvent.press(view.getByTestId('focus-exit'));
+
+    expect(useReaderSettings.getState().mode).toBe('mushaf');
+    expect(view.getByTestId('reader-back')).toBeOnTheScreen();
   });
 
   it.each(['ayah', 'tafsir', 'reader-settings'])('leaves the page and toolbar as they were under the %s sheet', async (sheet) => {

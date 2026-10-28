@@ -37,7 +37,7 @@ export function SheetContainer({
   };
 
   return (
-    <SheetFrame shape={sheetShapeFor(currentTab)}>
+    <SheetFrame grabber={currentTab === 'tafsir' ? 'compact' : 'strong'} shape={sheetShapeFor(currentTab)}>
       <View
         accessibilityLabel={t('reader.sheet.label')}
         style={{
@@ -51,6 +51,7 @@ export function SheetContainer({
         <PanelTabs onChange={changeTab} testID={`${testID}-tabs`} value={currentTab} />
         <AyahPanelContent
           executor={executor}
+          layout="sheet"
           onClose={onClose}
           onTabChange={changeTab}
           onVerseChange={setCurrentKey}

@@ -10,6 +10,7 @@ export function PanelHeader({
   juz,
   onClose,
   closeLabel,
+  tafsirSheet = false,
   testID = 'panel-header',
 }: {
   // The surah's Arabic name, a Quranic word.
@@ -20,6 +21,8 @@ export function PanelHeader({
   // The side panel has its own close; sheets pass one here.
   onClose?: () => void;
   closeLabel?: string;
+  // The phone sheet on the tafsir tab titles the sheet «التفسير» and names the ayah beneath it.
+  tafsirSheet?: boolean;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -29,6 +32,19 @@ export function PanelHeader({
     page === null || juz === null
       ? null
       : t('reader.toolbar.place', { juz: formatNumber(juz, locale), page: formatNumber(page, locale) });
+
+  if (tafsirSheet) {
+    return (
+      <SheetHeader
+        closeLabel={closeLabel ?? t('reader.sheet.close')}
+        onClose={onClose}
+        size="large"
+        subtitle={`${surahName} · ${ayah}`}
+        testID={testID}
+        title={t('reader.panel.tabs.tafsir')}
+      />
+    );
+  }
 
   return (
     <SheetHeader

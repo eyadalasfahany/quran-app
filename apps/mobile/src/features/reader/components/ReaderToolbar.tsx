@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
+import type { WindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { IconButton, TitlePill, ToolbarPill } from '@/shared/ui';
 
@@ -15,15 +16,17 @@ const SETTINGS = { ios: 'slider.horizontal.3', android: 'tune' } as const;
 const ACTIONS = { ios: 'ellipsis.circle', android: 'more_horiz' } as const;
 const PANEL = { ios: 'sidebar.right', android: 'view_sidebar' } as const;
 
-// Reading mode draws only Back, the title and one settings control (its frame in quran-app-screens.html).
-// Mushaf draws the tools group and the page subtitle. Focus keeps the Mushaf bar until its own frame is built.
-export type ReaderToolbarMode = 'reading' | 'mushaf' | 'focus';
+// Focus has its own chrome (FocusChrome), so this bar draws only Reading and Mushaf.
+// Reading on a phone draws Back, the title with «وضع القراءة» and one settings circle (its frame in
+// quran-app-screens.html). Medium and expanded windows draw Back, the title with the page place, and one glass
+// group: bookmark, reader settings, ayah actions, and on expanded the side panel toggle (#tablet-reader).
+export type ReaderToolbarMode = 'reading' | 'mushaf';
 
 export function ReaderToolbar({
   mode,
   title,
   subtitle,
-  expanded,
+  windowClass,
   panelOpen,
   bookmarked = false,
   onBack,
@@ -36,7 +39,7 @@ export function ReaderToolbar({
   mode: ReaderToolbarMode;
   title: string;
   subtitle?: string;
-  expanded: boolean;
+  windowClass: WindowClass;
   panelOpen: boolean;
   bookmarked?: boolean;
   onBack: () => void;
@@ -50,8 +53,10 @@ export function ReaderToolbar({
   const theme = useTheme();
   const insets = useContext(SafeAreaInsetsContext) ?? { bottom: 0, left: 0, right: 0, top: 0 };
   const readingMode = mode === 'reading';
-  // A phone in Reading mode keeps only the settings circle; expanded windows keep the group for the panel toggle.
-  const lone = readingMode && !expanded;
+  const compact = windowClass === 'compact';
+  const expanded = windowClass === 'expanded';
+  // A phone in Reading mode keeps only the settings circle.
+  const lone = readingMode && compact;
 
   const settings = (
     <IconButton
@@ -62,6 +67,7 @@ export function ReaderToolbar({
       variant={lone ? 'glass' : 'plain'}
     />
   );
+  // The side panel only exists on an expanded window; medium shows ayah actions as a sheet, so no toggle there.
   const panelToggle = expanded ? (
     <IconButton
       icon={PANEL}
@@ -94,7 +100,7 @@ export function ReaderToolbar({
       />
       <View style={{ flex: 1, minWidth: 0 }}>
         <TitlePill
-          subtitle={readingMode ? t('reader.toolbar.readingSubtitle') : subtitle}
+          subtitle={lone ? t('reader.toolbar.readingSubtitle') : subtitle}
           testID="reader-title"
           title={title}
         />
@@ -103,13 +109,9 @@ export function ReaderToolbar({
         settings
       ) : (
         <ToolbarPill label={t('reader.toolbar.tools')} testID="reader-tools">
-          {readingMode ? null : (
-            <IconButton icon={BOOKMARK} label={t('reader.toolbar.bookmarkPage')} onPress={onBookmarkPage} pressed={bookmarked} />
-          )}
+          <IconButton icon={BOOKMARK} label={t('reader.toolbar.bookmarkPage')} onPress={onBookmarkPage} pressed={bookmarked} />
           {settings}
-          {readingMode ? null : (
-            <IconButton icon={ACTIONS} label={t('reader.toolbar.ayahActions')} onPress={onAyahActions} />
-          )}
+          <IconButton icon={ACTIONS} label={t('reader.toolbar.ayahActions')} onPress={onAyahActions} />
           {panelToggle}
         </ToolbarPill>
       )}

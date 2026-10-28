@@ -9,7 +9,7 @@ import { FULL_SHEET_RADIUS, SHEET_MARGIN, SHEET_RADIUS, type SheetShape } from '
 /** Grabber top padding on the ayah and settings frames (quran-app-screens.html: padding-top 10px). */
 export const GRABBER_TOP = 10;
 
-export type GrabberTone = 'strong' | 'muted';
+export type GrabberTone = 'strong' | 'compact' | 'muted';
 
 /**
  * The phone frames draw the ayah and settings sheets as a card: 8pt from the
@@ -25,7 +25,8 @@ export function SheetFrame({
   children: ReactNode;
   shape?: SheetShape;
   /**
-   * `strong`: 40 pt, lineStrong, opaque (Ayah actions, Tafsir, Delete account).
+   * `strong`: 40 pt, lineStrong, opaque (Ayah actions, Delete account).
+   * `compact`: 36 pt, lineStrong, opaque (Tafsir, whose frame draws the narrower bar).
    * `muted`: 36 pt, inkMuted at 40% (Reader settings).
    */
   grabber?: GrabberTone;
@@ -37,7 +38,9 @@ export function SheetFrame({
   const grabberStyle =
     grabber === 'muted'
       ? { backgroundColor: colors.inkMuted, opacity: theme.opacity.grabber, width: theme.size.grabberWidthCompact }
-      : { backgroundColor: colors.lineStrong, opacity: 1, width: theme.size.grabberWidth };
+      : grabber === 'compact'
+        ? { backgroundColor: colors.lineStrong, opacity: 1, width: theme.size.grabberWidthCompact }
+        : { backgroundColor: colors.lineStrong, opacity: 1, width: theme.size.grabberWidth };
 
   return (
     <View

@@ -12,5 +12,6 @@ final readonly class CatalogEntry
         public ?string $authorName,
         public ?string $languageName,
         public ?string $slug,
+        public ?string $nameAr = null,
     ) {}
 }

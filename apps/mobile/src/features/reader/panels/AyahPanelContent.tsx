@@ -16,7 +16,7 @@ import { AyahActionsPanel } from './AyahActionsPanel';
 import { LiveAyahActionsPanel } from './LiveAyahActionsPanel';
 import { PanelHeader } from './PanelHeader';
 import { loadAyahPanelData, loadTafsirOptions, loadTafsirPassage, readAyahUserState } from './panel-data';
-import { TafsirPanel } from './TafsirPanel';
+import { TafsirPanel, type TafsirPanelLayout } from './TafsirPanel';
 
 function openContentExecutor(): SqlExecutor | null {
   try {
@@ -44,6 +44,7 @@ export function AyahPanelContent({
   onClose,
   executor: executorOverride,
   store,
+  layout = 'panel',
   testID = 'ayah-panel-content',
 }: {
   verseKey: string;
@@ -57,6 +58,8 @@ export function AyahPanelContent({
   // Tests pass their own content and user databases.
   executor?: SqlExecutor | null;
   store?: UserStore;
+  // The side panel (the default) or a phone sheet; the tafsir tab lays out differently in each.
+  layout?: TafsirPanelLayout;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -123,6 +126,7 @@ export function AyahPanelContent({
         onClose={onClose}
         page={verse.page}
         surahName={chapter?.nameArabic ?? verseKey}
+        tafsirSheet={layout === 'sheet' && tab === 'tafsir'}
         testID={`${testID}-header`}
         verseNumber={verse.verseNumber}
       />
@@ -141,6 +145,7 @@ export function AyahPanelContent({
             downloadTafsirId={savedTafsirId !== null && !installedTafsirIds.has(savedTafsirId) ? savedTafsirId : null}
             fontScale={fontScale}
             html={passage?.html ?? null}
+            layout={layout}
             onDownload={(id) => useReaderSettings.getState().setTafsirId(id)}
             onNext={nextKey === undefined ? undefined : () => onVerseChange(nextKey)}
             onPrevious={previousKey === undefined ? undefined : () => onVerseChange(previousKey)}

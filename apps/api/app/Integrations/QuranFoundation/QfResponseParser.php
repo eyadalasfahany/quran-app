@@ -42,6 +42,7 @@ final class QfResponseParser
                 authorName: $this->nullableString($item, 'author_name'),
                 languageName: $this->nullableString($item, 'language_name'),
                 slug: $this->nullableString($item, 'slug'),
+                nameAr: $this->arabicTranslatedName($item),
             );
         }
 
@@ -224,6 +225,31 @@ final class QfResponseParser
         }
 
         return $this->objectField($payload, $key);
+    }
+
+    /**
+     * The Arabic title from a `?language=ar` catalogue item, only when QF labels it Arabic. Stored as received.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function arabicTranslatedName(array $payload): ?string
+    {
+        if (! array_key_exists('translated_name', $payload) || $payload['translated_name'] === null) {
+            return null;
+        }
+
+        $translated = $payload['translated_name'];
+
+        if (! is_array($translated) || array_is_list($translated)) {
+            throw new QuranFoundationException('Quran Foundation response field [translated_name] must be an object.');
+        }
+
+        /** @var array<string, mixed> $translated */
+        if (($translated['language_name'] ?? null) !== 'arabic') {
+            return null;
+        }
+
+        return $this->nullableString($translated, 'name');
     }
 
     /**

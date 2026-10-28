@@ -48,7 +48,9 @@ describe('SheetContainer', () => {
 
     await fireEvent.press(view.getByRole('button', { name: 'Next ayah' }));
 
-    expect(view.getByRole('header', { name: 'الفاتحة · Ayah 3' })).toBeOnTheScreen();
+    // The phone sheet on the tafsir tab titles itself Tafsir and names the ayah beneath.
+    expect(view.getByRole('header', { name: 'Tafsir' })).toBeOnTheScreen();
+    expect(view.getByText('الفاتحة · Ayah 3')).toBeOnTheScreen();
   });
 
   it('closes from the header', async () => {

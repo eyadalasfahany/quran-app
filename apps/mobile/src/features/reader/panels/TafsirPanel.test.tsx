@@ -81,19 +81,20 @@ describe('TafsirPanel', () => {
     expect(textContent(screen.getByTestId('tafsir-panel-ayah-block'))).toBe(`${AYAH_1_2} ﴿٢﴾`);
   });
 
-  it('draws the ayah in a raised card, in the Quran font at the reader scale', async () => {
+  it('draws the ayah in a page-toned card with the frame radius, in the Quran font at the reader scale', async () => {
     const screen = await renderPanel({ fontScale: 1.2 }).view;
     const block = screen.getByTestId('tafsir-panel-ayah-block');
 
     expect(flatStyle(screen.getByTestId('tafsir-panel-ayah').props.style)).toMatchObject({
-      backgroundColor: themes.light.colors.surfaceRaised,
+      backgroundColor: themes.light.colors.surfacePage,
       borderColor: themes.light.colors.line,
-      borderRadius: themes.light.radius.lg,
+      borderRadius: themes.light.radius.card,
+      paddingVertical: themes.light.space[3],
     });
     expect(block.props.allowFontScaling).toBe(false);
     expect(flatStyle(block.props.style)).toMatchObject({
       fontFamily: quranFontFamily,
-      fontSize: quranTypeScale.quranReading.size * 1.2,
+      fontSize: quranTypeScale.quranPanel.size * 1.2,
     });
   });
 
@@ -116,67 +117,58 @@ describe('TafsirPanel', () => {
     );
   });
 
-  it('hides the coverage caption for a single-ayah passage', async () => {
-    const screen = await renderPanel().view;
-    expect(screen.queryByTestId('tafsir-panel-coverage')).toBeNull();
-  });
-
   it.each([
-    ['ar', 'يغطي هذا المقطع الآيات ٣–٥'],
-    ['en', 'This passage covers ayahs 3–5'],
-  ] as const)('shows the range caption in %s', async (locale, caption) => {
-    const screen = await renderPanel({ coverage: { from: 3, to: 5 } }, locale).view;
+    ['ar', 'يغطي هذا المقطع الآية ٢'],
+    ['en', 'This passage covers ayah 2'],
+  ] as const)('names the single ayah the passage covers in %s', async (locale, caption) => {
+    const screen = await renderPanel({}, locale).view;
     expect(screen.getByTestId('tafsir-panel-coverage')).toHaveTextContent(caption);
   });
 
-  it('moves to the previous and next ayah', async () => {
-    const { props, view } = renderPanel({}, 'en');
-    const screen = await view;
-
-    await fireEvent.press(screen.getByRole('button', { name: 'Previous ayah' }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Next ayah' }));
-
-    expect(props.onPrevious).toHaveBeenCalledTimes(1);
-    expect(props.onNext).toHaveBeenCalledTimes(1);
-  });
-
-  it('disables previous at the first ayah', async () => {
-    const { view } = renderPanel({ onPrevious: undefined }, 'en');
-    const screen = await view;
-
-    expect(screen.getByRole('button', { name: 'Previous ayah' }).props.accessibilityState).toEqual({ disabled: true });
-    expect(screen.getByRole('button', { name: 'Next ayah' }).props.accessibilityState).toEqual({ disabled: false });
-  });
-
-  it('says so when the tafsir has no passage for this ayah', async () => {
+  it('hides the coverage caption when the tafsir has no passage for this ayah', async () => {
     const screen = await renderPanel({ html: null }, 'en').view;
-
-    expect(screen.getByTestId('tafsir-panel-no-entry')).toHaveTextContent('This tafsir has no passage for this ayah.');
+    expect(screen.queryByTestId('tafsir-panel-coverage')).toBeNull();
   });
 
-  it('shows the empty state with a download action when nothing is installed', async () => {
-    const { props, view } = renderPanel({ downloadTafsirId: 16, tafsirs: [] }, 'en');
-    const screen = await view;
+  it('scrolls the tafsir picker in a sheet', async () => {
+    const screen = await renderPanel({ layout: 'sheet' }, 'en').view;
 
-    expect(screen.getByText('No tafsir downloaded')).toBeOnTheScreen();
-    expect(screen.queryAllByRole('radio')).toHaveLength(0);
-
-    await fireEvent.press(screen.getByRole('button', { name: 'Download this tafsir for offline reading' }));
-
-    expect(props.onDownload).toHaveBeenCalledWith(16);
+    expect(screen.getByLabelText('Choose a tafsir').props.horizontal).toBe(true);
   });
 
-  it('hides the download action when no tafsir is known to download', async () => {
-    const screen = await renderPanel({ downloadTafsirId: null, tafsirs: [] }).view;
+  it('wraps the tafsir picker in the side panel', async () => {
+    const screen = await renderPanel({ layout: 'panel' }, 'en').view;
 
-    expect(screen.getByText('لا يوجد تفسير محمّل')).toBeOnTheScreen();
-    expect(screen.queryByTestId('tafsir-panel-empty-action')).toBeNull();
+    expect(screen.getByLabelText('Choose a tafsir').props.horizontal).toBeUndefined();
   });
 
-  it('labels the ayah card for screen readers', async () => {
-    const screen = await renderPanel({ ayahLabel: 'الحمد لله رب العالمين الآية ٢' }).view;
+  it('floats the previous and next bar over a sheet', async () => {
+    const screen = await renderPanel({ layout: 'sheet' }, 'en').view;
 
-    expect(screen.getByTestId('tafsir-panel-ayah').props.accessibilityLabel).toBe('الحمد لله رب العالمين الآية ٢');
+    expect(screen.getByTestId('tafsir-panel-steps-pill')).toBeOnTheScreen();
+  });
+
+  it('sets the previous and next buttons at the foot of the side panel', async () => {
+    const screen = await renderPanel({ layout: 'panel' }, 'en').view;
+
+    expect(screen.queryByTestId('tafsir-panel-steps-pill')).toBeNull();
+    expect(screen.getByTestId('tafsir-panel-steps')).toBeOnTheScreen();
+  });
+
+  it.each([
+    ['sheet', 12],
+    ['panel', 13],
+  ] as const)('sets the source credit at %s pt in the %s layout', async (layout, size) => {
+    const screen = await renderPanel({ layout }, 'en').view;
+
+    expect(flatStyle(screen.getByTestId('tafsir-panel-source').props.style).fontSize).toBe(size);
+  });
+
+  it('leaves the frame gap between the passage and its credit', async () => {
+    const screen = await renderPanel({}, 'en').view;
+    const column = screen.getByTestId('tafsir-panel-body').parent;
+
+    expect(flatStyle(column?.props.style).gap).toBe(themes.light.size.bodyCreditGap);
   });
 
   it('has no raw colour literals', () => {

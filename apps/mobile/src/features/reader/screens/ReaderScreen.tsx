@@ -15,6 +15,7 @@ import { resolveInitialAnchor, writeReadingAnchor } from '../anchor/reading-anch
 import { pageForVerse } from '../anchor/page';
 import { useReadingAnchor } from '../anchor/useReadingAnchor';
 import { AdaptiveReaderLayout } from '../components/AdaptiveReaderLayout';
+import { FocusChrome } from '../components/FocusChrome';
 import { FocusReader } from '../components/FocusReader';
 import { ReaderModeFade } from '../components/ReaderModeFade';
 import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToolbar';
@@ -26,6 +27,7 @@ import { HafsMushafList } from '../HafsMushafList';
 import { panelPlacementFor, panelStripWidth } from '../layout';
 import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
+import type { ReaderMode } from '../anchor/reading-anchor';
 import { useReaderSelection } from '../selection';
 import { useReaderSettings } from '../settings';
 
@@ -34,6 +36,7 @@ type ReaderChrome = {
   page: number | null;
   juz: number | null;
   verseId: number | null;
+  place: { current: number; surah: string; total: number } | null;
 };
 
 function isAyahSheet(segment: string | undefined): boolean {
@@ -43,11 +46,12 @@ function isAyahSheet(segment: string | undefined): boolean {
 function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): ReaderChrome {
   const verse = getVerseByKey(executor, verseKey);
   if (verse === undefined) {
-    return { juz: null, page: null, title: verseKey, verseId: null };
+    return { juz: null, page: null, place: null, title: verseKey, verseId: null };
   }
   const chapter = getChapter(executor, verse.chapterId);
   const title = chapter === undefined ? verseKey : locale === 'ar' ? chapter.nameArabic : chapter.nameEn;
-  return { juz: verse.juz, page: verse.page, title, verseId: verse.id };
+  const place = chapter === undefined ? null : { current: verse.verseNumber, surah: chapter.nameArabic, total: chapter.versesCount };
+  return { juz: verse.juz, page: verse.page, place, title, verseId: verse.id };
 }
 
 export function ReaderScreen({ verseKey }: { verseKey: string }) {
@@ -91,10 +95,18 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const chrome = useMemo(
     () =>
       executor === null
-        ? { juz: null, page: null, title: anchor.verseKey, verseId: null }
+        ? { juz: null, page: null, place: null, title: anchor.verseKey, verseId: null }
         : loadChrome(executor, anchor.verseKey, locale),
     [executor, anchor.verseKey, locale],
   );
+  const focusPosition =
+    chrome.place === null
+      ? chrome.title
+      : t('reader.focus.position', {
+          current: formatNumber(chrome.place.current, locale),
+          surah: chrome.place.surah,
+          total: formatNumber(chrome.place.total, locale),
+        });
   const subtitle =
     chrome.page === null || chrome.juz === null
       ? undefined
@@ -169,6 +181,15 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     visibleVerseKey !== selection.verseKey &&
     pinnedVerseKey !== selection.verseKey;
 
+  // Focus leaves the reader's toolbar; Back from Focus returns to the mode Focus was entered from.
+  const setMode = useReaderSettings((state) => state.setMode);
+  const focusReturn = useRef<ReaderMode>('mushaf');
+  useEffect(() => {
+    if (mode !== 'focus') {
+      focusReturn.current = mode;
+    }
+  }, [mode]);
+
   const gutter = placement === 'docked' ? panelStripWidth() : 0;
   const topInset = insets.top + READER_TOOLBAR_CLEARANCE;
 
@@ -215,10 +236,13 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           ) : null
         }
         toolbar={
+          focus ? (
+            <FocusChrome onExit={() => setMode(focusReturn.current)} position={focusPosition} />
+          ) : (
           <ReaderToolbar
               bookmarked={bookmarked}
               mode={mode}
-              expanded={windowClass === 'expanded'}
+              windowClass={windowClass}
               onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? anchor.verseKey)}
               onBack={leaveReader}
               onBookmarkPage={() => {
@@ -237,6 +261,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               subtitle={subtitle}
               title={chrome.title}
             />
+          )
         }
         topInset={insets.top}
         verseKey={selection.verseKey}

@@ -50,6 +50,7 @@
     "surahTitle": "Surah {{name}}",
     "focus": {
       "position": "{{surah}} · Ayah {{current}} of {{total}}",
+      "exit": "Exit Focus mode",
       "nextHint": "Swipe up for the next ayah",
       "previous": "Previous ayah",
       "next": "Next ayah",
@@ -91,6 +92,7 @@
     "tafsir": {
       "pickerLabel": "Choose a tafsir",
       "coverage": "This passage covers ayahs {{from}}–{{to}}",
+      "coverageOne": "This passage covers ayah {{ayah}}",
       "source": "Source: {{author}} · via Quran Foundation",
       "previous": "Previous ayah",
       "next": "Next ayah",

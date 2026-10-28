@@ -35,9 +35,6 @@ describe('FocusReader', () => {
     expect(view.getByTestId('focus-stage-current').props.children).toBe(verse('1:5').textUthmani);
     expect(view.getByTestId('focus-stage-previous', hidden)).toHaveTextContent(verse('1:4').textUthmani, { exact: false });
     expect(view.getByTestId('focus-stage-next', hidden)).toHaveTextContent(verse('1:6').textUthmani, { exact: false });
-    expect(
-      view.getByText(locale === 'ar' ? 'الفاتحة · الآية ٥ من ٧' : 'الفاتحة · Ayah 5 of 7'),
-    ).toBeOnTheScreen();
   });
 
   it('has nothing before the first ayah of a surah', async () => {

@@ -50,6 +50,7 @@
     "surahTitle": "سورة {{name}}",
     "focus": {
       "position": "{{surah}} · الآية {{current}} من {{total}}",
+      "exit": "خروج من وضع التركيز",
       "nextHint": "اسحب لأعلى للآية التالية",
       "previous": "الآية السابقة",
       "next": "الآية التالية",
@@ -91,6 +92,7 @@
     "tafsir": {
       "pickerLabel": "اختيار التفسير",
       "coverage": "يغطي هذا المقطع الآيات {{from}}–{{to}}",
+      "coverageOne": "يغطي هذا المقطع الآية {{ayah}}",
       "source": "المصدر: {{author}} · عبر Quran Foundation",
       "previous": "الآية السابقة",
       "next": "الآية التالية",

@@ -53,6 +53,12 @@ describe('IconButton', () => {
     expect(flatStyle(view.getByRole('button').props.style).backgroundColor).toBe(colors.fillSecondary);
   });
 
+  it('fills the surface variant with the surface token, as the side panel close does', async () => {
+    const view = await renderUi(<IconButton icon={{ ios: 'xmark', android: 'close' }} label="Close" onPress={() => undefined} variant="surface" />);
+
+    expect(flatStyle(view.getByRole('button').props.style).backgroundColor).toBe(themes.light.colors.surface);
+  });
+
   it('fills the track variant with fillTrack, at the same 44 pt size and radius as filled', async () => {
     const view = await renderUi(<IconButton icon={bookmark} label="Close" onPress={() => undefined} variant="track" />);
     const filled = await renderUi(<IconButton icon={bookmark} label="Close" onPress={() => undefined} variant="filled" />);

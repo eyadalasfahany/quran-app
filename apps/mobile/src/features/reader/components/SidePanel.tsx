@@ -36,7 +36,13 @@ export function SidePanel({
     >
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2], marginBottom: theme.space[3] }}>
         <View style={{ flex: 1 }} />
-        <IconButton icon={CLOSE} label={t('reader.panel.close')} onPress={onClose} testID="reader-panel-close" />
+        <IconButton
+          icon={CLOSE}
+          label={t('reader.panel.close')}
+          onPress={onClose}
+          testID="reader-panel-close"
+          variant="surface"
+        />
       </View>
       <PanelTabs onChange={onTabChange} testID="reader-panel-tabs" value={tab} />
       <View style={{ flex: 1, paddingTop: theme.space[4] }}>{children}</View>

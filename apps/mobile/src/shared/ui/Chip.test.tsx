@@ -26,7 +26,10 @@ describe('Chip', () => {
 
     expect(flatStyle(view.getByRole('button').props.style).backgroundColor).toBe(colors.brandSurface);
     expect(flatStyle(view.getByText('الميسر').props.style).color).toBe(colors.onBrandSurface);
-    expect(flatStyle(view.getByText('مختصر').props.style).color).toBe(colors.onBrandSurfaceMuted);
+    expect(flatStyle(view.getByText('مختصر').props.style)).toMatchObject({
+      color: colors.onBrandSurface,
+      opacity: 0.8,
+    });
   });
 
   it('is a radio with a checked state in a single-choice group', async () => {
@@ -44,7 +47,32 @@ describe('Chip', () => {
     expect(view.getByRole('radio', { name: 'Ibn Kathir, long' }).props.accessibilityState).toMatchObject({
       checked: false,
     });
-    expect(flatStyle(view.getByText('long').props.style).color).toBe(colors.inkMuted);
+    expect(flatStyle(view.getByText('long').props.style)).toMatchObject({ color: colors.ink, opacity: 0.8 });
+  });
+
+  it.each([
+    ['sheet', 19],
+    ['panel', 22],
+  ] as const)('rounds the %s chip to radius %s, with the frame padding and inner gap', async (layout, radius) => {
+    const view = await renderUi(<Chip label="ابن كثير" layout={layout} onPress={jest.fn()} selected={false} testID="chip" />);
+
+    expect(flatStyle(view.getByTestId('chip').props.style)).toMatchObject({
+      borderRadius: radius,
+      paddingHorizontal: 14,
+    });
+  });
+
+  it('draws the caption in the label colour at 0.8 opacity, in both states', async () => {
+    const unselected = await renderUi(<Chip caption="مختصر" label="الميسر" onPress={jest.fn()} selected={false} />);
+    const caption = unselected.getByText('مختصر');
+    expect(flatStyle(caption.props.style).opacity).toBe(0.8);
+    expect(flatStyle(caption.props.style).color).toBe(colors.ink);
+
+    const selected = await renderUi(<Chip caption="مختصر" label="الميسر" onPress={jest.fn()} selected />);
+    expect(flatStyle(selected.getByText('مختصر').props.style)).toMatchObject({
+      color: colors.onBrandSurface,
+      opacity: 0.8,
+    });
   });
 
   it('calls onPress', async () => {
@@ -61,7 +89,7 @@ describe('Chip', () => {
 
     expect(flatStyle(view.getByRole('button').props.style)).toMatchObject({
       flexDirection: 'row',
-      paddingHorizontal: themes.light.space[4],
+      paddingHorizontal: 14,
     });
   });
 

@@ -61,6 +61,15 @@ describe('PanelHeader', () => {
     expect(view.queryByRole('button')).toBeNull();
   });
 
+  it('titles the phone sheet on the tafsir tab «التفسير» and names the ayah beneath it', async () => {
+    const view = await renderUi(<PanelHeader juz={1} page={1} surahName="الفاتحة" tafsirSheet verseNumber={2} />);
+
+    expect(view.getByRole('header', { name: 'التفسير' })).toBeOnTheScreen();
+    expect(view.getByTestId('panel-header-title')).toHaveTextContent('التفسير');
+    expect(view.getByTestId('panel-header-subtitle')).toHaveTextContent('الفاتحة · الآية ٢');
+    expect(flatStyle(view.getByTestId('panel-header-title').props.style).fontSize).toBe(22);
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/reader/panels/PanelHeader.tsx')).toEqual([]);
   });
