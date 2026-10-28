@@ -133,11 +133,6 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
 
   // Opened by a deep link or restored at launch, the reader has nothing under it to go back to.
   const leaveReader = () => {
-    // TEMP-DEBUG-BACK: remove after the Back bug is found.
-    void fetch('http://localhost:9799/back-pressed').catch(() => undefined);
-    void fetch(`http://localhost:9799/back?can=${router.canGoBack()}&seg=${encodeURIComponent(JSON.stringify(segments))}`).catch(
-      () => undefined,
-    );
     if (router.canGoBack()) {
       router.back();
       return;
@@ -236,10 +231,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                   setBookmarkOverride({ verseId: chrome.verseId, value: false });
                 }
               }}
-              onOpenSettings={() => {
-                void fetch('http://localhost:9799/settings').catch(() => undefined); // TEMP-DEBUG-BACK
-                router.push('/reader-settings' as Href);
-              }}
+              onOpenSettings={() => router.push('/reader-settings' as Href)}
               onTogglePanel={() => useReaderSelection.getState().setPanelOpen(!useReaderSelection.getState().panelOpen)}
               panelOpen={selection.panelOpen}
               subtitle={subtitle}

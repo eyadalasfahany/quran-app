@@ -61,7 +61,7 @@ Open:
 - Reader settings and ayah sheet checked on the iPhone 17 against their frames (28 Oct): the percent is right-to-left («٪١٠٠»), the «أ−»/«أ+» lines are tall enough for the hamza (Amiri's own leading), and every sheet's close glyph is `size.closeGlyph` (12).
 
 Open:
-- Bug (reported 28 Oct, iPhone 17): the reader's Back chevron does nothing in portrait (compact window); it works in landscape (expanded, 874 pt). Under investigation: touch blocked in compact vs `router.back()` popping an invisible sheet route.
+- Dev builds only: Expo's floating dev-tools button (`expo-dev-menu` FAB) catches touches in an invisible area at the top right under RTL. It draws the gear mirrored at the top left, but its hit area (`DevMenuFABWindow.hitTest`, `fabFrame`) stays at the top right, so every top-right Back button stopped working in portrait. Store builds have no FAB. Workaround on a simulator: `xcrun simctl spawn booted defaults write com.taybahapp.taybah.dev EXDevMenuShowFloatingActionButton -bool NO`, then relaunch. To do: set `EXDevMenuShowFloatingActionButton: false` in the dev variant's `ios.infoPlist`, and report the bug upstream.
 - Reader settings: the script picker («خط المصحف») waits for its feature.
 - `radius.tile` (16) is not a token in `quran-app-design-system.html` yet.
 - Resource names: `installed_resources` keeps no name, so tafsir labels fall back to «تفسير {id}». The manifest already sends `name`, `author_name`, `language_code` and `direction`; storing them is a `content.db` schema change.
