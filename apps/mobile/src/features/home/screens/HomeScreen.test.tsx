@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { fireEvent } from '@testing-library/react-native';
+import { Dimensions } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -68,8 +69,16 @@ const verse: VerseRecord = {
   verseNumber: 255,
 };
 
+function setWindowWidth(width: number) {
+  Dimensions.set({
+    screen: { fontScale: 1, height: 844, scale: 1, width },
+    window: { fontScale: 1, height: 844, scale: 1, width },
+  });
+}
+
 describe('HomeScreen', () => {
   beforeEach(() => {
+    setWindowWidth(390);
     storage.remove(storageKeys.readerLastVerseKey);
     jest.mocked(router.push).mockClear();
     jest.mocked(router.navigate).mockClear();
@@ -87,6 +96,21 @@ describe('HomeScreen', () => {
     expect(view.getByRole('header', { name: 'السلام عليكم' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'بحث' })).toBeOnTheScreen();
     expect(view.queryByTestId('home-continue-reading')).toBeNull();
+  });
+
+  it('keeps the header search button on compact windows', async () => {
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByTestId('home-search')).toBeOnTheScreen();
+  });
+
+  it('drops the header search button on expanded windows, where the sidebar holds search', async () => {
+    setWindowWidth(900);
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.queryByTestId('home-search')).toBeNull();
+    expect(view.queryByRole('button', { name: 'بحث' })).toBeNull();
+    expect(view.getByRole('header', { name: 'السلام عليكم' })).toBeOnTheScreen();
   });
 
   it('opens the search screen from the header button', async () => {

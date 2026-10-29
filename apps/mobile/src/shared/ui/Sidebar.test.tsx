@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
+import type { ReactTestRendererNode } from 'react-test-renderer';
 import { AccessibilityInfo, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -24,10 +25,10 @@ function entries(onPress: (key: string) => void = () => undefined): SidebarEntry
   ];
 }
 
-function sidebar(items: SidebarEntry[] = entries()) {
+function sidebar(items: SidebarEntry[] = entries(), search?: { label: string; onPress: () => void }) {
   return (
     <SafeAreaProvider initialMetrics={{ frame: { height: 800, width: 900, x: 0, y: 0 }, insets }}>
-      <Sidebar items={items} label="التنقل الرئيسي" />
+      <Sidebar items={items} label="التنقل الرئيسي" search={search} />
     </SafeAreaProvider>
   );
 }
@@ -90,6 +91,41 @@ describe('Sidebar', () => {
     });
     expect(container.paddingLeft).toBeUndefined();
     expect(view.getAllByRole('tab').map((tab) => tab.props.testID)).toEqual(['sidebar-home', 'sidebar-mushaf']);
+  });
+
+  it('puts the search field first, above the tabs, when search is given', async () => {
+    const onPress = jest.fn();
+    const view = await renderUi(sidebar(entries(), { label: 'ابحث في القرآن', onPress }));
+
+    const hostOrder: string[] = [];
+    const walk = (node: ReactTestRendererNode | null | undefined): void => {
+      if (!node || typeof node !== 'object') {
+        return;
+      }
+      if (Array.isArray(node)) {
+        node.forEach(walk);
+        return;
+      }
+      const testID = node.props.testID as string | undefined;
+      if (testID === 'sidebar-search' || testID === 'sidebar-home') {
+        hostOrder.push(testID);
+      }
+      (node.children ?? []).forEach(walk);
+    };
+    walk(view.toJSON());
+    expect(hostOrder).toEqual(['sidebar-search', 'sidebar-home']);
+
+    await fireEvent.press(view.getByRole('button', { name: 'ابحث في القرآن' }));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(view.getAllByRole('tab')).toHaveLength(2);
+  });
+
+  it('has no search field when search is not given', async () => {
+    const view = await renderUi(sidebar());
+
+    expect(view.queryByTestId('sidebar-search')).toBeNull();
+    expect(view.queryByRole('button', { name: 'ابحث في القرآن' })).toBeNull();
   });
 
   it('has no raw colour literals', () => {

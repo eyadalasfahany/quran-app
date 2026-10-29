@@ -6,6 +6,7 @@ import { useTheme } from '@/core/theme';
 
 import { GlassSurface } from './GlassSurface';
 import { SidebarItem } from './SidebarItem';
+import { SidebarSearch } from './SidebarSearch';
 
 export type SidebarEntry = {
   key: string;
@@ -17,7 +18,15 @@ export type SidebarEntry = {
   testID: string;
 };
 
-export function Sidebar({ label, items }: { label: string; items: readonly SidebarEntry[] }) {
+export function Sidebar({
+  label,
+  items,
+  search,
+}: {
+  label: string;
+  items: readonly SidebarEntry[];
+  search?: { label: string; onPress: () => void };
+}) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -42,6 +51,7 @@ export function Sidebar({ label, items }: { label: string; items: readonly Sideb
         }}
         testID="sidebar"
       >
+        {search ? <SidebarSearch label={search.label} onPress={search.onPress} testID="sidebar-search" /> : null}
         {items.map((item) => (
           <SidebarItem
             key={item.key}

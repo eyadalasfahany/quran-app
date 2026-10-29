@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { destinations, type Destination, SectionScreen } from '@/core/layout';
+import { destinations, type Destination, SectionScreen, useWindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
 import { HomeTileRow } from '@/features/home/components/HomeTileRow';
@@ -29,6 +29,8 @@ export function HomeScreen() {
   const theme = useTheme();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
+  // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
+  const expanded = useWindowClass() === 'expanded';
 
   const continueReading = useMemo(() => {
     if (!ready) {
@@ -48,7 +50,7 @@ export function HomeScreen() {
   }, [lastReadVerseKey, ready]);
 
   return (
-    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={<SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
+    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={expanded ? undefined : <SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
       {continueReading ? (
         <ContinueReadingCard
           ayah={continueReading.verse.verseNumber}

@@ -17,9 +17,19 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { navigate: jest.fn() },
+  router: { navigate: jest.fn(), push: jest.fn() },
   useSegments: jest.fn(() => ['(main)', '(home)']),
 }));
+
+// useSegments is typed as a generic tuple; the tests only need the route names.
+function segments(...names: string[]) {
+  return names as unknown as ReturnType<typeof useSegments>;
+}
+
+const searchLabels = {
+  ar: 'ابحث في القرآن',
+  en: 'Search the Quran',
+} as const;
 
 const labels = {
   ar: { nav: 'التنقل الرئيسي', mushaf: 'المصحف' },
@@ -37,7 +47,8 @@ function shell(expanded: boolean) {
 describe('MainShell', () => {
   beforeEach(() => {
     jest.mocked(router.navigate).mockClear();
-    jest.mocked(useSegments).mockReturnValue(['(main)', '(home)']);
+    jest.mocked(router.push).mockClear();
+    jest.mocked(useSegments).mockReturnValue(segments('(main)', '(home)'));
   });
 
   it('renders only the tabs on compact and medium windows', async () => {
@@ -64,8 +75,23 @@ describe('MainShell', () => {
     ]);
   });
 
+  it('opens search from a field at the top of the expanded sidebar', async () => {
+    const view = await renderUi(shell(true));
+
+    await fireEvent.press(view.getByTestId('sidebar-search'));
+
+    expect(router.push).toHaveBeenCalledWith('/search');
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('shows no search field on compact and medium windows', async () => {
+    const view = await renderUi(shell(false));
+
+    expect(view.queryByTestId('sidebar-search')).toBeNull();
+  });
+
   it('selects the destination of the current route', async () => {
-    jest.mocked(useSegments).mockReturnValue(['(main)', '(mushaf)']);
+    jest.mocked(useSegments).mockReturnValue(segments('(main)', '(mushaf)'));
     const view = await renderUi(shell(true));
 
     expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
@@ -73,7 +99,7 @@ describe('MainShell', () => {
   });
 
   it('keeps the tab under a sheet selected while the sheet is open', async () => {
-    jest.mocked(useSegments).mockReturnValue(['(main)', '(mushaf)']);
+    jest.mocked(useSegments).mockReturnValue(segments('(main)', '(mushaf)'));
     const view = await renderUi(shell(true));
 
     jest.mocked(useSegments).mockReturnValue(['reader-settings'] as unknown as ReturnType<typeof useSegments>);
@@ -96,6 +122,12 @@ describe('MainShell', () => {
     await fireEvent.press(view.getByTestId('sidebar-listen'));
 
     expect(router.navigate).toHaveBeenCalledWith('/(main)/(listen)');
+  });
+
+  it.each(locales)('labels the search field in %s', async (locale) => {
+    const view = await renderUi(shell(true), { locale });
+
+    expect(view.getByRole('button', { name: searchLabels[locale] })).toBeOnTheScreen();
   });
 
   it.each(locales)('labels the sidebar and its tabs in %s', async (locale) => {

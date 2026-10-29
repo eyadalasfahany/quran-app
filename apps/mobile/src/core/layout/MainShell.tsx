@@ -34,6 +34,7 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
             testID: `sidebar-${item.testID}`,
           }))}
           label={t('nav.main')}
+          search={{ label: t('search.placeholder'), onPress: () => router.push('/search') }}
         />
       ) : null}
       <View style={{ flex: 1 }}>{children}</View>

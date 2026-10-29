@@ -28,6 +28,7 @@ export { SegmentedControl, type SegmentedOption } from './SegmentedControl';
 export { SheetHeader } from './SheetHeader';
 export { Sidebar, type SidebarEntry } from './Sidebar';
 export { SidebarItem } from './SidebarItem';
+export { SidebarSearch } from './SidebarSearch';
 export { SurahCartouche } from './SurahCartouche';
 export { displayText, maxFontScale, quranText, uiTextProps, type DisplayTypeToken } from './textStyles';
 export { TitlePill } from './TitlePill';
