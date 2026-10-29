@@ -1,5 +1,6 @@
 import type { QuranTypeToken } from '@quran/design-tokens';
-import { Text, type StyleProp, type TextProps, type TextStyle } from 'react-native';
+import type { Ref } from 'react';
+import { Text, type HostInstance, type StyleProp, type TextProps, type TextStyle } from 'react-native';
 
 import { quranText } from './textStyles';
 import { textToneColor, type TextTone } from './UiText';
@@ -23,6 +24,8 @@ export function QuranText({
   // full line from edge to edge; a paragraph's last line keeps to the start.
   align?: 'start' | 'center' | 'justify';
   style?: StyleProp<TextStyle>;
+  /** The host Text, for measuring the recited word's line (useWordFollow). */
+  ref?: Ref<HostInstance>;
 } & Omit<TextProps, 'style' | 'allowFontScaling' | 'numberOfLines' | 'ellipsizeMode'>) {
   const colors = useContrastColors();
 

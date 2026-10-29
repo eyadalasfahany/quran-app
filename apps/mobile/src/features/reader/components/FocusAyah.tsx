@@ -5,6 +5,7 @@ import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { AyahMarker, highlightFill, useContrastColors, type HighlightColor } from '@/shared/ui';
 
+import type { FollowedTextProps } from '../useWordFollow';
 import { RecitedQuranText } from './RecitedQuranText';
 
 // The current ayah of the Focus frame: centred Quran text over its active marker.
@@ -17,6 +18,7 @@ export function FocusAyah({
   recited = false,
   activeWord = null,
   onOpenActions,
+  followedText,
   testID = 'focus-ayah',
 }: {
   verseNumber: number;
@@ -29,6 +31,8 @@ export function FocusAyah({
   /** The recited word (1-based), when the ayah has word segments. */
   activeWord?: number | null;
   onOpenActions?: () => void;
+  /** The word follow-scroll's Text props, while Focus follows the recitation. */
+  followedText?: FollowedTextProps;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -47,6 +51,7 @@ export function FocusAyah({
   return (
     <View style={{ alignItems: 'center', gap: theme.space[4] }}>
       <RecitedQuranText
+        {...followedText}
         accessibilityHint={recited ? t('player.nowPlaying') : undefined}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="text"

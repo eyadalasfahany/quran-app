@@ -16,6 +16,8 @@ import {
 
 import type { ChapterRecord } from '../data/chapters';
 import type { VerseRecord } from '../data/verses';
+import { MUSHAF_WORD_SPACE, surahRuns } from '../mushaf-paragraph';
+import type { WordFollow } from '../useWordFollow';
 import { BismillahLine } from './BismillahLine';
 import { RecitedWords } from './RecitedWords';
 
@@ -26,9 +28,6 @@ const FRAME_CONTENT = {
   paddingHorizontal: 18,
   paddingTop: 22,
 } as const;
-
-// Separates an ayah from its end mark and from the next ayah. Kept outside the stored ayah text.
-const WORD_SPACE = ' ';
 
 export function HafsMushafPage({
   verses,
@@ -42,6 +41,8 @@ export function HafsMushafPage({
   onOpenActions,
   focusVerseKey = null,
   onFocusRunLayout,
+  follow,
+  followKey = null,
   testID,
 }: {
   verses: readonly VerseRecord[];
@@ -59,6 +60,9 @@ export function HafsMushafPage({
   /** The ayah the reader opened at. The surah paragraph holding it reports its view once laid out. */
   focusVerseKey?: string | null;
   onFocusRunLayout?: (run: HostInstance | null) => void;
+  /** The word follow-scroll: the paragraph holding `followKey` reports its lines to it. */
+  follow?: WordFollow;
+  followKey?: string | null;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -71,6 +75,8 @@ export function HafsMushafPage({
     <GoldFrame contentStyle={{ alignItems: 'center', ...FRAME_CONTENT }} testID={testID} variant="page">
       {surahRuns(verses).map((run) => {
         const [first] = run;
+        // The paragraph holding the followed ayah reports its lines to the word follow-scroll.
+        const followed = follow !== undefined && followKey !== null && run.some((verse) => verse.verseKey === followKey);
         const chapter = first.verseNumber === 1 ? chapters.get(first.chapterId) : undefined;
         const showBismillah = chapter !== undefined && chapter.bismillahPre === 1 && chapter.id !== 1;
         const holdsFocus = focusVerseKey !== null && run.some((verse) => verse.verseKey === focusVerseKey);
@@ -97,6 +103,7 @@ export function HafsMushafPage({
               />
             ) : null}
             <QuranText
+              {...(followed ? follow.textProps(first.verseKey) : undefined)}
               align="justify"
               fontScale={fontScale}
               style={{ width: '100%' }}
@@ -117,7 +124,7 @@ export function HafsMushafPage({
                     : `${verse.textUthmani} ${ayahLabel} ${t(`ui.highlight.${highlight}`)}`;
                 return (
                   <Fragment key={verse.id}>
-                    {index > 0 ? WORD_SPACE : null}
+                    {index > 0 ? MUSHAF_WORD_SPACE : null}
                     <Text
                       accessibilityHint={recited ? t('player.nowPlaying') : undefined}
                       accessibilityLabel={accessibilityLabel}
@@ -137,7 +144,7 @@ export function HafsMushafPage({
                         verse.textUthmani
                       )}
                     </Text>
-                    {WORD_SPACE}
+                    {MUSHAF_WORD_SPACE}
                     <AyahEndMark
                       active={marked}
                       number={verse.verseNumber}
@@ -153,20 +160,4 @@ export function HafsMushafPage({
       })}
     </GoldFrame>
   );
-}
-
-// Splits a page's verses where a surah starts, so each surah's ayahs flow as one paragraph under its cartouche.
-type SurahRun = [VerseRecord, ...VerseRecord[]];
-
-function surahRuns(verses: readonly VerseRecord[]): SurahRun[] {
-  const runs: SurahRun[] = [];
-  for (const verse of verses) {
-    const current = runs.at(-1);
-    if (current === undefined || verse.verseNumber === 1) {
-      runs.push([verse]);
-    } else {
-      current.push(verse);
-    }
-  }
-  return runs;
 }

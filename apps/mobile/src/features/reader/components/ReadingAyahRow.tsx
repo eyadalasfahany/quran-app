@@ -5,6 +5,7 @@ import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { Divider, highlightFill, useContrastColors, type HighlightColor } from '@/shared/ui';
 
+import type { FollowedTextProps } from '../useWordFollow';
 import { ReadingAyahHeader } from './ReadingAyahHeader';
 import { RecitedQuranText } from './RecitedQuranText';
 
@@ -26,6 +27,7 @@ export function ReadingAyahRow({
   onOpenActions,
   onOpenTafsir,
   onPlay,
+  followedText,
   testID,
 }: {
   verseNumber: number;
@@ -44,6 +46,8 @@ export function ReadingAyahRow({
   onOpenActions?: () => void;
   onOpenTafsir?: () => void;
   onPlay?: () => void;
+  /** Set on the row the reader follows: its Text reports its lines for the word follow-scroll. */
+  followedText?: FollowedTextProps;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -94,6 +98,7 @@ export function ReadingAyahRow({
           }}
         >
           <RecitedQuranText
+            {...followedText}
             activeWord={recited ? activeWord : null}
             fontScale={fontScale}
             text={textUthmani}

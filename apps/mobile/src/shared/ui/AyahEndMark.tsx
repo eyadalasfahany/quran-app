@@ -13,6 +13,12 @@ export const ORNATE_CLOSE = '\uFD3E';
 // The ornaments reach above and below the digits, so a standalone mark needs a taller line.
 const MARK_LINE_HEIGHT = 1.5;
 
+// The characters the mark draws, in order: the direction mark, the open ornament, the Arabic-Indic digits and
+// the close ornament. The reader counts a recited ayah's offsets with this, so it matches what renders.
+export function ayahEndMarkText(number: number): string {
+  return `${RTL_MARK}${ORNATE_OPEN}${formatNumber(number, 'ar')}${ORNATE_CLOSE}`;
+}
+
 // The end-of-ayah ornament: Amiri Quran's ornate parentheses around the Arabic-Indic number.
 // Inline in a Quran line it is a Text span that flows with the ayahs and takes the line's size;
 // standing alone (AyahMarker) it takes a size. The app draws it; it is never part of the stored ayah text.

@@ -8,6 +8,7 @@ import { PageDivider, type HighlightColor } from '@/shared/ui';
 
 import type { ChapterRecord } from '../data/chapters';
 import { getVersesByPage } from '../data/verses';
+import type { WordFollow } from '../useWordFollow';
 import { HafsMushafPage } from './HafsMushafPage';
 
 // One page of the Tanzil (Hafs) Mushaf in the list, led by the break from the page before it.
@@ -24,6 +25,8 @@ export function HafsPage({
   onOpenAyahActions,
   focusVerseKey = null,
   onFocusOffset,
+  follow,
+  followKey = null,
   testID,
 }: {
   page: number;
@@ -41,6 +44,9 @@ export function HafsPage({
   focusVerseKey?: string | null;
   /** How far below the top of this page the surah paragraph holding that ayah starts. */
   onFocusOffset?: (page: number, offset: number) => void;
+  /** The word follow-scroll, and the followed ayah: its paragraph's Text reports its lines to the follow. */
+  follow?: WordFollow;
+  followKey?: string | null;
   testID?: string;
 }) {
   const rootRef = useRef<HostInstance>(null);
@@ -66,6 +72,8 @@ export function HafsPage({
       <HafsMushafPage
         chapters={chapters}
         focusVerseKey={focusVerseKey}
+        follow={follow}
+        followKey={followKey}
         fontScale={fontScale}
         highlightsByVerseId={highlightsByVerseId}
         onFocusRunLayout={measureFocus}

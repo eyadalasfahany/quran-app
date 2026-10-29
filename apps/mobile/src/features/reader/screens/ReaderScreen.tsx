@@ -121,12 +121,14 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   // Focus shows one ayah at a time: while following, that ayah is the recited one.
   const focusKey = followKey ?? listAnchor;
   const { setVisible } = anchor;
-  // Following in Focus also moves the saved place, as a manual turn does.
+  // While playing and following, the saved place is the recited ayah, in every mode (developer, 29 Oct 2026). The
+  // lists' viewability holds off the saved place meanwhile (below). Paused or idle playback never moves it.
+  // The visible verse stays what the lists report on screen: the resume pill compares it with the recited ayah.
   useEffect(() => {
-    if (mode === 'focus' && followKey !== null) {
-      setVisible({ verseKey: followKey });
+    if (followKey !== null) {
+      setVisible({ page: executor === null ? undefined : pageForVerse(executor, followKey), verseKey: followKey });
     }
-  }, [followKey, mode, setVisible]);
+  }, [executor, followKey, setVisible]);
   // The toolbar names the saved place, which follows the scroll even while the list is pinned.
   const chrome = useMemo(
     () =>
@@ -155,14 +157,15 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   }, [anchor, mode]);
 
   useEffect(() => {
-    if (executor === null || mode !== 'mushaf' || anchor.page !== null) {
+    // Following sets the recited ayah's page itself (above); this would write the stale anchor over it.
+    if (executor === null || mode !== 'mushaf' || anchor.page !== null || followKey !== null) {
       return;
     }
     const page = pageForVerse(executor, anchor.verseKey);
     if (page !== undefined) {
       anchor.setVisible({ page, verseKey: anchor.verseKey });
     }
-  }, [anchor, executor, mode]);
+  }, [anchor, executor, followKey, mode]);
 
   const storedBookmarked = useMemo(() => {
     if (chrome.verseId === null) {
@@ -336,6 +339,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 bottomInset={0}
                 contentBottomInset={showMiniBar ? MINI_PLAYER_READER_FOOTPRINT : 0}
                 fontScale={fontScale}
+                followKey={followKey}
                 highlightsByVerseId={highlights}
                 onOpenAyahActions={selectVerse}
                 onSelectVerseKey={selectVerse}
@@ -346,7 +350,10 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                   // surah opened halfway down a page stays the saved place and the title.
                   const verseKey = pageForVerse(executor, anchor.verseKey) === page ? anchor.verseKey : key;
                   setVisibleVerseKey(verseKey);
-                  anchor.setVisible({ page, verseKey });
+                  // Following keeps the saved place on the recited ayah; the reader's own scroll moves it again.
+                  if (followKey === null) {
+                    anchor.setVisible({ page, verseKey });
+                  }
                   haptics.onPage(page, surahStartPages.has(page));
                 }}
                 recitedVerseKey={recitedVerseKey}
@@ -359,6 +366,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
             {executor !== null && mode === 'focus' ? (
               <FocusReader
                 activeWord={activeWord}
+                following={followKey !== null}
                 fontScale={fontScale}
                 highlightsByVerseId={highlights}
                 onOpenActions={selectVerse}
@@ -396,7 +404,9 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onUserScrollStart={follow.onUserScrollStart}
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);
-                  anchor.setVisible({ verseKey: key });
+                  if (followKey === null) {
+                    anchor.setVisible({ verseKey: key });
+                  }
                   haptics.onVerse(key);
                 }}
                 recitedVerseKey={recitedVerseKey}
