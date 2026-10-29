@@ -40,3 +40,13 @@ composer qa                  # needs MySQL and Redis running
 ```
 
 Mail goes to `storage/logs/laravel.log` (`MAIL_MAILER=log`).
+
+## Mobile (iOS dev build)
+
+```bash
+npm ci                                  # from the repo root; runs the postinstall patches (Nitro, expo-audio exact seek)
+cd apps/mobile/ios && pod install && cd ..
+npx expo run:ios                        # the dev client; needed after any native dependency change
+```
+
+Run `pod install` after every `npm ci`. `expo-sqlite`'s podspec copies its bundled `sqlite3.c`/`sqlite3.h` into `node_modules/expo-sqlite/ios/` only while `pod install` runs, and `npm ci` wipes them. If you skip it, the build fails with `cannot find 'exsqlite3_bind_…' in scope` (29 Oct 2026). If it still fails, regenerate the native project: `npx expo prebuild --clean -p ios`.
