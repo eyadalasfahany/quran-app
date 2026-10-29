@@ -11,8 +11,8 @@ import { getVerseByKey, getVerseRange } from './data/verses';
 import { ReadingList } from './ReadingList';
 import type { ReadingRow } from './reading-list-types';
 import { resolveCenterId, verseWindowBounds } from './reading-window';
-import { recitedWordOffset } from './word-follow';
-import { measureInViewport } from './measure-in-viewport';
+import { FOLLOW_VIEW_POSITION, recitedWordOffset } from './word-follow';
+import { measureWithin } from './measure-within';
 import { WORD_SETTLE_MS } from './useWordFollow';
 
 type TestNode = NonNullable<Awaited<ReturnType<typeof renderUi>>['root']>;
@@ -21,6 +21,9 @@ type FlashListTestState = {
   scrollCalls: { index: number; animated?: boolean }[];
   offsetCalls: { offset: number; animated?: boolean }[];
   currentOffset: number;
+  /** The followed row's layout y (FlashList's, without the first item offset) and the first item offset. */
+  layoutY: number;
+  firstItemOffset: number;
   lastData: ReadingRow[] | undefined;
   lastExtraData: unknown;
   onViewableItemsChanged:
@@ -32,6 +35,8 @@ const flashListTestState: FlashListTestState = {
   scrollCalls: [],
   offsetCalls: [],
   currentOffset: 0,
+  layoutY: 0,
+  firstItemOffset: 0,
   lastData: undefined,
   lastExtraData: undefined,
   onViewableItemsChanged: undefined,
@@ -70,6 +75,8 @@ jest.mock('@shopify/flash-list', () => {
 
       React.useImperativeHandle(ref, () => ({
         getAbsoluteLastScrollOffset: () => state.currentOffset,
+        getFirstItemOffset: () => state.firstItemOffset,
+        getLayout: () => ({ height: 0, width: 0, x: 0, y: state.layoutY }),
         scrollToIndex: (options: { index: number; animated?: boolean }) => {
           state.scrollCalls.push(options);
         },
@@ -94,8 +101,8 @@ jest.mock('@shopify/flash-list', () => {
 
 export { flashListTestState };
 
-// The native measurement of a Text inside the list viewport: each word-follow test sets where the Text sits.
-jest.mock('./measure-in-viewport', () => ({ measureInViewport: jest.fn() }));
+// The native measurement of the followed Text inside its row: each word-follow test sets where the Text sits.
+jest.mock('./measure-within', () => ({ measureWithin: jest.fn() }));
 
 let mockTestExecutor: SqlExecutor;
 const mockDimensions = { width: 390, height: 844 };
@@ -437,7 +444,10 @@ describe('ReadingList word follow', () => {
   const lineHeight = 50;
 
   afterEach(() => {
-    jest.mocked(measureInViewport).mockReset();
+    jest.mocked(measureWithin).mockReset();
+    flashListTestState.layoutY = 0;
+    flashListTestState.firstItemOffset = 0;
+    flashListTestState.currentOffset = 0;
   });
 
   function followed(props: Partial<React.ComponentProps<typeof ReadingList>>) {
@@ -475,14 +485,24 @@ describe('ReadingList word follow', () => {
     return view.root === null ? undefined : visit(view.root);
   }
 
-  // Lays the recited ayah out in two lines, the recited word starting the second. The Text sits `textTop` down the
-  // viewport, as the native measurement reports it.
-  async function layOutRecited(textTop: number) {
+  // Lays the recited ayah out in two lines, the recited word starting the second. The row is laid out at layout y
+  // `layoutY` under a first item offset; the Text sits `textTopInRow` down the row, as the native measurement reports.
+  async function layOutRecited({
+    firstItemOffset = 0,
+    layoutY,
+    textTopInRow,
+  }: {
+    firstItemOffset?: number;
+    layoutY: number;
+    textTopInRow: number;
+  }) {
     const verse = getVerseByKey(mockTestExecutor, '18:12');
     expect(verse).toBeDefined();
     const offset = recitedWordOffset(verse!.textUthmani, 2);
     expect(offset).not.toBeNull();
-    jest.mocked(measureInViewport).mockImplementation((_node, _viewport, onMeasured) => onMeasured(textTop));
+    flashListTestState.layoutY = layoutY;
+    flashListTestState.firstItemOffset = firstItemOffset;
+    jest.mocked(measureWithin).mockImplementation((_node, _container, onMeasured) => onMeasured(textTopInRow));
     const view = await renderUi(followed({}));
     const textNode = recitedTextNode(view);
     expect(textNode).toBeDefined();
@@ -496,18 +516,42 @@ describe('ReadingList word follow', () => {
   }
 
   // The follow of the recited ayah (its own animated scroll) settles first: the word check waits WORD_SETTLE_MS.
-  it('scrolls to the recited word when its line leaves the comfort band', async () => {
-    flashListTestState.currentOffset = 200;
-    await layOutRecited(700);
-    // The word's line sits at 750, below the band (168.8 to 675.2): it moves to a third down the viewport.
+  it('scrolls to the recited word, measured from the row with its first item offset, when its line leaves the band', async () => {
+    // The row's content top is 1000 + 36 = 1036. The Text sits 64 down the row, and the list has scrolled 400, so the
+    // Text's top is at 1036 + 64 - 400 = 700 on screen. Its second line sits at 750, below the band (168.8 to 675.2).
+    flashListTestState.currentOffset = 400;
+    await layOutRecited({ firstItemOffset: 36, layoutY: 1000, textTopInRow: 64 });
     const lineY = 700 + lineHeight;
     await waitFor(() => {
-      expect(flashListTestState.offsetCalls).toEqual([{ animated: true, offset: 200 + (lineY - viewportHeight / 3) }]);
+      expect(flashListTestState.offsetCalls).toEqual([
+        { animated: true, offset: 400 + (lineY - viewportHeight * FOLLOW_VIEW_POSITION) },
+      ]);
     });
   });
 
+  it('lands a recited line far down a long list near the current offset, not far below', async () => {
+    // A row 9000 down the content, the list scrolled to it (offset 8950): the Text sits 120 into the row. Its top is at
+    // 9000 + 120 - 8950 = 170 on screen, its line at 220, inside the band: nothing moves.
+    flashListTestState.currentOffset = 8950;
+    await layOutRecited({ layoutY: 9000, textTopInRow: 120 });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, WORD_SETTLE_MS + 50));
+    });
+    expect(flashListTestState.offsetCalls).toEqual([]);
+  });
+
+  it('ignores a stale measurement far below the viewport', async () => {
+    flashListTestState.currentOffset = 200;
+    await layOutRecited({ layoutY: 90000, textTopInRow: 0 });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, WORD_SETTLE_MS + 50));
+    });
+    expect(flashListTestState.offsetCalls).toEqual([]);
+  });
+
   it('does not scroll when the recited word is inside the band', async () => {
-    await layOutRecited(300);
+    flashListTestState.currentOffset = 0;
+    await layOutRecited({ layoutY: 0, textTopInRow: 300 });
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, WORD_SETTLE_MS + 50));
     });

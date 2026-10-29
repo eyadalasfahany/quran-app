@@ -1,19 +1,19 @@
 // The follow-scroll for the recited word (developer, 29 Oct 2026). While the reader follows the recitation, the
 // line holding the recited word stays in the comfort band of the viewport. A line that leaves the band scrolls to a
-// third down. The position is measured on screen (measureLayout against the viewport), so it is right at any scroll
-// offset. word-follow.ts holds the arithmetic; this hook measures, waits and scrolls.
+// third down. Each list measures where the followed Text is on screen, in its own content coordinates (see
+// follow-position.ts); this hook waits, guards the measurement, and scrolls. word-follow.ts holds the arithmetic.
 
 import { useEffect, useLayoutEffect, useState } from 'react';
 import type { HostInstance } from 'react-native';
 
-import { measureInViewport } from './measure-in-viewport';
+import { capWordScrollStep, isPlausibleScreenTop } from './follow-position';
 import { comfortBand, lineForOffset, scrollTargetForLine, type TextLine } from './word-follow';
 
 // An animated scroll takes about this long; a word check waits for it, so a check never reads a moving line.
 export const WORD_SETTLE_MS = 450;
 
 export type FollowedTextProps = {
-  /** A callback ref: the host Text is measured against the viewport. */
+  /** The ref for the host Text that draws the followed text: the hook keeps the node it measures. */
   ref: (node: HostInstance | null) => void;
   onTextLayout: (event: { nativeEvent: { lines: readonly TextLine[] } }) => void;
 };
@@ -29,6 +29,11 @@ export type WordFollowOptions = {
   /** The viewport height until its first layout (0 when unknown: no scroll then). */
   fallbackHeight: number;
   reduceMotion: boolean;
+  /**
+   * The on-screen top of the followed Text (`text`, the node the hook holds), computed by the list in its content
+   * coordinates. Null when it cannot be measured yet. The hook adds the line's own offset to it.
+   */
+  measureTextTop: (text: HostInstance, done: (top: number | null) => void) => void;
   /** The list's current scroll offset, and the scroll the hook asks for. */
   currentOffset: () => number;
   scrollTo: (offset: number, animated: boolean) => void;
@@ -37,12 +42,11 @@ export type WordFollowOptions = {
 export type WordFollow = {
   /** Spread onto the Text that draws the followed text: its ref and its laid-out lines. */
   textProps: (textKey: string) => FollowedTextProps;
-  /** Put on the viewport: its height, and the parent the Text is measured against. */
+  /** Put on the viewport: its height. The hook measures nothing across the viewport. */
   viewportProps: {
-    ref: (node: HostInstance | null) => void;
     onLayout: (event: { nativeEvent: { layout: { height: number } } }) => void;
   };
-  /** An ayah-level scroll is starting now: word checks wait for it to settle. */
+  /** A scroll is starting or has just finished: word checks wait for it to settle. */
   noteScroll: (animated: boolean) => void;
 };
 
@@ -73,10 +77,9 @@ export function useWordFollow(options: WordFollowOptions): WordFollow {
 
 function createController(): Controller {
   let latest: WordFollowOptions | null = null;
-  let textNode: HostInstance | null = null;
-  let viewportNode: HostInstance | null = null;
   let viewportHeight: number | null = null;
   let known: { textKey: string; lines: readonly TextLine[] } | null = null;
+  let textNode: HostInstance | null = null;
   let settleUntil = 0;
   let sequence = 0;
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -97,13 +100,12 @@ function createController(): Controller {
     if (now === null || !now.following || now.textKey === null || now.offset === null) {
       return;
     }
-    if (known === null || known.textKey !== now.textKey) {
+    if (known === null || known.textKey !== now.textKey || textNode === null) {
       return;
     }
     const text = textNode;
-    const viewport = viewportNode;
     const height = viewportHeight ?? now.fallbackHeight;
-    if (text === null || viewport === null || height <= 0) {
+    if (height <= 0) {
       return;
     }
     const wait = settleUntil - Date.now();
@@ -114,7 +116,7 @@ function createController(): Controller {
     const offset = now.offset;
     const textLines = known.lines;
     const request = ++sequence;
-    measureInViewport(text, viewport, (top) => {
+    now.measureTextTop(text, (textTop) => {
       // A newer check, or an ayah scroll that began meanwhile, makes this measurement stale.
       if (request !== sequence || latest === null) {
         return;
@@ -124,18 +126,26 @@ function createController(): Controller {
         later(settling);
         return;
       }
+      if (textTop === null) {
+        return;
+      }
       const index = lineForOffset(textLines, offset);
       if (index < 0) {
         return;
       }
       const line = textLines[index]!;
-      const delta = scrollTargetForLine(top + line.y, line.height, { height }, comfortBand(height - now.bottomInset));
+      const lineTop = textTop + line.y;
+      // A top far outside the viewport is a stale measurement: the ayah-level scroll brings the ayah into view.
+      if (!isPlausibleScreenTop(lineTop, height)) {
+        return;
+      }
+      const delta = scrollTargetForLine(lineTop, line.height, { height }, comfortBand(height - now.bottomInset));
       if (delta === null) {
         return;
       }
       const current = latest;
       const from = current.currentOffset();
-      const target = Math.max(0, from + delta);
+      const target = Math.max(0, from + capWordScrollStep(delta, height));
       if (target === from) {
         return;
       }
@@ -171,9 +181,6 @@ function createController(): Controller {
       },
     }),
     viewportProps: {
-      ref: (node) => {
-        viewportNode = node;
-      },
       onLayout: (event) => {
         viewportHeight = event.nativeEvent.layout.height;
         check();

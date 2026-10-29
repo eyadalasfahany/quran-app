@@ -1,6 +1,6 @@
 import { FlashList, type FlashListRef, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View, type HostInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -11,6 +11,8 @@ import type { HighlightColor } from '@/shared/ui';
 import { HafsPage } from './components/HafsPage';
 import { listChapters } from './data/chapters';
 import { paragraphOf, paragraphWordOffset } from './mushaf-paragraph';
+import { followedTextScreenTop, rowContentTop } from './follow-position';
+import { measureWithin } from './measure-within';
 import { extendPageWindow, pageWindowFrom, pagesIn, type PageWindow } from './page-window';
 import { useWordFollow } from './useWordFollow';
 
@@ -137,6 +139,11 @@ export function HafsMushafList({
     () => (followKey === null ? null : paragraphOf(executor, followKey)),
     [executor, followKey],
   );
+  // Each page's root: the followed paragraph is measured inside its page cell, which shares the list's content (no
+  // scroll view between them).
+  const pageRoots = useRef(new Map<number, HostInstance>());
+  const followPage = followKey === null ? undefined : pageForVerse(executor, followKey);
+  const followIndex = followPage === undefined ? -1 : pages.indexOf(followPage);
   const word = useWordFollow({
     bottomInset: contentBottomInset,
     currentOffset: () =>
@@ -145,6 +152,29 @@ export function HafsMushafList({
         : 0,
     fallbackHeight: Math.max(0, windowHeight - topInset - bottomInset),
     following: followKey !== null,
+    // The paragraph's on-screen top: its page row's content top (layout y plus the first item offset), plus the
+    // paragraph's offset inside the page cell, minus the scroll offset (the scrollToOffset space).
+    measureTextTop: (text, done) => {
+      const list = listRef.current;
+      const root = followPage === undefined ? undefined : pageRoots.current.get(followPage);
+      const layout = list !== null && followIndex >= 0 ? list.getLayout(followIndex) : undefined;
+      if (list === null || root === undefined || layout === undefined) {
+        done(null);
+        return;
+      }
+      const rowTop = rowContentTop(layout.y, list.getFirstItemOffset());
+      measureWithin(text, root, (textTopInPage) => {
+        done(
+          textTopInPage === null
+            ? null
+            : followedTextScreenTop({
+                rowTop,
+                scrollOffset: list.getAbsoluteLastScrollOffset(),
+                textTopInRow: textTopInPage,
+              }),
+        );
+      });
+    },
     offset:
       followRun !== null && followKey !== null && recitedWord !== null
         ? paragraphWordOffset(followRun, followKey, recitedWord)
@@ -157,6 +187,14 @@ export function HafsMushafList({
     },
     textKey: followRun === null ? null : followRun[0].verseKey,
   });
+
+  // A page turn to the recited page is a scroll: word checks wait for it to settle, as an ayah scroll does. A layout
+  // effect, so the settle is set during the commit, before the page's Text can report its lines.
+  useLayoutEffect(() => {
+    if (followPage !== undefined) {
+      word.noteScroll(true);
+    }
+  }, [followPage, word]);
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: { isViewable: boolean; item: number; index: number | null }[] }) => {
@@ -194,6 +232,13 @@ export function HafsMushafList({
         fontScale={fontScale}
         highlightsByVerseId={highlightsByVerseId}
         onFocusOffset={scrollToFocus}
+        onRootNode={(node) => {
+          if (node === null) {
+            pageRoots.current.delete(page);
+          } else {
+            pageRoots.current.set(page, node);
+          }
+        }}
         onOpenAyahActions={onOpenAyahActions}
         onSelectVerseKey={onSelectVerseKey}
         page={page}

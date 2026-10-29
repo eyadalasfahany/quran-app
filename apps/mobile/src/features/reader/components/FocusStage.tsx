@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View, type NativeSyntheticEvent, type ScrollViewInstance } from 'react-native';
+import {
+  ScrollView,
+  View,
+  type HostInstance,
+  type NativeSyntheticEvent,
+  type ScrollViewInstance,
+} from 'react-native';
 import Animated, { LayoutAnimationConfig, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 
 import { useTheme } from '@/core/theme';
 import { UiText, type HighlightColor } from '@/shared/ui';
 
 import { focusTurnAnimations, type FocusTurnDirection } from '../focus-turn';
+import { followedTextScreenTop } from '../follow-position';
+import { measureWithin } from '../measure-within';
 import { recitedWordOffset } from '../word-follow';
 import { useWordFollow } from '../useWordFollow';
 import { FocusAside } from './FocusAside';
@@ -104,8 +112,11 @@ export function FocusStage({
   const turn = useMemo(() => focusTurnAnimations(direction, reduceMotion), [direction, reduceMotion]);
 
   // The stage's scroll view starts at its top for each ayah (a turn remounts it), so the offset restarts there.
+  // The scroll's content child (contentRef) holds the ayah and its neighbours, at the scroll content's top, so the
+  // followed Text is measured inside it and its screen top is that offset minus the tracked scroll offset.
   const scrollRef = useRef<ScrollViewInstance>(null);
   const scrollOffset = useRef(0);
+  const contentRef = useRef<HostInstance>(null);
   useEffect(() => {
     scrollOffset.current = 0;
   }, [verseNumber]);
@@ -114,6 +125,20 @@ export function FocusStage({
     currentOffset: () => scrollOffset.current,
     fallbackHeight: 0,
     following,
+    measureTextTop: (text, done) => {
+      const content = contentRef.current;
+      if (content === null) {
+        done(null);
+        return;
+      }
+      measureWithin(text, content, (textTopInContent) => {
+        done(
+          textTopInContent === null
+            ? null
+            : followedTextScreenTop({ rowTop: 0, scrollOffset: scrollOffset.current, textTopInRow: textTopInContent }),
+        );
+      });
+    },
     offset: recited && activeWord !== null ? recitedWordOffset(textUthmani, activeWord) : null,
     reduceMotion,
     scrollTo: (offset, animated) => {
@@ -160,12 +185,7 @@ export function FocusStage({
             <View {...word.viewportProps} style={{ flex: 1 }}>
               <ScrollView
                 alwaysBounceVertical
-                contentContainerStyle={{
-                  flexGrow: 1,
-                  justifyContent: 'space-evenly',
-                  paddingHorizontal: PAGE_GUTTER,
-                  paddingVertical: theme.space[4],
-                }}
+                contentContainerStyle={{ flexGrow: 1, paddingHorizontal: PAGE_GUTTER }}
                 onScroll={(event) => {
                   scrollOffset.current = event.nativeEvent.contentOffset.y;
                 }}
@@ -176,33 +196,39 @@ export function FocusStage({
                 showsVerticalScrollIndicator={false}
                 testID={`${testID}-scroll`}
               >
-                {previousText !== null && previousNumber !== null ? (
-                  <FocusAside
+                {/* The content child: it fills the scroll content from its top, so the spacing lives here. */}
+                <View
+                  ref={contentRef}
+                  style={{ flex: 1, justifyContent: 'space-evenly', paddingVertical: theme.space[4] }}
+                >
+                  {previousText !== null && previousNumber !== null ? (
+                    <FocusAside
+                      fontScale={fontScale}
+                      testID={`${testID}-previous`}
+                      textUthmani={previousText}
+                      verseNumber={previousNumber}
+                    />
+                  ) : (
+                    <View />
+                  )}
+                  <FocusAyah
+                    activeWord={activeWord}
+                    followedText={word.textProps(String(verseNumber))}
                     fontScale={fontScale}
-                    testID={`${testID}-previous`}
-                    textUthmani={previousText}
-                    verseNumber={previousNumber}
+                    highlightColor={highlightColor}
+                    recited={recited}
+                    onOpenActions={onOpenActions}
+                    testID={testID}
+                    textImlaei={textImlaei}
+                    textUthmani={textUthmani}
+                    verseNumber={verseNumber}
                   />
-                ) : (
-                  <View />
-                )}
-                <FocusAyah
-                  activeWord={activeWord}
-                  followedText={word.textProps(String(verseNumber))}
-                  fontScale={fontScale}
-                  highlightColor={highlightColor}
-                  recited={recited}
-                  onOpenActions={onOpenActions}
-                  testID={testID}
-                  textImlaei={textImlaei}
-                  textUthmani={textUthmani}
-                  verseNumber={verseNumber}
-                />
-                {nextText !== null && nextNumber !== null ? (
-                  <FocusAside fontScale={fontScale} testID={`${testID}-next`} textUthmani={nextText} verseNumber={nextNumber} />
-                ) : (
-                  <View />
-                )}
+                  {nextText !== null && nextNumber !== null ? (
+                    <FocusAside fontScale={fontScale} testID={`${testID}-next`} textUthmani={nextText} verseNumber={nextNumber} />
+                  ) : (
+                    <View />
+                  )}
+                </View>
               </ScrollView>
             </View>
           </Animated.View>

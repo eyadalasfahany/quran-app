@@ -27,6 +27,7 @@ export function HafsPage({
   onFocusOffset,
   follow,
   followKey = null,
+  onRootNode,
   testID,
 }: {
   page: number;
@@ -47,6 +48,8 @@ export function HafsPage({
   /** The word follow-scroll, and the followed ayah: its paragraph's Text reports its lines to the follow. */
   follow?: WordFollow;
   followKey?: string | null;
+  /** The page's root node, which the follow measures the followed paragraph against. */
+  onRootNode?: (node: HostInstance | null) => void;
   testID?: string;
 }) {
   const rootRef = useRef<HostInstance>(null);
@@ -62,7 +65,12 @@ export function HafsPage({
   const juz = verses[0]?.juz ?? 1;
 
   return (
-    <View ref={rootRef}>
+    <View
+      ref={(node) => {
+        rootRef.current = node;
+        onRootNode?.(node);
+      }}
+    >
       {page > 1 ? (
         <PageDivider
           label={t('reader.toolbar.place', { juz: formatNumber(juz, locale), page: formatNumber(page, locale) })}

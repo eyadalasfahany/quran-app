@@ -6,9 +6,11 @@ import { openReaderTestContent } from '../../../jest/reader-test-db';
 import { renderUi } from '../../../jest/render-ui';
 import { HafsMushafList } from './HafsMushafList';
 import { paragraphOf, paragraphWordOffset } from './mushaf-paragraph';
-import { measureInViewport } from './measure-in-viewport';
+import { measureWithin } from './measure-within';
 import { isWordToken } from './recited-text';
 import { FOLLOW_VIEW_POSITION } from './word-follow';
+import { firstVerseOfPage, pageForVerse } from '@/features/reader/anchor/page';
+import { WORD_SETTLE_MS } from './useWordFollow';
 import { ayahEndMarkText } from '@/shared/ui/AyahEndMark';
 
 type TestNode = NonNullable<Awaited<ReturnType<typeof renderUi>>['root']>;
@@ -16,6 +18,9 @@ type TestNode = NonNullable<Awaited<ReturnType<typeof renderUi>>['root']>;
 // The list's scroll calls are recorded; each page renders as its own row.
 const mockListState = {
   currentOffset: 0,
+  /** The followed page row's layout y (without the first item offset) and the first item offset. */
+  layoutY: 0,
+  firstItemOffset: 0,
   offsetCalls: [] as { offset: number; animated?: boolean }[],
 };
 
@@ -33,6 +38,8 @@ jest.mock('@shopify/flash-list', () => {
     ) => {
       React.useImperativeHandle(ref, () => ({
         getAbsoluteLastScrollOffset: () => mockListState.currentOffset,
+        getFirstItemOffset: () => mockListState.firstItemOffset,
+        getLayout: () => ({ height: 0, width: 0, x: 0, y: mockListState.layoutY }),
         scrollToIndex: () => undefined,
         scrollToOffset: (options: { offset: number; animated?: boolean }) => {
           mockListState.offsetCalls.push(options);
@@ -51,8 +58,8 @@ jest.mock('@shopify/flash-list', () => {
   return { FlashList };
 });
 
-// The native measurement of a paragraph inside the list viewport: each test sets where the paragraph sits.
-jest.mock('./measure-in-viewport', () => ({ measureInViewport: jest.fn() }));
+// The native measurement of the followed paragraph inside its page cell: each test sets where the paragraph sits.
+jest.mock('./measure-within', () => ({ measureWithin: jest.fn() }));
 
 jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
   __esModule: true,
@@ -71,9 +78,11 @@ beforeAll(async () => {
 });
 
 afterEach(() => {
-  jest.mocked(measureInViewport).mockReset();
+  jest.mocked(measureWithin).mockReset();
   mockListState.offsetCalls.length = 0;
   mockListState.currentOffset = 0;
+  mockListState.layoutY = 0;
+  mockListState.firstItemOffset = 0;
 });
 
 // The host Text the followed paragraph draws: the only Text in the list that reports its lines.
@@ -114,7 +123,11 @@ describe('HafsMushafList word follow', () => {
       .textUthmani.split(' ')
       .filter(isWordToken)[recitedWord - 1];
     expect(paragraph.slice(offset!).startsWith(word!)).toBe(true);
-    mockListState.currentOffset = 300;
+    // The list is scrolled to the recited page: its row's content top is 1000 + 36, and the paragraph sits 64 into it.
+    // On screen the paragraph's top is 1036 + 64 - 400 = 700.
+    mockListState.currentOffset = 400;
+    mockListState.layoutY = 1000;
+    mockListState.firstItemOffset = 36;
 
     const view = await renderUi(
       <HafsMushafList
@@ -135,8 +148,8 @@ describe('HafsMushafList word follow', () => {
       { height: lineHeight, text: paragraph.slice(0, offset!), y: 0 },
       { height: lineHeight, text: paragraph.slice(offset!), y: lineHeight },
     ];
-    const textTop = 700;
-    jest.mocked(measureInViewport).mockImplementation((_node, _viewport, onMeasured) => onMeasured(textTop));
+    const textTopInPage = 64;
+    jest.mocked(measureWithin).mockImplementation((_node, _page, onMeasured) => onMeasured(textTopInPage));
     await act(async () => {
       textNode!.props.onTextLayout({ nativeEvent: { lines } });
     });
@@ -145,9 +158,78 @@ describe('HafsMushafList word follow', () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
     });
 
-    const lineY = textTop + lineHeight;
+    const lineY = 700 + lineHeight;
     expect(mockListState.offsetCalls).toEqual([
-      { animated: true, offset: 300 + (lineY - viewportHeight * FOLLOW_VIEW_POSITION) },
+      { animated: true, offset: 400 + (lineY - viewportHeight * FOLLOW_VIEW_POSITION) },
+    ]);
+  });
+
+  it('leaves a line inside the band of a tall page alone, far down the list', async () => {
+    // The list is scrolled far down a tall page (offset 3950): the paragraph starts 4000 into the list and its line
+    // sits 120 into the page cell, so on screen it is at 170, inside the band. Nothing moves.
+    const followKey = '2:255';
+    mockListState.currentOffset = 3950;
+    mockListState.layoutY = 4000;
+    jest.mocked(measureWithin).mockImplementation((_node, _page, onMeasured) => onMeasured(120));
+    const view = await renderUi(
+      <HafsMushafList anchorVerseKey={followKey} followKey={followKey} recitedWord={4} recitedVerseKey={followKey} testID="mushaf" topInset={0} />,
+    );
+    const textNode = followedTextNode(view.root)!;
+    const run = paragraphOf(mockExecutor, followKey)!;
+    const paragraph = run.map((verse) => verse.textUthmani).join(' ');
+    await act(async () => {
+      textNode.props.onTextLayout({ nativeEvent: { lines: [{ height: lineHeight, text: paragraph, y: 0 }] } });
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, WORD_SETTLE_MS + 50));
+    });
+    expect(mockListState.offsetCalls.filter((call) => call.animated === true)).toEqual([]);
+  });
+
+  it('waits for a page turn to settle before it checks the recited word', async () => {
+    const fromKey = '2:255';
+    const fromPage = pageForVerse(mockExecutor, fromKey)!;
+    const toKey = firstVerseOfPage(mockExecutor, fromPage + 1)!;
+    const recitedWord = 1;
+    const toRun = paragraphOf(mockExecutor, toKey)!;
+    const toParagraph = toRun.map((verse) => verse.textUthmani).join(' ');
+    const toOffset = paragraphWordOffset(toRun, toKey, recitedWord)!;
+    mockListState.currentOffset = 0;
+    mockListState.layoutY = 0;
+    jest.mocked(measureWithin).mockImplementation((_node, _page, onMeasured) => onMeasured(300));
+    const view = await renderUi(
+      <HafsMushafList anchorVerseKey={fromKey} followKey={fromKey} recitedWord={recitedWord} recitedVerseKey={fromKey} testID="mushaf" topInset={0} />,
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, WORD_SETTLE_MS + 50));
+    });
+
+    // The reader turns to the next page as the recitation moves there. Its line is now below the band (700 on screen).
+    mockListState.offsetCalls.length = 0;
+    jest.mocked(measureWithin).mockImplementation((_node, _page, onMeasured) => onMeasured(700));
+    await act(async () => {
+      view.rerender(
+        <HafsMushafList anchorVerseKey={toKey} followKey={toKey} recitedWord={recitedWord} recitedVerseKey={toKey} testID="mushaf" topInset={0} />,
+      );
+    });
+    const textNode = followedTextNode(view.root)!;
+    await act(async () => {
+      textNode.props.onTextLayout({
+        nativeEvent: {
+          lines: [
+            { height: lineHeight, text: toParagraph.slice(0, toOffset), y: 0 },
+            { height: lineHeight, text: toParagraph.slice(toOffset), y: lineHeight },
+          ],
+        },
+      });
+    });
+    // Right after the turn, no word scroll has run: the check waits for the page to settle.
+    expect(mockListState.offsetCalls.filter((call) => call.animated === true)).toEqual([]);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, WORD_SETTLE_MS + 50));
+    });
+    expect(mockListState.offsetCalls.filter((call) => call.animated === true)).toEqual([
+      { animated: true, offset: 0 + (750 - viewportHeight * FOLLOW_VIEW_POSITION) },
     ]);
   });
 

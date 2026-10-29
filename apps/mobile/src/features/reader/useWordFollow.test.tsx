@@ -2,11 +2,12 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react-native';
 import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 
-import { measureInViewport } from './measure-in-viewport';
-import { useWordFollow, WORD_SETTLE_MS } from './useWordFollow';
+import { useWordFollow, WORD_SETTLE_MS, type WordFollowOptions } from './useWordFollow';
 
-// The native measurement of the followed Text inside the viewport: each test sets where the Text sits.
-jest.mock('./measure-in-viewport', () => ({ measureInViewport: jest.fn() }));
+// The list's measurement of the followed Text's on-screen top. Each test sets it with placeText; null means the
+// list cannot measure yet.
+let measuredTop: number | null = null;
+const measureTextTop: WordFollowOptions['measureTextTop'] = (_text, done) => done(measuredTop);
 
 const LINES = [
   { height: 50, text: 'first line ', y: 0 },
@@ -43,6 +44,7 @@ function Follow({
     currentOffset: () => currentOffset,
     fallbackHeight,
     following: options.following,
+    measureTextTop,
     offset: options.offset,
     reduceMotion,
     scrollTo: (offset, animated) => scrolls.push({ animated, offset }),
@@ -83,16 +85,16 @@ async function settle(ms = WORD_SETTLE_MS + 50) {
 
 describe('useWordFollow', () => {
   beforeEach(() => {
-    jest.mocked(measureInViewport).mockReset();
+    measuredTop = null;
   });
 
   afterEach(async () => {
     await cleanup();
   });
 
-  // The word is on the second line (offset 12), and the Text sits `top` down the viewport.
-  function placeText(top: number) {
-    jest.mocked(measureInViewport).mockImplementation((_node, _viewport, onMeasured) => onMeasured(top));
+  // The word is on the second line (offset 12), and the followed Text's top sits at `top` on screen.
+  function placeText(top: number | null) {
+    measuredTop = top;
   }
   const base: Harness = { following: true, fallbackHeight: VIEWPORT_HEIGHT, offset: 12, textKey: 'verse' };
 
@@ -106,6 +108,37 @@ describe('useWordFollow', () => {
 
   it('does nothing while the word line is inside the band', async () => {
     placeText(200); // the second line sits at 250, inside the band
+    const { scrolls, view } = await mountFollow(base);
+    await reportLines(view);
+    await settle();
+    expect(scrolls).toEqual([]);
+  });
+
+  it('ignores a stale measurement far outside the viewport', async () => {
+    placeText(250000); // a stale native value: the line is nowhere near the screen
+    const { scrolls, view } = await mountFollow({ ...base, currentOffset: 100 });
+    await reportLines(view);
+    await settle();
+    expect(scrolls).toEqual([]);
+  });
+
+  it('ignores a stale negative measurement far above the viewport', async () => {
+    placeText(-5000);
+    const { scrolls, view } = await mountFollow({ ...base, currentOffset: 100 });
+    await reportLines(view);
+    await settle();
+    expect(scrolls).toEqual([]);
+  });
+
+  it('caps a single word scroll at one viewport height', async () => {
+    placeText(1100); // the second line sits at 1150: a plausible top, but the step to a third down is 950
+    const { scrolls, view } = await mountFollow({ ...base, currentOffset: 100, reduceMotion: true });
+    await reportLines(view);
+    expect(scrolls).toEqual([{ animated: false, offset: 100 + VIEWPORT_HEIGHT }]);
+  });
+
+  it('waits when the list cannot measure the Text yet', async () => {
+    placeText(null);
     const { scrolls, view } = await mountFollow(base);
     await reportLines(view);
     await settle();

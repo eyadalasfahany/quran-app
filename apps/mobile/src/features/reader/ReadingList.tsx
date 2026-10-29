@@ -5,7 +5,7 @@ import {
   type ViewToken,
 } from '@shopify/flash-list';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions, type HostInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -18,6 +18,8 @@ import { ReaderModeFade } from './components/ReaderModeFade';
 import { ReadingAyahRow } from './components/ReadingAyahRow';
 import { SurahHeader } from './components/SurahHeader';
 import { readingColumnWidth } from './layout';
+import { followedTextScreenTop, rowContentTop } from './follow-position';
+import { measureWithin } from './measure-within';
 import { estimateReadingRowHeight, heightCacheSignature, ReadingHeightCache } from './reading-heights';
 import type { ReadingRow } from './reading-list-types';
 import { FOLLOW_VIEW_POSITION, recitedWordOffset } from './word-follow';
@@ -174,6 +176,12 @@ export function ReadingList({
     followRow?.type === 'ayah' && activeWord !== null
       ? recitedWordOffset(followRow.verse.textUthmani, activeWord)
       : null;
+  // The followed row's root: the followed Text is measured inside its own row, which shares the list's content with
+  // the row cell (no scroll view between them).
+  const followedRowNode = useRef<HostInstance | null>(null);
+  const setFollowedRow = useCallback((node: HostInstance | null) => {
+    followedRowNode.current = node;
+  }, []);
   const word = useWordFollow({
     bottomInset: contentBottomInset,
     currentOffset: () =>
@@ -182,6 +190,30 @@ export function ReadingList({
         : 0,
     fallbackHeight: viewportHeight - contentBottomInset,
     following: followKey !== null,
+    // The on-screen top of the followed Text: the row's content top (layout y plus the first item offset), plus the
+    // Text's offset in the row, minus the scroll offset. getAbsoluteLastScrollOffset is the scroll content offset
+    // that scrollToOffset takes (it adds the first item offset back, and scrollToOffset skips it by default).
+    measureTextTop: (text, done) => {
+      const list = listRef.current;
+      const row = followedRowNode.current;
+      const layout = list !== null && followIndex >= 0 ? list.getLayout(followIndex) : undefined;
+      if (list === null || row === null || layout === undefined) {
+        done(null);
+        return;
+      }
+      const rowTop = rowContentTop(layout.y, list.getFirstItemOffset());
+      measureWithin(text, row, (textTopInRow) => {
+        done(
+          textTopInRow === null
+            ? null
+            : followedTextScreenTop({
+                rowTop,
+                scrollOffset: list.getAbsoluteLastScrollOffset(),
+                textTopInRow,
+              }),
+        );
+      });
+    },
     offset: followedOffset,
     reduceMotion,
     scrollTo: (offset, animated) => {
@@ -296,6 +328,7 @@ export function ReadingList({
           onPlay={play}
           onPress={() => onSelectVerseKey(verse.verseKey)}
           recited={recited}
+          rowRef={followKey === verse.verseKey ? setFollowedRow : undefined}
           selected={selected}
           testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
           textImlaei={verse.textImlaei}
