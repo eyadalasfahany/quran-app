@@ -1,6 +1,10 @@
+import { act, fireEvent, within } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
+
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { themes } from '@/core/theme';
+import { ThemeProvider, themes } from '@/core/theme';
+import { AYAH_CARD_MIN_HEIGHT } from '../player-fit';
 
 import { NowPlayingAyah, type AyahWord } from './NowPlayingAyah';
 
@@ -44,5 +48,166 @@ describe('NowPlayingAyah', () => {
 
   it('uses no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/audio/components/NowPlayingAyah.tsx')).toEqual([]);
+  });
+
+  it('keeps the Quran text as stored, joined by single spaces, with nothing added or trimmed', async () => {
+    const view = await renderUi(<NowPlayingAyah counter="c" label="l" words={words} />);
+
+    expect(textOf(view.getByLabelText('l'))).toBe('إِيَّاكَ نَعْبُدُ وَإِيَّاكَ');
+  });
+});
+
+const layoutOf = (height: number) => ({ nativeEvent: { layout: { height, width: 300, x: 0, y: 0 } } });
+const followLines = [
+  { height: 52.5, text: 'إِيَّاكَ ', y: 0 },
+  { height: 52.5, text: 'نَعْبُدُ وَإِيَّاكَ', y: 250 },
+];
+const recitedWord = 2;
+
+// The card's text and counter heights, as the Text and the counter report them.
+async function renderCard(props: Partial<React.ComponentProps<typeof NowPlayingAyah>> = {}, textHeight = 80) {
+  const view = await renderUi(
+    <NowPlayingAyah counter="الآية ٥ من ٧" label="إياك نعبد" words={words} {...props} />,
+    { theme: 'dark' },
+  );
+  await fireEvent(view.getByLabelText('إياك نعبد'), 'layout', layoutOf(textHeight));
+  await fireEvent(view.getByTestId('now-playing-counter'), 'layout', layoutOf(16));
+  return view;
+}
+
+// The jest preset gives every ScrollView instance one shared scrollTo mock on its prototype.
+function scrollTo(_view?: unknown) {
+  return (ScrollView.prototype as unknown as { scrollTo: jest.Mock }).scrollTo;
+}
+
+// The text under a node, as the Quran text would read to a reader.
+type TextNode = { children: readonly (TextNode | string)[] };
+
+function textOf(node: TextNode): string {
+  return node.children.map((child) => (typeof child === 'string' ? child : textOf(child))).join('');
+}
+
+describe('NowPlayingAyah card', () => {
+  it('scrolls the Quran text inside the card, and keeps the counter pinned outside the scroll', async () => {
+    const view = await renderCard();
+    const scroll = view.getByTestId('now-playing-scroll');
+
+    expect(within(scroll).getByLabelText('إياك نعبد')).toBeOnTheScreen();
+    expect(within(scroll).queryByTestId('now-playing-counter')).toBeNull();
+    expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
+    expect(within(view.getByTestId('now-playing-ayah')).getByTestId('now-playing-counter')).toBeOnTheScreen();
+  });
+
+  it('stays at its natural height when the text fits the room: the text plus the counter and the chrome', async () => {
+    const onNaturalHeight = jest.fn();
+    const view = await renderCard({ maxHeight: 500, onNaturalHeight });
+
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
+    expect(onNaturalHeight).toHaveBeenLastCalledWith(80 + 16 + 36);
+  });
+
+  it('fills the room and scrolls its text when the text is taller than the room, with the minimum held', async () => {
+    const view = await renderCard({ maxHeight: 200 }, 400);
+    const card = flatStyle(view.getByTestId('now-playing-ayah').props.style);
+    const scroll = flatStyle(view.getByTestId('now-playing-scroll').props.style);
+
+    expect(card).toMatchObject({ flexGrow: 1, flexShrink: 1, minHeight: AYAH_CARD_MIN_HEIGHT });
+    expect(scroll).toMatchObject({ flexBasis: 0, flexGrow: 1, flexShrink: 1 });
+    expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
+  });
+
+  it('keeps the card and its counter at natural size until the column gives it a room', async () => {
+    const view = await renderCard({}, 400);
+
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
+    expect(flatStyle(view.getByTestId('now-playing-scroll').props.style).flexGrow).toBe(0);
+  });
+
+  it('keeps the card border and radius fixed around the scroll', async () => {
+    const view = await renderCard({ maxHeight: 200 }, 400);
+
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ borderRadius: 20, paddingVertical: 14 });
+  });
+});
+
+describe('NowPlayingAyah follow', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    scrollTo().mockClear();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  // A card that scrolls (text 400 pt in a 200 pt room) with a 300 pt viewport; the recited word is on the second line.
+  async function renderFollowing(playing = true) {
+    const view = await renderCard({ activeWord: recitedWord, maxHeight: 200, playing, words }, 400);
+    await fireEvent(view.getByLabelText('إياك نعبد'), 'textLayout', { nativeEvent: { lines: followLines } });
+    await fireEvent(view.getByTestId('now-playing-scroll'), 'layout', layoutOf(300));
+    return view;
+  }
+
+  it('scrolls the recited word\'s line a third down the card when it leaves the comfort band', async () => {
+    const view = await renderFollowing();
+
+    // The second line sits at 250 pt; a third of the 300 pt viewport is 100 pt, so the line lands at 150.
+    expect(scrollTo(view)).toHaveBeenLastCalledWith({ animated: true, y: 150 });
+  });
+
+  it('does not scroll while the recited line is already inside the band', async () => {
+    const view = await renderUi(
+      <NowPlayingAyah activeWord={recitedWord} counter="c" label="إياك نعبد" maxHeight={200} playing words={words} />,
+      { theme: 'dark' },
+    );
+    await fireEvent(view.getByTestId('now-playing-scroll'), 'scroll', { nativeEvent: { contentOffset: { y: 100 } } });
+    await fireEvent(view.getByLabelText('إياك نعبد'), 'layout', layoutOf(400));
+    await fireEvent(view.getByTestId('now-playing-counter'), 'layout', layoutOf(16));
+    await fireEvent(view.getByLabelText('إياك نعبد'), 'textLayout', { nativeEvent: { lines: followLines } });
+    await fireEvent(view.getByTestId('now-playing-scroll'), 'layout', layoutOf(300));
+
+    // The line is at 150 on screen (250 less the 100 pt offset): inside the band from 60 to 240.
+    expect(scrollTo(view).mock.calls.filter(([options]) => options.animated)).toEqual([]);
+  });
+
+  it('does not follow when the player is not playing', async () => {
+    const view = await renderFollowing(false);
+
+    expect(scrollTo(view).mock.calls.filter(([options]) => options.animated)).toEqual([]);
+  });
+
+  it('pauses following on a drag, and resumes it 5 s after the drag ends', async () => {
+    const view = await renderFollowing();
+    const scroll = view.getByTestId('now-playing-scroll');
+    scrollTo(view).mockClear();
+
+    await fireEvent(scroll, 'scrollBeginDrag');
+    await fireEvent(scroll, 'scrollEndDrag');
+    await fireEvent(scroll, 'layout', layoutOf(302));
+    expect(scrollTo(view)).not.toHaveBeenCalledWith(expect.objectContaining({ animated: true }));
+
+    await act(async () => {
+      jest.advanceTimersByTime(4999);
+    });
+    expect(scrollTo(view)).not.toHaveBeenCalledWith(expect.objectContaining({ animated: true }));
+
+    await act(async () => {
+      jest.advanceTimersByTime(1);
+    });
+    // 302 pt viewport: the line at 250 lands at 250 - 302 / 3.
+    expect(scrollTo(view)).toHaveBeenLastCalledWith({ animated: true, y: expect.closeTo(250 - 302 / 3, 5) });
+  });
+
+  it('scrolls a new ayah back to its top', async () => {
+    const view = await renderFollowing();
+    scrollTo(view).mockClear();
+
+    await view.rerender(
+      <ThemeProvider name="dark">
+        <NowPlayingAyah activeWord={null} counter="c" label="الآية التالية" maxHeight={200} words={words} />
+      </ThemeProvider>,
+    );
+
+    expect(scrollTo(view)).toHaveBeenCalledWith({ animated: false, y: 0 });
   });
 });
