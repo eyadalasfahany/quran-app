@@ -49,4 +49,6 @@ cd apps/mobile/ios && pod install && cd ..
 npx expo run:ios                        # the dev client; needed after any native dependency change
 ```
 
-Run `pod install` after every `npm ci`. `expo-sqlite`'s podspec copies its bundled `sqlite3.c`/`sqlite3.h` into `node_modules/expo-sqlite/ios/` only while `pod install` runs, and `npm ci` wipes them. If you skip it, the build fails with `cannot find 'exsqlite3_bind_…' in scope` (29 Oct 2026). If it still fails, regenerate the native project: `npx expo prebuild --clean -p ios`.
+Locally only: run `pod install` after every `npm ci`. `ios/` is generated (continuous native generation, `.gitignore`), but a local `ios/` from an earlier build stays on disk. `npm ci` wipes the `sqlite3.c`/`sqlite3.h` that `expo-sqlite`'s podspec copies into `node_modules/expo-sqlite/ios/` during `pod install`, and `expo run:ios` skips `pod install` when the lockfile and Podfile are unchanged. The build then fails with `cannot find 'exsqlite3_bind_…' in scope` (29 Oct 2026). `npx expo prebuild --clean -p ios` also fixes it, by regenerating `ios/`.
+
+EAS builds don't need any of this: each one starts from a clean checkout, runs `npm ci` (with the postinstall patches), then `expo prebuild` and `pod install` on a fresh `ios/`.
