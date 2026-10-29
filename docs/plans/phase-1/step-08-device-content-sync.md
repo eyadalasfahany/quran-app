@@ -70,7 +70,7 @@ type ContentSyncDeps = {
 - The MMKV key `content.selectedResourceIds` (a number array). Add the key to `storageKeys`.
 - When unset, the default is:
   - every `mushafs` resource;
-  - the first `translations` and the first `tafsirs` resource whose `language_code` equals the app locale, falling back to `en`; Translation parts removed by ADR 0014 (28 Oct 2026).
+  - the first `translations` and the first `tafsirs` resource whose `language_code` equals the app locale, falling back to `en`; Translation parts removed by ADR 0014 (28 Oct 2026). Tafsir default removed by ADR 0019 (29 Oct 2026).
   - the first `chapter_recitations` resource.
 - This is **provisional** until the Settings and download UI in Phase 2/3; say so in a comment.
 

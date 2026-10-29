@@ -15,6 +15,8 @@ import {
   type FileStore,
 } from '@/core/sync/content-sync';
 import { contentContract } from '@/core/sync/content-tables';
+import { selectedResourceIds } from '@/core/sync/selection';
+import { storage, storageKeys } from '@/core/storage/mmkv';
 
 import { applyContentMigrations } from '../jest/apply-content-migrations';
 import { openNodeSqlite } from '../jest/node-sqlite-executor';
@@ -255,6 +257,9 @@ describe('content sync', () => {
     } else {
       process.env.EXPO_PUBLIC_API_URL = originalUrl;
     }
+    storage.remove(storageKeys.readerSettings);
+    storage.remove(storageKeys.selectedResourceIds);
+    storage.remove(storageKeys.locale);
     jest.restoreAllMocks();
   });
 
@@ -307,6 +312,69 @@ describe('content sync', () => {
       expect(downloadPack).toHaveBeenCalledWith('http://localhost:8000/api/v1/content/packs/85/3', expect.any(String));
       expect(existsSync(join(cacheDir, 'packs', '85-3.sqlite.gz'))).toBe(false);
       expect(existsSync(join(cacheDir, 'packs', '85-3.sqlite'))).toBe(false);
+    });
+  });
+
+  it('installs no tafsir on the first sync without a reader choice', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const hash = await sha256(bytes);
+    const entry = resource({
+      id: 85,
+      version: 1,
+      pack: { url: '/api/v1/content/packs/85/1', size_bytes: bytes.byteLength, sha256: hash },
+    });
+    const published = manifest([entry]);
+    const downloadPack = jest.fn(async (_url: string, toPath: string) => {
+      mkdirSync(parentDir(toPath), { recursive: true });
+      writeFileSync(toPath, bytes);
+    });
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        })),
+        selection: selectedResourceIds,
+      });
+
+      expect(report.resources).toEqual([]);
+      expect(downloadPack).not.toHaveBeenCalled();
+      expect(tafsirHtml(executor, 85, 1)).toBeUndefined();
+      expect(executor.get('SELECT resource_id FROM installed_resources WHERE resource_id = ?', [85])).toBeUndefined();
+    });
+  });
+
+  it('removes an installed tafsir that is neither chosen nor installed on demand', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const hash = await sha256(bytes);
+    const entry = resource({
+      id: 85,
+      version: 1,
+      pack: { url: '/api/v1/content/packs/85/1', size_bytes: bytes.byteLength, sha256: hash },
+    });
+    const published = manifest([entry]);
+    const downloadPack = jest.fn(async () => undefined);
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      installTafsir(executor, 85, 1, [{ groupTafsirId: 1, html: 'drop-me' }]);
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        })),
+        selection: selectedResourceIds,
+      });
+
+      expect(report.resources).toEqual([{ resourceId: 85, status: 'removed' }]);
+      expect(downloadPack).not.toHaveBeenCalled();
+      expect(tafsirHtml(executor, 85, 1)).toBeUndefined();
     });
   });
 

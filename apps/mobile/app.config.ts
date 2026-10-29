@@ -34,11 +34,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     // Layout follows window size; no orientation lock anywhere (spec §4).
     orientation: 'default',
+    // Home-screen mark, cropped from the logo so the Kaaba stays inside the icon mask.
+    // iOS uses this PNG; a Liquid Glass .icon would replace it.
     icon: './assets/images/icon.png',
     userInterfaceStyle: 'automatic',
     ios: {
       bundleIdentifier: variant.id,
-      icon: './assets/expo.icon',
       supportsTablet: true,
       infoPlist: {
         // All four iPad orientations and no full-screen requirement: needed for Split View and Stage Manager.
@@ -64,10 +65,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       package: variant.id,
       adaptiveIcon: {
-        backgroundColor: '#E6F4FE',
-        foregroundImage: './assets/images/android-icon-foreground.png',
-        backgroundImage: './assets/images/android-icon-background.png',
-        monochromeImage: './assets/images/android-icon-monochrome.png',
+        backgroundColor: '#E9DED0',
+        foregroundImage: './assets/images/icon.png',
       },
       predictiveBackGestureEnabled: false,
     },
@@ -76,9 +75,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-splash-screen',
         {
-          backgroundColor: '#208AEF',
+          backgroundColor: '#E9DED0',
           image: './assets/images/splash-icon.png',
-          imageWidth: 76,
+          imageWidth: 280,
+          resizeMode: 'contain',
+          // Android 12 draws the splash inside a circle. The full poster would lose its corners,
+          // so Android uses the same mark as the home-screen icon.
+          android: {
+            backgroundColor: '#E9DED0',
+            image: './assets/images/icon.png',
+            imageWidth: 192,
+          },
         },
       ],
       ['expo-localization', { supportsRTL: true }],

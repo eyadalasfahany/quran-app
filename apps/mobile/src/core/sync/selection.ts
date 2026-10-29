@@ -1,13 +1,12 @@
 import type { ContentManifestResource } from '@quran/api-contract';
 
-import { getLocale, type Locale } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { readReaderResourceOverride } from '@/features/reader/settings-model';
 
-// Provisional until the Settings and download UI in Phase 2/3 choose resources.
+// Saved selection, else the default. A tafsir installs only when the reader picks one (ADR 0019).
 export function selectedResourceIds(resources: readonly ContentManifestResource[]): number[] {
   const saved = readSavedSelection();
-  const base = saved ?? defaultSelectedResourceIds(resources, getLocale());
+  const base = saved ?? defaultSelectedResourceIds(resources);
   return applyReaderResourceOverride(base, resources);
 }
 
@@ -19,36 +18,14 @@ export function writeSavedSelectionIds(ids: readonly number[]): void {
   storage.set(storageKeys.selectedResourceIds, JSON.stringify([...ids]));
 }
 
-export function defaultSelectedResourceIds(
-  resources: readonly ContentManifestResource[],
-  locale: Locale,
-): number[] {
+// Every mushaf and the first recitation. Recitations stay as they are until Phase 3.
+export function defaultSelectedResourceIds(resources: readonly ContentManifestResource[]): number[] {
   const ids = resources.filter((resource) => resource.group === 'mushafs').map((resource) => resource.id);
-  const tafsir = firstByLanguage(resources, 'tafsirs', locale);
-  if (tafsir !== undefined) {
-    ids.push(tafsir);
-  }
   const recitation = resources.find((resource) => resource.group === 'chapter_recitations');
   if (recitation !== undefined) {
     ids.push(recitation.id);
   }
   return ids;
-}
-
-function firstByLanguage(
-  resources: readonly ContentManifestResource[],
-  group: 'tafsirs',
-  locale: Locale,
-): number | undefined {
-  const inGroup = resources.filter((resource) => resource.group === group);
-  const match = inGroup.find((resource) => resource.language_code === locale);
-  if (match !== undefined) {
-    return match.id;
-  }
-  if (locale === 'en') {
-    return undefined;
-  }
-  return inGroup.find((resource) => resource.language_code === 'en')?.id;
 }
 
 function applyReaderResourceOverride(

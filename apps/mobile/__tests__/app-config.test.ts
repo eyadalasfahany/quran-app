@@ -36,6 +36,31 @@ describe('app.config', () => {
     expect(configFor(undefined).ios?.bundleIdentifier).toBe('com.taybahapp.taybah.dev');
   });
 
+  it('uses the Taybah mark for the icon and the full artwork for the splash', () => {
+    const config = configFor('production');
+
+    expect(config.icon).toBe('./assets/images/icon.png');
+    expect(config.ios?.icon).toBeUndefined();
+    expect(config.android?.adaptiveIcon).toEqual({
+      backgroundColor: '#E9DED0',
+      foregroundImage: './assets/images/icon.png',
+    });
+    expect(config.plugins).toContainEqual([
+      'expo-splash-screen',
+      {
+        backgroundColor: '#E9DED0',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 280,
+        resizeMode: 'contain',
+        android: {
+          backgroundColor: '#E9DED0',
+          image: './assets/images/icon.png',
+          imageWidth: 192,
+        },
+      },
+    ]);
+  });
+
   it('names the app Taybah, and طيبة on Arabic devices', () => {
     const config = configFor('production');
 

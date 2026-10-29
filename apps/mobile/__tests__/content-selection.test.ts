@@ -36,14 +36,28 @@ describe('content selection', () => {
     storage.remove(storageKeys.readerSettings);
   });
 
-  it('picks every mushaf, the locale tafsir and the first recitation', () => {
-    expect(defaultSelectedResourceIds(resources, 'ar')).toEqual([1, 2, 21, 30]);
-    expect(defaultSelectedResourceIds(resources, 'en')).toEqual([1, 2, 21, 30]);
+  it('picks every mushaf and the first recitation, and no tafsir, in either locale', () => {
+    expect(defaultSelectedResourceIds(resources)).toEqual([1, 2, 30]);
+
+    storage.set(storageKeys.locale, 'en');
+    expect(selectedResourceIds(resources)).toEqual([1, 2, 30]);
   });
 
-  it('falls back to English when the locale has no tafsir', () => {
-    const withoutFrench = resources.filter((item) => item.language_code !== 'fr');
-    expect(defaultSelectedResourceIds(withoutFrench, 'ar')).toEqual([1, 2, 21, 30]);
+  it('contains no tafsir with no saved selection and no reader choice', () => {
+    const ids = selectedResourceIds(resources);
+
+    expect(ids).toEqual([1, 2, 30]);
+    expect(ids).not.toContain(20);
+    expect(ids).not.toContain(21);
+  });
+
+  it('adds the reader-chosen tafsir', () => {
+    storage.set(
+      storageKeys.readerSettings,
+      JSON.stringify({ version: 1, mode: 'reading', fontScale: 1, tafsirChosen: true, tafsirId: 21 }),
+    );
+
+    expect(selectedResourceIds(resources)).toContain(21);
   });
 
   it('uses the saved ids when the reader has chosen', () => {

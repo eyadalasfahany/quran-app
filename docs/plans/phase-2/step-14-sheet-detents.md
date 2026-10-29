@@ -82,7 +82,7 @@ Follow [README.md](README.md). Changes the reader sheets, the frames and spec §
 - **`SheetScrollView`:** a new component in `src/features/reader/components/`. It reads `useSheet()`, locks scrolling below full, and wires the `Gesture.Native` hand-off. `TafsirPanel`, the actions panel and the settings sheet use it in place of `ScrollView` when they render in a sheet. The side panel keeps a plain `ScrollView`.
 - **Spec and ADR:**
   - Spec §12 "Motion" (the reader sheets sentence) and §4's sheet rows describe the detents.
-  - New ADR 0019, "Sheet detents": a 50% mid detent, a full detent, slide-down dismiss, and the frames redrawn. It amends ADR 0013's sheet heights.
+  - New ADR 0020, "Sheet detents": a 50% mid detent, a full detent, slide-down dismiss, and the frames redrawn. It amends ADR 0013's sheet heights.
 - **Tests:**
   - `sheetDetents` and `nextDetent`: every threshold, velocity in each direction, never skipping a detent, a small window, and a large safe area.
   - `SheetHost`: it opens at mid; `close()` animates and then calls `router.back` once; the scrim press and Android back close it; Reduce Motion uses a fade; the a11y actions expand and collapse.
