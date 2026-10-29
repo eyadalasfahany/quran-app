@@ -1,4 +1,6 @@
-import { Text } from 'react-native';
+import { AccessibilityInfo, Text } from 'react-native';
+import type { PanGesture } from 'react-native-gesture-handler';
+import type { SharedValue } from 'react-native-reanimated';
 
 import { themes } from '@/core/theme';
 
@@ -6,6 +8,24 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { FULL_SHEET_RADIUS, SHEET_MARGIN, SHEET_RADIUS } from '../form-sheet';
 import { GRABBER_TOP, SheetFrame } from './SheetFrame';
+import { SheetContext, type SheetContextValue } from './sheet-context';
+
+/**
+ * A sheet context for a frame rendered on its own. The frame only reads the detent actions, so the
+ * gesture and scroll offset are placeholders.
+ */
+function sheetWith(overrides: Partial<SheetContextValue> = {}): SheetContextValue {
+  return {
+    close: jest.fn(),
+    collapse: jest.fn(),
+    detent: 'mid',
+    expand: jest.fn(),
+    panGesture: {} as PanGesture,
+    scrollOffset: { value: 0 } as SharedValue<number>,
+    scrollTouched: { value: false } as SharedValue<boolean>,
+    ...overrides,
+  };
+}
 
 describe('SheetFrame', () => {
   it('insets the card like the phone frames and rounds every corner', async () => {
@@ -140,5 +160,98 @@ describe('SheetFrame', () => {
 
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/reader/components/SheetFrame.tsx')).toEqual([]);
+  });
+
+  it('keeps the grabber area out of the accessibility tree outside a sheet', async () => {
+    const view = await renderUi(
+      <SheetFrame testID="sheet-frame">
+        <Text>إعدادات</Text>
+      </SheetFrame>,
+    );
+
+    expect(view.getByTestId('sheet-frame-grabber-area').props.accessibilityRole).toBeUndefined();
+    expect(view.getByTestId('sheet-frame-grabber-area').props.accessibilityActions).toBeUndefined();
+  });
+
+  describe('inside a sheet', () => {
+    it.each(locales)('makes the grabber a button labelled in %s', async (locale) => {
+      const view = await renderUi(
+        <SheetContext.Provider value={sheetWith()}>
+          <SheetFrame testID="sheet-frame">
+            <Text>إعدادات</Text>
+          </SheetFrame>
+        </SheetContext.Provider>,
+        { locale },
+      );
+
+      const grabber = view.getByTestId('sheet-frame-grabber-area');
+      expect(grabber.props.accessibilityRole).toBe('button');
+      expect(grabber.props.accessibilityLabel).toBe(locale === 'ar' ? 'مقبض اللوحة' : 'Sheet handle');
+      expect(grabber.props.accessibilityActions).toEqual([
+        { label: locale === 'ar' ? 'توسيع' : 'Expand', name: 'expand' },
+        { label: locale === 'ar' ? 'تصغير' : 'Collapse', name: 'collapse' },
+      ]);
+    });
+
+    it('expands the sheet and announces the full detent', async () => {
+      const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => undefined);
+      const sheet = sheetWith();
+      try {
+        const view = await renderUi(
+          <SheetContext.Provider value={sheet}>
+            <SheetFrame testID="sheet-frame">
+              <Text>إعدادات</Text>
+            </SheetFrame>
+          </SheetContext.Provider>,
+          { locale: 'en' },
+        );
+
+        view.getByTestId('sheet-frame-grabber-area').props.onAccessibilityAction({ nativeEvent: { actionName: 'expand' } });
+
+        expect(sheet.expand).toHaveBeenCalledTimes(1);
+        expect(sheet.collapse).not.toHaveBeenCalled();
+        expect(announce).toHaveBeenCalledWith('Full screen');
+      } finally {
+        announce.mockRestore();
+      }
+    });
+
+    it('collapses the sheet and announces the mid detent', async () => {
+      const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility').mockImplementation(() => undefined);
+      const sheet = sheetWith();
+      try {
+        const view = await renderUi(
+          <SheetContext.Provider value={sheet}>
+            <SheetFrame testID="sheet-frame">
+              <Text>إعدادات</Text>
+            </SheetFrame>
+          </SheetContext.Provider>,
+          { locale: 'ar' },
+        );
+
+        view.getByTestId('sheet-frame-grabber-area').props.onAccessibilityAction({ nativeEvent: { actionName: 'collapse' } });
+
+        expect(sheet.collapse).toHaveBeenCalledTimes(1);
+        expect(sheet.expand).not.toHaveBeenCalled();
+        expect(announce).toHaveBeenCalledWith('نصف الشاشة');
+      } finally {
+        announce.mockRestore();
+      }
+    });
+
+    it('leaves the grabber visuals as they are', async () => {
+      const view = await renderUi(
+        <SheetContext.Provider value={sheetWith()}>
+          <SheetFrame testID="sheet-frame">
+            <Text>إعدادات</Text>
+          </SheetFrame>
+        </SheetContext.Provider>,
+      );
+
+      expect(flatStyle(view.getByTestId('sheet-frame-grabber').props.style)).toMatchObject({
+        height: 5,
+        width: themes.light.size.grabberWidth,
+      });
+    });
   });
 });

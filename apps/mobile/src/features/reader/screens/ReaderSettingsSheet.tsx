@@ -1,10 +1,12 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import { SheetHeader } from '@/shared/ui';
 
 import { SheetFrame } from '../components/SheetFrame';
+import { SheetScrollView } from '../components/SheetScrollView';
+import { useSheet } from '../components/sheet-context';
 import { useReaderSettings } from '../settings';
 import { FontScaleStepper } from '../settings/components/FontScaleStepper';
 import { ModePicker } from '../settings/components/ModePicker';
@@ -23,6 +25,7 @@ export function ReaderSettingsSheet() {
   const fontScale = useReaderSettings((state) => state.fontScale);
   const setMode = useReaderSettings((state) => state.setMode);
   const setFontScale = useReaderSettings((state) => state.setFontScale);
+  const sheet = useSheet();
 
   return (
     <SheetFrame grabber="muted" testID="reader-settings-sheet">
@@ -30,13 +33,19 @@ export function ReaderSettingsSheet() {
         <SheetHeader
           closeLabel={t('reader.settings.close')}
           closeTone="track"
-          onClose={() => router.back()}
+          onClose={() => {
+            if (sheet === null) {
+              router.back();
+            } else {
+              sheet.close();
+            }
+          }}
           size="large"
           testID="reader-settings"
           title={t('reader.settings.title')}
         />
       </View>
-      <ScrollView
+      <SheetScrollView
         contentContainerStyle={{
           gap: SHEET_GAP,
           paddingBottom: SHEET_PADDING_BOTTOM,
@@ -55,7 +64,7 @@ export function ReaderSettingsSheet() {
         <SettingsSection label={t('reader.settings.fontScale')} layout="inline">
           <FontScaleStepper onChange={setFontScale} value={fontScale} />
         </SettingsSection>
-      </ScrollView>
+      </SheetScrollView>
     </SheetFrame>
   );
 }

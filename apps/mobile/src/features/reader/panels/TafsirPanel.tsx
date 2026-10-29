@@ -7,6 +7,7 @@ import { formatNumber, type Locale } from '@/core/i18n';
 import { uiFontFamilies, useTheme } from '@/core/theme';
 import { Card, Chip, EmptyState, maxFontScale, QuranText, UiText } from '@/shared/ui';
 
+import { SheetScrollView } from '../components/SheetScrollView';
 import { AyahStepper } from './AyahStepper';
 import { TafsirDownloadList, type TafsirDownloadItem } from './TafsirDownloadList';
 import { tafsirAuthorName, tafsirDisplayName, type TextDirection } from './panel-text';
@@ -121,7 +122,7 @@ export function TafsirPanel({
   if (mode === 'list') {
     return (
       <View style={{ flex: 1 }} testID={testID}>
-        <ScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom }}>
+        <SheetScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom }}>
           <TafsirDownloadList
             items={downloadItems}
             onCancel={onCancelDownload}
@@ -129,7 +130,7 @@ export function TafsirPanel({
             onOpen={onOpenTafsir}
             testID={`${testID}-downloads`}
           />
-        </ScrollView>
+        </SheetScrollView>
       </View>
     );
   }
@@ -137,7 +138,7 @@ export function TafsirPanel({
   if (mode === 'offline') {
     return (
       <View style={{ flex: 1 }} testID={testID}>
-        <ScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom, paddingVertical: theme.space[6] }}>
+        <SheetScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom, paddingVertical: theme.space[6] }}>
           <EmptyState
             action={{ label: t('reader.tafsir.retry'), onPress: onRetry }}
             body={t('reader.tafsir.emptyBody')}
@@ -145,7 +146,7 @@ export function TafsirPanel({
             testID={`${testID}-empty`}
             title={t('reader.tafsir.emptyTitle')}
           />
-        </ScrollView>
+        </SheetScrollView>
         {stepper}
       </View>
     );
@@ -197,7 +198,7 @@ export function TafsirPanel({
 
   return (
     <View style={{ flex: 1 }} testID={testID}>
-      <ScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom }}>
+      <SheetScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom }}>
         {picker}
         <Card
           accessibilityLabel={ayahLabel}
@@ -263,7 +264,7 @@ export function TafsirPanel({
             )}
           </View>
         ) : null}
-      </ScrollView>
+      </SheetScrollView>
       {stepper}
     </View>
   );

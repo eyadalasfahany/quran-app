@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, ScrollView, Share, View } from 'react-native';
+import { AccessibilityInfo, Share, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import { setHighlight, toggleBookmark, type Note, type UserStore } from '@/features/library/data';
 import { ActionTile, HighlightRow, type HighlightColor, type IconName, UiText } from '@/shared/ui';
 
 import { AUDIO_AVAILABLE } from '../audio';
+import { SheetScrollView } from '../components/SheetScrollView';
 import { NoteEditor } from './NoteEditor';
 import { ayahShareText } from './panel-text';
 
@@ -161,7 +162,7 @@ export function AyahActionsPanel({
   ];
 
   return (
-    <ScrollView contentContainerStyle={{ gap: SHEET_GAP, paddingBottom: theme.space[6] }} testID={testID}>
+    <SheetScrollView contentContainerStyle={{ gap: SHEET_GAP, paddingBottom: theme.space[6] }} testID={testID}>
       <HighlightRow
         label={t('reader.ayahPanel.highlightTitle')}
         onSelect={onHighlight}
@@ -205,7 +206,7 @@ export function AyahActionsPanel({
           verseId={verseId}
         />
       ) : null}
-    </ScrollView>
+    </SheetScrollView>
   );
 }
 function rows(tiles: readonly Tile[]): Tile[][] {

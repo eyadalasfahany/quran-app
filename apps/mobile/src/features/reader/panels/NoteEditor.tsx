@@ -14,6 +14,7 @@ import {
 } from '@/features/library/data';
 import { Button, Card, uiTextProps, UiText, useContrastColors } from '@/shared/ui';
 
+import { useSheet } from '../components/sheet-context';
 import { textDirection } from './panel-text';
 
 const NOTE_FIELD_MIN_HEIGHT = 120;
@@ -35,6 +36,7 @@ export function NoteEditor({
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
+  const sheet = useSheet();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const [body, setBody] = useState(note?.body ?? '');
   const [failed, setFailed] = useState(false);
@@ -92,6 +94,7 @@ export function NoteEditor({
           accessibilityLabel={t('reader.note.label')}
           multiline
           onChangeText={setBody}
+          onFocus={() => sheet?.expand()}
           placeholder={t('reader.note.placeholder')}
           placeholderTextColor={colors.inkMuted}
           style={[

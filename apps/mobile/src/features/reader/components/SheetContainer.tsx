@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -10,6 +11,7 @@ import type { PanelTab } from '../selection';
 import { sheetShapeFor } from '../form-sheet';
 import { PanelTabs } from './PanelTabs';
 import { SheetFrame } from './SheetFrame';
+import { useSheet } from './sheet-context';
 
 export function SheetContainer({
   verseKey,
@@ -29,6 +31,7 @@ export function SheetContainer({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const sheet = useSheet();
   const [currentTab, setCurrentTab] = useState<PanelTab>(tab);
   const [currentKey, setCurrentKey] = useState(verseKey);
   const changeTab = (next: PanelTab) => {
@@ -52,7 +55,7 @@ export function SheetContainer({
         <AyahPanelContent
           executor={executor}
           layout="sheet"
-          onClose={onClose}
+          onClose={onClose ?? sheet?.close ?? (() => router.back())}
           onTabChange={changeTab}
           onVerseChange={setCurrentKey}
           tab={currentTab}
