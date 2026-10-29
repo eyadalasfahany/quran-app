@@ -660,7 +660,7 @@ For each change, in one transaction per request:
 
 ## 13. Notifications, environments and monitoring
 
-Reminders are local; only the daily hadith and rare announcements come from the server. Three environments keep QF prelive and production keys apart.
+Reminders are local; only the daily hadith and rare announcements come from the server. Local and production keep QF prelive and production keys apart. There is no staging server (ADR 0022).
 
 **Notifications**
 
@@ -673,18 +673,18 @@ Reminders are local; only the daily hadith and rare announcements come from the 
 
 |  | Local | Staging | Production |
 | --- | --- | --- | --- |
-| API | `php artisan serve` on local PHP 8.5 with Homebrew MySQL and Redis; no Docker or Caddy for now (ADR 0003, 0004) | Small VPS behind Caddy | Production VPS (4 vCPU, 8 GB, 80 GB) behind Caddy |
-| QF keys | Prelive | Prelive | Production |
+| API | `php artisan serve` on local PHP 8.5 with Homebrew MySQL and Redis; no Docker or Caddy for now (ADR 0003, 0004) | — | Railway (ADR 0022): FrankenPHP, Horizon, scheduler, MySQL, Redis |
+| QF keys | Prelive | — | Production |
 | EAS channel | `development` | — | `production` |
 | App variant | `com.taybahapp.taybah.dev` | — | `com.taybahapp.taybah` (TestFlight and App Store) |
-| Mail | Log driver (Mailpit once Docker returns, ADR 0004) | Transactional provider, sandbox | Transactional provider |
+| Mail | Log driver (Mailpit once Docker returns, ADR 0004) | — | Transactional provider |
 | Push | Expo push to dev builds | — | Expo push to TestFlight and store builds |
 
-One App Store app (ADR 0016): TestFlight and store builds share `com.taybahapp.taybah` and the `production` EAS profile. The `.dev` bundle ID keeps development builds beside it on a test device. The profile's `EXPO_PUBLIC_API_URL` is an EAS environment variable (`production` environment); it points at a staging API until the production server exists, then at production.
+One App Store app (ADR 0016): TestFlight and store builds share `com.taybahapp.taybah` and the `production` EAS profile. The `.dev` bundle ID keeps development builds beside it on a test device. The profile's `EXPO_PUBLIC_API_URL` is an EAS environment variable (`production` environment) and points at the production API on Railway (ADR 0022).
 
 **Configuration and secrets**
 
-- API: `QF_ENV`, `QF_CLIENT_ID`, `QF_CLIENT_SECRET`, `GOOGLE_CLIENT_IDS` (iOS, Android, web), `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_BUNDLE_ID`, `EXPO_ACCESS_TOKEN`, `MAIL_*`, `SENTRY_LARAVEL_DSN`. All live in the server's environment and GitHub environment secrets, never in the repo.
+- API: `QF_ENV`, `QF_CLIENT_ID`, `QF_CLIENT_SECRET`, `GOOGLE_CLIENT_IDS` (iOS, Android, web), `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_BUNDLE_ID`, `EXPO_ACCESS_TOKEN`, `MAIL_*`, `SENTRY_LARAVEL_DSN`. All live in Railway variables, never in the repo.
 - App: `app.config.ts` reads `APP_VARIANT` and `EXPO_PUBLIC_API_URL` per EAS build profile. No secret ever ships in the app.
 
 **Monitoring**
@@ -732,10 +732,10 @@ For each window, Maestro runs "open reader at 2:255 → rotate or resize → ass
 
 **CI pipelines (GitHub Actions, path-filtered)**
 
-- `api.yml`: Composer install, Pint, Larastan, Pest (MySQL 9.7 and Redis 8.10 service containers), `composer audit`; on `main`, build and push the Docker image, deploy to staging.
+- `api.yml`: Composer install, Pint, Larastan, Pest (MySQL 9.7 and Redis 8.10 service containers), `composer audit`. Production deploy is Railway, on push to `main` (ADR 0022).
 - `mobile.yml`: `npm ci`, ESLint, `tsc`, Jest, `npx expo-doctor`, and an npm audit gate that fails on high or critical advisories unless `.github/audit-allowlist.json` lists them with a reason and a review date; on tags `mobile-v*`, `eas build` for the `production` profile and `eas submit`.
 - `contract.yml`: regenerate OpenAPI and TS types, fail on drift.
-- `release-api.yml`: on tags `api-v*`, deploy to production (migrations, container swap, Horizon restart).
+- Production deploy is not a second workflow. Railway builds `apps/api/docker/Dockerfile` and runs migrations on boot (ADR 0022).
 - OTA: `eas update --channel production` for JavaScript-only fixes, guarded by the same checks.
 
 ## 15. Solo delivery plan

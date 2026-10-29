@@ -379,8 +379,8 @@ QF credentials never leave the backend, and prelive and production are kept full
 
 | Environment | QF auth URL | QF API base | Our use |
 | --- | --- | --- | --- |
-| Prelive | `https://prelive-oauth2.quran.foundation` | `https://apis-prelive.quran.foundation` | Development and staging builds |
-| Production | `https://oauth2.quran.foundation` | `https://apis.quran.foundation` | Store builds only |
+| Prelive | `https://prelive-oauth2.quran.foundation` | `https://apis-prelive.quran.foundation` | Local development |
+| Production | `https://oauth2.quran.foundation` | `https://apis.quran.foundation` | The Railway API, TestFlight, and store builds (ADR 0022) |
 
 Endpoints from the [QF quickstart](https://api-docs.quran.foundation/docs/quickstart).
 
@@ -420,8 +420,8 @@ Builds, store submission and over-the-air fixes all run through EAS, with two ch
 
 | Channel | Backend | Who gets it |
 | --- | --- | --- |
-| `development` | Local / staging, QF prelive keys | Developers (development builds) |
-| `production` | Production, QF production keys (staging and prelive until the production server exists) | TestFlight and Play internal testers, then store users |
+| `development` | Local, QF prelive keys | Developers (development builds) |
+| `production` | Production on Railway, QF production keys (ADR 0022) | TestFlight and Play internal testers, then store users |
 
 - **Builds:** EAS Build per channel; version numbers bumped automatically by EAS.
 - **Submission:** EAS Submit to App Store Connect and Google Play, with Play staged rollout at 10% → 50% → 100%.
@@ -436,14 +436,13 @@ Builds, store submission and over-the-air fixes all run through EAS, with two ch
 
 ## Self-hosting
 
-The backend runs on your own servers with Docker Compose. Audio is served from Quran Foundation's CDN, so our server only carries the API, content packs and user data.
+The backend runs on Railway (ADR 0022). Audio is served from Quran Foundation's CDN, so the host only carries the API, content packs and user data. One hosted environment: production.
 
-- **Servers:** one production server and one smaller staging server, kept separate because they use different QF keys. Starting size for production: 4 vCPU, 8 GB RAM, 80 GB SSD. This is an estimate to revisit after beta.
-- **Containers:** web server with TLS (Caddy, automatic Let's Encrypt), PHP 8.5-FPM app, Horizon worker, scheduler, MySQL 9.7 LTS, Redis 8.10. MySQL and Redis are not exposed outside the server.
-- **In front:** Cloudflare (free plan) for DNS, DDoS protection and caching of content-pack downloads, which are the heaviest traffic.
-- **Deploys:** GitHub Actions builds the image and deploys over SSH with zero downtime: migrations first, then a container swap and a Horizon restart.
-- **Backups:** nightly database backups (`spatie/laravel-backup`) to off-site object storage, kept 30 days; a restore is tested monthly on staging.
-- **Security:** SSH keys only, firewall open on 80 and 443 only, automatic OS security updates; secrets in the server's environment, never in the repository.
+- **Host:** one Railway project. Services: the API (FrankenPHP, PHP 8.5), Horizon, the scheduler, MySQL, and Redis. Railway terminates TLS. The service root is `apps/api`.
+- **Deploys:** a push to `main`. Railway builds `apps/api/docker/Dockerfile`. The container runs migrations before it serves.
+- **In front:** Railway's hostname. Cloudflare (free plan) can sit in front later for DNS and caching of content-pack downloads.
+- **Backups:** nightly database backups (`spatie/laravel-backup`) to off-site object storage, kept 30 days. Not set up yet.
+- **Security:** secrets in Railway variables, never in the repository.
 - **Monitoring:** external uptime check, Laravel Pulse, Sentry, and alerts on disk space, queue backlog and content-sync age.
 - **Email:** a transactional email provider for sign-in codes, since mail sent straight from a self-hosted server is often marked as spam.
 - **Growth path:** when load requires it, move MySQL to its own server first, then add app containers behind a load balancer.
@@ -454,7 +453,7 @@ Four phases take the app to the stores in about 18 weeks. The first gate, QF con
 
 | Phase | Weeks | Work |
 |---|---|---|
-| Foundations | 1 to 4 | QF access, prelive keys · Laravel 13, sync job · Auth: email, Google, Apple · Expo app, design tokens · Arabic, English, RTL · CI, staging server |
+| Foundations | 1 to 4 | QF access, prelive keys · Laravel 13, sync job · Auth: email, Google, Apple · Expo app, design tokens · Arabic, English, RTL · CI, production on Railway |
 | Reading | 5 to 9 | Onboarding · Fonts, display modes · Vertical virtual scroll · Tafsir · Search, bookmarks · User data sync |
 | Listening and Hadith | 10 to 14 | Player, lock screen · Ayah and word highlight · Downloads, range repeat · Notes, khatma planner · Hadith v1 · Push, reminders |
 | Beta and launch | 15 to 18 | TestFlight, Play beta · Accessibility pass · Store pages AR and EN · Production server, keys · Store review · Public launch |
