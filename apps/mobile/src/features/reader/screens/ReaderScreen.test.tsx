@@ -10,6 +10,7 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 import { themes } from '@/core/theme';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { pageForVerse } from '@/features/reader/anchor/page';
+import { verseKeyToId } from '../data/verses';
 
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -36,6 +37,7 @@ let mockMushafProps:
       contentBottomInset?: number;
       highlightsByVerseId?: ReadonlyMap<number, string>;
       onVisiblePage?: (page: number, verseKey: string) => void;
+      onUserScrollStart?: () => void;
     }
   | undefined;
 jest.mock('../HafsMushafList', () => {
@@ -304,6 +306,55 @@ describe('ReaderScreen', () => {
 
       expect(view.queryByTestId('mini-player-reader')).toBeNull();
       expect(mockMushafProps?.contentBottomInset).toBe(0);
+    });
+  });
+
+  describe('recitation follow', () => {
+    beforeEach(() => {
+      usePlayerStore.getState().reset();
+    });
+
+    afterEach(() => {
+      usePlayerStore.getState().reset();
+    });
+
+    // Plays surah 2 with the given ayah recited, in Mushaf mode.
+    async function playingAt(verseKey: string) {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode('mushaf');
+      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 2, positionMs: 0, durationMs: 48_000 });
+      usePlayerStore.getState().markPlaying();
+      usePlayerStore.setState({ activeVerseId: verseKeyToId(executor, verseKey) ?? null });
+    }
+
+    it('turns the Mushaf to the recited ayah while playing', async () => {
+      await playingAt('2:256');
+      await renderUi(reader());
+      expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
+    });
+
+    it('a drag stops the follow and shows the pill; the pill resumes at once', async () => {
+      await playingAt('2:256');
+      const view = await renderUi(reader());
+
+      await act(async () => {
+        mockMushafProps?.onUserScrollStart?.();
+      });
+      expect(mockMushafProps?.anchorVerseKey).toBe('2:255');
+      expect(view.getByTestId('reader-resume')).toBeOnTheScreen();
+
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'العودة إلى الآية الحالية' }));
+      });
+      expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
+    });
+
+    it('a paused player does not move the reader', async () => {
+      await playingAt('2:256');
+      usePlayerStore.getState().markPaused();
+      await renderUi(reader());
+      expect(mockMushafProps?.anchorVerseKey).toBe('2:255');
     });
   });
 

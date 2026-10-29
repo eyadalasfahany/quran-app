@@ -8,7 +8,7 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { themes } from '@/core/theme';
 import { openAudioTestDb } from '../data/test-db';
-import { pause, resume, seek } from '../player';
+import { nextAyah, pause, previousAyah, resume, seek } from '../player';
 import { usePlayerStore } from '../playerStore';
 
 import { PlayerScreen } from './PlayerScreen';
@@ -26,7 +26,9 @@ jest.mock('@/core/db/content/open', () => ({
 }));
 
 jest.mock('../player', () => ({
+  nextAyah: jest.fn(() => Promise.resolve()),
   pause: jest.fn(),
+  previousAyah: jest.fn(() => Promise.resolve()),
   resume: jest.fn(() => Promise.resolve()),
   seek: jest.fn(),
 }));
@@ -237,5 +239,18 @@ describe('PlayerScreen', () => {
 
   it('uses no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/audio/screens/PlayerScreen.tsx')).toEqual([]);
+  });
+
+  it('steps to the previous and next ayah through the engine, enabled once timings exist', async () => {
+    loadSurah('paused');
+    const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
+    expect(view.getByRole('button', { name: 'الآية السابقة' })).toBeDisabled();
+
+    usePlayerStore.setState({ activeVerseId: 5, activeWord: null });
+    const enabled = await renderUi(<PlayerScreen />, { theme: 'dark' });
+    await fireEvent.press(enabled.getByRole('button', { name: 'الآية التالية' }));
+    await fireEvent.press(enabled.getByRole('button', { name: 'الآية السابقة' }));
+    expect(nextAyah).toHaveBeenCalledTimes(1);
+    expect(previousAyah).toHaveBeenCalledTimes(1);
   });
 });

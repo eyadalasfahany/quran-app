@@ -6,6 +6,7 @@ import {
 } from '@shopify/flash-list';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { View, useWindowDimensions } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
 import { useTheme } from '@/core/theme';
@@ -36,6 +37,12 @@ export type ReadingListProps = {
   fontScale?: number;
   selectedVerseKey?: string | null;
   recitedVerseKey?: string | null;
+  /** The recited word (1-based) inside the recited ayah, when the reciter has word segments. */
+  activeWord?: number | null;
+  /** Whether a reciter can play from a row (useAudioAvailable). */
+  audioAvailable?: boolean;
+  /** The ayah to bring into view: set while the reader follows the recitation, null otherwise. */
+  followKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   horizontalGutter?: number;
   topInset?: number;
@@ -45,17 +52,26 @@ export type ReadingListProps = {
   onSelectVerseKey: (verseKey: string) => void;
   onOpenAyahActions: (verseKey: string) => void;
   onOpenTafsir?: (verseKey: string) => void;
+  onPlayVerseKey?: (verseKey: string) => void;
   onVisibleVerseKey?: (verseKey: string) => void;
+  /** A drag began or ended: the reader is scrolling by hand, so following pauses. */
+  onUserScrollStart?: () => void;
+  onUserScrollEnd?: () => void;
   testID?: string;
 };
 
 const NO_HIGHLIGHTS: ReadonlyMap<number, HighlightColor> = new Map();
+// Where the recited ayah lands when the list follows it: a third of the way down the viewport.
+const FOLLOW_VIEW_POSITION = 1 / 3;
 
 export function ReadingList({
   anchorVerseKey,
   fontScale = 1,
   selectedVerseKey = null,
   recitedVerseKey = null,
+  activeWord = null,
+  audioAvailable = false,
+  followKey = null,
   highlightsByVerseId = NO_HIGHLIGHTS,
   horizontalGutter = 0,
   topInset = 0,
@@ -64,10 +80,14 @@ export function ReadingList({
   onSelectVerseKey,
   onOpenAyahActions,
   onOpenTafsir,
+  onPlayVerseKey,
   onVisibleVerseKey,
+  onUserScrollStart,
+  onUserScrollEnd,
   testID,
 }: ReadingListProps) {
   const theme = useTheme();
+  const reduceMotion = useReducedMotion();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const columnWidth = readingColumnWidth(windowWidth, horizontalGutter);
   const listRef = useRef<FlashListRef<ReadingRow>>(null);
@@ -127,6 +147,21 @@ export function ReadingList({
     }
   }, [anchorVerseKey, followedVerseKey, openedVerseKey, rows]);
 
+  // Following the recitation: the recited ayah moves to the top third. Animated, or a jump under Reduce Motion.
+  // An ayah outside the window recentres the window first; the rows then bring the scroll on the next pass.
+  const followIndex = followKey === null ? -1 : anchorRowIndex(rows, followKey);
+  if (followKey !== null && followIndex < 0 && openedVerseKey !== followKey) {
+    setOpenedVerseKey(followKey);
+  }
+  useEffect(() => {
+    if (followKey === null || followIndex < 0) {
+      return;
+    }
+    if (typeof listRef.current?.scrollToIndex === 'function') {
+      listRef.current.scrollToIndex({ animated: !reduceMotion, index: followIndex, viewPosition: FOLLOW_VIEW_POSITION });
+    }
+  }, [followIndex, followKey, reduceMotion, rows]);
+
   const prevLayoutSignature = useRef<string | null>(null);
   useLayoutEffect(() => {
     if (prevLayoutSignature.current === null) {
@@ -180,8 +215,8 @@ export function ReadingList({
 
   // FlashList repaints rows only when data or extraData changes; renderItem reads these three.
   const rowExtraData = useMemo(
-    () => ({ highlightsByVerseId, recitedVerseKey, selectedVerseKey }),
-    [highlightsByVerseId, recitedVerseKey, selectedVerseKey],
+    () => ({ activeWord, audioAvailable, highlightsByVerseId, recitedVerseKey, selectedVerseKey }),
+    [activeWord, audioAvailable, highlightsByVerseId, recitedVerseKey, selectedVerseKey],
   );
 
   const renderItem = ({ item }: ListRenderItemInfo<ReadingRow>) => {
@@ -206,15 +241,19 @@ export function ReadingList({
     const recited = recitedVerseKey === verse.verseKey;
     const openActions = () => onOpenAyahActions(verse.verseKey);
     const openTafsir = onOpenTafsir === undefined ? undefined : () => onOpenTafsir(verse.verseKey);
+    const play = onPlayVerseKey === undefined ? undefined : () => onPlayVerseKey(verse.verseKey);
 
     return (
       <MeasuredRow rowKey={item.key} onHeight={recordHeight}>
         <ReadingAyahRow
+          activeWord={activeWord}
+          audioAvailable={audioAvailable}
           fontScale={fontScale}
           highlightColor={highlightsByVerseId.get(verse.id) ?? null}
           onLongPress={openActions}
           onOpenActions={openActions}
           onOpenTafsir={openTafsir}
+          onPlay={play}
           onPress={() => onSelectVerseKey(verse.verseKey)}
           recited={recited}
           selected={selected}
@@ -246,6 +285,9 @@ export function ReadingList({
             maintainVisibleContentPosition={{ autoscrollToTopThreshold: 10 }}
             onEndReached={extendEnd}
             onEndReachedThreshold={0.6}
+            onMomentumScrollEnd={onUserScrollEnd}
+            onScrollBeginDrag={onUserScrollStart}
+            onScrollEndDrag={onUserScrollEnd}
             onStartReached={extendStart}
             onStartReachedThreshold={0.6}
             onViewableItemsChanged={onViewableItemsChanged}

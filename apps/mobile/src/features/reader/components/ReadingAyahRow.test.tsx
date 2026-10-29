@@ -247,3 +247,50 @@ describe('ReadingAyahRow', () => {
     expect(rawColorLiteralsInFeature('src/features/reader/components/ReadingAyahRow.tsx')).toEqual([]);
   });
 });
+
+describe('ReadingAyahRow recitation', () => {
+  const props = { onPress: () => undefined, textImlaei: 'text', testID: 'row', textUthmani: 'ٱللَّهُ لَآ', verseNumber: 1 };
+
+  function quranBlock(view: Awaited<ReturnType<typeof renderUi>>) {
+    return flatStyle(view.getByText('ٱللَّهُ لَآ').parent!.props.style);
+  }
+
+  it('the recited ayah gets the neutral wash, the brand rule and the recited hint', async () => {
+    const view = await renderUi(<ReadingAyahRow {...props} recited />);
+    expect(quranBlock(view)).toMatchObject({
+      backgroundColor: colors.highlightActive,
+      borderStartColor: colors.brand,
+      borderStartWidth: themes.light.stroke.activeRule,
+    });
+    const row = view.getByRole('button', { name: 'text الآية ١' });
+    expect(row.props.accessibilityState).toMatchObject({ selected: true });
+    expect(row.props.accessibilityHint).toBe('يُتلى الآن');
+  });
+
+  it('a user colour still fills the recited ayah', async () => {
+    const view = await renderUi(<ReadingAyahRow {...props} highlightColor="green" recited />);
+    expect(quranBlock(view)).toMatchObject({ backgroundColor: colors.highlightGreen, borderStartColor: colors.brand });
+  });
+
+  it('an ayah that is not recited has no hint', async () => {
+    const view = await renderUi(<ReadingAyahRow {...props} />);
+    expect(view.getByRole('button', { name: 'text الآية ١' }).props.accessibilityHint).toBeUndefined();
+  });
+
+  it('the play button calls onPlay when a reciter is available', async () => {
+    const onPlay = jest.fn();
+    const view = await renderUi(<ReadingAyahRow {...props} audioAvailable onPlay={onPlay} />);
+    fireEvent.press(view.getByTestId('row-header-play'));
+    expect(onPlay).toHaveBeenCalledTimes(1);
+  });
+
+  it('the play button is disabled, with the hint, while no reciter is available', async () => {
+    const onPlay = jest.fn();
+    const view = await renderUi(<ReadingAyahRow {...props} audioAvailable={false} onPlay={onPlay} />, { locale: 'en' });
+    const play = view.getByTestId('row-header-play');
+    expect(play.props.accessibilityState).toMatchObject({ disabled: true });
+    expect(play.props.accessibilityHint).toBe("Recitation isn't available yet");
+    fireEvent.press(play);
+    expect(onPlay).not.toHaveBeenCalled();
+  });
+});

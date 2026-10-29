@@ -3,7 +3,9 @@ import { View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { AyahMarker, highlightFill, QuranText, useContrastColors, type HighlightColor } from '@/shared/ui';
+import { AyahMarker, highlightFill, useContrastColors, type HighlightColor } from '@/shared/ui';
+
+import { RecitedQuranText } from './RecitedQuranText';
 
 // The current ayah of the Focus frame: centred Quran text over its active marker.
 export function FocusAyah({
@@ -12,6 +14,8 @@ export function FocusAyah({
   textImlaei,
   fontScale = 1,
   highlightColor = null,
+  recited = false,
+  activeWord = null,
   onOpenActions,
   testID = 'focus-ayah',
 }: {
@@ -20,6 +24,10 @@ export function FocusAyah({
   textImlaei: string | null;
   fontScale?: number;
   highlightColor?: HighlightColor | null;
+  /** The ayah the player is reciting: the neutral wash and the brand marker (ADR 0012). */
+  recited?: boolean;
+  /** The recited word (1-based), when the ayah has word segments. */
+  activeWord?: number | null;
   onOpenActions?: () => void;
   testID?: string;
 }) {
@@ -33,21 +41,23 @@ export function FocusAyah({
     highlightColor === null
       ? `${labelText} ${ayahLabel}`
       : `${labelText} ${ayahLabel} ${t(`ui.highlight.${highlightColor}`)}`;
-  const background = highlightFill(colors, highlightColor);
+  // The user's colour fills the ayah; the recitation's wash shows only without one (ADR 0012).
+  const background = highlightFill(colors, highlightColor) ?? (recited ? colors.highlightActive : undefined);
 
   return (
     <View style={{ alignItems: 'center', gap: theme.space[4] }}>
-      <QuranText
+      <RecitedQuranText
+        accessibilityHint={recited ? t('player.nowPlaying') : undefined}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="text"
+        activeWord={recited ? activeWord : null}
         align="center"
         fontScale={fontScale}
         style={background === undefined ? undefined : { backgroundColor: background }}
         testID={`${testID}-current`}
+        text={textUthmani}
         variant="quranFocus"
-      >
-        {textUthmani}
-      </QuranText>
+      />
       <AyahMarker
         active
         markerSize={theme.size.focusMarker}

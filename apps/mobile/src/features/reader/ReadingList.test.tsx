@@ -352,3 +352,52 @@ describe('ReadingList', () => {
     });
   });
 });
+
+describe('ReadingList recitation follow', () => {
+  function list(props: Partial<React.ComponentProps<typeof ReadingList>>) {
+    return (
+      <ThemeProvider name="light">
+        <ReadingList
+          anchorVerseKey="18:10"
+          mode="reading"
+          onOpenAyahActions={() => undefined}
+          onSelectVerseKey={() => undefined}
+          testID="list"
+          {...props}
+        />
+      </ThemeProvider>
+    );
+  }
+
+  it('brings the followed ayah to a third of the way down, animated', async () => {
+    flashListTestState.scrollCalls.length = 0;
+    const view = await renderUi(list({}));
+    const index = ayahRowIndex('18:12');
+    flashListTestState.scrollCalls.length = 0;
+
+    view.rerender(list({ followKey: '18:12' }));
+
+    await waitFor(() => {
+      expect(flashListTestState.scrollCalls).toContainEqual(
+        expect.objectContaining({ animated: true, index, viewPosition: 1 / 3 }),
+      );
+    });
+  });
+
+  it('does not scroll when no ayah is followed (paused, or idle)', async () => {
+    flashListTestState.scrollCalls.length = 0;
+    const view = await renderUi(list({}));
+    flashListTestState.scrollCalls.length = 0;
+
+    view.rerender(list({ followKey: null, recitedVerseKey: '18:12' }));
+
+    expect(flashListTestState.scrollCalls).toEqual([]);
+  });
+
+  it('marks the recited row with the recited hint', async () => {
+    const view = await renderUi(list({ recitedVerseKey: '18:10' }));
+    const recited = view.getAllByRole('button').filter((button) => button.props.accessibilityHint === 'يُتلى الآن');
+    expect(recited).toHaveLength(1);
+    expect(recited[0]!.props.accessibilityLabel).toContain('الآية ١٠');
+  });
+});

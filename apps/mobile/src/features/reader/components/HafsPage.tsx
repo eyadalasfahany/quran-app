@@ -17,6 +17,7 @@ export function HafsPage({
   chapters,
   fontScale,
   selectedVerseKey,
+  recitedVerseKey = null,
   highlightsByVerseId,
   onSelectVerseKey,
   onOpenAyahActions,
@@ -29,6 +30,8 @@ export function HafsPage({
   chapters: ReadonlyMap<number, ChapterRecord>;
   fontScale: number;
   selectedVerseKey: string | null;
+  /** The ayah the player is reciting. */
+  recitedVerseKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
@@ -66,6 +69,7 @@ export function HafsPage({
         onFocusRunLayout={measureFocus}
         onOpenActions={onOpenAyahActions}
         onPressVerse={onSelectVerseKey}
+        recitedVerseKey={recitedVerseKey}
         selectedVerseKey={selectedVerseKey}
         testID={testID ? `${testID}-page-${page}` : undefined}
         verses={verses}

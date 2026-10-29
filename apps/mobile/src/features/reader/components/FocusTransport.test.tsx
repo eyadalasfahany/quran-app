@@ -82,3 +82,22 @@ describe('FocusTransport', () => {
     expect(featureComponentLiterals('features/reader/components/FocusTransport.tsx')).toEqual([]);
   });
 });
+
+describe('FocusTransport play', () => {
+  it('plays from the focused ayah, and shows pause while playing', async () => {
+    const onPlay = jest.fn();
+    const view = await renderUi(<FocusTransport onPlay={onPlay} />, { locale: 'en' });
+    fireEvent.press(view.getByRole('button', { name: 'Play' }));
+    expect(onPlay).toHaveBeenCalledTimes(1);
+  });
+
+  it('is disabled without a play handler (no reciter available)', async () => {
+    const view = await renderUi(<FocusTransport />, { locale: 'en' });
+    expect(view.getByRole('button', { name: 'Play' }).props.accessibilityState).toMatchObject({ disabled: true });
+  });
+
+  it('labels the control pause while playing', async () => {
+    const view = await renderUi(<FocusTransport onPlay={() => undefined} playing />, { locale: 'en' });
+    expect(view.getByRole('button', { name: 'Pause' })).toBeOnTheScreen();
+  });
+});

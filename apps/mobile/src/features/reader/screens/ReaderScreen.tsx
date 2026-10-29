@@ -9,6 +9,10 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useWindowClass } from '@/core/layout';
 import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
+import { nextAyah, pause, previousAyah } from '@/features/audio/player';
+import { usePlayerStore } from '@/features/audio/playerStore';
+import { useAudioAvailable } from '@/features/audio/hooks/useAudioAvailable';
+import { playVerse } from '@/features/audio/play-verse';
 import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
 import { MINI_PLAYER_READER_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { listBookmarks, toggleBookmark, useHighlightsByVerseId } from '@/features/library/data';
@@ -34,6 +38,8 @@ import type { ReaderMode } from '../anchor/reading-anchor';
 import { useReaderSelection } from '../selection';
 import { useScrollHaptics } from '../scroll-haptics';
 import { useReaderSettings } from '../settings';
+import { useRecitation } from '../useRecitation';
+import { useRecitationFollow } from '../useRecitationFollow';
 
 type ReaderChrome = {
   title: string;
@@ -102,8 +108,25 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     [executor],
   );
 
+  // The recitation: the ayah being recited, and whether the reader follows it (playing and not dragged away).
+  const audioAvailable = useAudioAvailable();
+  const { activeWord, recitedVerseKey, status } = useRecitation(executor);
+  const follow = useRecitationFollow();
+  const playing = status === 'playing';
+  const active = status === 'playing' || status === 'loading';
+  const followKey = follow.following && playing ? recitedVerseKey : null;
+
   const placement = panelPlacementFor(width, windowClass);
   const listAnchor = pinnedVerseKey ?? anchor.verseKey;
+  // Focus shows one ayah at a time: while following, that ayah is the recited one.
+  const focusKey = followKey ?? listAnchor;
+  const { setVisible } = anchor;
+  // Following in Focus also moves the saved place, as a manual turn does.
+  useEffect(() => {
+    if (mode === 'focus' && followKey !== null) {
+      setVisible({ verseKey: followKey });
+    }
+  }, [followKey, mode, setVisible]);
   // The toolbar names the saved place, which follows the scroll even while the list is pinned.
   const chrome = useMemo(
     () =>
@@ -186,13 +209,33 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const sheetOpen = segments.some((segment) => segment === 'reader-settings' || segment === 'ayah' || segment === 'tafsir');
   // Focus pages one ayah at a time with its own transport, so the resume pill has nothing to return to.
   const focus = mode === 'focus';
-  const showResume =
+  // While playing, a drag away from the recited ayah shows the pill back to it, in every mode.
+  const shownKey = focus ? listAnchor : visibleVerseKey;
+  const recitingAway = playing && recitedVerseKey !== null && !follow.following && shownKey !== recitedVerseKey;
+  const selectionPill =
     !focus &&
-    !sheetOpen &&
     selection.verseKey !== null &&
     visibleVerseKey !== null &&
     visibleVerseKey !== selection.verseKey &&
     pinnedVerseKey !== selection.verseKey;
+  const showResume = !sheetOpen && (recitingAway || selectionPill);
+
+  // Play from the focused ayah, or pause when the player is active.
+  const playFocused = () => {
+    if (active) {
+      pause();
+      return;
+    }
+    void playVerse(focusKey);
+  };
+  // A previous or next step in Focus also moves the recitation, when the player holds this surah.
+  const stepRecitation = (key: string, way: 'next' | 'previous') => {
+    const chapterId = executor === null ? undefined : getVerseByKey(executor, key)?.chapterId;
+    if (chapterId === undefined || usePlayerStore.getState().chapterId !== chapterId) {
+      return;
+    }
+    void (way === 'next' ? nextAyah() : previousAyah());
+  };
 
   // Focus leaves the reader's toolbar; Back from Focus returns to the mode Focus was entered from.
   const setMode = useReaderSettings((state) => state.setMode);
@@ -242,6 +285,11 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           showResume ? (
             <ResumePill
               onPress={() => {
+                if (recitingAway) {
+                  follow.resume();
+                  setPinnedVerseKey(null);
+                  return;
+                }
                 if (selection.verseKey !== null) {
                   setPinnedVerseKey(selection.verseKey);
                 }
@@ -284,13 +332,15 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           <ReaderModeFade mode={mode === 'mushaf' ? 'mushaf' : 'text'}>
             {executor !== null && mode === 'mushaf' ? (
               <HafsMushafList
-                anchorVerseKey={listAnchor}
+                anchorVerseKey={followKey ?? listAnchor}
                 bottomInset={0}
                 contentBottomInset={showMiniBar ? MINI_PLAYER_READER_FOOTPRINT : 0}
                 fontScale={fontScale}
                 highlightsByVerseId={highlights}
                 onOpenAyahActions={selectVerse}
                 onSelectVerseKey={selectVerse}
+                onUserScrollEnd={follow.onUserScrollEnd}
+                onUserScrollStart={follow.onUserScrollStart}
                 onVisiblePage={(page, key) => {
                   // The page holding the ayah the reader is at keeps that ayah, not the page's first one, so a
                   // surah opened halfway down a page stays the saved place and the title.
@@ -299,6 +349,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                   anchor.setVisible({ page, verseKey });
                   haptics.onPage(page, surahStartPages.has(page));
                 }}
+                recitedVerseKey={recitedVerseKey}
                 selectedVerseKey={selection.verseKey}
                 testID="reader-mushaf"
                 topInset={topInset}
@@ -306,34 +357,48 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
             ) : null}
             {executor !== null && mode === 'focus' ? (
               <FocusReader
+                activeWord={activeWord}
                 fontScale={fontScale}
                 highlightsByVerseId={highlights}
                 onOpenActions={selectVerse}
+                onPlay={audioAvailable ? playFocused : undefined}
+                onStep={stepRecitation}
+                onUserMove={follow.onUserScrollStart}
+                onUserMoveEnd={follow.onUserScrollEnd}
                 onVerseChange={(key) => {
                   setPinnedVerseKey(key);
                   anchor.setVisible({ verseKey: key });
                 }}
+                playing={active}
+                recitedVerseKey={recitedVerseKey}
                 topInset={topInset}
-                verseKey={listAnchor}
+                verseKey={focusKey}
               />
             ) : null}
             {executor !== null && mode === 'reading' ? (
               <ReadingList
+                activeWord={activeWord}
                 anchorVerseKey={listAnchor}
+                audioAvailable={audioAvailable}
                 bottomInset={0}
                 contentBottomInset={showMiniBar ? MINI_PLAYER_READER_FOOTPRINT : 0}
                 fontScale={fontScale}
+                followKey={followKey}
                 highlightsByVerseId={highlights}
                 horizontalGutter={gutter}
                 mode="reading"
                 onOpenAyahActions={selectVerse}
                 onOpenTafsir={openTafsir}
+                onPlayVerseKey={(key) => void playVerse(key)}
                 onSelectVerseKey={selectVerse}
+                onUserScrollEnd={follow.onUserScrollEnd}
+                onUserScrollStart={follow.onUserScrollStart}
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);
                   anchor.setVisible({ verseKey: key });
                   haptics.onVerse(key);
                 }}
+                recitedVerseKey={recitedVerseKey}
                 selectedVerseKey={selection.verseKey}
                 testID="reader-reading"
                 topInset={topInset}
