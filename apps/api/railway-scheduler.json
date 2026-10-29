@@ -5,7 +5,7 @@
     "dockerfilePath": "docker/Dockerfile"
   },
   "deploy": {
-    "startCommand": "php artisan schedule:work",
+    "startCommand": "/usr/local/bin/entrypoint.sh php artisan schedule:work",
     "restartPolicyType": "ALWAYS"
   }
 }
