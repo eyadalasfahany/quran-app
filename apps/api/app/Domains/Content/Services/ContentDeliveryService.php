@@ -66,6 +66,7 @@ final class ContentDeliveryService
                 packSizeBytes: $pack->size_bytes,
                 packSha256: $pack->sha256,
                 changesSinceMinVersion: $resource->changes_floor_version,
+                isDefault: $this->isDefault($resource),
             );
         }
 
@@ -157,10 +158,32 @@ final class ContentDeliveryService
     }
 
     /**
-     * The config override for a QF source id wins over the catalogue's name_ar (names are not Quran text).
+     * True only for the configured chapter reciter. The value is a QF source id, not our resource id.
+     */
+    private function isDefault(Resource $resource): bool
+    {
+        $default = config('quran.default_recitation');
+
+        return $resource->group === ResourceGroup::ChapterRecitations
+            && is_int($default)
+            && (int) $resource->source_key === $default;
+    }
+
+    /**
+     * A chapter recitation uses recitations.reciter_name_ar when it is set.
+     * A tafsir uses the config override for a QF source id over the catalogue's name_ar.
+     * Names are not Quran text.
      */
     private function servedArabicName(Resource $resource): ?string
     {
+        if ($resource->group === ResourceGroup::ChapterRecitations) {
+            $reciterName = $resource->recitation?->reciter_name_ar;
+
+            if (is_string($reciterName)) {
+                return $reciterName;
+            }
+        }
+
         if ($resource->group === ResourceGroup::Tafsirs) {
             $overrides = config('quran.display_names.ar', []);
             $override = $overrides[(int) $resource->source_key] ?? null;

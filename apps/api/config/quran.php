@@ -55,6 +55,10 @@ return [
         ],
     ],
 
+    // QF chapter reciter id (resources.source_key for group chapter_recitations).
+    // Mishari Rashid al-Afasy, Murattal.
+    'default_recitation' => 7,
+
     // ADR 0015: tafsir text is Arabic only. QF language_name values from the English catalogue.
     'tafsir_languages' => ['arabic'],
 

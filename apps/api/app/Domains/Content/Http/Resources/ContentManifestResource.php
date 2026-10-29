@@ -32,7 +32,8 @@ final class ContentManifestResource extends JsonResource
      *         direction: string|null,
      *         version: int,
      *         pack: array{url: string, size_bytes: int, sha256: string},
-     *         changes_since_min_version: int
+     *         changes_since_min_version: int,
+     *         is_default: bool
      *     }>
      * }
      */

@@ -28,7 +28,8 @@ final class ContentManifestEntryResource extends JsonResource
      *     direction: string|null,
      *     version: int,
      *     pack: array{url: string, size_bytes: int, sha256: string},
-     *     changes_since_min_version: int
+     *     changes_since_min_version: int,
+     *     is_default: bool
      * }
      */
     public function toArray(Request $request): array
@@ -52,6 +53,7 @@ final class ContentManifestEntryResource extends JsonResource
                 'sha256' => $this->resource->packSha256,
             ],
             'changes_since_min_version' => $this->resource->changesSinceMinVersion,
+            'is_default' => $this->resource->isDefault,
         ];
     }
 }

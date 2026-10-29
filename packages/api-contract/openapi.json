@@ -392,6 +392,9 @@
                                 },
                                 "changes_since_min_version": {
                                     "type": "integer"
+                                },
+                                "is_default": {
+                                    "type": "boolean"
                                 }
                             },
                             "required": [
@@ -405,7 +408,8 @@
                                 "direction",
                                 "version",
                                 "pack",
-                                "changes_since_min_version"
+                                "changes_since_min_version",
+                                "is_default"
                             ]
                         }
                     }

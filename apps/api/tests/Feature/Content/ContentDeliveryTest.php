@@ -7,12 +7,14 @@ use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Enums\TextDirection;
 use App\Domains\Content\Jobs\PruneContentChangesJob;
 use App\Domains\Content\Models\ContentChange;
+use App\Domains\Content\Models\Recitation;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\ChangeCursor;
 use App\Domains\Content\Packs\PackBuilder;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -360,6 +362,35 @@ it('returns 404 for the pack and the change feed of an ignored resource even whe
         ->assertJsonPath('code', 'not_found');
 })->with(ResourceGroup::ignoredValues());
 
+function packedRecitation(string $sourceKey, ?string $reciterNameAr, ?string $nameAr = null): Resource
+{
+    $recitation = Recitation::factory()->create([
+        'reciter_name_ar' => $reciterNameAr,
+        'resource_id' => Resource::factory()->state([
+            'group' => ResourceGroup::ChapterRecitations,
+            'source_key' => $sourceKey,
+            'name_ar' => $nameAr,
+            'version' => 1,
+            'is_active' => true,
+        ]),
+    ]);
+    $resource = $recitation->resource;
+    app(PackBuilder::class)->build($resource);
+
+    return $resource;
+}
+
+/**
+ * @param  list<array{query: string, bindings: list<mixed>, time: float|null}>  $log
+ */
+function recitationQueries(array $log): int
+{
+    return count(array_filter(
+        $log,
+        fn (array $query): bool => str_contains($query['query'], '`recitations`'),
+    ));
+}
+
 function contentChange(int $resourceId, int $version, int $verseId): ContentChange
 {
     return ContentChange::query()->create([
@@ -492,4 +523,79 @@ it('changes the manifest ETag when the configured Arabic author changes', functi
     $first->assertJsonPath('resources.0.author_ar', 'ابن كثير');
     $second->assertJsonPath('resources.0.author_ar', 'ابن كثير الدمشقي');
     expect($second->headers->get('ETag'))->not->toBe($first->headers->get('ETag'));
+});
+
+it('marks only the configured chapter recitation as the default', function (): void {
+    $default = packedRecitation('7', 'مشاري راشد العفاسي');
+    $other = packedRecitation('6', 'محمود خليل الحصري');
+    $tafsir = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '7',
+        'language_code' => 'ar',
+        'version' => 1,
+        'is_active' => true,
+    ]);
+    app(PackBuilder::class)->build($tafsir);
+
+    $flags = collect($this->getJson('/api/v1/content/manifest')->json('resources'))
+        ->mapWithKeys(fn (array $entry): array => [$entry['id'] => $entry['is_default']])
+        ->all();
+
+    expect($flags)->toBe([
+        $default->id => true,
+        $other->id => false,
+        $tafsir->id => false,
+    ]);
+});
+
+it('moves the default flag and changes the manifest ETag when the configured recitation changes', function (): void {
+    $afasy = packedRecitation('7', 'مشاري راشد العفاسي');
+    $husary = packedRecitation('6', 'محمود خليل الحصري');
+
+    $first = $this->getJson('/api/v1/content/manifest');
+    config()->set('quran.default_recitation', 6);
+    $second = $this->getJson('/api/v1/content/manifest');
+
+    $first->assertJsonPath('resources.0.id', $afasy->id)
+        ->assertJsonPath('resources.0.is_default', true)
+        ->assertJsonPath('resources.1.id', $husary->id)
+        ->assertJsonPath('resources.1.is_default', false);
+    $second->assertJsonPath('resources.0.is_default', false)
+        ->assertJsonPath('resources.1.is_default', true);
+    expect($second->headers->get('ETag'))->not->toBe($first->headers->get('ETag'));
+});
+
+it('serves a recitation arabic name from the reciter and null without one', function (): void {
+    $named = packedRecitation('7', 'مشاري راشد العفاسي', 'اسم المورد');
+    $missing = packedRecitation('6', null, null);
+    $catalogue = packedRecitation('12', null, 'اسم الفهرس');
+
+    $names = collect($this->getJson('/api/v1/content/manifest')->json('resources'))
+        ->mapWithKeys(fn (array $entry): array => [$entry['id'] => $entry['name_ar']])
+        ->all();
+
+    expect($names)->toBe([
+        $named->id => 'مشاري راشد العفاسي',
+        $missing->id => null,
+        $catalogue->id => 'اسم الفهرس',
+    ]);
+});
+
+it('keeps the manifest query count flat as recitations are added', function (): void {
+    packedRecitation('7', 'مشاري راشد العفاسي');
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $this->getJson('/api/v1/content/manifest')->assertOk()->assertJsonCount(1, 'resources');
+    $one = DB::getQueryLog();
+
+    packedRecitation('6', 'محمود خليل الحصري');
+
+    DB::flushQueryLog();
+    $this->getJson('/api/v1/content/manifest')->assertOk()->assertJsonCount(2, 'resources');
+    $two = DB::getQueryLog();
+
+    expect(recitationQueries($one))->toBe(1)
+        ->and(recitationQueries($two))->toBe(1)
+        ->and(count($two))->toBe(count($one));
 });

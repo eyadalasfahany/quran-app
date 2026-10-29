@@ -23,5 +23,6 @@ final class ContentManifestEntryData extends Data
         public readonly int $packSizeBytes,
         public readonly string $packSha256,
         public readonly int $changesSinceMinVersion,
+        public readonly bool $isDefault,
     ) {}
 }

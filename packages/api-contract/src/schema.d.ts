@@ -110,6 +110,7 @@ export interface components {
                     sha256: string;
                 };
                 changes_since_min_version: number;
+                is_default: boolean;
             }[];
         };
         /** HealthResource */
