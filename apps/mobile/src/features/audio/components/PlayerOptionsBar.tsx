@@ -16,10 +16,16 @@ export function PlayerOptionsBar({ versesCount, speed = 1 }: { versesCount: numb
   const locale = useLocale();
   const theme = useTheme();
   const nativeGlass = useGlass();
-  const rangeLabel = t('player.options.range', { from: formatNumber(1, locale), to: formatNumber(versesCount, locale) });
+  // With no surah loaded there is no range to show.
+  const rangeLabel =
+    versesCount > 0
+      ? t('player.options.range', { from: formatNumber(1, locale), to: formatNumber(versesCount, locale) })
+      : t('player.options.rangeEmpty');
 
   return (
     <GlassSurface
+      // The player is dark in every app theme, so its glass must not follow the light appearance.
+      colorScheme="dark"
       radius="xl"
       style={[
         { flexDirection: 'row', gap: 4, padding: 6 },

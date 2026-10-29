@@ -1,5 +1,5 @@
 import type { RadiusToken } from '@quran/design-tokens';
-import { GlassView } from 'expo-glass-effect';
+import { GlassView, type GlassColorScheme } from 'expo-glass-effect';
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewProps, type ViewStyle } from 'react-native';
 
@@ -11,6 +11,7 @@ import { useContrastColors } from './useContrastColors';
 export function GlassSurface({
   children,
   radius = 'xl',
+  colorScheme = 'auto',
   style,
   accessibilityLabel,
   accessibilityRole,
@@ -18,6 +19,8 @@ export function GlassSurface({
 }: {
   children?: ReactNode;
   radius?: RadiusToken;
+  // The native glass's appearance. 'auto' follows the system; a surface that is always dark (the player) sets 'dark'.
+  colorScheme?: GlassColorScheme;
   style?: StyleProp<ViewStyle>;
 } & Pick<ViewProps, 'accessibilityLabel' | 'accessibilityRole' | 'testID'>) {
   const theme = useTheme();
@@ -31,6 +34,7 @@ export function GlassSurface({
     return (
       <View accessibilityLabel={accessibilityLabel} accessibilityRole={accessibilityRole} style={[shape, style]} testID={testID}>
         <GlassView
+          colorScheme={colorScheme}
           glassEffectStyle="regular"
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, shape]}

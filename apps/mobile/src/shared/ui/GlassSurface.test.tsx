@@ -40,9 +40,17 @@ describe('GlassSurface', () => {
 
     expect(view.getByTestId('surface-glass').props.glassEffectStyle).toBe('regular');
     expect(view.getByTestId('surface-glass').props.pointerEvents).toBe('none');
+    expect(view.getByTestId('surface-glass').props.colorScheme).toBe('auto');
     expect(flatStyle(surface.props.style)).toMatchObject({ borderRadius: themes.light.radius.xl });
     expect(flatStyle(surface.props.style).backgroundColor).toBeUndefined();
     expect(view.getByText('محتوى')).toBeOnTheScreen();
+  });
+
+  it('passes a fixed appearance to the native glass for a surface that is always dark', async () => {
+    mockLiquidGlass.mockReturnValue(true);
+    const view = await renderUi(<GlassSurface colorScheme="dark" testID="surface" />);
+
+    expect(view.getByTestId('surface-glass', { includeHiddenElements: true }).props.colorScheme).toBe('dark');
   });
 
   it('falls back to solid glassFallback with a line hairline', async () => {

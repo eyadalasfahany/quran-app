@@ -235,6 +235,7 @@
       "repeat": "تكرار",
       "repeatLabel": "عدد مرات التكرار",
       "range": "الآيات {{from}}–{{to}}",
+      "rangeEmpty": "الآيات",
       "speed": "السرعة {{rate}}×",
       "sleep": "مؤقت النوم"
     },

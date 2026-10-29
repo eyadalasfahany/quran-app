@@ -62,6 +62,15 @@ describe('PlayerOptionsBar', () => {
 
     expect(bar.backgroundColor).toBeUndefined();
     expect(view.getByTestId('player-options-glass', { includeHiddenElements: true })).toBeOnTheScreen();
+    // The player is dark in every app theme, so the light theme must not tint its glass light.
+    expect(view.getByTestId('player-options-glass', { includeHiddenElements: true }).props.colorScheme).toBe('dark');
+  });
+
+  it('shows the range label without numbers when no surah is loaded', async () => {
+    const view = await renderUi(<PlayerOptionsBar versesCount={0} />);
+
+    expect(view.getByText('الآيات')).toBeOnTheScreen();
+    expect(view.queryByText(/–/)).toBeNull();
   });
 
   it('keeps the bar as a 4-column row with 4 pt gaps and 6 pt padding', async () => {

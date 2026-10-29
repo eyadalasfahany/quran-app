@@ -235,6 +235,7 @@
       "repeat": "Repeat",
       "repeatLabel": "Repeat count",
       "range": "Ayahs {{from}}–{{to}}",
+      "rangeEmpty": "Ayahs",
       "speed": "Speed {{rate}}×",
       "sleep": "Sleep timer"
     },
