@@ -4,6 +4,12 @@ import { I18nManager, Pressable, View, useWindowDimensions } from 'react-native'
 
 import { useWindowClass, windowClassFor, type WindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
+import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
+import {
+  MINI_PLAYER_METRICS,
+  MINI_PLAYER_READER_BOTTOM,
+  MINI_PLAYER_SIDE,
+} from '@/features/audio/mini-player-metrics';
 
 import { PANEL_INSET, panelPlacementFor, panelStripWidth, type PanelPlacement } from '../layout';
 
@@ -20,6 +26,7 @@ export function AdaptiveReaderLayout({
   toolbar,
   panel,
   resume,
+  miniPlayer,
   children,
 }: {
   width?: number;
@@ -35,6 +42,8 @@ export function AdaptiveReaderLayout({
   panel?: ReactNode;
   // Floats centred at the bottom of the reading stage, above the mini player.
   resume?: ReactNode;
+  // The reader's mini player bar, floated 28 above the bottom safe area. Passed only where the mode allows it.
+  miniPlayer?: ReactNode;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
@@ -48,6 +57,12 @@ export function AdaptiveReaderLayout({
   const rtl = I18nManager.isRTL;
   const strip = placement === 'docked' ? panelStripWidth() : 0;
   const trailing = rtl ? 'left' : 'right';
+  const miniVisible = useMiniPlayerVisible('reader');
+  // The bar is drawn only when it was passed and the shared rule says it shows. The resume pill sits above it.
+  const miniShown = Boolean(miniPlayer) && miniVisible;
+  const resumeBottom = miniShown
+    ? MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_METRICS.reader.height + theme.space[2]
+    : theme.space[4];
 
   const placementRef = useRef<PanelPlacement | null>(null);
   const verseKeyRef = useRef(verseKey);
@@ -94,14 +109,30 @@ export function AdaptiveReaderLayout({
           {resume ? (
             <View
               pointerEvents="box-none"
-              style={{ alignItems: 'center', bottom: theme.space[4], left: 0, position: 'absolute', right: 0 }}
+              style={{ alignItems: 'center', bottom: resumeBottom, left: 0, position: 'absolute', right: 0 }}
               testID="reader-resume-slot"
             >
               {resume}
             </View>
           ) : null}
         </View>
-        <View testID="reader-mini-player-slot" style={{ height: bottomInset }} />
+        {/* The bar floats above this slot, outside its bounds; Android must not clip it. */}
+        <View style={{ height: bottomInset, overflow: 'visible' }} testID="reader-mini-player-slot">
+          {miniPlayer ? (
+            <View
+              pointerEvents="box-none"
+              style={{
+                bottom: bottomInset + MINI_PLAYER_READER_BOTTOM,
+                end: MINI_PLAYER_SIDE,
+                position: 'absolute',
+                start: MINI_PLAYER_SIDE,
+              }}
+              testID="reader-mini-player-dock"
+            >
+              {miniPlayer}
+            </View>
+          ) : null}
+        </View>
       </View>
       {placement === 'overlay' && showPanel ? (
         <Pressable

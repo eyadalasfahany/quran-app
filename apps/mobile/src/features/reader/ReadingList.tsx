@@ -40,6 +40,8 @@ export type ReadingListProps = {
   horizontalGutter?: number;
   topInset?: number;
   bottomInset?: number;
+  // Bottom padding inside the scroll, so the last ayah scrolls clear of the reader's mini player bar.
+  contentBottomInset?: number;
   onSelectVerseKey: (verseKey: string) => void;
   onOpenAyahActions: (verseKey: string) => void;
   onOpenTafsir?: (verseKey: string) => void;
@@ -58,6 +60,7 @@ export function ReadingList({
   horizontalGutter = 0,
   topInset = 0,
   bottomInset = 0,
+  contentBottomInset = 0,
   onSelectVerseKey,
   onOpenAyahActions,
   onOpenTafsir,
@@ -235,7 +238,7 @@ export function ReadingList({
       <View style={{ alignItems: 'center', flex: 1, paddingBottom: bottomInset, paddingTop: topInset, width: '100%' }}>
         <View style={{ flex: 1, maxWidth: columnWidth, width: '100%' }}>
           <FlashList
-            contentContainerStyle={{ paddingHorizontal: theme.space[5] }}
+            contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[5] }}
             data={rows}
             drawDistance={viewportHeight * 2}
             extraData={rowExtraData}

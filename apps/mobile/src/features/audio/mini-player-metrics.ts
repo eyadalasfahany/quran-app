@@ -1,3 +1,5 @@
+import { MINI_PLAYER_BOTTOM_GAP } from '@/core/layout/tab-bar-clearance';
+
 // The mini player's numbers, read from the two phone frames (quran-app-screens.html: #Main for tabs,
 // #Mushaf and #Reading for reader). Padding is logical: the start edge is the right in Arabic, and the
 // English frames mirror it.
@@ -47,3 +49,10 @@ export const MINI_PLAYER_PROGRESS_HEIGHT = 3;
 /** The play/pause button: a 44 pt circle with an 18 pt glyph. */
 export const MINI_PLAYER_BUTTON_SIZE = 44;
 export const MINI_PLAYER_GLYPH_SIZE = 18;
+
+/** The reader bar's bottom edge, 28 above the bottom safe area (#Mushaf, #Reading: bottom 28). */
+export const MINI_PLAYER_READER_BOTTOM = 28;
+/** Bottom content inset of the reader's lists while the reader bar shows: the bar's footprint plus the gap. */
+export const MINI_PLAYER_READER_FOOTPRINT = MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_METRICS.reader.height + MINI_PLAYER_BOTTOM_GAP;
+/** Bottom content inset of the tab screens while the tabs bar shows: the bar's height plus the gap. */
+export const MINI_PLAYER_TABS_FOOTPRINT = MINI_PLAYER_METRICS.tabs.height + MINI_PLAYER_BOTTOM_GAP;

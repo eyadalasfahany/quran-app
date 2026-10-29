@@ -8,6 +8,9 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useWindowClass } from '@/core/layout';
+import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
+import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
+import { MINI_PLAYER_READER_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { listBookmarks, toggleBookmark, useHighlightsByVerseId } from '@/features/library/data';
 import { Screen } from '@/shared/ui';
 
@@ -73,6 +76,9 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const selection = useReaderSelection();
   const highlights = useHighlightsByVerseId();
   const haptics = useScrollHaptics(mode);
+  // The bar shows in Reading and Mushaf only. Focus has its own transport (step 5), and expanded windows get theirs in 4b2.
+  const miniVisible = useMiniPlayerVisible('reader');
+  const showMiniBar = miniVisible && (mode === 'reading' || mode === 'mushaf');
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
   const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
@@ -231,6 +237,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           </SidePanel>
         }
         panelOpen={selection.panelOpen}
+        miniPlayer={showMiniBar ? <MiniPlayer variant="reader" /> : undefined}
         resume={
           showResume ? (
             <ResumePill
@@ -279,6 +286,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               <HafsMushafList
                 anchorVerseKey={listAnchor}
                 bottomInset={0}
+                contentBottomInset={showMiniBar ? MINI_PLAYER_READER_FOOTPRINT : 0}
                 fontScale={fontScale}
                 highlightsByVerseId={highlights}
                 onOpenAyahActions={selectVerse}
@@ -313,6 +321,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               <ReadingList
                 anchorVerseKey={listAnchor}
                 bottomInset={0}
+                contentBottomInset={showMiniBar ? MINI_PLAYER_READER_FOOTPRINT : 0}
                 fontScale={fontScale}
                 highlightsByVerseId={highlights}
                 horizontalGutter={gutter}

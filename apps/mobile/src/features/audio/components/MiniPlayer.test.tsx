@@ -1,7 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { I18nManager } from 'react-native';
+import { Dimensions, I18nManager } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -66,10 +66,18 @@ beforeEach(() => {
   jest.mocked(router.push).mockClear();
 });
 
+function setWindowWidth(width: number) {
+  Dimensions.set({
+    screen: { fontScale: 1, height: 844, scale: 1, width },
+    window: { fontScale: 1, height: 844, scale: 1, width },
+  });
+}
+
 afterEach(() => {
   db.close();
   mockContent.executor = null;
   I18nManager.isRTL = false;
+  setWindowWidth(390);
 });
 
 // Surah 1 at 12 s of 48 s: a quarter of the way along.
@@ -98,6 +106,14 @@ describe('MiniPlayer', () => {
     const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.queryByTestId('mini-player-reader')).toBeNull();
+  });
+
+  it.each(['tabs', 'reader'] as const)('draws nothing on an expanded window, even while playing (%s)', async (variant) => {
+    setWindowWidth(1000);
+    loadSurah('playing');
+    const view = await renderUi(<MiniPlayer variant={variant} />, { theme: 'light' });
+
+    expect(view.queryByTestId(`mini-player-${variant}`)).toBeNull();
   });
 
   it('shows the tab variant at the frame numbers: 64 high, 20 radius, 10 start and 12 end padding', async () => {

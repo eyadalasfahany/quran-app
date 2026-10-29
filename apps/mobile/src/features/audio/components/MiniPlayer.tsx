@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { GlassSurface, UiText } from '@/shared/ui';
 
+import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { usePlayerNames } from '../hooks/usePlayerNames';
 import {
   MINI_PLAYER_BUTTON_SIZE,
@@ -21,9 +22,9 @@ import { MiniPlayerTile } from './MiniPlayerTile';
 import { PlayerIconButton } from './PlayerIconButton';
 import { PAUSE_ICON, PLAY_ICON } from './player-icons';
 
-// The bar shown above the tabs (`tabs`) and at the foot of the reader (`reader`). It draws nothing while the
-// player is idle. Tapping the bar opens the full player; the button beside it toggles playback. The two are
-// siblings, so the button is never inside another button.
+// The bar shown above the tabs (`tabs`) and at the foot of the reader (`reader`). It draws nothing while
+// useMiniPlayerVisible is false: the player is idle, or the window is expanded. Tapping the bar opens the full
+// player; the button beside it toggles playback. The two are siblings, so the button is never inside another button.
 export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -31,8 +32,9 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
   const positionMs = usePlayerStore((state) => state.positionMs);
   const durationMs = usePlayerStore((state) => state.durationMs);
   const { reciterName, chapterName } = usePlayerNames();
+  const visible = useMiniPlayerVisible(variant);
 
-  if (status === 'idle') {
+  if (!visible) {
     return null;
   }
 

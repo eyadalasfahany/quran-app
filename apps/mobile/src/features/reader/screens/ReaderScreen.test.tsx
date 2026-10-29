@@ -1,12 +1,14 @@
 import { act, fireEvent } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import { useSegments } from 'expo-router';
+import { Dimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { themes } from '@/core/theme';
+import { usePlayerStore } from '@/features/audio/playerStore';
 import { pageForVerse } from '@/features/reader/anchor/page';
 
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
@@ -31,6 +33,7 @@ jest.mock('@/features/library/data/hooks', () => ({
 let mockMushafProps:
   | {
       anchorVerseKey: string;
+      contentBottomInset?: number;
       highlightsByVerseId?: ReadonlyMap<number, string>;
       onVisiblePage?: (page: number, verseKey: string) => void;
     }
@@ -39,9 +42,21 @@ jest.mock('../HafsMushafList', () => {
   const { createElement } = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HafsMushafList: (props: { anchorVerseKey: string; testID?: string; topInset?: number }) => {
+    HafsMushafList: (props: { anchorVerseKey: string; contentBottomInset?: number; testID?: string; topInset?: number }) => {
       mockMushafProps = props;
       return createElement(View, { style: { paddingTop: props.topInset }, testID: props.testID });
+    },
+  };
+});
+// The reading list stands in for FlashList's scroll-to-anchor, which Jest can't run; the props it was given are checked.
+let mockReadingProps: { contentBottomInset?: number; testID?: string } | undefined;
+jest.mock('../ReadingList', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    ReadingList: (props: { contentBottomInset?: number; testID?: string }) => {
+      mockReadingProps = props;
+      return createElement(View, { testID: props.testID });
     },
   };
 });
@@ -213,6 +228,82 @@ describe('ReaderScreen', () => {
       backgroundColor: themes.light.colors.surfacePage,
       flex: 1,
       paddingTop: 0,
+    });
+  });
+
+  describe('mini player', () => {
+    // The bar's footprint above the safe area: 28 + 68 + 12.
+    const footprint = 108;
+
+    function setWindowWidth(width: number) {
+      Dimensions.set({
+        screen: { fontScale: 1, height: 844, scale: 1, width },
+        window: { fontScale: 1, height: 844, scale: 1, width },
+      });
+    }
+
+    function startPlayback() {
+      const store = usePlayerStore.getState();
+      store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      store.markPlaying();
+    }
+
+    beforeEach(() => {
+      setWindowWidth(390);
+      usePlayerStore.getState().reset();
+    });
+
+    afterEach(() => {
+      setWindowWidth(390);
+      usePlayerStore.getState().reset();
+    });
+
+    it.each(['reading', 'mushaf'] as const)('shows the bar in %s mode and lifts the list past it', async (mode) => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode(mode);
+      startPlayback();
+
+      const view = await renderUi(reader());
+
+      expect(view.getByTestId('mini-player-reader')).toBeOnTheScreen();
+      if (mode === 'mushaf') {
+        expect(mockMushafProps?.contentBottomInset).toBe(footprint);
+      } else {
+        expect(mockReadingProps?.contentBottomInset).toBe(footprint);
+      }
+    });
+
+    it('draws no bar in Focus mode, and the lists keep no inset there', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('focus');
+      startPlayback();
+
+      const view = await renderUi(reader());
+
+      expect(view.queryByTestId('mini-player-reader')).toBeNull();
+      expect(view.queryByTestId('reader-mini-player-dock')).toBeNull();
+    });
+
+    it('draws no bar on an expanded window, where the expanded placement takes over', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      setWindowWidth(1000);
+      startPlayback();
+
+      const view = await renderUi(reader());
+
+      expect(view.queryByTestId('mini-player-reader')).toBeNull();
+      expect(mockMushafProps?.contentBottomInset).toBe(0);
+    });
+
+    it('draws no bar while the player is idle, and the list keeps no inset', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+
+      const view = await renderUi(reader());
+
+      expect(view.queryByTestId('mini-player-reader')).toBeNull();
+      expect(mockMushafProps?.contentBottomInset).toBe(0);
     });
   });
 

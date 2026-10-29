@@ -19,6 +19,8 @@ export type HafsMushafListProps = {
   fontScale?: number;
   topInset?: number;
   bottomInset?: number;
+  // Bottom padding inside the scroll, so the last page line scrolls clear of the reader's mini player bar.
+  contentBottomInset?: number;
   selectedVerseKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onVisiblePage?: (page: number, verseKey: string) => void;
@@ -32,6 +34,7 @@ export function HafsMushafList({
   fontScale = 1,
   topInset = 0,
   bottomInset = 0,
+  contentBottomInset = 0,
   selectedVerseKey = null,
   highlightsByVerseId,
   onVisiblePage,
@@ -168,7 +171,7 @@ export function HafsMushafList({
   return (
     <View style={{ flex: 1, paddingBottom: bottomInset, paddingTop: topInset }} testID={testID}>
       <FlashList
-        contentContainerStyle={{ paddingHorizontal: theme.space[4] }}
+        contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[4] }}
         data={pages}
         extraData={pageExtraData}
         keyExtractor={(page) => String(page)}

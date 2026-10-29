@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
+import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
+import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { useTheme } from '@/core/theme';
 import { Screen, ScreenHeader } from '@/shared/ui';
 
@@ -21,11 +23,16 @@ export function SectionScreen({
   children?: ReactNode;
 }) {
   const theme = useTheme();
+  // The tabs mini bar floats above the tab bar; the blocks keep clear of it while it shows.
+  const miniShown = useMiniPlayerVisible('tabs');
 
   return (
     <Screen testID={testID}>
       <ContentColumn gutter={gutter}>
-        <View style={{ flex: 1, gap: theme.size.sectionGap }}>
+        <View
+          style={{ flex: 1, gap: theme.size.sectionGap, paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
+          testID={`${testID}-content`}
+        >
           <ScreenHeader title={title} trailing={trailing} />
           {children}
         </View>

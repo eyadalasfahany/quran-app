@@ -1,8 +1,10 @@
 import { act, fireEvent } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { I18nManager, Text } from 'react-native';
+import { Dimensions, I18nManager, Text } from 'react-native';
 
 import { ThemeProvider, themes } from '@/core/theme';
+import { MINI_PLAYER_METRICS, MINI_PLAYER_READER_BOTTOM } from '@/features/audio/mini-player-metrics';
+import { usePlayerStore } from '@/features/audio/playerStore';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -17,6 +19,28 @@ const widths = [
   [1100, 'docked'],
   [1366, 'docked'],
 ] as const;
+
+function setWindowWidth(width: number) {
+  Dimensions.set({
+    screen: { fontScale: 1, height: 844, scale: 1, width },
+    window: { fontScale: 1, height: 844, scale: 1, width },
+  });
+}
+
+// Loads a surah and starts it, so the mini player bar shows.
+function startPlayback() {
+  const store = usePlayerStore.getState();
+  store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+  store.markPlaying();
+}
+
+// The bar's top edge measured up from the content area's bottom: 28 above the safe area plus its 68 height.
+const barTop = MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_METRICS.reader.height;
+
+beforeEach(() => {
+  setWindowWidth(390);
+  usePlayerStore.getState().reset();
+});
 
 function themed(node: ReactElement) {
   return <ThemeProvider name="light">{node}</ThemeProvider>;
@@ -101,6 +125,61 @@ describe('AdaptiveReaderLayout', () => {
     });
     expect(slot.props.pointerEvents).toBe('box-none');
     expect(view.getByText('resume')).toBeOnTheScreen();
+  });
+
+  it('lifts the resume pill 8 above the mini bar while the bar shows (28 + 68 + 8)', async () => {
+    startPlayback();
+    const view = await renderUi(layout(375, { miniPlayer: <Text>mini</Text>, resume: <Text>resume</Text> }));
+
+    expect(barTop + themes.light.space[2]).toBe(104);
+    expect(flatStyle(view.getByTestId('reader-resume-slot').props.style).bottom).toBe(104);
+  });
+
+  it('keeps the resume pill at space[4] when the mini bar is not showing', async () => {
+    const view = await renderUi(layout(375, { miniPlayer: <Text>mini</Text>, resume: <Text>resume</Text> }));
+
+    expect(flatStyle(view.getByTestId('reader-resume-slot').props.style).bottom).toBe(themes.light.space[4]);
+  });
+
+  it('keeps the resume pill at space[4] on an expanded window, where the bar is hidden', async () => {
+    setWindowWidth(1000);
+    startPlayback();
+    // The panel is closed: an open overlay panel is a modal, which hides the rest of the tree from the queries.
+    const view = await renderUi(
+      layout(1000, { miniPlayer: <Text>mini</Text>, panelOpen: false, resume: <Text>resume</Text> }),
+    );
+
+    expect(flatStyle(view.getByTestId('reader-resume-slot').props.style).bottom).toBe(themes.light.space[4]);
+  });
+
+  it('keeps the resume pill at space[4] when the bar is not passed, even while playing', async () => {
+    startPlayback();
+    const view = await renderUi(layout(375, { resume: <Text>resume</Text> }));
+
+    expect(flatStyle(view.getByTestId('reader-resume-slot').props.style).bottom).toBe(themes.light.space[4]);
+  });
+
+  it.each(locales)('draws the mini player 28 above the bottom safe area, 16 in from each side (%s)', async (locale) => {
+    startPlayback();
+    const view = await renderUi(layout(375, { bottomInset: 34, miniPlayer: <Text>mini</Text> }), { locale });
+    const dock = view.getByTestId('reader-mini-player-dock');
+
+    expect(view.getByText('mini')).toBeOnTheScreen();
+    expect(dock.parent?.props.testID).toBe('reader-mini-player-slot');
+    expect(flatStyle(dock.props.style)).toMatchObject({
+      bottom: 34 + MINI_PLAYER_READER_BOTTOM,
+      end: 16,
+      position: 'absolute',
+      start: 16,
+    });
+    expect(dock.props.pointerEvents).toBe('box-none');
+  });
+
+  it('draws no mini player dock when none is given', async () => {
+    const view = await renderUi(layout(375));
+
+    expect(view.queryByTestId('reader-mini-player-dock')).toBeNull();
+    expect(view.getByTestId('reader-mini-player-slot')).toBeOnTheScreen();
   });
 
   it('leaves out the resume slot when there is nothing to resume', async () => {

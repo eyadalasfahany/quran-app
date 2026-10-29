@@ -145,6 +145,29 @@ describe('ReadingList', () => {
     expect(view.queryByTestId('reader-mode-fade')).toBeNull();
   });
 
+  it('pads the end of the scroll by the content inset, so the last ayah clears the mini player', async () => {
+    const view = await renderUi(
+      <ReadingList
+        anchorVerseKey="18:10"
+        contentBottomInset={108}
+        mode="reading"
+        onOpenAyahActions={() => undefined}
+        onSelectVerseKey={() => undefined}
+        testID="list"
+      />,
+    );
+
+    expect(flatStyle(view.getByTestId('list').props.contentContainerStyle)).toMatchObject({ paddingBottom: 108 });
+  });
+
+  it('adds no bottom content inset by default', async () => {
+    const view = await renderUi(
+      <ReadingList anchorVerseKey="18:10" mode="reading" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />,
+    );
+
+    expect(flatStyle(view.getByTestId('list').props.contentContainerStyle).paddingBottom).toBe(0);
+  });
+
   it('starts below the floating toolbar and keeps the frame gutter', async () => {
     const view = await renderUi(
       <ReadingList

@@ -14,6 +14,8 @@ import { listJuzStarts } from '@/features/library/data/juz';
 import { getChapter, listChapters, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
+import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
+import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { useTheme } from '@/core/theme';
 import { Screen, ScreenHeader, SearchButton } from '@/shared/ui';
 
@@ -34,6 +36,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   const theme = useTheme();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
+  const miniShown = useMiniPlayerVisible('tabs');
   const [segment, setSegment] = useState<IndexSegmentKey>('surahs');
 
   const { continueReading, rows } = useMemo(() => {
@@ -112,6 +115,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
         </ScreenHeader>
         <View style={{ flex: 1, marginTop: theme.size.blockGap, minHeight: 200 }}>
           <FlashList
+            contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
             data={rows}
             keyExtractor={keyExtractor}
             ListHeaderComponent={header}
