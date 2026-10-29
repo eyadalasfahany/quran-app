@@ -5,13 +5,27 @@ at the device's declared size, read from its inline style or from the `.xw-devic
 
 usage: python3 packages/design-tokens/scripts/frame-shot.py <frame-id> <out.png>
 """
+import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[3] / 'quran-app-screens.html'
-CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+
+
+def find_chrome():
+    """Chrome on the developer's Mac; elsewhere $CHROME, a chrome or chromium on PATH, or Playwright's Chromium."""
+    candidates = [os.environ.get('CHROME'), '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+                  shutil.which('google-chrome'), shutil.which('chromium'), '/opt/pw-browsers/chromium']
+    for path in candidates:
+        if path and Path(path).exists():
+            return path
+    sys.exit('No Chrome found. Set CHROME to a Chrome or Chromium binary.')
+
+
+CHROME = find_chrome()
 FONTS = ('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran'
          '&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">')
 
@@ -66,7 +80,9 @@ def render(frame_id, out):
            f'{screen}</body></html>')
     page = out.with_suffix('.html')
     page.write_text(doc, encoding='utf-8')
-    subprocess.run([CHROME, '--headless=new', '--hide-scrollbars', '--force-device-scale-factor=2',
+    # Linux containers run as root, where Chromium only starts without its sandbox.
+    sandbox = ['--no-sandbox'] if sys.platform.startswith('linux') else []
+    subprocess.run([CHROME, *sandbox, '--headless=new', '--hide-scrollbars', '--force-device-scale-factor=2',
                     f'--window-size={width},{height}', '--virtual-time-budget=4000',
                     f'--screenshot={out}', page.as_uri()], check=True, capture_output=True)
     print(out)
