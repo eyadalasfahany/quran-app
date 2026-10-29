@@ -3,9 +3,22 @@ import { AppState } from 'react-native';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-import { createFakeAudioPlaylist, type FakeAudioPlaylist } from '../../../jest/fake-audio-player';
+import { createFakeAudioPlaylist, type FakeAudioPlaylist, type FakeAudioPlaylistStatus } from '../../../jest/fake-audio-player';
+import * as timings from './data/timings';
 import { openAudioTestDb } from './data/test-db';
-import { nextSurah, pause, playChapter, playFromVerse, previousSurah, resetPlayerForTests, resume, restoreLastSession, seek } from './player';
+import {
+  nextAyah,
+  nextSurah,
+  pause,
+  playChapter,
+  playFromVerse,
+  previousAyah,
+  previousSurah,
+  resetPlayerForTests,
+  resume,
+  restoreLastSession,
+  seek,
+} from './player';
 import { usePlayerStore } from './playerStore';
 import { readLastPosition } from './resume-model';
 import { setReciterId } from './settings';
@@ -118,6 +131,7 @@ describe('playing a surah', () => {
 
     expect(audio.createAudioPlaylist).toHaveBeenCalledWith({
       sources: [{ uri: 'https://example.test/1.mp3' }, { uri: 'https://example.test/2.mp3' }, { uri: 'https://example.test/114.mp3' }],
+      updateInterval: 100,
     });
     expect(fakePlaylist().skipTo).not.toHaveBeenCalled();
     expect(fakePlaylist().play).toHaveBeenCalled();
@@ -382,7 +396,7 @@ describe('one playlist per reciter', () => {
 
     expect(audio.createAudioPlaylist).toHaveBeenCalledTimes(2);
     expect(first.destroy).toHaveBeenCalled();
-    expect(audio.createAudioPlaylist).toHaveBeenLastCalledWith({ sources: [{ uri: 'https://example.test/husary-1.mp3' }] });
+    expect(audio.createAudioPlaylist).toHaveBeenLastCalledWith({ sources: [{ uri: 'https://example.test/husary-1.mp3' }], updateInterval: 100 });
     expect(usePlayerStore.getState().reciterId).toBe(31);
   });
 
@@ -528,5 +542,248 @@ describe('next and previous surah', () => {
     await playChapter(1);
     await flush();
     expect(fakePlaylist().listenerCount('trackChanged')).toBe(1);
+  });
+});
+
+/** Surah 1 with four ayahs: 1:1 at 0 to 5 s; 1:2 at 5 to 10 s, whose first word starts 50 ms early; 1:3 at 10 to 15 s; a gap; 1:4 at 16 to 20 s. */
+function seedAyahs(db: SqlExecutor): void {
+  db.run(
+    `INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search) VALUES
+     (2, '1:2', 1, 2, 1, 1, 1, 1, 'none', 'a', 'a'),
+     (3, '1:3', 1, 3, 1, 1, 1, 1, 'none', 'a', 'a'),
+     (4, '1:4', 1, 4, 1, 1, 1, 1, 'none', 'a', 'a')`,
+  );
+  db.run('DELETE FROM recitation_timings WHERE audio_file_id = 100');
+  db.run(
+    `INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms, segments) VALUES
+     (100, 1, 0, 5000, '[[1,0,2000],[2,2000,4000],[3,4000,5000]]'),
+     (100, 2, 5000, 10000, '[[1,4950,6000],[2,6000,9000]]'),
+     (100, 3, 10000, 15000, NULL),
+     (100, 4, 16000, 20000, NULL)`,
+  );
+}
+
+/** Surah 2's file has one ayah (2:1, verse 8) from 0 to 6 s. */
+function seedSurahTwoTimings(db: SqlExecutor): void {
+  db.run('INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (200, 8, 0, 6000)');
+}
+
+/** Reports the loaded surah at `seconds`, the way the playlist does on each tick. */
+function reportAt(seconds: number, extra: Partial<FakeAudioPlaylistStatus> = {}): void {
+  fakePlaylist().currentTime = seconds;
+  fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: seconds, duration: 20, ...extra });
+}
+
+describe('the active ayah and word', () => {
+  beforeEach(() => {
+    seedAyahs(executor);
+  });
+
+  it('follows the status times: ayah and word, at the boundaries, in gaps and on the last ayah', async () => {
+    await playChapter(1);
+
+    reportAt(1.5);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 1, activeWord: 1 });
+    reportAt(2.5);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 1, activeWord: 2 });
+    reportAt(5);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 2, activeWord: 1 });
+    reportAt(12);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3, activeWord: null });
+    reportAt(15.5);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3, activeWord: null });
+    reportAt(18);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4, activeWord: null });
+    reportAt(25);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4, activeWord: null });
+  });
+
+  it('highlights in the same call as the status update, with the tick at 100 ms', async () => {
+    jest.useFakeTimers();
+    try {
+      await playChapter(1);
+      expect(audio.createAudioPlaylist.mock.calls.at(-1)?.[0]).toMatchObject({ updateInterval: 100 });
+
+      // No timer is advanced: the highlight is set before the status callback returns.
+      reportAt(5);
+      expect(usePlayerStore.getState().activeVerseId).toBe(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('clears on a track change until the next status update', async () => {
+    await playChapter(1);
+    reportAt(1.5);
+
+    fakePlaylist().emitTrackChanged(1);
+
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: null, activeWord: null, chapterId: 2 });
+  });
+
+  it('clears on stop', async () => {
+    seedSurahTwoTimings(executor);
+    executor.run("INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (1140, 1, 0, 20000)");
+    await playChapter(114);
+    reportAt(5);
+    expect(usePlayerStore.getState().activeVerseId).toBe(1);
+
+    await nextAyah();
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'idle', activeVerseId: null, activeWord: null });
+  });
+
+  it('clears on error', async () => {
+    await playChapter(1);
+    reportAt(1.5);
+
+    await playFromVerse('9:9');
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', activeVerseId: null, activeWord: null });
+  });
+
+  it('clears when the reciter changes', async () => {
+    seedHusary(executor);
+    await playChapter(1);
+    reportAt(1.5);
+
+    setReciterId(31);
+    await playChapter(1);
+
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 31, activeVerseId: null, activeWord: null });
+  });
+
+  it('gives no highlight when the file timings overlap (invalid, so timingsFor returns none)', async () => {
+    executor.run('UPDATE recitation_timings SET end_ms = 9000 WHERE audio_file_id = 100 AND verse_id = 1');
+    await playChapter(1);
+
+    reportAt(6);
+
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: null, activeWord: null });
+  });
+});
+
+describe('previous and next ayah', () => {
+  beforeEach(() => {
+    seedAyahs(executor);
+    seedSurahTwoTimings(executor);
+  });
+
+  it('seeks to the previous ayah inside the surah', async () => {
+    await playChapter(1);
+    reportAt(12);
+
+    await previousAyah();
+
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(5);
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, positionMs: 5000 });
+  });
+
+  it('seeks to the next ayah inside the surah', async () => {
+    await playChapter(1);
+    reportAt(6);
+
+    await nextAyah();
+
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(10);
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, positionMs: 10000 });
+  });
+
+  it('from inside a gap, the next ayah is the one after the gap', async () => {
+    await playChapter(1);
+    reportAt(15.5);
+
+    await nextAyah();
+
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(16);
+  });
+
+  it('from the last ayah, next goes to the first ayah of the next surah', async () => {
+    await playChapter(1);
+    reportAt(18);
+
+    await nextAyah();
+
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2, status: 'loading' });
+    expect(fakePlaylist().skipTo).toHaveBeenLastCalledWith(1);
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+    expect(fakePlaylist().play).toHaveBeenCalled();
+  });
+
+  it('from the first ayah, previous goes to the last ayah of the previous surah', async () => {
+    await playChapter(2);
+    reportAt(0);
+
+    await previousAyah();
+
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, status: 'loading' });
+    expect(fakePlaylist().skipTo).toHaveBeenLastCalledWith(0);
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(16);
+  });
+
+  it('from the first ayah of the first surah, previous starts it again', async () => {
+    await playChapter(1);
+    reportAt(1);
+
+    await previousAyah();
+
+    expect(usePlayerStore.getState().chapterId).toBe(1);
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(0);
+  });
+
+  it('after the last ayah of the last surah, next stops', async () => {
+    executor.run("INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (1140, 1, 0, 20000)");
+    await playChapter(114);
+    reportAt(5);
+
+    await nextAyah();
+
+    expect(fakePlaylist().pause).toHaveBeenCalled();
+    expect(usePlayerStore.getState().status).toBe('idle');
+  });
+
+  it('falls back to the surah moves when the surah has no timings', async () => {
+    await playChapter(2);
+    reportAt(3);
+    expect(usePlayerStore.getState().chapterId).toBe(2);
+
+    await nextAyah();
+    expect(usePlayerStore.getState().chapterId).toBe(114);
+
+    await previousAyah();
+    expect(usePlayerStore.getState().chapterId).toBe(2);
+  });
+});
+
+describe('volume', () => {
+  it('applies the stored volume to a new playlist and follows later changes', async () => {
+    usePlayerStore.getState().setVolume(0.5);
+    await playChapter(1);
+    expect(fakePlaylist().volume).toBe(0.5);
+
+    usePlayerStore.getState().setVolume(0.2);
+    expect(fakePlaylist().volume).toBe(0.2);
+  });
+});
+
+describe('timings cache', () => {
+  it('reads each audio file once, and reads the new reciter file after a reciter change', async () => {
+    seedAyahs(executor);
+    seedHusary(executor);
+    const spy = jest.spyOn(timings, 'timingsFor');
+    try {
+      await playChapter(1);
+      await nextSurah();
+      await previousSurah();
+      await playChapter(1);
+      expect(spy.mock.calls.filter(([, id]) => id === 100)).toHaveLength(1);
+
+      setReciterId(31);
+      await playChapter(1);
+      expect(spy.mock.calls.filter(([, id]) => id === 300)).toHaveLength(1);
+      expect(spy.mock.calls.filter(([, id]) => id === 100)).toHaveLength(1);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

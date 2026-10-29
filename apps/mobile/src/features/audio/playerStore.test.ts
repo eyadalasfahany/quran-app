@@ -1,4 +1,4 @@
-import { CHAPTER_COUNT, clampSeek, isChapterId, nextChapterId, previousChapterId, queueFrom, usePlayerStore } from './playerStore';
+import { CHAPTER_COUNT, clampSeek, clampVolume, isChapterId, nextChapterId, previousChapterId, queueFrom, usePlayerStore } from './playerStore';
 
 beforeEach(() => {
   usePlayerStore.getState().reset();
@@ -91,5 +91,48 @@ describe('playerStore transitions', () => {
     usePlayerStore.getState().moveTo({ chapterId: 2, durationMs: 7264000 });
 
     expect(usePlayerStore.getState()).toMatchObject({ status: 'playing', chapterId: 2, positionMs: 0, durationMs: 7264000, error: null });
+  });
+});
+
+describe('volume and the active ayah in the store', () => {
+  it('clamps volume to 0 to 1, and ignores a value that is not a number', () => {
+    expect(clampVolume(2)).toBe(1);
+    expect(clampVolume(-1)).toBe(0);
+    expect(clampVolume(0.25)).toBe(0.25);
+
+    usePlayerStore.getState().setVolume(3);
+    expect(usePlayerStore.getState().volume).toBe(1);
+    usePlayerStore.getState().setVolume(Number.NaN);
+    expect(usePlayerStore.getState().volume).toBe(1);
+    usePlayerStore.getState().setVolume(0.4);
+    expect(usePlayerStore.getState().volume).toBe(0.4);
+  });
+
+  it('starts at full volume with nothing highlighted', () => {
+    expect(usePlayerStore.getState()).toMatchObject({ volume: 1, activeVerseId: null, activeWord: null });
+  });
+
+  it('sets the highlight, and keeps the same state when nothing changed', () => {
+    usePlayerStore.getState().setActive(4, 2);
+    const before = usePlayerStore.getState();
+    expect(before).toMatchObject({ activeVerseId: 4, activeWord: 2 });
+
+    usePlayerStore.getState().setActive(4, 2);
+    expect(usePlayerStore.getState()).toBe(before);
+  });
+
+  it('clears the highlight on stop, failure and restore', () => {
+    const store = usePlayerStore.getState();
+    store.setActive(3, 1);
+    store.markStopped();
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: null, activeWord: null });
+
+    store.setActive(3, 1);
+    store.markFailed('load-failed');
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: null, activeWord: null });
+
+    store.setActive(3, 1);
+    store.restore({ reciterId: 30, chapterId: 1, positionMs: 0 });
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: null, activeWord: null });
   });
 });

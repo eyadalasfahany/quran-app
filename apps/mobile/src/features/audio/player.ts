@@ -14,9 +14,10 @@ import { getLocale } from '@/core/i18n/locale';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 
+import { activeTimingIndex, activeWordPosition } from './active-ayah';
 import { chapterAudio, type ChapterAudio } from './data/audio-files';
 import { listReciters, recitationIdForResource } from './data/reciters';
-import { timingsFor } from './data/timings';
+import { timingsFor, type AyahTiming } from './data/timings';
 import { clampSeek, isChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
 import { readLastPosition, writeLastPosition } from './resume-model';
 import { getReciterId } from './settings';
@@ -43,6 +44,8 @@ const OFFLINE_SKIP_MIN_MS = 5_000;
 // A last track this close to its end, and not playing, counts as finished.
 const END_TOLERANCE_S = 0.5;
 const LOCK_SCREEN_CONTROLS = { showNextTrack: true, showPreviousTrack: true } as const;
+// The status tick. The recited ayah must follow the audio within 150 ms (spec §12), so the tick is 100 ms.
+const STATUS_INTERVAL_MS = 100;
 
 type Subscription = { remove: () => void };
 
@@ -69,6 +72,11 @@ let watchedSince = 0;
 let loadSequence = 0;
 let audioModeReady: Promise<void> | null = null;
 let appStateSubscription: Subscription | null = null;
+// The surah now playing and its timings, sorted by start (empty when its file has none). The highlight and
+// the ayah navigation read them.
+let trackTimings: { chapterId: number; timings: AyahTiming[] } | null = null;
+// Timings per audio file id, read once for the session.
+const timingsCache = new Map<number, AyahTiming[]>();
 
 const store = () => usePlayerStore.getState();
 
@@ -138,6 +146,7 @@ function disposeQueue(): void {
   loadedChapterId = null;
   loadedIndex = null;
   intendedIndex = null;
+  trackTimings = null;
 }
 
 /**
@@ -170,8 +179,11 @@ function ensureQueue(db: SqlExecutor, reciterId: number): Queue | undefined {
     sources.push({ uri: row.url });
   }
   disposeQueue();
-  const playlist = createAudioPlaylist({ sources });
+  // A playlist for another reciter has no recited ayah until its first status update.
+  store().setActive(null, null);
+  const playlist = createAudioPlaylist({ sources, updateInterval: STATUS_INTERVAL_MS });
   playlist.playbackRate = store().speed;
+  playlist.volume = store().volume;
   queueSubscriptions = [
     playlist.addListener('playlistStatusUpdate', onPlaylistStatus),
     playlist.addListener('trackChanged', onTrackChanged),
@@ -183,6 +195,34 @@ function ensureQueue(db: SqlExecutor, reciterId: number): Queue | undefined {
     }
   });
   return queue;
+}
+
+/** The timings of a surah's file for this reciter, read once per audio file. Empty when it has none. */
+function timingsForChapter(db: SqlExecutor, reciterId: number, chapterId: number): AyahTiming[] {
+  const lookup = lookupAudio(db, reciterId, chapterId);
+  if (!('audio' in lookup)) {
+    return [];
+  }
+  const cached = timingsCache.get(lookup.audio.id);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const timings = timingsFor(db, lookup.audio.id);
+  timingsCache.set(lookup.audio.id, timings);
+  return timings;
+}
+
+/** Loads the timings of the surah that has just started playing. */
+function setTrackTimings(db: SqlExecutor, reciterId: number, chapterId: number): void {
+  trackTimings = { chapterId, timings: timingsForChapter(db, reciterId, chapterId) };
+}
+
+/** Highlights the ayah and word at `positionMs` of the surah now playing. */
+function updateHighlight(chapterId: number, positionMs: number): void {
+  const timings = trackTimings?.chapterId === chapterId ? trackTimings.timings : [];
+  const index = activeTimingIndex(timings, positionMs);
+  const timing = index < 0 ? undefined : timings[index];
+  store().setActive(timing?.verseId ?? null, timing === undefined ? null : activeWordPosition(timing, positionMs));
 }
 
 /** The playlist, when it is holding `chapterId` at its current index. */
@@ -285,6 +325,9 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
     stopPlayback();
     return;
   }
+  if (status.isLoaded && chapterId !== undefined) {
+    updateHighlight(chapterId, Math.round(status.currentTime * 1000));
+  }
   if (current.status === 'playing' || current.status === 'paused') {
     current.setPosition(Math.round(status.currentTime * 1000));
   }
@@ -329,6 +372,7 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   const db = contentDb();
   store().moveTo({ chapterId, durationMs: rowDurationMs(db, active.reciterId, chapterId) });
   loadedChapterId = chapterId;
+  setTrackTimings(db, active.reciterId, chapterId);
   active.playlist.updateLockScreenMetadata(lockScreenMetadata(db, active.reciterId, chapterId));
   writeLastPosition({ reciterId: active.reciterId, chapterId, positionMs: 0 });
   const status = store().status;
@@ -388,6 +432,7 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
       active.playlist.skipTo(index);
     }
     loadedChapterId = chapterId;
+    setTrackTimings(db, reciterId, chapterId);
     if (positionMs > 0) {
       await active.playlist.seekTo(positionMs / 1000);
       if (sequence !== loadSequence) {
@@ -431,9 +476,90 @@ export function playFromVerse(verseKey: string): Promise<void> {
       store().markFailed(lookup.error);
       return;
     }
-    const timing = timingsFor(db, lookup.audio.id).find((row) => row.verseId === verse.id);
+    const timing = timingsForChapter(db, reciterId, verse.chapterId).find((row) => row.verseId === verse.id);
     await loadChapter(verse.chapterId, timing?.startMs ?? 0, reciterId);
   });
+}
+
+/**
+ * Seeks to the start of the ayah before the one being recited. From the first ayah it goes to the last ayah of
+ * the surah before, and from the first surah's first ayah it starts again. With no timings for this surah it
+ * does what `previousSurah` does.
+ */
+export function previousAyah(): Promise<void> {
+  return guarded(async () => {
+    const state = store();
+    if (state.chapterId === null) {
+      return;
+    }
+    const reciterId = reciterFor(state);
+    if (reciterId === null) {
+      store().markFailed('no-reciter');
+      return;
+    }
+    const db = contentDb();
+    const timings = timingsForChapter(db, reciterId, state.chapterId);
+    if (timings.length === 0) {
+      await previousSurah();
+      return;
+    }
+    const index = activeTimingIndex(timings, currentPositionMs());
+    const before = index > 0 ? timings[index - 1] : undefined;
+    if (before !== undefined) {
+      await jumpTo(state.chapterId, before.startMs, reciterId);
+      return;
+    }
+    const previous = neighbourChapter(db, reciterId, state.chapterId, -1);
+    if (previous === null) {
+      await jumpTo(state.chapterId, 0, reciterId);
+      return;
+    }
+    await loadChapter(previous, timingsForChapter(db, reciterId, previous).at(-1)?.startMs ?? 0, reciterId);
+  });
+}
+
+/**
+ * Seeks to the start of the ayah after the one being recited. From the last ayah it goes to the first ayah of
+ * the next surah, and after the last surah it stops. With no timings for this surah it does what `nextSurah` does.
+ */
+export function nextAyah(): Promise<void> {
+  return guarded(async () => {
+    const state = store();
+    if (state.chapterId === null) {
+      return;
+    }
+    const reciterId = reciterFor(state);
+    if (reciterId === null) {
+      store().markFailed('no-reciter');
+      return;
+    }
+    const db = contentDb();
+    const timings = timingsForChapter(db, reciterId, state.chapterId);
+    if (timings.length === 0) {
+      await nextSurah();
+      return;
+    }
+    const after = timings[activeTimingIndex(timings, currentPositionMs()) + 1];
+    if (after !== undefined) {
+      await jumpTo(state.chapterId, after.startMs, reciterId);
+      return;
+    }
+    const following = neighbourChapter(db, reciterId, state.chapterId, 1);
+    if (following === null) {
+      stopPlayback();
+      return;
+    }
+    await loadChapter(following, timingsForChapter(db, reciterId, following)[0]?.startMs ?? 0, reciterId);
+  });
+}
+
+/** Plays `chapterId` from `positionMs`: a seek when that surah is loaded, a load of its file otherwise. */
+async function jumpTo(chapterId: number, positionMs: number, reciterId: number): Promise<void> {
+  if (activeQueue(chapterId) !== null) {
+    seek(positionMs);
+    return;
+  }
+  await loadChapter(chapterId, positionMs, reciterId);
 }
 
 export function pause(): void {
@@ -570,6 +696,13 @@ usePlayerStore.subscribe((state, previous) => {
   }
 });
 
+// The playlist plays at the store's volume, and follows volume changes (the sleep timer's fade).
+usePlayerStore.subscribe((state, previous) => {
+  if (state.volume !== previous.volume && queue !== null) {
+    queue.playlist.volume = state.volume;
+  }
+});
+
 /** Test-only: forget the playlist, the load state and the store. */
 export function resetPlayerForTests(): void {
   appStateSubscription?.remove();
@@ -578,5 +711,6 @@ export function resetPlayerForTests(): void {
   loadSequence = 0;
   audioModeReady = null;
   watchedIndex = null;
+  timingsCache.clear();
   usePlayerStore.getState().reset();
 }

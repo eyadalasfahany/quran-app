@@ -23,8 +23,11 @@ export type PlayerState = {
   /** Placeholder from the content row while loading; replaced by the player's own duration once loaded. */
   durationMs: number;
   speed: number;
-  /** Filled by step 3 (audio to ayah). Unused until then. */
+  /** 0 to 1. The engine applies it to the playlist; the sleep timer fades through it. */
+  volume: number;
+  /** The ayah being recited, from the loaded file's timings. Null when nothing is recited or the file has no timings. */
   activeVerseId: number | null;
+  /** The word being recited (1-based, as QF sends it), when the ayah has word segments. */
   activeWord: number | null;
 };
 
@@ -57,6 +60,9 @@ export type PlayerActions = {
   setPosition: (positionMs: number) => void;
   setDuration: (durationMs: number) => void;
   setSpeed: (speed: number) => void;
+  setVolume: (volume: number) => void;
+  /** Sets the highlighted ayah and word. Does nothing when both are unchanged. */
+  setActive: (verseId: number | null, word: number | null) => void;
   restore: (request: RestoreRequest) => void;
   reset: () => void;
 };
@@ -70,6 +76,7 @@ export const initialPlayerState: PlayerState = {
   positionMs: 0,
   durationMs: 0,
   speed: 1,
+  volume: 1,
   activeVerseId: null,
   activeWord: null,
 };
@@ -99,11 +106,14 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
     }),
   markPlaying: () => set({ status: 'playing', error: null }),
   markPaused: () => set((state) => (state.status === 'playing' || state.status === 'loading' ? { status: 'paused' } : {})),
-  markStopped: () => set({ status: 'idle', positionMs: 0 }),
-  markFailed: (code) => set({ status: 'error', error: code }),
+  markStopped: () => set({ status: 'idle', positionMs: 0, activeVerseId: null, activeWord: null }),
+  markFailed: (code) => set({ status: 'error', error: code, activeVerseId: null, activeWord: null }),
   setPosition: (positionMs) => set({ positionMs }),
   setDuration: (durationMs) => set({ durationMs }),
   setSpeed: (speed) => set({ speed }),
+  setVolume: (volume) => set((state) => (Number.isFinite(volume) ? { volume: clampVolume(volume) } : state)),
+  setActive: (activeVerseId, activeWord) =>
+    set((state) => (state.activeVerseId === activeVerseId && state.activeWord === activeWord ? state : { activeVerseId, activeWord })),
   restore: ({ reciterId, chapterId, positionMs }) =>
     set({
       reciterId,
@@ -113,6 +123,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       error: null,
       positionMs,
       durationMs: 0,
+      activeVerseId: null,
+      activeWord: null,
     }),
   reset: () => set(initialPlayerState),
 }));
@@ -137,6 +149,11 @@ export function nextChapterId(chapterId: number): number | null {
 
 export function previousChapterId(chapterId: number): number {
   return Math.min(CHAPTER_COUNT, Math.max(1, chapterId - 1));
+}
+
+/** Volume is 0 to 1. Values outside that range are clamped to it. */
+export function clampVolume(volume: number): number {
+  return Math.min(1, Math.max(0, volume));
 }
 
 /**
