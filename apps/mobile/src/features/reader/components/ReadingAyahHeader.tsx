@@ -4,8 +4,6 @@ import { View } from 'react-native';
 
 import { AyahMarker, IconButton, type IconName } from '@/shared/ui';
 
-import { AUDIO_AVAILABLE } from '../audio';
-
 const noop = () => undefined;
 
 const icons = {
@@ -19,6 +17,8 @@ export function ReadingAyahHeader({
   verseNumber,
   active = false,
   fontScale = 1,
+  audioAvailable = false,
+  onPlay,
   onOpenActions,
   onOpenTafsir,
   testID,
@@ -26,12 +26,15 @@ export function ReadingAyahHeader({
   verseNumber: number;
   active?: boolean;
   fontScale?: number;
+  /** Whether a reciter can play from here (useAudioAvailable). */
+  audioAvailable?: boolean;
+  onPlay?: () => void;
   onOpenActions?: () => void;
   onOpenTafsir?: () => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
-  const audioHint = AUDIO_AVAILABLE ? undefined : t('reader.ayahPanel.audioUnavailable');
+  const audioHint = audioAvailable ? undefined : t('reader.ayahPanel.audioUnavailable');
 
   return (
     <View
@@ -47,12 +50,12 @@ export function ReadingAyahHeader({
       />
       <View style={{ flexDirection: 'row' }}>
         <IconButton
-          disabled={!AUDIO_AVAILABLE}
+          disabled={!audioAvailable || onPlay === undefined}
           hint={audioHint}
           icon={icons.play}
           iconSize={size.iconSm}
           label={t('reader.ayahRow.play')}
-          onPress={() => undefined}
+          onPress={onPlay ?? noop}
           testID={testID ? `${testID}-play` : undefined}
           tone="muted"
         />

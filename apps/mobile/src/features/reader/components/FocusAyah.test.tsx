@@ -87,3 +87,27 @@ describe('FocusAyah', () => {
     expect(featureComponentLiterals('features/reader/components/FocusAyah.tsx')).toEqual([]);
   });
 });
+
+describe('FocusAyah recitation', () => {
+  const props = { textImlaei: 'text', textUthmani: 'ٱللَّهُ لَآ', verseNumber: 255 };
+
+  it('the recited ayah gets the neutral wash and says it is being recited', async () => {
+    const view = await renderUi(<FocusAyah {...props} recited />);
+    expect(flatStyle(view.getByTestId('focus-ayah-current').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.highlightActive,
+    });
+    expect(view.getByTestId('focus-ayah-current').props.accessibilityHint).toBe('يُتلى الآن');
+  });
+
+  it('a user colour fills the recited ayah instead of the wash', async () => {
+    const view = await renderUi(<FocusAyah {...props} highlightColor="blue" recited />);
+    expect(flatStyle(view.getByTestId('focus-ayah-current').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.highlightBlue,
+    });
+  });
+
+  it('an ayah that is not recited has no wash', async () => {
+    const view = await renderUi(<FocusAyah {...props} />);
+    expect(flatStyle(view.getByTestId('focus-ayah-current').props.style).backgroundColor).toBeUndefined();
+  });
+});

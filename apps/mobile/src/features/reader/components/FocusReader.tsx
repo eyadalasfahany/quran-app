@@ -15,15 +15,32 @@ export function FocusReader({
   verseKey,
   fontScale = 1,
   highlightsByVerseId,
+  recitedVerseKey = null,
+  activeWord = null,
+  playing = false,
+  onPlay,
   topInset = 0,
   onVerseChange,
+  onStep,
+  onUserMove,
+  onUserMoveEnd,
   onOpenActions,
 }: {
   verseKey: string;
   fontScale?: number;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
+  /** The ayah being recited, and its recited word. */
+  recitedVerseKey?: string | null;
+  activeWord?: number | null;
+  playing?: boolean;
+  onPlay?: () => void;
   topInset?: number;
   onVerseChange: (verseKey: string) => void;
+  /** A previous or next step (button or swipe): lets the reader move the recitation too. */
+  onStep?: (verseKey: string, way: 'next' | 'previous') => void;
+  /** The reader moved by hand (step, swipe or progress): following pauses. */
+  onUserMove?: () => void;
+  onUserMoveEnd?: () => void;
   onOpenActions?: (verseKey: string) => void;
 }) {
   const stage = useMemo(() => {
@@ -54,20 +71,33 @@ export function FocusReader({
   }
 
   const { chapter, next, previous, verse } = stage;
+  const moveTo = (key: string, way: 'next' | 'previous' | null) => {
+    onUserMove?.();
+    onUserMoveEnd?.();
+    if (way !== null) {
+      onStep?.(key, way);
+    }
+    onVerseChange(key);
+  };
 
   return (
     <FocusStage
+      activeWord={verse.verseKey === recitedVerseKey ? activeWord : null}
       fontScale={fontScale}
       highlightColor={highlightsByVerseId?.get(verse.id) ?? null}
       nextNumber={next?.verseNumber ?? null}
       nextText={next?.textUthmani ?? null}
-      topInset={topInset}
-      onNext={next === undefined ? undefined : () => onVerseChange(next.verseKey)}
+      onDragFinish={onUserMoveEnd}
+      onDragStart={onUserMove}
+      onNext={next === undefined ? undefined : () => moveTo(next.verseKey, 'next')}
       onOpenActions={onOpenActions === undefined ? undefined : () => onOpenActions(verse.verseKey)}
-      onPrevious={previous === undefined ? undefined : () => onVerseChange(previous.verseKey)}
-      onSelectVerse={(number) => onVerseChange(neighbourKey(verse.chapterId, number))}
+      onPlay={onPlay}
+      onPrevious={previous === undefined ? undefined : () => moveTo(previous.verseKey, 'previous')}
+      onSelectVerse={(number) => moveTo(neighbourKey(verse.chapterId, number), null)}
+      playing={playing}
       previousNumber={previous?.verseNumber ?? null}
       previousText={previous?.textUthmani ?? null}
+      recited={verse.verseKey === recitedVerseKey}
       textImlaei={verse.textImlaei}
       textUthmani={verse.textUthmani}
       verseNumber={verse.verseNumber}

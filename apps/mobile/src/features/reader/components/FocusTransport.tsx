@@ -9,6 +9,7 @@ const UP = { ios: 'chevron.up', android: 'keyboard_arrow_up' } as const;
 const DOWN = { ios: 'chevron.down', android: 'keyboard_arrow_down' } as const;
 const PLAY = { ios: 'play.fill', android: 'play_arrow' } as const;
 const REPEAT = { ios: 'repeat', android: 'repeat' } as const;
+const PAUSE = { ios: 'pause.fill', android: 'pause' } as const;
 const MEMORIZE = { ios: 'eye.slash', android: 'visibility_off' } as const;
 
 // The Focus frame (quran-app-screens.html, #Focus): every control is 52 tall. Labelled controls pad 14 and
@@ -22,10 +23,15 @@ const LABEL_WEIGHT = 600;
 export function FocusTransport({
   onPrevious,
   onNext,
+  onPlay,
+  playing = false,
   testID = 'focus-transport',
 }: {
   onPrevious?: () => void;
   onNext?: () => void;
+  /** Plays from the focused ayah, or pauses when playing. Undefined disables the control. */
+  onPlay?: () => void;
+  playing?: boolean;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -62,8 +68,10 @@ export function FocusTransport({
           <Icon color={ink} name={UP} size={theme.size.icon} />
         </Pressable>
         <Pressable
-          accessibilityLabel={t('reader.focus.play')}
+          accessibilityLabel={playing ? t('player.pause') : t('reader.focus.play')}
           accessibilityRole="button"
+          disabled={onPlay === undefined}
+          onPress={onPlay}
           style={{
             alignItems: 'center',
             backgroundColor: theme.colors.brand,
@@ -74,7 +82,7 @@ export function FocusTransport({
           }}
           testID={`${testID}-play`}
         >
-          <Icon color={theme.colors.onBrand} name={PLAY} size={theme.size.icon} />
+          <Icon color={theme.colors.onBrand} name={playing ? PAUSE : PLAY} size={theme.size.icon} />
         </Pressable>
         <Pressable
           accessibilityLabel={t('reader.focus.next')}

@@ -47,6 +47,12 @@ export function FocusStage({
   nextNumber,
   fontScale = 1,
   highlightColor = null,
+  recited = false,
+  activeWord = null,
+  playing = false,
+  onPlay,
+  onDragStart,
+  onDragFinish,
   topInset = 0,
   onPrevious,
   onNext,
@@ -65,6 +71,16 @@ export function FocusStage({
   fontScale?: number;
   /** The reader's saved highlight for the current ayah. */
   highlightColor?: HighlightColor | null;
+  /** The current ayah is the one being recited, and its recited word. */
+  recited?: boolean;
+  activeWord?: number | null;
+  /** Whether the player is playing, so the play control shows pause. */
+  playing?: boolean;
+  onPlay?: () => void;
+  /** A swipe began: the reader is moving by hand, so following pauses. */
+  onDragStart?: () => void;
+  /** The swipe ended. */
+  onDragFinish?: () => void;
   /** Room for FocusChrome, which floats over the top of Focus. */
   topInset?: number;
   onPrevious?: () => void;
@@ -99,6 +115,7 @@ export function FocusStage({
   };
 
   const onDragEnd = (event: NativeSyntheticEvent<PageDrag>) => {
+    onDragFinish?.();
     const way = focusPageFromDrag(event.nativeEvent);
     if (way !== null) {
       go(way);
@@ -120,6 +137,7 @@ export function FocusStage({
                 paddingHorizontal: PAGE_GUTTER,
                 paddingVertical: theme.space[4],
               }}
+              onScrollBeginDrag={onDragStart}
               onScrollEndDrag={onDragEnd}
               showsVerticalScrollIndicator={false}
               testID={`${testID}-scroll`}
@@ -135,8 +153,10 @@ export function FocusStage({
                 <View />
               )}
               <FocusAyah
+                activeWord={activeWord}
                 fontScale={fontScale}
                 highlightColor={highlightColor}
+                recited={recited}
                 onOpenActions={onOpenActions}
                 testID={testID}
                 textImlaei={textImlaei}
@@ -155,7 +175,12 @@ export function FocusStage({
       <UiText align="center" style={{ marginBottom: theme.size.focusHintGap }} tone="muted" variant="label" weight={400}>
         {t('reader.focus.nextHint')}
       </UiText>
-      <FocusTransport onNext={onNext === undefined ? undefined : () => go('next')} onPrevious={onPrevious === undefined ? undefined : () => go('previous')} />
+      <FocusTransport
+        onNext={onNext === undefined ? undefined : () => go('next')}
+        onPlay={onPlay}
+        onPrevious={onPrevious === undefined ? undefined : () => go('previous')}
+        playing={playing}
+      />
     </View>
   );
 }

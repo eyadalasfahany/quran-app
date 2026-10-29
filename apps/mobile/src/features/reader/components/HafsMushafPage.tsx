@@ -34,6 +34,7 @@ export function HafsMushafPage({
   chapters,
   fontScale = 1,
   selectedVerseKey = null,
+  recitedVerseKey = null,
   highlightsByVerseId,
   onPressVerse,
   onOpenActions,
@@ -45,6 +46,8 @@ export function HafsMushafPage({
   chapters: ReadonlyMap<number, ChapterRecord>;
   fontScale?: number;
   selectedVerseKey?: string | null;
+  /** The ayah the player is reciting. Ayah level only: the Mushaf text is one paragraph per surah. */
+  recitedVerseKey?: string | null;
   /** The reader's saved highlight colour per verse id. */
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onPressVerse?: (verseKey: string) => void;
@@ -98,9 +101,11 @@ export function HafsMushafPage({
             >
               {run.map((verse, index) => {
                 const selected = selectedVerseKey === verse.verseKey;
+                const recited = recitedVerseKey === verse.verseKey;
+                const marked = selected || recited;
                 // The reader's highlight colour fills the ayah; the selection wash shows only without one (ADR 0012).
                 const highlight = highlightsByVerseId?.get(verse.id) ?? null;
-                const background = highlightFill(colors, highlight) ?? (selected ? colors.highlightActive : undefined);
+                const background = highlightFill(colors, highlight) ?? (marked ? colors.highlightActive : undefined);
                 const ayahLabel = t('ui.ayahNumber', { number: formatNumber(verse.verseNumber, locale) });
                 const accessibilityLabel =
                   highlight === null
@@ -110,7 +115,9 @@ export function HafsMushafPage({
                   <Fragment key={verse.id}>
                     {index > 0 ? WORD_SPACE : null}
                     <Text
+                      accessibilityHint={recited ? t('player.nowPlaying') : undefined}
                       accessibilityLabel={accessibilityLabel}
+                      accessibilityState={{ selected: marked }}
                       onLongPress={onOpenActions ? () => onOpenActions(verse.verseKey) : undefined}
                       onPress={onPressVerse ? () => onPressVerse(verse.verseKey) : undefined}
                       style={background === undefined ? null : { backgroundColor: background }}
@@ -120,7 +127,7 @@ export function HafsMushafPage({
                     </Text>
                     {WORD_SPACE}
                     <AyahEndMark
-                      active={selected}
+                      active={marked}
                       number={verse.verseNumber}
                       onPress={onOpenActions ? () => onOpenActions(verse.verseKey) : undefined}
                       testID={testID ? `${testID}-marker-${verse.verseKey}` : undefined}

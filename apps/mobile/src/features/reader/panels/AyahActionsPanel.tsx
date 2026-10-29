@@ -2,16 +2,19 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccessibilityInfo, Share, View } from 'react-native';
 
+import { openContentDb } from '@/core/db/content/open';
 import { useTheme } from '@/core/theme';
+import { useAudioAvailable } from '@/features/audio/hooks/useAudioAvailable';
+import { playVerse } from '@/features/audio/play-verse';
 import { setHighlight, toggleBookmark, type Note, type UserStore } from '@/features/library/data';
 import { ActionTile, HighlightRow, type HighlightColor, type IconName, UiText } from '@/shared/ui';
 
-import { AUDIO_AVAILABLE } from '../audio';
+import { idToVerseKey } from '../data/verses';
 import { SheetScrollView } from '../components/SheetScrollView';
 import { NoteEditor } from './NoteEditor';
 import { ayahShareText } from './panel-text';
 
-// Recitation arrives in Phase 3. Until then play and repeat stay visible but disabled.
+// Play starts the recitation from this ayah. Repeat waits for step 5 and stays visible but disabled.
 const GRID_COLUMNS = 4;
 
 // Ayah actions frame (quran-app-screens.html): 14 px between the sheet's blocks.
@@ -121,15 +124,22 @@ export function AyahActionsPanel({
     void Share.share({ message: shareText });
   };
 
-  const audioHint = AUDIO_AVAILABLE ? undefined : t('reader.ayahPanel.audioUnavailable');
+  const audioAvailable = useAudioAvailable();
+  const audioHint = audioAvailable ? undefined : t('reader.ayahPanel.audioUnavailable');
+  const onPlay = () => {
+    const verseKey = idToVerseKey(openContentDb().executor, verseId);
+    if (verseKey !== undefined) {
+      void playVerse(verseKey);
+    }
+  };
   const tiles: Tile[] = [
     {
-      disabled: !AUDIO_AVAILABLE,
+      disabled: !audioAvailable,
       hint: audioHint,
       icon: icons.play,
       key: 'play',
       label: t('reader.ayahPanel.play'),
-      onPress: () => undefined,
+      onPress: onPlay,
       primary: true,
     },
     ...(onOpenTafsir
@@ -143,7 +153,7 @@ export function AyahActionsPanel({
       selected: isBookmarked,
     },
     {
-      disabled: !AUDIO_AVAILABLE,
+      disabled: true,
       hint: audioHint,
       icon: icons.repeat,
       key: 'repeat',

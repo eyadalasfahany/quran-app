@@ -17,7 +17,7 @@ import { PlayerTransport } from '../components/PlayerTransport';
 import { ReciterArtwork } from '../components/ReciterArtwork';
 import { usePlayerHost } from '../components/player-host-context';
 import { usePlayerView } from '../hooks/usePlayerView';
-import { pause, resume, seek } from '../player';
+import { nextAyah, pause, previousAyah, resume, seek } from '../player';
 
 // Frame padding from the #Player frame: 52 top, 24 sides, 30 bottom. The safe area wins when it is larger.
 const FRAME_PADDING_TOP = 52;
@@ -80,8 +80,8 @@ function PlayerBody() {
           <PlayerProgress durationMs={view.durationMs} onSeek={seek} positionMs={view.positionMs} />
           <PlayerTransport
             isPlaying={view.isPlaying}
-            onNext={() => undefined}
-            onPrevious={() => undefined}
+            onNext={() => void nextAyah()}
+            onPrevious={() => void previousAyah()}
             onTogglePlay={togglePlay}
             stepsEnabled={view.stepsEnabled}
           />

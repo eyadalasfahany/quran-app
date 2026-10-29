@@ -3,7 +3,10 @@ import { fireEvent } from '@testing-library/react-native';
 import { formatNumber, i18n } from '@/core/i18n';
 import { themes } from '@/core/theme';
 
+import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { getVersesByPage } from '../data/verses';
+import { listChapters } from '../data/chapters';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 import type { ChapterRecord } from '../data/chapters';
 import type { VerseRecord } from '../data/verses';
@@ -271,5 +274,23 @@ describe('HafsMushafPage', () => {
 
   it('uses theme tokens only', () => {
     expect(featureComponentLiterals('features/reader/components/HafsMushafPage.tsx')).toEqual([]);
+  });
+});
+
+describe('HafsMushafPage recitation', () => {
+  it('the recited ayah gets the wash and the brand marker, and says it is being recited', async () => {
+    const { executor } = await openReaderTestContent();
+    const verses = getVersesByPage(executor, 1).slice(0, 2);
+    const chapters = new Map(listChapters(executor).map((chapter) => [chapter.id, chapter]));
+    const recited = verses[1]!;
+    const view = await renderUi(
+      <HafsMushafPage chapters={chapters} recitedVerseKey={recited.verseKey} testID="page" verses={verses} />,
+    );
+    const text = view.getByTestId(`page-ayah-${recited.verseKey}`);
+    expect(flatStyle(text.props.style)).toMatchObject({ backgroundColor: themes.light.colors.highlightActive });
+    expect(text.props.accessibilityHint).toBe('يُتلى الآن');
+    expect(view.getByTestId(`page-marker-${recited.verseKey}`).props.accessibilityState ?? {}).toBeDefined();
+    const other = verses[0]!;
+    expect(flatStyle(view.getByTestId(`page-ayah-${other.verseKey}`).props.style).backgroundColor).toBeUndefined();
   });
 });

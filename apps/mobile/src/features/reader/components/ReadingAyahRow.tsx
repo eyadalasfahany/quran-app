@@ -3,9 +3,10 @@ import { Pressable, View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { Divider, highlightFill, QuranText, useContrastColors, type HighlightColor } from '@/shared/ui';
+import { Divider, highlightFill, useContrastColors, type HighlightColor } from '@/shared/ui';
 
 import { ReadingAyahHeader } from './ReadingAyahHeader';
+import { RecitedQuranText } from './RecitedQuranText';
 
 // The frame's article padding: 14 above the header, 16 above the hairline.
 const ROW_PADDING_TOP = 14;
@@ -17,11 +18,14 @@ export function ReadingAyahRow({
   fontScale = 1,
   selected = false,
   recited = false,
+  activeWord = null,
+  audioAvailable = false,
   highlightColor = null,
   onPress,
   onLongPress,
   onOpenActions,
   onOpenTafsir,
+  onPlay,
   testID,
 }: {
   verseNumber: number;
@@ -29,12 +33,17 @@ export function ReadingAyahRow({
   textImlaei: string | null;
   fontScale?: number;
   selected?: boolean;
+  /** The ayah the player is reciting: the neutral wash, the brand marker and rule (ADR 0012). */
   recited?: boolean;
+  /** The recited word (1-based), when the ayah has word segments. */
+  activeWord?: number | null;
+  audioAvailable?: boolean;
   highlightColor?: HighlightColor | null;
   onPress?: () => void;
   onLongPress?: () => void;
   onOpenActions?: () => void;
   onOpenTafsir?: () => void;
+  onPlay?: () => void;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -57,13 +66,16 @@ export function ReadingAyahRow({
     <View style={{ gap: theme.space[2], paddingTop: ROW_PADDING_TOP }}>
       <ReadingAyahHeader
         active={active}
+        audioAvailable={audioAvailable}
         fontScale={fontScale}
         onOpenActions={onOpenActions}
         onOpenTafsir={onOpenTafsir}
+        onPlay={onPlay}
         testID={testID ? `${testID}-header` : undefined}
         verseNumber={verseNumber}
       />
       <Pressable
+        accessibilityHint={recited ? t('player.nowPlaying') : undefined}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
         accessibilityState={{ selected: active }}
@@ -81,9 +93,12 @@ export function ReadingAyahRow({
             paddingVertical: theme.space[1],
           }}
         >
-          <QuranText fontScale={fontScale} variant="quranReading">
-            {textUthmani}
-          </QuranText>
+          <RecitedQuranText
+            activeWord={recited ? activeWord : null}
+            fontScale={fontScale}
+            text={textUthmani}
+            variant="quranReading"
+          />
         </View>
       </Pressable>
       <Divider style={{ marginTop: theme.space[4] }} testID={testID ? `${testID}-divider` : undefined} />
