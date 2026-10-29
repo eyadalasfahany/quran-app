@@ -101,6 +101,11 @@ describe('app.config', () => {
     expect(infoPlist?.CFBundleAllowMixedLocalizations).toBe(true);
   });
 
+  it('hides the dev-menu floating button in development builds only', () => {
+    expect(configFor('development').ios?.infoPlist?.EXDevMenuShowFloatingActionButton).toBe(false);
+    expect(configFor('production').ios?.infoPlist).not.toHaveProperty('EXDevMenuShowFloatingActionButton');
+  });
+
   it('keeps RTL support on', () => {
     expect(configFor('production').plugins).toContainEqual(['expo-localization', { supportsRTL: true }]);
   });

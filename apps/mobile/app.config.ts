@@ -19,7 +19,8 @@ function resolveVariant(value: string | undefined): Variant {
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const variant = VARIANTS[resolveVariant(process.env.APP_VARIANT)];
+  const variantKey = resolveVariant(process.env.APP_VARIANT);
+  const variant = VARIANTS[variantKey];
 
   return {
     ...config,
@@ -60,6 +61,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         CFBundleAllowMixedLocalizations: true,
         // HTTPS only through the OS, which is exempt; skips the export-compliance question per build.
         ITSAppUsesNonExemptEncryption: false,
+        // Dev builds only: expo-dev-menu's floating button keeps its hit area at the top right under
+        // RTL while drawing at the top left, so it swallows taps on the top-right Back button.
+        // expo-dev-menu reads this key as its default; the dev menu still opens with a shake.
+        ...(variantKey === 'development' && { EXDevMenuShowFloatingActionButton: false }),
       },
     },
     android: {
