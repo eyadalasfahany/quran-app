@@ -24,6 +24,8 @@ type FlashListTestState = {
   /** The followed row's layout y (FlashList's, without the first item offset) and the first item offset. */
   layoutY: number;
   firstItemOffset: number;
+  /** What scrollToIndex returns: FlashList's promise, which resolves when its steps finish. */
+  scrollResult: Promise<void> | undefined;
   lastData: ReadingRow[] | undefined;
   lastExtraData: unknown;
   onViewableItemsChanged:
@@ -37,6 +39,7 @@ const flashListTestState: FlashListTestState = {
   currentOffset: 0,
   layoutY: 0,
   firstItemOffset: 0,
+  scrollResult: undefined,
   lastData: undefined,
   lastExtraData: undefined,
   onViewableItemsChanged: undefined,
@@ -79,6 +82,7 @@ jest.mock('@shopify/flash-list', () => {
         getLayout: () => ({ height: 0, width: 0, x: 0, y: state.layoutY }),
         scrollToIndex: (options: { index: number; animated?: boolean }) => {
           state.scrollCalls.push(options);
+          return state.scrollResult;
         },
         scrollToOffset: (options: { offset: number; animated?: boolean }) => {
           state.offsetCalls.push(options);
@@ -420,6 +424,34 @@ describe('ReadingList recitation follow', () => {
     expect(flashListTestState.scrollCalls).toEqual([]);
   });
 
+  it('scrolls once per recited ayah, not again when the window extends', async () => {
+    const view = await renderUi(list({ followKey: '18:12', recitedVerseKey: '18:12' }));
+    await waitFor(() => {
+      expect(flashListTestState.scrollCalls).toContainEqual(expect.objectContaining({ viewPosition: 1 / 3 }));
+    });
+    flashListTestState.scrollCalls.length = 0;
+
+    await fireEvent(view.getByLabelText('extend-end'), 'touchEnd');
+    await fireEvent(view.getByLabelText('extend-start'), 'touchEnd');
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+
+    expect(flashListTestState.scrollCalls).toEqual([]);
+  });
+
+  it('scrolls again when the follow resumes on the same ayah', async () => {
+    const view = await renderUi(list({ followKey: '18:12', recitedVerseKey: '18:12' }));
+    await view.rerender(list({ followKey: null, recitedVerseKey: '18:12' }));
+    flashListTestState.scrollCalls.length = 0;
+
+    await view.rerender(list({ followKey: '18:12', recitedVerseKey: '18:12' }));
+
+    await waitFor(() => {
+      expect(flashListTestState.scrollCalls).toContainEqual(expect.objectContaining({ viewPosition: 1 / 3 }));
+    });
+  });
+
   it('does not scroll when no ayah is followed (paused, or idle)', async () => {
     flashListTestState.scrollCalls.length = 0;
     const view = await renderUi(list({}));
@@ -448,6 +480,7 @@ describe('ReadingList word follow', () => {
     flashListTestState.layoutY = 0;
     flashListTestState.firstItemOffset = 0;
     flashListTestState.currentOffset = 0;
+    flashListTestState.scrollResult = undefined;
   });
 
   function followed(props: Partial<React.ComponentProps<typeof ReadingList>>) {
@@ -521,6 +554,30 @@ describe('ReadingList word follow', () => {
     // Text's top is at 1036 + 64 - 400 = 700 on screen. Its second line sits at 750, below the band (168.8 to 675.2).
     flashListTestState.currentOffset = 400;
     await layOutRecited({ firstItemOffset: 36, layoutY: 1000, textTopInRow: 64 });
+    const lineY = 700 + lineHeight;
+    await waitFor(() => {
+      expect(flashListTestState.offsetCalls).toEqual([
+        { animated: true, offset: 400 + (lineY - viewportHeight * FOLLOW_VIEW_POSITION) },
+      ]);
+    });
+  });
+
+  it('waits for the ayah scroll to finish before it follows the word', async () => {
+    let finish: () => void = () => undefined;
+    flashListTestState.scrollResult = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    flashListTestState.currentOffset = 400;
+    await layOutRecited({ firstItemOffset: 36, layoutY: 1000, textTopInRow: 64 });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, WORD_SETTLE_MS * 2));
+    });
+    expect(flashListTestState.offsetCalls).toEqual([]);
+
+    await act(async () => {
+      finish();
+    });
+
     const lineY = 700 + lineHeight;
     await waitFor(() => {
       expect(flashListTestState.offsetCalls).toEqual([

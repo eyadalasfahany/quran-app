@@ -179,6 +179,8 @@ export function ReadingList({
   // The followed row's root: the followed Text is measured inside its own row, which shares the list's content with
   // the row cell (no scroll view between them).
   const followedRowNode = useRef<HostInstance | null>(null);
+  // True while FlashList runs the ayah scroll: no word check measures then.
+  const ayahScrolling = useRef(false);
   const setFollowedRow = useCallback((node: HostInstance | null) => {
     followedRowNode.current = node;
   }, []);
@@ -197,7 +199,7 @@ export function ReadingList({
       const list = listRef.current;
       const row = followedRowNode.current;
       const layout = list !== null && followIndex >= 0 ? list.getLayout(followIndex) : undefined;
-      if (list === null || row === null || layout === undefined) {
+      if (ayahScrolling.current || list === null || row === null || layout === undefined) {
         done(null);
         return;
       }
@@ -223,14 +225,35 @@ export function ReadingList({
     },
     textKey: followKey,
   });
+  // The ayah scroll runs once per recited ayah. A window extension (new rows above or below) re-runs this effect, but
+  // FlashList keeps the content in place, so scrolling again would restart the animation and move the list.
+  const ayahScrolledKey = useRef<string | null>(null);
   useEffect(() => {
-    if (followKey === null || followIndex < 0) {
+    if (followKey === null) {
+      ayahScrolledKey.current = null;
       return;
     }
-    if (typeof listRef.current?.scrollToIndex === 'function') {
-      word.noteScroll(!reduceMotion);
-      listRef.current.scrollToIndex({ animated: !reduceMotion, index: followIndex, viewPosition: FOLLOW_VIEW_POSITION });
+    if (followIndex < 0 || ayahScrolledKey.current === followKey) {
+      return;
     }
+    const list = listRef.current;
+    if (typeof list?.scrollToIndex !== 'function') {
+      return;
+    }
+    ayahScrolledKey.current = followKey;
+    ayahScrolling.current = true;
+    word.noteScroll(!reduceMotion);
+    if (__DEV__) {
+      console.debug('[follow] ayah scroll', { followIndex, followKey, from: list.getAbsoluteLastScrollOffset() });
+    }
+    // FlashList's scroll to an index takes several steps, and its reported offset is a projection until they
+    // finish. Word checks wait for the promise, then for the settle.
+    void Promise.resolve(
+      list.scrollToIndex({ animated: !reduceMotion, index: followIndex, viewPosition: FOLLOW_VIEW_POSITION }),
+    ).finally(() => {
+      ayahScrolling.current = false;
+      word.noteScroll(!reduceMotion);
+    });
   }, [followIndex, followKey, reduceMotion, rows, word]);
 
   const prevLayoutSignature = useRef<string | null>(null);

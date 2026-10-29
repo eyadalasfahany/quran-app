@@ -149,6 +149,9 @@ function createController(): Controller {
       if (target === from) {
         return;
       }
+      if (__DEV__) {
+        console.debug('[follow] word scroll', { delta, from, height, lineTop, target, textKey: now.textKey });
+      }
       settleUntil = Date.now() + (current.reduceMotion ? 0 : WORD_SETTLE_MS);
       current.scrollTo(target, !current.reduceMotion);
     });
