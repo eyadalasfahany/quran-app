@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -7,6 +8,7 @@ import { useSlideUp, useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui/UiText';
 
 import { PlayerChoiceRow } from './PlayerChoiceRow';
+import { PlayerOverlay } from './PlayerOverlay';
 
 export type PlayerChoice<T extends string | number> = { value: T; label: string; disabled?: boolean };
 
@@ -42,16 +44,29 @@ export function PlayerChoiceMenu<T extends string | number>({
     overflow: 'hidden' as const,
   };
 
+  // Android back closes the menu first. It is added after the player's own handler, so it runs first.
+  useEffect(() => {
+    if (!visible) {
+      return undefined;
+    }
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose();
+      return true;
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, [onClose, visible]);
+
+  if (!visible) {
+    return null;
+  }
+
+  // Not a React Native Modal: the player is itself a native modal, and iOS silently refuses to present a
+  // second one from it. The menu is drawn in the player host's overlay instead.
   return (
-    <Modal
-      animationType="fade"
-      onRequestClose={onClose}
-      statusBarTranslucent
-      testID={testID ? `${testID}-modal` : undefined}
-      transparent
-      visible={visible}
-    >
-      <View style={styles.root}>
+    <PlayerOverlay>
+      <View style={styles.root} testID={testID ? `${testID}-overlay` : undefined}>
         <Pressable
           accessible={false}
           onPress={onClose}
@@ -101,11 +116,11 @@ export function PlayerChoiceMenu<T extends string | number>({
           </View>
         </Animated.View>
       </View>
-    </Modal>
+    </PlayerOverlay>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, justifyContent: 'flex-end' },
+  root: { bottom: 0, justifyContent: 'flex-end', left: 0, position: 'absolute', right: 0, top: 0 },
   sheet: { gap: 8, paddingHorizontal: 8 },
 });

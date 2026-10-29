@@ -1,5 +1,6 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
+import { BackHandler } from 'react-native';
 
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -81,11 +82,16 @@ describe('PlayerChoiceMenu', () => {
 
   it('closes from Cancel, from the scrim and from Android back', async () => {
     const onClose = jest.fn();
+    const add = jest.spyOn(BackHandler, 'addEventListener');
     const view = await renderUi(menu({ onClose }), { locale: 'en' });
 
     fireEvent.press(view.getByRole('button', { name: 'Cancel' }));
     fireEvent.press(view.getByTestId('menu-scrim', { includeHiddenElements: true }));
-    fireEvent(view.getByTestId('menu-modal'), 'requestClose');
+    const back = add.mock.calls.find(([name]) => name === 'hardwareBackPress')?.[1] as (() => boolean) | undefined;
+    act(() => {
+      back?.();
+    });
+    add.mockRestore();
 
     expect(onClose).toHaveBeenCalledTimes(3);
   });

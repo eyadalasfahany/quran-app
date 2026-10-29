@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, useWindowDimensions } from 'react-native';
+import { BackHandler, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 
@@ -38,6 +38,7 @@ export function PlayerHost({ children, testID = 'player-host' }: { children: Rea
   const scrollOffset = useSharedValue(0);
   const scrollTouched = useSharedValue(false);
   const closing = useRef(false);
+  const [overlay, setOverlay] = useState<ReactNode | null>(null);
 
   // Open: slide up, or fade in under Reduce Motion (the same rule as useSlideUp).
   const openedWithReduceMotion = useRef(reduceMotion);
@@ -100,7 +101,7 @@ export function PlayerHost({ children, testID = 'player-host' }: { children: Rea
   }));
 
   const value = useMemo<PlayerHostValue>(
-    () => ({ close, panGesture, scrollOffset, scrollTouched }),
+    () => ({ close, panGesture, scrollOffset, scrollTouched, setOverlay }),
     [close, panGesture, scrollOffset, scrollTouched],
   );
 
@@ -121,6 +122,11 @@ export function PlayerHost({ children, testID = 'player-host' }: { children: Rea
             testID={testID}
           >
             {children}
+            {overlay === null ? null : (
+              <View pointerEvents="box-none" style={StyleSheet.absoluteFill} testID={`${testID}-overlay`}>
+                {overlay}
+              </View>
+            )}
           </Animated.View>
         </GestureDetector>
       </PlayerHostContext.Provider>
