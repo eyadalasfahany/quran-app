@@ -100,7 +100,12 @@ describe('steppedPosition', () => {
 
 describe('wordStates', () => {
   it('marks words before the active one as recited, the active one as current, the rest as upcoming', () => {
-    expect(wordStates(4, 1)).toEqual(['recited', 'current', 'upcoming', 'upcoming']);
+    expect(wordStates(4, 2)).toEqual(['recited', 'current', 'upcoming', 'upcoming']);
+  });
+
+  it('reads the active word as a 1-based position, so the first word lights first', () => {
+    expect(wordStates(4, 1)).toEqual(['current', 'upcoming', 'upcoming', 'upcoming']);
+    expect(wordStates(4, 4)).toEqual(['recited', 'recited', 'recited', 'current']);
   });
 
   it('leaves every word upcoming when no word is active', () => {

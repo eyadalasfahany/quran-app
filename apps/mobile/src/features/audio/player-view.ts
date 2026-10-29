@@ -69,16 +69,21 @@ export function steppedPosition(positionMs: number, deltaMs: number, durationMs:
 
 export type WordState = 'recited' | 'current' | 'upcoming';
 
-/** Words before the active one are recited, the active one is current, the rest are still to come. */
+/**
+ * Words before the active one are recited, the active one is current, the rest are still to come. `activeWord` is the engine's word position, 1-based as QF numbers segments, so word 1 is
+ * index 0. (Reading it as an index lit the next word: the first word never showed, and the highlight ran a
+ * word ahead of the voice.)
+ */
 export function wordStates(count: number, activeWord: number | null): WordState[] {
+  const current = activeWord === null ? null : activeWord - 1;
   return Array.from({ length: count }, (_, index) => {
-    if (activeWord === null) {
+    if (current === null) {
       return 'upcoming';
     }
-    if (index < activeWord) {
+    if (index < current) {
       return 'recited';
     }
-    return index === activeWord ? 'current' : 'upcoming';
+    return index === current ? 'current' : 'upcoming';
   });
 }
 

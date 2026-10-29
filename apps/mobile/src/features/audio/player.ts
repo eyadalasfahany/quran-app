@@ -46,6 +46,11 @@ const END_TOLERANCE_S = 0.5;
 const LOCK_SCREEN_CONTROLS = { showNextTrack: true, showPreviousTrack: true } as const;
 // The status tick. The recited ayah must follow the audio within 150 ms (spec §12), so the tick is 100 ms.
 const STATUS_INTERVAL_MS = 100;
+// The player reports the position it decodes, which is heard a little later (the output buffer, the speaker or
+// Bluetooth route), and QF's word segments start slightly before the word is heard (Afasy 1:2: 6,025 against the
+// ayah's 6,090). So the highlight looks up a moment earlier than the reported position. Seeking stays exact.
+// Tuned on the iPhone 17 simulator; raise it if the highlight still leads the voice.
+export const HIGHLIGHT_LAG_MS = 100;
 
 type Subscription = { remove: () => void };
 
@@ -218,7 +223,8 @@ function setTrackTimings(db: SqlExecutor, reciterId: number, chapterId: number):
 }
 
 /** Highlights the ayah and word at `positionMs` of the surah now playing. */
-function updateHighlight(chapterId: number, positionMs: number): void {
+function updateHighlight(chapterId: number, reportedMs: number): void {
+  const positionMs = Math.max(0, reportedMs - HIGHLIGHT_LAG_MS);
   const timings = trackTimings?.chapterId === chapterId ? trackTimings.timings : [];
   const index = activeTimingIndex(timings, positionMs);
   const timing = index < 0 ? undefined : timings[index];

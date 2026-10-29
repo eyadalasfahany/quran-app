@@ -183,7 +183,7 @@ describe('PlayerScreen', () => {
     db.executor.run(`INSERT INTO words (verse_id, position, char_type, text_uthmani, text_imlaei) VALUES
        (5, 1, 'word', 'إِيَّاكَ', 'iyyaka'), (5, 2, 'word', 'نَعْبُدُ', 'na3budu'), (5, 3, 'end', '٥', '5')`);
     loadSurah('paused');
-    usePlayerStore.setState({ activeVerseId: 5, activeWord: 1 });
+    usePlayerStore.setState({ activeVerseId: 5, activeWord: 2 });
     const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
 
     expect(view.getByTestId('now-playing-ayah')).toBeOnTheScreen();

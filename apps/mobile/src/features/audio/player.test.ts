@@ -7,6 +7,7 @@ import { createFakeAudioPlaylist, type FakeAudioPlaylist, type FakeAudioPlaylist
 import * as timings from './data/timings';
 import { openAudioTestDb } from './data/test-db';
 import {
+  HIGHLIGHT_LAG_MS,
   nextAyah,
   nextSurah,
   pause,
@@ -574,6 +575,11 @@ function reportAt(seconds: number, extra: Partial<FakeAudioPlaylistStatus> = {})
   fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: seconds, duration: 20, ...extra });
 }
 
+/** Reports the position at which `seconds` is heard: the decoded position runs HIGHLIGHT_LAG_MS ahead. */
+function heardAt(seconds: number): void {
+  reportAt(seconds + HIGHLIGHT_LAG_MS / 1000);
+}
+
 describe('the active ayah and word', () => {
   beforeEach(() => {
     seedAyahs(executor);
@@ -582,20 +588,30 @@ describe('the active ayah and word', () => {
   it('follows the status times: ayah and word, at the boundaries, in gaps and on the last ayah', async () => {
     await playChapter(1);
 
-    reportAt(1.5);
+    heardAt(1.5);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 1, activeWord: 1 });
-    reportAt(2.5);
+    heardAt(2.5);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 1, activeWord: 2 });
-    reportAt(5);
+    heardAt(5);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 2, activeWord: 1 });
-    reportAt(12);
+    heardAt(12);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3, activeWord: null });
-    reportAt(15.5);
+    heardAt(15.5);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3, activeWord: null });
-    reportAt(18);
+    heardAt(18);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4, activeWord: null });
-    reportAt(25);
+    heardAt(25);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4, activeWord: null });
+  });
+
+  it('holds the highlight HIGHLIGHT_LAG_MS behind the decoded position, so it moves when the word is heard', async () => {
+    await playChapter(1);
+
+    // Ayah 2 starts at 5 s. Decoded at 5 s, it isn't heard yet; the highlight stays on ayah 1.
+    reportAt(5);
+    expect(usePlayerStore.getState().activeVerseId).toBe(1);
+    reportAt(5 + HIGHLIGHT_LAG_MS / 1000);
+    expect(usePlayerStore.getState().activeVerseId).toBe(2);
   });
 
   it('highlights in the same call as the status update, with the tick at 100 ms', async () => {
@@ -605,7 +621,7 @@ describe('the active ayah and word', () => {
       expect(audio.createAudioPlaylist.mock.calls.at(-1)?.[0]).toMatchObject({ updateInterval: 100 });
 
       // No timer is advanced: the highlight is set before the status callback returns.
-      reportAt(5);
+      heardAt(5);
       expect(usePlayerStore.getState().activeVerseId).toBe(2);
     } finally {
       jest.useRealTimers();
