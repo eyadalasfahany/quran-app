@@ -17,6 +17,7 @@ export function FocusReader({
   highlightsByVerseId,
   recitedVerseKey = null,
   activeWord = null,
+  following = false,
   playing = false,
   onPlay,
   topInset = 0,
@@ -32,6 +33,8 @@ export function FocusReader({
   /** The ayah being recited, and its recited word. */
   recitedVerseKey?: string | null;
   activeWord?: number | null;
+  /** The reader follows the recitation: the stage keeps the recited word in view. */
+  following?: boolean;
   playing?: boolean;
   onPlay?: () => void;
   topInset?: number;
@@ -84,6 +87,7 @@ export function FocusReader({
     <FocusStage
       activeWord={verse.verseKey === recitedVerseKey ? activeWord : null}
       fontScale={fontScale}
+      following={following}
       highlightColor={highlightsByVerseId?.get(verse.id) ?? null}
       nextNumber={next?.verseNumber ?? null}
       nextText={next?.textUthmani ?? null}

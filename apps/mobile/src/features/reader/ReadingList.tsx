@@ -20,6 +20,8 @@ import { SurahHeader } from './components/SurahHeader';
 import { readingColumnWidth } from './layout';
 import { estimateReadingRowHeight, heightCacheSignature, ReadingHeightCache } from './reading-heights';
 import type { ReadingRow } from './reading-list-types';
+import { FOLLOW_VIEW_POSITION, recitedWordOffset } from './word-follow';
+import { useWordFollow } from './useWordFollow';
 import {
   anchorRowIndex,
   buildReadingRows,
@@ -61,8 +63,6 @@ export type ReadingListProps = {
 };
 
 const NO_HIGHLIGHTS: ReadonlyMap<number, HighlightColor> = new Map();
-// Where the recited ayah lands when the list follows it: a third of the way down the viewport.
-const FOLLOW_VIEW_POSITION = 1 / 3;
 
 export function ReadingList({
   anchorVerseKey,
@@ -95,10 +95,21 @@ export function ReadingList({
   const topVerseKeyRef = useRef<string | null>(null);
   const [openedVerseKey, setOpenedVerseKey] = useState(anchorVerseKey);
   const [followedVerseKey, setFollowedVerseKey] = useState<string | null>(null);
-  if (anchorVerseKey !== followedVerseKey && anchorVerseKey !== openedVerseKey) {
+  // The anchor moves by the reader's own scroll (its echo matches the top ayah, so nothing re-centres) or from
+  // outside (a mode change, a jump). While following, the recited ayah is the anchor and the recitation scrolls.
+  const [seenAnchorKey, setSeenAnchorKey] = useState(anchorVerseKey);
+  const anchorMoved = seenAnchorKey !== anchorVerseKey;
+  if (anchorMoved) {
+    setSeenAnchorKey(anchorVerseKey);
+  }
+  if (followKey === null && anchorMoved && anchorVerseKey !== followedVerseKey && anchorVerseKey !== openedVerseKey) {
     setOpenedVerseKey(anchorVerseKey);
   }
   const openedVerseRef = useRef(openedVerseKey);
+  const followingRef = useRef(followKey !== null);
+  useLayoutEffect(() => {
+    followingRef.current = followKey !== null;
+  });
   const onVisibleRef = useRef(onVisibleVerseKey);
   useEffect(() => {
     onVisibleRef.current = onVisibleVerseKey;
@@ -132,6 +143,10 @@ export function ReadingList({
   useLayoutEffect(() => {
     const openedChanged = openedVerseRef.current !== openedVerseKey;
     openedVerseRef.current = openedVerseKey;
+    // While following, the recitation's scroll (below) moves the list, and the anchor echoes it.
+    if (followingRef.current) {
+      return;
+    }
     // The screen echoes the ayah a scroll just revealed. Pinning that ayah to the
     // top is what made a small drag jump.
     if (!openedChanged && followedVerseKey !== null && anchorVerseKey === followedVerseKey) {
@@ -153,14 +168,38 @@ export function ReadingList({
   if (followKey !== null && followIndex < 0 && openedVerseKey !== followKey) {
     setOpenedVerseKey(followKey);
   }
+  const followRow = followIndex < 0 ? undefined : rows[followIndex];
+  // The recited word's offset inside the followed ayah's text (the Text the row draws), for the word follow-scroll.
+  const followedOffset =
+    followRow?.type === 'ayah' && activeWord !== null
+      ? recitedWordOffset(followRow.verse.textUthmani, activeWord)
+      : null;
+  const word = useWordFollow({
+    bottomInset: contentBottomInset,
+    currentOffset: () =>
+      typeof listRef.current?.getAbsoluteLastScrollOffset === 'function'
+        ? listRef.current.getAbsoluteLastScrollOffset()
+        : 0,
+    fallbackHeight: viewportHeight - contentBottomInset,
+    following: followKey !== null,
+    offset: followedOffset,
+    reduceMotion,
+    scrollTo: (offset, animated) => {
+      if (typeof listRef.current?.scrollToOffset === 'function') {
+        listRef.current.scrollToOffset({ animated, offset });
+      }
+    },
+    textKey: followKey,
+  });
   useEffect(() => {
     if (followKey === null || followIndex < 0) {
       return;
     }
     if (typeof listRef.current?.scrollToIndex === 'function') {
+      word.noteScroll(!reduceMotion);
       listRef.current.scrollToIndex({ animated: !reduceMotion, index: followIndex, viewPosition: FOLLOW_VIEW_POSITION });
     }
-  }, [followIndex, followKey, reduceMotion, rows]);
+  }, [followIndex, followKey, reduceMotion, rows, word]);
 
   const prevLayoutSignature = useRef<string | null>(null);
   useLayoutEffect(() => {
@@ -215,8 +254,8 @@ export function ReadingList({
 
   // FlashList repaints rows only when data or extraData changes; renderItem reads these three.
   const rowExtraData = useMemo(
-    () => ({ activeWord, audioAvailable, highlightsByVerseId, recitedVerseKey, selectedVerseKey }),
-    [activeWord, audioAvailable, highlightsByVerseId, recitedVerseKey, selectedVerseKey],
+    () => ({ activeWord, audioAvailable, followKey, highlightsByVerseId, recitedVerseKey, selectedVerseKey }),
+    [activeWord, audioAvailable, followKey, highlightsByVerseId, recitedVerseKey, selectedVerseKey],
   );
 
   const renderItem = ({ item }: ListRenderItemInfo<ReadingRow>) => {
@@ -249,6 +288,7 @@ export function ReadingList({
           activeWord={activeWord}
           audioAvailable={audioAvailable}
           fontScale={fontScale}
+          followedText={followKey === verse.verseKey ? word.textProps(verse.verseKey) : undefined}
           highlightColor={highlightsByVerseId.get(verse.id) ?? null}
           onLongPress={openActions}
           onOpenActions={openActions}
@@ -275,7 +315,7 @@ export function ReadingList({
     <ReaderModeFade mode="reading" testID={`${testID ?? 'reading-list'}-fade`}>
       {/* The toolbar floats over the top inset, so the list starts below it like the Mushaf list. */}
       <View style={{ alignItems: 'center', flex: 1, paddingBottom: bottomInset, paddingTop: topInset, width: '100%' }}>
-        <View style={{ flex: 1, maxWidth: columnWidth, width: '100%' }}>
+        <View {...word.viewportProps} style={{ flex: 1, maxWidth: columnWidth, width: '100%' }}>
           <FlashList
             contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[5] }}
             data={rows}

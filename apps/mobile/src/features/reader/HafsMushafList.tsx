@@ -1,6 +1,7 @@
 import { FlashList, type FlashListRef, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
 import { useTheme } from '@/core/theme';
@@ -9,7 +10,9 @@ import type { HighlightColor } from '@/shared/ui';
 
 import { HafsPage } from './components/HafsPage';
 import { listChapters } from './data/chapters';
+import { paragraphOf, paragraphWordOffset } from './mushaf-paragraph';
 import { extendPageWindow, pageWindowFrom, pagesIn, type PageWindow } from './page-window';
+import { useWordFollow } from './useWordFollow';
 
 // Longest the list waits for the opened page to measure before it settles anyway.
 const SETTLE_MS = 1500;
@@ -26,6 +29,8 @@ export type HafsMushafListProps = {
   recitedVerseKey?: string | null;
   /** The recited word's 1-based position, marked inside the recited ayah. */
   recitedWord?: number | null;
+  /** The ayah the reader follows (playing, not dragged away): the word follow-scroll keeps its line in view. */
+  followKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onVisiblePage?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
@@ -45,6 +50,7 @@ export function HafsMushafList({
   selectedVerseKey = null,
   recitedVerseKey = null,
   recitedWord = null,
+  followKey = null,
   highlightsByVerseId,
   onVisiblePage,
   onSelectVerseKey,
@@ -56,6 +62,8 @@ export function HafsMushafList({
   const theme = useTheme();
   const listRef = useRef<FlashListRef<number>>(null);
   const { executor } = useMemo(() => openContentDb(), []);
+  const reduceMotion = useReducedMotion();
+  const { height: windowHeight } = useWindowDimensions();
   const chapters = useMemo(() => new Map(listChapters(executor).map((chapter) => [chapter.id, chapter])), [executor]);
   const initialPage = pageForVerse(executor, anchorVerseKey) ?? 1;
   const visiblePageRef = useRef(initialPage);
@@ -123,6 +131,33 @@ export function HafsMushafList({
   );
   const focusPage = focusVerseKey === null ? undefined : pageForVerse(executor, focusVerseKey);
 
+  // The paragraph holding the followed ayah is what the word follow-scroll measures; the recited word's offset is
+  // counted in that paragraph's text, as the page draws it.
+  const followRun = useMemo(
+    () => (followKey === null ? null : paragraphOf(executor, followKey)),
+    [executor, followKey],
+  );
+  const word = useWordFollow({
+    bottomInset: contentBottomInset,
+    currentOffset: () =>
+      typeof listRef.current?.getAbsoluteLastScrollOffset === 'function'
+        ? listRef.current.getAbsoluteLastScrollOffset()
+        : 0,
+    fallbackHeight: Math.max(0, windowHeight - topInset - bottomInset),
+    following: followKey !== null,
+    offset:
+      followRun !== null && followKey !== null && recitedWord !== null
+        ? paragraphWordOffset(followRun, followKey, recitedWord)
+        : null,
+    reduceMotion,
+    scrollTo: (offset, animated) => {
+      if (typeof listRef.current?.scrollToOffset === 'function') {
+        listRef.current.scrollToOffset({ animated, offset });
+      }
+    },
+    textKey: followRun === null ? null : followRun[0].verseKey,
+  });
+
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: { isViewable: boolean; item: number; index: number | null }[] }) => {
       const viewable = viewableItems.filter(
@@ -144,8 +179,8 @@ export function HafsMushafList({
 
   // FlashList repaints pages only when data or extraData changes; renderPage reads these from props.
   const pageExtraData = useMemo(
-    () => ({ focusVerseKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey }),
-    [focusVerseKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey],
+    () => ({ focusVerseKey, followKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey }),
+    [focusVerseKey, followKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey],
   );
 
   const renderPage = useCallback(
@@ -154,6 +189,8 @@ export function HafsMushafList({
         chapters={chapters}
         executor={executor}
         focusVerseKey={page === focusPage ? focusVerseKey : null}
+        follow={word}
+        followKey={followKey}
         fontScale={fontScale}
         highlightsByVerseId={highlightsByVerseId}
         onFocusOffset={scrollToFocus}
@@ -171,7 +208,9 @@ export function HafsMushafList({
       executor,
       focusPage,
       focusVerseKey,
+      followKey,
       fontScale,
+      word,
       highlightsByVerseId,
       onOpenAyahActions,
       onSelectVerseKey,
@@ -185,28 +224,30 @@ export function HafsMushafList({
 
   return (
     <View style={{ flex: 1, paddingBottom: bottomInset, paddingTop: topInset }} testID={testID}>
-      <FlashList
-        contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[4] }}
-        data={pages}
-        extraData={pageExtraData}
-        keyExtractor={(page) => String(page)}
-        maintainVisibleContentPosition={{}}
-        onEndReached={() => setPageWindow((current) => extendPageWindow(current, 'end'))}
-        onEndReachedThreshold={0.6}
-        onMomentumScrollEnd={onUserScrollEnd}
-        onScrollBeginDrag={onUserScrollStart}
-        onScrollEndDrag={onUserScrollEnd}
-        onStartReached={() => {
-          if (!settlingRef.current) {
-            setPageWindow((current) => extendPageWindow(current, 'start'));
-          }
-        }}
-        onStartReachedThreshold={0.6}
-        onViewableItemsChanged={onViewableItemsChanged}
-        ref={listRef}
-        renderItem={renderPage}
-        viewabilityConfig={{ itemVisiblePercentThreshold: 20 }}
-      />
+      <View {...word.viewportProps} style={{ flex: 1 }}>
+        <FlashList
+          contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[4] }}
+          data={pages}
+          extraData={pageExtraData}
+          keyExtractor={(page) => String(page)}
+          maintainVisibleContentPosition={{}}
+          onEndReached={() => setPageWindow((current) => extendPageWindow(current, 'end'))}
+          onEndReachedThreshold={0.6}
+          onMomentumScrollEnd={onUserScrollEnd}
+          onScrollBeginDrag={onUserScrollStart}
+          onScrollEndDrag={onUserScrollEnd}
+          onStartReached={() => {
+            if (!settlingRef.current) {
+              setPageWindow((current) => extendPageWindow(current, 'start'));
+            }
+          }}
+          onStartReachedThreshold={0.6}
+          onViewableItemsChanged={onViewableItemsChanged}
+          ref={listRef}
+          renderItem={renderPage}
+          viewabilityConfig={{ itemVisiblePercentThreshold: 20 }}
+        />
+      </View>
     </View>
   );
 }

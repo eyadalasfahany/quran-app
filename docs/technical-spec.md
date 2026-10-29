@@ -651,7 +651,8 @@ For each change, in one transaction per request:
 | Focus: next or previous ayah | Reanimated layout animation (`focus-turn.ts`) | Cross-fade: the leaving ayah fades out (`standard`) and drifts 56 pt the way of the turn while the next fades in (`slow`) from the other side; position on `spring()` | Cross-fade only |
 | Surah cartouche, Continue reading rosette | `react-native-svg` + Reanimated dash offset (`useDrawOnView`) | Gold outline draws in, `draw` (700 ms), the first time it scrolls into view; each surah's cartouche once per session | Shown drawn, no motion |
 
-- **Cancelling motion:** any touch on the reader stops auto-scroll at once and shows a pill to return to the current ayah; following resumes only when it is tapped.
+- **Cancelling motion:** any touch on the reader stops auto-scroll at once and shows a pill to return to the current ayah. Following resumes when the pill is tapped, or 5 s after the reader's scroll stops (developer, 29 Oct 2026; `FOLLOW_RESUME_MS`).
+- **Following the recitation** (ADR 0023): the line holding the recited word stays in the middle 60% of the visible area, and scrolls to a third down only when it leaves. While following and playing, the saved reading place is the recited ayah.
 - **Haptics** (`expo-haptics`, added to the content plan when Phase 1 first uses it):
   - Selection feedback when the reading mode, script or reciter changes.
   - Success when a khatma day is completed.
