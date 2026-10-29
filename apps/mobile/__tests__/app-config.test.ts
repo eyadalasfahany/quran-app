@@ -36,7 +36,7 @@ describe('app.config', () => {
     expect(configFor(undefined).ios?.bundleIdentifier).toBe('com.taybahapp.taybah.dev');
   });
 
-  it('uses the Taybah mark for the icon and the full artwork for the splash', () => {
+  it('uses the Taybah mark for the icon and the vertical artwork for the splash', () => {
     const config = configFor('production');
 
     expect(config.icon).toBe('./assets/images/icon.png');
@@ -48,12 +48,12 @@ describe('app.config', () => {
     expect(config.plugins).toContainEqual([
       'expo-splash-screen',
       {
-        backgroundColor: '#E9DED0',
-        image: './assets/images/splash-icon.png',
-        imageWidth: 280,
+        backgroundColor: '#1F4D40',
+        image: './assets/images/taybah-vertical-splash-screen.png',
+        imageWidth: 390,
         resizeMode: 'contain',
         android: {
-          backgroundColor: '#E9DED0',
+          backgroundColor: '#1F4D40',
           image: './assets/images/icon.png',
           imageWidth: 192,
         },
