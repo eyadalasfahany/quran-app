@@ -632,7 +632,7 @@ For each change, in one transaction per request:
 
 **Motion (reviewed against Apple's HIG on motion, accessibility and Liquid Glass)**
 
-- **Native first:** the full player and the tab bar use native components (a modal, native tabs), which bring system motion, gesture tracking and Reduce Motion handling. The reader sheets are custom cards drawn per frame, presented as a transparent modal (ADR 0013). Each sheet has a mid detent at 50% of the window and a full detent under the safe area. A drag moves it between them, and a slide down closes it, the reverse of the entrance (ADR 0020). The stack's own animation and swipe are off.
+- **Native first:** the tab bar uses native tabs, which bring system motion, gesture tracking and Reduce Motion handling. The full player is a full-screen transparent modal with its own slide-up and drag-to-dismiss: a downward drag tracks the finger and closes past 25% of the window or above 800 pt/s, otherwise it springs back, and the close button slides it down (developer, 29 Oct 2026). The reader sheets are custom cards drawn per frame, presented as a transparent modal (ADR 0013). Each sheet has a mid detent at 50% of the window and a full detent under the safe area. A drag moves it between them, and a slide down closes it, the reverse of the entrance (ADR 0020). The stack's own animation and swipe are off.
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.

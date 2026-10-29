@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { I18nManager } from 'react-native';
@@ -151,11 +151,12 @@ describe('PlayerScreen', () => {
     expect(pause).not.toHaveBeenCalled();
   });
 
-  it('closes the player with the minimize button', async () => {
+  it('closes the player with the minimize button, sliding it down before leaving the route', async () => {
     const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
 
-    fireEvent.press(view.getByRole('button', { name: 'تصغير المشغّل' }));
-    expect(router.back).toHaveBeenCalledTimes(1);
+    await fireEvent.press(view.getByRole('button', { name: 'تصغير المشغّل' }));
+    expect(router.back).not.toHaveBeenCalled();
+    await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1), { timeout: 2000 });
   });
 
   it('seeks through the progress control with the position in milliseconds', async () => {

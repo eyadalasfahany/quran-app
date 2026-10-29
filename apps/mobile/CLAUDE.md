@@ -11,7 +11,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - Colors, spacing, radii and type come from `@quran/design-tokens`, which is transcribed from the HTML design system. No raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
 - Text styles set the per-weight family (`IBMPlexSansArabic-Bold`) and never `fontWeight`; on Android a weight on top of a bold face can fake-bold it.
 - Motion follows spec §12 ("Motion").
-  - The full player and tabs are native components with system motion. Reader sheets are custom cards in a transparent modal (ADR 0013).
+  - Tabs are native components with system motion. The full player is a transparent modal with its own slide-up and drag-to-dismiss, built like the reader sheets (developer, 29 Oct 2026). Reader sheets are custom cards in a transparent modal (ADR 0013).
   - Custom motion uses `src/core/theme/motion.ts`:
     - `timing('instant' | 'fast' | 'standard' | 'slow')` for opacity and color.
     - `spring()` for position, size and drag release.

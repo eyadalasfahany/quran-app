@@ -80,7 +80,7 @@ export default function RootLayout() {
         <Stack.Screen name="reader-settings" options={sheetScreenOptions} />
         <Stack.Screen name="ayah/[verseKey]" options={sheetScreenOptions} />
         <Stack.Screen name="tafsir/[verseKey]" options={sheetScreenOptions} />
-        <Stack.Screen name="player" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="player" options={sheetScreenOptions} />
       </Stack>
     </ThemeProvider>
   );
