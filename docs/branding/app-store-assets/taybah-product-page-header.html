@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <style>
+    @font-face { font-family: 'Amiri Quran'; src: url('../../../apps/mobile/assets/fonts/Amiri/AmiriQuran.ttf') format('truetype'); }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 3840px; height: 1646px; overflow: hidden; }
+    body { background: #f7f3ea; color: #13231f; font-family: 'Amiri Quran', serif; }
+    .canvas { position: relative; width: 100%; height: 100%; overflow: hidden; background: radial-gradient(circle at 86% 45%, #ead39b 0 8%, transparent 29%), linear-gradient(118deg, #fbf8f1 0 61%, #edf0e8 61% 100%); }
+    .pattern { position: absolute; width: 1220px; height: 1220px; top: -360px; right: -80px; opacity: .16; transform: rotate(45deg); background: repeating-linear-gradient(45deg, transparent 0 72px, #1f4d40 73px 79px, transparent 80px 154px), repeating-linear-gradient(-45deg, transparent 0 72px, #1f4d40 73px 79px, transparent 80px 154px); }
+    .copy { position: absolute; top: 286px; right: 1870px; width: 1560px; text-align: right; }
+    .brand { color: #1f4d40; font-size: 372px; line-height: .9; font-weight: 700; letter-spacing: -8px; }
+    .rule { width: 392px; height: 10px; margin: 74px 0 50px auto; background: #c9a961; }
+    .headline { font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 96px; font-weight: 700; color: #13231f; line-height: 1.25; }
+    .detail { width: 930px; margin: 28px 0 44px auto; font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 49px; line-height: 1.5; color: #5b6a64; }
+    .promise { font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 54px; font-weight: 600; color: #1f4d40; letter-spacing: .5px; }
+    .promise span { color: #8c6a2b; padding: 0 18px; }
+    .phone { position: absolute; right: 720px; bottom: -255px; width: 740px; height: 1600px; padding: 28px; border-radius: 102px 102px 0 0; background: #13231f; box-shadow: 0 52px 98px rgba(19, 35, 31, .26); overflow: hidden; }
+    .phone::before { content: ''; position: absolute; top: 24px; left: 50%; width: 270px; height: 42px; border-radius: 28px; background: #13231f; transform: translateX(-50%); z-index: 2; }
+    .phone img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: top center; border-radius: 78px 78px 0 0; }
+    .ornament { position: absolute; right: 1490px; bottom: 178px; width: 540px; height: 540px; border: 7px solid rgba(201,169,97,.9); transform: rotate(45deg); opacity: .8; }
+    .ornament::after { content: ''; position: absolute; inset: 105px; border: 7px solid rgba(31,77,64,.62); }
+  </style>
+</head>
+<body>
+  <main class="canvas">
+    <div class="pattern"></div>
+    <div class="ornament"></div>
+    <section class="copy" aria-label="Taybah Quran app">
+      <div class="brand">طيبة</div>
+      <div class="rule"></div>
+      <div class="headline">القرآن معك، في كل وقت.</div>
+      <div class="detail">مصحف عربي، تلاوات موثوقة، وبحث سريع بين الآيات والسور.</div>
+      <div class="promise">اقرأ <span>·</span> استمع <span>·</span> ابحث</div>
+    </section>
+    <div class="phone"><img src="mushaf-reference.png" alt="واجهة المصحف في طيبة"></div>
+  </main>
+</body>
+</html>
