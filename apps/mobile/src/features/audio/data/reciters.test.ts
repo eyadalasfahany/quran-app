@@ -1,6 +1,6 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-import { listReciters, recitationIdForResource } from './reciters';
+import { listReciters, recitationIdForResource, recitationStyle } from './reciters';
 import { openAudioTestDb } from './test-db';
 
 let executor: SqlExecutor;
@@ -97,5 +97,17 @@ describe('recitationIdForResource', () => {
 
   it('returns undefined when the resource has no recitation row', () => {
     expect(recitationIdForResource(executor, 31)).toBeUndefined();
+  });
+});
+
+describe('recitationStyle', () => {
+  it('reads the style QF sends for an installed recitation', () => {
+    executor.run(`UPDATE recitations SET style = 'Murattal' WHERE resource_id = 30`);
+    expect(recitationStyle(executor, 30)).toBe('Murattal');
+  });
+
+  it('returns null when the style is not stored, or the resource has no recitation row', () => {
+    expect(recitationStyle(executor, 30)).toBeNull();
+    expect(recitationStyle(executor, 31)).toBeNull();
   });
 });

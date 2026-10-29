@@ -95,3 +95,9 @@ function recitationStatus(db: SqlExecutor): Map<number, RecitationStatus> {
     rows.map((row) => [row.resourceId, { hasTimings: row.hasTimings === 1, hasWordSegments: row.hasWordSegments === 1 }]),
   );
 }
+
+/** The recitation style QF sends for a resource ("Murattal", "Mujawwad", "Muallim"), or null when none is stored. */
+export function recitationStyle(db: SqlExecutor, resourceId: number): string | null {
+  const row = db.get<{ style: string | null }>('SELECT style FROM recitations WHERE resource_id = ?', [resourceId]);
+  return row?.style ?? null;
+}

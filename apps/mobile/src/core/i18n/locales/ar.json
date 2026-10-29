@@ -210,5 +210,37 @@
     "resume": "متابعة",
     "progress": "قرأت {{percent}}٪ من المصحف",
     "tiles": { "surahs": "السور", "saved": "المحفوظات" }
+  },
+  "player": {
+    "minimize": "تصغير المشغّل",
+    "nowPlaying": "يُتلى الآن",
+    "more": "المزيد",
+    "ayahCounter": "الآية {{number}} من {{total}}",
+    "previousAyah": "الآية السابقة",
+    "nextAyah": "الآية التالية",
+    "play": "تشغيل",
+    "pause": "إيقاف مؤقت",
+    "progress": "التقدم",
+    "surah": "سورة {{name}}",
+    "style": {
+      "murattal": "مرتّل",
+      "mujawwad": "مجوّد",
+      "muallim": "معلّم"
+    },
+    "options": {
+      "repeat": "تكرار",
+      "repeatLabel": "عدد مرات التكرار",
+      "range": "الآيات {{from}}–{{to}}",
+      "speed": "السرعة {{rate}}×",
+      "sleep": "مؤقت النوم"
+    },
+    "errors": {
+      "noReciter": "اختر قارئًا لتشغيل السورة.",
+      "notInstalled": "هذه التلاوة غير مثبتة بعد.",
+      "loadFailed": "تعذّر تشغيل الملف الصوتي. حاول مرة أخرى.",
+      "notFound": "الملف الصوتي غير متوفر الآن.",
+      "invalidChapter": "هذه السورة غير متاحة.",
+      "invalidVerse": "هذه الآية غير متاحة."
+    }
   }
 }

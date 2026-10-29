@@ -210,5 +210,37 @@
     "resume": "Continue",
     "progress": "{{percent}}% of the Quran read",
     "tiles": { "surahs": "Surahs", "saved": "Saved" }
+  },
+  "player": {
+    "minimize": "Minimize player",
+    "nowPlaying": "Now playing",
+    "more": "More",
+    "ayahCounter": "Ayah {{number}} of {{total}}",
+    "previousAyah": "Previous ayah",
+    "nextAyah": "Next ayah",
+    "play": "Play",
+    "pause": "Pause",
+    "progress": "Progress",
+    "surah": "Surah {{name}}",
+    "style": {
+      "murattal": "Murattal",
+      "mujawwad": "Mujawwad",
+      "muallim": "Teacher"
+    },
+    "options": {
+      "repeat": "Repeat",
+      "repeatLabel": "Repeat count",
+      "range": "Ayahs {{from}}–{{to}}",
+      "speed": "Speed {{rate}}×",
+      "sleep": "Sleep timer"
+    },
+    "errors": {
+      "noReciter": "Choose a reciter to play this surah.",
+      "notInstalled": "This recitation is not installed yet.",
+      "loadFailed": "The audio file could not be played. Try again.",
+      "notFound": "This audio file is not available right now.",
+      "invalidChapter": "This surah is not available.",
+      "invalidVerse": "This ayah is not available."
+    }
   }
 }
