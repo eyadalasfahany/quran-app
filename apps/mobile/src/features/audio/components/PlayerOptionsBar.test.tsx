@@ -6,11 +6,20 @@ import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { themes } from '@/core/theme';
 
+import { useSurahVerses, type SurahVerse } from '../hooks/useSurahVerses';
 import { usePlayerStore } from '../playerStore';
 import { resetSleepTimerForTests, useSleepTimerStore } from '../sleep-timer';
 import { PlayerOptionsBar } from './PlayerOptionsBar';
 
-jest.mock('../player', () => ({ pause: jest.fn(), seek: jest.fn() }));
+jest.mock('../player', () => ({ pause: jest.fn(), seek: jest.fn(), setRepeat: jest.fn(() => true) }));
+
+// Seven ayahs of a surah with ids 101 to 107 and numbers 1 to 7.
+const SURAH: SurahVerse[] = [1, 2, 3, 4, 5, 6, 7].map((number) => ({ id: 100 + number, number }));
+
+jest.mock('../hooks/useSurahVerses', () => ({
+  ...jest.requireActual<typeof import('../hooks/useSurahVerses')>('../hooks/useSurahVerses'),
+  useSurahVerses: jest.fn(() => []),
+}));
 
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
@@ -35,12 +44,13 @@ const dark = themes.dark.colors;
 describe('PlayerOptionsBar', () => {
   beforeEach(() => {
     resetSleepTimerForTests();
-    usePlayerStore.setState({ speed: 1, chapterId: null });
+    usePlayerStore.setState({ speed: 1, chapterId: null, activeVerseId: null, repeat: null });
+    jest.mocked(useSurahVerses).mockReturnValue([]);
     mockLiquidGlass.mockReturnValue(false);
     jest.mocked(AccessibilityInfo.isReduceTransparencyEnabled).mockResolvedValue(false);
   });
 
-  it.each(locales)('shows the four labels in %s: repeat and range disabled, speed and sleep enabled', async (locale) => {
+  it.each(locales)('shows the four labels in %s: range disabled without an ayah, repeat, speed and sleep enabled', async (locale) => {
     const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale, theme: 'dark' });
 
     if (locale === 'ar') {
@@ -48,7 +58,7 @@ describe('PlayerOptionsBar', () => {
       expect(view.getByText('الآيات ١–٧')).toBeOnTheScreen();
       expect(view.getByText('السرعة ١×')).toBeOnTheScreen();
       expect(view.getByText('مؤقت النوم')).toBeOnTheScreen();
-      expect(view.getByRole('button', { name: 'عدد مرات التكرار' })).toBeDisabled();
+      expect(view.getByRole('button', { name: 'عدد مرات التكرار' })).toBeEnabled();
     } else {
       expect(view.getByText('Repeat')).toBeOnTheScreen();
       expect(view.getByText('Ayahs 1–7')).toBeOnTheScreen();
@@ -56,7 +66,7 @@ describe('PlayerOptionsBar', () => {
       expect(view.getByText('Sleep timer')).toBeOnTheScreen();
     }
     expect(view.getAllByRole('button')).toHaveLength(4);
-    expect(view.getByTestId('player-option-repeat').props.accessibilityState).toMatchObject({ disabled: true });
+    expect(view.getByTestId('player-option-repeat').props.accessibilityState).toMatchObject({ disabled: false });
     expect(view.getByTestId('player-option-range').props.accessibilityState).toMatchObject({ disabled: true });
     expect(view.getByTestId('player-option-speed').props.accessibilityState).toMatchObject({ disabled: false });
     expect(view.getByTestId('player-option-sleep').props.accessibilityState).toMatchObject({ disabled: false });
@@ -152,5 +162,51 @@ describe('PlayerOptionsBar', () => {
 
   it('uses no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/audio/components/PlayerOptionsBar.tsx')).toEqual([]);
+  });
+
+  it('shows the set repeat with its count and accent, and the set range', async () => {
+    jest.mocked(useSurahVerses).mockReturnValue(SURAH);
+    usePlayerStore.setState({ activeVerseId: 102, chapterId: 2, repeat: { fromVerseId: 102, toVerseId: 104, count: 3, done: 0 } });
+    const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'ar', theme: 'dark' });
+
+    expect(view.getByText('تكرار ٣×')).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('تكرار ٣×').props.style)).toMatchObject({ color: dark.playerAccent });
+    expect(view.getByTestId('player-option-repeat').props.accessibilityState).toMatchObject({ selected: true });
+    expect(view.getByRole('button', { name: 'تكرار ٣ مرات، الآيات ٢–٤' })).toBeOnTheScreen();
+    expect(view.getByText('الآيات ٢–٤')).toBeOnTheScreen();
+  });
+
+  it('shows ∞ as is, and the whole surah when the set range is not known', async () => {
+    usePlayerStore.setState({ activeVerseId: 102, chapterId: 2, repeat: { fromVerseId: 102, toVerseId: 104, count: Infinity, done: 0 } });
+    const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'en' });
+
+    expect(view.getByText('Repeat ∞')).toBeOnTheScreen();
+    expect(view.getByText('Ayahs 1–7')).toBeOnTheScreen();
+  });
+
+  it('shows the plain repeat label, unaccented, when no repeat is set', async () => {
+    const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'en', theme: 'dark' });
+
+    expect(flatStyle(view.getByText('Repeat').props.style)).toMatchObject({ color: dark.playerInk });
+    expect(view.getByTestId('player-option-repeat').props.accessibilityState).toMatchObject({ selected: false });
+  });
+
+  it('opens the repeat menu from its item', async () => {
+    const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'en' });
+
+    fireEvent.press(view.getByRole('button', { name: 'Repeat count' }));
+    await waitFor(() => expect(view.getByRole('radio', { name: '3×' })).toBeOnTheScreen());
+  });
+
+  it('enables the range item only with a recited ayah, and opens the range picker from it', async () => {
+    jest.mocked(useSurahVerses).mockReturnValue(SURAH);
+    const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'en' });
+    expect(view.getByTestId('player-option-range').props.accessibilityState).toMatchObject({ disabled: true });
+
+    usePlayerStore.setState({ activeVerseId: 101, chapterId: 2 });
+    const enabled = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'en' });
+    expect(enabled.getByTestId('player-option-range').props.accessibilityState).toMatchObject({ disabled: false });
+    fireEvent.press(enabled.getByRole('button', { name: 'Ayahs 1–7' }));
+    await waitFor(() => expect(enabled.getByText('From ayah')).toBeOnTheScreen());
   });
 });

@@ -33,7 +33,6 @@ export function PlayerSleepMenu({ visible, onClose }: { visible: boolean; onClos
       onClose={onClose}
       onSelect={(value) => {
         choose(value);
-        onClose();
       }}
       selected={mode}
       testID="player-sleep-menu"

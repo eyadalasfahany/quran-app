@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
 
 import { locales, renderUi } from '../../../../jest/render-ui';
@@ -50,7 +50,9 @@ describe('PlayerSpeedMenu', () => {
     fireEvent.press(view.getByRole('radio', { name: '0.75×' }));
 
     expect(usePlayerStore.getState().speed).toBe(0.75);
-    expect(onClose).toHaveBeenCalledTimes(1);
+    // The menu slides down first; onClose runs when the slide has finished.
+    expect(onClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
   it('renders nothing when not visible', async () => {

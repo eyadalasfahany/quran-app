@@ -25,7 +25,6 @@ export function PlayerSpeedMenu({ visible, onClose }: { visible: boolean; onClos
       onClose={onClose}
       onSelect={(rate) => {
         setSpeed(rate);
-        onClose();
       }}
       selected={speed}
       testID="player-speed-menu"

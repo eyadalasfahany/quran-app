@@ -280,6 +280,24 @@
     "menu": {
       "cancel": "Cancel"
     },
+    "repeat": {
+      "title": "Repeat",
+      "off": "Off",
+      "once": "Once",
+      "times": "{{count}}×",
+      "forever": "∞",
+      "label": "Repeat {{count}}",
+      "spoken": "Repeat {{count}}, {{range}}",
+      "spokenOnce": "once",
+      "spokenTimes": "{{count}} times",
+      "spokenForever": "forever"
+    },
+    "range": {
+      "title": "Ayahs",
+      "from": "From ayah",
+      "to": "To ayah",
+      "done": "Done"
+    },
     "errors": {
       "noReciter": "Choose a reciter to play this surah.",
       "notInstalled": "This recitation is not installed yet.",

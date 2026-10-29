@@ -7,13 +7,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSlideUp, useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui/UiText';
 
+import { usePlayerSheetExit } from '../hooks/usePlayerSheetExit';
 import { PlayerChoiceRow } from './PlayerChoiceRow';
 import { PlayerOverlay } from './PlayerOverlay';
 
 export type PlayerChoice<T extends string | number> = { value: T; label: string; disabled?: boolean };
 
 // A small action sheet for a list of mutually exclusive choices (HIG pop-up button). The app has no native menu
-// library, so the sheet is drawn here: it slides up over a scrim, and Cancel, the scrim and Android back close it.
+// library, so the sheet is drawn here: it slides up over a scrim, and Cancel, the scrim, Android back and a choice
+// close it. Closing slides it back down (a fade under Reduce Motion) and calls `onClose` once it has left.
 // The player is dark in every theme, so the sheet takes the player's tokens.
 export function PlayerChoiceMenu<T extends string | number>({
   visible,
@@ -36,6 +38,8 @@ export function PlayerChoiceMenu<T extends string | number>({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const slide = useSlideUp();
+  const exit = usePlayerSheetExit(onClose);
+  const { dismiss } = exit;
   const card = {
     backgroundColor: theme.colors.playerBg,
     borderColor: theme.colors.playerLine,
@@ -50,13 +54,13 @@ export function PlayerChoiceMenu<T extends string | number>({
       return undefined;
     }
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      onClose();
+      dismiss();
       return true;
     });
     return () => {
       subscription.remove();
     };
-  }, [onClose, visible]);
+  }, [dismiss, visible]);
 
   if (!visible) {
     return null;
@@ -67,16 +71,18 @@ export function PlayerChoiceMenu<T extends string | number>({
   return (
     <PlayerOverlay>
       <View style={styles.root} testID={testID ? `${testID}-overlay` : undefined}>
-        <Pressable
-          accessible={false}
-          onPress={onClose}
-          style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.scrim }]}
-          testID={testID ? `${testID}-scrim` : undefined}
-        />
+        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.scrim }, exit.scrimStyle]}>
+          <Pressable
+            accessible={false}
+            onPress={exit.dismiss}
+            style={StyleSheet.absoluteFill}
+            testID={testID ? `${testID}-scrim` : undefined}
+          />
+        </Animated.View>
         <Animated.View
           accessibilityViewIsModal
           entering={slide.entering}
-          style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, theme.space[2]) }]}
+          style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, theme.space[2]) }, exit.sheetStyle]}
           testID={testID}
         >
           <View style={card}>
@@ -91,7 +97,10 @@ export function PlayerChoiceMenu<T extends string | number>({
                 disabled={choice.disabled}
                 key={String(choice.value)}
                 label={choice.label}
-                onPress={() => onSelect(choice.value)}
+                onPress={() => {
+                  onSelect(choice.value);
+                  exit.dismiss();
+                }}
                 testID={testID ? `${testID}-${String(choice.value)}` : undefined}
               />
             ))}
@@ -100,7 +109,7 @@ export function PlayerChoiceMenu<T extends string | number>({
             <Pressable
               accessibilityLabel={t('player.menu.cancel')}
               accessibilityRole="button"
-              onPress={onClose}
+              onPress={exit.dismiss}
               style={({ pressed }) => ({
                 alignItems: 'center',
                 justifyContent: 'center',

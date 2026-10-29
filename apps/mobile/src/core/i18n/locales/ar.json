@@ -280,6 +280,24 @@
     "menu": {
       "cancel": "إلغاء"
     },
+    "repeat": {
+      "title": "تكرار",
+      "off": "إيقاف",
+      "once": "مرة",
+      "times": "{{count}}×",
+      "forever": "∞",
+      "label": "تكرار {{count}}",
+      "spoken": "تكرار {{count}}، {{range}}",
+      "spokenOnce": "مرة واحدة",
+      "spokenTimes": "{{count}} مرات",
+      "spokenForever": "بلا نهاية"
+    },
+    "range": {
+      "title": "الآيات",
+      "from": "من الآية",
+      "to": "إلى الآية",
+      "done": "تم"
+    },
     "errors": {
       "noReciter": "اختر قارئًا لتشغيل السورة.",
       "notInstalled": "هذه التلاوة غير مثبتة بعد.",

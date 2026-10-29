@@ -1,4 +1,4 @@
-import { act, fireEvent } from '@testing-library/react-native';
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
 import { BackHandler } from 'react-native';
 
@@ -80,20 +80,39 @@ describe('PlayerChoiceMenu', () => {
     expect(onSelect).toHaveBeenCalledWith('b');
   });
 
-  it('closes from Cancel, from the scrim and from Android back', async () => {
+  it('slides down, then reports the choice, when a choice is pressed', async () => {
+    const onClose = jest.fn();
+    const onSelect = jest.fn();
+    const view = await renderUi(menu({ onClose, onSelect }), { locale: 'en' });
+
+    fireEvent.press(view.getByRole('radio', { name: 'Beta' }));
+
+    expect(onSelect).toHaveBeenCalledWith('b');
+    expect(onClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
+  // The Android back case runs last: its leftover exit animation would otherwise leak into the next test.
+  it.each(['Cancel', 'scrim', 'back'] as const)('slides down, then closes, from %s', async (trigger) => {
     const onClose = jest.fn();
     const add = jest.spyOn(BackHandler, 'addEventListener');
     const view = await renderUi(menu({ onClose }), { locale: 'en' });
 
-    fireEvent.press(view.getByRole('button', { name: 'Cancel' }));
-    fireEvent.press(view.getByTestId('menu-scrim', { includeHiddenElements: true }));
-    const back = add.mock.calls.find(([name]) => name === 'hardwareBackPress')?.[1] as (() => boolean) | undefined;
-    act(() => {
-      back?.();
-    });
+    if (trigger === 'Cancel') {
+      fireEvent.press(view.getByRole('button', { name: 'Cancel' }));
+    } else if (trigger === 'scrim') {
+      fireEvent.press(view.getByTestId('menu-scrim', { includeHiddenElements: true }));
+    } else {
+      const back = add.mock.calls.findLast(([name]) => name === 'hardwareBackPress')?.[1] as (() => boolean) | undefined;
+      act(() => {
+        back?.();
+      });
+    }
     add.mockRestore();
 
-    expect(onClose).toHaveBeenCalledTimes(3);
+    // The sheet is still mounted during its exit; onClose runs once the slide has finished.
+    expect(onClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
   it('uses no raw colour literals', () => {
