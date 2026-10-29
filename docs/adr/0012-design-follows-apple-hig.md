@@ -30,6 +30,7 @@ An `apple-design` skill review of the HTML design files and tokens found problem
    - Progress bars fill from the right, with elapsed time on the right. This covers the player, the mini-player line and download bars.
    - Next ayah sits on the left, and its glyph points left.
    - Play and pause glyphs never flip.
+   - In English (LTR) all of the above mirrors: progress fills from the left with elapsed time on the left, and next ayah sits on the right. The controls follow the layout direction, as the HIG asks (clarified by the developer, 29 Oct 2026).
    - Android's Material convention keeps media LTR. We follow the HIG on both platforms for one consistent design.
 3. **Highlights**
    - Light and sepia user highlights step down in lightness: gold, green, blue, rose.
