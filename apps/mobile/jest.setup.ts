@@ -1,3 +1,4 @@
+import { createFakeAudioPlayer as mockCreateFakeAudioPlayer } from './jest/fake-audio-player';
 import { deviceLanguageCode } from './jest/device-language';
 
 // Gesture handler installs its UI-thread bindings through Worklets, which has no UI runtime under Jest.
@@ -48,6 +49,11 @@ jest.mock('react-native/Libraries/Settings/NativeSettingsManager', () => ({
     addListener: jest.fn(),
     removeListeners: jest.fn(),
   },
+}));
+
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: jest.fn(() => mockCreateFakeAudioPlayer()),
+  setAudioModeAsync: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock('expo-updates', () => ({

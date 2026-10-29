@@ -116,4 +116,15 @@ describe('app.config', () => {
     expect(config.plugins).toContain('expo-updates');
     expect(config.updates?.url).toBeUndefined();
   });
+
+  it('plays audio in the background on iOS', () => {
+    expect(configFor('production').ios?.infoPlist?.UIBackgroundModes).toEqual(['audio']);
+  });
+
+  it('configures expo-audio for background playback without microphone access', () => {
+    expect(configFor('production').plugins).toContainEqual([
+      'expo-audio',
+      { enableBackgroundPlayback: true, microphonePermission: false, recordAudioAndroid: false },
+    ]);
+  });
 });

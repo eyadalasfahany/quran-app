@@ -51,6 +51,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           'UIInterfaceOrientationLandscapeRight',
         ],
         UIRequiresFullScreen: false,
+        // Playback continues with the screen locked (spec §12). The plugin adds the same key via expo-audio.
+        UIBackgroundModes: ['audio'],
         // Arabic is the app's own default language, whatever the device language. UIKit takes its
         // layout direction (and the native tab bar order) from the app's development region and
         // declared localizations, so the native chrome mirrors even on an English device.
@@ -99,6 +101,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'expo-updates',
       'expo-sqlite',
       'expo-font',
+      // Background playback and lock-screen controls (Android foreground service). No recording, so no
+      // microphone permission.
+      [
+        'expo-audio',
+        { enableBackgroundPlayback: true, microphonePermission: false, recordAudioAndroid: false },
+      ],
     ],
     experiments: {
       typedRoutes: true,
