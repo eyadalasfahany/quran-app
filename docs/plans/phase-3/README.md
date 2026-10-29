@@ -6,7 +6,8 @@ One file per step of [`../phase-3.md`](../phase-3.md). Send a Haiku agent *"Impl
 | --- | --- | --- | --- |
 | 1 | [step-01-audio-data.md](step-01-audio-data.md) | — | Done (29 Oct 2026). On the branch |
 | 1b | [step-01b-default-reciter.md](step-01b-default-reciter.md) | 1 | Done (29 Oct 2026): API `c02e023`; device migration 0006 |
-| 2 | [step-02-player-core.md](step-02-player-core.md) | 1 | |
+| 2 | [step-02-player-core.md](step-02-player-core.md) | 1 | Done (single `AudioPlayer`) |
+| 2b | [step-02b-playlist.md](step-02b-playlist.md) | 2 | In progress: `AudioPlaylist` engine |
 | 3 | [step-03-audio-to-ayah.md](step-03-audio-to-ayah.md) | 2 | |
 | 4 | [step-04-players-ui.md](step-04-players-ui.md) | 2, 3 | |
 | 5 | [step-05-repeat-speed-sleep.md](step-05-repeat-speed-sleep.md) | 3 | |
