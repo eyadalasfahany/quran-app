@@ -38,7 +38,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Pack decompression | `fflate` | 0.8.3 | Gunzips content packs on the device; pure JS, fastest available (ADR 0008) |
 | Server data | `@tanstack/react-query` | 5.105.0 | Caching, retries and background refetch for API calls |
 | App state | `zustand` | 5.0.16 | Small global state: player, reader settings |
-| Preferences | `react-native-mmkv` + `react-native-nitro-modules` | 4.3.2; 0.37.1 | Fast synchronous key-value storage; MMKV 4 runs on Nitro modules |
+| Preferences | `react-native-mmkv` + `react-native-nitro-modules` | 4.3.2; 0.37.1 | Fast synchronous key-value storage; MMKV 4 runs on Nitro modules. Nitro is patched at install for iOS 16.4–17 (ADR 0016); recheck on every Nitro upgrade |
 | Tokens | `expo-secure-store` | \~58.0.2 | Keychain / Keystore storage for the auth token |
 | Google sign-in | `@react-native-google-signin/google-signin` | 16.1.5 | Native Google sign-in; ID token sent to Laravel |
 | Apple sign-in (iOS) | `expo-apple-authentication` | \~58.0.2 | Native Sign in with Apple; identity token sent to Laravel |

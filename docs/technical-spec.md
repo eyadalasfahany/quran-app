@@ -726,6 +726,7 @@ The Quran text checksum is the one test that blocks everything; layout checks ac
 | iPhone SE-size and iPhone Pro Max-size | Portrait, landscape |
 | iPad mini | Portrait, landscape, Slide Over, 1/2 Split View |
 | iPad Pro 13-inch | Full screen landscape, 1/3 and 2/3 Split View, Stage Manager window resized live |
+| Oldest supported iOS: an iPad that stops at iOS 16 (iPad 5th generation; minimum is Expo's iOS 16.4, ADR 0016) | Cold launch to the reader, portrait |
 | Android mid-range phone (for the 1.5 s cold start budget) | Portrait, landscape |
 | Android foldable (Pixel Fold emulator or device) | Folded, unfolded portrait and landscape, fold and unfold mid-playback |
 | Android 10-inch tablet emulator | Landscape, split screen |
