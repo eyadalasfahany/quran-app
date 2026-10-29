@@ -9,8 +9,8 @@ import { RANGE_ICON, REPEAT_ICON, SLEEP_ICON, SPEED_ICON } from './player-icons'
 import { PlayerOptionButton } from './PlayerOptionButton';
 
 // The bottom glass group: repeat, the ayah range, speed and the sleep timer. Until steps 5 and later, every item
-// is disabled and shows its default label. Glass is the native material when it is on; otherwise the solid
-// fallback uses the player line, not the theme's surface, so the bar stays dark on the dark player screen.
+// is disabled and shows its default label. Glass is the native material when it is on; otherwise the bar takes
+// the frame's player glass tokens, not the theme's fallback, so it stays dark on the dark player screen.
 export function PlayerOptionsBar({ versesCount, speed = 1 }: { versesCount: number; speed?: number }) {
   const { t } = useTranslation();
   const locale = useLocale();
@@ -23,7 +23,9 @@ export function PlayerOptionsBar({ versesCount, speed = 1 }: { versesCount: numb
       radius="xl"
       style={[
         { flexDirection: 'row', gap: 4, padding: 6 },
-        nativeGlass ? null : { backgroundColor: theme.colors.playerLine, borderColor: theme.colors.playerLine },
+        nativeGlass
+          ? null
+          : { backgroundColor: theme.colors.playerGlassFill, borderColor: theme.colors.playerGlassStroke },
       ]}
       testID="player-options"
     >

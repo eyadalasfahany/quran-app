@@ -47,12 +47,12 @@ describe('PlayerOptionsBar', () => {
     view.getAllByRole('button').forEach((button) => expect(button.props.accessibilityState).toMatchObject({ disabled: true }));
   });
 
-  it('uses the solid player line when Liquid Glass is off, not the theme surface', async () => {
+  it('uses the player glass tokens when Liquid Glass is off, not the theme fallback', async () => {
     const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { theme: 'light' });
     const bar = flatStyle(view.getByTestId('player-options').props.style);
 
-    expect(bar.backgroundColor).toBe(dark.playerLine);
-    expect(bar.borderColor).toBe(dark.playerLine);
+    expect(bar.backgroundColor).toBe(dark.playerGlassFill);
+    expect(bar.borderColor).toBe(dark.playerGlassStroke);
   });
 
   it('keeps the native glass path free of a solid fill when Liquid Glass is on', async () => {

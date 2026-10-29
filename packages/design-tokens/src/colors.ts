@@ -43,6 +43,9 @@ export type ColorTokens = {
   playerInk: string;
   playerMuted: string;
   playerAccent: string;
+  /** The options bar's glass on player-bg (quran-app-screens.html, #Player). */
+  playerGlassFill: string;
+  playerGlassStroke: string;
 };
 
 export type ShadowTokens = {
@@ -88,6 +91,8 @@ export const colors: Record<ThemeName, ColorTokens> = {
     playerInk: '#f3eee2',
     playerMuted: '#a7b3ad',
     playerAccent: '#e6c77e',
+    playerGlassFill: 'rgba(255, 255, 255, 0.07)',
+    playerGlassStroke: 'rgba(255, 255, 255, 0.14)',
   },
   sepia: {
     surface: '#f1e6cf',
@@ -126,6 +131,8 @@ export const colors: Record<ThemeName, ColorTokens> = {
     playerInk: '#f3eee2',
     playerMuted: '#a7b3ad',
     playerAccent: '#e6c77e',
+    playerGlassFill: 'rgba(255, 255, 255, 0.07)',
+    playerGlassStroke: 'rgba(255, 255, 255, 0.14)',
   },
   dark: {
     surface: '#0e1715',
@@ -164,6 +171,8 @@ export const colors: Record<ThemeName, ColorTokens> = {
     playerInk: '#f3eee2',
     playerMuted: '#a7b3ad',
     playerAccent: '#e6c77e',
+    playerGlassFill: 'rgba(255, 255, 255, 0.07)',
+    playerGlassStroke: 'rgba(255, 255, 255, 0.14)',
   },
 };
 
