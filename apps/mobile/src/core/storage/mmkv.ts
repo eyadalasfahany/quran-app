@@ -16,6 +16,7 @@ export const storageKeys = {
   readerMode: 'reader.mode',
   readerSettings: 'reader.settings',
   searchRecentQueries: 'search.recentQueries',
+  audioReciterId: 'audio.reciterId',
 } as const;
 
 /** Per-page QCF V2 font cache metadata (ADR 0011). */
