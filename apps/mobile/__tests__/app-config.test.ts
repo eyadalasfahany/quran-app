@@ -1,4 +1,4 @@
-import type { ExpoConfig } from 'expo/config';
+import type { ExpoConfig } from '@expo/config-types';
 
 import appConfig from '../app.config';
 
@@ -50,6 +50,7 @@ describe('app.config', () => {
       {
         backgroundColor: '#1F4D40',
         image: './assets/images/taybah-vertical-splash-screen.png',
+        enableFullScreenImage_legacy: true,
         imageWidth: 390,
         resizeMode: 'contain',
         android: {
