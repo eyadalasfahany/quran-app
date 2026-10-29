@@ -33,6 +33,13 @@ Spec §15. **Exit criterion:** ayah highlight within 150 ms of the timings on th
 
 **Waves:** A: 1. B: 2. C: 3, 6, 7 (parallel). D: 4, 5. E: 8.
 
+## Prelive data (checked 29 Oct 2026, `qf-audio-shapes`)
+- **Ids:** Afasy murattal is QF chapter reciter 7 (our resource 24, `recitations.id` 2); Husary murattal is 6 (resource 23, `recitations.id` 1). Both have 114 files and 6,236 timing rows, all with segments; surah 2 has no overlapping or empty ranges for either.
+- **Manifest:** only Afasy is served; Husary has no pack yet. A recitation's `name_ar` is null in the manifest although `recitations.reciter_name_ar` holds «مشاري راشد العفاسي» (`servedArabicName` covers tafsirs only).
+- **`duration_ms` is whole seconds and can be shorter than the last ayah** (Afasy 1: 46,000 against a last `end_ms` of 46,490). The player takes the duration from the loaded file, not from the row.
+- **`size_bytes` units differ by reciter:** QF sends Husary's `file_size` as 371.65 (KB) and Afasy's as 839,808 (bytes). Download sizes (step 7) come from the response's `Content-Length`, not from the row.
+- **Segments:** QF sends stray one-element entries (Afasy 1:3) and floats (Husary); the API drops the stubs and rounds the floats, so the device sees clean `[position, start, end]` triples. Word segments can start a little before their ayah's `start_ms` (Afasy 1:2: 6,025 against 6,090), so word lookup searches inside the active ayah only.
+
 ## Known limits
 - Prelive has 2 reciters (Afasy with timings, Husary). The full catalogue needs QF production keys.
 - Audio files are QF content: streamed from the URLs QF returns, never repackaged by our API (ADR 0008).
