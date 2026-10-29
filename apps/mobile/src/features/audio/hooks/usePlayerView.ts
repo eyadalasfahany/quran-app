@@ -9,10 +9,10 @@ import { getVerseRange } from '@/features/reader/data/verses';
 import { getWords } from '@/features/reader/data/words';
 
 import type { AyahWord } from '../components/NowPlayingAyah';
-import { listReciters, recitationStyle } from '../data/reciters';
+import { recitationStyle } from '../data/reciters';
 import { reciterInitial, recitationStyleKey, wordStates } from '../player-view';
 import { usePlayerStore, type PlayerErrorCode } from '../playerStore';
-import { defaultReciterId } from '../settings-model';
+import { usePlayerNames } from './usePlayerNames';
 
 export type PlayerView = {
   artworkLetter: string;
@@ -35,7 +35,6 @@ export function usePlayerView(): PlayerView {
   const { t } = useTranslation();
   const locale = useLocale();
   const status = usePlayerStore((state) => state.status);
-  const storedReciterId = usePlayerStore((state) => state.reciterId);
   const chapterId = usePlayerStore((state) => state.chapterId);
   const positionMs = usePlayerStore((state) => state.positionMs);
   const durationMs = usePlayerStore((state) => state.durationMs);
@@ -45,12 +44,10 @@ export function usePlayerView(): PlayerView {
   const speed = usePlayerStore((state) => state.speed);
 
   const db = useMemo(() => openContentDb().executor, []);
-  const reciters = useMemo(() => listReciters(db), [db]);
-  const reciter = reciters.find((row) => row.resourceId === (storedReciterId ?? defaultReciterId(reciters)));
+  const { reciter, reciterName, chapterName } = usePlayerNames();
   const chapter = useMemo(() => (chapterId === null ? undefined : getChapter(db, chapterId)), [db, chapterId]);
 
-  const reciterName = (locale === 'ar' ? reciter?.nameAr ?? reciter?.name : reciter?.name ?? reciter?.nameAr) ?? '';
-  const surahName = chapter === undefined ? '' : t('player.surah', { name: locale === 'ar' ? chapter.nameArabic : chapter.nameEn });
+  const surahName = chapterName === null ? '' : t('player.surah', { name: chapterName });
   const styleKey = reciter === undefined ? null : recitationStyleKey(recitationStyle(db, reciter.resourceId));
 
   const verse = useMemo(() => {

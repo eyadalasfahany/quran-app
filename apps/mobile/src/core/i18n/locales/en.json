@@ -222,6 +222,10 @@
     "pause": "Pause",
     "progress": "Progress",
     "surah": "Surah {{name}}",
+    "mini": {
+      "label": "{{reciter}}, {{surah}}",
+      "hint": "Opens the player"
+    },
     "style": {
       "murattal": "Murattal",
       "mujawwad": "Mujawwad",

@@ -222,6 +222,10 @@
     "pause": "إيقاف مؤقت",
     "progress": "التقدم",
     "surah": "سورة {{name}}",
+    "mini": {
+      "label": "{{reciter}}، {{surah}}",
+      "hint": "يفتح المشغّل"
+    },
     "style": {
       "murattal": "مرتّل",
       "mujawwad": "مجوّد",
