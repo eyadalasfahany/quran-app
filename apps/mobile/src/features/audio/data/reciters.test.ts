@@ -10,10 +10,10 @@ beforeEach(() => {
   ({ executor, close } = openAudioTestDb());
   // Catalogue: Afasy (30) and Husary (31), plus a tafsir that must not show up as a reciter.
   executor.run(
-    `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default) VALUES
-     (30, 'chapter_recitations', 'Mishari', 'مشاري', 1, 1000, 1),
-     (31, 'chapter_recitations', 'Husary', 'الحصري', 1, 2000, 0),
-     (21, 'tafsirs', 'Tafsir', 'تفسير', 1, 3000, 0)`,
+    `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default, style) VALUES
+     (30, 'chapter_recitations', 'Mishari', 'مشاري', 1, 1000, 1, 'Murattal'),
+     (31, 'chapter_recitations', 'Husary', 'الحصري', 1, 2000, 0, 'Muallim'),
+     (21, 'tafsirs', 'Tafsir', 'تفسير', 1, 3000, 0, NULL)`,
   );
   // Installed: Afasy (with a recitation and timings), a tafsir, and a recitation the catalogue doesn't list.
   executor.run(
@@ -23,9 +23,9 @@ beforeEach(() => {
      (50, 'chapter_recitations', 1, 'c', 0, 'Legacy', 'قديم')`,
   );
   executor.run(
-    `INSERT INTO recitations (id, resource_id, reciter_name, reciter_name_ar, has_word_segments) VALUES
-     (1, 30, 'Mishari', 'مشاري', 1),
-     (2, 50, 'Legacy', 'قديم', 0)`,
+    `INSERT INTO recitations (id, resource_id, reciter_name, reciter_name_ar, style, has_word_segments) VALUES
+     (1, 30, 'Mishari', 'مشاري', 'Mujawwad', 1),
+     (2, 50, 'Legacy', 'قديم', NULL, 0)`,
   );
   executor.run(`INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
      (100, 1, 1, 'https://example.test/1.mp3', 60000, 'mp3')`);
@@ -48,6 +48,7 @@ describe('listReciters', () => {
         hasTimings: true,
         hasWordSegments: true,
         isDefault: true,
+        style: 'Mujawwad',
       },
       {
         resourceId: 31,
@@ -58,6 +59,7 @@ describe('listReciters', () => {
         hasTimings: false,
         hasWordSegments: false,
         isDefault: false,
+        style: 'Muallim',
       },
       {
         resourceId: 50,
@@ -68,8 +70,20 @@ describe('listReciters', () => {
         hasTimings: false,
         hasWordSegments: false,
         isDefault: false,
+        style: null,
       },
     ]);
+  });
+
+  it('reads the style from the installed recitation once installed, and from the catalogue before that', () => {
+    const styles = Object.fromEntries(listReciters(executor).map((reciter) => [reciter.resourceId, reciter.style]));
+    expect(styles).toEqual({ 30: 'Mujawwad', 31: 'Muallim', 50: null });
+  });
+
+  it('keeps the catalogue style for an uninstalled reciter, so the Listen tab can filter it', () => {
+    executor.run(`INSERT INTO catalog_resources (resource_id, "group", version, pack_size_bytes, style) VALUES (33, 'chapter_recitations', 1, 500, 'Murattal')`);
+    const reciter = listReciters(executor).find((row) => row.resourceId === 33);
+    expect(reciter).toMatchObject({ installed: false, style: 'Murattal' });
   });
 
   it('reads isDefault from the catalogue flag, and gives installed-but-unlisted recitations false', () => {
@@ -107,7 +121,7 @@ describe('recitationStyle', () => {
   });
 
   it('returns null when the style is not stored, or the resource has no recitation row', () => {
-    expect(recitationStyle(executor, 30)).toBeNull();
+    expect(recitationStyle(executor, 50)).toBeNull();
     expect(recitationStyle(executor, 31)).toBeNull();
   });
 });

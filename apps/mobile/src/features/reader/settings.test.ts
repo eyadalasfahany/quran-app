@@ -14,6 +14,7 @@ function resource(
     author_name: null,
     author_ar: null,
     is_default: false,
+    style: null,
     changes_since_min_version: 1,
     direction: null,
     language_code: null,

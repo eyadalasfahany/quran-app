@@ -216,6 +216,7 @@ describe('resource names migration (0004)', () => {
         'pack_size_bytes',
         'author_ar',
         'is_default',
+        'style',
       ]);
       expect(columnNames(database, 'catalog_resources')).toEqual(drizzleColumnNames(catalogResources));
       expect(count(database, 'catalog_resources')).toBe(0);
@@ -297,6 +298,47 @@ describe('default reciter migration (0006)', () => {
 
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
       expect(executor.get('SELECT is_default AS isDefault FROM catalog_resources WHERE resource_id = 30')).toEqual({ isDefault: 0 });
+    } finally {
+      database.close();
+    }
+  });
+});
+
+describe('reciter style migration (0007)', () => {
+  it('adds a nullable style text column to catalog_resources', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      applyContentMigrations(executor, migrationsDir);
+      const column = database
+        .prepare(`SELECT type, "notnull" AS notNullFlag FROM pragma_table_info(?) WHERE name = 'style'`)
+        .get('catalog_resources') as { type: string; notNullFlag: number } | undefined;
+      expect(column).toEqual({ type: 'TEXT', notNullFlag: 0 });
+      expect(columnNames(database, 'catalog_resources')).toEqual(drizzleColumnNames(catalogResources));
+    } finally {
+      database.close();
+    }
+  });
+
+  it('clears the stored manifest ETag, so the next sync rewrites the catalogue with style', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      const journal = JSON.parse(readFileSync(join(migrationsDir, 'meta/_journal.json'), 'utf8')) as {
+        entries: { idx: number; tag: string }[];
+      };
+      const tags = [...journal.entries].sort((left, right) => left.idx - right.idx).map((entry) => entry.tag);
+      const reciterStyle = tags.indexOf('0007_reciter_style');
+      for (const tag of tags.slice(0, reciterStyle)) {
+        executor.exec(readFileSync(join(migrationsDir, `${tag}.sql`), 'utf8'));
+      }
+      executor.run('INSERT INTO meta (key, value) VALUES (?, ?)', ['manifest_etag', '"before-style"']);
+      executor.run(
+        `INSERT INTO catalog_resources (resource_id, "group", version, pack_size_bytes) VALUES (30, 'chapter_recitations', 1, 1)`,
+      );
+
+      executor.exec(readFileSync(join(migrationsDir, '0007_reciter_style.sql'), 'utf8'));
+
+      expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
+      expect(executor.get('SELECT style FROM catalog_resources WHERE resource_id = 30')).toEqual({ style: null });
     } finally {
       database.close();
     }

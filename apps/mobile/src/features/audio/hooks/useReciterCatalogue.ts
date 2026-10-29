@@ -1,6 +1,6 @@
 import { openContentDb } from '@/core/db/content/open';
 
-import { listReciters, recitationStyle } from '../data/reciters';
+import { listReciters } from '../data/reciters';
 import { usePlayerStore } from '../playerStore';
 import { useAudioSettings } from '../settings';
 import { defaultReciterId, resolveReciterId } from '../settings-model';
@@ -21,7 +21,7 @@ function readCatalogue(): ReciterEntry[] {
     name: reciter.name,
     nameAr: reciter.nameAr,
     resourceId: reciter.resourceId,
-    style: recitationStyle(db, reciter.resourceId),
+    style: reciter.style,
   }));
 }
 

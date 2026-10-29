@@ -8,6 +8,7 @@ import m0003 from './0003_drop_translation_entries.sql';
 import m0004 from './0004_resource_names_catalog.sql';
 import m0005 from './0005_author_ar.sql';
 import m0006 from './0006_default_reciter.sql';
+import m0007 from './0007_reciter_style.sql';
 
   export default {
     journal,
@@ -18,7 +19,8 @@ m0002,
 m0003,
 m0004,
 m0005,
-m0006
+m0006,
+m0007
     }
   }
   

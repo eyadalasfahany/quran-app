@@ -120,6 +120,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     pack: { url: `/api/v1/content/packs/${overrides.id}/1`, size_bytes: 1, sha256: 'abc' },
     changes_since_min_version: 1,
     is_default: false,
+    style: null,
     ...overrides,
   };
 }
@@ -992,6 +993,12 @@ function catalogRows(executor: SqlExecutor): CatalogRow[] {
   );
 }
 
+function catalogStyles(executor: SqlExecutor): { resourceId: number; style: string | null }[] {
+  return executor.all<{ resourceId: number; style: string | null }>(
+    'SELECT resource_id AS resourceId, style FROM catalog_resources ORDER BY resource_id',
+  );
+}
+
 function catalogDefaults(executor: SqlExecutor): { resourceId: number; isDefault: number }[] {
   return executor.all<{ resourceId: number; isDefault: number }>(
     'SELECT resource_id AS resourceId, is_default AS isDefault FROM catalog_resources ORDER BY resource_id',
@@ -1135,6 +1142,38 @@ describe('device catalogue and resource names', () => {
       current = withFlag('"flag-missing"', undefined);
       await syncContent(await deps(executor, cacheDir, api));
       expect(catalogDefaults(executor)).toEqual([{ resourceId: 85, isDefault: 0 }]);
+    });
+  });
+
+  it('writes the recitation style into the catalogue, and null for a tafsir or a missing value', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const pack = { url: '/api/v1/content/packs/85/3', size_bytes: bytes.byteLength, sha256: await sha256(bytes) };
+    const withoutStyle = resource({ id: 31, group: 'chapter_recitations', name: 'Husary' });
+    delete (withoutStyle as Partial<ContentManifestResource>).style;
+    const body = manifest(
+      [
+        resource({ id: 30, group: 'chapter_recitations', name: 'Afasy', style: 'Murattal' }),
+        withoutStyle,
+        resource({ id: 85, version: 3, name: 'Tafsir', style: null, pack }),
+      ],
+      '"styles"',
+    );
+    const api: ContentApi = {
+      getManifest: async () => ({ status: 200, etag: body.etag, manifest: body.body }),
+      getChanges: async () => {
+        throw new Error('changes');
+      },
+      downloadPack: downloadInto(bytes),
+    };
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      await syncContent(await deps(executor, cacheDir, api));
+
+      expect(catalogStyles(executor)).toEqual([
+        { resourceId: 30, style: 'Murattal' },
+        { resourceId: 31, style: null },
+        { resourceId: 85, style: null },
+      ]);
     });
   });
 

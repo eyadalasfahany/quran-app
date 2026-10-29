@@ -86,6 +86,7 @@ export const catalogResources = sqliteTable('catalog_resources', {
   packSizeBytes: integer('pack_size_bytes').notNull(),
   authorAr: text('author_ar'),
   isDefault: integer('is_default').notNull().default(0),
+  style: text('style'),
 });
 
 export const tafsirEntries = sqliteTable(

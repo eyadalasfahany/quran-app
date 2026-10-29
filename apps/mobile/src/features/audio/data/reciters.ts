@@ -11,14 +11,17 @@ export type CatalogReciter = {
   hasTimings: boolean;
   hasWordSegments: boolean;
   isDefault: boolean;
+  /** QF's recitation style ("Murattal", "Mujawwad", "Muallim"), or null when there is none. */
+  style: string | null;
 };
 
-type RecitationStatus = { hasTimings: boolean; hasWordSegments: boolean };
+type RecitationStatus = { hasTimings: boolean; hasWordSegments: boolean; style: string | null };
 
 /**
  * Every recitation the device knows: the catalogue, plus installed recitations the catalogue doesn't list
  * (installs from before it existed, which have no pack size). Sorted by resource id.
  * Timings and word segments exist only after the pack is installed, so they are false otherwise.
+ * The style is the installed recitation's when the pack is installed, else the catalogue's.
  */
 export function listReciters(db: SqlExecutor): CatalogReciter[] {
   const installed = db.all<{ resourceId: number; name: string | null; nameAr: string | null }>(
@@ -31,8 +34,15 @@ export function listReciters(db: SqlExecutor): CatalogReciter[] {
   const status = recitationStatus(db);
 
   const catalogue = db
-    .all<{ resourceId: number; name: string | null; nameAr: string | null; packSizeBytes: number; isDefault: number }>(
-      `SELECT resource_id AS resourceId, name, name_ar AS nameAr, pack_size_bytes AS packSizeBytes, is_default AS isDefault
+    .all<{
+      resourceId: number;
+      name: string | null;
+      nameAr: string | null;
+      packSizeBytes: number;
+      isDefault: number;
+      style: string | null;
+    }>(
+      `SELECT resource_id AS resourceId, name, name_ar AS nameAr, pack_size_bytes AS packSizeBytes, is_default AS isDefault, style
        FROM catalog_resources
        WHERE "group" = ?
        ORDER BY resource_id`,
@@ -50,6 +60,7 @@ export function listReciters(db: SqlExecutor): CatalogReciter[] {
         hasTimings: state?.hasTimings ?? false,
         hasWordSegments: state?.hasWordSegments ?? false,
         isDefault: row.isDefault === 1,
+        style: state === undefined ? row.style : state.style,
       };
     });
 
@@ -67,6 +78,7 @@ export function listReciters(db: SqlExecutor): CatalogReciter[] {
         hasTimings: state?.hasTimings ?? false,
         hasWordSegments: state?.hasWordSegments ?? false,
         isDefault: false,
+        style: state?.style ?? null,
       };
     });
 
@@ -79,10 +91,11 @@ export function recitationIdForResource(db: SqlExecutor, resourceId: number): nu
 }
 
 function recitationStatus(db: SqlExecutor): Map<number, RecitationStatus> {
-  const rows = db.all<{ resourceId: number; hasWordSegments: number; hasTimings: number }>(
+  const rows = db.all<{ resourceId: number; hasWordSegments: number; hasTimings: number; style: string | null }>(
     `SELECT
        resource_id AS resourceId,
        has_word_segments AS hasWordSegments,
+       style,
        EXISTS (
          SELECT 1
          FROM chapter_audio_files
@@ -92,7 +105,10 @@ function recitationStatus(db: SqlExecutor): Map<number, RecitationStatus> {
      FROM recitations`,
   );
   return new Map(
-    rows.map((row) => [row.resourceId, { hasTimings: row.hasTimings === 1, hasWordSegments: row.hasWordSegments === 1 }]),
+    rows.map((row) => [
+      row.resourceId,
+      { hasTimings: row.hasTimings === 1, hasWordSegments: row.hasWordSegments === 1, style: row.style },
+    ]),
   );
 }
 

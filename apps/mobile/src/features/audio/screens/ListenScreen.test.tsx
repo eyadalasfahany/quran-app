@@ -43,7 +43,7 @@ jest.mock('react-native-safe-area-context', () => {
 const install = jest.mocked(installResource);
 const play = jest.mocked(playChapter);
 
-// Afasy: installed, Murattal. Husary: installed, Muallim. Siddiq: not installed, so no style is known.
+// Afasy: installed, Murattal. Husary: installed, Muallim. Siddiq: not installed, but the catalogue still gives its style.
 let close: () => void;
 
 beforeEach(() => {
@@ -52,10 +52,10 @@ beforeEach(() => {
   close = opened.close;
   const db = opened.executor;
   db.run(
-    `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default) VALUES
-     (30, 'chapter_recitations', 'Mishari Rashid Al-Afasy', 'مشاري راشد العفاسي', 1, 700000, 1),
-     (31, 'chapter_recitations', 'Mahmoud Khalil Al-Husary', 'محمود خليل الحصري', 1, 700000, 0),
-     (32, 'chapter_recitations', 'Mohamed Siddiq Al-Minshawi', 'محمد صديق المنشاوي', 1, 700000, 0)`,
+    `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default, style) VALUES
+     (30, 'chapter_recitations', 'Mishari Rashid Al-Afasy', 'مشاري راشد العفاسي', 1, 700000, 1, 'Murattal'),
+     (31, 'chapter_recitations', 'Mahmoud Khalil Al-Husary', 'محمود خليل الحصري', 1, 700000, 0, 'Muallim'),
+     (32, 'chapter_recitations', 'Mohamed Siddiq Al-Minshawi', 'محمد صديق المنشاوي', 1, 700000, 0, 'Murattal')`,
   );
   db.run(
     `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, name, name_ar) VALUES
@@ -92,13 +92,23 @@ describe('ListenScreen', () => {
     expect(view.getByText('محمد صديق المنشاوي')).toBeOnTheScreen();
   });
 
-  it('shows the style tag only for installed reciters, and the teaching note for Muallim', async () => {
+  it('shows the style tag on every row, installed or not, and the teaching note for Muallim', async () => {
     const view = await renderUi(<ListenScreen />);
 
     expect(view.getByTestId('reciter-row-30-style')).toHaveTextContent('مرتّل');
     expect(view.getByTestId('reciter-row-31-style')).toHaveTextContent('معلّم');
+    expect(view.getByTestId('reciter-row-32-style')).toHaveTextContent('مرتّل');
     expect(view.getByText('للتعليم والتكرار')).toBeOnTheScreen();
-    expect(view.queryByTestId('reciter-row-32-style')).toBeNull();
+  });
+
+  it('finds an uninstalled reciter through the مرتّل chip by its catalogue style', async () => {
+    const view = await renderUi(<ListenScreen />);
+
+    await fireEvent.press(view.getByRole('radio', { name: 'مرتّل' }));
+
+    expect(view.getByText('مشاري راشد العفاسي')).toBeOnTheScreen();
+    expect(view.getByText('محمد صديق المنشاوي')).toBeOnTheScreen();
+    expect(view.queryByText('محمود خليل الحصري')).toBeNull();
   });
 
   it('marks the chosen reciter as checked, with the default for a fresh install', async () => {

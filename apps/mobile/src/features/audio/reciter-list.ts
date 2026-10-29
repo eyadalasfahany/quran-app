@@ -1,6 +1,6 @@
 import { recitationStyleKey } from './player-view';
 
-/** A catalogue reciter as the Listen tab reads it. `style` is QF's style string, null until the pack is installed. */
+/** A catalogue reciter as the Listen tab reads it. `style` is QF's style string, or null when there is none. */
 export type ReciterEntry = {
   resourceId: number;
   name: string | null;
@@ -38,7 +38,7 @@ export function matchesQuery(reciter: Pick<ReciterEntry, 'name' | 'nameAr'>, que
   return [reciter.nameAr, reciter.name].some((name) => name !== null && normalizeForSearch(name).includes(needle));
 }
 
-/** Reciters with no known style (not installed yet) match only «الكل». */
+/** Reciters with no style match only «الكل». */
 export function matchesFilter(reciter: Pick<ReciterEntry, 'style'>, filter: ReciterFilter): boolean {
   return filter === 'all' || reciter.style === filter;
 }

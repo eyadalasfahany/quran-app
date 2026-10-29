@@ -28,7 +28,7 @@ export function ReciterRow({
   letter: string;
   /** The chosen (default) reciter: the tile is filled. */
   selected: boolean;
-  /** null until the pack is installed, because the style comes from the installed recitation. */
+  /** The recitation style tag, or null when the reciter has no style. */
   styleLabel: string | null;
   status: ReciterRowStatus | null;
   playLabel: string;
