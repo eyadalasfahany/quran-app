@@ -1,12 +1,14 @@
-import { fireEvent } from '@testing-library/react-native';
+import { cleanup, fireEvent, within } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
+import { Dimensions } from 'react-native';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { installResource } from '@/core/sync';
 
 import { playChapter } from '../player';
+import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
 import { usePlayerStore } from '../playerStore';
 import { resetReciterDownloads } from '../reciter-downloads';
 import { getReciterId, resetAudioSettingsStore } from '../settings';
@@ -209,5 +211,73 @@ describe('ListenScreen', () => {
     const view = await renderUi(<ListenScreen />, { locale });
 
     expect(view.getByRole('radio', { name: locale === 'en' ? 'Mishari Rashid Al-Afasy' : 'مشاري راشد العفاسي' })).toBeOnTheScreen();
+  });
+
+  it.each(locales)('scrolls the title, the search field and the chips with the list, under %s', async (locale) => {
+    const view = await renderUi(<ListenScreen />, { locale });
+    const list = view.getByTestId('reciter-list');
+
+    expect(within(list).getByRole('header', { name: locale === 'ar' ? 'الاستماع' : 'Listen' })).toBeOnTheScreen();
+    expect(within(list).getByRole('search')).toBeOnTheScreen();
+    expect(within(list).getByTestId('reciter-filter-chips')).toBeOnTheScreen();
+  });
+
+  it('keeps the search field focused while typing re-renders the list', async () => {
+    const view = await renderUi(<ListenScreen />);
+    const field = view.getByRole('search');
+
+    fireEvent(field, 'focus');
+    await fireEvent.changeText(field, 'Husary');
+
+    expect(view.getByRole('search')).toBe(field);
+    expect(view.getByRole('search')).toHaveProp('value', 'Husary');
+  });
+
+  it.each(locales)('shows the empty state under the header when nothing matches, under %s', async (locale) => {
+    const view = await renderUi(<ListenScreen />, { locale });
+
+    await fireEvent.changeText(view.getByRole('search'), 'zzz');
+
+    const list = view.getByTestId('reciter-list');
+    expect(within(list).getByTestId('reciter-empty')).toBeOnTheScreen();
+    expect(within(list).getByRole('header', { name: locale === 'ar' ? 'الاستماع' : 'Listen' })).toBeOnTheScreen();
+    expect(within(list).getByRole('search')).toBeOnTheScreen();
+  });
+
+  describe('above the tabs mini bar', () => {
+    let savedWindow: ReturnType<typeof Dimensions.get>;
+
+    beforeEach(() => {
+      savedWindow = Dimensions.get('window');
+      Dimensions.set({
+        screen: { fontScale: 1, height: 844, scale: 1, width: 390 },
+        window: { fontScale: 1, height: 844, scale: 1, width: 390 },
+      });
+      usePlayerStore.getState().reset();
+    });
+
+    afterEach(() => {
+      // Unmount first, so the restored size reaches no mounted screen.
+      cleanup();
+      Dimensions.set({ screen: savedWindow, window: savedWindow });
+    });
+
+    it('pads the bottom of the list by the bar footprint while the bar shows, so the last row clears it', async () => {
+      const store = usePlayerStore.getState();
+      store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      store.markPlaying();
+      const view = await renderUi(<ListenScreen />);
+
+      expect(flatStyle(view.getByTestId('reciter-list').props.contentContainerStyle).paddingBottom).toBe(
+        MINI_PLAYER_TABS_FOOTPRINT,
+      );
+      expect(MINI_PLAYER_TABS_FOOTPRINT).toBe(76);
+    });
+
+    it('adds no bottom padding while the player is idle', async () => {
+      const view = await renderUi(<ListenScreen />);
+
+      expect(flatStyle(view.getByTestId('reciter-list').props.contentContainerStyle).paddingBottom).toBe(0);
+    });
   });
 });
