@@ -5,6 +5,23 @@
     "listen": "الاستماع",
     "myQuran": "مصحفي"
   },
+  "listen": {
+    "search": {
+      "placeholder": "ابحث عن قارئ"
+    },
+    "filter": {
+      "group": "تصفية القرّاء",
+      "all": "الكل",
+      "downloaded": "المحمّلة"
+    },
+    "play": "تشغيل {{name}}",
+    "teaching": "للتعليم والتكرار",
+    "unnamed": "قارئ",
+    "empty": {
+      "title": "لا يوجد قارئ مطابق",
+      "body": "جرّب اسمًا آخر، أو امسح البحث."
+    }
+  },
   "nav": {
     "main": "التنقل الرئيسي"
   },
@@ -209,7 +226,7 @@
     "place": "الآية {{ayah}} · صفحة {{page}} · الجزء {{juz}}",
     "resume": "متابعة",
     "progress": "قرأت {{percent}}٪ من المصحف",
-    "tiles": { "surahs": "السور", "saved": "المحفوظات" }
+    "tiles": { "surahs": "السور", "saved": "المحفوظات", "reciters": "القرّاء" }
   },
   "player": {
     "minimize": "تصغير المشغّل",

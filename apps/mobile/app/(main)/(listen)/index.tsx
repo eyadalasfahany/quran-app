@@ -1,8 +1,5 @@
-import { useTranslation } from 'react-i18next';
+import { ListenScreen } from '@/features/audio/screens/ListenScreen';
 
-import { SectionScreen } from '@/core/layout';
-
-export default function ListenScreen() {
-  const { t } = useTranslation();
-  return <SectionScreen testID="screen-listen" title={t('tabs.listen')} />;
+export default function ListenRoute() {
+  return <ListenScreen />;
 }

@@ -23,6 +23,7 @@ function tabHref(name: Destination['name']): Href {
 
 const SURAHS_ICON: IconName = { ios: 'list.bullet', android: 'format_list_bulleted' };
 const SAVED_ICON: IconName = { ios: 'bookmark', android: 'bookmark' };
+const RECITERS_ICON: IconName = { ios: 'headphones', android: 'headphones' };
 
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -64,6 +65,7 @@ export function HomeScreen() {
         tiles={[
           { icon: SURAHS_ICON, key: 'surahs', label: t('home.tiles.surahs'), onPress: () => router.navigate(tabHref('(mushaf)')) },
           { icon: SAVED_ICON, key: 'saved', label: t('home.tiles.saved'), onPress: () => router.navigate(tabHref('(my-quran)')) },
+          { icon: RECITERS_ICON, key: 'reciters', label: t('home.tiles.reciters'), onPress: () => router.navigate(tabHref('(listen)')) },
         ]}
       />
     </SectionScreen>

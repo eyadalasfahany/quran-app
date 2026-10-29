@@ -5,6 +5,23 @@
     "listen": "Listen",
     "myQuran": "My Quran"
   },
+  "listen": {
+    "search": {
+      "placeholder": "Search for a reciter"
+    },
+    "filter": {
+      "group": "Filter reciters",
+      "all": "All",
+      "downloaded": "Downloaded"
+    },
+    "play": "Play {{name}}",
+    "teaching": "For teaching and repetition",
+    "unnamed": "Reciter",
+    "empty": {
+      "title": "No matching reciter",
+      "body": "Try another name, or clear the search."
+    }
+  },
   "nav": {
     "main": "Main navigation"
   },
@@ -209,7 +226,7 @@
     "place": "Ayah {{ayah}} · page {{page}} · juz {{juz}}",
     "resume": "Continue",
     "progress": "{{percent}}% of the Quran read",
-    "tiles": { "surahs": "Surahs", "saved": "Saved" }
+    "tiles": { "surahs": "Surahs", "saved": "Saved", "reciters": "Reciters" }
   },
   "player": {
     "minimize": "Minimize player",

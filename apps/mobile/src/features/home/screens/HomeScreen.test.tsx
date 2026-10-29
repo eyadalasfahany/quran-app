@@ -132,14 +132,15 @@ describe('HomeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/read/2:255');
   });
 
-  it('renders the Surahs and Saved tiles without a last-read verse', async () => {
+  it('renders the Surahs, Saved and Reciters tiles in frame order without a last-read verse', async () => {
     const view = await renderUi(<HomeScreen />);
 
     expect(view.getByTestId('home-tiles-surahs')).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'السور' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'المحفوظات' })).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'القرّاء' })).toBeOnTheScreen();
     expect(view.queryByRole('button', { name: 'الحديث' })).toBeNull();
-    expect(view.queryByRole('button', { name: 'القرّاء' })).toBeNull();
+    expect(view.getByTestId('home-tiles').children.length).toBe(3);
   });
 
   it('navigates to the Mushaf and My Quran tabs from the tiles', async () => {
@@ -150,6 +151,9 @@ describe('HomeScreen', () => {
 
     await fireEvent.press(view.getByRole('button', { name: 'المحفوظات' }));
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(my-quran)');
-    expect(router.navigate).toHaveBeenCalledTimes(2);
+
+    await fireEvent.press(view.getByRole('button', { name: 'القرّاء' }));
+    expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(listen)');
+    expect(router.navigate).toHaveBeenCalledTimes(3);
   });
 });
