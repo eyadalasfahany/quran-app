@@ -48,7 +48,7 @@ export function Sidebar({
         radius="xl"
         style={{
           flex: 1,
-          gap: theme.space[1],
+          gap: theme.space[2],
           paddingHorizontal: theme.space[3],
           paddingVertical: theme.space[4],
           width: theme.size.sidebar,

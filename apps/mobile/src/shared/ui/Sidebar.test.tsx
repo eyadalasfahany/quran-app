@@ -63,6 +63,12 @@ describe('Sidebar', () => {
     });
   });
 
+  it('spaces its items 8 pt apart, as #ExpandedHome draws the sidebar (gap space-2)', async () => {
+    const view = await renderUi(sidebar());
+
+    expect(flatStyle(view.getByTestId('sidebar').props.style).gap).toBe(themes.light.space[2]);
+  });
+
   it('uses native glass when it is available', async () => {
     mockLiquidGlass.mockReturnValue(true);
     const view = await renderUi(sidebar());
