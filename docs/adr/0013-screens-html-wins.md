@@ -2,7 +2,7 @@
 
 Date: 2026-10-27 · Status: accepted · Amends ADR 0010 (design source), spec §4 and §12, Phase 2 step 8
 
-Amended by ADR 0014.
+Amended by ADR 0014. Amended by ADR 0020.
 
 ## Context
 

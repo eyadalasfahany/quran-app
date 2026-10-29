@@ -1,5 +1,10 @@
 import { deviceLanguageCode } from './jest/device-language';
 
+// Gesture handler installs its UI-thread bindings through Worklets, which has no UI runtime under Jest.
+jest.mock('react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings', () => ({
+  installUIRuntimeBindings: () => undefined,
+}));
+
 jest.mock('@shopify/flash-list', () => ({
   FlashList: jest.requireActual<typeof import('react-native')>('react-native').FlatList,
 }));

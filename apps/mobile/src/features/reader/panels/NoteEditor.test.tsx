@@ -6,6 +6,7 @@ import { getNotes, NOTE_MAX_CHARACTERS, saveNote } from '@/features/library/data
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { openUserTestStore } from '../../../../jest/user-test-db';
+import { SheetContext, type SheetContextValue } from '../components/sheet-context';
 import { NoteEditor } from './NoteEditor';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
@@ -19,6 +20,29 @@ describe('NoteEditor', () => {
     expect(view.getByTestId('note-editor-counter')).toHaveTextContent('٠ / ١٠٠٠٠');
     expect(view.getByRole('button', { name: 'حفظ الملاحظة' }).props.accessibilityState).toEqual({ disabled: true });
     expect(view.queryByRole('button', { name: 'حذف الملاحظة' })).toBeNull();
+  });
+
+  it('expands the sheet to full when the field takes focus, for the keyboard', async () => {
+    const { store } = openUserTestStore();
+    const expand = jest.fn();
+    const sheet = {
+      close: jest.fn(),
+      collapse: jest.fn(),
+      detent: 'mid',
+      expand,
+      panGesture: {},
+      scrollOffset: { value: 0 },
+    } as unknown as SheetContextValue;
+    const view = await renderUi(
+      <SheetContext.Provider value={sheet}>
+        <NoteEditor note={null} store={store} verseId={2} />
+      </SheetContext.Provider>,
+      { locale: 'en' },
+    );
+
+    fireEvent(view.getByLabelText('Note on this ayah'), 'focus');
+
+    expect(expand).toHaveBeenCalledTimes(1);
   });
 
   it('saves a new note through the repository', async () => {

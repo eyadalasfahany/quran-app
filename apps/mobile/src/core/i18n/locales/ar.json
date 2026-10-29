@@ -62,7 +62,12 @@
     },
     "sheet": {
       "label": "خيارات الآية",
-      "close": "إغلاق"
+      "close": "إغلاق",
+      "grabber": "مقبض اللوحة",
+      "expand": "توسيع",
+      "collapse": "تصغير",
+      "expanded": "ملء الشاشة",
+      "collapsed": "نصف الشاشة"
     },
     "ayahPanel": {
       "ayah": "الآية {{number}}",

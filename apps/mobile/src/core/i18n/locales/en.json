@@ -62,7 +62,12 @@
     },
     "sheet": {
       "label": "Ayah actions",
-      "close": "Close"
+      "close": "Close",
+      "grabber": "Sheet handle",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "expanded": "Full screen",
+      "collapsed": "Half screen"
     },
     "ayahPanel": {
       "ayah": "Ayah {{number}}",

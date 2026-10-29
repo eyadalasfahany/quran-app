@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import { useContrastColors } from '@/shared/ui';
 
 import { FULL_SHEET_RADIUS, SHEET_MARGIN, SHEET_RADIUS, type SheetShape } from '../form-sheet';
+import { useSheet } from './sheet-context';
 
 /** Grabber top padding on the ayah and settings frames (quran-app-screens.html: padding-top 10px). */
 export const GRABBER_TOP = 10;
@@ -35,6 +37,30 @@ export function SheetFrame({
   const card = shape === 'card';
   const theme = useTheme();
   const colors = useContrastColors();
+  const { t } = useTranslation();
+  const sheet = useSheet();
+  // Inside a sheet the grabber is a button that expands and collapses it. Outside one it is decoration.
+  const grabberAccessibility =
+    sheet === null
+      ? {}
+      : {
+          accessible: true,
+          accessibilityActions: [
+            { label: t('reader.sheet.expand'), name: 'expand' },
+            { label: t('reader.sheet.collapse'), name: 'collapse' },
+          ],
+          accessibilityLabel: t('reader.sheet.grabber'),
+          accessibilityRole: 'button' as const,
+          onAccessibilityAction: (event: { nativeEvent: { actionName: string } }) => {
+            if (event.nativeEvent.actionName === 'expand') {
+              sheet.expand();
+              AccessibilityInfo.announceForAccessibility(t('reader.sheet.expanded'));
+            } else if (event.nativeEvent.actionName === 'collapse') {
+              sheet.collapse();
+              AccessibilityInfo.announceForAccessibility(t('reader.sheet.collapsed'));
+            }
+          },
+        };
   const grabberStyle =
     grabber === 'muted'
       ? { backgroundColor: colors.inkMuted, opacity: theme.opacity.grabber, width: theme.size.grabberWidthCompact }
@@ -64,6 +90,7 @@ export function SheetFrame({
         testID={testID === undefined ? undefined : `${testID}-card`}
       >
         <View
+          {...grabberAccessibility}
           style={{ alignItems: 'center', paddingTop: GRABBER_TOP }}
           testID={testID === undefined ? undefined : `${testID}-grabber-area`}
         >

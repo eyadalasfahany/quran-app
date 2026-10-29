@@ -237,8 +237,8 @@ Layout is driven by the window's width class from `useWindowDimensions`, never b
 
 | Window class | Width (dp/pt) | Typical cases | Navigation | Reader | Ayah actions and tafsir | Player |
 | --- | --- | --- | --- | --- | --- | --- |
-| Compact | under 600 | Phones, folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs | Full width | Bottom sheets | Mini-player bar, full-screen player |
-| Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (a 560-wide card, ADR 0013) | Mini-player bar, full-screen player |
+| Compact | under 600 | Phones, folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs | Full width | Bottom sheets (mid 50% and full detents, ADR 0020) | Mini-player bar, full-screen player |
+| Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (a 560-wide card, ADR 0013, with the same detents) | Mini-player bar, full-screen player |
 | Expanded | 840 and up | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | Sidebar | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player in the sidebar footer; full player as a modal |
 
 - **`useWindowClass()`** returns `compact | medium | expanded` with a small hysteresis (±16) so a resize near a boundary doesn't flicker.
@@ -635,14 +635,14 @@ For each change, in one transaction per request:
 
 **Motion (reviewed against Apple's HIG on motion, accessibility and Liquid Glass)**
 
-- **Native first:** the full player and the tab bar use native components (a modal, native tabs), which bring system motion, gesture tracking and Reduce Motion handling. The reader sheets are custom cards drawn per frame, presented as a transparent modal with the stack's slide-up and swipe to dismiss (ADR 0013).
+- **Native first:** the full player and the tab bar use native components (a modal, native tabs), which bring system motion, gesture tracking and Reduce Motion handling. The reader sheets are custom cards drawn per frame, presented as a transparent modal (ADR 0013). Each sheet has a mid detent at 50% of the window and a full detent under the safe area. A drag moves it between them, and a slide down closes it, the reverse of the entrance (ADR 0020). The stack's own animation and swipe are off.
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
 
 | Interaction | Component | Motion | Reduce Motion |
 | --- | --- | --- | --- |
-| Ayah actions, tafsir, reader settings | Transparent modal with a custom card (ADR 0013) | Stack slide-up | Stack handling |
+| Ayah actions, tafsir, reader settings | Transparent modal with a custom card (ADR 0013, ADR 0020) | Slide up to mid (50%) on open; drag between mid and full; slide down to close | Fade |
 | Mini-player → full player | Pan gesture + `spring()` | Tracks the finger; springs open or closed on release | Fade, `slow` |
 | Tab change | Native tabs | System | System |
 | Tab bar minimize on scroll | Native tabs (iOS 26); Android's bar stays fixed | System | System |
