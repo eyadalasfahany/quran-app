@@ -362,10 +362,11 @@ it('returns 404 for the pack and the change feed of an ignored resource even whe
         ->assertJsonPath('code', 'not_found');
 })->with(ResourceGroup::ignoredValues());
 
-function packedRecitation(string $sourceKey, ?string $reciterNameAr, ?string $nameAr = null): Resource
+function packedRecitation(string $sourceKey, ?string $reciterNameAr, ?string $nameAr = null, ?string $style = 'Murattal'): Resource
 {
     $recitation = Recitation::factory()->create([
         'reciter_name_ar' => $reciterNameAr,
+        'style' => $style,
         'resource_id' => Resource::factory()->state([
             'group' => ResourceGroup::ChapterRecitations,
             'source_key' => $sourceKey,
@@ -581,18 +582,66 @@ it('serves a recitation arabic name from the reciter and null without one', func
     ]);
 });
 
+it('includes a recitation style and null for every other group', function (): void {
+    $recitation = packedRecitation('7', 'مشاري راشد العفاسي', style: 'Murattal');
+    $tafsir = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '16',
+        'language_code' => 'ar',
+        'version' => 1,
+        'is_active' => true,
+    ]);
+    app(PackBuilder::class)->build($tafsir);
+
+    $styles = collect($this->getJson('/api/v1/content/manifest')->json('resources'))
+        ->mapWithKeys(fn (array $entry): array => [$entry['id'] => $entry['style']])
+        ->all();
+
+    expect($styles)->toBe([
+        $recitation->id => 'Murattal',
+        $tafsir->id => null,
+    ]);
+});
+
+it('returns null style when a recitation has no style', function (): void {
+    $unstyled = packedRecitation('6', 'محمود خليل الحصري', style: null);
+    $missing = Resource::factory()->create([
+        'group' => ResourceGroup::ChapterRecitations,
+        'source_key' => '12',
+        'version' => 1,
+        'is_active' => true,
+    ]);
+    app(PackBuilder::class)->build($missing);
+
+    $styles = collect($this->getJson('/api/v1/content/manifest')->json('resources'))
+        ->mapWithKeys(fn (array $entry): array => [$entry['id'] => $entry['style']])
+        ->all();
+
+    expect($styles)->toBe([
+        $unstyled->id => null,
+        $missing->id => null,
+    ]);
+});
+
 it('keeps the manifest query count flat as recitations are added', function (): void {
-    packedRecitation('7', 'مشاري راشد العفاسي');
+    packedRecitation('7', 'مشاري راشد العفاسي', style: 'Murattal');
 
     DB::flushQueryLog();
     DB::enableQueryLog();
-    $this->getJson('/api/v1/content/manifest')->assertOk()->assertJsonCount(1, 'resources');
+    $this->getJson('/api/v1/content/manifest')
+        ->assertOk()
+        ->assertJsonCount(1, 'resources')
+        ->assertJsonPath('resources.0.style', 'Murattal');
     $one = DB::getQueryLog();
 
-    packedRecitation('6', 'محمود خليل الحصري');
+    packedRecitation('6', 'محمود خليل الحصري', style: 'Mujawwad');
 
     DB::flushQueryLog();
-    $this->getJson('/api/v1/content/manifest')->assertOk()->assertJsonCount(2, 'resources');
+    $this->getJson('/api/v1/content/manifest')
+        ->assertOk()
+        ->assertJsonCount(2, 'resources')
+        ->assertJsonPath('resources.0.style', 'Murattal')
+        ->assertJsonPath('resources.1.style', 'Mujawwad');
     $two = DB::getQueryLog();
 
     expect(recitationQueries($one))->toBe(1)
