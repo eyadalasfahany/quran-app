@@ -11,7 +11,8 @@ One file per step of [`../phase-3.md`](../phase-3.md). Send a Haiku agent *"Impl
 | 3 | [step-03-audio-to-ayah.md](step-03-audio-to-ayah.md) | 2 | |
 | 4 | [step-04-players-ui.md](step-04-players-ui.md) | 2, 3 | |
 | 5 | [step-05-repeat-speed-sleep.md](step-05-repeat-speed-sleep.md) | 3 | |
-| 6 | [step-06-reciters.md](step-06-reciters.md) | 1, 2 | |
+| 6 | [step-06-reciters.md](step-06-reciters.md) | 1, 2 | Done (29 Oct 2026): the Listen tab |
+| 6b | [step-06b-reciter-style.md](step-06b-reciter-style.md) | 6 | Part 1 (API) on the developer's Mac, then part 2 (device) |
 | 7 | [step-07-audio-downloads.md](step-07-audio-downloads.md) | 2, Phase 2 step 13 | |
 | 8 | [step-08-exit-check.md](step-08-exit-check.md) | all | |
 
