@@ -17,6 +17,7 @@ import {
 import type { ChapterRecord } from '../data/chapters';
 import type { VerseRecord } from '../data/verses';
 import { BismillahLine } from './BismillahLine';
+import { RecitedWords } from './RecitedWords';
 
 /** Padding inside the double gold frame, from the Mushaf phone frame. */
 const FRAME_CONTENT = {
@@ -35,6 +36,7 @@ export function HafsMushafPage({
   fontScale = 1,
   selectedVerseKey = null,
   recitedVerseKey = null,
+  recitedWord = null,
   highlightsByVerseId,
   onPressVerse,
   onOpenActions,
@@ -48,6 +50,8 @@ export function HafsMushafPage({
   selectedVerseKey?: string | null;
   /** The ayah the player is reciting. Ayah level only: the Mushaf text is one paragraph per surah. */
   recitedVerseKey?: string | null;
+  /** The recited word's 1-based position in that ayah, when its timings have word segments. */
+  recitedWord?: number | null;
   /** The reader's saved highlight colour per verse id. */
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onPressVerse?: (verseKey: string) => void;
@@ -123,7 +127,15 @@ export function HafsMushafPage({
                       style={background === undefined ? null : { backgroundColor: background }}
                       testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
                     >
-                      {verse.textUthmani}
+                      {recited && recitedWord !== null ? (
+                        <RecitedWords
+                          activeWord={recitedWord}
+                          testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
+                          text={verse.textUthmani}
+                        />
+                      ) : (
+                        verse.textUthmani
+                      )}
                     </Text>
                     {WORD_SPACE}
                     <AyahEndMark

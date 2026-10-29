@@ -24,6 +24,8 @@ export type HafsMushafListProps = {
   selectedVerseKey?: string | null;
   /** The ayah the player is reciting; it gets the recited wash and brand marker. */
   recitedVerseKey?: string | null;
+  /** The recited word's 1-based position, marked inside the recited ayah. */
+  recitedWord?: number | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onVisiblePage?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
@@ -42,6 +44,7 @@ export function HafsMushafList({
   contentBottomInset = 0,
   selectedVerseKey = null,
   recitedVerseKey = null,
+  recitedWord = null,
   highlightsByVerseId,
   onVisiblePage,
   onSelectVerseKey,
@@ -141,8 +144,8 @@ export function HafsMushafList({
 
   // FlashList repaints pages only when data or extraData changes; renderPage reads these from props.
   const pageExtraData = useMemo(
-    () => ({ focusVerseKey, highlightsByVerseId, recitedVerseKey, selectedVerseKey }),
-    [focusVerseKey, highlightsByVerseId, recitedVerseKey, selectedVerseKey],
+    () => ({ focusVerseKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey }),
+    [focusVerseKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey],
   );
 
   const renderPage = useCallback(
@@ -158,6 +161,7 @@ export function HafsMushafList({
         onSelectVerseKey={onSelectVerseKey}
         page={page}
         recitedVerseKey={recitedVerseKey}
+        recitedWord={recitedWord}
         selectedVerseKey={selectedVerseKey}
         testID={testID}
       />
@@ -172,6 +176,7 @@ export function HafsMushafList({
       onOpenAyahActions,
       onSelectVerseKey,
       recitedVerseKey,
+      recitedWord,
       scrollToFocus,
       selectedVerseKey,
       testID,

@@ -350,6 +350,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                   haptics.onPage(page, surahStartPages.has(page));
                 }}
                 recitedVerseKey={recitedVerseKey}
+                recitedWord={activeWord}
                 selectedVerseKey={selection.verseKey}
                 testID="reader-mushaf"
                 topInset={topInset}

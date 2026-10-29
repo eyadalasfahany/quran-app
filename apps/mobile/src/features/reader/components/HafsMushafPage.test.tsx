@@ -293,4 +293,32 @@ describe('HafsMushafPage recitation', () => {
     const other = verses[0]!;
     expect(flatStyle(view.getByTestId(`page-ayah-${other.verseKey}`).props.style).backgroundColor).toBeUndefined();
   });
+
+  it('marks the recited word inside the recited ayah, keeping the ayah text exact', async () => {
+    const { executor } = await openReaderTestContent();
+    const verses = getVersesByPage(executor, 1).slice(0, 2);
+    const chapters = new Map(listChapters(executor).map((chapter) => [chapter.id, chapter]));
+    const recited = verses[1]!;
+    const words = recited.textUthmani.split(' ').filter((token) => /\p{L}/u.test(token));
+    const view = await renderUi(
+      <HafsMushafPage chapters={chapters} recitedVerseKey={recited.verseKey} recitedWord={2} testID="page" verses={verses} />,
+    );
+
+    const word = view.getByTestId(`page-ayah-${recited.verseKey}-word`);
+    expect(word).toHaveTextContent(words[1]!);
+    expect(flatStyle(word.props.style)).toMatchObject({ backgroundColor: themes.light.colors.brandSurface });
+    expect(view.getByTestId(`page-ayah-${recited.verseKey}`)).toHaveTextContent(recited.textUthmani);
+  });
+
+  it('marks no word without a word position, and none in an ayah that is not recited', async () => {
+    const { executor } = await openReaderTestContent();
+    const verses = getVersesByPage(executor, 1).slice(0, 2);
+    const chapters = new Map(listChapters(executor).map((chapter) => [chapter.id, chapter]));
+    const view = await renderUi(
+      <HafsMushafPage chapters={chapters} recitedVerseKey={verses[1]!.verseKey} testID="page" verses={verses} />,
+    );
+
+    expect(view.queryByTestId(`page-ayah-${verses[1]!.verseKey}-word`)).toBeNull();
+    expect(view.queryByTestId(`page-ayah-${verses[0]!.verseKey}-word`)).toBeNull();
+  });
 });
