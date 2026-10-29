@@ -79,7 +79,7 @@ Each step becomes a brief in `docs/plans/phase-2/`. The *Needs* column shows wha
 | 4 | **Reading and Focus modes** | `ReadingAyahRow` (Uthmani only; translations removed by ADR 0014), `FocusAyah`. FlashList of 6,236 ayahs with measured, cached heights. Mode switching keeps the anchor ayah | 1, 2 | Done |
 | 5 | **Mushaf mode** | Font pack (D1), `MushafPage` (15 lines from `word_layouts`, one QCF run per line), FlashList of 604 pages with `overrideItemLayout`. Falls back to Reading mode when a page's layout or font isn't installed | 1, 2 | Done |
 | 6 | **Reader shell and adaptive layout** | The `read/[verseKey]` route, the glass toolbar, ayah selection, and `AdaptiveSplit` / `SidePanel`: docked at ≥ 1,100 pt, overlaying the page from 840 to 1,099 pt, a sheet on compact and medium. The `ayah/[verseKey]` and `tafsir/[verseKey]` routes render in the panel or a sheet | 1, 4 | Done |
-| 7 | **Ayah actions and tafsir panels** | `AyahActionsPanel` (highlight colours, action tiles), `TafsirPanel` (picker, ayah card, text with its source credit, previous and next). Play-from-here is wired in Phase 3. Translation panel and word meanings removed by ADR 0014 | 1, 3, 6 | Done (working tree) |
+| 7 | **Ayah actions and tafsir panels** | `AyahActionsPanel` (highlight colours, action tiles), `TafsirPanel` (picker, ayah card, text with its source credit, previous and next). Play-from-here is wired in Phase 3. Translation panel and word meanings removed by ADR 0014 | 1, 3, 6 | Done |
 | 8 | **Surah and juz index, and search** | The Mushaf tab's index (surah and juz lists, jump to an ayah). Search screen: FTS5 over `search_quran` (Imla'i-based, from step 11 of Phase 1), surah-name prefix matching, results with matched words highlighted, under 150 ms | 1, 2 | Done |
 | 9 | **Reader settings** | Settings sheet: mode, font scale (80–160%), theme (light, sepia, dark). Translations on or off removed by ADR 0014. Persisted in MMKV and applied without a reload. Appearance is already resolved; do not add a second theme field | 1, 4 | Done |
 | 10 | **Exit check** | Exit check on the iPhone 17 simulator, portrait and landscape (developer, 28 Oct 2026: no real devices in Phase 2). Arabic and English. The resize keep-position test. The 604-page pass needs QF's full mushaf layout. iPad, foldable and Split View deferred | all | |
@@ -87,9 +87,10 @@ Each step becomes a brief in `docs/plans/phase-2/`. The *Needs* column shows wha
 **Parallel waves:**
 - **A:** 1, 2, 3. Done. Committed.
 - **B:** 4, 5, 8. Done. Committed.
-- **C:** 6, 9. Done. Local commit `04c650a`, not pushed.
-- **D:** 7. Done. In the working tree, not committed.
-- **E:** the exit check. Next.
+- **C:** 6, 9. Done. Committed.
+- **D:** 7. Done. Committed.
+- **E:** design conformance (11b), resource names (12, done on prelive) and tafsir downloads (13). In progress.
+- **F:** the exit check (10), after E.
 
 ## Known limits
 

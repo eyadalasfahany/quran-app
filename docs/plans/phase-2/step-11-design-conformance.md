@@ -40,7 +40,7 @@ Gaps carried into 11b: `IconButton` has no tone, size or disabled prop; `Card` h
 
 Each fix lands in the component that owns the visual. Order: shared components (segmented control, chips, action tiles, sheet card, title pill, toolbar), then the Mushaf page, the ayah and settings sheets, the index and search, Reading, Focus and Tafsir, and the tablet layouts. The 27 Oct audit's findings per frame are the checklist.
 
-**Status: in progress** (28 Oct 2026, working tree). Done:
+**Status: in progress** (29 Oct 2026, committed up to `25e4529`). Done:
 - Mushaf page: ayahs flow inline per surah; ayah numbers are the `﴿n﴾` mark (`AyahEndMark`, ADR 0012 amended) in every view.
 - Reader: Back points to the leading edge; Reading starts below the toolbar with the 20 pt gutter; Focus hides the toolbar and resume pill and insets its exit bar.
 - Sheets: a `scrim` behind every reader sheet; tafsir takes the full-width sheet at 52 pt (the translation sheet was removed by ADR 0014) (`AyahSheetScreen` sizes the sheet by tab).
@@ -56,17 +56,19 @@ Each fix lands in the component that owns the visual. Order: shared components (
 
 - Sheets follow their own frame: `SheetHeader closeTone` (`fill` for ayah and tafsir, `track` for settings) and `SheetFrame grabber` (`strong` 40×5 `lineStrong` for ayah, tafsir and delete account; `muted` 36×5 ink-muted at 0.4 for settings). `shadows.raised` (light) is 0.08. `fillTrack` and `goldOnBrandSurface` are in `quran-app-design-system.html`; `check:html` reports 0 mismatches.
 - Native iOS chrome follows RTL: the tab bar gets `direction` from `I18nManager.isRTL`, and Arabic is the iOS app language (`CFBundleDevelopmentRegion: ar`, `AppleLanguages` kept in step with the saved locale).
-
-Open:
 - Reader settings and ayah sheet checked on the iPhone 17 against their frames (28 Oct): the percent is right-to-left («٪١٠٠»), the «أ−»/«أ+» lines are tall enough for the hamza (Amiri's own leading), and every sheet's close glyph is `size.closeGlyph` (12).
+- Search: the «بحث» button in the Home (`Main`) and `SurahIndex` headers opens the search screen.
+- Amiri leading: the medallion number and the index surah name use Amiri's natural leading (`amiriNaturalLeading`, 1.758), so «آل» and «أ» are not clipped.
+- Home tiles (ADR 0017): «السور» and «المحفوظات» only, sharing the row; the مصحفي tab uses `bookmark`. Checked on the iPhone 17 (tile 79 pt, as the frame).
+- Resource names (step 12): tafsir names and authors are stored on the device.
 
 Open:
-- Search had no way in (28 Oct). The frames draw a «بحث» button in the Home (`Main`) and `SurahIndex` headers (in progress), and a «ابحث في القرآن» field at the top of the expanded sidebar (`ExpandedHome`, to do).
+- Search field: the «ابحث في القرآن» field at the top of the expanded sidebar (`ExpandedHome`).
+- Home: the «وِردك اليوم» subtitle and the khatma card need khatma data (Phase 4). Decide whether Home leaves them out until then.
 - Dev builds only: Expo's floating dev-tools button (`expo-dev-menu` FAB) catches touches in an invisible area at the top right under RTL. It draws the gear mirrored at the top left, but its hit area (`DevMenuFABWindow.hitTest`, `fabFrame`) stays at the top right, so every top-right Back button stopped working in portrait. Store builds have no FAB. Workaround on a simulator: `xcrun simctl spawn booted defaults write com.taybahapp.taybah.dev EXDevMenuShowFloatingActionButton -bool NO`, then relaunch. To do: set `EXDevMenuShowFloatingActionButton: false` in the dev variant's `ios.infoPlist`, and report the bug upstream.
 - Reader settings: the script picker («خط المصحف») waits for its feature.
 - `radius.tile` (16) is not a token in `quran-app-design-system.html` yet.
-- Resource names: `installed_resources` keeps no name, so tafsir labels fall back to «تفسير {id}». The manifest already sends `name`, `author_name`, `language_code` and `direction`; storing them is a `content.db` schema change.
-- Reader settings, the tafsir panel (header, named chips, source credit, download), the Reading ayah header row with its actions, the Index and Home headers, and the tablet frames.
+- Still to compare on the iPhone 17: the tafsir panel (header, named chips, source credit, download), the Reading ayah header row with its actions, and the tablet frames.
 
 ## Tests
 

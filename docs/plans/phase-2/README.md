@@ -9,14 +9,16 @@ Progress and the handoff for the next agent are in [`../phase-2.md`](../phase-2.
 | 1 | [step-01-design-system-components.md](step-01-design-system-components.md) | Design-token work finished | Done. Committed (`05b931e`) |
 | 2 | [step-02-reader-data.md](step-02-reader-data.md) | Phase 1 | Done. Committed (`05b931e`) |
 | 3 | [step-03-local-user-data.md](step-03-local-user-data.md) | — | Done. Committed (`05b931e`) |
-| 4 | [step-04-reading-and-focus-modes.md](step-04-reading-and-focus-modes.md) | 1, 2 | Done. Working tree, not committed |
-| 5 | [step-05-mushaf-mode.md](step-05-mushaf-mode.md) | 1, 2 | Done. Working tree, not committed |
-| 6 | [step-06-reader-shell-and-layout.md](step-06-reader-shell-and-layout.md) | 1, 4 | Next |
-| 7 | [step-07-ayah-panels.md](step-07-ayah-panels.md) | 1, 3, 6 | |
-| 8 | [step-08-index-and-search.md](step-08-index-and-search.md) | 1, 2 | Done. Working tree, not committed |
-| 9 | [step-09-reader-settings.md](step-09-reader-settings.md) | 1, 4 | Next. Runs with step 6 |
-| 10 | [step-10-exit-check.md](step-10-exit-check.md) | all | |
-| 11 | [step-11-design-conformance.md](step-11-design-conformance.md) | 1–9 | 11a done; 11b next |
+| 4 | [step-04-reading-and-focus-modes.md](step-04-reading-and-focus-modes.md) | 1, 2 | Done. Committed |
+| 5 | [step-05-mushaf-mode.md](step-05-mushaf-mode.md) | 1, 2 | Done. Committed |
+| 6 | [step-06-reader-shell-and-layout.md](step-06-reader-shell-and-layout.md) | 1, 4 | Done. Committed |
+| 7 | [step-07-ayah-panels.md](step-07-ayah-panels.md) | 1, 3, 6 | Done. Committed |
+| 8 | [step-08-index-and-search.md](step-08-index-and-search.md) | 1, 2 | Done. Committed |
+| 9 | [step-09-reader-settings.md](step-09-reader-settings.md) | 1, 4 | Done. Committed |
+| 10 | [step-10-exit-check.md](step-10-exit-check.md) | all | After 11b and 13 |
+| 11 | [step-11-design-conformance.md](step-11-design-conformance.md) | 1–9 | 11a done; 11b in progress |
+| 12 | [step-12-resource-names.md](step-12-resource-names.md) | 11 | Done on prelive. Production sync waits for QF production keys |
+| 13 | [step-13-tafsir-downloads.md](step-13-tafsir-downloads.md) | 12 | In progress: `DownloadRow` and `install-resource` exist; the panel's list of tafsirs to download is not built |
 
 ## Rules for every step
 
