@@ -825,6 +825,34 @@ describe('content sync', () => {
     });
   });
 
+  it('reports a removed recitation pack to onResourceRemoved, so its downloads can go with it', async () => {
+    const published = manifest([]);
+    const onResourceRemoved = jest.fn();
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      executor.run(
+        `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, name, name_ar)
+         VALUES (30, 'chapter_recitations', 1, 'a', 0, 'Mishari', 'مشاري')`,
+      );
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack: async () => {
+            throw new Error('no pack is published');
+          },
+        })),
+        selection: () => [],
+        onResourceRemoved,
+      });
+
+      expect(report.resources).toEqual([{ resourceId: 30, status: 'removed' }]);
+      expect(onResourceRemoved).toHaveBeenCalledWith(30, 'chapter_recitations');
+    });
+  });
+
   it('continues after one resource fails', async () => {
     const bytes = gzipPack(86, [{ groupTafsirId: 1, html: 'ok' }]);
     const hash = await sha256(bytes);

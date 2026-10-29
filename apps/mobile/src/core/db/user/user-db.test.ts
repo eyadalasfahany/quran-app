@@ -51,7 +51,15 @@ describe('user.db schema', () => {
   });
 
   it('creates the personal tables and no content tables', () => {
-    expect(tableNames(database)).toEqual(['bookmarks', 'highlights', 'notes', 'outbox', 'recent_listens', 'sync_meta']);
+    expect(tableNames(database)).toEqual([
+      'bookmarks',
+      'downloads',
+      'highlights',
+      'notes',
+      'outbox',
+      'recent_listens',
+      'sync_meta',
+    ]);
     expect(USER_DATABASE).toBe('user.db');
   });
 
@@ -190,8 +198,43 @@ describe('user.db schema', () => {
     const journal = JSON.parse(readFileSync(join(migrationsDir, 'meta/_journal.json'), 'utf8')) as {
       entries: { idx: number; tag: string }[];
     };
-    expect(journal.entries.map((entry) => entry.tag)).toEqual(['0000_user_data', '0001_recent_listens']);
+    expect(journal.entries.map((entry) => entry.tag)).toEqual([
+      '0000_user_data',
+      '0001_recent_listens',
+      '0002_audio_downloads',
+    ]);
     expect(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8')).toMatch(/^CREATE TABLE `recent_listens`/);
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0001');
+    expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0002');
+  });
+
+  it('adds downloads in migration 0002, keeps existing rows, and defaults progress to 0', () => {
+    const { database: old, executor } = openNodeSqlite(':memory:');
+    try {
+      configureUserDatabase(executor);
+      executor.exec(readFileSync(join(migrationsDir, '0000_user_data.sql'), 'utf8'));
+      executor.exec(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8'));
+      executor.run(
+        `INSERT INTO recent_listens (audio_file_id, reciter_resource_id, chapter_id, last_position_ms, played_at)
+         VALUES (100, 30, 1, 1000, 1)`,
+      );
+
+      executor.exec(readFileSync(join(migrationsDir, '0002_audio_downloads.sql'), 'utf8'));
+
+      expect(tableNames(old)).toContain('downloads');
+      expect(old.prepare('SELECT audio_file_id AS id FROM recent_listens').all()).toEqual([{ id: 100 }]);
+      executor.run(
+        `INSERT INTO downloads (audio_file_id, reciter_resource_id, chapter_id, audio_url, local_path, status, downloaded_at, verified_at)
+         VALUES (100, 30, 1, 'https://example.test/1.mp3', 'file:///a.mp3', 'queued', NULL, NULL)`,
+      );
+      expect(old.prepare('SELECT progress, resume_data, size_bytes FROM downloads').get()).toEqual({
+        progress: 0,
+        resume_data: null,
+        size_bytes: null,
+      });
+      expect(indexSql(old, 'downloads_reciter_resource_id_idx')).toContain('reciter_resource_id');
+    } finally {
+      old.close();
+    }
   });
 });

@@ -5,6 +5,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { createFakeAudioPlaylist, type FakeAudioPlaylist, type FakeAudioPlaylistStatus } from '../../../jest/fake-audio-player';
 import * as timings from './data/timings';
+import { upsertDownload, type DownloadRow } from './data/downloads';
 import { listRecentListens } from './data/recent-listens';
 import { openAudioTestDb } from './data/test-db';
 import {
@@ -26,6 +27,7 @@ import { usePlayerStore } from './playerStore';
 import { readLastPosition } from './resume-model';
 import { setReciterId } from './settings';
 import { openUserTestStore } from '../../../jest/user-test-db';
+import { putFile, resetFakeFileSystem } from '../../../jest/fake-file-system';
 
 // The content database is opened by the app at start; tests hand the player an in-memory copy instead.
 const mockContent: { executor: SqlExecutor | null } = { executor: null };
@@ -1149,3 +1151,75 @@ describe('recent listens', () => {
   });
 });
 
+describe('playing downloaded surahs', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const LOCAL_1 = 'file:///documents/audio/30/1.mp3';
+
+  beforeEach(() => {
+    resetFakeFileSystem();
+  });
+
+  function download(overrides: Partial<DownloadRow>): void {
+    upsertDownload(
+      {
+        audioFileId: 100,
+        reciterResourceId: 30,
+        chapterId: 1,
+        audioUrl: 'https://example.test/1.mp3',
+        sourceSizeBytes: null,
+        localPath: 'audio/30/1.mp3',
+        sizeBytes: 5000,
+        status: 'done',
+        progress: 1,
+        resumeData: null,
+        downloadedAt: Date.now(),
+        verifiedAt: Date.now(),
+        ...overrides,
+      },
+      { db: mockUser.executor ?? undefined },
+    );
+  }
+
+  function sourcesOfLastPlaylist(): { uri: string }[] {
+    return (audio.createAudioPlaylist.mock.calls.at(-1)?.[0] as { sources: { uri: string }[] }).sources;
+  }
+
+  it('plays the local file of a surah verified within 7 days, and streams the other surahs', async () => {
+    download({});
+    putFile(LOCAL_1, 5000);
+
+    await playChapter(1);
+
+    expect(sourcesOfLastPlaylist()).toEqual([
+      { uri: LOCAL_1 },
+      { uri: 'https://example.test/2.mp3' },
+      { uri: 'https://example.test/114.mp3' },
+    ]);
+  });
+
+  it('streams a surah whose verification is older than 7 days', async () => {
+    download({ verifiedAt: Date.now() - 8 * DAY });
+    putFile(LOCAL_1, 5000);
+
+    await playChapter(1);
+
+    expect(sourcesOfLastPlaylist()[0]).toEqual({ uri: 'https://example.test/1.mp3' });
+  });
+
+  it('streams a surah whose file is no longer on disk', async () => {
+    download({});
+
+    await playChapter(1);
+
+    expect(sourcesOfLastPlaylist()[0]).toEqual({ uri: 'https://example.test/1.mp3' });
+  });
+
+  it('streams a surah that is still downloading', async () => {
+    download({ status: 'downloading', verifiedAt: null });
+    putFile(LOCAL_1, 5000);
+
+    await playChapter(1);
+
+    expect(sourcesOfLastPlaylist()[0]).toEqual({ uri: 'https://example.test/1.mp3' });
+  });
+});

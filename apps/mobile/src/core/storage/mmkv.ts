@@ -18,6 +18,7 @@ export const storageKeys = {
   searchRecentQueries: 'search.recentQueries',
   audioReciterId: 'audio.reciterId',
   audioLastPosition: 'audio.lastPosition',
+  audioWifiOnlyDownloads: 'audio.wifiOnlyDownloads',
 } as const;
 
 /** Per-page QCF V2 font cache metadata (ADR 0011). */

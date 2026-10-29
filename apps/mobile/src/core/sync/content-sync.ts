@@ -41,6 +41,8 @@ export type ContentSyncDeps = {
   gunzip: (bytes: Uint8Array) => Uint8Array;
   now: () => number;
   selection: (resources: readonly ContentManifestResource[]) => number[];
+  /** Called after a resource's rows are removed, so dependents (the reciter's downloads) can go too. */
+  onResourceRemoved?: (resourceId: number, group: string) => void;
 };
 
 export type ContentSyncStatus =
@@ -119,6 +121,7 @@ export async function syncContent(deps: ContentSyncDeps): Promise<ContentSyncRep
     }
     try {
       removeResource(deps.db, installed);
+      deps.onResourceRemoved?.(installed.resourceId, installed.group);
       report.push({ resourceId: installed.resourceId, status: 'removed' });
     } catch (error) {
       retryable = true;

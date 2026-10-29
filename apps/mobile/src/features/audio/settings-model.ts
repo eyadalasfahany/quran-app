@@ -15,6 +15,15 @@ export function parseReciterId(raw: string | undefined): number | null {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
+/** Downloads wait for Wi-Fi unless the reader turned that off. Unset counts as on. */
+export function readWifiOnlyDownloads(): boolean {
+  return storage.getBoolean(storageKeys.audioWifiOnlyDownloads) ?? true;
+}
+
+export function writeWifiOnlyDownloads(on: boolean): void {
+  storage.set(storageKeys.audioWifiOnlyDownloads, on);
+}
+
 export function readSavedReciterId(): number | null {
   return parseReciterId(storage.getString(storageKeys.audioReciterId));
 }
