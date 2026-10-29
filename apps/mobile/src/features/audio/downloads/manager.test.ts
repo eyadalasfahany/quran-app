@@ -181,6 +181,16 @@ describe('the queue', () => {
     expect(dl(100)?.localPath).toBe(contentPath(1));
   });
 
+  it('takes BigInt byte counts, as iOS reports them, without throwing', async () => {
+    await start();
+    enqueueSurah(30, 1);
+    const task = transfers()[0];
+
+    expect(() => task?.progress(BigInt(250), BigInt(1000))).not.toThrow();
+    expect(useDownloadProgress.getState().byId[100]).toBe(0.25);
+    expect(dl(100)?.sizeBytes).toBe(1000);
+  });
+
   it('reports progress live, and writes it to the row at most once a second', async () => {
     await start();
     enqueueSurah(30, 1);

@@ -140,10 +140,13 @@ export class FakeDownloadTask {
     this.rejectTransfer?.(Object.assign(new Error('Download was cancelled.'), { name: 'AbortError' }));
   }
 
-  /** Test control: reports progress through the `onProgress` option. */
-  progress(bytesWritten: number, totalBytes: number): void {
-    this.bytesWritten = bytesWritten;
-    const data: DownloadProgress = { bytesWritten, totalBytes };
+  /**
+   * Test control: reports progress through the `onProgress` option. On iOS the native counts arrive as BigInt
+   * although the types say number, so tests can pass either.
+   */
+  progress(bytesWritten: number | bigint, totalBytes: number | bigint): void {
+    this.bytesWritten = Number(bytesWritten);
+    const data = { bytesWritten, totalBytes } as unknown as DownloadProgress;
     this.options.onProgress?.(data);
   }
 

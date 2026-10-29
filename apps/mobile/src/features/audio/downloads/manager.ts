@@ -142,17 +142,31 @@ function pump(): void {
   }
 }
 
+/**
+ * A byte count from expo-file-system. Its types say number, but on iOS the native 64-bit counts arrive as BigInt,
+ * which Math and division reject ("Cannot convert BigInt to number"). Audio files are far below 2^53 bytes.
+ */
+export function byteCount(value: number | bigint | null | undefined): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const count = Number(value);
+  return Number.isFinite(count) ? count : null;
+}
+
 function handleProgress(token: object, data: DownloadProgress): void {
   const transfer = active;
   if (transfer === null || transfer.token !== token) {
     return;
   }
-  const fraction = data.totalBytes > 0 ? clampFraction(data.bytesWritten / data.totalBytes) : 0;
+  const written = byteCount(data.bytesWritten) ?? 0;
+  const total = byteCount(data.totalBytes) ?? 0;
+  const fraction = total > 0 ? clampFraction(written / total) : 0;
   useDownloadProgress.getState().set(transfer.audioFileId, fraction);
   // Content-Length is the size of a fresh response. A resumed response reports only the remaining bytes, so it is not used.
-  if (!transfer.resumed && !transfer.sizeRecorded && data.totalBytes > 0) {
+  if (!transfer.resumed && !transfer.sizeRecorded && total > 0) {
     transfer.sizeRecorded = true;
-    patchDownload(transfer.audioFileId, { sizeBytes: data.totalBytes }, userStore());
+    patchDownload(transfer.audioFileId, { sizeBytes: total }, userStore());
   }
   const time = now();
   if (time - transfer.lastWriteAt >= PROGRESS_WRITE_INTERVAL_MS) {
@@ -198,7 +212,7 @@ function finishTransfer(token: object, file: File | null): void {
     {
       status: 'done',
       progress: 1,
-      sizeBytes: row?.sizeBytes ?? file.info().size ?? null,
+      sizeBytes: row?.sizeBytes ?? byteCount(file.info().size),
       downloadedAt: time,
       verifiedAt: time,
       resumeData: null,
