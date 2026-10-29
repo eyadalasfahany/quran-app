@@ -1,4 +1,10 @@
-import type { ConfigContext, ExpoConfig } from 'expo/config';
+import type { ExpoConfig } from '@expo/config-types';
+
+// `expo/config` re-exports this with `export *`, which drops the type.
+// The dynamic config callback only reads `config`.
+type ConfigContext = {
+  config: Partial<ExpoConfig>;
+};
 
 // APP_VARIANT is set per EAS build profile (eas.json). Local runs default to development.
 // TestFlight and the App Store share the production bundle ID (ADR 0016).
@@ -84,6 +90,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         {
           backgroundColor: '#1F4D40',
           image: './assets/images/taybah-vertical-splash-screen.png',
+          // The artwork is a full-screen poster (1440×3120). Without this, the plugin
+          // draws it as a centered square of imageWidth.
+          enableFullScreenImage_legacy: true,
           imageWidth: 390,
           resizeMode: 'contain',
           // Android 12 draws the splash inside a circle. The full poster would lose its corners,
