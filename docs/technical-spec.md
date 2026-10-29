@@ -116,7 +116,7 @@ The API is split into domain modules, each layered Controller → FormRequest �
 apps/api/app/
 ├── Domains/
 │   ├── Content/        verses, words, layouts, tafsir, packs, change feed
-│   ├── Audio/          reciters, recitations, chapter audio, timings
+│   ├── Audio/          recitations, chapter audio, timings
 │   ├── Hadith/         categories, hadiths, translations, daily rotation
 │   ├── Identity/       users, email codes, Google, Apple, tokens, deletion, export
 │   ├── Sync/           user-data push/pull, conflict resolution, tombstones
@@ -258,7 +258,7 @@ Layout is driven by the window's width class from `useWindowDimensions`, never b
 > **Phase 1 shape (ADR 0009).** QF's real data differs from some tables below. For the content mirror, the column-level source of truth is `docs/plans/phase-1/step-02-mirror-schema.md`:
 > - `resources` gains columns; `mushaf_pages` is new.
 > - `word_layouts` carries glyph and position; `tafsir_entries` is keyed by `group_tafsir_id`.
-> - `recitations` replaces `reciters`.
+> - `recitations` replaces `reciters` (ADR 0021): the reciter's names, style and qirat are columns on `recitations`.
 > - `chapters`, `verses` and `words` wait for `quran_core`.
 
 The schema has four groups: the QF content mirror, hadith, identity and devices, and synced user data. All tables are InnoDB, `utf8mb4` with `utf8mb4_0900_bin` on Quran text columns (byte-exact, so no collation ever folds a diacritic) and `utf8mb4_0900_ai_ci` elsewhere. Timestamps are `datetime(6)` in UTC.
@@ -292,10 +292,9 @@ Verses use QF's integer id (1–6,236) as the primary key, with `verse_key` (`2:
 
 | Table | Columns | Keys and indexes |
 | --- | --- | --- |
-| `reciters` | `id`, `source_key`, `name_ar`, `name_en`, `style` enum(`murattal`,`mujawwad`,`muallim`), `is_active` bool, `sort_order` smallint | unique `source_key` |
-| `recitations` | `id`, `reciter_id` FK, `resource_id` FK, `riwayah` varchar(32) default `hafs`, `has_word_segments` bool | unique `resource_id` |
+| `recitations` | `id`, `resource_id` FK, `reciter_name` varchar(200) null, `reciter_name_ar` varchar(200) null, `style` varchar(32) null, `qirat` varchar(32) null, `has_word_segments` bool (one recitation per `chapter_recitations` resource; no `reciters` table, ADR 0021) | unique `resource_id` |
 | `chapter_audio_files` | `id`, `recitation_id` FK, `chapter_id` FK, `audio_url` varchar(500), `size_bytes` bigint null, `duration_ms` int unsigned, `format` varchar(8) | unique (`recitation_id`,`chapter_id`) |
-| `recitation_timings` | `audio_file_id` FK, `verse_id` FK, `start_ms` int unsigned, `end_ms` int unsigned, `segments` json null (`[[word_position, start_ms, end_ms], …]`) | PK (`audio_file_id`,`verse_id`); check `start_ms < end_ms` |
+| `recitation_timings` | `audio_file_id` FK, `verse_id`, `verse_key` varchar(7), `start_ms` int unsigned, `end_ms` int unsigned, `segments` json null (`[[word_position, start_ms, end_ms], …]`) | PK (`audio_file_id`,`verse_id`); `start_ms < end_ms` is checked on the device, not by the database (ADR 0021) |
 
 **Hadith**
 
@@ -354,7 +353,7 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `words` | `id`, `verse_id`, `position`, `char_type`, `text_uthmani`, `text_indopak` null, `qcf_code_v2` null | PK `id`; index (`verse_id`,`position`) |
 | `word_layouts` | `mushaf_id`, `word_id`, `page`, `line` | PK (`mushaf_id`,`word_id`); index (`mushaf_id`,`page`,`line`) |
 | `tafsir_entries` | `id`, `resource_id`, `first_verse_id`, `last_verse_id`, `html` | index (`resource_id`,`first_verse_id`) |
-| `reciters`, `recitations`, `chapter_audio_files` | as backend | — |
+| `recitations`, `chapter_audio_files` | as backend | — |
 | `recitation_timings` | `audio_file_id`, `verse_id`, `start_ms`, `end_ms`, `segments` (JSON text) | PK (`audio_file_id`,`verse_id`) |
 | `hadith_categories`, `hadiths`, `hadith_translations`, `hadith_category_hadith` | as backend, `ar` + interface language only | — |
 | `search_quran` | FTS5 virtual table: `verse_id` UNINDEXED, `text_search` | `tokenize='unicode61 remove_diacritics 2'` |
@@ -439,8 +438,6 @@ Twenty-seven endpoints cover v1. The OpenAPI file generated from the code is the
 | GET | `/content/changes` | none | Row changes for one resource since a version (`resource_id`, `since_version`, `cursor`) | 200, 410 |
 | GET | `/content/tafsirs/{resource_id}/verses/{verse_key}` | none | One tafsir entry for an ayah before the pack is downloaded | 200, 404 |
 | GET | `/content/resources` | none | Catalogue of tafsirs with names and authors (`?group=&language=`); translation groups are never listed (ADR 0014) | 200 |
-| GET | `/reciters` | none | Reciters with style, recitations, word-segment support | 200 |
-| GET | `/reciters/{id}/chapters/{chapter}` | none | Audio URL, size, duration and timings for one surah (streaming before the recitation pack exists) | 200, 404 |
 | GET | `/hadith/categories` | none | Category tree | 200 |
 | GET | `/hadith/categories/{id}/hadiths` | none | Hadiths in a category, paginated | 200 |
 | GET | `/hadith/{id}` | none | One hadith with grade, attribution, explanation, benefits, source URL | 200, 404 |
