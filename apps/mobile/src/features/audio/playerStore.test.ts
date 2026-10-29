@@ -136,3 +136,74 @@ describe('volume and the active ayah in the store', () => {
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: null, activeWord: null });
   });
 });
+
+describe('repeat', () => {
+  const store = () => usePlayerStore.getState();
+
+  it('sets the range with done at 0, for each offered count', () => {
+    for (const count of [1, 3, 5, 10, Infinity]) {
+      store().setRepeat({ fromVerseId: 2, toVerseId: 4, count });
+      expect(store().repeat).toEqual({ fromVerseId: 2, toVerseId: 4, count, done: 0 });
+    }
+  });
+
+  it('resets done when a new range is set', () => {
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 5 });
+    store().advanceRepeat();
+    store().advanceRepeat();
+
+    store().setRepeat({ fromVerseId: 3, toVerseId: 3, count: 3 });
+
+    expect(store().repeat).toEqual({ fromVerseId: 3, toVerseId: 3, count: 3, done: 0 });
+  });
+
+  it('keeps the previous repeat for a count the control does not offer, or a from after to', () => {
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
+
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 2 });
+    expect(store().repeat).toEqual({ fromVerseId: 2, toVerseId: 4, count: 3, done: 0 });
+
+    store().setRepeat({ fromVerseId: 5, toVerseId: 4, count: 3 });
+    expect(store().repeat).toEqual({ fromVerseId: 2, toVerseId: 4, count: 3, done: 0 });
+  });
+
+  it('counts seeks back with advanceRepeat, and does nothing without a range', () => {
+    store().advanceRepeat();
+    expect(store().repeat).toBeNull();
+
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 10 });
+    store().advanceRepeat();
+    expect(store().repeat).toMatchObject({ done: 1 });
+  });
+
+  it('clears with clearRepeat', () => {
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
+
+    store().clearRepeat();
+
+    expect(store().repeat).toBeNull();
+  });
+
+  it('is cleared when the surah changes, the player stops, or a session is restored', () => {
+    store().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 0 });
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
+    store().moveTo({ chapterId: 2, durationMs: 0 });
+    expect(store().repeat).toBeNull();
+
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
+    store().markStopped();
+    expect(store().repeat).toBeNull();
+
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
+    store().restore({ reciterId: 30, chapterId: 1, positionMs: 0 });
+    expect(store().repeat).toBeNull();
+  });
+
+  it('is cleared by reset', () => {
+    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
+
+    store().reset();
+
+    expect(store().repeat).toBeNull();
+  });
+});

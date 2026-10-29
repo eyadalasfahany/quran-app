@@ -19,6 +19,7 @@ import {
   resume,
   restoreLastSession,
   seek,
+  setRepeat,
 } from './player';
 import { usePlayerStore } from './playerStore';
 import { readLastPosition } from './resume-model';
@@ -160,6 +161,15 @@ describe('playing a surah', () => {
 
     expect(fakePlaylist().seekTo).toHaveBeenCalledWith(40);
     expect(fakePlaylist().play).toHaveBeenCalled();
+  });
+
+  it('seeks to the first word when it starts before the ayah, so the word is not clipped', async () => {
+    seedAyahs(executor);
+
+    await playFromVerse('1:2');
+
+    // Ayah 1:2 starts at 5000 ms, but its first word segment starts at 4950 ms.
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(4.95);
   });
 
   it('starts from 0 when the audio has no timings for the verse', async () => {
@@ -691,8 +701,8 @@ describe('previous and next ayah', () => {
 
     await previousAyah();
 
-    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(5);
-    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, positionMs: 5000 });
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(4.95);
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, positionMs: 4950 });
   });
 
   it('seeks to the next ayah inside the surah', async () => {
@@ -801,5 +811,227 @@ describe('timings cache', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+});
+
+describe('resume from idle', () => {
+  it('restores the saved session and plays it from the saved position', async () => {
+    storage.set(storageKeys.audioLastPosition, JSON.stringify({ reciterId: 30, chapterId: 2, positionMs: 5000 }));
+
+    await resume();
+
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2, reciterId: 30 });
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(5);
+    expect(fakePlaylist().play).toHaveBeenCalled();
+  });
+
+  it('with nothing saved, plays the first surah with the current reciter', async () => {
+    await resume();
+
+    expect(audio.createAudioPlaylist).toHaveBeenCalledWith(expect.objectContaining({ sources: expect.arrayContaining([{ uri: 'https://example.test/1.mp3' }]) }));
+    expect(fakePlaylist().skipTo).not.toHaveBeenCalled();
+    expect(fakePlaylist().play).toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, reciterId: 30, status: 'loading' });
+  });
+
+  it('while playing, does nothing', async () => {
+    await playChapter(1);
+    reportAt(1);
+    const plays = fakePlaylist().play.mock.calls.length;
+    const playlists = audio.createAudioPlaylist.mock.calls.length;
+
+    await resume();
+
+    expect(fakePlaylist().play).toHaveBeenCalledTimes(plays);
+    expect(audio.createAudioPlaylist).toHaveBeenCalledTimes(playlists);
+    expect(usePlayerStore.getState().status).toBe('playing');
+  });
+});
+
+describe('repeat', () => {
+  // Surah 1 timings: verse 1 0-5000, 2 5000-10000, 3 10000-15000, 4 16000-20000. Its end tolerance is 50 ms.
+  beforeEach(() => {
+    seedAyahs(executor);
+    seedSurahTwoTimings(executor);
+  });
+
+  it('sets the range with done at 0, when its ayahs have timings', async () => {
+    await playChapter(1);
+    reportAt(1);
+
+    expect(setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 })).toBe(true);
+    expect(usePlayerStore.getState().repeat).toEqual({ fromVerseId: 2, toVerseId: 3, count: 3, done: 0 });
+  });
+
+  it('does nothing when the surah has no timings, or the range is not valid', async () => {
+    await playChapter(114);
+
+    expect(setRepeat({ fromVerseId: 1, toVerseId: 1, count: 3 })).toBe(false);
+    expect(usePlayerStore.getState().repeat).toBeNull();
+
+    await playChapter(1);
+    expect(setRepeat({ fromVerseId: 3, toVerseId: 2, count: 3 })).toBe(false);
+    expect(setRepeat({ fromVerseId: 2, toVerseId: 3, count: 2 })).toBe(false);
+    expect(usePlayerStore.getState().repeat).toBeNull();
+  });
+
+  it('seeks back to the range start at the end of its last ayah, until the count is reached, then continues', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+
+    reportAt(14.94);
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+
+    reportAt(14.95);
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(4.95);
+    expect(usePlayerStore.getState()).toMatchObject({ positionMs: 4950, repeat: { done: 1 } });
+
+    reportAt(5.1);
+    reportAt(14.96);
+    expect(fakePlaylist().seekTo).toHaveBeenCalledTimes(2);
+    expect(usePlayerStore.getState().repeat).toMatchObject({ done: 2 });
+
+    reportAt(5.1);
+    reportAt(15.02);
+    expect(fakePlaylist().seekTo).toHaveBeenCalledTimes(2);
+    expect(usePlayerStore.getState().repeat).toBeNull();
+    expect(usePlayerStore.getState().status).toBe('playing');
+  });
+
+  it('plays the range once and continues for count 1', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 1 });
+
+    reportAt(14.96);
+
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ repeat: null, status: 'playing' });
+  });
+
+  it('repeats for ever with Infinity', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: Infinity });
+
+    for (let loop = 0; loop < 20; loop += 1) {
+      reportAt(5.1);
+      reportAt(14.96);
+    }
+
+    expect(fakePlaylist().seekTo).toHaveBeenCalledTimes(20);
+    expect(usePlayerStore.getState().repeat).not.toBeNull();
+  });
+
+  it('does not seek twice for stale ticks that arrive before the seek lands', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 5 });
+
+    reportAt(14.96);
+    reportAt(14.99);
+    reportAt(14.97);
+
+    expect(fakePlaylist().seekTo).toHaveBeenCalledTimes(1);
+    expect(usePlayerStore.getState().repeat).toMatchObject({ done: 1 });
+  });
+
+  it('repeats a single ayah from its own start', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 2, count: 3 });
+
+    reportAt(9.96);
+
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(4.95);
+  });
+
+  it('does nothing while the paused or stopped player reports a position', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+    pause();
+
+    fakePlaylist().emitStatus({ playing: false, isLoaded: true, currentTime: 14.96 });
+
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+  });
+
+  it('clears when the playlist moves to another surah', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+
+    fakePlaylist().emitTrackChanged(1);
+
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2, repeat: null });
+  });
+
+  it('clears on playChapter and playFromVerse', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+    await playChapter(1);
+    expect(usePlayerStore.getState().repeat).toBeNull();
+
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+    await playFromVerse('1:3');
+    expect(usePlayerStore.getState().repeat).toBeNull();
+  });
+
+  it('clears when playback stops at the end of the last surah', async () => {
+    await playChapter(114);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true });
+    usePlayerStore.getState().setRepeat({ fromVerseId: 1, toVerseId: 2, count: 3 });
+
+    fakePlaylist().emitStatus({ didJustFinish: true });
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'idle', repeat: null });
+  });
+
+  it('clears when a seek lands outside the range, and keeps it for a seek inside', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+
+    seek(7000);
+    expect(usePlayerStore.getState().repeat).not.toBeNull();
+
+    seek(2000);
+    expect(usePlayerStore.getState().repeat).toBeNull();
+  });
+
+  it('keeps the range for the next ayah inside it, and clears when the next ayah is outside', async () => {
+    await playChapter(1);
+    reportAt(2);
+    setRepeat({ fromVerseId: 1, toVerseId: 2, count: 3 });
+
+    await nextAyah();
+    expect(usePlayerStore.getState().repeat).not.toBeNull();
+
+    fakePlaylist().currentTime = 6;
+    await nextAyah();
+    expect(usePlayerStore.getState().repeat).toBeNull();
+  });
+
+  it('clears when the previous ayah is outside the range', async () => {
+    await playChapter(1);
+    reportAt(6);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+
+    await previousAyah();
+
+    expect(usePlayerStore.getState().repeat).toBeNull();
+  });
+
+  it('clears when the next surah is played', async () => {
+    await playChapter(1);
+    reportAt(1);
+    setRepeat({ fromVerseId: 2, toVerseId: 3, count: 3 });
+
+    await nextSurah();
+
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2, repeat: null });
   });
 });

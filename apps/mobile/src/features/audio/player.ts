@@ -14,11 +14,19 @@ import { getLocale } from '@/core/i18n/locale';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 
-import { activeTimingIndex, activeWordPosition } from './active-ayah';
+import { activeTimingIndex, activeWordPosition, ayahSeekStartMs } from './active-ayah';
 import { chapterAudio, type ChapterAudio } from './data/audio-files';
 import { listReciters, recitationIdForResource } from './data/reciters';
 import { timingsFor, type AyahTiming } from './data/timings';
 import { clampSeek, isChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
+import {
+  isRepeatRangeValid,
+  repeatAction,
+  repeatContainsPosition,
+  repeatContainsVerse,
+  REPEAT_END_TOLERANCE_MS,
+  type RepeatRequest,
+} from './repeat';
 import { readLastPosition, writeLastPosition } from './resume-model';
 import { getReciterId } from './settings';
 import { defaultReciterId, resolveReciterId } from './settings-model';
@@ -82,6 +90,8 @@ let appStateSubscription: Subscription | null = null;
 let trackTimings: { chapterId: number; timings: AyahTiming[] } | null = null;
 // Timings per audio file id, read once for the session.
 const timingsCache = new Map<number, AyahTiming[]>();
+// While a repeat seek is being applied, the decoded position at or above this is stale: the seek has not landed.
+let repeatGuardMs: number | null = null;
 
 const store = () => usePlayerStore.getState();
 
@@ -152,6 +162,7 @@ function disposeQueue(): void {
   loadedIndex = null;
   intendedIndex = null;
   trackTimings = null;
+  repeatGuardMs = null;
 }
 
 /**
@@ -165,6 +176,10 @@ function ensureQueue(db: SqlExecutor, reciterId: number): Queue | undefined {
   const recitationId = recitationIdForResource(db, reciterId);
   if (recitationId === undefined) {
     return undefined;
+  }
+  // A repeat belongs to the reciter it was set with.
+  if (queue !== null) {
+    releaseRepeat();
   }
   // One file per surah, in surah order. Like chapterAudio, the lowest id wins when a surah has two rows.
   const rows = db.all<{ chapterId: number; url: string }>(
@@ -220,6 +235,54 @@ function timingsForChapter(db: SqlExecutor, reciterId: number, chapterId: number
 /** Loads the timings of the surah that has just started playing. */
 function setTrackTimings(db: SqlExecutor, reciterId: number, chapterId: number): void {
   trackTimings = { chapterId, timings: timingsForChapter(db, reciterId, chapterId) };
+}
+
+/** Ends the repeat: the range is forgotten and a seek still in flight is no longer waited for. */
+function releaseRepeat(): void {
+  repeatGuardMs = null;
+  store().clearRepeat();
+}
+
+/** Ends the repeat when moving to `verseId` takes the person outside its range. */
+function releaseRepeatOutside(timings: readonly AyahTiming[], verseId: number): void {
+  const repeat = store().repeat;
+  if (repeat !== null && !repeatContainsVerse(repeat, timings, verseId)) {
+    releaseRepeat();
+  }
+}
+
+/**
+ * Applies the repeat to the decoded position of the surah now playing: at the end of its last ayah the range
+ * starts again, until its count is reached, and then the repeat ends and playback continues.
+ */
+function applyRepeat(active: Queue, chapterId: number, positionMs: number): void {
+  const repeat = store().repeat;
+  if (repeat === null || trackTimings?.chapterId !== chapterId) {
+    return;
+  }
+  const { timings } = trackTimings;
+  if (repeatGuardMs !== null) {
+    if (positionMs >= repeatGuardMs) {
+      return;
+    }
+    repeatGuardMs = null;
+  }
+  const action = repeatAction(repeat, timings, positionMs);
+  if (action === 'none') {
+    return;
+  }
+  if (action === 'finish') {
+    releaseRepeat();
+    return;
+  }
+  const last = timings.find((timing) => timing.verseId === repeat.toVerseId);
+  repeatGuardMs = (last?.endMs ?? 0) - REPEAT_END_TOLERANCE_MS;
+  store().advanceRepeat();
+  store().setPosition(action.seekTo);
+  active.playlist.seekTo(action.seekTo / 1000).catch((error: unknown) => {
+    console.warn('Repeat seek failed.', error);
+    store().markFailed('load-failed');
+  });
 }
 
 /** Highlights the ayah and word at `positionMs` of the surah now playing. */
@@ -337,6 +400,9 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
   if (current.status === 'playing' || current.status === 'paused') {
     current.setPosition(Math.round(status.currentTime * 1000));
   }
+  if (current.status === 'playing' && status.playing && status.isLoaded && chapterId !== undefined) {
+    applyRepeat(active, chapterId, Math.round(status.currentTime * 1000));
+  }
   if (status.playing) {
     if (current.status === 'loading' || current.status === 'paused') {
       current.markPlaying();
@@ -355,6 +421,8 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   if (active === null) {
     return;
   }
+  // A surah change ends the repeat, whoever made it.
+  releaseRepeat();
   const fromUs = intendedIndex === currentIndex;
   const previousLoaded = loadedIndex === previousIndex;
   const stuckLongEnough = watchedIndex === previousIndex && Date.now() - watchedSince >= OFFLINE_SKIP_MIN_MS;
@@ -399,6 +467,7 @@ async function guarded(action: () => Promise<void>): Promise<void> {
 function stopPlayback(): void {
   loadSequence += 1;
   clearWatchdog();
+  releaseRepeat();
   queue?.playlist.pause();
   store().markStopped();
 }
@@ -459,6 +528,7 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
 /** Plays a surah from `fromMs` with the saved reciter (or the default one). */
 export function playChapter(chapterId: number, fromMs = 0): Promise<void> {
   return guarded(async () => {
+    releaseRepeat();
     await loadChapter(chapterId, fromMs, currentReciterId(contentDb()));
   });
 }
@@ -466,6 +536,7 @@ export function playChapter(chapterId: number, fromMs = 0): Promise<void> {
 /** Plays from the start of an ayah: its surah file, seeked to the ayah's start. With no timings, from 0. */
 export function playFromVerse(verseKey: string): Promise<void> {
   return guarded(async () => {
+    releaseRepeat();
     const db = contentDb();
     const verse = getVerseByKey(db, verseKey);
     if (verse === undefined) {
@@ -483,7 +554,7 @@ export function playFromVerse(verseKey: string): Promise<void> {
       return;
     }
     const timing = timingsForChapter(db, reciterId, verse.chapterId).find((row) => row.verseId === verse.id);
-    await loadChapter(verse.chapterId, timing?.startMs ?? 0, reciterId);
+    await loadChapter(verse.chapterId, timing === undefined ? 0 : ayahSeekStartMs(timing), reciterId);
   });
 }
 
@@ -512,15 +583,19 @@ export function previousAyah(): Promise<void> {
     const index = activeTimingIndex(timings, currentPositionMs());
     const before = index > 0 ? timings[index - 1] : undefined;
     if (before !== undefined) {
-      await jumpTo(state.chapterId, before.startMs, reciterId);
+      releaseRepeatOutside(timings, before.verseId);
+      await jumpTo(state.chapterId, ayahSeekStartMs(before), reciterId);
       return;
     }
     const previous = neighbourChapter(db, reciterId, state.chapterId, -1);
     if (previous === null) {
+      releaseRepeatOutside(timings, timings[0]?.verseId ?? -1);
       await jumpTo(state.chapterId, 0, reciterId);
       return;
     }
-    await loadChapter(previous, timingsForChapter(db, reciterId, previous).at(-1)?.startMs ?? 0, reciterId);
+    releaseRepeat();
+    const lastOfPrevious = timingsForChapter(db, reciterId, previous).at(-1);
+    await loadChapter(previous, lastOfPrevious === undefined ? 0 : ayahSeekStartMs(lastOfPrevious), reciterId);
   });
 }
 
@@ -547,7 +622,8 @@ export function nextAyah(): Promise<void> {
     }
     const after = timings[activeTimingIndex(timings, currentPositionMs()) + 1];
     if (after !== undefined) {
-      await jumpTo(state.chapterId, after.startMs, reciterId);
+      releaseRepeatOutside(timings, after.verseId);
+      await jumpTo(state.chapterId, ayahSeekStartMs(after), reciterId);
       return;
     }
     const following = neighbourChapter(db, reciterId, state.chapterId, 1);
@@ -555,7 +631,9 @@ export function nextAyah(): Promise<void> {
       stopPlayback();
       return;
     }
-    await loadChapter(following, timingsForChapter(db, reciterId, following)[0]?.startMs ?? 0, reciterId);
+    releaseRepeat();
+    const firstOfFollowing = timingsForChapter(db, reciterId, following)[0];
+    await loadChapter(following, firstOfFollowing === undefined ? 0 : ayahSeekStartMs(firstOfFollowing), reciterId);
   });
 }
 
@@ -586,8 +664,17 @@ export function pause(): void {
 /** Continues the current surah. After a restore, it loads the file at the saved position first. */
 export function resume(): Promise<void> {
   return guarded(async () => {
+    const before = store();
+    if (before.status === 'playing' || before.status === 'loading') {
+      return;
+    }
+    if (before.chapterId === null && !restoreLastSession()) {
+      // Nothing is loaded and nothing was saved: start the first surah.
+      await playChapter(1);
+      return;
+    }
     const state = store();
-    if (state.chapterId === null || state.status === 'playing' || state.status === 'loading') {
+    if (state.chapterId === null) {
       return;
     }
     if (queue !== null && loadedChapterId === state.chapterId && state.status !== 'error') {
@@ -605,6 +692,9 @@ export function seek(positionMs: number): void {
     return;
   }
   const target = clampSeek(positionMs);
+  if (state.repeat !== null && trackTimings?.chapterId === state.chapterId && !repeatContainsPosition(state.repeat, trackTimings.timings, target)) {
+    releaseRepeat();
+  }
   if (queue !== null && loadedChapterId === state.chapterId) {
     queue.playlist.seekTo(target / 1000).catch((error: unknown) => {
       console.warn('Seek failed.', error);
@@ -643,6 +733,7 @@ export function nextSurah(): Promise<void> {
       stopPlayback();
       return;
     }
+    releaseRepeat();
     await loadChapter(next, 0, reciterId);
   });
 }
@@ -673,6 +764,7 @@ export function previousSurah(): Promise<void> {
       return;
     }
     const previous = neighbourChapter(contentDb(), reciterId, state.chapterId, -1) ?? state.chapterId;
+    releaseRepeat();
     await loadChapter(previous, 0, reciterId);
   });
 }
@@ -691,8 +783,41 @@ export function restoreLastSession(): boolean {
     return false;
   }
   loadedChapterId = null;
+  repeatGuardMs = null;
   store().restore(saved);
   return true;
+}
+
+/** Where a seek to an ayah of the surah now playing lands, or null when it has no timing there. */
+export function seekStartMs(verseId: number): number | null {
+  if (trackTimings === null || trackTimings.chapterId !== store().chapterId) {
+    return null;
+  }
+  const timing = trackTimings.timings.find((row) => row.verseId === verseId);
+  return timing === undefined ? null : ayahSeekStartMs(timing);
+}
+
+/** True when the surah now playing has ayah timings, so the highlight and the ayah controls can follow it. */
+export function hasAyahTimings(): boolean {
+  return trackTimings !== null && trackTimings.chapterId === store().chapterId && trackTimings.timings.length > 0;
+}
+
+/**
+ * Repeats an ayah range of the current surah from its timings. Returns false, and changes nothing, when the
+ * range is not in this surah's timings, so a surah without timings cannot repeat.
+ */
+export function setRepeat(request: RepeatRequest): boolean {
+  const state = store();
+  if (state.chapterId === null) {
+    return false;
+  }
+  const reciterId = reciterFor(state);
+  if (reciterId === null || !isRepeatRangeValid(request, timingsForChapter(contentDb(), reciterId, state.chapterId))) {
+    return false;
+  }
+  releaseRepeat();
+  store().setRepeat(request);
+  return store().repeat !== null;
 }
 
 // The playlist plays at the store's speed, and follows speed changes.
@@ -717,6 +842,7 @@ export function resetPlayerForTests(): void {
   loadSequence = 0;
   audioModeReady = null;
   watchedIndex = null;
+  repeatGuardMs = null;
   timingsCache.clear();
   usePlayerStore.getState().reset();
 }

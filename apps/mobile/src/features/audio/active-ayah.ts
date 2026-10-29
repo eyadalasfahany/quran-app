@@ -40,3 +40,16 @@ export function activeWordPosition(timing: AyahTiming, ms: number): number | nul
   }
   return best?.[0] ?? null;
 }
+
+/**
+ * Where a seek to this ayah lands. QF's ayah start can be later than its first word's segment start (Afasy 1:2:
+ * the ayah at 6,090 and word 1 at 6,025), so the earlier of the two is used, or the first word would be clipped.
+ * The highlight lookup does not use this; it reads the timings as they are.
+ */
+export function ayahSeekStartMs(timing: AyahTiming): number {
+  if (timing.segments === null || timing.segments.length === 0) {
+    return timing.startMs;
+  }
+  const firstWordMs = Math.min(...timing.segments.map((segment) => segment[1]));
+  return Math.min(timing.startMs, firstWordMs);
+}

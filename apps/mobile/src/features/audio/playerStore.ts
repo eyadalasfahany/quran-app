@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { REPEAT_COUNTS, type RepeatRange, type RepeatRequest } from './repeat';
+
 export const CHAPTER_COUNT = 114;
 
 export type PlayerStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
@@ -29,6 +31,8 @@ export type PlayerState = {
   activeVerseId: number | null;
   /** The word being recited (1-based, as QF sends it), when the ayah has word segments. */
   activeWord: number | null;
+  /** The ayah range being repeated in the current surah. Null when no repeat is set. */
+  repeat: RepeatRange | null;
 };
 
 export type LoadRequest = {
@@ -63,6 +67,11 @@ export type PlayerActions = {
   setVolume: (volume: number) => void;
   /** Sets the highlighted ayah and word. Does nothing when both are unchanged. */
   setActive: (verseId: number | null, word: number | null) => void;
+  /** Sets the repeat range with done at 0. Does nothing when `count` is not offered or `from` is after `to`. */
+  setRepeat: (request: RepeatRequest) => void;
+  clearRepeat: () => void;
+  /** Counts one more seek back to the start of the repeat range. */
+  advanceRepeat: () => void;
   restore: (request: RestoreRequest) => void;
   reset: () => void;
 };
@@ -79,6 +88,7 @@ export const initialPlayerState: PlayerState = {
   volume: 1,
   activeVerseId: null,
   activeWord: null,
+  repeat: null,
 };
 
 export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
@@ -103,10 +113,11 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       durationMs,
       activeVerseId: null,
       activeWord: null,
+      repeat: null,
     }),
   markPlaying: () => set({ status: 'playing', error: null }),
   markPaused: () => set((state) => (state.status === 'playing' || state.status === 'loading' ? { status: 'paused' } : {})),
-  markStopped: () => set({ status: 'idle', positionMs: 0, activeVerseId: null, activeWord: null }),
+  markStopped: () => set({ status: 'idle', positionMs: 0, activeVerseId: null, activeWord: null, repeat: null }),
   markFailed: (code) => set({ status: 'error', error: code, activeVerseId: null, activeWord: null }),
   setPosition: (positionMs) => set({ positionMs }),
   setDuration: (durationMs) => set({ durationMs }),
@@ -114,6 +125,13 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
   setVolume: (volume) => set((state) => (Number.isFinite(volume) ? { volume: clampVolume(volume) } : state)),
   setActive: (activeVerseId, activeWord) =>
     set((state) => (state.activeVerseId === activeVerseId && state.activeWord === activeWord ? state : { activeVerseId, activeWord })),
+  setRepeat: ({ fromVerseId, toVerseId, count }) =>
+    set((state) =>
+      REPEAT_COUNTS.includes(count) && fromVerseId <= toVerseId ? { repeat: { fromVerseId, toVerseId, count, done: 0 } } : state,
+    ),
+  clearRepeat: () => set((state) => (state.repeat === null ? state : { repeat: null })),
+  advanceRepeat: () =>
+    set((state) => (state.repeat === null ? state : { repeat: { ...state.repeat, done: state.repeat.done + 1 } })),
   restore: ({ reciterId, chapterId, positionMs }) =>
     set({
       reciterId,
@@ -125,6 +143,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       durationMs: 0,
       activeVerseId: null,
       activeWord: null,
+      repeat: null,
     }),
   reset: () => set(initialPlayerState),
 }));

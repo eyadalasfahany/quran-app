@@ -9,6 +9,7 @@ import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
+import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 
 void SplashScreen.preventAutoHideAsync();
@@ -29,6 +30,7 @@ export default function RootLayout() {
   const content = useContentDb();
   const user = useUserDb();
   useContentSync();
+  useRestorePlayerSession(content.ready);
   // A font that fails to load falls back to the system font rather than holding the splash.
   // A database error is logged and the reader deals with an empty database later.
   const ready =

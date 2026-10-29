@@ -1,16 +1,19 @@
 import { AppState, type AppStateStatus } from 'react-native';
 import { create } from 'zustand';
 
-import { pause, seek } from './player';
+import { hasAyahTimings, pause, seekStartMs, seek } from './player';
 import { usePlayerStore } from './playerStore';
 
 // The sleep timer (spec §12, step 5a). A timed mode fades the volume from 1 to 0 over FADE_MS, then pauses,
 // then restores the volume to 1. End of surah pauses when the playlist moves on to the next surah.
 // The deadline is wall-clock, so it survives backgrounding: the tick runs only in the foreground, and every
 // return to the foreground checks the deadline again.
+// End of ayah pauses when the highlight moves on from the ayah that was active when it was armed. The highlight
+// is held back by HIGHLIGHT_LAG_MS, so the move happens as the next ayah starts to be heard. It pauses at once
+// (a fade of FADE_MS would let the next ayah play), then seeks to that ayah's start, where resuming begins.
 
 export type TimedSleepMode = 'minutes15' | 'minutes30' | 'minutes60';
-export type SleepMode = 'off' | TimedSleepMode | 'endOfSurah';
+export type SleepMode = 'off' | TimedSleepMode | 'endOfSurah' | 'endOfAyah';
 
 export const SLEEP_MINUTES: Record<TimedSleepMode, number> = { minutes15: 15, minutes30: 30, minutes60: 60 };
 export const FADE_MS = 3_000;
@@ -27,13 +30,15 @@ type SleepTimerState = {
   nowMs: number;
   /** True while the volume is fading out. */
   fading: boolean;
+  /** The ayah highlighted when end of ayah was chosen (null when none was). Its change away ends the timer. */
+  armedVerseId: number | null;
 };
 
 export type SleepTimerActions = {
   choose: (mode: SleepMode) => void;
 };
 
-const idle: SleepTimerState = { mode: 'off', endsAtMs: null, armedChapterId: null, nowMs: 0, fading: false };
+const idle: SleepTimerState = { mode: 'off', endsAtMs: null, armedChapterId: null, nowMs: 0, fading: false, armedVerseId: null };
 
 export const useSleepTimerStore = create<SleepTimerState & SleepTimerActions>()(() => ({
   ...idle,
@@ -72,6 +77,15 @@ function choose(mode: SleepMode, now: number): void {
   stopInterval();
   if (mode === 'off') {
     setSleep({ ...idle, nowMs: now });
+    return;
+  }
+  if (mode === 'endOfAyah') {
+    // Without timings the highlight never moves, so there is no ayah to end: nothing is armed.
+    if (usePlayerStore.getState().chapterId === null || !hasAyahTimings()) {
+      setSleep({ ...idle, nowMs: now });
+      return;
+    }
+    setSleep({ ...idle, mode, armedVerseId: usePlayerStore.getState().activeVerseId, nowMs: now });
     return;
   }
   if (mode === 'endOfSurah') {
@@ -140,6 +154,26 @@ function ensureForegroundWatch(): void {
     }
   });
 }
+
+// End of ayah: the highlight moves on from the armed ayah. The new ayah's start is read now, while its timings are
+// loaded; the pause waits for the rest of the highlight update to finish (as end of surah does).
+usePlayerStore.subscribe((state, previous) => {
+  const armed = sleep();
+  if (armed.mode !== 'endOfAyah' || state.activeVerseId === null || state.activeVerseId === previous.activeVerseId) {
+    return;
+  }
+  if (state.activeVerseId === armed.armedVerseId) {
+    return;
+  }
+  const startMs = seekStartMs(state.activeVerseId);
+  setSleep({ ...idle, nowMs: Date.now() });
+  void Promise.resolve().then(() => {
+    pause();
+    if (startMs !== null) {
+      seek(startMs);
+    }
+  });
+});
 
 // End of surah: the playlist has already moved to the next surah when the chapter changes. The pause waits for
 // the rest of that change to finish, so seek(0) finds the new surah's file loaded.

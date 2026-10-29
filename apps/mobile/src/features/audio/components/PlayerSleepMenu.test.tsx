@@ -23,7 +23,7 @@ jest.mock('expo-symbols', () => {
 
 beforeEach(() => {
   resetSleepTimerForTests();
-  usePlayerStore.setState({ chapterId: 1 });
+  usePlayerStore.setState({ activeVerseId: null, chapterId: 1 });
 });
 
 afterEach(() => {
@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe('PlayerSleepMenu', () => {
-  it.each(locales)('offers Off, the three timers, end of surah and a disabled end of ayah in %s', async (locale) => {
+  it.each(locales)('offers Off, the three timers, end of surah, and end of ayah disabled with no recited ayah, in %s', async (locale) => {
     const view = await renderUi(<PlayerSleepMenu onClose={() => undefined} visible />, { locale, theme: 'dark' });
     const names =
       locale === 'ar'
@@ -61,7 +61,7 @@ describe('PlayerSleepMenu', () => {
     expect(useSleepTimerStore.getState()).toMatchObject({ mode: 'endOfSurah', armedChapterId: 1 });
   });
 
-  it('does not arm the disabled end of ayah', async () => {
+  it('does not arm end of ayah while no ayah is being recited', async () => {
     const onClose = jest.fn();
     const view = await renderUi(<PlayerSleepMenu onClose={onClose} visible />, { locale: 'en' });
 
@@ -69,6 +69,13 @@ describe('PlayerSleepMenu', () => {
 
     expect(useSleepTimerStore.getState().mode).toBe('off');
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('enables end of ayah while an ayah is being recited', async () => {
+    usePlayerStore.setState({ activeVerseId: 3 });
+    const view = await renderUi(<PlayerSleepMenu onClose={() => undefined} visible />, { locale: 'en' });
+
+    expect(view.getByRole('radio', { name: 'End of ayah' }).props.accessibilityState).toMatchObject({ disabled: false });
   });
 
   it('turns a running timer off with Off', async () => {

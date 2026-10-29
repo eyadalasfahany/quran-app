@@ -1,5 +1,5 @@
 import type { AyahTiming } from './data/timings';
-import { activeTimingIndex, activeWordPosition } from './active-ayah';
+import { activeTimingIndex, activeWordPosition, ayahSeekStartMs } from './active-ayah';
 
 // Three ayahs with a gap after the second, and word segments that start before their ayah.
 const timings: AyahTiming[] = [
@@ -76,5 +76,22 @@ describe('activeWordPosition', () => {
   it('returns null when the ayah has no segments, or an empty list', () => {
     expect(activeWordPosition(timings[2]!, 17000)).toBeNull();
     expect(activeWordPosition({ verseId: 4, startMs: 0, endMs: 10, segments: [] }, 5)).toBeNull();
+  });
+});
+
+describe('ayahSeekStartMs', () => {
+  it('uses the first word segment when it starts before the ayah', () => {
+    expect(ayahSeekStartMs(timings[1] as AyahTiming)).toBe(4950);
+  });
+
+  it('uses the ayah start when the first word starts at or after it', () => {
+    const later: AyahTiming = { verseId: 9, startMs: 1000, endMs: 3000, segments: [[1, 1200, 2000]] };
+    expect(ayahSeekStartMs(later)).toBe(1000);
+    expect(ayahSeekStartMs({ ...later, segments: [[1, 1000, 2000]] })).toBe(1000);
+  });
+
+  it('uses the ayah start when there are no segments', () => {
+    expect(ayahSeekStartMs(timings[2] as AyahTiming)).toBe(16000);
+    expect(ayahSeekStartMs({ verseId: 9, startMs: 1000, endMs: 3000, segments: [] })).toBe(1000);
   });
 });
