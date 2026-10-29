@@ -12,7 +12,7 @@ import { useWordFollow } from '../useWordFollow';
 import { FocusAside } from './FocusAside';
 import { FocusAyah } from './FocusAyah';
 import { FocusProgress } from './FocusProgress';
-import { FocusTransport } from './FocusTransport';
+import { FocusTransport, type RepeatTarget } from './FocusTransport';
 
 const PULL = 36;
 const PAGE_GUTTER = 28;
@@ -61,6 +61,7 @@ export function FocusStage({
   onNext,
   onSelectVerse,
   onOpenActions,
+  repeatTarget = null,
   testID = 'focus-stage',
 }: {
   verseNumber: number;
@@ -72,6 +73,8 @@ export function FocusStage({
   nextText: string | null;
   nextNumber: number | null;
   fontScale?: number;
+  /** The focused ayah and its surah, for the repeat control. */
+  repeatTarget?: RepeatTarget | null;
   /** The reader's saved highlight for the current ayah. */
   highlightColor?: HighlightColor | null;
   /** The current ayah is the one being recited, and its recited word. */
@@ -213,6 +216,7 @@ export function FocusStage({
         onPlay={onPlay}
         onPrevious={onPrevious === undefined ? undefined : () => go('previous')}
         playing={playing}
+        repeatTarget={repeatTarget}
       />
     </View>
   );

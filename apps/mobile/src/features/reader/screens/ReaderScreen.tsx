@@ -13,8 +13,6 @@ import { nextAyah, pause, previousAyah } from '@/features/audio/player';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { useAudioAvailable } from '@/features/audio/hooks/useAudioAvailable';
 import { playVerse } from '@/features/audio/play-verse';
-import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
-import { MINI_PLAYER_READER_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { listBookmarks, toggleBookmark, useHighlightsByVerseId } from '@/features/library/data';
 import { Screen } from '@/shared/ui';
 
@@ -35,6 +33,7 @@ import { panelPlacementFor, panelStripWidth } from '../layout';
 import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
 import type { ReaderMode } from '../anchor/reading-anchor';
+import { useReaderMiniFootprint } from '../useReaderMiniFootprint';
 import { useReaderSelection } from '../selection';
 import { useScrollHaptics } from '../scroll-haptics';
 import { useReaderSettings } from '../settings';
@@ -82,9 +81,10 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const selection = useReaderSelection();
   const highlights = useHighlightsByVerseId();
   const haptics = useScrollHaptics(mode);
-  // The bar shows in Reading and Mushaf only. Focus has its own transport (step 5), and expanded windows get theirs in 4b2.
-  const miniVisible = useMiniPlayerVisible('reader');
-  const showMiniBar = miniVisible && (mode === 'reading' || mode === 'mushaf');
+  // The bar (or its collapsed capsule) shows in Reading and Mushaf only, and its footprint comes from one hook, so the
+  // dock, the resume pill and the lists' insets agree. Focus has its own transport.
+  const mini = useReaderMiniFootprint();
+  const showMiniBar = mini.shown;
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
   const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
@@ -283,7 +283,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           </SidePanel>
         }
         panelOpen={selection.panelOpen}
-        miniPlayer={showMiniBar ? <MiniPlayer variant="reader" /> : undefined}
+        miniPlayer={showMiniBar ? <MiniPlayer topVerseKey={visibleVerseKey ?? anchor.verseKey} variant="reader" /> : undefined}
         resume={
           showResume ? (
             <ResumePill
@@ -337,7 +337,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               <HafsMushafList
                 anchorVerseKey={followKey ?? listAnchor}
                 bottomInset={0}
-                contentBottomInset={showMiniBar ? MINI_PLAYER_READER_FOOTPRINT : 0}
+                contentBottomInset={mini.footprint}
                 fontScale={fontScale}
                 followKey={followKey}
                 highlightsByVerseId={highlights}
@@ -390,7 +390,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 anchorVerseKey={listAnchor}
                 audioAvailable={audioAvailable}
                 bottomInset={0}
-                contentBottomInset={showMiniBar ? MINI_PLAYER_READER_FOOTPRINT : 0}
+                contentBottomInset={mini.footprint}
                 fontScale={fontScale}
                 followKey={followKey}
                 highlightsByVerseId={highlights}

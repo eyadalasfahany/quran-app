@@ -14,6 +14,7 @@ export const storageKeys = {
   readerLastVerseKey: 'reader.lastVerseKey',
   readerLastPage: 'reader.lastPage',
   readerMode: 'reader.mode',
+  readerMiniCollapsed: 'reader.miniCollapsed',
   readerSettings: 'reader.settings',
   searchRecentQueries: 'search.recentQueries',
   audioReciterId: 'audio.reciterId',

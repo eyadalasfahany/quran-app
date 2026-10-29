@@ -102,6 +102,7 @@ export function FocusReader({
       previousNumber={previous?.verseNumber ?? null}
       previousText={previous?.textUthmani ?? null}
       recited={verse.verseKey === recitedVerseKey}
+      repeatTarget={{ chapterId: verse.chapterId, verseId: verse.id }}
       textImlaei={verse.textImlaei}
       textUthmani={verse.textUthmani}
       verseNumber={verse.verseNumber}

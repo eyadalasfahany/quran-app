@@ -4,14 +4,10 @@ import { I18nManager, Pressable, View, useWindowDimensions } from 'react-native'
 
 import { useWindowClass, windowClassFor, type WindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
-import {
-  MINI_PLAYER_METRICS,
-  MINI_PLAYER_READER_BOTTOM,
-  MINI_PLAYER_SIDE,
-} from '@/features/audio/mini-player-metrics';
+import { MINI_PLAYER_SIDE } from '@/features/audio/mini-player-metrics';
 
 import { PANEL_INSET, panelPlacementFor, panelStripWidth, type PanelPlacement } from '../layout';
+import { useReaderMiniFootprint } from '../useReaderMiniFootprint';
 
 export function AdaptiveReaderLayout({
   width,
@@ -57,12 +53,10 @@ export function AdaptiveReaderLayout({
   const rtl = I18nManager.isRTL;
   const strip = placement === 'docked' ? panelStripWidth() : 0;
   const trailing = rtl ? 'left' : 'right';
-  const miniVisible = useMiniPlayerVisible('reader');
-  // The bar is drawn only when it was passed and the shared rule says it shows. The resume pill sits above it.
-  const miniShown = Boolean(miniPlayer) && miniVisible;
-  const resumeBottom = miniShown
-    ? MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_METRICS.reader.height + theme.space[2]
-    : theme.space[4];
+  const mini = useReaderMiniFootprint();
+  // The bar is drawn only when it was passed and the shared footprint says it shows. The resume pill sits above it.
+  const miniShown = Boolean(miniPlayer) && mini.shown;
+  const resumeBottom = miniShown ? mini.bottom + mini.height + theme.space[2] : theme.space[4];
 
   const placementRef = useRef<PanelPlacement | null>(null);
   const verseKeyRef = useRef(verseKey);
@@ -122,7 +116,7 @@ export function AdaptiveReaderLayout({
             <View
               pointerEvents="box-none"
               style={{
-                bottom: bottomInset + MINI_PLAYER_READER_BOTTOM,
+                bottom: bottomInset + mini.bottom,
                 end: MINI_PLAYER_SIDE,
                 position: 'absolute',
                 start: MINI_PLAYER_SIDE,

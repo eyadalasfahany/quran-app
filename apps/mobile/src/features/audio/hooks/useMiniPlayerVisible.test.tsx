@@ -4,6 +4,10 @@ import { Dimensions } from 'react-native';
 import { usePlayerStore } from '../playerStore';
 import { useMiniPlayerVisible } from './useMiniPlayerVisible';
 
+// The reciter a play would use: null until a test sets one.
+let mockReciter: { resourceId: number } | null = null;
+jest.mock('../play-verse', () => ({ catalogueReciter: () => mockReciter }));
+
 function setWindowWidth(width: number) {
   Dimensions.set({
     screen: { fontScale: 1, height: 844, scale: 1, width },
@@ -41,6 +45,31 @@ describe('useMiniPlayerVisible', () => {
     const { result } = await renderHook(() => useMiniPlayerVisible(variant));
 
     expect(result.current).toBe(false);
+  });
+
+  it('shows the reader bar while idle when a reciter resolves, and no other variant does', async () => {
+    mockReciter = { resourceId: 30 };
+    try {
+      const reader = await renderHook(() => useMiniPlayerVisible('reader'));
+      expect(reader.result.current).toBe(true);
+      const tabs = await renderHook(() => useMiniPlayerVisible('tabs'));
+      expect(tabs.result.current).toBe(false);
+      const sidebar = await renderHook(() => useMiniPlayerVisible('sidebar'));
+      expect(sidebar.result.current).toBe(false);
+    } finally {
+      mockReciter = null;
+    }
+  });
+
+  it('hides the idle reader bar on an expanded window, even with a reciter', async () => {
+    setWindowWidth(1000);
+    mockReciter = { resourceId: 30 };
+    try {
+      const { result } = await renderHook(() => useMiniPlayerVisible('reader'));
+      expect(result.current).toBe(false);
+    } finally {
+      mockReciter = null;
+    }
   });
 
   it.each(['loading', 'playing', 'paused', 'error'] as const)('is shown once the player is %s', async (status) => {

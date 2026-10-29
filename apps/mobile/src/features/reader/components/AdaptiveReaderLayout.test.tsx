@@ -9,6 +9,7 @@ import { usePlayerStore } from '@/features/audio/playerStore';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { PANEL_INSET, panelStripWidth, SIDE_PANEL_WIDTH } from '../layout';
+import { useReaderMiniCollapse } from '../mini-bar-collapse';
 import { AdaptiveReaderLayout } from './AdaptiveReaderLayout';
 
 const widths = [
@@ -173,6 +174,19 @@ describe('AdaptiveReaderLayout', () => {
       start: 16,
     });
     expect(dock.props.pointerEvents).toBe('box-none');
+  });
+
+  it('drops the dock to the capsule (18 above the safe area) and lifts the resume pill over it (18 + 44 + 8) while collapsed', async () => {
+    startPlayback();
+    useReaderMiniCollapse.getState().setCollapsed(true);
+    try {
+      const view = await renderUi(layout(375, { bottomInset: 34, miniPlayer: <Text>mini</Text>, resume: <Text>resume</Text> }));
+
+      expect(flatStyle(view.getByTestId('reader-mini-player-dock').props.style).bottom).toBe(34 + 18);
+      expect(flatStyle(view.getByTestId('reader-resume-slot').props.style).bottom).toBe(18 + 44 + themes.light.space[2]);
+    } finally {
+      useReaderMiniCollapse.getState().setCollapsed(false);
+    }
   });
 
   it('draws no mini player dock when none is given', async () => {

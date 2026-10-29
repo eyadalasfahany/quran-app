@@ -278,6 +278,7 @@
     "mini": {
       "label": "{{reciter}}, {{surah}}",
       "hint": "Opens the player",
+      "show": "Show player",
       "caption": "{{surah}} · {{ayah}}"
     },
     "style": {

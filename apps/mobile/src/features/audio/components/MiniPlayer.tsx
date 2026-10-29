@@ -18,10 +18,14 @@ import {
   MINI_PLAYER_SIDEBAR,
   type MiniPlayerVariant,
 } from '../mini-player-metrics';
+import { useIdleReciter } from '../hooks/useIdleReciter';
+import { useVerseCaption } from '../hooks/useVerseCaption';
 import { pause, resume } from '../player';
+import { playVerse } from '../play-verse';
 import { playbackFraction, reciterInitial } from '../player-view';
 import { usePlayerStore } from '../playerStore';
 import { MiniPlayerProgressLine } from './MiniPlayerProgressLine';
+import { ReaderMiniPlayer } from './ReaderMiniPlayer';
 import { MiniPlayerTile } from './MiniPlayerTile';
 import { PlayerIconButton } from './PlayerIconButton';
 import { PAUSE_ICON, PLAY_ICON } from './player-icons';
@@ -29,7 +33,7 @@ import { PAUSE_ICON, PLAY_ICON } from './player-icons';
 // The bar shown above the tabs (`tabs`) and at the foot of the reader (`reader`), and the solid footer of the
 // expanded sidebar (`sidebar`). It draws nothing while useMiniPlayerVisible is false. Tapping the row opens the
 // full player; the button beside it toggles playback. The two are siblings, so the button is never inside another button.
-export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
+export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlayerVariant; topVerseKey?: string | null }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
@@ -39,6 +43,10 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
   const { reciterName, chapterName } = usePlayerNames();
   const ayahNumber = useActiveAyahNumber();
   const visible = useMiniPlayerVisible(variant);
+  const idle = status === 'idle';
+  // The reader's idle bar: the reciter a play would use, and the caption of the top ayah on screen.
+  const idleReciter = useIdleReciter(variant === 'reader' && idle);
+  const idleCaption = useVerseCaption(variant === 'reader' && idle ? topVerseKey : null);
 
   if (!visible) {
     return null;
@@ -111,6 +119,36 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
         </View>
         <MiniPlayerProgressLine fraction={fraction} placement="inline" />
       </View>
+    );
+  }
+
+  // Plays from the top ayah on screen with the catalogue's reciter (installing its pack first if needed).
+  const playIdle = (verseKey: string | null) => {
+    if (verseKey !== null) {
+      void playVerse(verseKey);
+    }
+  };
+
+  if (variant === 'reader') {
+    const idleName = idleReciter === null ? '' : (locale === 'ar' ? idleReciter.nameAr ?? idleReciter.name : idleReciter.name ?? idleReciter.nameAr) ?? '';
+    const surah = idle ? idleCaption?.surah ?? '' : chapterName ?? '';
+    // Reading shows the ayah beside the surah, as the frame does (#Reading, #ReadingMiniIdle).
+    const ayah = idle ? idleCaption?.ayah ?? null : ayahNumber;
+    const readerSubtitle =
+      ayah === null
+        ? surah
+        : t('player.mini.caption', { surah, ayah: t('ui.ayahNumber', { number: formatNumber(ayah, locale) }) });
+
+    return (
+      <ReaderMiniPlayer
+        fraction={fraction}
+        idle={idle}
+        onOpen={() => router.push('/player')}
+        onToggle={idle ? () => playIdle(topVerseKey) : toggle}
+        playing={isPlaying}
+        reciterName={idle ? idleName : reciterName}
+        subtitle={readerSubtitle}
+      />
     );
   }
 

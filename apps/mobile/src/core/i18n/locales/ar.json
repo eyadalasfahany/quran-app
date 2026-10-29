@@ -278,6 +278,7 @@
     "mini": {
       "label": "{{reciter}}، {{surah}}",
       "hint": "يفتح المشغّل",
+      "show": "إظهار المشغّل",
       "caption": "{{surah}} · {{ayah}}"
     },
     "style": {

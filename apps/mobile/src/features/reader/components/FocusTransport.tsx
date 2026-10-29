@@ -3,6 +3,8 @@ import { Pressable, View } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
+import { hasAyahTimings, setRepeat } from '@/features/audio/player';
+import { usePlayerStore } from '@/features/audio/playerStore';
 import { GlassSurface, Icon, UiText } from '@/shared/ui';
 
 const UP = { ios: 'chevron.up', android: 'keyboard_arrow_up' } as const;
@@ -19,12 +21,18 @@ const LABELLED_PADDING = 14;
 const LABELLED_GAP = 6;
 // The frame's labels are 13 px at weight 600.
 const LABEL_WEIGHT = 600;
+// The Focus repeat is one toggle: off, or the focused ayah repeated this many times (the frame's «٣×»).
+const FOCUS_REPEAT_COUNT = 3;
+
+/** The focused ayah and its surah: what the repeat applies to. Null when the ayah is not in the content database. */
+export type RepeatTarget = { verseId: number; chapterId: number };
 
 export function FocusTransport({
   onPrevious,
   onNext,
   onPlay,
   playing = false,
+  repeatTarget = null,
   testID = 'focus-transport',
 }: {
   onPrevious?: () => void;
@@ -32,12 +40,38 @@ export function FocusTransport({
   /** Plays from the focused ayah, or pauses when playing. Undefined disables the control. */
   onPlay?: () => void;
   playing?: boolean;
+  /** The focused ayah the repeat applies to. Null disables the repeat control. */
+  repeatTarget?: RepeatTarget | null;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const ink = theme.colors.ink;
+  // The repeat follows the player's store: its label and accent show the active repeat, and the control is
+  // enabled only when the focused ayah's surah is the one loaded with ayah timings.
+  const repeat = usePlayerStore((state) => state.repeat);
+  const recitedChapterId = usePlayerStore((state) => state.chapterId);
+  const status = usePlayerStore((state) => state.status);
+  const canRepeat =
+    repeatTarget !== null && recitedChapterId === repeatTarget.chapterId && status !== 'idle' && hasAyahTimings();
+  const repeating = repeat !== null;
+  const repeatLabel =
+    repeat === null
+      ? t('reader.focus.repeatShort', { count: formatNumber(FOCUS_REPEAT_COUNT, locale) })
+      : repeat.count === Infinity
+        ? t('player.repeat.forever')
+        : t('player.repeat.times', { count: formatNumber(repeat.count, locale) });
+  const toggleRepeat = () => {
+    if (repeat !== null) {
+      usePlayerStore.getState().clearRepeat();
+      return;
+    }
+    if (repeatTarget !== null) {
+      // The engine refuses a range its timings lack; then nothing changes.
+      setRepeat({ count: FOCUS_REPEAT_COUNT, fromVerseId: repeatTarget.verseId, toVerseId: repeatTarget.verseId });
+    }
+  };
   const labelled = {
     alignItems: 'center',
     flexDirection: 'row',
@@ -51,10 +85,18 @@ export function FocusTransport({
   return (
     <GlassSurface radius="pill" style={{ alignSelf: 'center' }} testID={testID}>
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[1], padding: theme.space[1] }}>
-        <Pressable accessibilityLabel={t('reader.focus.repeat')} accessibilityRole="button" style={labelled} testID={`${testID}-repeat`}>
-          <Icon color={ink} name={REPEAT} size={theme.size.iconMd} />
-          <UiText scale="bar" style={labelStyle} variant="caption" weight={LABEL_WEIGHT}>
-            {t('reader.focus.repeatShort', { count: formatNumber(3, locale) })}
+        <Pressable
+          accessibilityLabel={repeating ? t('player.repeat.title') : t('reader.focus.repeat')}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canRepeat, selected: repeating }}
+          disabled={!canRepeat}
+          onPress={toggleRepeat}
+          style={labelled}
+          testID={`${testID}-repeat`}
+        >
+          <Icon color={repeating ? theme.colors.brand : ink} name={REPEAT} size={theme.size.iconMd} />
+          <UiText scale="bar" style={labelStyle} tone={repeating ? 'brand' : 'ink'} variant="caption" weight={LABEL_WEIGHT}>
+            {repeatLabel}
           </UiText>
         </Pressable>
         <Pressable

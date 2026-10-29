@@ -653,6 +653,7 @@ For each change, in one transaction per request:
 
 - **Cancelling motion:** any touch on the reader stops auto-scroll at once and shows a pill to return to the current ayah. Following resumes when the pill is tapped, or 5 s after the reader's scroll stops (developer, 29 Oct 2026; `FOLLOW_RESUME_MS`).
 - **Following the recitation** (ADR 0023): the line holding the recited word stays in the middle 60% of the visible area, and scrolls to a third down only when it leaves. While following and playing, the saved reading place is the recited ayah.
+- **Reader mini bar** (ADR 0024): in Reading and Mushaf it shows even when idle, with the top ayah on screen, and its play starts there. A small down chevron marks that it can be dragged down. Dragging it down past half its height (or above 800 pt/s) collapses it to a 64 × 24 glass capsule with a grabber; a tap or an upward drag brings it back. The choice is remembered (`reader.miniCollapsed`), and the reader's bottom inset follows the bar or the capsule. Under Reduce Motion the content fades and the glass switches without fading.
 - **Haptics** (`expo-haptics`, added to the content plan when Phase 1 first uses it):
   - Selection feedback when the reading mode, script or reciter changes.
   - Success when a khatma day is completed.

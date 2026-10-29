@@ -8,6 +8,9 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { themes, uiFontFamilies } from '@/core/theme';
 import { openAudioTestDb } from '../data/test-db';
+import { useReaderMiniCollapse } from '@/features/reader/mini-bar-collapse';
+
+import { playVerse } from '../play-verse';
 import { pause, resume } from '../player';
 import { usePlayerStore } from '../playerStore';
 
@@ -32,6 +35,11 @@ jest.mock('../player', () => ({
 }));
 
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+
+jest.mock('../play-verse', () => ({
+  ...jest.requireActual<typeof import('../play-verse')>('../play-verse'),
+  playVerse: jest.fn(() => Promise.resolve()),
+}));
 
 jest.mock('expo-symbols', () => {
   const { createElement } = jest.requireActual<typeof import('react')>('react');
@@ -61,6 +69,8 @@ beforeEach(() => {
   db.executor.run(`INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
      (100, 1, 1, 'https://example.test/1.mp3', 48000, 'mp3')`);
   usePlayerStore.getState().reset();
+  useReaderMiniCollapse.getState().setCollapsed(false);
+  jest.mocked(playVerse).mockClear();
   jest.mocked(pause).mockClear();
   jest.mocked(resume).mockClear();
   jest.mocked(router.push).mockClear();
@@ -102,8 +112,18 @@ describe('MiniPlayer', () => {
     expect(view.queryByTestId('mini-player-tabs')).toBeNull();
   });
 
-  it('draws nothing while the player is idle, in the reader variant', async () => {
-    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+  it('draws the reader bar while idle when a reciter resolves, with the play glyph and no progress line', async () => {
+    const view = await renderUi(<MiniPlayer topVerseKey="1:1" variant="reader" />, { theme: 'light' });
+
+    expect(view.getByTestId('mini-player-reader')).toBeOnTheScreen();
+    expect(view.queryByTestId('mini-player-progress')).toBeNull();
+    expect(view.getByRole('button', { name: 'تشغيل' })).toBeOnTheScreen();
+  });
+
+  it('draws nothing while idle in the reader variant when no reciter resolves', async () => {
+    db.executor.run('DELETE FROM catalog_resources');
+    db.executor.run('DELETE FROM installed_resources');
+    const view = await renderUi(<MiniPlayer topVerseKey="1:1" variant="reader" />, { theme: 'light' });
 
     expect(view.queryByTestId('mini-player-reader')).toBeNull();
   });
@@ -406,5 +426,88 @@ describe('MiniPlayer sidebar variant', () => {
 
   it('uses no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/audio/components/MiniPlayer.tsx')).toEqual([]);
+  });
+});
+
+describe('MiniPlayer reader variant', () => {
+  afterEach(() => {
+    useReaderMiniCollapse.getState().setCollapsed(false);
+  });
+
+  beforeEach(() => {
+    db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search)
+       VALUES (3, '1:3', 1, 3, 1, 1, 1, 1, 'none', 'a', 'a')`);
+  });
+
+  it('captions the idle bar with the surah and the top ayah on screen, and plays from that ayah', async () => {
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+
+    expect(view.getByText('الفاتحة · الآية ٣')).toBeOnTheScreen();
+    fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
+    expect(playVerse).toHaveBeenCalledWith('1:3');
+  });
+
+  it('names the idle bar with the resolved reciter in English', async () => {
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
+    expect(view.getByText('The Opener · Ayah 3')).toBeOnTheScreen();
+  });
+
+  it('shows the active ayah beside the surah while playing, and the gold progress line', async () => {
+    loadSurah('playing');
+    usePlayerStore.getState().setActive(3, null);
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+
+    expect(view.getByText('الفاتحة · الآية ٣')).toBeOnTheScreen();
+    expect(view.getByTestId('mini-player-progress', { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+
+  it('draws the down chevron at the top centre, in inkMuted at 70%, and it takes no touches', async () => {
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    const chevron = view.getByTestId('mini-player-chevron', { includeHiddenElements: true });
+
+    expect(chevron.props.pointerEvents).toBe('none');
+    expect(flatStyle(chevron.props.style)).toMatchObject({ opacity: 0.7, position: 'absolute', top: 5 });
+  });
+
+  it('gives the bar only the collapse accessibility action (the capsule expands), with the player label', async () => {
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    const row = view.getByTestId('mini-player-open');
+
+    expect(row.props.accessibilityActions).toEqual([
+      { label: 'تصغير المشغّل', name: 'collapse' },
+    ]);
+  });
+
+  it('draws the capsule when collapsed, labelled to show the player, and a tap expands it', async () => {
+    useReaderMiniCollapse.getState().setCollapsed(true);
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+
+    expect(view.queryByTestId('mini-player-reader')).toBeNull();
+    fireEvent.press(view.getByRole('button', { name: 'إظهار المشغّل' }));
+    expect(useReaderMiniCollapse.getState().collapsed).toBe(false);
+    expect(view.queryByTestId('mini-player-reader')).toBeNull();
+  });
+
+  it('puts the gold progress line on the capsule while playing, and not while idle', async () => {
+    useReaderMiniCollapse.getState().setCollapsed(true);
+    loadSurah('playing');
+    const playing = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    expect(playing.getByTestId('mini-player-progress', { includeHiddenElements: true })).toBeOnTheScreen();
+    playing.unmount();
+
+    usePlayerStore.getState().reset();
+    const idle = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    expect(idle.queryByTestId('mini-player-progress', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('hides the chevron-less capsule on an expanded window', async () => {
+    setWindowWidth(1000);
+    useReaderMiniCollapse.getState().setCollapsed(true);
+    loadSurah('playing');
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+
+    expect(view.queryByTestId('mini-player-capsule')).toBeNull();
   });
 });
