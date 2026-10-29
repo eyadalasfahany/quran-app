@@ -58,6 +58,7 @@ final class ContentDeliveryService
                 group: $resource->group,
                 name: $resource->name,
                 nameAr: $this->servedArabicName($resource),
+                style: $this->servedStyle($resource),
                 authorName: $resource->author_name,
                 authorAr: $this->servedArabicAuthor($resource),
                 languageCode: $resource->language_code,
@@ -167,6 +168,21 @@ final class ContentDeliveryService
         return $resource->group === ResourceGroup::ChapterRecitations
             && is_int($default)
             && (int) $resource->source_key === $default;
+    }
+
+    /**
+     * Chapter recitations carry recitations.style as stored (QF English: Murattal, Mujawwad, Muallim).
+     * Every other group is null. The recitation is already eager-loaded for the Arabic name.
+     */
+    private function servedStyle(Resource $resource): ?string
+    {
+        if ($resource->group !== ResourceGroup::ChapterRecitations) {
+            return null;
+        }
+
+        $style = $resource->recitation?->style;
+
+        return is_string($style) ? $style : null;
     }
 
     /**

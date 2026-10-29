@@ -339,6 +339,12 @@
                                         "null"
                                     ]
                                 },
+                                "style": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
                                 "author_name": {
                                     "type": [
                                         "string",
@@ -402,6 +408,7 @@
                                 "group",
                                 "name",
                                 "name_ar",
+                                "style",
                                 "author_name",
                                 "author_ar",
                                 "language_code",

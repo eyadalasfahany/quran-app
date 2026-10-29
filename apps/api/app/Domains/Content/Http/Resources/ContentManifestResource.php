@@ -26,6 +26,7 @@ final class ContentManifestResource extends JsonResource
      *         group: ServedResourceGroup,
      *         name: string|null,
      *         name_ar: string|null,
+     *         style: string|null,
      *         author_name: string|null,
      *         author_ar: string|null,
      *         language_code: string|null,
