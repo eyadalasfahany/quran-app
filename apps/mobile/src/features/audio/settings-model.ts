@@ -2,6 +2,11 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 
 export type ReciterOption = { resourceId: number; installed: boolean };
 
+/** The reciter the catalogue flags as the default (the API's `is_default`), or null when none is flagged. */
+export function defaultReciterId(reciters: readonly { resourceId: number; isDefault: boolean }[]): number | null {
+  return reciters.find((reciter) => reciter.isDefault)?.resourceId ?? null;
+}
+
 export function parseReciterId(raw: string | undefined): number | null {
   if (raw === undefined) {
     return null;
@@ -21,8 +26,7 @@ export function writeSavedReciterId(id: number): void {
 /**
  * The reciter to play: the saved choice if it is in the list, else the default, else the first installed
  * reciter, else the first one, else null.
- * `defaultId` is passed in by the caller. TODO(phase-3 D2): supply Afasy's resource id here once there is a
- * stable way to identify it on the device; until then it is null and the fallbacks apply.
+ * `defaultId` is passed in by the caller, usually from `defaultReciterId`.
  */
 export function resolveReciterId(
   saved: number | null,

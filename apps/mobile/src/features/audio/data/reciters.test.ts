@@ -10,10 +10,10 @@ beforeEach(() => {
   ({ executor, close } = openAudioTestDb());
   // Catalogue: Afasy (30) and Husary (31), plus a tafsir that must not show up as a reciter.
   executor.run(
-    `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes) VALUES
-     (30, 'chapter_recitations', 'Mishari', 'مشاري', 1, 1000),
-     (31, 'chapter_recitations', 'Husary', 'الحصري', 1, 2000),
-     (21, 'tafsirs', 'Tafsir', 'تفسير', 1, 3000)`,
+    `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default) VALUES
+     (30, 'chapter_recitations', 'Mishari', 'مشاري', 1, 1000, 1),
+     (31, 'chapter_recitations', 'Husary', 'الحصري', 1, 2000, 0),
+     (21, 'tafsirs', 'Tafsir', 'تفسير', 1, 3000, 0)`,
   );
   // Installed: Afasy (with a recitation and timings), a tafsir, and a recitation the catalogue doesn't list.
   executor.run(
@@ -47,6 +47,7 @@ describe('listReciters', () => {
         packSizeBytes: 1000,
         hasTimings: true,
         hasWordSegments: true,
+        isDefault: true,
       },
       {
         resourceId: 31,
@@ -56,6 +57,7 @@ describe('listReciters', () => {
         packSizeBytes: 2000,
         hasTimings: false,
         hasWordSegments: false,
+        isDefault: false,
       },
       {
         resourceId: 50,
@@ -65,8 +67,14 @@ describe('listReciters', () => {
         packSizeBytes: 0,
         hasTimings: false,
         hasWordSegments: false,
+        isDefault: false,
       },
     ]);
+  });
+
+  it('reads isDefault from the catalogue flag, and gives installed-but-unlisted recitations false', () => {
+    const flags = Object.fromEntries(listReciters(executor).map((reciter) => [reciter.resourceId, reciter.isDefault]));
+    expect(flags).toEqual({ 30: true, 31: false, 50: false });
   });
 
   it('reports no timings for a catalogue-only reciter even when recitation rows exist for other resources', () => {

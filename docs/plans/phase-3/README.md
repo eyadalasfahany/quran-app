@@ -5,7 +5,7 @@ One file per step of [`../phase-3.md`](../phase-3.md). Send a Haiku agent *"Impl
 | Step | Brief | Needs | Status |
 | --- | --- | --- | --- |
 | 1 | [step-01-audio-data.md](step-01-audio-data.md) | — | Done (29 Oct 2026). On the branch |
-| 1b | [step-01b-default-reciter.md](step-01b-default-reciter.md) | 1 | Part 1 (API) on the developer's Mac; part 2 (device) after the contract lands |
+| 1b | [step-01b-default-reciter.md](step-01b-default-reciter.md) | 1 | Done (29 Oct 2026): API `c02e023`; device migration 0006 |
 | 2 | [step-02-player-core.md](step-02-player-core.md) | 1 | |
 | 3 | [step-03-audio-to-ayah.md](step-03-audio-to-ayah.md) | 2 | |
 | 4 | [step-04-players-ui.md](step-04-players-ui.md) | 2, 3 | |

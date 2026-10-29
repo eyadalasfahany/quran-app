@@ -43,6 +43,13 @@
       "when": 1793268211375,
       "tag": "0005_author_ar",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793278237650,
+      "tag": "0006_default_reciter",
+      "breakpoints": true
     }
   ]
 }

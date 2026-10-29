@@ -10,6 +10,7 @@ export type CatalogReciter = {
   packSizeBytes: number;
   hasTimings: boolean;
   hasWordSegments: boolean;
+  isDefault: boolean;
 };
 
 type RecitationStatus = { hasTimings: boolean; hasWordSegments: boolean };
@@ -30,8 +31,8 @@ export function listReciters(db: SqlExecutor): CatalogReciter[] {
   const status = recitationStatus(db);
 
   const catalogue = db
-    .all<{ resourceId: number; name: string | null; nameAr: string | null; packSizeBytes: number }>(
-      `SELECT resource_id AS resourceId, name, name_ar AS nameAr, pack_size_bytes AS packSizeBytes
+    .all<{ resourceId: number; name: string | null; nameAr: string | null; packSizeBytes: number; isDefault: number }>(
+      `SELECT resource_id AS resourceId, name, name_ar AS nameAr, pack_size_bytes AS packSizeBytes, is_default AS isDefault
        FROM catalog_resources
        WHERE "group" = ?
        ORDER BY resource_id`,
@@ -48,6 +49,7 @@ export function listReciters(db: SqlExecutor): CatalogReciter[] {
         packSizeBytes: row.packSizeBytes,
         hasTimings: state?.hasTimings ?? false,
         hasWordSegments: state?.hasWordSegments ?? false,
+        isDefault: row.isDefault === 1,
       };
     });
 
@@ -64,6 +66,7 @@ export function listReciters(db: SqlExecutor): CatalogReciter[] {
         packSizeBytes: 0,
         hasTimings: state?.hasTimings ?? false,
         hasWordSegments: state?.hasWordSegments ?? false,
+        isDefault: false,
       };
     });
 

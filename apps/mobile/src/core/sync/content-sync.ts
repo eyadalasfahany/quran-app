@@ -380,14 +380,16 @@ export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifes
     db.run('DELETE FROM catalog_resources');
     for (const resource of resources) {
       db.run(
-        `INSERT OR REPLACE INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, language_code, direction, version, pack_size_bytes)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT OR REPLACE INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, language_code, direction, version, pack_size_bytes, is_default)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           resource.id,
           resource.group,
           ...namesValues(resource),
           resource.version,
           resource.pack.size_bytes,
+          // An older API omits is_default; a missing flag means not the default.
+          resource.is_default === true ? 1 : 0,
         ],
       );
       db.run(

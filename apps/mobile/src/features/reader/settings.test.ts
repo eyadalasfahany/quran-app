@@ -13,6 +13,7 @@ function resource(
   return {
     author_name: null,
     author_ar: null,
+    is_default: false,
     changes_since_min_version: 1,
     direction: null,
     language_code: null,

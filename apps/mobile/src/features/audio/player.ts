@@ -20,7 +20,7 @@ import { timingsFor } from './data/timings';
 import { clampSeek, isChapterId, nextChapterId, previousChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
 import { readLastPosition, writeLastPosition } from './resume-model';
 import { getReciterId } from './settings';
-import { resolveReciterId } from './settings-model';
+import { defaultReciterId, resolveReciterId } from './settings-model';
 
 // One expo-audio player for the whole app, created on first use. Audio URLs come only from
 // chapter_audio_files (ADR 0008); this module makes no other network calls.
@@ -49,8 +49,8 @@ function contentDb(): SqlExecutor {
 
 /** The reciter to play when the caller gives none: the saved choice, resolved against what is installed. */
 function currentReciterId(db: SqlExecutor): number | null {
-  // TODO(phase-3 D2) is recorded in settings-model: the default reciter is null until D2 lands.
-  return resolveReciterId(getReciterId(), listReciters(db), null);
+  const reciters = listReciters(db);
+  return resolveReciterId(getReciterId(), reciters, defaultReciterId(reciters));
 }
 
 function reciterFor(state: { reciterId: number | null }): number | null {

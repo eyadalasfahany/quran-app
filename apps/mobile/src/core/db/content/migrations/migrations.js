@@ -7,6 +7,7 @@ import m0002 from './0002_word_map_and_basmala.sql';
 import m0003 from './0003_drop_translation_entries.sql';
 import m0004 from './0004_resource_names_catalog.sql';
 import m0005 from './0005_author_ar.sql';
+import m0006 from './0006_default_reciter.sql';
 
   export default {
     journal,
@@ -16,7 +17,8 @@ m0001,
 m0002,
 m0003,
 m0004,
-m0005
+m0005,
+m0006
     }
   }
   

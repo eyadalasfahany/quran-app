@@ -215,6 +215,7 @@ describe('resource names migration (0004)', () => {
         'version',
         'pack_size_bytes',
         'author_ar',
+        'is_default',
       ]);
       expect(columnNames(database, 'catalog_resources')).toEqual(drizzleColumnNames(catalogResources));
       expect(count(database, 'catalog_resources')).toBe(0);
@@ -256,6 +257,46 @@ describe('Arabic author migration (0005)', () => {
       executor.exec(readFileSync(join(migrationsDir, '0005_author_ar.sql'), 'utf8'));
 
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
+    } finally {
+      database.close();
+    }
+  });
+});
+
+describe('default reciter migration (0006)', () => {
+  it('adds is_default to catalog_resources as NOT NULL with a default of 0', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      applyContentMigrations(executor, migrationsDir);
+      const column = database
+        .prepare(`SELECT type, "notnull" AS notNullFlag, dflt_value AS defaultValue FROM pragma_table_info(?) WHERE name = 'is_default'`)
+        .get('catalog_resources') as { type: string; notNullFlag: number; defaultValue: string } | undefined;
+      expect(column).toEqual({ type: 'INTEGER', notNullFlag: 1, defaultValue: '0' });
+    } finally {
+      database.close();
+    }
+  });
+
+  it('clears the stored manifest ETag, so the next sync rewrites the catalogue with is_default', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      const journal = JSON.parse(readFileSync(join(migrationsDir, 'meta/_journal.json'), 'utf8')) as {
+        entries: { idx: number; tag: string }[];
+      };
+      const tags = [...journal.entries].sort((left, right) => left.idx - right.idx).map((entry) => entry.tag);
+      const defaultReciter = tags.indexOf('0006_default_reciter');
+      for (const tag of tags.slice(0, defaultReciter)) {
+        executor.exec(readFileSync(join(migrationsDir, `${tag}.sql`), 'utf8'));
+      }
+      executor.run('INSERT INTO meta (key, value) VALUES (?, ?)', ['manifest_etag', '"before-is-default"']);
+      executor.run(
+        `INSERT INTO catalog_resources (resource_id, "group", version, pack_size_bytes) VALUES (30, 'chapter_recitations', 1, 1)`,
+      );
+
+      executor.exec(readFileSync(join(migrationsDir, '0006_default_reciter.sql'), 'utf8'));
+
+      expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
+      expect(executor.get('SELECT is_default AS isDefault FROM catalog_resources WHERE resource_id = 30')).toEqual({ isDefault: 0 });
     } finally {
       database.close();
     }

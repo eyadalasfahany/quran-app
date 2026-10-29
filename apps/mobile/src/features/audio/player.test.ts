@@ -153,6 +153,40 @@ describe('playing a surah', () => {
   });
 });
 
+describe('default reciter', () => {
+  beforeEach(() => {
+    storage.remove(storageKeys.audioReciterId);
+    // Husary (31) is the flagged default and is installed with surah 1; Mishari (30) is installed too but not flagged.
+    executor.run(
+      `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default) VALUES
+       (31, 'chapter_recitations', 'Husary', 'الحصري', 1, 2000, 1)`,
+    );
+    executor.run(
+      `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, name, name_ar) VALUES
+       (31, 'chapter_recitations', 1, 'b', 0, 'Husary', 'الحصري')`,
+    );
+    executor.run(`INSERT INTO recitations (id, resource_id, reciter_name, reciter_name_ar, has_word_segments) VALUES (2, 31, 'Husary', 'الحصري', 0)`);
+    executor.run(
+      `INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
+       (300, 2, 1, 'https://example.test/husary-1.mp3', 46000, 'mp3')`,
+    );
+  });
+
+  it('plays the flagged default when nothing is saved, even though an installed reciter comes first', async () => {
+    await playChapter(1);
+
+    expect(usePlayerStore.getState().reciterId).toBe(31);
+  });
+
+  it('plays the saved reciter over the flagged default', async () => {
+    setReciterId(30);
+
+    await playChapter(1);
+
+    expect(usePlayerStore.getState().reciterId).toBe(30);
+  });
+});
+
 describe('error paths', () => {
   it('reports no reciter when none is installed', async () => {
     executor.run('DELETE FROM installed_resources');

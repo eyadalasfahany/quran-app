@@ -1,6 +1,13 @@
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
-import { parseReciterId, readSavedReciterId, resolveReciterId, writeSavedReciterId, type ReciterOption } from './settings-model';
+import {
+  defaultReciterId,
+  parseReciterId,
+  readSavedReciterId,
+  resolveReciterId,
+  writeSavedReciterId,
+  type ReciterOption,
+} from './settings-model';
 
 const reciters: ReciterOption[] = [
   { installed: false, resourceId: 30 },
@@ -36,6 +43,30 @@ describe('resolveReciterId', () => {
 
   it('returns null when there are no reciters', () => {
     expect(resolveReciterId(30, [], 30)).toBeNull();
+  });
+});
+
+describe('defaultReciterId', () => {
+  it('returns the resource id of the reciter flagged as default', () => {
+    expect(
+      defaultReciterId([
+        { isDefault: false, resourceId: 30 },
+        { isDefault: true, resourceId: 31 },
+      ]),
+    ).toBe(31);
+  });
+
+  it('returns null when no reciter is flagged', () => {
+    expect(defaultReciterId([{ isDefault: false, resourceId: 30 }])).toBeNull();
+    expect(defaultReciterId([])).toBeNull();
+  });
+
+  it('feeds resolveReciterId when nothing is saved', () => {
+    const listed = [
+      { installed: true, isDefault: false, resourceId: 30 },
+      { installed: true, isDefault: true, resourceId: 31 },
+    ];
+    expect(resolveReciterId(null, listed, defaultReciterId(listed))).toBe(31);
   });
 });
 

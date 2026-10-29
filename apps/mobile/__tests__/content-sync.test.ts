@@ -119,6 +119,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     version: 1,
     pack: { url: `/api/v1/content/packs/${overrides.id}/1`, size_bytes: 1, sha256: 'abc' },
     changes_since_min_version: 1,
+    is_default: false,
     ...overrides,
   };
 }
@@ -991,6 +992,12 @@ function catalogRows(executor: SqlExecutor): CatalogRow[] {
   );
 }
 
+function catalogDefaults(executor: SqlExecutor): { resourceId: number; isDefault: number }[] {
+  return executor.all<{ resourceId: number; isDefault: number }>(
+    'SELECT resource_id AS resourceId, is_default AS isDefault FROM catalog_resources ORDER BY resource_id',
+  );
+}
+
 function installedNames(executor: SqlExecutor, resourceId: number): Omit<CatalogRow, 'resourceId' | 'group' | 'version' | 'packSizeBytes'> | undefined {
   return executor.get(
     `SELECT name, name_ar AS nameAr, author_name AS authorName, author_ar AS authorAr, language_code AS languageCode, direction
@@ -1095,6 +1102,39 @@ describe('device catalogue and resource names', () => {
         languageCode: 'ar',
         direction: 'rtl',
       });
+    });
+  });
+
+  it('writes is_default into the catalogue as 1 or 0, and as 0 when an older API omits it', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const pack = { url: '/api/v1/content/packs/85/3', size_bytes: bytes.byteLength, sha256: await sha256(bytes) };
+    const withFlag = (etag: string, flag: boolean | undefined) => {
+      const entry: ContentManifestResource = resource({ id: 85, version: 3, name: 'Afasy', pack, is_default: flag ?? false });
+      if (flag === undefined) {
+        delete (entry as Partial<ContentManifestResource>).is_default;
+      }
+      return manifest([entry], etag);
+    };
+    let current = withFlag('"flag-true"', true);
+    const api: ContentApi = {
+      getManifest: async () => ({ status: 200, etag: current.etag, manifest: current.body }),
+      getChanges: async () => {
+        throw new Error('changes');
+      },
+      downloadPack: downloadInto(bytes),
+    };
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      await syncContent(await deps(executor, cacheDir, api));
+      expect(catalogDefaults(executor)).toEqual([{ resourceId: 85, isDefault: 1 }]);
+
+      current = withFlag('"flag-false"', false);
+      await syncContent(await deps(executor, cacheDir, api));
+      expect(catalogDefaults(executor)).toEqual([{ resourceId: 85, isDefault: 0 }]);
+
+      current = withFlag('"flag-missing"', undefined);
+      await syncContent(await deps(executor, cacheDir, api));
+      expect(catalogDefaults(executor)).toEqual([{ resourceId: 85, isDefault: 0 }]);
     });
   });
 
