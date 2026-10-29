@@ -61,13 +61,13 @@ Each fix lands in the component that owns the visual. Order: shared components (
 - Amiri leading: the medallion number and the index surah name use Amiri's natural leading (`amiriNaturalLeading`, 1.758), so «آل» and «أ» are not clipped.
 - Home tiles (ADR 0017): «السور» and «المحفوظات» only, sharing the row; the مصحفي tab uses `bookmark`. Checked on the iPhone 17 (tile 79 pt, as the frame).
 - Resource names (step 12): tafsir names and authors are stored on the device.
+- `radius-tile` (16) is in `quran-app-design-system.html`; `check:html` reports 0 mismatches.
 
 Open:
 - Search field: the «ابحث في القرآن» field at the top of the expanded sidebar (`ExpandedHome`).
 - Home: the «وِردك اليوم» subtitle and the khatma card need khatma data, so Home leaves them out until Phase 4 (developer, 29 Oct 2026; approved difference from `Main`, as in ADR 0017).
-- Dev builds only: Expo's floating dev-tools button (`expo-dev-menu` FAB) catches touches in an invisible area at the top right under RTL. It draws the gear mirrored at the top left, but its hit area (`DevMenuFABWindow.hitTest`, `fabFrame`) stays at the top right, so every top-right Back button stopped working in portrait. Store builds have no FAB. Workaround on a simulator: `xcrun simctl spawn booted defaults write com.taybahapp.taybah.dev EXDevMenuShowFloatingActionButton -bool NO`, then relaunch. To do: set `EXDevMenuShowFloatingActionButton: false` in the dev variant's `ios.infoPlist`, and report the bug upstream.
+- Dev builds only: Expo's floating dev-tools button (`expo-dev-menu` FAB) kept its hit area at the top right under RTL and blocked every top-right Back button. Fixed (29 Oct 2026): the dev variant sets `EXDevMenuShowFloatingActionButton: false` in `ios.infoPlist` (needs a native rebuild). Still to do: report the bug upstream.
 - Reader settings: the script picker («خط المصحف») waits for its feature.
-- `radius.tile` (16) is not a token in `quran-app-design-system.html` yet.
 - Still to compare on the iPhone 17: the tafsir panel (header, named chips, source credit, download), the Reading ayah header row with its actions, and the tablet frames.
 
 ## Tests

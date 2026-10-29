@@ -18,8 +18,8 @@ Progress and the handoff for the next agent are in [`../phase-2.md`](../phase-2.
 | 10 | [step-10-exit-check.md](step-10-exit-check.md) | all | After 11b and 13 |
 | 11 | [step-11-design-conformance.md](step-11-design-conformance.md) | 1–9 | 11a done; 11b in progress |
 | 12 | [step-12-resource-names.md](step-12-resource-names.md) | 11 | Done on prelive. Production sync waits for QF production keys |
-| 13 | [step-13-tafsir-downloads.md](step-13-tafsir-downloads.md) | 12 | Done, not committed (29 Oct 2026): `author_ar` (API, contract, migration 0005), the download store, `TafsirDownloadList`, the panel's list, reading and offline states. Checked on the iPhone 17 simulator against `#TafsirDownload` |
-| 14 | [step-14-sheet-detents.md](step-14-sheet-detents.md) | 13 | Done, not committed (29 Oct 2026): part A frames approved; part B detents, slide-down dismiss and `SheetScrollView` in the working tree (ADR 0020). Device check and recordings pending on the iPhone 17 simulator |
+| 13 | [step-13-tafsir-downloads.md](step-13-tafsir-downloads.md) | 12 | Done. On `main` (29 Oct 2026): `author_ar` (API, contract, migration 0005), the download store, `TafsirDownloadList`, the panel's list, reading and offline states. Checked on the iPhone 17 simulator against `#TafsirDownload` |
+| 14 | [step-14-sheet-detents.md](step-14-sheet-detents.md) | 13 | Done. On `main` (PR #2, 29 Oct 2026): part A frames approved; part B detents, slide-down dismiss and `SheetScrollView` (ADR 0020). Device check and recordings pending on the iPhone 17 simulator |
 
 ## Rules for every step
 
