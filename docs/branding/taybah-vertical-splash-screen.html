@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 1440px; height: 3120px; margin: 0; overflow: hidden; }
+    body { background: #1F4D40; }
+    .splash {
+      position: relative;
+      width: 1440px;
+      height: 3120px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 40%, #285C4D 0, #1F4D40 54%, #163B31 100%);
+    }
+    .arch {
+      position: absolute;
+      top: 455px;
+      left: 138px;
+      width: 1164px;
+      height: 1545px;
+      border: 4px solid rgba(201, 169, 97, .42);
+      border-bottom: 0;
+      border-radius: 584px 584px 0 0;
+    }
+    .arch::before,
+    .arch::after {
+      content: '';
+      position: absolute;
+      inset: 57px;
+      border: 2px solid rgba(201, 169, 97, .26);
+      border-bottom: 0;
+      border-radius: 527px 527px 0 0;
+    }
+    .arch::after {
+      inset: 182px;
+      border-color: rgba(201, 169, 97, .18);
+      border-radius: 403px 403px 0 0;
+    }
+    .star {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      background: #C9A961;
+      transform: rotate(45deg);
+      box-shadow: 0 0 34px rgba(201, 169, 97, .3);
+    }
+    .star.top { top: 245px; left: 685px; }
+    .star.bottom { bottom: 292px; left: 685px; width: 46px; height: 46px; opacity: .85; }
+    .line { position: absolute; left: 250px; right: 250px; height: 2px; background: linear-gradient(90deg, transparent, rgba(201, 169, 97, .85), transparent); }
+    .line.top { top: 370px; }
+    .line.bottom { bottom: 355px; }
+    .logo-card {
+      position: absolute;
+      top: 1000px;
+      left: 170px;
+      width: 1100px;
+      height: 1100px;
+      overflow: hidden;
+      border: 6px solid rgba(201, 169, 97, .8);
+      border-radius: 72px;
+      background: #F7F3EA;
+      box-shadow: 0 42px 100px rgba(5, 24, 18, .38), inset 0 0 0 10px rgba(255, 253, 248, .78);
+    }
+    .logo-card img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  </style>
+</head>
+<body>
+  <main class="splash" aria-label="شاشة بدء تطبيق طيبة">
+    <div class="arch" aria-hidden="true"></div>
+    <div class="star top" aria-hidden="true"></div>
+    <div class="star bottom" aria-hidden="true"></div>
+    <div class="line top" aria-hidden="true"></div>
+    <div class="line bottom" aria-hidden="true"></div>
+    <div class="logo-card"><img src="taybah-editorial-kaaba-logo-final.png" alt="شعار طيبة"></div>
+  </main>
+</body>
+</html>

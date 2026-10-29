@@ -82,14 +82,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-splash-screen',
         {
-          backgroundColor: '#E9DED0',
-          image: './assets/images/splash-icon.png',
-          imageWidth: 280,
+          backgroundColor: '#1F4D40',
+          image: './assets/images/taybah-vertical-splash-screen.png',
+          imageWidth: 390,
           resizeMode: 'contain',
           // Android 12 draws the splash inside a circle. The full poster would lose its corners,
           // so Android uses the same mark as the home-screen icon.
           android: {
-            backgroundColor: '#E9DED0',
+            backgroundColor: '#1F4D40',
             image: './assets/images/icon.png',
             imageWidth: 192,
           },
