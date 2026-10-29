@@ -254,7 +254,21 @@
       "range": "الآيات {{from}}–{{to}}",
       "rangeEmpty": "الآيات",
       "speed": "السرعة {{rate}}×",
-      "sleep": "مؤقت النوم"
+      "speedTitle": "السرعة",
+      "rateValue": "{{rate}}×",
+      "sleep": "مؤقت النوم",
+      "sleepArmed": "{{title}}، {{state}}"
+    },
+    "sleep": {
+      "off": "إيقاف",
+      "minutes": "{{minutes}} دقيقة",
+      "remaining": "{{minutes}} د",
+      "remainingLong": "{{minutes}} دقيقة متبقية",
+      "endOfSurah": "نهاية السورة",
+      "endOfAyah": "نهاية الآية"
+    },
+    "menu": {
+      "cancel": "إلغاء"
     },
     "errors": {
       "noReciter": "اختر قارئًا لتشغيل السورة.",

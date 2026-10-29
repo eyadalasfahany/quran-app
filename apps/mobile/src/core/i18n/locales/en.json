@@ -254,7 +254,21 @@
       "range": "Ayahs {{from}}–{{to}}",
       "rangeEmpty": "Ayahs",
       "speed": "Speed {{rate}}×",
-      "sleep": "Sleep timer"
+      "speedTitle": "Speed",
+      "rateValue": "{{rate}}×",
+      "sleep": "Sleep timer",
+      "sleepArmed": "{{title}}, {{state}}"
+    },
+    "sleep": {
+      "off": "Off",
+      "minutes": "{{minutes}} minutes",
+      "remaining": "{{minutes}} min",
+      "remainingLong": "{{minutes}} minutes left",
+      "endOfSurah": "End of surah",
+      "endOfAyah": "End of ayah"
+    },
+    "menu": {
+      "cancel": "Cancel"
     },
     "errors": {
       "noReciter": "Choose a reciter to play this surah.",

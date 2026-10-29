@@ -11,3 +11,4 @@ export const REPEAT_ICON = { ios: 'repeat', android: 'repeat' } as const satisfi
 export const RANGE_ICON = { ios: 'list.bullet', android: 'format_list_bulleted' } as const satisfies IconName;
 export const SPEED_ICON = { ios: 'speedometer', android: 'speed' } as const satisfies IconName;
 export const SLEEP_ICON = { ios: 'moon', android: 'bedtime' } as const satisfies IconName;
+export const CHECK_ICON = { ios: 'checkmark', android: 'check' } as const satisfies IconName;
