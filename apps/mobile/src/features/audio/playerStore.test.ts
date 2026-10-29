@@ -81,4 +81,15 @@ describe('playerStore transitions', () => {
     usePlayerStore.getState().restore({ reciterId: 30, chapterId: 2, positionMs: 5000 });
     expect(usePlayerStore.getState()).toMatchObject({ status: 'paused', chapterId: 2, positionMs: 5000, durationMs: 0, error: null });
   });
+
+  it('moves to another surah on a track change, keeping the status and resetting the position', () => {
+    const store = usePlayerStore.getState();
+    store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 4000, durationMs: 46000 });
+    store.markPlaying();
+    store.setPosition(40000);
+
+    usePlayerStore.getState().moveTo({ chapterId: 2, durationMs: 7264000 });
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'playing', chapterId: 2, positionMs: 0, durationMs: 7264000, error: null });
+  });
 });

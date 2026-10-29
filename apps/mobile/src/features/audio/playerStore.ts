@@ -41,8 +41,15 @@ export type RestoreRequest = {
   positionMs: number;
 };
 
+export type MoveRequest = {
+  chapterId: number;
+  durationMs: number;
+};
+
 export type PlayerActions = {
   beginLoad: (request: LoadRequest) => void;
+  /** The playlist moved to another surah on its own (natural end, lock screen). Keeps the status. */
+  moveTo: (request: MoveRequest) => void;
   markPlaying: () => void;
   markPaused: () => void;
   markStopped: () => void;
@@ -77,6 +84,15 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       status: 'loading',
       error: null,
       positionMs,
+      durationMs,
+      activeVerseId: null,
+      activeWord: null,
+    }),
+  moveTo: ({ chapterId, durationMs }) =>
+    set({
+      chapterId,
+      queue: queueFrom(chapterId),
+      positionMs: 0,
       durationMs,
       activeVerseId: null,
       activeWord: null,
