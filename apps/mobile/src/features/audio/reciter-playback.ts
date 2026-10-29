@@ -53,3 +53,12 @@ export async function playRecentListen(
   setReciterId(listen.reciterResourceId);
   await playChapter(listen.chapterId, listen.lastPositionMs);
 }
+
+/**
+ * Plays one surah from a reciter, from its start, for the reciter's download page. The page installs the pack
+ * before it lists the surahs, so nothing is installed here.
+ */
+export async function playSurahFromReciter(resourceId: number, chapterId: number): Promise<void> {
+  setReciterId(resourceId);
+  await playChapter(chapterId);
+}

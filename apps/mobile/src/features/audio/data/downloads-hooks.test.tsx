@@ -7,7 +7,7 @@ import * as schema from '@/core/db/user/schema';
 
 import { openUserTestStore } from '../../../../jest/user-test-db';
 import { upsertDownload, type DownloadRow } from './downloads';
-import { useReciterDownloads } from './downloads';
+import { useDoneCountsByReciter, useReciterDownloads } from './downloads';
 
 // The real drizzle useLiveQuery runs here; the test emits the table change that expo-sqlite would after a write.
 type ChangeListener = (event: { tableName: string }) => void;
@@ -120,5 +120,35 @@ describe('useReciterDownloads against a live database', () => {
       expect.objectContaining({ audioFileId: 1, chapterId: 1, status: 'done', sizeBytes: 9, verifiedAt: 5 }),
       expect.objectContaining({ audioFileId: 2, chapterId: 2, status: 'queued' }),
     ]);
+  });
+});
+
+describe('useDoneCountsByReciter against a live database', () => {
+  let database: DatabaseSync;
+  let store: ReturnType<typeof openUserTestStore>['store'];
+
+  beforeEach(() => {
+    const opened = openUserTestStore();
+    database = opened.database;
+    store = opened.store;
+    mockUserDb = { db: proxyDb(database), executor: store.db! };
+    mockChangeListeners.clear();
+  });
+
+  afterEach(() => {
+    database.close();
+  });
+
+  it('counts the done surahs per reciter, live, and leaves out reciters with none', async () => {
+    const view = await renderHook(() => useDoneCountsByReciter());
+    await settle();
+    expect(view.result.current).toEqual({});
+
+    await writeAndEmit(() => upsertDownload(row(1, 30, { status: 'done', verifiedAt: 5 }), { db: store.db }));
+    await writeAndEmit(() => upsertDownload(row(2, 30, { status: 'done', verifiedAt: 5 }), { db: store.db }));
+    await writeAndEmit(() => upsertDownload(row(3, 30, { status: 'queued' }), { db: store.db }));
+    await writeAndEmit(() => upsertDownload(row(4, 31, { status: 'paused' }), { db: store.db }));
+
+    expect(view.result.current).toEqual({ 30: 2 });
   });
 });

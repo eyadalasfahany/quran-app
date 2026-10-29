@@ -1,5 +1,6 @@
-import { asc, eq } from 'drizzle-orm';
+import { asc, count, eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { useMemo } from 'react';
 
 import { openUserDb } from '@/core/db/user/open';
 import { downloads, type downloadStatuses } from '@/core/db/user/schema';
@@ -204,4 +205,23 @@ export function useReciterDownloads(reciterResourceId: number) {
       .orderBy(asc(downloads.chapterId), asc(downloads.audioFileId)),
     [reciterResourceId],
   );
+}
+
+/** Fully downloaded surahs per reciter, live. A reciter with none is absent from the map. */
+export function useDoneCountsByReciter(): Record<number, number> {
+  const { db } = openUserDb();
+  const { data } = useLiveQuery(
+    db
+      .select({ reciterResourceId: downloads.reciterResourceId, count: count() })
+      .from(downloads)
+      .where(eq(downloads.status, 'done'))
+      .groupBy(downloads.reciterResourceId),
+  );
+  return useMemo(() => {
+    const counts: Record<number, number> = {};
+    for (const row of data ?? []) {
+      counts[row.reciterResourceId] = row.count;
+    }
+    return counts;
+  }, [data]);
 }

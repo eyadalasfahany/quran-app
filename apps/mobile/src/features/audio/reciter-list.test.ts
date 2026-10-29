@@ -1,4 +1,11 @@
-import { matchesFilter, matchesQuery, normalizeForSearch, reciterDisplayName, reciterStatus } from './reciter-list';
+import {
+  joinStatusLine,
+  matchesFilter,
+  matchesQuery,
+  normalizeForSearch,
+  reciterDisplayName,
+  reciterStatus,
+} from './reciter-list';
 
 describe('normalizeForSearch', () => {
   it('drops harakat and tatweel, and folds alef, alef maqsura and taa marbuta', () => {
@@ -48,6 +55,24 @@ describe('matchesFilter', () => {
 
   it('hides a reciter whose style is unknown from every style chip', () => {
     expect(matchesFilter({ style: null }, 'Murattal')).toBe(false);
+  });
+
+  it('shows only the reciters with a downloaded surah for «المحمّلة»', () => {
+    expect(matchesFilter({ style: 'Murattal' }, 'downloaded', 2)).toBe(true);
+    expect(matchesFilter({ style: 'Murattal' }, 'downloaded', 0)).toBe(false);
+    expect(matchesFilter({ style: null }, 'downloaded')).toBe(false);
+  });
+});
+
+describe('joinStatusLine', () => {
+  it('joins the parts with a middle dot and skips the missing ones', () => {
+    expect(joinStatusLine(['يُتلى الآن', '٣ سور محمّلة'])).toBe('يُتلى الآن · ٣ سور محمّلة');
+    expect(joinStatusLine([null, '٣ سور محمّلة'])).toBe('٣ سور محمّلة');
+    expect(joinStatusLine(['يُتلى الآن', null])).toBe('يُتلى الآن');
+  });
+
+  it('is null when no part is left', () => {
+    expect(joinStatusLine([null, ''])).toBeNull();
   });
 });
 

@@ -1,6 +1,6 @@
 import { playChapter, resume } from './player';
 import { usePlayerStore } from './playerStore';
-import { playRecentListen, playReciter } from './reciter-playback';
+import { playRecentListen, playReciter, playSurahFromReciter } from './reciter-playback';
 import { downloadReciterPack } from './reciter-downloads';
 import { getReciterId, resetAudioSettingsStore } from './settings';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -124,3 +124,13 @@ describe('playRecentListen', () => {
   });
 });
 
+
+describe('playSurahFromReciter', () => {
+  it('chooses the reciter and plays the surah from its start, without installing anything', async () => {
+    await playSurahFromReciter(31, 18);
+
+    expect(getReciterId()).toBe(31);
+    expect(play).toHaveBeenCalledWith(18);
+    expect(download).not.toHaveBeenCalled();
+  });
+});

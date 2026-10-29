@@ -14,6 +14,9 @@ import { resetReaderSettingsStore } from '../settings';
 import { AyahPanelContent } from './AyahPanelContent';
 import { resetTafsirDownloads } from './tafsir-downloads';
 
+// A row's action is labelled with the action and then the row's title («تنزيل البقرة»).
+const rowAction = (label: string) => new RegExp(`^${label} `);
+
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
 jest.mock('@/core/sync', () => ({ installResource: jest.fn(), runDeviceContentSync: jest.fn(() => Promise.resolve()) }));
@@ -186,7 +189,7 @@ describe('AyahPanelContent', () => {
       const view = await renderTafsir(db, locale);
 
       await fireEvent.press(view.getByTestId('ayah-panel-content-tafsir-downloads-row-16-action'));
-      await waitFor(() => expect(view.getByRole('button', { name: openLabel })).toBeOnTheScreen());
+      await waitFor(() => expect(view.getByRole('button', { name: rowAction(openLabel) })).toBeOnTheScreen());
 
       expect(view.queryAllByRole('radio')).toHaveLength(0);
       expect(view.queryByTestId('ayah-panel-content-tafsir-steps')).toBeNull();
@@ -204,9 +207,9 @@ describe('AyahPanelContent', () => {
       });
       const view = await renderTafsir(db, locale);
       await fireEvent.press(view.getByTestId('ayah-panel-content-tafsir-downloads-row-16-action'));
-      await waitFor(() => expect(view.getByRole('button', { name: openLabel })).toBeOnTheScreen());
+      await waitFor(() => expect(view.getByRole('button', { name: rowAction(openLabel) })).toBeOnTheScreen());
 
-      await fireEvent.press(view.getByRole('button', { name: openLabel }));
+      await fireEvent.press(view.getByRole('button', { name: rowAction(openLabel) }));
 
       expect(view.getAllByRole('radio')).toHaveLength(2);
       expect(view.getByText('الثناء على الله بصفاته كلها.')).toBeOnTheScreen();

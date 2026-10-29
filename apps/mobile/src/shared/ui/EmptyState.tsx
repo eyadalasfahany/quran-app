@@ -16,7 +16,8 @@ export function EmptyState({
   testID,
 }: {
   title: string;
-  body: string;
+  /** Optional: a state that needs only its title (a missing reciter) draws none. */
+  body?: string;
   action?: EmptyStateAction;
   icon?: IconName;
   testID?: string;
@@ -32,9 +33,11 @@ export function EmptyState({
       <UiText accessibilityRole="header" align="center" variant="title">
         {title}
       </UiText>
-      <UiText align="center" tone="muted" variant="subhead">
-        {body}
-      </UiText>
+      {body ? (
+        <UiText align="center" tone="muted" variant="subhead">
+          {body}
+        </UiText>
+      ) : null}
       {action ? (
         <Button
           label={action.label}
