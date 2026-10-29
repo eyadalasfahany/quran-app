@@ -13,7 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:generate:user": "drizzle-kit generate --config drizzle.user.config.ts",
     "seed:build": "node scripts/build-content-seed.mjs",
-    "postinstall": "node scripts/patch-nitro-exception-ptr.mjs"
+    "postinstall": "node scripts/patch-nitro-exception-ptr.mjs && node scripts/patch-expo-audio-exact-seek.mjs"
   },
   "dependencies": {
     "@native-html/render": "1.0.4",
