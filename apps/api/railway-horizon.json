@@ -5,7 +5,7 @@
     "dockerfilePath": "docker/Dockerfile"
   },
   "deploy": {
-    "startCommand": "php artisan horizon",
+    "startCommand": "/usr/local/bin/entrypoint.sh php artisan horizon",
     "restartPolicyType": "ALWAYS"
   }
 }
