@@ -8,7 +8,7 @@ Follow [README.md](README.md). Needs step 2 and Phase 2 step 13 (`DownloadRow`).
 - `Downloads` screen recitations card identical to the frame («تنزيل الكل», per-surah rows, storage bar segment for recitations), using `DownloadRow`; delete frees the file.
 - Tests: download progress/cancel/resume; Wi-Fi gate; local-first playback; delete.
 
-## Plan (29 Oct 2026, for approval)
+## Plan (approved by the developer, 29 Oct 2026, including `expo-network`)
 
 ### Licence question to settle first
 The content plan leaves this open: "May downloaded recitation audio be kept on the device beyond 7 days, and does it count as Content Sync content?" (`docs/content-plan.md`, open questions). Until QF answers, the build follows the strict reading, the same rule as packs:

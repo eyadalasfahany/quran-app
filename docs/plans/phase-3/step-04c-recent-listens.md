@@ -1,4 +1,6 @@
-# Step 4c — Recently played («آخر ما استمعت إليه»): plan for approval
+# Step 4c — Recently played («آخر ما استمعت إليه»)
+
+**Approved by the developer (29 Oct 2026).**
 
 Follow [README.md](README.md). Needs steps 2b and 3a. **Touches the `user.db` schema, so the developer approves this plan before code** (root CLAUDE.md, "Plan before coding anything that touches the schema").
 
