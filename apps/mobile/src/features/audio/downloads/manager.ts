@@ -119,6 +119,32 @@ function nextCandidate(): DownloadRow | undefined {
   return [...rows].sort((a, b) => orderOf(a.audioFileId) - orderOf(b.audioFileId))[0];
 }
 
+/**
+ * Makes sure a queued download can start: starts the manager if it isn't running, and reads the network again if
+ * its state is still unknown. Without this, a download queued before or outside the startup hook (a hot reload of
+ * this module resets `started`, but the root hook doesn't run again) waited as «في الانتظار» for ever.
+ */
+function kick(): void {
+  if (!started) {
+    startDownloadManager().catch((error: unknown) => {
+      console.warn('The download manager did not start.', error);
+    });
+    return;
+  }
+  if (network === null) {
+    getNetworkStateAsync()
+      .then((state) => {
+        network = state;
+        pump();
+      })
+      .catch((error: unknown) => {
+        console.warn('The network state is unknown. Downloads wait for a change.', error);
+      });
+    return;
+  }
+  pump();
+}
+
 /** Starts the next queued item when the network allows it. Does nothing while a transfer runs. */
 function pump(): void {
   if (!started || active !== null || backgrounded) {
@@ -364,7 +390,7 @@ export function enqueueSurah(reciterResourceId: number, chapterId: number): bool
   );
   queueOrder.set(audio.id, nextQueueOrder);
   nextQueueOrder += 1;
-  pump();
+  kick();
   return true;
 }
 

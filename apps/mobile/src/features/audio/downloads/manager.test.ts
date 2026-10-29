@@ -310,6 +310,29 @@ describe('the queue', () => {
     expect(listDownloads({ db: user }).map((row) => row.audioFileId)).toEqual([100, 200, 300]);
   });
 
+  it('starts the manager when a surah is queued before it was started (a hot reload resets it)', async () => {
+    enqueueSurah(30, 1);
+    await settle();
+
+    expect(addNetworkStateListener).toHaveBeenCalledTimes(1);
+    expect(transfers()).toHaveLength(1);
+    expect(transfers()[0]?.url).toBe('https://example.test/1.mp3');
+  });
+
+  it('reads the network again when a surah is queued while its state is still unknown', async () => {
+    jest.mocked(getNetworkStateAsync).mockRejectedValueOnce(new Error('no state'));
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await startDownloadManager();
+    await settle();
+    expect(transfers()).toHaveLength(0);
+
+    enqueueSurah(30, 1);
+    await settle();
+
+    expect(transfers()).toHaveLength(1);
+    warn.mockRestore();
+  });
+
   it('starts the manager only once', async () => {
     await start();
     await startDownloadManager();
