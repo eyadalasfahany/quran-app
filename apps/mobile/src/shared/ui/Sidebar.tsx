@@ -1,4 +1,5 @@
 import type { AndroidSymbol, SFSymbol } from 'expo-symbols';
+import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -22,10 +23,13 @@ export function Sidebar({
   label,
   items,
   search,
+  footer,
 }: {
   label: string;
   items: readonly SidebarEntry[];
   search?: { label: string; onPress: () => void };
+  /** Pinned to the bottom of the sidebar, below the destinations (the expanded mini player). */
+  footer?: ReactNode;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -63,6 +67,12 @@ export function Sidebar({
             testID={item.testID}
           />
         ))}
+        {footer ? (
+          <>
+            <View style={{ flex: 1 }} />
+            <View testID="sidebar-footer">{footer}</View>
+          </>
+        ) : null}
       </GlassSurface>
     </View>
   );

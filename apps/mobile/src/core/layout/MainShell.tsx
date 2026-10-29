@@ -39,12 +39,13 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
             testID: `sidebar-${item.testID}`,
           }))}
           label={t('nav.main')}
+          footer={<MiniPlayer variant="sidebar" />}
           search={{ label: t('search.placeholder'), onPress: () => router.push('/search') }}
         />
       ) : null}
       <View style={{ flex: 1 }}>{children}</View>
       {/* Compact and medium only: the frames float the mini player above the tab bar. Expanded windows get
-          their own placements (step 4b2). */}
+          the sidebar footer instead (above). */}
       {expanded ? null : (
         <View
           pointerEvents="box-none"

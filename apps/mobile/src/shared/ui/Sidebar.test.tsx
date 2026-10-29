@@ -1,6 +1,6 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, within } from '@testing-library/react-native';
 import type { ReactTestRendererNode } from 'react-test-renderer';
-import { AccessibilityInfo, StyleSheet } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
@@ -126,6 +126,52 @@ describe('Sidebar', () => {
 
     expect(view.queryByTestId('sidebar-search')).toBeNull();
     expect(view.queryByRole('button', { name: 'ابحث في القرآن' })).toBeNull();
+  });
+
+  describe('footer', () => {
+    function withFooter() {
+      return (
+        <SafeAreaProvider initialMetrics={{ frame: { height: 800, width: 900, x: 0, y: 0 }, insets }}>
+          <Sidebar footer={<Text>mini footer</Text>} items={entries()} label="التنقل الرئيسي" />
+        </SafeAreaProvider>
+      );
+    }
+
+    it('renders the footer at the bottom, below the last destination', async () => {
+      const view = await renderUi(withFooter());
+      const order: string[] = [];
+      const walk = (node: ReactTestRendererNode | null | undefined): void => {
+        if (!node || typeof node !== 'object') {
+          return;
+        }
+        if (Array.isArray(node)) {
+          node.forEach(walk);
+          return;
+        }
+        const testID = node.props.testID as string | undefined;
+        if (testID === 'sidebar-mushaf' || testID === 'sidebar-footer') {
+          order.push(testID);
+        }
+        (node.children ?? []).forEach(walk);
+      };
+      walk(view.toJSON());
+
+      expect(order).toEqual(['sidebar-mushaf', 'sidebar-footer']);
+      expect(within(view.getByTestId('sidebar-footer')).getByText('mini footer')).toBeOnTheScreen();
+    });
+
+    it('renders nothing extra when no footer is given', async () => {
+      const view = await renderUi(sidebar());
+
+      expect(view.queryByTestId('sidebar-footer')).toBeNull();
+      expect(view.queryByText('mini footer')).toBeNull();
+    });
+
+    it('keeps the destinations as tabs with the footer present', async () => {
+      const view = await renderUi(withFooter());
+
+      expect(view.getAllByRole('tab')).toHaveLength(2);
+    });
   });
 
   it('has no raw colour literals', () => {

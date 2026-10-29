@@ -1,7 +1,7 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, within } from '@testing-library/react-native';
 import { router, useSegments } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { Text } from 'react-native';
+import { Dimensions, Text } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../jest/ui-source';
@@ -13,6 +13,14 @@ import { usePlayerStore } from '@/features/audio/playerStore';
 import { MainShell } from './MainShell';
 
 let db: { executor: SqlExecutor; close: () => void };
+
+// The mini player reads the window class itself, so an expanded shell needs an expanded window too.
+function setWindowWidth(width: number) {
+  Dimensions.set({
+    screen: { fontScale: 1, height: 844, scale: 1, width },
+    window: { fontScale: 1, height: 844, scale: 1, width },
+  });
+}
 
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
@@ -97,6 +105,7 @@ describe('MainShell', () => {
   afterEach(() => {
     db.close();
     mockContent.executor = null;
+    setWindowWidth(390);
   });
 
   describe('mini player placement', () => {
@@ -112,6 +121,30 @@ describe('MainShell', () => {
       const view = await renderUi(shell(false));
 
       expect(view.queryByTestId('mini-player-tabs')).toBeNull();
+    });
+
+    it('puts the mini player in the sidebar footer on an expanded window while something is loaded', async () => {
+      setWindowWidth(1000);
+      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      const view = await renderUi(shell(true));
+
+      expect(within(view.getByTestId('sidebar-footer')).getByTestId('mini-player-sidebar')).toBeOnTheScreen();
+      expect(view.queryByTestId('mini-player-dock')).toBeNull();
+    });
+
+    it('shows no sidebar mini player on an expanded window while the player is idle', async () => {
+      setWindowWidth(1000);
+      const view = await renderUi(shell(true));
+
+      expect(view.queryByTestId('mini-player-sidebar')).toBeNull();
+    });
+
+    it('shows no sidebar mini player on a compact window, even while something is loaded', async () => {
+      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      const view = await renderUi(shell(false));
+
+      expect(view.queryByTestId('mini-player-sidebar')).toBeNull();
+      expect(view.queryByTestId('sidebar-footer')).toBeNull();
     });
 
     it('hides the mini player on an expanded window, where the sidebar takes its place', async () => {

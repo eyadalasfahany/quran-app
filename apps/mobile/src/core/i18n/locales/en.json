@@ -241,7 +241,8 @@
     "surah": "Surah {{name}}",
     "mini": {
       "label": "{{reciter}}, {{surah}}",
-      "hint": "Opens the player"
+      "hint": "Opens the player",
+      "caption": "{{surah}} · {{ayah}}"
     },
     "style": {
       "murattal": "Murattal",

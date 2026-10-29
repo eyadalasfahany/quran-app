@@ -241,7 +241,8 @@
     "surah": "سورة {{name}}",
     "mini": {
       "label": "{{reciter}}، {{surah}}",
-      "hint": "يفتح المشغّل"
+      "hint": "يفتح المشغّل",
+      "caption": "{{surah}} · {{ayah}}"
     },
     "style": {
       "murattal": "مرتّل",
