@@ -51,7 +51,7 @@ describe('user.db schema', () => {
   });
 
   it('creates the personal tables and no content tables', () => {
-    expect(tableNames(database)).toEqual(['bookmarks', 'highlights', 'notes', 'outbox', 'sync_meta']);
+    expect(tableNames(database)).toEqual(['bookmarks', 'highlights', 'notes', 'outbox', 'recent_listens', 'sync_meta']);
     expect(USER_DATABASE).toBe('user.db');
   });
 
@@ -164,5 +164,34 @@ describe('user.db schema', () => {
       reopened.close();
       rmSync(directory, { force: true, recursive: true });
     }
+  });
+
+  it('adds recent_listens in migration 0001 and keeps the rows that exist before it', () => {
+    const { database: old, executor } = openNodeSqlite(':memory:');
+    try {
+      configureUserDatabase(executor);
+      executor.exec(readFileSync(join(migrationsDir, '0000_user_data.sql'), 'utf8'));
+      executor.run(
+        `INSERT INTO bookmarks (id, verse_id, kind, page, client_updated_at, deleted_at, dirty)
+         VALUES ('kept', 262, 'verse', NULL, 1, NULL, 1)`,
+      );
+
+      executor.exec(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8'));
+
+      expect(tableNames(old)).toContain('recent_listens');
+      expect(old.prepare('SELECT id FROM bookmarks').all()).toEqual([{ id: 'kept' }]);
+      expect(old.prepare('SELECT COUNT(*) AS count FROM outbox').get()).toEqual({ count: 0 });
+    } finally {
+      old.close();
+    }
+  });
+
+  it('registers migration 0001 in the journal after 0000', () => {
+    const journal = JSON.parse(readFileSync(join(migrationsDir, 'meta/_journal.json'), 'utf8')) as {
+      entries: { idx: number; tag: string }[];
+    };
+    expect(journal.entries.map((entry) => entry.tag)).toEqual(['0000_user_data', '0001_recent_listens']);
+    expect(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8')).toMatch(/^CREATE TABLE `recent_listens`/);
+    expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0001');
   });
 });

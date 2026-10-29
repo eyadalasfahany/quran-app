@@ -3,6 +3,10 @@ import { fireEvent } from '@testing-library/react-native';
 import { Dimensions } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
+import { listReciters, type CatalogReciter } from '@/features/audio/data/reciters';
+import { useRecentListens } from '@/features/audio/data/recent-listens-hooks';
+import type { RecentListen } from '@/features/audio/data/recent-listens';
+import { playRecentListen } from '@/features/audio/reciter-playback';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { getChapter, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey, type VerseRecord } from '@/features/reader/data/verses';
@@ -31,6 +35,18 @@ jest.mock('@/core/db/content/open', () => ({
 
 jest.mock('@/features/reader/data/verses', () => ({
   getVerseByKey: jest.fn(),
+}));
+
+jest.mock('@/features/audio/data/recent-listens-hooks', () => ({
+  useRecentListens: jest.fn(() => ({ data: [] })),
+}));
+
+jest.mock('@/features/audio/data/reciters', () => ({
+  listReciters: jest.fn(() => []),
+}));
+
+jest.mock('@/features/audio/reciter-playback', () => ({
+  playRecentListen: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock('@/features/reader/data/chapters', () => ({
@@ -157,3 +173,64 @@ describe('HomeScreen', () => {
     expect(router.navigate).toHaveBeenCalledTimes(3);
   });
 });
+
+describe('HomeScreen recent listens', () => {
+  const reciter: CatalogReciter = {
+    installed: true,
+    isDefault: false,
+    hasTimings: true,
+    hasWordSegments: false,
+    name: 'Husary',
+    nameAr: 'الحصري',
+    packSizeBytes: 0,
+    resourceId: 31,
+    style: 'Murattal',
+  };
+  const listen: RecentListen = { audioFileId: 300, chapterId: 2, lastPositionMs: 4000, playedAt: 2, reciterResourceId: 31 };
+
+  beforeEach(() => {
+    setWindowWidth(390);
+    jest.mocked(useRecentListens).mockReturnValue({ data: [] } as unknown as ReturnType<typeof useRecentListens>);
+    jest.mocked(openContentDb).mockReturnValue({ executor: {} } as ReturnType<typeof openContentDb>);
+    jest.mocked(getChapter).mockReturnValue(chapter);
+    jest.mocked(listReciters).mockReturnValue([reciter]);
+    jest.mocked(playRecentListen).mockClear();
+  });
+
+  it('hides the section when there are no recent listens', async () => {
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.queryByTestId('home-recent-listens')).toBeNull();
+    expect(view.queryByText('آخر ما استمعت إليه')).toBeNull();
+  });
+
+  it('shows the heading and a filled first row with the reciter, surah and style', async () => {
+    jest.mocked(useRecentListens).mockReturnValue({ data: [listen] } as unknown as ReturnType<typeof useRecentListens>);
+
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByRole('header', { name: 'آخر ما استمعت إليه' })).toBeOnTheScreen();
+    expect(view.getByText('الحصري')).toBeOnTheScreen();
+    expect(view.getByText('سورة البقرة · مرتّل')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'تشغيل سورة البقرة' })).toBeOnTheScreen();
+  });
+
+  it('resumes the listen with its reciter and saved position when its play button is pressed', async () => {
+    jest.mocked(useRecentListens).mockReturnValue({ data: [listen] } as unknown as ReturnType<typeof useRecentListens>);
+
+    const view = await renderUi(<HomeScreen />);
+    await fireEvent.press(view.getByRole('button', { name: 'تشغيل سورة البقرة' }));
+
+    expect(playRecentListen).toHaveBeenCalledWith(listen, true);
+  });
+
+  it('leaves out a listen whose reciter is not in the catalogue', async () => {
+    jest.mocked(useRecentListens).mockReturnValue({ data: [listen] } as unknown as ReturnType<typeof useRecentListens>);
+    jest.mocked(listReciters).mockReturnValue([]);
+
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.queryByTestId('home-recent-listens')).toBeNull();
+  });
+});
+

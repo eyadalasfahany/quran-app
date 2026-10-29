@@ -10,6 +10,11 @@ import { I18nManager } from "react-native";
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
 
+// The user database is not open under Jest; Home's recent listens are empty.
+jest.mock("@/features/audio/data/recent-listens-hooks", () => ({
+  useRecentListens: () => ({ data: [] }),
+}));
+
 // The user database is not open under Jest; the reader's highlight hook gets an empty map.
 jest.mock("@/features/library/data/hooks", () => ({
   ...jest.requireActual("@/features/library/data/hooks"),

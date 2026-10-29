@@ -367,7 +367,7 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `outbox` | `seq` integer autoincrement, `entity` text, `entity_id` text, `op` text (`upsert`,`delete`), `payload` text, `client_updated_at` int, `attempts` int | PK `seq`; one pending row per (`entity`,`entity_id`): a newer edit replaces the older one |
 | `sync_meta` | `key`, `value` (`pull_cursor`, `last_push_at`, `last_pull_at`, `owner_user_id`) | PK `key` |
 | `downloads` | `audio_file_id`, `local_path`, `size_bytes`, `status` (`queued`,`downloading`,`done`,`failed`), `progress`, `downloaded_at` | PK `audio_file_id` |
-| `recent_listens` | `audio_file_id`, `last_position_ms`, `played_at` | for Home's "last listened" |
+| `recent_listens` | `audio_file_id`, `reciter_resource_id`, `chapter_id`, `last_position_ms`, `played_at` | for Home's "last listened". Local only, no sync columns. The reciter and surah are kept so a row draws without a content lookup, and the table holds the 20 newest (step 4c) |
 | `search_history` | `query`, `searched_at` | local only, capped at 20 |
 
 **Packs and the first launch**

@@ -226,7 +226,16 @@
     "place": "Ayah {{ayah}} · page {{page}} · juz {{juz}}",
     "resume": "Continue",
     "progress": "{{percent}}% of the Quran read",
-    "tiles": { "surahs": "Surahs", "saved": "Saved", "reciters": "Reciters" }
+    "tiles": {
+      "surahs": "Surahs",
+      "saved": "Saved",
+      "reciters": "Reciters"
+    },
+    "recent": {
+      "heading": "Recently listened",
+      "subtitle": "{{surah}} · {{style}}",
+      "play": "Play {{surah}}"
+    }
   },
   "player": {
     "minimize": "Minimize player",

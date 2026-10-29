@@ -60,6 +60,16 @@ export const notes = sqliteTable(
   ],
 );
 
+// Personal listening history for Home's «آخر ما استمعت إليه». Local only: no sync columns and no outbox.
+// Keyed by QF's audio file id, so playing a surah again updates its row; pruned to 20 rows on write.
+export const recentListens = sqliteTable('recent_listens', {
+  audioFileId: integer('audio_file_id').primaryKey(),
+  reciterResourceId: integer('reciter_resource_id').notNull(),
+  chapterId: integer('chapter_id').notNull(),
+  lastPositionMs: integer('last_position_ms').notNull(),
+  playedAt: integer('played_at').notNull(),
+});
+
 export const outbox = sqliteTable(
   'outbox',
   {

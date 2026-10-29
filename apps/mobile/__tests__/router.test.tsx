@@ -11,6 +11,11 @@ import { Dimensions, I18nManager } from "react-native";
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
 
+// The user database is not open under Jest; Home's recent listens are empty.
+jest.mock("@/features/audio/data/recent-listens-hooks", () => ({
+  useRecentListens: () => ({ data: [] }),
+}));
+
 jest.mock("expo-symbols", () => {
   const { createElement } = jest.requireActual<typeof import("react")>("react");
   const { View } =

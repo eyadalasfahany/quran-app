@@ -1,6 +1,6 @@
 import { playChapter, resume } from './player';
 import { usePlayerStore } from './playerStore';
-import { playReciter } from './reciter-playback';
+import { playRecentListen, playReciter } from './reciter-playback';
 import { downloadReciterPack } from './reciter-downloads';
 import { getReciterId, resetAudioSettingsStore } from './settings';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -83,3 +83,44 @@ describe('playReciter', () => {
     expect(play).not.toHaveBeenCalled();
   });
 });
+
+describe('playRecentListen', () => {
+  it('leaves the same surah playing as it is, and resumes it when paused, instead of jumping to the saved spot', async () => {
+    usePlayerStore.setState({ reciterId: 31, chapterId: 18, status: 'playing' });
+    await playRecentListen({ reciterResourceId: 31, chapterId: 18, lastPositionMs: 90_000 }, true);
+    expect(play).not.toHaveBeenCalled();
+
+    usePlayerStore.setState({ status: 'paused' });
+    await playRecentListen({ reciterResourceId: 31, chapterId: 18, lastPositionMs: 90_000 }, true);
+    expect(resumePlayback).toHaveBeenCalledTimes(1);
+    expect(play).not.toHaveBeenCalled();
+  });
+
+  it('sets the reciter and resumes the surah at the saved position', async () => {
+    await playRecentListen({ reciterResourceId: 31, chapterId: 18, lastPositionMs: 90_000 }, true);
+
+    expect(getReciterId()).toBe(31);
+    expect(download).not.toHaveBeenCalled();
+    expect(play).toHaveBeenCalledWith(18, 90_000);
+  });
+
+  it('installs an uninstalled pack first, then plays from the saved position', async () => {
+    download.mockResolvedValue(true);
+
+    await playRecentListen({ reciterResourceId: 31, chapterId: 18, lastPositionMs: 4_000 }, false);
+
+    expect(download).toHaveBeenCalledWith(31);
+    expect(getReciterId()).toBe(31);
+    expect(play).toHaveBeenCalledWith(18, 4_000);
+  });
+
+  it('changes nothing when the install fails', async () => {
+    download.mockResolvedValue(false);
+
+    await playRecentListen({ reciterResourceId: 31, chapterId: 18, lastPositionMs: 4_000 }, false);
+
+    expect(getReciterId()).toBeNull();
+    expect(play).not.toHaveBeenCalled();
+  });
+});
+

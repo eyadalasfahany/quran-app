@@ -7,6 +7,9 @@ import { destinations, type Destination, SectionScreen, useWindowClass } from '@
 import { useTheme } from '@/core/theme';
 import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
 import { HomeTileRow } from '@/features/home/components/HomeTileRow';
+import { RecentListensSection } from '@/features/home/components/RecentListensSection';
+import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
+import { playRecentListen } from '@/features/audio/reciter-playback';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
@@ -32,6 +35,7 @@ export function HomeScreen() {
   const lastReadVerseKey = useLastReadVerseKey();
   // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
   const expanded = useWindowClass() === 'expanded';
+  const recentItems = useRecentListenItems(2);
 
   const continueReading = useMemo(() => {
     if (!ready) {
@@ -67,6 +71,19 @@ export function HomeScreen() {
           { icon: SAVED_ICON, key: 'saved', label: t('home.tiles.saved'), onPress: () => router.navigate(tabHref('(my-quran)')) },
           { icon: RECITERS_ICON, key: 'reciters', label: t('home.tiles.reciters'), onPress: () => router.navigate(tabHref('(listen)')) },
         ]}
+      />
+      <RecentListensSection
+        heading={t('home.recent.heading')}
+        items={recentItems.map((item) => ({
+          key: item.key,
+          letter: item.letter,
+          name: item.name,
+          onPlay: () => {
+            void playRecentListen(item.listen, item.installed);
+          },
+          playLabel: item.playLabel,
+          subtitle: item.subtitle,
+        }))}
       />
     </SectionScreen>
   );

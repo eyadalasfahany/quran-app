@@ -226,7 +226,16 @@
     "place": "الآية {{ayah}} · صفحة {{page}} · الجزء {{juz}}",
     "resume": "متابعة",
     "progress": "قرأت {{percent}}٪ من المصحف",
-    "tiles": { "surahs": "السور", "saved": "المحفوظات", "reciters": "القرّاء" }
+    "tiles": {
+      "surahs": "السور",
+      "saved": "المحفوظات",
+      "reciters": "القرّاء"
+    },
+    "recent": {
+      "heading": "آخر ما استمعت إليه",
+      "subtitle": "{{surah}} · {{style}}",
+      "play": "تشغيل {{surah}}"
+    }
   },
   "player": {
     "minimize": "تصغير المشغّل",

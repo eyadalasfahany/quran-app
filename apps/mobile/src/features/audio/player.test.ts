@@ -5,6 +5,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { createFakeAudioPlaylist, type FakeAudioPlaylist, type FakeAudioPlaylistStatus } from '../../../jest/fake-audio-player';
 import * as timings from './data/timings';
+import { listRecentListens } from './data/recent-listens';
 import { openAudioTestDb } from './data/test-db';
 import {
   HIGHLIGHT_LAG_MS,
@@ -24,6 +25,7 @@ import {
 import { usePlayerStore } from './playerStore';
 import { readLastPosition } from './resume-model';
 import { setReciterId } from './settings';
+import { openUserTestStore } from '../../../jest/user-test-db';
 
 // The content database is opened by the app at start; tests hand the player an in-memory copy instead.
 const mockContent: { executor: SqlExecutor | null } = { executor: null };
@@ -38,6 +40,19 @@ jest.mock('@/core/db/content/open', () => ({
   useContentDb: () => ({ ready: true, error: null }),
 }));
 
+// The personal database holds the recent listens; tests hand the engine an in-memory copy.
+const mockUser: { executor: SqlExecutor | null } = { executor: null };
+
+jest.mock('@/core/db/user/open', () => ({
+  openUserDb: () => {
+    if (mockUser.executor === null) {
+      throw new Error('The test user database is not open.');
+    }
+    return { db: undefined, executor: mockUser.executor };
+  },
+  useUserDb: () => ({ ready: true, error: null }),
+}));
+
 type AudioModuleMock = {
   createAudioPlaylist: jest.Mock;
   setAudioModeAsync: jest.Mock;
@@ -46,6 +61,7 @@ type AudioModuleMock = {
 const audio = jest.requireMock<AudioModuleMock>('expo-audio');
 let executor: SqlExecutor;
 let close: () => void;
+let userDatabase: { close: () => void };
 
 /** The playlist the engine built most recently. */
 function fakePlaylist(): FakeAudioPlaylist {
@@ -118,13 +134,18 @@ beforeEach(() => {
   ({ executor, close } = openAudioTestDb());
   seedContent(executor);
   mockContent.executor = executor;
+  const user = openUserTestStore();
+  mockUser.executor = user.store.db ?? null;
+  userDatabase = user.database;
   setReciterId(30);
 });
 
 afterEach(() => {
   resetPlayerForTests();
   close();
+  userDatabase.close();
   mockContent.executor = null;
+  mockUser.executor = null;
 });
 
 describe('playing a surah', () => {
@@ -1035,3 +1056,96 @@ describe('repeat', () => {
     expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2, repeat: null });
   });
 });
+
+describe('recent listens', () => {
+  const recent = () => listRecentListens(20, { db: mockUser.executor ?? undefined });
+
+  it('saves the surah and its position on pause', async () => {
+    await playChapter(1);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true });
+    fakePlaylist().currentTime = 12.5;
+
+    pause();
+
+    expect(recent()).toEqual([
+      { audioFileId: 100, reciterResourceId: 30, chapterId: 1, lastPositionMs: 12500, playedAt: expect.any(Number) },
+    ]);
+  });
+
+  it('saves the surah when the system pauses it (lock screen, headphones)', async () => {
+    await playChapter(1);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true });
+    fakePlaylist().emitStatus({ playing: false, isLoaded: true, currentTime: 3 });
+
+    expect(recent()).toMatchObject([{ audioFileId: 100, chapterId: 1, lastPositionMs: 3000 }]);
+  });
+
+  it('saves the surah that ended, at its final position, when the playlist moves on', async () => {
+    await playChapter(1);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 0.1 });
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 45.9 });
+    fakePlaylist().emitTrackChanged(1);
+
+    expect(recent()).toMatchObject([{ audioFileId: 100, chapterId: 1, lastPositionMs: 45900 }]);
+  });
+
+  it('saves the surah it stops on, at the position it had reached', async () => {
+    await playChapter(114);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true });
+    fakePlaylist().currentTime = 9;
+
+    await nextSurah();
+
+    expect(usePlayerStore.getState().status).toBe('idle');
+    expect(recent()).toMatchObject([{ audioFileId: 1140, reciterResourceId: 30, chapterId: 114, lastPositionMs: 9000 }]);
+  });
+
+  it('saves on the status tick at most every 15 seconds for the same surah', async () => {
+    const now = jest.spyOn(Date, 'now');
+    now.mockReturnValue(1_000_000);
+    await playChapter(1);
+
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 1 });
+    expect(recent()).toMatchObject([{ lastPositionMs: 1000 }]);
+
+    now.mockReturnValue(1_005_000);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 6 });
+    expect(recent()).toMatchObject([{ lastPositionMs: 1000 }]);
+
+    now.mockReturnValue(1_015_000);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 16 });
+    expect(recent()).toMatchObject([{ lastPositionMs: 16000, playedAt: 1_015_000 }]);
+    now.mockRestore();
+  });
+
+  it('does not save while the surah is paused or stopped', async () => {
+    await playChapter(1);
+    fakePlaylist().emitStatus({ playing: false, isLoaded: true, currentTime: 5 });
+
+    expect(recent()).toEqual([]);
+  });
+
+  it('keeps playback going when the write fails, and logs the error', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await playChapter(1);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true });
+    const working = mockUser.executor;
+    mockUser.executor = {
+      exec: () => undefined,
+      run: () => undefined,
+      get: () => undefined,
+      all: () => [],
+      transaction: () => {
+        throw new Error('disk full');
+      },
+    };
+
+    expect(() => pause()).not.toThrow();
+
+    expect(usePlayerStore.getState().status).toBe('paused');
+    expect(warn).toHaveBeenCalledWith('Recent listen was not saved.', expect.any(Error));
+    mockUser.executor = working;
+    warn.mockRestore();
+  });
+});
+

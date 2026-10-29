@@ -16,6 +16,7 @@ import { getVerseByKey } from '@/features/reader/data/verses';
 
 import { activeTimingIndex, activeWordPosition, ayahSeekStartMs } from './active-ayah';
 import { chapterAudio, type ChapterAudio } from './data/audio-files';
+import { upsertRecentListen } from './data/recent-listens';
 import { listReciters, recitationIdForResource } from './data/reciters';
 import { timingsFor, type AyahTiming } from './data/timings';
 import { clampSeek, isChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
@@ -59,6 +60,8 @@ const STATUS_INTERVAL_MS = 100;
 // ayah's 6,090). So the highlight looks up a moment earlier than the reported position. Seeking stays exact.
 // Tuned on the iPhone 17 simulator; raise it if the highlight still leads the voice.
 export const HIGHLIGHT_LAG_MS = 100;
+// Home's recent list (spec §12): the status tick saves the surah at most this often while it plays.
+const LISTEN_SAVE_INTERVAL_MS = 15_000;
 
 type Subscription = { remove: () => void };
 
@@ -92,6 +95,9 @@ let trackTimings: { chapterId: number; timings: AyahTiming[] } | null = null;
 const timingsCache = new Map<number, AyahTiming[]>();
 // While a repeat seek is being applied, the decoded position at or above this is stale: the seek has not landed.
 let repeatGuardMs: number | null = null;
+// The last save of a surah's listen, and the last position the status tick reported for one.
+let lastListenSave: { key: string; at: number } | null = null;
+let lastTick: { reciterId: number; chapterId: number; positionMs: number } | null = null;
 
 const store = () => usePlayerStore.getState();
 
@@ -163,6 +169,7 @@ function disposeQueue(): void {
   intendedIndex = null;
   trackTimings = null;
   repeatGuardMs = null;
+  lastTick = null;
 }
 
 /**
@@ -319,6 +326,51 @@ function currentPositionMs(): number {
   return state.positionMs;
 }
 
+function listenKey(reciterId: number, chapterId: number): string {
+  return `${reciterId}:${chapterId}`;
+}
+
+/**
+ * Saves a surah's listen for Home's recent list. Wrapped in try/catch: a database error is logged and never
+ * stops playback.
+ */
+function saveListen(reciterId: number, chapterId: number, positionMs: number): void {
+  const now = Date.now();
+  lastListenSave = { key: listenKey(reciterId, chapterId), at: now };
+  try {
+    const lookup = lookupAudio(contentDb(), reciterId, chapterId);
+    if (!('audio' in lookup)) {
+      return;
+    }
+    upsertRecentListen({
+      audioFileId: lookup.audio.id,
+      reciterResourceId: reciterId,
+      chapterId,
+      lastPositionMs: Math.max(0, Math.round(positionMs)),
+      playedAt: now,
+    });
+  } catch (error) {
+    console.warn('Recent listen was not saved.', error);
+  }
+}
+
+/** The status tick's save: the same surah at most once per 15 s, and a new surah at once. */
+function saveListenOnTick(reciterId: number, chapterId: number, positionMs: number): void {
+  if (lastListenSave?.key === listenKey(reciterId, chapterId) && Date.now() - lastListenSave.at < LISTEN_SAVE_INTERVAL_MS) {
+    return;
+  }
+  saveListen(reciterId, chapterId, positionMs);
+}
+
+/** Saves the surah now loaded at its current position, for pause and stop. */
+function saveCurrentListen(): void {
+  const state = store();
+  if (state.reciterId === null || state.chapterId === null) {
+    return;
+  }
+  saveListen(state.reciterId, state.chapterId, currentPositionMs());
+}
+
 function saveResumeState(): void {
   const state = store();
   if (state.chapterId === null || !['loading', 'playing', 'paused'].includes(state.status)) {
@@ -403,6 +455,13 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
   if (current.status === 'playing' && status.playing && status.isLoaded && chapterId !== undefined) {
     applyRepeat(active, chapterId, Math.round(status.currentTime * 1000));
   }
+  if (status.isLoaded && chapterId !== undefined) {
+    lastTick = { reciterId: active.reciterId, chapterId, positionMs: Math.round(status.currentTime * 1000) };
+  }
+  // A loading surah that reports playing is about to be marked playing below, so it counts as playing here.
+  if ((current.status === 'playing' || current.status === 'loading') && status.playing && status.isLoaded && chapterId !== undefined) {
+    saveListenOnTick(active.reciterId, chapterId, Math.round(status.currentTime * 1000));
+  }
   if (status.playing) {
     if (current.status === 'loading' || current.status === 'paused') {
       current.markPlaying();
@@ -413,6 +472,9 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
   if (current.status === 'playing') {
     current.markPaused();
     saveResumeState();
+    if (chapterId !== undefined) {
+      saveListen(active.reciterId, chapterId, Math.round(status.currentTime * 1000));
+    }
   }
 }
 
@@ -438,6 +500,10 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
     intendedIndex = previousIndex;
     active.playlist.skipTo(previousIndex);
     return;
+  }
+  const endedChapter = active.chapterIds[previousIndex];
+  if (lastTick !== null && lastTick.chapterId === endedChapter) {
+    saveListen(lastTick.reciterId, lastTick.chapterId, lastTick.positionMs);
   }
   const chapterId = active.chapterIds[currentIndex];
   if (chapterId === undefined) {
@@ -469,6 +535,7 @@ function stopPlayback(): void {
   clearWatchdog();
   releaseRepeat();
   queue?.playlist.pause();
+  saveCurrentListen();
   store().markStopped();
 }
 
@@ -659,6 +726,7 @@ export function pause(): void {
   queue?.playlist.pause();
   store().markPaused();
   saveResumeState();
+  saveCurrentListen();
 }
 
 /** Continues the current surah. After a restore, it loads the file at the saved position first. */
@@ -843,6 +911,7 @@ export function resetPlayerForTests(): void {
   audioModeReady = null;
   watchedIndex = null;
   repeatGuardMs = null;
+  lastListenSave = null;
   timingsCache.clear();
   usePlayerStore.getState().reset();
 }

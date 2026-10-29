@@ -26,3 +26,30 @@ export async function playReciter(resourceId: number, installed: boolean): Promi
   setReciterId(resourceId);
   await playChapter(usePlayerStore.getState().chapterId ?? 1);
 }
+
+/**
+ * Plays a recent listen: its reciter, from the saved position of its surah (Home's «آخر ما استمعت إليه»). An
+ * uninstalled pack is installed first; if that fails, nothing changes.
+ */
+export async function playRecentListen(
+  listen: { reciterResourceId: number; chapterId: number; lastPositionMs: number },
+  installed: boolean,
+): Promise<void> {
+  // The surah already loaded with this reciter is not restarted at the saved position, which can be up to
+  // 15 s behind: playing stays as it is, and paused resumes where it stopped.
+  const current = usePlayerStore.getState();
+  if (current.reciterId === listen.reciterResourceId && current.chapterId === listen.chapterId) {
+    if (current.status === 'paused') {
+      await resume();
+      return;
+    }
+    if (current.status === 'playing' || current.status === 'loading') {
+      return;
+    }
+  }
+  if (!installed && !(await downloadReciterPack(listen.reciterResourceId))) {
+    return;
+  }
+  setReciterId(listen.reciterResourceId);
+  await playChapter(listen.chapterId, listen.lastPositionMs);
+}
