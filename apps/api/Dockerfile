@@ -1,5 +1,5 @@
 # Local development image for the API, Horizon and the scheduler (ADR 0003).
-# The staging/production PHP-FPM image behind Caddy is built when staging is set up.
+# Production on Railway uses docker/Dockerfile (ADR 0022).
 FROM php:8.5-cli
 
 RUN apt-get update \

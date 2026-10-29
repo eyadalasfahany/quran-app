@@ -10,10 +10,10 @@ Spec §13 had three app variants: `.dev`, `.preview` and production, with the pr
 
 1. **One App Store app**, `com.taybahapp.taybah` (App Store Connect Apple ID 6828097265). TestFlight and store builds both come from the `production` EAS profile.
 2. The `preview` variant, profile and channel are removed. `development` stays for local development builds; it never reaches App Store Connect.
-3. The production profile reads `EXPO_PUBLIC_API_URL` from the EAS `production` environment, so the API it points at changes without a code change: staging until the production server exists, production after.
+3. The production profile reads `EXPO_PUBLIC_API_URL` from the EAS `production` environment. That URL is the production API on Railway (ADR 0022).
 
 ## Consequences
 
-- Early TestFlight builds run against staging and QF prelive keys under the production bundle ID. Builds made before the switch keep the staging URL until testers update.
+- TestFlight and the store both call the production API. There is no staging API.
 - One set of credentials, one store record, one push identity.
 - A TestFlight build and the store build cannot sit side by side on one device; the `.dev` build still can.
