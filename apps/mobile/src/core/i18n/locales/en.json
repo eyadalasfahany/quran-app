@@ -99,7 +99,8 @@
       "next": "Next ayah",
       "emptyTitle": "No tafsir downloaded",
       "emptyBody": "Download a tafsir to read it offline.",
-      "download": "Download this tafsir for offline reading",
+      "retry": "Try again",
+      "downloadIntro": "Download a tafsir to read it offline",
       "noEntry": "This tafsir has no passage for this ayah.",
       "fallbackName": "Tafsir {{id}}"
     },
@@ -182,7 +183,10 @@
     "download": {
       "start": "Download",
       "cancel": "Stop download",
-      "open": "Open"
+      "open": "Open",
+      "downloading": "Downloading",
+      "failed": "Download failed",
+      "size": "{{size}} MB"
     },
     "ayahNumber": "Ayah {{number}}",
     "clearSearch": "Clear search",

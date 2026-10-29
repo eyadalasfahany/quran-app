@@ -268,6 +268,7 @@ describe('tafsir', () => {
         name: null,
         nameAr: null,
         authorName: null,
+        authorAr: null,
         languageCode: null,
         direction: null,
       },
@@ -276,14 +277,14 @@ describe('tafsir', () => {
 
   it('reads the stored names of installed tafsirs and the Arabic catalogue with installed flags', () => {
     executor.run(
-      'UPDATE installed_resources SET name = ?, name_ar = ?, author_name = ?, language_code = ?, direction = ? WHERE resource_id = ?',
-      ['Ibn Kathir', 'تفسير ابن كثير', 'Ibn Kathir', 'ar', 'rtl', TAFSIR_ID],
+      'UPDATE installed_resources SET name = ?, name_ar = ?, author_name = ?, author_ar = ?, language_code = ?, direction = ? WHERE resource_id = ?',
+      ['Ibn Kathir', 'تفسير ابن كثير', 'Ibn Kathir', 'ابن كثير', 'ar', 'rtl', TAFSIR_ID],
     );
     const insertCatalog =
-      'INSERT INTO catalog_resources (resource_id, "group", name, name_ar, author_name, language_code, direction, version, pack_size_bytes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    executor.run(insertCatalog, [TAFSIR_ID, 'tafsirs', 'Ibn Kathir', 'تفسير ابن كثير', 'Ibn Kathir', 'ar', 'rtl', 3, 4096]);
-    executor.run(insertCatalog, [170, 'tafsirs', "Al-Sa'di", 'تفسير السعدي', null, 'ar', 'rtl', 1, 2048]);
-    executor.run(insertCatalog, [MUSHAF_RESOURCE, 'mushafs', 'Uthmani', null, null, 'ar', 'rtl', 1, 8]);
+      'INSERT INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, language_code, direction, version, pack_size_bytes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    executor.run(insertCatalog, [TAFSIR_ID, 'tafsirs', 'Ibn Kathir', 'تفسير ابن كثير', 'Ibn Kathir', 'ابن كثير', 'ar', 'rtl', 3, 4096]);
+    executor.run(insertCatalog, [170, 'tafsirs', "Al-Sa'di", 'تفسير السعدي', null, null, 'ar', 'rtl', 1, 2048]);
+    executor.run(insertCatalog, [MUSHAF_RESOURCE, 'mushafs', 'Uthmani', null, null, null, 'ar', 'rtl', 1, 8]);
 
     expect(listInstalledTafsirs(executor)).toEqual([
       expect.objectContaining({
@@ -291,6 +292,7 @@ describe('tafsir', () => {
         name: 'Ibn Kathir',
         nameAr: 'تفسير ابن كثير',
         authorName: 'Ibn Kathir',
+        authorAr: 'ابن كثير',
         languageCode: 'ar',
         direction: 'rtl',
       }),
@@ -301,6 +303,7 @@ describe('tafsir', () => {
         name: 'Ibn Kathir',
         nameAr: 'تفسير ابن كثير',
         authorName: 'Ibn Kathir',
+        authorAr: 'ابن كثير',
         languageCode: 'ar',
         direction: 'rtl',
         version: 3,
@@ -312,6 +315,7 @@ describe('tafsir', () => {
         name: "Al-Sa'di",
         nameAr: 'تفسير السعدي',
         authorName: null,
+        authorAr: null,
         languageCode: 'ar',
         direction: 'rtl',
         version: 1,

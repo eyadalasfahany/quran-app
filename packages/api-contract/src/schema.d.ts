@@ -99,6 +99,7 @@ export interface components {
                 name: string | null;
                 name_ar: string | null;
                 author_name: string | null;
+                author_ar: string | null;
                 language_code: string | null;
                 /** @enum {string|null} */
                 direction: "rtl" | "ltr" | null;

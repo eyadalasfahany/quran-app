@@ -111,6 +111,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     name: 'Test',
     name_ar: null,
     author_name: null,
+    author_ar: null,
     language_code: 'ar',
     direction: 'rtl',
     version: 1,
@@ -907,6 +908,7 @@ type CatalogRow = {
   name: string | null;
   nameAr: string | null;
   authorName: string | null;
+  authorAr: string | null;
   languageCode: string | null;
   direction: string | null;
   version: number;
@@ -916,14 +918,14 @@ type CatalogRow = {
 function catalogRows(executor: SqlExecutor): CatalogRow[] {
   return executor.all<CatalogRow>(
     `SELECT resource_id AS resourceId, "group" AS "group", name, name_ar AS nameAr, author_name AS authorName,
-            language_code AS languageCode, direction, version, pack_size_bytes AS packSizeBytes
+            author_ar AS authorAr, language_code AS languageCode, direction, version, pack_size_bytes AS packSizeBytes
      FROM catalog_resources ORDER BY resource_id`,
   );
 }
 
 function installedNames(executor: SqlExecutor, resourceId: number): Omit<CatalogRow, 'resourceId' | 'group' | 'version' | 'packSizeBytes'> | undefined {
   return executor.get(
-    `SELECT name, name_ar AS nameAr, author_name AS authorName, language_code AS languageCode, direction
+    `SELECT name, name_ar AS nameAr, author_name AS authorName, author_ar AS authorAr, language_code AS languageCode, direction
      FROM installed_resources WHERE resource_id = ?`,
     [resourceId],
   );
@@ -960,6 +962,7 @@ describe('device catalogue and resource names', () => {
       name: 'Al-Muyassar',
       name_ar: 'التفسير الميسر',
       author_name: 'نخبة من العلماء',
+      author_ar: 'نخبة من العلماء',
       language_code: 'ar',
       direction: 'rtl',
       version: 3,
@@ -970,6 +973,7 @@ describe('device catalogue and resource names', () => {
       name: "Al-Sa'di",
       name_ar: 'تفسير السعدي',
       author_name: null,
+      author_ar: null,
       language_code: 'ar',
       direction: 'rtl',
       version: 1,
@@ -996,6 +1000,7 @@ describe('device catalogue and resource names', () => {
           name: 'Al-Muyassar',
           nameAr: 'التفسير الميسر',
           authorName: 'نخبة من العلماء',
+          authorAr: 'نخبة من العلماء',
           languageCode: 'ar',
           direction: 'rtl',
           version: 3,
@@ -1007,6 +1012,7 @@ describe('device catalogue and resource names', () => {
           name: "Al-Sa'di",
           nameAr: 'تفسير السعدي',
           authorName: null,
+          authorAr: null,
           languageCode: 'ar',
           direction: 'rtl',
           version: 1,
@@ -1017,9 +1023,40 @@ describe('device catalogue and resource names', () => {
         name: 'Al-Muyassar',
         nameAr: 'التفسير الميسر',
         authorName: 'نخبة من العلماء',
+        authorAr: 'نخبة من العلماء',
         languageCode: 'ar',
         direction: 'rtl',
       });
+    });
+  });
+
+  it('refreshes author_ar in both tables from a later manifest when only the Arabic author changed', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const pack = { url: '/api/v1/content/packs/85/3', size_bytes: bytes.byteLength, sha256: await sha256(bytes) };
+    const before = manifest([resource({ id: 85, version: 3, name: 'Ibn Kathir', author_name: 'Hafiz Ibn Kathir', author_ar: null, pack })], '"v1"');
+    const after = manifest([resource({ id: 85, version: 3, name: 'Ibn Kathir', author_name: 'Hafiz Ibn Kathir', author_ar: 'ابن كثير', pack })], '"v2"');
+    let current = before;
+    const downloadPack = jest.fn(downloadInto(bytes));
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const api: ContentApi = {
+        getManifest: async () => ({ status: 200, etag: current.etag, manifest: current.body }),
+        getChanges: async () => {
+          throw new Error('changes');
+        },
+        downloadPack,
+      };
+      await syncContent(await deps(executor, cacheDir, api));
+      expect(installedNames(executor, 85)?.authorAr).toBeNull();
+      expect(catalogRows(executor)).toEqual([expect.objectContaining({ resourceId: 85, authorAr: null })]);
+
+      current = after;
+      const report = await syncContent(await deps(executor, cacheDir, api));
+
+      expect(report.resources).toEqual([{ resourceId: 85, status: 'unchanged' }]);
+      expect(downloadPack).toHaveBeenCalledTimes(1);
+      expect(installedNames(executor, 85)).toMatchObject({ authorName: 'Hafiz Ibn Kathir', authorAr: 'ابن كثير' });
+      expect(catalogRows(executor)).toEqual([expect.objectContaining({ resourceId: 85, authorAr: 'ابن كثير' })]);
     });
   });
 

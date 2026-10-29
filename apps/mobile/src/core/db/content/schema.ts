@@ -71,6 +71,7 @@ export const installedResources = sqliteTable('installed_resources', {
   authorName: text('author_name'),
   languageCode: text('language_code'),
   direction: text('direction', { enum: ['rtl', 'ltr'] }),
+  authorAr: text('author_ar'),
 });
 
 export const catalogResources = sqliteTable('catalog_resources', {
@@ -83,6 +84,7 @@ export const catalogResources = sqliteTable('catalog_resources', {
   direction: text('direction', { enum: ['rtl', 'ltr'] }),
   version: integer('version').notNull(),
   packSizeBytes: integer('pack_size_bytes').notNull(),
+  authorAr: text('author_ar'),
 });
 
 export const tafsirEntries = sqliteTable(

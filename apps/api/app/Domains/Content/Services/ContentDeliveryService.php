@@ -59,6 +59,7 @@ final class ContentDeliveryService
                 name: $resource->name,
                 nameAr: $this->servedArabicName($resource),
                 authorName: $resource->author_name,
+                authorAr: $this->servedArabicAuthor($resource),
                 languageCode: $resource->language_code,
                 direction: $resource->direction,
                 version: $pack->version,
@@ -170,6 +171,20 @@ final class ContentDeliveryService
         }
 
         return $resource->name_ar;
+    }
+
+    private function servedArabicAuthor(Resource $resource): ?string
+    {
+        if ($resource->group === ResourceGroup::Tafsirs) {
+            $overrides = config('quran.display_authors.ar', []);
+            $override = $overrides[(int) $resource->source_key] ?? null;
+
+            if (is_string($override)) {
+                return $override;
+            }
+        }
+
+        return null;
     }
 
     private function item(ContentChange $change): ContentChangeItemData

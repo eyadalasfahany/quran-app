@@ -8,7 +8,8 @@ import { uiFontFamilies, useTheme } from '@/core/theme';
 import { Card, Chip, EmptyState, maxFontScale, QuranText, UiText } from '@/shared/ui';
 
 import { AyahStepper } from './AyahStepper';
-import { tafsirDisplayName, type TextDirection } from './panel-text';
+import { TafsirDownloadList, type TafsirDownloadItem } from './TafsirDownloadList';
+import { tafsirAuthorName, tafsirDisplayName, type TextDirection } from './panel-text';
 
 const EMPTY_ICON = { ios: 'book.closed', android: 'menu_book' } as const;
 const SYSTEM_FONTS = Object.values(uiFontFamilies);
@@ -23,12 +24,19 @@ export type TafsirOption = {
   name: string | null;
   nameAr: string | null;
   authorName: string | null;
+  authorAr: string | null;
   direction?: TextDirection | null;
 };
 
 // 'sheet' is the phone sheet: a horizontal row of tafsirs and a floating previous and next bar.
 // 'panel' is the side panel: the tafsirs wrap and the previous and next buttons sit at its foot.
 export type TafsirPanelLayout = 'sheet' | 'panel';
+
+/**
+ * list: nothing readable yet, so the download list only. reading: the passage, with the selected tafsir's
+ * download row in its place when it isn't readable. offline: no catalogue and nothing installed.
+ */
+export type TafsirPanelMode = 'list' | 'reading' | 'offline';
 
 export function TafsirPanel({
   tafsirs,
@@ -42,12 +50,17 @@ export function TafsirPanel({
   fontScale = 1,
   onPrevious,
   onNext,
-  downloadTafsirId,
-  onDownload,
+  mode,
+  downloadItems,
+  selectedDownload,
+  onDownloadTafsir,
+  onCancelDownload,
+  onOpenTafsir,
+  onRetry,
   layout = 'panel',
   testID = 'tafsir-panel',
 }: {
-  // Installed tafsirs only.
+  /** Every catalogue tafsir, installed or not, for the chip row. */
   tafsirs: readonly TafsirOption[];
   selectedId: number | null;
   onSelect: (resourceId: number) => void;
@@ -63,9 +76,15 @@ export function TafsirPanel({
   fontScale?: number;
   onPrevious?: () => void;
   onNext?: () => void;
-  // The tafsir the empty state offers to download, when one is known.
-  downloadTafsirId: number | null;
-  onDownload: (resourceId: number) => void;
+  mode: TafsirPanelMode;
+  /** Every catalogue tafsir as a download row, shown in list mode. */
+  downloadItems: TafsirDownloadItem[];
+  /** The selected tafsir's row when it isn't readable; it replaces the passage. */
+  selectedDownload: TafsirDownloadItem | null;
+  onDownloadTafsir: (resourceId: number) => void;
+  onCancelDownload: (resourceId: number) => void;
+  onOpenTafsir: (resourceId: number) => void;
+  onRetry: () => void;
   layout?: TafsirPanelLayout;
   testID?: string;
 }) {
@@ -99,16 +118,28 @@ export function TafsirPanel({
     />
   );
 
-  if (tafsirs.length === 0) {
+  if (mode === 'list') {
+    return (
+      <View style={{ flex: 1 }} testID={testID}>
+        <ScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom }}>
+          <TafsirDownloadList
+            items={downloadItems}
+            onCancel={onCancelDownload}
+            onDownload={onDownloadTafsir}
+            onOpen={onOpenTafsir}
+            testID={`${testID}-downloads`}
+          />
+        </ScrollView>
+      </View>
+    );
+  }
+
+  if (mode === 'offline') {
     return (
       <View style={{ flex: 1 }} testID={testID}>
         <ScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom, paddingVertical: theme.space[6] }}>
           <EmptyState
-            action={
-              downloadTafsirId === null
-                ? undefined
-                : { label: t('reader.tafsir.download'), onPress: () => onDownload(downloadTafsirId) }
-            }
+            action={{ label: t('reader.tafsir.retry'), onPress: onRetry }}
             body={t('reader.tafsir.emptyBody')}
             icon={EMPTY_ICON}
             testID={`${testID}-empty`}
@@ -181,7 +212,17 @@ export function TafsirPanel({
             {` ﴿${formatNumber(verseNumber, 'ar')}﴾`}
           </QuranText>
         </Card>
-        {selected === null ? null : (
+        {selectedDownload === null ? null : (
+          <TafsirDownloadList
+            items={[selectedDownload]}
+            onCancel={onCancelDownload}
+            onDownload={onDownloadTafsir}
+            onOpen={onOpenTafsir}
+            showIntro={false}
+            testID={`${testID}-download`}
+          />
+        )}
+        {selectedDownload !== null || selected === null ? null : (
           <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2], justifyContent: 'space-between' }}>
             <UiText testID={`${testID}-name`} variant="caption" weight={600}>
               {displayName(selected)}
@@ -193,33 +234,35 @@ export function TafsirPanel({
             )}
           </View>
         )}
-        <View style={{ gap: theme.size.bodyCreditGap }}>
-          <View
-            onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-            style={direction === null ? undefined : { direction }}
-            testID={`${testID}-body`}
-          >
-            {html === null ? (
-              <UiText testID={`${testID}-no-entry`} tone="muted">
-                {t('reader.tafsir.noEntry')}
+        {selectedDownload === null ? (
+          <View style={{ gap: theme.size.bodyCreditGap }}>
+            <View
+              onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
+              style={direction === null ? undefined : { direction }}
+              testID={`${testID}-body`}
+            >
+              {html === null ? (
+                <UiText testID={`${testID}-no-entry`} tone="muted">
+                  {t('reader.tafsir.noEntry')}
+                </UiText>
+              ) : (
+                <RenderHtml
+                  baseStyle={baseStyle}
+                  contentWidth={width ?? windowWidth}
+                  defaultTextProps={{ maxFontSizeMultiplier: maxFontScale.content }}
+                  source={{ html }}
+                  systemFonts={SYSTEM_FONTS}
+                  tagsStyles={TAGS_STYLES}
+                />
+              )}
+            </View>
+            {selected === null ? null : (
+              <UiText testID={`${testID}-source`} tone="muted" {...credit}>
+                {t('reader.tafsir.source', { author: tafsirAuthorName(selected, locale) ?? displayName(selected) })}
               </UiText>
-            ) : (
-              <RenderHtml
-                baseStyle={baseStyle}
-                contentWidth={width ?? windowWidth}
-                defaultTextProps={{ maxFontSizeMultiplier: maxFontScale.content }}
-                source={{ html }}
-                systemFonts={SYSTEM_FONTS}
-                tagsStyles={TAGS_STYLES}
-              />
             )}
           </View>
-          {selected === null ? null : (
-            <UiText testID={`${testID}-source`} tone="muted" {...credit}>
-              {t('reader.tafsir.source', { author: selected.authorName ?? displayName(selected) })}
-            </UiText>
-          )}
-        </View>
+        ) : null}
       </ScrollView>
       {stepper}
     </View>

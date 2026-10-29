@@ -70,4 +70,16 @@ return [
         ],
     ],
 
+    // QF has no Arabic author field, so the served Arabic author is this override by QF source id
+    // (resources.source_key). Credits are not Quran text. Other tafsirs serve no Arabic author.
+    'display_authors' => [
+        'ar' => [
+            14 => 'ابن كثير',
+            90 => 'القرطبي',
+            93 => 'محمد سيد طنطاوي',
+            94 => 'البغوي',
+            926 => 'جلال الدين المحلي والسيوطي',
+        ],
+    ],
+
 ];

@@ -6,16 +6,26 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { openUserDb } from '@/core/db/user/open';
 import { formatNumber, type Locale } from '@/core/i18n';
+import { runDeviceContentSync } from '@/core/sync';
 import { useTheme } from '@/core/theme';
 import type { UserStore } from '@/features/library/data';
-import { UiText } from '@/shared/ui';
+import { type DownloadRowState, UiText } from '@/shared/ui';
 
 import type { PanelTab } from '../selection';
 import { useReaderSettings } from '../settings';
 import { AyahActionsPanel } from './AyahActionsPanel';
 import { LiveAyahActionsPanel } from './LiveAyahActionsPanel';
 import { PanelHeader } from './PanelHeader';
-import { loadAyahPanelData, loadTafsirOptions, loadTafsirPassage, readAyahUserState } from './panel-data';
+import {
+  type CatalogTafsirOption,
+  loadAyahPanelData,
+  loadCatalogTafsirOptions,
+  loadTafsirPassage,
+  readAyahUserState,
+} from './panel-data';
+import { tafsirAuthorName, tafsirDisplayName, tafsirRowSubtitle } from './panel-text';
+import type { TafsirDownloadItem } from './TafsirDownloadList';
+import { useTafsirDownloads } from './tafsir-downloads';
 import { TafsirPanel, type TafsirPanelLayout } from './TafsirPanel';
 
 function openContentExecutor(): SqlExecutor | null {
@@ -69,6 +79,12 @@ export function AyahPanelContent({
   const savedTafsirId = useReaderSettings((state) => state.tafsirId);
   // Switching tafsir here is a reading choice, not a download choice, so it stays out of the settings.
   const [pickedTafsirId, setPickedTafsirId] = useState<number | null>(null);
+  const [opened, setOpened] = useState<ReadonlySet<number>>(() => new Set());
+  const [reloads, setReloads] = useState(0);
+  const downloads = useTafsirDownloads((state) => state.byId);
+  const installedVersion = useTafsirDownloads((state) => state.installedVersion);
+  const startDownload = useTafsirDownloads((state) => state.start);
+  const cancelDownload = useTafsirDownloads((state) => state.cancel);
 
   const executor = useMemo(
     () => (executorOverride === undefined ? openContentExecutor() : executorOverride),
@@ -76,20 +92,47 @@ export function AyahPanelContent({
   );
   const live = useMemo(() => store === undefined && userDbAvailable(), [store]);
   const data = useMemo(() => (executor === null ? null : loadAyahPanelData(executor, verseKey)), [executor, verseKey]);
-  const tafsirs = useMemo(() => (executor === null ? [] : loadTafsirOptions(executor)), [executor]);
-  const installedTafsirIds = new Set(tafsirs.map((tafsir) => tafsir.resourceId));
+  // Re-read after an install (installedVersion) and after a retry sync (reloads). Both are only
+  // dependencies, not inputs: the query reads the database directly.
+  const tafsirs = useMemo(
+    () => (executor === null ? [] : loadCatalogTafsirOptions(executor)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executor, installedVersion, reloads],
+  );
+  // Tafsirs installed when the panel opened are readable from the start. Later installs wait for «عرض».
+  const [initiallyInstalled] = useState(
+    () => new Set(tafsirs.filter((tafsir) => tafsir.installed).map((tafsir) => tafsir.resourceId)),
+  );
+  const readableIds = tafsirs
+    .filter((tafsir) => tafsir.installed && (initiallyInstalled.has(tafsir.resourceId) || opened.has(tafsir.resourceId)))
+    .map((tafsir) => tafsir.resourceId);
+  const mode = tafsirs.length === 0 ? 'offline' : readableIds.length === 0 ? 'list' : 'reading';
   const tafsirIdInUse =
-    (pickedTafsirId !== null && installedTafsirIds.has(pickedTafsirId) ? pickedTafsirId : null) ??
-    (savedTafsirId !== null && installedTafsirIds.has(savedTafsirId) ? savedTafsirId : null) ??
+    (pickedTafsirId !== null && tafsirs.some((tafsir) => tafsir.resourceId === pickedTafsirId) ? pickedTafsirId : null) ??
+    (savedTafsirId !== null && readableIds.includes(savedTafsirId) ? savedTafsirId : null) ??
+    readableIds[0] ??
     tafsirs[0]?.resourceId ??
     null;
+  const selectedReadable = tafsirIdInUse !== null && readableIds.includes(tafsirIdInUse);
   const passage = useMemo(
     () =>
-      executor === null || data === null || tafsirIdInUse === null
+      executor === null || data === null || tafsirIdInUse === null || !selectedReadable
         ? null
         : loadTafsirPassage(executor, tafsirIdInUse, data.verse),
-    [data, executor, tafsirIdInUse],
+    [data, executor, selectedReadable, tafsirIdInUse],
   );
+
+  const openTafsir = (resourceId: number) => {
+    setOpened((current) => new Set(current).add(resourceId));
+    setPickedTafsirId(resourceId);
+  };
+  const retrySync = () => {
+    runDeviceContentSync()
+      .catch(() => {})
+      .finally(() => {
+        setReloads((count) => count + 1);
+      });
+  };
 
   if (executor === null || data === null) {
     return (
@@ -107,6 +150,26 @@ export function AyahPanelContent({
     ayah: ayahNumber,
     surah: chapter === undefined ? verseKey : locale === 'ar' ? chapter.nameArabic : chapter.nameEn,
   });
+  const downloadItem = (tafsir: CatalogTafsirOption): TafsirDownloadItem => {
+    const entry = downloads[tafsir.resourceId];
+    const state: DownloadRowState =
+      entry?.status === 'downloading' ? 'downloading' : tafsir.installed ? 'installed' : 'available';
+    return {
+      progress: entry?.progress ?? 0,
+      resourceId: tafsir.resourceId,
+      state,
+      subtitle: tafsirRowSubtitle(
+        { author: tafsirAuthorName(tafsir, locale), packSizeBytes: tafsir.packSizeBytes, status: entry?.status },
+        t,
+        locale,
+      ),
+      title: tafsirDisplayName(tafsir, locale, t('reader.tafsir.fallbackName', { id: tafsir.resourceId })),
+    };
+  };
+  const downloadItems = tafsirs.map(downloadItem);
+  const selectedOption = tafsirs.find((tafsir) => tafsir.resourceId === tafsirIdInUse);
+  const selectedDownload =
+    mode === 'reading' && selectedOption !== undefined && !selectedReadable ? downloadItem(selectedOption) : null;
   const actionsProps = {
     onOpenTafsir: onTabChange ? () => onTabChange('tafsir') : undefined,
     reference,
@@ -139,14 +202,19 @@ export function AyahPanelContent({
           <TafsirPanel
             ayahLabel={`${verse.textImlaei ?? verse.textUthmani} ${t('ui.ayahNumber', { number: ayahNumber })}`}
             coverage={passage?.coverage ?? null}
-            downloadTafsirId={savedTafsirId !== null && !installedTafsirIds.has(savedTafsirId) ? savedTafsirId : null}
+            downloadItems={downloadItems}
             fontScale={fontScale}
             html={passage?.html ?? null}
             layout={layout}
-            onDownload={(id) => useReaderSettings.getState().setTafsirId(id)}
+            mode={mode}
+            onCancelDownload={cancelDownload}
+            onDownloadTafsir={startDownload}
             onNext={nextKey === undefined ? undefined : () => onVerseChange(nextKey)}
+            onOpenTafsir={openTafsir}
             onPrevious={previousKey === undefined ? undefined : () => onVerseChange(previousKey)}
+            onRetry={retrySync}
             onSelect={setPickedTafsirId}
+            selectedDownload={selectedDownload}
             selectedId={tafsirIdInUse}
             tafsirs={tafsirs}
             testID={`${testID}-tafsir`}

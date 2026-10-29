@@ -13,6 +13,7 @@ export type ResourceNames = {
   name: string | null;
   nameAr: string | null;
   authorName: string | null;
+  authorAr: string | null;
   languageCode: string | null;
   direction: 'rtl' | 'ltr' | null;
 };
@@ -71,6 +72,7 @@ export function listInstalledTafsirs(db: SqlExecutor): InstalledContentResource[
          name,
          name_ar AS nameAr,
          author_name AS authorName,
+         author_ar AS authorAr,
          language_code AS languageCode,
          direction
        FROM installed_resources
@@ -88,6 +90,7 @@ export function listInstalledTafsirs(db: SqlExecutor): InstalledContentResource[
       name: row.name,
       nameAr: row.nameAr,
       authorName: row.authorName,
+      authorAr: row.authorAr,
       languageCode: row.languageCode,
       direction: toDirection(row.direction),
     }));
@@ -102,6 +105,7 @@ export function listCatalogTafsirs(db: SqlExecutor): CatalogTafsir[] {
          name,
          name_ar AS nameAr,
          author_name AS authorName,
+         author_ar AS authorAr,
          language_code AS languageCode,
          direction,
          version,
@@ -117,6 +121,7 @@ export function listCatalogTafsirs(db: SqlExecutor): CatalogTafsir[] {
       name: row.name,
       nameAr: row.nameAr,
       authorName: row.authorName,
+      authorAr: row.authorAr,
       languageCode: row.languageCode,
       direction: toDirection(row.direction),
       version: row.version,

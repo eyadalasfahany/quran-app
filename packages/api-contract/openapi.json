@@ -345,6 +345,12 @@
                                         "null"
                                     ]
                                 },
+                                "author_ar": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
                                 "language_code": {
                                     "type": [
                                         "string",
@@ -394,6 +400,7 @@
                                 "name",
                                 "name_ar",
                                 "author_name",
+                                "author_ar",
                                 "language_code",
                                 "direction",
                                 "version",

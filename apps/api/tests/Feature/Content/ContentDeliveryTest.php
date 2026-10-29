@@ -438,3 +438,58 @@ it('serves the configured Arabic name for a QF id and the catalogue name otherwi
         $none->id => null,
     ]);
 });
+
+it('serves the configured Arabic author for a QF id and null otherwise', function (): void {
+    $overridden = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '14',
+        'author_name' => 'Ibn Kathir',
+        'language_code' => 'ar',
+        'version' => 1,
+    ]);
+    $none = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '16',
+        'author_name' => 'Al-Sa\'di',
+        'language_code' => 'ar',
+        'version' => 1,
+    ]);
+    $mushaf = Resource::factory()->create([
+        'group' => ResourceGroup::Mushafs,
+        'source_key' => '14',
+        'author_name' => 'Mushaf author',
+        'language_code' => 'ar',
+        'version' => 1,
+    ]);
+    foreach ([$overridden, $none, $mushaf] as $resource) {
+        app(PackBuilder::class)->build($resource);
+    }
+
+    $authors = collect($this->getJson('/api/v1/content/manifest')->json('resources'))
+        ->mapWithKeys(fn (array $entry): array => [$entry['id'] => $entry['author_ar']])
+        ->all();
+
+    expect($authors)->toEqualCanonicalizing([
+        $overridden->id => 'ابن كثير',
+        $none->id => null,
+        $mushaf->id => null,
+    ]);
+});
+
+it('changes the manifest ETag when the configured Arabic author changes', function (): void {
+    $tafsir = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => '14',
+        'language_code' => 'ar',
+        'version' => 1,
+    ]);
+    app(PackBuilder::class)->build($tafsir);
+
+    $first = $this->getJson('/api/v1/content/manifest');
+    config()->set('quran.display_authors.ar.14', 'ابن كثير الدمشقي');
+    $second = $this->getJson('/api/v1/content/manifest');
+
+    $first->assertJsonPath('resources.0.author_ar', 'ابن كثير');
+    $second->assertJsonPath('resources.0.author_ar', 'ابن كثير الدمشقي');
+    expect($second->headers->get('ETag'))->not->toBe($first->headers->get('ETag'));
+});

@@ -346,8 +346,8 @@ function removeResource(db: SqlExecutor, installed: InstalledResource): void {
 
 function upsertInstalled(db: SqlExecutor, resource: ContentManifestResource, checkedAt: number): void {
   db.run(
-    `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, change_cursor, name, name_ar, author_name, language_code, direction)
-     VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?)
+    `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, change_cursor, name, name_ar, author_name, author_ar, language_code, direction)
+     VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(resource_id) DO UPDATE SET
        "group" = excluded."group",
        version = excluded.version,
@@ -357,6 +357,7 @@ function upsertInstalled(db: SqlExecutor, resource: ContentManifestResource, che
        name = excluded.name,
        name_ar = excluded.name_ar,
        author_name = excluded.author_name,
+       author_ar = excluded.author_ar,
        language_code = excluded.language_code,
        direction = excluded.direction`,
     [
@@ -379,8 +380,8 @@ export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifes
     db.run('DELETE FROM catalog_resources');
     for (const resource of resources) {
       db.run(
-        `INSERT OR REPLACE INTO catalog_resources (resource_id, "group", name, name_ar, author_name, language_code, direction, version, pack_size_bytes)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT OR REPLACE INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, language_code, direction, version, pack_size_bytes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           resource.id,
           resource.group,
@@ -391,7 +392,7 @@ export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifes
       );
       db.run(
         `UPDATE installed_resources
-         SET name = ?, name_ar = ?, author_name = ?, language_code = ?, direction = ?
+         SET name = ?, name_ar = ?, author_name = ?, author_ar = ?, language_code = ?, direction = ?
          WHERE resource_id = ?`,
         [...namesValues(resource), resource.id],
       );
@@ -399,8 +400,8 @@ export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifes
   });
 }
 
-function namesValues(resource: ContentManifestResource): [string | null, string | null, string | null, string | null, string | null] {
-  return [resource.name, resource.name_ar, resource.author_name, resource.language_code, resource.direction];
+function namesValues(resource: ContentManifestResource): [string | null, string | null, string | null, string | null, string | null, string | null] {
+  return [resource.name, resource.name_ar, resource.author_name, resource.author_ar, resource.language_code, resource.direction];
 }
 
 function listInstalled(db: SqlExecutor): InstalledResource[] {

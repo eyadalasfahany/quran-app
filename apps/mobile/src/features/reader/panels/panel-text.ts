@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+
 import { formatNumber } from '@/core/i18n';
 
 export type TextDirection = 'rtl' | 'ltr';
@@ -29,6 +31,52 @@ export function tafsirDisplayName(
     return secondary;
   }
   return fallback;
+}
+
+/**
+ * The author in the interface language, with the same fallback as the name: Arabic author in
+ * Arabic and English author in English, then the other one. Null when neither is set.
+ */
+export function tafsirAuthorName(
+  option: { authorName: string | null; authorAr: string | null },
+  locale: 'ar' | 'en',
+): string | null {
+  const primary = locale === 'ar' ? option.authorAr : option.authorName;
+  const secondary = locale === 'ar' ? option.authorName : option.authorAr;
+  if (primary !== null && primary.trim() !== '') {
+    return primary;
+  }
+  if (secondary !== null && secondary.trim() !== '') {
+    return secondary;
+  }
+  return null;
+}
+
+export type TafsirRowStatus = 'downloading' | 'failed';
+
+/**
+ * The subtitle of a tafsir's download row: the status while a download runs or after one fails, then
+ * the author and the pack size, joined with « · ». The size is left out when it is 0.
+ */
+export function tafsirRowSubtitle(
+  row: { status?: TafsirRowStatus; author: string | null; packSizeBytes: number },
+  t: TFunction,
+  locale: 'ar' | 'en',
+): string {
+  const parts: string[] = [];
+  if (row.status === 'downloading') {
+    parts.push(t('ui.download.downloading'));
+  }
+  if (row.status === 'failed') {
+    parts.push(t('ui.download.failed'));
+  }
+  if (row.author !== null) {
+    parts.push(row.author);
+  }
+  if (row.packSizeBytes > 0) {
+    parts.push(t('ui.download.size', { size: formatNumber(Number((row.packSizeBytes / 1e6).toFixed(1)), locale) }));
+  }
+  return parts.join(' · ');
 }
 
 const rtlStrong =/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/u;

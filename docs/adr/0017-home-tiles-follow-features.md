@@ -21,3 +21,4 @@ The design system gives My Quran and Saved the `bookmark` glyph and keeps `penci
 
 - Until all four tiles ship, Home differs from #Main in the tile row only. Reviews accept the shorter row and wider tiles.
 - Each feature step that adds a tile also adds it to the tile list and its tests.
+- The same rule covers the rest of Home (developer, 29 Oct 2026): the «وِردك اليوم» subtitle and the khatma card come with khatma in Phase 4, and «آخر ما استمعت إليه» with the players in Phase 3 step 4.

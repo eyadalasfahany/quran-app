@@ -2,7 +2,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { getHighlights, getNotes, listBookmarks, type HighlightColor, type Note, type UserStore } from '@/features/library/data';
 
 import { getChapter, type ChapterRecord } from '../data/chapters';
-import { getTafsirForVerse, listInstalledTafsirs } from '../data/tafsir';
+import { getTafsirForVerse, listCatalogTafsirs, listInstalledTafsirs } from '../data/tafsir';
 import { getVerseByKey, getVerseRange, idToVerseKey, type VerseRecord } from '../data/verses';
 import type { TafsirOption } from './TafsirPanel';
 
@@ -28,12 +28,38 @@ export function loadAyahPanelData(db: SqlExecutor, verseKey: string): AyahPanelD
 
 export function loadTafsirOptions(db: SqlExecutor): TafsirOption[] {
   return listInstalledTafsirs(db).map((row) => ({
+    authorAr: row.authorAr,
     authorName: row.authorName,
     direction: row.direction,
     name: row.name,
     nameAr: row.nameAr,
     resourceId: row.resourceId,
   }));
+}
+
+export type CatalogTafsirOption = TafsirOption & { installed: boolean; packSizeBytes: number };
+
+/**
+ * Every Arabic tafsir the device knows: the catalogue, plus installed tafsirs the catalogue doesn't list
+ * (installs from before it existed, which have no pack size). Sorted by resource id.
+ */
+export function loadCatalogTafsirOptions(db: SqlExecutor): CatalogTafsirOption[] {
+  const catalogue = listCatalogTafsirs(db);
+  const catalogueIds = new Set(catalogue.map((tafsir) => tafsir.resourceId));
+  const listed = catalogue.map((tafsir) => ({
+    authorAr: tafsir.authorAr,
+    authorName: tafsir.authorName,
+    direction: tafsir.direction,
+    installed: tafsir.installed,
+    name: tafsir.name,
+    nameAr: tafsir.nameAr,
+    packSizeBytes: tafsir.packSizeBytes,
+    resourceId: tafsir.resourceId,
+  }));
+  const unlisted = loadTafsirOptions(db)
+    .filter((tafsir) => !catalogueIds.has(tafsir.resourceId))
+    .map((tafsir) => ({ ...tafsir, installed: true, packSizeBytes: 0 }));
+  return [...listed, ...unlisted].sort((a, b) => a.resourceId - b.resourceId);
 }
 
 export type TafsirPassage = { html: string; coverage: { from: number; to: number } | null };

@@ -18,7 +18,8 @@ Progress and the handoff for the next agent are in [`../phase-2.md`](../phase-2.
 | 10 | [step-10-exit-check.md](step-10-exit-check.md) | all | After 11b and 13 |
 | 11 | [step-11-design-conformance.md](step-11-design-conformance.md) | 1–9 | 11a done; 11b in progress |
 | 12 | [step-12-resource-names.md](step-12-resource-names.md) | 11 | Done on prelive. Production sync waits for QF production keys |
-| 13 | [step-13-tafsir-downloads.md](step-13-tafsir-downloads.md) | 12 | In progress: `DownloadRow` and `install-resource` exist; the panel's list of tafsirs to download is not built |
+| 13 | [step-13-tafsir-downloads.md](step-13-tafsir-downloads.md) | 12 | Done, not committed (29 Oct 2026): `author_ar` (API, contract, migration 0005), the download store, `TafsirDownloadList`, the panel's list, reading and offline states. Checked on the iPhone 17 simulator against `#TafsirDownload` |
+| 14 | [step-14-sheet-detents.md](step-14-sheet-detents.md) | 13 | Frames approved; code not started |
 
 ## Rules for every step
 

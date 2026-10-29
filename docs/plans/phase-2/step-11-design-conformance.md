@@ -64,7 +64,7 @@ Each fix lands in the component that owns the visual. Order: shared components (
 
 Open:
 - Search field: the «ابحث في القرآن» field at the top of the expanded sidebar (`ExpandedHome`).
-- Home: the «وِردك اليوم» subtitle and the khatma card need khatma data (Phase 4). Decide whether Home leaves them out until then.
+- Home: the «وِردك اليوم» subtitle and the khatma card need khatma data, so Home leaves them out until Phase 4 (developer, 29 Oct 2026; approved difference from `Main`, as in ADR 0017).
 - Dev builds only: Expo's floating dev-tools button (`expo-dev-menu` FAB) catches touches in an invisible area at the top right under RTL. It draws the gear mirrored at the top left, but its hit area (`DevMenuFABWindow.hitTest`, `fabFrame`) stays at the top right, so every top-right Back button stopped working in portrait. Store builds have no FAB. Workaround on a simulator: `xcrun simctl spawn booted defaults write com.taybahapp.taybah.dev EXDevMenuShowFloatingActionButton -bool NO`, then relaunch. To do: set `EXDevMenuShowFloatingActionButton: false` in the dev variant's `ios.infoPlist`, and report the bug upstream.
 - Reader settings: the script picker («خط المصحف») waits for its feature.
 - `radius.tile` (16) is not a token in `quran-app-design-system.html` yet.

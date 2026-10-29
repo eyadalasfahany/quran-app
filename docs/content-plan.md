@@ -261,7 +261,7 @@ The exact tafsir IDs are confirmed by calling `/resources/tafsirs` with our prel
 
 **How it works**
 
-1. **Catalogue:** the backend syncs the resource lists. The app only offers resources present in our mirror, showing QF's name, author and language fields.
+1. **Catalogue:** the backend syncs the resource lists. The app only offers resources present in our mirror, showing QF's name, author and language fields. Arabic author names come from the `display_authors.ar` config override, since QF has none.
 2. **Selection:** the reader picks in Settings or from the tafsir picker. The app downloads that resource's pack from our backend, which keeps it current through the Content Sync `tafsirs` group.
 3. **Before download or offline:** the app asks our API for one ayah. The backend calls QF's tafsir-by-ayah endpoint (`resource_id` + `ayah_key`) and caches the answer for no more than 7 days.
 4. **Rendering:** tafsir text arrives as HTML. The backend sanitizes it to a short whitelist of tags (paragraphs, line breaks, bold, italic, quote spans) without changing any words, and the app renders it with `@native-html/render` in the interface font, at the reader's chosen size.

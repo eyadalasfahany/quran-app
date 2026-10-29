@@ -10,6 +10,7 @@ function resource(
     name: null,
     name_ar: null,
     author_name: null,
+    author_ar: null,
     language_code: null,
     direction: null,
     version: 1,

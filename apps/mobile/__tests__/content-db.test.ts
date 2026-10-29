@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -214,9 +214,48 @@ describe('resource names migration (0004)', () => {
         'direction',
         'version',
         'pack_size_bytes',
+        'author_ar',
       ]);
       expect(columnNames(database, 'catalog_resources')).toEqual(drizzleColumnNames(catalogResources));
       expect(count(database, 'catalog_resources')).toBe(0);
+    } finally {
+      database.close();
+    }
+  });
+});
+
+describe('Arabic author migration (0005)', () => {
+  it('adds a nullable author_ar column to installed_resources and catalog_resources', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      applyContentMigrations(executor, migrationsDir);
+      for (const table of ['installed_resources', 'catalog_resources']) {
+        const column = database
+          .prepare(`SELECT type, "notnull" AS notNullFlag FROM pragma_table_info(?) WHERE name = 'author_ar'`)
+          .get(table) as { type: string; notNullFlag: number } | undefined;
+        expect(column).toEqual({ notNullFlag: 0, type: 'TEXT' });
+      }
+    } finally {
+      database.close();
+    }
+  });
+
+  it('clears the stored manifest ETag, so the next sync reads author_ar instead of a 304', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      const journal = JSON.parse(readFileSync(join(migrationsDir, 'meta/_journal.json'), 'utf8')) as {
+        entries: { idx: number; tag: string }[];
+      };
+      const tags = [...journal.entries].sort((left, right) => left.idx - right.idx).map((entry) => entry.tag);
+      const authorAr = tags.indexOf('0005_author_ar');
+      for (const tag of tags.slice(0, authorAr)) {
+        executor.exec(readFileSync(join(migrationsDir, `${tag}.sql`), 'utf8'));
+      }
+      executor.run('INSERT INTO meta (key, value) VALUES (?, ?)', ['manifest_etag', '"before-author-ar"']);
+
+      executor.exec(readFileSync(join(migrationsDir, '0005_author_ar.sql'), 'utf8'));
+
+      expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
     } finally {
       database.close();
     }

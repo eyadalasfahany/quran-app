@@ -16,6 +16,7 @@ final class ContentManifestEntryData extends Data
         public readonly ?string $name,
         public readonly ?string $nameAr,
         public readonly ?string $authorName,
+        public readonly ?string $authorAr,
         public readonly ?string $languageCode,
         public readonly ?TextDirection $direction,
         public readonly int $version,

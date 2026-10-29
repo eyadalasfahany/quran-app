@@ -4,7 +4,7 @@ import { saveNote, setHighlight, toggleBookmark } from '@/features/library/data'
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { openUserTestStore } from '../../../../jest/user-test-db';
 import { getVerseByKey } from '../data/verses';
-import { loadAyahPanelData, loadTafsirOptions, loadTafsirPassage, readAyahUserState } from './panel-data';
+import { loadAyahPanelData, loadCatalogTafsirOptions, loadTafsirOptions, loadTafsirPassage, readAyahUserState } from './panel-data';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
 
@@ -53,16 +53,80 @@ describe('panel data', () => {
 
   it('lists installed tafsirs with their names, author and direction', () => {
     expect(loadTafsirOptions(db)).toEqual([
-      { authorName: null, direction: null, name: null, nameAr: null, resourceId: 16 },
+      { authorAr: null, authorName: null, direction: null, name: null, nameAr: null, resourceId: 16 },
     ]);
 
     db.run(
-      'UPDATE installed_resources SET name = ?, name_ar = ?, author_name = ?, direction = ? WHERE resource_id = ?',
-      ['Al-Muyassar', 'التفسير الميسر', 'نخبة من العلماء', 'rtl', 16],
+      'UPDATE installed_resources SET name = ?, name_ar = ?, author_name = ?, author_ar = ?, direction = ? WHERE resource_id = ?',
+      ['Al-Muyassar', 'التفسير الميسر', 'نخبة من العلماء', 'مجموعة من العلماء', 'rtl', 16],
     );
     expect(loadTafsirOptions(db)).toEqual([
-      { authorName: 'نخبة من العلماء', direction: 'rtl', name: 'Al-Muyassar', nameAr: 'التفسير الميسر', resourceId: 16 },
+      {
+        authorAr: 'مجموعة من العلماء',
+        authorName: 'نخبة من العلماء',
+        direction: 'rtl',
+        name: 'Al-Muyassar',
+        nameAr: 'التفسير الميسر',
+        resourceId: 16,
+      },
     ]);
+  });
+
+  it('lists the catalogue with install state and pack size, sorted by resource id', async () => {
+    const fresh = (await openReaderTestContent()).executor;
+    install(fresh, 14, 'tafsirs');
+    fresh.run(
+      `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, language_code, direction, version, pack_size_bytes)
+       VALUES (926, 'tafsirs', 'Al-Jalalayn', 'تفسير الجلالين', NULL, 'جلال الدين المحلي', 'ar', 'rtl', 1, 900000),
+              (14, 'tafsirs', 'Ibn Kathir', 'ابن كثير', 'Hafiz Ibn Kathir', 'ابن كثير', 'ar', 'rtl', 1, 4800000),
+              (90, 'tafsirs', 'Al-Muyassar', 'التفسير الميسر', NULL, NULL, 'ar', 'rtl', 1, 1200000)`,
+    );
+
+    expect(loadCatalogTafsirOptions(fresh)).toEqual([
+      {
+        authorAr: 'ابن كثير',
+        authorName: 'Hafiz Ibn Kathir',
+        direction: 'rtl',
+        installed: true,
+        name: 'Ibn Kathir',
+        nameAr: 'ابن كثير',
+        packSizeBytes: 4800000,
+        resourceId: 14,
+      },
+      {
+        authorAr: null,
+        authorName: null,
+        direction: 'rtl',
+        installed: false,
+        name: 'Al-Muyassar',
+        nameAr: 'التفسير الميسر',
+        packSizeBytes: 1200000,
+        resourceId: 90,
+      },
+      {
+        authorAr: 'جلال الدين المحلي',
+        authorName: null,
+        direction: 'rtl',
+        installed: false,
+        name: 'Al-Jalalayn',
+        nameAr: 'تفسير الجلالين',
+        packSizeBytes: 900000,
+        resourceId: 926,
+      },
+    ]);
+  });
+
+  it('adds installed tafsirs the catalogue does not list, with no pack size', async () => {
+    const fresh = (await openReaderTestContent()).executor;
+    install(fresh, 16, 'tafsirs');
+
+    expect(loadCatalogTafsirOptions(fresh)).toEqual([
+      { authorAr: null, authorName: null, direction: null, installed: true, name: null, nameAr: null, packSizeBytes: 0, resourceId: 16 },
+    ]);
+  });
+
+  it('is empty with no catalogue and nothing installed', async () => {
+    expect(loadCatalogTafsirOptions((await openReaderTestContent()).executor)).toEqual([]);
   });
 
   it('reads the ayah bookmark, highlight and latest note from user.db', () => {

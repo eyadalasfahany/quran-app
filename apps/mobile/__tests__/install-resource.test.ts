@@ -34,6 +34,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     name: 'Test',
     name_ar: 'اختبار',
     author_name: 'Author',
+    author_ar: null,
     language_code: 'ar',
     direction: 'rtl',
     version: 1,

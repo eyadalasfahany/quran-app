@@ -6,6 +6,7 @@ import { quranFontFamily, themes } from '@/core/theme';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { TafsirPanel, type TafsirOption } from './TafsirPanel';
+import type { TafsirDownloadItem } from './TafsirDownloadList';
 
 const AYAH_1_2 = 'ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ';
 const HTML = '<p>الحمد لله: الثناء على الله بصفاته <b>التي كلها أوصاف كمال</b>.</p><p>وبنعمه الظاهرة والباطنة.</p>';
@@ -13,12 +14,13 @@ const HTML = '<p>الحمد لله: الثناء على الله بصفاته <b
 const tafsirs: TafsirOption[] = [
   {
     authorName: 'نخبة من العلماء',
+    authorAr: null,
     name: 'Al-Muyassar',
     nameAr: 'التفسير الميسر',
     resourceId: 16,
     direction: 'rtl',
   },
-  { authorName: 'ابن كثير', name: 'Ibn Kathir', nameAr: 'ابن كثير', resourceId: 14 },
+  { authorAr: 'ابن كثير', authorName: 'Hafiz Ibn Kathir', name: 'Ibn Kathir', nameAr: 'ابن كثير', resourceId: 14 },
 ];
 
 type TextNode = string | { children: readonly TextNode[] };
@@ -34,15 +36,25 @@ function htmlTextContent(html: string): string {
   return html.replace(/<[^>]+>/g, '');
 }
 
+const downloadItems: TafsirDownloadItem[] = [
+  { resourceId: 16, title: 'التفسير الميسر', subtitle: 'نخبة من العلماء · ١٫٢ م.ب', state: 'available', progress: 0 },
+  { resourceId: 14, title: 'ابن كثير', subtitle: 'جارٍ التنزيل · ابن كثير · ٤٫٨ م.ب', state: 'downloading', progress: 0.4 },
+];
+
 function renderPanel(overrides: Partial<Parameters<typeof TafsirPanel>[0]> = {}, locale: 'ar' | 'en' = 'ar') {
   const props: Parameters<typeof TafsirPanel>[0] = {
     coverage: null,
-    downloadTafsirId: null,
+    downloadItems: [],
     html: HTML,
-    onDownload: jest.fn(),
+    mode: 'reading',
+    onCancelDownload: jest.fn(),
+    onDownloadTafsir: jest.fn(),
     onNext: jest.fn(),
+    onOpenTafsir: jest.fn(),
     onPrevious: jest.fn(),
+    onRetry: jest.fn(),
     onSelect: jest.fn(),
+    selectedDownload: null,
     selectedId: 16,
     tafsirs,
     textUthmani: AYAH_1_2,
@@ -123,6 +135,22 @@ describe('TafsirPanel', () => {
     );
   });
 
+  it('credits the Arabic author in Arabic and the English author in English', async () => {
+    const arabic = await renderPanel({ selectedId: 14 }, 'ar').view;
+    expect(arabic.getByTestId('tafsir-panel-source')).toHaveTextContent('المصدر: ابن كثير · عبر Quran Foundation');
+
+    const english = await renderPanel({ selectedId: 14 }, 'en').view;
+    expect(english.getByTestId('tafsir-panel-source')).toHaveTextContent('Source: Hafiz Ibn Kathir · via Quran Foundation');
+  });
+
+  it('credits the other author when the interface language has none', async () => {
+    const arabic = await renderPanel(
+      { tafsirs: [{ authorAr: null, authorName: 'Hafiz Ibn Kathir', name: 'Ibn Kathir', nameAr: 'ابن كثير', resourceId: 14 }], selectedId: 14 },
+      'ar',
+    ).view;
+    expect(arabic.getByTestId('tafsir-panel-source')).toHaveTextContent('المصدر: Hafiz Ibn Kathir · عبر Quran Foundation');
+  });
+
   it.each([
     ['ar', 'يغطي هذا المقطع الآية ٢'],
     ['en', 'This passage covers ayah 2'],
@@ -190,19 +218,19 @@ describe('TafsirPanel', () => {
 
   it('falls back to the other name, then to the numbered placeholder, when a name is missing', async () => {
     const onlyEnglish = await renderPanel(
-      { tafsirs: [{ authorName: null, name: 'Al-Muyassar', nameAr: null, resourceId: 16 }] },
+      { tafsirs: [{ authorName: null, authorAr: null, name: 'Al-Muyassar', nameAr: null, resourceId: 16 }] },
       'ar',
     ).view;
     expect(onlyEnglish.getByTestId('tafsir-panel-name')).toHaveTextContent('Al-Muyassar');
 
-    const unnamed = await renderPanel({ tafsirs: [{ authorName: null, name: null, nameAr: null, resourceId: 16 }] }, 'ar').view;
+    const unnamed = await renderPanel({ tafsirs: [{ authorName: null, authorAr: null, name: null, nameAr: null, resourceId: 16 }] }, 'ar').view;
     expect(unnamed.getByTestId('tafsir-panel-name')).toHaveTextContent('تفسير 16');
     expect(unnamed.getByTestId('tafsir-panel-source')).toHaveTextContent('المصدر: تفسير 16 · عبر Quran Foundation');
   });
 
   it('credits the display name when the tafsir has no author', async () => {
     const screen = await renderPanel(
-      { tafsirs: [{ authorName: null, name: 'Al-Muyassar', nameAr: 'التفسير الميسر', resourceId: 16 }] },
+      { tafsirs: [{ authorName: null, authorAr: null, name: 'Al-Muyassar', nameAr: 'التفسير الميسر', resourceId: 16 }] },
       'en',
     ).view;
 
@@ -211,11 +239,94 @@ describe('TafsirPanel', () => {
 
   it('sets the passage direction from the tafsir', async () => {
     const screen = await renderPanel(
-      { tafsirs: [{ authorName: null, direction: 'ltr', name: 'Ibn Kathir', nameAr: null, resourceId: 14 }], selectedId: 14 },
+      { tafsirs: [{ authorName: null, authorAr: null, direction: 'ltr', name: 'Ibn Kathir', nameAr: null, resourceId: 14 }], selectedId: 14 },
       'en',
     ).view;
 
     expect(flatStyle(screen.getByTestId('tafsir-panel-body').props.style)).toMatchObject({ direction: 'ltr' });
+  });
+
+  describe('list mode', () => {
+    it.each(locales)('shows the download list alone in %s', async (locale) => {
+      const screen = await renderPanel({ downloadItems, mode: 'list' }, locale).view;
+
+      expect(screen.getByTestId('tafsir-panel-downloads-row-16')).toBeOnTheScreen();
+      expect(screen.getByTestId('tafsir-panel-downloads-row-14')).toBeOnTheScreen();
+      expect(screen.queryAllByRole('radio')).toHaveLength(0);
+      expect(screen.queryByTestId('tafsir-panel-ayah')).toBeNull();
+      expect(screen.queryByTestId('tafsir-panel-steps')).toBeNull();
+      expect(screen.queryByTestId('tafsir-panel-steps-pill')).toBeNull();
+    });
+
+    it('calls onDownloadTafsir with the row id when its download button is pressed', async () => {
+      const { props, view } = renderPanel({ downloadItems, mode: 'list' }, 'en');
+      const screen = await view;
+
+      await fireEvent.press(screen.getByTestId('tafsir-panel-downloads-row-16-action'));
+
+      expect(props.onDownloadTafsir).toHaveBeenCalledWith(16);
+    });
+
+    it('calls onOpenTafsir when an installed row is opened', async () => {
+      const { props, view } = renderPanel(
+        { downloadItems: [{ ...downloadItems[0]!, state: 'installed' }], mode: 'list' },
+        'en',
+      );
+      const screen = await view;
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Open' }));
+
+      expect(props.onOpenTafsir).toHaveBeenCalledWith(16);
+    });
+  });
+
+  describe('offline mode', () => {
+    it.each([
+      ['ar', 'إعادة المحاولة'],
+      ['en', 'Try again'],
+    ] as const)('shows the empty state with a retry in %s', async (locale, label) => {
+      const screen = await renderPanel({ mode: 'offline', tafsirs: [] }, locale).view;
+
+      expect(screen.getByTestId('tafsir-panel-empty')).toBeOnTheScreen();
+      expect(screen.queryByTestId('tafsir-panel-downloads')).toBeNull();
+      expect(screen.getByRole('button', { name: label })).toBeOnTheScreen();
+    });
+
+    it('calls onRetry when the retry is pressed', async () => {
+      const { props, view } = renderPanel({ mode: 'offline', tafsirs: [] }, 'en');
+      const screen = await view;
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
+
+      expect(props.onRetry).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('selected download', () => {
+    it('replaces the passage with the row of a tafsir that is not readable, keeping chips and stepper', async () => {
+      const screen = await renderPanel({ selectedDownload: downloadItems[1]!, selectedId: 14 }, 'en').view;
+
+      expect(screen.getByTestId('tafsir-panel-download-row-14')).toBeOnTheScreen();
+      expect(screen.queryByTestId('tafsir-panel-body')).toBeNull();
+      expect(screen.queryByTestId('tafsir-panel-name')).toBeNull();
+      expect(screen.queryByTestId('tafsir-panel-source')).toBeNull();
+      expect(screen.getAllByRole('radio')).toHaveLength(2);
+      expect(screen.getByTestId('tafsir-panel-ayah')).toBeOnTheScreen();
+      expect(screen.getByTestId('tafsir-panel-steps')).toBeOnTheScreen();
+    });
+
+    it('draws the row without the intro line', async () => {
+      const screen = await renderPanel({ selectedDownload: downloadItems[0]!, selectedId: 16 }, 'en').view;
+
+      expect(screen.queryByText('Download a tafsir to read it offline')).toBeNull();
+    });
+
+    it('starts a failed download with the failure in its subtitle', async () => {
+      const failed: TafsirDownloadItem = { ...downloadItems[0]!, state: 'available', subtitle: 'Download failed · Al-Muyassar' };
+      const screen = await renderPanel({ selectedDownload: failed, selectedId: 16 }, 'en').view;
+
+      expect(screen.getByText('Download failed · Al-Muyassar')).toBeOnTheScreen();
+    });
   });
 
   it('has no raw colour literals', () => {
