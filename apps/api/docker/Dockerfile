@@ -10,22 +10,23 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Horizon's lockfile requires pcntl. The runtime stage installs it too late for this check.
-RUN install-php-extensions pcntl
-
 WORKDIR /app
 
 COPY composer.json composer.lock ./
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
+# pcntl is installed in the runtime stage below. Horizon requires it, and this
+# stage's PHP does not have it yet, so Composer must not reject the lockfile.
 RUN composer install \
     --no-dev \
     --no-interaction \
     --no-progress \
     --no-scripts \
     --prefer-dist \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --ignore-platform-req=ext-pcntl \
+    --ignore-platform-req=ext-posix
 
 FROM dunglas/frankenphp:1-php8.5
 
