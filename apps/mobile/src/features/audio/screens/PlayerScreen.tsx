@@ -27,8 +27,9 @@ const FRAME_PADDING_TOP = 52;
 const FRAME_PADDING_SIDE = 24;
 const FRAME_PADDING_BOTTOM = 30;
 
-// The column's fixed parts, in order. The ayah card (or the notice in its place) sits between the title and the progress.
-const FIXED_PARTS: readonly PlayerPart[] = ['header', 'artwork', 'title', 'progress', 'transport', 'options'];
+// The column's fixed parts, in order. The artwork and the ayah card (or the notice in its place) are sized by
+// fitPlayerColumn; the card sits between the title and the progress.
+const FIXED_PARTS: readonly PlayerPart[] = ['header', 'title', 'progress', 'transport', 'options'];
 
 // The full player. It composes the audio components and wires them to playerStore; it draws no UI of its own.
 // The player is hosted by PlayerHost, which slides it up on open and lets a drag close it.
@@ -40,10 +41,11 @@ export function PlayerScreen() {
   );
 }
 
-// The player fills the window and never scrolls as a page while the ayah fits. A long ayah takes the room left after
-// the fixed parts and scrolls its own text. Only when that room cannot hold two lines of Quran text (a very large
-// text size) does the column scroll: by the few points the minimum overflows, or as a whole when the fixed parts alone
-// do not fit, with the card at its natural height so nothing is clipped. See player-fit.ts.
+// The player fills the window and never scrolls as a page. The artwork and the ayah card share the room the fixed
+// parts leave: the card takes about a fifth of the window, the artwork takes the rest up to its full size, and the
+// artwork is hidden when it would be too small. The card scrolls its own text when the ayah is longer than the card.
+// Only when even the minimum card does not fit (a very large text size) does the column scroll as a whole. See
+// player-fit.ts.
 function PlayerBody() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -62,11 +64,10 @@ function PlayerBody() {
   const fixedParts = notice === null ? FIXED_PARTS : [...FIXED_PARTS, 'notice' as const];
   const fit = fitPlayerColumn({
     available,
-    cardNatural: ayah === null ? undefined : measures.cardNatural,
-    childCount: FIXED_PARTS.length + (notice !== null || ayah !== null ? 1 : 0),
+    fixedCount: fixedParts.length,
     fixedHeight: measures.sumOf(fixedParts),
+    hasCard: ayah !== null,
   });
-  const cardRoom = fit.cardFill ?? undefined;
 
   const togglePlay = () => {
     if (view.isPlaying) {
@@ -100,9 +101,7 @@ function PlayerBody() {
           <View onLayout={measures.onPartLayout('header')} testID="player-part-header">
             <PlayerHeader onMinimize={host.close} />
           </View>
-          <View onLayout={measures.onPartLayout('artwork')} testID="player-part-artwork">
-            <ReciterArtwork letter={view.artworkLetter} />
-          </View>
+          {fit.artworkSize !== null ? <ReciterArtwork letter={view.artworkLetter} size={fit.artworkSize} /> : null}
           <View onLayout={measures.onPartLayout('title')} testID="player-part-title">
             <NowPlayingTitle reciter={view.reciterName} style={view.styleLabel} surah={view.surahName} />
           </View>
@@ -116,8 +115,7 @@ function PlayerBody() {
               activeWord={activeWord}
               counter={ayah.counter}
               label={ayah.label}
-              maxHeight={cardRoom}
-              onNaturalHeight={measures.onCardNatural}
+              height={fit.cardHeight ?? undefined}
               playing={view.isPlaying}
               words={ayah.words}
             />

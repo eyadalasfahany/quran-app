@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Text, View, type ScrollViewInstance } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -6,7 +6,6 @@ import { QuranText } from '@/shared/ui/QuranText';
 import { UiText } from '@/shared/ui/UiText';
 
 import { useAyahCardFollow } from '../hooks/useAyahCardFollow';
-import { AYAH_CARD_MIN_HEIGHT } from '../player-fit';
 import type { WordState } from '../player-view';
 import { AyahScrollView } from './AyahScrollView';
 
@@ -22,9 +21,9 @@ const CARD_GAP = 6;
  * The ayah card while playing: words recited, the current word and the words still to come, each in its own
  * player token. The ayah text is the stored Uthmani text, unchanged. Hidden until audio-to-ayah timings exist.
  *
- * The card is as tall as its text unless `maxHeight` (the room the column leaves it) is smaller; then it fills that
- * room and its text scrolls inside it, while the counter stays pinned below. While `playing`, the text scrolls to
- * keep the recited word's line in view (useAyahCardFollow).
+ * With `height` (the room the column gives the card) the card is that tall: its text scrolls inside it when the text
+ * is taller, and a shorter text sits centred. The counter stays pinned below. Without `height` the card is as tall as
+ * its text. While `playing` and the text scrolls, the text follows the recited word's line (useAyahCardFollow).
  */
 export function NowPlayingAyah({
   words,
@@ -32,8 +31,7 @@ export function NowPlayingAyah({
   label,
   activeWord = null,
   playing = false,
-  maxHeight,
-  onNaturalHeight,
+  height,
 }: {
   words: AyahWord[];
   counter: string;
@@ -41,27 +39,19 @@ export function NowPlayingAyah({
   /** The engine's 1-based word position, or null before the first word. */
   activeWord?: number | null;
   playing?: boolean;
-  /** The height left for the card in its column, when the column is measured. */
-  maxHeight?: number;
-  /** Reports the card's height at its natural size (null until its text and counter are measured). */
-  onNaturalHeight?: (height: number | null) => void;
+  /** The card's height in its column, when the column gives it one. Unset, the card is as tall as its text. */
+  height?: number;
 }) {
   const theme = useTheme();
   const [textHeight, setTextHeight] = useState<number | null>(null);
-  const [counterHeight, setCounterHeight] = useState<number | null>(null);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const text = words.map((word) => word.text).join(' ');
 
-  // The natural height comes from the text and the counter, which are measured whatever the card's size.
-  const chrome = 2 * CARD_PADDING_VERTICAL + 2 * theme.stroke.hairline + CARD_GAP;
-  const natural = textHeight === null || counterHeight === null ? null : chrome + textHeight + counterHeight;
-  const fill = natural !== null && maxHeight !== undefined && natural > maxHeight;
-
-  useEffect(() => {
-    onNaturalHeight?.(natural);
-  }, [natural, onNaturalHeight]);
+  // The text scrolls when it is taller than the scroll view it sits in.
+  const scrollable = textHeight !== null && viewportHeight !== null && textHeight > viewportHeight;
 
   const scrollRef = useRef<ScrollViewInstance>(null);
-  const follow = useAyahCardFollow({ activeWord, label, playing, scrollable: fill, scrollRef, text });
+  const follow = useAyahCardFollow({ activeWord, label, playing, scrollable, scrollRef, text });
 
   return (
     <View
@@ -76,19 +66,25 @@ export function NowPlayingAyah({
           paddingHorizontal: theme.space[4],
           paddingVertical: CARD_PADDING_VERTICAL,
         },
-        fill ? { flexGrow: 1, flexShrink: 1, minHeight: AYAH_CARD_MIN_HEIGHT } : null,
+        height === undefined ? null : { height },
       ]}
       testID="now-playing-ayah"
     >
       <AyahScrollView
-        contentContainerStyle={{ alignItems: 'center' }}
-        onLayout={follow.onViewportLayout}
+        contentContainerStyle={{ alignItems: 'center', flexGrow: 1, justifyContent: 'center' }}
+        onLayout={(event) => {
+          follow.onViewportLayout(event);
+          setViewportHeight(event.nativeEvent.layout.height);
+        }}
         onScroll={follow.onScroll}
         onScrollBeginDrag={follow.onScrollBeginDrag}
         onScrollEndDrag={follow.onScrollEndDrag}
         ref={scrollRef}
-        showsVerticalScrollIndicator={fill}
-        style={[{ alignSelf: 'stretch', flexGrow: 0, flexShrink: 0 }, fill ? { flexBasis: 0, flexGrow: 1, flexShrink: 1 } : null]}
+        showsVerticalScrollIndicator={scrollable}
+        style={[
+          { alignSelf: 'stretch', flexGrow: 0, flexShrink: 0 },
+          height === undefined ? null : { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
+        ]}
         testID="now-playing-scroll"
       >
         <QuranText
@@ -107,13 +103,7 @@ export function NowPlayingAyah({
           ))}
         </QuranText>
       </AyahScrollView>
-      <UiText
-        onLayout={(event) => setCounterHeight(event.nativeEvent.layout.height)}
-        style={{ color: theme.colors.playerMuted }}
-        testID="now-playing-counter"
-        variant="label"
-        weight={400}
-      >
+      <UiText style={{ color: theme.colors.playerMuted }} testID="now-playing-counter" variant="label" weight={400}>
         {counter}
       </UiText>
     </View>

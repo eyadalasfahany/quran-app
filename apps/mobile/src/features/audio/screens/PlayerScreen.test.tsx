@@ -9,6 +9,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { themes } from '@/core/theme';
 import { openAudioTestDb } from '../data/test-db';
 import { nextAyah, pause, previousAyah, resume, seek } from '../player';
+import { AYAH_CARD_MIN_HEIGHT } from '../player-fit';
 import { usePlayerStore } from '../playerStore';
 
 import { PlayerScreen } from './PlayerScreen';
@@ -256,8 +257,10 @@ describe('PlayerScreen', () => {
 
   describe('column layout', () => {
     // The window's height as the screen reports it, and the fixed parts' natural heights on an iPhone 17 frame.
+    // The column's available height is the screen less the 52 and 30 pt frame padding.
     const layoutOf = (height: number) => ({ nativeEvent: { layout: { height, width: 350, x: 0, y: 0 } } });
-    const frameParts = { artwork: 220, header: 44, options: 74, progress: 25, title: 56, transport: 76 } as const;
+    const frameParts = { header: 44, options: 74, progress: 25, title: 56, transport: 76 } as const;
+    const hidden = { includeHiddenElements: true };
 
     function insertLongVerse(words: number) {
       const rows = Array.from({ length: words }, (_, index) => `(5, ${index + 1}, 'word', 'كلمة', 'kalima')`).join(', ');
@@ -276,26 +279,28 @@ describe('PlayerScreen', () => {
       await fireEvent(view.getByTestId('now-playing-counter'), 'layout', layoutOf(16));
     }
 
-    it('does not scroll the page with a normal ayah: the card keeps its natural height and the options stay pinned', async () => {
+    async function renderLongVerse() {
       insertLongVerse(2);
       loadSurah('paused');
       usePlayerStore.setState({ activeVerseId: 5, activeWord: 1 });
-      const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
+      return renderUi(<PlayerScreen />, { theme: 'dark' });
+    }
+
+    it('gives an iPhone 17 a 168 pt card and a 199 pt artwork, with no page scroll', async () => {
+      const view = await renderLongVerse();
       await measure(view, 844, {}, 52.5);
 
+      // 762 pt available, less 275 pt of fixed parts and six 20 pt gaps: 367 pt shared by the artwork and the card.
       expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
-      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(168);
+      expect(flatStyle(view.getByTestId('reciter-artwork', hidden).props.style).height).toBeCloseTo(199, 5);
     });
 
-    it('bounds a long ayah to the room left, and keeps the transport and options rendered', async () => {
-      insertLongVerse(2);
-      loadSurah('paused');
-      usePlayerStore.setState({ activeVerseId: 5, activeWord: 1 });
-      const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
+    it('keeps the card at its fixed height for a long ayah, which scrolls its own text, with the transport and options rendered', async () => {
+      const view = await renderLongVerse();
       await measure(view, 844, {}, 600);
 
-      // 844 less the 52 and 30 pt frame padding, less the fixed parts (495 pt) and six 20 pt gaps: 147 pt for the card.
-      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ flexGrow: 1 });
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(168);
       expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexBasis: 0, flexGrow: 1 });
       expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
       expect(view.getByTestId('player-transport')).toBeOnTheScreen();
@@ -303,16 +308,23 @@ describe('PlayerScreen', () => {
       expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
     });
 
-    it('scrolls the whole column, with the card at its natural height, only when even the fixed parts do not fit', async () => {
-      insertLongVerse(2);
-      loadSurah('paused');
-      usePlayerStore.setState({ activeVerseId: 5, activeWord: 1 });
-      const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
-      // A very large text size makes the artwork and header far taller than the frame's.
-      await measure(view, 844, { artwork: 640, header: 120 }, 600);
+    it('hides the artwork on an iPhone SE and gives the card the room it freed, with no page scroll', async () => {
+      const view = await renderLongVerse();
+      // 667 pt screen: 585 pt available, of which the artwork would get 44 pt, below its minimum.
+      await measure(view, 667, {}, 600);
+
+      expect(view.queryByTestId('reciter-artwork', hidden)).toBeNull();
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(210);
+      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
+    });
+
+    it('scrolls the whole column, with the card at its minimum, only when even the fixed parts do not fit', async () => {
+      const view = await renderLongVerse();
+      // A very large text size makes the header far taller than the frame's.
+      await measure(view, 844, { header: 700 }, 600);
 
       expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(true);
-      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(AYAH_CARD_MIN_HEIGHT);
       expect(view.getByTestId('player-options')).toBeOnTheScreen();
     });
   });

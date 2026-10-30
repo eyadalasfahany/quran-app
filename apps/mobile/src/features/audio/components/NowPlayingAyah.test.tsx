@@ -4,7 +4,6 @@ import { ScrollView } from 'react-native';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { ThemeProvider, themes } from '@/core/theme';
-import { AYAH_CARD_MIN_HEIGHT } from '../player-fit';
 
 import { NowPlayingAyah, type AyahWord } from './NowPlayingAyah';
 
@@ -89,42 +88,42 @@ function textOf(node: TextNode): string {
 
 describe('NowPlayingAyah card', () => {
   it('scrolls the Quran text inside the card, and keeps the counter pinned outside the scroll', async () => {
-    const view = await renderCard();
+    const view = await renderCard({ height: 200 });
     const scroll = view.getByTestId('now-playing-scroll');
 
     expect(within(scroll).getByLabelText('إياك نعبد')).toBeOnTheScreen();
     expect(within(scroll).queryByTestId('now-playing-counter')).toBeNull();
-    expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
     expect(within(view.getByTestId('now-playing-ayah')).getByTestId('now-playing-counter')).toBeOnTheScreen();
   });
 
-  it('stays at its natural height when the text fits the room: the text plus the counter and the chrome', async () => {
-    const onNaturalHeight = jest.fn();
-    const view = await renderCard({ maxHeight: 500, onNaturalHeight });
-
-    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
-    expect(onNaturalHeight).toHaveBeenLastCalledWith(80 + 16 + 36);
-  });
-
-  it('fills the room and scrolls its text when the text is taller than the room, with the minimum held', async () => {
-    const view = await renderCard({ maxHeight: 200 }, 400);
-    const card = flatStyle(view.getByTestId('now-playing-ayah').props.style);
-    const scroll = flatStyle(view.getByTestId('now-playing-scroll').props.style);
-
-    expect(card).toMatchObject({ flexGrow: 1, flexShrink: 1, minHeight: AYAH_CARD_MIN_HEIGHT });
-    expect(scroll).toMatchObject({ flexBasis: 0, flexGrow: 1, flexShrink: 1 });
-    expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
-  });
-
-  it('keeps the card and its counter at natural size until the column gives it a room', async () => {
+  it('is as tall as its text when no height is given', async () => {
     const view = await renderCard({}, 400);
 
-    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBeUndefined();
     expect(flatStyle(view.getByTestId('now-playing-scroll').props.style).flexGrow).toBe(0);
   });
 
+  it('takes the given height, and its text scrolls above the pinned counter when the text is taller', async () => {
+    const view = await renderCard({ height: 200 }, 400);
+    await fireEvent(view.getByTestId('now-playing-scroll'), 'layout', layoutOf(150));
+
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ height: 200 });
+    expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexBasis: 0, flexGrow: 1, flexShrink: 1 });
+    expect(view.getByTestId('now-playing-scroll').props.showsVerticalScrollIndicator).toBe(true);
+    expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
+  });
+
+  it('centres a short text vertically in the given height, and does not scroll it', async () => {
+    const view = await renderCard({ height: 200 }, 80);
+    await fireEvent(view.getByTestId('now-playing-scroll'), 'layout', layoutOf(150));
+    const scroll = view.getByTestId('now-playing-scroll');
+
+    expect(scroll.props.showsVerticalScrollIndicator).toBe(false);
+    expect(flatStyle(scroll.props.contentContainerStyle)).toMatchObject({ alignItems: 'center', flexGrow: 1, justifyContent: 'center' });
+  });
+
   it('keeps the card border and radius fixed around the scroll', async () => {
-    const view = await renderCard({ maxHeight: 200 }, 400);
+    const view = await renderCard({ height: 200 }, 400);
 
     expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ borderRadius: 20, paddingVertical: 14 });
   });
@@ -140,9 +139,9 @@ describe('NowPlayingAyah follow', () => {
     jest.useRealTimers();
   });
 
-  // A card that scrolls (text 400 pt in a 200 pt room) with a 300 pt viewport; the recited word is on the second line.
+  // A card that scrolls (text 400 pt in a 200 pt card) with a 300 pt viewport; the recited word is on the second line.
   async function renderFollowing(playing = true) {
-    const view = await renderCard({ activeWord: recitedWord, maxHeight: 200, playing, words }, 400);
+    const view = await renderCard({ activeWord: recitedWord, height: 200, playing, words }, 400);
     await fireEvent(view.getByLabelText('إياك نعبد'), 'textLayout', { nativeEvent: { lines: followLines } });
     await fireEvent(view.getByTestId('now-playing-scroll'), 'layout', layoutOf(300));
     return view;
@@ -157,7 +156,7 @@ describe('NowPlayingAyah follow', () => {
 
   it('does not scroll while the recited line is already inside the band', async () => {
     const view = await renderUi(
-      <NowPlayingAyah activeWord={recitedWord} counter="c" label="إياك نعبد" maxHeight={200} playing words={words} />,
+      <NowPlayingAyah activeWord={recitedWord} counter="c" height={200} label="إياك نعبد" playing words={words} />,
       { theme: 'dark' },
     );
     await fireEvent(view.getByTestId('now-playing-scroll'), 'scroll', { nativeEvent: { contentOffset: { y: 100 } } });
@@ -204,7 +203,7 @@ describe('NowPlayingAyah follow', () => {
 
     await view.rerender(
       <ThemeProvider name="dark">
-        <NowPlayingAyah activeWord={null} counter="c" label="الآية التالية" maxHeight={200} words={words} />
+        <NowPlayingAyah activeWord={null} counter="c" height={200} label="الآية التالية" words={words} />
       </ThemeProvider>,
     );
 

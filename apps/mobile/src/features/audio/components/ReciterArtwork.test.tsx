@@ -29,6 +29,16 @@ describe('ReciterArtwork', () => {
     });
   });
 
+  it('scales the tile, corner and letter with its size', async () => {
+    const view = await renderUi(<ReciterArtwork letter="م" size={110} />, { theme: 'dark' });
+    const tile = flatStyle(view.getByTestId('reciter-artwork', { includeHiddenElements: true }).props.style);
+    const letter = view.getByText('م', { includeHiddenElements: true });
+
+    expect(tile).toMatchObject({ height: 110, width: 110 });
+    expect(tile.borderRadius).toBeCloseTo(16, 5);
+    expect(flatStyle(letter.props.style).fontSize).toBeCloseTo(48, 5);
+  });
+
   it.each(locales)('is decorative and hidden from screen readers (%s)', async (locale) => {
     const view = await renderUi(<ReciterArtwork letter="ع" />, { locale });
     const tile = view.getByTestId('reciter-artwork', { includeHiddenElements: true });
