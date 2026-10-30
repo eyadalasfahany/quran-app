@@ -15,6 +15,6 @@ Not an agent coding task. The reviewer runs this on real builds and records the 
 | 7 | Tafsir (translations removed by ADR 0014) | Installed and not installed | Text as received; source credit; empty state with a download action |
 | 8 | Search | Mid-range Android release build | Three-letter query under 150 ms; «العالمين» finds 1:2 |
 | 9 | Accessibility | VoiceOver and TalkBack; largest text size; Increase Contrast; Reduce Motion and Reduce Transparency | Every control labelled; ayah labels are Imla'i plus number; no clipping; glass solid when reduced |
-| 10 | Arabic and English | All of the above in both | Mirrors correctly, media controls included (the play glyph points left in Arabic, ADR 0025) |
+| 10 | Arabic and English | All of the above in both | Mirrors correctly, media controls included (the play glyph stays fixed, pointing right in both, ADR 0029) |
 | 11 | Gates | `composer qa`, mobile gates, package tests | Green |
 | 12 | **604 pages** | Needs QF production mushaf layout | **Pending** until production data. Record as open if prelive only |

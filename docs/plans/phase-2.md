@@ -89,7 +89,7 @@ Each step becomes a brief in `docs/plans/phase-2/`. The *Needs* column shows wha
 - **B:** 4, 5, 8. Done. Committed.
 - **C:** 6, 9. Done. Committed.
 - **D:** 7. Done. Committed.
-- **E:** design conformance (11b), resource names (12, done on prelive) and tafsir downloads (13). In progress.
+- **E:** design conformance (11b) in progress. Resource names (12, done on prelive), tafsir downloads (13) and sheet detents (14) are done. Passage rendering notes are in the step 13 brief (30 Oct 2026).
 - **F:** the exit check (10), after E.
 
 ## Known limits

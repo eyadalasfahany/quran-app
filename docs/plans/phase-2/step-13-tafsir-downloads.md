@@ -155,3 +155,13 @@ Before building, read `.agents/skills/apple-design/SKILL.md` and the references 
   - Installed, showing «عرض».
   - The passage after «عرض».
 - **After it lands:** update the step 13 row in `README.md` and the Status in `../phase-2.md`.
+
+## Passage rendering (30 Oct 2026)
+
+Decisions and one platform gotcha from the passage polish, all in `TafsirPanel.tsx` and `tafsir-quotes.ts`:
+
+- **Line height:** the passage runs at 1.75 × its font size (`PASSAGE_LINE_HEIGHT_RATIO`). The frame's 17/26 body style is too tight for long-form Arabic prose; the developer approved the deviation.
+- **Direction comes from the passage, not the catalogue.** The first strong character of the passage decides; the catalogue `direction` is only a fallback for an empty passage, and Arabic is the default. A wrong catalogue row can't flip an Arabic tafsir. Applied as `writingDirection` on the base style plus `direction` on the wrapper view.
+- **`textAlign` stays `'auto'` — iOS gotcha.** An explicit `textAlign: 'right'` inside an RTL layout resolves to the *left* edge on iOS: RN's `RCTResolveTextAlignment` swaps Right→Left when the layout direction is RTL. The passage hugged the left edge until the explicit alignment was removed. Don't reintroduce it.
+- **Quoted ayahs render gold.** QF's tafsir marks Quran quotes textually with `{…}` and `﴿…﴾`, and the server sanitizer strips markup, so `wrapQuranQuotes()` wraps those spans in `<span class="quran-quote">` and `classesStyles` colours them `colors.gold`. The brace characters stay visible — the developer confirmed (30 Oct 2026).
+- **Direction regressions:** rows inside the sheet's hosted scroll must never get a hard-coded direction; earlier `direction` overrides on the sheet root and chip row were reverted (30 Oct 2026). The passage wrapper's content-derived `direction` is the only one that stays.

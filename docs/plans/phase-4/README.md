@@ -6,7 +6,7 @@ One file per step of [`../phase-4.md`](../phase-4.md). Send a subagent *"Impleme
 | --- | --- | --- | --- |
 | 1 | [step-01-settings-screen.md](step-01-settings-screen.md) | — | Built. Top of `#Settings` checked on iPhone 17. About section is below the fold. |
 | 2 | [step-02-my-quran-library.md](step-02-my-quran-library.md) | 1 | Built. Bookmarks tab checked on iPhone 17 against `#MyQuran`. Deviations, all per brief/ADR: no sign-in banner (ADR 0027), one bookmark row (ADR 0028), «الختمة» segment added and disabled, colour filter chips on highlights, trailing remove affordances (the frame draws plain rows) — the bookmark row's remove button goes beyond the brief; the developer approved keeping it (2026-10-30). |
-| 3 | [step-03-khatma-planner.md](step-03-khatma-planner.md) | 2 | Not started |
+| 3 | [step-03-khatma-planner.md](step-03-khatma-planner.md) | 2 | Built (30 Oct 2026). `user.db` migration 0003, repository and hooks; `KhatmaScreen` with its components; the Home wird ring card; the My Quran «الختمة» tab; the Settings row. Manual position marker from the ayah actions («موضع الختمة»), with a gold on-text marker in Reading and Mushaf and the «تم تحديث موضع الختمة» pill on the reader. Gates green (275 suites). Frame check on the iPhone 17 folds into step 5 |
 | 4 | [step-04-local-reminders.md](step-04-local-reminders.md) | 1 | Not started |
 | 5 | [step-05-exit-check.md](step-05-exit-check.md) | all | Not started |
 

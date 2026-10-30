@@ -1,6 +1,6 @@
 # 0025 — Play glyph follows the layout direction
 
-Date: 2026-10-30 · Status: accepted · Amends ADR 0012 (decision 2)
+Date: 2026-10-30 · Status: decision 1 superseded by ADR 0029 the same day; decision 2 stands · Amends ADR 0012 (decision 2)
 
 ## Context
 
