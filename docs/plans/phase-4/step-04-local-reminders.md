@@ -75,12 +75,13 @@ Recon is done; build exactly this.
 
 Built as specced, with these decisions on record:
 
-- **Time picker is an inline expansion, not a modal sheet.** The brief above said "iOS — a modal sheet". No frame in `quran-app-screens.html` covers this picker; the built `ReminderTimeSheet` expands the spinner inline under the row with «تم»/«إلغاء», the iOS Settings pattern, drawn from tokens. **Developer sign-off needed** — the modal variant is recoverable if rejected.
+- **Time picker is an inline expansion, not a modal sheet.** The brief above said "iOS — a modal sheet". No frame in `quran-app-screens.html` covers this picker; the built `ReminderTimeSheet` expands the spinner inline under the row with «تم»/«إلغاء», the iOS Settings pattern, drawn from tokens. **Approved by the developer (31 Oct 2026).**
 - `formatTime(date, locale)` added to `src/core/i18n/dates.ts` («٩:٠٠ م» / "9:00 PM"), same ICU-plus-arabize pattern as `formatDate`.
 - Route payload validated before navigating: only `/read/...` is accepted; the cold-start double delivery (listener + `getLastNotificationResponseAsync`) is swallowed with a 2-second window so a later tap on the repeating notification still opens.
 - jest.setup gained global mocks for `expo-notifications` and `@react-native-community/datetimepicker` (a View stand-in that keeps props reachable, so tests can fire `change` and inspect `value`).
 - **Jest lesson recorded for future steps:** after a state-changing `fireEvent`, assert with `await findBy*` / `waitFor`, never a sync `getBy*` — React 19 concurrent rendering does not flush the update synchronously (KhatmaScreen's tests already follow this).
-- `expo-notifications` (~58.1.7) and `@react-native-community/datetimepicker` (9.2.1) added to `apps/mobile`; content-plan pin corrected (the subagent had written `~7.6.2`). **New dependency needs developer approval before commit.**
-- Gate: lint 0 errors, tsc clean, jest 279/279 suites (2766 tests) green. `expo-doctor` fails on a **pre-existing** react-native duplication (root `0.88.1` vs mobile `0.88.0`, present at HEAD) — not from this step; aligning it touches the Nitro patch (ADR 0016) and is left to the developer.
+- `expo-notifications` (~58.1.7) and `@react-native-community/datetimepicker` (9.2.1) added to `apps/mobile`; content-plan pin corrected (the subagent had written `~7.6.2`). **Dependencies approved by the developer (31 Oct 2026).**
+- Gate: lint 0 errors, tsc clean, jest 279/279 suites (2766 tests) green. `expo-doctor` fails on a **pre-existing** react-native duplication (root `0.88.1` vs mobile `0.88.0`, present at HEAD) — not from this step; aligning it touches the Nitro patch (ADR 0016). **Developer acknowledged (31 Oct 2026): left as-is, to be handled outside this step.**
+- Manual device check passed (31 Oct 2026): permission flow, inline picker, banner delivery with the production payload, and the deep link into the reader, verified on the dev client via a temporary trigger row (removed after the check).
 - A dev-client rebuild (`npx expo run:ios`) is required: `expo-notifications` adds a native module.
 
