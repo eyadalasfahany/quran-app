@@ -9,6 +9,7 @@ import { AppState, Image } from 'react-native';
 
 import appIcon from '../../../assets/images/icon.png';
 import { openContentDb } from '@/core/db/content/open';
+import { openUserDb } from '@/core/db/user/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { getLocale } from '@/core/i18n/locale';
 import { getChapter } from '@/features/reader/data/chapters';
@@ -16,6 +17,7 @@ import { getVerseByKey } from '@/features/reader/data/verses';
 
 import { activeTimingIndex, activeWordPosition, ayahSeekStartMs } from './active-ayah';
 import { chapterAudio, type ChapterAudio } from './data/audio-files';
+import { isPlayableOffline, listDownloadsForReciter } from './data/downloads';
 import { upsertRecentListen } from './data/recent-listens';
 import { listReciters, recitationIdForResource } from './data/reciters';
 import { timingsFor, type AyahTiming } from './data/timings';
@@ -28,6 +30,7 @@ import {
   REPEAT_END_TOLERANCE_MS,
   type RepeatRequest,
 } from './repeat';
+import { fileForDownloadPath } from './downloads/files';
 import { readLastPosition, writeLastPosition } from './resume-model';
 import { getReciterId } from './settings';
 import { defaultReciterId, resolveReciterId } from './settings-model';
@@ -173,6 +176,24 @@ function disposeQueue(): void {
 }
 
 /**
+ * The file URI of each surah of this reciter that is downloaded, verified within 7 days and still on disk,
+ * keyed by audio file id. Read when a playlist is built, so a download that finishes later plays from the next rebuild.
+ */
+function playableLocalFiles(reciterId: number): Map<number, string> {
+  const files = new Map<number, string>();
+  for (const row of listDownloadsForReciter(reciterId, { db: openUserDb().executor })) {
+    if (!isPlayableOffline(row)) {
+      continue;
+    }
+    const file = fileForDownloadPath(row.localPath);
+    if (file.exists) {
+      files.set(row.audioFileId, file.uri);
+    }
+  }
+  return files;
+}
+
+/**
  * The playlist for `reciterId`, reused while the reciter is unchanged and rebuilt when it changes. Undefined
  * when the reciter's recitation is not installed.
  */
@@ -189,13 +210,15 @@ function ensureQueue(db: SqlExecutor, reciterId: number): Queue | undefined {
     releaseRepeat();
   }
   // One file per surah, in surah order. Like chapterAudio, the lowest id wins when a surah has two rows.
-  const rows = db.all<{ chapterId: number; url: string }>(
-    `SELECT chapter_id AS chapterId, audio_url AS url
+  // A surah downloaded and playable offline plays from its local file; the rest stream from QF's URL.
+  const rows = db.all<{ id: number; chapterId: number; url: string }>(
+    `SELECT id, chapter_id AS chapterId, audio_url AS url
      FROM chapter_audio_files
      WHERE recitation_id = ?
      ORDER BY chapter_id, id`,
     [recitationId],
   );
+  const localFiles = playableLocalFiles(reciterId);
   const chapterIds: number[] = [];
   const sources: { uri: string }[] = [];
   for (const row of rows) {
@@ -203,7 +226,7 @@ function ensureQueue(db: SqlExecutor, reciterId: number): Queue | undefined {
       continue;
     }
     chapterIds.push(row.chapterId);
-    sources.push({ uri: row.url });
+    sources.push({ uri: localFiles.get(row.id) ?? row.url });
   }
   disposeQueue();
   // A playlist for another reciter has no recited ayah until its first status update.

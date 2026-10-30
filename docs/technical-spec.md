@@ -366,7 +366,7 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `bookmarks`, `highlights`, `notes`, `khatma_plans`, `khatma_logs`, `reading_position`, `settings` | same own columns as the backend, plus `id` uuid, `client_updated_at` int (ms), `deleted_at` int null, `dirty` int (0/1) | `dirty = 1` until the server acknowledges the change |
 | `outbox` | `seq` integer autoincrement, `entity` text, `entity_id` text, `op` text (`upsert`,`delete`), `payload` text, `client_updated_at` int, `attempts` int | PK `seq`; one pending row per (`entity`,`entity_id`): a newer edit replaces the older one |
 | `sync_meta` | `key`, `value` (`pull_cursor`, `last_push_at`, `last_pull_at`, `owner_user_id`) | PK `key` |
-| `downloads` | `audio_file_id`, `local_path`, `size_bytes`, `status` (`queued`,`downloading`,`done`,`failed`), `progress`, `downloaded_at` | PK `audio_file_id` |
+| `downloads` | `audio_file_id`, `reciter_resource_id`, `chapter_id`, `audio_url`, `source_size_bytes`, `local_path` (relative to the document directory), `size_bytes`, `status` (`queued`,`downloading`,`paused`,`waiting_wifi`,`done`,`failed`), `progress` (0 to 1), `resume_data` null, `downloaded_at` null, `verified_at` null | PK `audio_file_id`; index `reciter_resource_id`. Local only, no sync columns. `audio_url` and `source_size_bytes` snapshot the content row so verification can see that QF changed the file (step 7) |
 | `recent_listens` | `audio_file_id`, `reciter_resource_id`, `chapter_id`, `last_position_ms`, `played_at` | for Home's "last listened". Local only, no sync columns. The reciter and surah are kept so a row draws without a content lookup, and the table holds the 20 newest (step 4c) |
 | `search_history` | `query`, `searched_at` | local only, capped at 20 |
 
@@ -651,7 +651,9 @@ For each change, in one transaction per request:
 | Focus: next or previous ayah | Reanimated layout animation (`focus-turn.ts`) | Cross-fade: the leaving ayah fades out (`standard`) and drifts 56 pt the way of the turn while the next fades in (`slow`) from the other side; position on `spring()` | Cross-fade only |
 | Surah cartouche, Continue reading rosette | `react-native-svg` + Reanimated dash offset (`useDrawOnView`) | Gold outline draws in, `draw` (700 ms), the first time it scrolls into view; each surah's cartouche once per session | Shown drawn, no motion |
 
-- **Cancelling motion:** any touch on the reader stops auto-scroll at once and shows a pill to return to the current ayah; following resumes only when it is tapped.
+- **Cancelling motion:** any touch on the reader stops auto-scroll at once and shows a pill to return to the current ayah. Following resumes when the pill is tapped, or 5 s after the reader's scroll stops (developer, 29 Oct 2026; `FOLLOW_RESUME_MS`).
+- **Following the recitation** (ADR 0023): the line holding the recited word stays in the middle 60% of the visible area, and scrolls to a third down only when it leaves. While following and playing, the saved reading place is the recited ayah.
+- **Reader mini bar** (ADR 0024): in Reading and Mushaf it shows even when idle, with the top ayah on screen, and its play starts there. A small down chevron marks that it can be dragged down. Dragging it down past half its height (or above 800 pt/s) collapses it to a 64 × 24 glass capsule with a grabber; a tap or an upward drag brings it back. The choice is remembered (`reader.miniCollapsed`), and the reader's bottom inset follows the bar or the capsule. Under Reduce Motion the content fades and the glass switches without fading.
 - **Haptics** (`expo-haptics`, added to the content plan when Phase 1 first uses it):
   - Selection feedback when the reading mode, script or reciter changes.
   - Success when a khatma day is completed.

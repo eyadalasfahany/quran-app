@@ -1,9 +1,10 @@
 import { sql } from 'drizzle-orm';
-import { check, index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { check, index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const bookmarkKinds = ['verse', 'page'] as const;
 export const highlightColors = ['gold', 'green', 'blue', 'rose'] as const;
 export const outboxOps = ['upsert', 'delete'] as const;
+export const downloadStatuses = ['queued', 'downloading', 'paused', 'waiting_wifi', 'done', 'failed'] as const;
 
 export const NOTE_MAX_CHARACTERS = 10_000;
 
@@ -69,6 +70,28 @@ export const recentListens = sqliteTable('recent_listens', {
   lastPositionMs: integer('last_position_ms').notNull(),
   playedAt: integer('played_at').notNull(),
 });
+
+// Downloaded recitation audio, one row per QF audio file (step 7). Local only: no sync columns, no outbox.
+// `audio_url` and `source_size_bytes` snapshot the content row at download time, so verification can tell
+// whether QF's file changed. `source_size_bytes` is in the content row's own units (KB for some reciters).
+export const downloads = sqliteTable(
+  'downloads',
+  {
+    audioFileId: integer('audio_file_id').primaryKey(),
+    reciterResourceId: integer('reciter_resource_id').notNull(),
+    chapterId: integer('chapter_id').notNull(),
+    audioUrl: text('audio_url').notNull(),
+    sourceSizeBytes: integer('source_size_bytes'),
+    localPath: text('local_path').notNull(),
+    sizeBytes: integer('size_bytes'),
+    status: text('status', { enum: downloadStatuses }).notNull(),
+    progress: real('progress').notNull().default(0),
+    resumeData: text('resume_data'),
+    downloadedAt: integer('downloaded_at'),
+    verifiedAt: integer('verified_at'),
+  },
+  (table) => [index('downloads_reciter_resource_id_idx').on(table.reciterResourceId)],
+);
 
 export const outbox = sqliteTable(
   'outbox',

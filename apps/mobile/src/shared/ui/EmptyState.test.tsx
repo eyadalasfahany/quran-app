@@ -19,6 +19,13 @@ describe('EmptyState', () => {
     expect(view.queryByRole('button')).toBeNull();
   });
 
+  it('draws only the title when there is no body', async () => {
+    const view = await renderUi(<EmptyState title="لم نجد هذا القارئ" />);
+
+    expect(view.getByRole('header', { name: 'لم نجد هذا القارئ' })).toBeOnTheScreen();
+    expect(JSON.stringify(view.toJSON()).match(/"type":"Text"/g)).toHaveLength(1);
+  });
+
   it('renders the action as a 44 pt brand button and calls it', async () => {
     const onPress = jest.fn();
     const view = await renderUi(

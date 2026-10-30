@@ -9,6 +9,9 @@ import { featureComponentLiterals } from '../../../../jest/ui-source';
 
 import { TafsirDownloadList, type TafsirDownloadItem } from './TafsirDownloadList';
 
+// A row's action is labelled with the action and then the row's title («تنزيل البقرة»).
+const rowAction = (label: string) => new RegExp(`^${label} `);
+
 const light = themes.light.colors;
 
 const items: TafsirDownloadItem[] = [
@@ -69,20 +72,20 @@ describe('TafsirDownloadList', () => {
       const view = await renderList();
 
       expect(view.getByTestId('list-row-90-action')).toBeOnTheScreen();
-      expect(view.getByRole('button', { name: 'تنزيل' })).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: /^تنزيل / })).toBeOnTheScreen();
     });
 
     it('shows the stop button and progress bar for a downloading tafsir', async () => {
       const view = await renderList();
 
-      expect(view.getByRole('button', { name: 'إيقاف التنزيل' })).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: /^إيقاف التنزيل / })).toBeOnTheScreen();
       expect(view.getByRole('progressbar').props.accessibilityValue).toEqual({ min: 0, max: 100, now: 40 });
     });
 
     it('shows the open pill for an installed tafsir', async () => {
       const view = await renderList();
 
-      expect(view.getByRole('button', { name: 'عرض' })).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: /^عرض / })).toBeOnTheScreen();
     });
   });
 
@@ -106,7 +109,7 @@ describe('TafsirDownloadList', () => {
       const onCancel = jest.fn();
       const view = await renderList({ onDownload, onCancel });
 
-      fireEvent.press(view.getByRole('button', { name: 'إيقاف التنزيل' }));
+      fireEvent.press(view.getByRole('button', { name: /^إيقاف التنزيل / }));
 
       expect(onCancel).toHaveBeenCalledTimes(1);
       expect(onCancel).toHaveBeenCalledWith(14);
@@ -118,7 +121,7 @@ describe('TafsirDownloadList', () => {
       const onOpen = jest.fn();
       const view = await renderList({ onDownload, onOpen });
 
-      fireEvent.press(view.getByRole('button', { name: 'عرض' }));
+      fireEvent.press(view.getByRole('button', { name: /^عرض / }));
 
       expect(onOpen).toHaveBeenCalledTimes(1);
       expect(onOpen).toHaveBeenCalledWith(926);
@@ -184,7 +187,7 @@ describe('TafsirDownloadList', () => {
     expect(
       view.getByText(locale === 'ar' ? 'نزّل تفسيرًا لقراءته بدون إنترنت' : 'Download a tafsir to read it offline'),
     ).toBeOnTheScreen();
-    expect(view.getByRole('button', { name: locale === 'ar' ? 'تنزيل' : 'Download' })).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: rowAction(locale === 'ar' ? 'تنزيل' : 'Download') })).toBeOnTheScreen();
     expect(I18nManager.isRTL).toBe(locale === 'ar');
   });
 

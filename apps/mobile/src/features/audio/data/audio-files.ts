@@ -24,3 +24,13 @@ export function chapterAudio(db: SqlExecutor, recitationId: number, chapterId: n
     [recitationId, chapterId],
   );
 }
+
+/** The surahs one recitation has an audio file for, in surah order. `recitationId` is `recitations.id`. */
+export function chapterIdsWithAudio(db: SqlExecutor, recitationId: number): number[] {
+  return db
+    .all<{ chapterId: number }>(
+      'SELECT DISTINCT chapter_id AS chapterId FROM chapter_audio_files WHERE recitation_id = ? ORDER BY chapter_id',
+      [recitationId],
+    )
+    .map((row) => row.chapterId);
+}

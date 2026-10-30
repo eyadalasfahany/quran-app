@@ -1,5 +1,8 @@
 import {
   MINI_PLAYER_BUTTON_SIZE,
+  MINI_PLAYER_CAPSULE,
+  MINI_PLAYER_CAPSULE_FOOTPRINT,
+  MINI_PLAYER_CHEVRON,
   MINI_PLAYER_GAP,
   MINI_PLAYER_METRICS,
   MINI_PLAYER_PROGRESS_HEIGHT,
@@ -50,5 +53,18 @@ describe('clearance above the bar', () => {
 
   it('sets the tabs list inset at the bar height plus its gap: 64 + 12', () => {
     expect(MINI_PLAYER_TABS_FOOTPRINT).toBe(76);
+  });
+});
+
+describe('the collapsed capsule and chevron', () => {
+  it('matches #ReadingMiniCollapsed: a 64 by 24 pill in an 88 by 44 hit area, 18 above the safe area', () => {
+    expect(MINI_PLAYER_CAPSULE).toMatchObject({ bottom: 18, height: 24, hitHeight: 44, hitWidth: 88, width: 64 });
+    expect(MINI_PLAYER_CAPSULE.grabberWidth).toBe(28);
+    expect(MINI_PLAYER_CAPSULE.grabberHeight).toBe(4);
+    expect(MINI_PLAYER_CAPSULE_FOOTPRINT).toBe(62);
+  });
+
+  it('matches the reader chevron: 16 by 8, 5 from the top, at 70%', () => {
+    expect(MINI_PLAYER_CHEVRON).toEqual({ height: 8, opacity: 0.7, top: 5, width: 16 });
   });
 });

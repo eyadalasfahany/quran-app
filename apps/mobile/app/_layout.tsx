@@ -9,6 +9,7 @@ import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
+import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 
@@ -31,6 +32,7 @@ export default function RootLayout() {
   const user = useUserDb();
   useContentSync();
   useRestorePlayerSession(content.ready);
+  useDownloadManagerStartup(content.ready && user.ready);
   // A font that fails to load falls back to the system font rather than holding the splash.
   // A database error is logged and the reader deals with an empty database later.
   const ready =

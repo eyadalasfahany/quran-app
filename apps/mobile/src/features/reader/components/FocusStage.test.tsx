@@ -1,10 +1,16 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { ScrollView } from 'react-native';
 
 import { themes } from '@/core/theme';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { measureWithin } from '../measure-within';
+import { FOLLOW_VIEW_POSITION, recitedWordOffset } from '../word-follow';
 import { focusPageFromDrag, FocusStage } from './FocusStage';
+
+// The native measurement of the followed Text inside the scroll content: each follow test sets where it sits.
+jest.mock('../measure-within', () => ({ measureWithin: jest.fn() }));
 
 const stage = {
   nextNumber: 6,
@@ -16,6 +22,66 @@ const stage = {
   verseNumber: 5,
   versesCount: 7,
 };
+
+describe('FocusStage word follow', () => {
+  const viewportHeight = 844;
+  const lineHeight = 50;
+
+  afterEach(() => {
+    jest.mocked(measureWithin).mockReset();
+    jest.mocked(ScrollView.prototype.scrollTo).mockClear();
+  });
+
+  // The stage has laid out its viewport and the followed Text's lines, and the list has scrolled to `scrollY`.
+  async function layOutFollow(view: Awaited<ReturnType<typeof renderUi>>, scrollY: number, textUthmani: string) {
+    const offset = recitedWordOffset(textUthmani, 2)!;
+    await act(async () => {
+      view.getByTestId('focus-stage-scroll').props.onScroll({ nativeEvent: { contentOffset: { y: scrollY } } });
+      view.getByTestId('focus-stage-scroll').parent!.props.onLayout({
+        nativeEvent: { layout: { height: viewportHeight, width: 390, x: 0, y: 0 } },
+      });
+      view.getByTestId('focus-stage-current').props.onTextLayout({
+        nativeEvent: {
+          lines: [
+            { height: lineHeight, text: textUthmani.slice(0, offset), y: 0 },
+            { height: lineHeight, text: textUthmani.slice(offset), y: lineHeight },
+          ],
+        },
+      });
+    });
+  }
+
+  it('scrolls the recited word line a third down when it has left the band, from the tracked scroll offset', async () => {
+    // The followed Text sits 1000 down the scroll content and the stage has scrolled 200, so its top is 800 on screen.
+    // Its second line sits at 850, below the band (168.8 to 675.2): it moves to a third down the viewport.
+    jest.mocked(measureWithin).mockImplementation((_node, _content, onMeasured) => onMeasured(1000));
+    const view = await renderUi(<FocusStage {...stage} activeWord={2} following recited testID="focus-stage" />);
+
+    await layOutFollow(view, 200, stage.textUthmani);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    });
+
+    expect(ScrollView.prototype.scrollTo).toHaveBeenCalledTimes(1);
+    expect(ScrollView.prototype.scrollTo).toHaveBeenCalledWith({
+      animated: true,
+      y: 200 + (850 - viewportHeight * FOLLOW_VIEW_POSITION),
+    });
+  });
+
+  it('leaves the recited line alone while it is inside the band', async () => {
+    // The Text sits 300 down the content; with no scroll its line is at 350, inside the band.
+    jest.mocked(measureWithin).mockImplementation((_node, _content, onMeasured) => onMeasured(300));
+    const view = await renderUi(<FocusStage {...stage} activeWord={2} following recited testID="focus-stage" />);
+
+    await layOutFollow(view, 0, stage.textUthmani);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    });
+
+    expect(ScrollView.prototype.scrollTo).not.toHaveBeenCalled();
+  });
+});
 
 describe('FocusStage', () => {
   it('starts below the reader toolbar', async () => {

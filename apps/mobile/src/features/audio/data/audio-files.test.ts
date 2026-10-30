@@ -1,6 +1,6 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-import { chapterAudio } from './audio-files';
+import { chapterAudio, chapterIdsWithAudio } from './audio-files';
 import { openAudioTestDb } from './test-db';
 
 let executor: SqlExecutor;
@@ -37,5 +37,22 @@ describe('chapterAudio', () => {
   it('returns undefined for a missing surah or recitation', () => {
     expect(chapterAudio(executor, 1, 3)).toBeUndefined();
     expect(chapterAudio(executor, 2, 1)).toBeUndefined();
+  });
+});
+
+describe('chapterIdsWithAudio', () => {
+  it('lists the surahs of one recitation that have a file, in surah order', () => {
+    executor.run(
+      `INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, size_bytes, duration_ms, format) VALUES
+       (102, 1, 1, 'https://example.test/1b.mp3', NULL, 1000, 'mp3'),
+       (103, 2, 5, 'https://example.test/5.mp3', NULL, 1000, 'mp3')`,
+    );
+
+    expect(chapterIdsWithAudio(executor, 1)).toEqual([1, 2]);
+    expect(chapterIdsWithAudio(executor, 2)).toEqual([5]);
+  });
+
+  it('is empty for a recitation with no files', () => {
+    expect(chapterIdsWithAudio(executor, 99)).toEqual([]);
   });
 });

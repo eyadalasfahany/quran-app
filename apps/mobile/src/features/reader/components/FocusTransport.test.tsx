@@ -1,12 +1,32 @@
 import { fireEvent } from '@testing-library/react-native';
 
 import { themes } from '@/core/theme';
+import { hasAyahTimings, setRepeat } from '@/features/audio/player';
+import { usePlayerStore } from '@/features/audio/playerStore';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { FocusTransport } from './FocusTransport';
 
+jest.mock('@/features/audio/player', () => ({
+  ...jest.requireActual<typeof import('@/features/audio/player')>('@/features/audio/player'),
+  hasAyahTimings: jest.fn(() => true),
+  setRepeat: jest.fn(() => true),
+}));
+
 const theme = themes.light;
+const target = { chapterId: 1, verseId: 5 };
+
+// Surah 1 loaded and playing, so the focused ayah's repeat is available.
+function loadFocusedSurah() {
+  usePlayerStore.setState({ chapterId: 1, status: 'paused' });
+}
+
+beforeEach(() => {
+  usePlayerStore.getState().reset();
+  jest.mocked(hasAyahTimings).mockReturnValue(true);
+  jest.mocked(setRepeat).mockClear();
+});
 
 describe('FocusTransport', () => {
   it.each(locales)('labels every control in %s', async (locale) => {
@@ -80,6 +100,71 @@ describe('FocusTransport', () => {
 
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/reader/components/FocusTransport.tsx')).toEqual([]);
+  });
+});
+
+describe('FocusTransport repeat', () => {
+  it('is disabled without a focused ayah', async () => {
+    const view = await renderUi(<FocusTransport />, { locale: 'en' });
+
+    expect(view.getByTestId('focus-transport-repeat').props.accessibilityState).toMatchObject({ disabled: true });
+  });
+
+  it('is disabled when the focused ayah\'s surah is not the one loaded in the player', async () => {
+    usePlayerStore.setState({ chapterId: 2, status: 'paused' });
+    const view = await renderUi(<FocusTransport repeatTarget={target} />, { locale: 'en' });
+
+    expect(view.getByTestId('focus-transport-repeat').props.accessibilityState).toMatchObject({ disabled: true });
+  });
+
+  it('is disabled when the loaded surah has no ayah timings', async () => {
+    loadFocusedSurah();
+    jest.mocked(hasAyahTimings).mockReturnValue(false);
+    const view = await renderUi(<FocusTransport repeatTarget={target} />, { locale: 'en' });
+
+    expect(view.getByTestId('focus-transport-repeat').props.accessibilityState).toMatchObject({ disabled: true });
+  });
+
+  it('sets the focused ayah to repeat three times, through the engine', async () => {
+    loadFocusedSurah();
+    const view = await renderUi(<FocusTransport repeatTarget={target} />, { locale: 'en' });
+
+    fireEvent.press(view.getByTestId('focus-transport-repeat'));
+    expect(setRepeat).toHaveBeenCalledWith({ count: 3, fromVerseId: 5, toVerseId: 5 });
+  });
+
+  it('clears the repeat when it is on', async () => {
+    loadFocusedSurah();
+    usePlayerStore.getState().setRepeat({ count: 3, fromVerseId: 5, toVerseId: 5 });
+    const view = await renderUi(<FocusTransport repeatTarget={target} />, { locale: 'en' });
+
+    fireEvent.press(view.getByTestId('focus-transport-repeat'));
+    expect(usePlayerStore.getState().repeat).toBeNull();
+    expect(setRepeat).not.toHaveBeenCalled();
+  });
+
+  it('labels the active repeat with its count from the store, in the brand accent', async () => {
+    loadFocusedSurah();
+    usePlayerStore.getState().setRepeat({ count: 5, fromVerseId: 5, toVerseId: 5 });
+    const view = await renderUi(<FocusTransport repeatTarget={target} />, { locale: 'en' });
+
+    expect(view.getByText('5×')).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('5×').props.style).color).toBe(theme.colors.brand);
+  });
+
+  it('shows the forever sign for an endless repeat', async () => {
+    loadFocusedSurah();
+    usePlayerStore.getState().setRepeat({ count: Infinity, fromVerseId: 5, toVerseId: 5 });
+    const view = await renderUi(<FocusTransport repeatTarget={target} />, { locale: 'en' });
+
+    expect(view.getByText('∞')).toBeOnTheScreen();
+  });
+
+  it('keeps the frame\'s «٣×» in the ink colour when off', async () => {
+    loadFocusedSurah();
+    const view = await renderUi(<FocusTransport repeatTarget={target} />, { locale: 'ar' });
+
+    expect(flatStyle(view.getByText('٣×').props.style).color).toBe(theme.colors.ink);
   });
 });
 

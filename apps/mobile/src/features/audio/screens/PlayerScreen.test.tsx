@@ -253,4 +253,67 @@ describe('PlayerScreen', () => {
     expect(nextAyah).toHaveBeenCalledTimes(1);
     expect(previousAyah).toHaveBeenCalledTimes(1);
   });
+
+  describe('column layout', () => {
+    // The window's height as the screen reports it, and the fixed parts' natural heights on an iPhone 17 frame.
+    const layoutOf = (height: number) => ({ nativeEvent: { layout: { height, width: 350, x: 0, y: 0 } } });
+    const frameParts = { artwork: 220, header: 44, options: 74, progress: 25, title: 56, transport: 76 } as const;
+
+    function insertLongVerse(words: number) {
+      const rows = Array.from({ length: words }, (_, index) => `(5, ${index + 1}, 'word', 'كلمة', 'kalima')`).join(', ');
+      db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah,
+         text_uthmani, text_imlaei, text_search) VALUES (5, '1:5', 1, 5, 1, 1, 1, 1, 'none', 'إِيَّاكَ نَعْبُدُ', 'iyyaka na3budu', 'x')`);
+      db.executor.run(`INSERT INTO words (verse_id, position, char_type, text_uthmani, text_imlaei) VALUES ${rows}`);
+    }
+
+    // Measures the screen and each part as the layout reports them. The card reports its text and counter heights.
+    async function measure(view: Awaited<ReturnType<typeof renderUi>>, screen: number, parts: Partial<Record<keyof typeof frameParts, number>>, text: number) {
+      await fireEvent(view.getByTestId('player-screen'), 'layout', layoutOf(screen));
+      for (const [part, height] of Object.entries({ ...frameParts, ...parts })) {
+        await fireEvent(view.getByTestId(`player-part-${part}`), 'layout', layoutOf(height));
+      }
+      await fireEvent(view.getByLabelText(/الآية ٥$/), 'layout', layoutOf(text));
+      await fireEvent(view.getByTestId('now-playing-counter'), 'layout', layoutOf(16));
+    }
+
+    it('does not scroll the page with a normal ayah: the card keeps its natural height and the options stay pinned', async () => {
+      insertLongVerse(2);
+      loadSurah('paused');
+      usePlayerStore.setState({ activeVerseId: 5, activeWord: 1 });
+      const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
+      await measure(view, 844, {}, 52.5);
+
+      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
+    });
+
+    it('bounds a long ayah to the room left, and keeps the transport and options rendered', async () => {
+      insertLongVerse(2);
+      loadSurah('paused');
+      usePlayerStore.setState({ activeVerseId: 5, activeWord: 1 });
+      const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
+      await measure(view, 844, {}, 600);
+
+      // 844 less the 52 and 30 pt frame padding, less the fixed parts (495 pt) and six 20 pt gaps: 147 pt for the card.
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ flexGrow: 1 });
+      expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexBasis: 0, flexGrow: 1 });
+      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
+      expect(view.getByTestId('player-transport')).toBeOnTheScreen();
+      expect(view.getByTestId('player-options')).toBeOnTheScreen();
+      expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
+    });
+
+    it('scrolls the whole column, with the card at its natural height, only when even the fixed parts do not fit', async () => {
+      insertLongVerse(2);
+      loadSurah('paused');
+      usePlayerStore.setState({ activeVerseId: 5, activeWord: 1 });
+      const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
+      // A very large text size makes the artwork and header far taller than the frame's.
+      await measure(view, 844, { artwork: 640, header: 120 }, 600);
+
+      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(true);
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).flexGrow).toBeUndefined();
+      expect(view.getByTestId('player-options')).toBeOnTheScreen();
+    });
+  });
 });

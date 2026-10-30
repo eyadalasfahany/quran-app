@@ -11,6 +11,12 @@ import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
 
 // The user database is not open under Jest; Home's recent listens are empty.
+// The user database is not open under Jest; the Listen tab (rendered by the tabs) reads no download counts.
+jest.mock("@/features/audio/data/downloads", () => ({
+  ...jest.requireActual("@/features/audio/data/downloads"),
+  useDoneCountsByReciter: () => ({}),
+}));
+
 jest.mock("@/features/audio/data/recent-listens-hooks", () => ({
   useRecentListens: () => ({ data: [] }),
 }));

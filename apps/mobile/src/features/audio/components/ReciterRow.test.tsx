@@ -15,6 +15,8 @@ const base = {
   downloadProgress: null,
   onSelect: () => undefined,
   onPlay: () => undefined,
+  onOptions: () => undefined,
+  optionsLabel: 'خيارات القارئ',
   testID: 'row',
 };
 
@@ -55,6 +57,36 @@ describe('ReciterRow', () => {
 
     expect(onPlay).toHaveBeenCalledTimes(1);
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('opens the reciter page from the «⋯» button, which is 44 pt and does not select or play', async () => {
+    const onSelect = jest.fn();
+    const onPlay = jest.fn();
+    const onOptions = jest.fn();
+    const view = await renderUi(
+      <ReciterRow {...base} onOptions={onOptions} onPlay={onPlay} onSelect={onSelect} testID="row" />,
+    );
+    const options = view.getByRole('button', { name: 'خيارات القارئ' });
+
+    expect(flatStyle(options.props.style).height).toBeGreaterThanOrEqual(44);
+    expect(flatStyle(options.props.style).width).toBeGreaterThanOrEqual(44);
+    await fireEvent.press(options);
+
+    expect(onOptions).toHaveBeenCalledTimes(1);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onPlay).not.toHaveBeenCalled();
+  });
+
+  it('labels the «⋯» button in English', async () => {
+    const onOptions = jest.fn();
+    const view = await renderUi(
+      <ReciterRow {...base} name="Mishari" onOptions={onOptions} optionsLabel="Reciter options" playLabel="Play" />,
+      { locale: 'en' },
+    );
+
+    await fireEvent.press(view.getByRole('button', { name: 'Reciter options' }));
+
+    expect(onOptions).toHaveBeenCalledTimes(1);
   });
 
   it('omits the style tag when the style is unknown, and the status line when there is none', async () => {

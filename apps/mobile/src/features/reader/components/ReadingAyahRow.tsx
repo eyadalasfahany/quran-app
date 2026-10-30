@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { Pressable, View, type HostInstance } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { Divider, highlightFill, useContrastColors, type HighlightColor } from '@/shared/ui';
 
+import type { FollowedTextProps } from '../useWordFollow';
 import { ReadingAyahHeader } from './ReadingAyahHeader';
 import { RecitedQuranText } from './RecitedQuranText';
 
@@ -26,6 +27,8 @@ export function ReadingAyahRow({
   onOpenActions,
   onOpenTafsir,
   onPlay,
+  followedText,
+  rowRef,
   testID,
 }: {
   verseNumber: number;
@@ -44,6 +47,10 @@ export function ReadingAyahRow({
   onOpenActions?: () => void;
   onOpenTafsir?: () => void;
   onPlay?: () => void;
+  /** Set on the row the reader follows: its Text reports its lines for the word follow-scroll. */
+  followedText?: FollowedTextProps;
+  /** Set on the row the reader follows: the word follow-scroll measures the Text inside this row. */
+  rowRef?: (node: HostInstance | null) => void;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -63,7 +70,7 @@ export function ReadingAyahRow({
 
   // The header's buttons sit outside the text's Pressable, so each one stays reachable by screen readers.
   return (
-    <View style={{ gap: theme.space[2], paddingTop: ROW_PADDING_TOP }}>
+    <View ref={rowRef} style={{ gap: theme.space[2], paddingTop: ROW_PADDING_TOP }}>
       <ReadingAyahHeader
         active={active}
         audioAvailable={audioAvailable}
@@ -94,6 +101,7 @@ export function ReadingAyahRow({
           }}
         >
           <RecitedQuranText
+            {...followedText}
             activeWord={recited ? activeWord : null}
             fontScale={fontScale}
             text={textUthmani}

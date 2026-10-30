@@ -274,7 +274,7 @@ describe('TafsirPanel', () => {
       );
       const screen = await view;
 
-      await fireEvent.press(screen.getByRole('button', { name: 'Open' }));
+      await fireEvent.press(screen.getByRole('button', { name: /^Open / }));
 
       expect(props.onOpenTafsir).toHaveBeenCalledWith(16);
     });

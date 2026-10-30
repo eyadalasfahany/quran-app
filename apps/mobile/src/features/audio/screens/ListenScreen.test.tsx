@@ -31,6 +31,13 @@ jest.mock('@/core/db/content/open', () => ({
 jest.mock('../player', () => ({ playChapter: jest.fn(() => Promise.resolve()) }));
 jest.mock('@/core/sync', () => ({ installResource: jest.fn() }));
 
+// The downloaded surahs per reciter, from the user database (not open under Jest).
+const mockDoneCounts: { value: Record<number, number> } = { value: {} };
+jest.mock('../data/downloads', () => ({ useDoneCountsByReciter: () => mockDoneCounts.value }));
+
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
+
 jest.mock('expo-symbols', () => {
   const { createElement } = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -75,6 +82,8 @@ beforeEach(() => {
   usePlayerStore.setState({ chapterId: null, reciterId: null, status: 'idle' });
   install.mockReset();
   play.mockClear();
+  mockDoneCounts.value = {};
+  mockPush.mockClear();
 });
 
 afterEach(() => {
@@ -149,13 +158,81 @@ describe('ListenScreen', () => {
     expect(view.getByText('محمود خليل الحصري')).toBeOnTheScreen();
   });
 
-  it('keeps «المحمّلة» disabled until the downloads of step 7', async () => {
+  it('enables «المحمّلة» and shows only the reciters with a downloaded surah', async () => {
+    mockDoneCounts.value = { 31: 2 };
+    const view = await renderUi(<ListenScreen />);
+    const chip = view.getByRole('radio', { name: 'المحمّلة' });
+
+    expect(chip.props.accessibilityState).toMatchObject({ disabled: false });
+    await fireEvent.press(chip);
+
+    expect(view.getByRole('radio', { name: 'المحمّلة' }).props.accessibilityState).toMatchObject({ checked: true });
+    expect(view.queryByText('مشاري راشد العفاسي')).toBeNull();
+    expect(view.getByText('محمود خليل الحصري')).toBeOnTheScreen();
+    expect(view.queryByText('محمد صديق المنشاوي')).toBeNull();
+  });
+
+  it('shows «المحمّلة» with nothing in it when no surah is downloaded', async () => {
     const view = await renderUi(<ListenScreen />);
 
     await fireEvent.press(view.getByRole('radio', { name: 'المحمّلة' }));
 
-    expect(view.getByRole('radio', { name: 'المحمّلة' }).props.accessibilityState).toMatchObject({ disabled: true });
-    expect(view.getByRole('radio', { name: 'الكل' }).props.accessibilityState).toMatchObject({ checked: true });
+    expect(view.getByTestId('reciter-empty')).toBeOnTheScreen();
+  });
+
+  it.each([
+    [1, 'سورة محمّلة'],
+    [2, 'سورتان محمّلتان'],
+    [3, '٣ سور محمّلة'],
+    [11, '١١ سورة محمّلة'],
+    [114, '١١٤ سورة محمّلة'],
+  ])('adds the count to the status line with the Arabic plural for %p surahs', async (count, text) => {
+    mockDoneCounts.value = { 30: count };
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent(text);
+  });
+
+  it('puts the count after «يُتلى الآن» when both apply, with a middle dot', async () => {
+    usePlayerStore.setState({ reciterId: 30, status: 'playing' });
+    mockDoneCounts.value = { 30: 3 };
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent('يُتلى الآن · ٣ سور محمّلة');
+  });
+
+  it('shows no count on a reciter with no downloads', async () => {
+    mockDoneCounts.value = { 30: 3 };
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.queryByTestId('reciter-row-31-status')).toHaveTextContent('للتعليم والتكرار');
+    expect(view.queryByTestId('reciter-row-32-status')).toBeNull();
+  });
+
+  it.each([
+    [1, '1 surah downloaded'],
+    [3, '3 surahs downloaded'],
+  ])('shows the English count for %p surahs', async (count, text) => {
+    mockDoneCounts.value = { 30: count };
+    const view = await renderUi(<ListenScreen />, { locale: 'en' });
+
+    expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent(text);
+  });
+
+  it('opens the reciter page from «⋯», without selecting or playing the reciter', async () => {
+    const view = await renderUi(<ListenScreen />);
+
+    await fireEvent.press(view.getByTestId('reciter-row-30-options'));
+
+    expect(mockPush).toHaveBeenCalledWith('/(main)/(listen)/reciter/30');
+    expect(play).not.toHaveBeenCalled();
+    expect(getReciterId()).not.toBe(31);
+  });
+
+  it('labels «⋯» in English', async () => {
+    const view = await renderUi(<ListenScreen />, { locale: 'en' });
+
+    expect(view.getAllByRole('button', { name: 'Reciter options' })).toHaveLength(3);
   });
 
   it('makes a reciter the default when its row is pressed', async () => {

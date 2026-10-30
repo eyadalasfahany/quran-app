@@ -10,11 +10,19 @@ import { rawColorLiterals } from '../../../jest/ui-source';
 
 import { DownloadRow, type DownloadRowState } from './DownloadRow';
 
+// A row's action is labelled with the action and then the row's title («تنزيل البقرة»).
+const rowAction = (label: string) => new RegExp(`^${label} `);
+
 const light = themes.light.colors;
 
 function labels(locale: Locale = 'ar') {
   const t = i18n.getFixedT(locale);
-  return { download: t('ui.download.start'), cancel: t('ui.download.cancel'), open: t('ui.download.open') };
+  return {
+    delete: t('listen.download.delete'),
+    download: t('ui.download.start'),
+    cancel: t('ui.download.cancel'),
+    open: t('ui.download.open'),
+  };
 }
 
 function renderRow(
@@ -34,14 +42,29 @@ function renderRow(
 }
 
 describe('DownloadRow', () => {
+  it('names the row in the download label, so VoiceOver can tell the rows apart', async () => {
+    const view = await renderRow({ state: 'available' });
+    expect(view.getByRole('button', { name: 'تنزيل تفسير ابن كثير' })).toBeOnTheScreen();
+  });
+
+  it('names the row in the stop label', async () => {
+    const view = await renderRow({ state: 'downloading', progress: 0.5 });
+    expect(view.getByRole('button', { name: 'إيقاف التنزيل تفسير ابن كثير' })).toBeOnTheScreen();
+  });
+
+  it('names the row in the open label', async () => {
+    const view = await renderRow({ state: 'installed', locale: 'en' });
+    expect(view.getByRole('button', { name: 'Open تفسير ابن كثير' })).toBeOnTheScreen();
+  });
+
   describe('available', () => {
     it('shows the download pill and no stop button or progress bar', async () => {
       const view = await renderRow({ state: 'available' });
 
-      expect(view.getByRole('button', { name: 'تنزيل' })).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: /^تنزيل / })).toBeOnTheScreen();
       expect(view.queryByRole('progressbar')).toBeNull();
-      expect(view.queryByRole('button', { name: 'إيقاف التنزيل' })).toBeNull();
-      expect(view.queryByRole('button', { name: 'عرض' })).toBeNull();
+      expect(view.queryByRole('button', { name: /^إيقاف التنزيل / })).toBeNull();
+      expect(view.queryByRole('button', { name: /^عرض / })).toBeNull();
     });
 
     it('calls onDownload, and no other action', async () => {
@@ -50,7 +73,7 @@ describe('DownloadRow', () => {
       const onOpen = jest.fn();
       const view = await renderRow({ state: 'available', onDownload, onCancel, onOpen });
 
-      fireEvent.press(view.getByRole('button', { name: 'تنزيل' }));
+      await fireEvent.press(view.getByRole('button', { name: /^تنزيل / }));
 
       expect(onDownload).toHaveBeenCalledTimes(1);
       expect(onCancel).not.toHaveBeenCalled();
@@ -59,7 +82,7 @@ describe('DownloadRow', () => {
 
     it('keeps both controls at least 44 pt', async () => {
       const view = await renderRow({ state: 'available' });
-      const pill = flatStyle(view.getByRole('button', { name: 'تنزيل' }).props.style);
+      const pill = flatStyle(view.getByRole('button', { name: /^تنزيل / }).props.style);
 
       expect(pill.minHeight).toBeGreaterThanOrEqual(44);
       expect(pill.minWidth).toBeGreaterThanOrEqual(44);
@@ -76,8 +99,8 @@ describe('DownloadRow', () => {
     it('shows a stop button labelled as the cancel action, and no download pill', async () => {
       const view = await renderRow({ state: 'downloading', progress: 0.4 });
 
-      expect(view.getByRole('button', { name: 'إيقاف التنزيل' })).toBeOnTheScreen();
-      expect(view.queryByRole('button', { name: 'تنزيل' })).toBeNull();
+      expect(view.getByRole('button', { name: /^إيقاف التنزيل / })).toBeOnTheScreen();
+      expect(view.queryByRole('button', { name: /^تنزيل / })).toBeNull();
     });
 
     it('calls onCancel when the stop button is pressed', async () => {
@@ -85,7 +108,7 @@ describe('DownloadRow', () => {
       const onDownload = jest.fn();
       const view = await renderRow({ state: 'downloading', progress: 0.4, onCancel, onDownload });
 
-      fireEvent.press(view.getByRole('button', { name: 'إيقاف التنزيل' }));
+      await fireEvent.press(view.getByRole('button', { name: /^إيقاف التنزيل / }));
 
       expect(onCancel).toHaveBeenCalledTimes(1);
       expect(onDownload).not.toHaveBeenCalled();
@@ -148,9 +171,9 @@ describe('DownloadRow', () => {
     it('shows the open pill and no progress bar', async () => {
       const view = await renderRow({ state: 'installed' });
 
-      expect(view.getByRole('button', { name: 'عرض' })).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: /^عرض / })).toBeOnTheScreen();
       expect(view.queryByRole('progressbar')).toBeNull();
-      expect(view.queryByRole('button', { name: 'تنزيل' })).toBeNull();
+      expect(view.queryByRole('button', { name: /^تنزيل / })).toBeNull();
     });
 
     it('calls onOpen, not onDownload', async () => {
@@ -158,10 +181,46 @@ describe('DownloadRow', () => {
       const onDownload = jest.fn();
       const view = await renderRow({ state: 'installed', onOpen, onDownload });
 
-      fireEvent.press(view.getByRole('button', { name: 'عرض' }));
+      await fireEvent.press(view.getByRole('button', { name: /^عرض / }));
 
       expect(onOpen).toHaveBeenCalledTimes(1);
       expect(onDownload).not.toHaveBeenCalled();
+    });
+
+    it('draws no delete button unless onDelete is given', async () => {
+      const view = await renderRow({ state: 'installed' });
+
+      expect(view.queryByRole('button', { name: rowAction('حذف التنزيل') })).toBeNull();
+    });
+
+    it('draws a 44 pt delete button after the open pill, and calls onDelete from it', async () => {
+      const onDelete = jest.fn();
+      const onOpen = jest.fn();
+      const view = await renderRow({ state: 'installed', onDelete, onOpen, testID: 'row' });
+      const remove = view.getByRole('button', { name: rowAction('حذف التنزيل') });
+      const size = flatStyle(remove.props.style);
+
+      expect(size.height).toBeGreaterThanOrEqual(44);
+      expect(size.width).toBeGreaterThanOrEqual(44);
+      await fireEvent.press(remove);
+
+      expect(onDelete).toHaveBeenCalledTimes(1);
+      expect(onOpen).not.toHaveBeenCalled();
+    });
+
+    it('draws the delete button in English', async () => {
+      const onDelete = jest.fn();
+      const view = await renderRow({ state: 'installed', onDelete, locale: 'en' });
+
+      await fireEvent.press(view.getByRole('button', { name: /^Delete download / }));
+
+      expect(onDelete).toHaveBeenCalledTimes(1);
+    });
+
+    it('draws no delete button while downloading, even with onDelete', async () => {
+      const view = await renderRow({ state: 'downloading', progress: 0.2, onDelete: jest.fn() });
+
+      expect(view.queryByRole('button', { name: rowAction('حذف التنزيل') })).toBeNull();
     });
   });
 
@@ -185,7 +244,7 @@ describe('DownloadRow', () => {
     const view = await renderRow({ state: 'downloading', progress: 0.1, locale });
 
     expect(view.getByText('تفسير ابن كثير')).toBeOnTheScreen();
-    expect(view.getByRole('button', { name: labels(locale).cancel })).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: new RegExp(`^${labels(locale).cancel} `) })).toBeOnTheScreen();
   });
 
   it('has no raw colour literals', () => {

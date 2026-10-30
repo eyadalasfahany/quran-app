@@ -17,6 +17,33 @@
     "play": "تشغيل {{name}}",
     "teaching": "للتعليم والتكرار",
     "unnamed": "قارئ",
+    "downloadedSurahs_one": "سورة محمّلة",
+    "downloadedSurahs_two": "سورتان محمّلتان",
+    "downloadedSurahs_few": "{{n}} سور محمّلة",
+    "downloadedSurahs_many": "{{n}} سورة محمّلة",
+    "downloadedSurahs_other": "{{n}} سورة محمّلة",
+    "options": "خيارات القارئ",
+    "reciter": {
+      "back": "رجوع",
+      "countOf": "{{n}} من {{total}} محمّلة",
+      "downloadAll": "تنزيل الكل",
+      "deleteAll": "حذف التنزيلات",
+      "deleteTitle": "حذف التنزيلات؟",
+      "deleteBody": "تُحذف الملفات الصوتية المحمّلة لهذا القارئ من الجهاز. يمكنك تنزيلها مرة أخرى في أي وقت.",
+      "deleteConfirm": "حذف",
+      "cancel": "إلغاء",
+      "installing": "جارٍ تنزيل بيانات القارئ",
+      "installFailed": "تعذّر تنزيل بيانات القارئ",
+      "retry": "إعادة المحاولة",
+      "notFound": "لم نجد هذا القارئ"
+    },
+    "download": {
+      "queued": "في الانتظار",
+      "waitingWifi": "بانتظار Wi-Fi",
+      "paused": "متوقف",
+      "delete": "حذف التنزيل",
+      "play": "تشغيل"
+    },
     "empty": {
       "title": "لا يوجد قارئ مطابق",
       "body": "جرّب اسمًا آخر، أو امسح البحث."
@@ -251,6 +278,7 @@
     "mini": {
       "label": "{{reciter}}، {{surah}}",
       "hint": "يفتح المشغّل",
+      "show": "إظهار المشغّل",
       "caption": "{{surah}} · {{ayah}}"
     },
     "style": {

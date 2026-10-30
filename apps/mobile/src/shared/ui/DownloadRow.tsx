@@ -3,6 +3,7 @@ import { View, Pressable } from 'react-native';
 import { useTheme } from '@/core/theme';
 
 import { UiText } from './UiText';
+import { IconButton } from './IconButton';
 import { useContrastColors } from './useContrastColors';
 
 export type DownloadRowState = 'available' | 'downloading' | 'installed';
@@ -11,10 +12,15 @@ export type DownloadRowActionLabels = {
   download: string;
   cancel: string;
   open: string;
+  /** Needed only with `onDelete`. */
+  delete?: string;
 };
 
+// The trash glyph for an installed row's delete button.
+const DELETE_ICON = { ios: 'trash', android: 'delete' } as const;
+
 // One row of a download list: available shows the download pill, downloading shows the stop button
-// and a progress bar under the subtitle, installed shows the open pill.
+// and a progress bar under the subtitle, installed shows the open pill and, with `onDelete`, a trailing delete button.
 export function DownloadRow({
   title,
   subtitle,
@@ -23,6 +29,7 @@ export function DownloadRow({
   onDownload,
   onCancel,
   onOpen,
+  onDelete,
   actionLabels,
   showDivider = false,
   testID,
@@ -35,6 +42,8 @@ export function DownloadRow({
   onDownload?: () => void;
   onCancel?: () => void;
   onOpen?: () => void;
+  /** Drawn for an installed row only. */
+  onDelete?: () => void;
   actionLabels: DownloadRowActionLabels;
   showDivider?: boolean;
   testID?: string;
@@ -61,7 +70,7 @@ export function DownloadRow({
     if (state === 'downloading') {
       return (
         <Pressable
-          accessibilityLabel={actionLabels.cancel}
+          accessibilityLabel={`${actionLabels.cancel} ${title}`}
           accessibilityRole="button"
           onPress={onCancel}
           style={({ pressed }) => [
@@ -95,7 +104,8 @@ export function DownloadRow({
     const label = isInstalled ? actionLabels.open : actionLabels.download;
     return (
       <Pressable
-        accessibilityLabel={label}
+        // Every row has the same actions, so each says which row it acts on («تنزيل البقرة»).
+        accessibilityLabel={`${label} ${title}`}
         accessibilityRole="button"
         onPress={isInstalled ? onOpen : onDownload}
         style={({ pressed }) => [pillStyle, { opacity: pressed ? theme.opacity.pressed : 1 }]}
@@ -158,6 +168,17 @@ export function DownloadRow({
         ) : null}
       </View>
       {action}
+      {state === 'installed' && onDelete !== undefined && actionLabels.delete !== undefined ? (
+        <IconButton
+          icon={DELETE_ICON}
+          iconSize={20}
+          label={`${actionLabels.delete} ${title}`}
+          onPress={onDelete}
+          testID={testID ? `${testID}-delete` : undefined}
+          tone="muted"
+          variant="raised"
+        />
+      ) : null}
     </View>
   );
 }

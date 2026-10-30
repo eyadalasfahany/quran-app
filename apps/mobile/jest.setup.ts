@@ -56,6 +56,25 @@ jest.mock('expo-audio', () => ({
   setAudioModeAsync: jest.fn(() => Promise.resolve()),
 }));
 
+// Downloads write under the document directory and watch the network. Tests drive both through the fakes.
+jest.mock('expo-file-system', () => jest.requireActual<typeof import('./jest/fake-file-system')>('./jest/fake-file-system').fakeExpoFileSystem);
+
+jest.mock('expo-network', () => ({
+  NetworkStateType: {
+    BLUETOOTH: 'BLUETOOTH',
+    CELLULAR: 'CELLULAR',
+    ETHERNET: 'ETHERNET',
+    NONE: 'NONE',
+    OTHER: 'OTHER',
+    UNKNOWN: 'UNKNOWN',
+    VPN: 'VPN',
+    WIFI: 'WIFI',
+    WIMAX: 'WIMAX',
+  },
+  addNetworkStateListener: jest.fn(() => ({ remove: jest.fn() })),
+  getNetworkStateAsync: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true, type: 'WIFI' })),
+}));
+
 jest.mock('expo-updates', () => ({
   reloadAsync: jest.fn(() => Promise.resolve()),
 }));

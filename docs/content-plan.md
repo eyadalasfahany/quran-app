@@ -32,6 +32,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Long lists | `@shopify/flash-list` | 2.3.2 | Virtualized vertical mushaf and surah lists |
 | Audio | `expo-audio` | \~58.0.10 | Background playback, lock-screen controls and playlists built in |
 | Downloads | `expo-file-system` | \~58.0.12 | Audio and pack downloads with progress |
+| Network | `expo-network` | \~58.0.4 | Wi-Fi-only audio downloads |
 | Pack checksum | `expo-crypto` | \~58.0.7 | SHA-256 of downloaded packs |
 | Reading fonts | Amiri and Amiri Quran (bundled assets, SIL OFL) | 1.003 | Uthmani ayah text in Reading and Focus modes, surah names and display type. Older than 12 months: accepted for a stable typeface (ADR 0011) |
 | Mushaf fonts | QCF V2 page fonts, loaded at runtime from `verses.quran.foundation` | QF CDN | Fetched on first use, cached on the device, revalidated every 30 days; never served by our API; credit "Quran fonts provided by Quran Foundation" (ADR 0011) |

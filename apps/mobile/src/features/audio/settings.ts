@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 
-import { readSavedReciterId, writeSavedReciterId } from './settings-model';
+import { readSavedReciterId, readWifiOnlyDownloads, writeSavedReciterId, writeWifiOnlyDownloads } from './settings-model';
 
-type AudioSettingsStore = { reciterId: number | null };
+type AudioSettingsStore = { reciterId: number | null; wifiOnlyDownloads: boolean };
 
 export const useAudioSettings = create<AudioSettingsStore>(() => ({
   reciterId: readSavedReciterId(),
+  wifiOnlyDownloads: readWifiOnlyDownloads(),
 }));
 
 export function getReciterId(): number | null {
@@ -17,6 +18,15 @@ export function setReciterId(id: number): void {
   useAudioSettings.setState({ reciterId: id });
 }
 
+export function getWifiOnlyDownloads(): boolean {
+  return readWifiOnlyDownloads();
+}
+
+export function setWifiOnlyDownloads(on: boolean): void {
+  writeWifiOnlyDownloads(on);
+  useAudioSettings.setState({ wifiOnlyDownloads: on });
+}
+
 export function resetAudioSettingsStore(): void {
-  useAudioSettings.setState({ reciterId: readSavedReciterId() });
+  useAudioSettings.setState({ reciterId: readSavedReciterId(), wifiOnlyDownloads: readWifiOnlyDownloads() });
 }

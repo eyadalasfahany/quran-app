@@ -1,8 +1,9 @@
 import { View, Pressable } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { UiText, useContrastColors } from '@/shared/ui';
+import { IconButton, UiText, useContrastColors } from '@/shared/ui';
 
+import { MORE_ICON } from './player-icons';
 import { ReciterPlayButton } from './ReciterPlayButton';
 import { ReciterStyleTag } from './ReciterStyleTag';
 import { ReciterTile } from './ReciterTile';
@@ -10,7 +11,7 @@ import { ReciterTile } from './ReciterTile';
 export type ReciterRowStatus = { label: string; tone: 'muted' | 'danger' };
 
 // One reciter in the Listen list (quran-app-screens.html, #Reciters). Tapping the info selects the reciter;
-// the play button is a separate control beside it.
+// the play button is a separate control beside it, and the «⋯» button opens the reciter's page.
 export function ReciterRow({
   name,
   letter,
@@ -22,6 +23,8 @@ export function ReciterRow({
   downloadProgress,
   onSelect,
   onPlay,
+  onOptions,
+  optionsLabel,
   testID,
 }: {
   name: string;
@@ -37,6 +40,9 @@ export function ReciterRow({
   downloadProgress: number | null;
   onSelect: () => void;
   onPlay: () => void;
+  /** Opens the reciter's page (its downloads). */
+  onOptions: () => void;
+  optionsLabel: string;
   testID?: string;
 }) {
   const theme = useTheme();
@@ -99,6 +105,14 @@ export function ReciterRow({
         onPress={onPlay}
         progress={downloadProgress}
         testID={testID ? `${testID}-play` : undefined}
+      />
+      <IconButton
+        icon={MORE_ICON}
+        iconSize={20}
+        label={optionsLabel}
+        onPress={onOptions}
+        testID={testID ? `${testID}-options` : undefined}
+        tone="muted"
       />
     </View>
   );

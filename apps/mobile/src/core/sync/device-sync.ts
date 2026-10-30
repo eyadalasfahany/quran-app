@@ -3,6 +3,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { gunzipSync } from 'fflate';
 
 import { openContentDb } from '@/core/db/content/open';
+import { removeReciter } from '@/features/audio/downloads/manager';
 
 import { getChanges, getManifest } from '../api/content';
 import { syncContent, type ContentSyncDeps, type ContentSyncReport, type FileStore, type PackDownloadOptions } from './content-sync';
@@ -75,6 +76,17 @@ function deviceContentDeps(): ContentSyncDeps {
     gunzip: gunzipPack,
     now: () => Date.now(),
     selection: selectedResourceIds,
+    onResourceRemoved: (resourceId, group) => {
+      if (group !== 'chapter_recitations') {
+        return;
+      }
+      // The pack is gone, so its downloads go with it. A failure here must not fail the sync.
+      try {
+        removeReciter(resourceId);
+      } catch (error) {
+        console.warn('Downloaded audio was not removed with its reciter.', error);
+      }
+    },
   };
 }
 

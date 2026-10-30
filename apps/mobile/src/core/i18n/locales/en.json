@@ -17,6 +17,33 @@
     "play": "Play {{name}}",
     "teaching": "For teaching and repetition",
     "unnamed": "Reciter",
+    "downloadedSurahs_one": "{{n}} surah downloaded",
+    "downloadedSurahs_two": "{{n}} surahs downloaded",
+    "downloadedSurahs_few": "{{n}} surahs downloaded",
+    "downloadedSurahs_many": "{{n}} surahs downloaded",
+    "downloadedSurahs_other": "{{n}} surahs downloaded",
+    "options": "Reciter options",
+    "reciter": {
+      "back": "Back",
+      "countOf": "{{n}} of {{total}} downloaded",
+      "downloadAll": "Download all",
+      "deleteAll": "Delete downloads",
+      "deleteTitle": "Delete downloads?",
+      "deleteBody": "The downloaded audio of this reciter is removed from this device. You can download it again at any time.",
+      "deleteConfirm": "Delete",
+      "cancel": "Cancel",
+      "installing": "Downloading the reciter's data",
+      "installFailed": "The reciter's data could not be downloaded",
+      "retry": "Try again",
+      "notFound": "This reciter was not found"
+    },
+    "download": {
+      "queued": "Queued",
+      "waitingWifi": "Waiting for Wi-Fi",
+      "paused": "Paused",
+      "delete": "Delete download",
+      "play": "Play"
+    },
     "empty": {
       "title": "No matching reciter",
       "body": "Try another name, or clear the search."
@@ -251,6 +278,7 @@
     "mini": {
       "label": "{{reciter}}, {{surah}}",
       "hint": "Opens the player",
+      "show": "Show player",
       "caption": "{{surah}} · {{ayah}}"
     },
     "style": {

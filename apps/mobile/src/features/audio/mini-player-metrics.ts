@@ -74,3 +74,26 @@ export const MINI_PLAYER_READER_BOTTOM = 28;
 export const MINI_PLAYER_READER_FOOTPRINT = MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_METRICS.reader.height + MINI_PLAYER_BOTTOM_GAP;
 /** Bottom content inset of the tab screens while the tabs bar shows: the bar's height plus the gap. */
 export const MINI_PLAYER_TABS_FOOTPRINT = MINI_PLAYER_METRICS.tabs.height + MINI_PLAYER_BOTTOM_GAP;
+
+/**
+ * The collapsed capsule (#ReadingMiniCollapsed): a 64 × 24 glass pill centred in an 88 × 44 hit area, whose
+ * bottom edge sits 18 above the safe area. Its grabber is 28 × 4.
+ */
+export const MINI_PLAYER_CAPSULE = {
+  bottom: 18,
+  hitWidth: 88,
+  hitHeight: 44,
+  width: 64,
+  height: 24,
+  grabberWidth: 28,
+  grabberHeight: 4,
+} as const;
+
+/** The collapsed footprint the lists and the resume pill clear: the hit area's bottom plus its height (18 + 44). */
+export const MINI_PLAYER_CAPSULE_FOOTPRINT = MINI_PLAYER_CAPSULE.bottom + MINI_PLAYER_CAPSULE.hitHeight;
+
+/** The chevron drawn at the top centre of the reader bar (#Reading, #ReadingMiniIdle): 16 × 8, 5 from the top, 70%. */
+export const MINI_PLAYER_CHEVRON = { width: 16, height: 8, top: 5, opacity: 0.7 } as const;
+
+/** How far a bar or capsule starts below its rest position when it switches in (the slide, not Reduce Motion). */
+export const MINI_PLAYER_ENTER_OFFSET = 40;
