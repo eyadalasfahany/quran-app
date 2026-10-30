@@ -7,6 +7,14 @@ import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { SectionScreen } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useAllHighlights, useAllNotes, useBookmarks } from '@/features/library/data';
+import { KhatmaSummaryCard } from '@/features/khatma/components/KhatmaSummaryCard';
+import {
+  planProgress,
+  toLocalDateString,
+  useActivePlan,
+  usePlanLogs,
+} from '@/features/khatma/data';
+import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { IconButton } from '@/shared/ui';
 
 import { BookmarkListCard } from '../components/BookmarkListCard';
@@ -34,6 +42,9 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
   const highlights = useAllHighlights();
   const notes = useAllNotes();
   const [activeTab, setActiveTab] = useState<MyQuranTab>('bookmarks');
+  const activePlan = useActivePlan().data[0] ?? null;
+  const planLogs = usePlanLogs(activePlan?.id);
+  const today = toLocalDateString(new Date());
 
   // Joins wait for the content database; until then every tab draws its empty state. The try/catch
   // mirrors IndexScreen: under Jest openContentDb throws, and the tabs draw their empty states.
@@ -58,6 +69,30 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
       noteItems: resolveSavedVerses(executor, notes.data),
     };
   }, [bookmarks.data, highlights.data, notes.data, ready]);
+
+  const khatmaSummary = useMemo(() => {
+    if (activePlan === null || !ready) {
+      return { active: false as const };
+    }
+    try {
+      const executor = openContentDb().executor;
+      const bounds = resolvePlanBounds(executor, activePlan.startVerseId);
+      if (bounds === null) {
+        return { active: false as const };
+      }
+      const progress = planProgress(activePlan, planLogs.data, today, bounds.pagesTotal);
+      const todayLog = planLogs.data.find((log) => log.date === today);
+      return {
+        active: true as const,
+        dayIndex: progress.dayIndex,
+        durationDays: activePlan.durationDays,
+        pagesLoggedToday: todayLog?.pagesRead ?? 0,
+        todayTarget: progress.todayTarget,
+      };
+    } catch {
+      return { active: false as const };
+    }
+  }, [activePlan, planLogs.data, ready, today]);
 
   const openVerse = (verseKey: string) => router.push(`/read/${verseKey}` as Href);
   const editNote = (verseKey: string) => router.push(`/ayah/${verseKey}` as Href);
@@ -91,6 +126,16 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
         ) : null}
         {activeTab === 'notes' ? (
           <NoteListCard items={noteItems} onEditNote={editNote} onOpenMushaf={openMushaf} onOpenVerse={openVerse} />
+        ) : null}
+        {activeTab === 'khatma' ? (
+          <KhatmaSummaryCard
+            active={khatmaSummary.active}
+            dayIndex={khatmaSummary.active ? khatmaSummary.dayIndex : undefined}
+            durationDays={khatmaSummary.active ? khatmaSummary.durationDays : undefined}
+            onPress={() => router.push('/khatma' as Href)}
+            pagesLoggedToday={khatmaSummary.active ? khatmaSummary.pagesLoggedToday : undefined}
+            todayTarget={khatmaSummary.active ? khatmaSummary.todayTarget : undefined}
+          />
         ) : null}
       </ScrollView>
     </SectionScreen>

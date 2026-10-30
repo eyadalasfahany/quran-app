@@ -124,7 +124,7 @@ export function FocusTransport({
           }}
           testID={`${testID}-play`}
         >
-          <Icon color={theme.colors.onBrand} mirrorInRtl name={playing ? PAUSE : PLAY} size={theme.size.icon} />
+          <Icon color={theme.colors.onBrand} name={playing ? PAUSE : PLAY} size={theme.size.icon} />
         </Pressable>
         <Pressable
           accessibilityLabel={t('reader.focus.next')}

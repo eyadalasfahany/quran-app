@@ -23,6 +23,11 @@ jest.mock('../reminder-preference', () => ({
   writeDailyReminder: jest.fn(),
 }));
 
+jest.mock('@/features/khatma/data', () => ({
+  ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
+  useActivePlan: () => ({ data: [] }),
+}));
+
 jest.mock('@/features/audio/settings', () => ({
   useAudioSettings: jest.fn((selector: (s: { wifiOnlyDownloads: boolean }) => unknown) =>
     selector({ wifiOnlyDownloads: false }),

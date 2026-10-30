@@ -21,6 +21,7 @@ export function HafsPage({
   recitedVerseKey = null,
   recitedWord = null,
   highlightsByVerseId,
+  khatmaMarkerVerseId = null,
   onSelectVerseKey,
   onOpenAyahActions,
   focusVerseKey = null,
@@ -39,6 +40,7 @@ export function HafsPage({
   recitedVerseKey?: string | null;
   recitedWord?: number | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
+  khatmaMarkerVerseId?: number | null;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
   /** The ayah the reader opened at, when it is on this page. */
@@ -84,6 +86,7 @@ export function HafsPage({
         followKey={followKey}
         fontScale={fontScale}
         highlightsByVerseId={highlightsByVerseId}
+        khatmaMarkerVerseId={khatmaMarkerVerseId}
         onFocusRunLayout={measureFocus}
         onOpenActions={onOpenAyahActions}
         onPressVerse={onSelectVerseKey}

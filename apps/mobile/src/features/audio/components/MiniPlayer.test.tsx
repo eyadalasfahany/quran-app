@@ -218,13 +218,11 @@ describe('MiniPlayer', () => {
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it.each(locales)('flips the play triangle on the toggle in RTL (%s)', async (locale) => {
+  it.each(locales)('keeps the play triangle on the toggle unflipped in %s', async (locale) => {
     loadSurah('paused');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { locale });
 
-    expect(flatStyle(view.getByTestId('mini-player-toggle-icon', { includeHiddenElements: true }).props.style).transform).toEqual(
-      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
-    );
+    expect(flatStyle(view.getByTestId('mini-player-toggle-icon', { includeHiddenElements: true }).props.style).transform).toBeUndefined();
   });
 
   it('resumes when the button is pressed while paused', async () => {

@@ -6,6 +6,8 @@ import { View } from 'react-native';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { useTheme } from '@/core/theme';
 
+import { publishKhatmaMarkedNotice } from '@/features/khatma/marked-notice';
+
 import { AyahPanelContent } from '../panels/AyahPanelContent';
 import type { PanelTab } from '../selection';
 import { sheetShapeFor } from '../form-sheet';
@@ -56,6 +58,7 @@ export function SheetContainer({
           executor={executor}
           layout="sheet"
           onClose={onClose ?? sheet?.close ?? (() => router.back())}
+          onKhatmaMarked={publishKhatmaMarkedNotice}
           onTabChange={changeTab}
           onVerseChange={setCurrentKey}
           tab={currentTab}

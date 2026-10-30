@@ -1,5 +1,5 @@
 import { type Href, router, useSegments } from 'expo-router';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, useWindowDimensions } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -8,11 +8,15 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useWindowClass } from '@/core/layout';
+import { useTheme } from '@/core/theme';
 import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
 import { nextAyah, pause, previousAyah } from '@/features/audio/player';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { useAudioAvailable } from '@/features/audio/hooks/useAudioAvailable';
 import { playVerse } from '@/features/audio/play-verse';
+import { KhatmaMarkedPill } from '@/features/khatma/components/KhatmaMarkedPill';
+import { useActivePlan, useKhatmaMarkerVerseId } from '@/features/khatma/data';
+import { subscribeKhatmaMarkedNotice } from '@/features/khatma/marked-notice';
 import { listBookmarks, toggleBookmark, useHighlightsByVerseId } from '@/features/library/data';
 import { Screen } from '@/shared/ui';
 
@@ -81,6 +85,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const segments = useSegments();
   const width = useWindowDimensions().width;
   const windowClass = useWindowClass();
+  const theme = useTheme();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   // Opening a surah while audio plays shows that surah. The recited ayah stays the continue-reading place,
   // and the reader moves to it only from the return control.
@@ -98,6 +103,13 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const fontScale = useReaderSettings((state) => state.fontScale);
   const selection = useReaderSelection();
   const highlights = useHighlightsByVerseId();
+  const activeKhatmaPlan = useActivePlan().data[0] ?? null;
+  const khatmaMarkerVerseId = useKhatmaMarkerVerseId(activeKhatmaPlan?.id);
+  const [showMarkedPill, setShowMarkedPill] = useState(false);
+  const onKhatmaMarked = useCallback(() => {
+    setShowMarkedPill(true);
+  }, []);
+  useEffect(() => subscribeKhatmaMarkedNotice(onKhatmaMarked), [onKhatmaMarked]);
   const haptics = useScrollHaptics(mode);
   // The bar (or its collapsed capsule) shows in Reading and Mushaf only, and its footprint comes from one hook, so the
   // dock, the resume pill and the lists' insets agree. Focus has its own transport.
@@ -302,6 +314,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           >
             <AyahPanelContent
               executor={executor}
+              onKhatmaMarked={onKhatmaMarked}
               onTabChange={(tab) => useReaderSelection.getState().setPanelTab(tab)}
               onVerseChange={(key) => useReaderSelection.getState().selectVerse(key, placement)}
               tab={selection.panelTab}
@@ -312,19 +325,24 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
         panelOpen={selection.panelOpen}
         miniPlayer={showMiniBar ? <MiniPlayer topVerseKey={visibleVerseKey ?? viewKey} variant="reader" /> : undefined}
         resume={
-          showResume ? (
-            <ResumePill
-              onPress={() => {
-                if (recitingAway) {
-                  follow.resume();
-                  setPinnedVerseKey(null);
-                  return;
-                }
-                if (selection.verseKey !== null) {
-                  setPinnedVerseKey(selection.verseKey);
-                }
-              }}
-            />
+          showMarkedPill || showResume ? (
+            <View style={{ alignItems: 'center', gap: theme.space[2] }}>
+              {showMarkedPill ? <KhatmaMarkedPill onDone={() => setShowMarkedPill(false)} /> : null}
+              {showResume ? (
+                <ResumePill
+                  onPress={() => {
+                    if (recitingAway) {
+                      follow.resume();
+                      setPinnedVerseKey(null);
+                      return;
+                    }
+                    if (selection.verseKey !== null) {
+                      setPinnedVerseKey(selection.verseKey);
+                    }
+                  }}
+                />
+              ) : null}
+            </View>
           ) : null
         }
         toolbar={
@@ -368,6 +386,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 fontScale={fontScale}
                 followKey={followKey}
                 highlightsByVerseId={highlights}
+                khatmaMarkerVerseId={khatmaMarkerVerseId}
                 onOpenAyahActions={selectVerse}
                 onSelectVerseKey={selectVerse}
                 onUserScrollEnd={follow.onUserScrollEnd}
@@ -423,6 +442,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 fontScale={fontScale}
                 followKey={followKey}
                 highlightsByVerseId={highlights}
+                khatmaMarkerVerseId={khatmaMarkerVerseId}
                 horizontalGutter={gutter}
                 mode="reading"
                 onOpenAyahActions={selectVerse}

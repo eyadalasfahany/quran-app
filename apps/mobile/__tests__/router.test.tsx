@@ -30,6 +30,13 @@ jest.mock("@/features/library/data/hooks", () => ({
   useAllNotes: () => ({ data: [] }),
 }));
 
+// The user database is not open under Jest; Home's khatma card reads no active plan or marker.
+jest.mock("@/features/khatma/data/hooks", () => ({
+  useActivePlan: () => ({ data: [] }),
+  usePlanLogs: () => ({ data: [] }),
+  useKhatmaMarkerVerseId: () => null,
+}));
+
 jest.mock("expo-symbols", () => {
   const { createElement } = jest.requireActual<typeof import("react")>("react");
   const { View } =

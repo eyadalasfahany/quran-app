@@ -21,7 +21,6 @@ describe('SheetContainer', () => {
     expect(view.getByText('2:255')).toBeOnTheScreen();
     expect(view.getByTestId('sheet-container').props.accessibilityLabel).toBe(locale === 'ar' ? 'خيارات الآية' : 'Ayah actions');
   });
-
   it('opens on the requested tab and switches tabs', async () => {
     const view = await renderUi(<SheetContainer executor={executor} tab="tafsir" verseKey="1:2" />, { locale: 'en' });
 

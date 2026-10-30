@@ -13,6 +13,9 @@ import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
 import { pause } from '@/features/audio/player';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { playRecentListen } from '@/features/audio/reciter-playback';
+import { HomeWirdCard } from '@/features/khatma/components/HomeWirdCard';
+import { planProgress, toLocalDateString, useActivePlan, usePlanLogs } from '@/features/khatma/data';
+import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
@@ -43,6 +46,31 @@ export function HomeScreen() {
   const playerActive = usePlayerStore((state) => state.status === 'playing' || state.status === 'loading');
   const playerReciterId = usePlayerStore((state) => state.reciterId);
   const playerChapterId = usePlayerStore((state) => state.chapterId);
+  const activePlan = useActivePlan().data[0] ?? null;
+  const planLogs = usePlanLogs(activePlan?.id);
+  const today = toLocalDateString(new Date());
+
+  const homeWird = useMemo(() => {
+    if (activePlan === null || !ready) {
+      return null;
+    }
+    try {
+      const executor = openContentDb().executor;
+      const bounds = resolvePlanBounds(executor, activePlan.startVerseId);
+      if (bounds === null) {
+        return null;
+      }
+      const progress = planProgress(activePlan, planLogs.data, today, bounds.pagesTotal);
+      return {
+        dayIndex: progress.dayIndex,
+        durationDays: activePlan.durationDays,
+        pagesRead: progress.pagesRead,
+        pagesTotal: progress.pagesTotal,
+      };
+    } catch {
+      return null;
+    }
+  }, [activePlan, planLogs.data, ready, today]);
 
   const continueReading = useMemo(() => {
     if (!ready) {
@@ -75,6 +103,15 @@ export function HomeScreen() {
           onPress={() => router.push(`/read/${continueReading.verse.verseKey}` as Href)}
           page={continueReading.verse.page}
           surahName={continueReading.chapter.nameArabic}
+        />
+      ) : null}
+      {homeWird ? (
+        <HomeWirdCard
+          dayIndex={homeWird.dayIndex}
+          durationDays={homeWird.durationDays}
+          onPress={() => router.push('/khatma' as Href)}
+          pagesRead={homeWird.pagesRead}
+          pagesTotal={homeWird.pagesTotal}
         />
       ) : null}
       <HomeTileRow

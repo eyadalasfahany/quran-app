@@ -71,12 +71,27 @@ describe('MushafLine', () => {
     expect(flatStyle(view.getByTestId('line').props.style).borderStartWidth).toBe(0);
   });
 
-  it('never recolours the ayah marker glyph', async () => {
+  it('never recolours the ayah marker glyph for highlights', async () => {
     const view = await renderUi(
       <MushafLine activeVerseId={42} fontFamily="qcf-v2-p1" fontSize={20} highlightByVerse={new Map([[42, 'gold']])} lineHeight={32} words={words} />,
     );
     const marker = view.getByText(GLYPH_END_1);
     expect(flatStyle(marker.props.style).backgroundColor).toBeUndefined();
+  });
+
+  it('tints the end glyph gold on the khatma marker verse only', async () => {
+    const view = await renderUi(
+      <MushafLine fontFamily="qcf-v2-p1" fontSize={20} khatmaMarkerVerseId={42} lineHeight={32} words={words} />,
+    );
+    expect(flatStyle(view.getByText(GLYPH_END_1).props.style).color).toBe(themes.light.colors.gold);
+    expect(flatStyle(view.getByText(GLYPH_AL_FATIHA_1).props.style).color).toBe(themes.light.colors.ink);
+  });
+
+  it('leaves the end glyph default when the marker is on another verse', async () => {
+    const view = await renderUi(
+      <MushafLine fontFamily="qcf-v2-p1" fontSize={20} khatmaMarkerVerseId={7} lineHeight={32} words={words} />,
+    );
+    expect(flatStyle(view.getByText(GLYPH_END_1).props.style).color).toBe(themes.light.colors.ink);
   });
 
   it.each(locales)('mirrors the margin rule in %s', async (locale) => {

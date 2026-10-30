@@ -27,6 +27,7 @@ export function MushafListPage({
   selectedVerseId,
   activeVerseId,
   highlightsByVerseId,
+  khatmaMarkerVerseId = null,
   onSelectVerseId,
   onOpenAyahActions,
   onSwitchToReading,
@@ -40,6 +41,7 @@ export function MushafListPage({
   selectedVerseId: number | null;
   activeVerseId: number | null;
   highlightsByVerseId: ReadonlyMap<number, HighlightColor>;
+  khatmaMarkerVerseId?: number | null;
   onSelectVerseId?: (verseId: number) => void;
   onOpenAyahActions?: (verseId: number) => void;
   onSwitchToReading?: (verseKey: string) => void;
@@ -97,6 +99,7 @@ export function MushafListPage({
         contentWidth={contentWidth}
         fontFamily={font.fontFamily}
         highlightByVerse={highlightsByVerseId}
+        khatmaMarkerVerseId={khatmaMarkerVerseId}
         lines={lines}
         onVerseLongPress={onOpenAyahActions}
         onVersePress={onSelectVerseId}

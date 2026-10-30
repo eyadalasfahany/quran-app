@@ -10,6 +10,9 @@ import { getHighlights, listBookmarks } from '@/features/library/data';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { openUserTestStore } from '../../../../jest/user-test-db';
+import { createPlan } from '@/features/khatma/data';
+import { getKhatmaMarkerVerseId } from '@/features/khatma/data/repository';
+
 import { AyahActionsPanel } from './AyahActionsPanel';
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
@@ -23,14 +26,13 @@ const AYAH_1_2 = 'ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰل�
 const REFERENCE = 'الفاتحة · الآية ٢';
 
 // The seven action tiles, in the order the ayah sheet shows them (ADR 0014).
-const TILE_KEYS = ['play', 'tafsir', 'bookmark', 'repeat', 'note', 'copy', 'share'] as const;
-
 function panel(overrides: Partial<Parameters<typeof AyahActionsPanel>[0]> = {}) {
   return (
     <AyahActionsPanel
       bookmarked={false}
       highlight={null}
       note={null}
+      page={1}
       reference={REFERENCE}
       textUthmani={AYAH_1_2}
       verseId={2}
@@ -55,10 +57,12 @@ describe('AyahActionsPanel', () => {
     }
   });
 
-  it('shows exactly seven tiles in order, with no translation tile and no word chips', async () => {
+  it('shows the action tiles in order, with no translation tile and no word chips', async () => {
     const view = await renderUi(panel({ onOpenTafsir: jest.fn() }), { locale: 'en' });
 
-    const tileIds = TILE_KEYS.map((key) => `ayah-actions-panel-${key}`);
+    const tileIds = ['play', 'tafsir', 'bookmark', 'repeat', 'note', 'copy', 'share'].map(
+      (key) => `ayah-actions-panel-${key}`,
+    );
     const shownTileIds = view
       .getAllByRole('button')
       .map((button) => button.props.testID as string | undefined)
@@ -155,6 +159,72 @@ describe('AyahActionsPanel', () => {
 
     const withoutTafsir = await renderUi(panel(), { locale: 'en' });
     expect(withoutTafsir.queryByRole('button', { name: 'Tafsir' })).toBeNull();
+  });
+
+  it('hides the khatma tile without an active plan', async () => {
+    const view = await renderUi(panel(), { locale: 'en' });
+    expect(view.queryByRole('button', { name: 'Khatma position' })).toBeNull();
+  });
+
+  it('marks the khatma position when a plan is active', async () => {
+    const { store } = openUserTestStore();
+    const plan = createPlan({ durationDays: 30, startVerseId: 1 }, store);
+    const view = await renderUi(
+      panel({
+        activeKhatmaPlan: plan,
+        khatmaBoundsOverride: { pagesTotal: 604, startPage: 1 },
+        page: 5,
+        store,
+        verseId: 50,
+      }),
+      { locale: 'en' },
+    );
+
+    await fireEvent.press(view.getByRole('button', { name: 'Khatma position' }));
+    expect(getKhatmaMarkerVerseId(plan.id, store)).toBe(50);
+  });
+
+  it('calls onKhatmaMarked with the mark result', async () => {
+    const { store } = openUserTestStore();
+    const plan = createPlan({ durationDays: 30, startVerseId: 1 }, store);
+    const onKhatmaMarked = jest.fn();
+    const view = await renderUi(
+      panel({
+        activeKhatmaPlan: plan,
+        khatmaBoundsOverride: { pagesTotal: 604, startPage: 1 },
+        onKhatmaMarked,
+        page: 5,
+        store,
+        verseId: 50,
+      }),
+      { locale: 'en' },
+    );
+
+    await fireEvent.press(view.getByRole('button', { name: 'Khatma position' }));
+    expect(onKhatmaMarked).toHaveBeenCalledWith(expect.objectContaining({ logged: expect.any(Boolean) }));
+  });
+
+  it('shows the khatma tile selected on the marker ayah', async () => {
+    const { store } = openUserTestStore();
+    const plan = createPlan({ durationDays: 30, startVerseId: 1 }, store);
+    const view = await renderUi(
+      panel({ activeKhatmaPlan: plan, khatmaMarkerVerseId: 2, store, verseId: 2 }),
+      { locale: 'en' },
+    );
+
+    expect(view.getByRole('button', { name: 'Khatma position' }).props.accessibilityState).toMatchObject({
+      selected: true,
+    });
+  });
+
+  it.each(['ar', 'en'] as const)('renders the khatma action under %s', async (locale) => {
+    const { store } = openUserTestStore();
+    const view = await renderUi(
+      panel({ activeKhatmaPlan: createPlan({ durationDays: 30, startVerseId: 1 }, store), store }),
+      { locale },
+    );
+    const label = locale === 'ar' ? 'موضع الختمة' : 'Khatma position';
+    expect(view.getByRole('button', { name: label })).toBeOnTheScreen();
   });
 
   it('has no raw colour literals', () => {

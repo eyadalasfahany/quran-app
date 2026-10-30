@@ -28,6 +28,12 @@ jest.mock('expo-router', () => ({
   router: { navigate: jest.fn(), push: jest.fn() },
 }));
 
+jest.mock('@/features/khatma/data', () => ({
+  ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
+  useActivePlan: () => ({ data: [] }),
+  usePlanLogs: () => ({ data: [] }),
+}));
+
 // Flipped to false to show the content database still opening.
 const mockContentDb: { ready: boolean } = { ready: true };
 jest.mock('@/core/db/content/open', () => ({

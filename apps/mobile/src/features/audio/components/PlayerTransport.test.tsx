@@ -69,13 +69,13 @@ describe('PlayerTransport', () => {
     expect(flatStyle(view.getByTestId('player-transport').props.style).flexDirection).toBe('row');
   });
 
-  it('flips the directional glyphs and the play triangle in RTL', async () => {
+  it('flips the step glyphs in RTL and keeps the play triangle unflipped', async () => {
     const ar = (await renderTransport({ stepsEnabled: true }, 'ar')).view;
     I18nManager.isRTL = true;
     expect(flatStyle(ar.getByTestId('player-previous-icon', hidden).props.style).transform).toEqual([{ scaleX: -1 }]);
     expect(flatStyle(ar.getByTestId('player-next-icon', hidden).props.style).transform).toEqual([{ scaleX: -1 }]);
-    // Play points left in Arabic.
-    expect(flatStyle(ar.getByTestId('player-toggle-icon', hidden).props.style).transform).toEqual([{ scaleX: -1 }]);
+    // Play maps to the timeline, not the reading direction, so it never flips.
+    expect(flatStyle(ar.getByTestId('player-toggle-icon', hidden).props.style).transform).toBeUndefined();
 
     I18nManager.isRTL = false;
     const en = (await renderTransport({ stepsEnabled: true }, 'en')).view;

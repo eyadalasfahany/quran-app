@@ -127,6 +127,32 @@ describe('ReadingAyahRow', () => {
     });
   });
 
+  it('draws a gold margin rule when khatma marked and not active', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow khatmaMarked onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
+    );
+    expect(quranBlockStyle(view)).toMatchObject({
+      borderStartColor: colors.gold,
+      borderStartWidth: themes.light.stroke.activeRule,
+    });
+  });
+
+  it('prefers the brand rule when khatma marked and recited', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow khatmaMarked onPress={() => undefined} recited testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
+    );
+    expect(quranBlockStyle(view)).toMatchObject({ borderStartColor: colors.brand });
+  });
+
+  it.each(locales)('appends the khatma label to the accessibility label (%s)', async (locale) => {
+    const view = await renderUi(
+      <ReadingAyahRow khatmaMarked onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
+      { locale },
+    );
+    const suffix = locale === 'ar' ? 'موضع الختمة' : 'Khatma position';
+    expect(view.getByRole('button', { name: new RegExp(suffix) })).toBeOnTheScreen();
+  });
+
   it('fills from the highlight token and names the colour for screen readers', async () => {
     const view = await renderUi(
       <ReadingAyahRow

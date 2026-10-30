@@ -1,6 +1,7 @@
 import type { IconName } from '@/shared/ui/Icon';
 
-// Directional glyphs point the way playback goes; callers pass mirrorInRtl so they flip with the layout direction (play included).
+// Previous and next point the way playback steps go; callers pass mirrorInRtl so they flip with the layout
+// direction. Play and pause never flip: the triangle maps to the timeline, not the reading direction.
 export const PREVIOUS_AYAH_ICON = { ios: 'backward.end.fill', android: 'skip_previous' } as const satisfies IconName;
 export const NEXT_AYAH_ICON = { ios: 'forward.end.fill', android: 'skip_next' } as const satisfies IconName;
 export const PLAY_ICON = { ios: 'play.fill', android: 'play_arrow' } as const satisfies IconName;

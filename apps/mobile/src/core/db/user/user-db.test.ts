@@ -55,6 +55,8 @@ describe('user.db schema', () => {
       'bookmarks',
       'downloads',
       'highlights',
+      'khatma_logs',
+      'khatma_plans',
       'notes',
       'outbox',
       'recent_listens',
@@ -202,10 +204,61 @@ describe('user.db schema', () => {
       '0000_user_data',
       '0001_recent_listens',
       '0002_audio_downloads',
+      '0003_volatile_madrox',
     ]);
     expect(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8')).toMatch(/^CREATE TABLE `recent_listens`/);
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0001');
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0002');
+    expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0003');
+  });
+
+  it('adds khatma tables in migration 0003 with one live active plan per user', () => {
+    const { database: old, executor } = openNodeSqlite(':memory:');
+    try {
+      configureUserDatabase(executor);
+      for (const tag of ['0000_user_data', '0001_recent_listens', '0002_audio_downloads']) {
+        executor.exec(readFileSync(join(migrationsDir, `${tag}.sql`), 'utf8'));
+      }
+      executor.run(
+        `INSERT INTO bookmarks (id, verse_id, kind, page, client_updated_at, deleted_at, dirty)
+         VALUES ('kept', 262, 'verse', NULL, 1, NULL, 1)`,
+      );
+
+      executor.exec(readFileSync(join(migrationsDir, '0003_volatile_madrox.sql'), 'utf8'));
+
+      expect(tableNames(old)).toContain('khatma_plans');
+      expect(tableNames(old)).toContain('khatma_logs');
+      expect(old.prepare('SELECT id FROM bookmarks').all()).toEqual([{ id: 'kept' }]);
+
+      const oneActive = indexSql(old, 'khatma_plans_one_active_idx');
+      expect(oneActive).toContain('UNIQUE');
+      expect(oneActive).toContain('active');
+      expect(oneActive.toLowerCase()).toContain('deleted_at');
+
+      const oneLogPerDay = indexSql(old, 'khatma_logs_live_plan_date_idx');
+      expect(oneLogPerDay).toContain('UNIQUE');
+      expect(oneLogPerDay).toContain('plan_id');
+      expect(oneLogPerDay).toContain('date');
+
+      executor.run(
+        `INSERT INTO khatma_plans (id, duration_days, start_verse_id, start_date, status, completed_at, client_updated_at, deleted_at, dirty)
+         VALUES ('plan-1', 30, 1, '2026-10-30', 'active', NULL, 1, NULL, 1)`,
+      );
+      expect(() =>
+        executor.run(
+          `INSERT INTO khatma_plans (id, duration_days, start_verse_id, start_date, status, completed_at, client_updated_at, deleted_at, dirty)
+           VALUES ('plan-2', 60, 1, '2026-10-30', 'active', NULL, 2, NULL, 1)`,
+        ),
+      ).toThrow(/unique/i);
+      // An abandoned plan and a soft-deleted active one leave room for a new active plan.
+      executor.run(`UPDATE khatma_plans SET status = 'abandoned', completed_at = 3 WHERE id = 'plan-1'`);
+      executor.run(
+        `INSERT INTO khatma_plans (id, duration_days, start_verse_id, start_date, status, completed_at, client_updated_at, deleted_at, dirty)
+         VALUES ('plan-3', 60, 1, '2026-10-30', 'active', NULL, 4, NULL, 1)`,
+      );
+    } finally {
+      old.close();
+    }
   });
 
   it('adds downloads in migration 0002, keeps existing rows, and defaults progress to 0', () => {

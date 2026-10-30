@@ -127,7 +127,8 @@
       "copy": "نسخ",
       "share": "مشاركة",
       "copied": "نُسخت الآية",
-      "reference": "{{surah}} · الآية {{ayah}}"
+      "reference": "{{surah}} · الآية {{ayah}}",
+      "khatmaMark": "موضع الختمة"
     },
     "note": {
       "label": "ملاحظة على الآية",
@@ -374,6 +375,57 @@
       "invalidChapter": "هذه السورة غير متاحة.",
       "invalidVerse": "هذه الآية غير متاحة."
     }
+  },
+  "khatma": {
+    "title": "خطة الختمة",
+    "durationLabel": "أختم خلال",
+    "durationDays": "{{formatted}} يومًا",
+    "dailyWirdLabel": "وردك اليومي",
+    "pagesPerDay_one": "{{formatted}} صفحة",
+    "pagesPerDay_two": "{{formatted}} صفحتان",
+    "pagesPerDay_few": "{{formatted}} صفحات",
+    "pagesPerDay_many": "{{formatted}} صفحة",
+    "pagesPerDay_other": "{{formatted}} صفحة",
+    "juzApprox_one": "حوالي {{formatted}} جزء يوميًا",
+    "juzApprox_two": "حوالي {{formatted}} جزءين يوميًا",
+    "juzApprox_few": "حوالي {{formatted}} أجزاء يوميًا",
+    "juzApprox_many": "حوالي {{formatted}} جزءًا يوميًا",
+    "juzApprox_other": "حوالي {{formatted}} جزء يوميًا",
+    "dailyWirdA11y": "{{pages}} صفحة، {{juz}}",
+    "startLabel": "البداية",
+    "startLastRead": "من حيث توقفت · {{place}}",
+    "startBeginning": "من بداية المصحف · الفاتحة",
+    "lastReadPlace": "{{surah}} {{ayah}}",
+    "progressTitle": "التقدّم",
+    "progressDay": "اليوم {{day}}",
+    "progressFootnote": "إذا فاتك يوم، نوزّع الصفحات المتبقية على الأيام القادمة تلقائيًا. لا عدّاد انقطاع.",
+    "progressA11y": "اليوم {{day}}، {{filled}} من {{total}} أيام مسجّلة",
+    "savePlan": "حفظ الخطة",
+    "endPlan": {
+      "action": "إنهاء الختمة",
+      "title": "إنهاء الختمة؟",
+      "message": "تُوقَف خطة الختمة الحالية. يبقى سجلّ ما قرأته.",
+      "confirm": "إنهاء",
+      "cancel": "إلغاء"
+    },
+    "summary": {
+      "planName": "ختمة {{formatted}} يومًا",
+      "dayProgress": "اليوم {{day}} من {{total}}",
+      "emptyTitle": "ابدأ ختمة",
+      "emptyBody": "حدّد مدة الختمة وتابع وردك اليومي.",
+      "start": "ابدأ ختمة"
+    },
+    "marked": "تم تحديث موضع الختمة",
+    "home": {
+      "title": "ختمتي",
+      "subtitle": "اليوم {{day}} من {{total}}",
+      "ahead_one": "متقدّم بيوم",
+      "ahead_two": "متقدّم بيومين",
+      "ahead_few": "متقدّم بـ{{formatted}} أيام",
+      "ahead_many": "متقدّم بـ{{formatted}} يومًا",
+      "ahead_other": "متقدّم بـ{{formatted}} يوم"
+    },
+    "settingsDuration": "{{formatted}} يومًا"
   },
   "settings": {
     "title": "الإعدادات",

@@ -5,6 +5,7 @@ export const bookmarkKinds = ['verse', 'page'] as const;
 export const highlightColors = ['gold', 'green', 'blue', 'rose'] as const;
 export const outboxOps = ['upsert', 'delete'] as const;
 export const downloadStatuses = ['queued', 'downloading', 'paused', 'waiting_wifi', 'done', 'failed'] as const;
+export const khatmaPlanStatuses = ['active', 'completed', 'abandoned'] as const;
 
 export const NOTE_MAX_CHARACTERS = 10_000;
 
@@ -111,3 +112,39 @@ export const syncMeta = sqliteTable('sync_meta', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
 });
+
+export const khatmaPlans = sqliteTable(
+  'khatma_plans',
+  {
+    id: text('id').primaryKey(),
+    durationDays: integer('duration_days').notNull(),
+    startVerseId: integer('start_verse_id').notNull(),
+    startDate: text('start_date').notNull(),
+    status: text('status', { enum: khatmaPlanStatuses }).notNull(),
+    completedAt: integer('completed_at'),
+    ...syncColumns,
+  },
+  (table) => [
+    uniqueIndex('khatma_plans_one_active_idx')
+      .on(table.status)
+      .where(sql`${table.status} = 'active' AND ${table.deletedAt} is null`),
+  ],
+);
+
+export const khatmaLogs = sqliteTable(
+  'khatma_logs',
+  {
+    id: text('id').primaryKey(),
+    planId: text('plan_id').notNull(),
+    date: text('date').notNull(),
+    pagesRead: integer('pages_read').notNull(),
+    lastVerseId: integer('last_verse_id').notNull(),
+    ...syncColumns,
+  },
+  (table) => [
+    index('khatma_logs_plan_id_idx').on(table.planId),
+    uniqueIndex('khatma_logs_live_plan_date_idx')
+      .on(table.planId, table.date)
+      .where(sql`${table.deletedAt} is null`),
+  ],
+);

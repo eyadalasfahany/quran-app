@@ -63,12 +63,10 @@ describe('ReaderMiniBar', () => {
     expect(view.getByRole('button', { name: 'Play' })).toBeOnTheScreen();
   });
 
-  it.each(locales)('flips the play triangle on the toggle in RTL (%s)', async (locale) => {
+  it.each(locales)('keeps the play triangle on the toggle unflipped in %s', async (locale) => {
     const view = await renderUi(bar({ idle: true, playing: false }).element, { locale });
 
-    expect(flatStyle(view.getByTestId('mini-player-toggle-icon', { includeHiddenElements: true }).props.style).transform).toEqual(
-      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
-    );
+    expect(flatStyle(view.getByTestId('mini-player-toggle-icon', { includeHiddenElements: true }).props.style).transform).toBeUndefined();
   });
 
   it('shows the pause label while playing', async () => {

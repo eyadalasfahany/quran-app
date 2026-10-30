@@ -24,15 +24,12 @@ describe('MyQuranTabs', () => {
     expect(onChange).toHaveBeenCalledWith('highlights');
   });
 
-  it('keeps «الختمة» disabled until step 3', async () => {
+  it('selects the khatma tab on press', async () => {
     const onChange = jest.fn();
     const view = await renderUi(<MyQuranTabs onChange={onChange} value="bookmarks" />);
 
-    const khatma = view.getByRole('tab', { name: 'الختمة' });
-    expect(khatma.props.accessibilityState).toMatchObject({ disabled: true, selected: false });
+    fireEvent.press(view.getByRole('tab', { name: 'الختمة' }));
 
-    fireEvent.press(khatma);
-
-    expect(onChange).not.toHaveBeenCalled();
+    expect(onChange).toHaveBeenCalledWith('khatma');
   });
 });

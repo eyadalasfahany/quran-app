@@ -6,6 +6,12 @@ jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resol
 
 const mockHighlightArgs: unknown[] = [];
 
+jest.mock('@/features/khatma/data', () => ({
+  ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
+  useActivePlan: () => ({ data: [] }),
+  useKhatmaMarkerVerseId: () => null,
+}));
+
 jest.mock('@/features/library/data', () => {
   const actual = jest.requireActual<typeof import('@/features/library/data')>('@/features/library/data');
   return {
@@ -27,6 +33,7 @@ jest.mock('@/features/library/data', () => {
 function panel(verseId: number) {
   return (
     <LiveAyahActionsPanel
+      page={1}
       reference="الفاتحة · الآية ٢"
       textUthmani="ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ"
       verseId={verseId}

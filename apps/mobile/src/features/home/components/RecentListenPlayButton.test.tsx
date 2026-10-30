@@ -68,14 +68,12 @@ describe('RecentListenPlayButton', () => {
     expect(view.getByRole('button', { name: locale === 'ar' ? 'تشغيل' : 'Play' })).toBeOnTheScreen();
   });
 
-  it.each(locales)('mirrors the play triangle in RTL, and draws a pause glyph unmirrored while playing (%s)', async (locale) => {
+  it.each(locales)('never mirrors the play triangle, and draws a pause glyph while playing (%s)', async (locale) => {
     const paused = await renderUi(
       <RecentListenPlayButton filled label="تشغيل" onPress={() => undefined} testID="play" />,
       { locale },
     );
-    expect(flatStyle(paused.getByTestId('play-glyph').props.style).transform).toEqual(
-      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
-    );
+    expect(flatStyle(paused.getByTestId('play-glyph').props.style).transform).toBeUndefined();
 
     const playing = await renderUi(
       <RecentListenPlayButton filled label="إيقاف مؤقت" onPress={() => undefined} playing testID="play" />,

@@ -62,14 +62,12 @@ describe('ReciterPlayButton', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it.each(locales)('mirrors the play triangle in RTL, and draws a pause glyph unmirrored while playing (%s)', async (locale) => {
+  it.each(locales)('never mirrors the play triangle, and draws a pause glyph while playing (%s)', async (locale) => {
     const paused = await renderUi(
       <ReciterPlayButton label="تشغيل" onPress={() => undefined} progress={null} testID="play" />,
       { locale },
     );
-    expect(flatStyle(paused.getByTestId('play-glyph').props.style).transform).toEqual(
-      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
-    );
+    expect(flatStyle(paused.getByTestId('play-glyph').props.style).transform).toBeUndefined();
 
     const playing = await renderUi(
       <ReciterPlayButton label="إيقاف مؤقت" onPress={() => undefined} playing progress={null} testID="play" />,

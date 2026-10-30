@@ -1,8 +1,11 @@
 import { type Href, router } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
+import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
+import { useActivePlan } from '@/features/khatma/data';
 import { Screen } from '@/shared/ui';
 
 import { AboutSection } from '../components/AboutSection';
@@ -14,8 +17,17 @@ import { SettingsHeader } from '../components/SettingsHeader';
 import { readDailyReminder, writeDailyReminder } from '../reminder-preference';
 
 export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string }) {
+  const { t } = useTranslation();
+  const locale = useLocale();
   const theme = useTheme();
   const [reminderEnabled, setReminderEnabled] = useState(readDailyReminder);
+  const activePlan = useActivePlan().data[0] ?? null;
+  const khatmaValue = useMemo(() => {
+    if (activePlan === null) {
+      return undefined;
+    }
+    return t('khatma.settingsDuration', { formatted: formatNumber(activePlan.durationDays, locale) });
+  }, [activePlan, locale, t]);
 
   const handleReminderChange = (on: boolean) => {
     setReminderEnabled(on);
@@ -44,7 +56,12 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
         <ListeningSection
           onPressReciter={() => router.navigate('/(main)/(listen)' as Href)}
         />
-        <HabitsSection onReminderChange={handleReminderChange} reminderEnabled={reminderEnabled} />
+        <HabitsSection
+          khatmaValue={khatmaValue}
+          onPressKhatma={() => router.push('/khatma' as Href)}
+          onReminderChange={handleReminderChange}
+          reminderEnabled={reminderEnabled}
+        />
         <AboutSection onPressSources={() => router.push('/settings/sources' as Href)} />
       </ScrollView>
     </Screen>

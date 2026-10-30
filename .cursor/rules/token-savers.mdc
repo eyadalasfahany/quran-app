@@ -1,0 +1,8 @@
+---
+description: Token-saving defaults — rtk for shell output, caveman for replies (developer request, 2026-10-30)
+alwaysApply: true
+---
+# Token savers (every session)
+
+1. **rtk for every shell command.** Prefix commands with `rtk` (`rtk git`, `rtk test`, `rtk tsc`, `rtk lint`, `rtk diff`, `rtk read`); unknown subcommands pass through unchanged, so it is always safe. The full command table is in the RTK block appended to `CLAUDE.md`. File reads/edits still use the dedicated tools.
+2. **Caveman replies.** Follow the `caveman` skill (`~/.cursor/plugins/cache/caveman/*/skills/caveman/SKILL.md`): full intensity — drop articles and filler, fragments OK, technical terms exact, code blocks unchanged. Plain speech only for security warnings, destructive-action confirmations, ordered multi-step sequences, or when the developer asks to clarify. Off only when the developer says "stop caveman" / "normal mode".

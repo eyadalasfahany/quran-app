@@ -127,7 +127,8 @@
       "copy": "Copy",
       "share": "Share",
       "copied": "Ayah copied",
-      "reference": "{{surah}} · Ayah {{ayah}}"
+      "reference": "{{surah}} · Ayah {{ayah}}",
+      "khatmaMark": "Khatma position"
     },
     "note": {
       "label": "Note on this ayah",
@@ -374,6 +375,57 @@
       "invalidChapter": "This surah is not available.",
       "invalidVerse": "This ayah is not available."
     }
+  },
+  "khatma": {
+    "title": "Khatma plan",
+    "durationLabel": "Finish in",
+    "durationDays": "{{formatted}} days",
+    "dailyWirdLabel": "Your daily portion",
+    "pagesPerDay_one": "{{formatted}} page",
+    "pagesPerDay_two": "{{formatted}} pages",
+    "pagesPerDay_few": "{{formatted}} pages",
+    "pagesPerDay_many": "{{formatted}} pages",
+    "pagesPerDay_other": "{{formatted}} pages",
+    "juzApprox_one": "About {{formatted}} juz per day",
+    "juzApprox_two": "About {{formatted}} juz per day",
+    "juzApprox_few": "About {{formatted}} juz per day",
+    "juzApprox_many": "About {{formatted}} juz per day",
+    "juzApprox_other": "About {{formatted}} juz per day",
+    "dailyWirdA11y": "{{pages}} pages, {{juz}}",
+    "startLabel": "Start from",
+    "startLastRead": "Where I left off · {{place}}",
+    "startBeginning": "From the beginning · Al-Fatiha",
+    "lastReadPlace": "{{surah}} {{ayah}}",
+    "progressTitle": "Progress",
+    "progressDay": "Day {{day}}",
+    "progressFootnote": "If you miss a day, remaining pages are spread over the days ahead. No streak counter.",
+    "progressA11y": "Day {{day}}, {{filled}} of {{total}} days logged",
+    "savePlan": "Save plan",
+    "endPlan": {
+      "action": "End khatma",
+      "title": "End this khatma?",
+      "message": "Your current khatma plan will stop. What you've read stays logged.",
+      "confirm": "End khatma",
+      "cancel": "Cancel"
+    },
+    "summary": {
+      "planName": "{{formatted}}-day khatma",
+      "dayProgress": "Day {{day}} of {{total}}",
+      "emptyTitle": "Start a khatma",
+      "emptyBody": "Choose how long you want to finish the Quran and track your daily portion.",
+      "start": "Start a khatma"
+    },
+    "marked": "Khatma position updated",
+    "home": {
+      "title": "My khatma",
+      "subtitle": "Day {{day}} of {{total}}",
+      "ahead_one": "1 day ahead",
+      "ahead_two": "{{count}} days ahead",
+      "ahead_few": "{{count}} days ahead",
+      "ahead_many": "{{count}} days ahead",
+      "ahead_other": "{{count}} days ahead"
+    },
+    "settingsDuration": "{{formatted}} days"
   },
   "settings": {
     "title": "Settings",

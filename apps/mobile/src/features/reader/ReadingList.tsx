@@ -50,6 +50,7 @@ export type ReadingListProps = {
   /** The ayah to bring into view: set while the reader follows the recitation, null otherwise. */
   followKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
+  khatmaMarkerVerseId?: number | null;
   horizontalGutter?: number;
   topInset?: number;
   bottomInset?: number;
@@ -80,6 +81,7 @@ export function ReadingList({
   playing = false,
   followKey = null,
   highlightsByVerseId = NO_HIGHLIGHTS,
+  khatmaMarkerVerseId = null,
   horizontalGutter = 0,
   topInset = 0,
   bottomInset = 0,
@@ -357,6 +359,7 @@ export function ReadingList({
           fontScale={fontScale}
           followedText={followKey === verse.verseKey ? word.textProps(verse.verseKey) : undefined}
           highlightColor={highlightsByVerseId.get(verse.id) ?? null}
+          khatmaMarked={khatmaMarkerVerseId === verse.id}
           onLongPress={openActions}
           onOpenActions={openActions}
           onOpenTafsir={openTafsir}

@@ -13,6 +13,7 @@ export function MushafLine({
   activeVerseId = null,
   selectedVerseId = null,
   highlightByVerse,
+  khatmaMarkerVerseId = null,
   onVersePress,
   onVerseLongPress,
   testID,
@@ -24,6 +25,8 @@ export function MushafLine({
   activeVerseId?: number | null;
   selectedVerseId?: number | null;
   highlightByVerse?: ReadonlyMap<number, HighlightColor>;
+  /** Gold end-of-ayah glyph (`charType === 'end'`) on the marked verse. */
+  khatmaMarkerVerseId?: number | null;
   onVersePress?: (verseId: number) => void;
   onVerseLongPress?: (verseId: number) => void;
   testID?: string;
@@ -55,6 +58,7 @@ export function MushafLine({
             onPress={onVersePress ? () => onVersePress(word.verseId) : undefined}
             style={wordStyle(word, {
               activeVerseId,
+              khatmaMarkerVerseId,
               selectedVerseId,
               highlightByVerse,
               theme,
@@ -73,13 +77,18 @@ function wordStyle(
   word: MushafWord,
   ctx: {
     activeVerseId: number | null;
+    khatmaMarkerVerseId: number | null;
     selectedVerseId: number | null;
     highlightByVerse?: ReadonlyMap<number, HighlightColor>;
     theme: Theme;
   },
 ) {
   const color = ctx.theme.colors.ink;
+  // QCF layout marks each ayah's closing glyph with charType 'end' (see mushaf.ts / MushafWord).
   if (word.charType === 'end') {
+    if (word.verseId === ctx.khatmaMarkerVerseId) {
+      return { color: ctx.theme.colors.gold };
+    }
     return { color };
   }
   const highlight = highlightFill(ctx.theme.colors, ctx.highlightByVerse?.get(word.verseId));

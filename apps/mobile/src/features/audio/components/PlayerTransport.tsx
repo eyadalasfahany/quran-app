@@ -7,8 +7,9 @@ import { NEXT_AYAH_ICON, PAUSE_ICON, PLAY_ICON, PREVIOUS_AYAH_ICON } from './pla
 import { PlayerIconButton } from './PlayerIconButton';
 
 // Previous ayah, play/pause, next ayah, in that order in the row. The row follows the layout direction, so Arabic
-// shows next on the left and English shows it on the right. Directional glyphs flip with the direction, and so does
-// the play triangle (it points left in Arabic); pause is symmetric. Ayah steps stay disabled until audio-to-ayah timings exist.
+// shows next on the left and English shows it on the right. The step glyphs flip with the direction; the play
+// triangle never does (it maps to the timeline, not the reading direction) and pause is symmetric. Ayah steps stay
+// disabled until audio-to-ayah timings exist.
 export function PlayerTransport({
   isPlaying,
   stepsEnabled,
@@ -48,7 +49,6 @@ export function PlayerTransport({
         radius={38}
         icon={isPlaying ? PAUSE_ICON : PLAY_ICON}
         label={isPlaying ? t('player.pause') : t('player.play')}
-        mirrorInRtl
         onPress={onTogglePlay}
         testID="player-toggle"
       />

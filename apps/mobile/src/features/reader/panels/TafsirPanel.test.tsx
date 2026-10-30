@@ -91,6 +91,55 @@ describe('TafsirPanel', () => {
     expect(textContent(screen.getByTestId('tafsir-panel-body'))).toBe(htmlTextContent(HTML));
   });
 
+  it('colours quoted ayahs in gold without altering their text', async () => {
+    const html = '<p>قوله {إِيَّاكَ نَعْبُدُ} مناسب له، وكقوله ﴿بِسْمِ ٱللَّهِ ١﴾ هنا.</p>';
+    const screen = await renderPanel({ html }).view;
+
+    for (const quote of ['{إِيَّاكَ نَعْبُدُ}', '﴿بِسْمِ ٱللَّهِ ١﴾']) {
+      expect(flatStyle(screen.getByText(quote).props.style).color).toBe(themes.light.colors.gold);
+    }
+    expect(textContent(screen.getByTestId('tafsir-panel-body'))).toBe(htmlTextContent(html));
+  });
+
+  it('gives the passage airier lines than the body style', async () => {
+    const screen = await renderPanel().view;
+
+    expect(flatStyle(screen.getByText('الثناء على الله بصفاته', { exact: false }).props.style)).toMatchObject({
+      fontSize: 17,
+      lineHeight: 30,
+    });
+  });
+
+  it('reads right to left when the catalogue entry carries no direction', async () => {
+    const screen = await renderPanel({ selectedId: 14 }).view;
+
+    expect(flatStyle(screen.getByTestId('tafsir-panel-body').props.style)).toMatchObject({ direction: 'rtl' });
+    expect(flatStyle(screen.getByText('الثناء على الله بصفاته', { exact: false }).props.style)).toMatchObject({
+      textAlign: 'auto',
+      writingDirection: 'rtl',
+    });
+  });
+
+  it('lets the passage win when the catalogue direction is wrong', async () => {
+    const screen = await renderPanel({
+      selectedId: 14,
+      tafsirs: [{ authorAr: 'ابن كثير', authorName: 'Hafiz Ibn Kathir', direction: 'ltr', name: 'Ibn Kathir', nameAr: 'ابن كثير', resourceId: 14 }],
+    }).view;
+
+    expect(flatStyle(screen.getByTestId('tafsir-panel-body').props.style)).toMatchObject({ direction: 'rtl' });
+  });
+
+  it('reads left to right for a Latin passage', async () => {
+    const screen = await renderPanel({
+      html: '<p>All praise is due to Allah, Lord of the worlds.</p>',
+    }).view;
+
+    expect(flatStyle(screen.getByTestId('tafsir-panel-body').props.style)).toMatchObject({ direction: 'ltr' });
+    expect(flatStyle(screen.getByText('All praise is due to Allah', { exact: false }).props.style)).toMatchObject({
+      textAlign: 'auto',
+      writingDirection: 'ltr',
+    });
+  });
   it('shows a loading region of seven placeholder lines in place of the passage while the tafsir downloads', async () => {
     const { view } = renderPanel({ loading: true });
     const screen = await view;
@@ -264,9 +313,13 @@ describe('TafsirPanel', () => {
     expect(screen.getByTestId('tafsir-panel-source')).toHaveTextContent('Source: Al-Muyassar · via Quran Foundation');
   });
 
-  it('sets the passage direction from the tafsir', async () => {
+  it('sets the passage direction from the tafsir when the passage has no strong characters', async () => {
     const screen = await renderPanel(
-      { tafsirs: [{ authorName: null, authorAr: null, direction: 'ltr', name: 'Ibn Kathir', nameAr: null, resourceId: 14 }], selectedId: 14 },
+      {
+        html: '<p>123 · —</p>',
+        tafsirs: [{ authorName: null, authorAr: null, direction: 'ltr', name: 'Ibn Kathir', nameAr: null, resourceId: 14 }],
+        selectedId: 14,
+      },
       'en',
     ).view;
 

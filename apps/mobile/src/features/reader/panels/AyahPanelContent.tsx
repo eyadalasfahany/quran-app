@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -55,6 +55,7 @@ export function AyahPanelContent({
   executor: executorOverride,
   store,
   layout = 'panel',
+  onKhatmaMarked,
   testID = 'ayah-panel-content',
 }: {
   verseKey: string;
@@ -70,6 +71,7 @@ export function AyahPanelContent({
   store?: UserStore;
   // The side panel (the default) or a phone sheet; the tafsir tab lays out differently in each.
   layout?: TafsirPanelLayout;
+  onKhatmaMarked?: ComponentProps<typeof AyahActionsPanel>['onKhatmaMarked'];
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -173,7 +175,9 @@ export function AyahPanelContent({
   const selectedDownload =
     mode === 'reading' && selectedOption !== undefined && !selectedReadable ? downloadItem(selectedOption) : null;
   const actionsProps = {
+    onKhatmaMarked,
     onOpenTafsir: onTabChange ? () => onTabChange('tafsir') : undefined,
+    page: verse.page,
     reference,
     testID: `${testID}-actions`,
     textUthmani: verse.textUthmani,

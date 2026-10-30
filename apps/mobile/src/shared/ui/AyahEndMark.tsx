@@ -25,6 +25,7 @@ export function ayahEndMarkText(number: number): string {
 export function AyahEndMark({
   number,
   active = false,
+  khatmaMarked = false,
   onPress,
   size,
   decorative = false,
@@ -32,6 +33,8 @@ export function AyahEndMark({
 }: {
   number: number;
   active?: boolean;
+  /** Gold ornament when this ayah is the khatma marker and not active. */
+  khatmaMarked?: boolean;
   onPress?: () => void;
   /** Font size when the mark stands alone; inline it inherits the line's. */
   size?: number;
@@ -50,20 +53,27 @@ export function AyahEndMark({
         accessibilityState: onPress ? { selected: active } : undefined,
       };
 
+  const markerGold = !active && khatmaMarked;
+
   return (
     <Text
       {...accessibility}
       allowFontScaling={size === undefined ? undefined : false}
       onPress={onPress}
       style={[
-        { color: active ? theme.colors.brand : theme.colors.gold, fontFamily: quranFontFamily },
+        {
+          color: active ? theme.colors.brand : theme.colors.gold,
+          fontFamily: quranFontFamily,
+        },
         size === undefined ? null : { fontSize: size, lineHeight: Math.round(size * MARK_LINE_HEIGHT) },
       ]}
       testID={testID}
     >
       {RTL_MARK}
       {ORNATE_OPEN}
-      <Text style={{ color: active ? theme.colors.brand : theme.colors.ink }}>{formatNumber(number, 'ar')}</Text>
+      <Text style={{ color: active ? theme.colors.brand : markerGold ? theme.colors.gold : theme.colors.ink }}>
+        {formatNumber(number, 'ar')}
+      </Text>
       {ORNATE_CLOSE}
     </Text>
   );

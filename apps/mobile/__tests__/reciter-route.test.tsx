@@ -19,6 +19,13 @@ jest.mock('@/features/library/data/hooks', () => ({
   useAllNotes: () => ({ data: [] }),
 }));
 
+// The user database is not open under Jest; Home's khatma card reads no active plan or marker.
+jest.mock('@/features/khatma/data/hooks', () => ({
+  useActivePlan: () => ({ data: [] }),
+  usePlanLogs: () => ({ data: [] }),
+  useKhatmaMarkerVerseId: () => null,
+}));
+
 // The user database is not open under Jest; the Listen tab (the route's parent) reads no downloads.
 jest.mock('@/features/audio/data/downloads', () => ({
   ...jest.requireActual<typeof import('@/features/audio/data/downloads')>('@/features/audio/data/downloads'),

@@ -19,6 +19,7 @@ export function ReadingAyahRow({
   fontScale = 1,
   selected = false,
   recited = false,
+  khatmaMarked = false,
   activeWord = null,
   audioAvailable = false,
   playing = false,
@@ -39,6 +40,8 @@ export function ReadingAyahRow({
   selected?: boolean;
   /** The ayah the player is reciting: the neutral wash, the brand marker and rule (ADR 0012). */
   recited?: boolean;
+  /** The ayah marked as the khatma position when it is not selected or recited. */
+  khatmaMarked?: boolean;
   /** The recited word (1-based), when the ayah has word segments. */
   activeWord?: number | null;
   audioAvailable?: boolean;
@@ -63,10 +66,11 @@ export function ReadingAyahRow({
   const active = selected || recited;
   const labelText = textImlaei ?? textUthmani;
   const ayahLabel = t('ui.ayahNumber', { number: formatNumber(verseNumber, locale) });
+  const khatmaSuffix = khatmaMarked ? t('reader.ayahPanel.khatmaMark') : '';
   const accessibilityLabel =
     highlightColor === null
-      ? `${labelText} ${ayahLabel}`
-      : `${labelText} ${ayahLabel} ${t(`ui.highlight.${highlightColor}`)}`;
+      ? `${labelText} ${ayahLabel}${khatmaSuffix ? ` ${khatmaSuffix}` : ''}`
+      : `${labelText} ${ayahLabel} ${t(`ui.highlight.${highlightColor}`)}${khatmaSuffix ? ` ${khatmaSuffix}` : ''}`;
 
   // The user's colour wins the fill; the selection wash shows only on an ayah without one (ADR 0012).
   const quranBackground = highlightFill(colors, highlightColor) ?? (active ? colors.highlightActive : 'transparent');
@@ -98,8 +102,8 @@ export function ReadingAyahRow({
           style={{
             backgroundColor: quranBackground,
             borderRadius: theme.radius.sm,
-            borderStartColor: active ? colors.brand : 'transparent',
-            borderStartWidth: active ? theme.stroke.activeRule : 0,
+            borderStartColor: active ? colors.brand : khatmaMarked ? theme.colors.gold : 'transparent',
+            borderStartWidth: active || khatmaMarked ? theme.stroke.activeRule : 0,
             paddingHorizontal: theme.space[1],
             paddingVertical: theme.space[1],
           }}

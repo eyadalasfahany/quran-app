@@ -1,5 +1,5 @@
 import RenderHtml, { type MixedStyleRecord } from '@native-html/render';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View, useWindowDimensions, type TextStyle } from 'react-native';
 
@@ -11,10 +11,13 @@ import { SheetScrollView } from '../components/SheetScrollView';
 import { TafsirTextSkeleton } from './TafsirTextSkeleton';
 import { AyahStepper } from './AyahStepper';
 import { TafsirDownloadList, type TafsirDownloadItem } from './TafsirDownloadList';
-import { tafsirAuthorName, tafsirDisplayName, type TextDirection } from './panel-text';
+import { tafsirAuthorName, tafsirDisplayName, textDirection, type TextDirection } from './panel-text';
+import { QURAN_QUOTE_CLASS, wrapQuranQuotes } from './tafsir-quotes';
 
 const EMPTY_ICON = { ios: 'book.closed', android: 'menu_book' } as const;
 const SYSTEM_FONTS = Object.values(uiFontFamilies);
+// Long-form Arabic prose reads better with air between lines than the 17/26 body style gives it.
+const PASSAGE_LINE_HEIGHT_RATIO = 1.75;
 // Bold picks the bold face; a fontWeight on top would fake-bold it on Android.
 const TAGS_STYLES: MixedStyleRecord = {
   b: { fontFamily: uiFontFamilies[700], fontWeight: 'normal' },
@@ -101,16 +104,32 @@ export function TafsirPanel({
   const windowWidth = useWindowDimensions().width;
   const [width, setWidth] = useState<number | null>(null);
   const selected = tafsirs.find((tafsir) => tafsir.resourceId === selectedId) ?? null;
-  const direction = selected?.direction ?? null;
+  // The passage's own first strong character decides: a catalogue row with no direction (or a wrong one)
+  // can't leave an Arabic tafsir reading left to right. Arabic first when there is no passage to sniff.
+  const direction: TextDirection = useMemo(() => {
+    const fallback = selected?.direction ?? 'rtl';
+    if (html === null) {
+      return fallback;
+    }
+    return textDirection(html.replace(/<[^>]+>/g, ' '), fallback);
+  }, [html, selected]);
 
   const body: TextStyle = theme.text.body ?? {};
+  const fontSize = (body.fontSize ?? 17) * fontScale;
   const baseStyle = {
     color: theme.colors.ink,
     fontFamily: uiFontFamilies[400],
-    fontSize: (body.fontSize ?? 17) * fontScale,
-    lineHeight: (body.lineHeight ?? 26) * fontScale,
-    ...(direction === null ? {} : { textAlign: direction === 'rtl' ? ('right' as const) : ('left' as const) }),
+    fontSize,
+    lineHeight: Math.round(fontSize * PASSAGE_LINE_HEIGHT_RATIO),
+    // Natural alignment follows the body's direction. On iOS an explicit 'right' inside an RTL
+    // layout resolves to the left edge, so the passage would hug the wrong side.
+    textAlign: 'auto' as const,
+    writingDirection: direction,
   };
+  const classesStyles: MixedStyleRecord = {
+    [QURAN_QUOTE_CLASS]: { color: theme.colors.gold },
+  };
+  const passageHtml = useMemo(() => (html === null ? null : wrapQuranQuotes(html)), [html]);
 
   // The sheet's floating bar sits over the scroll, so the scroll keeps clear of it.
   const scrollBottom = layout === 'sheet' ? theme.size.touchTarget * 2 : theme.space[4];
@@ -212,9 +231,10 @@ export function TafsirPanel({
   ) : (
     <RenderHtml
       baseStyle={baseStyle}
+      classesStyles={classesStyles}
       contentWidth={width ?? windowWidth}
       defaultTextProps={{ maxFontSizeMultiplier: maxFontScale.content }}
-      source={{ html }}
+      source={{ html: passageHtml ?? '' }}
       systemFonts={SYSTEM_FONTS}
       tagsStyles={TAGS_STYLES}
     />
@@ -263,7 +283,7 @@ export function TafsirPanel({
           <View style={{ gap: theme.size.bodyCreditGap }}>
             <View
               onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
-              style={direction === null ? undefined : { direction }}
+              style={{ direction }}
               testID={`${testID}-body`}
             >
               {passage}

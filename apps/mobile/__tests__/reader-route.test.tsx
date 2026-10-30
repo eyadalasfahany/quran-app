@@ -31,6 +31,13 @@ jest.mock("@/features/library/data/hooks", () => ({
   useAllNotes: () => ({ data: [] }),
 }));
 
+// The user database is not open under Jest; the reader's khatma marker and Home's card read no plan.
+jest.mock("@/features/khatma/data/hooks", () => ({
+  useActivePlan: () => ({ data: [] }),
+  usePlanLogs: () => ({ data: [] }),
+  useKhatmaMarkerVerseId: () => null,
+}));
+
 describe("reader route", () => {
   // The app starts in Arabic; these tests use the English labels, so they save English first (as a reader would).
   beforeEach(async () => {

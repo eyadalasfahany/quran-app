@@ -8,6 +8,8 @@ import { useAudioAvailable } from '@/features/audio/hooks/useAudioAvailable';
 import { pause } from '@/features/audio/player';
 import { playVerse } from '@/features/audio/play-verse';
 import { usePlayerStore } from '@/features/audio/playerStore';
+import type { KhatmaPlan } from '@/features/khatma/data';
+import { markKhatmaPosition, type KhatmaMarkBounds } from '@/features/khatma/mark-position';
 import { setHighlight, toggleBookmark, type Note, type UserStore } from '@/features/library/data';
 import { ActionTile, HighlightRow, type HighlightColor, type IconName, UiText } from '@/shared/ui';
 
@@ -28,6 +30,7 @@ const icons = {
   tafsir: { ios: 'book', android: 'menu_book' },
   bookmark: { ios: 'bookmark', android: 'bookmark' },
   bookmarked: { ios: 'bookmark.fill', android: 'bookmark_added' },
+  khatma: { ios: 'book.closed', android: 'menu_book' },
   repeat: { ios: 'repeat', android: 'repeat' },
   note: { ios: 'note.text', android: 'edit_note' },
   copy: { ios: 'doc.on.doc', android: 'content_copy' },
@@ -43,24 +46,28 @@ type Tile = {
   disabled?: boolean;
   selected?: boolean;
   hint?: string;
-  /** Directional glyphs flip with the layout direction (the play triangle points left in Arabic). */
-  mirrorInRtl?: boolean;
 };
 
 export function AyahActionsPanel({
   verseId,
   verseNumber,
+  page,
   textUthmani,
   reference,
   bookmarked,
   highlight,
   note,
   store,
+  activeKhatmaPlan = null,
+  khatmaMarkerVerseId = null,
+  khatmaBoundsOverride,
+  onKhatmaMarked,
   onOpenTafsir,
   testID = 'ayah-actions-panel',
 }: {
   verseId: number;
   verseNumber: number;
+  page: number;
   // Uthmani text exactly as stored; copied and shared byte for byte.
   textUthmani: string;
   // The reference line under copied text, for example «الفاتحة · الآية ٢».
@@ -69,6 +76,11 @@ export function AyahActionsPanel({
   highlight: HighlightColor | null;
   note: Note | null;
   store?: UserStore;
+  activeKhatmaPlan?: KhatmaPlan | null;
+  khatmaMarkerVerseId?: number | null;
+  /** Tests pass plan bounds when content.db is unavailable under Jest. */
+  khatmaBoundsOverride?: KhatmaMarkBounds;
+  onKhatmaMarked?: (result: { logged: boolean; completed: boolean }) => void;
   onOpenTafsir?: () => void;
   testID?: string;
 }) {
@@ -98,6 +110,20 @@ export function AyahActionsPanel({
     } catch {
       // The live query restores the stored state.
     }
+  };
+
+  const onKhatmaMark = () => {
+    if (activeKhatmaPlan === null) {
+      return;
+    }
+    const result = markKhatmaPosition({
+      boundsOverride: khatmaBoundsOverride,
+      page,
+      plan: activeKhatmaPlan,
+      store,
+      verseId,
+    });
+    onKhatmaMarked?.(result);
   };
 
   const onHighlight = (next: HighlightColor) => {
@@ -149,7 +175,6 @@ export function AyahActionsPanel({
       icon: playingThis ? icons.pause : icons.play,
       key: 'play',
       label: playingThis ? t('player.pause') : t('reader.ayahPanel.play'),
-      mirrorInRtl: true,
       onPress: playingThis ? pause : onPlay,
       primary: true,
     },
@@ -163,6 +188,17 @@ export function AyahActionsPanel({
       onPress: onBookmark,
       selected: isBookmarked,
     },
+    ...(activeKhatmaPlan !== null
+      ? [
+          {
+            icon: icons.khatma,
+            key: 'khatma',
+            label: t('reader.ayahPanel.khatmaMark'),
+            onPress: onKhatmaMark,
+            selected: khatmaMarkerVerseId === verseId,
+          },
+        ]
+      : []),
     {
       disabled: true,
       hint: audioHint,
@@ -200,7 +236,6 @@ export function AyahActionsPanel({
                 icon={tile.icon}
                 key={tile.key}
                 label={tile.label}
-                mirrorInRtl={tile.mirrorInRtl}
                 onPress={tile.onPress}
                 selected={tile.selected}
                 testID={`${testID}-${tile.key}`}

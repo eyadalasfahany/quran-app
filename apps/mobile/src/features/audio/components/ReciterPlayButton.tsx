@@ -1,4 +1,4 @@
-import { I18nManager, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
@@ -11,7 +11,7 @@ const RING_RADIUS = 21; // Sits on the 1 pt border of the 44 pt button.
 
 // The row's play button. While `progress` is a number (0 to 1) a determinate ring fills around it.
 // The frame has no downloading state; the ring is the design gap the step brief asks the developer to approve.
-// The play triangle flips with the layout direction; while `playing`, the button draws a symmetric pause glyph.
+// The play triangle never flips: playback glyphs map to the timeline, not the reading direction.
 export function ReciterPlayButton({
   label,
   progress,
@@ -58,7 +58,6 @@ export function ReciterPlayButton({
     >
       <Svg
         height={GLYPH_SIZE}
-        style={!playing && I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}
         testID={testID ? `${testID}-glyph` : undefined}
         viewBox="0 0 24 24"
         width={GLYPH_SIZE}

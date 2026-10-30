@@ -34,6 +34,7 @@ export type HafsMushafListProps = {
   /** The ayah the reader follows (playing, not dragged away): the word follow-scroll keeps its line in view. */
   followKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
+  khatmaMarkerVerseId?: number | null;
   onVisiblePage?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
@@ -54,6 +55,7 @@ export function HafsMushafList({
   recitedWord = null,
   followKey = null,
   highlightsByVerseId,
+  khatmaMarkerVerseId = null,
   onVisiblePage,
   onSelectVerseKey,
   onOpenAyahActions,
@@ -217,8 +219,16 @@ export function HafsMushafList({
 
   // FlashList repaints pages only when data or extraData changes; renderPage reads these from props.
   const pageExtraData = useMemo(
-    () => ({ focusVerseKey, followKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey }),
-    [focusVerseKey, followKey, highlightsByVerseId, recitedVerseKey, recitedWord, selectedVerseKey],
+    () => ({
+      focusVerseKey,
+      followKey,
+      highlightsByVerseId,
+      khatmaMarkerVerseId,
+      recitedVerseKey,
+      recitedWord,
+      selectedVerseKey,
+    }),
+    [focusVerseKey, followKey, highlightsByVerseId, khatmaMarkerVerseId, recitedVerseKey, recitedWord, selectedVerseKey],
   );
 
   const renderPage = useCallback(
@@ -231,6 +241,7 @@ export function HafsMushafList({
         followKey={followKey}
         fontScale={fontScale}
         highlightsByVerseId={highlightsByVerseId}
+        khatmaMarkerVerseId={khatmaMarkerVerseId}
         onFocusOffset={scrollToFocus}
         onRootNode={(node) => {
           if (node === null) {
@@ -257,6 +268,7 @@ export function HafsMushafList({
       fontScale,
       word,
       highlightsByVerseId,
+      khatmaMarkerVerseId,
       onOpenAyahActions,
       onSelectVerseKey,
       recitedVerseKey,

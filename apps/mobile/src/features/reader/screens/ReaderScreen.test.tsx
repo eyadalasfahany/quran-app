@@ -29,6 +29,12 @@ jest.mock('@/features/library/data/hooks', () => ({
   useHighlightsByVerseId: () => mockHighlights,
 }));
 
+jest.mock('@/features/khatma/data', () => ({
+  ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
+  useActivePlan: () => ({ data: [] }),
+  useKhatmaMarkerVerseId: () => null,
+}));
+
 // The Mushaf list stands in for FlashList, which doesn't report visible pages under Jest; a test reports
 // them through the props it was given.
 let mockMushafProps:

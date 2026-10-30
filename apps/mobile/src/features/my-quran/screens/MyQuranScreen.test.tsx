@@ -33,6 +33,12 @@ jest.mock('../data/saved-items', () => ({
   resolveSavedVerses: () => [],
 }));
 
+jest.mock('@/features/khatma/data', () => ({
+  ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
+  useActivePlan: () => ({ data: [] }),
+  usePlanLogs: () => ({ data: [] }),
+}));
+
 describe('MyQuranScreen', () => {
   beforeEach(() => {
     jest.mocked(router.push).mockClear();
@@ -70,9 +76,4 @@ describe('MyQuranScreen', () => {
     expect(router.navigate).toHaveBeenCalledWith('/(main)/(mushaf)');
   });
 
-  it('keeps «الختمة» disabled until step 3', async () => {
-    const view = await renderUi(<MyQuranScreen />);
-
-    expect(view.getByRole('tab', { name: 'الختمة' }).props.accessibilityState).toMatchObject({ disabled: true });
-  });
 });
