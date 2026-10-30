@@ -1,7 +1,7 @@
 import RenderHtml, { type MixedStyleRecord } from '@native-html/render';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, Text, View, useWindowDimensions, type TextStyle } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { uiFontFamilies, useTheme } from '@/core/theme';
@@ -103,12 +103,12 @@ export function TafsirPanel({
   const selected = tafsirs.find((tafsir) => tafsir.resourceId === selectedId) ?? null;
   const direction = selected?.direction ?? null;
 
-  const { fontSize = 17, lineHeight = 26 } = theme.text.body;
+  const body: TextStyle = theme.text.body ?? {};
   const baseStyle = {
     color: theme.colors.ink,
     fontFamily: uiFontFamilies[400],
-    fontSize: fontSize * fontScale,
-    lineHeight: lineHeight * fontScale,
+    fontSize: (body.fontSize ?? 17) * fontScale,
+    lineHeight: (body.lineHeight ?? 26) * fontScale,
     ...(direction === null ? {} : { textAlign: direction === 'rtl' ? ('right' as const) : ('left' as const) }),
   };
 

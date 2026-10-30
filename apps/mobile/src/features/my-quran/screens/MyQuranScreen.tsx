@@ -1,0 +1,98 @@
+import { type Href, router } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ScrollView } from 'react-native';
+
+import { openContentDb, useContentDb } from '@/core/db/content/open';
+import { SectionScreen } from '@/core/layout';
+import { useTheme } from '@/core/theme';
+import { useAllHighlights, useAllNotes, useBookmarks } from '@/features/library/data';
+import { IconButton } from '@/shared/ui';
+
+import { BookmarkListCard } from '../components/BookmarkListCard';
+import { HighlightListCard } from '../components/HighlightListCard';
+import { MyQuranTabs, type MyQuranTab } from '../components/MyQuranTabs';
+import { NoteListCard } from '../components/NoteListCard';
+import {
+  resolveSavedVerses,
+  type SavedBookmarkItem,
+  type SavedHighlightItem,
+  type SavedNoteItem,
+} from '../data/saved-items';
+
+const SETTINGS_ICON = { ios: 'gearshape', android: 'settings' } as const;
+
+/**
+ * «مصحفي» (#MyQuran): the bookmarks, highlights and notes the reader saved, under one segment.
+ * «ختمة» stays disabled until step 3. Local-only (ADR 0027): no sign-in banner.
+ */
+export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string }) {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const { ready } = useContentDb();
+  const bookmarks = useBookmarks();
+  const highlights = useAllHighlights();
+  const notes = useAllNotes();
+  const [activeTab, setActiveTab] = useState<MyQuranTab>('bookmarks');
+
+  // Joins wait for the content database; until then every tab draws its empty state. The try/catch
+  // mirrors IndexScreen: under Jest openContentDb throws, and the tabs draw their empty states.
+  const { bookmark, highlightItems, noteItems } = useMemo(() => {
+    const empty: {
+      bookmark: SavedBookmarkItem | null;
+      highlightItems: SavedHighlightItem[];
+      noteItems: SavedNoteItem[];
+    } = { bookmark: null, highlightItems: [], noteItems: [] };
+    if (!ready) {
+      return empty;
+    }
+    let executor;
+    try {
+      executor = openContentDb().executor;
+    } catch {
+      return empty;
+    }
+    return {
+      bookmark: resolveSavedVerses(executor, bookmarks.data)[0] ?? null,
+      highlightItems: resolveSavedVerses(executor, highlights.data),
+      noteItems: resolveSavedVerses(executor, notes.data),
+    };
+  }, [bookmarks.data, highlights.data, notes.data, ready]);
+
+  const openVerse = (verseKey: string) => router.push(`/read/${verseKey}` as Href);
+  const editNote = (verseKey: string) => router.push(`/ayah/${verseKey}` as Href);
+  const openMushaf = () => router.navigate('/(main)/(mushaf)' as Href);
+
+  return (
+    <SectionScreen
+      testID={testID}
+      title={t('tabs.myQuran')}
+      trailing={
+        <IconButton
+          icon={SETTINGS_ICON}
+          label={t('settings.title')}
+          onPress={() => router.push('/settings' as Href)}
+          testID="my-quran-settings"
+          variant="raised"
+        />
+      }
+    >
+      <MyQuranTabs onChange={setActiveTab} value={activeTab} />
+      <ScrollView
+        contentContainerStyle={{ gap: theme.space[3], paddingBottom: theme.space[4] }}
+        style={{ flex: 1 }}
+        testID={`${testID}-list`}
+      >
+        {activeTab === 'bookmarks' ? (
+          <BookmarkListCard item={bookmark} onOpenMushaf={openMushaf} onOpenVerse={openVerse} />
+        ) : null}
+        {activeTab === 'highlights' ? (
+          <HighlightListCard items={highlightItems} onOpenMushaf={openMushaf} onOpenVerse={openVerse} />
+        ) : null}
+        {activeTab === 'notes' ? (
+          <NoteListCard items={noteItems} onEditNote={editNote} onOpenMushaf={openMushaf} onOpenVerse={openVerse} />
+        ) : null}
+      </ScrollView>
+    </SectionScreen>
+  );
+}

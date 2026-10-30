@@ -6,13 +6,15 @@ import { FOLLOW_RESUME_MS, FOLLOWING, pauseFollow, scrollEnded, settleFollow, ty
  * Whether the reader follows the recitation, and the handlers that pause it. A drag pauses following; the
  * scroll's end (and each momentum end) starts the 5 s inactivity clock; `resume` jumps back at once.
  */
-export function useRecitationFollow(): {
+export function useRecitationFollow(initiallyFollowing = true): {
   following: boolean;
   onUserScrollStart: () => void;
   onUserScrollEnd: () => void;
   resume: () => void;
 } {
-  const [state, setState] = useState<FollowState>(FOLLOWING);
+  const [state, setState] = useState<FollowState>(() =>
+    initiallyFollowing ? FOLLOWING : pauseFollow(0),
+  );
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clear = useCallback(() => {

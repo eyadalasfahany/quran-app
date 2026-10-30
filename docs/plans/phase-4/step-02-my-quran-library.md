@@ -14,7 +14,7 @@ Build the personal library screen (`app/(main)/(my-quran)/index.tsx`) backed by 
 3. **Segmented Tabs:**
    - Tabs: Bookmarks («العلامات»), Highlights («التظليلات»), Notes («الملاحظات»), Khatma («الختمة»).
 4. **Tab Views:**
-   - **Bookmarks:** lists saved verse bookmarks with surah name, ayah number, and page. Tapping an item navigates to the reader at that verse. Swipe or action button to remove.
+   - **Bookmark:** one bookmark only (ADR 0028). Tapping bookmark on an ayah replaces the previous one. The row shows that ayah. Tapping it opens the reader there. Khatma progress is calculated from this ayah.
    - **Highlights:** lists highlighted verses, with color filter chips (gold, green, blue, rose). Tapping navigates to that verse. Option to remove highlight.
    - **Notes:** lists ayah notes showing surah/ayah header, note text preview, and updated date. Tapping navigates to the verse; tapping edit opens the note editor.
    - **Empty States:** when a tab has no items, render an empty state following frame `#EmptyMyQuran` with an icon, title, description, and action button (e.g., "Start reading").

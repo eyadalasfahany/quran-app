@@ -125,8 +125,8 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
             ListEmptyComponent={
               ready ? undefined : (
                 <SkeletonGroup testID="index-loading">
-                  {SKELETON_NAME_WIDTHS.map((width) => (
-                    <SurahRowSkeleton key={width} nameWidth={width} />
+                  {SKELETON_NAME_WIDTHS.map((width, index) => (
+                    <SurahRowSkeleton key={`${width}-${index}`} nameWidth={width} />
                   ))}
                 </SkeletonGroup>
               )

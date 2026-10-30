@@ -11,6 +11,14 @@ jest.mock('@/features/audio/data/recent-listens-hooks', () => ({
   useRecentListens: () => ({ data: [] }),
 }));
 
+// The user database is not open under Jest; the My Quran tab reads empty saved-item lists.
+jest.mock('@/features/library/data/hooks', () => ({
+  ...jest.requireActual<typeof import('@/features/library/data/hooks')>('@/features/library/data/hooks'),
+  useBookmarks: () => ({ data: [] }),
+  useAllHighlights: () => ({ data: [] }),
+  useAllNotes: () => ({ data: [] }),
+}));
+
 // The user database is not open under Jest; the Listen tab (the route's parent) reads no downloads.
 jest.mock('@/features/audio/data/downloads', () => ({
   ...jest.requireActual<typeof import('@/features/audio/data/downloads')>('@/features/audio/data/downloads'),

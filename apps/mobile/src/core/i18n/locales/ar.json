@@ -209,6 +209,45 @@
       "startVerse": "يبدأ من {{verseKey}}"
     }
   },
+  "myQuran": {
+    "tabsLabel": "أقسام مصحفي",
+    "tabs": {
+      "bookmarks": "العلامات",
+      "highlights": "التظليلات",
+      "notes": "الملاحظات",
+      "khatma": "الختمة"
+    },
+    "reference": "{{surah}} · الآية {{ayah}}",
+    "place": "صفحة {{page}} · الجزء {{juz}}",
+    "removeBookmark": "إزالة العلامة",
+    "removeHighlight": "إزالة التظليل",
+    "editNote": "تعديل الملاحظة",
+    "empty": {
+      "bookmarks": {
+        "title": "لا توجد علامات بعد",
+        "body": "اضغط مطوّلًا على أي آية ثم اختر «حفظ»، وستجدها هنا لتعود إليها بسرعة.",
+        "action": "افتح المصحف"
+      },
+      "highlights": {
+        "title": "لا توجد تظليلات بعد",
+        "body": "اختر لونًا من خيارات الآية لتظليلها، وستجدها هنا.",
+        "action": "افتح المصحف"
+      },
+      "notes": {
+        "title": "لا توجد ملاحظات بعد",
+        "body": "أضف ملاحظة من خيارات الآية، وستجدها هنا.",
+        "action": "افتح المصحف"
+      }
+    },
+    "filter": {
+      "label": "تصفية التظليلات باللون",
+      "all": "الكل",
+      "gold": "ذهبي",
+      "green": "أخضر",
+      "blue": "أزرق",
+      "rose": "وردي"
+    }
+  },
   "search": {
     "title": "البحث",
     "placeholder": "ابحث في القرآن",
@@ -334,6 +373,53 @@
       "notFound": "الملف الصوتي غير متوفر الآن.",
       "invalidChapter": "هذه السورة غير متاحة.",
       "invalidVerse": "هذه الآية غير متاحة."
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "back": "رجوع",
+    "sections": {
+      "language": "اللغة",
+      "reading": "القراءة",
+      "listening": "الاستماع",
+      "reminders": "الورد والتذكير",
+      "about": "عن التطبيق"
+    },
+    "language": {
+      "label": "لغة التطبيق",
+      "ar": "العربية",
+      "en": "English"
+    },
+    "reading": {
+      "quranFont": "خط المصحف",
+      "quranFontValue": "العثماني · حفص",
+      "appearance": "طريقة العرض والمظهر",
+      "appearanceValue": "مصحف · تلقائي",
+      "darkAfterMaghrib": "الوضع الداكن تلقائيًا بعد المغرب",
+      "defaultTafsir": "التفسير الافتراضي",
+      "defaultTafsirValue": "التفسير الميسر"
+    },
+    "listening": {
+      "defaultReciter": "القارئ الافتراضي",
+      "defaultReciterValue": "مشاري العفاسي",
+      "wifiOnly": "التنزيل عبر Wi‑Fi فقط",
+      "downloads": "التنزيلات والمساحة",
+      "downloadsValue": "إدارة التنزيلات"
+    },
+    "reminders": {
+      "dailyReminder": "تذكير بالورد اليومي",
+      "khatma": "الختمة",
+      "khatmaValue": "٣٠ يومًا"
+    },
+    "about": {
+      "sources": "المصادر والشكر",
+      "sourcesValue": "Quran Foundation · Tanzil · مجمع الملك فهد",
+      "clearData": "مسح البيانات المحلية",
+      "clearDataTitle": "مسح البيانات المحلية؟",
+      "clearDataMessage": "هل أنت متأكد من مسح العلامات المحفوظة والتظليلات والملاحظات والختمة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "clearDataConfirm": "مسح البيانات",
+      "cancel": "إلغاء",
+      "dataCleared": "تم مسح البيانات المحلية بنجاح"
     }
   }
 }

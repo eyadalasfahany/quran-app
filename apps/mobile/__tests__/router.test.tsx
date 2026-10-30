@@ -22,6 +22,14 @@ jest.mock("@/features/audio/data/recent-listens-hooks", () => ({
   useRecentListens: () => ({ data: [] }),
 }));
 
+// The user database is not open under Jest; the My Quran tab reads empty saved-item lists.
+jest.mock("@/features/library/data/hooks", () => ({
+  ...jest.requireActual("@/features/library/data/hooks"),
+  useBookmarks: () => ({ data: [] }),
+  useAllHighlights: () => ({ data: [] }),
+  useAllNotes: () => ({ data: [] }),
+}));
+
 jest.mock("expo-symbols", () => {
   const { createElement } = jest.requireActual<typeof import("react")>("react");
   const { View } =
@@ -93,6 +101,8 @@ describe("adaptive nav", () => {
       { ios: "book", android: "menu_book" },
       { ios: "headphones", android: "headphones" },
       { ios: "bookmark", android: "bookmark" },
+      // The sidebar's pinned settings entry (step 1).
+      { ios: "gearshape", android: "settings" },
     ]);
 
     await act(async () => {

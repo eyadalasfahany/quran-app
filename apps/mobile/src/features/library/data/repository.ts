@@ -85,6 +85,8 @@ export function toggleBookmark(verseId: number, store?: UserStore): Bookmark | n
       return null;
     }
 
+    clearOtherBookmarks(db, verseId, clientUpdatedAt);
+
     const tombstoneId = latestTombstoneId(db, 'bookmarks', verseId, 'verse');
     const id = tombstoneId ?? uuid();
     const bookmark: Bookmark = { id, verseId, kind: 'verse', page: null, clientUpdatedAt };
@@ -237,11 +239,40 @@ export function deleteNote(id: string, store?: UserStore): void {
   });
 }
 
+export function deleteBookmark(id: string, store?: UserStore): void {
+  const { db, now } = resolveStore(store);
+
+  db.transaction(() => {
+    const live = db.get<{ id: string }>(`SELECT id FROM bookmarks WHERE id = ? AND deleted_at IS NULL`, [id]);
+    if (live === undefined) {
+      return;
+    }
+
+    const clientUpdatedAt = now();
+    softDelete(db, 'bookmarks', id, clientUpdatedAt);
+    writeOutbox(db, {
+      entity: 'bookmark',
+      entityId: id,
+      op: 'delete',
+      payload: deletePayload(id, clientUpdatedAt),
+      clientUpdatedAt,
+    });
+  });
+}
+
 export function listBookmarks(store?: UserStore): Bookmark[] {
   const { db } = resolveStore(store);
   return db
     .all<BookmarkRow>(`${BOOKMARK_SELECT} WHERE deleted_at IS NULL ORDER BY client_updated_at DESC, id ASC`)
     .map(asBookmark);
+}
+
+/** Every live highlight, newest first. The My Quran highlights tab lists these. */
+export function listHighlights(store?: UserStore): Highlight[] {
+  const { db } = resolveStore(store);
+  return db
+    .all<HighlightRow>(`${HIGHLIGHT_SELECT} WHERE deleted_at IS NULL ORDER BY client_updated_at DESC, id ASC`)
+    .map(asHighlight);
 }
 
 export function getHighlights(verseIds: readonly number[], store?: UserStore): Highlight[] {
@@ -268,6 +299,12 @@ export function getNotes(verseId: number, store?: UserStore): Note[] {
   );
 }
 
+/** Every live note, newest first. The My Quran notes tab lists these. */
+export function listNotes(store?: UserStore): Note[] {
+  const { db } = resolveStore(store);
+  return db.all<NoteRow>(`${NOTE_SELECT} WHERE deleted_at IS NULL ORDER BY client_updated_at DESC, id ASC`);
+}
+
 function resolveStore(store?: UserStore): ResolvedStore {
   return {
     db: store?.db ?? defaultExecutor(),
@@ -278,6 +315,23 @@ function resolveStore(store?: UserStore): ResolvedStore {
 
 function defaultExecutor(): SqlExecutor {
   return openUserDb().executor;
+}
+
+function clearOtherBookmarks(db: SqlExecutor, verseId: number, clientUpdatedAt: number): void {
+  const others = db.all<BookmarkRow>(
+    `${BOOKMARK_SELECT} WHERE deleted_at IS NULL AND NOT (verse_id = ? AND kind = 'verse')`,
+    [verseId],
+  );
+  for (const other of others) {
+    softDelete(db, 'bookmarks', other.id, clientUpdatedAt);
+    writeOutbox(db, {
+      clientUpdatedAt,
+      entity: 'bookmark',
+      entityId: other.id,
+      op: 'delete',
+      payload: deletePayload(other.id, clientUpdatedAt),
+    });
+  }
 }
 
 function liveVerseBookmark(db: SqlExecutor, verseId: number): Bookmark | undefined {

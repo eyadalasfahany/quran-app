@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useTheme } from '@/core/theme';
 
 import { Icon } from './Icon';
-import { UiText } from './UiText';
+import { UiText, type TextTone } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
@@ -17,6 +17,7 @@ export function ListRow({
   onPress,
   separator,
   titleVariant = 'body',
+  titleTone = 'ink',
   chevron = true,
   density = 'default',
   testID,
@@ -29,6 +30,7 @@ export function ListRow({
   separator?: 'line' | 'strong';
   /** `displaySm` sets the title in Amiri, as the surah index does. */
   titleVariant?: 'body' | 'displaySm';
+  titleTone?: TextTone;
   /** Rows whose trailing content already reads as the destination (the index's page) drop the chevron. */
   chevron?: boolean;
   /**
@@ -56,7 +58,7 @@ export function ListRow({
     <>
       {leading}
       <View style={{ flex: 1, gap: index ? 0 : 2 }}>
-        <UiText style={titleStyle} variant={titleVariant}>
+        <UiText style={titleStyle} tone={titleTone} variant={titleVariant}>
           {title}
         </UiText>
         {subtitle ? (

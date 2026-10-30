@@ -120,6 +120,12 @@ describe('ListRow', () => {
     expect(flatStyle(view.getByText('البقرة').props.style).fontSize).toBe(20);
   });
 
+  it('uses the danger tone for the title when requested', async () => {
+    const view = await renderUi(<ListRow title="مسح البيانات المحلية" titleTone="danger" />);
+
+    expect(flatStyle(view.getByText('مسح البيانات المحلية').props.style).color).toBe(colors.danger);
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('ListRow.tsx')).toEqual([]);
   });

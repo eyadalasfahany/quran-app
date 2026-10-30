@@ -1,4 +1,4 @@
-export { useBookmarks, useHighlights, useHighlightsByVerseId, useNotes } from './hooks';
+export { useAllHighlights, useAllNotes, useBookmarks, useHighlights, useHighlightsByVerseId, useNotes } from './hooks';
 export {
   HighlightValidationError,
   NOTE_MAX_CHARACTERS,
@@ -10,10 +10,13 @@ export {
 } from './model';
 export type { Bookmark, BookmarkKind, Highlight, HighlightColor, Note } from './model';
 export {
+  deleteBookmark,
   deleteNote,
   getHighlights,
   getNotes,
   listBookmarks,
+  listHighlights,
+  listNotes,
   saveNote,
   setHighlight,
   toggleBookmark,

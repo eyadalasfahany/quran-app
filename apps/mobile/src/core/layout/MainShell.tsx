@@ -29,15 +29,26 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
     <View style={{ backgroundColor: theme.colors.surface, flex: 1, flexDirection: 'row' }} testID="main-shell">
       {expanded ? (
         <Sidebar
-          items={destinations.map((item) => ({
-            androidIcon: item.androidIcon,
-            key: item.name,
-            label: t(item.label),
-            onPress: () => router.navigate(item.href),
-            selected: item.name === active,
-            symbol: item.symbol,
-            testID: `sidebar-${item.testID}`,
-          }))}
+          items={[
+            ...destinations.map((item) => ({
+              androidIcon: item.androidIcon,
+              key: item.name,
+              label: t(item.label),
+              onPress: () => router.navigate(item.href),
+              selected: item.name === active,
+              symbol: item.symbol,
+              testID: `sidebar-${item.testID}`,
+            })),
+            {
+              androidIcon: 'settings' as const,
+              key: 'settings',
+              label: t('settings.title'),
+              onPress: () => router.push('/settings'),
+              selected: false,
+              symbol: 'gearshape',
+              testID: 'sidebar-settings',
+            },
+          ]}
           label={t('nav.main')}
           footer={<MiniPlayer variant="sidebar" />}
           search={{ label: t('search.placeholder'), onPress: () => router.push('/search') }}

@@ -93,10 +93,10 @@ jest.mock('expo-router', () => ({
 // The app root provides the insets; the toolbar clears the top inset itself, so the screen adds none.
 const metrics = { frame: { height: 844, width: 390, x: 0, y: 0 }, insets: { bottom: 34, left: 0, right: 0, top: 59 } };
 
-function reader() {
+function reader(verseKey = '2:255') {
   return (
     <SafeAreaProvider initialMetrics={metrics}>
-      <ReaderScreen verseKey="2:255" />
+      <ReaderScreen verseKey={verseKey} />
     </SafeAreaProvider>
   );
 }
@@ -336,20 +336,33 @@ describe('ReaderScreen', () => {
       usePlayerStore.setState({ activeVerseId: verseKeyToId(executor, verseKey) ?? null });
     }
 
-    it('turns the Mushaf to the recited ayah while playing', async () => {
+    it('turns the Mushaf to the recited ayah when that ayah is the one opened', async () => {
       await playingAt('2:256');
-      await renderUi(reader());
+      await renderUi(reader('2:256'));
+      expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
+    });
+
+    it('opens the chosen ayah while another ayah is playing, and the pill returns to the recitation', async () => {
+      await playingAt('2:256');
+      const view = await renderUi(reader());
+
+      expect(mockMushafProps?.anchorVerseKey).toBe('2:255');
+      expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
+      expect(view.getByTestId('reader-resume')).toBeOnTheScreen();
+
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'العودة إلى الآية الحالية' }));
+      });
       expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
     });
 
     it('a drag stops the follow and shows the pill; the pill resumes at once', async () => {
       await playingAt('2:256');
-      const view = await renderUi(reader());
+      const view = await renderUi(reader('2:256'));
 
       await act(async () => {
         mockMushafProps?.onUserScrollStart?.();
       });
-      // The saved place stays on the recited ayah until the list reports a new one; the pill points back to it.
       expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
       expect(view.getByTestId('reader-resume')).toBeOnTheScreen();
 
@@ -369,61 +382,43 @@ describe('ReaderScreen', () => {
 
     it('the saved place is the recited ayah while following, in Mushaf', async () => {
       await playingAt('2:256');
-      const view = await renderUi(reader());
+      const view = await renderUi(reader('2:256'));
       expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
+      expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
     });
 
     it('the saved place is the recited ayah while following, in Reading', async () => {
       await playingAt('2:256', 'reading');
-      const view = await renderUi(reader());
+      const view = await renderUi(reader('2:256'));
       expect(mockReadingProps?.anchorVerseKey).toBe('2:256');
       expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
     });
 
-    it('while following, the lists scrolling does not overwrite the saved place (Reading)', async () => {
+    it('while playing, scrolling does not overwrite the saved place (Reading)', async () => {
       await playingAt('2:256', 'reading');
-      const view = await renderUi(reader());
-      await act(async () => {
-        mockReadingProps?.onVisibleVerseKey?.('2:250');
-      });
-      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
-    });
-
-    it('while following, the lists scrolling does not overwrite the saved place (Mushaf)', async () => {
-      await playingAt('2:256');
-      const { executor } = await openReaderTestContent();
-      const view = await renderUi(reader());
-      await act(async () => {
-        mockMushafProps?.onVisiblePage?.(pageForVerse(executor, '2:250')!, '2:250');
-      });
-      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
-    });
-
-    it('once the drag pauses the follow, viewability updates the saved place again (Reading)', async () => {
-      await playingAt('2:256', 'reading');
-      const view = await renderUi(reader());
-      // A drag and the list's next report are separate events: the second sees the re-rendered (paused) props.
+      const view = await renderUi(reader('2:256'));
       await act(async () => {
         mockReadingProps?.onUserScrollStart?.();
       });
       await act(async () => {
         mockReadingProps?.onVisibleVerseKey?.('2:250');
       });
-      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:250');
+      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
+      expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
     });
 
-    it('once the drag pauses the follow, viewability updates the saved place again (Mushaf)', async () => {
+    it('while playing, scrolling does not overwrite the saved place (Mushaf)', async () => {
       await playingAt('2:256');
       const { executor } = await openReaderTestContent();
-      const view = await renderUi(reader());
-      const page = pageForVerse(executor, '2:250')!;
+      const view = await renderUi(reader('2:256'));
       await act(async () => {
         mockMushafProps?.onUserScrollStart?.();
       });
       await act(async () => {
-        mockMushafProps?.onVisiblePage?.(page, '2:250');
+        mockMushafProps?.onVisiblePage?.(pageForVerse(executor, '2:250')!, '2:250');
       });
-      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:250');
+      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
+      expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
     });
   });
 

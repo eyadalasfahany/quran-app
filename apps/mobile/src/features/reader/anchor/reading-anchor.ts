@@ -35,6 +35,15 @@ export function resolveInitialAnchor(params: { verseKey?: string | null } = {}):
   };
 }
 
+/** The ayah being played. Listening owns the continue-reading place, and the saved mode stays as it was. */
+export function writePlayedPlace(verseKey: string, page: number | null): void {
+  writeReadingAnchor({
+    mode: readStoredAnchor()?.mode ?? DEFAULT_READER_MODE,
+    page,
+    verseKey,
+  });
+}
+
 export function writeReadingAnchor(position: ReadingPosition): void {
   storage.set(storageKeys.readerLastVerseKey, position.verseKey);
   if (position.page === null) {

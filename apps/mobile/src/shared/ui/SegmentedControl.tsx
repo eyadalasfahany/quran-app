@@ -13,7 +13,13 @@ export const SEGMENT_HIT_SLOP = 2;
 /** Gap between a segment's leading glyph and its label (frame: gap 6px). */
 export const SEGMENT_GAP = 6;
 
-export type SegmentedOption<K extends string> = { key: K; label: string; leading?: ReactNode };
+export type SegmentedOption<K extends string> = {
+  key: K;
+  label: string;
+  leading?: ReactNode;
+  /** A disabled option draws dimmed and never fires onChange (the My Quran «ختمة» tab before step 3). */
+  disabled?: boolean;
+};
 
 export function SegmentedControl<K extends string>({
   options,
@@ -53,18 +59,20 @@ export function SegmentedControl<K extends string>({
     >
       {options.map((option) => {
         const selected = option.key === value;
+        const disabled = option.disabled ?? false;
         return (
           <Pressable
             key={option.key}
             accessibilityRole="tab"
-            accessibilityState={{ selected }}
+            accessibilityState={disabled ? { disabled, selected } : { selected }}
+            disabled={disabled || undefined}
             hitSlop={{ bottom: SEGMENT_HIT_SLOP, top: SEGMENT_HIT_SLOP }}
-            onPress={() => select(option.key)}
+            onPress={() => (disabled ? undefined : select(option.key))}
             style={({ pressed }) => ({
               alignItems: 'center',
               backgroundColor: selected
                 ? theme.colors.surfaceRaised
-                : pressed
+                : pressed && !disabled
                   ? theme.colors.glassSelected
                   : 'transparent',
               borderRadius: theme.radius.pill,
@@ -74,6 +82,7 @@ export function SegmentedControl<K extends string>({
               gap: SEGMENT_GAP,
               justifyContent: 'center',
               minHeight: SEGMENT_MIN_HEIGHT,
+              opacity: disabled ? theme.opacity.disabled : 1,
               paddingHorizontal: theme.space[2],
             })}
             testID={testID ? `${testID}-${option.key}` : undefined}

@@ -21,10 +21,14 @@ jest.mock("@/features/audio/data/recent-listens-hooks", () => ({
   useRecentListens: () => ({ data: [] }),
 }));
 
-// The user database is not open under Jest; the reader's highlight hook gets an empty map.
+// The user database is not open under Jest; the reader's highlight hook gets an empty map,
+// and the My Quran tab reads empty saved-item lists.
 jest.mock("@/features/library/data/hooks", () => ({
   ...jest.requireActual("@/features/library/data/hooks"),
   useHighlightsByVerseId: () => new Map(),
+  useBookmarks: () => ({ data: [] }),
+  useAllHighlights: () => ({ data: [] }),
+  useAllNotes: () => ({ data: [] }),
 }));
 
 describe("reader route", () => {

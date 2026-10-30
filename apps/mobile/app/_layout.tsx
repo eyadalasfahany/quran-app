@@ -11,6 +11,7 @@ import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
+import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 
 void SplashScreen.preventAutoHideAsync();
@@ -31,6 +32,7 @@ export default function RootLayout() {
   const content = useContentDb();
   const user = useUserDb();
   useContentSync();
+  usePlaybackReadingPlace(content.ready);
   useRestorePlayerSession(content.ready);
   useDownloadManagerStartup(content.ready && user.ready);
   // A font that fails to load falls back to the system font rather than holding the splash.

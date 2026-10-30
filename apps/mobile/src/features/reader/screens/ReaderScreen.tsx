@@ -16,7 +16,7 @@ import { playVerse } from '@/features/audio/play-verse';
 import { listBookmarks, toggleBookmark, useHighlightsByVerseId } from '@/features/library/data';
 import { Screen } from '@/shared/ui';
 
-import { resolveInitialAnchor, writeReadingAnchor } from '../anchor/reading-anchor';
+import { resolveInitialAnchor, writePlayedPlace, writeReadingAnchor } from '../anchor/reading-anchor';
 import { pageForVerse } from '../anchor/page';
 import { useReadingAnchor } from '../anchor/useReadingAnchor';
 import { AdaptiveReaderLayout } from '../components/AdaptiveReaderLayout';
@@ -27,7 +27,7 @@ import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToo
 import { ResumePill } from '../components/ResumePill';
 import { SidePanel } from '../components/SidePanel';
 import { getChapter, listChapters } from '../data/chapters';
-import { getVerseByKey } from '../data/verses';
+import { getVerseByKey, idToVerseKey } from '../data/verses';
 import { HafsMushafList } from '../HafsMushafList';
 import { panelPlacementFor, panelStripWidth } from '../layout';
 import { AyahPanelContent } from '../panels/AyahPanelContent';
@@ -52,6 +52,18 @@ function isAyahSheet(segment: string | undefined): boolean {
   return segment === 'ayah' || segment === 'tafsir';
 }
 
+function recitedKeyNow(): string | null {
+  const player = usePlayerStore.getState();
+  if ((player.status !== 'playing' && player.status !== 'loading') || player.activeVerseId === null) {
+    return null;
+  }
+  try {
+    return idToVerseKey(openContentDb().executor, player.activeVerseId) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): ReaderChrome {
   const verse = getVerseByKey(executor, verseKey);
   if (verse === undefined) {
@@ -70,11 +82,17 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const width = useWindowDimensions().width;
   const windowClass = useWindowClass();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
-  const seeded = useRef<boolean | null>(null);
-  if (seeded.current == null) {
-    writeReadingAnchor(resolveInitialAnchor({ verseKey }));
-    seeded.current = true;
-  }
+  // Opening a surah while audio plays shows that surah. The recited ayah stays the continue-reading place,
+  // and the reader moves to it only from the return control.
+  const [openedAway] = useState(() => {
+    const route = resolveInitialAnchor({ verseKey });
+    const playingKey = recitedKeyNow();
+    const away = playingKey !== null && route.verseKey !== playingKey;
+    if (!away) {
+      writeReadingAnchor(route);
+    }
+    return away;
+  });
   const anchor = useReadingAnchor();
   const mode = useReaderSettings((state) => state.mode);
   const fontScale = useReaderSettings((state) => state.fontScale);
@@ -111,31 +129,35 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   // The recitation: the ayah being recited, and whether the reader follows it (playing and not dragged away).
   const audioAvailable = useAudioAvailable();
   const { activeWord, recitedVerseKey, status } = useRecitation(executor);
-  const follow = useRecitationFollow();
+  const follow = useRecitationFollow(!openedAway);
   const playing = status === 'playing';
   const active = status === 'playing' || status === 'loading';
   const followKey = follow.following && playing ? recitedVerseKey : null;
 
   const placement = panelPlacementFor(width, windowClass);
-  const listAnchor = pinnedVerseKey ?? anchor.verseKey;
-  // Focus shows one ayah at a time: while following, that ayah is the recited one.
-  const focusKey = followKey ?? listAnchor;
+  const routeVerseKey = resolveInitialAnchor({ verseKey }).verseKey;
+  // The page on screen: the recited ayah while following, otherwise the surah that was opened or the saved place.
+  const viewKey = followKey ?? pinnedVerseKey ?? (openedAway ? routeVerseKey : anchor.verseKey);
+  const focusKey = viewKey;
   const { setVisible } = anchor;
-  // While playing and following, the saved place is the recited ayah, in every mode (developer, 29 Oct 2026). The
-  // lists' viewability holds off the saved place meanwhile (below). Paused or idle playback never moves it.
-  // The visible verse stays what the lists report on screen: the resume pill compares it with the recited ayah.
+  // Listening owns the continue-reading place whenever an ayah is playing, including when this screen is showing
+  // another surah. The reader's own scroll writes the place only while nothing is playing.
   useEffect(() => {
-    if (followKey !== null) {
-      setVisible({ page: executor === null ? undefined : pageForVerse(executor, followKey), verseKey: followKey });
+    if (!active || recitedVerseKey === null) {
+      return;
     }
-  }, [executor, followKey, setVisible]);
-  // The toolbar names the saved place, which follows the scroll even while the list is pinned.
+    const page = executor === null ? null : (pageForVerse(executor, recitedVerseKey) ?? null);
+    writePlayedPlace(recitedVerseKey, page);
+    if (follow.following) {
+      setVisible({ page, verseKey: recitedVerseKey });
+    }
+  }, [active, executor, follow.following, recitedVerseKey, setVisible]);
   const chrome = useMemo(
     () =>
       executor === null
-        ? { juz: null, page: null, place: null, title: anchor.verseKey, verseId: null }
-        : loadChrome(executor, anchor.verseKey, locale),
-    [executor, anchor.verseKey, locale],
+        ? { juz: null, page: null, place: null, title: viewKey, verseId: null }
+        : loadChrome(executor, viewKey, locale),
+    [executor, viewKey, locale],
   );
   const focusPosition =
     chrome.place === null
@@ -154,18 +176,22 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     if (anchor.mode !== mode) {
       anchor.setMode(mode);
     }
-  }, [anchor, mode]);
+    // setMode persists whatever verse the anchor held. Playing keeps the recited ayah in front of that.
+    if (active && recitedVerseKey !== null) {
+      writePlayedPlace(recitedVerseKey, executor === null ? null : (pageForVerse(executor, recitedVerseKey) ?? null));
+    }
+  }, [active, anchor, executor, mode, recitedVerseKey]);
 
   useEffect(() => {
     // Following sets the recited ayah's page itself (above); this would write the stale anchor over it.
-    if (executor === null || mode !== 'mushaf' || anchor.page !== null || followKey !== null) {
+    if (executor === null || mode !== 'mushaf' || anchor.page !== null || followKey !== null || openedAway || active) {
       return;
     }
     const page = pageForVerse(executor, anchor.verseKey);
     if (page !== undefined) {
       anchor.setVisible({ page, verseKey: anchor.verseKey });
     }
-  }, [anchor, executor, followKey, mode]);
+  }, [active, anchor, executor, followKey, mode, openedAway]);
 
   const storedBookmarked = useMemo(() => {
     if (chrome.verseId === null) {
@@ -213,7 +239,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   // Focus pages one ayah at a time with its own transport, so the resume pill has nothing to return to.
   const focus = mode === 'focus';
   // While playing, a drag away from the recited ayah shows the pill back to it, in every mode.
-  const shownKey = focus ? listAnchor : visibleVerseKey;
+  const shownKey = focus ? viewKey : visibleVerseKey;
   const recitingAway = playing && recitedVerseKey !== null && !follow.following && shownKey !== recitedVerseKey;
   const selectionPill =
     !focus &&
@@ -254,7 +280,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const topInset = insets.top + READER_TOOLBAR_CLEARANCE;
 
   return (
-    <Screen accessibilityLabel={anchor.verseKey} surface="surfacePage" testID="reader-screen" topInset={false}>
+    <Screen accessibilityLabel={viewKey} surface="surfacePage" testID="reader-screen" topInset={false}>
       <AdaptiveReaderLayout
         bottomInset={insets.bottom}
         onCloseOverlay={() => useReaderSelection.getState().closePanel()}
@@ -279,12 +305,12 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               onTabChange={(tab) => useReaderSelection.getState().setPanelTab(tab)}
               onVerseChange={(key) => useReaderSelection.getState().selectVerse(key, placement)}
               tab={selection.panelTab}
-              verseKey={selection.verseKey ?? visibleVerseKey ?? anchor.verseKey}
+              verseKey={selection.verseKey ?? visibleVerseKey ?? viewKey}
             />
           </SidePanel>
         }
         panelOpen={selection.panelOpen}
-        miniPlayer={showMiniBar ? <MiniPlayer topVerseKey={visibleVerseKey ?? anchor.verseKey} variant="reader" /> : undefined}
+        miniPlayer={showMiniBar ? <MiniPlayer topVerseKey={visibleVerseKey ?? viewKey} variant="reader" /> : undefined}
         resume={
           showResume ? (
             <ResumePill
@@ -309,7 +335,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               bookmarked={bookmarked}
               mode={mode}
               windowClass={windowClass}
-              onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? anchor.verseKey)}
+              onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? viewKey)}
               onBack={leaveReader}
               onBookmarkPage={() => {
                 if (chrome.verseId === null) {
@@ -336,7 +362,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           <ReaderModeFade mode={mode === 'mushaf' ? 'mushaf' : 'text'}>
             {executor !== null && mode === 'mushaf' ? (
               <HafsMushafList
-                anchorVerseKey={followKey ?? listAnchor}
+                anchorVerseKey={viewKey}
                 bottomInset={0}
                 contentBottomInset={mini.footprint}
                 fontScale={fontScale}
@@ -349,10 +375,10 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onVisiblePage={(page, key) => {
                   // The page holding the ayah the reader is at keeps that ayah, not the page's first one, so a
                   // surah opened halfway down a page stays the saved place and the title.
-                  const verseKey = pageForVerse(executor, anchor.verseKey) === page ? anchor.verseKey : key;
+                  const verseKey = pageForVerse(executor, viewKey) === page ? viewKey : key;
                   setVisibleVerseKey(verseKey);
-                  // Following keeps the saved place on the recited ayah; the reader's own scroll moves it again.
-                  if (followKey === null) {
+                  // While audio plays, listening keeps the continue-reading place. Scroll writes it only when idle.
+                  if (followKey === null && !active) {
                     anchor.setVisible({ page, verseKey });
                   }
                   haptics.onPage(page, surahStartPages.has(page));
@@ -377,7 +403,9 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onUserMoveEnd={follow.onUserScrollEnd}
                 onVerseChange={(key) => {
                   setPinnedVerseKey(key);
-                  anchor.setVisible({ verseKey: key });
+                  if (!active) {
+                    anchor.setVisible({ verseKey: key });
+                  }
                 }}
                 playing={active}
                 recitedVerseKey={recitedVerseKey}
@@ -388,7 +416,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
             {executor !== null && mode === 'reading' ? (
               <ReadingList
                 activeWord={activeWord}
-                anchorVerseKey={listAnchor}
+                anchorVerseKey={viewKey}
                 audioAvailable={audioAvailable}
                 bottomInset={0}
                 contentBottomInset={mini.footprint}
@@ -406,7 +434,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onUserScrollStart={follow.onUserScrollStart}
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);
-                  if (followKey === null) {
+                  if (followKey === null && !active) {
                     anchor.setVisible({ verseKey: key });
                   }
                   haptics.onVerse(key);

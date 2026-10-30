@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react-native';
 
-import { useBookmarks, useHighlights, useHighlightsByVerseId, useNotes } from './hooks';
+import { useAllHighlights, useAllNotes, useBookmarks, useHighlights, useHighlightsByVerseId, useNotes } from './hooks';
 
 type CapturedQuery = {
   sql: string;
@@ -119,5 +119,25 @@ describe('user data hooks', () => {
     expect(mockQueries[3]?.sql.toLowerCase()).toContain('deleted_at');
     expect(mockQueries[3]?.params).toEqual([262]);
     expect(mockQueries[3]?.deps).toEqual([262]);
+  });
+
+  it('watches every live highlight and note, newest first', async () => {
+    const view = await renderHook(() => ({
+      highlights: useAllHighlights(),
+      notes: useAllNotes(),
+    }));
+
+    expect(view.result.current.highlights.data).toEqual([]);
+    expect(view.result.current.notes.data).toEqual([]);
+
+    const highlightsSql = mockQueries[0]?.sql.toLowerCase() ?? '';
+    expect(highlightsSql).toContain('highlights');
+    expect(highlightsSql).toContain('deleted_at');
+    expect(highlightsSql).toContain('client_updated_at" desc');
+
+    const notesSql = mockQueries[1]?.sql.toLowerCase() ?? '';
+    expect(notesSql).toContain('notes');
+    expect(notesSql).toContain('deleted_at');
+    expect(notesSql).toContain('client_updated_at" desc');
   });
 });

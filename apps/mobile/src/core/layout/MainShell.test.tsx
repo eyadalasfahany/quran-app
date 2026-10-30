@@ -177,6 +177,7 @@ describe('MainShell', () => {
       'sidebar-mushaf',
       'sidebar-listen',
       'sidebar-my-quran',
+      'sidebar-settings',
     ]);
   });
 
@@ -227,6 +228,15 @@ describe('MainShell', () => {
     await fireEvent.press(view.getByTestId('sidebar-listen'));
 
     expect(router.navigate).toHaveBeenCalledWith('/(main)/(listen)');
+  });
+
+  it('opens settings from the sidebar with push, not navigate', async () => {
+    const view = await renderUi(shell(true));
+
+    await fireEvent.press(view.getByTestId('sidebar-settings'));
+
+    expect(router.push).toHaveBeenCalledWith('/settings');
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
   it.each(locales)('labels the search field in %s', async (locale) => {

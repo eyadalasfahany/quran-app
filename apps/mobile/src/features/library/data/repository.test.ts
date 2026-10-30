@@ -8,10 +8,13 @@ import { applyContentMigrations } from '../../../../jest/apply-content-migration
 import { openNodeSqlite } from '../../../../jest/node-sqlite-executor';
 import { HighlightValidationError, type HighlightColor, NoteValidationError } from './model';
 import {
+  deleteBookmark,
   deleteNote,
   getHighlights,
   getNotes,
   listBookmarks,
+  listHighlights,
+  listNotes,
   saveNote,
   setHighlight,
   toggleBookmark,
@@ -115,6 +118,71 @@ describe('local user data', () => {
       deleted_at: number | null;
     };
     expect(tombstone).toEqual({ dirty: 1, deleted_at: 11 });
+  });
+
+  it('soft-deletes a bookmark by id and writes a delete to the outbox', () => {
+    toggleBookmark(262, { db: executor, now: () => 10, uuid: () => 'bookmark-1' });
+
+    deleteBookmark('bookmark-1', { db: executor, now: () => 11 });
+
+    expect(listBookmarks({ db: executor })).toEqual([]);
+    const tombstone = database.prepare(`SELECT dirty, deleted_at FROM bookmarks WHERE id = 'bookmark-1'`).get() as {
+      dirty: number;
+      deleted_at: number | null;
+    };
+    expect(tombstone).toEqual({ dirty: 1, deleted_at: 11 });
+    // The outbox keeps one row per entity, so the delete replaces the create's upsert.
+    const rows = outbox(database);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      entity: 'bookmark',
+      entity_id: 'bookmark-1',
+      op: 'delete',
+      client_updated_at: 11,
+      attempts: 0,
+    });
+    expect(JSON.parse(rows[0]?.payload ?? '{}')).toEqual({ id: 'bookmark-1', client_updated_at: 11 });
+
+    // A missing or already deleted row is a no-op.
+    deleteBookmark('bookmark-1', { db: executor, now: () => 12 });
+    deleteBookmark('missing', { db: executor, now: () => 13 });
+    expect(count(database, 'outbox')).toBe(1);
+  });
+
+  it('lists every live highlight across verses, newest first', () => {
+    setHighlight(5, 'gold', { db: executor, now: () => 1, uuid: () => 'highlight-1' });
+    setHighlight(9, 'rose', { db: executor, now: () => 2, uuid: () => 'highlight-2' });
+    setHighlight(5, 'blue', { db: executor, now: () => 3 });
+
+    expect(listHighlights({ db: executor })).toEqual([
+      { id: 'highlight-1', verseId: 5, color: 'blue', clientUpdatedAt: 3 },
+      { id: 'highlight-2', verseId: 9, color: 'rose', clientUpdatedAt: 2 },
+    ]);
+
+    setHighlight(9, null, { db: executor, now: () => 4 });
+    expect(listHighlights({ db: executor }).map((row) => row.verseId)).toEqual([5]);
+  });
+
+  it('lists every live note across verses, newest first', () => {
+    const first = saveNote(1, 'ملاحظة أولى', { db: executor, now: () => 20, uuid: () => 'note-1' });
+    const second = saveNote(2, 'ملاحظة ثانية', { db: executor, now: () => 21, uuid: () => 'note-2' });
+    saveNote(1, 'محذوفة', { db: executor, now: () => 22, uuid: () => 'note-3' });
+    deleteNote('note-3', { db: executor, now: () => 23 });
+
+    expect(listNotes({ db: executor })).toEqual([second, first]);
+    expect(count(database, 'notes')).toBe(3);
+  });
+
+  it('keeps a single bookmark, replacing the previous one', () => {
+    toggleBookmark(262, { db: executor, now: () => 10, uuid: () => 'bookmark-1' });
+    const moved = toggleBookmark(1, { db: executor, now: () => 12, uuid: () => 'bookmark-2' });
+
+    expect(moved?.verseId).toBe(1);
+    expect(listBookmarks({ db: executor }).map((bookmark) => bookmark.verseId)).toEqual([1]);
+    const previous = database.prepare(`SELECT deleted_at FROM bookmarks WHERE id = 'bookmark-1'`).get() as {
+      deleted_at: number | null;
+    };
+    expect(previous.deleted_at).toBe(12);
   });
 
   it('replaces a live highlight on the same verse and reads only the requested verses', () => {

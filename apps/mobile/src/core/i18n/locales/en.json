@@ -209,6 +209,45 @@
       "startVerse": "Starts at {{verseKey}}"
     }
   },
+  "myQuran": {
+    "tabsLabel": "My Quran sections",
+    "tabs": {
+      "bookmarks": "Bookmarks",
+      "highlights": "Highlights",
+      "notes": "Notes",
+      "khatma": "Khatma"
+    },
+    "reference": "{{surah}} · Ayah {{ayah}}",
+    "place": "Page {{page}} · Juz {{juz}}",
+    "removeBookmark": "Remove bookmark",
+    "removeHighlight": "Remove highlight",
+    "editNote": "Edit note",
+    "empty": {
+      "bookmarks": {
+        "title": "No bookmarks yet",
+        "body": "Long-press any ayah and choose Bookmark, and it will appear here to return to quickly.",
+        "action": "Open the Mushaf"
+      },
+      "highlights": {
+        "title": "No highlights yet",
+        "body": "Pick a colour from an ayah's actions to highlight it, and it will appear here.",
+        "action": "Open the Mushaf"
+      },
+      "notes": {
+        "title": "No notes yet",
+        "body": "Add a note from an ayah's actions, and it will appear here.",
+        "action": "Open the Mushaf"
+      }
+    },
+    "filter": {
+      "label": "Filter highlights by colour",
+      "all": "All",
+      "gold": "Gold",
+      "green": "Green",
+      "blue": "Blue",
+      "rose": "Rose"
+    }
+  },
   "search": {
     "title": "Search",
     "placeholder": "Search the Quran",
@@ -334,6 +373,53 @@
       "notFound": "This audio file is not available right now.",
       "invalidChapter": "This surah is not available.",
       "invalidVerse": "This ayah is not available."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "back": "Back",
+    "sections": {
+      "language": "Language",
+      "reading": "Reading",
+      "listening": "Listening",
+      "reminders": "Habit & Reminders",
+      "about": "About"
+    },
+    "language": {
+      "label": "App language",
+      "ar": "العربية",
+      "en": "English"
+    },
+    "reading": {
+      "quranFont": "Quran font",
+      "quranFontValue": "Uthmani · Hafs",
+      "appearance": "Reading mode and appearance",
+      "appearanceValue": "Mushaf · Auto",
+      "darkAfterMaghrib": "Dark mode automatically after Maghrib",
+      "defaultTafsir": "Default tafsir",
+      "defaultTafsirValue": "Al-Tafsir Al-Muyassar"
+    },
+    "listening": {
+      "defaultReciter": "Default reciter",
+      "defaultReciterValue": "Mishari Rashid Alafasy",
+      "wifiOnly": "Download over Wi-Fi only",
+      "downloads": "Downloads and storage",
+      "downloadsValue": "Manage downloads"
+    },
+    "reminders": {
+      "dailyReminder": "Daily reading reminder",
+      "khatma": "Khatma",
+      "khatmaValue": "30 days"
+    },
+    "about": {
+      "sources": "Sources and acknowledgments",
+      "sourcesValue": "Quran Foundation · Tanzil · King Fahd Complex",
+      "clearData": "Clear local data",
+      "clearDataTitle": "Clear local data?",
+      "clearDataMessage": "Are you sure you want to clear your local bookmarks, highlights, notes, and Khatma? This action cannot be undone.",
+      "clearDataConfirm": "Clear data",
+      "cancel": "Cancel",
+      "dataCleared": "Local data cleared successfully"
     }
   }
 }

@@ -121,6 +121,33 @@ describe('SegmentedControl', () => {
     expect(Haptics.selectionAsync).not.toHaveBeenCalled();
   });
 
+  it('dims a disabled option, reports it disabled, and never fires onChange or a haptic for it', async () => {
+    const onChange = jest.fn();
+    const disabledOptions = [
+      { key: 'actions', label: 'الخيارات' },
+      { key: 'tafsir', label: 'التفسير' },
+      { key: 'translation', label: 'الترجمة', disabled: true },
+    ] as const;
+    const view = await renderUi(
+      <SegmentedControl label="لوحة الآية" onChange={onChange} options={disabledOptions} testID="seg" value="actions" />,
+    );
+
+    const tab = view.getByRole('tab', { name: 'الترجمة' });
+    expect(tab.props.accessibilityState).toMatchObject({ disabled: true, selected: false });
+    expect(flatStyle(tab.props.style).opacity).toBe(themes.light.opacity.disabled);
+
+    await fireEvent.press(tab);
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(Haptics.selectionAsync).not.toHaveBeenCalled();
+  });
+
+  it('leaves enabled options without a disabled state', async () => {
+    const view = await renderUi(control());
+
+    expect(view.getByRole('tab', { name: 'الخيارات' }).props.accessibilityState).toEqual({ selected: true });
+  });
+
   it.each(locales)('lays segments out in a logical row that mirrors in RTL (%s)', async (locale) => {
     const view = await renderUi(control(), { locale });
 

@@ -53,10 +53,28 @@ export function liveAllHighlightsQuery(db: UserDatabase) {
     .orderBy(asc(highlights.verseId), asc(highlights.id));
 }
 
+/** Every live highlight row, newest first, for the My Quran highlights list. */
+export function liveAllHighlightRowsQuery(db: UserDatabase) {
+  return db
+    .select(highlightColumns)
+    .from(highlights)
+    .where(isNull(highlights.deletedAt))
+    .orderBy(desc(highlights.clientUpdatedAt), asc(highlights.id));
+}
+
 export function liveNotesQuery(db: UserDatabase, verseId: number) {
   return db
     .select(noteColumns)
     .from(notes)
     .where(and(isNull(notes.deletedAt), eq(notes.verseId, verseId)))
+    .orderBy(desc(notes.clientUpdatedAt), asc(notes.id));
+}
+
+/** Every live note, newest first, for the My Quran notes list. */
+export function liveAllNotesQuery(db: UserDatabase) {
+  return db
+    .select(noteColumns)
+    .from(notes)
+    .where(isNull(notes.deletedAt))
     .orderBy(desc(notes.clientUpdatedAt), asc(notes.id));
 }
