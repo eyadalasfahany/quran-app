@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
+import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey, idToVerseKey } from '@/features/reader/data/verses';
@@ -158,6 +159,8 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
   const onPrimary = () => {
     if (saveMode) {
       createPlan({ durationDays, startVerseId: selectedStartVerseId });
+      // Reschedule so tomorrow's reminder body carries the new plan's wird (spec §13).
+      void syncDailyReminder();
       return;
     }
     if (continueVerseKey !== null) {

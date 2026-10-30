@@ -427,6 +427,18 @@
     },
     "settingsDuration": "{{formatted}} days"
   },
+  "common": {
+    "cancel": "Cancel",
+    "done": "Done",
+    "openSettings": "Open Settings"
+  },
+  "notifications": {
+    "reminder": {
+      "title": "Your daily wird",
+      "body": "Time to read your daily wird of the Quran",
+      "wirdToday": "Today's wird:"
+    }
+  },
   "settings": {
     "title": "Settings",
     "back": "Back",
@@ -460,6 +472,9 @@
     },
     "reminders": {
       "dailyReminder": "Daily reading reminder",
+      "everyDayAt": "Every day {{time}}",
+      "permissionDeniedTitle": "Cannot send reminders",
+      "permissionDeniedBody": "Taybah needs permission to send daily reminders. You can enable them in your device settings.",
       "khatma": "Khatma",
       "khatmaValue": "30 days"
     },

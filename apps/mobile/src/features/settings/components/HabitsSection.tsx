@@ -1,18 +1,15 @@
 import { useTranslation } from 'react-i18next';
 
-import { ListRow, ToggleRow, UiText } from '@/shared/ui';
+import { ListRow, UiText } from '@/shared/ui';
 
 import { SettingsGroup } from './SettingsGroup';
+import { DailyReminderRow } from './DailyReminderRow';
 
 export function HabitsSection({
-  reminderEnabled = false,
-  onReminderChange,
   khatmaValue,
   onPressKhatma,
   testID = 'habits-section',
 }: {
-  reminderEnabled?: boolean;
-  onReminderChange?: (value: boolean) => void;
   khatmaValue?: string;
   onPressKhatma?: () => void;
   testID?: string;
@@ -21,13 +18,7 @@ export function HabitsSection({
 
   return (
     <SettingsGroup testID={testID} title={t('settings.sections.reminders')}>
-      <ToggleRow
-        onValueChange={onReminderChange ?? (() => {})}
-        separator="line"
-        testID="habits-reminder-toggle"
-        title={t('settings.reminders.dailyReminder')}
-        value={reminderEnabled}
-      />
+      <DailyReminderRow />
       <ListRow
         chevron
         onPress={onPressKhatma}

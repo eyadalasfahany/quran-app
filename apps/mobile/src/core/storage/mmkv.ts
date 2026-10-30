@@ -21,6 +21,8 @@ export const storageKeys = {
   audioLastPosition: 'audio.lastPosition',
   audioWifiOnlyDownloads: 'audio.wifiOnlyDownloads',
   dailyReminder: 'settings.dailyReminder',
+  dailyReminderTime: 'settings.dailyReminderTime',
+  dailyReminderNotificationId: 'settings.dailyReminderNotificationId',
 } as const;
 
 /** Per-page QCF V2 font cache metadata (ADR 0011). */

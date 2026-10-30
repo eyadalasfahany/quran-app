@@ -45,7 +45,8 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Apple sign-in (iOS) | `expo-apple-authentication` | \~58.0.2 | Native Sign in with Apple; identity token sent to Laravel |
 | Languages | `i18next` + `react-i18next` + `expo-localization` | 26.5.11; 17.1.9; \~58.0.5 | Arabic and English strings, device language detection |
 | Motion and gestures | `react-native-reanimated` + `react-native-worklets` + `react-native-gesture-handler` | 4.7.1; 0.13.0; \~3.3.0 | Sheets, mini-player to player, ayah and word highlight |
-| Notifications | `expo-notifications` | \~58.1.6 | Local reminders and push tokens |
+| Notifications | `expo-notifications` | \~58.1.7 | Local reminders and push tokens |
+| Reminder time picker | `@react-native-community/datetimepicker` | `9.2.1` | Time picker for local daily reminders |
 | Prayer times | `adhan` + `expo-location` | 4.4.6; \~58.0.19 | On-device prayer times for "dark mode after Maghrib" and reminders |
 | Tafsir rendering | `@native-html/render` | 1.0.4 | Renders sanitized tafsir HTML. Replaces `react-native-render-html`, which has had no release since January 2022 |
 | Vector ornaments | `react-native-svg` | 15.16.0 | The surah cartouche's pointed frame and the Continue reading rosette, drawn in with Reanimated animated props; the version SDK 58 pins |

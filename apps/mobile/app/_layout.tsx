@@ -3,7 +3,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-
+import { syncDailyReminder } from '@/features/notifications/reminder-service';
+import { registerReminderDeepLinks } from '@/features/notifications/reminder-deeplink';
 import { useContentDb } from '@/core/db/content/open';
 import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
@@ -69,6 +70,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (ready) {
+      void syncDailyReminder();
+      registerReminderDeepLinks();
       void SplashScreen.hideAsync();
     }
   }, [ready]);

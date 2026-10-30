@@ -427,6 +427,18 @@
     },
     "settingsDuration": "{{formatted}} يومًا"
   },
+  "common": {
+    "cancel": "إلغاء",
+    "done": "تم",
+    "openSettings": "فتح الإعدادات"
+  },
+  "notifications": {
+    "reminder": {
+      "title": "وردك اليومي",
+      "body": "حان وقت قراءة وردك من القرآن الكريم",
+      "wirdToday": "وِردك اليوم:"
+    }
+  },
   "settings": {
     "title": "الإعدادات",
     "back": "رجوع",
@@ -460,6 +472,9 @@
     },
     "reminders": {
       "dailyReminder": "تذكير بالورد اليومي",
+      "everyDayAt": "كل يوم {{time}}",
+      "permissionDeniedTitle": "لا يمكن إرسال التذكيرات",
+      "permissionDeniedBody": "تحتاج طيبة إلى إذن لإرسال التذكيرات اليومية. يمكنك تفعيلها من إعدادات الجهاز.",
       "khatma": "الختمة",
       "khatmaValue": "٣٠ يومًا"
     },

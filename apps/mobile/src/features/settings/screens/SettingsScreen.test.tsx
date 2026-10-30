@@ -18,11 +18,6 @@ jest.mock('expo-router', () => ({
   router: { back: jest.fn(), navigate: jest.fn(), push: jest.fn() },
 }));
 
-jest.mock('../reminder-preference', () => ({
-  readDailyReminder: jest.fn(() => false),
-  writeDailyReminder: jest.fn(),
-}));
-
 jest.mock('@/features/khatma/data', () => ({
   ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
   useActivePlan: () => ({ data: [] }),
@@ -35,15 +30,9 @@ jest.mock('@/features/audio/settings', () => ({
   setWifiOnlyDownloads: jest.fn(),
 }));
 
-const { readDailyReminder, writeDailyReminder } = jest.requireMock('../reminder-preference') as {
-  readDailyReminder: jest.Mock;
-  writeDailyReminder: jest.Mock;
-};
-
 describe('SettingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    readDailyReminder.mockReturnValue(false);
   });
 
   it('renders the settings title and all section headers in Arabic', async () => {
@@ -90,12 +79,10 @@ describe('SettingsScreen', () => {
     expect(router.navigate).toHaveBeenCalledWith('/(main)/(listen)');
   });
 
-  it('persists the daily reminder toggle', async () => {
+  it('renders the daily reminder row', async () => {
     const view = await renderUi(<SettingsScreen />);
 
-    fireEvent(view.getByTestId('habits-reminder-toggle'), 'valueChange', true);
-
-    expect(writeDailyReminder).toHaveBeenCalledWith(true);
+    expect(view.getByTestId('daily-reminder-toggle-row')).toBeOnTheScreen();
   });
 
   it.each(locales)('renders the screen title in %s', async (locale) => {

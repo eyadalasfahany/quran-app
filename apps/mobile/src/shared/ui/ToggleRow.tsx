@@ -10,6 +10,7 @@ export function ToggleRow({
   subtitle,
   value,
   onValueChange,
+  onPress,
   separator,
   testID,
 }: {
@@ -17,6 +18,7 @@ export function ToggleRow({
   subtitle?: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
+  onPress?: () => void;
   separator?: 'line' | 'strong';
   testID?: string;
 }) {
@@ -24,6 +26,7 @@ export function ToggleRow({
 
   return (
     <ListRow
+      onPress={onPress}
       separator={separator}
       subtitle={subtitle}
       testID={testID ? `${testID}-row` : undefined}

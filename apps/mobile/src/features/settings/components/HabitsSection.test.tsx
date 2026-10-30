@@ -5,26 +5,11 @@ import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { HabitsSection } from './HabitsSection';
 
 describe('HabitsSection', () => {
-  it('renders the reminder toggle and khatma row', async () => {
+  it('renders the daily reminder row and the khatma row', async () => {
     const view = await renderUi(<HabitsSection />);
 
-    expect(view.getByTestId('habits-reminder-toggle-row')).toBeOnTheScreen();
+    expect(view.getByTestId('daily-reminder-toggle-row')).toBeOnTheScreen();
     expect(view.getByTestId('habits-khatma-row')).toBeOnTheScreen();
-  });
-
-  it('reflects the controlled reminderEnabled value', async () => {
-    const view = await renderUi(<HabitsSection reminderEnabled={true} />);
-
-    expect(view.getByTestId('habits-reminder-toggle').props.value).toBe(true);
-  });
-
-  it('calls onReminderChange when the toggle is pressed', async () => {
-    const onReminderChange = jest.fn();
-    const view = await renderUi(<HabitsSection onReminderChange={onReminderChange} reminderEnabled={false} />);
-
-    fireEvent(view.getByTestId('habits-reminder-toggle'), 'valueChange', true);
-
-    expect(onReminderChange).toHaveBeenCalledWith(true);
   });
 
   it('shows the khatmaValue in the khatma row', async () => {

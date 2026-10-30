@@ -136,3 +136,26 @@ function mockCreateMmkv() {
 jest.mock('react-native-mmkv', () => ({
   createMMKV: () => mockCreateMmkv(),
 }));
+
+// Local notifications are a native module; tests drive them through these fakes.
+jest.mock('expo-notifications', () => ({
+  AndroidImportance: { DEFAULT: 3 },
+  SchedulableTriggerInputTypes: { CALENDAR: 'calendar', DAILY: 'daily' },
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
+  getLastNotificationResponseAsync: jest.fn(() => Promise.resolve(null)),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
+  scheduleNotificationAsync: jest.fn(() => Promise.resolve('scheduled-notification-id')),
+  setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+}));
+
+// The time picker is a native view. Render a stand-in that keeps the props reachable.
+jest.mock('@react-native-community/datetimepicker', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    __esModule: true,
+    default: (props: Record<string, unknown>) => createElement(View, props),
+  };
+});

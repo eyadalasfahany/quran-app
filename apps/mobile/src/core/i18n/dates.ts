@@ -19,3 +19,21 @@ export function formatDate(epochMs: number, locale: Locale = getLocale()): strin
   // ICU numbering for `ar` varies by platform; the app's Arabic numeral style is Arabic-Indic.
   return locale === 'ar' ? arabizeDigits(text) : text;
 }
+
+const timeFormatters = new Map<Locale, Intl.DateTimeFormat>();
+
+function timeFormatter(locale: Locale): Intl.DateTimeFormat {
+  const cached = timeFormatters.get(locale);
+  if (cached) {
+    return cached;
+  }
+  const created = new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' });
+  timeFormatters.set(locale, created);
+  return created;
+}
+
+/** «٩:٠٠ م» / "9:00 PM" — for the daily reminder time in Settings. */
+export function formatTime(date: Date, locale: Locale = getLocale()): string {
+  const text = timeFormatter(locale).format(date);
+  return locale === 'ar' ? arabizeDigits(text) : text;
+}
