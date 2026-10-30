@@ -12,10 +12,17 @@ import {
 
 const [x1, y1, x2, y2] = easing.easeOut;
 export const easeOut = Easing.bezier(x1, y1, x2, y2);
+const [ex1, ey1, ex2, ey2] = easing.easeInOut;
+export const easeInOut = Easing.bezier(ex1, ey1, ex2, ey2);
 
 // Opacity, color and stroke drawing only: `withTiming(opacity, timing('fast'))`.
 export function timing(speed: DurationToken): WithTimingConfig {
   return { duration: duration[speed], easing: easeOut };
+}
+
+// One loading-skeleton pulse, each way: `withRepeat(withTiming(0.55, pulseTiming()), -1, true)`.
+export function pulseTiming(): WithTimingConfig {
+  return { duration: duration.pulse, easing: easeInOut };
 }
 
 // Position and size: `withSpring(y, spring())`, including the release after a drag.

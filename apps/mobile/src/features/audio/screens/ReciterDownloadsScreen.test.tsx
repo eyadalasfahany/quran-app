@@ -55,7 +55,8 @@ jest.mock('../reciter-downloads', () => {
   return { ...actual, downloadReciterPack: jest.fn(() => Promise.resolve(true)) };
 });
 
-jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: jest.fn() }));
+jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: (selector: (state: { version: number; syncSettled: boolean }) => unknown) =>
+    selector({ syncSettled: true, version: 0 }) }));
 
 jest.mock('expo-router', () => ({
   ...jest.requireActual<typeof import('expo-router')>('expo-router'),
@@ -281,7 +282,11 @@ describe('ReciterDownloadsScreen', () => {
       const view = await renderUi(<ReciterDownloadsScreen resourceId={32} />);
 
       expect(packDownload).toHaveBeenCalledWith(32);
-      expect(view.getByText('جارٍ تنزيل بيانات القارئ')).toBeOnTheScreen();
+      // The surah list's place is a loading region while the pack installs; the header stays.
+      const loading = view.getByTestId('reciter-installing');
+      expect(loading.props.accessibilityLabel).toBe('جارٍ التحميل');
+      expect(loading.props.accessibilityState).toEqual({ busy: true });
+      expect(view.queryByText('جارٍ تنزيل بيانات القارئ')).toBeNull();
       expect(view.queryByRole('button', { name: 'تنزيل الكل' })).toBeNull();
       expect(view.queryByTestId('surah-row-1')).toBeNull();
     });

@@ -11,11 +11,14 @@ export const duration = {
   slow: 300,
   // An ornament's gold outline drawing itself in, once, when it first scrolls into view.
   draw: 700,
+  // One pulse of a loading skeleton, each way: opacity 1 to 0.55 and back (quran-app-screens.html, #loading).
+  pulse: 1000,
 } as const;
 
-// Cubic bezier control points (x1, y1, x2, y2); easeOut matches CSS `ease-out`.
+// Cubic bezier control points (x1, y1, x2, y2); easeOut matches CSS `ease-out`, easeInOut CSS `ease-in-out`.
 export const easing = {
   easeOut: [0, 0, 0.58, 1],
+  easeInOut: [0.42, 0, 0.58, 1],
 } as const;
 
 // Position and size changes. A damping ratio of 1 settles without bouncing.

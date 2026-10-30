@@ -6,6 +6,7 @@ import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { destinations, type Destination, SectionScreen, useWindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
+import { ContinueReadingSkeleton } from '@/features/home/components/ContinueReadingSkeleton';
 import { HomeTileRow } from '@/features/home/components/HomeTileRow';
 import { RecentListensSection } from '@/features/home/components/RecentListensSection';
 import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
@@ -15,7 +16,7 @@ import { playRecentListen } from '@/features/audio/reciter-playback';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
-import { SearchButton, type IconName } from '@/shared/ui';
+import { SearchButton, SkeletonGroup, type IconName } from '@/shared/ui';
 
 // Home's tiles open the tabs they name. Only shipped features get a tile (ADR 0017).
 function tabHref(name: Destination['name']): Href {
@@ -62,6 +63,11 @@ export function HomeScreen() {
 
   return (
     <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={expanded ? undefined : <SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
+      {!ready ? (
+        <SkeletonGroup testID="home-continue-loading">
+          <ContinueReadingSkeleton testID="home-continue-reading-skeleton" />
+        </SkeletonGroup>
+      ) : null}
       {continueReading ? (
         <ContinueReadingCard
           ayah={continueReading.verse.verseNumber}
@@ -80,6 +86,7 @@ export function HomeScreen() {
       />
       <RecentListensSection
         heading={t('home.recent.heading')}
+        loading={!ready}
         items={recentItems.map((item) => {
           const playing =
             playerActive && playerReciterId === item.listen.reciterResourceId && playerChapterId === item.listen.chapterId;

@@ -7,11 +7,13 @@ import { useContentDb } from '@/core/db/content/open';
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
 import { ContentColumn } from '@/core/layout';
-import { EmptyState, Screen } from '@/shared/ui';
+import { useCatalogVersion } from '@/core/sync';
+import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 
 import { type ReciterFilterOption } from '../components/ReciterFilterChips';
 import { ReciterListHeader } from '../components/ReciterListHeader';
 import { ReciterRow, type ReciterRowStatus } from '../components/ReciterRow';
+import { ReciterRowSkeleton } from '../components/ReciterRowSkeleton';
 import { useDoneCountsByReciter } from '../data/downloads';
 import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
@@ -33,6 +35,8 @@ import { setReciterId } from '../settings';
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
+// The loading skeleton's seven rows, each with its own name length (quran-app-screens.html, #loading).
+const SKELETON_NAME_WIDTHS = ['62%', '48%', '70%', '55%', '66%', '44%', '58%'] as const;
 
 // The Listen tab (quran-app-screens.html, #Reciters). It composes the reciter components and wires them to
 // the catalogue, the download store and the player. It draws no UI of its own.
@@ -47,6 +51,9 @@ export function ListenScreen() {
   const downloads = useReciterDownloads((state) => state.byId);
   const doneCounts = useDoneCountsByReciter();
   const miniShown = useMiniPlayerVisible('tabs');
+  const syncSettled = useCatalogVersion((state) => state.syncSettled);
+  // Until the first catalogue sync has run, an empty list is loading, not «no reciters».
+  const loading = !ready || (reciters.length === 0 && !syncSettled);
 
   const rows = useMemo(
     () =>
@@ -106,7 +113,15 @@ export function ListenScreen() {
             />
           }
           ListEmptyComponent={
-            <EmptyState body={t('listen.empty.body')} testID="reciter-empty" title={t('listen.empty.title')} />
+            loading ? (
+              <SkeletonGroup testID="reciter-loading">
+                {SKELETON_NAME_WIDTHS.map((width) => (
+                  <ReciterRowSkeleton key={width} nameWidth={width} />
+                ))}
+              </SkeletonGroup>
+            ) : (
+              <EmptyState body={t('listen.empty.body')} testID="reciter-empty" title={t('listen.empty.title')} />
+            )
           }
           renderItem={({ item }) => {
             const download = downloads[item.resourceId];

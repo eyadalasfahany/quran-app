@@ -29,7 +29,13 @@ jest.mock('@/core/db/content/open', () => ({
 }));
 
 jest.mock('../player', () => ({ pause: jest.fn(), playChapter: jest.fn(() => Promise.resolve()) }));
-jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: jest.fn() }));
+// The first catalogue sync's state: a test flips it to show the loading skeleton.
+const mockCatalog: { settled: boolean } = { settled: true };
+jest.mock('@/core/sync', () => ({
+  installResource: jest.fn(),
+  useCatalogVersion: (selector: (state: { version: number; syncSettled: boolean }) => unknown) =>
+    selector({ syncSettled: mockCatalog.settled, version: 0 }),
+}));
 
 // The downloaded surahs per reciter, from the user database (not open under Jest).
 const mockDoneCounts: { value: Record<number, number> } = { value: {} };
@@ -84,6 +90,7 @@ beforeEach(() => {
   play.mockClear();
   mockDoneCounts.value = {};
   mockPush.mockClear();
+  mockCatalog.settled = true;
 });
 
 afterEach(() => {
@@ -319,6 +326,33 @@ describe('ListenScreen', () => {
     expect(within(list).getByTestId('reciter-empty')).toBeOnTheScreen();
     expect(within(list).getByRole('header', { name: locale === 'ar' ? 'الاستماع' : 'Listen' })).toBeOnTheScreen();
     expect(within(list).getByRole('search')).toBeOnTheScreen();
+  });
+
+  it('shows the loading skeleton, not «no reciters», until the first catalogue sync has run', async () => {
+    mockCatalog.settled = false;
+    mockContent.executor?.run('DELETE FROM recitations');
+    mockContent.executor?.run('DELETE FROM installed_resources');
+    mockContent.executor?.run('DELETE FROM catalog_resources');
+
+    const view = await renderUi(<ListenScreen />);
+
+    const loading = view.getByTestId('reciter-loading');
+    expect(loading.props.accessibilityLabel).toBe('جارٍ التحميل');
+    expect(loading.props.accessibilityState).toEqual({ busy: true });
+    expect(view.queryByTestId('reciter-empty')).toBeNull();
+    expect(view.getByRole('search', { name: 'ابحث عن قارئ' })).toBeOnTheScreen();
+  });
+
+  it('shows the empty state once the sync has settled with no reciters', async () => {
+    mockCatalog.settled = true;
+    mockContent.executor?.run('DELETE FROM recitations');
+    mockContent.executor?.run('DELETE FROM installed_resources');
+    mockContent.executor?.run('DELETE FROM catalog_resources');
+
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.getByTestId('reciter-empty')).toBeOnTheScreen();
+    expect(view.queryByTestId('reciter-loading')).toBeNull();
   });
 
   describe('above the tabs mini bar', () => {

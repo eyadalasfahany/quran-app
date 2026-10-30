@@ -4,6 +4,7 @@ import { AppState } from 'react-native';
 import { useContentDb } from '@/core/db/content/open';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
+import { markSyncSettled } from './catalog-version';
 import { runDeviceContentSync } from './device-sync';
 
 export const CONTENT_SYNC_FOREGROUND_MS = 6 * 60 * 60 * 1000;
@@ -42,6 +43,7 @@ export function createContentSyncScheduler(run: SyncRun, now: () => number = Dat
       })
       .finally(() => {
         running = false;
+        markSyncSettled();
       });
   }
 

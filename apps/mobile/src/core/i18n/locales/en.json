@@ -229,6 +229,7 @@
     "surahTag": "Surah"
   },
   "ui": {
+    "loading": "Loading",
     "download": {
       "start": "Download",
       "cancel": "Stop download",

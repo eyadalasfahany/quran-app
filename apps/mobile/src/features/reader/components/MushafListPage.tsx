@@ -10,11 +10,14 @@ import { QCF_V2_MUSHAF_ID } from '@/features/reader/mushaf/constants';
 import { mushafPageHeight } from '@/features/reader/mushaf/page-metrics';
 import { useMushafPageFont } from '@/features/reader/mushaf/useMushafPageFont';
 
+import { SkeletonGroup } from '@/shared/ui';
+
 import { MushafPage } from './MushafPage';
+import { MushafPageSkeleton } from './MushafPageSkeleton';
 import { MushafPagePlaceholder } from './MushafPagePlaceholder';
 
 // One page-exact QCF page in the list: the page itself, a placeholder when its layout or font is
-// missing, or an empty slot of the page's height while the font loads.
+// missing, or a page-shaped loading skeleton of the page's height while the font loads (never Quran text in another font).
 export function MushafListPage({
   page,
   contentWidth,
@@ -76,7 +79,13 @@ export function MushafListPage({
   }
 
   if (font.status === 'loading') {
-    return <View style={{ minHeight }} testID={testID ? `${testID}-loading` : undefined} />;
+    return (
+      <View style={{ alignItems: 'center', minHeight, paddingVertical: framePadding }} testID={testID ? `${testID}-loading` : undefined}>
+        <SkeletonGroup style={{ alignSelf: 'stretch' }}>
+          <MushafPageSkeleton />
+        </SkeletonGroup>
+      </View>
+    );
   }
 
   return (

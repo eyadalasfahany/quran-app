@@ -20,6 +20,24 @@ describe('RecentListensSection', () => {
     expect(view.getByRole('button', { name: 'تشغيل سورة الكهف' }).props.style).toBeDefined();
   });
 
+  it('keeps the heading and shows two row skeletons in a loading region while loading', async () => {
+    const view = await renderUi(<RecentListensSection heading="آخر ما استمعت إليه" items={[]} loading />);
+
+    expect(view.getByRole('header', { name: 'آخر ما استمعت إليه' })).toBeOnTheScreen();
+    const region = view.getByTestId('home-recent-listens-loading');
+    expect(region.props.accessibilityLabel).toBe('جارٍ التحميل');
+    expect(region.props.accessibilityState).toEqual({ busy: true });
+    expect(view.getByTestId('home-recent-listens-loading').children.length).toBeGreaterThan(0);
+    expect(view.queryByRole('button')).toBeNull();
+  });
+
+  it('draws nothing while loading is off and there are no items', async () => {
+    const view = await renderUi(<RecentListensSection heading="آخر ما استمعت إليه" items={[]} />);
+
+    expect(view.queryByTestId('home-recent-listens')).toBeNull();
+    expect(view.queryByRole('header')).toBeNull();
+  });
+
   it('passes each item its playing state, so a playing listen draws pause', async () => {
     const view = await renderUi(
       <RecentListensSection heading="آخر ما استمعت إليه" items={items().map((item, index) => ({ ...item, playing: index === 0 }))} />,

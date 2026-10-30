@@ -2,6 +2,7 @@ import { act, render } from '@testing-library/react-native';
 import { createElement } from 'react';
 import { AppState } from 'react-native';
 
+import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import {
   CONTENT_SYNC_FOREGROUND_MS,
@@ -21,6 +22,7 @@ function flush(): Promise<void> {
 describe('content sync trigger', () => {
   afterEach(() => {
     storage.remove(storageKeys.contentLastSyncAt);
+    useCatalogVersion.setState({ syncSettled: false });
     jest.restoreAllMocks();
   });
 
@@ -92,5 +94,26 @@ describe('content sync trigger', () => {
     listeners[0]?.('active');
     await flush();
     expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks the catalogue settled once a run succeeds', async () => {
+    const scheduler = createContentSyncScheduler(async () => undefined, () => 5);
+    expect(useCatalogVersion.getState().syncSettled).toBe(false);
+
+    scheduler.start();
+    await flush();
+
+    expect(useCatalogVersion.getState().syncSettled).toBe(true);
+  });
+
+  it('marks the catalogue settled even when the run fails, so an empty list is not loading forever', async () => {
+    const scheduler = createContentSyncScheduler(async () => {
+      throw new Error('offline');
+    }, () => 5);
+
+    scheduler.start();
+    await flush();
+
+    expect(useCatalogVersion.getState().syncSettled).toBe(true);
   });
 });

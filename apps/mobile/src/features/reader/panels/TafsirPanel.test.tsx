@@ -91,6 +91,33 @@ describe('TafsirPanel', () => {
     expect(textContent(screen.getByTestId('tafsir-panel-body'))).toBe(htmlTextContent(HTML));
   });
 
+  it('shows a loading region of seven placeholder lines in place of the passage while the tafsir downloads', async () => {
+    const { view } = renderPanel({ loading: true });
+    const screen = await view;
+
+    const loading = screen.getByTestId('tafsir-panel-loading');
+    expect(loading.props.accessibilityLabel).toBe('جارٍ التحميل');
+    expect(loading.props.accessibilityState).toEqual({ busy: true });
+    expect(screen.getByTestId('tafsir-panel-skeleton', { includeHiddenElements: true }).children).toHaveLength(7);
+    expect(screen.queryByText('الثناء على الله بصفاته', { exact: false })).toBeNull();
+  });
+
+  it('shows the loading region, not the missing message, while a tafsir with no passage here downloads', async () => {
+    const { view } = renderPanel({ html: null, loading: true });
+    const screen = await view;
+
+    expect(screen.getByTestId('tafsir-panel-loading')).toBeOnTheScreen();
+    expect(screen.queryByTestId('tafsir-panel-no-entry')).toBeNull();
+  });
+
+  it('keeps the passage when not loading', async () => {
+    const { view } = renderPanel({ loading: false });
+    const screen = await view;
+
+    expect(screen.queryByTestId('tafsir-panel-loading')).toBeNull();
+    expect(screen.getByTestId('tafsir-panel-body')).toBeOnTheScreen();
+  });
+
   it('keeps the Uthmani ayah exactly as stored with its marker', async () => {
     const { view } = renderPanel();
     const screen = await view;

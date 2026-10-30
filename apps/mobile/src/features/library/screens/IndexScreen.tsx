@@ -10,6 +10,7 @@ import { ContinueReadingRow } from '@/features/library/components/ContinueReadin
 import { IndexSegment, type IndexSegmentKey } from '@/features/library/components/IndexSegment';
 import { JuzRow } from '@/features/library/components/JuzRow';
 import { SurahRow } from '@/features/library/components/SurahRow';
+import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
 import { listJuzStarts } from '@/features/library/data/juz';
 import { getChapter, listChapters, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
@@ -17,7 +18,7 @@ import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKe
 import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
 import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { useTheme } from '@/core/theme';
-import { Screen, ScreenHeader, SearchButton } from '@/shared/ui';
+import { Screen, ScreenHeader, SearchButton, SkeletonGroup } from '@/shared/ui';
 
 type ContinueReading = {
   verseKey: string;
@@ -26,6 +27,9 @@ type ContinueReading = {
 };
 
 type IndexItem = { kind: 'surah'; chapter: ChapterRecord } | { kind: 'juz'; juz: number; verseKey: string };
+
+// While the content database opens, the list holds ten surah rows, each with its own name length.
+const SKELETON_NAME_WIDTHS = ['34%', '28%', '40%', '30%', '24%', '36%', '32%', '26%', '38%', '30%'] as const;
 
 function readHref(verseKey: string): Href {
   return `/read/${verseKey}` as Href;
@@ -118,6 +122,15 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
             contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
             data={rows}
             keyExtractor={keyExtractor}
+            ListEmptyComponent={
+              ready ? undefined : (
+                <SkeletonGroup testID="index-loading">
+                  {SKELETON_NAME_WIDTHS.map((width) => (
+                    <SurahRowSkeleton key={width} nameWidth={width} />
+                  ))}
+                </SkeletonGroup>
+              )
+            }
             ListHeaderComponent={header}
             renderItem={renderItem}
             testID="index-list"

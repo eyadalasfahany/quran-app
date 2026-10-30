@@ -2,7 +2,7 @@ import { duration, spring as springToken } from '@quran/design-tokens';
 import { renderHook } from '@testing-library/react-native';
 import { FadeIn, FadeOut, SlideInDown, SlideOutDown, useReducedMotion } from 'react-native-reanimated';
 
-import { easeOut, spring, timing, useSlideUp } from '@/core/theme';
+import { easeInOut, easeOut, pulseTiming, spring, timing, useSlideUp } from '@/core/theme';
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'),
@@ -14,6 +14,11 @@ const reducedMotion = jest.mocked(useReducedMotion);
 describe('motion', () => {
   it.each(['instant', 'fast', 'standard', 'slow'] as const)('times %s fades from the duration token with ease-out', (speed) => {
     expect(timing(speed)).toEqual({ duration: duration[speed], easing: easeOut });
+  });
+
+  it('pulses loading skeletons over the pulse duration with ease-in-out', () => {
+    expect(duration.pulse).toBe(1000);
+    expect(pulseTiming()).toEqual({ duration: duration.pulse, easing: easeInOut });
   });
 
   it('moves with a spring that settles without bouncing', () => {

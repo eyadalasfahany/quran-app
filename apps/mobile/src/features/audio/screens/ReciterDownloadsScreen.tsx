@@ -6,7 +6,8 @@ import { Alert, FlatList, View } from 'react-native';
 import { useContentDb } from '@/core/db/content/open';
 import { useLocale } from '@/core/i18n/useLocale';
 import { ContentColumn } from '@/core/layout';
-import { EmptyState, Screen } from '@/shared/ui';
+import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
+import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
 
 import { ReciterPageActions } from '../components/ReciterPageActions';
 import { ReciterPageHeader } from '../components/ReciterPageHeader';
@@ -25,6 +26,8 @@ import { reciterDisplayName } from '../reciter-list';
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
+// While the pack installs, the surah list's place holds eight rows, each with its own name length.
+const INSTALL_SKELETON_WIDTHS = ['58%', '46%', '64%', '52%', '60%', '44%', '56%', '50%'] as const;
 
 // One reciter's page: the name, the count, the bulk actions and a row per surah (no frame; see
 // ReciterPageHeader). It composes the components and wires the download manager and the player.
@@ -97,7 +100,11 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
           title={t('listen.reciter.installFailed')}
         />
       ) : (
-        <EmptyState testID="reciter-installing" title={t('listen.reciter.installing')} />
+        <SkeletonGroup testID="reciter-installing">
+          {INSTALL_SKELETON_WIDTHS.map((width) => (
+            <SurahRowSkeleton key={width} medallion={false} nameWidth={width} />
+          ))}
+        </SkeletonGroup>
       );
     }
     return null;

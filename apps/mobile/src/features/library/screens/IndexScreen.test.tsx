@@ -21,6 +21,8 @@ jest.mock('expo-router', () => ({
 }));
 
 let mockExecutor: SqlExecutor | undefined;
+// Flipped to false to show the content database still opening.
+const mockContentDb: { ready: boolean } = { ready: true };
 
 jest.mock('@/core/db/content/open', () => ({
   openContentDb: () => {
@@ -29,7 +31,7 @@ jest.mock('@/core/db/content/open', () => ({
     }
     return { db: {}, executor: mockExecutor };
   },
-  useContentDb: () => ({ error: null, ready: true }),
+  useContentDb: () => ({ error: null, ready: mockContentDb.ready }),
 }));
 
 let seeded: SqlExecutor;
@@ -97,6 +99,20 @@ describe('IndexScreen', () => {
     expect(view.getByRole('header', { name: 'الفهرس' })).toBeOnTheScreen();
     expect(view.queryByTestId('surah-row-1')).toBeNull();
     expect(view.queryByTestId('index-continue-reading')).toBeNull();
+  });
+
+  it('shows ten surah row skeletons in a loading region while the content database opens', async () => {
+    mockContentDb.ready = false;
+    try {
+      const view = await renderUi(<IndexScreen />);
+
+      const loading = view.getByTestId('index-loading');
+      expect(loading.props.accessibilityLabel).toBe('جارٍ التحميل');
+      expect(loading.props.accessibilityState).toEqual({ busy: true });
+      expect(view.getByRole('header', { name: 'الفهرس' })).toBeOnTheScreen();
+    } finally {
+      mockContentDb.ready = true;
+    }
   });
 
   it.each(locales)('renders the title in %s', async (locale) => {

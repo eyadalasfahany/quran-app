@@ -229,6 +229,7 @@
     "surahTag": "سورة"
   },
   "ui": {
+    "loading": "جارٍ التحميل",
     "download": {
       "start": "تنزيل",
       "cancel": "إيقاف التنزيل",

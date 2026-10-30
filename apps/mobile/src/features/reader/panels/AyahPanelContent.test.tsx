@@ -12,14 +12,15 @@ import { openUserTestStore } from '../../../../jest/user-test-db';
 import { getVerseByKey } from '../data/verses';
 import { resetReaderSettingsStore } from '../settings';
 import { AyahPanelContent } from './AyahPanelContent';
-import { resetTafsirDownloads } from './tafsir-downloads';
+import { resetTafsirDownloads, useTafsirDownloads } from './tafsir-downloads';
 
 // A row's action is labelled with the action and then the row's title («تنزيل البقرة»).
 const rowAction = (label: string) => new RegExp(`^${label} `);
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
-jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: jest.fn(), runDeviceContentSync: jest.fn(() => Promise.resolve()) }));
+jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: (selector: (state: { version: number; syncSettled: boolean }) => unknown) =>
+    selector({ syncSettled: true, version: 0 }), runDeviceContentSync: jest.fn(() => Promise.resolve()) }));
 
 const HTML = '<p>الثناء على الله بصفاته كلها.</p>';
 
@@ -250,6 +251,16 @@ describe('AyahPanelContent', () => {
 
       expect(runDeviceContentSync).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('shows the passage loading region in place of the text while the tafsir in use downloads again', async () => {
+    useTafsirDownloads.setState({ byId: { 16: { progress: 0.4, status: 'downloading' } } });
+    const view = await renderTafsir(await catalogueDb([16]), 'ar');
+
+    const loading = view.getByTestId('ayah-panel-content-tafsir-loading');
+    expect(loading.props.accessibilityLabel).toBe('جارٍ التحميل');
+    expect(loading.props.accessibilityState).toEqual({ busy: true });
+    expect(view.queryByText('الثناء على الله بصفاته كلها.', { exact: false })).toBeNull();
   });
 
   it('falls back to the verse key without a content database', async () => {

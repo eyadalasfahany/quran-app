@@ -28,11 +28,13 @@ jest.mock('expo-router', () => ({
   router: { navigate: jest.fn(), push: jest.fn() },
 }));
 
+// Flipped to false to show the content database still opening.
+const mockContentDb: { ready: boolean } = { ready: true };
 jest.mock('@/core/db/content/open', () => ({
   openContentDb: jest.fn(() => {
     throw new Error('openContentDb is unavailable under Jest.');
   }),
-  useContentDb: () => ({ error: null, ready: true }),
+  useContentDb: () => ({ error: null, ready: mockContentDb.ready }),
 }));
 
 jest.mock('@/features/reader/data/verses', () => ({
@@ -119,6 +121,22 @@ describe('HomeScreen', () => {
     expect(view.getByRole('header', { name: 'السلام عليكم' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'بحث' })).toBeOnTheScreen();
     expect(view.queryByTestId('home-continue-reading')).toBeNull();
+  });
+
+  it('shows the continue skeleton and the recent listens heading with two row skeletons while the content database opens', async () => {
+    mockContentDb.ready = false;
+    try {
+      const view = await renderUi(<HomeScreen />);
+
+      const card = view.getByTestId('home-continue-loading');
+      expect(card.props.accessibilityLabel).toBe('جارٍ التحميل');
+      expect(card.props.accessibilityState).toEqual({ busy: true });
+      expect(view.queryByTestId('home-continue-reading')).toBeNull();
+      expect(view.getByRole('header', { name: 'آخر ما استمعت إليه' })).toBeOnTheScreen();
+      expect(view.getByTestId('home-recent-listens-loading').props.accessibilityState).toEqual({ busy: true });
+    } finally {
+      mockContentDb.ready = true;
+    }
   });
 
   it('keeps the header search button on compact windows', async () => {

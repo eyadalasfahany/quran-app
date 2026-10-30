@@ -96,6 +96,16 @@ describe('MushafListPage', () => {
     expect(view.queryByTestId('mushaf-page')).toBeNull();
   });
 
+  it('shows a loading region of Mushaf-line skeletons, and no Quran text, while the font loads', async () => {
+    mockFont = { status: 'loading' };
+    const view = await renderUi(listPage(1));
+
+    const loading = view.getByTestId('mushaf-page-loading');
+    expect(loading.children.length).toBeGreaterThan(0);
+    expect(view.getByLabelText('جارٍ التحميل')).toBeOnTheScreen();
+    expect(view.queryByText(GLYPH_AL_FATIHA_1)).toBeNull();
+  });
+
   it('offers Reading mode when the page font fails', async () => {
     mockFont = { status: 'error' };
     const onSwitchToReading = jest.fn();

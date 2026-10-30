@@ -114,6 +114,8 @@ export function AyahPanelContent({
     tafsirs[0]?.resourceId ??
     null;
   const selectedReadable = tafsirIdInUse !== null && readableIds.includes(tafsirIdInUse);
+  // The tafsir in use is downloading (an update or a re-download of an installed one): its passage place pulses.
+  const selectedDownloading = tafsirIdInUse !== null && downloads[tafsirIdInUse]?.status === 'downloading';
   const passage = useMemo(
     () =>
       executor === null || data === null || tafsirIdInUse === null || !selectedReadable
@@ -206,6 +208,7 @@ export function AyahPanelContent({
             fontScale={fontScale}
             html={passage?.html ?? null}
             layout={layout}
+            loading={selectedDownloading}
             mode={mode}
             onCancelDownload={cancelDownload}
             onDownloadTafsir={startDownload}

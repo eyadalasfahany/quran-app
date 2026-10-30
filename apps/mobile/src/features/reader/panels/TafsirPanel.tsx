@@ -5,9 +5,10 @@ import { ScrollView, Text, View, useWindowDimensions } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { uiFontFamilies, useTheme } from '@/core/theme';
-import { Card, Chip, EmptyState, maxFontScale, QuranText, UiText } from '@/shared/ui';
+import { Card, Chip, EmptyState, maxFontScale, QuranText, SkeletonGroup, UiText } from '@/shared/ui';
 
 import { SheetScrollView } from '../components/SheetScrollView';
+import { TafsirTextSkeleton } from './TafsirTextSkeleton';
 import { AyahStepper } from './AyahStepper';
 import { TafsirDownloadList, type TafsirDownloadItem } from './TafsirDownloadList';
 import { tafsirAuthorName, tafsirDisplayName, type TextDirection } from './panel-text';
@@ -47,6 +48,7 @@ export function TafsirPanel({
   textUthmani,
   ayahLabel,
   html,
+  loading = false,
   coverage,
   fontScale = 1,
   onPrevious,
@@ -72,6 +74,8 @@ export function TafsirPanel({
   ayahLabel?: string;
   // Sanitized server-side and rendered as received; null when the tafsir has no passage here.
   html: string | null;
+  /** The selected tafsir is downloading: the passage place shows placeholder lines, not the html or the missing message. */
+  loading?: boolean;
   // Ayah numbers the passage spans, when it covers more than this ayah.
   coverage: { from: number; to: number } | null;
   fontScale?: number;
@@ -196,6 +200,26 @@ export function TafsirPanel({
         ? t('reader.tafsir.coverageOne', { ayah: formatNumber(verseNumber, locale) })
         : t('reader.tafsir.coverage', { from: formatNumber(coverage.from, locale), to: formatNumber(coverage.to, locale) });
 
+  // While the tafsir downloads, the passage place shows placeholder lines; otherwise the passage, or the missing message.
+  const passage = loading ? (
+    <SkeletonGroup testID={`${testID}-loading`}>
+      <TafsirTextSkeleton testID={`${testID}-skeleton`} />
+    </SkeletonGroup>
+  ) : html === null ? (
+    <UiText testID={`${testID}-no-entry`} tone="muted">
+      {t('reader.tafsir.noEntry')}
+    </UiText>
+  ) : (
+    <RenderHtml
+      baseStyle={baseStyle}
+      contentWidth={width ?? windowWidth}
+      defaultTextProps={{ maxFontSizeMultiplier: maxFontScale.content }}
+      source={{ html }}
+      systemFonts={SYSTEM_FONTS}
+      tagsStyles={TAGS_STYLES}
+    />
+  );
+
   return (
     <View style={{ flex: 1 }} testID={testID}>
       <SheetScrollView contentContainerStyle={{ gap: theme.size.sheetGap, paddingBottom: scrollBottom }}>
@@ -242,20 +266,7 @@ export function TafsirPanel({
               style={direction === null ? undefined : { direction }}
               testID={`${testID}-body`}
             >
-              {html === null ? (
-                <UiText testID={`${testID}-no-entry`} tone="muted">
-                  {t('reader.tafsir.noEntry')}
-                </UiText>
-              ) : (
-                <RenderHtml
-                  baseStyle={baseStyle}
-                  contentWidth={width ?? windowWidth}
-                  defaultTextProps={{ maxFontSizeMultiplier: maxFontScale.content }}
-                  source={{ html }}
-                  systemFonts={SYSTEM_FONTS}
-                  tagsStyles={TAGS_STYLES}
-                />
-              )}
+              {passage}
             </View>
             {selected === null ? null : (
               <UiText testID={`${testID}-source`} tone="muted" {...credit}>
