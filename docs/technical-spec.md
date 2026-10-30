@@ -529,6 +529,8 @@ PUT /api/v1/devices/8b0c…
 
 ## 10. Authentication
 
+> **v1 cut (ADR 0027):** Account authentication, sign-in screens, and cloud tokens are removed for v1. The app operates local-only; bookmarks, highlights, notes, and khatma remain on the device.
+
 All three sign-in methods end in the same place: `IdentityService::signIn(ProviderIdentity, DeviceData)` finds or creates the user, links the provider, and issues one Sanctum token for that device.
 
 **Account matching**
@@ -567,6 +569,8 @@ All three sign-in methods end in the same place: `IdentityService::signIn(Provid
 - Export: `GET /me/export` returns bookmarks, highlights, notes, khatma and settings as one JSON file, shared through the OS share sheet.
 
 ## 11. User data sync
+
+> **v1 cut (ADR 0027):** Remote push/pull sync endpoints are removed for v1. All personal data is written directly to the on-device `user.db` SQLite database with no network synchronization.
 
 Every personal change is written to `user.db` first and synced later; the network is never on the path of a tap. Each item resolves independently by last-write-wins on `client_updated_at`.
 
@@ -767,8 +771,8 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | 1. Content pipeline | 2–6 | QF sync jobs, mirror schema, pack builder, manifest and change feed, device content sync, Tanzil seed, text-integrity check | Fresh install reaches QF text offline; checksum passes |
 | 2. Reader + responsive | 6–12 | Mushaf (QCF), Reading and Focus modes, compact/medium/expanded layouts, reading anchor, surah and juz index, ayah actions, tafsir, search, reader settings | All 604 pages verified on phone, iPad and foldable; resize keeps position |
 | 3. Listening and audio | 12–16 | Reciters, player, lock screen, ayah and word highlight, repeat, speed, sleep timer, downloads | Highlight within 150 ms of timings on sample surahs |
-| 4. Accounts and sync | 16–20 | Email, Google, Apple sign-in; bookmarks, highlights, notes; sync engine; khatma; local reminders; export and deletion | Two-device sync tests pass; Apple account deletion revokes the token |
-| 5. Beta and store review | 20–24 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
+| 4. My Quran, Khatma & Settings (Local-only) | 16–18 | Settings (language switch, theme, reader/audio shortcuts, local data reset); My Quran library (bookmarks, highlights, notes); Khatma planner and logs; local daily reminders (ADR 0027) | Settings language switches app locale and direction; local bookmarks, highlights, notes and khatma persist and function offline |
+| 5. Beta and store review | 18–22 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
 
 **Cut lines**
 
@@ -779,7 +783,7 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | Quran translations and word-by-word meanings | Removed (ADR 0014) | — | Not built in any version |
 | Hinge-aware foldable split, keyboard shortcuts | v1.1 | \~1 week | Needs a native module; the base responsive layout already works |
 | Root search | v1.1 | \~1 week | Needs extra QF data |
-| Accounts and sync (whole Phase 4) | Optional further cut | \~4 weeks | A local-only v1 is possible; no Google sign-in also removes the Apple sign-in requirement |
+| Accounts and remote sync | Removed for v1 (ADR 0027) | \~4 weeks | Local-only v1: no accounts, login or cloud sync. All bookmarks, notes, highlights and khatma stay in local user.db |
 
 **Before Phase 2 starts:** the tablet and unfolded designs (section 16) must exist, or Phase 2 will be built twice.
 
