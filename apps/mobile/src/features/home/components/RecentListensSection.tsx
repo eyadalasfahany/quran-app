@@ -13,6 +13,8 @@ export type RecentListensItem = {
   name: string;
   subtitle: string;
   playLabel: string;
+  /** This listen is playing: its button shows pause. */
+  playing?: boolean;
   onPlay: () => void;
 };
 
@@ -43,6 +45,7 @@ export function RecentListensSection({
           name={item.name}
           onPlay={item.onPlay}
           playLabel={item.playLabel}
+          playing={item.playing}
           subtitle={item.subtitle}
           testID={`${testID}-${item.key}`}
         />

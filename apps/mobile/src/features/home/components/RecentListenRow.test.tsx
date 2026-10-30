@@ -16,6 +16,12 @@ const props = {
 };
 
 describe('RecentListenRow', () => {
+  it('draws the pause glyph on its button while the listen plays', async () => {
+    const view = await renderUi(<RecentListenRow {...props} filled={false} playing />);
+
+    expect(JSON.stringify(view.toJSON())).toContain('M6 5h4v14H6zM14 5h4v14h-4z');
+  });
+
   it('draws the reciter tile at 48 pt with a 14 pt radius and an Amiri letter in brand', async () => {
     const view = await renderUi(<RecentListenRow {...props} filled={false} testID="row" />);
     const letter = view.getByText('ع', { includeHiddenElements: true });

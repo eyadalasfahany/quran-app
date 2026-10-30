@@ -68,6 +68,23 @@ describe('RecentListenPlayButton', () => {
     expect(view.getByRole('button', { name: locale === 'ar' ? 'تشغيل' : 'Play' })).toBeOnTheScreen();
   });
 
+  it.each(locales)('mirrors the play triangle in RTL, and draws a pause glyph unmirrored while playing (%s)', async (locale) => {
+    const paused = await renderUi(
+      <RecentListenPlayButton filled label="تشغيل" onPress={() => undefined} testID="play" />,
+      { locale },
+    );
+    expect(flatStyle(paused.getByTestId('play-glyph').props.style).transform).toEqual(
+      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
+    );
+
+    const playing = await renderUi(
+      <RecentListenPlayButton filled label="إيقاف مؤقت" onPress={() => undefined} playing testID="play" />,
+      { locale },
+    );
+    expect(flatStyle(playing.getByTestId('play-glyph').props.style).transform).toBeUndefined();
+    expect(JSON.stringify(playing.toJSON())).toContain('M6 5h4v14H6zM14 5h4v14h-4z');
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/home/components/RecentListenPlayButton.tsx')).toEqual([]);
   });

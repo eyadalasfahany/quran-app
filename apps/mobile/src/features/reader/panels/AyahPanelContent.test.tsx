@@ -19,7 +19,7 @@ const rowAction = (label: string) => new RegExp(`^${label} `);
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
-jest.mock('@/core/sync', () => ({ installResource: jest.fn(), runDeviceContentSync: jest.fn(() => Promise.resolve()) }));
+jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: jest.fn(), runDeviceContentSync: jest.fn(() => Promise.resolve()) }));
 
 const HTML = '<p>الثناء على الله بصفاته كلها.</p>';
 

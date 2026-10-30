@@ -1,6 +1,6 @@
 import { act, fireEvent } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { Dimensions, I18nManager, Text } from 'react-native';
+import { Dimensions, Text } from 'react-native';
 
 import { ThemeProvider, themes } from '@/core/theme';
 import { MINI_PLAYER_METRICS, MINI_PLAYER_READER_BOTTOM } from '@/features/audio/mini-player-metrics';
@@ -74,11 +74,23 @@ describe('AdaptiveReaderLayout', () => {
     const host = view.getByTestId('reader-panel-host');
     const style = flatStyle(host.props.style);
 
+    // Logical insets: React Native maps `end` to the trailing edge in both directions.
     expect(style.width).toBe(SIDE_PANEL_WIDTH);
-    expect(style[I18nManager.isRTL ? 'left' : 'right']).toBe(PANEL_INSET);
+    expect(style.end).toBe(PANEL_INSET);
+    expect(style.left).toBeUndefined();
+    expect(style.right).toBeUndefined();
     const stage = flatStyle(view.getByTestId('reader-stage').props.style);
-    expect(stage[I18nManager.isRTL ? 'marginLeft' : 'marginRight']).toBe(panelStripWidth());
+    expect(stage.marginEnd).toBe(panelStripWidth());
+    expect(stage.marginLeft).toBeUndefined();
+    expect(stage.marginRight).toBeUndefined();
     expect(view.getByTestId('reader-mini-player-slot').parent?.props.testID).toBe('reader-stage');
+  });
+
+  it('reserves no strip on a docked window while the panel is closed', async () => {
+    const view = await renderUi(layout(1366, { panelOpen: false }));
+
+    expect(view.queryByTestId('reader-panel-host')).toBeNull();
+    expect(flatStyle(view.getByTestId('reader-stage').props.style).marginEnd).toBe(0);
   });
 
   it('closes an overlay from a tap outside and leaves a docked panel open', async () => {

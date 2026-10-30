@@ -1,3 +1,5 @@
+import { useCatalogVersion } from '@/core/sync';
+
 import type { CatalogReciter } from '../data/reciters';
 import { catalogueReciter } from '../play-verse';
 import { useReciterDownloads } from '../reciter-downloads';
@@ -8,5 +10,6 @@ import { useAudioSettings } from '../settings';
 export function useIdleReciter(enabled: boolean): CatalogReciter | null {
   useAudioSettings((state) => state.reciterId);
   useReciterDownloads((state) => state.installedVersion);
+  useCatalogVersion((state) => state.version);
   return enabled ? catalogueReciter() : null;
 }

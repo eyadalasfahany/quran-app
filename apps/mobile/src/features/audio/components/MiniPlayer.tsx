@@ -113,6 +113,7 @@ export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlaye
             hitSize={MINI_PLAYER_BUTTON_SIZE}
             icon={isPlaying ? PAUSE_ICON : PLAY_ICON}
             label={isPlaying ? t('player.pause') : t('player.play')}
+            mirrorInRtl
             onPress={toggle}
             testID="mini-player-toggle"
           />
@@ -200,6 +201,7 @@ export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlaye
         hitSize={MINI_PLAYER_BUTTON_SIZE}
         icon={isPlaying ? PAUSE_ICON : PLAY_ICON}
         label={isPlaying ? t('player.pause') : t('player.play')}
+        mirrorInRtl
         onPress={toggle}
         testID="mini-player-toggle"
       />

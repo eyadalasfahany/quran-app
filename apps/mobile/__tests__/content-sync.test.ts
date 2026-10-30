@@ -14,6 +14,7 @@ import {
   type ContentSyncDeps,
   type FileStore,
 } from '@/core/sync/content-sync';
+import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { contentContract } from '@/core/sync/content-tables';
 import { selectedResourceIds } from '@/core/sync/selection';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -511,6 +512,7 @@ describe('content sync', () => {
         manifest: published.body,
       }));
 
+      const versionBefore = useCatalogVersion.getState().version;
       await syncContent(
         await deps(executor, cacheDir, {
           getManifest,
@@ -524,6 +526,8 @@ describe('content sync', () => {
       expect(getManifest).toHaveBeenCalledTimes(1);
       expect(getManifest).toHaveBeenCalledWith(undefined);
       expect(catalogRows(executor).map((row) => row.resourceId)).toEqual([85]);
+      // Screens mounted before the first sync re-read the catalogue when it lands.
+      expect(useCatalogVersion.getState().version).toBeGreaterThan(versionBefore);
       expect(installedNames(executor, 85)).toMatchObject({ name: 'Al-Muyassar', nameAr: 'التفسير الميسر' });
       expect(executor.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])?.value).toBe('"fresh"');
       expect(downloadPack).not.toHaveBeenCalled();

@@ -16,6 +16,7 @@ import { useDoneCountsByReciter } from '../data/downloads';
 import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { recitationStyleKey, reciterInitial } from '../player-view';
+import { pause } from '../player';
 import { playReciter } from '../reciter-playback';
 import { useReciterDownloads } from '../reciter-downloads';
 import {
@@ -111,6 +112,7 @@ export function ListenScreen() {
             const download = downloads[item.resourceId];
             const name = reciterDisplayName(item, locale, t('listen.unnamed'));
             const styleKey = recitationStyleKey(item.style);
+            const playing = item.resourceId === playingId;
             return (
               <ReciterRow
                 downloadProgress={download?.status === 'downloading' ? download.progress : null}
@@ -120,6 +122,10 @@ export function ListenScreen() {
                   router.push(`/(main)/(listen)/reciter/${item.resourceId}` as Href);
                 }}
                 onPlay={() => {
+                  if (playing) {
+                    pause();
+                    return;
+                  }
                   void playReciter(item.resourceId, item.installed);
                 }}
                 onSelect={() => {
@@ -127,7 +133,8 @@ export function ListenScreen() {
                 }}
                 optionsLabel={t('listen.options')}
                 playHint={download?.status === 'downloading' ? t('ui.download.downloading') : undefined}
-                playLabel={t('listen.play', { name })}
+                playLabel={playing ? t('player.pause') : t('listen.play', { name })}
+                playing={playing}
                 selected={item.resourceId === selectedId}
                 status={statusFor(item, download?.status === 'failed', doneCounts[item.resourceId] ?? 0)}
                 styleLabel={styleKey === null ? null : t(styleKey)}

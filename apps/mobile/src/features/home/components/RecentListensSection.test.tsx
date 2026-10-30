@@ -20,6 +20,14 @@ describe('RecentListensSection', () => {
     expect(view.getByRole('button', { name: 'تشغيل سورة الكهف' }).props.style).toBeDefined();
   });
 
+  it('passes each item its playing state, so a playing listen draws pause', async () => {
+    const view = await renderUi(
+      <RecentListensSection heading="آخر ما استمعت إليه" items={items().map((item, index) => ({ ...item, playing: index === 0 }))} />,
+    );
+
+    expect(JSON.stringify(view.toJSON()).split('M6 5h4v14H6zM14 5h4v14h-4z')).toHaveLength(2);
+  });
+
   it('renders nothing when there are no items', async () => {
     const view = await renderUi(<RecentListensSection heading="آخر ما استمعت إليه" items={[]} />);
 

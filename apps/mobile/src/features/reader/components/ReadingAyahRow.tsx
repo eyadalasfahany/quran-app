@@ -21,6 +21,7 @@ export function ReadingAyahRow({
   recited = false,
   activeWord = null,
   audioAvailable = false,
+  playing = false,
   highlightColor = null,
   onPress,
   onLongPress,
@@ -41,6 +42,8 @@ export function ReadingAyahRow({
   /** The recited word (1-based), when the ayah has word segments. */
   activeWord?: number | null;
   audioAvailable?: boolean;
+  /** This ayah is being recited: its play control shows pause. */
+  playing?: boolean;
   highlightColor?: HighlightColor | null;
   onPress?: () => void;
   onLongPress?: () => void;
@@ -78,6 +81,7 @@ export function ReadingAyahRow({
         onOpenActions={onOpenActions}
         onOpenTafsir={onOpenTafsir}
         onPlay={onPlay}
+        playing={playing}
         testID={testID ? `${testID}-header` : undefined}
         verseNumber={verseNumber}
       />

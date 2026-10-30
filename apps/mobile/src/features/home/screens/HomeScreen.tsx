@@ -9,6 +9,8 @@ import { ContinueReadingCard } from '@/features/home/components/ContinueReadingC
 import { HomeTileRow } from '@/features/home/components/HomeTileRow';
 import { RecentListensSection } from '@/features/home/components/RecentListensSection';
 import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
+import { pause } from '@/features/audio/player';
+import { usePlayerStore } from '@/features/audio/playerStore';
 import { playRecentListen } from '@/features/audio/reciter-playback';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
@@ -36,6 +38,10 @@ export function HomeScreen() {
   // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
   const expanded = useWindowClass() === 'expanded';
   const recentItems = useRecentListenItems(2);
+  // A recent listen is playing when the player holds its reciter and surah and is playing or loading it.
+  const playerActive = usePlayerStore((state) => state.status === 'playing' || state.status === 'loading');
+  const playerReciterId = usePlayerStore((state) => state.reciterId);
+  const playerChapterId = usePlayerStore((state) => state.chapterId);
 
   const continueReading = useMemo(() => {
     if (!ready) {
@@ -74,16 +80,25 @@ export function HomeScreen() {
       />
       <RecentListensSection
         heading={t('home.recent.heading')}
-        items={recentItems.map((item) => ({
-          key: item.key,
-          letter: item.letter,
-          name: item.name,
-          onPlay: () => {
-            void playRecentListen(item.listen, item.installed);
-          },
-          playLabel: item.playLabel,
-          subtitle: item.subtitle,
-        }))}
+        items={recentItems.map((item) => {
+          const playing =
+            playerActive && playerReciterId === item.listen.reciterResourceId && playerChapterId === item.listen.chapterId;
+          return {
+            key: item.key,
+            letter: item.letter,
+            name: item.name,
+            onPlay: () => {
+              if (playing) {
+                pause();
+                return;
+              }
+              void playRecentListen(item.listen, item.installed);
+            },
+            playLabel: playing ? t('player.pause') : item.playLabel,
+            playing,
+            subtitle: item.subtitle,
+          };
+        })}
       />
     </SectionScreen>
   );

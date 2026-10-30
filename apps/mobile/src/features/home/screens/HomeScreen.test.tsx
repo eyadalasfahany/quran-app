@@ -6,6 +6,8 @@ import { openContentDb } from '@/core/db/content/open';
 import { listReciters, type CatalogReciter } from '@/features/audio/data/reciters';
 import { useRecentListens } from '@/features/audio/data/recent-listens-hooks';
 import type { RecentListen } from '@/features/audio/data/recent-listens';
+import { pause } from '@/features/audio/player';
+import { usePlayerStore } from '@/features/audio/playerStore';
 import { playRecentListen } from '@/features/audio/reciter-playback';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { getChapter, type ChapterRecord } from '@/features/reader/data/chapters';
@@ -43,6 +45,11 @@ jest.mock('@/features/audio/data/recent-listens-hooks', () => ({
 
 jest.mock('@/features/audio/data/reciters', () => ({
   listReciters: jest.fn(() => []),
+}));
+
+jest.mock('@/features/audio/player', () => ({
+  ...jest.requireActual<typeof import('@/features/audio/player')>('@/features/audio/player'),
+  pause: jest.fn(),
 }));
 
 jest.mock('@/features/audio/reciter-playback', () => ({
@@ -195,6 +202,28 @@ describe('HomeScreen recent listens', () => {
     jest.mocked(getChapter).mockReturnValue(chapter);
     jest.mocked(listReciters).mockReturnValue([reciter]);
     jest.mocked(playRecentListen).mockClear();
+    jest.mocked(pause).mockClear();
+    usePlayerStore.getState().reset();
+  });
+
+  it('shows pause on a listen that is playing, and pauses from its button', async () => {
+    jest.mocked(useRecentListens).mockReturnValue({ data: [listen] } as unknown as ReturnType<typeof useRecentListens>);
+    usePlayerStore.setState({ chapterId: 2, reciterId: 31, status: 'playing' });
+
+    const view = await renderUi(<HomeScreen />);
+    await fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
+
+    expect(pause).toHaveBeenCalledTimes(1);
+    expect(playRecentListen).not.toHaveBeenCalled();
+  });
+
+  it('keeps play on a listen whose surah is not the one playing', async () => {
+    jest.mocked(useRecentListens).mockReturnValue({ data: [listen] } as unknown as ReturnType<typeof useRecentListens>);
+    usePlayerStore.setState({ chapterId: 3, reciterId: 31, status: 'playing' });
+
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByRole('button', { name: 'تشغيل سورة البقرة' })).toBeOnTheScreen();
   });
 
   it('hides the section when there are no recent listens', async () => {

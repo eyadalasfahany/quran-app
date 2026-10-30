@@ -299,7 +299,7 @@ Arabic is the default interface language and English is the second; Quran text i
 
 - **Language choice:** picked on the first onboarding screen from the device language (`expo-localization`), changeable later in Settings.
 - **Strings:** every interface string lives in i18next resource files (`ar.json`, `en.json`); no hard-coded text in components. Arabic plural forms are used where counts appear.
-- **Direction:** switching between Arabic and English flips the layout with `I18nManager.forceRTL` and reloads the app once (`Updates.reloadAsync`). Media controls and audio progress follow the layout direction and mirror with it; only the play and pause glyphs never flip (ADR 0012).
+- **Direction:** switching between Arabic and English flips the layout with `I18nManager.forceRTL` and reloads the app once (`Updates.reloadAsync`). Media controls and audio progress follow the layout direction and mirror with it, the play glyph included (ADR 0012, ADR 0025).
 - **Numbers:** Arabic-Indic digits in the Arabic interface, Western digits in English.
 - **Content languages are separate:** the interface language does not change the Quran or tafsir the reader chose.
 - **Store listings:** App Store and Google Play pages in both Arabic and English.

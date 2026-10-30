@@ -18,6 +18,7 @@ export function RecentListenRow({
   subtitle,
   playLabel,
   filled,
+  playing = false,
   onPlay,
   testID,
 }: {
@@ -29,6 +30,8 @@ export function RecentListenRow({
   playLabel: string;
   /** The most recent row's button is filled. */
   filled: boolean;
+  /** This listen is playing: its button shows pause. */
+  playing?: boolean;
   onPlay: () => void;
   testID?: string;
 }) {
@@ -59,7 +62,13 @@ export function RecentListenRow({
           {subtitle}
         </UiText>
       </View>
-      <RecentListenPlayButton filled={filled} label={playLabel} onPress={onPlay} testID={testID ? `${testID}-play` : undefined} />
+      <RecentListenPlayButton
+        filled={filled}
+        label={playLabel}
+        onPress={onPlay}
+        playing={playing}
+        testID={testID ? `${testID}-play` : undefined}
+      />
     </View>
   );
 }

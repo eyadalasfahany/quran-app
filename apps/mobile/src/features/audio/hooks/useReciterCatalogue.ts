@@ -1,4 +1,5 @@
 import { openContentDb } from '@/core/db/content/open';
+import { useCatalogVersion } from '@/core/sync';
 
 import { listReciters } from '../data/reciters';
 import { usePlayerStore } from '../playerStore';
@@ -31,8 +32,10 @@ export function useReciterCatalogue(ready: boolean): {
   selectedId: number | null;
   playingId: number | null;
 } {
-  // Subscribing to installedVersion re-renders after an install, which reads the catalogue again.
+  // Subscribing to installedVersion and the catalogue version re-renders after an install or a catalogue sync,
+  // which reads the catalogue again (on first launch the sync lands after this tab mounted).
   useReciterDownloads((state) => state.installedVersion);
+  useCatalogVersion((state) => state.version);
   const savedId = useAudioSettings((state) => state.reciterId);
   const playingId = usePlayerStore((state) => (state.status === 'playing' ? state.reciterId : null));
 

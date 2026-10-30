@@ -19,7 +19,7 @@ One file per step of [`../phase-3.md`](../phase-3.md). Send a Haiku agent *"Impl
 ## Rules for every step
 Everything in [`../phase-2/README.md`](../phase-2/README.md) applies: one component per file with its own test, screens only compose, `apple-design` skill, tokens through `useTheme()`, identical to the frames, the iPhone 17 visual check, gates. Added for audio:
 - **Audio sources:** only the URLs in `chapter_audio_files` (QF's, ADR 0008). The app never calls QF otherwise; credentials stay in `apps/api`.
-- **Media controls follow the layout direction** (ADR 0012): in Arabic the progress fills from the right with elapsed time on the right, and next ayah sits on the left with its glyph pointing left. In English all of it mirrors. Play and pause glyphs never flip. Time labels (elapsed and total) always show once the duration is known.
+- **Media controls follow the layout direction** (ADR 0012): in Arabic the progress fills from the right with elapsed time on the right, and next ayah sits on the left with its glyph pointing left. In English all of it mirrors. The play glyph mirrors too, pointing left in Arabic (ADR 0025). Time labels (elapsed and total) always show once the duration is known.
 - **State:** player queue, active ayah/word, repeat, speed and sleep timer live in `playerStore` (Zustand). Last listened goes to `user.db` `recent_listens`.
 - **Motion:** highlight changes use `timing('fast')`; Reduce Motion turns follow-scroll animations into jumps.
 - **Native changes** (`expo-audio`, background mode) need `expo prebuild -p ios` and a rebuild; the reviewer does it.

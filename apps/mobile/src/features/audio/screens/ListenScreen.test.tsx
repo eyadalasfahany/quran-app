@@ -7,7 +7,7 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { installResource } from '@/core/sync';
 
-import { playChapter } from '../player';
+import { pause, playChapter } from '../player';
 import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
 import { usePlayerStore } from '../playerStore';
 import { resetReciterDownloads } from '../reciter-downloads';
@@ -28,8 +28,8 @@ jest.mock('@/core/db/content/open', () => ({
   useContentDb: () => ({ ready: true, error: null }),
 }));
 
-jest.mock('../player', () => ({ playChapter: jest.fn(() => Promise.resolve()) }));
-jest.mock('@/core/sync', () => ({ installResource: jest.fn() }));
+jest.mock('../player', () => ({ pause: jest.fn(), playChapter: jest.fn(() => Promise.resolve()) }));
+jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: jest.fn() }));
 
 // The downloaded surahs per reciter, from the user database (not open under Jest).
 const mockDoneCounts: { value: Record<number, number> } = { value: {} };
@@ -356,5 +356,22 @@ describe('ListenScreen', () => {
 
       expect(flatStyle(view.getByTestId('reciter-list').props.contentContainerStyle).paddingBottom).toBe(0);
     });
+  });
+});
+
+describe('ListenScreen while a reciter plays', () => {
+  afterEach(() => {
+    usePlayerStore.getState().reset();
+    jest.mocked(pause).mockClear();
+  });
+
+  it('labels the playing reciter pause, and its button pauses without starting playback', async () => {
+    usePlayerStore.setState({ reciterId: 30, status: 'playing' });
+    const view = await renderUi(<ListenScreen />);
+
+    await fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
+
+    expect(pause).toHaveBeenCalledTimes(1);
+    expect(play).not.toHaveBeenCalled();
   });
 });

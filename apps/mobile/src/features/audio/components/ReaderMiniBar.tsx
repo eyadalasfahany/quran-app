@@ -145,6 +145,7 @@ export function ReaderMiniBar({
                 hitSize={MINI_PLAYER_BUTTON_SIZE}
                 icon={playing ? PAUSE_ICON : PLAY_ICON}
                 label={playing ? t('player.pause') : t('player.play')}
+                mirrorInRtl
                 onPress={onToggle}
                 testID="mini-player-toggle"
               />

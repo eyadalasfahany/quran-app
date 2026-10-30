@@ -72,20 +72,22 @@ describe('PlayerIconButton', () => {
     expect(button.props.accessibilityState).toMatchObject({ disabled: true });
   });
 
-  it.each(locales)('mirrors a directional glyph in RTL only, and never a play glyph (%s)', async (locale) => {
+  it.each(locales)('mirrors a glyph in RTL only when asked, play included (%s)', async (locale) => {
     const view = await renderUi(
       <>
         <PlayerIconButton icon={next} label="next" mirrorInRtl onPress={() => undefined} testID="dir" />
-        <PlayerIconButton icon={{ ios: 'play.fill', android: 'play_arrow' }} label="play" onPress={() => undefined} testID="play" />
+        <PlayerIconButton icon={{ ios: 'play.fill', android: 'play_arrow' }} label="play" mirrorInRtl onPress={() => undefined} testID="play" />
+        <PlayerIconButton icon={{ ios: 'pause.fill', android: 'pause' }} label="pause" onPress={() => undefined} testID="pause" />
       </>,
       { locale },
     );
-    I18nManager.isRTL = locale === 'ar';
     const directional = flatStyle(view.getByTestId('dir-icon', hidden).props.style);
     const play = flatStyle(view.getByTestId('play-icon', hidden).props.style);
+    const pause = flatStyle(view.getByTestId('pause-icon', hidden).props.style);
 
     expect(directional.transform).toEqual(locale === 'ar' ? [{ scaleX: -1 }] : undefined);
-    expect(play.transform).toBeUndefined();
+    expect(play.transform).toEqual(locale === 'ar' ? [{ scaleX: -1 }] : undefined);
+    expect(pause.transform).toBeUndefined();
   });
 
   it('uses no raw colour literals', () => {

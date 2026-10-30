@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { I18nManager, Pressable, View, useWindowDimensions } from 'react-native';
+import { Pressable, View, useWindowDimensions } from 'react-native';
 
 import { useWindowClass, windowClassFor, type WindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
@@ -50,9 +50,8 @@ export function AdaptiveReaderLayout({
   const resolvedClass = windowClass ?? (width === undefined ? liveClass : windowClassFor(width));
   const placement = panelPlacementFor(resolvedWidth, resolvedClass);
   const showPanel = placement !== 'sheet' && panelOpen;
-  const rtl = I18nManager.isRTL;
-  const strip = placement === 'docked' ? panelStripWidth() : 0;
-  const trailing = rtl ? 'left' : 'right';
+  // The strip is reserved only while a docked panel is shown; a closed panel leaves the stage full width.
+  const strip = placement === 'docked' && showPanel ? panelStripWidth() : 0;
   const mini = useReaderMiniFootprint();
   // The bar is drawn only when it was passed and the shared footprint says it shows. The resume pill sits above it.
   const miniShown = Boolean(miniPlayer) && mini.shown;
@@ -90,11 +89,11 @@ export function AdaptiveReaderLayout({
 
   return (
     <View style={{ flex: 1 }} testID={`reader-layout-${placement}`}>
+      {/* Logical margins and insets: the panel sits on the trailing edge in both directions. */}
       <View
         style={{
           flex: 1,
-          marginLeft: rtl ? strip : 0,
-          marginRight: rtl ? 0 : strip,
+          marginEnd: strip,
         }}
         testID="reader-stage"
       >
@@ -143,8 +142,8 @@ export function AdaptiveReaderLayout({
             bottom: bottomInset + PANEL_INSET,
             position: 'absolute',
             top: topInset + PANEL_INSET,
+            end: PANEL_INSET,
             width: theme.size.sidePanel,
-            [trailing]: PANEL_INSET,
           }}
           testID="reader-panel-host"
         >

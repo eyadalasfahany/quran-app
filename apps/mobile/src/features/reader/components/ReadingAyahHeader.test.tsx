@@ -1,7 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { ReadingAyahHeader } from './ReadingAyahHeader';
 
 describe('ReadingAyahHeader', () => {
@@ -23,6 +23,28 @@ describe('ReadingAyahHeader', () => {
 
     expect(play.props.accessibilityState).toMatchObject({ disabled: true });
     expect(play.props.accessibilityHint).toBe('التلاوة غير متاحة بعد');
+  });
+
+  it('shows pause while the ayah plays, and the press still calls onPlay', async () => {
+    const onPlay = jest.fn();
+    const view = await renderUi(<ReadingAyahHeader audioAvailable onPlay={onPlay} playing verseNumber={1} />, {
+      locale: 'en',
+    });
+
+    expect(view.queryByRole('button', { name: 'Play ayah' })).toBeNull();
+    await fireEvent.press(view.getByRole('button', { name: 'Pause' }));
+    expect(onPlay).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(locales)('flips the play triangle in RTL and never the pause glyph (%s)', async (locale) => {
+    const view = await renderUi(
+      <ReadingAyahHeader audioAvailable onPlay={() => undefined} testID="hdr" verseNumber={1} />,
+      { locale },
+    );
+    const [icon] = view.getByTestId('hdr-play').children;
+    expect(flatStyle(typeof icon === 'object' ? icon.props.style : undefined).transform).toEqual(
+      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
+    );
   });
 
   it('opens tafsir and ayah actions from their buttons', async () => {

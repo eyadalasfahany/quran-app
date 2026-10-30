@@ -55,7 +55,7 @@ jest.mock('../reciter-downloads', () => {
   return { ...actual, downloadReciterPack: jest.fn(() => Promise.resolve(true)) };
 });
 
-jest.mock('@/core/sync', () => ({ installResource: jest.fn() }));
+jest.mock('@/core/sync', () => ({ installResource: jest.fn(), useCatalogVersion: jest.fn() }));
 
 jest.mock('expo-router', () => ({
   ...jest.requireActual<typeof import('expo-router')>('expo-router'),

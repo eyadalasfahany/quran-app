@@ -255,6 +255,17 @@ describe('ReadingAyahRow recitation', () => {
     return flatStyle(view.getByText('ٱللَّهُ لَآ').parent!.props.style);
   }
 
+  it('shows pause on the recited ayah while playing, and forwards the press', async () => {
+    const onPlay = jest.fn();
+    const view = await renderUi(
+      <ReadingAyahRow audioAvailable onPlay={onPlay} playing recited textImlaei="x" textUthmani="x" verseNumber={1} />,
+      { locale: 'en' },
+    );
+
+    await fireEvent.press(view.getByRole('button', { name: 'Pause' }));
+    expect(onPlay).toHaveBeenCalledTimes(1);
+  });
+
   it('the recited ayah gets the neutral wash, the brand rule and the recited hint', async () => {
     const view = await renderUi(<ReadingAyahRow {...props} recited />);
     expect(quranBlock(view)).toMatchObject({

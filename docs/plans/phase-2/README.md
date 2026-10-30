@@ -60,7 +60,7 @@ The `#tablet-reader` drawings predate ADR 0012 and are being updated. Where a fr
 - **Recited or selected ayah:** a neutral `highlightActive` wash plus a **filled brand ayah marker**, never gold.
 - **Page-exact QCF Mushaf:** the ayah marker is a font glyph and is **never recoloured**. Show the active ayah with a brand margin rule beside each of its lines instead.
 - **Opening ayah actions:** from a tap on the ayah, a tap on its marker, or an ayah-actions glass button in the toolbar.
-- **Audio progress** follows the layout direction: it fills from the right in Arabic and from the left in English. Only the play and pause glyphs never flip.
+- **Audio progress** follows the layout direction: it fills from the right in Arabic and from the left in English. The play glyph mirrors with it (ADR 0025).
 - **Glass groups:** at most **one** per screen edge, plus Back.
 - **My Quran** uses the bookmark glyph.
 - **Text styles:** follow the type scale from the design-token work (ADR 0012, its type-scale step). Each UI style maps to a Dynamic Type style. **Don't hard-code sizes**; use the theme's text styles.

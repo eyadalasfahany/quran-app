@@ -5,7 +5,9 @@ import { AccessibilityInfo, Share, View } from 'react-native';
 import { openContentDb } from '@/core/db/content/open';
 import { useTheme } from '@/core/theme';
 import { useAudioAvailable } from '@/features/audio/hooks/useAudioAvailable';
+import { pause } from '@/features/audio/player';
 import { playVerse } from '@/features/audio/play-verse';
+import { usePlayerStore } from '@/features/audio/playerStore';
 import { setHighlight, toggleBookmark, type Note, type UserStore } from '@/features/library/data';
 import { ActionTile, HighlightRow, type HighlightColor, type IconName, UiText } from '@/shared/ui';
 
@@ -22,6 +24,7 @@ const SHEET_GAP = 14;
 
 const icons = {
   play: { ios: 'play.fill', android: 'play_arrow' },
+  pause: { ios: 'pause.fill', android: 'pause' },
   tafsir: { ios: 'book', android: 'menu_book' },
   bookmark: { ios: 'bookmark', android: 'bookmark' },
   bookmarked: { ios: 'bookmark.fill', android: 'bookmark_added' },
@@ -40,6 +43,8 @@ type Tile = {
   disabled?: boolean;
   selected?: boolean;
   hint?: string;
+  /** Directional glyphs flip with the layout direction (the play triangle points left in Arabic). */
+  mirrorInRtl?: boolean;
 };
 
 export function AyahActionsPanel({
@@ -126,6 +131,10 @@ export function AyahActionsPanel({
 
   const audioAvailable = useAudioAvailable();
   const audioHint = audioAvailable ? undefined : t('reader.ayahPanel.audioUnavailable');
+  // This ayah is the one being recited: its play tile shows pause.
+  const playingThis = usePlayerStore(
+    (s) => (s.status === 'playing' || s.status === 'loading') && s.activeVerseId === verseId,
+  );
   const onPlay = () => {
     const verseKey = idToVerseKey(openContentDb().executor, verseId);
     if (verseKey !== undefined) {
@@ -134,12 +143,14 @@ export function AyahActionsPanel({
   };
   const tiles: Tile[] = [
     {
-      disabled: !audioAvailable,
+      // A recited ayah has audio, so its pause stays enabled even when the audio check says otherwise.
+      disabled: !audioAvailable && !playingThis,
       hint: audioHint,
-      icon: icons.play,
+      icon: playingThis ? icons.pause : icons.play,
       key: 'play',
-      label: t('reader.ayahPanel.play'),
-      onPress: onPlay,
+      label: playingThis ? t('player.pause') : t('reader.ayahPanel.play'),
+      mirrorInRtl: true,
+      onPress: playingThis ? pause : onPlay,
       primary: true,
     },
     ...(onOpenTafsir
@@ -189,6 +200,7 @@ export function AyahActionsPanel({
                 icon={tile.icon}
                 key={tile.key}
                 label={tile.label}
+                mirrorInRtl={tile.mirrorInRtl}
                 onPress={tile.onPress}
                 selected={tile.selected}
                 testID={`${testID}-${tile.key}`}

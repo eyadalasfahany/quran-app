@@ -10,6 +10,6 @@ On the iPhone 17 simulator (Phase 2 decision: no real devices), Arabic and Engli
 | 4 | Repeat ×3, speed 1.5×, sleep timer end of surah | Each behaves as specified |
 | 5 | Download a surah, go offline | It plays from the file; others show the offline state |
 | 6 | Mini player, full player, Reciters, Downloads | Identical to their frames (screenshots vs frame-shot) |
-| 7 | RTL media rules | Play glyph never flips; progress, times and previous/next mirror between Arabic and English |
+| 7 | RTL media rules | Play glyph points left in Arabic and right in English (ADR 0025); progress, times and previous/next mirror between Arabic and English |
 
 Record results in [`../phase-3.md`](../phase-3.md).

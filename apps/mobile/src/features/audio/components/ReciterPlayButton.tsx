@@ -1,19 +1,22 @@
-import { Pressable } from 'react-native';
+import { I18nManager, Pressable } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
 import { useContrastColors } from '@/shared/ui';
 
 const PLAY_GLYPH = 'M8 5v14l11-7z';
+const PAUSE_GLYPH = 'M6 5h4v14H6zM14 5h4v14h-4z';
 const GLYPH_SIZE = 16;
 const RING_RADIUS = 21; // Sits on the 1 pt border of the 44 pt button.
 
 // The row's play button. While `progress` is a number (0 to 1) a determinate ring fills around it.
 // The frame has no downloading state; the ring is the design gap the step brief asks the developer to approve.
+// The play triangle flips with the layout direction; while `playing`, the button draws a symmetric pause glyph.
 export function ReciterPlayButton({
   label,
   progress,
   hint,
+  playing = false,
   onPress,
   testID,
 }: {
@@ -21,6 +24,8 @@ export function ReciterPlayButton({
   /** null when no pack is downloading. */
   progress: number | null;
   hint?: string;
+  /** This reciter is playing: the button draws pause. */
+  playing?: boolean;
   onPress: () => void;
   testID?: string;
 }) {
@@ -51,8 +56,14 @@ export function ReciterPlayButton({
       })}
       testID={testID}
     >
-      <Svg height={GLYPH_SIZE} viewBox="0 0 24 24" width={GLYPH_SIZE}>
-        <Path d={PLAY_GLYPH} fill={theme.colors.brand} />
+      <Svg
+        height={GLYPH_SIZE}
+        style={!playing && I18nManager.isRTL ? { transform: [{ scaleX: -1 }] } : undefined}
+        testID={testID ? `${testID}-glyph` : undefined}
+        viewBox="0 0 24 24"
+        width={GLYPH_SIZE}
+      >
+        <Path d={playing ? PAUSE_GLYPH : PLAY_GLYPH} fill={theme.colors.brand} />
       </Svg>
       {downloading ? (
         <Svg

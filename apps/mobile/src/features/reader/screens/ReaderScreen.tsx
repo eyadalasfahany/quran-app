@@ -249,7 +249,8 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     }
   }, [mode]);
 
-  const gutter = placement === 'docked' ? panelStripWidth() : 0;
+  // The strip is reserved only while a docked panel is open, matching AdaptiveReaderLayout.
+  const gutter = placement === 'docked' && selection.panelOpen ? panelStripWidth() : 0;
   const topInset = insets.top + READER_TOOLBAR_CLEARANCE;
 
   return (
@@ -398,6 +399,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 mode="reading"
                 onOpenAyahActions={selectVerse}
                 onOpenTafsir={openTafsir}
+                onPause={pause}
                 onPlayVerseKey={(key) => void playVerse(key)}
                 onSelectVerseKey={selectVerse}
                 onUserScrollEnd={follow.onUserScrollEnd}
@@ -409,6 +411,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                   }
                   haptics.onVerse(key);
                 }}
+                playing={playing}
                 recitedVerseKey={recitedVerseKey}
                 selectedVerseKey={selection.verseKey}
                 testID="reader-reading"

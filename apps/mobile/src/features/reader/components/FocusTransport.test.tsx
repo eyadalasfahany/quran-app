@@ -185,4 +185,12 @@ describe('FocusTransport play', () => {
     const view = await renderUi(<FocusTransport onPlay={() => undefined} playing />, { locale: 'en' });
     expect(view.getByRole('button', { name: 'Pause' })).toBeOnTheScreen();
   });
+
+  it.each(locales)('flips the play triangle in RTL (%s)', async (locale) => {
+    const paused = await renderUi(<FocusTransport onPlay={() => undefined} />, { locale });
+    const [pausedIcon] = paused.getByTestId('focus-transport-play').children;
+    expect(flatStyle(typeof pausedIcon === 'object' ? pausedIcon.props.style : undefined).transform).toEqual(
+      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
+    );
+  });
 });

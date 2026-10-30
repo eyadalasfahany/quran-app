@@ -5,6 +5,19 @@ import { featureComponentLiterals } from '../../../../jest/ui-source';
 
 import { ReciterRow } from './ReciterRow';
 
+// Every value of one prop anywhere in the rendered tree, in render order.
+function propValues(node: unknown, key: string): unknown[] {
+  if (node === null || typeof node !== 'object') {
+    return [];
+  }
+  if (Array.isArray(node)) {
+    return node.flatMap((child) => propValues(child, key));
+  }
+  const record = node as { props?: Record<string, unknown>; children?: unknown };
+  const own = record.props !== undefined && key in record.props ? [record.props[key]] : [];
+  return [...own, ...propValues(record.children, key)];
+}
+
 const base = {
   name: 'مشاري راشد العفاسي',
   letter: 'ع',
@@ -21,6 +34,12 @@ const base = {
 };
 
 describe('ReciterRow', () => {
+  it('draws the pause glyph on the play button while the reciter plays', async () => {
+    const view = await renderUi(<ReciterRow {...base} playLabel="إيقاف مؤقت" playing />);
+
+    expect(propValues(view.toJSON(), 'd')).toEqual(['M6 5h4v14H6zM14 5h4v14h-4z']);
+  });
+
   it('shows the name, the style tag and the play button, with a 66 pt minimum height', async () => {
     const view = await renderUi(<ReciterRow {...base} />);
 

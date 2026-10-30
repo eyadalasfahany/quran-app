@@ -3,6 +3,7 @@ import type { ContentChange, ContentManifestResource } from '@quran/api-contract
 import type { SqlExecutor, SqlValue } from '@/core/db/sql-executor';
 
 import { packUrl, type ChangesQuery, type ChangesResult, type ManifestResult } from '../api/content';
+import { bumpCatalogVersion } from './catalog-version';
 import { columnList, contentGroup, type ContentColumn, type ContentGroupSchema, type ContentTable } from './content-tables';
 import { onDemandResourceIds } from './on-demand';
 
@@ -405,6 +406,7 @@ export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifes
       );
     }
   });
+  bumpCatalogVersion();
 }
 
 function namesValues(resource: ContentManifestResource): [string | null, string | null, string | null, string | null, string | null, string | null] {
