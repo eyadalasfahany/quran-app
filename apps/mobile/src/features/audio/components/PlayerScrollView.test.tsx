@@ -35,6 +35,7 @@ describe('PlayerScrollView', () => {
     );
 
     expect(view.getByTestId('scroll').props.bounces).toBe(false);
+    expect(view.getByTestId('scroll').props.showsVerticalScrollIndicator).toBe(false);
   });
 
   it('has no raw colour literals', () => {

@@ -4,7 +4,7 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 
 import { requestLocationPermissions } from '../data/location';
@@ -83,6 +83,13 @@ describe('QiblaScreen', () => {
     await fireEvent.press(view.getByRole('button', { name: 'رجوع' }));
 
     expect(router.back).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(locales)('flips the back chevron only in RTL (%s)', async (locale) => {
+    const view = await renderUi(<QiblaScreen />, { locale });
+    const icon = view.getByTestId('qibla-back-icon', { includeHiddenElements: true });
+
+    expect(flatStyle(icon.props.style).transform).toEqual(locale === 'ar' ? [{ scaleX: -1 }] : undefined);
   });
 
   it('asks for permission and refreshes the location from the location button', async () => {

@@ -390,6 +390,8 @@ export function ReadingList({
         <View {...word.viewportProps} style={{ flex: 1, maxWidth: columnWidth, width: '100%' }}>
           <FlashList
             contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[5] }}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
             data={rows}
             drawDistance={viewportHeight * 2}
             extraData={rowExtraData}

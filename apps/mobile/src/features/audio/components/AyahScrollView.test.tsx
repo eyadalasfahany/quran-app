@@ -125,6 +125,7 @@ describe('AyahScrollView', () => {
     );
 
     expect(view.getByTestId('scroll').props.bounces).toBe(false);
+    expect(view.getByTestId('scroll').props.showsVerticalScrollIndicator).toBe(false);
     expect(useNativeGesture).not.toHaveBeenCalled();
   });
 

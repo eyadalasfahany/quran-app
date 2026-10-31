@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { GestureDetector, useNativeGesture } from 'react-native-gesture-handler';
 
+import { HIDDEN_SCROLL_INDICATORS } from '@/core/layout/hide-scroll-indicators';
+
 import { useOptionalPlayerHost, type PlayerHostValue } from './player-host-context';
 import { recordScroll, recordScrollTouch } from './player-motion';
 
@@ -22,7 +24,7 @@ type AyahScrollViewProps = ScrollViewProps & { ref?: Ref<ScrollViewInstance> };
 export function AyahScrollView(props: AyahScrollViewProps) {
   const host = useOptionalPlayerHost();
   if (host === null) {
-    return <ScrollView {...props} bounces={false} overScrollMode="never" scrollEventThrottle={16} />;
+    return <ScrollView {...props} {...HIDDEN_SCROLL_INDICATORS} bounces={false} overScrollMode="never" scrollEventThrottle={16} />;
   }
   return <HandoffScrollView {...props} host={host} />;
 }
@@ -45,6 +47,7 @@ function HandoffScrollView({ host, onScroll, ...props }: AyahScrollViewProps & {
     <GestureDetector gesture={nativeGesture}>
       <ScrollView
         {...props}
+        {...HIDDEN_SCROLL_INDICATORS}
         bounces={false}
         onScroll={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
           recordScroll(scrollOffset, event.nativeEvent.contentOffset.y);

@@ -284,6 +284,8 @@ export function HafsMushafList({
       <View {...word.viewportProps} style={{ flex: 1 }}>
         <FlashList
           contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[4] }}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
           data={pages}
           extraData={pageExtraData}
           keyExtractor={(page) => String(page)}

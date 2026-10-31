@@ -67,22 +67,29 @@ export function SalahScreen() {
   // Still resolving the first fix (or waiting on the system prompt): hold the screen empty.
   const locating = coords === null && source === 'auto' && permissionStatus === Location.PermissionStatus.UNDETERMINED;
   const sourceLabel = t(source === 'auto' ? 'salah.sourceAuto' : 'salah.sourceManual');
+  // The tabs mini bar floats over the list. The qibla row is as tall as a touch
+  // target plus its vertical padding; add that on top of the bar footprint so
+  // the row can scroll fully above the player and stay tappable.
+  const qiblaRowClearance = theme.size.touchTarget + theme.space[4] * 2;
+  const listBottomPad = theme.space[4] + (miniShown ? MINI_PLAYER_TABS_FOOTPRINT + qiblaRowClearance : 0);
 
   return (
     <Screen testID="screen-salah">
       <ContentColumn>
-        <View style={{ flex: 1, gap: theme.size.sectionGap, paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}>
+        <View style={{ flex: 1, gap: theme.size.sectionGap }}>
           <SalahDateHeader onLocationPress={() => setSheetOpen(true)} subtitle={subtitle} title={t('salah.title')} />
           {locating ? null : coords === null || times === null || next === null || previous === null || bearing === null ? (
-            <EmptyState
-              action={{ label: t('salah.noLocation.chooseCity'), onPress: () => setSheetOpen(true) }}
-              body={t('salah.noLocation.body')}
-              icon={EMPTY_LOCATION}
-              testID="salah-no-location"
-              title={t('salah.noLocation.title')}
-            />
+            <View style={{ flex: 1, paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}>
+              <EmptyState
+                action={{ label: t('salah.noLocation.chooseCity'), onPress: () => setSheetOpen(true) }}
+                body={t('salah.noLocation.body')}
+                icon={EMPTY_LOCATION}
+                testID="salah-no-location"
+                title={t('salah.noLocation.title')}
+              />
+            </View>
           ) : (
-            <ScrollView contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: theme.space[4] }} style={{ flex: 1 }} testID="screen-salah-scroll">
+            <ScrollView contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: listBottomPad }} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={{ flex: 1 }} testID="screen-salah-scroll">
               <NextPrayerHero
                 city={source === 'manual' ? cityName?.[locale] : undefined}
                 prayerName={t(`home.salah.${next.name}`)}

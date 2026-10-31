@@ -1,6 +1,8 @@
 import { createFakeAudioPlaylist as mockCreateFakeAudioPlaylist } from './jest/fake-audio-player';
 import { deviceLanguageCode } from './jest/device-language';
 
+import '@/core/layout/hide-scroll-indicators';
+
 // Gesture handler installs its UI-thread bindings through Worklets, which has no UI runtime under Jest.
 jest.mock('react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings', () => ({
   installUIRuntimeBindings: () => undefined,

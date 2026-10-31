@@ -1,8 +1,13 @@
 import { fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { Dimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { renderUi } from '../../../../jest/render-ui';
+import { themes } from '@/core/theme';
+import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
+import { usePlayerStore } from '@/features/audio/playerStore';
+
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 
 import { setManualLocation } from '../data/location';
 import { SalahScreen } from './SalahScreen';
@@ -131,5 +136,38 @@ describe('SalahScreen', () => {
 
     await fireEvent.press(view.getByTestId('salah-no-location-action'));
     expect(view.getByTestId('salah-location-sheet')).toBeTruthy();
+  });
+
+  describe('mini player clearance', () => {
+    beforeEach(() => {
+      Dimensions.set({
+        screen: { fontScale: 1, height: 844, scale: 1, width: 390 },
+        window: { fontScale: 1, height: 844, scale: 1, width: 390 },
+      });
+      usePlayerStore.getState().reset();
+    });
+
+    afterEach(() => {
+      usePlayerStore.getState().reset();
+    });
+
+    it('pads the scroll content by the bar footprint while the bar shows, so the qibla row clears it', async () => {
+      const store = usePlayerStore.getState();
+      store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      store.markPlaying();
+      const view = await renderUi(screen());
+
+      expect(flatStyle(view.getByTestId('screen-salah-scroll').props.contentContainerStyle).paddingBottom).toBe(
+        themes.light.space[4] + MINI_PLAYER_TABS_FOOTPRINT + themes.light.size.touchTarget + themes.light.space[4] * 2,
+      );
+    });
+
+    it('adds no bar footprint while the player is idle', async () => {
+      const view = await renderUi(screen());
+
+      expect(flatStyle(view.getByTestId('screen-salah-scroll').props.contentContainerStyle).paddingBottom).toBe(
+        themes.light.space[4],
+      );
+    });
   });
 });

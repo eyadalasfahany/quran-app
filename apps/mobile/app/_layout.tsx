@@ -3,6 +3,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+
+import '@/core/layout/hide-scroll-indicators';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { registerReminderDeepLinks } from '@/features/notifications/reminder-deeplink';
 import { useContentDb } from '@/core/db/content/open';

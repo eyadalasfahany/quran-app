@@ -80,7 +80,7 @@ export function NowPlayingAyah({
         onScrollBeginDrag={follow.onScrollBeginDrag}
         onScrollEndDrag={follow.onScrollEndDrag}
         ref={scrollRef}
-        showsVerticalScrollIndicator={scrollable}
+        showsVerticalScrollIndicator={false}
         style={[
           { alignSelf: 'stretch', flexGrow: 0, flexShrink: 0 },
           height === undefined ? null : { flexBasis: 0, flexGrow: 1, flexShrink: 1 },

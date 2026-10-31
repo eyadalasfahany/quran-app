@@ -2,6 +2,8 @@ import type { ScrollViewProps } from 'react-native';
 import { GestureDetector, useNativeGesture } from 'react-native-gesture-handler';
 import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
 
+import { HIDDEN_SCROLL_INDICATORS } from '@/core/layout/hide-scroll-indicators';
+
 import { usePlayerHost } from './player-host-context';
 import { recordScroll, recordScrollTouch } from './player-motion';
 
@@ -34,6 +36,7 @@ export function PlayerScrollView(props: ScrollViewProps) {
     <GestureDetector gesture={nativeGesture}>
       <Animated.ScrollView
         {...props}
+        {...HIDDEN_SCROLL_INDICATORS}
         // No overscroll: at the top, a downward drag moves the player rather than stretching the content.
         bounces={false}
         overScrollMode="never"

@@ -139,6 +139,8 @@ export function MushafList({
     <View style={{ flex: 1, paddingTop: topInset, paddingBottom: bottomInset }} testID={testID}>
       <FlashList
         data={PAGE_NUMBERS}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
         extraData={pageExtraData}
         initialScrollIndex={initialIndex}
         keyExtractor={(page) => String(page)}

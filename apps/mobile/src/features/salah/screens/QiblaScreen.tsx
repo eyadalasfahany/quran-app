@@ -23,8 +23,9 @@ import { qiblaBearing } from '../data/prayer-times';
 import { usePrayerLocation } from '../hooks';
 import { normalize180, useQiblaHeading } from '../hooks/useQiblaHeading';
 
-// Back points left in LTR and right in RTL; mirrorInRtl flips the glyph.
-const BACK_ICON = { ios: 'chevron.backward', android: 'arrow_back' } as const;
+// A left chevron, flipped in RTL — same as Settings. `chevron.backward` already
+// mirrors itself, so pairing it with mirrorInRtl pointed the wrong way.
+const BACK_ICON = { ios: 'chevron.left', android: 'chevron_left' } as const;
 const LOCATION_ICON = { ios: 'location.fill', android: 'place' } as const;
 
 // Needle within ±3° of the marker counts as facing the qibla (step brief).

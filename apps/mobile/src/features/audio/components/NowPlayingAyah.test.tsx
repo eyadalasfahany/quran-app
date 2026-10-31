@@ -109,7 +109,7 @@ describe('NowPlayingAyah card', () => {
 
     expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ height: 200 });
     expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexBasis: 0, flexGrow: 1, flexShrink: 1 });
-    expect(view.getByTestId('now-playing-scroll').props.showsVerticalScrollIndicator).toBe(true);
+    expect(view.getByTestId('now-playing-scroll').props.showsVerticalScrollIndicator).toBe(false);
     expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
   });
 

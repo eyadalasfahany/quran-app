@@ -120,6 +120,8 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
         <View style={{ flex: 1, marginTop: theme.size.blockGap, minHeight: 200 }}>
           <FlashList
             contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
             data={rows}
             keyExtractor={keyExtractor}
             ListEmptyComponent={

@@ -46,6 +46,7 @@ describe('SheetScrollView', () => {
     );
 
     expect(view.getByTestId('scroll').props.scrollEnabled).toBeUndefined();
+    expect(view.getByTestId('scroll').props.showsVerticalScrollIndicator).toBe(false);
     expect(view.getByText('الآية')).toBeOnTheScreen();
   });
 

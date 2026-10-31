@@ -175,6 +175,8 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
           <View style={{ flex: 1, minHeight: 240 }}>
             <FlashList
               data={page.results}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
               ItemSeparatorComponent={() => <View style={{ height: theme.space[2] }} />}
               keyExtractor={keyExtractor}
               ListFooterComponent={
