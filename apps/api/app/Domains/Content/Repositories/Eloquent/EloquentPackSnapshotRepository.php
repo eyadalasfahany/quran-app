@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domains\Content\Repositories\Eloquent;
 
+use App\Domains\Content\Models\AzkarCategory;
+use App\Domains\Content\Models\AzkarChapter;
+use App\Domains\Content\Models\AzkarEntry;
+use App\Domains\Content\Models\AzkarEntryCategory;
+use App\Domains\Content\Models\AzkarItem;
+use App\Domains\Content\Models\AzkarNote;
+use App\Domains\Content\Models\AzkarRecording;
+use App\Domains\Content\Models\AzkarSegment;
 use App\Domains\Content\Models\ChapterAudioFile;
 use App\Domains\Content\Models\Mushaf;
 use App\Domains\Content\Models\MushafPage;
@@ -59,6 +67,22 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
                 ->join('chapter_audio_files', 'chapter_audio_files.id', '=', 'recitation_timings.audio_file_id')
                 ->join('recitations', 'recitations.id', '=', 'chapter_audio_files.recitation_id')
                 ->where('recitations.resource_id', $resourceId),
+            'azkar_chapters' => AzkarChapter::query()->toBase()
+                ->where('azkar_chapters.resource_id', $resourceId),
+            'azkar_entries' => AzkarEntry::query()->toBase()
+                ->where('azkar_entries.resource_id', $resourceId),
+            'azkar_items' => AzkarItem::query()->toBase()
+                ->where('azkar_items.resource_id', $resourceId),
+            'azkar_segments' => AzkarSegment::query()->toBase()
+                ->where('azkar_segments.resource_id', $resourceId),
+            'azkar_categories' => AzkarCategory::query()->toBase()
+                ->where('azkar_categories.resource_id', $resourceId),
+            'azkar_entry_categories' => AzkarEntryCategory::query()->toBase()
+                ->where('azkar_entry_categories.resource_id', $resourceId),
+            'azkar_notes' => AzkarNote::query()->toBase()
+                ->where('azkar_notes.resource_id', $resourceId),
+            'azkar_recordings' => AzkarRecording::query()->toBase()
+                ->where('azkar_recordings.resource_id', $resourceId),
             default => throw new PackBuildException('Unknown pack table ['.$table->name.'].'),
         };
 

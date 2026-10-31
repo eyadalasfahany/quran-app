@@ -67,4 +67,26 @@ describe('content selection', () => {
 
     expect(selectedResourceIds(resources)).toEqual([99, 100]);
   });
+
+  it('installs an azkar resource that the manifest lists, with no user choice', () => {
+    const listed = [...resources, resource({ id: 40, group: 'azkar' })];
+
+    expect(defaultSelectedResourceIds(listed)).toEqual([1, 2, 30, 40]);
+    expect(selectedResourceIds(listed)).toEqual([1, 2, 30, 40]);
+  });
+
+  it('keeps an azkar resource selected alongside a saved selection', () => {
+    const listed = [...resources, resource({ id: 40, group: 'azkar' })];
+    storage.set(storageKeys.selectedResourceIds, JSON.stringify([99, 100]));
+
+    expect(selectedResourceIds(listed)).toEqual([99, 100, 40]);
+  });
+
+  it('never selects azkar when the manifest does not list it', () => {
+    expect(defaultSelectedResourceIds(resources)).toEqual([1, 2, 30]);
+    expect(selectedResourceIds(resources)).toEqual([1, 2, 30]);
+
+    storage.set(storageKeys.selectedResourceIds, JSON.stringify([99]));
+    expect(selectedResourceIds(resources)).toEqual([99]);
+  });
 });

@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property string $code
+ * @property PermissionStatus $permission_status
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */

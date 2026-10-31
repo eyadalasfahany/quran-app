@@ -29,7 +29,32 @@ describe('clearLocalUserData', () => {
       'reading_position',
       'recent_listens',
       'search_history',
+      'azkar_favorites',
+      'azkar_progress',
+      'azkar_reminders',
     ]);
+  });
+
+  it('empties the azkar personal tables', () => {
+    const { database, executor } = openMigrated();
+
+    executor.exec(
+      `INSERT INTO azkar_favorites (entry_key, created_at) VALUES ('taybah-dev-fixture:entry-1', 100);`,
+    );
+    executor.exec(
+      `INSERT INTO azkar_progress (scope_key, period_key, item_key, current_count, completed_at, updated_at) VALUES ('morning', '2026-10-31', 'taybah-dev-fixture:item-1', 1, NULL, 100);`,
+    );
+    executor.exec(
+      `INSERT INTO azkar_reminders (id, target_type, target_key, enabled, trigger_type, clock_time, prayer, offset_minutes, notification_ids, updated_at) VALUES ('r1', 'category', 'morning', 1, 'clock', '07:00', NULL, NULL, NULL, 100);`,
+    );
+
+    clearLocalUserData(executor);
+
+    for (const table of ['azkar_favorites', 'azkar_progress', 'azkar_reminders']) {
+      expect(database.prepare(`SELECT count(*) as c FROM ${table}`).get()).toEqual({ c: 0 });
+    }
+
+    database.close();
   });
 
   it('deletes rows from existing user tables and gracefully ignores missing tables', () => {

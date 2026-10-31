@@ -552,5 +552,88 @@
       "cancel": "إلغاء",
       "dataCleared": "تم مسح البيانات المحلية بنجاح"
     }
+  },
+  "azkar": {
+    "categories": {
+      "morning": "أذكار الصباح",
+      "evening": "أذكار المساء",
+      "after_prayer": "أذكار بعد الصلاة",
+      "before_sleep": "أذكار النوم",
+      "after_waking": "أذكار الاستيقاظ",
+      "morning-and-evening": "الصباح والمساء",
+      "sleep-and-waking": "النوم والاستيقاظ",
+      "prayer-and-the-masjid": "الصلاة والمسجد",
+      "wudu-and-purification": "الوضوء والطهارة",
+      "food-and-drink": "الطعام والشراب",
+      "fasting": "الصيام",
+      "home-and-family": "البيت والأسرة",
+      "travel": "السفر",
+      "hajj-and-umrah": "الحج والعمرة",
+      "weather-and-nature": "الطقس والطبيعة",
+      "distress-and-anxiety": "الكرب والقلق",
+      "illness-and-healing": "المرض والشفاء",
+      "protection-and-refuge": "الحماية",
+      "forgiveness-and-repentance": "المغفرة والتوبة",
+      "provision-and-debt": "الرزق والدين",
+      "knowledge-and-guidance": "العلم والهداية",
+      "gatherings-and-greetings": "المجالس والتحية",
+      "death-and-the-deceased": "الموت والمتوفى",
+      "dhikr-and-praise": "الذكر والحمد"
+    },
+    "occasions": {
+      "morning": "الصباح",
+      "evening": "المساء",
+      "after_prayer": "بعد الصلاة",
+      "before_sleep": "قبل النوم",
+      "after_waking": "بعد الاستيقاظ",
+      "entering_home": "دخول البيت",
+      "leaving_home": "الخروج من البيت",
+      "entering_mosque": "دخول المسجد",
+      "leaving_mosque": "الخروج من المسجد",
+      "travel": "السفر",
+      "general": "عام"
+    },
+    "share": {
+      "source": "حصن المسلم · {{number}}"
+    },
+    "reader": {
+      "variation": "الصيغة {{n}}",
+      "close": "إغلاق",
+      "progress": "{{current}} من {{total}}",
+      "entryTitle": "الذكر",
+      "previous": "السابق",
+      "next": "التالي",
+      "done": "تم",
+      "source": "حصن المسلم · {{number}}",
+      "details": "المصدر والتفاصيل",
+      "textSize": "حجم النص",
+      "favouriteAdd": "إضافة إلى المفضلة",
+      "favouriteRemove": "إزالة من المفضلة",
+      "share": "مشاركة",
+      "repeatGroup": "تُكرَّر هذه المجموعة {{count}} مرات",
+      "completionTitle": "أتممت {{title}}",
+      "completionBack": "العودة إلى الأذكار",
+      "restart": "البدء من جديد"
+    },
+    "counter": {
+      "label": "عداد الذكر {{position}}",
+      "value": "{{current}} من {{total}}",
+      "hint": "اضغط للعدّ",
+      "reset": "إعادة الضبط"
+    },
+    "details": {
+      "title": "المصدر والتفاصيل",
+      "occasion": "المناسبة",
+      "instructions": "التعليمات",
+      "context": "السياق",
+      "meaning": "المعنى",
+      "virtue": "الفضل",
+      "reference": "المرجع",
+      "grade": "الدرجة",
+      "source": "المصدر",
+      "sourceCaption": "المصدر: {{name}} · {{reference}}",
+      "sourceCaptionNoReference": "المصدر: {{name}}",
+      "bookNumber": "حصن المسلم · رقم {{number}}"
+    }
   }
 }

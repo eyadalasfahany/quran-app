@@ -56,6 +56,9 @@ export const typeScale = {
   displaySm: { family: 'display', size: 20, lineHeight: 26, weight: 700 },
   // round(14 × amiriNaturalLeading); the medallion number is the only user of this token.
   numeral: { family: 'display', size: 14, lineHeight: 25, weight: 400 },
+  // Azkar (ADR 0031): the reader's dhikr text and the category list preview. Both at least amiriNaturalLeading.
+  dhikr: { family: 'display', size: 24, lineHeight: 48, weight: 400 },
+  dhikrList: { family: 'display', size: 19, lineHeight: 34, weight: 400 },
   title: { family: 'ui', size: 22, lineHeight: 30, weight: 700, ramp: 'title2' },
   headline: { family: 'ui', size: 17, lineHeight: 24, weight: 600, ramp: 'headline' },
   body: { family: 'ui', size: 17, lineHeight: 26, weight: 400, ramp: 'body' },

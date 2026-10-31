@@ -24,6 +24,13 @@ export const storageKeys = {
   dailyReminderTime: 'settings.dailyReminderTime',
   dailyReminderNotificationId: 'settings.dailyReminderNotificationId',
 
+  // Azkar preferences (phase 6, step 5). Personal, local only; not cleared by content updates.
+  azkar: {
+    fontScale: 'azkar.fontScale',
+    // JSON map of entry key to the chosen alternative (variation key).
+    variationChoice: 'azkar.variationChoice',
+  },
+
   // Salah data layer
   salah: {
     locationSource: 'salah.locationSource',

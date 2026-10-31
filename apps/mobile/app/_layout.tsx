@@ -7,13 +7,14 @@ import { useEffect, useState } from 'react';
 import '@/core/layout/hide-scroll-indicators';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { registerReminderDeepLinks } from '@/features/notifications/reminder-deeplink';
-import { useContentDb } from '@/core/db/content/open';
+import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
+import { azkarDevFixturesEnabled, loadAzkarDevFixtures } from '@/features/azkar/data/dev-fixtures';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 
@@ -69,6 +70,18 @@ export default function RootLayout() {
       console.error(user.error);
     }
   }, [user.error]);
+
+  // Development only: placeholder Azkar rows for the UI (never shipped; see dev-fixtures.ts).
+  useEffect(() => {
+    if (!content.ready || !azkarDevFixturesEnabled()) {
+      return;
+    }
+    try {
+      loadAzkarDevFixtures(openContentDb().executor);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [content.ready]);
 
   useEffect(() => {
     if (ready) {

@@ -30,7 +30,7 @@ final class EloquentResourceRepository extends EloquentRepository implements Res
             ->where('is_active', true)
             ->whereNotIn('group', ResourceGroup::ignoredValues())
             ->whereHas('contentPacks')
-            ->with(['contentPacks', 'recitation'])
+            ->with(['contentPacks', 'recitation', 'source'])
             ->orderBy('group')
             ->orderBy('id')
             ->get();

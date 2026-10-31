@@ -5,7 +5,22 @@ import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { getTableColumns } from 'drizzle-orm';
 
-import { catalogResources, chapters, installedResources, meta, verses, words } from '@/core/db/content/schema';
+import {
+  azkarCategories,
+  azkarChapters,
+  azkarEntries,
+  azkarEntryCategories,
+  azkarItems,
+  azkarNotes,
+  azkarRecordings,
+  azkarSegments,
+  catalogResources,
+  chapters,
+  installedResources,
+  meta,
+  verses,
+  words,
+} from '@/core/db/content/schema';
 import { importSeedIfNeeded, type SeedSource } from '@/core/db/content/seed';
 import { CHAPTER_COLUMNS, META_COLUMNS, SEED_TABLES, VERSE_COLUMNS, WORD_COLUMNS } from '@/core/db/content/seed-schema';
 import { getVerse, getVersesByPage } from '@/core/db/content/verses';
@@ -339,6 +354,127 @@ describe('reciter style migration (0007)', () => {
 
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
       expect(executor.get('SELECT style FROM catalog_resources WHERE resource_id = 30')).toEqual({ style: null });
+    } finally {
+      database.close();
+    }
+  });
+});
+
+describe('azkar migration (0008)', () => {
+  const canonical: Record<string, string[]> = {
+    azkar_chapters: ['resource_id', 'id', 'source_chapter_id', 'number', 'title_ar', 'title_en'],
+    azkar_entries: [
+      'resource_id',
+      'id',
+      'entry_key',
+      'chapter_id',
+      'position',
+      'source_reference',
+      'entry_type',
+      'occasion',
+      'timing_type',
+      'timing_prayer',
+      'timing_policy_id',
+      'review_status',
+      'source_version',
+      'imported_at',
+    ],
+    azkar_items: [
+      'resource_id',
+      'id',
+      'entry_id',
+      'item_key',
+      'variation_key',
+      'position',
+      'kind',
+      'required_count',
+      'speaker',
+      'source_dua_id',
+      'text_en',
+      'transliteration',
+      'source_text_sha256',
+      'repeat_group',
+      'repeat_times',
+    ],
+    azkar_segments: [
+      'resource_id',
+      'item_id',
+      'position',
+      'kind',
+      'text_ar',
+      'quran_surah',
+      'quran_verse_from',
+      'quran_verse_to',
+      'text_search',
+    ],
+    azkar_categories: ['resource_id', 'id', 'kind', 'position', 'occasion', 'progress_period'],
+    azkar_entry_categories: ['resource_id', 'category_id', 'entry_id', 'variation_key', 'position'],
+    azkar_notes: [
+      'resource_id',
+      'id',
+      'entry_id',
+      'item_id',
+      'kind',
+      'text_ar',
+      'text_en',
+      'grader',
+      'source_type',
+      'source_name',
+      'source_reference',
+      'source_url',
+      'review_status',
+    ],
+    azkar_recordings: [
+      'resource_id',
+      'id',
+      'recording_key',
+      'item_id',
+      'reciter_name',
+      'reciter_name_ar',
+      'source',
+      'remote_url',
+      'duration_ms',
+      'size_bytes',
+      'stream_allowed',
+      'download_allowed',
+      'redistribution_allowed',
+      'attribution_ar',
+      'attribution_en',
+      'licence',
+      'licence_url',
+      'rights_verified_at',
+    ],
+  };
+
+  it('creates the eight azkar tables with the canonical columns', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      applyContentMigrations(executor, migrationsDir);
+      for (const [name, columns] of Object.entries(canonical)) {
+        expect(columnNames(database, name)).toEqual(columns);
+      }
+    } finally {
+      database.close();
+    }
+  });
+
+  it('matches the Drizzle azkar schema', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      applyContentMigrations(executor, migrationsDir);
+      const schemas = {
+        azkar_chapters: azkarChapters,
+        azkar_entries: azkarEntries,
+        azkar_items: azkarItems,
+        azkar_segments: azkarSegments,
+        azkar_categories: azkarCategories,
+        azkar_entry_categories: azkarEntryCategories,
+        azkar_notes: azkarNotes,
+        azkar_recordings: azkarRecordings,
+      };
+      for (const [name, schema] of Object.entries(schemas)) {
+        expect(columnNames(database, name)).toEqual(drizzleColumnNames(schema));
+      }
     } finally {
       database.close();
     }

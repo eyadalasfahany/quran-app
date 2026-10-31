@@ -23,6 +23,10 @@ final class PackBuilder
 
     public function build(Resource $resource): ContentPackData
     {
+        if (! $resource->hasDeliverableRights()) {
+            throw new PackBuildException('Resource ['.$resource->id.'] has no content source cleared for delivery.');
+        }
+
         $existing = $this->packs->findForVersion($resource->id, $resource->version);
 
         if ($existing !== null) {

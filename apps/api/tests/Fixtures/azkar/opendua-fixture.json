@@ -1,0 +1,213 @@
+{
+  "schemaVersion": "2.0.0",
+  "dataVersion": "0.0.4",
+  "released": "2026-09-09",
+  "defaultReciterId": "reciter-0001",
+  "counts": {
+    "collections": 1,
+    "chapters": 3,
+    "entries": 4,
+    "duas": 5,
+    "recordings": 1
+  },
+  "licences": {
+    "data": {
+      "name": "FIXTURE data licence",
+      "url": "https://example.invalid/fixture-data-licence"
+    },
+    "audio": {
+      "name": "FIXTURE audio licence",
+      "url": "https://example.invalid/fixture-audio-licence"
+    }
+  },
+  "collections": [
+    {
+      "id": "hisn-al-muslim",
+      "title": "FIXTURE collection",
+      "description": "FIXTURE description, not a dhikr",
+      "chapterCount": 3,
+      "entryCount": 4
+    }
+  ],
+  "chapters": [
+    {"id": "chapter-000001", "number": 1, "title": "FIXTURE chapter one", "entryCount": 1},
+    {"id": "chapter-000025", "number": 25, "title": "FIXTURE chapter twenty-five", "entryCount": 1},
+    {"id": "chapter-000027", "number": 27, "title": "FIXTURE chapter twenty-seven", "entryCount": 2}
+  ],
+  "entries": [
+    {
+      "id": "entry-000001",
+      "slug": "fixture-entry-1",
+      "title": "FIXTURE title 1",
+      "type": "invocation",
+      "collectionId": "hisn-al-muslim",
+      "chapterId": "chapter-000001",
+      "sourceReference": "FIXTURE reference 1",
+      "tags": ["morning-and-evening"],
+      "references": [],
+      "variations": [
+        {
+          "id": "standard",
+          "steps": [
+            {
+              "type": "recitation",
+              "items": [
+                {
+                  "dua": {
+                    "id": "dua-0001",
+                    "arabic": "«نص تجريبي ١ — ليس ذكرًا»",
+                    "transliteration": "FIXTURE transliteration 1 — not a dhikr",
+                    "translation": "FIXTURE text 1 — not a dhikr",
+                    "references": []
+                  }
+                }
+              ],
+              "recordings": [
+                {
+                  "id": "rec-0001",
+                  "reciterId": "reciter-0001",
+                  "url": "https://example.invalid/fixture/rec-0001.mp3",
+                  "durationSeconds": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entry-000002",
+      "slug": "fixture-entry-2",
+      "title": "FIXTURE title 2",
+      "type": "instruction",
+      "collectionId": "hisn-al-muslim",
+      "chapterId": "chapter-000025",
+      "sourceReference": "FIXTURE reference 2",
+      "tags": ["travel"],
+      "references": [],
+      "steps": [
+        {
+          "type": "instruction",
+          "text": "FIXTURE instruction 2 — not a dhikr"
+        },
+        {
+          "type": "recitation",
+          "speaker": "FIXTURE speaker",
+          "items": [
+            {
+              "dua": {
+                "id": "dua-0002",
+                "arabic": "  «نص تجريبي ٢ — ليس ذكرًا»  ",
+                "transliteration": "FIXTURE transliteration 2 — not a dhikr",
+                "translation": "FIXTURE text 2 — not a dhikr",
+                "references": []
+              },
+              "times": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entry-000003",
+      "slug": "fixture-entry-3",
+      "title": "FIXTURE title 3",
+      "type": "invocation",
+      "collectionId": "hisn-al-muslim",
+      "chapterId": "chapter-000027",
+      "sourceReference": "FIXTURE reference 3",
+      "tags": ["morning-and-evening"],
+      "references": [],
+      "variations": [
+        {
+          "id": "morning",
+          "steps": [
+            {
+              "type": "repeat",
+              "times": 3,
+              "steps": [
+                {
+                  "type": "narration",
+                  "arabic": "«نص تجريبي ٦ — ليس ذكرًا»",
+                  "text": "FIXTURE narration 6 — not a dhikr"
+                },
+                {
+                  "type": "recitation",
+                  "items": [
+                    {
+                      "dua": {
+                        "id": "dua-0005",
+                        "arabic": "«نص تجريبي ٧ — ليس ذكرًا»",
+                        "transliteration": "FIXTURE transliteration 7 — not a dhikr",
+                        "translation": "FIXTURE text 7 — not a dhikr",
+                        "references": [],
+                        "placeholders": ["FIXTURE placeholder"]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "standard",
+          "steps": [
+            {
+              "type": "instruction",
+              "arabic": "«نص تجريبي ٨ — ليس ذكرًا»",
+              "text": "FIXTURE instruction 8 — not a dhikr"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entry-000004",
+      "slug": "fixture-entry-4",
+      "title": "FIXTURE title 4",
+      "type": "invocation",
+      "collectionId": "hisn-al-muslim",
+      "chapterId": "chapter-000027",
+      "sourceReference": "FIXTURE reference 4",
+      "tags": ["travel"],
+      "references": [],
+      "variations": [
+        {
+          "id": "evening",
+          "steps": [
+            {
+              "type": "recitation",
+              "items": [
+                {
+                  "dua": {
+                    "id": "dua-0004",
+                    "arabic": "«نص تجريبي ٤» ﴿نص تجريبي﴾ «نص تجريبي ٥» ﴿نص تجريبي﴾",
+                    "transliteration": "FIXTURE transliteration 4 — not a dhikr",
+                    "translation": "FIXTURE text 4 — not a dhikr",
+                    "references": []
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "duas": [
+    {"id": "dua-0001", "arabic": "«نص تجريبي ١ — ليس ذكرًا»", "transliteration": "FIXTURE transliteration 1 — not a dhikr", "translation": "FIXTURE text 1 — not a dhikr", "references": []},
+    {"id": "dua-0002", "arabic": "  «نص تجريبي ٢ — ليس ذكرًا»  ", "transliteration": "FIXTURE transliteration 2 — not a dhikr", "translation": "FIXTURE text 2 — not a dhikr", "references": []},
+    {"id": "dua-0004", "arabic": "«نص تجريبي ٤» ﴿نص تجريبي﴾ «نص تجريبي ٥» ﴿نص تجريبي﴾", "transliteration": "FIXTURE transliteration 4 — not a dhikr", "translation": "FIXTURE text 4 — not a dhikr", "references": []},
+    {"id": "dua-0005", "arabic": "«نص تجريبي ٧ — ليس ذكرًا»", "transliteration": "FIXTURE transliteration 7 — not a dhikr", "translation": "FIXTURE text 7 — not a dhikr", "references": [], "placeholders": ["FIXTURE placeholder"]},
+    {"id": "dua-0006", "arabic": "«نص تجريبي ٩ — ليس ذكرًا»", "transliteration": "FIXTURE transliteration 9 — not a dhikr", "translation": "FIXTURE text 9 — not a dhikr", "references": []}
+  ],
+  "reciters": [
+    {"id": "reciter-0001", "name": "FIXTURE reciter", "duaCount": 3}
+  ],
+  "referenceWorks": [],
+  "tags": [
+    {"id": "morning-and-evening", "title": "FIXTURE tag one", "description": "FIXTURE tag, not a dhikr", "entryCount": 2},
+    {"id": "travel", "title": "FIXTURE tag two", "description": "FIXTURE tag, not a dhikr", "entryCount": 2}
+  ]
+}

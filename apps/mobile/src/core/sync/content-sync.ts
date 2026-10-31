@@ -293,6 +293,8 @@ export async function importPack(
     }
     await deps.files.writeBytes(sqlitePath, deps.gunzip(gzipped));
     copyPack(deps.db, databasePath(sqlitePath), resource, checkedAt);
+    // A pack import is a content write: screens that read content re-read after it (see useCatalogVersion).
+    bumpCatalogVersion();
     return 'pack-imported';
   } finally {
     await removeQuiet(deps.files, gzipPath);

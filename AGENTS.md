@@ -65,7 +65,7 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
 
 ## How to work here
 
-- **Current phase: Phase 4, My Quran, Khatma and Settings (Local-only)** (spec §15, ADR 0027). The plan is `docs/plans/phase-4.md`. Account authentication, login screens and remote sync are removed for v1 (ADR 0027); personal data lives locally in `user.db`. Phases 0, 1, 2, and 3 are done. Work one step at a time and keep each change small enough to review.
+- **Current phase: Phase 6, الأذكار (Azkar)** on branch `ft/azkar` (spec §15, ADR 0031). The plan is `docs/plans/phase-6.md`. Production Azkar content is blocked until OpenDua confirms rights in writing (ADR 0031 release blockers). Open work in earlier phases: Phase 4 step 5 (exit check) and Phase 5 steps 4 (prayer notifications) and 6 (exit check). Phases 0–3 are done. v1 is local-only (ADR 0027). Work one step at a time and keep each change small enough to review.
 - Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the HTML design files above (ADR 0010).
 - The developer commits and pushes. Don't commit unless asked.
 - Plan before coding anything that touches the schema, sync, the API contract or the reader.

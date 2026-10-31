@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
-it('creates the content mirror tables and seeds two sources idempotently', function (): void {
+it('creates the content mirror tables and seeds two sources idempotently alongside the pending opendua row', function (): void {
     $tables = [
         'content_sources',
         'resources',
@@ -45,8 +45,9 @@ it('creates the content mirror tables and seeds two sources idempotently', funct
     $this->seed(ContentSourceSeeder::class);
     $this->seed(ContentSourceSeeder::class);
 
-    expect(ContentSource::query()->count())->toBe(2)
-        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['qf', 'tanzil']);
+    // The azkar migration adds the pending opendua row (ADR 0031); the seeder adds qf and tanzil.
+    expect(ContentSource::query()->count())->toBe(3)
+        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['opendua', 'qf', 'tanzil']);
 });
 
 it('stores quran text in the binary collation and no other text column', function (): void {

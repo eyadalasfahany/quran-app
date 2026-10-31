@@ -552,5 +552,88 @@
       "cancel": "Cancel",
       "dataCleared": "Local data cleared successfully"
     }
+  },
+  "azkar": {
+    "categories": {
+      "morning": "Morning azkar",
+      "evening": "Evening azkar",
+      "after_prayer": "After prayer",
+      "before_sleep": "Before sleep",
+      "after_waking": "On waking",
+      "morning-and-evening": "Morning and evening",
+      "sleep-and-waking": "Sleep and waking",
+      "prayer-and-the-masjid": "Prayer and the masjid",
+      "wudu-and-purification": "Wudu and purification",
+      "food-and-drink": "Food and drink",
+      "fasting": "Fasting",
+      "home-and-family": "Home and family",
+      "travel": "Travel",
+      "hajj-and-umrah": "Hajj and umrah",
+      "weather-and-nature": "Weather and nature",
+      "distress-and-anxiety": "Distress and anxiety",
+      "illness-and-healing": "Illness and healing",
+      "protection-and-refuge": "Protection",
+      "forgiveness-and-repentance": "Forgiveness and repentance",
+      "provision-and-debt": "Provision and debt",
+      "knowledge-and-guidance": "Knowledge and guidance",
+      "gatherings-and-greetings": "Gatherings and greetings",
+      "death-and-the-deceased": "Death and the deceased",
+      "dhikr-and-praise": "Dhikr and praise"
+    },
+    "occasions": {
+      "morning": "Morning",
+      "evening": "Evening",
+      "after_prayer": "After prayer",
+      "before_sleep": "Before sleep",
+      "after_waking": "On waking",
+      "entering_home": "Entering home",
+      "leaving_home": "Leaving home",
+      "entering_mosque": "Entering the mosque",
+      "leaving_mosque": "Leaving the mosque",
+      "travel": "Travel",
+      "general": "General"
+    },
+    "share": {
+      "source": "Hisn al-Muslim · {{number}}"
+    },
+    "reader": {
+      "variation": "Wording {{n}}",
+      "close": "Close",
+      "progress": "{{current}} of {{total}}",
+      "entryTitle": "Dhikr",
+      "previous": "Previous",
+      "next": "Next",
+      "done": "Done",
+      "source": "Hisn al-Muslim · {{number}}",
+      "details": "Source and details",
+      "textSize": "Text size",
+      "favouriteAdd": "Add to favourites",
+      "favouriteRemove": "Remove from favourites",
+      "share": "Share",
+      "repeatGroup": "This group is repeated {{count}} times",
+      "completionTitle": "You finished {{title}}",
+      "completionBack": "Back to Azkar",
+      "restart": "Start again"
+    },
+    "counter": {
+      "label": "Counter for dhikr {{position}}",
+      "value": "{{current}} of {{total}}",
+      "hint": "Tap to count",
+      "reset": "Reset count"
+    },
+    "details": {
+      "title": "Source and details",
+      "occasion": "Occasion",
+      "instructions": "Instructions",
+      "context": "Context",
+      "meaning": "Meaning",
+      "virtue": "Virtue",
+      "reference": "Reference",
+      "grade": "Grade",
+      "source": "Source",
+      "sourceCaption": "Source: {{name}} · {{reference}}",
+      "sourceCaptionNoReference": "Source: {{name}}",
+      "bookNumber": "Hisn al-Muslim · no. {{number}}"
+    }
   }
 }

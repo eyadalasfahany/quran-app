@@ -108,6 +108,8 @@ describe("adaptive nav", () => {
       { ios: "house", android: "home" },
       { ios: "book", android: "menu_book" },
       { ios: "headphones", android: "headphones" },
+      // الصلاة joined the sidebar after الاستماع in Phase 5 (ADR 0030).
+      { ios: "moon.stars", android: "mosque" },
       // The sidebar's pinned settings entry (step 1).
       { ios: "gearshape", android: "settings" },
     ]);

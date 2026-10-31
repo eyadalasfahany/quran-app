@@ -12,6 +12,9 @@ export const PERSONAL_TABLES = [
   'reading_position',
   'recent_listens',
   'search_history',
+  'azkar_favorites',
+  'azkar_progress',
+  'azkar_reminders',
 ] as const;
 
 export function clearLocalUserData(executor?: SqlExecutor): void {
