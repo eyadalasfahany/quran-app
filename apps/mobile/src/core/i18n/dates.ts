@@ -20,6 +20,29 @@ export function formatDate(epochMs: number, locale: Locale = getLocale()): strin
   return locale === 'ar' ? arabizeDigits(text) : text;
 }
 
+const hijriFormatters = new Map<Locale, Intl.DateTimeFormat>();
+
+function hijriFormatter(locale: Locale): Intl.DateTimeFormat {
+  const cached = hijriFormatters.get(locale);
+  if (cached) {
+    return cached;
+  }
+  // Umm al-Qura Hijri calendar, computed on-device by ICU — no network, no drift (ADR 0030 §6).
+  const tag = locale === 'ar' ? 'ar-SA-u-ca-islamic-umalqura' : 'en-u-ca-islamic-umalqura';
+  const created = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' });
+  hijriFormatters.set(locale, created);
+  return created;
+}
+
+/** «٢٠ جمادى الأولى ١٤٤٨» / "Jumada I 20, 1448" — Umm al-Qura Hijri date for the Salah header. */
+export function formatHijriDate(date: Date, locale: Locale = getLocale()): string {
+  const text = hijriFormatter(locale)
+    .format(date)
+    .replace(/\s?(هـ|AH)$/, '')
+    .trim();
+  return locale === 'ar' ? arabizeDigits(text) : text;
+}
+
 const timeFormatters = new Map<Locale, Intl.DateTimeFormat>();
 
 function timeFormatter(locale: Locale): Intl.DateTimeFormat {

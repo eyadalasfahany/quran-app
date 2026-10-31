@@ -173,10 +173,10 @@ describe('MainShell', () => {
     expect(view.getByTestId('sidebar')).toBeOnTheScreen();
     expect(view.getByText('tabs')).toBeOnTheScreen();
     expect(view.getAllByRole('tab').map((tab) => tab.props.testID)).toEqual([
+      'sidebar-my-quran',
       'sidebar-home',
       'sidebar-mushaf',
       'sidebar-listen',
-      'sidebar-my-quran',
       'sidebar-settings',
     ]);
   });

@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { destinations, type Destination, SectionScreen, useWindowClass } from '@/core/layout';
+import { tabDestinations, type Destination, SectionScreen, useWindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
 import { ContinueReadingSkeleton } from '@/features/home/components/ContinueReadingSkeleton';
@@ -23,7 +23,7 @@ import { SearchButton, SkeletonGroup, type IconName } from '@/shared/ui';
 
 // Home's tiles open the tabs they name. Only shipped features get a tile (ADR 0017).
 function tabHref(name: Destination['name']): Href {
-  const destination = destinations.find((item) => item.name === name);
+  const destination = tabDestinations.find((item) => item.name === name);
   if (destination === undefined) {
     throw new Error(`Unknown tab ${name}`);
   }

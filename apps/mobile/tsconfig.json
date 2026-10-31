@@ -21,6 +21,7 @@
     "**/*.tsx",
     "**/*.d.ts",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "src/declarations.d.ts"
   ]
 }

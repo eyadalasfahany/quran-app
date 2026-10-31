@@ -9,7 +9,7 @@ import { MINI_PLAYER_SIDE } from '@/features/audio/mini-player-metrics';
 import { useTheme } from '@/core/theme';
 import { Sidebar } from '@/shared/ui';
 
-import { destinations } from './destinations';
+import { sidebarDestinations } from './destinations';
 import { miniPlayerBottom } from './tab-bar-clearance';
 
 export function MainShell({ expanded, children }: { expanded: boolean; children: ReactNode }) {
@@ -17,7 +17,7 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const segments: readonly string[] = useSegments();
-  const current = destinations.find((item) => segments.includes(item.name))?.name;
+  const current = sidebarDestinations.find((item) => segments.includes(item.name))?.name;
   // A sheet's route names no tab; the tab under it stays the selected one.
   const [lastActive, setLastActive] = useState(current ?? '(home)');
   if (current !== undefined && current !== lastActive) {
@@ -30,7 +30,7 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
       {expanded ? (
         <Sidebar
           items={[
-            ...destinations.map((item) => ({
+            ...sidebarDestinations.map((item) => ({
               androidIcon: item.androidIcon,
               key: item.name,
               label: t(item.label),

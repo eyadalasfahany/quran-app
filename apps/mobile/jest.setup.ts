@@ -121,6 +121,10 @@ function mockCreateMmkv() {
       const value = memory.get(key);
       return typeof value === 'string' ? value : undefined;
     },
+    getNumber: (key: string) => {
+      const value = memory.get(key);
+      return typeof value === 'number' ? value : undefined;
+    },
     remove: (key: string) => {
       const removed = memory.delete(key);
       notify(key);

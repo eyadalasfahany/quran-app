@@ -8,7 +8,7 @@ export type Destination = {
   href: Href;
   label: DestinationLabel;
   symbol: SFSymbol;
-  androidIcon: 'home' | 'menu_book' | 'headphones' | 'bookmark';
+  androidIcon: 'home' | 'menu_book' | 'headphones' | 'bookmark' | 'account_circle';
   testID: 'home' | 'mushaf' | 'listen' | 'my-quran';
 };
 
@@ -35,8 +35,17 @@ export const destinations = [
     name: '(my-quran)',
     href: '/(main)/(my-quran)',
     label: 'tabs.myQuran',
-    symbol: 'bookmark',
-    androidIcon: 'bookmark',
+    symbol: 'person.crop.circle',
+    androidIcon: 'account_circle',
     testID: 'my-quran',
   },
 ] as const satisfies readonly Destination[];
+
+const allDestinations = destinations as unknown as Destination[];
+
+export const tabDestinations = allDestinations;
+
+export const sidebarDestinations = [
+  allDestinations.find((d) => d.name === '(my-quran)')!,
+  ...allDestinations.filter((d) => d.name !== '(my-quran)'),
+];

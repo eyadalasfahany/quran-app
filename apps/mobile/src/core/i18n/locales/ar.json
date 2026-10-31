@@ -303,6 +303,17 @@
       "heading": "آخر ما استمعت إليه",
       "subtitle": "{{surah}} · {{style}}",
       "play": "تشغيل {{surah}}"
+    },
+    "salah": {
+      "nextPrayerAt": "الصلاة القادمة {{name}} في {{time}}",
+      "fajr": "الفجر",
+      "sunrise": "الشروق",
+      "dhuhr": "الظهر",
+      "asr": "العصر",
+      "maghrib": "المغرب",
+      "isha": "العشاء",
+      "qibla": "القبلة: {{degrees}}°",
+      "hijri": "{{date}}"
     }
   },
   "player": {

@@ -640,6 +640,7 @@ For each change, in one transaction per request:
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
+  - The qibla compass rotates with device heading via a Reanimated spring; under Reduce Motion it renders a static dial (bearing + fixed arrow).
 
 | Interaction | Component | Motion | Reduce Motion |
 | --- | --- | --- | --- |
@@ -757,7 +758,8 @@ wk  2 ──  6   Content pipeline
 wk  6 ── 12   Reader + responsive
 wk 12         ◆ Gate: 604 pages verified on phone, iPad, foldable
 wk 12 ── 16   Listening and audio
-wk 16 ── 20   Accounts and sync
+wk 16 ── 18   My Quran, Khatma & Settings (Local-only)
+wk 18 ── 20   Salah & Qibla (on-device)
 wk 20 ── 24   Beta and store review
 wk 24         ★ Store launch
 wk 24 ── 30   v1.1: Hadith and more (post-launch)
@@ -772,7 +774,8 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | 2. Reader + responsive | 6–12 | Mushaf (QCF), Reading and Focus modes, compact/medium/expanded layouts, reading anchor, surah and juz index, ayah actions, tafsir, search, reader settings | All 604 pages verified on phone, iPad and foldable; resize keeps position |
 | 3. Listening and audio | 12–16 | Reciters, player, lock screen, ayah and word highlight, repeat, speed, sleep timer, downloads | Highlight within 150 ms of timings on sample surahs |
 | 4. My Quran, Khatma & Settings (Local-only) | 16–18 | Settings (language switch, theme, reader/audio shortcuts, local data reset); My Quran library (bookmarks, highlights, notes); Khatma planner and logs; local daily reminders (ADR 0027) | Settings language switches app locale and direction; local bookmarks, highlights, notes and khatma persist and function offline |
-| 5. Beta and store review | 18–22 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
+| 5. Salah & Qibla (on-device) | — | adhan-js times, الصلاة tab, local prayer notifications, qibla compass, five-tab navigation (ADR 0030) | Offline: times, qibla and notifications work in airplane mode; frames #Salah/#Qibla verified |
+| 6. Beta and store review | 18–22 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
 
 **Cut lines**
 

@@ -303,6 +303,17 @@
       "heading": "Recently listened",
       "subtitle": "{{surah}} · {{style}}",
       "play": "Play {{surah}}"
+    },
+    "salah": {
+      "nextPrayerAt": "Next prayer {{name}} at {{time}}",
+      "fajr": "Fajr",
+      "sunrise": "Sunrise",
+      "dhuhr": "Dhuhr",
+      "asr": "Asr",
+      "maghrib": "Maghrib",
+      "isha": "Isha",
+      "qibla": "Qibla: {{degrees}}°",
+      "hijri": "{{date}}"
     }
   },
   "player": {

@@ -1,5 +1,5 @@
 export { CONTENT_COLUMN_MAX_WIDTH, ContentColumn } from './ContentColumn';
-export { destinations, type Destination } from './destinations';
+export { tabDestinations, sidebarDestinations, type Destination } from './destinations';
 export { MainShell } from './MainShell';
 export { SectionScreen } from './SectionScreen';
 export { useTabBarStyle, type TabBarStyle } from './useTabBarStyle';

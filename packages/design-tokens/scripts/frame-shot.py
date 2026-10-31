@@ -78,6 +78,11 @@ def render(frame_id, out):
     doc = (f'<!doctype html><html><head><meta charset="utf-8">{FONTS}{styles}'
            '<style>body{margin:0;background:#fff}</style></head><body>'
            f'{screen}</body></html>')
+    # Frames reference repo-root assets (e.g. design-assets/...); the temp page lives next to the
+    # output PNG, so rewrite those URLs as absolute file URIs for headless Chrome.
+    root = SRC.parent
+    doc = re.sub(r'(url\(["\']?|src=")(design-assets/[^)"\']+)',
+                 lambda m: m.group(1) + (root / m.group(2)).as_uri(), doc)
     page = out.with_suffix('.html')
     page.write_text(doc, encoding='utf-8')
     # Linux containers run as root, where Chromium only starts without its sandbox.

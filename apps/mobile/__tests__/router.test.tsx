@@ -104,10 +104,10 @@ describe("adaptive nav", () => {
         .getAllByTestId("sidebar-symbol")
         .map((symbol) => symbol.props.name),
     ).toEqual([
+      { ios: "person.crop.circle", android: "account_circle" },
       { ios: "house", android: "home" },
       { ios: "book", android: "menu_book" },
       { ios: "headphones", android: "headphones" },
-      { ios: "bookmark", android: "bookmark" },
       // The sidebar's pinned settings entry (step 1).
       { ios: "gearshape", android: "settings" },
     ]);

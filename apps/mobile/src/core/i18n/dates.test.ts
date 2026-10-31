@@ -1,4 +1,4 @@
-import { formatDate, formatTime } from './dates';
+import { formatDate, formatHijriDate, formatTime } from './dates';
 
 // 2026-10-28T12:00:00Z
 const WHEN = 1_793_205_600_000;
@@ -22,6 +22,29 @@ describe('formatDate', () => {
 
   it('defaults to the app locale', () => {
     expect(formatDate(WHEN)).toBe(formatDate(WHEN, 'ar'));
+  });
+});
+
+describe('formatHijriDate', () => {
+  // Local noon on 2026-10-31 — Umm al-Qura: 20 Jumada al-Ula 1448.
+  const DAY = new Date(2026, 9, 31, 12, 0, 0, 0);
+
+  it('formats the Umm al-Qura Hijri date in Arabic without the era suffix', () => {
+    const text = formatHijriDate(DAY, 'ar');
+
+    expect(text).toBe('٢٠ جمادى الأولى ١٤٤٨');
+  });
+
+  it('formats the Hijri date in English without the AH suffix', () => {
+    const text = formatHijriDate(DAY, 'en');
+
+    expect(text).toContain('Jumada');
+    expect(text).toContain('1448');
+    expect(text).not.toContain('AH');
+  });
+
+  it('defaults to the app locale', () => {
+    expect(formatHijriDate(DAY)).toBe(formatHijriDate(DAY, 'ar'));
   });
 });
 

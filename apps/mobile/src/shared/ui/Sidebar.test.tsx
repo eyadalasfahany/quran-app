@@ -20,7 +20,8 @@ const insets = { bottom: 10, left: 0, right: 0, top: 20 };
 
 function entries(onPress: (key: string) => void = () => undefined): SidebarEntry[] {
   return [
-    { androidIcon: 'home', key: 'home', label: 'الرئيسية', onPress: () => onPress('home'), selected: true, symbol: 'house', testID: 'sidebar-home' },
+    { androidIcon: 'account_circle', key: 'my-quran', label: 'مصحفي', onPress: () => onPress('my-quran'), selected: true, symbol: 'person.crop.circle', testID: 'sidebar-my-quran' },
+    { androidIcon: 'home', key: 'home', label: 'الرئيسية', onPress: () => onPress('home'), selected: false, symbol: 'house', testID: 'sidebar-home' },
     { androidIcon: 'menu_book', key: 'mushaf', label: 'المصحف', onPress: () => onPress('mushaf'), selected: false, symbol: 'book', testID: 'sidebar-mushaf' },
   ];
 }
@@ -46,8 +47,9 @@ describe('Sidebar', () => {
       accessibilityLabel: 'التنقل الرئيسي',
       accessibilityRole: 'tablist',
     });
-    expect(view.getAllByRole('tab')).toHaveLength(2);
-    expect(view.getByRole('tab', { name: 'الرئيسية' }).props.accessibilityState).toEqual({ selected: true });
+    expect(view.getAllByRole('tab')).toHaveLength(3);
+    expect(view.getByRole('tab', { name: 'مصحفي' }).props.accessibilityState).toEqual({ selected: true });
+    expect(view.getByRole('tab', { name: 'الرئيسية' }).props.accessibilityState).toEqual({ selected: false });
     expect(view.getByRole('tab', { name: 'المصحف' }).props.accessibilityState).toEqual({ selected: false });
   });
 
@@ -81,9 +83,9 @@ describe('Sidebar', () => {
     const onPress = jest.fn();
     const view = await renderUi(sidebar(entries(onPress)));
 
-    await fireEvent.press(view.getByRole('tab', { name: 'المصحف' }));
+    await fireEvent.press(view.getByRole('tab', { name: 'الرئيسية' }));
 
-    expect(onPress).toHaveBeenCalledWith('mushaf');
+    expect(onPress).toHaveBeenCalledWith('home');
   });
 
   it.each(locales)('insets from the leading edge and the safe area in %s', async (locale) => {
@@ -96,7 +98,7 @@ describe('Sidebar', () => {
       paddingTop: insets.top + themes.light.space[4],
     });
     expect(container.paddingLeft).toBeUndefined();
-    expect(view.getAllByRole('tab').map((tab) => tab.props.testID)).toEqual(['sidebar-home', 'sidebar-mushaf']);
+    expect(view.getAllByRole('tab').map((tab) => tab.props.testID)).toEqual(['sidebar-my-quran', 'sidebar-home', 'sidebar-mushaf']);
   });
 
   it('puts the search field first, above the tabs, when search is given', async () => {
@@ -113,18 +115,18 @@ describe('Sidebar', () => {
         return;
       }
       const testID = node.props.testID as string | undefined;
-      if (testID === 'sidebar-search' || testID === 'sidebar-home') {
+      if (testID === 'sidebar-search' || testID === 'sidebar-my-quran') {
         hostOrder.push(testID);
       }
       (node.children ?? []).forEach(walk);
     };
     walk(view.toJSON());
-    expect(hostOrder).toEqual(['sidebar-search', 'sidebar-home']);
+    expect(hostOrder).toEqual(['sidebar-search', 'sidebar-my-quran']);
 
     await fireEvent.press(view.getByRole('button', { name: 'ابحث في القرآن' }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
-    expect(view.getAllByRole('tab')).toHaveLength(2);
+    expect(view.getAllByRole('tab')).toHaveLength(3);
   });
 
   it('has no search field when search is not given', async () => {
@@ -155,14 +157,14 @@ describe('Sidebar', () => {
           return;
         }
         const testID = node.props.testID as string | undefined;
-        if (testID === 'sidebar-mushaf' || testID === 'sidebar-footer') {
+        if (testID === 'sidebar-mushaf' || testID === 'sidebar-footer' || testID === 'sidebar-home' || testID === 'sidebar-my-quran') {
           order.push(testID);
         }
         (node.children ?? []).forEach(walk);
       };
       walk(view.toJSON());
 
-      expect(order).toEqual(['sidebar-mushaf', 'sidebar-footer']);
+      expect(order).toEqual(['sidebar-my-quran', 'sidebar-home', 'sidebar-mushaf', 'sidebar-footer']);
       expect(within(view.getByTestId('sidebar-footer')).getByText('mini footer')).toBeOnTheScreen();
     });
 
@@ -176,7 +178,7 @@ describe('Sidebar', () => {
     it('keeps the destinations as tabs with the footer present', async () => {
       const view = await renderUi(withFooter());
 
-      expect(view.getAllByRole('tab')).toHaveLength(2);
+      expect(view.getAllByRole('tab')).toHaveLength(3);
     });
   });
 

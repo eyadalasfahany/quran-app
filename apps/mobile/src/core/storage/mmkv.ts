@@ -23,6 +23,14 @@ export const storageKeys = {
   dailyReminder: 'settings.dailyReminder',
   dailyReminderTime: 'settings.dailyReminderTime',
   dailyReminderNotificationId: 'settings.dailyReminderNotificationId',
+
+  // Salah data layer
+  salah: {
+    locationSource: 'salah.locationSource',
+    manualCityId: 'salah.manualCityId',
+    manualLat: 'salah.manualLat',
+    manualLng: 'salah.manualLng',
+  },
 } as const;
 
 /** Per-page QCF V2 font cache metadata (ADR 0011). */

@@ -43,6 +43,9 @@ Spec §15 & ADR 0027. **Exit criterion:**
 | **3** | **Khatma planner** | `KhatmaScreen` matching frame `#Khatma`: active plan card, daily reading target & progress gauge, logging pages read, and new plan creation sheet. | Step 2 |
 | **4** | **Local daily reminders** | `expo-notifications` local scheduled notification: configurable daily reminder time, toggle in Settings, deep link to reading anchor on tap. | Step 1 |
 | **5** | **Phase 4 exit check** | iPhone 17 simulator verification: language switch, offline persistence, Khatma tracking, notifications, visual review against frames. | Steps 1–4 |
+| **6** | **My Mushaf profile icon & sidebar order** | مصحفي gets a person-circle symbol (SF `person.crop.circle` / Material `account_circle`) and moves to first in the expanded sidebar; tab order unchanged (center arrives with the 5th tab in Phase 5). Sidebar frames updated in the same change. | Steps 1–2 |
+
+Step 6 lands before the phase exit is signed off; step 5's visual review is re-run against the updated `#ExpandedHome` / `#ExpandedHomeDark` frames.
 
 ---
 
@@ -53,4 +56,5 @@ Spec §15 & ADR 0027. **Exit criterion:**
 - `step-03-khatma-planner.md`
 - `step-04-local-reminders.md`
 - `step-05-exit-check.md`
+- `step-06-my-mushaf-profile-icon.md`
 
