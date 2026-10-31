@@ -6,7 +6,8 @@ import { displayFontFamilies, uiFontFamilies } from '@/core/theme';
 import { maxFontScale } from './textStyles';
 import { useContrastColors } from './useContrastColors';
 
-export type TextTone = 'ink' | 'muted' | 'brand' | 'danger' | 'onBrand' | 'onBrandMuted' | 'goldInk';
+// onBrand is the ink on a brand button (colors.onBrand); onBrandSurface is the text on a brand card (colors.onBrandSurface).
+export type TextTone = 'ink' | 'muted' | 'brand' | 'danger' | 'onBrand' | 'onBrandSurface' | 'onBrandMuted' | 'goldInk';
 
 const toneColor: Record<TextTone, keyof ColorTokens> = {
   ink: 'ink',
@@ -14,6 +15,7 @@ const toneColor: Record<TextTone, keyof ColorTokens> = {
   brand: 'brand',
   danger: 'danger',
   onBrand: 'onBrand',
+  onBrandSurface: 'onBrandSurface',
   onBrandMuted: 'onBrandSurfaceMuted',
   goldInk: 'goldInk',
 };

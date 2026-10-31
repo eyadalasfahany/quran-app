@@ -50,6 +50,7 @@ Spec §15 · ADR 0031 (sources, rights, provenance, data ownership) · research:
 | 7 | Reminders | Category and entry reminders (clock and prayer-relative) on the shared notification layer | |
 | 8 | Audio rights & states | Rights model, availability logic, UI states; OpenDua not connected | |
 | 9 | Dorar adapter | `HadithReferenceSource` interface, Dorar transport behind env, null and fake sources, tests | |
+| 11 | القائمة tab (ADR 0032) | Menu tab replaces only the الصلاة tab item; menu screen per the approved `Menu` frames; Salah unchanged. Cursor prompt `phase-6/cursor/03-menu-tab.md` | |
 | 10 | Exit check | Checks, visual review, airplane mode, both languages, both window classes | |
 
 ## Variations (reviewer decision, 31 Oct 2026)
@@ -58,6 +59,20 @@ Upstream variations are mutually exclusive alternatives (e.g. setting out / retu
 - A category link to a specific variation (ch. 27 `morning` / `evening`) shows exactly that variation.
 - A `'*'` link shows **one** variation at a time, by default the first in upstream order, with a switch labelled neutrally «الصيغة ١ / ٢» ("Wording 1 / 2"). Upstream variation labels are English editorial text; they are not stored, and they are not translated.
 - The user's choice persists per entry (MMKV). Progress keys include the variation, and the entry counts once in category totals.
+
+## Tap anywhere to count (developer, 1 Nov 2026)
+
+Approved difference from the `AzkarReader` frame: in the reader, a tap anywhere on the screen counts one repetition (widened from the dhikr area to the whole screen, developer, 1 Nov 2026) (or marks «تم» when no count is sourced), not only a tap on the 120 pt counter.
+- The circle stays as the visible progress and the accessible control. The tap surface is hidden from VoiceOver and TalkBack, so screen-reader users keep a single counter button.
+- Buttons (share, favourite, text size, details, previous/next, variation switch) keep their own taps, and scrolling a long dhikr never counts.
+- The same 120 ms double-tap guard, haptics, completion and Reduce Motion rules apply.
+
+## Auto-advance and mark complete (developer, 1 Nov 2026)
+
+Approved behaviour for the reader:
+- **Auto-advance:** when a unit completes (its sourced count is reached, or «تم» is tapped), the reader moves to the next unit after a short pause, so the success haptic and the full ring are seen. Reduce Motion moves without animation. Previous and next still work by hand, and a completed unit can be revisited.
+- **Last unit:** when every unit in the session is done, the reader does not jump away. It shows a «إتمام» / "Mark as complete" button, and tapping it records the session as complete for its period, then shows the completion screen («أتممت أذكار …», «البدء من جديد», «العودة»).
+- Session completion is stored in `user.db.azkar_progress` under a reserved unit key `__session__` for the scope and period. No migration is needed. «البدء من جديد» clears it with the rest of the scope.
 
 ## Progress periods (UX policy, not a ruling)
 

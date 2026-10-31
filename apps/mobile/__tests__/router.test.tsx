@@ -71,6 +71,28 @@ describe("adaptive nav", () => {
     jest.useRealTimers();
   });
 
+  it("opens the menu tab, which is the last tab in the bar", async () => {
+    setWidth(390);
+    const view = await renderRouter("./app");
+
+    await act(async () => {
+      router.navigate("/(main)/(menu)");
+    });
+
+    expect(view.getSegments()).toEqual(["(main)", "(menu)"]);
+  });
+
+  it("keeps the Salah route reachable from the menu, though it has no tab item", async () => {
+    setWidth(390);
+    const view = await renderRouter("./app");
+
+    await act(async () => {
+      router.navigate("/(main)/(salah)");
+    });
+
+    expect(view.getSegments()).toEqual(["(main)", "(salah)"]);
+  });
+
   it("keeps the active section when the window class switches between tabs and the sidebar", async () => {
     setWidth(390);
     const view = await renderRouter("./app");

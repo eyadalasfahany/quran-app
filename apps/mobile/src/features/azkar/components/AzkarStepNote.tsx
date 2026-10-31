@@ -32,7 +32,10 @@ export function AzkarStepNote({
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const lines = items.map(stepText).filter((text) => text.length > 0);
+  // Arabic steps show their Arabic; in the English interface an English-only step shows its English.
+  const lines = items
+    .flatMap((item) => [stepText(item), locale === 'en' ? (item.textEn ?? '') : ''])
+    .filter((text) => text.trim().length > 0);
 
   if (lines.length === 0 && repeatCount === null) {
     return null;

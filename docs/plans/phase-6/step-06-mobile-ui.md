@@ -52,7 +52,7 @@ ADR 0031, spec §12 (Azkar), frames in the «الأذكار — Azkar» section 
   - Quran segment rendered from verses
   - Arabic and English, compact and expanded
 
-## 6b — Browse and entry points (frames `AzkarHome`, `AzkarHomeDark`, `AzkarHomeEnglish`, `AzkarCategory`, `AzkarSearch`, `AzkarFavorites`, `AzkarFavoritesEmpty`, `AzkarLoading`, `AzkarUnavailable`, `MainAzkar`, `SalahAzkar`)
+## 6b — Browse and entry points (frames `AzkarHome`, `AzkarHomeDark`, `AzkarHomeEnglish`, `AzkarCategory`, `AzkarSearch`, `AzkarFavorites`, `AzkarFavoritesEmpty`, `AzkarLoading`, `AzkarUnavailable`, `MainAzkar`; `SalahAzkar` withdrawn, ADR 0031 §10)
 - **Components:**
   - `ContinueAzkarCard`: brand card from `useContinueScope`; hidden when none
   - `AzkarSessionRow` with `AzkarProgressRing`
@@ -67,8 +67,8 @@ ADR 0031, spec §12 (Azkar), frames in the «الأذكار — Azkar» section 
   - The unavailable state (`AzkarUnavailable`) when `hasAzkarContent` is false
 - **Entry points (only when `hasAzkarContent`):**
   - **Home:** add an «الأذكار» tile to `HomeTileRow` in `HomeScreen` (ADR 0017), opening `/azkar`
-  - **Salah:** an `AzkarAfterPrayerRow` component in `features/salah/components` (styled like `QiblaRow`) under the Qibla row, opening `/azkar/category/after_prayer`
-  - Update the existing Home and Salah tests: without content, no tile or row
+  - **Menu:** the «الأذكار» card in the القائمة grid (ADR 0032; built with the menu tab). **No change to the Salah screen** (ADR 0031 §10).
+  - Update the existing Home tests: without content, no tile. Salah code and tests are not touched
 - **Tests:** home lists session and browse categories with progress; the continue card; category list order and count chips; search results and the empty query; favourites list and empty state; the entry points gated by content; Arabic and English; light and dark (token use).
 
 ## Gates

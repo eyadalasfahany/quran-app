@@ -103,6 +103,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="reader-settings" options={sheetScreenOptions} />
         <Stack.Screen name="ayah/[verseKey]" options={sheetScreenOptions} />
+        <Stack.Screen name="azkar/details/[entryKey]" options={sheetScreenOptions} />
         <Stack.Screen name="tafsir/[verseKey]" options={sheetScreenOptions} />
         <Stack.Screen name="player" options={sheetScreenOptions} />
       </Stack>

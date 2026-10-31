@@ -21,6 +21,8 @@ export default function MainLayout() {
             <NativeTabs.Trigger.Icon md={item.androidIcon} sf={item.symbol} />
           </NativeTabs.Trigger>
         ))}
+        {/* الصلاة has no tab item (ADR 0032), but its route stays registered: the menu opens it. */}
+        <NativeTabs.Trigger hidden name="(salah)" />
       </NativeTabs>
     </MainShell>
   );

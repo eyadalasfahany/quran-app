@@ -5,6 +5,7 @@ import type { AzkarProgressRow } from './model';
 import {
   applyTap,
   emptyTapState,
+  SESSION_UNIT_KEY,
   pickLastActiveScope,
   type ScopeResolution,
   type ScopeSummary,
@@ -95,7 +96,34 @@ export function resetUnit(scopeKey: string, periodKey: string, unitKey: string, 
   ]);
 }
 
-/** Clears a scope's progress in one period («إعادة الضبط»). */
+/**
+ * Marks a whole session complete for its scope and period («إتمام»), under the reserved `__session__` key. Idempotent:
+ * a second call moves the marker's time.
+ */
+export function markSessionComplete(scopeKey: string, periodKey: string, store?: AzkarStore): void {
+  const { db, now } = resolveStore(store);
+  const at = now();
+  db.run(
+    `INSERT INTO azkar_progress (scope_key, period_key, item_key, current_count, completed_at, updated_at)
+     VALUES (?, ?, ?, 0, ?, ?)
+     ON CONFLICT(scope_key, period_key, item_key) DO UPDATE SET
+       completed_at = excluded.completed_at,
+       updated_at = excluded.updated_at`,
+    [scopeKey, periodKey, SESSION_UNIT_KEY, at, at],
+  );
+}
+
+/** Whether a session was marked complete for this scope and period. */
+export function isSessionComplete(scopeKey: string, periodKey: string, store?: AzkarStore): boolean {
+  const { db } = resolveStore(store);
+  const row = db.get<{ completedAt: number | null }>(
+    'SELECT completed_at AS completedAt FROM azkar_progress WHERE scope_key = ? AND period_key = ? AND item_key = ?',
+    [scopeKey, periodKey, SESSION_UNIT_KEY],
+  );
+  return row !== undefined && row.completedAt !== null;
+}
+
+/** Clears a scope's progress in one period («إعادة الضبط»). Also clears the session marker. */
 export function resetScope(scopeKey: string, periodKey: string, store?: AzkarStore): void {
   const { db } = resolveStore(store);
   db.run('DELETE FROM azkar_progress WHERE scope_key = ? AND period_key = ?', [scopeKey, periodKey]);
@@ -108,7 +136,7 @@ export function listScopeSummaries(store?: AzkarStore): ScopeSummary[] {
     `SELECT
        scope_key AS scopeKey,
        period_key AS periodKey,
-       count(completed_at) AS completedUnits,
+       count(CASE WHEN item_key <> '__session__' THEN completed_at END) AS completedUnits,
        max(updated_at) AS updatedAt
      FROM azkar_progress
      GROUP BY scope_key, period_key

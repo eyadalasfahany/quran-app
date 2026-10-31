@@ -6,7 +6,7 @@ import { useTheme } from '@/core/theme';
 
 import type { AzkarEntryDetail, AzkarNote, AzkarNoteKind } from '../data/model';
 import { hasArabic } from '../data/reader-units';
-import { referenceNumber } from '../screens/reader-model';
+import { referenceNumber } from '../reader-model';
 import { AzkarDetailsSection } from './AzkarDetailsSection';
 import { stepText } from './AzkarStepNote';
 import type { Locale } from '@/core/i18n';

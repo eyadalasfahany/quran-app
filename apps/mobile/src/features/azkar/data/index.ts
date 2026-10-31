@@ -1,11 +1,15 @@
 export {
   useAzkarAvailable,
   useAzkarCategories,
+  useAzkarCategory,
   useAzkarFontScale,
+  useAzkarProgressSummaries,
   useAzkarSearch,
   useCategoryUnits,
+  useContinueAzkar,
   useContinueScope,
   useEntry,
+  useFavoriteCards,
   useFavorites,
   useIsFavorite,
   useScopeProgress,
@@ -14,9 +18,23 @@ export {
 export { azkarShareText } from './share-text';
 export { buildReaderUnits, buildCategoryUnits } from './reader-units';
 export type { ReaderUnit, ReaderUnitKind } from './reader-units';
+export { buildCategoryCards } from './category-cards';
+export type { CategoryCard } from './category-cards';
+export { listFavoriteCards } from './favorite-cards';
+export type { FavoriteCard } from './favorite-cards';
+export { resolveAzkarScope } from './scope-resolver';
+export type { ResolvedAzkarScope } from './scope-resolver';
+export { firstArabicText } from './preview';
+export {
+  addAzkarRecentSearch,
+  clearAzkarRecentSearches,
+  readAzkarRecentSearches,
+  removeAzkarRecentSearch,
+} from './recent-searches';
 export {
   applyTap,
   categoryProgress,
+  completedUnitsIn,
   periodKey,
   pickLastActiveScope,
   scopeKeyForCategory,

@@ -1,3 +1,5 @@
+import { act, fireEvent, screen } from '@testing-library/react-native';
+
 import type { AzkarEntry, AzkarEntryDetail, AzkarItemDetail, AzkarNote, AzkarSegment, AzkarVariation } from '@/features/azkar/data/model';
 import type { ReaderUnit } from '@/features/azkar/data/reader-units';
 
@@ -125,4 +127,16 @@ export function makeDetail(overrides: Partial<AzkarEntryDetail> = {}): AzkarEntr
     recordings: [],
     ...overrides,
   };
+}
+
+/**
+ * Presses inside an async `act`, so pressability state settles before the next render (see `renderUi`, which is async).
+ */
+/** The element type `screen.getBy*` returns, so tests pass the queries' results straight in. */
+export type TestElement = ReturnType<typeof screen.getByRole>;
+
+export async function press(element: TestElement): Promise<void> {
+  await act(async () => {
+    fireEvent.press(element);
+  });
 }

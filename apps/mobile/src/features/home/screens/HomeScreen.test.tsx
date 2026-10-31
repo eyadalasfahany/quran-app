@@ -64,6 +64,12 @@ jest.mock('@/features/audio/reciter-playback', () => ({
   playRecentListen: jest.fn(() => Promise.resolve()),
 }));
 
+// Azkar content availability (ADR 0017): off by default, so the tile is hidden unless a test turns it on.
+const mockAzkar: { available: boolean } = { available: false };
+jest.mock('@/features/azkar/data', () => ({
+  useAzkarAvailable: () => mockAzkar.available,
+}));
+
 jest.mock('@/features/reader/data/chapters', () => ({
   getChapter: jest.fn(),
 }));
@@ -179,7 +185,8 @@ describe('HomeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/read/2:255');
   });
 
-  it('renders the Surahs, Saved and Reciters tiles in frame order without a last-read verse', async () => {
+  it('renders the Surahs, Saved and Reciters tiles in frame order without Azkar content', async () => {
+    mockAzkar.available = false;
     const view = await renderUi(<HomeScreen />);
 
     expect(view.getByTestId('home-tiles-surahs')).toBeOnTheScreen();
@@ -187,7 +194,23 @@ describe('HomeScreen', () => {
     expect(view.getByRole('button', { name: 'المحفوظات' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'القرّاء' })).toBeOnTheScreen();
     expect(view.queryByRole('button', { name: 'الحديث' })).toBeNull();
+    expect(view.queryByRole('button', { name: 'الأذكار' })).toBeNull();
     expect(view.getByTestId('home-tiles').children.length).toBe(3);
+  });
+
+  it('adds the Azkar tile between Saved and Reciters once Azkar content is installed, and opens Azkar', async () => {
+    mockAzkar.available = true;
+    try {
+      const view = await renderUi(<HomeScreen />);
+
+      expect(view.getByTestId('home-tiles').children.length).toBe(4);
+      expect(view.getByRole('button', { name: 'الأذكار' })).toBeOnTheScreen();
+
+      await fireEvent.press(view.getByRole('button', { name: 'الأذكار' }));
+      expect(router.push).toHaveBeenLastCalledWith('/azkar');
+    } finally {
+      mockAzkar.available = false;
+    }
   });
 
   it('navigates to the Mushaf and My Quran tabs from the tiles', async () => {

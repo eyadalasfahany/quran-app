@@ -5,7 +5,7 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { Icon, UiText } from '@/shared/ui';
 
-import { referenceNumber } from '../screens/reader-model';
+import { referenceNumber } from '../reader-model';
 
 const INFO = { ios: 'info.circle', android: 'info' } as const;
 

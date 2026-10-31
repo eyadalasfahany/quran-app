@@ -10,6 +10,8 @@ import { ContinueReadingSkeleton } from '@/features/home/components/ContinueRead
 import { HomeTileRow } from '@/features/home/components/HomeTileRow';
 import { RecentListensSection } from '@/features/home/components/RecentListensSection';
 import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
+import { azkarHref } from '@/features/azkar/routes';
+import { useAzkarAvailable } from '@/features/azkar/data';
 import { pause } from '@/features/audio/player';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { playRecentListen } from '@/features/audio/reciter-playback';
@@ -33,6 +35,7 @@ function tabHref(name: Destination['name']): Href {
 const SURAHS_ICON: IconName = { ios: 'list.bullet', android: 'format_list_bulleted' };
 const SAVED_ICON: IconName = { ios: 'bookmark', android: 'bookmark' };
 const RECITERS_ICON: IconName = { ios: 'headphones', android: 'headphones' };
+const AZKAR_ICON: IconName = { ios: 'circle.dotted', android: 'scatter_plot' };
 
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -47,6 +50,8 @@ export function HomeScreen() {
   const playerReciterId = usePlayerStore((state) => state.reciterId);
   const playerChapterId = usePlayerStore((state) => state.chapterId);
   const activePlan = useActivePlan().data[0] ?? null;
+  // The Azkar tile shows only once Azkar content is installed (ADR 0017, ADR 0031 §10).
+  const azkarAvailable = useAzkarAvailable();
   const planLogs = usePlanLogs(activePlan?.id);
   const today = toLocalDateString(new Date());
 
@@ -118,6 +123,9 @@ export function HomeScreen() {
         tiles={[
           { icon: SURAHS_ICON, key: 'surahs', label: t('home.tiles.surahs'), onPress: () => router.navigate(tabHref('(mushaf)')) },
           { icon: SAVED_ICON, key: 'saved', label: t('home.tiles.saved'), onPress: () => router.navigate(tabHref('(my-quran)')) },
+          ...(azkarAvailable
+            ? [{ icon: AZKAR_ICON, key: 'azkar', label: t('home.tiles.azkar'), onPress: () => router.push(azkarHref.home) }]
+            : []),
           { icon: RECITERS_ICON, key: 'reciters', label: t('home.tiles.reciters'), onPress: () => router.navigate(tabHref('(listen)')) },
         ]}
       />

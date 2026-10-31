@@ -24,7 +24,7 @@ export function liveProgressSummaryQuery(db: UserDatabase) {
     .select({
       scopeKey: azkarProgress.scopeKey,
       periodKey: azkarProgress.periodKey,
-      completedUnits: sql<number>`count(${azkarProgress.completedAt})`,
+      completedUnits: sql<number>`count(CASE WHEN ${azkarProgress.itemKey} <> '__session__' THEN ${azkarProgress.completedAt} END)`,
       updatedAt: max(azkarProgress.updatedAt),
     })
     .from(azkarProgress)

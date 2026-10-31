@@ -62,48 +62,62 @@ export function AzkarCounter({
   });
 
   return (
-    <Pressable
-      accessibilityActions={[{ label: t('azkar.counter.reset'), name: 'reset' }]}
-      accessibilityHint={t('azkar.counter.hint')}
-      accessibilityLabel={t('azkar.counter.label', { position: formatNumber(position, locale) })}
-      accessibilityRole="button"
-      accessibilityValue={{ text: valueText }}
-      onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === 'reset') {
-          onReset();
-        }
-      }}
-      onPress={onTap}
-      style={{ height: COUNTER_SIZE, width: COUNTER_SIZE }}
-      testID={testID}
-    >
-      <View style={{ alignItems: 'center', height: COUNTER_SIZE, justifyContent: 'center', width: COUNTER_SIZE }}>
-        <Svg height={COUNTER_SIZE} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }} width={COUNTER_SIZE}>
-          <Circle
-            cx={COUNTER_SIZE / 2}
-            cy={COUNTER_SIZE / 2}
-            fill={theme.colors.surfaceRaised}
-            r={RADIUS}
-            stroke={theme.colors.line}
-            strokeWidth={STROKE}
-          />
-          <AnimatedCircle
-            animatedProps={animatedProps}
-            cx={COUNTER_SIZE / 2}
-            cy={COUNTER_SIZE / 2}
-            fill="none"
-            r={RADIUS}
-            stroke={theme.colors.brand}
-            strokeDasharray={CIRCUMFERENCE}
-            strokeLinecap="round"
-            strokeWidth={STROKE}
-            testID={`${testID}-ring`}
-          />
-        </Svg>
-        <UiText align="center" testID={`${testID}-value`} variant="displaySm">
-          {valueText}
-        </UiText>
-      </View>
-    </Pressable>
+    <View style={{ alignItems: 'center', gap: theme.space[2] }}>
+      <Pressable
+        accessibilityActions={[{ label: t('azkar.counter.reset'), name: 'reset' }]}
+        accessibilityHint={t('azkar.counter.hint')}
+        accessibilityLabel={t('azkar.counter.label', {
+          position: formatNumber(position, locale),
+        })}
+        accessibilityRole="button"
+        accessibilityValue={{ text: valueText }}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName === 'reset') {
+            onReset();
+          }
+        }}
+        onPress={onTap}
+        style={{ height: COUNTER_SIZE, width: COUNTER_SIZE }}
+        testID={testID}
+      >
+        <View
+          style={{
+            alignItems: 'center',
+            height: COUNTER_SIZE,
+            justifyContent: 'center',
+            width: COUNTER_SIZE,
+          }}
+        >
+          <Svg height={COUNTER_SIZE} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }} width={COUNTER_SIZE}>
+            <Circle
+              cx={COUNTER_SIZE / 2}
+              cy={COUNTER_SIZE / 2}
+              fill={theme.colors.surfaceRaised}
+              r={RADIUS}
+              stroke={theme.colors.line}
+              strokeWidth={STROKE}
+            />
+            <AnimatedCircle
+              animatedProps={animatedProps}
+              cx={COUNTER_SIZE / 2}
+              cy={COUNTER_SIZE / 2}
+              fill="none"
+              r={RADIUS}
+              stroke={theme.colors.brand}
+              strokeDasharray={CIRCUMFERENCE}
+              strokeLinecap="round"
+              strokeWidth={STROKE}
+              testID={`${testID}-ring`}
+            />
+          </Svg>
+          <UiText align="center" testID={`${testID}-value`} variant="displaySm">
+            {valueText}
+          </UiText>
+        </View>
+      </Pressable>
+      <UiText align="center" importantForAccessibility="no" tone="muted" variant="caption">
+        {t('azkar.counter.hint')}
+      </UiText>
+    </View>
   );
 }

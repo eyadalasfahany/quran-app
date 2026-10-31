@@ -4,7 +4,76 @@
     "mushaf": "Mushaf",
     "listen": "Listen",
     "myQuran": "My Quran",
-    "salah": "Prayer"
+    "salah": "Prayer",
+    "menu": "Menu"
+  },
+  "menu": {
+    "title": "Menu",
+    "searchLabel": "Search",
+    "card": {
+      "hint": "Opens {{title}}"
+    },
+    "salah": {
+      "caption": "Next prayer",
+      "title": "Prayer",
+      "noLocation": "Prayer times for your location",
+      "preview": "{{time}} · {{remaining}}",
+      "inMinutes_one": "in {{minutes}} minute",
+      "inMinutes_other": "in {{minutes}} minutes",
+      "hoursPart_one": "1 hour",
+      "hoursPart_other": "{{formatted}} hours",
+      "minutesPart_one": "1 minute",
+      "minutesPart_other": "{{formatted}} minutes",
+      "remainingHours": "in {{hours}}",
+      "remainingHoursMinutes": "in {{hours}} {{minutes}}"
+    },
+    "qibla": {
+      "caption": "Direction",
+      "title": "Qibla",
+      "bearing": "{{degrees}}° from true north",
+      "noLocation": "Direction of the Kaaba from your location"
+    },
+    "azkar": {
+      "caption": "Remembrance",
+      "continueCaption": "Continue",
+      "title": "Azkar",
+      "subtitle": "Azkar by occasion",
+      "progress": "{{current}} of {{total}}"
+    },
+    "khatma": {
+      "caption": "My khatma",
+      "title": "Khatma",
+      "today": "Today {{day}} of {{total}}"
+    },
+    "mushaf": {
+      "caption": "Reading",
+      "title": "Mushaf",
+      "subtitle": "Read by page and surah"
+    },
+    "listen": {
+      "caption": "Audio",
+      "title": "Listen",
+      "subtitle": "Reciters and saved recitations"
+    },
+    "myQuran": {
+      "caption": "Marks",
+      "title": "My Quran",
+      "subtitle": "Marks, highlights and notes"
+    },
+    "search": {
+      "caption": "Quran and azkar",
+      "title": "Search"
+    },
+    "settings": {
+      "caption": "App",
+      "title": "Settings",
+      "subtitle": "Text, appearance, reminders and account"
+    },
+    "sources": {
+      "caption": "References",
+      "title": "Sources and thanks",
+      "subtitle": "Sources and licences"
+    }
   },
   "listen": {
     "search": {
@@ -298,7 +367,8 @@
     "tiles": {
       "surahs": "Surahs",
       "saved": "Saved",
-      "reciters": "Reciters"
+      "reciters": "Reciters",
+      "azkar": "Azkar"
     },
     "recent": {
       "heading": "Recently listened",
@@ -604,9 +674,11 @@
       "previous": "Previous",
       "next": "Next",
       "done": "Done",
+      "markComplete": "Mark as complete",
       "source": "Hisn al-Muslim · {{number}}",
       "details": "Source and details",
       "textSize": "Text size",
+      "textSizeGlyph": "Aa",
       "favouriteAdd": "Add to favourites",
       "favouriteRemove": "Remove from favourites",
       "share": "Share",
@@ -634,6 +706,49 @@
       "sourceCaption": "Source: {{name}} · {{reference}}",
       "sourceCaptionNoReference": "Source: {{name}}",
       "bookNumber": "Hisn al-Muslim · no. {{number}}"
+    },
+    "browse": {
+      "title": "Azkar",
+      "back": "Back",
+      "favourites": "Favourites",
+      "sessionHeading": "Today's azkar",
+      "topicsHeading": "Topics",
+      "continueEyebrow": "Continue",
+      "resume": "Resume",
+      "start": "Start",
+      "continue": "Continue",
+      "repeatChip": "×{{number}}",
+      "repeatLabel": "{{number}} times",
+      "completed": "Completed",
+      "topicCount_one": "{{number}} dhikr",
+      "topicCount_other": "{{number}} dhikr",
+      "sourceLine_one": "Hisn al-Muslim · {{number}} dhikr",
+      "sourceLine_other": "Hisn al-Muslim · {{number}} dhikr",
+      "topicCount_two": "{{number}} dhikr",
+      "topicCount_few": "{{number}} dhikr",
+      "topicCount_many": "{{number}} dhikr",
+      "sourceLine_two": "Hisn al-Muslim · {{number}} dhikr",
+      "sourceLine_few": "Hisn al-Muslim · {{number}} dhikr",
+      "sourceLine_many": "Hisn al-Muslim · {{number}} dhikr"
+    },
+    "search": {
+      "placeholder": "Search azkar",
+      "hint": "Search by a word or part of one. Matching chapters and azkar appear here.",
+      "recentTitle": "Recent searches",
+      "clear": "Clear history",
+      "removeRecent": "Remove {{query}}",
+      "chaptersHeading": "Topics",
+      "entriesHeading": "Azkar",
+      "noResults": "No matching results"
+    },
+    "favourites": {
+      "emptyTitle": "No favourite azkar yet",
+      "emptyBody": "Tap the bookmark on any dhikr to find it here.",
+      "browse": "Browse azkar"
+    },
+    "unavailable": {
+      "title": "Azkar are not available yet",
+      "body": "The content arrives once publishing rights are complete"
     }
   }
 }

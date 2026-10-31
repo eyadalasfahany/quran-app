@@ -3,8 +3,17 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { at, openAzkarUserDb } from '../../../../jest/azkar-test-db';
-import { getProgressRows, lastActiveScope, recordTap, resetScope, resetUnit } from './progress-repository';
-import { TAP_GUARD_MS } from './progress';
+import {
+  getProgressRows,
+  isSessionComplete,
+  lastActiveScope,
+  listScopeSummaries,
+  markSessionComplete,
+  recordTap,
+  resetScope,
+  resetUnit,
+} from './progress-repository';
+import { SESSION_UNIT_KEY, TAP_GUARD_MS } from './progress';
 
 const SCOPE = 'category:morning';
 const PERIOD = '2026-10-31';
@@ -132,5 +141,53 @@ describe('progress repository', () => {
     const travelStale = (scopeKey: string) =>
       scopeKey === 'category:travel' ? { periodKey: 'session-next', total: 1 } : resolve(scopeKey);
     expect(lastActiveScope(travelStale, { db: opened.executor })).toEqual({ scopeKey: SCOPE, periodKey: PERIOD });
+  });
+
+  describe('session completion marker («إتمام»)', () => {
+    it('is not complete until marked, then stays complete for its scope and period only', () => {
+      const store = { db: opened.executor, now: () => 5_000 };
+      expect(isSessionComplete(SCOPE, PERIOD, store)).toBe(false);
+
+      markSessionComplete(SCOPE, PERIOD, store);
+
+      expect(isSessionComplete(SCOPE, PERIOD, store)).toBe(true);
+      expect(isSessionComplete(SCOPE, '2026-11-01', store)).toBe(false);
+      expect(isSessionComplete('category:other', PERIOD, store)).toBe(false);
+    });
+
+    it('stores the marker under the reserved key, so it is not a unit', () => {
+      markSessionComplete(SCOPE, PERIOD, { db: opened.executor, now: () => 5_000 });
+
+      expect(getProgressRows(SCOPE, PERIOD, { db: opened.executor }).map((row) => row.itemKey)).toEqual([SESSION_UNIT_KEY]);
+    });
+
+    it('does not count the marker as a completed unit in the scope summaries', () => {
+      recordTap(SCOPE, PERIOD, 'fixture:item-1', 1, { db: opened.executor, now: () => 1_000 });
+      markSessionComplete(SCOPE, PERIOD, { db: opened.executor, now: () => 2_000 });
+
+      const summary = listScopeSummaries({ db: opened.executor }).find((row) => row.scopeKey === SCOPE);
+      expect(summary?.completedUnits).toBe(1);
+    });
+
+    it('is cleared with the rest of the scope by a reset', () => {
+      const store = { db: opened.executor, now: () => 5_000 };
+      markSessionComplete(SCOPE, PERIOD, store);
+
+      resetScope(SCOPE, PERIOD, store);
+
+      expect(isSessionComplete(SCOPE, PERIOD, store)).toBe(false);
+    });
+
+    it('moves its time when marked again, without a second row', () => {
+      let clock = 5_000;
+      const store = { db: opened.executor, now: () => clock };
+      markSessionComplete(SCOPE, PERIOD, store);
+      clock = 9_000;
+      markSessionComplete(SCOPE, PERIOD, store);
+
+      const rows = getProgressRows(SCOPE, PERIOD, store);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]?.updatedAt).toBe(9_000);
+    });
   });
 });

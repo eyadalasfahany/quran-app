@@ -9,6 +9,7 @@ import type { Locale } from '@/core/i18n/locale';
 import { useCatalogVersion } from '@/core/sync/catalog-version';
 
 import {
+  getCategory,
   getEntry,
   hasAzkarContent,
   listCategories,
@@ -18,9 +19,11 @@ import {
 } from './content-repository';
 import { readAzkarFontScale, saveAzkarFontScale } from './font-scale';
 import { liveFavoritesQuery, liveIsFavoriteQuery, liveProgressSummaryQuery, liveScopeProgressQuery } from './live-queries';
-import type { AzkarCategoryListItem, AzkarEntryDetail } from './model';
-import { pickLastActiveScope, type ScopeResolution, type ScopeSummary } from './progress';
+import { listFavoriteCards, type FavoriteCard } from './favorite-cards';
+import type { AzkarCategory, AzkarCategoryListItem, AzkarEntryDetail } from './model';
+import { completedUnitsIn, pickLastActiveScope, type ScopeResolution, type ScopeSummary } from './progress';
 import type { ReaderUnit } from './reader-units';
+import { resolveAzkarScope, type ResolvedAzkarScope } from './scope-resolver';
 import { matchesCategoryLabel, searchAzkarEntries, type AzkarSearchHit } from './search';
 import { getVariationChoices, setVariationChoice, type VariationChoices } from './variation-choice';
 
@@ -46,11 +49,21 @@ function useContentRevision(): number {
   return useCatalogVersion((state) => state.version);
 }
 
+/**
+ * Whether Azkar content is installed (ADR 0017: Home shows the tile only then). Home renders before the content
+ * database is open, so an unopened database reads as unavailable rather than throwing.
+ */
 export function useAzkarAvailable(): boolean {
   const revision = useContentRevision();
-  const { executor } = openContentDb();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => readOr(false, () => hasAzkarContent(executor)), [executor, revision]);
+  return useMemo(
+    () =>
+      readOr(false, () => {
+        const { executor } = openContentDb();
+        return hasAzkarContent(executor);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [revision],
+  );
 }
 
 export function useAzkarCategories(locale: Locale): AzkarCategoryListItem[] {
@@ -164,4 +177,67 @@ export function useIsFavorite(entryKey: string): boolean {
  */
 function categoryLabel(t: TFunction, id: string): string {
   return t(`azkar.categories.${id}` as never);
+}
+
+/** Every (scope, period) progress summary. Session rows and the continue card read it; it is live. */
+export function useAzkarProgressSummaries(): ScopeSummary[] {
+  const { db } = openUserDb();
+  const { data } = useLiveQuery(liveProgressSummaryQuery(db));
+  return useMemo(
+    () =>
+      data.map((row) => ({
+        scopeKey: row.scopeKey,
+        periodKey: row.periodKey,
+        completedUnits: Number(row.completedUnits),
+        updatedAt: row.updatedAt ?? 0,
+      })),
+    [data],
+  );
+}
+
+/** One category by id, or undefined. Re-reads when the catalogue changes. */
+export function useAzkarCategory(categoryId: string): AzkarCategory | undefined {
+  const revision = useContentRevision();
+  const { executor } = openContentDb();
+  return useMemo(
+    () => readOr<AzkarCategory | undefined>(undefined, () => getCategory(executor, categoryId)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executor, categoryId, revision],
+  );
+}
+
+/**
+ * The scope to continue (the newest with an incomplete unit in its current period) and its completed count. Null when
+ * nothing is in progress. Content and progress both drive it: it re-resolves on a catalogue change or a tap.
+ */
+export function useContinueAzkar(locale: Locale): { scope: ResolvedAzkarScope; completed: number } | null {
+  const revision = useContentRevision();
+  const { executor } = openContentDb();
+  const summaries = useAzkarProgressSummaries();
+
+  // `revision` is not read in the body, but a catalogue change must rebuild the resolver.
+  const resolve = useMemo(
+    () => resolveAzkarScope(executor, locale, new Date()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executor, locale, revision],
+  );
+  const picked = useMemo(() => pickLastActiveScope(summaries, resolve), [resolve, summaries]);
+
+  const scope = picked === null ? null : resolve(picked.scopeKey);
+  if (scope === null) {
+    return null;
+  }
+  return { scope, completed: completedUnitsIn(summaries, scope.scopeKey, scope.periodKey) };
+}
+
+/** Favourite cards in favourite order. Entries that no longer exist are skipped. */
+export function useFavoriteCards(): FavoriteCard[] {
+  const revision = useContentRevision();
+  const { executor } = openContentDb();
+  const { data: favorites } = useFavorites();
+  return useMemo(
+    () => readOr<FavoriteCard[]>([], () => listFavoriteCards(executor, favorites)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executor, favorites, revision],
+  );
 }

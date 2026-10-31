@@ -4,7 +4,86 @@
     "mushaf": "المصحف",
     "listen": "الاستماع",
     "myQuran": "مصحفي",
-    "salah": "الصلاة"
+    "salah": "الصلاة",
+    "menu": "القائمة"
+  },
+  "menu": {
+    "title": "القائمة",
+    "searchLabel": "بحث",
+    "card": {
+      "hint": "افتح {{title}}"
+    },
+    "salah": {
+      "caption": "الصلاة القادمة",
+      "title": "الصلاة",
+      "noLocation": "أوقات الصلاة حسب موقعك",
+      "preview": "{{time}} · {{remaining}}",
+      "inMinutes_zero": "بعد أقل من دقيقة",
+      "inMinutes_one": "بعد دقيقة",
+      "inMinutes_two": "بعد دقيقتين",
+      "inMinutes_few": "بعد {{minutes}} دقائق",
+      "inMinutes_many": "بعد {{minutes}} دقيقة",
+      "inMinutes_other": "بعد {{minutes}} دقيقة",
+      "hoursPart_one": "ساعة",
+      "hoursPart_two": "ساعتين",
+      "hoursPart_few": "{{formatted}} ساعات",
+      "hoursPart_many": "{{formatted}} ساعة",
+      "hoursPart_other": "{{formatted}} ساعة",
+      "minutesPart_one": "دقيقة",
+      "minutesPart_two": "دقيقتين",
+      "minutesPart_few": "{{formatted}} دقائق",
+      "minutesPart_many": "{{formatted}} دقيقة",
+      "minutesPart_other": "{{formatted}} دقيقة",
+      "remainingHours": "بعد {{hours}}",
+      "remainingHoursMinutes": "بعد {{hours}} و{{minutes}}"
+    },
+    "qibla": {
+      "caption": "الاتجاه",
+      "title": "القبلة",
+      "bearing": "{{degrees}}° من الشمال الحقيقي",
+      "noLocation": "اتجاه الكعبة من موقعك"
+    },
+    "azkar": {
+      "caption": "الذكر",
+      "continueCaption": "تابع",
+      "title": "الأذكار",
+      "subtitle": "الأذكار حسب المناسبة",
+      "progress": "{{current}} من {{total}}"
+    },
+    "khatma": {
+      "caption": "ختمتي",
+      "title": "الختمة",
+      "today": "اليوم {{day}} من {{total}}"
+    },
+    "mushaf": {
+      "caption": "القراءة",
+      "title": "المصحف",
+      "subtitle": "القراءة بالصفحة والسورة"
+    },
+    "listen": {
+      "caption": "الصوت",
+      "title": "الاستماع",
+      "subtitle": "القرّاء والتلاوات المحفوظة"
+    },
+    "myQuran": {
+      "caption": "العلامات",
+      "title": "مصحفي",
+      "subtitle": "العلامات والتظليلات والملاحظات"
+    },
+    "search": {
+      "caption": "في القرآن والأذكار",
+      "title": "البحث"
+    },
+    "settings": {
+      "caption": "التطبيق",
+      "title": "الإعدادات",
+      "subtitle": "الخط والمظهر والتذكير والحساب"
+    },
+    "sources": {
+      "caption": "المراجع",
+      "title": "المصادر والشكر",
+      "subtitle": "المصادر والتراخيص"
+    }
   },
   "listen": {
     "search": {
@@ -298,7 +377,8 @@
     "tiles": {
       "surahs": "السور",
       "saved": "المحفوظات",
-      "reciters": "القرّاء"
+      "reciters": "القرّاء",
+      "azkar": "الأذكار"
     },
     "recent": {
       "heading": "آخر ما استمعت إليه",
@@ -604,9 +684,11 @@
       "previous": "السابق",
       "next": "التالي",
       "done": "تم",
+      "markComplete": "إتمام",
       "source": "حصن المسلم · {{number}}",
       "details": "المصدر والتفاصيل",
       "textSize": "حجم النص",
+      "textSizeGlyph": "Aa",
       "favouriteAdd": "إضافة إلى المفضلة",
       "favouriteRemove": "إزالة من المفضلة",
       "share": "مشاركة",
@@ -634,6 +716,49 @@
       "sourceCaption": "المصدر: {{name}} · {{reference}}",
       "sourceCaptionNoReference": "المصدر: {{name}}",
       "bookNumber": "حصن المسلم · رقم {{number}}"
+    },
+    "browse": {
+      "title": "الأذكار",
+      "back": "رجوع",
+      "favourites": "المفضلة",
+      "sessionHeading": "أذكار اليوم",
+      "topicsHeading": "المواضيع",
+      "continueEyebrow": "تابع",
+      "resume": "متابعة",
+      "start": "ابدأ",
+      "continue": "تابع",
+      "repeatChip": "×{{number}}",
+      "repeatLabel": "{{number}} مرات",
+      "completed": "مكتمل",
+      "topicCount_one": "ذكر واحد",
+      "topicCount_two": "ذكران",
+      "topicCount_few": "{{number}} أذكار",
+      "topicCount_many": "{{number}} ذكرًا",
+      "topicCount_other": "{{number}} ذكر",
+      "sourceLine_one": "حصن المسلم · ذكر واحد",
+      "sourceLine_two": "حصن المسلم · ذكران",
+      "sourceLine_few": "حصن المسلم · {{number}} أذكار",
+      "sourceLine_many": "حصن المسلم · {{number}} ذكرًا",
+      "sourceLine_other": "حصن المسلم · {{number}} ذكرًا"
+    },
+    "search": {
+      "placeholder": "ابحث في الأذكار",
+      "hint": "ابحث بالكلمة أو بجزء منها، وستظهر الأبواب والأذكار التي تطابقها.",
+      "recentTitle": "عمليات البحث الأخيرة",
+      "clear": "مسح السجل",
+      "removeRecent": "إزالة {{query}}",
+      "chaptersHeading": "الأبواب",
+      "entriesHeading": "الأذكار",
+      "noResults": "لا توجد نتائج مطابقة"
+    },
+    "favourites": {
+      "emptyTitle": "لا توجد أذكار مفضلة بعد",
+      "emptyBody": "اضغط على أيقونة الإشارة في أي ذكر لتجده هنا.",
+      "browse": "تصفّح الأذكار"
+    },
+    "unavailable": {
+      "title": "الأذكار غير متاحة بعد",
+      "body": "يتوفر المحتوى عند اكتمال إذن النشر"
     }
   }
 }

@@ -6,6 +6,12 @@ import type { AzkarProgressPeriod } from './model';
 /** A tap within this many milliseconds of the previous accepted tap on the same unit is ignored. */
 export const TAP_GUARD_MS = 120;
 
+/**
+ * The reserved item key of a session's «إتمام» marker: the whole session is complete for its scope and period.
+ * It is never a unit's key. Summaries and counts leave it out, so it adds no unit to a total.
+ */
+export const SESSION_UNIT_KEY = '__session__';
+
 export class AzkarProgressError extends Error {
   constructor(readonly code: 'required_count_invalid') {
     super(code);
@@ -164,4 +170,11 @@ export function pickLastActiveScope(
   }
 
   return best === null ? null : { scopeKey: best.scopeKey, periodKey: best.periodKey };
+}
+
+/** Completed units of one scope in one period, from the per (scope, period) summaries. */
+export function completedUnitsIn(summaries: readonly ScopeSummary[], scopeKey: string, periodKey: string): number {
+  return summaries
+    .filter((summary) => summary.scopeKey === scopeKey && summary.periodKey === periodKey)
+    .reduce((total, summary) => total + summary.completedUnits, 0);
 }

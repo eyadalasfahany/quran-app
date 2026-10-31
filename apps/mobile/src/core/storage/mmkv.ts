@@ -29,6 +29,8 @@ export const storageKeys = {
     fontScale: 'azkar.fontScale',
     // JSON map of entry key to the chosen alternative (variation key).
     variationChoice: 'azkar.variationChoice',
+    // JSON array of recent Azkar search queries, newest first.
+    searchRecent: 'azkar.searchRecent',
   },
 
   // Salah data layer

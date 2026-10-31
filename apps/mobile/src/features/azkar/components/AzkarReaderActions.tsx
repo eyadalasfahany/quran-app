@@ -43,10 +43,10 @@ export function AzkarReaderActions({
         testID="azkar-text-size-toggle"
       >
         <UiText tone={textSizeOpen ? 'brand' : 'muted'} variant="subhead" weight={600}>
-          Aa
+          {t('azkar.reader.textSizeGlyph')}
         </UiText>
       </Pressable>
-      <IconButton hint={undefined} icon={SHARE} label={t('azkar.reader.share')} onPress={onShare} testID="azkar-share" tone="muted" variant="plain" />
+      <IconButton icon={SHARE} label={t('azkar.reader.share')} onPress={onShare} testID="azkar-share" tone="muted" variant="plain" />
       <IconButton
         icon={favorite ? BOOKMARK_FILLED : BOOKMARK}
         label={favorite ? t('azkar.reader.favouriteRemove') : t('azkar.reader.favouriteAdd')}

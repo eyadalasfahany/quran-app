@@ -95,7 +95,8 @@ Dorar (الدرر السنية) offers an official hadith API with an approved a
 ### 10. Placement
 - No sixth tab.
 - **Home:** gains an «الأذكار» tile only when Azkar content is installed (ADR 0017: no dead ends).
-- **Salah:** gains an «أذكار بعد الصلاة» row under the same condition.
+- **Menu** (ADR 0032): an «الأذكار» card in the القائمة grid, under the same condition.
+- **Salah:** unchanged. No Azkar row is added to the Salah screen (developer, 1 Nov 2026: the Salah feature must not change). The `SalahAzkar` frame is withdrawn.
 - **Routes:** `/azkar/*`, pushed over the tabs. Details and reminder settings are sheets (ADR 0013, 0020).
 
 ## Consequences
