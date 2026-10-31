@@ -43,6 +43,25 @@ export function formatHijriDate(date: Date, locale: Locale = getLocale()): strin
   return locale === 'ar' ? arabizeDigits(text) : text;
 }
 
+const weekdayFormatters = new Map<Locale, Intl.DateTimeFormat>();
+
+function weekdayFormatter(locale: Locale): Intl.DateTimeFormat {
+  const cached = weekdayFormatters.get(locale);
+  if (cached) {
+    return cached;
+  }
+  const created = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  weekdayFormatters.set(locale, created);
+  return created;
+}
+
+/** «السبت ٣١ أكتوبر» / "Saturday, October 31" — the Gregorian line under the Salah header's Hijri date. */
+export function formatWeekdayDate(date: Date, locale: Locale = getLocale()): string {
+  const text = weekdayFormatter(locale).format(date);
+  // ICU punctuates the Arabic weekday with «،»; the Salah header drops it (quran-app-screens.html, #Salah).
+  return locale === 'ar' ? arabizeDigits(text).replace(/،/g, '') : text;
+}
+
 const timeFormatters = new Map<Locale, Intl.DateTimeFormat>();
 
 function timeFormatter(locale: Locale): Intl.DateTimeFormat {

@@ -1,6 +1,6 @@
 import citiesData from '../../../../assets/salah/cities.json';
 
-interface City {
+export interface City {
   id: string;
   ar: string;
   en: string;

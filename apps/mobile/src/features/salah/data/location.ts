@@ -10,13 +10,21 @@ interface ManualLocation {
 }
 
 export const getLocationPermissionStatus = async () => {
-  const { status } = await Location.getForegroundPermissionsAsync();
-  return status;
+  try {
+    const result = await Location.getForegroundPermissionsAsync();
+    return result?.status ?? Location.PermissionStatus.UNDETERMINED;
+  } catch {
+    return Location.PermissionStatus.UNDETERMINED;
+  }
 };
 
 export const requestLocationPermissions = async () => {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  return status;
+  try {
+    const result = await Location.requestForegroundPermissionsAsync();
+    return result?.status ?? Location.PermissionStatus.DENIED;
+  } catch {
+    return Location.PermissionStatus.DENIED;
+  }
 };
 
 export const getCoordinates = async (): Promise<{ lat: number; lng: number } | null> => {
@@ -30,21 +38,29 @@ export const getCoordinates = async (): Promise<{ lat: number; lng: number } | n
     }
   }
 
-  const { status } = await Location.getForegroundPermissionsAsync();
-  if (status !== 'granted') {
+  const status = await getLocationPermissionStatus();
+  if (status !== Location.PermissionStatus.GRANTED) {
     return null;
   }
 
   try {
-    let location = await Location.getLastKnownPositionAsync();
-    if (location && (Date.now() - location.timestamp < 30 * 60 * 1000)) { // Use if less than 30 mins old
-      return { lat: location.coords.latitude, lng: location.coords.longitude };
+    const lastKnown = await Location.getLastKnownPositionAsync();
+    if (lastKnown && Date.now() - lastKnown.timestamp < 30 * 60 * 1000) {
+      return { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude };
     }
 
-    location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    return { lat: location.coords.latitude, lng: location.coords.longitude };
-  } catch (error) {
-    console.error('Error getting location:', error);
+    try {
+      const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      return { lat: current.coords.latitude, lng: current.coords.longitude };
+    } catch {
+      // Simulator and some devices have no live GPS fix. A stale last-known
+      // reading is still enough to compute a bearing; otherwise the empty state.
+      if (lastKnown) {
+        return { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude };
+      }
+      return null;
+    }
+  } catch {
     return null;
   }
 };

@@ -141,6 +141,18 @@ jest.mock('react-native-mmkv', () => ({
   createMMKV: () => mockCreateMmkv(),
 }));
 
+// GPS and heading are native. Route tests mount the Salah tab, so the module
+// has to resolve without a device. Feature tests that need a fix override this.
+jest.mock('expo-location', () => ({
+  Accuracy: { Balanced: 3, BestForNavigation: 6, High: 4, Highest: 5, Low: 2, Lowest: 1 },
+  PermissionStatus: { DENIED: 'denied', GRANTED: 'granted', UNDETERMINED: 'undetermined' },
+  getCurrentPositionAsync: jest.fn(() => Promise.resolve(null)),
+  getForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'denied' })),
+  getLastKnownPositionAsync: jest.fn(() => Promise.resolve(null)),
+  requestForegroundPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'denied' })),
+  watchHeadingAsync: jest.fn(() => Promise.resolve({ remove: jest.fn() })),
+}));
+
 // Local notifications are a native module; tests drive them through these fakes.
 jest.mock('expo-notifications', () => ({
   AndroidImportance: { DEFAULT: 3 },

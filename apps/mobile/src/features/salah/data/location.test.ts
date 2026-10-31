@@ -44,6 +44,34 @@ describe('location data module', () => {
     expect(coords).toBeNull();
   });
 
+  it('falls back to last-known when the live GPS fix fails', async () => {
+    (Location.getForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({
+      status: Location.PermissionStatus.GRANTED,
+    });
+    (Location.getLastKnownPositionAsync as jest.Mock).mockResolvedValueOnce({
+      coords: { latitude: 24.7136, longitude: 46.6753 },
+      timestamp: Date.now() - 60 * 60 * 1000,
+    });
+    (Location.getCurrentPositionAsync as jest.Mock).mockRejectedValueOnce(new Error('no fix'));
+
+    await expect(getCoordinates()).resolves.toEqual({ lat: 24.7136, lng: 46.6753 });
+  });
+
+  it('treats a missing permission payload as undetermined, not a throw', async () => {
+    (Location.getForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce(undefined);
+    await expect(getLocationPermissionStatus()).resolves.toBe(Location.PermissionStatus.UNDETERMINED);
+  });
+
+  it('returns null when GPS is unavailable and there is no last-known', async () => {
+    (Location.getForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({
+      status: Location.PermissionStatus.GRANTED,
+    });
+    (Location.getLastKnownPositionAsync as jest.Mock).mockResolvedValueOnce(null);
+    (Location.getCurrentPositionAsync as jest.Mock).mockRejectedValueOnce(new Error('no fix'));
+
+    await expect(getCoordinates()).resolves.toBeNull();
+  });
+
   it('manual location round-trips through MMKV', () => {
     setManualLocation({ id: 'dubai', lat: 25.2048, lng: 55.2708 });
     expect(getStoredLocationSource()).toBe('manual');

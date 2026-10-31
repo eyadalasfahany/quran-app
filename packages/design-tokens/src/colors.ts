@@ -46,6 +46,22 @@ export type ColorTokens = {
   /** The options bar's glass on player-bg (quran-app-screens.html, #Player). */
   playerGlassFill: string;
   playerGlassStroke: string;
+  /** The Qibla instrument (quran-app-screens.html, #Qibla). Same in every theme, like player*. */
+  qiblaGlowBrand: string;
+  qiblaTickMinor: string;
+  qiblaTickMajor: string;
+  qiblaGoldSoft: string;
+  qiblaGoldStroke: string;
+  qiblaGoldHalo: string;
+  qiblaAlignedHalo: string;
+  qiblaBezelFrom: string;
+  qiblaBezelTo: string;
+  qiblaHubFrom: string;
+  qiblaHubTo: string;
+  qiblaHubRing: string;
+  qiblaDartFrom: string;
+  qiblaDartGlow: string;
+  qiblaCounterweight: string;
 };
 
 export type ShadowTokens = {
@@ -93,6 +109,21 @@ export const colors: Record<ThemeName, ColorTokens> = {
     playerAccent: '#e6c77e',
     playerGlassFill: 'rgba(255, 255, 255, 0.07)',
     playerGlassStroke: 'rgba(255, 255, 255, 0.14)',
+    qiblaGlowBrand: 'rgba(31, 77, 64, 0.5)',
+    qiblaTickMinor: 'rgba(243, 238, 226, 0.16)',
+    qiblaTickMajor: 'rgba(243, 238, 226, 0.45)',
+    qiblaGoldSoft: 'rgba(201, 169, 97, 0.12)',
+    qiblaGoldStroke: 'rgba(201, 169, 97, 0.4)',
+    qiblaGoldHalo: 'rgba(201, 169, 97, 0.35)',
+    qiblaAlignedHalo: 'rgba(201, 169, 97, 0.13)',
+    qiblaBezelFrom: '#13201c',
+    qiblaBezelTo: '#0b1411',
+    qiblaHubFrom: '#182b26',
+    qiblaHubTo: '#0a1310',
+    qiblaHubRing: 'rgba(243, 238, 226, 0.25)',
+    qiblaDartFrom: '#a07c33',
+    qiblaDartGlow: 'rgba(230, 199, 126, 0.55)',
+    qiblaCounterweight: 'rgba(243, 238, 226, 0.22)',
   },
   sepia: {
     surface: '#f1e6cf',
@@ -133,6 +164,21 @@ export const colors: Record<ThemeName, ColorTokens> = {
     playerAccent: '#e6c77e',
     playerGlassFill: 'rgba(255, 255, 255, 0.07)',
     playerGlassStroke: 'rgba(255, 255, 255, 0.14)',
+    qiblaGlowBrand: 'rgba(31, 77, 64, 0.5)',
+    qiblaTickMinor: 'rgba(243, 238, 226, 0.16)',
+    qiblaTickMajor: 'rgba(243, 238, 226, 0.45)',
+    qiblaGoldSoft: 'rgba(201, 169, 97, 0.12)',
+    qiblaGoldStroke: 'rgba(201, 169, 97, 0.4)',
+    qiblaGoldHalo: 'rgba(201, 169, 97, 0.35)',
+    qiblaAlignedHalo: 'rgba(201, 169, 97, 0.13)',
+    qiblaBezelFrom: '#13201c',
+    qiblaBezelTo: '#0b1411',
+    qiblaHubFrom: '#182b26',
+    qiblaHubTo: '#0a1310',
+    qiblaHubRing: 'rgba(243, 238, 226, 0.25)',
+    qiblaDartFrom: '#a07c33',
+    qiblaDartGlow: 'rgba(230, 199, 126, 0.55)',
+    qiblaCounterweight: 'rgba(243, 238, 226, 0.22)',
   },
   dark: {
     surface: '#0e1715',
@@ -173,6 +219,21 @@ export const colors: Record<ThemeName, ColorTokens> = {
     playerAccent: '#e6c77e',
     playerGlassFill: 'rgba(255, 255, 255, 0.07)',
     playerGlassStroke: 'rgba(255, 255, 255, 0.14)',
+    qiblaGlowBrand: 'rgba(31, 77, 64, 0.5)',
+    qiblaTickMinor: 'rgba(243, 238, 226, 0.16)',
+    qiblaTickMajor: 'rgba(243, 238, 226, 0.45)',
+    qiblaGoldSoft: 'rgba(201, 169, 97, 0.12)',
+    qiblaGoldStroke: 'rgba(201, 169, 97, 0.4)',
+    qiblaGoldHalo: 'rgba(201, 169, 97, 0.35)',
+    qiblaAlignedHalo: 'rgba(201, 169, 97, 0.13)',
+    qiblaBezelFrom: '#13201c',
+    qiblaBezelTo: '#0b1411',
+    qiblaHubFrom: '#182b26',
+    qiblaHubTo: '#0a1310',
+    qiblaHubRing: 'rgba(243, 238, 226, 0.25)',
+    qiblaDartFrom: '#a07c33',
+    qiblaDartGlow: 'rgba(230, 199, 126, 0.55)',
+    qiblaCounterweight: 'rgba(243, 238, 226, 0.22)',
   },
 };
 

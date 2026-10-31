@@ -177,6 +177,7 @@ describe('MainShell', () => {
       'sidebar-home',
       'sidebar-mushaf',
       'sidebar-listen',
+      'sidebar-salah',
       'sidebar-settings',
     ]);
   });

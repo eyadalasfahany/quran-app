@@ -3,7 +3,8 @@
     "home": "Home",
     "mushaf": "Mushaf",
     "listen": "Listen",
-    "myQuran": "My Quran"
+    "myQuran": "My Quran",
+    "salah": "Prayer"
   },
   "listen": {
     "search": {
@@ -313,7 +314,59 @@
       "maghrib": "Maghrib",
       "isha": "Isha",
       "qibla": "Qibla: {{degrees}}°",
-      "hijri": "{{date}}"
+      "hijri": "{{date}}",
+      "qiblaScreen": {
+        "title": "Qibla Direction",
+        "subtitle": "Makkah · Al-Masjid al-Haram",
+        "fromTrueNorth": "degrees from true north",
+        "aligned": "Facing the qibla",
+        "calibrate": "Move your device in a figure 8",
+        "distance": "To Al-Masjid al-Haram",
+        "kmUnit": "km",
+        "accuracy": "Compass accuracy",
+        "accuracyGood": "Good",
+        "accuracyPoor": "Low",
+        "location": "Location",
+        "locationAuto": "Automatic",
+        "unsupportedNote": "This device has no compass; the direction shown is computed from your location",
+        "noLocationTitle": "Location not set",
+        "noLocationBody": "We need your location to compute the qibla direction and distance",
+        "setLocation": "Set location",
+        "back": "Back",
+        "locationA11y": "Location",
+        "a11yDial": "Qibla direction: {{degrees}} degrees",
+        "cardinalNorth": "N",
+        "cardinalSouth": "S",
+        "cardinalWest": "W",
+        "cardinalEast": "E"
+      }
+    }
+  },
+  "salah": {
+    "title": "Prayer",
+    "next": "Next prayer",
+    "remaining": "{{time}} left",
+    "sourceAuto": "Automatic",
+    "sourceManual": "Manual",
+    "notify": "{{name}} reminder",
+    "qiblaRow": {
+      "title": "Qibla direction",
+      "subtitle": "{{degrees}}° from true north"
+    },
+    "location": {
+      "a11y": "Location",
+      "title": "Location",
+      "close": "Close",
+      "auto": "Automatic location",
+      "autoHint": "Uses your device's current location",
+      "searchPlaceholder": "Search for a city",
+      "noResults": "No matching cities",
+      "permissionDenied": "Location permission denied — pick a city manually or enable it in Settings"
+    },
+    "noLocation": {
+      "title": "Set your location",
+      "body": "To show prayer times and the qibla direction, allow location access or pick a city manually.",
+      "chooseCity": "Choose a city"
     }
   },
   "player": {

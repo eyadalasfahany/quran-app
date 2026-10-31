@@ -30,6 +30,12 @@ export const storageKeys = {
     manualCityId: 'salah.manualCityId',
     manualLat: 'salah.manualLat',
     manualLng: 'salah.manualLng',
+    // Per-prayer reminder toggles (persisted in step 3; scheduling lands in step 4).
+    bellFajr: 'salah.bell.fajr',
+    bellDhuhr: 'salah.bell.dhuhr',
+    bellAsr: 'salah.bell.asr',
+    bellMaghrib: 'salah.bell.maghrib',
+    bellIsha: 'salah.bell.isha',
   },
 } as const;
 

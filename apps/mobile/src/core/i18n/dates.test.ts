@@ -1,4 +1,4 @@
-import { formatDate, formatHijriDate, formatTime } from './dates';
+import { formatDate, formatHijriDate, formatTime, formatWeekdayDate } from './dates';
 
 // 2026-10-28T12:00:00Z
 const WHEN = 1_793_205_600_000;
@@ -45,6 +45,31 @@ describe('formatHijriDate', () => {
 
   it('defaults to the app locale', () => {
     expect(formatHijriDate(DAY)).toBe(formatHijriDate(DAY, 'ar'));
+  });
+});
+
+describe('formatWeekdayDate', () => {
+  // Saturday 2026-10-31, local noon.
+  const DAY = new Date(2026, 9, 31, 12, 0, 0, 0);
+
+  it('formats the Arabic weekday date with Arabic-Indic digits', () => {
+    const text = formatWeekdayDate(DAY, 'ar');
+
+    expect(text).toContain('السبت');
+    expect(text).toContain('٣١');
+    expect(text).toContain('أكتوبر');
+  });
+
+  it('formats the English weekday date', () => {
+    const text = formatWeekdayDate(DAY, 'en');
+
+    expect(text).toContain('Saturday');
+    expect(text).toContain('31');
+    expect(text).toContain('October');
+  });
+
+  it('defaults to the app locale', () => {
+    expect(formatWeekdayDate(DAY)).toBe(formatWeekdayDate(DAY, 'ar'));
   });
 });
 

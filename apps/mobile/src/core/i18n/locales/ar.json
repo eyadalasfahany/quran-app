@@ -3,7 +3,8 @@
     "home": "الرئيسية",
     "mushaf": "المصحف",
     "listen": "الاستماع",
-    "myQuran": "مصحفي"
+    "myQuran": "مصحفي",
+    "salah": "الصلاة"
   },
   "listen": {
     "search": {
@@ -313,7 +314,59 @@
       "maghrib": "المغرب",
       "isha": "العشاء",
       "qibla": "القبلة: {{degrees}}°",
-      "hijri": "{{date}}"
+      "hijri": "{{date}}",
+      "qiblaScreen": {
+        "title": "اتجاه القبلة",
+        "subtitle": "مكة المكرمة · المسجد الحرام",
+        "fromTrueNorth": "درجة من الشمال الحقيقي",
+        "aligned": "أنت باتجاه القبلة",
+        "calibrate": "حرّك جهازك على شكل ٨",
+        "distance": "إلى المسجد الحرام",
+        "kmUnit": "كم",
+        "accuracy": "دقة البوصلة",
+        "accuracyGood": "جيدة",
+        "accuracyPoor": "منخفضة",
+        "location": "الموقع",
+        "locationAuto": "تلقائي",
+        "unsupportedNote": "هذا الجهاز لا يدعم البوصلة؛ الاتجاه المعروض محسوب من موقعك",
+        "noLocationTitle": "الموقع غير محدد",
+        "noLocationBody": "نحتاج موقعك لحساب اتجاه القبلة والمسافة",
+        "setLocation": "تحديد الموقع",
+        "back": "رجوع",
+        "locationA11y": "الموقع",
+        "a11yDial": "اتجاه القبلة: {{degrees}} درجة",
+        "cardinalNorth": "ش",
+        "cardinalSouth": "ج",
+        "cardinalWest": "غ",
+        "cardinalEast": "ق"
+      }
+    }
+  },
+  "salah": {
+    "title": "الصلاة",
+    "next": "الصلاة القادمة",
+    "remaining": "متبقٍ {{time}}",
+    "sourceAuto": "تلقائي",
+    "sourceManual": "يدوي",
+    "notify": "تنبيه {{name}}",
+    "qiblaRow": {
+      "title": "اتجاه القبلة",
+      "subtitle": "{{degrees}}° من الشمال الحقيقي"
+    },
+    "location": {
+      "a11y": "الموقع",
+      "title": "الموقع",
+      "close": "إغلاق",
+      "auto": "الموقع التلقائي",
+      "autoHint": "يستخدم الموقع الحالي لجهازك",
+      "searchPlaceholder": "ابحث عن مدينة",
+      "noResults": "لا نتائج مطابقة",
+      "permissionDenied": "إذن الموقع مرفوض — اختر مدينة يدويًا أو فعّل الإذن من الإعدادات"
+    },
+    "noLocation": {
+      "title": "حدّد موقعك",
+      "body": "لعرض مواقيت الصلاة واتجاه القبلة، اسمح بالوصول إلى موقعك أو اختر مدينة يدويًا.",
+      "chooseCity": "اختيار مدينة"
     }
   },
   "player": {

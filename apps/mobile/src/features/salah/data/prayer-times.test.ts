@@ -1,4 +1,4 @@
-import { timesFor, qiblaBearing, nextPrayer, distanceToMakkahKm } from '../data/prayer-times';
+import { timesFor, qiblaBearing, nextPrayer, prevPrayer, distanceToMakkahKm } from '../data/prayer-times';
 
 describe('prayer-times data module', () => {
   const fixedDate = new Date('2026-10-27T12:00:00Z'); // A fixed date for consistent testing
@@ -71,6 +71,39 @@ describe('prayer-times data module', () => {
 
     expect(next?.name).toBe('fajr');
     expect(next?.time.toISOString()).toBe(tomorrowFajr.toISOString());
+  });
+
+  it('should determine the previous prayer, spanning midnight with yesterday isha', () => {
+    const riyadhCoords = { lat: 24.7136, lng: 46.6753 };
+    const times = timesFor(fixedDate, riyadhCoords);
+
+    // Between Dhuhr and Asr (dhuhr 08:37Z, asr 11:51Z)
+    const midAfternoon = new Date(fixedDate);
+    midAfternoon.setUTCHours(10, 0, 0, 0);
+    let prev = prevPrayer(times, midAfternoon, riyadhCoords);
+    expect(prev.name).toBe('dhuhr');
+    expect(prev.time.toISOString()).toBe(times.dhuhr.toISOString());
+
+    // After Isha: prev is isha itself
+    const night = new Date(fixedDate);
+    night.setUTCHours(17, 0, 0, 0);
+    prev = prevPrayer(times, night, riyadhCoords);
+    expect(prev.name).toBe('isha');
+    expect(prev.time.toISOString()).toBe(times.isha.toISOString());
+
+    // Before Fajr (fajr 01:38Z): prev is yesterday's isha
+    const beforeFajr = new Date(fixedDate);
+    beforeFajr.setUTCHours(0, 30, 0, 0);
+    prev = prevPrayer(times, beforeFajr, riyadhCoords);
+    const yesterdayIsha = timesFor(new Date('2026-10-26T12:00:00Z'), riyadhCoords).isha;
+    expect(prev.name).toBe('isha');
+    expect(prev.time.toISOString()).toBe(yesterdayIsha.toISOString());
+
+    // Between Fajr and Shurouq: prev is fajr (الشروق is not a prayer)
+    const afterFajr = new Date(fixedDate);
+    afterFajr.setUTCHours(2, 0, 0, 0);
+    prev = prevPrayer(times, afterFajr, riyadhCoords);
+    expect(prev.name).toBe('fajr');
   });
 
   it('should calculate distance to Makkah correctly', () => {

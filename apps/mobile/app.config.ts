@@ -107,6 +107,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       ['expo-localization', { supportsRTL: true }],
+      // Prayer times and the qibla bearing (ADR 0030). Foreground only; no background tracking.
+      [
+        'expo-location',
+        {
+          locationWhenInUsePermission: 'يحتاج طيبة إلى موقعك لعرض مواقيت الصلاة واتجاه القبلة.',
+        },
+      ],
       // Release builds reload through expo-updates after a language change.
       // No update URL until EAS exists, so this does not check for remote updates.
       'expo-updates',
