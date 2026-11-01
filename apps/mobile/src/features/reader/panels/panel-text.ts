@@ -71,7 +71,11 @@ export function tafsirRowSubtitle(
     parts.push(t('ui.download.failed'));
   }
   if (row.author !== null) {
-    parts.push(row.author);
+    // An author in the other script pulls the size after it into its own direction («MB 1 · المحلي» in English).
+    // First-strong isolates (U+2068 … U+2069) keep the name to itself.
+    const interfaceDirection: TextDirection = locale === 'ar' ? 'rtl' : 'ltr';
+    const sameDirection = textDirection(row.author, interfaceDirection) === interfaceDirection;
+    parts.push(sameDirection ? row.author : `⁨${row.author}⁩`);
   }
   if (row.packSizeBytes > 0) {
     parts.push(t('ui.download.size', { size: formatNumber(Number((row.packSizeBytes / 1e6).toFixed(1)), locale) }));

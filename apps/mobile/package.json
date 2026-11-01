@@ -13,6 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:generate:user": "drizzle-kit generate --config drizzle.user.config.ts",
     "seed:build": "node scripts/build-content-seed.mjs",
+    "assets:brand": "node scripts/generate-brand-assets.mjs",
     "postinstall": "node scripts/patch-nitro-exception-ptr.mjs && node scripts/patch-expo-audio-exact-seek.mjs"
   },
   "dependencies": {
@@ -65,6 +66,7 @@
   "devDependencies": {
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "30.0.0",
+    "@types/node": "^26.6.6",
     "@types/react": "~19.3.0",
     "babel-plugin-inline-import": "3.0.0",
     "babel-preset-expo": "~58.0.0",

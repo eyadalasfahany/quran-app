@@ -37,6 +37,18 @@ describe('ReciterSearchField', () => {
     expect(view.getByRole('search')).toHaveProp('value', 'x');
   });
 
+  it.each([
+    ['en', 'left'],
+    ['ar', undefined],
+  ] as const)('aligns the typed text as %s expects (textAlign %s)', async (locale, textAlign) => {
+    const view = await renderUi(
+      <ReciterSearchField onChangeText={() => undefined} placeholder="placeholder" testID="search" value="" />,
+      { locale },
+    );
+
+    expect(flatStyle(view.getByRole('search').props.style).textAlign).toBe(textAlign);
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/audio/components/ReciterSearchField.tsx')).toEqual([]);
   });

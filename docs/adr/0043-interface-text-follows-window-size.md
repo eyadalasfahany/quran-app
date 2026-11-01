@@ -18,10 +18,10 @@ The developer asked (1 Nov 2026) for text size to follow the screen size, set in
    - Quran text (`quranTypeScale`): it follows the reader's own 80–160% setting, and the mushaf font size comes from the page width (spec §4).
    - Icons, touch targets, spacing and radii.
 4. **Dynamic Type stays.** The factor sets the base size. The system text size still multiplies it, capped by `maxFontScale` as before.
-5. **One place.** `UiText` and the text inputs read the factor through `useTextScale()` (`src/core/theme`). Components never multiply by it themselves.
+5. **Two places.** `UiText` applies the factor once to its final size and line height, token or override alike (`useTextScale()`, `src/core/theme`). `ThemeProvider` scales `theme.text`, so the text inputs and the tafsir passages that read `theme.text.body` get scaled sizes. Components never multiply by it themselves. The Sibha inputs set no size of their own and keep the system default.
 
 ## Consequences
 
 - Text grows by up to 15% on large phones and iPads and shrinks by up to 10% on small windows. Fixed-height controls that hold text must allow that range; the review checks the largest and smallest cases.
 - Screenshots on the iPhone 17 simulator (402 pt) show text 3% larger than the 390 pt frame. That difference is approved by this ADR.
-- Tests cover the factor's boundaries in the tokens package and the scaled sizes in `UiText`.
+- Tests cover the factor's boundaries (`apps/mobile/src/core/theme/textScale.test.ts`; the tokens package has no test runner) and the scaled sizes in `UiText`. Jest's default window is set to 390 × 844 (`jest.setup.ts`), so other tests see a factor of 1.

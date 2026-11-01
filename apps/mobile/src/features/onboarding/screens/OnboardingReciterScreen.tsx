@@ -5,6 +5,7 @@ import { ScrollView, View } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { useLocale } from '@/core/i18n/useLocale';
+import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { pause } from '@/features/audio/player';
 import { recitationStyleKey, reciterInitial } from '@/features/audio/player-view';
@@ -63,44 +64,47 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
 
   return (
     <Screen testID={testID}>
-      <ScrollView
-        contentContainerStyle={{
-          gap: theme.space[4],
-          paddingBottom: theme.space[4],
-          paddingHorizontal: theme.space[5],
-          paddingTop: theme.space[6],
-        }}
-        style={{ flex: 1 }}
-      >
-        <OnboardingTopBar
-          backLabel={t('onboarding.back')}
-          onBack={() => router.back()}
-          onSkip={finishOnboarding}
-          skipLabel={t('onboarding.skip')}
-        />
-        <View style={{ gap: 6 }}>
-          <UiText variant="displayMd">{t('onboarding.reciter.title')}</UiText>
-          <UiText tone="muted" variant="subhead">
-            {t('onboarding.reciter.subtitle')}
-          </UiText>
-        </View>
-        <View
-          accessibilityLabel={t('onboarding.reciter.groupLabel')}
-          accessibilityRole="radiogroup"
-          style={{ gap: theme.space[2] }}
+      {/* The column caps the content at 720 on wide windows (spec §4). Its gutter is 0: the phone layout keeps its own padding. */}
+      <ContentColumn gutter={0} testID={`${testID}-column`}>
+        <ScrollView
+          contentContainerStyle={{
+            gap: theme.space[4],
+            paddingBottom: theme.space[4],
+            paddingHorizontal: theme.space[5],
+            paddingTop: theme.space[6],
+          }}
+          style={{ flex: 1 }}
         >
-          {rows.map(renderRow)}
-        </View>
-        <Card padding={3} testID="onboarding-daily-reminder">
-          <DailyReminderRow />
-        </Card>
-      </ScrollView>
-      <OnboardingFooter
-        continueLabel={t('onboarding.startReading')}
-        onContinue={finishOnboarding}
-        step={3}
-        stepLabel={t('onboarding.stepOfThree', { step: 3, total: 3 })}
-      />
+          <OnboardingTopBar
+            backLabel={t('onboarding.back')}
+            onBack={() => router.back()}
+            onSkip={finishOnboarding}
+            skipLabel={t('onboarding.skip')}
+          />
+          <View style={{ gap: 6 }}>
+            <UiText variant="displayMd">{t('onboarding.reciter.title')}</UiText>
+            <UiText tone="muted" variant="subhead">
+              {t('onboarding.reciter.subtitle')}
+            </UiText>
+          </View>
+          <View
+            accessibilityLabel={t('onboarding.reciter.groupLabel')}
+            accessibilityRole="radiogroup"
+            style={{ gap: theme.space[2] }}
+          >
+            {rows.map(renderRow)}
+          </View>
+          <Card padding={3} testID="onboarding-daily-reminder">
+            <DailyReminderRow />
+          </Card>
+        </ScrollView>
+        <OnboardingFooter
+          continueLabel={t('onboarding.startReading')}
+          onContinue={finishOnboarding}
+          step={3}
+          stepLabel={t('onboarding.stepOfThree', { step: 3, total: 3 })}
+        />
+      </ContentColumn>
     </Screen>
   );
 }

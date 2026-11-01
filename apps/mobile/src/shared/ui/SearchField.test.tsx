@@ -94,6 +94,15 @@ describe('SearchField', () => {
     expect(style.paddingRight).toBeUndefined();
   });
 
+  it.each([
+    ['en', 'left'],
+    ['ar', undefined],
+  ] as const)('aligns the typed text as %s expects (textAlign %s)', async (locale, textAlign) => {
+    const view = await renderUi(field(), { locale });
+
+    expect(flatStyle(view.getByTestId('search-input').props.style).textAlign).toBe(textAlign);
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('SearchField.tsx')).toEqual([]);
   });

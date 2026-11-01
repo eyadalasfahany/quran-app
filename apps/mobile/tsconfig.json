@@ -5,7 +5,8 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "types": [
-      "jest"
+      "jest",
+      "node"
     ],
     "paths": {
       "@/*": [

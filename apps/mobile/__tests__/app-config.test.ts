@@ -42,24 +42,33 @@ describe('app.config', () => {
     expect(config.icon).toBe('./assets/images/icon.png');
     expect(config.ios?.icon).toBeUndefined();
     expect(config.android?.adaptiveIcon).toEqual({
-      backgroundColor: '#E9DED0',
-      foregroundImage: './assets/images/icon.png',
+      backgroundColor: '#F9F7F2',
+      foregroundImage: './assets/images/android-adaptive-foreground.png',
     });
     expect(config.plugins).toContainEqual([
       'expo-splash-screen',
       {
-        backgroundColor: '#1F4D40',
+        backgroundColor: '#F9F7F2',
         image: './assets/images/taybah-vertical-splash-screen.png',
         enableFullScreenImage_legacy: true,
         imageWidth: 390,
-        resizeMode: 'contain',
+        resizeMode: 'cover',
+        ios: {
+          backgroundColor: '#F9F7F2',
+          tabletBackgroundColor: '#F9F7F2',
+          tabletImage: './assets/images/taybah-tablet-portrait-splash-screen.png',
+        },
         android: {
-          backgroundColor: '#1F4D40',
-          image: './assets/images/icon.png',
-          imageWidth: 192,
+          backgroundColor: '#F9F7F2',
+          image: './assets/images/taybah-vertical-splash-screen.png',
+          imageWidth: 390,
+          resizeMode: 'cover',
         },
       },
     ]);
+    expect(config.plugins?.some((entry) => Array.isArray(entry) && entry[1]?.landscapeImage != null)).toBe(
+      true,
+    );
   });
 
   it('names the app Taybah, and طيبة on Arabic devices', () => {

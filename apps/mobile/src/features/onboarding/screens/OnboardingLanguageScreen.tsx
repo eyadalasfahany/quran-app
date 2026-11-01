@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { setLocale, type Locale } from '@/core/i18n';
+import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { OnboardingFooter } from '@/features/onboarding/components/OnboardingFooter';
 import { OnboardingHeroPattern } from '@/features/onboarding/components/OnboardingHeroPattern';
@@ -25,56 +26,59 @@ export function OnboardingLanguageScreen({ testID = 'onboarding-language' }: { t
 
   return (
     <Screen testID={testID}>
-      <OnboardingHeroPattern />
-      <View
-        style={{
-          flex: 1,
-          gap: theme.space[4],
-          marginTop: -theme.space[8],
-          paddingHorizontal: theme.space[6],
-        }}
-      >
-        <View style={{ alignItems: 'center', gap: 6 }}>
-          <UiText align="center" variant="displayLg">
-            {t('onboarding.language.title')}
-          </UiText>
-          <UiText align="center" tone="muted" variant="body">
-            {tagline}
-          </UiText>
-          {/* The second line is the English gloss under the Arabic tagline; in English it would repeat the first. */}
-          {taglineEn !== tagline ? (
-            <UiText align="center" tone="muted" variant="caption">
-              {taglineEn}
-            </UiText>
-          ) : null}
-        </View>
+      {/* The column caps the content at 720 on wide windows (spec §4). Its gutter is 0: the phone layout keeps its own padding. */}
+      <ContentColumn gutter={0} testID={`${testID}-column`}>
+        <OnboardingHeroPattern />
         <View
-          accessibilityLabel={t('onboarding.language.groupLabel')}
-          accessibilityRole="radiogroup"
-          style={{ gap: theme.space[2] }}
+          style={{
+            flex: 1,
+            gap: theme.space[4],
+            marginTop: -theme.space[8],
+            paddingHorizontal: theme.space[6],
+          }}
         >
-          <OnboardingRadioCard
-            detail={t('onboarding.language.arabicDetail')}
-            onPress={() => setLocalLocale('ar')}
-            selected={locale === 'ar'}
-            testID="onboarding-locale-ar"
-            title={t('onboarding.language.arabic')}
-          />
-          <OnboardingRadioCard
-            detail={t('onboarding.language.englishDetail')}
-            onPress={() => setLocalLocale('en')}
-            selected={locale === 'en'}
-            testID="onboarding-locale-en"
-            title={t('onboarding.language.english')}
-          />
+          <View style={{ alignItems: 'center', gap: 6 }}>
+            <UiText align="center" variant="displayLg">
+              {t('onboarding.language.title')}
+            </UiText>
+            <UiText align="center" tone="muted" variant="body">
+              {tagline}
+            </UiText>
+            {/* The second line is the English gloss under the Arabic tagline; in English it would repeat the first. */}
+            {taglineEn !== tagline ? (
+              <UiText align="center" tone="muted" variant="caption">
+                {taglineEn}
+              </UiText>
+            ) : null}
+          </View>
+          <View
+            accessibilityLabel={t('onboarding.language.groupLabel')}
+            accessibilityRole="radiogroup"
+            style={{ gap: theme.space[2] }}
+          >
+            <OnboardingRadioCard
+              detail={t('onboarding.language.arabicDetail')}
+              onPress={() => setLocalLocale('ar')}
+              selected={locale === 'ar'}
+              testID="onboarding-locale-ar"
+              title={t('onboarding.language.arabic')}
+            />
+            <OnboardingRadioCard
+              detail={t('onboarding.language.englishDetail')}
+              onPress={() => setLocalLocale('en')}
+              selected={locale === 'en'}
+              testID="onboarding-locale-en"
+              title={t('onboarding.language.english')}
+            />
+          </View>
         </View>
-      </View>
-      <OnboardingFooter
-        continueLabel={t('onboarding.continue')}
-        onContinue={continueNext}
-        step={1}
-        stepLabel={t('onboarding.stepOfThree', { step: 1, total: 3 })}
-      />
+        <OnboardingFooter
+          continueLabel={t('onboarding.continue')}
+          onContinue={continueNext}
+          step={1}
+          stepLabel={t('onboarding.stepOfThree', { step: 1, total: 3 })}
+        />
+      </ContentColumn>
     </Screen>
   );
 }

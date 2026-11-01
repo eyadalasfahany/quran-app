@@ -1,7 +1,8 @@
 import { screen } from '@testing-library/react-native';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { OnboardingLanguageScreen } from './OnboardingLanguageScreen';
 
@@ -37,6 +38,18 @@ describe('OnboardingLanguageScreen', () => {
 
     expect(screen.getByTestId('onboarding-locale-ar')).toBeOnTheScreen();
     expect(screen.getByTestId('onboarding-locale-en')).toBeOnTheScreen();
+  });
+
+  it('caps the content in a 720 pt column on a 1366 pt window, so the radio cards do not stretch', async () => {
+    setWindowSize(1366, 1024);
+    try {
+      const view = await renderUi(<OnboardingLanguageScreen />, { locale: 'en' });
+
+      expect(flatStyle(view.getByTestId('onboarding-language-column').props.style)).toMatchObject({ maxWidth: 720 });
+      expect(view.getByTestId('onboarding-locale-en')).toBeOnTheScreen();
+    } finally {
+      resetWindowSize();
+    }
   });
 
   it('uses theme tokens only', () => {

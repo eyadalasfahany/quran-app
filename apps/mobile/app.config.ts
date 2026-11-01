@@ -44,7 +44,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     // Layout follows window size; no orientation lock anywhere (spec §4).
     orientation: 'default',
-    // Home-screen mark, cropped from the logo so the Kaaba stays inside the icon mask.
+    // Home-screen mark from the Nabawi dome logo (square 1024 PNG).
     // iOS uses this PNG; a Liquid Glass .icon would replace it.
     icon: './assets/images/icon.png',
     userInterfaceStyle: 'automatic',
@@ -62,10 +62,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         UIRequiresFullScreen: false,
         // Playback continues with the screen locked (spec §12). The plugin adds the same key via expo-audio.
         UIBackgroundModes: ['audio'],
-        // Arabic is the app's own default language, whatever the device language. UIKit takes its
-        // layout direction (and the native tab bar order) from the app's development region and
-        // declared localizations, so the native chrome mirrors even on an English device.
-        // The per-launch language itself is set at runtime (src/core/i18n/app-language.ts).
+        // Arabic is the app's own default language, whatever the device language. At launch UIKit picks the
+        // app's localization from AppleLanguages, which src/core/i18n/app-language.ts sets to the saved
+        // language, among the bundled lproj folders (see `locales`); the development region is the fallback.
+        // That localization drives the native chrome and natural text alignment, and it changes only on the
+        // next cold start, so UiText and the search fields set their alignment explicitly.
         CFBundleDevelopmentRegion: 'ar',
         // iOS applies RTL only for languages the app declares.
         CFBundleLocalizations: ['ar', 'en'],
@@ -81,8 +82,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       package: variant.id,
       adaptiveIcon: {
-        backgroundColor: '#E9DED0',
-        foregroundImage: './assets/images/icon.png',
+        backgroundColor: '#F9F7F2',
+        // 1024×1024, logo in ~66% safe zone for the circular mask (see generate-brand-assets.mjs).
+        foregroundImage: './assets/images/android-adaptive-foreground.png',
       },
       predictiveBackGestureEnabled: false,
     },
@@ -93,20 +95,35 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-splash-screen',
         {
-          backgroundColor: '#1F4D40',
+          backgroundColor: '#F9F7F2',
+          // Phone: portrait poster (1440×3120). Cover fills full width and height (landscape too).
           image: './assets/images/taybah-vertical-splash-screen.png',
-          // The artwork is a full-screen poster (1440×3120). Without this, the plugin
-          // draws it as a centered square of imageWidth.
           enableFullScreenImage_legacy: true,
           imageWidth: 390,
-          resizeMode: 'contain',
-          // Android 12 draws the splash inside a circle. The full poster would lose its corners,
-          // so Android uses the same mark as the home-screen icon.
-          android: {
-            backgroundColor: '#1F4D40',
-            image: './assets/images/icon.png',
-            imageWidth: 192,
+          resizeMode: 'cover',
+          ios: {
+            backgroundColor: '#F9F7F2',
+            // iPad: portrait and landscape posters (2048×2732 / 2732×2048); storyboard picks tablet idiom.
+            tabletBackgroundColor: '#F9F7F2',
+            tabletImage: './assets/images/taybah-tablet-portrait-splash-screen.png',
           },
+          // Android 12+ full-bleed poster is applied by withAndroidFullBleedSplash (below).
+          android: {
+            backgroundColor: '#F9F7F2',
+            image: './assets/images/taybah-vertical-splash-screen.png',
+            imageWidth: 390,
+            resizeMode: 'cover',
+          },
+        },
+      ],
+      [
+        './plugins/withAndroidFullBleedSplash',
+        {
+          backgroundColor: '#F9F7F2',
+          portraitImage: './assets/images/taybah-vertical-splash-screen.png',
+          landscapeImage: './assets/images/taybah-landscape-splash-screen.png',
+          tabletPortraitImage: './assets/images/taybah-tablet-portrait-splash-screen.png',
+          tabletLandscapeImage: './assets/images/taybah-tablet-landscape-splash-screen.png',
         },
       ],
       ['expo-localization', { supportsRTL: true }],

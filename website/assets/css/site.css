@@ -90,17 +90,12 @@ img {
   margin-inline-end: auto;
 }
 
-.site-logo__mark {
-  width: 36px;
-  height: 36px;
+.site-logo__img {
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  background: var(--brand);
-  color: var(--on-brand);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-size: 22px;
-  line-height: 1;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .site-nav {

@@ -110,6 +110,15 @@ describe('tafsirRowSubtitle', () => {
     expect(subtitle).toBe(expected);
   });
 
+  it('isolates an author in the other script, so the size keeps its place', () => {
+    expect(tafsirRowSubtitle({ author: 'الميسر', packSizeBytes: 700_000 }, i18n.getFixedT('en'), 'en')).toBe(
+      '⁨الميسر⁩ · 0.7 MB',
+    );
+    expect(tafsirRowSubtitle({ author: 'Tabari', packSizeBytes: 8_500_000 }, i18n.getFixedT('ar'), 'ar')).toBe(
+      '⁨Tabari⁩ · ٨٫٥ م.ب',
+    );
+  });
+
   it('leaves out the author when there is none', () => {
     expect(tafsirRowSubtitle({ author: null, packSizeBytes: 900_000 }, i18n.getFixedT('ar'), 'ar')).toBe('٠٫٩ م.ب');
     expect(tafsirRowSubtitle({ author: null, packSizeBytes: 900_000 }, i18n.getFixedT('en'), 'en')).toBe('0.9 MB');
