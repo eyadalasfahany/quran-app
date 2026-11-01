@@ -39,19 +39,19 @@ describe('useTabContentBottom', () => {
     setPlatform(originalOs);
   });
 
-  it('adds nothing on iOS while the player is idle, where the native bar insets the content', async () => {
+  it('adds the native bar footprint on iOS while the player is idle, since the bar does not inset scroll views', async () => {
     setPlatform('ios');
     const { result } = await renderHook(() => useTabContentBottom());
 
-    expect(result.current).toBe(0);
+    expect(result.current).toBe(92);
   });
 
-  it('adds the mini player footprint on iOS while something is loaded', async () => {
+  it('adds the bar footprint and the mini player footprint on iOS while something is loaded', async () => {
     setPlatform('ios');
     startLoad();
     const { result } = await renderHook(() => useTabContentBottom());
 
-    expect(result.current).toBe(76);
+    expect(result.current).toBe(92 + 76);
   });
 
   it('clears the Android floating bar while the player is idle, from the system inset (ADR 0033)', async () => {

@@ -3,6 +3,7 @@ import type { ComponentProps } from 'react';
 import { Dimensions } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { tabContentClearance } from '@/core/layout/tab-bar-clearance';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { installResource } from '@/core/sync';
@@ -399,22 +400,24 @@ describe('ListenScreen', () => {
       Dimensions.set({ screen: savedWindow, window: savedWindow });
     });
 
-    it('pads the bottom of the list by the bar footprint while the bar shows, so the last row clears it', async () => {
+    it('pads the bottom of the list by the bar footprint and the mini bar while the mini bar shows, so the last row clears both', async () => {
       const store = usePlayerStore.getState();
       store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
       store.markPlaying();
       const view = await renderUi(<ListenScreen />);
 
       expect(flatStyle(view.getByTestId('reciter-list').props.contentContainerStyle).paddingBottom).toBe(
-        MINI_PLAYER_TABS_FOOTPRINT,
+        tabContentClearance('ios', 0) + MINI_PLAYER_TABS_FOOTPRINT,
       );
       expect(MINI_PLAYER_TABS_FOOTPRINT).toBe(76);
     });
 
-    it('adds no bottom padding while the player is idle', async () => {
+    it('pads only by the bar footprint while the player is idle', async () => {
       const view = await renderUi(<ListenScreen />);
 
-      expect(flatStyle(view.getByTestId('reciter-list').props.contentContainerStyle).paddingBottom).toBe(0);
+      expect(flatStyle(view.getByTestId('reciter-list').props.contentContainerStyle).paddingBottom).toBe(
+        tabContentClearance('ios', 0),
+      );
     });
   });
 });

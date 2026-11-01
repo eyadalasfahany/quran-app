@@ -1,7 +1,8 @@
-import { fireEvent, within } from '@testing-library/react-native';
+import { act, fireEvent, within } from '@testing-library/react-native';
 import { router, useSegments } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { Dimensions, Platform, Text } from 'react-native';
+import { setUpTests } from 'react-native-reanimated';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../jest/ui-source';
@@ -12,6 +13,10 @@ import { openAudioTestDb } from '@/features/audio/data/test-db';
 import { usePlayerStore } from '@/features/audio/playerStore';
 
 import { MainShell } from './MainShell';
+import { miniPlayerBottom, miniPlayerHiddenTabsBottom } from './tab-bar-clearance';
+import { useTabBarScrollStore } from './tab-bar-scroll-store';
+
+setUpTests();
 
 let db: { executor: SqlExecutor; close: () => void };
 
@@ -107,6 +112,44 @@ describe('MainShell', () => {
     db.close();
     mockContent.executor = null;
     setWindowWidth(390);
+  });
+
+  describe('mini player drop while scrolling hides the tabs', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(async () => {
+      jest.useRealTimers();
+      await act(async () => {
+        useTabBarScrollStore.setState({ collapsed: false, lastY: 0, tracking: false });
+      });
+    });
+
+    /** Runs the mini player's spring to its end. */
+    async function settle() {
+      await act(async () => {
+        jest.advanceTimersByTime(3000);
+      });
+    }
+
+    it('drops the mini player into the tab bar slot by the difference of the two bottoms, and returns it when the bar comes back', async () => {
+      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      const view = await renderUi(shell(false));
+      const drop = miniPlayerBottom(Platform.OS, 0, false) - miniPlayerHiddenTabsBottom(Platform.OS, 0, false);
+
+      await act(async () => {
+        useTabBarScrollStore.setState({ collapsed: true, tracking: true });
+      });
+      await settle();
+      expect(view.getByTestId('mini-player-dock')).toHaveAnimatedStyle({ transform: [{ translateY: drop }] });
+
+      await act(async () => {
+        useTabBarScrollStore.setState({ collapsed: false, lastY: 0, tracking: false });
+      });
+      await settle();
+      expect(view.getByTestId('mini-player-dock')).toHaveAnimatedStyle({ transform: [{ translateY: 0 }] });
+    });
   });
 
   describe('mini player placement', () => {

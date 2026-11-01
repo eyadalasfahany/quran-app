@@ -114,6 +114,7 @@ export function FocusAyah({
         testID={`${testID}-current`}
         text={textUthmani}
         variant="quranFocus"
+        wordMotion="pill"
       />
       <AyahMarker
         active

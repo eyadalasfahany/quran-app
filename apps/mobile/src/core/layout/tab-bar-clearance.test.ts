@@ -3,6 +3,7 @@ import type { PlatformOSType } from 'react-native';
 import {
   FLOATING_TAB_BAR,
   miniPlayerBottom,
+  miniPlayerHiddenTabsBottom,
   TAB_RAIL_CLEARANCE,
   tabBarFootprint,
   tabBarMode,
@@ -26,6 +27,24 @@ describe('miniPlayerBottom', () => {
   });
 });
 
+describe('miniPlayerHiddenTabsBottom', () => {
+  it('drops onto the iOS tab bar slot: 28 from the edge', () => {
+    expect(miniPlayerHiddenTabsBottom('ios', 0)).toBe(28);
+    expect(miniPlayerHiddenTabsBottom('ios', 34)).toBe(28);
+  });
+
+  it('drops onto the Android floating bar slot: 12 above the system inset', () => {
+    expect(miniPlayerHiddenTabsBottom('android', 0)).toBe(12);
+    expect(miniPlayerHiddenTabsBottom('android', 24)).toBe(36);
+    expect(miniPlayerHiddenTabsBottom('android', -4)).toBe(12);
+  });
+
+  it('is the shown position in a short window, where there is no bar to drop into', () => {
+    expect(miniPlayerHiddenTabsBottom('ios', 21, true)).toBe(miniPlayerBottom('ios', 21, true));
+    expect(miniPlayerHiddenTabsBottom('android', 0, true)).toBe(miniPlayerBottom('android', 0, true));
+  });
+});
+
 describe('tabBarFootprint', () => {
   it('is the iOS frame footprint, whatever the inset', () => {
     expect(tabBarFootprint('ios', 0)).toBe(92);
@@ -44,9 +63,9 @@ describe('tabBarFootprint', () => {
 });
 
 describe('tabContentClearance', () => {
-  it('needs no padding on iOS, where the native bar insets the content', () => {
-    expect(tabContentClearance('ios', 0)).toBe(0);
-    expect(tabContentClearance('ios', 34)).toBe(0);
+  it('pads iOS screens by the native bar footprint too, since the bar does not inset scroll views (measured 1 Nov 2026)', () => {
+    expect(tabContentClearance('ios', 0)).toBe(92);
+    expect(tabContentClearance('ios', 34)).toBe(92);
   });
 
   it('pads Android screens by the floating bar footprint, so no content sits under it', () => {
@@ -86,7 +105,7 @@ describe('tab rail in a short window (ADR 0036, developer 1 Nov 2026)', () => {
 
   it('keeps the tall-window clearance unchanged', () => {
     expect(tabContentClearance('android', 0)).toBe(76);
-    expect(tabContentClearance('ios', 0)).toBe(0);
+    expect(tabContentClearance('ios', 0)).toBe(92);
     expect(miniPlayerBottom('ios', 0)).toBe(104);
   });
 });

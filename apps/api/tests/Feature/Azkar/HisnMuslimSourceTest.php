@@ -179,6 +179,8 @@ it('the import command refuses an unknown source', function (): void {
 });
 
 it('the local unlock command changes the hisnmuslim row only with --source, and only locally', function (): void {
+    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
+
     $this->artisan('azkar:source-permission', ['status' => 'granted', '--source' => 'hisnmuslim'])->assertExitCode(0);
 
     expect(ContentSource::query()->where('code', 'hisnmuslim')->value('permission_status')?->value)->toBe('granted')

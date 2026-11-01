@@ -31,7 +31,15 @@ final class EloquentAzkarImportRepository implements AzkarImportRepository
 
     public function setSourcePermissionStatus(string $code, PermissionStatus $status): bool
     {
-        return ContentSource::query()->where('code', $code)->update(['permission_status' => $status->value]) > 0;
+        $source = ContentSource::query()->where('code', $code)->first();
+
+        if (! $source instanceof ContentSource) {
+            return false;
+        }
+
+        ContentSource::query()->where('code', $code)->update(['permission_status' => $status->value]);
+
+        return true;
     }
 
     public function itemTextHashes(int $resourceId): array

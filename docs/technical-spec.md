@@ -397,10 +397,10 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 
 **Hop 2: backend → packs and change feed**
 
-- **Pack:** `BuildContentPackJob` writes a SQLite file with only that resource's tables, `VACUUM`s it, gzips it, stores it under `storage/packs/{resource}/{version}.sqlite.gz` and records size and SHA-256. Cloudflare caches pack URLs, which are immutable because the version is in the path.
+- **Pack:** `BuildContentPackJob` writes a SQLite file with only that resource's tables, `VACUUM`s it, gzips it, stores it under `storage/app/private/packs/{resource}/{version}.sqlite.gz` (the `local` disk; on Railway that path is on the volume mounted at `/app/storage/app`, ADR 0040) and records size and SHA-256. Cloudflare caches pack URLs, which are immutable because the version is in the path.
 - **Change feed:** `content_changes` keeps row-level changes for 30 days. A device within that window applies only the delta; an older device gets `410 Gone` and downloads the latest pack.
 - **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`, `azkar:{id}` (ADR 0031). No translation or word-by-word pack exists (ADR 0014).
-- **Azkar is not synced from QF.** `php artisan azkar:import` reads a pinned OpenDua catalogue file (version + SHA-256), validates it, splits Quran passages into verse references from a reviewed map, writes an import report and bumps the `azkar` resource version. It refuses to write unless the `opendua` content source is `granted` and `AZKAR_OPENDUA_IMPORT_ENABLED=true`. The pack builder refuses an `azkar` pack unless its source is `granted` and its import flag (`AZKAR_OPENDUA_IMPORT_ENABLED`) is on (ADR 0031 §1). `azkar:import --skip-blocked` is local only: it leaves out entries with errors and lists them, and production refuses it. Each Quran map row carries a status (ADR 0031 §11): production accepts only `reviewed` rows; other environments also accept `candidate` rows and list them as warnings; `unmatched` rows always block their entry. `azkar:quran-map-candidates` generates the rows from the bundled Tanzil text, `azkar:import --download` fetches and SHA-256-verifies the pinned file, and `azkar:source-permission` (local only) sets the source status. The production release (`docker/release.sh`, Railway pre-deploy) runs `migrate --force`, then `azkar:import --download --if-unlocked --build-packs`; it builds the pack in-process, not on the queue. See `docs/runbooks/railway-release.md`. Only the `azkar` resource of `azkar.primary_source` (default `opendua`) is listed in the manifest, the change feed or the pack endpoint; any other Azkar resource stays imported for comparison (ADR 0031 §12).
+- **Azkar is not synced from QF.** `php artisan azkar:import` reads a pinned OpenDua catalogue file (version + SHA-256), validates it, splits Quran passages into verse references from a reviewed map, writes an import report and bumps the `azkar` resource version. It refuses to write unless the `opendua` content source is `granted` (set by a reviewed migration, ADR 0038) and `AZKAR_OPENDUA_IMPORT_ENABLED=true`. The pack builder refuses an `azkar` pack unless its source is `granted` and its import flag (`AZKAR_OPENDUA_IMPORT_ENABLED`) is on (ADR 0031 §1). `azkar:import --skip-blocked` is local only: it leaves out entries with errors and lists them, and production refuses it. Each Quran map row carries a status (ADR 0031 §11): production accepts only `reviewed` rows; other environments also accept `candidate` rows and list them as warnings; `unmatched` rows always block their entry. `azkar:quran-map-candidates` generates the rows from the bundled Tanzil text, `azkar:import --download` fetches and SHA-256-verifies the pinned file, and `azkar:source-permission` (local only) sets the source status. The production release (`docker/release.sh`, Railway pre-deploy) runs `migrate --force`, then `azkar:import --download --if-unlocked --build-packs`; it builds the pack in-process, not on the queue. See `docs/runbooks/railway-release.md`. Only the `azkar` resource of `azkar.primary_source` (default `opendua`) is listed in the manifest, the change feed or the pack endpoint; any other Azkar resource stays imported for comparison (ADR 0031 §12).
 - **Azkar enrichment (ADR 0031 §12):**
   - `azkar:snapshot hadeethenc` pins HadeethEnc's Azkar categories.
   - `azkar:hadeethenc-links` proposes entry→hadith links: ids and evidence only, from containment of at least 40 normalised characters.
@@ -629,7 +629,7 @@ For each change, in one transaction per request:
 
 - **Playback:** `expo-audio` with background mode and lock-screen metadata (reciter, surah, artwork). The queue is one file per surah; reaching the end starts the next surah.
 - **Audio → ayah:** the player reports position about every 100 ms. The timing rows for the current file are loaded into memory (at most 286 rows), and a binary search finds the row with `start_ms ≤ t < end_ms`. The resulting verse id goes to `playerStore`; the reader highlights it and scrolls to it if it is off-screen, unless the reader has scrolled by hand since following last started (ADR 0037).
-- **Word highlight:** when `segments` exist, the same search inside the active ayah gives the word position, animated with Reanimated. Reciters without segments get ayah-level highlight only; reciters without timings play without highlight or repeat.
+- **Word highlight:** when `segments` exist, the same search inside the active ayah gives the word position, animated with Reanimated. Reciters without segments get ayah-level highlight only; reciters without timings play without highlight or repeat. In Reading and Focus the recited word is a rounded pill (`brandSurface`, radius `sm`) drawn behind the text from measured word positions, so it can slide between words on a line (ADR 0039).
 - **Ayah → audio:** "Play from here" loads the surah file if needed and seeks to `start_ms`.
 - **Repeat:** a range A–B with N repeats seeks back to A's `start_ms` whenever `t ≥ B.end_ms`, then continues. Speed (0.5×–2×) and sleep timer (end of ayah, end of surah, 15/30/60 min) live in `playerStore`.
 - **Downloads:** `expo-file-system` downloads to the app's document directory with progress, resume after interruption, Wi-Fi-only by default, and the same timing rows (offsets are relative to the file).
@@ -658,9 +658,9 @@ For each change, in one transaction per request:
 | Azkar pushed screens (home, category, search, favourites) | Native stack, `pushScreenOptions` (`src/core/layout/push-screen-options.ts`) | iOS system slide; Android slide from the leading edge (left in Arabic, right in English) and back the same way | Fade |
 | Azkar reader | Native stack, `modalLikeScreenOptions` | Slides up to open, down to close (✕ or swipe down on iOS) | Fade |
 | Tab change | Native tabs (iOS); floating headless tab bar (Android, ADR 0033) | System (iOS); none (Android) | System (iOS); none (Android) |
-| Tab bar minimize on scroll | Native tabs (iOS 26); Android's bar stays fixed | System | System |
+| Tab bar hide on scroll | Native tabs `hidden` (iOS); floating bar (Android, ADR 0033). The tabs mini player drops into the bar's slot with `spring()` while the bar is hidden | System fade (iOS); slides off the bottom edge with `spring()`, no fade (Android) | System (iOS); jump (Android, `spring()` under Reduce Motion) |
 | Ayah highlight (audio) | Reanimated opacity | Cross-fade, `fast` (150 ms) | Same (a fade) |
-| Word highlight | Reanimated | `instant` (80 ms) or none, so it keeps up with the 150 ms sync budget | None |
+| Word highlight | Reanimated pill behind the text (Reading, Focus; ADR 0039); Mushaf keeps the span highlight | Slides (translateX and width) to the next word on the same line, `timing('fast')`; a new line or ayah jumps; the word's text turns light when the pill arrives | Jump |
 | Auto-scroll to the active ayah | FlashList | Animated scroll | Jump |
 | Glass show or hide | `GlassView` style | Switch `regular` ↔ `none` (never fade its opacity) | Switch without animating; no animated blur |
 | Reading mode or script change | Segmented control + content | Cross-fade, `standard` | Same |
@@ -687,7 +687,7 @@ For each change, in one transaction per request:
 
 ## 13. Notifications, environments and monitoring
 
-Reminders are local; only the daily hadith and rare announcements come from the server. Local and production keep QF prelive and production keys apart. There is no staging server (ADR 0022).
+Reminders are local; only the daily hadith and rare announcements come from the server. Local and production both use QF production keys (ADR 0041); sync tokens and mirrors stay per environment. There is no staging server (ADR 0022).
 
 **Notifications**
 
@@ -705,8 +705,8 @@ Reminders are local; only the daily hadith and rare announcements come from the 
 
 |  | Local | Staging | Production |
 | --- | --- | --- | --- |
-| API | `php artisan serve` on local PHP 8.5 with Homebrew MySQL and Redis; no Docker or Caddy for now (ADR 0003, 0004) | — | Railway (ADR 0022): FrankenPHP, Horizon, scheduler, MySQL, Redis |
-| QF keys | Prelive | — | Production |
+| API | `php artisan serve` on local PHP 8.5 with Homebrew MySQL and Redis; no Docker or Caddy for now (ADR 0003, 0004) | — | Railway (ADR 0022, amended by ADR 0040): FrankenPHP with one replica and a volume at `/app/storage/app` (packs and Azkar audio), `QUEUE_CONNECTION=sync`, MySQL, Redis. Horizon and the scheduler are not deployed while storage is a volume (a worker service cannot share it) |
+| QF keys | Production (ADR 0041; `sync_states` is kept per environment) | — | Production |
 | EAS channel | `development` | — | `production` |
 | App variant | `com.taybahapp.taybah.dev` | — | `com.taybahapp.taybah` (TestFlight and App Store) |
 | Mail | Log driver (Mailpit once Docker returns, ADR 0004) | — | Transactional provider |
@@ -801,7 +801,7 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | 3. Listening and audio | 12–16 | Reciters, player, lock screen, ayah and word highlight, repeat, speed, sleep timer, downloads | Highlight within 150 ms of timings on sample surahs |
 | 4. My Quran, Khatma & Settings (Local-only) | 16–18 | Settings (language switch, theme, reader/audio shortcuts, local data reset); My Quran library (bookmarks, highlights, notes); Khatma planner and logs; local daily reminders (ADR 0027) | Settings language switches app locale and direction; local bookmarks, highlights, notes and khatma persist and function offline |
 | 5. Salah & Qibla (on-device) | — | adhan-js times, الصلاة tab, local prayer notifications, qibla compass, five-tab navigation (ADR 0030) | Offline: times, qibla and notifications work in airplane mode; frames #Salah/#Qibla verified |
-| 6. Azkar (on-device) | 20–23 | Hisn al-Muslim from a pinned, rights-gated OpenDua pack; Azkar home, category and focused reader with a sourced counter or «تم»; progress, favourites, search, share; sourced notes hidden when empty; category reminders (clock or prayer-relative); audio rights model with no unlicensed audio; Dorar adapter on the API only (ADR 0031) | Offline reader, progress and reminders work in airplane mode; frames verified; **no production content until the ADR 0031 release blockers clear** |
+| 6. Azkar (on-device) | 20–23 | Hisn al-Muslim from a pinned, rights-gated OpenDua pack; Azkar home, category and focused reader with a sourced counter or «تم»; progress, favourites, search, share; sourced notes hidden when empty; category reminders (clock or prayer-relative); audio rights model with no unlicensed audio; Dorar adapter on the API only (ADR 0031) | Offline reader, progress and reminders work in airplane mode; frames verified; **no production content until the ADR 0031 release blockers clear** (blocker 1 closed by ADR 0038) |
 | 7. Beta and store review | 23–27 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
 
 **Proposed follow-up (not a phase, not approved): widgets and Apple Watch.** Home-screen and lock-screen widgets (iOS, Android) and a watchOS companion app with complications, fed by one local snapshot written by the app; the watch never calls the API. ADR 0035 (proposed) holds the decision and the decisions that need the developer; the plan is `docs/plans/widgets-watch.md`. Nothing in the current phase changes. Default placement is v1.1, because the iOS and watch targets compile only on a Mac or EAS.
@@ -832,7 +832,7 @@ One question blocks the build: whether QF accepts device copies served from our 
 - [ ] QF: may downloaded recitation audio be kept beyond 7 days?
 - [ ] QF: production rate limits for Content Sync and the Content API.
 - [ ] QF: approved QCF and IndoPak font files and exact credit wording.
-- [ ] QF: prelive returns only Al-Fatihah and Al-Baqarah. Is there a full prelive dataset, or when can we get production access to run the 6,236-ayah checksum? (Blocks the Phase 1 exit check.)
+- [x] QF: prelive returns only Al-Fatihah and Al-Baqarah. Production keys arrived on 1 Nov 2026, and local syncs the full dataset (ADR 0041).
 - [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player, Settings and the sidebar. The 30 current screens are phone-only (390 pt).
 - [x] Design: the Mushaf page cap on large iPads is 600, as drawn in the tablet frames (ADR 0013).
 - [x] Product: app name and bundle ID: **Taybah** («طيبة»), `com.taybahapp.taybah` (27 Oct 2026). Register `taybahapp.com` before launch.

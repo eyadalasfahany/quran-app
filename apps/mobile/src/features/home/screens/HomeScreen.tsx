@@ -4,7 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { tabDestinations, type Destination, SectionScreen, useTabBarScrollHandlers, useWindowClass } from '@/core/layout';
+import {
+  tabDestinations,
+  type Destination,
+  SectionScreen,
+  useTabBarScrollHandlers,
+  useTabContentBottom,
+  useWindowClass,
+} from '@/core/layout';
 import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { useAzkarAvailable, useRecentAzkarItems } from '@/features/azkar/data';
@@ -52,7 +59,7 @@ const SIBHA_ICON: IconName = { ios: 'circle.circle', android: 'adjust' };
 /**
  * Home (quran-app-screens.html, #Main; ADR 0034 §7). Top to bottom: continue reading, the next prayer, continue Azkar,
  * today's progress, the tiles, selected Azkar, recent Azkar, and recent listens. Every Azkar block hides without Azkar
- * content. The list scrolls and keeps clear of the tab bar (`SectionScreen`).
+ * content. The list scrolls under the tab bar and the mini player, and its end clears both (`useTabContentBottom`).
  */
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -63,6 +70,7 @@ export function HomeScreen() {
   // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
   const expanded = useWindowClass() === 'expanded';
   const tabScroll = useTabBarScrollHandlers();
+  const bottom = useTabContentBottom();
   const recentItems = useRecentListenItems(2);
   // A recent listen is playing when the player holds its reciter and surah and is playing or loading it.
   const playerActive = usePlayerStore((state) => state.status === 'playing' || state.status === 'loading');
@@ -112,7 +120,7 @@ export function HomeScreen() {
   return (
     <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={expanded ? undefined : <SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
       <ScrollView
-        contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: theme.space[4] }}
+        contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: bottom + theme.space[4] }}
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
         testID="home-scroll"

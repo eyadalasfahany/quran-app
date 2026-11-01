@@ -279,16 +279,56 @@ it('applies pages in order and stores only the final token', function (): void {
         ->and(SyncState::query()->value('last_sequence'))->toBe(11);
 });
 
-it('rejects a page whose sequences are not ascending', function (): void {
+it('applies a page whose mutations arrive out of order in ascending sequence', function (): void {
+    $result = syncTafsirs([
+        rowMutation(30, 'ROW_UPDATE', 82641, '<p>Third</p>'),
+        resourceMutation(10, 'RESOURCE_CREATE'),
+        rowMutation(20, 'ROW_UPDATE', 82642, '<p>Second</p>'),
+    ]);
+
+    expect($result->mutationsApplied)->toBe(3)
+        ->and(SyncState::query()->value('last_sequence'))->toBe(30)
+        ->and(SyncState::query()->value('sync_token'))->toBe('token-final')
+        ->and(ContentChange::query()->orderBy('id')->pluck('entity_key')->all())->toBe(['82642', '82641'])
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html'))->toBe('<p>Third</p>')
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82642)->value('html'))->toBe('<p>Second</p>');
+});
+
+it('applies mutations across pages in one ascending order without skipping a lower sequence on a later page', function (): void {
     fakeFoundation([
-        'sync' => syncPage([
-            resourceMutation(20, 'RESOURCE_CREATE'),
-            resourceMutation(11, 'RESOURCE_INVALIDATE'),
-        ]),
+        'sync' => Http::sequence()
+            ->push(syncPage([
+                rowMutation(40, 'ROW_UPDATE', 82641, '<p>Forty</p>'),
+                resourceMutation(20, 'RESOURCE_CREATE'),
+            ], 'token-page-1', true, '/api/v4/resources/sync?page=2'))
+            ->push(syncPage([
+                rowMutation(30, 'ROW_UPDATE', 82642, '<p>Thirty</p>'),
+            ], 'token-page-2')),
+    ]);
+
+    $result = app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
+
+    expect($result->mutationsApplied)->toBe(3)
+        ->and(SyncState::query()->value('last_sequence'))->toBe(40)
+        ->and(SyncState::query()->value('sync_token'))->toBe('token-page-2')
+        ->and(ContentChange::query()->orderBy('id')->pluck('entity_key')->all())->toBe(['82642', '82641'])
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82641)->value('html'))->toBe('<p>Forty</p>')
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 82642)->value('html'))->toBe('<p>Thirty</p>');
+});
+
+it('rejects a run that repeats a sequence number across pages and applies nothing', function (): void {
+    fakeFoundation([
+        'sync' => Http::sequence()
+            ->push(syncPage([
+                resourceMutation(10, 'RESOURCE_CREATE'),
+            ], 'token-page-1', true, '/api/v4/resources/sync?page=2'))
+            ->push(syncPage([
+                rowMutation(10, 'ROW_UPDATE', 82641, '<p>Repeated</p>'),
+            ], 'token-page-2')),
     ]);
 
     expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*'))
-        ->toThrow(SyncException::class, 'Sync mutations are out of sequence.');
+        ->toThrow(SyncException::class, 'Sync mutations repeat a sequence number.');
 
     $state = SyncState::query()->first();
     $run = SyncRun::query()->first();
@@ -298,7 +338,9 @@ it('rejects a page whose sequences are not ascending', function (): void {
         ->and($state->sync_token)->toBeNull()
         ->and($run)->not->toBeNull()
         ->and($run->status)->toBe(SyncRunStatus::Failed)
-        ->and(TafsirEntry::query()->count())->toBe(0);
+        ->and(Resource::query()->where('source_key', '169')->exists())->toBeFalse()
+        ->and(TafsirEntry::query()->count())->toBe(0)
+        ->and(ContentChange::query()->count())->toBe(0);
 });
 
 it('stores tafsir source text byte for byte and copies it into the change', function (): void {
@@ -330,6 +372,118 @@ it('rejects a tafsir record that has no text', function (): void {
 
     expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*'))
         ->toThrow(SyncException::class, 'Sync record is missing text.');
+
+    expect(SyncState::query()->value('sync_token'))->toBeNull()
+        ->and(TafsirEntry::query()->count())->toBe(0);
+});
+
+it('imports a single-verse tafsir record with a null group id using its own id', function (): void {
+    Log::spy();
+
+    $record = tafsirSyncRecord(37608, '<p>Single verse tafsir</p>', 192);
+    $record['group_tafsir_id'] = null;
+
+    fakeFoundation([
+        'sync' => syncPage([resourceMutation(10, 'RESOURCE_CREATE')]),
+        'snapshot' => tafsirSnapshot([$record]),
+    ]);
+
+    app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
+
+    $resource = Resource::query()->where('source_key', '169')->firstOrFail();
+
+    expect(TafsirEntry::query()->where('resource_id', $resource->id)->pluck('group_tafsir_id')->all())->toBe([37608])
+        ->and(TafsirEntry::query()->where('group_tafsir_id', 37608)->value('html'))->toBe('<p>Single verse tafsir</p>');
+
+    Log::shouldHaveReceived('warning')
+        ->with('Quran Foundation tafsir records have no group id; their record ids are used.', [
+            'resource_id' => '169',
+            'count' => 1,
+            'record_id' => 37608,
+            'verse_key' => '1:192',
+        ])
+        ->once();
+});
+
+it('imports a multi-verse tafsir group leader with a null group id using its own id and verse range', function (): void {
+    $record = tafsirSyncRecord(37610, '<p>Leader tafsir</p>', 18);
+    $record['group_tafsir_id'] = null;
+    $record['end_verse_id'] = 19;
+    $record['group_verses_count'] = 2;
+    $record['group_verse_key_to'] = '1:19';
+
+    fakeFoundation([
+        'sync' => syncPage([resourceMutation(10, 'RESOURCE_CREATE')]),
+        'snapshot' => tafsirSnapshot([$record]),
+    ]);
+
+    app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
+
+    $entry = TafsirEntry::query()->where('group_tafsir_id', 37610)->firstOrFail();
+
+    expect($entry->first_verse_id)->toBe(18)
+        ->and($entry->last_verse_id)->toBe(19)
+        ->and($entry->html)->toBe('<p>Leader tafsir</p>');
+});
+
+it('logs one summary warning for several null group id fallbacks in a snapshot', function (): void {
+    Log::spy();
+
+    $records = [];
+
+    foreach ([37608, 37609, 37610] as $index => $id) {
+        $record = tafsirSyncRecord($id, '<p>Fallback '.$index.'</p>', 192 + $index);
+        $record['group_tafsir_id'] = null;
+        $records[] = $record;
+    }
+
+    fakeFoundation([
+        'sync' => syncPage([resourceMutation(10, 'RESOURCE_CREATE')]),
+        'snapshot' => tafsirSnapshot($records),
+    ]);
+
+    app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
+
+    expect(TafsirEntry::query()->count())->toBe(3);
+
+    Log::shouldHaveReceived('warning')
+        ->with('Quran Foundation tafsir records have no group id; their record ids are used.', [
+            'resource_id' => '169',
+            'count' => 3,
+            'record_id' => 37608,
+            'verse_key' => '1:192',
+        ])
+        ->once();
+});
+
+it('imports a single-verse tafsir record whose group id key is missing using its own id', function (): void {
+    $record = tafsirSyncRecord(37608, '<p>Missing key tafsir</p>', 192);
+    unset($record['group_tafsir_id']);
+
+    fakeFoundation([
+        'sync' => syncPage([resourceMutation(10, 'RESOURCE_CREATE')]),
+        'snapshot' => tafsirSnapshot([$record]),
+    ]);
+
+    app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*');
+
+    expect(TafsirEntry::query()->where('group_tafsir_id', 37608)->value('html'))->toBe('<p>Missing key tafsir</p>');
+});
+
+it('rejects a null group id on a non-leader tafsir record', function (): void {
+    $record = tafsirSyncRecord(37610, '<p>Non leader tafsir</p>', 19);
+    $record['group_tafsir_id'] = null;
+    $record['start_verse_id'] = 18;
+    $record['end_verse_id'] = 19;
+    $record['group_verses_count'] = 2;
+
+    fakeFoundation([
+        'sync' => syncPage([resourceMutation(10, 'RESOURCE_CREATE')]),
+        'snapshot' => tafsirSnapshot([$record]),
+    ]);
+
+    expect(fn () => app(ContentSyncService::class)->run(ResourceGroup::Tafsirs, 'tafsirs:*'))
+        ->toThrow(SyncException::class, 'Sync record is missing group_tafsir_id.');
 
     expect(SyncState::query()->value('sync_token'))->toBeNull()
         ->and(TafsirEntry::query()->count())->toBe(0);

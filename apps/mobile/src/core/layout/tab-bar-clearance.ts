@@ -5,7 +5,9 @@ import type { PlatformOSType } from 'react-native';
 // so these are the frames' geometry: the iOS tab bar floats 28 above the edge and is 64 tall (#Main).
 // Not measured on a device yet.
 export const MINI_PLAYER_BOTTOM_GAP = 12;
-const IOS_TAB_BAR_FOOTPRINT = 28 + 64;
+const IOS_TAB_BAR_BOTTOM = 28;
+const IOS_TAB_BAR_HEIGHT = 64;
+const IOS_TAB_BAR_FOOTPRINT = IOS_TAB_BAR_BOTTOM + IOS_TAB_BAR_HEIGHT;
 
 // Android draws its own floating bar (ADR 0033 §2): 16 from each side, 12 above the system navigation inset,
 // 64 tall. The screens and the mini player keep clear of it.
@@ -70,12 +72,25 @@ export function miniPlayerBottom(platform: PlatformOSType, bottomInset: number, 
   return tabBarFootprint(platform, bottomInset, short) + MINI_PLAYER_BOTTOM_GAP;
 }
 
-// The bottom padding a tab screen's scroll content needs for the bar. The native bar insets its content on iOS,
-// so iOS needs none; the Android floating bar draws over the content, so Android pads by its footprint. A rail has no
-// bottom bar, so a short window pads by the safe area alone.
+/** While scrolling has hidden the tab bar, the mini player drops into the bar's own slot: the bar and the player are both 64 tall. */
+export function miniPlayerHiddenTabsBottom(platform: PlatformOSType, bottomInset: number, short = false): number {
+  if (short) {
+    return miniPlayerBottom(platform, bottomInset, true);
+  }
+  if (platform === 'android') {
+    return Math.max(0, bottomInset) + FLOATING_TAB_BAR.offset;
+  }
+  return IOS_TAB_BAR_BOTTOM;
+}
+
+/**
+ * The bottom padding a tab screen's scroll content needs for the bar. Neither bar insets React Native scroll views (the
+ * iOS native bar was measured on the iPhone 17 Pro simulator, iOS 26.4, 1 Nov 2026), so both platforms pad by the bar's
+ * footprint. A rail has no bottom bar, so a short window needs none.
+ */
 export function tabContentClearance(platform: PlatformOSType, bottomInset: number, short = false): number {
   if (short) {
     return 0;
   }
-  return platform === 'android' ? tabBarFootprint(platform, bottomInset) : 0;
+  return tabBarFootprint(platform, bottomInset);
 }

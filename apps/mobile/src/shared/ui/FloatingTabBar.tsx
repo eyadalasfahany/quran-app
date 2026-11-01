@@ -13,7 +13,7 @@ import { useTheme } from '@/core/theme';
 import { GlassSurface } from './GlassSurface';
 
 // The floating tab bar (ADR 0033 §2): a 64 pt capsule, 16 from each side, 12 above the system navigation inset.
-// Scrolling down in a tab screen slides it off the bottom edge; scrolling up brings it back.
+// Scrolling down in a tab screen slides it off the bottom edge like a sheet (no fade); scrolling up brings it back.
 //
 // In a short window the same items stand in a vertical rail on the start edge (ADR 0036).
 export function FloatingTabBar({
@@ -44,7 +44,6 @@ export function FloatingTabBar({
   const dockStyle = useAnimatedStyle(() => ({
     bottom,
     end: trailEnd,
-    opacity: interpolate(slide.value, [0, 1], [1, 0]),
     position: 'absolute' as const,
     start: fullStart,
     transform: [{ translateY: interpolate(slide.value, [0, 1], [0, hideDistance]) }],

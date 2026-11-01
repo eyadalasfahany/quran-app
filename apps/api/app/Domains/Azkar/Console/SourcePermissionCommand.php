@@ -11,8 +11,8 @@ use Illuminate\Console\Command;
 
 /**
  * Sets the OpenDua source's permission status for local and development work (ADR 0031 §1, §11).
- * Production never unlocks: the command refuses there and changes nothing. Production unlocks only after OpenDua's
- * written confirmation, through a reviewed change.
+ * Production never unlocks: the command refuses there and changes nothing. Production changes the status only
+ * through a reviewed migration (ADR 0038).
  */
 final class SourcePermissionCommand extends Command
 {

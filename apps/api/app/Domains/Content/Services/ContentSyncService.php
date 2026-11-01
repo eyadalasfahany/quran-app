@@ -27,7 +27,6 @@ use App\Integrations\QuranFoundation\Mutation;
 use App\Integrations\QuranFoundation\MutationType;
 use App\Integrations\QuranFoundation\QfConfig;
 use App\Integrations\QuranFoundation\Snapshot;
-use App\Integrations\QuranFoundation\SyncPage;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -175,43 +174,51 @@ final class ContentSyncService
         /** @var array<int, CatalogEntry>|null $catalog */
         $catalog = $served;
 
+        /** @var list<Mutation> $mutations */
+        $mutations = [];
+
+        // Collect every page first: the run's mutations must be applied in one ascending order, across pages.
         foreach ($this->client->sync($resourcesFilter, $state->sync_token, $bootstrap) as $page) {
             $sawPage = true;
             $token = $page->nextSyncToken;
-            $this->assertAscending($page);
 
-            foreach ($page->mutations as $mutation) {
-                if ($mutation->sequence <= (int) $state->last_sequence) {
-                    continue;
+            array_push($mutations, ...$page->mutations);
+        }
+
+        $this->assertUniqueSequences($mutations);
+        usort($mutations, fn (Mutation $first, Mutation $second): int => $first->sequence <=> $second->sequence);
+
+        foreach ($mutations as $mutation) {
+            if ($mutation->sequence <= (int) $state->last_sequence) {
+                continue;
+            }
+
+            if (ResourceGroup::tryFrom($mutation->resourceGroup)?->isIgnored() === true) {
+                if (! $loggedIgnoredMutation) {
+                    $loggedIgnoredMutation = true;
+                    Log::info('Quran Foundation sync skipped mutations for an ignored resource group.', [
+                        'resource_group' => $mutation->resourceGroup,
+                    ]);
                 }
 
-                if (ResourceGroup::tryFrom($mutation->resourceGroup)?->isIgnored() === true) {
-                    if (! $loggedIgnoredMutation) {
-                        $loggedIgnoredMutation = true;
-                        Log::info('Quran Foundation sync skipped mutations for an ignored resource group.', [
-                            'resource_group' => $mutation->resourceGroup,
-                        ]);
-                    }
+                continue;
+            }
 
-                    continue;
+            if ($served !== null && ! isset($served[$mutation->resourceId])) {
+                if (! $loggedUnservedMutation) {
+                    $loggedUnservedMutation = true;
+                    Log::info('Quran Foundation sync skipped tafsirs that are not active Arabic tafsirs.');
                 }
 
-                if ($served !== null && ! isset($served[$mutation->resourceId])) {
-                    if (! $loggedUnservedMutation) {
-                        $loggedUnservedMutation = true;
-                        Log::info('Quran Foundation sync skipped tafsirs that are not active Arabic tafsirs.');
-                    }
+                continue;
+            }
 
-                    continue;
-                }
+            $outcome = $this->applyMutation($handler, $state, $group, $sourceId, $mutation, $catalog, $versions);
+            $applied++;
+            $rows += $outcome['rows'];
 
-                $outcome = $this->applyMutation($handler, $state, $group, $sourceId, $mutation, $catalog, $versions);
-                $applied++;
-                $rows += $outcome['rows'];
-
-                if ($outcome['resourceId'] !== null && $outcome['version'] !== null) {
-                    $touched[$outcome['resourceId']] = $outcome['version'];
-                }
+            if ($outcome['resourceId'] !== null && $outcome['version'] !== null) {
+                $touched[$outcome['resourceId']] = $outcome['version'];
             }
         }
 
@@ -517,16 +524,19 @@ final class ContentSyncService
         return $next;
     }
 
-    private function assertAscending(SyncPage $page): void
+    /**
+     * @param  list<Mutation>  $mutations
+     */
+    private function assertUniqueSequences(array $mutations): void
     {
-        $previous = null;
+        $seen = [];
 
-        foreach ($page->mutations as $mutation) {
-            if ($previous !== null && $mutation->sequence <= $previous) {
-                throw new SyncException('Sync mutations are out of sequence.');
+        foreach ($mutations as $mutation) {
+            if (isset($seen[$mutation->sequence])) {
+                throw new SyncException('Sync mutations repeat a sequence number.');
             }
 
-            $previous = $mutation->sequence;
+            $seen[$mutation->sequence] = true;
         }
     }
 

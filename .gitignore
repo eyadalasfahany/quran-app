@@ -44,3 +44,6 @@ apps/api/.phpunit.cache/
 
 # Docker volumes kept on disk
 infra/data/
+
+# OpenDua recordings: contracted recitation, not licensed to us (ADR 0031 §8, ADR 0038 §3). Never commit.
+/opendua-audio-hisn-v0.0.2/

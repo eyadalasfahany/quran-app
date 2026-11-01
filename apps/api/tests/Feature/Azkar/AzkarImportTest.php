@@ -130,6 +130,8 @@ it('validates and transforms the fixture in a dry run and writes no rows', funct
 });
 
 it('reports the warnings the brief lists, with counts only', function (): void {
+    config(['azkar.chapter_titles_ar' => []]);
+
     $report = azkarDryRun(azkarFixturePath());
     $codes = array_count_values(array_map(fn (array $issue): string => $issue['code'], $report->warnings()));
 
@@ -339,6 +341,7 @@ it('refuses a wet import while the import flag is off and writes nothing', funct
 });
 
 it('refuses a wet import while the OpenDua source is pending, even with the flag on', function (): void {
+    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
     config(['azkar.opendua.import_enabled' => true]);
 
     $report = azkarWetRun(azkarFixturePath());
@@ -359,6 +362,8 @@ it('refuses a wet import when recording rights are enabled without a licence', f
 });
 
 it('the command prints the lock reasons and exits non-zero without writing a report', function (): void {
+    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
+
     $reportPath = storage_path('framework/testing/azkar/locked-report.json');
 
     $this->artisan('azkar:import', ['path' => azkarFixturePath(), '--report' => $reportPath])
@@ -550,8 +555,25 @@ it('classifies sessions, browse tags, timing and provenance as the ADR says', fu
         ->and($timePeriod->timing_type)->toBe('time_period')
         ->and($first->review_status)->toBe('sourced')
         ->and($first->source_version)->toBe('0.0.4')
-        ->and(AzkarChapter::query()->where('id', 1)->firstOrFail()->title_ar)->toBeNull()
         ->and(AzkarChapter::query()->where('id', 1)->firstOrFail()->title_en)->toBe('FIXTURE chapter one');
+});
+
+it('keeps title_ar null for a chapter with no configured Arabic title', function (): void {
+    config(['azkar.chapter_titles_ar' => []]);
+    azkarEnableWetImport();
+
+    azkarWetRun(azkarFixturePath());
+
+    expect(AzkarChapter::query()->where('id', 1)->firstOrFail()->title_ar)->toBeNull();
+});
+
+it('takes title_ar from the configured Arabic titles, keyed by chapter number', function (): void {
+    config(['azkar.chapter_titles_ar' => [1 => 'عنوان تجريبي للفصل']]);
+    azkarEnableWetImport();
+
+    azkarWetRun(azkarFixturePath());
+
+    expect(AzkarChapter::query()->where('id', 1)->firstOrFail()->title_ar)->toBe('عنوان تجريبي للفصل');
 });
 
 it('imports English only when enabled and keeps the transliteration gated with it', function (): void {
@@ -576,3 +598,50 @@ function azkarOriginalArabic(string $entry): string
         default => throw new RuntimeException('Unknown fixture entry.'),
     };
 }
+
+it('production imports the rest when the entry with an unreviewed Quran passage is excluded, and lists it', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+    azkarEnableWetImport();
+    config([
+        'azkar.quran_references' => [],
+        'azkar.excluded_entries' => ['hisn-al-muslim:entry-000004' => 'quran_reference_unidentified'],
+    ]);
+
+    $report = azkarWetRun(azkarFixturePath());
+
+    expect($report->status)->toBe(ImportReport::STATUS_IMPORTED)
+        ->and(azkarErrorCodes($report))->toBe(['quran_reference_unreviewed'])
+        ->and(AzkarEntry::query()->where('entry_key', 'hisn-al-muslim:entry-000004')->exists())->toBeFalse()
+        ->and(AzkarEntry::query()->count())->toBe(3)
+        ->and($report->content['excluded'])->toBe([['entry' => 'hisn-al-muslim:entry-000004', 'reason' => 'quran_reference_unidentified']]);
+});
+
+it('production still fails and writes nothing when the entry with an unreviewed Quran passage is not excluded', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+    azkarEnableWetImport();
+    config([
+        'azkar.quran_references' => [],
+        'azkar.excluded_entries' => ['hisn-al-muslim:entry-000099' => 'quran_reference_unidentified'],
+    ]);
+
+    $report = azkarWetRun(azkarFixturePath());
+
+    expect($report->status)->toBe(ImportReport::STATUS_INVALID)
+        ->and(azkarErrorCodes($report))->toBe(['quran_reference_unreviewed'])
+        ->and($report->content['excluded'])->toBe([['entry' => 'hisn-al-muslim:entry-000099', 'reason' => 'quran_reference_unidentified']])
+        ->and(AzkarEntry::query()->count())->toBe(0)
+        ->and(Resource::query()->count())->toBe(0);
+});
+
+it('leaves out an excluded entry that has no errors and lists it in the report', function (): void {
+    app()->detectEnvironment(fn (): string => 'production');
+    azkarEnableWetImport();
+    config(['azkar.excluded_entries' => ['hisn-al-muslim:entry-000001' => 'quran_reference_unidentified']]);
+
+    $report = azkarWetRun(azkarFixturePath());
+
+    expect($report->status)->toBe(ImportReport::STATUS_IMPORTED)
+        ->and(AzkarEntry::query()->where('entry_key', 'hisn-al-muslim:entry-000001')->exists())->toBeFalse()
+        ->and(AzkarEntry::query()->count())->toBe(3)
+        ->and($report->content['excluded'])->toBe([['entry' => 'hisn-al-muslim:entry-000001', 'reason' => 'quran_reference_unidentified']]);
+});

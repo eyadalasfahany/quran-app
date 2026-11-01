@@ -48,7 +48,7 @@ Follow `.claude/skills/laravel-standards`, except where this file or the spec sa
 
 ## Content and QF
 
-- QF prelive keys for local and staging, production keys only in production. Sync tokens and mirrors are per environment.
+- QF production keys for local and production (ADR 0041); prelive stays available. Sync tokens and mirrors are per environment.
 - Apply Content Sync mutations in ascending `sequence`, one transaction per mutation, advancing `last_sequence` in the same transaction.
 - Any `quran_core` change runs `VerifyTextIntegrityJob`; a mismatch blocks pack publishing.
 - HTTP clients: retry with backoff, User-Agent with app name and contact email, respect `Retry-After` on 429.

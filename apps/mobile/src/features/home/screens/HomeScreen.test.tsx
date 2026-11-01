@@ -1,6 +1,9 @@
 import { router } from 'expo-router';
-import { fireEvent, within } from '@testing-library/react-native';
-import { Dimensions } from 'react-native';
+import { act, fireEvent, within } from '@testing-library/react-native';
+import { Dimensions, Platform } from 'react-native';
+
+import { tabContentClearance } from '@/core/layout/tab-bar-clearance';
+import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 
 import { openContentDb } from '@/core/db/content/open';
 import { toLocalDateString } from '@/features/khatma/data';
@@ -551,5 +554,40 @@ describe('HomeScreen Khatma wird', () => {
     expect(view.queryByTestId('home-wird-card')).toBeNull();
     expect(view.queryByTestId('home-daily-progress-wird')).toBeNull();
     expect(view.getByTestId('home-daily-progress-empty')).toBeOnTheScreen();
+  });
+});
+
+describe('HomeScreen bottom clearance', () => {
+  const originalOs = Platform.OS;
+
+  beforeEach(() => {
+    setWindowWidth(390);
+    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'ios' });
+  });
+
+  afterEach(async () => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOs });
+    await act(async () => {
+      usePlayerStore.getState().reset();
+    });
+  });
+
+  it('pads the list end by the tab bar footprint plus the page gap while the player is idle', async () => {
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByTestId('home-scroll').props.contentContainerStyle.paddingBottom).toBe(
+      tabContentClearance('ios', 0) + 16,
+    );
+  });
+
+  it('adds the mini player footprint to the list end while something plays', async () => {
+    await act(async () => {
+      usePlayerStore.setState({ chapterId: 2, reciterId: 31, status: 'playing' });
+    });
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByTestId('home-scroll').props.contentContainerStyle.paddingBottom).toBe(
+      tabContentClearance('ios', 0) + MINI_PLAYER_TABS_FOOTPRINT + 16,
+    );
   });
 });

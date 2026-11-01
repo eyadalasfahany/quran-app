@@ -112,6 +112,7 @@ export function ReadingAyahRow({
             fontScale={fontScale}
             text={textUthmani}
             variant="quranReading"
+            wordMotion="pill"
           />
         </View>
       </Pressable>

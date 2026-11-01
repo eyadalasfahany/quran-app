@@ -35,6 +35,31 @@ describe('RecitedWords', () => {
     expect(view.getByTestId('ayah-word')).toHaveTextContent('فِيهِ');
   });
 
+  it('leaves the wash to the pill in colour marking, and keeps the testID', async () => {
+    const view = await renderUi(
+      <Text>
+        <RecitedWords activeWord={4} marking="color" testID="ayah" text={TEXT} />
+      </Text>,
+    );
+
+    const word = view.getByTestId('ayah-word');
+    expect(word).toHaveTextContent('رَيْبَ');
+    expect(flatStyle(word.props.style)).toMatchObject({ color: themes.light.colors.onBrandSurface });
+    expect(flatStyle(word.props.style).backgroundColor).toBeUndefined();
+  });
+
+  it('turns the ink to onBrandSurface in colour marking only while colored', async () => {
+    const view = await renderUi(
+      <Text>
+        <RecitedWords activeWord={4} colored={false} marking="color" testID="ayah" text={TEXT} />
+      </Text>,
+    );
+
+    const word = view.getByTestId('ayah-word');
+    expect(flatStyle(word.props.style).color).toBeUndefined();
+    expect(flatStyle(word.props.style).backgroundColor).toBeUndefined();
+  });
+
   it('uses no raw colour literals', () => {
     expect(featureComponentLiterals('features/reader/components/RecitedWords.tsx')).toEqual([]);
   });

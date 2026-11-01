@@ -91,7 +91,8 @@ final class AzkarImporter
         $issues = [...$issues, ...$enrichment['issues']];
         $requiredCounts = $this->requiredCounts($profile, $parsed->data, $secondaryPath);
         $issues = [...$issues, ...$requiredCounts['issues']];
-        $blocked = $this->blockedEntries($issues);
+        $excluded = $this->excludedEntries();
+        $blocked = $this->blockedEntries($issues) + $this->excludedIndexes($parsed->data, $profile->collectionId, $excluded);
         $plan = $this->transformer->plan($parsed->data, $sourceVersion, $now->getTimestampMs(), $blocked, $profile, $enrichment['notes'], $requiredCounts['plan']->fills);
 
         $sourceId = $this->resources->sourceId($sourceCode);
@@ -100,7 +101,7 @@ final class AzkarImporter
         $changed = $this->changedTexts($plan, $previous);
 
         $skipped = $skipBlocked ? $this->skippedEntries($issues) : [];
-        $hasErrors = $this->hasErrors($issues, $skipBlocked);
+        $hasErrors = $this->hasErrors($issues, $skipBlocked, $excluded);
         $status = $hasErrors ? ImportReport::STATUS_INVALID : ImportReport::STATUS_VALID;
         $resource = [
             'group' => ResourceGroup::Azkar->value,
@@ -382,6 +383,7 @@ final class AzkarImporter
                 'entries_blocked' => $stats->entriesBlocked,
                 'entries_skipped' => count($skipped),
                 'skipped' => $skipped,
+                'excluded' => $this->excludedReport($this->excludedEntries()),
                 'chapters_imported' => $stats->chapters,
                 'items' => ['recitation' => $stats->itemsRecitation, 'instruction' => $stats->itemsInstruction, 'narration' => $stats->itemsNarration],
                 'segments' => ['text' => $stats->segmentsText, 'quran' => $stats->segmentsQuran],
@@ -517,19 +519,88 @@ final class AzkarImporter
 
     /**
      * With $skipBlocked, an error that belongs to an entry leaves that entry out and does not fail the run. Errors
-     * with no entry (file, pin, structure, counts) always fail it.
+     * with no entry (file, pin, structure, counts) always fail it. Errors on an excluded entry never fail it
+     * (ADR 0031 §11, amended 1 Nov 2026).
      *
      * @param  list<ImportIssue>  $issues
+     * @param  array<string, string>  $excluded
      */
-    private function hasErrors(array $issues, bool $skipBlocked): bool
+    private function hasErrors(array $issues, bool $skipBlocked, array $excluded): bool
     {
         foreach ($issues as $issue) {
-            if ($issue->isError() && (! $skipBlocked || $issue->entryKey === null)) {
+            if (! $issue->isError()) {
+                continue;
+            }
+
+            if ($issue->entryKey !== null && isset($excluded[$issue->entryKey])) {
+                continue;
+            }
+
+            if (! $skipBlocked || $issue->entryKey === null) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * ADR 0031 §11 (amended 1 Nov 2026): configured entries left out of every import, production included.
+     *
+     * @return array<string, string> Reason by entry key, in config order.
+     */
+    private function excludedEntries(): array
+    {
+        $configured = config('azkar.excluded_entries', []);
+        $excluded = [];
+
+        if (! is_array($configured)) {
+            return $excluded;
+        }
+
+        foreach ($configured as $entryKey => $reason) {
+            if (is_string($entryKey)) {
+                $excluded[$entryKey] = (string) $reason;
+            }
+        }
+
+        return $excluded;
+    }
+
+    /**
+     * Catalogue entry indexes of the excluded entries, so the transformer leaves them out of the plan.
+     *
+     * @param  array<string, mixed>  $catalogue
+     * @param  array<string, string>  $excluded
+     * @return array<int, true>
+     */
+    private function excludedIndexes(array $catalogue, string $collectionId, array $excluded): array
+    {
+        $indexes = [];
+        $entries = is_array($catalogue['entries'] ?? null) ? $catalogue['entries'] : [];
+
+        foreach ($entries as $index => $entry) {
+            if (is_array($entry) && is_string($entry['id'] ?? null) && isset($excluded[$collectionId.':'.$entry['id']])) {
+                $indexes[$index] = true;
+            }
+        }
+
+        return $indexes;
+    }
+
+    /**
+     * @param  array<string, string>  $excluded
+     * @return list<array{entry: string, reason: string}>
+     */
+    private function excludedReport(array $excluded): array
+    {
+        $report = [];
+
+        foreach ($excluded as $entryKey => $reason) {
+            $report[] = ['entry' => $entryKey, 'reason' => $reason];
+        }
+
+        return $report;
     }
 
     /**

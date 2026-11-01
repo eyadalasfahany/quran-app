@@ -162,24 +162,45 @@ final class ChapterRecitationsHandler implements GroupHandler
     {
         $sourceId = $this->sourceId($resource);
         $english = $this->reciter($this->catalog->chapterReciters(), $sourceId);
+        $nameAr = $this->arabicName($sourceId);
 
         if ($english === null) {
             return [
                 'name' => $artist,
-                'nameAr' => null,
+                'nameAr' => $nameAr,
                 'style' => null,
                 'qirat' => null,
             ];
         }
 
-        $arabic = $this->reciter($this->catalog->chapterReciters('ar'), $sourceId);
-
         return [
             'name' => $english->name,
-            'nameAr' => $arabic?->translatedName,
+            'nameAr' => $nameAr,
             'style' => $english->style,
             'qirat' => $english->qirat,
         ];
+    }
+
+    /**
+     * A config override wins. Otherwise QF's Arabic name is used only when it has an Arabic letter,
+     * so a Latin transliteration never reaches the Arabic UI.
+     */
+    private function arabicName(int $sourceId): ?string
+    {
+        $overrides = config('quran.reciter_display_names.ar', []);
+        $override = is_array($overrides) ? ($overrides[$sourceId] ?? null) : null;
+
+        if (is_string($override)) {
+            return $override;
+        }
+
+        $arabic = $this->reciter($this->catalog->chapterReciters('ar'), $sourceId)?->translatedName;
+
+        if ($arabic === null || preg_match('/\p{Arabic}/u', $arabic) !== 1) {
+            return null;
+        }
+
+        return $arabic;
     }
 
     /**

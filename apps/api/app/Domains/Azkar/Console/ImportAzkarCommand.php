@@ -111,6 +111,7 @@ final class ImportAzkarCommand extends Command
         foreach ($report->content['skipped'] ?? [] as $skipped) {
             $this->line(sprintf('Left out (blocked): %s [%s]', $skipped['entry'], implode(', ', $skipped['codes'])));
         }
+        $this->line(sprintf('excluded: %d', count($report->content['excluded'] ?? [])));
         $this->line('Report written to: '.$reportPath);
 
         return $report->succeeded() ? self::SUCCESS : self::FAILURE;

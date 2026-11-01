@@ -344,6 +344,49 @@ it('falls back to the audio metadata artist when the reciter is not in the catal
         ->and(Resource::query()->where('source_key', '99')->value('name'))->toBe('Abdul Basit Abdul Samad');
 });
 
+it('stores a configured Arabic reciter name over the QF Arabic name', function (): void {
+    config()->set('quran.reciter_display_names.ar', [6 => 'اسم تجريبي ١']);
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutesWithArabicName('محمود خليل الحصري'), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], 'token-override');
+
+    expect(Recitation::query()->firstOrFail()->reciter_name_ar)->toBe('اسم تجريبي ١');
+});
+
+it('applies a configured Arabic reciter name when the English catalogue has no entry', function (): void {
+    config()->set('quran.reciter_display_names.ar', [99 => 'اسم تجريبي ٢']);
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:99', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 99, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/99'),
+    ], 'token-override-fallback', extra: [
+        CONTENT_HOST.'/api/v4/resources/snapshots/chapter_recitations/99' => contentSnapshot('chapter_recitations', 99, [
+            audioFile(200, 1, 78, 78000, 'Abdul Basit Abdul Samad'),
+        ]),
+    ]);
+
+    expect(Recitation::query()->firstOrFail()->reciter_name_ar)->toBe('اسم تجريبي ٢');
+});
+
+it('stores a Latin-only QF Arabic reciter name as null and keeps it off the resource', function (): void {
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutesWithArabicName('Bandar Baleela'), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], 'token-latin');
+
+    expect(Recitation::query()->firstOrFail()->reciter_name_ar)->toBeNull()
+        ->and(Resource::query()->where('source_key', '6')->value('name_ar'))->toBeNull();
+});
+
+it('stores a QF Arabic reciter name with Arabic letters unchanged', function (): void {
+    $arabic = 'محمود خليل الحصري (المعلم)';
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutesWithArabicName($arabic), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], 'token-arabic');
+
+    expect(Recitation::query()->firstOrFail()->reciter_name_ar)->toBe($arabic);
+});
+
 /**
  * @param  array<string, mixed>  $routes
  * @param  list<array<string, mixed>>  $mutations
@@ -617,6 +660,23 @@ function reciterRoutes(): array
             audioSegment(1, [[1, 0.0, 960.0], [2, 970.0, 1420.0], [9, 1, 2, 3], [3, 500.0, 100.0]]),
         ]),
     ];
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function reciterRoutesWithArabicName(string $translatedName): array
+{
+    $routes = reciterRoutes();
+    $routes[CONTENT_HOST.'/api/v4/resources/chapter_reciters?language=ar'] = [
+        'reciters' => [[
+            'id' => 6,
+            'name' => 'Mahmoud Khaleel Al-Husary',
+            'translated_name' => ['name' => $translatedName],
+        ]],
+    ];
+
+    return $routes;
 }
 
 /**

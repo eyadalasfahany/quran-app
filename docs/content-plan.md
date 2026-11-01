@@ -146,7 +146,7 @@ This lists every external source the app could pull from, and which one we use f
 
 | API | Gives us | Access | Terms that matter | Decision |
 | --- | --- | --- | --- | --- |
-| [OpenDua](https://opendua.hdfund.org/) (Ihsan Labs, Human Development Fund) | Hisn al-Muslim: 267 entries, 132 chapters, Arabic, steps, 31 repeat counts, English and transliteration, 249 recordings (v0.0.4, 2026-09-09) | Versioned JSON/CSV download; HTTP API at `api.opendua.org/v2`, no key, 60 req/min | English, transliteration and structure CC BY 4.0. No ownership claimed over the Arabic. Audio under a separate written agreement, **not licensed to us**. The dataset's own licence pages are 404 | **Primary** for Azkar (ADR 0031). **Production import blocked** until written rights for the Arabic, attribution, Arabic chapter titles and audio. No references, gradings or explanations upstream |
+| [OpenDua](https://opendua.org/) (Ihsan Labs, Human Development Fund) | Hisn al-Muslim: 267 entries, 132 chapters, Arabic, steps, 31 repeat counts, English and transliteration, 249 recordings (v0.0.4, 2026-09-09) | Versioned JSON/CSV download; HTTP API at `api.opendua.org/v2`, no key, 60 req/min | English, transliteration and structure CC BY 4.0. No ownership claimed over the Arabic. Audio under a separate written agreement; OpenDua's downloads page invites apps to ship the archive, and the developer accepted that invitation (ADR 0040) The licence URLs inside the dataset are 404; the statements on `opendua.org/developers` are the record (ADR 0038) | **Primary** for Azkar (ADR 0031). Arabic and attribution accepted on OpenDua's public statements (ADR 0038, 1 Nov 2026); source `granted`. Production import still needs the reviewed Quran map and `AZKAR_OPENDUA_IMPORT_ENABLED`. Audio ships, hosted by Taybah (ADR 0040, 1 Nov 2026); written confirmation requested, not required. No references, gradings or explanations upstream |
 | [Hisn al-Muslim](https://github.com/alihmada/Islamic-APIs) JSON (hisnmuslim.com) | Hisn al-Muslim adhkar as static JSON by category | No key | No terms published | **Not used**: provenance and rights undocumented |
 | [Islamic Network](https://islamic.network/api/) Pray API | Duas and adhkar linked to Hijri months and blessed days | No key; early access | Early access | **Watch** |
 
@@ -169,7 +169,7 @@ The Settings design already has "dark mode after Maghrib", and reminders may fol
 **Permissions to request**
 
 - [ ] MP3Quran: permission to stream reciters and radio in the app
-- [ ] OpenDua (`opendua@hdfund.org`): redistribution of the Arabic dataset, attribution wording, Arabic chapter titles, audio streaming, offline download and re-hosting (ADR 0031 release blockers)
+- [ ] OpenDua (`opendua@hdfund.org`): Arabic attribution wording, Arabic chapter titles, audio streaming, offline download and re-hosting and the attribution wording (non-blocking, ADR 0040). Redistribution of the Arabic dataset is settled by ADR 0038 and no longer a blocker.
 - [ ] Dorar: access token and the written terms on caching and storage
 - [ ] HadeethEnc: confirm app use in writing
 - [ ] Sunnah.com: API key and terms
@@ -379,12 +379,12 @@ All reading is served from the device database; the network is only used for syn
 
 ## Security, environments & monitoring
 
-QF credentials never leave the backend, and prelive and production are kept fully separate.
+QF credentials never leave the backend. Local development and the Railway API both use production keys (ADR 0041); prelive and production stores are kept fully separate.
 
 | Environment | QF auth URL | QF API base | Our use |
 | --- | --- | --- | --- |
-| Prelive | `https://prelive-oauth2.quran.foundation` | `https://apis-prelive.quran.foundation` | Local development |
-| Production | `https://oauth2.quran.foundation` | `https://apis.quran.foundation` | The Railway API, TestFlight, and store builds (ADR 0022) |
+| Prelive | `https://prelive-oauth2.quran.foundation` | `https://apis-prelive.quran.foundation` | Optional; local development until ADR 0041 |
+| Production | `https://oauth2.quran.foundation` | `https://apis.quran.foundation` | Local development (ADR 0041), the Railway API, TestFlight, and store builds (ADR 0022) |
 
 Endpoints from the [QF quickstart](https://api-docs.quran.foundation/docs/quickstart).
 
@@ -393,7 +393,7 @@ Endpoints from the [QF quickstart](https://api-docs.quran.foundation/docs/quicks
   - Content API calls send `x-auth-token` and `x-client-id`.
 - **Prelive holds sample data only:** `GET /content/api/v4/chapters` returns 2 chapters (Al-Fatihah, Al-Baqarah), not 114.
   - The pipeline can be built and tested on prelive.
-  - The full 6,236-ayah checksum and the Phase 1 exit check ("fresh install reaches QF text offline") need the full dataset, through production access or a full prelive dataset. Asked of QF (spec section 16).
+  - The full 6,236-ayah checksum and the Phase 1 exit check ("fresh install reaches QF text offline") need the full dataset. Production keys arrived on 1 Nov 2026, and local now syncs production (ADR 0041).
 
 - **Secrets:** client ID and secret in the secrets manager per environment; rotated on a schedule; never in the app binary or the repo.
 - **Separate stores:** sync tokens, mirrors and caches are kept per environment, as the Content Sync docs require.
@@ -424,7 +424,7 @@ Builds, store submission and over-the-air fixes all run through EAS, with two ch
 
 | Channel | Backend | Who gets it |
 | --- | --- | --- |
-| `development` | Local, QF prelive keys | Developers (development builds) |
+| `development` | Local, QF production keys (ADR 0041) | Developers (development builds) |
 | `production` | Production on Railway, QF production keys (ADR 0022) | TestFlight and Play internal testers, then store users |
 
 - **Builds:** EAS Build per channel; version numbers bumped automatically by EAS.

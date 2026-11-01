@@ -599,7 +599,14 @@ describe('ReadingList word follow', () => {
 
   it('does not follow the word once the reader has stopped following', async () => {
     const view = await renderUi(followed({ followKey: null }));
-    expect(recitedTextNode(view)).toBeUndefined();
+    // The pill keeps its own line handler on the Text (ADR 0039), so the Text still reports its lines; the follow
+    // must scroll nothing with the reader stopped.
+    const textNode = recitedTextNode(view);
+    expect(textNode).toBeDefined();
+    const verse = getVerseByKey(mockTestExecutor, '18:12');
+    await act(async () => {
+      textNode!.props.onTextLayout({ nativeEvent: { lines: [{ height: lineHeight, text: verse!.textUthmani, y: 0 }] } });
+    });
     expect(flashListTestState.offsetCalls).toEqual([]);
   });
 });

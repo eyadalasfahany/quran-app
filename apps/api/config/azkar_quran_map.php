@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 return [
     'hisn-al-muslim:entry-000004:standard:1' => [
-        [3, 190, 200, 'status' => 'candidate', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.98'],
+        [3, 190, 200, 'status' => 'reviewed', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.98'],
     ],
     'hisn-al-muslim:entry-000050:standard:1' => [
         [95, 8, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.70', 'check' => 'uthmani:0.67'],
@@ -30,10 +30,10 @@ return [
         [4, 170, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
     ],
     'hisn-al-muslim:entry-000071:standard:2' => [
-        [2, 255, null, 'status' => 'candidate', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
+        [2, 255, null, 'status' => 'reviewed', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
     ],
     'hisn-al-muslim:entry-000075:standard:1' => [
-        [2, 255, null, 'status' => 'candidate', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
+        [2, 255, null, 'status' => 'reviewed', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
     ],
     'hisn-al-muslim:entry-000076:standard:1' => [
         [17, 111, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.58', 'check' => 'uthmani:0.58'],
@@ -46,16 +46,16 @@ return [
         [4, 170, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
     ],
     'hisn-al-muslim:entry-000100:standard:1' => [
-        [2, 255, null, 'status' => 'candidate', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
+        [2, 255, null, 'status' => 'reviewed', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
     ],
     'hisn-al-muslim:entry-000101:standard:1' => [
-        [2, 285, 286, 'status' => 'candidate', 'evidence' => 'similarity:1.00', 'check' => 'uthmani:0.99'],
+        [2, 285, 286, 'status' => 'reviewed', 'evidence' => 'similarity:1.00', 'check' => 'uthmani:0.99'],
     ],
     'hisn-al-muslim:entry-000110:standard:1' => [
         [26, 225, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.21', 'check' => 'uthmani:0.21'],
     ],
     'hisn-al-muslim:entry-000135:standard:2' => [
-        [57, 3, null, 'status' => 'candidate', 'evidence' => 'exact-simple', 'check' => 'uthmani:0.99'],
+        [57, 3, null, 'status' => 'reviewed', 'evidence' => 'exact-simple', 'check' => 'uthmani:0.99'],
     ],
     'hisn-al-muslim:entry-000206:standard:1' => [
         [26, 190, 191, 'status' => 'unmatched', 'evidence' => 'similarity:0.57', 'check' => 'uthmani:0.57'],

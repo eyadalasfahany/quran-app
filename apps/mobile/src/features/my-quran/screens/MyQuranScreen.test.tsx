@@ -1,7 +1,9 @@
 import { fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 
 import { renderUi } from '../../../../jest/render-ui';
+import { tabContentClearance } from '@/core/layout/tab-bar-clearance';
 import { MyQuranScreen } from './MyQuranScreen';
 
 jest.mock('react-native-safe-area-context', () => {
@@ -76,4 +78,17 @@ describe('MyQuranScreen', () => {
     expect(router.navigate).toHaveBeenCalledWith('/(main)/(mushaf)');
   });
 
+  it('pads the list end by the tab bar footprint plus the page gap, so the last row clears the bar', async () => {
+    const originalOs = Platform.OS;
+    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'ios' });
+    try {
+      const view = await renderUi(<MyQuranScreen />);
+
+      expect(view.getByTestId('screen-my-quran-list').props.contentContainerStyle.paddingBottom).toBe(
+        tabContentClearance('ios', 0) + 16,
+      );
+    } finally {
+      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOs });
+    }
+  });
 });

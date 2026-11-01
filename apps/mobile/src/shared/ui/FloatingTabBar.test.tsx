@@ -1,12 +1,16 @@
-import { within } from '@testing-library/react-native';
+import { act, within } from '@testing-library/react-native';
 import { Text } from 'react-native';
+import { setUpTests } from 'react-native-reanimated';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../jest/window-size';
 import { rawColorLiterals } from '../../../jest/ui-source';
+import { useTabBarScrollStore } from '@/core/layout/tab-bar-scroll-store';
 import { themes } from '@/core/theme';
 
 import { FloatingTabBar } from './FloatingTabBar';
+
+setUpTests();
 
 let mockBottomInset = 0;
 let mockSideInsets = { left: 0, right: 0 };
@@ -126,6 +130,34 @@ describe('FloatingTabBar', () => {
 
     expect(view.queryByTestId('floating-tab-bar')).toBeNull();
     expect(view.queryByText('first')).toBeNull();
+  });
+
+  describe('while scrolling has hidden the tabs', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(async () => {
+      jest.useRealTimers();
+      await act(async () => {
+        useTabBarScrollStore.setState({ collapsed: false, lastY: 0, tracking: false });
+      });
+    });
+
+    it('slides the capsule off the bottom edge by its height, 12 offset, 16 and the inset, with no fade', async () => {
+      const view = await renderUi(bar());
+
+      await act(async () => {
+        useTabBarScrollStore.setState({ collapsed: true, tracking: true });
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(3000);
+      });
+
+      const dock = view.getByTestId('floating-tab-bar-dock');
+      expect(dock).toHaveAnimatedStyle({ transform: [{ translateY: 64 + 12 + 16 }] });
+      expect(flatStyle(dock.props.style).opacity).toBeUndefined();
+    });
   });
 
   it('does not block touches outside the capsule', async () => {

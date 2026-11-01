@@ -1,6 +1,6 @@
 # Step 8 — Azkar audio rights and states
 
-ADR 0031 §8. **OpenDua recordings are not streamed, downloaded, proxied, cached, re-hosted or bundled.** The importer imports no recording rows until rights are verified (step 3), so production has zero `azkar_recordings`. This step builds the rights logic and the UI states so a licensed recording can be added later with no schema change.
+ADR 0031 §8, as amended by ADR 0040 (1 Nov 2026): the opening rule below is superseded, the recordings now ship hosted by Taybah, and `docs/plans/phase-6/step-14-audio-and-storage.md` switches this logic on. Original text: **OpenDua recordings are not streamed, downloaded, proxied, cached, re-hosted or bundled.** The importer imports no recording rows until rights are verified (step 3), so production has zero `azkar_recordings`. This step builds the rights logic and the UI states so a licensed recording can be added later with no schema change.
 
 ## Rights logic (`src/features/azkar/audio/`)
 - `availability.ts` (pure): `audioAvailability(recording | null, { online, downloaded })` returns one of:

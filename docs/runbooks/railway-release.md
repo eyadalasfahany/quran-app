@@ -36,27 +36,48 @@ The entrypoint (`docker/entrypoint.sh`) also runs `config:cache` and `migrate --
 
 The release builds the azkar pack synchronously, so it does not depend on Horizon. Horizon still processes the queued `BuildContentPackJob` that the content listeners dispatch.
 
-## Environment (Railway variables, API service)
+## Environment (Railway variables)
+
+Set on the API service unless noted. The QF variables go on the API, Horizon and Scheduler services: the scheduler dispatches `SyncQuranFoundationJob`, and Horizon runs it and `BuildContentPackJob`.
 
 | Variable | Production value | Notes |
 | --- | --- | --- |
 | `APP_ENV` | `production` | Enables every production guard above. |
 | `AZKAR_OPENDUA_IMPORT_ENABLED` | `false` until OpenDua confirms in writing | ADR 0031 §1. |
-| `QF_CONTACT_EMAIL` | set | Used in the download User-Agent. |
+| `QF_ENV` | `production` | API, Horizon, Scheduler. Selects `oauth2.quran.foundation` and `apis.quran.foundation` (`config/quran.php`). |
+| `QF_CLIENT_ID` | QF production client ID | API, Horizon, Scheduler. Same pair as local `apps/api/.env` (ADR 0041); never in git. |
+| `QF_CLIENT_SECRET` | QF production client secret | API, Horizon, Scheduler. |
+| `QF_CONTACT_EMAIL` | set | API, Horizon, Scheduler. Used in the download User-Agent. |
+
+## First QF production sync
+
+**Deploy the sync fixes first** (1 Nov 2026). Production QF returns bootstrap mutations unsorted, and some Arabic tafsirs (90, 93, and all of 925) have records with a null `group_tafsir_id`. A build without the ordering fix in `ContentSyncService` and the group-leader fallback in `TafsirsHandler` fails `content:sync tafsirs` on production.
+
+The production mirror has its own sync tokens (`sync_states` is keyed by environment), so the first run bootstraps from QF snapshots. The scheduler runs every group in `quran.sync.groups` daily at 02:00 UTC. To start sooner, from a shell in the API container (`railway ssh`):
+
+```bash
+php artisan qf:ping
+php artisan content:sync tafsirs
+php artisan content:sync mushafs
+php artisan content:sync chapter_recitations
+```
+
+Each run prints `mutations_applied`, `resources_touched` and `rows`. Horizon builds the packs; `GET /api/v1/content/manifest` then lists each resource with its version, size and SHA-256.
 
 ## Unlocking Azkar in production
 
 This is a reviewed change, never a command on the server:
 
-1. OpenDua confirms the rights in writing (ADR 0031 release blockers 1 to 3).
-2. A migration (or a reviewed data change) sets the `opendua` row in `content_sources` to `granted`.
-3. `AZKAR_OPENDUA_IMPORT_ENABLED=true` is set on the API service.
-4. The reviewed Quran reference map has every row `reviewed` (no `candidate` or `unmatched` row remains; `php artisan azkar:quran-map-candidates` shows the counts).
-5. The next deploy imports and builds the pack. The import report is in `storage/app/azkar/reports/` inside the container, and the console summary is in the deploy log.
+1. ~~OpenDua confirms the rights in writing.~~ Done: ADR 0038 accepts OpenDua's public statements.
+2. ~~A migration sets the `opendua` row in `content_sources` to `granted`.~~ Done: `2026_11_01_100015_grant_opendua_content_source` (ADR 0038).
+3. `APP_ENV=production` is set on the API service. Without it the importer applies local rules and accepts `candidate` map rows.
+4. The reviewed Quran reference map has every row `reviewed` (no `candidate` or `unmatched` row remains; `php artisan azkar:quran-map-candidates` shows the counts). Review sheet: `docs/plans/phase-6/quran-map-review.md`.
+5. `AZKAR_OPENDUA_IMPORT_ENABLED=true` is set on the API service.
+6. The next deploy imports and builds the pack. The import report is in `storage/app/azkar/reports/` inside the container, and the console summary is in the deploy log.
 
 ## Checking a deploy
 
-- Deploy log, pre-deploy step: `Azkar import skipped: the wet import is locked.` is expected until the unlock above.
+- Deploy log, pre-deploy step: `Azkar import skipped: the wet import is locked.` is expected until the unlock above (now only the import flag keeps it locked).
 - When unlocked: the summary table, `Status: imported`, and `pack` in the report (`version`, `sha256`, `size_bytes`, `row_count`).
 - `GET /api/v1/content/manifest` lists the `azkar` resource once its pack exists.
 

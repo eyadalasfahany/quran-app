@@ -1,8 +1,8 @@
 import { router, useSegments } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, View } from 'react-native';
-import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
@@ -10,12 +10,14 @@ import { MINI_PLAYER_SIDE } from '@/features/audio/mini-player-metrics';
 import { useOfflineStrip } from '@/core/network/useOfflineStrip';
 import { useOnline } from '@/core/network/useOnline';
 import { useTheme } from '@/core/theme';
+import { spring } from '@/core/theme/motion';
 import { OfflineBanner, Sidebar } from '@/shared/ui';
 
 import { TabBarScrollSync } from './TabBarScrollSync';
 import { sidebarDestinations } from './destinations';
-import { miniPlayerBottom, tabBarSideClearance } from './tab-bar-clearance';
+import { miniPlayerBottom, miniPlayerHiddenTabsBottom, tabBarSideClearance } from './tab-bar-clearance';
 import { TabRailContext } from './TabRailContext';
+import { useTabBarHiddenOnScroll } from './useTabBarHiddenOnScroll';
 import { useIsShortWindow } from './useWindowClass';
 
 export function MainShell({ expanded, children }: { expanded: boolean; children: ReactNode }) {
@@ -33,6 +35,14 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
   // A short window draws the tabs as a rail on the start edge (ADR 0036): the screens and the mini player clear it there.
   const short = useIsShortWindow();
   const railSide = tabBarSideClearance(short);
+  const tabsScrollHidden = useTabBarHiddenOnScroll();
+  const playerBottom = miniPlayerBottom(Platform.OS, insets.bottom, short);
+  const playerDrop = playerBottom - miniPlayerHiddenTabsBottom(Platform.OS, insets.bottom, short);
+  const playerSlide = useSharedValue(0);
+  useEffect(() => {
+    playerSlide.value = withSpring(tabsScrollHidden ? 1 : 0, spring());
+  }, [tabsScrollHidden, playerSlide]);
+  const playerDock = useAnimatedStyle(() => ({ transform: [{ translateY: playerSlide.value * playerDrop }] }));
   // The offline strip sits under the top safe area and pushes the screens down by its height (ADR 0037). The screens
   // keep their own top inset, so the strip is placed on the blank band above them and never covers a title.
   const online = useOnline();
@@ -83,18 +93,21 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
       {/* Compact and medium only: the frames float the mini player above the tab bar. Expanded windows get
           the sidebar footer instead (above). */}
       {expanded ? null : (
-        <View
+        <Animated.View
           pointerEvents="box-none"
-          style={{
-            bottom: miniPlayerBottom(Platform.OS, insets.bottom, short),
-            end: MINI_PLAYER_SIDE,
-            position: 'absolute',
-            start: railSide + MINI_PLAYER_SIDE,
-          }}
+          style={[
+            {
+              bottom: playerBottom,
+              end: MINI_PLAYER_SIDE,
+              position: 'absolute',
+              start: railSide + MINI_PLAYER_SIDE,
+            },
+            playerDock,
+          ]}
           testID="mini-player-dock"
         >
           <MiniPlayer variant="tabs" />
-        </View>
+        </Animated.View>
       )}
     </View>
     </TabRailContext.Provider>

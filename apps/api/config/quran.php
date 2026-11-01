@@ -51,7 +51,8 @@ return [
         'groups' => [
             'tafsirs' => 'tafsirs:*',
             'mushafs' => 'mushafs:1',
-            'chapter_recitations' => 'chapter_recitations:6,7',
+            // Every QF production reciter except 173, a duplicate stream of 7 (developer, 1 Nov 2026).
+            'chapter_recitations' => 'chapter_recitations:1,2,3,4,5,6,7,9,10,12,13,19,158,159,160,161,168,174,175,176',
         ],
     ],
 
@@ -71,6 +72,23 @@ return [
             93 => 'التفسير الوسيط',
             90 => 'تفسير القرطبي',
             94 => 'تفسير البغوي',
+        ],
+    ],
+
+    // QF sends no Arabic name (or an ambiguous one) for these chapter reciters, keyed by QF
+    // chapter reciter id (resources.source_key). Names are not Quran text. An override wins over QF's Arabic name.
+    'reciter_display_names' => [
+        'ar' => [
+            4 => 'أبو بكر الشاطري',
+            12 => 'محمود خليل الحصري (المعلم)',
+            158 => 'عبدالله علي جابر',
+            159 => 'ماهر المعيقلي',
+            160 => 'بندر بليلة',
+            161 => 'خليفة الطنيجي',
+            168 => 'محمد صديق المنشاوي (مع الأطفال)',
+            174 => 'ياسر الدوسري',
+            175 => 'عبدالله حمد أبو شريدة',
+            176 => 'أحمد عبدالحميد طاحون (تجريبي)',
         ],
     ],
 

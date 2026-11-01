@@ -79,62 +79,34 @@ describe('SectionScreen', () => {
     expect(featureComponentLiterals('core/layout/SectionScreen.tsx')).toEqual([]);
   });
 
-  describe('above the tabs mini bar', () => {
+  describe('bottom clearance', () => {
     beforeEach(() => {
       setWindowWidth(390);
       usePlayerStore.getState().reset();
     });
 
-    it('is the bar height plus its gap, 76', () => {
+    it('is the mini bar height plus its gap, 76', () => {
       expect(MINI_PLAYER_TABS_FOOTPRINT).toBe(76);
     });
 
-    it.each(locales)('adds the bar footprint to the bottom of the content while the bar shows (%s)', async (locale) => {
+    it.each(locales)('leaves the content View without bottom padding while the mini bar shows (%s)', async (locale) => {
       startPlayback();
       const view = await renderUi(<SectionScreen testID="screen" title="x" />, { locale });
 
-      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(76);
+      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBeUndefined();
     });
 
-    it('adds no bottom padding while the player is idle', async () => {
-      const view = await renderUi(<SectionScreen testID="screen" title="x" />);
-
-      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(0);
-    });
-
-    it('adds no bottom padding on an expanded window, where the bar is hidden', async () => {
-      setWindowWidth(1000);
-      startPlayback();
-      const view = await renderUi(<SectionScreen testID="screen" title="x" />);
-
-      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(0);
-    });
-  });
-
-  describe('on Android, above the floating tab bar (ADR 0033)', () => {
-    const originalOs = Platform.OS;
-
-    beforeEach(() => {
-      setWindowWidth(390);
-      usePlayerStore.getState().reset();
+    it('leaves the content View without bottom padding on Android either, the screen scroll view pads instead', async () => {
+      const originalOs = Platform.OS;
       Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
-    });
+      try {
+        startPlayback();
+        const view = await renderUi(<SectionScreen testID="screen" title="x" />);
 
-    afterEach(() => {
-      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOs });
-    });
-
-    it('clears the floating bar: 12 + 64 with the bottom inset of 0', async () => {
-      const view = await renderUi(<SectionScreen testID="screen" title="x" />);
-
-      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(76);
-    });
-
-    it('clears the floating bar and the mini bar above it while something plays', async () => {
-      startPlayback();
-      const view = await renderUi(<SectionScreen testID="screen" title="x" />);
-
-      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(76 + 76);
+        expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBeUndefined();
+      } finally {
+        Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOs });
+      }
     });
   });
 });

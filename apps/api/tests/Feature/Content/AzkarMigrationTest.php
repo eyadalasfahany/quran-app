@@ -164,7 +164,7 @@ it('drops every azkar table on down and restores it on up', function (): void {
     }
 });
 
-it('seeds the opendua source as pending and its down removes only that row', function (): void {
+it('seeds the opendua source, grants it (ADR 0038), and its down removes only that row', function (): void {
     $migration = azkarMigration('insert_opendua_content_source');
 
     $migration->down();
@@ -172,6 +172,7 @@ it('seeds the opendua source as pending and its down removes only that row', fun
 
     $migration->up();
     $migration->up();
+    azkarMigration('grant_opendua_content_source')->up();
 
     $row = DB::table('content_sources')->where('code', 'opendua')->get();
 
@@ -179,9 +180,39 @@ it('seeds the opendua source as pending and its down removes only that row', fun
 
     $source = $row->first();
 
+    expect($source->permission_status)->toBe('granted')
+        ->and($source->licence_url)->toBe('https://opendua.org/developers')
+        ->and($source->attribution_ar)->toBe('')
+        ->and($source->notes)->toBe("Granted by ADR 0038 on OpenDua's public statements (1 Nov 2026). Arabic attribution not published by OpenDua. Audio not licensed.")
+        ->and($source->attribution_en)->toBe("OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts.");
+});
+
+it('grants the opendua source on its public statements (ADR 0038) and keeps its attribution', function (): void {
+    $migration = azkarMigration('grant_opendua_content_source');
+
+    $migration->down();
+    $migration->up();
+
+    $source = DB::table('content_sources')->where('code', 'opendua')->first();
+
+    expect($source->permission_status)->toBe('granted')
+        ->and($source->licence_url)->toBe('https://opendua.org/developers')
+        ->and($source->notes)->toBe("Granted by ADR 0038 on OpenDua's public statements (1 Nov 2026). Arabic attribution not published by OpenDua. Audio not licensed.")
+        ->and($source->attribution_ar)->toBe('')
+        ->and($source->attribution_en)->toStartWith('OpenDua dataset v0.0.4 (https://opendua.org)');
+});
+
+it('the grant migration down restores the pending source, its old licence URL and its old notes', function (): void {
+    $migration = azkarMigration('grant_opendua_content_source');
+
+    $migration->up();
+    $migration->down();
+
+    $source = DB::table('content_sources')->where('code', 'opendua')->first();
+
     expect($source->permission_status)->toBe('pending')
         ->and($source->licence_url)->toBe('https://opendua.hdfund.org/developers#dev-licence')
-        ->and($source->attribution_ar)->toBe('')
-        ->and($source->notes)->toBe("Arabic attribution pending OpenDua's wording")
-        ->and($source->attribution_en)->toBe("OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts.");
+        ->and($source->notes)->toBe("Arabic attribution pending OpenDua's wording");
+
+    $migration->up();
 });

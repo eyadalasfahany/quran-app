@@ -27,13 +27,25 @@ it('sets the OpenDua source to the given status locally', function (): void {
     expect(sprStatus())->toBe('granted');
 });
 
+it('accepts a status the source already has and leaves it unchanged', function (): void {
+    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
+
+    $this->artisan('azkar:source-permission', ['status' => 'granted'])->assertExitCode(0);
+
+    expect(sprStatus())->toBe('granted');
+});
+
 it('refuses statuses outside granted, pending and denied, and changes nothing', function (): void {
+    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
+
     $this->artisan('azkar:source-permission', ['status' => 'not_required'])->assertExitCode(1);
 
     expect(sprStatus())->toBe('pending');
 });
 
 it('refuses in production and leaves the source unchanged', function (): void {
+    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
+
     app()->detectEnvironment(fn (): string => 'production');
 
     $this->artisan('azkar:source-permission', ['status' => 'granted'])

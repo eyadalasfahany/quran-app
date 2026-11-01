@@ -3,6 +3,7 @@ import { fireEvent } from '@testing-library/react-native';
 import { Dimensions } from 'react-native';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
+import { tabContentClearance } from '@/core/layout/tab-bar-clearance';
 import { themes } from '@/core/theme';
 import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { usePlayerStore } from '@/features/audio/playerStore';
@@ -130,19 +131,23 @@ describe('IndexScreen', () => {
       usePlayerStore.getState().reset();
     });
 
-    it('pads the bottom of the list by the bar footprint while the bar shows, so the last row clears it', async () => {
+    it('pads the bottom of the list by the bar footprint and the mini bar while the mini bar shows, so the last row clears both', async () => {
       const store = usePlayerStore.getState();
       store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
       store.markPlaying();
       const view = await renderUi(<IndexScreen />);
 
-      expect(flatStyle(view.getByTestId('index-list').props.contentContainerStyle).paddingBottom).toBe(MINI_PLAYER_TABS_FOOTPRINT);
+      expect(flatStyle(view.getByTestId('index-list').props.contentContainerStyle).paddingBottom).toBe(
+        tabContentClearance('ios', 0) + MINI_PLAYER_TABS_FOOTPRINT,
+      );
     });
 
-    it('adds no bottom padding while the player is idle', async () => {
+    it('pads only by the bar footprint while the player is idle', async () => {
       const view = await renderUi(<IndexScreen />);
 
-      expect(flatStyle(view.getByTestId('index-list').props.contentContainerStyle).paddingBottom).toBe(0);
+      expect(flatStyle(view.getByTestId('index-list').props.contentContainerStyle).paddingBottom).toBe(
+        tabContentClearance('ios', 0),
+      );
     });
   });
 });
