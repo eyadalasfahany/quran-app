@@ -12,6 +12,8 @@
  *   - Tablet sw600dp: uses tablet PNGs at nodpi (2048×2732 / 2732×2048 sources).
  *
  * iOS: icon 1024; full-screen splash posters (legacy imageset at prebuild).
+ *
+ * Google Play: feature graphic 1024×500 (docs/branding/app-store-assets/).
  */
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -91,4 +93,22 @@ for (const [name, w, h, logoSize] of posters) {
 fs.copyFileSync(logoSrc, path.join(brand, 'taybah-nabawi-logo.png'));
 magick(logoSrc, '-resize', '512x512', path.join(out, 'splash-icon.png'));
 
+const featureGraphic = path.join(brand, 'app-store-assets/taybah-google-play-feature-graphic.png');
+fs.mkdirSync(path.dirname(featureGraphic), { recursive: true });
+magick(
+  '-size',
+  '1024x500',
+  `xc:${bg}`,
+  '(',
+  logoSrc,
+  '-resize',
+  'x440',
+  ')',
+  '-gravity',
+  'center',
+  '-composite',
+  featureGraphic,
+);
+
 console.log('Brand assets written to', out);
+console.log('Play feature graphic:', featureGraphic);
