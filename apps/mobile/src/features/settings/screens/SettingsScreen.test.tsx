@@ -43,6 +43,7 @@ describe('SettingsScreen', () => {
     expect(view.getByRole('header', { name: 'القراءة' })).toBeOnTheScreen();
     expect(view.getByRole('header', { name: 'الاستماع' })).toBeOnTheScreen();
     expect(view.getByRole('header', { name: 'الورد والتذكير' })).toBeOnTheScreen();
+    expect(view.getByRole('header', { name: 'إشعارات الصلاة' })).toBeOnTheScreen();
     expect(view.getByRole('header', { name: 'عن التطبيق' })).toBeOnTheScreen();
     expect(view.queryByText('تسجيل الدخول')).toBeNull();
   });

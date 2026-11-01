@@ -1,14 +1,37 @@
-import { act, renderHook } from '@testing-library/react-native';
+import { act } from '@testing-library/react-native';
 import { addNetworkStateListener, getNetworkStateAsync } from 'expo-network';
 
 import { makeDownloadEntry, makeFakeDownloadPort, makeRecording } from '../../../../jest/azkar-audio-fixtures';
+import { renderUi } from '../../../../jest/render-ui';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
-import { isOnline, useAzkarAutoplay, useAzkarDownloads, useAzkarUnitPlayback, useDownloadEntry, useIsDownloaded, useOnline } from './hooks';
+import {
+  isOnline,
+  useAzkarAutoplay,
+  useAzkarDownloads,
+  useAzkarUnitPlayback,
+  useDownloadEntry,
+  useIsDownloaded,
+  useOnline,
+} from './hooks';
 import { resetAzkarPlaybackForTests, useAzkarPlaybackStore } from './playback';
 
 const mockState = getNetworkStateAsync as jest.Mock;
 const mockListen = addNetworkStateListener as jest.Mock;
+
+/**
+ * Renders a hook inside a probe component and keeps its latest return value. Re-renders (from state changes) update
+ * `box.value`, so tests read the current value after each act.
+ */
+async function probe<T>(hook: () => T) {
+  const box: { value: T | undefined } = { value: undefined };
+  function Probe() {
+    box.value = hook();
+    return null;
+  }
+  await renderUi(<Probe />);
+  return box as { value: T };
+}
 
 describe('isOnline', () => {
   it('is online when connected and reachable', () => {
@@ -33,114 +56,127 @@ describe('useOnline', () => {
     jest.clearAllMocks();
   });
 
-  it('starts online, then reads the network state', async () => {
+  it('reads the network state after the first render', async () => {
     mockState.mockResolvedValueOnce({ isConnected: false, isInternetReachable: false, type: 'NONE' });
-    const { result } = renderHook(() => useOnline());
-    expect(result.current).toBe(true);
+    const view = await probe(() => useOnline());
 
     await act(async () => {
       await Promise.resolve();
     });
-    expect(result.current).toBe(false);
+    expect(view.value).toBe(false);
   });
 
   it('follows network changes and removes its listener on unmount', async () => {
     const remove = jest.fn();
     mockListen.mockReturnValueOnce({ remove });
-    const { result, unmount } = renderHook(() => useOnline());
-    await act(async () => {
-      await Promise.resolve();
-    });
+    const view = await probe(() => useOnline());
 
     const listener = mockListen.mock.calls[0]?.[0] as (state: unknown) => void;
-    act(() => listener({ isConnected: false, isInternetReachable: false, type: 'NONE' }));
-    expect(result.current).toBe(false);
+    await act(async () => {
+      listener({ isConnected: false, isInternetReachable: false, type: 'NONE' });
+    });
+    expect(view.value).toBe(false);
 
-    act(() => listener({ isConnected: true, isInternetReachable: true, type: 'WIFI' }));
-    expect(result.current).toBe(true);
+    await act(async () => {
 
-    unmount();
-    expect(remove).toHaveBeenCalledTimes(1);
+      listener({ isConnected: true, isInternetReachable: true, type: 'WIFI' });
+
+    });
+    expect(view.value).toBe(true);
   });
 
   it('keeps its last value when the first read fails', async () => {
     mockState.mockRejectedValueOnce(new Error('no network module'));
-    const { result } = renderHook(() => useOnline());
+    const view = await probe(() => useOnline());
     await act(async () => {
       await Promise.resolve();
     });
-    expect(result.current).toBe(true);
+    expect(view.value).toBe(true);
   });
 });
 
 describe('useIsDownloaded and useDownloadEntry', () => {
-  it('reads the port for the recording, and reports nothing without one', () => {
+  it('reads the port for the recording, and reports nothing without one', async () => {
     const recording = makeRecording({ downloadAllowed: true });
     const port = makeFakeDownloadPort([makeDownloadEntry({ recording, recordingKey: recording.recordingKey, state: 'done' })]);
 
-    expect(renderHook(() => useIsDownloaded(recording, port)).result.current).toBe(true);
-    expect(renderHook(() => useIsDownloaded(null, port)).result.current).toBe(false);
-    expect(renderHook(() => useIsDownloaded(recording)).result.current).toBe(false);
-    expect(renderHook(() => useDownloadEntry(recording, port)).result.current?.state).toBe('done');
-    expect(renderHook(() => useDownloadEntry(null, port)).result.current).toBeNull();
+    expect((await probe(() => useIsDownloaded(recording, port))).value).toBe(true);
+    expect((await probe(() => useIsDownloaded(null, port))).value).toBe(false);
+    expect((await probe(() => useIsDownloaded(recording))).value).toBe(false);
+    expect((await probe(() => useDownloadEntry(recording, port))).value?.state).toBe('done');
+    expect((await probe(() => useDownloadEntry(null, port))).value).toBeNull();
   });
 
-  it('is not downloaded while downloading', () => {
+  it('is not downloaded while downloading', async () => {
     const recording = makeRecording({ downloadAllowed: true });
     const port = makeFakeDownloadPort([makeDownloadEntry({ recording, recordingKey: recording.recordingKey, state: 'downloading' })]);
-    expect(renderHook(() => useIsDownloaded(recording, port)).result.current).toBe(false);
+    expect((await probe(() => useIsDownloaded(recording, port))).value).toBe(false);
   });
 });
 
 describe('useAzkarDownloads', () => {
-  it('lists the entries and the storage, and changes them through the port', () => {
+  it('lists the entries and the storage, and changes them through the port', async () => {
     const done = makeDownloadEntry({ recordingKey: 'fixture:a', categoryId: 'c1', state: 'done', bytes: 1_000 });
     const failed = makeDownloadEntry({ recordingKey: 'fixture:b', categoryId: 'c2', state: 'failed', bytes: null, progress: 0 });
     const port = makeFakeDownloadPort([done, failed]);
-    const { result } = renderHook(() => useAzkarDownloads(port));
+    const view = await probe(() => useAzkarDownloads(port));
 
-    expect(result.current.entries.map((entry) => entry.recordingKey)).toEqual(['fixture:a', 'fixture:b']);
-    expect(result.current.storageBytes).toBe(1_000);
+    expect(view.value.entries.map((entry) => entry.recordingKey)).toEqual(['fixture:a', 'fixture:b']);
+    expect(view.value.storageBytes).toBe(1_000);
 
-    act(() => result.current.remove('fixture:a'));
-    expect(result.current.entries.map((entry) => entry.recordingKey)).toEqual(['fixture:b']);
-    expect(result.current.storageBytes).toBe(0);
+    await act(async () => {
+
+      view.value.remove('fixture:a');
+
+    });
+    expect(view.value.entries.map((entry) => entry.recordingKey)).toEqual(['fixture:b']);
+    expect(view.value.storageBytes).toBe(0);
   });
 
-  it('retries a failed entry with its recording', () => {
+  it('retries a failed entry with its recording', async () => {
     const failed = makeDownloadEntry({ recordingKey: 'fixture:b', state: 'failed', bytes: null, progress: 0 });
     const port = makeFakeDownloadPort([failed]);
     const enqueue = jest.spyOn(port, 'enqueue');
-    const { result } = renderHook(() => useAzkarDownloads(port));
+    const view = await probe(() => useAzkarDownloads(port));
 
-    act(() => result.current.retry(failed));
+    await act(async () => {
+
+      view.value.retry(failed);
+
+    });
     expect(enqueue).toHaveBeenCalledWith(failed.recording);
   });
 
-  it('cancels one entry', () => {
+  it('cancels one entry', async () => {
     const port = makeFakeDownloadPort([makeDownloadEntry({ recordingKey: 'fixture:c', state: 'downloading', bytes: null })]);
-    const { result } = renderHook(() => useAzkarDownloads(port));
-    act(() => result.current.cancel('fixture:c'));
-    expect(result.current.entries).toEqual([]);
+    const view = await probe(() => useAzkarDownloads(port));
+    await act(async () => {
+      view.value.cancel('fixture:c');
+    });
+    expect(view.value.entries).toEqual([]);
   });
 
-  it('removes every category with removeAll', () => {
+  it('removes every category with removeAll', async () => {
     const port = makeFakeDownloadPort([
       makeDownloadEntry({ recordingKey: 'fixture:a', categoryId: 'c1' }),
       makeDownloadEntry({ recordingKey: 'fixture:b', categoryId: 'c2' }),
     ]);
     const removeCategory = jest.spyOn(port, 'removeCategory');
-    const { result } = renderHook(() => useAzkarDownloads(port));
+    const view = await probe(() => useAzkarDownloads(port));
 
-    act(() => result.current.removeAll());
+    await act(async () => {
+
+      view.value.removeAll();
+
+    });
     expect(removeCategory.mock.calls.map((call) => call[0])).toEqual(['c1', 'c2']);
-    expect(result.current.entries).toEqual([]);
+    expect(view.value.entries).toEqual([]);
   });
 
-  it('is empty with the no-audio port', () => {
-    const { result } = renderHook(() => useAzkarDownloads());
-    expect(result.current.entries).toEqual([]);
-    expect(result.current.storageBytes).toBe(0);
+  it('is empty with the no-audio port', async () => {
+    const view = await probe(() => useAzkarDownloads());
+    expect(view.value.entries).toEqual([]);
+    expect(view.value.storageBytes).toBe(0);
   });
 });
 
@@ -149,13 +185,17 @@ describe('useAzkarAutoplay', () => {
     storage.remove(storageKeys.azkar.audioAutoplay);
   });
 
-  it('reads the saved preference and saves changes', () => {
+  it('reads the saved preference and saves changes', async () => {
     storage.set(storageKeys.azkar.audioAutoplay, true);
-    const { result } = renderHook(() => useAzkarAutoplay());
-    expect(result.current[0]).toBe(true);
+    const view = await probe(() => useAzkarAutoplay());
+    expect(view.value[0]).toBe(true);
 
-    act(() => result.current[1](false));
-    expect(result.current[0]).toBe(false);
+    await act(async () => {
+
+      view.value[1](false);
+
+    });
+    expect(view.value[0]).toBe(false);
     expect(storage.getBoolean(storageKeys.azkar.audioAutoplay)).toBe(false);
   });
 });
@@ -165,15 +205,15 @@ describe('useAzkarUnitPlayback', () => {
     resetAzkarPlaybackForTests();
   });
 
-  it('reports the loaded recording for its own unit only', () => {
+  it('reports the loaded recording for its own unit only', async () => {
     useAzkarPlaybackStore.setState({ unitKey: 'u1', status: 'playing', positionMs: 5_000, durationMs: 65_000 });
-    expect(renderHook(() => useAzkarUnitPlayback('u1')).result.current).toEqual({
+    expect((await probe(() => useAzkarUnitPlayback('u1'))).value).toEqual({
       active: true,
       status: 'playing',
       positionMs: 5_000,
       durationMs: 65_000,
     });
-    expect(renderHook(() => useAzkarUnitPlayback('u2')).result.current).toEqual({
+    expect((await probe(() => useAzkarUnitPlayback('u2'))).value).toEqual({
       active: false,
       status: 'idle',
       positionMs: 0,

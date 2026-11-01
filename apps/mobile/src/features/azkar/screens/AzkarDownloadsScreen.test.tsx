@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/react-native';
+import { act, screen } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 import { router } from 'expo-router';
 
 import { makeDownloadEntry, makeFakeDownloadPort, makeRecording } from '../../../../jest/azkar-audio-fixtures';
@@ -14,6 +15,14 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), canGoBack: jest.fn(() => true), push: jest.fn(), replace: jest.fn() },
 }));
+
+type AlertButton = { text?: string; style?: string; onPress?: () => void };
+
+/** The buttons of the most recent confirmation Alert. */
+function alertButtons(): AlertButton[] {
+  const call = jest.mocked(Alert.alert).mock.calls.at(-1);
+  return (call?.[2] ?? []) as AlertButton[];
+}
 
 const MB12 = 12 * 1024 * 1024;
 
@@ -48,6 +57,7 @@ function populatedPort() {
 describe('AzkarDownloadsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
   });
 
   it('shows the empty state with no download buttons when the port reports nothing', async () => {
@@ -74,13 +84,33 @@ describe('AzkarDownloadsScreen', () => {
     expect(screen.getByRole('button', { name: 'إعادة المحاولة' })).toBeOnTheScreen();
   });
 
-  it('removes every recording with «حذف الكل», and then shows the empty state', async () => {
+  it('asks before removing every recording, and removes them when confirmed', async () => {
     const port = populatedPort();
     await renderUi(<AzkarDownloadsScreen port={port} />);
 
     await press(screen.getByRole('button', { name: 'حذف الكل' }));
+    expect(Alert.alert).toHaveBeenCalledWith('حذف كل التسجيلات؟', expect.any(String), expect.any(Array));
+    expect(port.entries).toHaveLength(3);
+
+    const confirm = alertButtons().find((button) => button.text === 'حذف الكل');
+    expect(confirm?.style).toBe('destructive');
+    await act(async () => {
+      confirm?.onPress?.();
+    });
     expect(port.entries).toHaveLength(0);
     expect(screen.getByRole('header', { name: 'لا تتوفر تسجيلات صوتية بعد' })).toBeOnTheScreen();
+  });
+
+  it('keeps every recording when the removal is cancelled', async () => {
+    const port = populatedPort();
+    await renderUi(<AzkarDownloadsScreen port={port} />);
+
+    await press(screen.getByRole('button', { name: 'حذف الكل' }));
+    const cancel = alertButtons().find((button) => button.text === 'إلغاء');
+    expect(cancel?.style).toBe('cancel');
+    expect(cancel?.onPress).toBeUndefined();
+    expect(port.entries).toHaveLength(3);
+    expect(screen.getByText('١٢ م.ب')).toBeOnTheScreen();
   });
 
   it('cancels a downloading recording from its row', async () => {
@@ -122,5 +152,9 @@ describe('AzkarDownloadsScreen', () => {
     await renderUi(<AzkarDownloadsScreen port={populatedPort()} />, { locale: 'en' });
     expect(screen.getByText('12 MB')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Delete all' })).toBeOnTheScreen();
+
+    await press(screen.getByRole('button', { name: 'Delete all' }));
+    expect(Alert.alert).toHaveBeenCalledWith('Delete all recordings?', expect.any(String), expect.any(Array));
+    expect(alertButtons().map((button) => button.text)).toEqual(['Cancel', 'Delete all']);
   });
 });

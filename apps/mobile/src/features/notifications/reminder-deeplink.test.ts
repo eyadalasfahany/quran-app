@@ -37,7 +37,7 @@ describe('registerReminderDeepLinks', () => {
     expect(router.navigate).toHaveBeenCalledWith('/read/2:255');
   });
 
-  it.each(['/settings', 'not-a-route', 42, undefined, '/azkarx', '/salah', 'azkar/category/morning'])(
+  it.each(['/settings', 'not-a-route', 42, undefined, '/azkarx', '/salahx', 'azkar/category/morning'])(
     'ignores the payload route %s',
     (route) => {
       registerReminderDeepLinks();
@@ -60,7 +60,18 @@ describe('registerReminderDeepLinks', () => {
     },
   );
 
+  it('opens the prayer notification route /salah, the الصلاة screen', () => {
+    registerReminderDeepLinks();
+
+    tapListener()(response('prayer-1', '/salah'));
+
+    expect(router.navigate).toHaveBeenCalledWith('/salah');
+  });
+
   it('recognises only the allowed prefixes', () => {
+    expect(isReminderRoute('/salah')).toBe(true);
+    expect(isReminderRoute('/salah/qibla')).toBe(false);
+    expect(isReminderRoute('/salahx')).toBe(false);
     expect(isReminderRoute('/read/2:255')).toBe(true);
     expect(isReminderRoute('/azkar/category/morning')).toBe(true);
     expect(isReminderRoute('/sibha')).toBe(false);

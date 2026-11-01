@@ -11,11 +11,11 @@ import { formatClock } from '../audio/clock';
 import { NoAudioDownloadPort, percentOf, type AzkarDownloadPort } from '../audio/downloads';
 import { useAzkarUnitPlayback, useIsDownloaded, useOnline } from '../audio/hooks';
 import {
-  playAzkarRecording,
   replayAzkarRecording,
   stopAzkarRecording,
   useAzkarPlaybackStore,
 } from '../audio/playback';
+import { startAzkarPlayback } from '../audio/start';
 import type { AzkarRecording } from '../data/model';
 import { AzkarAttributionLine } from './AzkarAttributionLine';
 
@@ -75,7 +75,7 @@ export function AzkarAudioPlayer({
       return;
     }
     if (recording !== null && playable) {
-      playAzkarRecording(recording, availability, { unitKey, onEnded: handleEnded });
+      startAzkarPlayback(recording, availability, { unitKey, onEnded: handleEnded });
     }
     onAutoStarted();
   }, [autoStart, recording, playable, availability, unitKey, onAutoStarted, handleEnded]);
@@ -105,7 +105,7 @@ export function AzkarAudioPlayer({
       replayAzkarRecording();
       return;
     }
-    playAzkarRecording(recording, availability, { unitKey, onEnded: handleEnded });
+    startAzkarPlayback(recording, availability, { unitKey, onEnded: handleEnded });
   };
 
   return (

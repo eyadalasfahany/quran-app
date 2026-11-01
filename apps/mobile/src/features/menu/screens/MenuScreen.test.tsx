@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -244,6 +244,37 @@ describe('MenuScreen', () => {
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(listen)');
     await fireEvent.press(screen.getByTestId('menu-card-my-quran'));
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(my-quran)');
+  });
+
+  describe('search card caption', () => {
+    it('reads «في القرآن والأذكار» once Azkar content is installed', async () => {
+      withAzkar(true);
+      await renderUi(<MenuScreen />);
+
+      expect(within(screen.getByTestId('menu-card-search')).getByText('في القرآن والأذكار')).toBeOnTheScreen();
+    });
+
+    it('reads «في القرآن» without Azkar content', async () => {
+      withAzkar(false);
+      await renderUi(<MenuScreen />);
+
+      expect(within(screen.getByTestId('menu-card-search')).getByText('في القرآن')).toBeOnTheScreen();
+      expect(within(screen.getByTestId('menu-card-search')).queryByText('في القرآن والأذكار')).toBeNull();
+    });
+
+    it('reads "In the Quran and Azkar" in English once Azkar content is installed', async () => {
+      withAzkar(true);
+      await renderUi(<MenuScreen />, { locale: 'en' });
+
+      expect(within(screen.getByTestId('menu-card-search')).getByText('In the Quran and Azkar')).toBeOnTheScreen();
+    });
+
+    it('reads "In the Quran" in English without Azkar content', async () => {
+      withAzkar(false);
+      await renderUi(<MenuScreen />, { locale: 'en' });
+
+      expect(within(screen.getByTestId('menu-card-search')).getByText('In the Quran')).toBeOnTheScreen();
+    });
   });
 
   it('opens search from its card and from the floating button', async () => {

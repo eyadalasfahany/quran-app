@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Children, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -6,11 +6,13 @@ import { useContrastColors } from '@/shared/ui';
 
 /**
  * The bordered card that holds the goal rows (quran-app-screens.html, #DailyGoalsSheet): a raised 20 pt card with a
- * hairline, the rows divided inside it.
+ * hairline, the rows divided by a hairline. The card draws the dividers, so a row that does not take a separator
+ * (the Settings reminder row) still sits in the list.
  */
 export function GoalsListCard({ children, testID = 'goals-list' }: { children: ReactNode; testID?: string }) {
   const theme = useTheme();
   const colors = useContrastColors();
+  const rows = Children.toArray(children);
 
   return (
     <View
@@ -23,7 +25,18 @@ export function GoalsListCard({ children, testID = 'goals-list' }: { children: R
       }}
       testID={testID}
     >
-      {children}
+      {rows.map((row, index) => (
+        <View
+          key={index}
+          style={
+            index < rows.length - 1
+              ? { borderBottomColor: colors.line, borderBottomWidth: theme.stroke.hairline }
+              : undefined
+          }
+        >
+          {row}
+        </View>
+      ))}
     </View>
   );
 }

@@ -52,7 +52,8 @@
       "subtitle": "Marks, highlights and notes"
     },
     "search": {
-      "caption": "Quran and azkar",
+      "captionQuran": "In the Quran",
+      "captionQuranAndAzkar": "In the Quran and Azkar",
       "title": "Search"
     },
     "settings": {
@@ -849,7 +850,11 @@
       "megabytes": "{{value}} MB",
       "removeAll": "Delete all",
       "emptyTitle": "No recordings are available yet",
-      "emptyBody": "Recordings will appear here once their use is licensed."
+      "emptyBody": "Recordings will appear here once their use is licensed.",
+      "removeAllTitle": "Delete all recordings?",
+      "removeAllBody": "Saved recordings will be deleted from this device. You can download them again later.",
+      "removeAllConfirm": "Delete all",
+      "removeAllCancel": "Cancel"
     },
     "reminders": {
       "title": "Azkar reminders",
@@ -915,6 +920,10 @@
     "misbaha": "Daily misbaha target",
     "misbahaCount": "Counts per day",
     "decrease": "Decrease",
-    "increase": "Increase"
+    "increase": "Increase",
+    "startKhatma": "Start a khatma",
+    "openSibha": "Open misbaha",
+    "prayerNotifications": "Prayer notifications",
+    "bell": "Reminder {{name}}"
   }
 }

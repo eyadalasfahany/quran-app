@@ -143,17 +143,17 @@ export function AzkarHomeScreen() {
               available ? (
                 <>
                   <IconButton
-                    icon={BOOKMARK}
-                    label={t('azkar.browse.favourites')}
-                    onPress={() => router.push(azkarHref.favorites)}
-                    testID="azkar-home-favorites"
-                    variant="raised"
-                  />
-                  <IconButton
                     icon={SEARCH}
                     label={t('ui.search')}
                     onPress={() => router.push(azkarHref.search)}
                     testID="azkar-home-search"
+                    variant="raised"
+                  />
+                  <IconButton
+                    icon={BOOKMARK}
+                    label={t('azkar.browse.favourites')}
+                    onPress={() => router.push(azkarHref.favorites)}
+                    testID="azkar-home-favorites"
                     variant="raised"
                   />
                   <IconButton

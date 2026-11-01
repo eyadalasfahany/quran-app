@@ -163,7 +163,7 @@ export function MenuScreen() {
       title={t('menu.myQuran.title')}
     />,
     <MenuCard
-      caption={t('menu.search.caption')}
+      caption={azkar.available ? t('menu.search.captionQuranAndAzkar') : t('menu.search.captionQuran')}
       icon={ICON.search}
       key="search"
       onPress={() => router.push('/search')}

@@ -33,7 +33,6 @@ export function MisbahaTargetStepper({
 
   return (
     <ListRow
-      separator="line"
       testID={testID}
       title={label}
       trailing={

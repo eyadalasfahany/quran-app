@@ -7,7 +7,8 @@ import { Icon, type IconName, UiText } from '@/shared/ui';
 import { audioAvailability } from '../audio/availability';
 import { NoAudioDownloadPort, type AzkarDownloadPort } from '../audio/downloads';
 import { useAzkarUnitPlayback, useIsDownloaded, useOnline } from '../audio/hooks';
-import { pauseAzkarRecording, playAzkarRecording, resumeAzkarRecording } from '../audio/playback';
+import { pauseAzkarRecording, resumeAzkarRecording } from '../audio/playback';
+import { startAzkarPlayback } from '../audio/start';
 import type { AzkarRecording } from '../data/model';
 
 const PLAY = { ios: 'play.fill', android: 'play_arrow' } as const satisfies IconName;
@@ -86,7 +87,7 @@ export function AzkarAudioButton({
       resumeAzkarRecording();
       return;
     }
-    playAzkarRecording(recording, availability, { unitKey, onEnded });
+    startAzkarPlayback(recording, availability, { unitKey, onEnded });
   };
 
   return (

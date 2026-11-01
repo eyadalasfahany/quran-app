@@ -4,6 +4,7 @@ import {
   DAILY_REMINDER_SLOTS,
   IOS_PENDING_LIMIT,
   PRAYER_NOTIFICATION_SLOTS,
+  PRAYER_ROLLING_DAYS,
 } from './budget';
 
 describe('pending notification budget', () => {
@@ -23,6 +24,11 @@ describe('pending notification budget', () => {
     expect(categories * AZKAR_ROLLING_DAYS).toBeLessThanOrEqual(AZKAR_SLOTS);
     // The limit is tight: a sixth category would overflow the pool.
     expect((categories + 1) * AZKAR_ROLLING_DAYS).toBeGreaterThan(AZKAR_SLOTS);
+  });
+
+  it('gives prayer notifications an 8-day rolling window per prayer, inside their 40 slots', () => {
+    expect(PRAYER_ROLLING_DAYS).toBe(8);
+    expect(5 * PRAYER_ROLLING_DAYS).toBe(PRAYER_NOTIFICATION_SLOTS);
   });
 
   it('never exceeds the iOS limit with every category at its reserved size', () => {

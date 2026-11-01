@@ -53,6 +53,10 @@ Spec §15 · ADR 0031 (sources, rights, provenance, data ownership) · research:
 | 11 | القائمة tab (ADR 0032) | Menu tab replaces only the الصلاة tab item; menu screen per the approved `Menu` frames; Salah unchanged. Cursor prompt `phase-6/cursor/03-menu-tab.md` | |
 | 10 | Exit check | Checks, visual review, airplane mode, both languages, both window classes | |
 
+## Follow-up: generalise the download manager (after the first licensed recording)
+
+Step 8 added `AzkarDownloadPort` and `NoAudioDownloadPort` (`apps/mobile/src/features/azkar/audio/downloads.ts`) and did not build a second download manager. `features/audio/downloads/manager.ts` is keyed by Quran `audio_file_id`. Generalising it (an additive `user.db` change: an owner `kind` and a generic key) waits until the first licensed Azkar recording exists, so it can be tested end to end without risking Quran downloads. The port then needs a change signal so the hooks re-read live.
+
 ## Variations (reviewer decision, 31 Oct 2026)
 
 Upstream variations are mutually exclusive alternatives (e.g. setting out / returning, food / milk, primary / alternative wording), never steps in sequence.

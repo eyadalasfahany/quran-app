@@ -52,7 +52,8 @@
       "subtitle": "العلامات والتظليلات والملاحظات"
     },
     "search": {
-      "caption": "في القرآن والأذكار",
+      "captionQuran": "في القرآن",
+      "captionQuranAndAzkar": "في القرآن والأذكار",
       "title": "البحث"
     },
     "settings": {
@@ -849,7 +850,11 @@
       "megabytes": "{{value}} م.ب",
       "removeAll": "حذف الكل",
       "emptyTitle": "لا تتوفر تسجيلات صوتية بعد",
-      "emptyBody": "ستظهر التسجيلات هنا بعد الحصول على ترخيص لنشرها."
+      "emptyBody": "ستظهر التسجيلات هنا بعد الحصول على ترخيص لنشرها.",
+      "removeAllTitle": "حذف كل التسجيلات؟",
+      "removeAllBody": "ستُحذف التسجيلات المحفوظة من هذا الجهاز. يمكن تنزيلها مجددًا لاحقًا.",
+      "removeAllConfirm": "حذف الكل",
+      "removeAllCancel": "إلغاء"
     },
     "reminders": {
       "title": "تذكير الأذكار",
@@ -915,6 +920,10 @@
     "misbaha": "هدف المسبحة اليومي",
     "misbahaCount": "عدد التسبيحات",
     "decrease": "تقليل",
-    "increase": "زيادة"
+    "increase": "زيادة",
+    "startKhatma": "ابدأ ختمة",
+    "openSibha": "فتح المسبحة",
+    "prayerNotifications": "إشعارات الصلاة",
+    "bell": "تذكير {{name}}"
   }
 }

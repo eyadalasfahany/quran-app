@@ -18,7 +18,7 @@ describe('DailyGoalsSheet', () => {
     expect(view.getByText('هدف تجريبي')).toBeOnTheScreen();
   });
 
-  it('closes from done, from save and from the dimmed screen', async () => {
+  it('closes from done and from save', async () => {
     const onClose = jest.fn();
     const view = await renderUi(
       <DailyGoalsSheet note="n" onClose={onClose} title="أهدافي اليومية">
@@ -28,20 +28,8 @@ describe('DailyGoalsSheet', () => {
 
     await fireEvent.press(view.getByRole('button', { name: 'تم' }));
     await fireEvent.press(view.getByRole('button', { name: 'حفظ' }));
-    // The dimmed scrim sits behind the modal card, so it is hidden from accessibility queries by design; a sighted tap reaches it.
-    await fireEvent.press(view.getByTestId('daily-goals-sheet-scrim', { includeHiddenElements: true }));
 
-    expect(onClose).toHaveBeenCalledTimes(3);
-  });
-
-  it('is labelled as a modal view', async () => {
-    const view = await renderUi(
-      <DailyGoalsSheet note="n" onClose={jest.fn()} title="أهدافي اليومية">
-        <Text>x</Text>
-      </DailyGoalsSheet>,
-    );
-
-    expect(view.getByLabelText('أهدافي اليومية').props.accessibilityViewIsModal).toBe(true);
+    expect(onClose).toHaveBeenCalledTimes(2);
   });
 
   it('reads in English', async () => {

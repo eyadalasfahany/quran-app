@@ -125,7 +125,9 @@ function repeatLabels(
   rangeLabel: string,
   t: Translate,
   locale: Locale,
-) {
+): { accessibilityLabel: string; label: string } {
+  // An explicit return type: inferring it across these t() branches exceeds TypeScript's depth (TS2589)
+  // once the typed locale grew past ~700 keys.
   if (repeat === null) {
     return { accessibilityLabel: t('player.options.repeatLabel'), label: t('player.options.repeat') };
   }
@@ -144,7 +146,12 @@ function repeatLabels(
 }
 
 /** The sleep item's text: its default title, or the armed state with the minutes left. */
-function sleepLabels(mode: SleepMode, remainingMinutes: number | null, t: Translate, locale: Locale) {
+function sleepLabels(
+  mode: SleepMode,
+  remainingMinutes: number | null,
+  t: Translate,
+  locale: Locale,
+): { armed: boolean; label: string; spoken: string } {
   if (mode === 'off') {
     return { armed: false, label: t('player.options.sleep'), spoken: '' };
   }

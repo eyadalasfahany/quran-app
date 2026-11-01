@@ -39,6 +39,16 @@ const categories = [
   { id: 'fasting', kind: 'browse', position: 3, occasion: null, progressPeriod: 'session', unitCount: 2 },
 ] as never;
 
+const HEADER_ACTION_IDS = ['azkar-home-search', 'azkar-home-favorites', 'azkar-home-reminders'];
+
+/** The header action test IDs in tree order (the order the row lays them out, mirrored in RTL). */
+function headerActionIds() {
+  return screen
+    .getAllByRole('button')
+    .map((element) => element.props.testID as string | undefined)
+    .filter((id): id is string => HEADER_ACTION_IDS.includes(id ?? ''));
+}
+
 function today() {
   const now = new Date();
   const pad = (value: number) => String(value).padStart(2, '0');
@@ -127,6 +137,20 @@ describe('AzkarHomeScreen', () => {
 
     await press(screen.getByRole('button', { name: 'بحث' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/search');
+  });
+
+  it('orders the header actions search, favourites, reminders so the row reads bell, bookmark, search from the start in RTL', async () => {
+    await renderUi(<AzkarHomeScreen />);
+
+    // A row mirrors with the direction: in RTL the first action sits at the right edge, so the frame's
+    // bell-bookmark-search order from the left edge comes from search-favourites-reminders in the tree.
+    expect(headerActionIds()).toEqual(HEADER_ACTION_IDS);
+  });
+
+  it('keeps the same header action order in English, where the row reads search, bookmark, bell from the start', async () => {
+    await renderUi(<AzkarHomeScreen />, { locale: 'en' });
+
+    expect(headerActionIds()).toEqual(HEADER_ACTION_IDS);
   });
 
   it('renders in English with the English labels', async () => {

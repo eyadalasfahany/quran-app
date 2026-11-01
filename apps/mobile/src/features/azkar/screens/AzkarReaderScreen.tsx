@@ -194,11 +194,6 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     };
   });
   const onAudioEnded = useCallback(() => advanceFromAudio.current(), []);
-  useEffect(() => {
-    if (recording === null) {
-      setAutoStartAudio(false);
-    }
-  }, [recording]);
   const reference = unitEntry?.entry.sourceReference.trim() ?? '';
   const sourceLine = t('azkar.share.source', { number: referenceNumber(reference, locale) });
 
@@ -206,6 +201,8 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     getQuranSegmentVerses(executor, segment).map((verse) => verse.textUthmani);
 
   const onTap = () => {
+    // A manual move ends any pending audio-driven start, so a later unit never starts on its own by mistake.
+    clearAutoStart();
     if (unit === undefined) {
       return;
     }
@@ -242,6 +239,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
 
   const restart = () => {
     cancelAdvance();
+    clearAutoStart();
     resetScope(scopeKey, period);
     setView(0);
   };
@@ -253,6 +251,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
 
   const moveTo = (index: number) => {
     cancelAdvance();
+    clearAutoStart();
     setView(index);
   };
 

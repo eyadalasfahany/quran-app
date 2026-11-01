@@ -30,6 +30,7 @@ The developer asked (1 Nov 2026) for the الصلاة tab to become a menu tab t
    - **Every user-facing screen has a card** (each hidden when its route or content does not exist): الرئيسية، المصحف (surah index)، الاستماع، القرّاء، مصحفي، الختمة، الصلاة، القبلة، الأذكار (home)، الأذكار المفضلة، البحث، الإعدادات، التنزيلات، المصادر والشكر.
    - **Search covers Quran and Azkar.** The menu's floating search opens `/search`, which gains an «الأذكار» scope (segmented or chip filter) next to the Quran scopes. Azkar results come from the Azkar search (text segments only, never Quran text copied into Azkar). It is shown only when Azkar content exists.
    - The floating search button sits at the bottom-leading corner above the tab bar, as drawn in `Menu`.
+   - **Approved difference (developer, 1 Nov 2026):** the `#Search` frame does not draw the scope control; it sits under the field, shown only with Azkar content. No frame edit.
 
 ## Consequences
 

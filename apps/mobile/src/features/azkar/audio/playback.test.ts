@@ -76,15 +76,28 @@ const flush = () =>
 
 const mockCreatePlayer = createAudioPlayer as unknown as jest.Mock;
 
+/** Every player the module created, in order. Kept apart from the mock so clearing mocks does not forget them. */
+const createdPlayers: FakePlayer[] = [];
+
+function newPlayer(): FakePlayer {
+  const player = makeFakePlayer();
+  createdPlayers.push(player);
+  return player;
+}
+
 function lastPlayer(): FakePlayer {
-  const results = mockCreatePlayer.mock.results;
-  return results[results.length - 1]?.value as FakePlayer;
+  const player = createdPlayers[createdPlayers.length - 1];
+  if (player === undefined) {
+    throw new Error("No player was created.");
+  }
+  return player;
 }
 
 describe('playAzkarRecording', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreatePlayer.mockImplementation(() => makeFakePlayer());
+    createdPlayers.length = 0;
+    mockCreatePlayer.mockImplementation(newPlayer);
     resetAzkarPlaybackForTests();
   });
 
@@ -184,7 +197,8 @@ describe('playAzkarRecording', () => {
 describe('transport controls', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
-    mockCreatePlayer.mockImplementation(() => makeFakePlayer());
+    createdPlayers.length = 0;
+    mockCreatePlayer.mockImplementation(newPlayer);
     resetAzkarPlaybackForTests();
     playAzkarRecording(makeRecording(), 'stream', { unitKey: 'u1' });
     await flush();
@@ -271,7 +285,8 @@ describe('transport controls', () => {
 describe('isolation from the Quran player', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreatePlayer.mockImplementation(() => makeFakePlayer());
+    createdPlayers.length = 0;
+    mockCreatePlayer.mockImplementation(newPlayer);
     resetAzkarPlaybackForTests();
     usePlayerStore.setState({ status: 'idle' });
   });

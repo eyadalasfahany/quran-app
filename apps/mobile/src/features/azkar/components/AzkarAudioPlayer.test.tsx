@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen } from '@testing-library/react-native';
 
 import { makeRecording } from '../../../../jest/azkar-audio-fixtures';
 import { press } from '../../../../jest/azkar-ui-fixtures';
@@ -15,6 +15,10 @@ import {
 import { AzkarAudioPlayer } from './AzkarAudioPlayer';
 
 const UNIT = 'fixture:unit-001';
+
+jest.mock('@/features/audio/player', () => ({
+  pause: jest.fn(),
+}));
 
 jest.mock('../audio/hooks', () => ({
   ...jest.requireActual<typeof import('../audio/hooks')>('../audio/hooks'),
@@ -166,7 +170,9 @@ describe('AzkarAudioPlayer', () => {
     const { ui } = renderPlayer();
     const view = await renderUi(ui);
 
-    view.unmount();
+    await act(async () => {
+      view.unmount();
+    });
     expect(stopAzkarRecording).toHaveBeenCalledTimes(1);
   });
 
@@ -175,7 +181,9 @@ describe('AzkarAudioPlayer', () => {
     const { ui } = renderPlayer();
     const view = await renderUi(ui);
 
-    view.unmount();
+    await act(async () => {
+      view.unmount();
+    });
     expect(stopAzkarRecording).not.toHaveBeenCalled();
   });
 

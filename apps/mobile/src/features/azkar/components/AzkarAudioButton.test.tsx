@@ -4,6 +4,7 @@ import { makeFakeDownloadPort, makeDownloadEntry, makeRecording } from '../../..
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { renderUi } from '../../../../jest/render-ui';
+import { pause as pauseQuranPlayback } from '@/features/audio/player';
 import { useOnline } from '../audio/hooks';
 import {
   pauseAzkarRecording,
@@ -16,6 +17,10 @@ import {
 import { AzkarAudioButton } from './AzkarAudioButton';
 
 const UNIT = 'fixture:unit-001';
+
+jest.mock('@/features/audio/player', () => ({
+  pause: jest.fn(),
+}));
 
 jest.mock('../audio/hooks', () => ({
   ...jest.requireActual<typeof import('../audio/hooks')>('../audio/hooks'),
@@ -65,6 +70,7 @@ describe('AzkarAudioButton', () => {
 
     await press(screen.getByRole('button', { name: 'تشغيل التسجيل' }));
     expect(playAzkarRecording).toHaveBeenCalledWith(recording, 'stream', { unitKey: UNIT, onEnded });
+    expect(pauseQuranPlayback).toHaveBeenCalledTimes(1);
   });
 
   it('shows the offline pill as real state, with a hint and no button, when streaming is allowed and offline', async () => {

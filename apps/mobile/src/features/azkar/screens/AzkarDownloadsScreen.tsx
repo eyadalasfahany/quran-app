@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { Alert, ScrollView, View } from 'react-native';
 
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
@@ -31,6 +31,14 @@ export function AzkarDownloadsScreen({
   const downloads = useAzkarDownloads(port);
   const { entries } = downloads;
 
+  // «حذف الكل» asks first: the removal cannot be undone from this screen.
+  const confirmRemoveAll = () => {
+    Alert.alert(t('azkar.downloads.removeAllTitle'), t('azkar.downloads.removeAllBody'), [
+      { text: t('azkar.downloads.removeAllCancel'), style: 'cancel' },
+      { text: t('azkar.downloads.removeAllConfirm'), style: 'destructive', onPress: downloads.removeAll },
+    ]);
+  };
+
   return (
     <Screen testID={testID}>
       <ContentColumn gutter={theme.size.gutterHome}>
@@ -60,7 +68,7 @@ export function AzkarDownloadsScreen({
                 ))}
               </Card>
               <View style={{ alignItems: 'center' }}>
-                <Button label={t('azkar.downloads.removeAll')} onPress={downloads.removeAll} testID="azkar-downloads-remove-all" variant="danger" />
+                <Button label={t('azkar.downloads.removeAll')} onPress={confirmRemoveAll} testID="azkar-downloads-remove-all" variant="danger" />
               </View>
             </ScrollView>
           )}

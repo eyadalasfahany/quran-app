@@ -27,6 +27,17 @@ The developer asked (1 Nov 2026) for Home to give Azkar the same weight as readi
 6. **«الصلاة القادمة» card** (developer, 1 Nov 2026), under «تابع القراءة». It shows the next prayer's name, time and time remaining («بعد ساعتين و٥ دقائق») and opens the Salah screen. It is a surface card, not a brand card. It reads prayer times through the existing Salah hooks without changing them, and shares the hours-and-minutes formatter with the menu. Without a location it shows a prompt that opens Salah.
 7. **Frames first** (ADR 0010): `HomeNextPrayerNoLocation`, `HomeAzkar`, `HomeAzkarDark`, `HomeAzkarEnglish`, `Sibha`, `SibhaDark`, `DailyGoalsSheet`, `HomeDailyProgressEmpty`.
 
+### «أهدافي اليومية» manages every daily activity (developer, 1 Nov 2026)
+- The sheet slides up and closes like every other sheet (`SheetHost`, ADR 0020); Reduce Motion fades.
+- It is the single place to manage daily activities:
+  - **الورد اليومي:** the toggle when a Khatma plan is active; otherwise a «ابدأ ختمة» row that opens `/khatma`.
+  - **All five Azkar sessions,** each with a toggle and a bell that opens that category's reminder sheet (`/azkar/reminders?category=`). Shown only when Azkar content exists.
+  - **المسبحة:** the daily-target toggle and stepper, and a row that opens `/sibha`.
+  - **The daily reading reminder,** shown as the same `DailyReminderRow` as in Settings.
+  - **Prayer notifications:** a row that opens Salah, where each prayer has its bell.
+- Changes still save immediately. Nothing is on by default.
+- Approved difference from the `DailyGoalsSheet` frame: the sheet opens at the shared mid detent (ADR 0020) and scrolls at the full detent; the frame draws the card near the top.
+
 ## Consequences
 
 - Home becomes longer. Section order, top to bottom:

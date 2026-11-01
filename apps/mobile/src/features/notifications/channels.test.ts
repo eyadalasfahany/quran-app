@@ -17,6 +17,24 @@ describe('notification channels', () => {
     expect(NOTIFICATION_CHANNELS.azkar).toBe('azkar');
   });
 
+  it('gives prayer notifications their own channel id (ADR 0030 §3)', () => {
+    expect(NOTIFICATION_CHANNELS.prayer).toBe('prayer');
+  });
+
+  it('names the prayer channel in the interface language', async () => {
+    const restore = jest.replaceProperty(Platform, 'OS', 'android');
+    try {
+      await ensureNotificationChannel(NOTIFICATION_CHANNELS.prayer);
+
+      expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(
+        'prayer',
+        expect.objectContaining({ name: 'إشعارات الصلاة' }),
+      );
+    } finally {
+      restore.restore();
+    }
+  });
+
   it('creates the Azkar channel on Android with its Arabic name', async () => {
     const restore = jest.replaceProperty(Platform, 'OS', 'android');
     try {
