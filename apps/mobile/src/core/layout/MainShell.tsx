@@ -2,12 +2,15 @@ import { router, useSegments } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, View } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
 import { MINI_PLAYER_SIDE } from '@/features/audio/mini-player-metrics';
+import { useOfflineStrip } from '@/core/network/useOfflineStrip';
+import { useOnline } from '@/core/network/useOnline';
 import { useTheme } from '@/core/theme';
-import { Sidebar } from '@/shared/ui';
+import { OfflineBanner, Sidebar } from '@/shared/ui';
 
 import { sidebarDestinations } from './destinations';
 import { miniPlayerBottom, tabBarSideClearance } from './tab-bar-clearance';
@@ -29,6 +32,11 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
   // A short window draws the tabs as a rail on the start edge (ADR 0036): the screens and the mini player clear it there.
   const short = useIsShortWindow();
   const railSide = tabBarSideClearance(short);
+  // The offline strip sits under the top safe area and pushes the screens down by its height (ADR 0037). The screens
+  // keep their own top inset, so the strip is placed on the blank band above them and never covers a title.
+  const online = useOnline();
+  const offlineStrip = useOfflineStrip(!online);
+  const pushDown = useAnimatedStyle(() => ({ marginTop: offlineStrip.layout.value * offlineStrip.natural.value }));
 
   return (
     <TabRailContext.Provider value={railSide}>
@@ -60,7 +68,16 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
           search={{ label: t('search.placeholder'), onPress: () => router.push('/search') }}
         />
       ) : null}
-      <View style={{ flex: 1 }}>{children}</View>
+      <View style={{ flex: 1 }}>
+        <Animated.View style={[{ flex: 1 }, pushDown]}>{children}</Animated.View>
+        <View
+          pointerEvents="none"
+          style={{ end: 0, position: 'absolute', start: railSide, top: insets.top }}
+          testID="offline-strip-dock"
+        >
+          <OfflineBanner motion={offlineStrip} visible={!online} />
+        </View>
+      </View>
       {/* Compact and medium only: the frames float the mini player above the tab bar. Expanded windows get
           the sidebar footer instead (above). */}
       {expanded ? null : (

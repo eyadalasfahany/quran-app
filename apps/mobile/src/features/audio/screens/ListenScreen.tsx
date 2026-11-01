@@ -9,8 +9,7 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { ContentColumn, useTabContentBottom } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useCatalogVersion } from '@/core/sync';
-import { useOnline } from '@/core/network/useOnline';
-import { EmptyState, OfflineBanner, Screen, SkeletonGroup } from '@/shared/ui';
+import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 
 import { type ReciterFilterOption } from '../components/ReciterFilterChips';
 import { ReciterListHeader } from '../components/ReciterListHeader';
@@ -52,7 +51,6 @@ export function ListenScreen() {
   const downloads = useReciterDownloads((state) => state.byId);
   const doneCounts = useDoneCountsByReciter();
   const verifyCounts = useVerifyNeededCounts();
-  const online = useOnline();
   const bottom = useTabContentBottom();
   const syncSettled = useCatalogVersion((state) => state.syncSettled);
   // Until the first catalogue sync has run, an empty list is loading, not «no reciters».
@@ -101,13 +99,6 @@ export function ListenScreen() {
   return (
     <Screen testID="screen-listen">
       <ContentColumn gutter={FRAME_GUTTER}>
-        {/* The frame's notice floats over the top of the list (quran-app-screens.html, Offline). */}
-        <View
-          pointerEvents="box-none"
-          style={{ left: FRAME_GUTTER, position: 'absolute', right: FRAME_GUTTER, top: theme.space[2], zIndex: 1 }}
-        >
-          <OfflineBanner visible={!online} />
-        </View>
         <FlatList
           contentContainerStyle={{ paddingBottom: bottom }}
           data={rows}

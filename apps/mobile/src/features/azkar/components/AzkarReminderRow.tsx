@@ -23,6 +23,7 @@ import { PrayerOffsetPicker } from './PrayerOffsetPicker';
 import { ReminderTriggerPicker } from './ReminderTriggerPicker';
 
 const SALAH_HREF = '/salah' as Href;
+const PERMISSION_DENIED_ICON = { ios: 'bell.slash', android: 'notifications_off' } as const;
 
 /**
  * Where the time picker starts: the saved time, or the current time when none is chosen. It is the picker's starting
@@ -194,6 +195,7 @@ export function AzkarReminderRow({
         <ConfirmDialog
           cancelLabel={t('common.cancel')}
           confirmLabel={t('common.openSettings')}
+          icon={PERMISSION_DENIED_ICON}
           message={t('settings.reminders.permissionDeniedBody')}
           onCancel={closeNotice}
           onConfirm={() => {

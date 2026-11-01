@@ -14,6 +14,7 @@ import { AzkarStorageSummary } from '../components/AzkarStorageSummary';
 import { azkarHref, goBackOr } from '../routes';
 
 const EMPTY_ICON = { ios: 'speaker.wave.2', android: 'volume_up' } as const;
+const REMOVE_ALL_ICON = { ios: 'trash', android: 'delete_sweep' } as const;
 
 /**
  * Saved audio (quran-app-screens.html, #AzkarDownloads and #AzkarDownloadsEmpty). It lists the downloaded, downloading
@@ -78,6 +79,7 @@ export function AzkarDownloadsScreen({
         cancelLabel={t('azkar.downloads.removeAllCancel')}
         confirmLabel={t('azkar.downloads.removeAllConfirm')}
         destructive
+        icon={REMOVE_ALL_ICON}
         message={t('azkar.downloads.removeAllBody')}
         onCancel={() => setRemoveOpen(false)}
         onConfirm={() => {

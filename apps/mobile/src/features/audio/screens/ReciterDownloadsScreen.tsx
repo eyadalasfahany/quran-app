@@ -8,7 +8,7 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { useOnline } from '@/core/network/useOnline';
 import { ContentColumn, useTabContentBottom } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { ConfirmDialog, EmptyState, OfflineBanner, Screen, SkeletonGroup } from '@/shared/ui';
+import { ConfirmDialog, EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
 
 import { ReciterPageActions } from '../components/ReciterPageActions';
@@ -26,6 +26,7 @@ import { reciterDisplayName } from '../reciter-list';
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
+const DELETE_ICON = { ios: 'trash', android: 'delete' } as const;
 // While the pack installs, the surah list's place holds eight rows, each with its own name length.
 const INSTALL_SKELETON_WIDTHS = ['58%', '46%', '64%', '52%', '60%', '44%', '56%', '50%'] as const;
 
@@ -128,13 +129,6 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   return (
     <Screen testID="screen-reciter">
       <ContentColumn gutter={FRAME_GUTTER}>
-        {/* The frame's notice floats over the top of the list (quran-app-screens.html, Offline). */}
-        <View
-          pointerEvents="box-none"
-          style={{ left: FRAME_GUTTER, position: 'absolute', right: FRAME_GUTTER, top: theme.space[2], zIndex: 1 }}
-        >
-          <OfflineBanner visible={!online} />
-        </View>
         <FlatList
           contentContainerStyle={{ paddingBottom: bottom }}
           data={installed ? surahs : []}
@@ -180,6 +174,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
         cancelLabel={t('listen.reciter.cancel')}
         confirmLabel={t('listen.reciter.deleteConfirm')}
         destructive
+        icon={DELETE_ICON}
         message={t('listen.reciter.deleteBody')}
         onCancel={() => setDeleteOpen(false)}
         onConfirm={() => {

@@ -31,7 +31,8 @@ import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKe
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useAzkarMenuPreview } from '@/features/menu/hooks/useAzkarMenuPreview';
-import { SearchButton, SkeletonGroup, type IconName } from '@/shared/ui';
+import { useStaleContent } from '@/core/sync/useStaleContent';
+import { SearchButton, SkeletonGroup, StaleContentBanner, type IconName } from '@/shared/ui';
 
 // Home's tiles open the tabs they name. Only shipped features get a tile (ADR 0017).
 function tabHref(name: Destination['name']): Href {
@@ -72,6 +73,8 @@ export function HomeScreen() {
   const { goals } = useDailyGoals();
   const continueAzkar = useAzkarMenuPreview().resume;
   const progress = useDailyProgress();
+  // The quiet notice that the content has not been checked for over seven days (spec §7, hop 3, item 6).
+  const stale = useStaleContent();
   const selectedAzkar = useSelectedAzkarItems();
   const recentAzkar = useRecentAzkarItems(locale);
   // Stable, so the memoised next-prayer card does not re-render for a new callback identity.
@@ -113,6 +116,7 @@ export function HomeScreen() {
         style={{ flex: 1 }}
         testID="home-scroll"
       >
+        <StaleContentBanner visible={stale} />
         {!ready ? (
           <SkeletonGroup testID="home-continue-loading">
             <ContinueReadingSkeleton testID="home-continue-reading-skeleton" />

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { openContentDb, useContentDb } from '@/core/db/content/open';
@@ -20,22 +20,24 @@ export function oldestCheckedAt(db: SqlExecutor): number | null {
 }
 
 /**
- * Whether the device's content has gone more than seven days without a check. It is read again after each sync
- * (the catalogue version and the settled flag change then), not on a timer, so it stays cheap.
+ * Whether the device's content has gone more than seven days without a check. It is read again after each sync. The
+ * clock is taken when the hook mounts, and again from the catalogue store each time a sync changes it, so the clock
+ * is never read during render and there is no timer.
  */
 export function useStaleContent(): boolean {
   const { ready } = useContentDb();
   const version = useCatalogVersion((state) => state.version);
   const settled = useCatalogVersion((state) => state.syncSettled);
+  const changedAt = useCatalogVersion((state) => state.changedAt);
+  const [mountedAt] = useState(() => Date.now());
+  const clock = changedAt ?? mountedAt;
 
   return useMemo(() => {
     if (!ready) {
       return false;
     }
-    // The clock is read here on purpose: this memo runs again only when a sync changes the database signals.
-    // eslint-disable-next-line react-hooks/purity
-    return isContentStale(oldestCheckedAt(openContentDb().executor), Date.now());
-    // version and settled are the signals to read again; the query itself reads the database.
+    return isContentStale(oldestCheckedAt(openContentDb().executor), clock);
+    // version, settled and clock are the signals to read again; the query itself reads the database.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, version, settled]);
+  }, [ready, version, settled, clock]);
 }
