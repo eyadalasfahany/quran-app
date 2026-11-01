@@ -23,6 +23,8 @@ describe('UiText', () => {
     ['brand', colors.brand],
     ['danger', colors.danger],
     ['onBrand', colors.onBrand],
+    ['onBrandSurface', colors.onBrandSurface],
+    ['onBrandMuted', colors.onBrandSurfaceMuted],
     ['goldInk', colors.goldInk],
   ] as const)('draws the %s tone', async (tone, color) => {
     const view = await renderUi(<UiText tone={tone}>نص</UiText>);

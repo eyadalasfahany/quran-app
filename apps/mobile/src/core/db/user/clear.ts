@@ -12,6 +12,9 @@ export const PERSONAL_TABLES = [
   'reading_position',
   'recent_listens',
   'search_history',
+  'azkar_favorites',
+  'azkar_progress',
+  'azkar_reminders',
 ] as const;
 
 export function clearLocalUserData(executor?: SqlExecutor): void {
@@ -28,4 +31,8 @@ export function clearLocalUserData(executor?: SqlExecutor): void {
   storage.remove(storageKeys.readerLastVerseKey);
   storage.remove(storageKeys.readerLastPage);
   storage.remove(storageKeys.audioLastPosition);
+  storage.remove(storageKeys.azkar.recentScopes);
+  storage.remove(storageKeys.sibha.state);
+  storage.remove(storageKeys.sibha.today);
+  storage.remove(storageKeys.dailyGoals);
 }

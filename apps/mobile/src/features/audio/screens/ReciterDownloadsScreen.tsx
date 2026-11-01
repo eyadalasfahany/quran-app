@@ -1,24 +1,24 @@
 import { router, type Href } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, FlatList, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { useLocale } from '@/core/i18n/useLocale';
-import { ContentColumn } from '@/core/layout';
-import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
+import { useOnline } from '@/core/network/useOnline';
+import { ContentColumn, useTabContentBottom } from '@/core/layout';
+import { useTheme } from '@/core/theme';
+import { ConfirmDialog, EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
 
 import { ReciterPageActions } from '../components/ReciterPageActions';
 import { ReciterPageHeader } from '../components/ReciterPageHeader';
 import { ReciterSurahRow } from '../components/ReciterSurahRow';
-import { useReciterDownloads as useReciterDownloadRows } from '../data/downloads';
+import { needsVerification, useReciterDownloads as useReciterDownloadRows } from '../data/downloads';
 import { cancel, enqueueAll, enqueueSurah, remove, removeReciter } from '../downloads/manager';
 import { useDownloadProgress } from '../downloads/store';
-import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { useReciterSurahs } from '../hooks/useReciterSurahs';
-import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
 import { recitationStyleKey } from '../player-view';
 import { playSurahFromReciter } from '../reciter-playback';
 import { downloadReciterPack, useReciterDownloads as usePackDownloads } from '../reciter-downloads';
@@ -26,6 +26,7 @@ import { reciterDisplayName } from '../reciter-list';
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
+const DELETE_ICON = { ios: 'trash', android: 'delete' } as const;
 // While the pack installs, the surah list's place holds eight rows, each with its own name length.
 const INSTALL_SKELETON_WIDTHS = ['58%', '46%', '64%', '52%', '60%', '44%', '56%', '50%'] as const;
 
@@ -34,9 +35,11 @@ const INSTALL_SKELETON_WIDTHS = ['58%', '46%', '64%', '52%', '60%', '44%', '56%'
 export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   const { t } = useTranslation();
   const locale = useLocale();
+  const theme = useTheme();
+  const online = useOnline();
   const { ready } = useContentDb();
   const { reciters } = useReciterCatalogue(ready);
-  const miniShown = useMiniPlayerVisible('tabs');
+  const bottom = useTabContentBottom();
   const reciter = reciters.find((item) => item.resourceId === resourceId);
   const known = reciter !== undefined;
   const installed = reciter?.installed === true;
@@ -44,6 +47,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   const { surahs, total } = useReciterSurahs(resourceId, ready, installed);
   const { data: rows = [] } = useReciterDownloadRows(resourceId);
   const progressById = useDownloadProgress((state) => state.byId);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // The surah list comes from the reciter's pack, so the pack installs first. The effect runs once per reciter;
   // a failed install waits for «إعادة المحاولة» rather than retrying on every render.
@@ -67,16 +71,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   };
 
   const confirmDeleteAll = () => {
-    Alert.alert(t('listen.reciter.deleteTitle'), t('listen.reciter.deleteBody'), [
-      { style: 'cancel', text: t('listen.reciter.cancel') },
-      {
-        onPress: () => {
-          removeReciter(resourceId);
-        },
-        style: 'destructive',
-        text: t('listen.reciter.deleteConfirm'),
-      },
-    ]);
+    setDeleteOpen(true);
   };
 
   const retryInstall = () => {
@@ -135,7 +130,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
     <Screen testID="screen-reciter">
       <ContentColumn gutter={FRAME_GUTTER}>
         <FlatList
-          contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
+          contentContainerStyle={{ paddingBottom: bottom }}
           data={installed ? surahs : []}
           keyExtractor={(chapter) => String(chapter.id)}
           ListEmptyComponent={emptyState ?? undefined}
@@ -160,10 +155,12 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
                 onPlay={() => {
                   void playSurahFromReciter(resourceId, item.id);
                 }}
+                offline={!online}
                 progress={row === undefined ? 0 : (progressById[row.audioFileId] ?? row.progress)}
                 showDivider={index < surahs.length - 1}
                 sizeBytes={row?.sizeBytes ?? null}
                 status={row?.status}
+                verifyNeeded={row !== undefined && needsVerification(row)}
                 testID={`surah-row-${item.id}`}
                 title={locale === 'ar' ? item.nameArabic : item.nameSimple}
               />
@@ -173,6 +170,21 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
           testID="reciter-downloads-list"
         />
       </ContentColumn>
+      <ConfirmDialog
+        cancelLabel={t('listen.reciter.cancel')}
+        confirmLabel={t('listen.reciter.deleteConfirm')}
+        destructive
+        icon={DELETE_ICON}
+        message={t('listen.reciter.deleteBody')}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={() => {
+          setDeleteOpen(false);
+          removeReciter(resourceId);
+        }}
+        testID="reciter-delete-dialog"
+        title={t('listen.reciter.deleteTitle')}
+        visible={deleteOpen}
+      />
     </Screen>
   );
 }

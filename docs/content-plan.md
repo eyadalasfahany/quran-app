@@ -140,13 +140,14 @@ This lists every external source the app could pull from, and which one we use f
 | [HadeethEnc](https://documenter.getpostman.com/view/5211979/TVev3j7q) API v1 | Curated hadiths with grade, explanation and benefits, by category; 72 languages | No key | No changes; credit HadeethEnc | **Primary** for v1 |
 | [Sunnah.com](https://sunnah.com/developers) | Full collections, Arabic and English | API key by GitHub request | Not published; confirm before building | **Later**: v2 |
 | [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) | Collections with grades, static JSON | Public CDN | Grade sources not documented | **Not used** |
-| Dorar.net | Arabic grading and takhrij | No official public API | Unofficial packages read the site | **Not used** without permission |
+| Dorar.net (الدرر السنية) | Hadith text, narrator, muhaddith, source, page, grade, canonical URL, explanation and related links | Official API with an approved access token (developer, 31 Oct 2026) | No bulk import, no scraping, no full mirror; nothing stored in offline packs without separate written permission; caching within their published limits; keep attribution and the Dorar URL | **Backend-only adapter** for Azkar references (ADR 0031 §2); token in `apps/api` env only |
 
 **Adhkar and duas**
 
 | API | Gives us | Access | Terms that matter | Decision |
 | --- | --- | --- | --- | --- |
-| [Hisn al-Muslim](https://github.com/alihmada/Islamic-APIs) JSON (hisnmuslim.com) | Hisn al-Muslim adhkar as static JSON by category | No key | No terms published | **Later**: morning and evening adhkar, after permission |
+| [OpenDua](https://opendua.hdfund.org/) (Ihsan Labs, Human Development Fund) | Hisn al-Muslim: 267 entries, 132 chapters, Arabic, steps, 31 repeat counts, English and transliteration, 249 recordings (v0.0.4, 2026-09-09) | Versioned JSON/CSV download; HTTP API at `api.opendua.org/v2`, no key, 60 req/min | English, transliteration and structure CC BY 4.0. No ownership claimed over the Arabic. Audio under a separate written agreement, **not licensed to us**. The dataset's own licence pages are 404 | **Primary** for Azkar (ADR 0031). **Production import blocked** until written rights for the Arabic, attribution, Arabic chapter titles and audio. No references, gradings or explanations upstream |
+| [Hisn al-Muslim](https://github.com/alihmada/Islamic-APIs) JSON (hisnmuslim.com) | Hisn al-Muslim adhkar as static JSON by category | No key | No terms published | **Not used**: provenance and rights undocumented |
 | [Islamic Network](https://islamic.network/api/) Pray API | Duas and adhkar linked to Hijri months and blessed days | No key; early access | Early access | **Watch** |
 
 **Prayer times, Hijri date and qibla**
@@ -168,7 +169,8 @@ The Settings design already has "dark mode after Maghrib", and reminders may fol
 **Permissions to request**
 
 - [ ] MP3Quran: permission to stream reciters and radio in the app
-- [ ] Hisn al-Muslim: permission to show the adhkar
+- [ ] OpenDua (`opendua@hdfund.org`): redistribution of the Arabic dataset, attribution wording, Arabic chapter titles, audio streaming, offline download and re-hosting (ADR 0031 release blockers)
+- [ ] Dorar: access token and the written terms on caching and storage
 - [ ] HadeethEnc: confirm app use in writing
 - [ ] Sunnah.com: API key and terms
 

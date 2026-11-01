@@ -1,4 +1,5 @@
-import { fireEvent } from '@testing-library/react-native';
+import * as Notifications from 'expo-notifications';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 
 import { renderUi } from '../../../../jest/render-ui';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -21,19 +22,31 @@ describe('PrayerBell', () => {
   it('toggles on, persists to MMKV, and marks itself selected', async () => {
     const view = await renderUi(<PrayerBell prayer="fajr" testID="bell" />);
 
-    await fireEvent.press(view.getByTestId('bell'));
+    fireEvent.press(view.getByTestId('bell'));
 
-    expect(storage.getBoolean(storageKeys.salah.bellFajr)).toBe(true);
-    expect(view.getByTestId('bell').props.accessibilityState).toMatchObject({ selected: true });
+    await waitFor(() => expect(storage.getBoolean(storageKeys.salah.bellFajr)).toBe(true));
+    await waitFor(() => expect(view.getByTestId('bell').props.accessibilityState).toMatchObject({ selected: true }));
   });
 
   it('toggles back off', async () => {
     storage.set(storageKeys.salah.bellFajr, true);
     const view = await renderUi(<PrayerBell prayer="fajr" testID="bell" />);
 
-    await fireEvent.press(view.getByTestId('bell'));
+    fireEvent.press(view.getByTestId('bell'));
 
-    expect(storage.getBoolean(storageKeys.salah.bellFajr)).toBe(false);
+    await waitFor(() => expect(storage.getBoolean(storageKeys.salah.bellFajr)).toBe(false));
+  });
+
+  it('refused permission leaves the bell muted and shows the permission dialog', async () => {
+    jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    const view = await renderUi(<PrayerBell prayer="fajr" testID="bell" />);
+
+    fireEvent.press(view.getByTestId('bell'));
+
+    await waitFor(() => expect(view.getByText('لا يمكن إرسال التذكيرات')).toBeOnTheScreen());
+    expect(storage.getBoolean(storageKeys.salah.bellFajr)).toBeUndefined();
+    expect(view.getByTestId('bell').props.accessibilityState).toMatchObject({ selected: false });
   });
 
   it('labels each prayer in English too', async () => {

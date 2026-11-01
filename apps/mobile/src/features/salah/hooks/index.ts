@@ -1,74 +1,109 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import * as Location from 'expo-location';
-import { getCoordinates, getStoredLocationSource, getStoredManualCityId, LocationSource } from '../data/location';
+import { getStoredLocationSource } from '../data/location';
+import { invalidatePrayerLocation, loadPrayerLocation, peekPrayerLocation, type PrayerLocationSnapshot } from '../data/location-cache';
 import { PrayerTimesOutput, NextPrayerName, nextPrayer, timesFor } from '../data/prayer-times';
-import { getBellEnabled, setBellEnabled } from '../data/bells';
+import { bellStorageKey, getBellEnabled } from '../data/bells';
+import { setPrayerBell } from '../data/notifications';
+import { dateForDayKey, dayKeyOf, nextClockBoundary } from '../data/clock';
 import { formatHijriDate } from '../../../core/i18n/dates';
 import { getLocale } from '../../../core/i18n';
-import { getCityById } from '../data/cities';
+import { storage } from '../../../core/storage/mmkv';
 
 export { useNow } from './useNow';
 
-interface PrayerLocation {
-  source: LocationSource;
-  coords: { lat: number; lng: number } | null;
-  cityId?: string;
-  cityName?: { ar: string; en: string };
-  permissionStatus: Location.PermissionStatus;
+// A boundary timer fires a moment after the boundary, so `now` is past it when the state is recomputed.
+const CLOCK_SLACK_MS = 50;
+
+export interface PrayerLocation extends PrayerLocationSnapshot {
+  /** True while the location is being read for the first time or after a refresh. */
+  pending: boolean;
+  /** Re-reads the location, bypassing the cache (after a permission prompt or a city choice). */
+  refresh: () => Promise<void>;
 }
 
-export const usePrayerLocation = () => {
-  const [location, setLocation] = useState<PrayerLocation>({
-    source: getStoredLocationSource(),
-    coords: null,
-    permissionStatus: Location.PermissionStatus.UNDETERMINED,
-  });
+const EMPTY_SNAPSHOT: PrayerLocationSnapshot = {
+  source: 'auto',
+  coords: null,
+  permissionStatus: Location.PermissionStatus.UNDETERMINED,
+};
 
-  const fetchLocation = useCallback(async () => {
-    const source = getStoredLocationSource();
-    const manualCityId = getStoredManualCityId();
-    let permissionStatus: Location.PermissionStatus = Location.PermissionStatus.UNDETERMINED;
-    try {
-      const result = await Location.getForegroundPermissionsAsync();
-      permissionStatus = result?.status ?? Location.PermissionStatus.UNDETERMINED;
-    } catch {
-      // Native location is missing (Jest, or a device without the module).
-    }
-    const coords = await getCoordinates();
+/**
+ * The prayer location, shared by Home, Menu, Salah and Qibla. One read (permission and coordinates) serves every consumer
+ * for a short time (`LOCATION_CACHE_TTL_MS`), so a mount does not repeat the GPS work. `pending` is true until the first
+ * read lands, so a screen can show a loading state instead of the no-location state.
+ */
+export const usePrayerLocation = (): PrayerLocation => {
+  const [snapshot, setSnapshot] = useState<PrayerLocationSnapshot | null>(() => peekPrayerLocation());
+  const [pending, setPending] = useState(snapshot === null);
 
-    let cityName: { ar: string; en: string } | undefined;
-    if (source === 'manual' && manualCityId) {
-      const city = getCityById(manualCityId);
-      if (city) {
-        cityName = { ar: city.ar, en: city.en };
-      }
-    }
-
-    setLocation({
-      source,
-      coords,
-      cityId: manualCityId,
-      cityName,
-      permissionStatus,
-    });
+  const load = useCallback(async () => {
+    const next = await loadPrayerLocation();
+    setSnapshot(next);
+    setPending(false);
   }, []);
 
   useEffect(() => {
-    // Reads the stored or GPS location (external systems); setState lands after the awaits.
-    const load = async () => {
-      await fetchLocation();
+    // Reads the stored or GPS location (external systems). The result lands after the awaits, and only if still mounted.
+    if (peekPrayerLocation() !== null) {
+      return undefined;
+    }
+    let mounted = true;
+    void loadPrayerLocation().then((next) => {
+      if (mounted) {
+        setSnapshot(next);
+        setPending(false);
+      }
+    });
+    return () => {
+      mounted = false;
     };
-    void load();
-  }, [fetchLocation]);
+  }, []);
 
-  // The Qibla screen re-reads after its location button asks for permission.
-  return { ...location, refresh: fetchLocation };
+  // The Qibla and Salah screens re-read after a permission prompt or a city choice, so the cache is dropped first.
+  const refresh = useCallback(() => {
+    invalidatePrayerLocation();
+    setPending(true);
+    return load();
+  }, [load]);
+
+  const view = snapshot ?? { ...EMPTY_SNAPSHOT, source: getStoredLocationSource() };
+  return {
+    cityId: view.cityId,
+    cityName: view.cityName,
+    coords: view.coords,
+    pending,
+    permissionStatus: view.permissionStatus,
+    refresh,
+    source: view.source,
+  };
 };
 
-// Pure derivations, not effects: pass the screen's ticking `now` (step 3 countdown)
-// so "today" and the next prayer roll over correctly as time advances.
+/**
+ * The day's prayer times at `coords`, memoised on the coordinates and the local day only. The ticking `now` of the
+ * countdown does not recompute them: they change once a day (adhan reads only the local date).
+ */
 export const useTodayTimes = (coords: { lat: number; lng: number } | null, now?: Date) => {
-  return useMemo(() => (coords ? timesFor(now ?? new Date(), coords) : null), [coords, now]);
+  const dayKey = dayKeyOf(now ?? new Date());
+  return useMemo(() => (coords ? timesFor(dateForDayKey(dayKey), coords) : null), [coords, dayKey]);
+};
+
+/**
+ * A clock for the prayer screen that re-renders only when the prayer state can change: at the next prayer time and at
+ * local midnight. The countdown ticks on its own (NextPrayerCountdown), so the screen does not tick every second.
+ */
+export const usePrayerClock = (coords: { lat: number; lng: number } | null): { now: Date; times: PrayerTimesOutput | null } => {
+  const [now, setNow] = useState(() => new Date());
+  const times = useTodayTimes(coords, now);
+
+  useEffect(() => {
+    const boundary = nextClockBoundary(now, times);
+    const delay = Math.max(0, boundary.getTime() - Date.now()) + CLOCK_SLACK_MS;
+    const timer = setTimeout(() => setNow(new Date()), delay);
+    return () => clearTimeout(timer);
+  }, [now, times]);
+
+  return { now, times };
 };
 
 export const useNextPrayer = (times: PrayerTimesOutput | null, coords: { lat: number; lng: number } | null, now?: Date) => {
@@ -80,17 +115,43 @@ export const useHijriDate = (now?: Date) => {
   return useMemo(() => formatHijriDate(now ?? new Date(), locale), [now, locale]);
 };
 
-// A prayer's reminder toggle: persisted to MMKV on tap (step 3); the scheduler reads it in step 4.
+/**
+ * A prayer's reminder bell, persisted in MMKV and live: the Salah row and the Settings section share it. Turning it on
+ * asks for notification permission first; a refusal leaves it off and sets `permissionDenied`, and the caller shows
+ * PrayerPermissionDialog until `dismissPermissionDenied` (ADR 0030 §3). Each applied change re-plans the prayer
+ * notifications.
+ */
 export const useBell = (name: NextPrayerName) => {
-  const [enabled, setEnabled] = useState(() => getBellEnabled(name));
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const listener = storage.addOnValueChangedListener((key) => {
+        if (key === bellStorageKey(name)) {
+          onChange();
+        }
+      });
+      return () => listener.remove();
+    },
+    [name],
+  );
+  const enabled = useSyncExternalStore(subscribe, () => getBellEnabled(name));
+
+  // Set when the system refused permission; cleared by the dialog's dismissal or by the next applied change.
+  const [permissionDenied, setPermissionDenied] = useState(false);
+
+  const setEnabled = useCallback(
+    async (on: boolean): Promise<boolean> => {
+      const applied = await setPrayerBell(name, on);
+      setPermissionDenied(!applied);
+      return applied;
+    },
+    [name],
+  );
+
+  const dismissPermissionDenied = useCallback(() => setPermissionDenied(false), []);
 
   const toggle = useCallback(() => {
-    setEnabled((previous) => {
-      const next = !previous;
-      setBellEnabled(name, next);
-      return next;
-    });
-  }, [name]);
+    void setEnabled(!getBellEnabled(name));
+  }, [name, setEnabled]);
 
-  return { enabled, toggle };
+  return { enabled, setEnabled, toggle, permissionDenied, dismissPermissionDenied };
 };

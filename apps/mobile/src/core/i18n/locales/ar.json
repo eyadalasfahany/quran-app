@@ -4,7 +4,107 @@
     "mushaf": "المصحف",
     "listen": "الاستماع",
     "myQuran": "مصحفي",
-    "salah": "الصلاة"
+    "salah": "الصلاة",
+    "menu": "القائمة"
+  },
+  "menu": {
+    "title": "القائمة",
+    "searchLabel": "بحث",
+    "card": {
+      "hint": "افتح {{title}}"
+    },
+    "salah": {
+      "caption": "الصلاة القادمة",
+      "title": "الصلاة",
+      "noLocation": "أوقات الصلاة حسب موقعك",
+      "preview": "{{time}} · {{remaining}}"
+    },
+    "qibla": {
+      "caption": "الاتجاه",
+      "title": "القبلة",
+      "bearing": "{{degrees}}° من الشمال الحقيقي",
+      "noLocation": "اتجاه الكعبة من موقعك"
+    },
+    "azkar": {
+      "caption": "الذكر",
+      "title": "الأذكار",
+      "subtitle": "الأذكار حسب المناسبة",
+      "progress": "{{current}} من {{total}}"
+    },
+    "khatma": {
+      "caption": "ختمتي",
+      "title": "الختمة",
+      "today": "اليوم {{day}} من {{total}}"
+    },
+    "mushaf": {
+      "caption": "القراءة",
+      "title": "المصحف",
+      "subtitle": "القراءة بالصفحة والسورة"
+    },
+    "listen": {
+      "caption": "الصوت",
+      "title": "الاستماع",
+      "subtitle": "القرّاء والتلاوات المحفوظة"
+    },
+    "myQuran": {
+      "caption": "العلامات",
+      "title": "مصحفي",
+      "subtitle": "العلامات والتظليلات والملاحظات"
+    },
+    "search": {
+      "captionQuran": "في القرآن",
+      "captionQuranAndAzkar": "في القرآن والأذكار",
+      "title": "البحث"
+    },
+    "settings": {
+      "caption": "التطبيق",
+      "title": "الإعدادات",
+      "subtitle": "الخط والمظهر والتذكير والحساب"
+    },
+    "sources": {
+      "caption": "المراجع",
+      "title": "المصادر والشكر",
+      "subtitle": "المصادر والتراخيص"
+    },
+    "continueReading": {
+      "caption": "تابع القراءة",
+      "preview": "الآية {{ayah}} · صفحة {{page}}"
+    },
+    "continueAzkar": {
+      "caption": "تابع الأذكار"
+    },
+    "home": {
+      "caption": "الصفحة",
+      "title": "الرئيسية",
+      "subtitle": "القراءة الأخيرة وما تابعته"
+    },
+    "favorites": {
+      "caption": "المحفوظات",
+      "title": "الأذكار المفضلة",
+      "subtitle": "ما حفظته من الأذكار"
+    }
+  },
+  "time": {
+    "remaining": {
+      "inMinutes_zero": "بعد أقل من دقيقة",
+      "inMinutes_one": "بعد دقيقة",
+      "inMinutes_two": "بعد دقيقتين",
+      "inMinutes_few": "بعد {{minutes}} دقائق",
+      "inMinutes_many": "بعد {{minutes}} دقيقة",
+      "inMinutes_other": "بعد {{minutes}} دقيقة",
+      "hoursPart_one": "ساعة",
+      "hoursPart_two": "ساعتين",
+      "hoursPart_few": "{{formatted}} ساعات",
+      "hoursPart_many": "{{formatted}} ساعة",
+      "hoursPart_other": "{{formatted}} ساعة",
+      "minutesPart_one": "دقيقة",
+      "minutesPart_two": "دقيقتين",
+      "minutesPart_few": "{{formatted}} دقائق",
+      "minutesPart_many": "{{formatted}} دقيقة",
+      "minutesPart_other": "{{formatted}} دقيقة",
+      "remainingHours": "بعد {{hours}}",
+      "remainingHoursMinutes": "بعد {{hours}} و{{minutes}}"
+    }
   },
   "listen": {
     "search": {
@@ -43,12 +143,23 @@
       "waitingWifi": "بانتظار Wi-Fi",
       "paused": "متوقف",
       "delete": "حذف التنزيل",
-      "play": "تشغيل"
+      "play": "تشغيل",
+      "offline": "غير متاح دون اتصال"
     },
     "empty": {
       "title": "لا يوجد قارئ مطابق",
       "body": "جرّب اسمًا آخر، أو امسح البحث."
+    },
+    "catalogue": {
+      "title": "اتصل مرة لتحميل القرّاء",
+      "body": "بعد أول اتصال تبقى قائمة القرّاء على جهازك."
     }
+  },
+  "network": {
+    "offlineBanner": "أنت غير متصل. المصحف والتلاوات المحمّلة تعمل كالمعتاد.",
+    "needsInternet": "يتطلب اتصالًا بالإنترنت",
+    "verifyDownloads": "اتصل مرة للتحقق من التنزيلات",
+    "staleContent": "اتصل لتحديث المحتوى"
   },
   "nav": {
     "main": "التنقل الرئيسي"
@@ -63,7 +174,8 @@
       "placeholderTitle": "هذه الصفحة غير جاهزة",
       "placeholderBody": "اتصل بالإنترنت لتحميل هذه الصفحة.",
       "missingLayoutBody": "لم تُثبَّت هذه الصفحة بعد. يمكنك قراءة الآية نفسها في وضع القراءة.",
-      "switchToReading": "اقرأ في وضع القراءة"
+      "switchToReading": "اقرأ في وضع القراءة",
+      "retry": "إعادة المحاولة"
     },
     "sources": {
       "title": "المصادر",
@@ -267,7 +379,19 @@
     "surahResultHint_few": "{{n}} آيات · تبدأ صفحة {{page}}",
     "surahResultHint_many": "{{n}} آية · تبدأ صفحة {{page}}",
     "surahResultHint_other": "{{n}} آية · تبدأ صفحة {{page}}",
-    "surahTag": "سورة"
+    "surahTag": "سورة",
+    "scope": {
+      "label": "نطاق البحث",
+      "quran": "القرآن",
+      "azkar": "الأذكار"
+    },
+    "placeholderAzkar": "ابحث في الأذكار",
+    "hintAzkar": "ابحث بكلمة من الذكر أو باسم الباب",
+    "azkarIdleHint": "ابحث بالكلمة أو بجزء منها، وستظهر الأبواب والأذكار التي تطابقها.",
+    "azkarChaptersHeading": "الأبواب",
+    "azkarEntriesHeading": "الأذكار",
+    "azkarNoResultsTitle": "لا توجد نتائج مطابقة",
+    "azkarNoResultsSuggestion": "جرّب كلمة أخرى."
   },
   "ui": {
     "loading": "جارٍ التحميل",
@@ -298,7 +422,9 @@
     "tiles": {
       "surahs": "السور",
       "saved": "المحفوظات",
-      "reciters": "القرّاء"
+      "reciters": "القرّاء",
+      "azkar": "الأذكار",
+      "misbaha": "المسبحة"
     },
     "recent": {
       "heading": "آخر ما استمعت إليه",
@@ -340,6 +466,31 @@
         "cardinalWest": "غ",
         "cardinalEast": "ق"
       }
+    },
+    "nextPrayer": {
+      "caption": "الصلاة القادمة",
+      "noLocation": "حدّد موقعك لعرض مواقيت الصلاة",
+      "a11yHint": "افتح أوقات الصلاة"
+    },
+    "dailyProgress": {
+      "title": "تقدّم اليوم",
+      "edit": "تعديل",
+      "emptyTitle": "حدّد أهدافك اليومية",
+      "emptyBody": "اختر ما تريد متابعته كل يوم: الورد والأذكار والمسبحة.",
+      "setGoals": "أهدافي اليومية",
+      "percent": "{{percent}}٪",
+      "wird": "وردك اليومي",
+      "pages": "{{current}} من {{total}} صفحة",
+      "misbaha": "المسبحة",
+      "complete": "مكتمل"
+    },
+    "selectedAzkar": {
+      "heading": "أذكار مختارة",
+      "all": "عرض الكل"
+    },
+    "recentAzkar": {
+      "heading": "آخر الأذكار",
+      "complete": "مكتملة"
     }
   },
   "salah": {
@@ -437,7 +588,9 @@
       "loadFailed": "تعذّر تشغيل الملف الصوتي. حاول مرة أخرى.",
       "notFound": "الملف الصوتي غير متوفر الآن.",
       "invalidChapter": "هذه السورة غير متاحة.",
-      "invalidVerse": "هذه الآية غير متاحة."
+      "invalidVerse": "هذه الآية غير متاحة.",
+      "offline": "غير متاح دون اتصال. حمّل السورة لتسمعها بدون إنترنت.",
+      "verifyRequired": "اتصل مرة للتحقق من التنزيلات"
     }
   },
   "khatma": {
@@ -497,10 +650,19 @@
     "openSettings": "فتح الإعدادات"
   },
   "notifications": {
+    "prayer": {
+      "title": "حان وقت صلاة {{name}}",
+      "body": "اضغط لفتح مواقيت الصلاة"
+    },
     "reminder": {
       "title": "وردك اليومي",
       "body": "حان وقت قراءة وردك من القرآن الكريم",
       "wirdToday": "وِردك اليوم:"
+    },
+    "channels": {
+      "reminders": "تذكير بالورد اليومي",
+      "azkar": "تذكير الأذكار",
+      "prayer": "إشعارات الصلاة"
     }
   },
   "settings": {
@@ -511,6 +673,7 @@
       "reading": "القراءة",
       "listening": "الاستماع",
       "reminders": "الورد والتذكير",
+      "prayerNotifications": "إشعارات الصلاة",
       "about": "عن التطبيق"
     },
     "language": {
@@ -540,7 +703,8 @@
       "permissionDeniedTitle": "لا يمكن إرسال التذكيرات",
       "permissionDeniedBody": "تحتاج طيبة إلى إذن لإرسال التذكيرات اليومية. يمكنك تفعيلها من إعدادات الجهاز.",
       "khatma": "الختمة",
-      "khatmaValue": "٣٠ يومًا"
+      "khatmaValue": "٣٠ يومًا",
+      "azkarReminders": "تذكير الأذكار"
     },
     "about": {
       "sources": "المصادر والشكر",
@@ -552,5 +716,240 @@
       "cancel": "إلغاء",
       "dataCleared": "تم مسح البيانات المحلية بنجاح"
     }
+  },
+  "azkar": {
+    "categories": {
+      "morning": "أذكار الصباح",
+      "evening": "أذكار المساء",
+      "after_prayer": "أذكار بعد الصلاة",
+      "before_sleep": "أذكار النوم",
+      "after_waking": "أذكار الاستيقاظ",
+      "morning-and-evening": "الصباح والمساء",
+      "sleep-and-waking": "النوم والاستيقاظ",
+      "prayer-and-the-masjid": "الصلاة والمسجد",
+      "wudu-and-purification": "الوضوء والطهارة",
+      "food-and-drink": "الطعام والشراب",
+      "fasting": "الصيام",
+      "home-and-family": "البيت والأسرة",
+      "travel": "السفر",
+      "hajj-and-umrah": "الحج والعمرة",
+      "weather-and-nature": "الطقس والطبيعة",
+      "distress-and-anxiety": "الكرب والقلق",
+      "illness-and-healing": "المرض والشفاء",
+      "protection-and-refuge": "الحماية",
+      "forgiveness-and-repentance": "المغفرة والتوبة",
+      "provision-and-debt": "الرزق والدين",
+      "knowledge-and-guidance": "العلم والهداية",
+      "gatherings-and-greetings": "المجالس والتحية",
+      "death-and-the-deceased": "الموت والمتوفى",
+      "dhikr-and-praise": "الذكر والحمد"
+    },
+    "occasions": {
+      "morning": "الصباح",
+      "evening": "المساء",
+      "after_prayer": "بعد الصلاة",
+      "before_sleep": "قبل النوم",
+      "after_waking": "بعد الاستيقاظ",
+      "entering_home": "دخول البيت",
+      "leaving_home": "الخروج من البيت",
+      "entering_mosque": "دخول المسجد",
+      "leaving_mosque": "الخروج من المسجد",
+      "travel": "السفر",
+      "general": "عام"
+    },
+    "share": {
+      "source": "حصن المسلم · {{number}}"
+    },
+    "reader": {
+      "variation": "الصيغة {{n}}",
+      "close": "إغلاق",
+      "progress": "{{current}} من {{total}}",
+      "entryTitle": "الذكر",
+      "previous": "السابق",
+      "next": "التالي",
+      "done": "تم",
+      "markComplete": "إتمام",
+      "source": "حصن المسلم · {{number}}",
+      "details": "المصدر والتفاصيل",
+      "textSize": "حجم النص",
+      "textSizeGlyph": "Aa",
+      "favouriteAdd": "إضافة إلى المفضلة",
+      "favouriteRemove": "إزالة من المفضلة",
+      "share": "مشاركة",
+      "repeatGroup": "تُكرَّر هذه المجموعة {{count}} مرات",
+      "completionTitle": "أتممت {{title}}",
+      "completionBack": "العودة إلى الأذكار",
+      "restart": "البدء من جديد"
+    },
+    "counter": {
+      "label": "عداد الذكر {{position}}",
+      "value": "{{current}} من {{total}}",
+      "hint": "اضغط للعدّ",
+      "doneLabel": "وضع علامة «تم»",
+      "doneHint": "اضغط للإتمام",
+      "reset": "إعادة الضبط"
+    },
+    "details": {
+      "title": "المصدر والتفاصيل",
+      "occasion": "المناسبة",
+      "instructions": "التعليمات",
+      "context": "السياق",
+      "meaning": "المعنى",
+      "virtue": "الفضل",
+      "reference": "المرجع",
+      "grade": "الدرجة",
+      "source": "المصدر",
+      "sourceCaption": "المصدر: {{name}} · {{reference}}",
+      "sourceCaptionNoReference": "المصدر: {{name}}",
+      "bookNumber": "حصن المسلم · رقم {{number}}"
+    },
+    "browse": {
+      "title": "الأذكار",
+      "back": "رجوع",
+      "favourites": "المفضلة",
+      "sessionHeading": "أذكار اليوم",
+      "topicsHeading": "المواضيع",
+      "continueEyebrow": "تابع",
+      "resume": "متابعة",
+      "start": "ابدأ",
+      "continue": "تابع",
+      "repeatChip": "×{{number}}",
+      "repeatLabel": "{{number}} مرات",
+      "completed": "مكتمل",
+      "topicCount_one": "ذكر واحد",
+      "topicCount_two": "ذكران",
+      "topicCount_few": "{{number}} أذكار",
+      "topicCount_many": "{{number}} ذكرًا",
+      "topicCount_other": "{{number}} ذكر",
+      "sourceLine_one": "حصن المسلم · ذكر واحد",
+      "sourceLine_two": "حصن المسلم · ذكران",
+      "sourceLine_few": "حصن المسلم · {{number}} أذكار",
+      "sourceLine_many": "حصن المسلم · {{number}} ذكرًا",
+      "sourceLine_other": "حصن المسلم · {{number}} ذكرًا"
+    },
+    "search": {
+      "placeholder": "ابحث في الأذكار",
+      "hint": "ابحث بالكلمة أو بجزء منها، وستظهر الأبواب والأذكار التي تطابقها.",
+      "recentTitle": "عمليات البحث الأخيرة",
+      "clear": "مسح السجل",
+      "removeRecent": "إزالة {{query}}",
+      "chaptersHeading": "الأبواب",
+      "entriesHeading": "الأذكار",
+      "noResults": "لا توجد نتائج مطابقة"
+    },
+    "favourites": {
+      "emptyTitle": "لا توجد أذكار مفضلة بعد",
+      "emptyBody": "اضغط على أيقونة الإشارة في أي ذكر لتجده هنا.",
+      "browse": "تصفّح الأذكار"
+    },
+    "unavailable": {
+      "title": "الأذكار غير متاحة بعد",
+      "body": "يتوفر المحتوى عند اكتمال إذن النشر"
+    },
+    "audio": {
+      "play": "تشغيل التسجيل",
+      "pause": "إيقاف التسجيل مؤقتًا",
+      "replay": "إعادة التشغيل",
+      "position": "{{elapsed}} من {{total}}",
+      "unavailableOffline": "غير متاح دون اتصال",
+      "unavailableOfflineHint": "يتطلب هذا التسجيل اتصالًا بالإنترنت",
+      "autoplay": "تشغيل تلقائي",
+      "autoplayHint": "ينتقل إلى الذكر التالي عند انتهاء التسجيل",
+      "licence": "الترخيص: {{licence}}"
+    },
+    "download": {
+      "download": "تنزيل التسجيل",
+      "cancel": "إلغاء التنزيل",
+      "remove": "حذف التسجيل",
+      "retry": "إعادة المحاولة",
+      "done": "تم التنزيل",
+      "rowDone": "{{size}} · تم التنزيل",
+      "failed": "تعذّر التنزيل",
+      "progress": "جارٍ التنزيل · {{percent}}٪"
+    },
+    "downloads": {
+      "title": "الصوتيات المحفوظة",
+      "storage": "المساحة المستخدمة",
+      "megabytes": "{{value}} م.ب",
+      "removeAll": "حذف الكل",
+      "emptyTitle": "لا تتوفر تسجيلات صوتية بعد",
+      "emptyBody": "ستظهر التسجيلات هنا بعد الحصول على ترخيص لنشرها.",
+      "removeAllTitle": "حذف كل التسجيلات؟",
+      "removeAllBody": "ستُحذف التسجيلات المحفوظة من هذا الجهاز. يمكن تنزيلها مجددًا لاحقًا.",
+      "removeAllConfirm": "حذف الكل",
+      "removeAllCancel": "إلغاء"
+    },
+    "reminders": {
+      "title": "تذكير الأذكار",
+      "disclaimer": "وقت التذكير من اختيارك، وليس وقتًا محددًا للذكر",
+      "dailyAlert": "تنبيه يومي",
+      "entryAction": "تذكير بهذا الذكر",
+      "trigger": {
+        "label": "نوع وقت التذكير",
+        "clock": "وقت محدد",
+        "prayer": "بعد صلاة"
+      },
+      "time": "الوقت",
+      "chooseTime": "اختر وقتًا",
+      "prayer": "الصلاة",
+      "offset": "الإزاحة",
+      "offsetAt": "عند الصلاة",
+      "offsetAfter_one": "بعد دقيقة",
+      "offsetAfter_two": "بعد دقيقتين",
+      "offsetAfter_few": "بعد {{number}} دقائق",
+      "offsetAfter_many": "بعد {{number}} دقيقة",
+      "offsetAfter_other": "بعد {{number}} دقيقة",
+      "offsetLess": "تقليل الإزاحة",
+      "offsetMore": "زيادة الإزاحة",
+      "needsLocation": "حدّد موقعك في الصلاة لاستخدام هذا الخيار",
+      "setLocation": "تحديد الموقع",
+      "deniedTitle": "الإشعارات متوقفة لطيبة",
+      "deniedBody": "فعّلها من إعدادات الجهاز لتصلك التذكيرات.",
+      "notificationTitle": "{{name}}",
+      "notificationEntryTitle": "تذكير الأذكار",
+      "notificationBody": "تذكيرك الذي اخترته",
+      "limitReached": "بلغت الحد الأقصى للتذكيرات"
+    }
+  },
+  "sibha": {
+    "title": "المسبحة",
+    "close": "إغلاق",
+    "reset": "إعادة الضبط",
+    "resetTitle": "إعادة ضبط العداد؟",
+    "resetBody": "يعود العداد والدورات إلى صفر. لا يتأثر مجموع اليوم.",
+    "resetConfirm": "إعادة الضبط",
+    "label": "تسمية اختيارية",
+    "labelA11y": "تسمية اختيارية",
+    "target": "الهدف",
+    "targetCustom": "مخصص",
+    "counter": {
+      "label": "العداد",
+      "hint": "اضغط للعدّ",
+      "value": "{{current}} من {{total}}",
+      "plain": "{{current}}",
+      "ofTarget": "من {{total}}",
+      "valueRound": "{{current}} من {{total}}، الدورة {{round}}"
+    },
+    "hint": "اضغط في أي مكان للعدّ",
+    "customTitle": "هدف مخصص",
+    "customBody": "أدخل عددًا من ١ إلى ٩٩٩٩",
+    "customField": "عدد التسبيحات",
+    "customSave": "حفظ",
+    "targetNone": "بلا حد",
+    "rounds": "الدورة {{round}}"
+  },
+  "dailyGoals": {
+    "title": "أهدافي اليومية",
+    "save": "حفظ",
+    "note": "تُحفظ الأهداف على هذا الجهاز، ولا تُرسل إلى أحد.",
+    "wird": "وردك اليومي (الختمة)",
+    "misbaha": "هدف المسبحة اليومي",
+    "misbahaCount": "عدد التسبيحات",
+    "decrease": "تقليل",
+    "increase": "زيادة",
+    "startKhatma": "ابدأ ختمة",
+    "openSibha": "فتح المسبحة",
+    "prayerNotifications": "إشعارات الصلاة",
+    "bell": "تذكير {{name}}"
   }
 }

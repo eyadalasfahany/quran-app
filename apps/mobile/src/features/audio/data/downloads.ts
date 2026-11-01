@@ -185,6 +185,44 @@ export function isPlayableOffline(row: Pick<DownloadRow, 'status' | 'verifiedAt'
   return row.status === 'done' && row.verifiedAt !== null && now - row.verifiedAt <= OFFLINE_VERIFY_WINDOW_MS;
 }
 
+/**
+ * A finished download that the device cannot play offline until it connects: it was last verified more than 7 days
+ * ago (or never). The file is kept; it plays again once a verification runs.
+ */
+export function needsVerification(row: Pick<DownloadRow, 'status' | 'verifiedAt'>, now: number = Date.now()): boolean {
+  return row.status === 'done' && !isPlayableOffline(row, now);
+}
+
+/** Finished downloads that need verifying, counted per reciter. A reciter with none is absent. */
+export function verifyNeededCounts(
+  rows: readonly Pick<DownloadRow, 'reciterResourceId' | 'status' | 'verifiedAt'>[],
+  now: number = Date.now(),
+): Record<number, number> {
+  const counts: Record<number, number> = {};
+  for (const row of rows) {
+    if (needsVerification(row, now)) {
+      counts[row.reciterResourceId] = (counts[row.reciterResourceId] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
+
+/** Finished downloads that need verifying, per reciter, live. */
+export function useVerifyNeededCounts(): Record<number, number> {
+  const { db } = openUserDb();
+  const { data } = useLiveQuery(
+    db
+      .select({
+        reciterResourceId: downloads.reciterResourceId,
+        status: downloads.status,
+        verifiedAt: downloads.verifiedAt,
+      })
+      .from(downloads)
+      .where(eq(downloads.status, 'done')),
+  );
+  return useMemo(() => verifyNeededCounts(data ?? []), [data]);
+}
+
 /** One reciter's download rows, re-read whenever the downloads table changes. */
 export function useReciterDownloads(reciterResourceId: number) {
   const { db } = openUserDb();

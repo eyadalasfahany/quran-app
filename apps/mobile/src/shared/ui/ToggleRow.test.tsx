@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
 import { locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
@@ -26,6 +27,23 @@ describe('ToggleRow', () => {
     const onValueChange = jest.fn();
     const view = await renderUi(<ToggleRow onValueChange={onValueChange} testID="toggle" title="t" value={false} />);
 
+    await fireEvent(view.getByTestId('toggle'), 'valueChange', true);
+    expect(onValueChange).toHaveBeenCalledWith(true);
+  });
+
+  it('draws an accessory before the switch and keeps the switch working', async () => {
+    const onValueChange = jest.fn();
+    const view = await renderUi(
+      <ToggleRow
+        accessory={<Text>زر إضافي</Text>}
+        onValueChange={onValueChange}
+        testID="toggle"
+        title="t"
+        value={false}
+      />,
+    );
+
+    expect(view.getByText('زر إضافي')).toBeOnTheScreen();
     await fireEvent(view.getByTestId('toggle'), 'valueChange', true);
     expect(onValueChange).toHaveBeenCalledWith(true);
   });

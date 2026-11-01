@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { check, index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const bookmarkKinds = ['verse', 'page'] as const;
 export const highlightColors = ['gold', 'green', 'blue', 'rose'] as const;
@@ -147,4 +147,48 @@ export const khatmaLogs = sqliteTable(
       .on(table.planId, table.date)
       .where(sql`${table.deletedAt} is null`),
   ],
+);
+
+// Azkar personal state (ADR 0031 §9). Local only: no sync columns and no outbox, so «مسح البيانات» clears them.
+export const azkarFavorites = sqliteTable('azkar_favorites', {
+  entryKey: text('entry_key').primaryKey(),
+  createdAt: integer('created_at').notNull(),
+});
+
+// Progress per item, scoped to a session category or chapter and a period (a day, a night, a prayer).
+export const azkarProgress = sqliteTable(
+  'azkar_progress',
+  {
+    scopeKey: text('scope_key').notNull(),
+    periodKey: text('period_key').notNull(),
+    itemKey: text('item_key').notNull(),
+    currentCount: integer('current_count').notNull().default(0),
+    completedAt: integer('completed_at'),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.scopeKey, table.periodKey, table.itemKey] }),
+    index('azkar_progress_scope_period_idx').on(table.scopeKey, table.periodKey),
+  ],
+);
+
+export const azkarReminderTargetTypes = ['category', 'entry'] as const;
+export const azkarReminderTriggerTypes = ['clock', 'prayer_relative'] as const;
+
+// A reminder preference («وقت التذكير»), not the time of the dhikr. `notification_ids` is a JSON array.
+export const azkarReminders = sqliteTable(
+  'azkar_reminders',
+  {
+    id: text('id').primaryKey(),
+    targetType: text('target_type', { enum: azkarReminderTargetTypes }).notNull(),
+    targetKey: text('target_key').notNull(),
+    enabled: integer('enabled').notNull(),
+    triggerType: text('trigger_type', { enum: azkarReminderTriggerTypes }).notNull(),
+    clockTime: text('clock_time'),
+    prayer: text('prayer'),
+    offsetMinutes: integer('offset_minutes'),
+    notificationIds: text('notification_ids'),
+    updatedAt: integer('updated_at').notNull(),
+  },
+  (table) => [uniqueIndex('azkar_reminders_target_idx').on(table.targetType, table.targetKey)],
 );

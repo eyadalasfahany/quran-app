@@ -133,7 +133,7 @@ export interface components {
          * ServedResourceGroup
          * @enum {string}
          */
-        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith";
+        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar";
     };
     responses: {
         /** @description Validation error */

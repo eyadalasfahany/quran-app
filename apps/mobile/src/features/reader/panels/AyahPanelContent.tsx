@@ -158,15 +158,19 @@ export function AyahPanelContent({
     const entry = downloads[tafsir.resourceId];
     const state: DownloadRowState =
       entry?.status === 'downloading' ? 'downloading' : tafsir.installed ? 'installed' : 'available';
+    // A failed download that could not reach the network says so; the download action retries it.
+    const needsNetwork = entry?.status === 'failed' && entry.reason === 'network';
     return {
       progress: entry?.progress ?? 0,
       resourceId: tafsir.resourceId,
       state,
-      subtitle: tafsirRowSubtitle(
-        { author: tafsirAuthorName(tafsir, locale), packSizeBytes: tafsir.packSizeBytes, status: entry?.status },
-        t,
-        locale,
-      ),
+      subtitle: needsNetwork
+        ? t('network.needsInternet')
+        : tafsirRowSubtitle(
+            { author: tafsirAuthorName(tafsir, locale), packSizeBytes: tafsir.packSizeBytes, status: entry?.status },
+            t,
+            locale,
+          ),
       title: tafsirDisplayName(tafsir, locale, t('reader.tafsir.fallbackName', { id: tafsir.resourceId })),
     };
   };

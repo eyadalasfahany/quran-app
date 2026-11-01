@@ -6,6 +6,7 @@ import {
   SlideInDown,
   SlideOutDown,
   useReducedMotion,
+  ZoomIn,
   type WithSpringConfig,
   type WithTimingConfig,
 } from 'react-native-reanimated';
@@ -14,6 +15,33 @@ const [x1, y1, x2, y2] = easing.easeOut;
 export const easeOut = Easing.bezier(x1, y1, x2, y2);
 const [ex1, ey1, ex2, ey2] = easing.easeInOut;
 export const easeInOut = Easing.bezier(ex1, ey1, ex2, ey2);
+
+/** The delay between staggered list rows, and the most rows that wait (a long list does not wait for its last row). */
+export const STAGGER_STEP_MS = 40;
+export const STAGGER_MAX_STEPS = 8;
+
+/**
+ * A list row's fade-in on its first mount: row `index` waits `index` steps, capped. Reduce Motion: a plain fade, no delay.
+ * Used as an Animated view's `entering` prop, so it runs once when the row mounts.
+ */
+export function staggerFadeIn(index: number, reduceMotion: boolean) {
+  const steps = reduceMotion ? 0 : Math.min(Math.max(index, 0), STAGGER_MAX_STEPS);
+  return FadeIn.delay(steps * STAGGER_STEP_MS)
+    .duration(duration.standard)
+    .easing(easeOut);
+}
+
+/**
+ * A scale-in for a finished state (the completion screen): the content grows in and fades in. Reduce Motion: a plain
+ * fade, with no scale.
+ */
+export function useScaleIn() {
+  const reduceMotion = useReducedMotion();
+  if (reduceMotion) {
+    return FadeIn.duration(duration.slow).easing(easeOut);
+  }
+  return ZoomIn.springify(springToken.duration).dampingRatio(springToken.dampingRatio);
+}
 
 // Opacity, color and stroke drawing only: `withTiming(opacity, timing('fast'))`.
 export function timing(speed: DurationToken): WithTimingConfig {

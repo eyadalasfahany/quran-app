@@ -8,6 +8,7 @@ import { themes } from '@/core/theme';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { SheetHost } from './SheetHost';
+import { SheetScrollView } from './SheetScrollView';
 import { useSheet } from './sheet-context';
 
 jest.mock('expo-router', () => ({
@@ -245,6 +246,130 @@ describe('SheetHost', () => {
     const backdrop = view.getByTestId('sheet-backdrop');
     expect(backdrop.props.accessibilityRole).toBe('button');
     expect(backdrop.props.accessibilityLabel).toBe(locale === 'ar' ? 'إغلاق' : 'Close');
+  });
+
+  describe('on a window of a given size', () => {
+    const DEFAULT_WINDOW = { height: 1334, width: 750 };
+
+    function setWindow(width: number, height: number) {
+      Dimensions.set({
+        screen: { fontScale: 1, height, scale: 1, width },
+        window: { fontScale: 1, height, scale: 1, width },
+      });
+    }
+
+    afterEach(() => {
+      setWindow(DEFAULT_WINDOW.width, DEFAULT_WINDOW.height);
+    });
+
+    it.each([
+      ['compact', 390],
+      ['medium', 750],
+      ['expanded', 1194],
+    ] as const)('centres a card no wider than 560 on a %s window except compact', async (windowClass, width) => {
+      setWindow(width, 844);
+      const view = await renderUi(
+        <SheetHost>
+          <Text>إعدادات</Text>
+        </SheetHost>,
+      );
+      const column = flatStyle(view.getByTestId('sheet-host-column').props.style);
+
+      if (windowClass === 'compact') {
+        expect(column.maxWidth).toBeUndefined();
+        expect(flatStyle(view.getByTestId('sheet-host').props.style).alignItems).toBeUndefined();
+      } else {
+        expect(column).toMatchObject({ maxWidth: 560, width: '100%' });
+        expect(flatStyle(view.getByTestId('sheet-host').props.style)).toMatchObject({ alignItems: 'center' });
+      }
+    });
+
+    it('centres a 560 pt card on a medium window, as spec §4 draws it', async () => {
+      setWindow(750, 1334);
+      const view = await renderUi(
+        <SheetHost>
+          <Text>إعدادات</Text>
+        </SheetHost>,
+      );
+
+      expect(flatStyle(view.getByTestId('sheet-host-column').props.style)).toMatchObject({ maxWidth: 560, width: '100%' });
+      expect(view.getByText('إعدادات')).toBeOnTheScreen();
+    });
+
+    it('centres the card on a landscape phone, which is wide though short (ADR 0036), and opens it at full', async () => {
+      setWindow(844, 390);
+      const view = await renderUi(
+        <SheetHost>
+          <Text>إعدادات</Text>
+        </SheetHost>,
+      );
+
+      expect(flatStyle(view.getByTestId('sheet-host-column').props.style)).toMatchObject({ maxWidth: 560, width: '100%' });
+      expect(flatStyle(view.getByTestId('sheet-host').props.style)).toMatchObject({ alignItems: 'center' });
+    });
+
+    it('opens at mid on a normal height, as ADR 0020 draws it', async () => {
+      setWindow(390, 844);
+      const view = await renderUi(
+        <SheetHost>
+          <DetentProbe />
+        </SheetHost>,
+      );
+      await settle();
+
+      expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: 844 * 0.5 });
+      expect(detentOf(view)).toBe('mid');
+    });
+
+    it('opens at full in a short window, where mid would hide the content', async () => {
+      setWindow(900, 411);
+      const view = await renderUi(
+        <SheetHost>
+          <DetentProbe />
+        </SheetHost>,
+      );
+      await settle();
+
+      expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: FULL });
+      expect(detentOf(view)).toBe('full');
+    });
+
+    it('keeps a short-window sheet at full when collapse is asked for, and its content scrolls there', async () => {
+      setWindow(900, 411);
+      const view = await renderUi(
+        <SheetHost>
+          <DetentProbe />
+          <SheetScrollView testID="content-scroll" />
+        </SheetHost>,
+      );
+      await settle();
+
+      await fireEvent.press(view.getByTestId('collapse'));
+      await settle();
+
+      expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: FULL });
+      expect(detentOf(view)).toBe('full');
+      expect(view.getByTestId('content-scroll').props.scrollEnabled).toBe(true);
+    });
+
+    it('moves a mid sheet to full when a resize makes the window short', async () => {
+      setWindow(390, 844);
+      const view = await renderUi(
+        <SheetHost>
+          <DetentProbe />
+        </SheetHost>,
+      );
+      await settle();
+      expect(detentOf(view)).toBe('mid');
+
+      await act(async () => {
+        setWindow(900, 411);
+      });
+      await settle();
+
+      expect(detentOf(view)).toBe('full');
+      expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: FULL });
+    });
   });
 
   it('has no raw colour literals', () => {

@@ -52,6 +52,9 @@ describe('user.db schema', () => {
 
   it('creates the personal tables and no content tables', () => {
     expect(tableNames(database)).toEqual([
+      'azkar_favorites',
+      'azkar_progress',
+      'azkar_reminders',
       'bookmarks',
       'downloads',
       'highlights',
@@ -63,6 +66,46 @@ describe('user.db schema', () => {
       'sync_meta',
     ]);
     expect(USER_DATABASE).toBe('user.db');
+  });
+
+  it('creates the three azkar personal tables with their keys', () => {
+    const columns = (table: string): string[] =>
+      (database.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((row) => row.name);
+
+    expect(columns('azkar_favorites')).toEqual(['entry_key', 'created_at']);
+    expect(columns('azkar_progress')).toEqual([
+      'scope_key',
+      'period_key',
+      'item_key',
+      'current_count',
+      'completed_at',
+      'updated_at',
+    ]);
+    expect(columns('azkar_reminders')).toEqual([
+      'id',
+      'target_type',
+      'target_key',
+      'enabled',
+      'trigger_type',
+      'clock_time',
+      'prayer',
+      'offset_minutes',
+      'notification_ids',
+      'updated_at',
+    ]);
+    expect(indexSql(database, 'azkar_progress_scope_period_idx')).toContain('scope_key');
+    expect(indexSql(database, 'azkar_reminders_target_idx')).toContain('UNIQUE');
+
+    database.prepare(
+      `INSERT INTO azkar_reminders (id, target_type, target_key, enabled, trigger_type, clock_time, prayer, offset_minutes, notification_ids, updated_at)
+       VALUES ('r1', 'category', 'morning', 1, 'clock', '07:00', NULL, NULL, NULL, 1)`,
+    ).run();
+    expect(() => {
+      database.prepare(
+        `INSERT INTO azkar_reminders (id, target_type, target_key, enabled, trigger_type, clock_time, prayer, offset_minutes, notification_ids, updated_at)
+         VALUES ('r2', 'category', 'morning', 1, 'clock', '08:00', NULL, NULL, NULL, 1)`,
+      ).run();
+    }).toThrow(/unique/i);
   });
 
   it('indexes verse_id and keeps one live highlight and one live bookmark per kind', () => {
@@ -147,7 +190,7 @@ describe('user.db schema', () => {
     const contentPath = join(directory, 'content.db');
     const content = new DatabaseSync(contentPath);
     content.exec('CREATE TABLE verses (id integer primary key, text_uthmani text not null)');
-    content.prepare(`INSERT INTO verses (id, text_uthmani) VALUES (1, 'بِسْمِ ٱللَّهِ')`).run();
+    content.prepare(`INSERT INTO verses (id, text_uthmani) VALUES (1, 'FIXTURE text 1 — not a dhikr')`).run();
     content.close();
 
     const user = openMigrated(userPath);
@@ -205,6 +248,7 @@ describe('user.db schema', () => {
       '0001_recent_listens',
       '0002_audio_downloads',
       '0003_volatile_madrox',
+      '0004_unknown_nitro',
     ]);
     expect(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8')).toMatch(/^CREATE TABLE `recent_listens`/);
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0001');

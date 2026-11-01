@@ -6,13 +6,16 @@ import { useContrastColors } from '@/shared/ui';
 
 export type TabBarStyle = Pick<
   NativeTabsProps,
-  'backgroundColor' | 'iconColor' | 'labelStyle' | 'tintColor' | 'unstable_nativeProps'
+  | 'backgroundColor'
+  | 'iconColor'
+  | 'labelStyle'
+  | 'tintColor'
+  | 'unstable_nativeProps'
 >;
 
 export function useTabBarStyle(): TabBarStyle {
   const theme = useTheme();
   const colors = useContrastColors();
-
   return {
     backgroundColor: theme.colors.glassFallback,
     // UIKit ignores I18nManager.forceRTL, so the native tab bar would keep the first tab on the left in Arabic.

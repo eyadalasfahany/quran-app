@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { fireEvent, waitFor } from '@testing-library/react-native';
-import { Alert, Linking } from 'react-native';
+import { Linking } from 'react-native';
 
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
@@ -8,11 +8,13 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 
 import { DailyReminderRow } from './DailyReminderRow';
 
+// The dialog's notice fades in, so until its animation ends its elements count as hidden to the query.
+const SHOWN = { includeHiddenElements: true } as const;
+
 describe('DailyReminderRow', () => {
   beforeEach(() => {
     storage.clearAll();
     jest.clearAllMocks();
-    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     jest.spyOn(Linking, 'openSettings').mockImplementation(() => Promise.resolve());
   });
 
@@ -66,19 +68,40 @@ describe('DailyReminderRow', () => {
     jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
     jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
 
-    const view = await renderUi(<DailyReminderRow />);
+    const view = await renderUi(<DailyReminderRow />, { locale: 'en' });
     fireEvent(view.getByTestId('daily-reminder-toggle'), 'valueChange', true);
 
+    // The notice fades in, so it counts as hidden to the query until its animation ends.
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledTimes(1);
+      expect(view.getByText('Cannot send reminders', SHOWN)).toBeOnTheScreen();
+    });
+    expect(view.getByTestId('daily-reminder-denied-icon-glyph', SHOWN).props.children.props.name).toEqual({
+      ios: 'bell.slash',
+      android: 'notifications_off',
     });
     expect(storage.getBoolean(storageKeys.dailyReminder)).toBeUndefined();
     expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
 
-    const buttons = jest.mocked(Alert.alert).mock.calls[0]?.[2] ?? [];
-    const openSettings = buttons.find((button) => button.style !== 'cancel');
-    openSettings?.onPress?.();
+    fireEvent.press(view.getByRole('button', { name: 'Open Settings', ...SHOWN }));
     expect(Linking.openSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes the permission notice with Cancel, and opens no settings', async () => {
+    jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+
+    const view = await renderUi(<DailyReminderRow />, { locale: 'en' });
+    fireEvent(view.getByTestId('daily-reminder-toggle'), 'valueChange', true);
+    await waitFor(() => {
+      expect(view.getByText('Cannot send reminders', SHOWN)).toBeOnTheScreen();
+    });
+
+    fireEvent.press(view.getByRole('button', { name: 'Cancel', ...SHOWN }));
+
+    expect(Linking.openSettings).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(view.queryByText('Cannot send reminders', SHOWN)).toBeNull();
+    });
   });
 
   it('turning off cancels the scheduled reminder', async () => {

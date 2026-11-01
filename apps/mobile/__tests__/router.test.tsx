@@ -6,7 +6,8 @@ import {
 } from "expo-router/testing-library";
 import { router } from "expo-router";
 import type { ComponentProps } from "react";
-import { Dimensions, I18nManager } from "react-native";
+import { Dimensions, I18nManager, Platform } from "react-native";
+import { within } from "@testing-library/react-native";
 
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
@@ -37,6 +38,15 @@ jest.mock("@/features/khatma/data/hooks", () => ({
   useKhatmaMarkerVerseId: () => null,
 }));
 
+// The Azkar cards read the content database, which is not open under Jest; the menu tab mounts here.
+jest.mock("@/features/azkar/data", () => ({
+  ...jest.requireActual("@/features/azkar/data"),
+  useAzkarAvailable: () => false,
+  useContinueAzkar: () => null,
+  useRecentAzkarItems: () => [],
+  useSessionCategoryProgress: () => [],
+}));
+
 jest.mock("expo-symbols", () => {
   const { createElement } = jest.requireActual<typeof import("react")>("react");
   const { View } =
@@ -64,10 +74,8 @@ describe("adaptive nav", () => {
     await i18n.changeLanguage("en");
   });
 
+  // Not the window width: resetting it here breaks the next render in this file (the tests set their own width).
   afterEach(() => {
-    act(() => {
-      setWidth(390);
-    });
     jest.useRealTimers();
   });
 
@@ -108,6 +116,8 @@ describe("adaptive nav", () => {
       { ios: "house", android: "home" },
       { ios: "book", android: "menu_book" },
       { ios: "headphones", android: "headphones" },
+      // الصلاة joined the sidebar after الاستماع in Phase 5 (ADR 0030).
+      { ios: "moon.stars", android: "mosque" },
       // The sidebar's pinned settings entry (step 1).
       { ios: "gearshape", android: "settings" },
     ]);
@@ -127,5 +137,95 @@ describe("adaptive nav", () => {
 
     expect(view.getSegments()).toEqual(["(main)", "(home)"]);
     expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
+  });
+
+});
+
+describe("android floating tab bar (ADR 0033)", () => {
+  const originalOs = Platform.OS;
+
+  function setPlatform(os: Platform["OS"]): void {
+    Object.defineProperty(Platform, "OS", { configurable: true, get: () => os });
+  }
+
+  // The root waits for fonts and the content database before it draws, so a render is only ready once the shell is.
+  async function renderMain(width: number) {
+    setWidth(width);
+    const view = await renderRouter("./app");
+    await screen.findByTestId("main-shell");
+    return view;
+  }
+
+  function floatingBar() {
+    return screen.getByTestId("floating-tab-bar");
+  }
+
+  beforeEach(async () => {
+    setPlatform("android");
+    storage.set(storageKeys.locale, "en");
+    I18nManager.isRTL = false;
+    await i18n.changeLanguage("en");
+  });
+
+  // Each test sets its own width in renderMain. Resetting the width in afterEach breaks the next render.
+  afterEach(() => {
+    setPlatform(originalOs);
+  });
+
+  it("draws the five tabs in order, with the destination test IDs", async () => {
+    await renderMain(390);
+
+    expect(within(floatingBar()).getAllByRole("tab").map((tab) => tab.props.testID)).toEqual([
+      "home",
+      "mushaf",
+      "my-quran",
+      "listen",
+      "menu",
+    ]);
+    expect(within(floatingBar()).getByRole("tab", { name: "Mushaf" })).toBeOnTheScreen();
+    expect(within(floatingBar()).getByRole("tab", { name: "Menu" })).toBeOnTheScreen();
+  });
+
+  it("follows navigation: the tab of the current route is the selected one", async () => {
+    const view = await renderMain(390);
+
+    expect(within(floatingBar()).getByTestId("home").props.accessibilityState).toEqual({ selected: true });
+
+    await act(async () => {
+      router.navigate("/(main)/(mushaf)");
+    });
+
+    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
+    expect(within(floatingBar()).getByTestId("mushaf").props.accessibilityState).toEqual({ selected: true });
+    expect(within(floatingBar()).getByTestId("home").props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it("switches to a tab when it is pressed", async () => {
+    const view = await renderMain(390);
+
+    await act(async () => {
+      fireEvent.press(within(floatingBar()).getByRole("tab", { name: "Listen" }));
+    });
+
+    expect(view.getSegments()).toEqual(["(main)", "(listen)"]);
+  });
+
+  it("hides the floating bar on expanded windows, where the sidebar takes over", async () => {
+    await renderMain(900);
+
+    expect(screen.queryByTestId("floating-tab-bar")).toBeNull();
+    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
+  });
+
+  it("keeps the Salah route reachable without a bar item, as the native tabs do", async () => {
+    const view = await renderMain(390);
+
+    expect(within(floatingBar()).queryByTestId("salah")).toBeNull();
+
+    await act(async () => {
+      router.navigate("/(main)/(salah)");
+    });
+
+    expect(view.getSegments()).toEqual(["(main)", "(salah)"]);
   });
 });

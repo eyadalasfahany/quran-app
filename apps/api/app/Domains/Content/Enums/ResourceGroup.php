@@ -18,6 +18,8 @@ enum ResourceGroup: string
     case Recitations = 'recitations';
     case ChapterRecitations = 'chapter_recitations';
     case Hadith = 'hadith';
+    // ADR 0031: Azkar content is delivered as a fourth content-pack group.
+    case Azkar = 'azkar';
 
     public function isIgnored(): bool
     {

@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { themes } from '@/core/theme';
 
@@ -65,5 +66,28 @@ describe('FocusProgress', () => {
 
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/reader/components/FocusProgress.tsx')).toEqual([]);
+  });
+});
+
+describe('FocusProgress safe-area insets', () => {
+  const insets = { bottom: 0, left: 40, right: 60, top: 0 };
+
+  it.each(locales)('moves the marks off the trailing side inset in %s', async (locale) => {
+    const view = await renderUi(
+      <SafeAreaInsetsContext.Provider value={insets}>
+        <FocusProgress verseNumber={5} versesCount={7} />
+      </SafeAreaInsetsContext.Provider>,
+      { locale },
+    );
+
+    // The marks sit at the trailing edge: the left in Arabic, the right in English.
+    const trailing = locale === 'ar' ? insets.left : insets.right;
+    expect(flatStyle(view.getByTestId('focus-progress', hidden).props.style)).toMatchObject({ end: 10 + trailing });
+  });
+
+  it('keeps the frame inset without a safe area', async () => {
+    const view = await renderUi(<FocusProgress verseNumber={5} versesCount={7} />);
+
+    expect(flatStyle(view.getByTestId('focus-progress', hidden).props.style)).toMatchObject({ end: 10 });
   });
 });

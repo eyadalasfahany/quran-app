@@ -49,6 +49,19 @@ arch('integrations never import domains')
     ->expect('App\Integrations')
     ->not->toUse('App\Domains');
 
+// ADR 0031 §2: Dorar data never reaches content tables, packs or the Azkar services/models.
+// Only the Azkar Sources namespace and AzkarServiceProvider (which picks the source) may use Integrations\Dorar.
+arch('dorar never reaches azkar services, packs, models or contracts')
+    ->expect([
+        'App\Domains\Azkar\Services',
+        'App\Domains\Azkar\Models',
+        'App\Domains\Azkar\Contracts',
+        'App\Domains\Azkar\Data',
+        'App\Domains\Content\Packs',
+        'App\Domains\Content\Models',
+    ])
+    ->not->toUse('App\Integrations\Dorar');
+
 arch('content models extend eloquent')
     ->expect('App\Domains\Content\Models')
     ->toExtend(Model::class);

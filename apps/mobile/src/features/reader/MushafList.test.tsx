@@ -57,6 +57,11 @@ jest.mock('@/features/reader/mushaf/fonts', () => ({
   setMushafFontViewport: () => undefined,
 }));
 
+// The list sizes its page from the side insets; a portrait phone has none.
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ bottom: 0, left: 0, right: 0, top: 0 }),
+}));
+
 jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
   __esModule: true,
   default: () => ({ width: 390, height: 844 }),

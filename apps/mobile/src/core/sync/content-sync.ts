@@ -14,7 +14,7 @@ export type PackDownloadOptions = {
 };
 
 export type ContentApi = {
-  getManifest: (etag?: string) => Promise<ManifestResult>;
+  getManifest: (etag?: string, signal?: AbortSignal) => Promise<ManifestResult>;
   getChanges: (query: ChangesQuery) => Promise<ChangesResult>;
   downloadPack: (url: string, toPath: string, options?: PackDownloadOptions) => Promise<void>;
 };
@@ -293,6 +293,8 @@ export async function importPack(
     }
     await deps.files.writeBytes(sqlitePath, deps.gunzip(gzipped));
     copyPack(deps.db, databasePath(sqlitePath), resource, checkedAt);
+    // A pack import is a content write: screens that read content re-read after it (see useCatalogVersion).
+    bumpCatalogVersion();
     return 'pack-imported';
   } finally {
     await removeQuiet(deps.files, gzipPath);

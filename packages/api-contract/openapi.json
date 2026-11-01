@@ -477,7 +477,8 @@
                     "tafsirs",
                     "recitations",
                     "chapter_recitations",
-                    "hadith"
+                    "hadith",
+                    "azkar"
                 ],
                 "title": "ServedResourceGroup"
             }

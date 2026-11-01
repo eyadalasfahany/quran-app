@@ -1,7 +1,7 @@
 import type { ContentChangesPage, ContentManifest } from '@quran/api-contract';
 import { Platform } from 'react-native';
 
-import { ApiError, apiGet, getChanges, getManifest, packUrl } from '@/core/api';
+import { ApiError, getChanges, getManifest, isNetworkError, packUrl, REQUEST_TIMEOUT_MS } from '@/core/api';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
 jest.mock('expo-constants', () => ({
@@ -19,6 +19,15 @@ const manifest: ContentManifest = {
 
 function jsonResponse(status: number, body: unknown, headers?: Record<string, string>): Response {
   return new Response(JSON.stringify(body), { status, headers });
+}
+
+// Never answers, but honours its signal the way fetch does.
+function hangingFetch(_input: unknown, init?: RequestInit): Promise<Response> {
+  return new Promise((_resolve, reject) => {
+    init?.signal?.addEventListener('abort', () => {
+      reject(Object.assign(new Error('The operation was aborted.'), { name: 'AbortError' }));
+    });
+  });
 }
 
 describe('content api', () => {
@@ -46,15 +55,18 @@ describe('content api', () => {
 
     await getManifest('"abc"');
 
-    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/api/v1/content/manifest', {
-      headers: {
-        Accept: 'application/json',
-        'Accept-Language': 'ar',
-        'X-Platform': Platform.OS === 'android' ? 'android' : 'ios',
-        'X-App-Version': '1.2.3',
-        'If-None-Match': '"abc"',
-      },
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:8000/api/v1/content/manifest',
+      expect.objectContaining({
+        headers: {
+          Accept: 'application/json',
+          'Accept-Language': 'ar',
+          'X-Platform': Platform.OS === 'android' ? 'android' : 'ios',
+          'X-App-Version': '1.2.3',
+          'If-None-Match': '"abc"',
+        },
+      }),
+    );
   });
 
   it('returns the manifest and etag on 200', async () => {
@@ -109,15 +121,41 @@ describe('content api', () => {
     expect(packUrl('https://cdn.example/pack.sqlite.gz')).toBe('https://cdn.example/pack.sqlite.gz');
   });
 
-  it('forwards an abort signal from apiGet', async () => {
-    const fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse(200, manifest));
+  it('aborts the request when the caller cancels, and that is not a network error', async () => {
+    const fetchMock = jest.spyOn(globalThis, 'fetch').mockImplementation(hangingFetch);
     const controller = new AbortController();
 
-    await apiGet('/content/manifest', { signal: controller.signal });
+    const pending = getManifest(undefined, controller.signal);
+    controller.abort();
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      'http://localhost:8000/api/v1/content/manifest',
-      expect.objectContaining({ signal: controller.signal }),
-    );
+    const signal = fetchMock.mock.calls[0]?.[1]?.signal;
+    expect(signal?.aborted).toBe(true);
+    const error = await pending.catch((reason: unknown) => reason);
+    expect(isNetworkError(error)).toBe(false);
+    expect((error as { name?: string }).name).toBe('AbortError');
+  });
+
+  it('times out a request that never answers, as a typed network error', async () => {
+    jest.useFakeTimers();
+    try {
+      jest.spyOn(globalThis, 'fetch').mockImplementation(hangingFetch);
+
+      const pending = getManifest().catch((reason: unknown) => reason);
+      await jest.advanceTimersByTimeAsync(REQUEST_TIMEOUT_MS);
+      const error = await pending;
+
+      expect(isNetworkError(error)).toBe(true);
+      expect(error).toMatchObject({ failure: 'timeout', kind: 'network' });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('reports an unreachable server as a network error, not a crash', async () => {
+    jest.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Network request failed'));
+
+    const error = await getManifest().catch((reason: unknown) => reason);
+
+    expect(error).toMatchObject({ failure: 'unreachable', kind: 'network' });
   });
 });

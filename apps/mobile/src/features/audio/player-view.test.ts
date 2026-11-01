@@ -51,6 +51,8 @@ describe('ERROR_KEYS', () => {
       'no-reciter',
       'not-found',
       'not-installed',
+      'offline',
+      'verify-required',
     ]);
   });
 });

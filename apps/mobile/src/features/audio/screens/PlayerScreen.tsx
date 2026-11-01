@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useWindowClass } from '@/core/layout';
+import { useScreenInsets } from '@/core/layout/useScreenInsets';
 import { useTheme } from '@/core/theme';
 import { READING_COLUMN_MAX } from '@/features/reader/layout';
 
@@ -49,6 +50,7 @@ export function PlayerScreen() {
 function PlayerBody() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const sides = useScreenInsets();
   const windowClass = useWindowClass();
   const view = usePlayerView();
   const host = usePlayerHost();
@@ -84,7 +86,8 @@ function PlayerBody() {
           alignItems: 'center',
           flexGrow: 1,
           paddingBottom,
-          paddingHorizontal: FRAME_PADDING_SIDE,
+          paddingEnd: FRAME_PADDING_SIDE + sides.end,
+          paddingStart: FRAME_PADDING_SIDE + sides.start,
           paddingTop,
         }}
         scrollEnabled={fit.scrolls}

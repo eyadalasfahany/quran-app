@@ -1,4 +1,15 @@
-import { DETENT_DISTANCE_RATIO, DETENT_VELOCITY, SHEET_MARGIN, nextDetent, sheetDetents, sheetScreenOptions, sheetShapeFor } from './form-sheet';
+import {
+  DETENT_DISTANCE_RATIO,
+  DETENT_VELOCITY,
+  SHEET_CARD_MAX_WIDTH,
+  SHEET_MARGIN,
+  isShortWindow,
+  nextDetent,
+  openingDetent,
+  sheetDetents,
+  sheetScreenOptions,
+  sheetShapeFor,
+} from './form-sheet';
 
 // 844 × 47 (the 390 × 844 frame with its 47 pt safe area): full 55, mid 422, closed 844.
 const phone = sheetDetents(844, 47);
@@ -26,6 +37,47 @@ describe('sheetDetents', () => {
     const large = sheetDetents(844, 100);
     expect(large.full).toBe(108);
     expect(large.mid).toBe(422);
+  });
+});
+
+describe('short windows', () => {
+  // A landscape phone: 411 pt tall with a 24 pt status area above the card.
+  const landscape = sheetDetents(411, 24);
+
+  it('treats a window under 500 pt as short and anything taller as not', () => {
+    expect(isShortWindow(411)).toBe(true);
+    expect(isShortWindow(499)).toBe(true);
+    expect(isShortWindow(500)).toBe(false);
+    expect(isShortWindow(844)).toBe(false);
+  });
+
+  it('does not treat an unknown height as short', () => {
+    expect(isShortWindow(0)).toBe(false);
+  });
+
+  it('opens at full in a short window and at mid otherwise (ADR 0020)', () => {
+    expect(openingDetent(411)).toBe('full');
+    expect(openingDetent(844)).toBe('mid');
+    expect(openingDetent(0)).toBe('mid');
+  });
+
+  it('makes mid the full detent in a short window, so the sheet has one resting place', () => {
+    expect(landscape).toEqual({ closed: 411, full: 24 + SHEET_MARGIN, mid: 24 + SHEET_MARGIN });
+  });
+
+  it('keeps the half-height mid detent at the normal heights (ADR 0020)', () => {
+    expect(sheetDetents(500, 24).mid).toBe(250);
+    expect(sheetDetents(844, 47).mid).toBe(422);
+  });
+
+  it('a drag down from full in a short window closes the sheet, because mid is the same place', () => {
+    expect(nextDetent('full', 200, 0, landscape)).toBe('closed');
+  });
+});
+
+describe('SHEET_CARD_MAX_WIDTH', () => {
+  it('is the 560 pt centred card of the medium and expanded windows (spec §4)', () => {
+    expect(SHEET_CARD_MAX_WIDTH).toBe(560);
   });
 });
 

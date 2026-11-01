@@ -151,10 +151,19 @@ final class ContentDeliveryService
     }
 
     /**
-     * ADR 0015: only Arabic tafsirs are served.
+     * ADR 0015: only Arabic tafsirs are served. ADR 0031 §1: a source without granted rights is never served.
      */
     private function isServed(Resource $resource): bool
     {
+        if (! $resource->hasDeliverableRights()) {
+            return false;
+        }
+
+        // ADR 0031 §12: only the primary Azkar source is served. Other Azkar resources stay imported for comparison.
+        if ($resource->group === ResourceGroup::Azkar && $resource->source?->code !== config('azkar.primary_source', 'opendua')) {
+            return false;
+        }
+
         return $resource->group !== ResourceGroup::Tafsirs || $resource->language_code === LanguageCode::Arabic->value;
     }
 

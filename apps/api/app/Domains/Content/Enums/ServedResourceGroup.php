@@ -12,6 +12,7 @@ enum ServedResourceGroup: string
     case Recitations = 'recitations';
     case ChapterRecitations = 'chapter_recitations';
     case Hadith = 'hadith';
+    case Azkar = 'azkar';
 
     public static function fromResourceGroup(ResourceGroup $group): self
     {

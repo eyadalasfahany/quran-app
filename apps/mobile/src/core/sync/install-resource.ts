@@ -49,7 +49,8 @@ async function runInstall(deps: InstallDeps, resourceId: number, options: Instal
   let resource: ContentManifestResource | undefined;
   try {
     // No ETag: a 304 has no body, and the pack url and checksum come from the manifest.
-    const manifest = await deps.api.getManifest();
+    // The cancel reaches the manifest request, so a cancelled tafsir install stops waiting on the network.
+    const manifest = await deps.api.getManifest(undefined, signal);
     if (manifest.status !== 200) {
       return { status: 'failed', reason: 'network' };
     }

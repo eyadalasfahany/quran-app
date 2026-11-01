@@ -100,6 +100,127 @@ const README_CONTRACT = [
       { entity: 'recitation_timing', key: '{audio_file_id}:{verse_id}' },
     ],
   },
+  {
+    group: 'azkar',
+    tables: [
+      {
+        name: 'azkar_chapters',
+        columns: ['resource_id', 'id', 'source_chapter_id', 'number', 'title_ar', 'title_en'],
+      },
+      {
+        name: 'azkar_entries',
+        columns: [
+          'resource_id',
+          'id',
+          'entry_key',
+          'chapter_id',
+          'position',
+          'source_reference',
+          'entry_type',
+          'occasion',
+          'timing_type',
+          'timing_prayer',
+          'timing_policy_id',
+          'review_status',
+          'source_version',
+          'imported_at',
+        ],
+      },
+      {
+        name: 'azkar_items',
+        columns: [
+          'resource_id',
+          'id',
+          'entry_id',
+          'item_key',
+          'variation_key',
+          'position',
+          'kind',
+          'required_count',
+          'speaker',
+          'source_dua_id',
+          'text_en',
+          'transliteration',
+          'source_text_sha256',
+          'repeat_group',
+          'repeat_times',
+        ],
+      },
+      {
+        name: 'azkar_segments',
+        columns: [
+          'resource_id',
+          'item_id',
+          'position',
+          'kind',
+          'text_ar',
+          'quran_surah',
+          'quran_verse_from',
+          'quran_verse_to',
+          'text_search',
+        ],
+      },
+      {
+        name: 'azkar_categories',
+        columns: ['resource_id', 'id', 'kind', 'position', 'occasion', 'progress_period'],
+      },
+      {
+        name: 'azkar_entry_categories',
+        columns: ['resource_id', 'category_id', 'entry_id', 'variation_key', 'position'],
+      },
+      {
+        name: 'azkar_notes',
+        columns: [
+          'resource_id',
+          'id',
+          'entry_id',
+          'item_id',
+          'kind',
+          'text_ar',
+          'text_en',
+          'grader',
+          'source_type',
+          'source_name',
+          'source_reference',
+          'source_url',
+          'review_status',
+        ],
+      },
+      {
+        name: 'azkar_recordings',
+        columns: [
+          'resource_id',
+          'id',
+          'recording_key',
+          'item_id',
+          'reciter_name',
+          'reciter_name_ar',
+          'source',
+          'remote_url',
+          'duration_ms',
+          'size_bytes',
+          'stream_allowed',
+          'download_allowed',
+          'redistribution_allowed',
+          'attribution_ar',
+          'attribution_en',
+          'licence',
+          'licence_url',
+          'rights_verified_at',
+        ],
+      },
+    ],
+    entities: [
+      { entity: 'azkar_chapter', key: 'id' },
+      { entity: 'azkar_entry', key: 'id' },
+      { entity: 'azkar_item', key: 'id' },
+      { entity: 'azkar_segment', key: '{item_id}:{position}' },
+      { entity: 'azkar_category', key: 'id' },
+      { entity: 'azkar_entry_category', key: '{category_id}:{entry_id}:{variation_key}' },
+      { entity: 'azkar_note', key: 'id' },
+      { entity: 'azkar_recording', key: 'id' },
+    ],
+  },
 ];
 
 type TafsirRow = { groupTafsirId: number; html: string };
@@ -315,6 +436,37 @@ describe('content sync', () => {
       expect(downloadPack).toHaveBeenCalledWith('http://localhost:8000/api/v1/content/packs/85/3', expect.any(String));
       expect(existsSync(join(cacheDir, 'packs', '85-3.sqlite.gz'))).toBe(false);
       expect(existsSync(join(cacheDir, 'packs', '85-3.sqlite'))).toBe(false);
+    });
+  });
+
+  it('bumps the catalogue version after a pack import, so content screens re-read', async () => {
+    const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
+    const hash = await sha256(bytes);
+    const entry = resource({
+      id: 85,
+      version: 3,
+      pack: { url: '/api/v1/content/packs/85/3', size_bytes: bytes.byteLength, sha256: hash },
+    });
+    const published = manifest([entry]);
+    const downloadPack = jest.fn(async (_url: string, toPath: string) => {
+      mkdirSync(parentDir(toPath), { recursive: true });
+      writeFileSync(toPath, bytes);
+    });
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const before = useCatalogVersion.getState().version;
+      const report = await syncContent(
+        await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        }),
+      );
+
+      expect(report.resources).toEqual([{ resourceId: 85, status: 'pack-imported' }]);
+      expect(useCatalogVersion.getState().version).toBeGreaterThan(before);
     });
   });
 
@@ -826,6 +978,51 @@ describe('content sync', () => {
       expect(tafsirHtml(executor, 86, 1)).toBe('stay');
       expect(executor.get('SELECT resource_id FROM installed_resources WHERE resource_id = ?', [85])).toBeUndefined();
       expect(executor.get('SELECT resource_id FROM installed_resources WHERE resource_id = ?', [87])).toBeUndefined();
+    });
+  });
+
+  it('removes an installed azkar resource the manifest no longer lists, with its rows, and keeps the listed one', async () => {
+    const published = manifest([resource({ id: 2, group: 'azkar', version: 1 })]);
+    const onResourceRemoved = jest.fn();
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      for (const resourceId of [2, 3]) {
+        executor.run(
+          `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at)
+           VALUES (?, 'azkar', 1, 'hash', 0)`,
+          [resourceId],
+        );
+        executor.run(
+          `INSERT INTO azkar_categories (resource_id, id, kind, position, occasion, progress_period)
+           VALUES (?, 'morning', 'session', 1, 'morning', 'daily')`,
+          [resourceId],
+        );
+      }
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack: async () => {
+            throw new Error('no pack is needed');
+          },
+        })),
+        selection: () => [2],
+        onResourceRemoved,
+      });
+
+      expect(report.resources).toEqual([
+        { resourceId: 3, status: 'removed' },
+        { resourceId: 2, status: 'unchanged' },
+      ]);
+      expect(onResourceRemoved).toHaveBeenCalledWith(3, 'azkar');
+      expect(executor.all('SELECT resource_id AS resourceId FROM azkar_categories')).toEqual([{ resourceId: 2 }]);
+      expect(
+        executor.all<{ resourceId: number }>(
+          `SELECT resource_id AS resourceId FROM installed_resources WHERE "group" = 'azkar'`,
+        ),
+      ).toEqual([{ resourceId: 2 }]);
     });
   });
 

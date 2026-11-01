@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -50,5 +51,33 @@ describe('FocusChrome', () => {
 
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/reader/components/FocusChrome.tsx')).toEqual([]);
+  });
+});
+
+describe('FocusChrome safe-area insets', () => {
+  // A landscape cutout on the right: the start edge is the right in Arabic and the left in English.
+  const insets = { bottom: 0, left: 40, right: 60, top: 24 };
+
+  it.each(locales)('keeps the exit clear of the side insets from the start edge in %s', async (locale) => {
+    const view = await renderUi(
+      <SafeAreaInsetsContext.Provider value={insets}>
+        <FocusChrome {...props} />
+      </SafeAreaInsetsContext.Provider>,
+      { locale },
+    );
+
+    const start = locale === 'ar' ? insets.right : insets.left;
+    const end = locale === 'ar' ? insets.left : insets.right;
+    expect(flatStyle(view.getByTestId('focus-chrome').props.style)).toMatchObject({
+      paddingEnd: 16 + end,
+      paddingStart: 16 + start,
+      paddingTop: 24 + 8,
+    });
+  });
+
+  it('adds no side padding without a safe area', async () => {
+    const view = await renderUi(<FocusChrome {...props} />);
+
+    expect(flatStyle(view.getByTestId('focus-chrome').props.style)).toMatchObject({ paddingEnd: 16, paddingStart: 16 });
   });
 });

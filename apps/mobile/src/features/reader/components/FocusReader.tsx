@@ -105,6 +105,7 @@ export function FocusReader({
       repeatTarget={{ chapterId: verse.chapterId, verseId: verse.id }}
       textImlaei={verse.textImlaei}
       textUthmani={verse.textUthmani}
+      topInset={topInset}
       verseNumber={verse.verseNumber}
       versesCount={chapter.versesCount}
     />

@@ -1,5 +1,5 @@
 import * as Location from 'expo-location';
-import { getLocationPermissionStatus, requestLocationPermissions, getCoordinates, setManualLocation, setAutoLocation, getStoredLocationSource, getStoredManualCityId } from '../data/location';
+import { getLocationPermissionStatus, requestLocationPermissions, getCoordinates, setManualLocation, setAutoLocation, getStoredLocationSource, getStoredManualCityId, LOCATION_FIX_TIMEOUT_MS } from '../data/location';
 import { storage } from '../../../core/storage/mmkv';
 
 // Mock expo-location wholesale — requireActual pulls in native expo-modules code.
@@ -70,6 +70,51 @@ describe('location data module', () => {
     (Location.getCurrentPositionAsync as jest.Mock).mockRejectedValueOnce(new Error('no fix'));
 
     await expect(getCoordinates()).resolves.toBeNull();
+  });
+
+  it('gives up on a live fix that takes longer than the timeout and uses the last known position', async () => {
+    jest.useFakeTimers();
+    try {
+      (Location.getForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({ status: Location.PermissionStatus.GRANTED });
+      (Location.getLastKnownPositionAsync as jest.Mock).mockResolvedValueOnce({
+        coords: { latitude: 24.7136, longitude: 46.6753 },
+        timestamp: Date.now() - 60 * 60 * 1000,
+      });
+      (Location.getCurrentPositionAsync as jest.Mock).mockReturnValueOnce(new Promise(() => undefined));
+
+      const pendingCoords = getCoordinates();
+      await jest.advanceTimersByTimeAsync(LOCATION_FIX_TIMEOUT_MS + 1);
+
+      await expect(pendingCoords).resolves.toEqual({ lat: 24.7136, lng: 46.6753 });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('uses a live fix that arrives inside the timeout', async () => {
+    (Location.getForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({ status: Location.PermissionStatus.GRANTED });
+    (Location.getLastKnownPositionAsync as jest.Mock).mockResolvedValueOnce(null);
+
+    await expect(getCoordinates()).resolves.toEqual({ lat: 34.0522, lng: -118.2437 });
+  });
+
+  it('lastKnownOnly returns the last known position, however old, and never asks the GPS for a fix', async () => {
+    (Location.getForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({ status: Location.PermissionStatus.GRANTED });
+    (Location.getLastKnownPositionAsync as jest.Mock).mockResolvedValueOnce({
+      coords: { latitude: 24.7136, longitude: 46.6753 },
+      timestamp: Date.now() - 5 * 24 * 60 * 60 * 1000,
+    });
+    jest.mocked(Location.getCurrentPositionAsync).mockClear();
+
+    await expect(getCoordinates({ lastKnownOnly: true })).resolves.toEqual({ lat: 24.7136, lng: 46.6753 });
+    expect(Location.getCurrentPositionAsync).not.toHaveBeenCalled();
+  });
+
+  it('lastKnownOnly is null when there is no last known position', async () => {
+    (Location.getForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({ status: Location.PermissionStatus.GRANTED });
+    (Location.getLastKnownPositionAsync as jest.Mock).mockResolvedValueOnce(null);
+
+    await expect(getCoordinates({ lastKnownOnly: true })).resolves.toBeNull();
   });
 
   it('manual location round-trips through MMKV', () => {

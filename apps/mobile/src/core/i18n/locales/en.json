@@ -4,7 +4,107 @@
     "mushaf": "Mushaf",
     "listen": "Listen",
     "myQuran": "My Quran",
-    "salah": "Prayer"
+    "salah": "Prayer",
+    "menu": "Menu"
+  },
+  "menu": {
+    "title": "Menu",
+    "searchLabel": "Search",
+    "card": {
+      "hint": "Opens {{title}}"
+    },
+    "salah": {
+      "caption": "Next prayer",
+      "title": "Prayer",
+      "noLocation": "Prayer times for your location",
+      "preview": "{{time}} · {{remaining}}"
+    },
+    "qibla": {
+      "caption": "Direction",
+      "title": "Qibla",
+      "bearing": "{{degrees}}° from true north",
+      "noLocation": "Direction of the Kaaba from your location"
+    },
+    "azkar": {
+      "caption": "Remembrance",
+      "title": "Azkar",
+      "subtitle": "Azkar by occasion",
+      "progress": "{{current}} of {{total}}"
+    },
+    "khatma": {
+      "caption": "My khatma",
+      "title": "Khatma",
+      "today": "Today {{day}} of {{total}}"
+    },
+    "mushaf": {
+      "caption": "Reading",
+      "title": "Mushaf",
+      "subtitle": "Read by page and surah"
+    },
+    "listen": {
+      "caption": "Audio",
+      "title": "Listen",
+      "subtitle": "Reciters and saved recitations"
+    },
+    "myQuran": {
+      "caption": "Marks",
+      "title": "My Quran",
+      "subtitle": "Marks, highlights and notes"
+    },
+    "search": {
+      "captionQuran": "In the Quran",
+      "captionQuranAndAzkar": "In the Quran and Azkar",
+      "title": "Search"
+    },
+    "settings": {
+      "caption": "App",
+      "title": "Settings",
+      "subtitle": "Text, appearance, reminders and account"
+    },
+    "sources": {
+      "caption": "References",
+      "title": "Sources and thanks",
+      "subtitle": "Sources and licences"
+    },
+    "continueReading": {
+      "caption": "Continue reading",
+      "preview": "Ayah {{ayah}} · page {{page}}"
+    },
+    "continueAzkar": {
+      "caption": "Continue azkar"
+    },
+    "home": {
+      "caption": "Start",
+      "title": "Home",
+      "subtitle": "Recent reading and listening"
+    },
+    "favorites": {
+      "caption": "Saved",
+      "title": "Favourite azkar",
+      "subtitle": "Azkar you saved"
+    }
+  },
+  "time": {
+    "remaining": {
+      "inMinutes_zero": "in less than a minute",
+      "inMinutes_one": "in {{minutes}} minute",
+      "inMinutes_two": "in {{minutes}} minutes",
+      "inMinutes_few": "in {{minutes}} minutes",
+      "inMinutes_many": "in {{minutes}} minutes",
+      "inMinutes_other": "in {{minutes}} minutes",
+      "hoursPart_one": "1 hour",
+      "hoursPart_two": "2 hours",
+      "hoursPart_few": "{{formatted}} hours",
+      "hoursPart_many": "{{formatted}} hours",
+      "hoursPart_other": "{{formatted}} hours",
+      "minutesPart_one": "1 minute",
+      "minutesPart_two": "2 minutes",
+      "minutesPart_few": "{{formatted}} minutes",
+      "minutesPart_many": "{{formatted}} minutes",
+      "minutesPart_other": "{{formatted}} minutes",
+      "remainingHours": "in {{hours}}",
+      "remainingHoursMinutes": "in {{hours}} {{minutes}}"
+    }
   },
   "listen": {
     "search": {
@@ -43,12 +143,23 @@
       "waitingWifi": "Waiting for Wi-Fi",
       "paused": "Paused",
       "delete": "Delete download",
-      "play": "Play"
+      "play": "Play",
+      "offline": "Not available offline"
     },
     "empty": {
       "title": "No matching reciter",
       "body": "Try another name, or clear the search."
+    },
+    "catalogue": {
+      "title": "Connect once to load reciters",
+      "body": "After the first connection, the reciter list stays on this device."
     }
+  },
+  "network": {
+    "offlineBanner": "You are offline. The mushaf and downloaded recitations work as usual.",
+    "needsInternet": "Needs an internet connection",
+    "verifyDownloads": "Connect once to verify your downloads",
+    "staleContent": "Connect to update the content"
   },
   "nav": {
     "main": "Main navigation"
@@ -63,7 +174,8 @@
       "placeholderTitle": "This page is not ready",
       "placeholderBody": "Connect to load this page.",
       "missingLayoutBody": "This page is not installed yet. You can read the same ayah in Reading mode.",
-      "switchToReading": "Read in Reading mode"
+      "switchToReading": "Read in Reading mode",
+      "retry": "Try again"
     },
     "sources": {
       "title": "Sources",
@@ -267,7 +379,19 @@
     "surahResultHint_few": "{{n}} ayahs · starts on page {{page}}",
     "surahResultHint_many": "{{n}} ayahs · starts on page {{page}}",
     "surahResultHint_other": "{{n}} ayahs · starts on page {{page}}",
-    "surahTag": "Surah"
+    "surahTag": "Surah",
+    "scope": {
+      "label": "Search in",
+      "quran": "Quran",
+      "azkar": "Azkar"
+    },
+    "placeholderAzkar": "Search Azkar",
+    "hintAzkar": "Search by a word from the dhikr or a chapter title",
+    "azkarIdleHint": "Search by a word or part of one. Matching chapters and azkar appear here.",
+    "azkarChaptersHeading": "Topics",
+    "azkarEntriesHeading": "Azkar",
+    "azkarNoResultsTitle": "No matching results",
+    "azkarNoResultsSuggestion": "Try another word."
   },
   "ui": {
     "loading": "Loading",
@@ -298,7 +422,9 @@
     "tiles": {
       "surahs": "Surahs",
       "saved": "Saved",
-      "reciters": "Reciters"
+      "reciters": "Reciters",
+      "azkar": "Azkar",
+      "misbaha": "Misbaha"
     },
     "recent": {
       "heading": "Recently listened",
@@ -340,6 +466,31 @@
         "cardinalWest": "W",
         "cardinalEast": "E"
       }
+    },
+    "nextPrayer": {
+      "caption": "Next prayer",
+      "noLocation": "Set your location to see prayer times",
+      "a11yHint": "Open prayer times"
+    },
+    "dailyProgress": {
+      "title": "Today's progress",
+      "edit": "Edit",
+      "emptyTitle": "Set your daily goals",
+      "emptyBody": "Choose what you want to track each day: wird, Azkar and misbaha.",
+      "setGoals": "My daily goals",
+      "percent": "{{percent}}%",
+      "wird": "Daily wird",
+      "pages": "{{current}} of {{total}} pages",
+      "misbaha": "Misbaha",
+      "complete": "Complete"
+    },
+    "selectedAzkar": {
+      "heading": "Selected Azkar",
+      "all": "See all"
+    },
+    "recentAzkar": {
+      "heading": "Recent Azkar",
+      "complete": "complete"
     }
   },
   "salah": {
@@ -437,7 +588,9 @@
       "loadFailed": "The audio file could not be played. Try again.",
       "notFound": "This audio file is not available right now.",
       "invalidChapter": "This surah is not available.",
-      "invalidVerse": "This ayah is not available."
+      "invalidVerse": "This ayah is not available.",
+      "offline": "Not available offline. Download this surah to listen without a connection.",
+      "verifyRequired": "Connect once to verify your downloads"
     }
   },
   "khatma": {
@@ -497,10 +650,19 @@
     "openSettings": "Open Settings"
   },
   "notifications": {
+    "prayer": {
+      "title": "Time for {{name}} prayer",
+      "body": "Tap to open prayer times"
+    },
     "reminder": {
       "title": "Your daily wird",
       "body": "Time to read your daily wird of the Quran",
       "wirdToday": "Today's wird:"
+    },
+    "channels": {
+      "reminders": "Daily reading reminder",
+      "azkar": "Azkar reminders",
+      "prayer": "Prayer times"
     }
   },
   "settings": {
@@ -511,6 +673,7 @@
       "reading": "Reading",
       "listening": "Listening",
       "reminders": "Habit & Reminders",
+      "prayerNotifications": "Prayer notifications",
       "about": "About"
     },
     "language": {
@@ -540,7 +703,8 @@
       "permissionDeniedTitle": "Cannot send reminders",
       "permissionDeniedBody": "Taybah needs permission to send daily reminders. You can enable them in your device settings.",
       "khatma": "Khatma",
-      "khatmaValue": "30 days"
+      "khatmaValue": "30 days",
+      "azkarReminders": "Azkar reminders"
     },
     "about": {
       "sources": "Sources and acknowledgments",
@@ -552,5 +716,240 @@
       "cancel": "Cancel",
       "dataCleared": "Local data cleared successfully"
     }
+  },
+  "azkar": {
+    "categories": {
+      "morning": "Morning azkar",
+      "evening": "Evening azkar",
+      "after_prayer": "After prayer",
+      "before_sleep": "Before sleep",
+      "after_waking": "On waking",
+      "morning-and-evening": "Morning and evening",
+      "sleep-and-waking": "Sleep and waking",
+      "prayer-and-the-masjid": "Prayer and the masjid",
+      "wudu-and-purification": "Wudu and purification",
+      "food-and-drink": "Food and drink",
+      "fasting": "Fasting",
+      "home-and-family": "Home and family",
+      "travel": "Travel",
+      "hajj-and-umrah": "Hajj and umrah",
+      "weather-and-nature": "Weather and nature",
+      "distress-and-anxiety": "Distress and anxiety",
+      "illness-and-healing": "Illness and healing",
+      "protection-and-refuge": "Protection",
+      "forgiveness-and-repentance": "Forgiveness and repentance",
+      "provision-and-debt": "Provision and debt",
+      "knowledge-and-guidance": "Knowledge and guidance",
+      "gatherings-and-greetings": "Gatherings and greetings",
+      "death-and-the-deceased": "Death and the deceased",
+      "dhikr-and-praise": "Dhikr and praise"
+    },
+    "occasions": {
+      "morning": "Morning",
+      "evening": "Evening",
+      "after_prayer": "After prayer",
+      "before_sleep": "Before sleep",
+      "after_waking": "On waking",
+      "entering_home": "Entering home",
+      "leaving_home": "Leaving home",
+      "entering_mosque": "Entering the mosque",
+      "leaving_mosque": "Leaving the mosque",
+      "travel": "Travel",
+      "general": "General"
+    },
+    "share": {
+      "source": "Hisn al-Muslim · {{number}}"
+    },
+    "reader": {
+      "variation": "Wording {{n}}",
+      "close": "Close",
+      "progress": "{{current}} of {{total}}",
+      "entryTitle": "Dhikr",
+      "previous": "Previous",
+      "next": "Next",
+      "done": "Done",
+      "markComplete": "Mark as complete",
+      "source": "Hisn al-Muslim · {{number}}",
+      "details": "Source and details",
+      "textSize": "Text size",
+      "textSizeGlyph": "Aa",
+      "favouriteAdd": "Add to favourites",
+      "favouriteRemove": "Remove from favourites",
+      "share": "Share",
+      "repeatGroup": "This group is repeated {{count}} times",
+      "completionTitle": "You finished {{title}}",
+      "completionBack": "Back to Azkar",
+      "restart": "Start again"
+    },
+    "counter": {
+      "label": "Counter for dhikr {{position}}",
+      "value": "{{current}} of {{total}}",
+      "hint": "Tap to count",
+      "doneLabel": "Mark as done",
+      "doneHint": "Tap to mark done",
+      "reset": "Reset count"
+    },
+    "details": {
+      "title": "Source and details",
+      "occasion": "Occasion",
+      "instructions": "Instructions",
+      "context": "Context",
+      "meaning": "Meaning",
+      "virtue": "Virtue",
+      "reference": "Reference",
+      "grade": "Grade",
+      "source": "Source",
+      "sourceCaption": "Source: {{name}} · {{reference}}",
+      "sourceCaptionNoReference": "Source: {{name}}",
+      "bookNumber": "Hisn al-Muslim · no. {{number}}"
+    },
+    "browse": {
+      "title": "Azkar",
+      "back": "Back",
+      "favourites": "Favourites",
+      "sessionHeading": "Today's azkar",
+      "topicsHeading": "Topics",
+      "continueEyebrow": "Continue",
+      "resume": "Resume",
+      "start": "Start",
+      "continue": "Continue",
+      "repeatChip": "×{{number}}",
+      "repeatLabel": "{{number}} times",
+      "completed": "Completed",
+      "topicCount_one": "{{number}} dhikr",
+      "topicCount_other": "{{number}} dhikr",
+      "sourceLine_one": "Hisn al-Muslim · {{number}} dhikr",
+      "sourceLine_other": "Hisn al-Muslim · {{number}} dhikr",
+      "topicCount_two": "{{number}} dhikr",
+      "topicCount_few": "{{number}} dhikr",
+      "topicCount_many": "{{number}} dhikr",
+      "sourceLine_two": "Hisn al-Muslim · {{number}} dhikr",
+      "sourceLine_few": "Hisn al-Muslim · {{number}} dhikr",
+      "sourceLine_many": "Hisn al-Muslim · {{number}} dhikr"
+    },
+    "search": {
+      "placeholder": "Search azkar",
+      "hint": "Search by a word or part of one. Matching chapters and azkar appear here.",
+      "recentTitle": "Recent searches",
+      "clear": "Clear history",
+      "removeRecent": "Remove {{query}}",
+      "chaptersHeading": "Topics",
+      "entriesHeading": "Azkar",
+      "noResults": "No matching results"
+    },
+    "favourites": {
+      "emptyTitle": "No favourite azkar yet",
+      "emptyBody": "Tap the bookmark on any dhikr to find it here.",
+      "browse": "Browse azkar"
+    },
+    "unavailable": {
+      "title": "Azkar are not available yet",
+      "body": "The content arrives once publishing rights are complete"
+    },
+    "audio": {
+      "play": "Play recording",
+      "pause": "Pause recording",
+      "replay": "Replay",
+      "position": "{{elapsed}} of {{total}}",
+      "unavailableOffline": "Not available offline",
+      "unavailableOfflineHint": "This recording needs an internet connection",
+      "autoplay": "Auto-play",
+      "autoplayHint": "Moves to the next dhikr when the recording ends",
+      "licence": "Licence: {{licence}}"
+    },
+    "download": {
+      "download": "Download recording",
+      "cancel": "Cancel download",
+      "remove": "Delete recording",
+      "retry": "Try again",
+      "done": "Downloaded",
+      "rowDone": "{{size}} · Downloaded",
+      "failed": "Download failed",
+      "progress": "Downloading · {{percent}}%"
+    },
+    "downloads": {
+      "title": "Saved audio",
+      "storage": "Storage used",
+      "megabytes": "{{value}} MB",
+      "removeAll": "Delete all",
+      "emptyTitle": "No recordings are available yet",
+      "emptyBody": "Recordings will appear here once their use is licensed.",
+      "removeAllTitle": "Delete all recordings?",
+      "removeAllBody": "Saved recordings will be deleted from this device. You can download them again later.",
+      "removeAllConfirm": "Delete all",
+      "removeAllCancel": "Cancel"
+    },
+    "reminders": {
+      "title": "Azkar reminders",
+      "disclaimer": "The reminder time is your choice, not a set time for the dhikr.",
+      "dailyAlert": "Daily alert",
+      "entryAction": "Remind me of this dhikr",
+      "trigger": {
+        "label": "Reminder time",
+        "clock": "Set time",
+        "prayer": "After prayer"
+      },
+      "time": "Time",
+      "chooseTime": "Choose a time",
+      "prayer": "Prayer",
+      "offset": "Offset",
+      "offsetAt": "At prayer time",
+      "offsetAfter_one": "{{number}} minute after",
+      "offsetAfter_two": "{{number}} minutes after",
+      "offsetAfter_other": "{{number}} minutes after",
+      "offsetAfter_few": "{{number}} minutes after",
+      "offsetAfter_many": "{{number}} minutes after",
+      "offsetLess": "Decrease offset",
+      "offsetMore": "Increase offset",
+      "needsLocation": "Set your location in Prayer to use this option",
+      "setLocation": "Set location",
+      "deniedTitle": "Notifications are off for Taybah",
+      "deniedBody": "Turn them on in your device settings to receive reminders.",
+      "notificationTitle": "{{name}}",
+      "notificationEntryTitle": "Azkar reminder",
+      "notificationBody": "Your chosen reminder",
+      "limitReached": "Reminder limit reached"
+    }
+  },
+  "sibha": {
+    "title": "Misbaha",
+    "close": "Close",
+    "reset": "Reset",
+    "resetTitle": "Reset the counter?",
+    "resetBody": "The count and the rounds go back to zero. Today's total is kept.",
+    "resetConfirm": "Reset",
+    "label": "Optional label",
+    "labelA11y": "Optional label",
+    "target": "Target",
+    "targetCustom": "Custom",
+    "counter": {
+      "label": "Counter",
+      "hint": "Tap to count",
+      "value": "{{current}} of {{total}}",
+      "plain": "{{current}}",
+      "ofTarget": "of {{total}}",
+      "valueRound": "{{current}} of {{total}}, round {{round}}"
+    },
+    "hint": "Tap anywhere to count",
+    "customTitle": "Custom target",
+    "customBody": "Enter a number from 1 to 9999",
+    "customField": "Number of counts",
+    "customSave": "Save",
+    "targetNone": "No limit",
+    "rounds": "Round {{round}}"
+  },
+  "dailyGoals": {
+    "title": "My daily goals",
+    "save": "Save",
+    "note": "Goals are saved on this device and are not sent to anyone.",
+    "wird": "Daily wird (khatma)",
+    "misbaha": "Daily misbaha target",
+    "misbahaCount": "Counts per day",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "startKhatma": "Start a khatma",
+    "openSibha": "Open misbaha",
+    "prayerNotifications": "Prayer notifications",
+    "bell": "Reminder {{name}}"
   }
 }

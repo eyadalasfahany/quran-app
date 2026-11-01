@@ -24,6 +24,32 @@ export const storageKeys = {
   dailyReminderTime: 'settings.dailyReminderTime',
   dailyReminderNotificationId: 'settings.dailyReminderNotificationId',
 
+  // Azkar preferences (phase 6, step 5). Personal, local only; not cleared by content updates.
+  azkar: {
+    fontScale: 'azkar.fontScale',
+    // JSON map of entry key to the chosen alternative (variation key).
+    variationChoice: 'azkar.variationChoice',
+    // JSON array of recent Azkar search queries, newest first.
+    searchRecent: 'azkar.searchRecent',
+    // JSON array of recently opened Azkar scopes, newest first, capped at 10 (ADR 0034 §3).
+    recentScopes: 'azkar.recentScopes',
+    // JSON: the local day, time zone and coordinates key of the last Azkar reminder sync (ADR 0031 §7).
+    remindersSync: 'azkar.remindersSync',
+    // Boolean: «تشغيل تلقائي», whether the reader advances when a unit's licensed recording ends (ADR 0031 §8).
+    audioAutoplay: 'azkar.audioAutoplay',
+  },
+
+  // Misbaha (ADR 0034 §4). Personal, local only; cleared with the other personal data.
+  sibha: {
+    // JSON: the count, the target and the label.
+    state: 'sibha.state',
+    // JSON: the local date and the taps counted on it.
+    today: 'sibha.today',
+  },
+
+  // JSON: the daily goals the user chose (ADR 0034 §5). Nothing is on by default.
+  dailyGoals: 'dailyGoals',
+
   // Salah data layer
   salah: {
     locationSource: 'salah.locationSource',
@@ -36,6 +62,8 @@ export const storageKeys = {
     bellAsr: 'salah.bell.asr',
     bellMaghrib: 'salah.bell.maghrib',
     bellIsha: 'salah.bell.isha',
+    // JSON: the local day, time zone and coordinates key of the last prayer notification sync (ADR 0030 §3).
+    notificationsSync: 'salah.notificationsSync',
   },
 } as const;
 

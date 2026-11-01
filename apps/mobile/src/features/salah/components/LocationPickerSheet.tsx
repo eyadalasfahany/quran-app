@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useLocale } from '@/core/i18n';
@@ -11,6 +11,14 @@ import { searchCities, type City } from '../data/cities';
 
 const LOCATE: IconName = { ios: 'location', android: 'my_location' };
 const CHECK: IconName = { ios: 'checkmark', android: 'check' };
+
+/** The results list's tallest height on a tall window. A short window gives it half its height instead (ADR 0036). */
+export const RESULTS_MAX_HEIGHT = 320;
+
+/** The results list's cap: min(320, half the window), so the search field and header stay on screen. */
+export function resultsMaxHeight(windowHeight: number): number {
+  return Math.min(RESULTS_MAX_HEIGHT, windowHeight * 0.5);
+}
 
 /**
  * The location sheet behind the header's map-pin button: switch back to automatic GPS or
@@ -41,12 +49,15 @@ export function LocationPickerSheet({
   const theme = useTheme();
   const locale = useLocale();
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => searchCities(query), [query]);
 
   return (
     <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      {/* The sheet rises with the keyboard, so the search field stays in view (ADR 0036). */}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} testID={`${testID}-keyboard`}>
       <View style={{ backgroundColor: theme.colors.scrim, flex: 1, justifyContent: 'flex-end' }} testID={testID}>
         {/* Tap-to-dismiss scrim: not itself focusable — VoiceOver users get the sheet's close button. */}
         <Pressable accessible={false} onPress={onClose} style={{ bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 }} testID={`${testID}-backdrop`} />
@@ -99,7 +110,7 @@ export function LocationPickerSheet({
             testID={`${testID}-search`}
             value={query}
           />
-          <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 320 }} testID={`${testID}-results`}>
+          <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: resultsMaxHeight(windowHeight) }} testID={`${testID}-results`}>
             {results.map((city) => {
               const selected = source === 'manual' && city.id === cityId;
               const country = locale === 'ar' ? city.country_ar : city.country_en;
@@ -139,6 +150,7 @@ export function LocationPickerSheet({
           </ScrollView>
         </View>
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

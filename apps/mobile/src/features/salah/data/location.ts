@@ -27,7 +27,32 @@ export const requestLocationPermissions = async () => {
   }
 };
 
-export const getCoordinates = async (): Promise<{ lat: number; lng: number } | null> => {
+/** A live GPS fix that takes longer than this is abandoned, so a slow fix never holds up the screen or a sync. */
+export const LOCATION_FIX_TIMEOUT_MS = 8000;
+
+export type CoordinatesOptions = {
+  /** Use the last known position and never ask the GPS for a fix (the foreground check). */
+  lastKnownOnly?: boolean;
+};
+
+/** Rejects if `promise` has not settled within `ms`; the timer is cleared as soon as it settles. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('location timed out')), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+export const getCoordinates = async (options: CoordinatesOptions = {}): Promise<{ lat: number; lng: number } | null> => {
   const source = storage.getString(storageKeys.salah.locationSource) as LocationSource | undefined;
 
   if (source === 'manual') {
@@ -45,12 +70,18 @@ export const getCoordinates = async (): Promise<{ lat: number; lng: number } | n
 
   try {
     const lastKnown = await Location.getLastKnownPositionAsync();
+    if (options.lastKnownOnly) {
+      return lastKnown ? { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude } : null;
+    }
     if (lastKnown && Date.now() - lastKnown.timestamp < 30 * 60 * 1000) {
       return { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude };
     }
 
     try {
-      const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const current = await withTimeout(
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        LOCATION_FIX_TIMEOUT_MS,
+      );
       return { lat: current.coords.latitude, lng: current.coords.longitude };
     } catch {
       // Simulator and some devices have no live GPS fix. A stale last-known

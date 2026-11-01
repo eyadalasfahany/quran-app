@@ -29,7 +29,32 @@ describe('clearLocalUserData', () => {
       'reading_position',
       'recent_listens',
       'search_history',
+      'azkar_favorites',
+      'azkar_progress',
+      'azkar_reminders',
     ]);
+  });
+
+  it('empties the azkar personal tables', () => {
+    const { database, executor } = openMigrated();
+
+    executor.exec(
+      `INSERT INTO azkar_favorites (entry_key, created_at) VALUES ('taybah-dev-fixture:entry-1', 100);`,
+    );
+    executor.exec(
+      `INSERT INTO azkar_progress (scope_key, period_key, item_key, current_count, completed_at, updated_at) VALUES ('morning', '2026-10-31', 'taybah-dev-fixture:item-1', 1, NULL, 100);`,
+    );
+    executor.exec(
+      `INSERT INTO azkar_reminders (id, target_type, target_key, enabled, trigger_type, clock_time, prayer, offset_minutes, notification_ids, updated_at) VALUES ('r1', 'category', 'morning', 1, 'clock', '07:00', NULL, NULL, NULL, 100);`,
+    );
+
+    clearLocalUserData(executor);
+
+    for (const table of ['azkar_favorites', 'azkar_progress', 'azkar_reminders']) {
+      expect(database.prepare(`SELECT count(*) as c FROM ${table}`).get()).toEqual({ c: 0 });
+    }
+
+    database.close();
   });
 
   it('deletes rows from existing user tables and gracefully ignores missing tables', () => {
@@ -55,6 +80,10 @@ describe('clearLocalUserData', () => {
     storage.set(storageKeys.readerLastVerseKey, '2:255');
     storage.set(storageKeys.readerLastPage, 42);
     storage.set(storageKeys.audioLastPosition, 12345);
+    storage.set(storageKeys.azkar.recentScopes, JSON.stringify([{ openedAt: 1, scopeKey: 'category:morning' }]));
+    storage.set(storageKeys.sibha.state, JSON.stringify({ count: 3, label: '', target: 33 }));
+    storage.set(storageKeys.sibha.today, JSON.stringify({ date: '2026-11-01', total: 3 }));
+    storage.set(storageKeys.dailyGoals, JSON.stringify({ misbahaTarget: 100, sessions: [], wird: true }));
 
     clearLocalUserData(executor);
 
@@ -72,6 +101,10 @@ describe('clearLocalUserData', () => {
     expect(storage.contains(storageKeys.readerLastVerseKey)).toBe(false);
     expect(storage.contains(storageKeys.readerLastPage)).toBe(false);
     expect(storage.contains(storageKeys.audioLastPosition)).toBe(false);
+    expect(storage.contains(storageKeys.azkar.recentScopes)).toBe(false);
+    expect(storage.contains(storageKeys.sibha.state)).toBe(false);
+    expect(storage.contains(storageKeys.sibha.today)).toBe(false);
+    expect(storage.contains(storageKeys.dailyGoals)).toBe(false);
 
     database.close();
   });

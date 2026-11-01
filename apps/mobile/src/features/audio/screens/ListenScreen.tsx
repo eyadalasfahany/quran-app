@@ -1,12 +1,13 @@
 import { useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
-import { ContentColumn } from '@/core/layout';
+import { ContentColumn, useTabContentBottom } from '@/core/layout';
+import { useTheme } from '@/core/theme';
 import { useCatalogVersion } from '@/core/sync';
 import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 
@@ -14,8 +15,7 @@ import { type ReciterFilterOption } from '../components/ReciterFilterChips';
 import { ReciterListHeader } from '../components/ReciterListHeader';
 import { ReciterRow, type ReciterRowStatus } from '../components/ReciterRow';
 import { ReciterRowSkeleton } from '../components/ReciterRowSkeleton';
-import { useDoneCountsByReciter } from '../data/downloads';
-import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
+import { useDoneCountsByReciter, useVerifyNeededCounts } from '../data/downloads';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { recitationStyleKey, reciterInitial } from '../player-view';
 import { pause } from '../player';
@@ -30,7 +30,6 @@ import {
   type ReciterEntry,
   type ReciterFilter,
 } from '../reciter-list';
-import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
 import { setReciterId } from '../settings';
 
 // The frame's 16 pt gutter.
@@ -44,16 +43,20 @@ export function ListenScreen() {
   const { t } = useTranslation();
   const locale = useLocale();
   const router = useRouter();
+  const theme = useTheme();
   const { ready } = useContentDb();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ReciterFilter>('all');
   const { reciters, selectedId, playingId } = useReciterCatalogue(ready);
   const downloads = useReciterDownloads((state) => state.byId);
   const doneCounts = useDoneCountsByReciter();
-  const miniShown = useMiniPlayerVisible('tabs');
+  const verifyCounts = useVerifyNeededCounts();
+  const bottom = useTabContentBottom();
   const syncSettled = useCatalogVersion((state) => state.syncSettled);
   // Until the first catalogue sync has run, an empty list is loading, not «no reciters».
   const loading = !ready || (reciters.length === 0 && !syncSettled);
+  // No reciter rows at all (a first launch that could not reach the network) is not the same as a search with no match.
+  const catalogueEmpty = ready && reciters.length === 0 && !loading;
 
   const rows = useMemo(
     () =>
@@ -72,8 +75,9 @@ export function ListenScreen() {
     { value: 'downloaded', label: t('listen.filter.downloaded') },
   ];
 
-  // The status line: «يُتلى الآن» or the failure or the teaching note, then «٣ سور محمّلة» when some are downloaded.
-  const statusFor = (reciter: ReciterEntry, failed: boolean, downloaded: number): ReciterRowStatus | null => {
+  // The status line: «يُتلى الآن» or the failure or the teaching note, then «٣ سور محمّلة» when some are downloaded,
+  // then the verify notice when a finished download needs a connection.
+  const statusFor = (reciter: ReciterEntry, failed: boolean, downloaded: number, verifyNeeded: number): ReciterRowStatus | null => {
     const kind = reciterStatus({ failed, playing: reciter.resourceId === playingId, style: reciter.style });
     let primary: ReciterRowStatus | null = null;
     if (kind === 'nowPlaying') {
@@ -87,7 +91,8 @@ export function ListenScreen() {
       downloaded > 0
         ? t('listen.downloadedSurahs', { count: downloaded, n: formatNumber(downloaded, locale) })
         : null;
-    const label = joinStatusLine([primary?.label ?? null, count]);
+    const verify = verifyNeeded > 0 ? t('network.verifyDownloads') : null;
+    const label = joinStatusLine([primary?.label ?? null, count, verify]);
     return label === null ? null : { label, tone: primary?.tone ?? 'muted' };
   };
 
@@ -95,7 +100,7 @@ export function ListenScreen() {
     <Screen testID="screen-listen">
       <ContentColumn gutter={FRAME_GUTTER}>
         <FlatList
-          contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
+          contentContainerStyle={{ paddingBottom: bottom }}
           data={rows}
           keyExtractor={(reciter) => String(reciter.resourceId)}
           // A React element, not an inline component: its type stays the same across renders, so the search
@@ -119,6 +124,12 @@ export function ListenScreen() {
                   <ReciterRowSkeleton key={width} nameWidth={width} />
                 ))}
               </SkeletonGroup>
+            ) : catalogueEmpty ? (
+              <EmptyState
+                body={t('listen.catalogue.body')}
+                testID="reciter-catalogue-empty"
+                title={t('listen.catalogue.title')}
+              />
             ) : (
               <EmptyState body={t('listen.empty.body')} testID="reciter-empty" title={t('listen.empty.title')} />
             )
@@ -151,7 +162,12 @@ export function ListenScreen() {
                 playLabel={playing ? t('player.pause') : t('listen.play', { name })}
                 playing={playing}
                 selected={item.resourceId === selectedId}
-                status={statusFor(item, download?.status === 'failed', doneCounts[item.resourceId] ?? 0)}
+                status={statusFor(
+                  item,
+                  download?.status === 'failed',
+                  doneCounts[item.resourceId] ?? 0,
+                  verifyCounts[item.resourceId] ?? 0,
+                )}
                 styleLabel={styleKey === null ? null : t(styleKey)}
                 testID={`reciter-row-${item.resourceId}`}
               />

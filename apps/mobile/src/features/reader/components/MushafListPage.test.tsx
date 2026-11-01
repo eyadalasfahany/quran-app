@@ -107,7 +107,7 @@ describe('MushafListPage', () => {
   });
 
   it('offers Reading mode when the page font fails', async () => {
-    mockFont = { status: 'error' };
+    mockFont = { status: 'error', retry: () => undefined };
     const onSwitchToReading = jest.fn();
     const view = await renderUi(listPage(1, { onSwitchToReading }));
 

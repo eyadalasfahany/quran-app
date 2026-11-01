@@ -1,29 +1,60 @@
-import { sidebarDestinations, tabDestinations } from './destinations';
+import { destinations, sidebarDestinations, tabDestinations } from './destinations';
+
+const byName = (name: string) => {
+  const found = destinations.find((d) => d.name === name);
+  if (found === undefined) {
+    throw new Error(`no destination ${name}`);
+  }
+  return found;
+};
 
 describe('tabDestinations', () => {
-  it('has the correct order and content', () => {
-    expect(tabDestinations.map((d) => d.name)).toEqual(['(home)', '(mushaf)', '(my-quran)', '(listen)', '(salah)']);
-    const myQuranTab = tabDestinations.find((d) => d.name === '(my-quran)');
-    expect(myQuranTab?.symbol).toBe('person.crop.circle');
-    expect(myQuranTab?.androidIcon).toBe('account_circle');
+  it('lists the five tabs in the tab bar order, with القائمة last (ADR 0032)', () => {
+    expect(tabDestinations.map((d) => d.name)).toEqual(['(home)', '(mushaf)', '(my-quran)', '(listen)', '(menu)']);
   });
 
   it('puts مصحفي in the middle of the five tabs', () => {
     expect(tabDestinations).toHaveLength(5);
-    expect(tabDestinations[2].name).toBe('(my-quran)');
+    const myQuran = byName('(my-quran)');
+    expect(tabDestinations.indexOf(myQuran)).toBe(2);
+    expect(myQuran.symbol).toBe('person.crop.circle');
+    expect(myQuran.androidIcon).toBe('account_circle');
   });
 
-  it('has the salah tab last with the moon-star icon', () => {
-    const salahTab = tabDestinations.find((d) => d.name === '(salah)');
-    expect(salahTab?.symbol).toBe('moon.stars');
-    expect(salahTab?.androidIcon).toBe('mosque');
-    expect(salahTab?.label).toBe('tabs.salah');
-    expect(salahTab?.href).toBe('/(main)/(salah)');
+  it('has the menu tab last, with the line-3 icon, its label and route', () => {
+    const menuTab = byName('(menu)');
+    expect(tabDestinations.indexOf(menuTab)).toBe(4);
+    expect(menuTab.label).toBe('tabs.menu');
+    expect(menuTab.symbol).toBe('line.3.horizontal');
+    expect(menuTab.androidIcon).toBe('menu');
+    expect(menuTab.testID).toBe('menu');
+    expect(menuTab.href).toBe('/(main)/(menu)');
+  });
+
+  it('no longer lists الصلاة as a tab', () => {
+    expect(tabDestinations.map((d) => d.name)).not.toContain('(salah)');
+  });
+});
+
+describe('destinations', () => {
+  it('keeps the Salah route as a destination the menu can open, at /salah', () => {
+    expect(byName('(salah)')).toMatchObject({
+      href: '/salah',
+      label: 'tabs.salah',
+      symbol: 'moon.stars',
+      androidIcon: 'mosque',
+    });
+  });
+
+  it('contains every tab and the Salah route, and nothing else', () => {
+    expect(destinations.map((d) => d.name).sort()).toEqual(
+      ['(home)', '(listen)', '(menu)', '(mushaf)', '(my-quran)', '(salah)'].sort(),
+    );
   });
 });
 
 describe('sidebarDestinations', () => {
-  it('has the correct order and content', () => {
+  it('keeps the sidebar order and still includes الصلاة', () => {
     expect(sidebarDestinations.map((d) => d.name)).toEqual([
       '(my-quran)',
       '(home)',
@@ -35,13 +66,17 @@ describe('sidebarDestinations', () => {
     expect(myQuranSidebar?.symbol).toBe('person.crop.circle');
     expect(myQuranSidebar?.androidIcon).toBe('account_circle');
   });
+
+  it('does not add القائمة to the sidebar', () => {
+    expect(sidebarDestinations.map((d) => d.name)).not.toContain('(menu)');
+  });
 });
 
 describe('destinations consistency', () => {
-  it('tabDestinations and sidebarDestinations contain the same records', () => {
-    expect(tabDestinations.length).toBe(sidebarDestinations.length);
-    const tabHrefs = new Set(tabDestinations.map((d) => d.href));
-    const sidebarHrefs = new Set(sidebarDestinations.map((d) => d.href));
-    expect(tabHrefs).toEqual(sidebarHrefs);
+  it('every tab and sidebar entry is a known destination', () => {
+    const hrefs = new Set<string>(destinations.map((d) => String(d.href)));
+    for (const destination of [...tabDestinations, ...sidebarDestinations]) {
+      expect(hrefs.has(String(destination.href))).toBe(true);
+    }
   });
 });

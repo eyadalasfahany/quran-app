@@ -1,8 +1,8 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 
 import type { KhatmaPlan } from '@/features/khatma/data';
 
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { KhatmaScreen } from './KhatmaScreen';
 
 jest.mock('react-native-safe-area-context', () => {
@@ -53,17 +53,61 @@ const activePlan: KhatmaPlan = {
 };
 
 const mockUseActivePlan = jest.fn(() => ({ data: [] as KhatmaPlan[] }));
+const mockEndPlan = jest.fn();
 
 jest.mock('@/features/khatma/data', () => ({
   ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
+  endPlan: (id: string, status: string) => mockEndPlan(id, status),
   useActivePlan: () => mockUseActivePlan(),
   useKhatmaMarkerVerseId: () => null,
   usePlanLogs: () => ({ data: [] }),
 }));
 
+// The confirmation fades in, so until its animation ends its elements count as hidden to the query.
+const SHOWN = { includeHiddenElements: true } as const;
+
 describe('KhatmaScreen saveMode', () => {
   beforeEach(() => {
     mockUseActivePlan.mockReturnValue({ data: [] });
+    mockEndPlan.mockClear();
+  });
+
+  it('pads the scroll content by the footer height, so the last card clears the footer CTA', async () => {
+    mockUseActivePlan.mockReturnValue({ data: [activePlan] });
+    const view = await renderUi(<KhatmaScreen />);
+
+    await act(async () => {
+      fireEvent(view.getByTestId('khatma-footer'), 'layout', { nativeEvent: { layout: { height: 88, width: 390, x: 0, y: 0 } } });
+    });
+
+    expect(flatStyle(view.getByTestId('khatma-scroll').props.contentContainerStyle).paddingBottom).toBe(88);
+  });
+
+  it('asks before ending the plan in the shared dialog, and ends it only when confirmed', async () => {
+    mockUseActivePlan.mockReturnValue({ data: [activePlan] });
+    const view = await renderUi(<KhatmaScreen />);
+
+    await fireEvent.press(view.getByTestId('khatma-end-plan'));
+
+    expect(view.getByText('إنهاء الختمة؟', SHOWN)).toBeOnTheScreen();
+    expect(view.getByTestId('khatma-end-dialog-icon-glyph', SHOWN).props.children.props.name).toEqual({
+      ios: 'stop.circle',
+      android: 'stop_circle',
+    });
+    expect(mockEndPlan).not.toHaveBeenCalled();
+
+    await fireEvent.press(view.getByTestId('khatma-end-dialog-confirm', SHOWN));
+    expect(mockEndPlan).toHaveBeenCalledWith('plan-1', 'abandoned');
+  });
+
+  it('keeps the plan when ending it is cancelled', async () => {
+    mockUseActivePlan.mockReturnValue({ data: [activePlan] });
+    const view = await renderUi(<KhatmaScreen />);
+
+    await fireEvent.press(view.getByTestId('khatma-end-plan'));
+    await fireEvent.press(view.getByTestId('khatma-end-dialog-cancel', SHOWN));
+
+    expect(mockEndPlan).not.toHaveBeenCalled();
   });
 
   it('shows continue reading and progress when last-read moved past plan start', async () => {
@@ -79,7 +123,7 @@ describe('KhatmaScreen saveMode', () => {
     mockUseActivePlan.mockReturnValue({ data: [activePlan] });
     const view = await renderUi(<KhatmaScreen />);
 
-    fireEvent.press(view.getByRole('tab', { name: '٧ يومًا' }));
+    await fireEvent.press(view.getByRole('tab', { name: '٧ يومًا' }));
 
     expect(await view.findByRole('button', { name: 'حفظ الخطة' })).toBeOnTheScreen();
     expect(view.queryByTestId('khatma-progress-grid')).toBeNull();
@@ -90,5 +134,14 @@ describe('KhatmaScreen saveMode', () => {
 
     expect(view.getByTestId('khatma-primary-cta')).toHaveTextContent('حفظ الخطة');
     expect(view.queryByTestId('khatma-progress-grid')).toBeNull();
+  });
+});
+
+describe('KhatmaScreen layout (ADR 0036)', () => {
+  it('keeps the plan in one column capped at 720, and the primary action inside it', async () => {
+    const view = await renderUi(<KhatmaScreen />);
+
+    expect(flatStyle(view.getByTestId('khatma-column').props.style)).toMatchObject({ maxWidth: 720, width: '100%' });
+    expect(view.getByTestId('khatma-column')).toContainElement(view.getByTestId('khatma-primary-cta'));
   });
 });

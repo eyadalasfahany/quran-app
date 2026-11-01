@@ -26,3 +26,27 @@ A local notification fires at each enabled prayer time — offline, no account, 
 
 ## Deliverables
 - Notifications module + tests; wired `PrayerTimeRow` bell; Settings section; i18n keys; device-verified delivery (exit check).
+
+## Implementation notes (Phase 5, step 4)
+
+Status: code and tests done; device delivery (the exit check) still open, because it needs a real build and the developer's device.
+
+**Shape of the change**
+- `salah/data/notifications.ts`: `prayerFireDates` (pure; 8 future times per enabled prayer, from `timesFor`), `syncPrayerNotifications` (cancel every pending notification whose route is `/salah`, then schedule), the serialised `resyncPrayerNotifications` and `resyncPrayerNotificationsIfNeeded`, and `setPrayerBell` (permission on turn-on, then one re-plan).
+- `notifications/sync-state.ts`: the day, time-zone and coordinates record, shared with Azkar. `azkar/reminders/resync-state.ts` now delegates to it and keeps its exports.
+- `notifications/permission.ts`: `ensureReminderPermission` moved here and re-exported from `reminder-service.ts`, so the Salah data layer does not load the khatma and reader modules.
+- `salah/hooks/usePrayerNotificationsSync.ts`: mounted once in `app/_layout.tsx`. It re-plans on launch, on foreground when the record says the day, zone or coordinates moved, and on a Salah location key change.
+- `salah/hooks/index.ts` `useBell`: live from MMKV (the Salah row and Settings share it), permission on first turn-on, and the Phase 4 refusal alert on denial.
+
+**Constants and keys:** prayer channel `prayer` (`notifications.channels.prayer`); `PRAYER_ROLLING_DAYS = 8` in `notifications/budget.ts`; route `/salah` is in the deep-link allowlist (exact match); MMKV `salah.notificationsSync`.
+
+**Budget:** 5 prayers × 8 days = 40, plus Azkar 23 and the daily reminder 1 = 64 (`IOS_PENDING_LIMIT`).
+
+**Deviations from the brief:**
+- Cancellation scans the OS pending list by route rather than keeping a list of ids in MMKV. The pending list is then the source of truth, and an orphaned id is also cancelled.
+- The location trigger is an MMKV value listener on the four Salah location keys. It is coalesced by the sync queue, so a manual city (four writes) causes one re-plan. This avoids editing the Salah location flow.
+
+**Open items for the developer:**
+- The Settings section «إشعارات الصلاة» has no frame in `quran-app-screens.html` (`#Settings` has only «الورد والتذكير»). It reuses the existing `SettingsGroup` and `ToggleRow` tokens. ADR 0010 needs a frame or approval before review.
+- A location permission granted while a bell is already on is picked up at the next foreground (no permission-change event is wired).
+- Notifications have not been delivered on a device yet (exit check, step 6).

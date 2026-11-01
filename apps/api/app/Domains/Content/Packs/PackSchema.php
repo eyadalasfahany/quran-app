@@ -25,6 +25,16 @@ final class PackSchema
             ResourceGroup::Tafsirs => [self::tafsirEntries()],
             ResourceGroup::Mushafs => [self::mushafs(), self::mushafPages(), self::wordLayouts()],
             ResourceGroup::ChapterRecitations => [self::recitations(), self::chapterAudioFiles(), self::recitationTimings()],
+            ResourceGroup::Azkar => [
+                self::azkarChapters(),
+                self::azkarEntries(),
+                self::azkarItems(),
+                self::azkarSegments(),
+                self::azkarCategories(),
+                self::azkarEntryCategories(),
+                self::azkarNotes(),
+                self::azkarRecordings(),
+            ],
             default => throw new PackBuildException('Resource group ['.$group->value.'] has no pack schema.'),
         };
     }
@@ -149,6 +159,180 @@ final class PackSchema
             ],
             primaryKey: ['audio_file_id', 'verse_id'],
             orderBy: ['audio_file_id', 'verse_id'],
+        );
+    }
+
+    public static function azkarChapters(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_chapters',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('source_chapter_id'),
+                self::integer('number'),
+                self::text('title_ar', nullable: true),
+                self::text('title_en', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function azkarEntries(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_entries',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('entry_key'),
+                self::integer('chapter_id'),
+                self::integer('position'),
+                self::text('source_reference'),
+                self::text('entry_type'),
+                self::text('occasion', nullable: true),
+                self::text('timing_type', nullable: true),
+                self::text('timing_prayer', nullable: true),
+                self::text('timing_policy_id', nullable: true),
+                self::text('review_status'),
+                self::text('source_version'),
+                self::integer('imported_at'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function azkarItems(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_items',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('entry_id'),
+                self::text('item_key'),
+                self::text('variation_key'),
+                self::integer('position'),
+                self::text('kind'),
+                self::integer('required_count', nullable: true),
+                self::text('speaker', nullable: true),
+                self::text('source_dua_id', nullable: true),
+                self::text('text_en', nullable: true),
+                self::text('transliteration', nullable: true),
+                self::text('source_text_sha256', nullable: true),
+                self::integer('repeat_group', nullable: true),
+                self::integer('repeat_times', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function azkarSegments(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_segments',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('item_id'),
+                self::integer('position'),
+                self::text('kind'),
+                self::text('text_ar', nullable: true),
+                self::integer('quran_surah', nullable: true),
+                self::integer('quran_verse_from', nullable: true),
+                self::integer('quran_verse_to', nullable: true),
+                self::text('text_search', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'item_id', 'position'],
+            orderBy: ['resource_id', 'item_id', 'position'],
+        );
+    }
+
+    public static function azkarCategories(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_categories',
+            columns: [
+                self::integer('resource_id'),
+                self::text('id'),
+                self::text('kind'),
+                self::integer('position'),
+                self::text('occasion', nullable: true),
+                self::text('progress_period'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function azkarEntryCategories(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_entry_categories',
+            columns: [
+                self::integer('resource_id'),
+                self::text('category_id'),
+                self::integer('entry_id'),
+                self::text('variation_key'),
+                self::integer('position'),
+            ],
+            primaryKey: ['resource_id', 'category_id', 'entry_id', 'variation_key'],
+            orderBy: ['resource_id', 'category_id', 'entry_id', 'variation_key'],
+        );
+    }
+
+    public static function azkarNotes(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_notes',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('entry_id'),
+                self::integer('item_id', nullable: true),
+                self::text('kind'),
+                self::text('text_ar', nullable: true),
+                self::text('text_en', nullable: true),
+                self::text('grader', nullable: true),
+                self::text('source_type'),
+                self::text('source_name'),
+                self::text('source_reference', nullable: true),
+                self::text('source_url', nullable: true),
+                self::text('review_status'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function azkarRecordings(): PackTable
+    {
+        return new PackTable(
+            name: 'azkar_recordings',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('recording_key'),
+                self::integer('item_id'),
+                self::text('reciter_name'),
+                self::text('reciter_name_ar', nullable: true),
+                self::text('source'),
+                self::text('remote_url'),
+                self::integer('duration_ms'),
+                self::integer('size_bytes', nullable: true),
+                self::integer('stream_allowed'),
+                self::integer('download_allowed'),
+                self::integer('redistribution_allowed'),
+                self::text('attribution_ar', nullable: true),
+                self::text('attribution_en', nullable: true),
+                self::text('licence'),
+                self::text('licence_url', nullable: true),
+                self::integer('rights_verified_at', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
         );
     }
 

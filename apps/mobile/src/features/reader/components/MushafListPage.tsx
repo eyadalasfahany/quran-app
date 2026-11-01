@@ -73,6 +73,7 @@ export function MushafListPage({
     return (
       <View style={{ minHeight }}>
         <MushafPagePlaceholder
+          onRetry={font.retry}
           onSwitchToReading={onSwitchToReading ? () => onSwitchToReading(verseKey) : undefined}
           testID={testID ? `${testID}-placeholder` : undefined}
         />

@@ -1,8 +1,10 @@
 import { cleanup, fireEvent, within } from '@testing-library/react-native';
+import { getNetworkStateAsync } from 'expo-network';
 import type { ComponentProps } from 'react';
 import { Dimensions } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { resetNetworkStateForTests, useNetworkStatus } from '@/core/network/network-state';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { installResource } from '@/core/sync';
@@ -39,7 +41,11 @@ jest.mock('@/core/sync', () => ({
 
 // The downloaded surahs per reciter, from the user database (not open under Jest).
 const mockDoneCounts: { value: Record<number, number> } = { value: {} };
-jest.mock('../data/downloads', () => ({ useDoneCountsByReciter: () => mockDoneCounts.value }));
+const mockVerifyCounts: { value: Record<number, number> } = { value: {} };
+jest.mock('../data/downloads', () => ({
+  useDoneCountsByReciter: () => mockDoneCounts.value,
+  useVerifyNeededCounts: () => mockVerifyCounts.value,
+}));
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
@@ -89,6 +95,7 @@ beforeEach(() => {
   install.mockReset();
   play.mockClear();
   mockDoneCounts.value = {};
+  mockVerifyCounts.value = {};
   mockPush.mockClear();
   mockCatalog.settled = true;
 });
@@ -206,6 +213,15 @@ describe('ListenScreen', () => {
     const view = await renderUi(<ListenScreen />);
 
     expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent('يُتلى الآن · ٣ سور محمّلة');
+  });
+
+  it('adds the verify notice to a reciter whose finished download needs a connection', async () => {
+    mockDoneCounts.value = { 30: 3 };
+    mockVerifyCounts.value = { 30: 1 };
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent('٣ سور محمّلة · اتصل مرة للتحقق من التنزيلات');
+    expect(view.queryByTestId('reciter-row-31-status')).toHaveTextContent('للتعليم والتكرار');
   });
 
   it('shows no count on a reciter with no downloads', async () => {
@@ -343,7 +359,7 @@ describe('ListenScreen', () => {
     expect(view.getByRole('search', { name: 'ابحث عن قارئ' })).toBeOnTheScreen();
   });
 
-  it('shows the empty state once the sync has settled with no reciters', async () => {
+  it('asks for one connection when the sync has settled with no catalogue at all', async () => {
     mockCatalog.settled = true;
     mockContent.executor?.run('DELETE FROM recitations');
     mockContent.executor?.run('DELETE FROM installed_resources');
@@ -351,8 +367,32 @@ describe('ListenScreen', () => {
 
     const view = await renderUi(<ListenScreen />);
 
-    expect(view.getByTestId('reciter-empty')).toBeOnTheScreen();
+    expect(view.getByTestId('reciter-catalogue-empty')).toBeOnTheScreen();
+    expect(view.getByRole('header', { name: 'اتصل مرة لتحميل القرّاء' })).toBeOnTheScreen();
+    expect(view.queryByTestId('reciter-empty')).toBeNull();
     expect(view.queryByTestId('reciter-loading')).toBeNull();
+  });
+
+  it('shows the offline notice at once while the device is offline', async () => {
+    mockCatalog.settled = true;
+    resetNetworkStateForTests();
+    useNetworkStatus.setState({ online: false });
+    jest.mocked(getNetworkStateAsync).mockResolvedValueOnce({ isConnected: false, isInternetReachable: false, type: 'NONE' } as Awaited<ReturnType<typeof getNetworkStateAsync>>);
+
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.getByLabelText('أنت غير متصل. المصحف والتلاوات المحمّلة تعمل كالمعتاد.')).toBeOnTheScreen();
+    resetNetworkStateForTests();
+  });
+
+  it('keeps the no-match message for a search over a catalogue that has reciters', async () => {
+    mockCatalog.settled = true;
+
+    const view = await renderUi(<ListenScreen />);
+    await fireEvent.changeText(view.getByRole('search'), 'zzz');
+
+    expect(view.getByTestId('reciter-empty')).toBeOnTheScreen();
+    expect(view.queryByTestId('reciter-catalogue-empty')).toBeNull();
   });
 
   describe('above the tabs mini bar', () => {

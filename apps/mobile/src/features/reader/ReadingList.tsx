@@ -9,6 +9,7 @@ import { View, useWindowDimensions, type HostInstance } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
+import { useScreenInsets } from '@/core/layout/useScreenInsets';
 import { useTheme } from '@/core/theme';
 import type { HighlightColor } from '@/features/library/data/model';
 
@@ -99,7 +100,9 @@ export function ReadingList({
   const theme = useTheme();
   const reduceMotion = useReducedMotion();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const columnWidth = readingColumnWidth(windowWidth, horizontalGutter);
+  // The screen pads the side insets (a notch in landscape), so the column is what is left of the window after them.
+  const sides = useScreenInsets();
+  const columnWidth = readingColumnWidth(windowWidth - sides.start - sides.end, horizontalGutter);
   const listRef = useRef<FlashListRef<ReadingRow>>(null);
   const heightCache = useRef(new ReadingHeightCache());
   const topVerseKeyRef = useRef<string | null>(null);

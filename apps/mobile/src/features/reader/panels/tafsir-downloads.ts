@@ -2,7 +2,12 @@ import { create } from 'zustand';
 
 import { installResource } from '@/core/sync';
 
-export type TafsirDownloadEntry = { status: 'downloading' | 'failed'; progress: number };
+export type TafsirDownloadEntry = {
+  status: 'downloading' | 'failed';
+  progress: number;
+  /** A failed install that could not reach the network. The row says so and offers the download again. */
+  reason?: 'network';
+};
 
 type TafsirDownloadsState = {
   byId: Record<number, TafsirDownloadEntry>;
@@ -63,7 +68,7 @@ export const useTafsirDownloads = create<TafsirDownloadsState>((set, get) => {
             return;
           }
           finish(() => {
-            setEntry(id, { status: 'failed', progress: 0 });
+            setEntry(id, result.reason === 'network' ? { progress: 0, reason: 'network', status: 'failed' } : { progress: 0, status: 'failed' });
           });
         },
         () => {

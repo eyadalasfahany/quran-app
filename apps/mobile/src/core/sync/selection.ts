@@ -6,7 +6,7 @@ import { readReaderResourceOverride } from '@/features/reader/settings-model';
 // Saved selection, else the default. A tafsir installs only when the reader picks one (ADR 0019).
 export function selectedResourceIds(resources: readonly ContentManifestResource[]): number[] {
   const saved = readSavedSelection();
-  const base = saved ?? defaultSelectedResourceIds(resources);
+  const base = withAzkar(saved ?? defaultSelectedResourceIds(resources), resources);
   return applyReaderResourceOverride(base, resources);
 }
 
@@ -24,6 +24,18 @@ export function defaultSelectedResourceIds(resources: readonly ContentManifestRe
   const recitation = resources.find((resource) => resource.group === 'chapter_recitations');
   if (recitation !== undefined) {
     ids.push(recitation.id);
+  }
+  return withAzkar(ids, resources);
+}
+
+// Azkar installs with no user choice (ADR 0031 §9): every azkar resource in the manifest is selected.
+// An absent one is never listed, so it is never requested.
+function withAzkar(base: readonly number[], resources: readonly ContentManifestResource[]): number[] {
+  const ids = [...base];
+  for (const resource of resources) {
+    if (resource.group === 'azkar' && !ids.includes(resource.id)) {
+      ids.push(resource.id);
+    }
   }
   return ids;
 }

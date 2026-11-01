@@ -199,6 +199,7 @@ apps/mobile/
 │   ├── reader-settings.tsx           sheet
 │   ├── player.tsx                    full-screen player
 │   ├── search.tsx, khatma.tsx
+│   ├── azkar/index.tsx, category/[id].tsx, read/[categoryId].tsx, details/[entryKey].tsx (sheet), search.tsx, favorites.tsx, reminders.tsx (sheet), downloads.tsx   Phase 6, ADR 0031
 │   ├── hadith/index.tsx, category/[id].tsx, [id].tsx
 │   ├── settings/index.tsx, downloads.tsx, account.tsx, sources.tsx
 │   ├── auth/sign-in.tsx, auth/verify.tsx
@@ -214,7 +215,7 @@ apps/mobile/
     │   ├── storage/    mmkv.ts (prefs, last-read cache), secure.ts (token)
     │   └── telemetry/  Sentry init, performance marks
     ├── features/
-    │   ├── reader/  audio/  search/  library/  khatma/  hadith/
+    │   ├── reader/  audio/  search/  library/  khatma/  hadith/  salah/  azkar/
     │   ├── auth/  settings/  downloads/  onboarding/  notifications/
     │   └── <feature>/components, hooks, data (repositories), store.ts (only if needed)
     └── shared/ui/      GlassSurface, Sheet, AyahMarker, SurahCartouche, SegmentedControl, ListRow
@@ -233,15 +234,15 @@ apps/mobile/
 
 **Responsive layout (phones, iPad, foldables)**
 
-Layout is driven by the window's width class from `useWindowDimensions`, never by `Platform.isPad` or the device model. iPad Split View at one third, a folded phone and a phone in portrait all get the compact layout; an unfolded foldable or an iPad in landscape gets the expanded one.
+Layout is driven by the window's size from `useWindowDimensions`, never by `Platform.isPad` or the device model. iPad Split View at one third, a folded phone and a phone in portrait all get the compact layout; an unfolded foldable or an iPad in landscape gets the expanded one. A short window (under 480 pt high) is a landscape phone: it keeps the compact layout with the bottom tab bar, whatever its width (ADR 0036). The sidebar needs a window that is both wide and not short.
 
 | Window class | Width (dp/pt) | Typical cases | Navigation | Reader | Ayah actions and tafsir | Player |
 | --- | --- | --- | --- | --- | --- | --- |
-| Compact | under 600 | Phones, folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs | Full width | Bottom sheets (mid 50% and full detents, ADR 0020) | Mini-player bar, full-screen player |
+| Compact | under 600, or any window under 480 high | Phones, phones in landscape (ADR 0036), folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs; a vertical tab rail on the start edge in a short window (ADR 0036) | Full width | Bottom sheets (mid 50% and full detents, ADR 0020) | Mini-player bar, full-screen player |
 | Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (a 560-wide card, ADR 0013, with the same detents) | Mini-player bar, full-screen player |
-| Expanded | 840 and up | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | Sidebar | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player in the sidebar footer; full player as a modal |
+| Expanded | 840 and up, and 480 or taller | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | Sidebar | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player in the sidebar footer; full player as a modal |
 
-- **`useWindowClass()`** returns `compact | medium | expanded` with a small hysteresis (±16) so a resize near a boundary doesn't flicker.
+- **`useWindowClass()`** returns `compact | medium | expanded`. The width classes keep a small hysteresis (±16) so a resize near a boundary doesn't flicker. A window under 480 pt high is compact whatever its width (ADR 0036). **`useWidthClass()`** returns the width class alone, for the sheet card and the menu columns, which a landscape phone still gets wide. **`useIsShortWindow()`** reports the height rule for the Qibla dial and the misbaha ring, which reflow beside their text.
 - **`AdaptiveSplit`** renders one pane in compact and medium, and two panes in expanded. The ayah and tafsir routes render into the side pane when it exists and as sheets otherwise, so the routes don't change between form factors.
 - **Reading column width:** Reading and Focus modes cap the Quran text column at about 720 pt and center it; long Arabic lines on a 13-inch iPad are hard to track.
 - **Mushaf page sizing:** page-exact mode keeps 15 lines per page. Page width is `min(window width − gutters, 600)` (the tablet frames, ADR 0013) and the QCF font size is derived from that width, so a page never re-wraps; wide windows show the page centered with margin, not stretched.
@@ -356,6 +357,7 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `recitations`, `chapter_audio_files` | as backend | — |
 | `recitation_timings` | `audio_file_id`, `verse_id`, `start_ms`, `end_ms`, `segments` (JSON text) | PK (`audio_file_id`,`verse_id`) |
 | `hadith_categories`, `hadiths`, `hadith_translations`, `hadith_category_hadith` | as backend, `ar` + interface language only | — |
+| `azkar_chapters`, `azkar_entries`, `azkar_items`, `azkar_segments`, `azkar_categories`, `azkar_entry_categories`, `azkar_notes`, `azkar_recordings` | Azkar pack group (ADR 0031): canonical Hisn al-Muslim structure with per-row provenance. Quran passages are `quran` segments that reference `verses`, never copied text. Every religious note carries its own source; recordings carry rights flags | keyed by `resource_id` plus their own ids; `azkar_entries.entry_key` unique |
 | `search_quran` | FTS5 virtual table: `verse_id` UNINDEXED, `text_search` | `tokenize='unicode61 remove_diacritics 2'` |
 | `search_study` | FTS5 virtual table: `resource_id` UNINDEXED, `verse_id` UNINDEXED, `body` | filled from downloaded tafsir only (ADR 0014) |
 
@@ -369,6 +371,7 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `downloads` | `audio_file_id`, `reciter_resource_id`, `chapter_id`, `audio_url`, `source_size_bytes`, `local_path` (relative to the document directory), `size_bytes`, `status` (`queued`,`downloading`,`paused`,`waiting_wifi`,`done`,`failed`), `progress` (0 to 1), `resume_data` null, `downloaded_at` null, `verified_at` null | PK `audio_file_id`; index `reciter_resource_id`. Local only, no sync columns. `audio_url` and `source_size_bytes` snapshot the content row so verification can see that QF changed the file (step 7) |
 | `recent_listens` | `audio_file_id`, `reciter_resource_id`, `chapter_id`, `last_position_ms`, `played_at` | for Home's "last listened". Local only, no sync columns. The reciter and surah are kept so a row draws without a content lookup, and the table holds the 20 newest (step 4c) |
 | `search_history` | `query`, `searched_at` | local only, capped at 20 |
+| `azkar_favorites`, `azkar_progress`, `azkar_reminders` | favourite `entry_key`s; per (`scope_key`, `period_key`, `item_key`) `current_count` and `completed_at`; reminder target, trigger (`clock` or `prayer_relative`) and scheduled notification ids | local only (ADR 0027, 0031). Keyed by stable `entry_key` / `item_key`, so a content re-import keeps them. Cleared by «مسح البيانات» |
 
 **Packs and the first launch**
 
@@ -396,7 +399,13 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 
 - **Pack:** `BuildContentPackJob` writes a SQLite file with only that resource's tables, `VACUUM`s it, gzips it, stores it under `storage/packs/{resource}/{version}.sqlite.gz` and records size and SHA-256. Cloudflare caches pack URLs, which are immutable because the version is in the path.
 - **Change feed:** `content_changes` keeps row-level changes for 30 days. A device within that window applies only the delta; an older device gets `410 Gone` and downloads the latest pack.
-- **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`. No translation or word-by-word pack exists (ADR 0014).
+- **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`, `azkar:{id}` (ADR 0031). No translation or word-by-word pack exists (ADR 0014).
+- **Azkar is not synced from QF.** `php artisan azkar:import` reads a pinned OpenDua catalogue file (version + SHA-256), validates it, splits Quran passages into verse references from a reviewed map, writes an import report and bumps the `azkar` resource version. It refuses to write unless the `opendua` content source is `granted` and `AZKAR_OPENDUA_IMPORT_ENABLED=true`. The pack builder refuses an `azkar` pack unless its source is `granted` and its import flag (`AZKAR_OPENDUA_IMPORT_ENABLED`) is on (ADR 0031 §1). `azkar:import --skip-blocked` is local only: it leaves out entries with errors and lists them, and production refuses it. Each Quran map row carries a status (ADR 0031 §11): production accepts only `reviewed` rows; other environments also accept `candidate` rows and list them as warnings; `unmatched` rows always block their entry. `azkar:quran-map-candidates` generates the rows from the bundled Tanzil text, `azkar:import --download` fetches and SHA-256-verifies the pinned file, and `azkar:source-permission` (local only) sets the source status. The production release (`docker/release.sh`, Railway pre-deploy) runs `migrate --force`, then `azkar:import --download --if-unlocked --build-packs`; it builds the pack in-process, not on the queue. See `docs/runbooks/railway-release.md`. Only the `azkar` resource of `azkar.primary_source` (default `opendua`) is listed in the manifest, the change feed or the pack endpoint; any other Azkar resource stays imported for comparison (ADR 0031 §12).
+- **Azkar enrichment (ADR 0031 §12):**
+  - `azkar:snapshot hadeethenc` pins HadeethEnc's Azkar categories.
+  - `azkar:hadeethenc-links` proposes entry→hadith links: ids and evidence only, from containment of at least 40 normalised characters.
+  - Import adds `explanation`, `grade` and `reference` notes with the hadith's HadeethEnc URL. Production uses reviewed links only; «الفوائد» is not stored.
+  - hisnmuslim.com is a second, non-primary source: snapshot, pin and `azkar:compare-sources`. Only `azkar.primary_source` is ever served.
 
 **Hop 3: device update (`core/sync/content-sync.ts`)**
 
@@ -636,7 +645,7 @@ For each change, in one transaction per request:
 
 **Motion (reviewed against Apple's HIG on motion, accessibility and Liquid Glass)**
 
-- **Native first:** the tab bar uses native tabs, which bring system motion, gesture tracking and Reduce Motion handling. The full player is a full-screen transparent modal with its own slide-up and drag-to-dismiss: a downward drag tracks the finger and closes past 25% of the window or above 800 pt/s, otherwise it springs back, and the close button slides it down (developer, 29 Oct 2026). The reader sheets are custom cards drawn per frame, presented as a transparent modal (ADR 0013). Each sheet has a mid detent at 50% of the window and a full detent under the safe area. A drag moves it between them, and a slide down closes it, the reverse of the entrance (ADR 0020). The stack's own animation and swipe are off.
+- **Native first:** on iOS the tab bar uses native tabs, which bring system motion, gesture tracking and Reduce Motion handling. Android draws the floating capsule from `#Main` with `expo-router/ui` headless tabs on the same routes (ADR 0033). The full player is a full-screen transparent modal with its own slide-up and drag-to-dismiss: a downward drag tracks the finger and closes past 25% of the window or above 800 pt/s, otherwise it springs back, and the close button slides it down (developer, 29 Oct 2026). The reader sheets are custom cards drawn per frame, presented as a transparent modal (ADR 0013). Each sheet has a mid detent at 50% of the window and a full detent under the safe area. A drag moves it between them, and a slide down closes it, the reverse of the entrance (ADR 0020). The stack's own animation and swipe are off.
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
@@ -646,7 +655,9 @@ For each change, in one transaction per request:
 | --- | --- | --- | --- |
 | Ayah actions, tafsir, reader settings | Transparent modal with a custom card (ADR 0013, ADR 0020) | Slide up to mid (50%) on open; drag between mid and full; slide down to close | Fade |
 | Mini-player → full player | Pan gesture + `spring()` | Tracks the finger; springs open or closed on release | Fade, `slow` |
-| Tab change | Native tabs | System | System |
+| Azkar pushed screens (home, category, search, favourites) | Native stack, `pushScreenOptions` (`src/core/layout/push-screen-options.ts`) | iOS system slide; Android slide from the leading edge (left in Arabic, right in English) and back the same way | Fade |
+| Azkar reader | Native stack, `modalLikeScreenOptions` | Slides up to open, down to close (✕ or swipe down on iOS) | Fade |
+| Tab change | Native tabs (iOS); floating headless tab bar (Android, ADR 0033) | System (iOS); none (Android) | System (iOS); none (Android) |
 | Tab bar minimize on scroll | Native tabs (iOS 26); Android's bar stays fixed | System | System |
 | Ayah highlight (audio) | Reanimated opacity | Cross-fade, `fast` (150 ms) | Same (a fade) |
 | Word highlight | Reanimated | `instant` (80 ms) or none, so it keeps up with the 150 ms sync budget | None |
@@ -665,6 +676,14 @@ For each change, in one transaction per request:
   - Scrolling (ADR 0018): in Reading mode, a selection tick each time the top ayah changes, and a light impact instead when that ayah starts a new surah; in Mushaf mode, a light impact when the top page holds the start of a surah. Programmatic moves (opening at the last-read ayah, resize restore, audio follow) tick too, except the first position after opening or switching mode. At most one scroll haptic per 80 ms; a surah tick wins over an ayah tick. None in Focus mode.
   - The system haptics setting turns them off.
 
+**Azkar (`features/azkar`, ADR 0031)**
+
+- **Reading:** a calm focused reader, one item at a time, with the category progress bar above it. The Arabic is set in the display face (Amiri), never in the Quran font. Quran segments render from `content.db.verses` in the Quran font and follow every Quran rule here. Text size follows the azkar size preference (MMKV), on the same stepper pattern as reader settings.
+- **Counter:** a 44 pt+ target; one count per tap with a short guard against double taps; a selection haptic per count and a success haptic on completion; VoiceOver announces «٢ من ٣». A count of 1 uses the same counter, and one tap completes it. When the primary source has no count, the import takes the secondary source's count for the same book number (hisnmuslim REPEAT; only while that source is unlocked; ambiguous pairings stay null; the primary wins on conflict; provenance in `azkar_items.required_count_source`, API only; developer, 1 Nov 2026; ADR 0031 §6). With no sourced count, the control is the single ring (an empty ring, a check and «تم», one tap completes; developer, 1 Nov 2026; ADR 0031 §6). Each count bumps the ring with a spring and completion pulses it; Reduce Motion drops the fill and the bump.
+- **Progressive disclosure:** instruction and the book's narration sit beside the text. Explanation, context, virtue, reference and grade open in a details sheet (side panel on expanded), each section shown only when sourced.
+- **Search:** over `azkar_segments.text_search` (text segments only, normalised as `text_search`), category and occasion. Quran segments are searched through `search_quran`, never through copied text.
+- **Share:** the Arabic text (Quran segments resolved from `verses`) and the source line (book and number), with nothing appended.
+
 ## 13. Notifications, environments and monitoring
 
 Reminders are local; only the daily hadith and rare announcements come from the server. Local and production keep QF prelive and production keys apart. There is no staging server (ADR 0022).
@@ -672,6 +691,11 @@ Reminders are local; only the daily hadith and rare announcements come from the 
 **Notifications**
 
 - **Local (`expo-notifications`):** daily reading reminder and khatma reminder are scheduled on the device at the user's time; they are rescheduled when the time zone, plan or setting changes. Permission is requested only when a switch is turned on.
+- **Azkar reminders (ADR 0031 §7):** per category (and per entry where useful), either a daily clock time or a prayer-relative offset (e.g. الفجر + ١٠ دقائق). Prayer-relative reminders keep a rolling 8-day schedule computed with `features/salah/data/prayer-times.ts`, refreshed on launch, foreground, date, time zone, location or setting change. A reminder time is the user's preference, never the religious time of the dhikr. They share the notification layer and deep-link handler with the daily reminder; no second system.
+  - Implementation:
+    - shared `channels.ts` (Android channels `reminders` and `azkar`) and `budget.ts` (iOS limit 64: daily reminder 1, prayer notifications 40, Azkar 23)
+    - deep-link allowlist `/read/`, `/azkar/`
+    - resync on launch, on foreground when the day, time zone or coordinates key changed, and on any edit
 - **Daily hadith push:** `SendDailyHadithJob` runs every 15 minutes, selects devices with `push_daily_hadith = 1` whose local time just passed `daily_hadith_time` and who haven't received today's hadith, and sends in batches of 100 through the Expo Push API. Quiet hours 23:00–07:00 local are enforced server-side.
 - **Payload:** title and body in the device's locale, `data: { "route": "/hadith/123" }`; tapping opens that route through Expo Router.
 - **Receipts:** `ReadExpoReceiptsJob` sets `push_disabled_at` on `DeviceNotRegistered`.
@@ -760,9 +784,10 @@ wk 12         ◆ Gate: 604 pages verified on phone, iPad, foldable
 wk 12 ── 16   Listening and audio
 wk 16 ── 18   My Quran, Khatma & Settings (Local-only)
 wk 18 ── 20   Salah & Qibla (on-device)
-wk 20 ── 24   Beta and store review
-wk 24         ★ Store launch
-wk 24 ── 30   v1.1: Hadith and more (post-launch)
+wk 20 ── 23   Azkar (Hisn al-Muslim, on-device)
+wk 23 ── 27   Beta and store review
+wk 27         ★ Store launch
+wk 27 ── 33   v1.1: Hadith and more (post-launch)
 ```
 
 Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your weekly hours`: at 20 hours a week, about 48 calendar weeks.
@@ -775,7 +800,10 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | 3. Listening and audio | 12–16 | Reciters, player, lock screen, ayah and word highlight, repeat, speed, sleep timer, downloads | Highlight within 150 ms of timings on sample surahs |
 | 4. My Quran, Khatma & Settings (Local-only) | 16–18 | Settings (language switch, theme, reader/audio shortcuts, local data reset); My Quran library (bookmarks, highlights, notes); Khatma planner and logs; local daily reminders (ADR 0027) | Settings language switches app locale and direction; local bookmarks, highlights, notes and khatma persist and function offline |
 | 5. Salah & Qibla (on-device) | — | adhan-js times, الصلاة tab, local prayer notifications, qibla compass, five-tab navigation (ADR 0030) | Offline: times, qibla and notifications work in airplane mode; frames #Salah/#Qibla verified |
-| 6. Beta and store review | 18–22 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
+| 6. Azkar (on-device) | 20–23 | Hisn al-Muslim from a pinned, rights-gated OpenDua pack; Azkar home, category and focused reader with a sourced counter or «تم»; progress, favourites, search, share; sourced notes hidden when empty; category reminders (clock or prayer-relative); audio rights model with no unlicensed audio; Dorar adapter on the API only (ADR 0031) | Offline reader, progress and reminders work in airplane mode; frames verified; **no production content until the ADR 0031 release blockers clear** |
+| 7. Beta and store review | 23–27 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
+
+**Proposed follow-up (not a phase, not approved): widgets and Apple Watch.** Home-screen and lock-screen widgets (iOS, Android) and a watchOS companion app with complications, fed by one local snapshot written by the app; the watch never calls the API. ADR 0035 (proposed) holds the decision and the decisions that need the developer; the plan is `docs/plans/widgets-watch.md`. Nothing in the current phase changes. Default placement is v1.1, because the iOS and watch targets compile only on a Mac or EAS.
 
 **Cut lines**
 

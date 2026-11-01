@@ -1,15 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { useOnline } from '@/core/network/useOnline';
 
 import { ensurePageFont } from './fonts';
 
 export type MushafPageFontState =
   | { status: 'loading' }
   | { status: 'ready'; fontFamily: string }
-  | { status: 'error' };
+  /** `retry` loads the font again; it also runs by itself when the connection comes back. */
+  | { status: 'error'; retry: () => void };
 
 export function useMushafPageFont(page: number): MushafPageFontState {
   const [ready, setReady] = useState<{ page: number; fontFamily: string } | null>(null);
   const [failedPage, setFailedPage] = useState<number | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const online = useOnline();
+  const previouslyOnline = useRef(online);
+
+  const retry = useCallback(() => {
+    setFailedPage(null);
+    setAttempt((count) => count + 1);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,10 +39,20 @@ export function useMushafPageFont(page: number): MushafPageFontState {
     return () => {
       cancelled = true;
     };
-  }, [page]);
+  }, [page, attempt]);
+
+  // The connection came back while this page's font was failing: try again. Only the change counts, so a page
+  // that fails while online does not retry in a loop.
+  useEffect(() => {
+    const returned = online && !previouslyOnline.current;
+    previouslyOnline.current = online;
+    if (returned && failedPage === page) {
+      retry();
+    }
+  }, [online, failedPage, page, retry]);
 
   if (failedPage === page) {
-    return { status: 'error' };
+    return { retry, status: 'error' };
   }
   if (ready?.page === page) {
     return { status: 'ready', fontFamily: ready.fontFamily };

@@ -48,9 +48,9 @@ export function PlayerOptionsBar({ versesCount }: { versesCount: number; speed?:
       : versesCount > 0
         ? t('player.options.range', { from: formatNumber(1, locale), to: formatNumber(versesCount, locale) })
         : t('player.options.rangeEmpty');
-  const repeatItem = repeatLabels(repeat, rangeLabel, t, locale);
+  const repeatItem = repeatLabels(repeat, rangeLabel, t as unknown as Translate, locale);
   const sleepTitle = t('player.options.sleep');
-  const sleep = sleepLabels(sleepMode, remainingMinutes, t, locale);
+  const sleep = sleepLabels(sleepMode, remainingMinutes, t as unknown as Translate, locale);
   const sleepAccessibilityLabel = sleep.armed ? t('player.options.sleepArmed', { title: sleepTitle, state: sleep.spoken }) : sleepTitle;
 
   return (
@@ -107,7 +107,9 @@ export function PlayerOptionsBar({ versesCount }: { versesCount: number; speed?:
   );
 }
 
-type Translate = ReturnType<typeof useTranslation>['t'];
+// A narrow translator for the label helpers: passing i18next's fully typed `t` makes TypeScript infer across ~700
+// typed keys and hit its depth limit (TS2589).
+type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 /** The first and last ayah numbers of the repeat range, or null when either ayah is not in the surah's verses. */
 function rangeNumbers(verses: readonly SurahVerse[], repeat: RepeatRange): { from: number; to: number } | null {
@@ -125,7 +127,7 @@ function repeatLabels(
   rangeLabel: string,
   t: Translate,
   locale: Locale,
-) {
+): { accessibilityLabel: string; label: string } {
   if (repeat === null) {
     return { accessibilityLabel: t('player.options.repeatLabel'), label: t('player.options.repeat') };
   }
@@ -144,7 +146,12 @@ function repeatLabels(
 }
 
 /** The sleep item's text: its default title, or the armed state with the minutes left. */
-function sleepLabels(mode: SleepMode, remainingMinutes: number | null, t: Translate, locale: Locale) {
+function sleepLabels(
+  mode: SleepMode,
+  remainingMinutes: number | null,
+  t: Translate,
+  locale: Locale,
+): { armed: boolean; label: string; spoken: string } {
   if (mode === 'off') {
     return { armed: false, label: t('player.options.sleep'), spoken: '' };
   }

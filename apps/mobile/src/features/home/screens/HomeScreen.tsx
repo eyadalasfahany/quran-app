@@ -1,25 +1,38 @@
 import { type Href, router } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ScrollView } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { tabDestinations, type Destination, SectionScreen, useWindowClass } from '@/core/layout';
+import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
-import { ContinueReadingSkeleton } from '@/features/home/components/ContinueReadingSkeleton';
-import { HomeTileRow } from '@/features/home/components/HomeTileRow';
-import { RecentListensSection } from '@/features/home/components/RecentListensSection';
-import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
+import { useAzkarAvailable, useRecentAzkarItems } from '@/features/azkar/data';
+import { azkarHref } from '@/features/azkar/routes';
 import { pause } from '@/features/audio/player';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { playRecentListen } from '@/features/audio/reciter-playback';
+import { ContinueAzkarHomeCard } from '@/features/home/components/ContinueAzkarHomeCard';
+import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
+import { ContinueReadingSkeleton } from '@/features/home/components/ContinueReadingSkeleton';
+import { DailyProgressCard } from '@/features/home/components/DailyProgressCard';
+import { HomeTileRow } from '@/features/home/components/HomeTileRow';
+import { HomeNextPrayer } from '@/features/home/components/HomeNextPrayer';
+import { RecentAzkarSection } from '@/features/home/components/RecentAzkarSection';
+import { RecentListensSection } from '@/features/home/components/RecentListensSection';
+import { SelectedAzkarSection } from '@/features/home/components/SelectedAzkarSection';
+import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
+import { useDailyProgress } from '@/features/home/hooks/useDailyProgress';
+import { useHomeWird } from '@/features/home/hooks/useHomeWird';
+import { useDailyGoals } from '@/features/daily-goals/hooks/useDailyGoals';
+import { useSelectedAzkarItems } from '@/features/home/hooks/useSelectedAzkar';
 import { HomeWirdCard } from '@/features/khatma/components/HomeWirdCard';
-import { planProgress, toLocalDateString, useActivePlan, usePlanLogs } from '@/features/khatma/data';
-import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
-import { SearchButton, SkeletonGroup, type IconName } from '@/shared/ui';
+import { useAzkarMenuPreview } from '@/features/menu/hooks/useAzkarMenuPreview';
+import { useStaleContent } from '@/core/sync/useStaleContent';
+import { SearchButton, SkeletonGroup, StaleContentBanner, type IconName } from '@/shared/ui';
 
 // Home's tiles open the tabs they name. Only shipped features get a tile (ADR 0017).
 function tabHref(name: Destination['name']): Href {
@@ -33,10 +46,18 @@ function tabHref(name: Destination['name']): Href {
 const SURAHS_ICON: IconName = { ios: 'list.bullet', android: 'format_list_bulleted' };
 const SAVED_ICON: IconName = { ios: 'bookmark', android: 'bookmark' };
 const RECITERS_ICON: IconName = { ios: 'headphones', android: 'headphones' };
+const AZKAR_ICON: IconName = { ios: 'circle.dotted', android: 'scatter_plot' };
+const SIBHA_ICON: IconName = { ios: 'circle.circle', android: 'adjust' };
 
+/**
+ * Home (quran-app-screens.html, #Main; ADR 0034 §7). Top to bottom: continue reading, the next prayer, continue Azkar,
+ * today's progress, the tiles, selected Azkar, recent Azkar, and recent listens. Every Azkar block hides without Azkar
+ * content. The list scrolls and keeps clear of the tab bar (`SectionScreen`).
+ */
 export function HomeScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const locale = useLocale();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
   // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
@@ -46,31 +67,18 @@ export function HomeScreen() {
   const playerActive = usePlayerStore((state) => state.status === 'playing' || state.status === 'loading');
   const playerReciterId = usePlayerStore((state) => state.reciterId);
   const playerChapterId = usePlayerStore((state) => state.chapterId);
-  const activePlan = useActivePlan().data[0] ?? null;
-  const planLogs = usePlanLogs(activePlan?.id);
-  const today = toLocalDateString(new Date());
-
-  const homeWird = useMemo(() => {
-    if (activePlan === null || !ready) {
-      return null;
-    }
-    try {
-      const executor = openContentDb().executor;
-      const bounds = resolvePlanBounds(executor, activePlan.startVerseId);
-      if (bounds === null) {
-        return null;
-      }
-      const progress = planProgress(activePlan, planLogs.data, today, bounds.pagesTotal);
-      return {
-        dayIndex: progress.dayIndex,
-        durationDays: activePlan.durationDays,
-        pagesRead: progress.pagesRead,
-        pagesTotal: progress.pagesTotal,
-      };
-    } catch {
-      return null;
-    }
-  }, [activePlan, planLogs.data, ready, today]);
+  // The Azkar blocks show only once Azkar content is installed (ADR 0017, ADR 0031 §10).
+  const azkarAvailable = useAzkarAvailable();
+  const homeWird = useHomeWird();
+  const { goals } = useDailyGoals();
+  const continueAzkar = useAzkarMenuPreview().resume;
+  const progress = useDailyProgress();
+  // The quiet notice that the content has not been checked for over seven days (spec §7, hop 3, item 6).
+  const stale = useStaleContent();
+  const selectedAzkar = useSelectedAzkarItems();
+  const recentAzkar = useRecentAzkarItems(locale);
+  // Stable, so the memoised next-prayer card does not re-render for a new callback identity.
+  const openSalah = useCallback(() => router.push('/salah' as Href), []);
 
   const continueReading = useMemo(() => {
     if (!ready) {
@@ -89,61 +97,98 @@ export function HomeScreen() {
     }
   }, [lastReadVerseKey, ready]);
 
+  const tiles = [
+    { icon: SURAHS_ICON, key: 'surahs', label: t('home.tiles.surahs'), onPress: () => router.navigate(tabHref('(mushaf)')) },
+    ...(azkarAvailable
+      ? [{ icon: AZKAR_ICON, key: 'azkar', label: t('home.tiles.azkar'), onPress: () => router.push(azkarHref.home) }]
+      : []),
+    // Misbaha has no religious content, so its tile does not wait for Azkar content.
+    { icon: SIBHA_ICON, key: 'sibha', label: t('home.tiles.misbaha'), onPress: () => router.push('/sibha' as Href) },
+    { icon: SAVED_ICON, key: 'saved', label: t('home.tiles.saved'), onPress: () => router.navigate(tabHref('(my-quran)')) },
+    { icon: RECITERS_ICON, key: 'reciters', label: t('home.tiles.reciters'), onPress: () => router.navigate(tabHref('(listen)')) },
+  ];
+
   return (
     <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={expanded ? undefined : <SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
-      {!ready ? (
-        <SkeletonGroup testID="home-continue-loading">
-          <ContinueReadingSkeleton testID="home-continue-reading-skeleton" />
-        </SkeletonGroup>
-      ) : null}
-      {continueReading ? (
-        <ContinueReadingCard
-          ayah={continueReading.verse.verseNumber}
-          juz={continueReading.verse.juz}
-          onPress={() => router.push(`/read/${continueReading.verse.verseKey}` as Href)}
-          page={continueReading.verse.page}
-          surahName={continueReading.chapter.nameArabic}
+      <ScrollView
+        contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: theme.space[4] }}
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
+        testID="home-scroll"
+      >
+        <StaleContentBanner visible={stale} />
+        {!ready ? (
+          <SkeletonGroup testID="home-continue-loading">
+            <ContinueReadingSkeleton testID="home-continue-reading-skeleton" />
+          </SkeletonGroup>
+        ) : null}
+        {continueReading ? (
+          <ContinueReadingCard
+            ayah={continueReading.verse.verseNumber}
+            juz={continueReading.verse.juz}
+            onPress={() => router.push(`/read/${continueReading.verse.verseKey}` as Href)}
+            page={continueReading.verse.page}
+            surahName={continueReading.chapter.nameArabic}
+          />
+        ) : null}
+        <HomeNextPrayer onPress={openSalah} />
+        {azkarAvailable && continueAzkar ? (
+          <ContinueAzkarHomeCard
+            onPress={() => router.push(continueAzkar.href)}
+            resume={{
+              caption: continueAzkar.caption,
+              preview: continueAzkar.preview,
+              progress: continueAzkar.progress ?? 0,
+              title: continueAzkar.title,
+            }}
+          />
+        ) : null}
+        <DailyProgressCard
+          lines={progress.lines}
+          onOpenGoals={() => router.push('/daily-goals' as Href)}
+          percent={progress.percent}
         />
-      ) : null}
-      {homeWird ? (
-        <HomeWirdCard
-          dayIndex={homeWird.dayIndex}
-          durationDays={homeWird.durationDays}
-          onPress={() => router.push('/khatma' as Href)}
-          pagesRead={homeWird.pagesRead}
-          pagesTotal={homeWird.pagesTotal}
+        {/* The wird card shows only while the wird is not a tracked goal; a tracked wird is the progress row. */}
+        {homeWird && !goals.wird ? (
+          <HomeWirdCard
+            dayIndex={homeWird.dayIndex}
+            durationDays={homeWird.durationDays}
+            onPress={() => router.push('/khatma' as Href)}
+            pagesRead={homeWird.pagesRead}
+            pagesTotal={homeWird.pagesTotal}
+          />
+        ) : null}
+        <HomeTileRow tiles={tiles} />
+        <SelectedAzkarSection
+          items={selectedAzkar}
+          onOpen={(id) => router.push(azkarHref.category(id))}
+          onSeeAll={() => router.push(azkarHref.home)}
         />
-      ) : null}
-      <HomeTileRow
-        tiles={[
-          { icon: SURAHS_ICON, key: 'surahs', label: t('home.tiles.surahs'), onPress: () => router.navigate(tabHref('(mushaf)')) },
-          { icon: SAVED_ICON, key: 'saved', label: t('home.tiles.saved'), onPress: () => router.navigate(tabHref('(my-quran)')) },
-          { icon: RECITERS_ICON, key: 'reciters', label: t('home.tiles.reciters'), onPress: () => router.navigate(tabHref('(listen)')) },
-        ]}
-      />
-      <RecentListensSection
-        heading={t('home.recent.heading')}
-        loading={!ready}
-        items={recentItems.map((item) => {
-          const playing =
-            playerActive && playerReciterId === item.listen.reciterResourceId && playerChapterId === item.listen.chapterId;
-          return {
-            key: item.key,
-            letter: item.letter,
-            name: item.name,
-            onPlay: () => {
-              if (playing) {
-                pause();
-                return;
-              }
-              void playRecentListen(item.listen, item.installed);
-            },
-            playLabel: playing ? t('player.pause') : item.playLabel,
-            playing,
-            subtitle: item.subtitle,
-          };
-        })}
-      />
+        {azkarAvailable ? <RecentAzkarSection items={recentAzkar} onOpen={(href) => router.push(href)} /> : null}
+        <RecentListensSection
+          heading={t('home.recent.heading')}
+          loading={!ready}
+          items={recentItems.map((item) => {
+            const playing =
+              playerActive && playerReciterId === item.listen.reciterResourceId && playerChapterId === item.listen.chapterId;
+            return {
+              key: item.key,
+              letter: item.letter,
+              name: item.name,
+              onPlay: () => {
+                if (playing) {
+                  pause();
+                  return;
+                }
+                void playRecentListen(item.listen, item.installed);
+              },
+              playLabel: playing ? t('player.pause') : item.playLabel,
+              playing,
+              subtitle: item.subtitle,
+            };
+          })}
+        />
+      </ScrollView>
     </SectionScreen>
   );
 }
