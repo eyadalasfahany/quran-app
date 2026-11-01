@@ -1,10 +1,10 @@
-import { screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { renderUi } from '../../../../jest/render-ui';
-import { AzkarTapSurface, tapSurfaceOpacity } from './AzkarTapSurface';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
+import { AzkarTapSurface } from './AzkarTapSurface';
 
 const SURFACE = 'azkar-tap-surface';
 const DHIKR_TEXT = 'نص تجريبي ١ — ليس ذكرًا';
@@ -74,10 +74,15 @@ describe('AzkarTapSurface', () => {
   // A press that turns into a scroll is not counted: Pressable cancels its press when a ScrollView takes the gesture
   // (native responder handling, which Jest does not run). Verified on the iPhone 17 simulator, not in Jest.
 
-  it('dims its pressed content only when Reduce Motion is off (tokens only, no raw colour)', () => {
-    expect(tapSurfaceOpacity(true, false, 0.7)).toBe(0.7);
-    expect(tapSurfaceOpacity(true, true, 0.7)).toBe(1);
-    expect(tapSurfaceOpacity(false, false, 0.7)).toBe(1);
+  it('gives no pressed opacity while a press is held: the counter and haptics are the feedback', async () => {
+    const { ui } = renderSurface();
+    await renderUi(ui);
+    const surface = screen.getByTestId(SURFACE);
+
+    fireEvent(surface, 'pressIn');
+    expect(flatStyle(surface.props.style).opacity).toBeUndefined();
+    fireEvent(surface, 'pressOut');
+    expect(flatStyle(surface.props.style).opacity).toBeUndefined();
     expect(rawColorLiteralsInFeature('src/features/azkar/components/AzkarTapSurface.tsx')).toEqual([]);
   });
 

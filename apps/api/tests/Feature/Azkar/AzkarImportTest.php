@@ -80,7 +80,7 @@ function azkarPinTo(string $path): void
 function azkarUseFixtureReferences(): void
 {
     config(['azkar.quran_references' => [
-        'hisn-al-muslim:entry-000004:evening:1' => [[1, 1, 7], [2, 1, null]],
+        'hisn-al-muslim:entry-000004:evening:1' => [[1, 1, 7, 'status' => 'reviewed', 'evidence' => 'fixture'], [2, 1, null, 'status' => 'reviewed', 'evidence' => 'fixture']],
     ]]);
 }
 
@@ -293,8 +293,10 @@ it('reports a Quran reference map with the wrong length or shape', function (arr
 
     expect(azkarErrorCodes($report))->toBe([$code]);
 })->with([
-    'one row for two spans' => [[[1, 1, 7]], 'quran_reference_unreviewed'],
-    'a zero surah' => [[[0, 1, null], [2, 1, null]], 'invalid_quran_reference'],
+    'one row for two spans' => [[[1, 1, 7, 'status' => 'reviewed', 'evidence' => 'fixture']], 'quran_reference_unreviewed'],
+    'a zero surah' => [[[0, 1, null, 'status' => 'reviewed', 'evidence' => 'fixture'], [2, 1, null, 'status' => 'reviewed', 'evidence' => 'fixture']], 'invalid_quran_reference'],
+    'a row without status' => [[[1, 1, 7], [2, 1, null, 'status' => 'reviewed', 'evidence' => 'fixture']], 'invalid_quran_reference'],
+    'an unknown status' => [[[1, 1, 7, 'status' => 'approved', 'evidence' => 'fixture'], [2, 1, null, 'status' => 'reviewed', 'evidence' => 'fixture']], 'invalid_quran_reference'],
 ]);
 
 it('collects every problem in one run instead of stopping at the first', function (): void {
@@ -323,6 +325,7 @@ it('blocks only the entry with the error, and the other entries still import', f
 });
 
 it('refuses a wet import while the import flag is off and writes nothing', function (): void {
+    config(['azkar.opendua.import_enabled' => false]);
     ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
 
     $report = azkarWetRun(azkarFixturePath());

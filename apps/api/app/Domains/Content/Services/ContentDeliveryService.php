@@ -159,6 +159,11 @@ final class ContentDeliveryService
             return false;
         }
 
+        // ADR 0031 §12: only the primary Azkar source is served. Other Azkar resources stay imported for comparison.
+        if ($resource->group === ResourceGroup::Azkar && $resource->source?->code !== config('azkar.primary_source', 'opendua')) {
+            return false;
+        }
+
         return $resource->group !== ResourceGroup::Tafsirs || $resource->language_code === LanguageCode::Arabic->value;
     }
 

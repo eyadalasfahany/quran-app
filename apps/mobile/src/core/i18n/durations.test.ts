@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 import { i18n } from '@/core/i18n';
 import type { Locale } from '@/core/i18n/locale';
 
-import { minutesUntil, prayerClock, remainingLabel, splitRemaining } from './previews';
+import { minutesUntil, remainingLabel, splitRemaining } from './durations';
 
 async function tFor(locale: Locale): Promise<TFunction> {
   await i18n.changeLanguage(locale);
@@ -38,14 +38,6 @@ describe('minutesUntil', () => {
   });
 });
 
-describe('prayerClock', () => {
-  it('keeps the period marker in Arabic with Arabic-Indic digits', () => {
-    const afternoon = new Date(2026, 10, 1, 15, 15);
-    expect(prayerClock(afternoon, 'ar')).toMatch(/^[٠-٩]+:[٠-٩]{2} /);
-    expect(prayerClock(afternoon, 'en')).toBe('3:15 PM');
-  });
-});
-
 describe('remainingLabel, Arabic', () => {
   it.each([
     [0, 'بعد أقل من دقيقة'],
@@ -71,7 +63,7 @@ describe('remainingLabel, Arabic', () => {
 
 describe('remainingLabel, English', () => {
   it.each([
-    [0, 'in 0 minutes'],
+    [0, 'in less than a minute'],
     [1, 'in 1 minute'],
     [2, 'in 2 minutes'],
     [5, 'in 5 minutes'],

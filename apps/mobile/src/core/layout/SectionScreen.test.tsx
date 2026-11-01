@@ -1,4 +1,4 @@
-import { Dimensions, Text } from 'react-native';
+import { Dimensions, Platform, Text } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../jest/ui-source';
@@ -108,6 +108,33 @@ describe('SectionScreen', () => {
       const view = await renderUi(<SectionScreen testID="screen" title="x" />);
 
       expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(0);
+    });
+  });
+
+  describe('on Android, above the floating tab bar (ADR 0033)', () => {
+    const originalOs = Platform.OS;
+
+    beforeEach(() => {
+      setWindowWidth(390);
+      usePlayerStore.getState().reset();
+      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOs });
+    });
+
+    it('clears the floating bar: 12 + 64 with the bottom inset of 0', async () => {
+      const view = await renderUi(<SectionScreen testID="screen" title="x" />);
+
+      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(76);
+    });
+
+    it('clears the floating bar and the mini bar above it while something plays', async () => {
+      startPlayback();
+      const view = await renderUi(<SectionScreen testID="screen" title="x" />);
+
+      expect(flatStyle(view.getByTestId('screen-content').props.style).paddingBottom).toBe(76 + 76);
     });
   });
 });

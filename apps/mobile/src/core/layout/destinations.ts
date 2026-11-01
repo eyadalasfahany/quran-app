@@ -41,8 +41,10 @@ export const destinations = [
     testID: 'listen',
   },
   {
+    // Not /(main)/(salah): that route has no tab item, so the native tabs render it blank. It is reached at /salah,
+    // a root stack route outside the tabs (app/salah/index.tsx), from the menu card and the expanded sidebar.
     name: '(salah)',
-    href: '/(main)/(salah)',
+    href: '/salah',
     label: 'tabs.salah',
     symbol: 'moon.stars',
     androidIcon: 'mosque',

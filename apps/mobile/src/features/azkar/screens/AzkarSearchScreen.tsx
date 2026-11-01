@@ -22,7 +22,7 @@ import {
   useAzkarCategories,
   useAzkarSearch,
 } from '../data';
-import { azkarHref } from '../routes';
+import { azkarHref, goBackOr } from '../routes';
 
 const SEARCH_DEBOUNCE_MS = 150;
 
@@ -51,7 +51,7 @@ export function AzkarSearchScreen({ testID = 'screen-azkar-search' }: { testID?:
       <ContentColumn gutter={theme.size.gutterHome}>
         <View style={{ flex: 1, gap: theme.space[5], paddingTop: theme.space[2] }}>
           <AzkarSearchBar
-            onBack={() => router.back()}
+            onBack={() => goBackOr(azkarHref.home)}
             onChangeText={setQuery}
             onSubmit={(value) => {
               if (value.trim().length > 0) {

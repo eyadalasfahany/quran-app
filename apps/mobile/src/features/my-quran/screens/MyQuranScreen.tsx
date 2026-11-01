@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { SectionScreen } from '@/core/layout';
+import { SectionScreen, useTabBarClearance } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useAllHighlights, useAllNotes, useBookmarks } from '@/features/library/data';
 import { KhatmaSummaryCard } from '@/features/khatma/components/KhatmaSummaryCard';
@@ -37,6 +37,7 @@ const SETTINGS_ICON = { ios: 'gearshape', android: 'settings' } as const;
 export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const barClearance = useTabBarClearance();
   const { ready } = useContentDb();
   const bookmarks = useBookmarks();
   const highlights = useAllHighlights();
@@ -114,7 +115,7 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
     >
       <MyQuranTabs onChange={setActiveTab} value={activeTab} />
       <ScrollView
-        contentContainerStyle={{ gap: theme.space[3], paddingBottom: theme.space[4] }}
+        contentContainerStyle={{ gap: theme.space[3], paddingBottom: barClearance + theme.space[4] }}
         style={{ flex: 1 }}
         testID={`${testID}-list`}
       >

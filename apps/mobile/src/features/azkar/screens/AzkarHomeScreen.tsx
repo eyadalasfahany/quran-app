@@ -25,10 +25,11 @@ import {
   useContinueAzkar,
 } from '../data';
 import type { AzkarCategoryListItem } from '../data/model';
-import { azkarHref } from '../routes';
+import { azkarHref, goBackOr } from '../routes';
 
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 const SEARCH = { ios: 'magnifyingglass', android: 'search' } as const;
+const BELL = { ios: 'bell', android: 'notifications' } as const;
 const UNAVAILABLE_ICON = { ios: 'book.closed', android: 'book' } as const;
 
 /** Chunks the browse topics into rows of two, as the frame lays them out. */
@@ -136,7 +137,7 @@ export function AzkarHomeScreen() {
       <ContentColumn gutter={theme.size.gutterHome}>
         <View style={{ flex: 1, gap: theme.space[5], paddingTop: theme.space[2] }}>
           <AzkarScreenHeader
-            onBack={() => router.back()}
+            onBack={() => goBackOr(azkarHref.homeTab)}
             title={t('azkar.browse.title')}
             trailing={
               available ? (
@@ -153,6 +154,13 @@ export function AzkarHomeScreen() {
                     label={t('ui.search')}
                     onPress={() => router.push(azkarHref.search)}
                     testID="azkar-home-search"
+                    variant="raised"
+                  />
+                  <IconButton
+                    icon={BELL}
+                    label={t('azkar.reminders.title')}
+                    onPress={() => router.push(azkarHref.reminders())}
+                    testID="azkar-home-reminders"
                     variant="raised"
                   />
                 </>

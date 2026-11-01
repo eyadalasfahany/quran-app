@@ -21,7 +21,7 @@ import {
   useScopeProgress,
 } from '../data';
 import { completedUnitKeys } from '../reader-model';
-import { azkarHref } from '../routes';
+import { azkarHref, goBackOr } from '../routes';
 
 /**
  * One browse category (quran-app-screens.html, #AzkarCategory): its header with «١٢ من ٢٤», one card per dhikr, and the
@@ -58,7 +58,8 @@ export function AzkarCategoryScreen({ categoryId, testID = 'screen-azkar-categor
         <View style={{ flex: 1, gap: theme.space[5], paddingTop: theme.space[2] }}>
           <AzkarCategoryHeader
             fraction={fraction}
-            onBack={() => router.back()}
+            onBack={() => goBackOr(azkarHref.home)}
+            onRemind={() => router.push(azkarHref.reminders({ category: categoryId }))}
             progressText={progressText}
             sourceLine={sourceLine}
             title={title}

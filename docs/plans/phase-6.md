@@ -64,7 +64,7 @@ Upstream variations are mutually exclusive alternatives (e.g. setting out / retu
 
 Approved difference from the `AzkarReader` frame: in the reader, a tap anywhere on the screen counts one repetition (widened from the dhikr area to the whole screen, developer, 1 Nov 2026) (or marks «تم» when no count is sourced), not only a tap on the 120 pt counter.
 - The circle stays as the visible progress and the accessible control. The tap surface is hidden from VoiceOver and TalkBack, so screen-reader users keep a single counter button.
-- Buttons (share, favourite, text size, details, previous/next, variation switch) keep their own taps, and scrolling a long dhikr never counts.
+- Buttons (close, share, favourite, text size, details, previous/next, variation switch, the counter, «تم», «إتمام») keep their own taps and never also count, so a press on the counter counts once. The completion screen and a completed unit ignore taps. The details panel beside the reader on an expanded window is not part of the surface. Scrolling a long dhikr never counts.
 - The same 120 ms double-tap guard, haptics, completion and Reduce Motion rules apply.
 
 ## Auto-advance and mark complete (developer, 1 Nov 2026)

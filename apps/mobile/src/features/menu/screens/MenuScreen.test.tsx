@@ -1,15 +1,19 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
-import { flatStyle, renderUi } from '../../../../jest/render-ui';
-import { qiblaBearing } from '@/features/salah/data/prayer-times';
+import { storage, storageKeys } from '@/core/storage/mmkv';
 import { useAzkarAvailable, useContinueAzkar } from '@/features/azkar/data';
+import { getChapter } from '@/features/reader/data/chapters';
+import { getVerseByKey } from '@/features/reader/data/verses';
+import { qiblaBearing } from '@/features/salah/data/prayer-times';
 import { usePrayerLocation } from '@/features/salah/hooks';
+
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 
 import { MenuScreen } from './MenuScreen';
 
-// Only the location (a device service) and the data that reads the user and content databases are replaced. The
-// Qibla bearing, the prayer times and the Azkar card's own hooks run for real.
+// Only the location (a device service), the databases and the last-read hook are replaced. The Qibla bearing, the
+// prayer times, the Azkar hooks and the menu's own logic run for real. The bearing test uses the real qiblaBearing.
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ bottom: 0, left: 0, right: 0, top: 0 }),
@@ -36,8 +40,21 @@ jest.mock('@/features/khatma/data/hooks', () => ({
   useKhatmaMarkerVerseId: () => null,
 }));
 
+jest.mock('@/core/db/content/open', () => ({
+  openContentDb: () => ({ db: {}, executor: {} }),
+  useContentDb: () => ({ error: null, ready: true }),
+}));
+
+jest.mock('@/features/reader/data/verses', () => ({ getVerseByKey: jest.fn() }));
+jest.mock('@/features/reader/data/chapters', () => ({ getChapter: jest.fn() }));
+jest.mock('@/features/reader/anchor/useLastReadVerseKey', () => ({
+  useLastReadVerseKey: () => '2:255',
+}));
+
 // London: a fixed location, so the bearing has a known value.
 const LONDON = { lat: 51.5074, lng: -0.1278 };
+
+const reading = { verseKey: '2:255', verseNumber: 255, page: 42, chapterId: 2 };
 
 function withLocation(coords: { lat: number; lng: number } | null) {
   jest.mocked(usePrayerLocation).mockReturnValue({
@@ -48,13 +65,42 @@ function withLocation(coords: { lat: number; lng: number } | null) {
   } as never);
 }
 
+function withAzkar(available: boolean, scope: object | null = null, completed = 0) {
+  jest.mocked(useAzkarAvailable).mockReturnValue(available);
+  jest.mocked(useContinueAzkar).mockReturnValue(scope ? ({ scope, completed } as never) : null);
+}
+
+const categoryScope = {
+  scopeKey: 'category:morning',
+  periodKey: 'day:2026-11-01',
+  total: 24,
+  categoryId: 'morning',
+  entryKey: null,
+  occasion: 'morning',
+};
+
+const entryScope = {
+  scopeKey: 'entry:entry:1',
+  periodKey: 'session',
+  total: 3,
+  categoryId: null,
+  entryKey: 'entry:1',
+  occasion: null,
+};
+
 describe('MenuScreen', () => {
   beforeEach(() => {
     jest.mocked(router.navigate).mockClear();
     jest.mocked(router.push).mockClear();
-    jest.mocked(useAzkarAvailable).mockReturnValue(false);
-    jest.mocked(useContinueAzkar).mockReset();
     withLocation(LONDON);
+    withAzkar(false);
+    jest.mocked(getVerseByKey).mockReturnValue(reading as never);
+    jest.mocked(getChapter).mockReturnValue({ nameArabic: 'البقرة' } as never);
+    storage.set(storageKeys.readerLastVerseKey, '2:255');
+  });
+
+  afterEach(() => {
+    storage.remove(storageKeys.readerLastVerseKey);
   });
 
   it('shows the title and the cards in Arabic', async () => {
@@ -87,71 +133,125 @@ describe('MenuScreen', () => {
     expect(screen.getByTestId('menu-card-qibla-preview')).toHaveTextContent('Direction of the Kaaba from your location');
   });
 
-  it('hides the Azkar card without Azkar content, and does not read Azkar progress', async () => {
-    jest.mocked(useAzkarAvailable).mockReturnValue(false);
-    await renderUi(<MenuScreen />);
+  describe('continue cards', () => {
+    it('shows «تابع القراءة» with the surah and the saved ayah and page, opening that ayah', async () => {
+      await renderUi(<MenuScreen />);
 
-    expect(screen.queryByTestId('menu-card-azkar')).toBeNull();
-    expect(useContinueAzkar).not.toHaveBeenCalled();
+      expect(screen.getByTestId('menu-card-continue-reading-preview')).toHaveTextContent('الآية ٢٥٥ · صفحة ٤٢');
+      await fireEvent.press(screen.getByTestId('menu-card-continue-reading'));
+      expect(router.push).toHaveBeenLastCalledWith('/read/2:255');
+    });
+
+    it('hides «تابع القراءة» on a fresh install, with nothing saved', async () => {
+      storage.remove(storageKeys.readerLastVerseKey);
+      await renderUi(<MenuScreen />);
+
+      expect(screen.queryByTestId('menu-card-continue-reading')).toBeNull();
+    });
+
+    it('shows «تابع الأذكار» with the scope in progress, opening its reader', async () => {
+      withAzkar(true, categoryScope, 12);
+      await renderUi(<MenuScreen />);
+
+      expect(screen.getByTestId('menu-card-continue-azkar-preview')).toHaveTextContent('١٢ من ٢٤');
+      expect(flatStyle(screen.getByTestId('menu-card-continue-azkar-progress').props.style).width).toBe('50%');
+      await fireEvent.press(screen.getByTestId('menu-card-continue-azkar'));
+      expect(router.push).toHaveBeenLastCalledWith('/azkar/read/morning');
+    });
+
+    it('opens an entry-scope resume in the entry reader', async () => {
+      withAzkar(true, entryScope, 1);
+      await renderUi(<MenuScreen />);
+
+      await fireEvent.press(screen.getByTestId('menu-card-continue-azkar'));
+      expect(router.push).toHaveBeenLastCalledWith('/azkar/entry/entry%3A1');
+    });
+
+    it('hides «تابع الأذكار» when nothing is in progress', async () => {
+      withAzkar(true, null);
+      await renderUi(<MenuScreen />);
+
+      expect(screen.queryByTestId('menu-card-continue-azkar')).toBeNull();
+    });
+
+    it('puts the continue cards first in the grid', async () => {
+      withAzkar(true, categoryScope, 12);
+      await renderUi(<MenuScreen />);
+
+      expect(screen.getByTestId('menu-grid-column-0')).toContainElement(screen.getByTestId('menu-card-continue-reading'));
+      expect(screen.getByTestId('menu-grid-column-1')).toContainElement(screen.getByTestId('menu-card-continue-azkar'));
+    });
   });
 
-  it('shows the Azkar card with its progress once Azkar content is installed', async () => {
-    jest.mocked(useAzkarAvailable).mockReturnValue(true);
-    jest.mocked(useContinueAzkar).mockReturnValue({
-      scope: { scopeKey: 'category:morning', periodKey: 'd', total: 24, categoryId: 'morning', entryKey: null, occasion: 'morning' },
-      completed: 12,
-    } as never);
-    await renderUi(<MenuScreen />);
+  describe('Azkar cards', () => {
+    it('hides the Azkar cards without Azkar content', async () => {
+      withAzkar(false);
+      await renderUi(<MenuScreen />);
 
-    expect(screen.getByTestId('menu-card-azkar')).toBeOnTheScreen();
-    expect(screen.getByTestId('menu-card-azkar-preview')).toHaveTextContent('١٢ من ٢٤');
-    expect(flatStyle(screen.getByTestId('menu-card-azkar-progress').props.style).width).toBe('50%');
+      expect(screen.queryByTestId('menu-card-azkar')).toBeNull();
+      expect(screen.queryByTestId('menu-card-azkar-favorites')).toBeNull();
+    });
+
+    it('shows the plain Azkar card and Favourites with Azkar content, opening Azkar and its favourites', async () => {
+      withAzkar(true, null);
+      await renderUi(<MenuScreen />);
+
+      await fireEvent.press(screen.getByTestId('menu-card-azkar'));
+      expect(router.push).toHaveBeenLastCalledWith('/azkar');
+      await fireEvent.press(screen.getByTestId('menu-card-azkar-favorites'));
+      expect(router.push).toHaveBeenLastCalledWith('/azkar/favorites');
+    });
   });
 
-  it('hides the Khatma preview line without an active plan', async () => {
-    await renderUi(<MenuScreen />);
+  describe('Khatma', () => {
+    it('hides the Khatma preview line without an active plan', async () => {
+      await renderUi(<MenuScreen />);
 
-    expect(screen.getByTestId('menu-card-khatma')).toBeOnTheScreen();
-    expect(screen.queryByTestId('menu-card-khatma-preview')).toBeNull();
+      expect(screen.getByTestId('menu-card-khatma')).toBeOnTheScreen();
+      expect(screen.queryByTestId('menu-card-khatma-preview')).toBeNull();
+    });
   });
 
-  it('opens the Salah route, not a tab, from its card', async () => {
+  it('opens the Salah screen at /salah from its card, not the hidden (salah) tab', async () => {
     await renderUi(<MenuScreen />);
 
-    fireEvent.press(screen.getByTestId('menu-card-salah'));
-    expect(router.navigate).toHaveBeenCalledWith('/(main)/(salah)');
+    await fireEvent.press(screen.getByTestId('menu-card-salah'));
+    expect(router.push).toHaveBeenLastCalledWith('/salah');
+    expect(router.navigate).not.toHaveBeenCalledWith('/(main)/(salah)');
   });
 
   it('opens the Qibla screen, Khatma, settings and sources from their cards', async () => {
     await renderUi(<MenuScreen />);
 
-    fireEvent.press(screen.getByTestId('menu-card-qibla'));
+    await fireEvent.press(screen.getByTestId('menu-card-qibla'));
     expect(router.push).toHaveBeenLastCalledWith('/salah/qibla');
-    fireEvent.press(screen.getByTestId('menu-card-khatma'));
+    await fireEvent.press(screen.getByTestId('menu-card-khatma'));
     expect(router.push).toHaveBeenLastCalledWith('/khatma');
-    fireEvent.press(screen.getByTestId('menu-card-settings'));
+    await fireEvent.press(screen.getByTestId('menu-card-settings'));
     expect(router.push).toHaveBeenLastCalledWith('/settings');
-    fireEvent.press(screen.getByTestId('menu-card-sources'));
+    await fireEvent.press(screen.getByTestId('menu-card-sources'));
     expect(router.push).toHaveBeenLastCalledWith('/settings/sources');
   });
 
-  it('opens the three tabs from their cards', async () => {
+  it('opens the four tabs from their cards', async () => {
     await renderUi(<MenuScreen />);
 
-    fireEvent.press(screen.getByTestId('menu-card-mushaf'));
+    await fireEvent.press(screen.getByTestId('menu-card-home'));
+    expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(home)');
+    await fireEvent.press(screen.getByTestId('menu-card-mushaf'));
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(mushaf)');
-    fireEvent.press(screen.getByTestId('menu-card-listen'));
+    await fireEvent.press(screen.getByTestId('menu-card-listen'));
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(listen)');
-    fireEvent.press(screen.getByTestId('menu-card-my-quran'));
+    await fireEvent.press(screen.getByTestId('menu-card-my-quran'));
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(my-quran)');
   });
 
   it('opens search from its card and from the floating button', async () => {
     await renderUi(<MenuScreen />);
 
-    fireEvent.press(screen.getByTestId('menu-card-search'));
+    await fireEvent.press(screen.getByTestId('menu-card-search'));
     expect(router.push).toHaveBeenLastCalledWith('/search');
-    fireEvent.press(screen.getByTestId('menu-search'));
+    await fireEvent.press(screen.getByTestId('menu-search'));
     expect(router.push).toHaveBeenLastCalledWith('/search');
   });
 

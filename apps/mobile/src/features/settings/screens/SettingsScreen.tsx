@@ -12,6 +12,7 @@ import { AboutSection } from '../components/AboutSection';
 import { HabitsSection } from '../components/HabitsSection';
 import { LanguageSection } from '../components/LanguageSection';
 import { ListeningSection } from '../components/ListeningSection';
+import { PrayerNotificationsSection } from '../components/PrayerNotificationsSection';
 import { ReadingSection } from '../components/ReadingSection';
 import { SettingsHeader } from '../components/SettingsHeader';
 
@@ -53,6 +54,7 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
           khatmaValue={khatmaValue}
           onPressKhatma={() => router.push('/khatma' as Href)}
         />
+        <PrayerNotificationsSection />
         <AboutSection onPressSources={() => router.push('/settings/sources' as Href)} />
       </ScrollView>
     </Screen>

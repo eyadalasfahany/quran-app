@@ -3,6 +3,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { I18nManager, Platform } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import '@/core/layout/hide-scroll-indicators';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
@@ -10,11 +12,15 @@ import { registerReminderDeepLinks } from '@/features/notifications/reminder-dee
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
+import { modalLikeScreenOptions, pushScreenOptions } from '@/core/layout/push-screen-options';
 import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
 import { azkarDevFixturesEnabled, loadAzkarDevFixtures } from '@/features/azkar/data/dev-fixtures';
+import { useAzkarRemindersForeground } from '@/features/azkar/reminders/use-azkar-reminders-foreground';
+import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
+import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNotificationsSync';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 
@@ -31,6 +37,9 @@ const directionCheck = ensureDirection();
 
 export default function RootLayout() {
   const themeName = useResolvedTheme();
+  const reduceMotion = useReducedMotion() ?? false;
+  const pushOptions = pushScreenOptions({ isRTL: I18nManager.isRTL, platform: Platform.OS, reduceMotion });
+  const modalLikeOptions = modalLikeScreenOptions({ platform: Platform.OS, reduceMotion });
   const [loaded, error] = useFonts(bundledFonts);
   const [directionReady, setDirectionReady] = useState(directionCheck.ready);
   const content = useContentDb();
@@ -46,6 +55,10 @@ export default function RootLayout() {
     directionReady &&
     (content.ready || content.error !== null) &&
     (user.ready || user.error !== null);
+  // Re-plans the Azkar reminders when the day, the time zone or the location changed while the app was away.
+  useAzkarRemindersForeground(ready);
+  // Re-plans the prayer notifications on launch, on foreground and on a location change (ADR 0030 §3).
+  usePrayerNotificationsSync(ready);
 
   useEffect(() => {
     if (directionCheck.ready) {
@@ -86,6 +99,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) {
       void syncDailyReminder();
+      void resyncAzkarReminders();
       registerReminderDeepLinks();
       void SplashScreen.hideAsync();
     }
@@ -102,10 +116,20 @@ export default function RootLayout() {
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themes[themeName].colors.surface } }}
       >
         <Stack.Screen name="reader-settings" options={sheetScreenOptions} />
+        <Stack.Screen name="daily-goals" options={sheetScreenOptions} />
         <Stack.Screen name="ayah/[verseKey]" options={sheetScreenOptions} />
         <Stack.Screen name="azkar/details/[entryKey]" options={sheetScreenOptions} />
+        <Stack.Screen name="azkar/reminders" options={sheetScreenOptions} />
         <Stack.Screen name="tafsir/[verseKey]" options={sheetScreenOptions} />
         <Stack.Screen name="player" options={sheetScreenOptions} />
+        <Stack.Screen name="azkar/index" options={pushOptions} />
+        <Stack.Screen name="azkar/category/[id]" options={pushOptions} />
+        <Stack.Screen name="azkar/search" options={pushOptions} />
+        <Stack.Screen name="azkar/favorites" options={pushOptions} />
+        <Stack.Screen name="azkar/downloads" options={pushOptions} />
+        <Stack.Screen name="azkar/read/[categoryId]" options={modalLikeOptions} />
+        <Stack.Screen name="azkar/entry/[entryKey]" options={modalLikeOptions} />
+        <Stack.Screen name="sibha" options={pushOptions} />
       </Stack>
     </ThemeProvider>
   );

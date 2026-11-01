@@ -6,11 +6,19 @@ import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { MenuSearchButton } from './MenuSearchButton';
 
 describe('MenuSearchButton', () => {
-  it('floats at the left edge, at the given clearance above the bottom', async () => {
+  it('floats at the left edge, at the given clearance above the bottom, laid out LTR so Arabic keeps it there', async () => {
     const view = await renderUi(<MenuSearchButton bottom={108} onPress={jest.fn()} />);
 
-    const container = view.getByTestId('menu-search').parent;
-    expect(flatStyle(container?.props.style)).toMatchObject({ bottom: 108, left: 20, position: 'absolute' });
+    const row = view.getByTestId('menu-search-row');
+    expect(flatStyle(row.props.style)).toMatchObject({
+      bottom: 108,
+      direction: 'ltr',
+      flexDirection: 'row',
+      left: 0,
+      paddingHorizontal: 20,
+      position: 'absolute',
+      right: 0,
+    });
   });
 
   it('calls onPress when tapped', async () => {

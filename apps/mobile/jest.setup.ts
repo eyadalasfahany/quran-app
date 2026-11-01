@@ -158,9 +158,10 @@ jest.mock('expo-location', () => ({
 // Local notifications are a native module; tests drive them through these fakes.
 jest.mock('expo-notifications', () => ({
   AndroidImportance: { DEFAULT: 3 },
-  SchedulableTriggerInputTypes: { CALENDAR: 'calendar', DAILY: 'daily' },
+  SchedulableTriggerInputTypes: { CALENDAR: 'calendar', DATE: 'date', DAILY: 'daily' },
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
+  getAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve([])),
   getLastNotificationResponseAsync: jest.fn(() => Promise.resolve(null)),
   getPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
   requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),

@@ -1,15 +1,20 @@
+import type { Href } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { formatNumber, useLocale } from '@/core/i18n';
+import { storage, storageKeys } from '@/core/storage/mmkv';
+import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
+import { getChapter } from '@/features/reader/data/chapters';
+import { getVerseByKey } from '@/features/reader/data/verses';
 import { planProgress, toLocalDateString, useActivePlan, usePlanLogs } from '@/features/khatma/data';
 import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { qiblaBearing } from '@/features/salah/data/prayer-times';
 import { useNextPrayer, useNow, usePrayerLocation, useTodayTimes } from '@/features/salah/hooks';
 
-import { minutesUntil, prayerClock, remainingLabel } from '../data/previews';
-
+import { prayerClock } from '@/core/i18n/clock';
+import { minutesUntil, remainingLabel } from '@/core/i18n/durations';
 
 export type MenuPreviews = {
   prayerTitle: string;
@@ -17,12 +22,14 @@ export type MenuPreviews = {
   qiblaPreview: string;
   /** Null without an active plan: the Khatma card then shows no preview line. */
   khatmaPreview: string | null;
+  /** The «تابع القراءة» card: the saved position, opened at its ayah. Null on a fresh install. */
+  continueReading: { title: string; preview: string; href: Href } | null;
 };
 
 // A minute tick is enough: the menu only shows minutes, and the Salah screen keeps the second-by-second countdown.
 const MENU_TICK_MS = 60_000;
 
-/** Live previews for the prayer, Qibla and Khatma cards. Every string is localised here, so the screen only places them. */
+/** Live previews for the menu cards. Every string is localised here, so the screen only places them. */
 export function useMenuPreviews(): MenuPreviews {
   const { t } = useTranslation();
   const locale = useLocale();
@@ -58,12 +65,40 @@ export function useMenuPreviews(): MenuPreviews {
     }
   }, [activePlan, planLogs.data, ready, today, locale, t]);
 
+  // Continue reading: the saved position (the same source Home's card reads). A fresh install has none saved.
+  const savedVerseKey = useLastReadVerseKey();
+  const hasSavedPosition = storage.getString(storageKeys.readerLastVerseKey) !== undefined;
+  const continueReading = useMemo(() => {
+    if (!hasSavedPosition || !ready) {
+      return null;
+    }
+    try {
+      const executor = openContentDb().executor;
+      const verse = getVerseByKey(executor, savedVerseKey);
+      const chapter = verse === undefined ? undefined : getChapter(executor, verse.chapterId);
+      if (verse === undefined || chapter === undefined) {
+        return null;
+      }
+      return {
+        title: chapter.nameArabic,
+        preview: t('menu.continueReading.preview', {
+          ayah: formatNumber(verse.verseNumber, locale),
+          page: formatNumber(verse.page, locale),
+        }),
+        href: `/read/${verse.verseKey}` as Href,
+      };
+    } catch {
+      return null;
+    }
+  }, [hasSavedPosition, ready, savedVerseKey, locale, t]);
+
   if (next === null || coords === null) {
     return {
       prayerTitle: t('menu.salah.title'),
       prayerPreview: t('menu.salah.noLocation'),
       qiblaPreview: t('menu.qibla.noLocation'),
       khatmaPreview,
+      continueReading,
     };
   }
 
@@ -76,5 +111,6 @@ export function useMenuPreviews(): MenuPreviews {
         ? t('menu.qibla.noLocation')
         : t('menu.qibla.bearing', { degrees: formatNumber(Math.round(bearing), locale) }),
     khatmaPreview,
+    continueReading,
   };
 }

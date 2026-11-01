@@ -28,6 +28,23 @@ describe('AzkarCategoryHeader', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
+  it('opens the reminder sheet for this category from the bell', async () => {
+    const onRemind = jest.fn();
+    await renderUi(
+      <AzkarCategoryHeader fraction={0} onBack={jest.fn()} onRemind={onRemind} progressText="0 من 24" sourceLine="حصن المسلم" title="أذكار الصباح" />,
+    );
+
+    await press(screen.getByRole('button', { name: 'تذكير الأذكار' }));
+
+    expect(onRemind).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no bell when no reminder handler is given', async () => {
+    await renderUi(<AzkarCategoryHeader fraction={0} onBack={jest.fn()} progressText="0 من 24" sourceLine="حصن المسلم" title="أذكار الصباح" />);
+
+    expect(screen.queryByRole('button', { name: 'تذكير الأذكار' })).toBeNull();
+  });
+
   it('uses theme tokens rather than raw colours', () => {
     expect(rawColorLiteralsInFeature('src/features/azkar/components/AzkarCategoryHeader.tsx')).toEqual([]);
   });

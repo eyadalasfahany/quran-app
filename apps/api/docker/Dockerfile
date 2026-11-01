@@ -58,7 +58,8 @@ ENV APP_ENV=production \
     SERVER_NAME=:8080
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY docker/release.sh /usr/local/bin/release.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/release.sh
 
 EXPOSE 8080
 

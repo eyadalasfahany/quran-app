@@ -46,8 +46,8 @@ it('creates the content mirror tables and seeds two sources idempotently alongsi
     $this->seed(ContentSourceSeeder::class);
 
     // The azkar migration adds the pending opendua row (ADR 0031); the seeder adds qf and tanzil.
-    expect(ContentSource::query()->count())->toBe(3)
-        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['opendua', 'qf', 'tanzil']);
+    expect(ContentSource::query()->count())->toBe(5)
+        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['hadeethenc', 'hisnmuslim', 'opendua', 'qf', 'tanzil']);
 });
 
 it('stores quran text in the binary collation and no other text column', function (): void {

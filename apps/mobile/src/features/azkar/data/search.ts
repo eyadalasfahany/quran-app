@@ -1,6 +1,8 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { normalizeForSearch } from '@/core/text/normalizeForSearch';
 
+import { activeAzkarResourceId } from './active-resource';
+
 export const AZKAR_SEARCH_LIMIT = 50;
 
 /** Segment rows read before entries are grouped. A cap keeps a very common query bounded. */
@@ -38,10 +40,10 @@ export function searchAzkarEntries(db: SqlExecutor, rawQuery: string, limit = AZ
      FROM azkar_segments s
      JOIN azkar_items i ON i.resource_id = s.resource_id AND i.id = s.item_id
      JOIN azkar_entries e ON e.resource_id = i.resource_id AND e.id = i.entry_id
-     WHERE s.kind = 'text' AND s.text_search LIKE ? ESCAPE '\\'
+     WHERE s.resource_id = ? AND s.kind = 'text' AND s.text_search LIKE ? ESCAPE '\\'
      ORDER BY e.entry_key, i.position, s.position
      LIMIT ?`,
-    [`%${escapeLike(query)}%`, MAX_SEGMENT_ROWS],
+    [activeAzkarResourceId(db), `%${escapeLike(query)}%`, MAX_SEGMENT_ROWS],
   );
 
   const hits: AzkarSearchHit[] = [];

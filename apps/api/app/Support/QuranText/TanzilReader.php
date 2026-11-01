@@ -6,6 +6,19 @@ namespace App\Support\QuranText;
 
 final class TanzilReader
 {
+    public static function path(): string
+    {
+        return base_path('../../packages/quran-text-check/data/tanzil-quran-uthmani-1.1.txt');
+    }
+
+    /**
+     * The standard-orthography text, used only to locate azkar Quran spans (ADR 0031 §11). Never rendered.
+     */
+    public static function simplePath(): string
+    {
+        return base_path('../../packages/quran-text-check/data/tanzil-quran-simple-1.1.txt');
+    }
+
     /**
      * Verse texts in file order. Blank lines and lines starting with "#" are skipped.
      * The text is everything after the second "|", unchanged.
@@ -14,7 +27,7 @@ final class TanzilReader
      */
     public function texts(): array
     {
-        $path = base_path('../../packages/quran-text-check/data/tanzil-quran-uthmani-1.1.txt');
+        $path = self::path();
 
         if (! is_file($path)) {
             throw new QuranTextException("Unable to read the Tanzil text at [{$path}].");

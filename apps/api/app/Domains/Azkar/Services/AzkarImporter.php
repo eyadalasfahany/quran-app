@@ -9,14 +9,18 @@ use App\Domains\Azkar\Data\ImportPlan;
 use App\Domains\Azkar\Data\ImportReport;
 use App\Domains\Azkar\Data\ImportStats;
 use App\Domains\Azkar\Exceptions\CatalogueUnreadableException;
-use App\Domains\Azkar\OpenDua\CatalogueParser;
+use App\Domains\Azkar\Exceptions\SnapshotException;
 use App\Domains\Azkar\Repositories\Contracts\AzkarImportRepository;
+use App\Domains\Azkar\Sources\AzkarSourceRegistry;
+use App\Domains\Azkar\Sources\HadeethEncSnapshot;
+use App\Domains\Azkar\Sources\SourceProfile;
 use App\Domains\Azkar\Validation\CatalogueValidator;
 use App\Domains\Content\Enums\PermissionStatus;
 use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Enums\TextDirection;
 use App\Domains\Content\Jobs\BuildContentPackJob;
 use App\Domains\Content\Models\Resource;
+use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -28,34 +32,49 @@ use Illuminate\Support\Facades\DB;
 final class AzkarImporter
 {
     public function __construct(
-        private readonly CatalogueParser $parser,
+        private readonly AzkarSourceRegistry $sources,
         private readonly CatalogueValidator $validator,
         private readonly AzkarTransformer $transformer,
         private readonly ResourceRepository $resources,
         private readonly AzkarImportRepository $azkar,
+        private readonly PackBuilder $packs,
+        private readonly HadeethEncSnapshot $hadeethSnapshot,
+        private readonly HadeethEncNotes $hadeethNotes,
     ) {}
 
-    public function run(string $path, bool $dryRun): ImportReport
+    /**
+     * @param  bool  $buildPacks  Build the azkar pack now, in this process, instead of queueing it (release runs).
+     * @param  bool  $skipBlocked  Local only: leave out entries with errors and import the rest (ADR 0031 §11).
+     *
+     * @throws \LogicException When $skipBlocked is requested in production.
+     */
+    public function run(string $path, bool $dryRun, bool $buildPacks = false, bool $skipBlocked = false, ?string $sourceCode = null): ImportReport
     {
+        if ($skipBlocked && app()->isProduction()) {
+            throw new \LogicException('Skipping blocked entries is refused in production (ADR 0031 §11).');
+        }
+
         $now = CarbonImmutable::now('UTC');
+        $profile = $this->sources->for($sourceCode ?? $this->sources->primaryCode())->profile();
+        $source = $this->sources->for($profile->code);
 
         if (! $dryRun) {
-            $locks = $this->lockReasons();
+            $locks = $this->lockReasons($profile);
 
             if ($locks !== []) {
                 return $this->locked($now, $locks);
             }
         }
 
-        $sourceVersion = (string) config('azkar.opendua.version');
-        $pinnedSha = (string) config('azkar.opendua.catalogue_sha256');
-        $sourceKey = (string) config('azkar.opendua.source_key');
-        $sourceCode = (string) config('azkar.opendua.source_code');
+        $sourceVersion = $profile->version;
+        $pinnedSha = $profile->pinnedSha256;
+        $sourceKey = $profile->sourceKey;
+        $sourceCode = $profile->code;
 
         try {
-            $parsed = $this->parser->parse($path);
+            $parsed = $source->parse($path);
         } catch (CatalogueUnreadableException $exception) {
-            return $this->failedToParse($now, $path, $exception, $dryRun);
+            return $this->failedToParse($now, $path, $exception, $dryRun, $profile);
         }
 
         $issues = [];
@@ -64,16 +83,19 @@ final class AzkarImporter
             $issues[] = new ImportIssue(ImportIssue::ERROR, 'checksum_mismatch', 'file');
         }
 
-        $issues = [...$issues, ...$this->validator->validate($parsed->data)];
+        $issues = [...$issues, ...$this->validator->validate($parsed->data, $profile)];
+        $enrichment = $this->enrichment($profile, $parsed->data);
+        $issues = [...$issues, ...$enrichment['issues']];
         $blocked = $this->blockedEntries($issues);
-        $plan = $this->transformer->plan($parsed->data, $sourceVersion, $now->getTimestampMs(), $blocked);
+        $plan = $this->transformer->plan($parsed->data, $sourceVersion, $now->getTimestampMs(), $blocked, $profile, $enrichment['notes']);
 
         $sourceId = $this->resources->sourceId($sourceCode);
         $existing = $sourceId === null ? null : $this->resources->findBySource($sourceId, ResourceGroup::Azkar, $sourceKey);
         $previous = $existing instanceof Resource ? $this->azkar->itemTextHashes($existing->id) : [];
         $changed = $this->changedTexts($plan, $previous);
 
-        $hasErrors = $this->hasErrors($issues);
+        $skipped = $skipBlocked ? $this->skippedEntries($issues) : [];
+        $hasErrors = $this->hasErrors($issues, $skipBlocked);
         $status = $hasErrors ? ImportReport::STATUS_INVALID : ImportReport::STATUS_VALID;
         $resource = [
             'group' => ResourceGroup::Azkar->value,
@@ -83,7 +105,7 @@ final class AzkarImporter
         ];
 
         if (! $dryRun && ! $hasErrors) {
-            $resource = $this->write($parsed->sha256, $parsed->data, $plan, $sourceId, $sourceKey, $sourceCode);
+            $resource = $this->write($parsed->sha256, $parsed->data, $plan, $sourceId, $sourceKey, $sourceCode, $buildPacks);
             $status = ImportReport::STATUS_IMPORTED;
         }
 
@@ -99,11 +121,15 @@ final class AzkarImporter
                 'pinned_sha256' => $pinnedSha,
                 'pinned_version' => $sourceVersion,
                 'data_version' => $parsed->data['dataVersion'] ?? null,
+                'source' => $profile->code,
             ],
             plan: $plan,
             changed: $changed,
             resource: $resource,
             issues: $issues,
+            profile: $profile,
+            skipped: $skipped,
+            enrichment: $enrichment['report'],
         );
     }
 
@@ -112,15 +138,15 @@ final class AzkarImporter
      *
      * @return list<string>
      */
-    public function lockReasons(): array
+    public function lockReasons(SourceProfile $profile): array
     {
         $reasons = [];
 
-        if (! (bool) config('azkar.opendua.import_enabled')) {
-            $reasons[] = 'AZKAR_OPENDUA_IMPORT_ENABLED is false (azkar.opendua.import_enabled). Production import stays locked (ADR 0031 §1).';
+        if (! $profile->importEnabled) {
+            $reasons[] = $profile->importFlagKey.' is false (azkar.'.$profile->code.'.import_enabled). Production import stays locked (ADR 0031 §1).';
         }
 
-        $code = (string) config('azkar.opendua.source_code');
+        $code = $profile->code;
         $status = $this->azkar->sourcePermissionStatus($code);
 
         if ($status === null) {
@@ -132,7 +158,7 @@ final class AzkarImporter
         $rights = config('azkar.recording_rights', []);
         $licence = is_array($rights) ? ($rights['licence'] ?? null) : null;
 
-        if ((bool) config('azkar.opendua.audio_rights_verified') && (! is_string($licence) || $licence === '')) {
+        if ($profile->audioRightsVerified && (! is_string($licence) || $licence === '')) {
             $reasons[] = 'Recording rights are incomplete: azkar.recording_rights.licence is empty (ADR 0031 §8).';
         }
 
@@ -145,7 +171,7 @@ final class AzkarImporter
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private function write(string $sha256, array $data, ImportPlan $plan, ?int $sourceId, string $sourceKey, string $sourceCode): array
+    private function write(string $sha256, array $data, ImportPlan $plan, ?int $sourceId, string $sourceKey, string $sourceCode, bool $buildPacks): array
     {
         if ($sourceId === null) {
             throw new \LogicException('The source ['.$sourceCode.'] must be seeded before a wet import.');
@@ -179,7 +205,9 @@ final class AzkarImporter
             return [$resource->id, $before, $resource->version];
         });
 
-        BuildContentPackJob::dispatch($resourceId);
+        if (! $buildPacks) {
+            BuildContentPackJob::dispatch($resourceId);
+        }
 
         return [
             'group' => ResourceGroup::Azkar->value,
@@ -187,7 +215,26 @@ final class AzkarImporter
             'id' => $resourceId,
             'version_before' => $versionBefore,
             'version_after' => $versionAfter,
+            'pack' => $buildPacks ? $this->buildPackNow($resourceId) : ['built' => false, 'queued' => true],
         ];
+    }
+
+    /**
+     * Builds the azkar pack synchronously for the rows just written (release runs, ADR 0031 §11).
+     *
+     * @return array<string, mixed>
+     */
+    private function buildPackNow(int $resourceId): array
+    {
+        $resource = $this->resources->find($resourceId);
+
+        if ($resource === null) {
+            throw new \LogicException('The azkar resource ['.$resourceId.'] disappeared after the import.');
+        }
+
+        $pack = $this->packs->build($resource);
+
+        return ['built' => true, 'version' => $pack->version, 'sha256' => $pack->sha256, 'size_bytes' => $pack->sizeBytes, 'row_count' => $pack->rowCount];
     }
 
     /**
@@ -210,7 +257,7 @@ final class AzkarImporter
         );
     }
 
-    private function failedToParse(CarbonImmutable $now, string $path, CatalogueUnreadableException $exception, bool $dryRun): ImportReport
+    private function failedToParse(CarbonImmutable $now, string $path, CatalogueUnreadableException $exception, bool $dryRun, SourceProfile $profile): ImportReport
     {
         return $this->report(
             now: $now,
@@ -222,6 +269,7 @@ final class AzkarImporter
             changed: [],
             resource: [],
             issues: [new ImportIssue(ImportIssue::ERROR, $exception->issueCode, 'file')],
+            profile: $profile,
         );
     }
 
@@ -231,6 +279,8 @@ final class AzkarImporter
      * @param  list<string>  $changed
      * @param  array<string, mixed>  $source
      * @param  array<string, mixed>  $resource
+     * @param  list<array{entry: string, codes: list<string>}>  $skipped
+     * @param  array<string, mixed>  $enrichment
      */
     private function report(
         CarbonImmutable $now,
@@ -242,6 +292,9 @@ final class AzkarImporter
         array $changed,
         array $resource,
         array $issues,
+        SourceProfile $profile,
+        array $skipped = [],
+        array $enrichment = [],
     ): ImportReport {
         $stats = $plan->stats;
         $englishAvailable = $stats->englishStored + $stats->englishSkipped;
@@ -255,6 +308,8 @@ final class AzkarImporter
             content: [
                 'entries_imported' => $stats->entries,
                 'entries_blocked' => $stats->entriesBlocked,
+                'entries_skipped' => count($skipped),
+                'skipped' => $skipped,
                 'chapters_imported' => $stats->chapters,
                 'items' => ['recitation' => $stats->itemsRecitation, 'instruction' => $stats->itemsInstruction, 'narration' => $stats->itemsNarration],
                 'segments' => ['text' => $stats->segmentsText, 'quran' => $stats->segmentsQuran],
@@ -271,18 +326,19 @@ final class AzkarImporter
                 'entries_without_explanations' => $stats->entries,
             ],
             gated: [
+                'hadeethenc' => $enrichment,
                 'english' => [
                     'available' => $englishAvailable,
                     'stored' => $stats->englishStored,
                     'skipped' => $stats->englishSkipped,
-                    'store_english' => (bool) config('azkar.opendua.store_english'),
+                    'store_english' => $profile->storeEnglish,
                 ],
                 'recordings' => [
                     'upstream' => $stats->recordingsUpstream,
                     'upstream_objects' => $stats->recordingObjects,
                     'imported' => $stats->recordingsImported,
                     'legally_downloadable' => $stats->recordingsDownloadable,
-                    'audio_rights_verified' => (bool) config('azkar.opendua.audio_rights_verified'),
+                    'audio_rights_verified' => $profile->audioRightsVerified,
                 ],
             ],
             changedUpstreamTexts: [
@@ -300,6 +356,62 @@ final class AzkarImporter
                 $issues,
             ),
         );
+    }
+
+    /**
+     * ADR 0031 §12: HadeethEnc notes for the primary source only. It runs when the hadeethenc source is granted and its
+     * flag is on, reads only the verified snapshot, and gives a reason for every case it does not run.
+     *
+     * @param  array<string, mixed>  $catalogue
+     * @return array{notes: array<string, list<array<string, mixed>>>, issues: list<ImportIssue>, report: array<string, mixed>}
+     */
+    private function enrichment(SourceProfile $profile, array $catalogue): array
+    {
+        $report = ['enabled' => false, 'reason' => null, 'entries_enriched' => 0, 'links_reviewed' => 0, 'links_candidate' => 0, 'notes' => ['explanation' => 0, 'grade' => 0, 'reference' => 0]];
+        $skip = static fn (string $reason): array => ['notes' => [], 'issues' => [], 'report' => [...$report, 'reason' => $reason]];
+
+        if ($profile->code !== $this->sources->primaryCode()) {
+            return $skip('Not the primary source; HadeethEnc notes attach to primary entries only.');
+        }
+
+        if (! (bool) config('azkar.hadeethenc.enabled')) {
+            return $skip('AZKAR_HADEETHENC_ENABLED is false (azkar.hadeethenc.enabled).');
+        }
+
+        if ($this->azkar->sourcePermissionStatus('hadeethenc') !== PermissionStatus::Granted) {
+            return $skip('Content source [hadeethenc] is not granted (ADR 0031 §12).');
+        }
+
+        try {
+            $records = $this->hadeethSnapshot->load(storage_path('app/azkar/hadeethenc/'.(string) config('azkar.hadeethenc.snapshot_date')));
+        } catch (SnapshotException $exception) {
+            return ['notes' => [], 'issues' => [new ImportIssue(ImportIssue::ERROR, 'hadeethenc_snapshot_invalid', 'hadeethenc')], 'report' => [...$report, 'reason' => $exception->getMessage()]];
+        }
+
+        $links = config('azkar_hadeethenc_links', []);
+        $built = $this->hadeethNotes->build(is_array($links) ? $links : [], $records, app()->isProduction());
+        $issues = [];
+
+        foreach ($built['candidates'] as $link) {
+            $issues[] = new ImportIssue(ImportIssue::WARNING, 'hadeethenc_link_candidate', 'link:'.$link);
+        }
+
+        foreach ($built['missing'] as $link) {
+            $issues[] = new ImportIssue(ImportIssue::ERROR, 'hadeethenc_hadith_missing', 'link:'.$link);
+        }
+
+        return [
+            'notes' => $built['notes'],
+            'issues' => $issues,
+            'report' => [
+                'enabled' => true,
+                'reason' => null,
+                'entries_enriched' => $built['stats']['entries_enriched'],
+                'links_reviewed' => $built['stats']['links_reviewed'],
+                'links_candidate' => $built['stats']['links_candidate'],
+                'notes' => ['explanation' => $built['stats']['explanation'], 'grade' => $built['stats']['grade'], 'reference' => $built['stats']['reference']],
+            ],
+        ];
     }
 
     /**
@@ -322,17 +434,45 @@ final class AzkarImporter
     }
 
     /**
+     * With $skipBlocked, an error that belongs to an entry leaves that entry out and does not fail the run. Errors
+     * with no entry (file, pin, structure, counts) always fail it.
+     *
      * @param  list<ImportIssue>  $issues
      */
-    private function hasErrors(array $issues): bool
+    private function hasErrors(array $issues, bool $skipBlocked): bool
     {
         foreach ($issues as $issue) {
-            if ($issue->isError()) {
+            if ($issue->isError() && (! $skipBlocked || $issue->entryKey === null)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * The entries left out by --skip-blocked, with their error codes. Keys and codes only.
+     *
+     * @param  list<ImportIssue>  $issues
+     * @return list<array{entry: string, codes: list<string>}>
+     */
+    private function skippedEntries(array $issues): array
+    {
+        $codes = [];
+
+        foreach ($issues as $issue) {
+            if ($issue->isError() && $issue->entryKey !== null) {
+                $codes[$issue->entryKey][$issue->code] = true;
+            }
+        }
+
+        $skipped = [];
+
+        foreach ($codes as $entry => $set) {
+            $skipped[] = ['entry' => (string) $entry, 'codes' => array_keys($set)];
+        }
+
+        return $skipped;
     }
 
     /**

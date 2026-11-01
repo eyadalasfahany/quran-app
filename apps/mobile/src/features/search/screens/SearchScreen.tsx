@@ -7,7 +7,10 @@ import { View } from 'react-native';
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
+import { useAzkarAvailable } from '@/features/azkar/data';
+import { azkarHref } from '@/features/azkar/routes';
 import { getWords, type WordRecord } from '@/features/reader/data/words';
+import { AzkarSearchResults } from '@/features/search/components/AzkarSearchResults';
 import { RecentSearches } from '@/features/search/components/RecentSearches';
 import { SearchBar } from '@/features/search/components/SearchBar';
 import { SearchMessage } from '@/features/search/components/SearchMessage';
@@ -17,7 +20,7 @@ import { SurahResultRow } from '@/features/search/components/SurahResultRow';
 import { useDebouncedValue } from '@/features/search/hooks/useDebouncedValue';
 import { addRecentSearch, readRecentSearches, removeRecentSearch } from '@/features/search/recentSearches';
 import { searchQuran, type SearchResult, SEARCH_PAGE_SIZE } from '@/features/search/searchQuran';
-import { Screen, UiText } from '@/shared/ui';
+import { Screen, SegmentedControl, UiText } from '@/shared/ui';
 
 const SEARCH_DEBOUNCE_MS = 150;
 
@@ -32,6 +35,10 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
   const [query, setQuery] = useState('');
   const [recent, setRecent] = useState(() => readRecentSearches());
   const [resultLimit, setResultLimit] = useState(SEARCH_PAGE_SIZE);
+  // The Azkar scope exists only once Azkar content is installed (ADR 0031); without it search is Quran only.
+  const azkarAvailable = useAzkarAvailable();
+  const [scope, setScope] = useState<'quran' | 'azkar'>('quran');
+  const activeScope = azkarAvailable && scope === 'azkar' ? 'azkar' : 'quran';
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
   const activeLimit = query.trim() === debouncedQuery.trim() ? resultLimit : SEARCH_PAGE_SIZE;
 
@@ -130,6 +137,7 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
   const showNoResults =
     !showRecent &&
     !waitingForDebounce &&
+    activeScope === 'quran' &&
     debouncedQuery.trim().length > 0 &&
     ready &&
     page.results.length === 0 &&
@@ -151,6 +159,18 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
           <UiText tone="muted" variant="label">
             {t('search.hint')}
           </UiText>
+          {azkarAvailable ? (
+            <SegmentedControl
+              label={t('search.scope.label')}
+              onChange={setScope}
+              options={[
+                { key: 'quran', label: t('search.scope.quran') },
+                { key: 'azkar', label: t('search.scope.azkar') },
+              ]}
+              testID="search-scope"
+              value={activeScope}
+            />
+          ) : null}
         </View>
 
         {showRecent ? (
@@ -171,7 +191,17 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
           </View>
         ) : null}
 
-        {!showRecent && page.results.length > 0 ? (
+        {!showRecent && activeScope === 'azkar' ? (
+          <AzkarSearchResults
+            onOpen={(entryKey) => {
+              commitSearch(query);
+              router.push(azkarHref.entry(entryKey));
+            }}
+            query={debouncedQuery}
+          />
+        ) : null}
+
+        {!showRecent && activeScope === 'quran' && page.results.length > 0 ? (
           <View style={{ flex: 1, minHeight: 240 }}>
             <FlashList
               data={page.results}

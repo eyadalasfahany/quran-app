@@ -12,9 +12,16 @@ export {
   useFavoriteCards,
   useFavorites,
   useIsFavorite,
+  useRecentAzkarItems,
   useScopeProgress,
+  useSessionCategoryProgress,
   useVariationChoices,
 } from './hooks';
+export type { RecentAzkarItem, SessionCategoryProgress } from './hooks';
+export { categoryPeriodProgress } from './category-progress';
+export type { CategoryPeriodProgress } from './category-progress';
+export { clearRecentScopes, readRecentScopes, recordRecentScope, RECENT_SCOPES_CAP, useRecentScopes } from './recent-scopes';
+export type { RecentScope } from './recent-scopes';
 export { azkarShareText } from './share-text';
 export { buildReaderUnits, buildCategoryUnits } from './reader-units';
 export type { ReaderUnit, ReaderUnitKind } from './reader-units';

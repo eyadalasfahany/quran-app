@@ -14,6 +14,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import type { Locale } from '@/core/i18n/locale';
 import { getVerseRange, verseKeyToId, type VerseRecord } from '@/features/reader/data/verses';
 
+import { activeAzkarResourceId } from './active-resource';
 import { buildCategoryUnits, type ReaderUnit } from './reader-units';
 import {
   asAzkarEnum,
@@ -184,12 +185,15 @@ type RecordingRow = Omit<AzkarRecording, 'streamAllowed' | 'downloadAllowed' | '
 type CategoryLinkRow = { resourceId: number; entryId: number; chapterNumber: number; linkVariationKey: string };
 
 export function hasAzkarContent(db: SqlExecutor): boolean {
-  return db.get<{ one: number }>('SELECT 1 AS one FROM azkar_entries LIMIT 1') !== undefined;
+  return db.get<{ one: number }>('SELECT 1 AS one FROM azkar_entries WHERE resource_id = ? LIMIT 1', [activeAzkarResourceId(db)]) !== undefined;
 }
 
 /** Session categories first, then browse; each in its stored position. `unitCount` is built for `locale`. */
 export function listCategories(db: SqlExecutor, locale: Locale = 'ar'): AzkarCategoryListItem[] {
-  const rows = db.all<CategoryRow>(`${CATEGORY_SELECT} ORDER BY CASE kind WHEN 'session' THEN 0 ELSE 1 END, position, id`);
+  const rows = db.all<CategoryRow>(
+    `${CATEGORY_SELECT} WHERE resource_id = ? ORDER BY CASE kind WHEN 'session' THEN 0 ELSE 1 END, position, id`,
+    [activeAzkarResourceId(db)],
+  );
 
   return rows.map((row) => {
     const category = asCategory(row);
@@ -200,12 +204,15 @@ export function listCategories(db: SqlExecutor, locale: Locale = 'ar'): AzkarCat
 /** Category ids in display order, without building units (cheap enough to run per keystroke). */
 export function listCategoryIds(db: SqlExecutor): string[] {
   return db
-    .all<{ id: string }>(`SELECT DISTINCT id FROM azkar_categories ORDER BY CASE kind WHEN 'session' THEN 0 ELSE 1 END, position, id`)
+    .all<{ id: string }>(
+      `SELECT DISTINCT id FROM azkar_categories WHERE resource_id = ? ORDER BY CASE kind WHEN 'session' THEN 0 ELSE 1 END, position, id`,
+      [activeAzkarResourceId(db)],
+    )
     .map((row) => row.id);
 }
 
 export function getCategory(db: SqlExecutor, categoryId: string): AzkarCategory | undefined {
-  const row = db.get<CategoryRow>(`${CATEGORY_SELECT} WHERE id = ? ORDER BY resource_id DESC LIMIT 1`, [categoryId]);
+  const row = db.get<CategoryRow>(`${CATEGORY_SELECT} WHERE resource_id = ? AND id = ?`, [activeAzkarResourceId(db), categoryId]);
   return row === undefined ? undefined : asCategory(row);
 }
 
@@ -231,9 +238,9 @@ export function listCategoryEntries(
      FROM azkar_entry_categories ec
      JOIN azkar_entries e ON e.resource_id = ec.resource_id AND e.id = ec.entry_id
      JOIN azkar_chapters c ON c.resource_id = e.resource_id AND c.id = e.chapter_id
-     WHERE ec.category_id = ?
+     WHERE ec.resource_id = ? AND ec.category_id = ?
      ORDER BY c.number, e.position, e.id`,
-    [categoryId],
+    [activeAzkarResourceId(db), categoryId],
   );
 
   const result: AzkarCategoryEntry[] = [];
@@ -285,7 +292,7 @@ export function getEntry(
   entryKey: string,
   overrides: VariationOverrides = {},
 ): AzkarEntryDetail | undefined {
-  const row = db.get<EntryRow>(`${ENTRY_SELECT} WHERE entry_key = ?`, [entryKey]);
+  const row = db.get<EntryRow>(`${ENTRY_SELECT} WHERE resource_id = ? AND entry_key = ?`, [activeAzkarResourceId(db), entryKey]);
   if (row === undefined) {
     return undefined;
   }

@@ -1,5 +1,4 @@
 import * as Notifications from 'expo-notifications';
-import { AndroidImportance } from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -9,18 +8,11 @@ import { getActivePlan, listLogsForPlan, planProgress, toLocalDateString } from 
 import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { resolveInitialAnchor } from '@/features/reader/anchor/reading-anchor';
 
-const ANDROID_CHANNEL_ID = 'reminders';
-const DEFAULT_TIME = '21:00';
+import { ensureNotificationChannel, NOTIFICATION_CHANNELS } from './channels';
 
-/** Permission is asked only when the user turns the reminder on (spec §13). */
-export async function ensureReminderPermission(): Promise<boolean> {
-  const current = await Notifications.getPermissionsAsync();
-  if (current.granted) {
-    return true;
-  }
-  const requested = await Notifications.requestPermissionsAsync();
-  return requested.granted;
-}
+export { ensureReminderPermission } from './permission';
+
+const DEFAULT_TIME = '21:00';
 
 export function readReminderTime(): { hour: number; minute: number } {
   const raw = storage.getString(storageKeys.dailyReminderTime) ?? DEFAULT_TIME;
@@ -75,12 +67,7 @@ export async function syncDailyReminder(): Promise<void> {
   }
 
   const { hour, minute } = readReminderTime();
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
-      name: 'Daily reminders',
-      importance: AndroidImportance.DEFAULT,
-    });
-  }
+  await ensureNotificationChannel(NOTIFICATION_CHANNELS.reminders);
 
   const identifier = await Notifications.scheduleNotificationAsync({
     content: {
@@ -90,7 +77,7 @@ export async function syncDailyReminder(): Promise<void> {
     },
     trigger:
       Platform.OS === 'android'
-        ? { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: ANDROID_CHANNEL_ID }
+        ? { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: NOTIFICATION_CHANNELS.reminders }
         : { type: Notifications.SchedulableTriggerInputTypes.CALENDAR, hour, minute, repeats: true },
   });
   storage.set(storageKeys.dailyReminderNotificationId, identifier);

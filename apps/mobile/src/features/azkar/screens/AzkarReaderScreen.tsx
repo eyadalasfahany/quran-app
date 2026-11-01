@@ -13,6 +13,10 @@ import { ContentColumn, useWindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { Screen } from '@/shared/ui';
 
+import { useAzkarAutoplay } from '../audio/hooks';
+import { recordingForUnit } from '../audio/recording-for-unit';
+import { stopAzkarRecording } from '../audio/playback';
+import { AzkarAudioPlayer } from '../components/AzkarAudioPlayer';
 import { AzkarCompletion } from '../components/AzkarCompletion';
 import { AzkarCounter } from '../components/AzkarCounter';
 import { AzkarDetailsPanel } from '../components/AzkarDetailsPanel';
@@ -30,18 +34,21 @@ import { AzkarVariationSwitch } from '../components/AzkarVariationSwitch';
 import { DhikrText } from '../components/DhikrText';
 import { useAzkarFontScale, useCategoryUnits, useEntry, useScopeProgress, useVariationChoices } from '../data/hooks';
 import { getCategory, getEntry, getQuranSegmentVerses } from '../data/content-repository';
+import { recordRecentScope } from '../data/recent-scopes';
 import { periodKey, scopeKeyForCategory, scopeKeyForEntry, SESSION_UNIT_KEY } from '../data/progress';
 import { markSessionComplete, recordTap, resetScope, resetUnit } from '../data/progress-repository';
 import { azkarShareText } from '../data/share-text';
 import { buildReaderUnits, type ReaderUnit } from '../data/reader-units';
 import type { AzkarCategory, AzkarEntryDetail } from '../data/model';
 import { completeHaptic, tapHaptic } from '../haptics';
+import { azkarHref, goBackOr } from '../routes';
 import {
   allUnitsDone,
   completedUnitKeys,
   readerProgress,
   referenceNumber,
   resolveReaderPosition,
+  showsCounter,
   type ReaderView,
 } from '../reader-model';
 
@@ -71,10 +78,10 @@ function safeEntry(db: SqlExecutor, entryKey: string): AzkarEntryDetail | undefi
   }
 }
 
-/** The repeat count of a unit whose body is one repeat group, or null. */
+/** The repeat count of a unit whose body is one repeat group, or null. A count of 1 is not a repetition to show. */
 function repeatCountFor(unit: ReaderUnit): number | null {
   const grouped = unit.body.length > 0 && unit.body.every((item) => item.repeatGroup !== null);
-  return grouped && unit.requiredCount !== null ? unit.requiredCount : null;
+  return grouped && showsCounter(unit.requiredCount) ? unit.requiredCount : null;
 }
 
 /**
@@ -93,6 +100,10 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   const [textSizeOpen, setTextSizeOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [view, setView] = useState<ReaderView>(null);
+  const [autoplay, setAutoplay] = useAzkarAutoplay();
+  // Set when the reader advanced from a unit whose recording ended with «تشغيل تلقائي» on; the next unit starts its own.
+  const [autoStartAudio, setAutoStartAudio] = useState(false);
+  const clearAutoStart = useCallback(() => setAutoStartAudio(false), []);
 
   const categoryId = scope.kind === 'category' ? scope.categoryId : '';
   const entryKey = scope.kind === 'entry' ? scope.entryKey : '';
@@ -140,7 +151,20 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     }
   }, []);
   useEffect(() => cancelAdvance, [cancelAdvance]);
-  useFocusEffect(useCallback(() => () => cancelAdvance(), [cancelAdvance]));
+  // Opening a scope records it for Home's «آخر الأذكار» (capped at 10, newest first; ADR 0034 §3).
+  useEffect(() => {
+    recordRecentScope(scopeKey);
+  }, [scopeKey]);
+  // Leaving the reader (blur) cancels the pending move and stops any recording it started.
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        cancelAdvance();
+        stopAzkarRecording();
+      },
+      [cancelAdvance],
+    ),
+  );
   const unit = position.finished ? undefined : units[position.index];
   const progress = readerProgress(position, total);
   const progressText = t('azkar.reader.progress', {
@@ -154,6 +178,27 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
 
   const unitEntryKey = unit?.entryKey ?? '';
   const unitEntry = useMemo(() => safeEntry(executor, unitEntryKey), [executor, unitEntryKey]);
+  // The unit's licensed recording, when one exists (none today; ADR 0031 §8).
+  const recording = unit === undefined ? null : recordingForUnit(unitEntry?.recordings ?? [], unit.body.map((item) => item.id));
+  // A recording that ends moves the reader on only with «تشغيل تلقائي» on. The playback module holds a stable callback,
+  // so this ref keeps it pointed at the latest position and preference. It never counts a tap.
+  const advanceFromAudio = useRef<() => void>(() => undefined);
+  useEffect(() => {
+    advanceFromAudio.current = () => {
+      if (!autoplay || position.index >= total - 1) {
+        return;
+      }
+      cancelAdvance();
+      setAutoStartAudio(true);
+      setView(position.index + 1);
+    };
+  });
+  const onAudioEnded = useCallback(() => advanceFromAudio.current(), []);
+  useEffect(() => {
+    if (recording === null) {
+      setAutoStartAudio(false);
+    }
+  }, [recording]);
   const reference = unitEntry?.entry.sourceReference.trim() ?? '';
   const sourceLine = t('azkar.share.source', { number: referenceNumber(reference, locale) });
 
@@ -229,13 +274,14 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     router.push(`/azkar/details/${encodeURIComponent(unit.entryKey)}` as Href);
   };
 
-  const counted = unit !== undefined && unit.requiredCount !== null;
+  // A sourced count of 1 is one recitation: «تم», never «١ من ١» (ADR 0031 §6). Only a count above 1 gets the counter.
+  const counted = unit !== undefined && showsCounter(unit.requiredCount);
   const showPanel = windowClass === 'expanded' && panelOpen && unit !== undefined;
 
   const body =
     unit === undefined ? null : (
       <ScrollView contentContainerStyle={{ flexGrow: 1, gap: theme.space[5], justifyContent: 'center', paddingVertical: theme.space[5] }}>
-        <AzkarTapSurface disabled={unitDone} onTap={onTap} style={{ gap: theme.space[5] }}>
+        <View style={{ gap: theme.space[5] }}>
           <AzkarStepNote items={unit.preface} testID="azkar-preface" />
           {unit.variations.length > 1 ? (
             <AzkarVariationSwitch
@@ -253,22 +299,39 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
           ))}
           <AzkarStepNote items={unit.afterword} testID="azkar-afterword" />
           {reference.length > 0 ? <AzkarSourceLine onPressDetails={openDetails} reference={reference} /> : null}
-        </AzkarTapSurface>
+        </View>
         <AzkarReaderActions
           entryKey={unit.entryKey}
+          onAudioEnded={onAudioEnded}
           onShare={onShare}
           onTextSize={() => setTextSizeOpen((open) => !open)}
+          recording={recording}
           textSizeOpen={textSizeOpen}
+          unitKey={unit.unitKey}
         />
+        {recording === null ? null : (
+          <AzkarAudioPlayer
+            autoStart={autoStartAudio}
+            autoplay={autoplay}
+            key={unit.unitKey}
+            onAutoStarted={clearAutoStart}
+            onAutoplayChange={setAutoplay}
+            onEnded={onAudioEnded}
+            recording={recording}
+            unitKey={unit.unitKey}
+          />
+        )}
         {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
       </ScrollView>
     );
 
   const reader = (
-    <View style={{ flex: 1 }}>
-      <AzkarReaderTopBar fraction={progress.fraction} onClose={() => router.back()} progressText={progressText} title={title} />
+    // Every pixel of the reader that is not a button counts a tap (the surface wraps the whole column). The completion
+    // screen and a reader with no unit are disabled.
+    <AzkarTapSurface disabled={unitDone || position.finished || unit === undefined} onTap={onTap} style={{ flex: 1 }}>
+      <AzkarReaderTopBar fraction={progress.fraction} onClose={() => goBackOr(azkarHref.home)} progressText={progressText} title={title} />
       {position.finished ? (
-        <AzkarCompletion onBack={() => router.back()} onRestart={restart} progressText={progressText} title={title} />
+        <AzkarCompletion onBack={() => goBackOr(azkarHref.home)} onRestart={restart} progressText={progressText} title={title} />
       ) : (
         body
       )}
@@ -296,7 +359,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
           </AzkarReaderControls>
         </View>
       )}
-    </View>
+    </AzkarTapSurface>
   );
 
   return (

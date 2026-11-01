@@ -400,7 +400,12 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 - **Pack:** `BuildContentPackJob` writes a SQLite file with only that resource's tables, `VACUUM`s it, gzips it, stores it under `storage/packs/{resource}/{version}.sqlite.gz` and records size and SHA-256. Cloudflare caches pack URLs, which are immutable because the version is in the path.
 - **Change feed:** `content_changes` keeps row-level changes for 30 days. A device within that window applies only the delta; an older device gets `410 Gone` and downloads the latest pack.
 - **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`, `azkar:{id}` (ADR 0031). No translation or word-by-word pack exists (ADR 0014).
-- **Azkar is not synced from QF.** `php artisan azkar:import` reads a pinned OpenDua catalogue file (version + SHA-256), validates it, splits Quran passages into verse references from a reviewed map, writes an import report and bumps the `azkar` resource version. It refuses to write unless the `opendua` content source is `granted` and `AZKAR_OPENDUA_IMPORT_ENABLED=true`. The pack builder refuses an `azkar` pack whose source is not `granted` (ADR 0031 §1).
+- **Azkar is not synced from QF.** `php artisan azkar:import` reads a pinned OpenDua catalogue file (version + SHA-256), validates it, splits Quran passages into verse references from a reviewed map, writes an import report and bumps the `azkar` resource version. It refuses to write unless the `opendua` content source is `granted` and `AZKAR_OPENDUA_IMPORT_ENABLED=true`. The pack builder refuses an `azkar` pack unless its source is `granted` and its import flag (`AZKAR_OPENDUA_IMPORT_ENABLED`) is on (ADR 0031 §1). `azkar:import --skip-blocked` is local only: it leaves out entries with errors and lists them, and production refuses it. Each Quran map row carries a status (ADR 0031 §11): production accepts only `reviewed` rows; other environments also accept `candidate` rows and list them as warnings; `unmatched` rows always block their entry. `azkar:quran-map-candidates` generates the rows from the bundled Tanzil text, `azkar:import --download` fetches and SHA-256-verifies the pinned file, and `azkar:source-permission` (local only) sets the source status. The production release (`docker/release.sh`, Railway pre-deploy) runs `migrate --force`, then `azkar:import --download --if-unlocked --build-packs`; it builds the pack in-process, not on the queue. See `docs/runbooks/railway-release.md`. Only the `azkar` resource of `azkar.primary_source` (default `opendua`) is listed in the manifest, the change feed or the pack endpoint; any other Azkar resource stays imported for comparison (ADR 0031 §12).
+- **Azkar enrichment (ADR 0031 §12):**
+  - `azkar:snapshot hadeethenc` pins HadeethEnc's Azkar categories.
+  - `azkar:hadeethenc-links` proposes entry→hadith links: ids and evidence only, from containment of at least 40 normalised characters.
+  - Import adds `explanation`, `grade` and `reference` notes with the hadith's HadeethEnc URL. Production uses reviewed links only; «الفوائد» is not stored.
+  - hisnmuslim.com is a second, non-primary source: snapshot, pin and `azkar:compare-sources`. Only `azkar.primary_source` is ever served.
 
 **Hop 3: device update (`core/sync/content-sync.ts`)**
 
@@ -640,7 +645,7 @@ For each change, in one transaction per request:
 
 **Motion (reviewed against Apple's HIG on motion, accessibility and Liquid Glass)**
 
-- **Native first:** the tab bar uses native tabs, which bring system motion, gesture tracking and Reduce Motion handling. The full player is a full-screen transparent modal with its own slide-up and drag-to-dismiss: a downward drag tracks the finger and closes past 25% of the window or above 800 pt/s, otherwise it springs back, and the close button slides it down (developer, 29 Oct 2026). The reader sheets are custom cards drawn per frame, presented as a transparent modal (ADR 0013). Each sheet has a mid detent at 50% of the window and a full detent under the safe area. A drag moves it between them, and a slide down closes it, the reverse of the entrance (ADR 0020). The stack's own animation and swipe are off.
+- **Native first:** on iOS the tab bar uses native tabs, which bring system motion, gesture tracking and Reduce Motion handling. Android draws the floating capsule from `#Main` with `expo-router/ui` headless tabs on the same routes (ADR 0033). The full player is a full-screen transparent modal with its own slide-up and drag-to-dismiss: a downward drag tracks the finger and closes past 25% of the window or above 800 pt/s, otherwise it springs back, and the close button slides it down (developer, 29 Oct 2026). The reader sheets are custom cards drawn per frame, presented as a transparent modal (ADR 0013). Each sheet has a mid detent at 50% of the window and a full detent under the safe area. A drag moves it between them, and a slide down closes it, the reverse of the entrance (ADR 0020). The stack's own animation and swipe are off.
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
@@ -650,7 +655,9 @@ For each change, in one transaction per request:
 | --- | --- | --- | --- |
 | Ayah actions, tafsir, reader settings | Transparent modal with a custom card (ADR 0013, ADR 0020) | Slide up to mid (50%) on open; drag between mid and full; slide down to close | Fade |
 | Mini-player → full player | Pan gesture + `spring()` | Tracks the finger; springs open or closed on release | Fade, `slow` |
-| Tab change | Native tabs | System | System |
+| Azkar pushed screens (home, category, search, favourites) | Native stack, `pushScreenOptions` (`src/core/layout/push-screen-options.ts`) | iOS system slide; Android slide from the leading edge (left in Arabic, right in English) and back the same way | Fade |
+| Azkar reader | Native stack, `modalLikeScreenOptions` | Slides up to open, down to close (✕ or swipe down on iOS) | Fade |
+| Tab change | Native tabs (iOS); floating headless tab bar (Android, ADR 0033) | System (iOS); none (Android) | System (iOS); none (Android) |
 | Tab bar minimize on scroll | Native tabs (iOS 26); Android's bar stays fixed | System | System |
 | Ayah highlight (audio) | Reanimated opacity | Cross-fade, `fast` (150 ms) | Same (a fade) |
 | Word highlight | Reanimated | `instant` (80 ms) or none, so it keeps up with the 150 ms sync budget | None |
@@ -685,6 +692,10 @@ Reminders are local; only the daily hadith and rare announcements come from the 
 
 - **Local (`expo-notifications`):** daily reading reminder and khatma reminder are scheduled on the device at the user's time; they are rescheduled when the time zone, plan or setting changes. Permission is requested only when a switch is turned on.
 - **Azkar reminders (ADR 0031 §7):** per category (and per entry where useful), either a daily clock time or a prayer-relative offset (e.g. الفجر + ١٠ دقائق). Prayer-relative reminders keep a rolling 8-day schedule computed with `features/salah/data/prayer-times.ts`, refreshed on launch, foreground, date, time zone, location or setting change. A reminder time is the user's preference, never the religious time of the dhikr. They share the notification layer and deep-link handler with the daily reminder; no second system.
+  - Implementation:
+    - shared `channels.ts` (Android channels `reminders` and `azkar`) and `budget.ts` (iOS limit 64: daily reminder 1, prayer notifications 40, Azkar 23)
+    - deep-link allowlist `/read/`, `/azkar/`
+    - resync on launch, on foreground when the day, time zone or coordinates key changed, and on any edit
 - **Daily hadith push:** `SendDailyHadithJob` runs every 15 minutes, selects devices with `push_daily_hadith = 1` whose local time just passed `daily_hadith_time` and who haven't received today's hadith, and sends in batches of 100 through the Expo Push API. Quiet hours 23:00–07:00 local are enforced server-side.
 - **Payload:** title and body in the device's locale, `data: { "route": "/hadith/123" }`; tapping opens that route through Expo Router.
 - **Receipts:** `ReadExpoReceiptsJob` sets `push_disabled_at` on `DeviceNotRegistered`.

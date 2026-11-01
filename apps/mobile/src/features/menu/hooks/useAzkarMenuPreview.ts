@@ -1,30 +1,41 @@
+import type { Href } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { formatNumber, useLocale } from '@/core/i18n';
-import { useContinueAzkar } from '@/features/azkar/data';
+import { useAzkarAvailable, useContinueAzkar } from '@/features/azkar/data';
+import { azkarHref } from '@/features/azkar/routes';
 
-export type AzkarMenuPreview = {
+export type MenuResume = {
   caption: string;
   title: string;
   preview: string;
-  /** 0 to 1 while a scope is in progress; undefined draws no bar. */
+  /** 0 to 1; undefined draws no bar. */
   progress?: number;
+  href: Href;
+};
+
+export type AzkarMenuState = {
+  /** Whether Azkar content is installed (ADR 0031 §10). Gates the Azkar cards and Favourites. */
+  available: boolean;
+  /** The scope to continue, opened in the reader at its first incomplete unit. Null when nothing is in progress. */
+  resume: MenuResume | null;
 };
 
 /**
- * The menu's Azkar card, as Azkar home's «تابع» card resolves it: the scope in progress with its count and bar, or
- * the subtitle when nothing is in progress. The caller mounts it only when Azkar content is installed, because
- * `useContinueAzkar` reads the content database.
+ * The menu's Azkar state. `resume` is the «تابع الأذكار» card: the last active scope with its count and bar, opened in
+ * the Azkar reader, which resumes at the first incomplete unit. `useContinueAzkar` reads the content database; under
+ * Jest that is mocked where a screen mounts this hook.
  */
-export function useAzkarMenuPreview(): AzkarMenuPreview {
+export function useAzkarMenuPreview(): AzkarMenuState {
   const { t } = useTranslation();
   const locale = useLocale();
+  const available = useAzkarAvailable();
   const continueAzkar = useContinueAzkar(locale);
 
-  return useMemo((): AzkarMenuPreview => {
-    if (continueAzkar === null) {
-      return { caption: t('menu.azkar.caption'), title: t('menu.azkar.title'), preview: t('menu.azkar.subtitle') };
+  return useMemo((): AzkarMenuState => {
+    if (!available || continueAzkar === null) {
+      return { available, resume: null };
     }
     const { scope, completed } = continueAzkar;
     const title = scope.categoryId
@@ -33,11 +44,20 @@ export function useAzkarMenuPreview(): AzkarMenuPreview {
         ? t(`azkar.occasions.${scope.occasion}` as never)
         : t('azkar.reader.entryTitle');
     const shown = Math.min(completed, scope.total);
+    const href = scope.categoryId
+      ? azkarHref.read(scope.categoryId)
+      : scope.entryKey
+        ? azkarHref.entry(scope.entryKey)
+        : azkarHref.home;
     return {
-      caption: t('menu.azkar.continueCaption'),
-      title,
-      preview: t('menu.azkar.progress', { current: formatNumber(shown, locale), total: formatNumber(scope.total, locale) }),
-      progress: scope.total === 0 ? 0 : shown / scope.total,
+      available,
+      resume: {
+        caption: t('menu.continueAzkar.caption'),
+        title,
+        preview: t('menu.azkar.progress', { current: formatNumber(shown, locale), total: formatNumber(scope.total, locale) }),
+        progress: scope.total === 0 ? 0 : shown / scope.total,
+        href,
+      },
     };
-  }, [continueAzkar, locale, t]);
+  }, [available, continueAzkar, locale, t]);
 }

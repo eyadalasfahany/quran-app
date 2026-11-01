@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { ContentColumn } from '@/core/layout';
+import { ContentColumn, useTabContentBottom } from '@/core/layout';
 import { ContinueReadingRow } from '@/features/library/components/ContinueReadingRow';
 import { IndexSegment, type IndexSegmentKey } from '@/features/library/components/IndexSegment';
 import { JuzRow } from '@/features/library/components/JuzRow';
@@ -15,8 +15,6 @@ import { listJuzStarts } from '@/features/library/data/juz';
 import { getChapter, listChapters, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
-import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
-import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { useTheme } from '@/core/theme';
 import { Screen, ScreenHeader, SearchButton, SkeletonGroup } from '@/shared/ui';
 
@@ -40,7 +38,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   const theme = useTheme();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
-  const miniShown = useMiniPlayerVisible('tabs');
+  const bottom = useTabContentBottom();
   const [segment, setSegment] = useState<IndexSegmentKey>('surahs');
 
   const { continueReading, rows } = useMemo(() => {
@@ -119,7 +117,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
         </ScreenHeader>
         <View style={{ flex: 1, marginTop: theme.size.blockGap, minHeight: 200 }}>
           <FlashList
-            contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
+            contentContainerStyle={{ paddingBottom: bottom }}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             data={rows}

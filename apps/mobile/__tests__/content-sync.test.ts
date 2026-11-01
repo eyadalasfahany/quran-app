@@ -981,6 +981,51 @@ describe('content sync', () => {
     });
   });
 
+  it('removes an installed azkar resource the manifest no longer lists, with its rows, and keeps the listed one', async () => {
+    const published = manifest([resource({ id: 2, group: 'azkar', version: 1 })]);
+    const onResourceRemoved = jest.fn();
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      for (const resourceId of [2, 3]) {
+        executor.run(
+          `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at)
+           VALUES (?, 'azkar', 1, 'hash', 0)`,
+          [resourceId],
+        );
+        executor.run(
+          `INSERT INTO azkar_categories (resource_id, id, kind, position, occasion, progress_period)
+           VALUES (?, 'morning', 'session', 1, 'morning', 'daily')`,
+          [resourceId],
+        );
+      }
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack: async () => {
+            throw new Error('no pack is needed');
+          },
+        })),
+        selection: () => [2],
+        onResourceRemoved,
+      });
+
+      expect(report.resources).toEqual([
+        { resourceId: 3, status: 'removed' },
+        { resourceId: 2, status: 'unchanged' },
+      ]);
+      expect(onResourceRemoved).toHaveBeenCalledWith(3, 'azkar');
+      expect(executor.all('SELECT resource_id AS resourceId FROM azkar_categories')).toEqual([{ resourceId: 2 }]);
+      expect(
+        executor.all<{ resourceId: number }>(
+          `SELECT resource_id AS resourceId FROM installed_resources WHERE "group" = 'azkar'`,
+        ),
+      ).toEqual([{ resourceId: 2 }]);
+    });
+  });
+
   it('reports a removed recitation pack to onResourceRemoved, so its downloads can go with it', async () => {
     const published = manifest([]);
     const onResourceRemoved = jest.fn();

@@ -76,3 +76,50 @@ describe('HomeTileRow', () => {
     expect(featureComponentLiterals('features/home/components/HomeTileRow.tsx')).toEqual([]);
   });
 });
+
+const fiveTiles = [
+  { icon: list, key: "surahs", label: "Surahs", onPress: () => undefined },
+  { icon: bookmark, key: "azkar", label: "Azkar", onPress: () => undefined },
+  { icon: bookmark, key: "sibha", label: "Misbaha", onPress: () => undefined },
+  { icon: bookmark, key: "saved", label: "Saved", onPress: () => undefined },
+  { icon: bookmark, key: "reciters", label: "Reciters", onPress: () => undefined },
+];
+
+async function layout(view: Awaited<ReturnType<typeof renderUi>>, id: string, width: number) {
+  await fireEvent(view.getByTestId(id), "layout", { nativeEvent: { layout: { height: 80, width, x: 0, y: 0 } } });
+}
+
+describe("HomeTileRow overflow", () => {
+  it("keeps the tiles in a row that shares the width while all of them fit", async () => {
+    const view = await renderUi(<HomeTileRow tiles={fiveTiles.slice(0, 4)} />, { locale: "en" });
+    await layout(view, "home-tiles-frame", 390);
+
+    expect(view.getByTestId("home-tiles").props.horizontal).toBeUndefined();
+    expect(flatStyle(view.getByTestId("home-tiles").props.style).flexDirection).toBe("row");
+  });
+
+  it("scrolls sideways at the 84 pt tile width when five tiles do not fit", async () => {
+    const view = await renderUi(<HomeTileRow tiles={fiveTiles} />, { locale: "en" });
+    await layout(view, "home-tiles-frame", 350);
+
+    const scroll = view.getByTestId("home-tiles");
+    expect(scroll.props.horizontal).toBe(true);
+    expect(scroll.props.showsHorizontalScrollIndicator).toBe(false);
+    expect(view.getByTestId("home-tiles-sibha")).toBeOnTheScreen();
+    expect(view.getByRole("button", { name: "Reciters" })).toBeOnTheScreen();
+  });
+
+  it("lays the five tiles out in a row on a wide window", async () => {
+    const view = await renderUi(<HomeTileRow tiles={fiveTiles} />, { locale: "en" });
+    await layout(view, "home-tiles-frame", 900);
+
+    expect(view.getByTestId("home-tiles").props.horizontal).toBeUndefined();
+    expect(view.getByTestId("home-tiles").children.length).toBe(5);
+  });
+
+  it("does not scroll before the row is measured", async () => {
+    const view = await renderUi(<HomeTileRow tiles={fiveTiles} />, { locale: "en" });
+
+    expect(flatStyle(view.getByTestId("home-tiles").props.style).flexDirection).toBe("row");
+  });
+});

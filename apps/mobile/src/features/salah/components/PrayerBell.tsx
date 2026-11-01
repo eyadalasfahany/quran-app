@@ -10,7 +10,8 @@ const BELL_ON: IconName = { ios: 'bell.fill', android: 'notifications_active' };
 
 /**
  * A prayer's reminder toggle: brand and selected while armed, muted outline while not.
- * The tap persists to MMKV (step 3); the scheduler picks it up in step 4.
+ * The tap runs `useBell`: permission on the first turn-on, then MMKV and a re-plan of the prayer notifications
+ * (ADR 0030 §3). A refusal leaves the bell off and shows the guidance alert.
  */
 export function PrayerBell({ prayer, testID }: { prayer: NextPrayerName; testID?: string }) {
   const { t } = useTranslation();

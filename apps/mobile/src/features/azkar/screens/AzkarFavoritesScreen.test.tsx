@@ -13,7 +13,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), push: jest.fn() },
+  router: { back: jest.fn(), canGoBack: jest.fn(() => true), push: jest.fn(), replace: jest.fn() },
 }));
 
 jest.mock('../data/favorites-repository', () => ({
@@ -43,6 +43,15 @@ describe('AzkarFavoritesScreen', () => {
 
     await press(screen.getByRole('button', { name: 'تصفّح الأذكار' }));
     expect(router.back).toHaveBeenCalledTimes(1);
+  });
+
+  it('replaces itself with Azkar home when opened with nothing under it', async () => {
+    jest.mocked(router.canGoBack).mockReturnValueOnce(false);
+    await renderUi(<AzkarFavoritesScreen />);
+
+    await press(screen.getByRole('button', { name: 'تصفّح الأذكار' }));
+    expect(router.replace).toHaveBeenCalledWith('/azkar');
+    expect(router.back).not.toHaveBeenCalled();
   });
 
   it('lists the saved dhikr, numbered, and opens one on press', async () => {

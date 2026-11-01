@@ -84,9 +84,10 @@ final class QuranSegmenter
     }
 
     /**
-     * Segments for an item. The references list must hold one row per span, in span order.
+     * Segments for an item. The references list holds one entry per span, in span order. An entry is one range, or a list
+     * of ranges for a span that runs across surah boundaries; each range becomes its own quran segment.
      *
-     * @param  list<array{0: int, 1: int, 2: int|null}>  $references
+     * @param  list<list<array{0: int, 1: int, 2: int|null}>>  $references
      * @return list<array{position: int, kind: string, text_ar: string|null, quran_surah: int|null, quran_verse_from: int|null, quran_verse_to: int|null, text_search: string|null}>
      *
      * @throws ReligiousTextIntegrityException
@@ -121,18 +122,21 @@ final class QuranSegmenter
                 continue;
             }
 
-            [$surah, $verseFrom, $verseTo] = $references[$spanIndex];
+            $ranges = $references[$spanIndex];
             $spanIndex++;
             $rebuilt .= self::OPEN.$piece['text'].self::CLOSE;
-            $segments[] = [
-                'position' => $position,
-                'kind' => 'quran',
-                'text_ar' => null,
-                'quran_surah' => $surah,
-                'quran_verse_from' => $verseFrom,
-                'quran_verse_to' => $verseTo,
-                'text_search' => null,
-            ];
+
+            foreach ($ranges as [$surah, $verseFrom, $verseTo]) {
+                $segments[] = [
+                    'position' => count($segments) + 1,
+                    'kind' => 'quran',
+                    'text_ar' => null,
+                    'quran_surah' => $surah,
+                    'quran_verse_from' => $verseFrom,
+                    'quran_verse_to' => $verseTo,
+                    'text_search' => null,
+                ];
+            }
         }
 
         if ($rebuilt !== $text) {

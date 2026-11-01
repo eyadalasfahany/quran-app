@@ -7,7 +7,9 @@ namespace App\Domains\Azkar\Validation;
 use App\Domains\Azkar\Data\FlatItem;
 use App\Domains\Azkar\Data\ImportIssue;
 use App\Domains\Azkar\OpenDua\StepFlattener;
+use App\Domains\Azkar\Services\QuranReferencePolicy;
 use App\Domains\Azkar\Services\QuranSegmenter;
+use App\Domains\Azkar\Sources\SourceProfile;
 
 /**
  * Collects every problem in a decoded catalogue. It never stops at the first one (ADR 0031 §3).
@@ -29,13 +31,14 @@ final class CatalogueValidator
     public function __construct(
         private readonly StepFlattener $flattener,
         private readonly QuranSegmenter $segmenter,
+        private readonly QuranReferencePolicy $references,
     ) {}
 
     /**
      * @param  array<string, mixed>  $catalogue
      * @return list<ImportIssue>
      */
-    public function validate(array $catalogue): array
+    public function validate(array $catalogue, SourceProfile $profile): array
     {
         $issues = [];
 
@@ -51,11 +54,11 @@ final class CatalogueValidator
             return [new ImportIssue(ImportIssue::ERROR, 'invalid_structure', 'counts')];
         }
 
-        if (($catalogue['dataVersion'] ?? null) !== config('azkar.opendua.version')) {
+        if (($catalogue['dataVersion'] ?? null) !== $profile->version) {
             $issues[] = new ImportIssue(ImportIssue::ERROR, 'version_mismatch', 'dataVersion');
         }
 
-        $collectionId = (string) config('azkar.opendua.collection_id');
+        $collectionId = $profile->collectionId;
         $entries = $catalogue['entries'];
         $this->entryKeys = $this->keysByIndex($entries, $collectionId);
 
@@ -114,7 +117,7 @@ final class CatalogueValidator
             $seen[$number] = true;
             $numberById[$chapter['id']] = $number;
 
-            if (! $this->hasArabicTitle($number)) {
+            if (! $this->hasArabicTitle($chapter, $number)) {
                 $issues[] = new ImportIssue(ImportIssue::WARNING, 'chapter_without_arabic_title', $path);
             }
         }
@@ -285,7 +288,9 @@ final class CatalogueValidator
     }
 
     /**
-     * ADR 0031 §4: every ﴿…﴾ span needs a reviewed reference row, one per span, in span order.
+     * ADR 0031 §4 and §11: every ﴿…﴾ span needs one map row, in span order. Each row's status decides whether the
+     * import may use it: reviewed rows always, candidate rows outside production (listed as warnings), and
+     * unmatched rows never.
      *
      * @return list<ImportIssue>
      */
@@ -313,15 +318,30 @@ final class CatalogueValidator
             return [new ImportIssue(ImportIssue::ERROR, 'quran_reference_unreviewed', $path, $item->entryIndex, $item->entryKey)];
         }
 
-        if (! $this->validReferences($references)) {
+        $rows = $this->parsedReferences($references);
+
+        if ($rows === null) {
             return [new ImportIssue(ImportIssue::ERROR, 'invalid_quran_reference', $path, $item->entryIndex, $item->entryKey)];
         }
 
-        if (count($references) !== $scan['spans']) {
+        if (count($rows) !== $scan['spans']) {
             return [new ImportIssue(ImportIssue::ERROR, 'quran_reference_unreviewed', $path, $item->entryIndex, $item->entryKey)];
         }
 
-        return [];
+        $issues = [];
+
+        foreach ($rows as $index => $row) {
+            $spanPath = $path.'#'.($index + 1);
+
+            $issues[] = match ($this->references->decide($row)) {
+                QuranReferencePolicy::DECISION_ACCEPT => null,
+                QuranReferencePolicy::DECISION_WARN_CANDIDATE => new ImportIssue(ImportIssue::WARNING, 'quran_reference_candidate', $spanPath, $item->entryIndex, $item->entryKey),
+                QuranReferencePolicy::DECISION_BLOCK => new ImportIssue(ImportIssue::ERROR, 'quran_reference_unreviewed', $spanPath, $item->entryIndex, $item->entryKey),
+                default => new ImportIssue(ImportIssue::ERROR, 'invalid_quran_reference', $spanPath, $item->entryIndex, $item->entryKey),
+            };
+        }
+
+        return array_values(array_filter($issues, static fn (?ImportIssue $issue): bool => $issue !== null));
     }
 
     /**
@@ -448,29 +468,41 @@ final class CatalogueValidator
         return $count > 1;
     }
 
-    private function validReferences(mixed $references): bool
+    /**
+     * @return list<array{surah: int|null, from: int|null, to: int|null, status: string, evidence: string|null}>|null
+     */
+    private function parsedReferences(mixed $references): ?array
     {
         if (! is_array($references) || ! array_is_list($references) || $references === []) {
-            return false;
+            return null;
         }
 
-        foreach ($references as $row) {
-            if (! is_array($row) || ! array_is_list($row) || count($row) !== 3) {
-                return false;
+        $rows = [];
+
+        foreach ($references as $reference) {
+            $row = $this->references->parse($reference);
+
+            if ($row === null) {
+                return null;
             }
 
-            [$surah, $from, $to] = $row;
-
-            if (! is_int($surah) || $surah < 1 || ! is_int($from) || $from < 1 || ($to !== null && (! is_int($to) || $to < 1))) {
-                return false;
-            }
+            $rows[] = $row;
         }
 
-        return true;
+        return $rows;
     }
 
-    private function hasArabicTitle(int $number): bool
+    /**
+     * A chapter's own Arabic title (from its source) wins; otherwise the reviewed config map (ADR 0031 §1).
+     *
+     * @param  array<array-key, mixed>  $chapter
+     */
+    private function hasArabicTitle(array $chapter, int $number): bool
     {
+        if (is_string($chapter['titleAr'] ?? null) && $chapter['titleAr'] !== '') {
+            return true;
+        }
+
         $titles = config('azkar.chapter_titles_ar', []);
 
         return is_array($titles) && is_string($titles[$number] ?? null) && $titles[$number] !== '';

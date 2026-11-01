@@ -8,6 +8,7 @@ use App\Domains\Azkar\Data\FlatItem;
 use App\Domains\Azkar\Data\ImportPlan;
 use App\Domains\Azkar\Data\ImportStats;
 use App\Domains\Azkar\OpenDua\StepFlattener;
+use App\Domains\Azkar\Sources\SourceProfile;
 use Carbon\CarbonImmutable;
 
 /**
@@ -19,17 +20,19 @@ final class AzkarTransformer
     public function __construct(
         private readonly StepFlattener $flattener,
         private readonly QuranSegmenter $segmenter,
+        private readonly QuranReferencePolicy $policy,
     ) {}
 
     /**
      * @param  array<string, mixed>  $catalogue
      * @param  array<int, true>  $blockedEntries  Entry indexes that have at least one error.
+     * @param  array<string, list<array<string, mixed>>>  $notesByEntryKey  HadeethEnc notes by entry key (ADR 0031 §12).
      */
-    public function plan(array $catalogue, string $sourceVersion, int $importedAt, array $blockedEntries): ImportPlan
+    public function plan(array $catalogue, string $sourceVersion, int $importedAt, array $blockedEntries, SourceProfile $profile, array $notesByEntryKey = []): ImportPlan
     {
-        $collectionId = (string) config('azkar.opendua.collection_id');
-        $storeEnglish = (bool) config('azkar.opendua.store_english', false);
-        $recordingsVerified = (bool) config('azkar.opendua.audio_rights_verified', false);
+        $collectionId = $profile->collectionId;
+        $storeEnglish = $profile->storeEnglish;
+        $recordingsVerified = $profile->audioRightsVerified;
         $rights = $this->recordingRights();
         $references = $this->references();
         $stats = new ImportStats(entriesBlocked: count($blockedEntries));
@@ -39,6 +42,7 @@ final class AzkarTransformer
         $tags = $this->list($catalogue['tags'] ?? null);
 
         $entries = [];
+        $notes = [];
         $items = [];
         $segments = [];
         $recordings = [];
@@ -159,6 +163,11 @@ final class AzkarTransformer
                 'imported_at' => $importedAt,
             ];
             $entryMeta[] = ['id' => $entryId, 'chapter' => $chapterNumber, 'variations' => $variationIds, 'tags' => $fields['tags']];
+
+            // ADR 0031 §12: notes attach to the entry by its key. Blocked entries stopped above, so they get none.
+            foreach (($notesByEntryKey[$entryKey] ?? []) as $note) {
+                $notes[] = ['id' => count($notes) + 1, 'entry_id' => $entryId] + $note;
+            }
         }
 
         [$categories, $entryCategories] = $this->categories($entryMeta, $tags);
@@ -177,7 +186,7 @@ final class AzkarTransformer
             segments: $segments,
             categories: $categories,
             entryCategories: $entryCategories,
-            notes: [],
+            notes: $notes,
             recordings: $recordings,
             stats: $stats,
         );
@@ -202,7 +211,9 @@ final class AzkarTransformer
             }
 
             $number = $chapter['number'];
-            $titleAr = is_string($titles[$number] ?? null) && $titles[$number] !== '' ? $titles[$number] : null;
+            $titleAr = is_string($chapter['titleAr'] ?? null) && $chapter['titleAr'] !== ''
+                ? $chapter['titleAr']
+                : (is_string($titles[$number] ?? null) && $titles[$number] !== '' ? $titles[$number] : null);
 
             if ($titleAr === null) {
                 $stats->chaptersWithoutArabicTitle++;
@@ -213,7 +224,7 @@ final class AzkarTransformer
                 'source_chapter_id' => $chapter['id'],
                 'number' => $number,
                 'title_ar' => $titleAr,
-                'title_en' => $chapter['title'],
+                'title_en' => $chapter['title'] === '' ? null : $chapter['title'],
             ];
             $numberById[$chapter['id']] = $number;
         }
@@ -295,7 +306,7 @@ final class AzkarTransformer
     /**
      * ADR 0031 §4 counting: every passage is either mapped to a reviewed row or unmapped.
      *
-     * @param  array<string, list<array{0: int, 1: int, 2: int|null}>>  $references
+     * @param  array<string, list<list<array{0: int, 1: int, 2: int|null}>>>  $references
      */
     private function tallyQuran(FlatItem $item, array $references, ImportStats $stats): void
     {
@@ -473,9 +484,10 @@ final class AzkarTransformer
     }
 
     /**
-     * The reviewed Quran reference map, keyed by item_key. Malformed rows are dropped here; the validator has already failed them.
+     * The usable Quran reference rows, keyed by item_key. Rows the policy does not accept are dropped here; the
+     * validator has already failed them, so an accepted entry always has one range per span.
      *
-     * @return array<string, list<array{0: int, 1: int, 2: int|null}>>
+     * @return array<string, list<list<array{0: int, 1: int, 2: int|null}>>>
      */
     private function references(): array
     {
@@ -494,9 +506,19 @@ final class AzkarTransformer
             $map[$itemKey] = [];
 
             foreach ($rows as $row) {
-                if (is_array($row) && count($row) === 3 && is_int($row[0]) && is_int($row[1]) && (is_int($row[2]) || $row[2] === null)) {
-                    $map[$itemKey][] = [$row[0], $row[1], $row[2]];
+                $parsed = $this->policy->parse($row);
+
+                if ($parsed === null || $parsed['surah'] === null || $parsed['from'] === null) {
+                    continue;
                 }
+
+                $decision = $this->policy->decide($parsed);
+
+                if (! in_array($decision, [QuranReferencePolicy::DECISION_ACCEPT, QuranReferencePolicy::DECISION_WARN_CANDIDATE], true)) {
+                    continue;
+                }
+
+                $map[$itemKey][] = $parsed['ranges'];
             }
         }
 
@@ -504,8 +526,8 @@ final class AzkarTransformer
     }
 
     /**
-     * @param  array<string, list<array{0: int, 1: int, 2: int|null}>>  $references
-     * @return list<array{0: int, 1: int, 2: int|null}>
+     * @param  array<string, list<list<array{0: int, 1: int, 2: int|null}>>>  $references
+     * @return list<list<array{0: int, 1: int, 2: int|null}>>
      */
     private function referencesFor(FlatItem $item, array $references): array
     {

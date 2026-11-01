@@ -2,6 +2,7 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { flatStyle, locales, renderUi, svgPaint } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { amiriNaturalLeading } from '@quran/design-tokens';
 import { themes } from '@/core/theme';
 
 import { ContinueReadingCard } from './ContinueReadingCard';
@@ -19,7 +20,7 @@ describe('ContinueReadingCard', () => {
       gap: 6,
       padding: 22,
     });
-    expect(flatStyle(view.getByText('سورة البقرة').props.style)).toMatchObject({ color: colors.onBrand, fontSize: 34 });
+    expect(flatStyle(view.getByText('سورة البقرة').props.style)).toMatchObject({ color: colors.onBrandSurface, fontSize: 34 });
     expect(view.getByText('الآية ٢٥٥ · صفحة ٤٢ · الجزء ٣')).toBeOnTheScreen();
     expect(flatStyle(view.getByText('تابع القراءة').props.style)).toMatchObject({
       color: colors.onBrandSurfaceMuted,
@@ -27,9 +28,23 @@ describe('ContinueReadingCard', () => {
       fontSize: 13,
     });
     expect(flatStyle(view.getByText('متابعة').props.style)).toMatchObject({
+      color: colors.onBrandSurface,
       fontFamily: 'IBMPlexSansArabic-SemiBold',
       fontSize: 13,
     });
+  });
+
+  it.each(['light', 'dark'] as const)('draws the title and the resume action in the on-brand surface token in %s', async (theme) => {
+    const view = await renderUi(<ContinueReadingCard {...props} />, { theme });
+
+    expect(flatStyle(view.getByText('سورة البقرة').props.style).color).toBe(themes[theme].colors.onBrandSurface);
+    expect(flatStyle(view.getByText('متابعة').props.style).color).toBe(themes[theme].colors.onBrandSurface);
+  });
+
+  it('gives the title a line height of at least Amiri natural leading', async () => {
+    const view = await renderUi(<ContinueReadingCard {...props} />);
+
+    expect(flatStyle(view.getByText('سورة البقرة').props.style).lineHeight).toBeGreaterThanOrEqual(Math.round(34 * amiriNaturalLeading));
   });
 
   it('fills the progress bar to the page’s share of the mushaf', async () => {

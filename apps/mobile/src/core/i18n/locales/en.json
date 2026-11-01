@@ -17,15 +17,7 @@
       "caption": "Next prayer",
       "title": "Prayer",
       "noLocation": "Prayer times for your location",
-      "preview": "{{time}} · {{remaining}}",
-      "inMinutes_one": "in {{minutes}} minute",
-      "inMinutes_other": "in {{minutes}} minutes",
-      "hoursPart_one": "1 hour",
-      "hoursPart_other": "{{formatted}} hours",
-      "minutesPart_one": "1 minute",
-      "minutesPart_other": "{{formatted}} minutes",
-      "remainingHours": "in {{hours}}",
-      "remainingHoursMinutes": "in {{hours}} {{minutes}}"
+      "preview": "{{time}} · {{remaining}}"
     },
     "qibla": {
       "caption": "Direction",
@@ -35,7 +27,6 @@
     },
     "azkar": {
       "caption": "Remembrance",
-      "continueCaption": "Continue",
       "title": "Azkar",
       "subtitle": "Azkar by occasion",
       "progress": "{{current}} of {{total}}"
@@ -73,6 +64,45 @@
       "caption": "References",
       "title": "Sources and thanks",
       "subtitle": "Sources and licences"
+    },
+    "continueReading": {
+      "caption": "Continue reading",
+      "preview": "Ayah {{ayah}} · page {{page}}"
+    },
+    "continueAzkar": {
+      "caption": "Continue azkar"
+    },
+    "home": {
+      "caption": "Start",
+      "title": "Home",
+      "subtitle": "Recent reading and listening"
+    },
+    "favorites": {
+      "caption": "Saved",
+      "title": "Favourite azkar",
+      "subtitle": "Azkar you saved"
+    }
+  },
+  "time": {
+    "remaining": {
+      "inMinutes_zero": "in less than a minute",
+      "inMinutes_one": "in {{minutes}} minute",
+      "inMinutes_two": "in {{minutes}} minutes",
+      "inMinutes_few": "in {{minutes}} minutes",
+      "inMinutes_many": "in {{minutes}} minutes",
+      "inMinutes_other": "in {{minutes}} minutes",
+      "hoursPart_one": "1 hour",
+      "hoursPart_two": "2 hours",
+      "hoursPart_few": "{{formatted}} hours",
+      "hoursPart_many": "{{formatted}} hours",
+      "hoursPart_other": "{{formatted}} hours",
+      "minutesPart_one": "1 minute",
+      "minutesPart_two": "2 minutes",
+      "minutesPart_few": "{{formatted}} minutes",
+      "minutesPart_many": "{{formatted}} minutes",
+      "minutesPart_other": "{{formatted}} minutes",
+      "remainingHours": "in {{hours}}",
+      "remainingHoursMinutes": "in {{hours}} {{minutes}}"
     }
   },
   "listen": {
@@ -336,7 +366,12 @@
     "surahResultHint_few": "{{n}} ayahs · starts on page {{page}}",
     "surahResultHint_many": "{{n}} ayahs · starts on page {{page}}",
     "surahResultHint_other": "{{n}} ayahs · starts on page {{page}}",
-    "surahTag": "Surah"
+    "surahTag": "Surah",
+    "scope": {
+      "label": "Search in",
+      "quran": "Quran",
+      "azkar": "Azkar"
+    }
   },
   "ui": {
     "loading": "Loading",
@@ -368,7 +403,8 @@
       "surahs": "Surahs",
       "saved": "Saved",
       "reciters": "Reciters",
-      "azkar": "Azkar"
+      "azkar": "Azkar",
+      "misbaha": "Misbaha"
     },
     "recent": {
       "heading": "Recently listened",
@@ -410,6 +446,31 @@
         "cardinalWest": "W",
         "cardinalEast": "E"
       }
+    },
+    "nextPrayer": {
+      "caption": "Next prayer",
+      "noLocation": "Set your location to see prayer times",
+      "a11yHint": "Open prayer times"
+    },
+    "dailyProgress": {
+      "title": "Today's progress",
+      "edit": "Edit",
+      "emptyTitle": "Set your daily goals",
+      "emptyBody": "Choose what you want to track each day: wird, Azkar and misbaha.",
+      "setGoals": "My daily goals",
+      "percent": "{{percent}}%",
+      "wird": "Daily wird",
+      "pages": "{{current}} of {{total}} pages",
+      "misbaha": "Misbaha",
+      "complete": "Complete"
+    },
+    "selectedAzkar": {
+      "heading": "Selected Azkar",
+      "all": "See all"
+    },
+    "recentAzkar": {
+      "heading": "Recent Azkar",
+      "complete": "complete"
     }
   },
   "salah": {
@@ -567,10 +628,19 @@
     "openSettings": "Open Settings"
   },
   "notifications": {
+    "prayer": {
+      "title": "Time for {{name}} prayer",
+      "body": "Tap to open prayer times"
+    },
     "reminder": {
       "title": "Your daily wird",
       "body": "Time to read your daily wird of the Quran",
       "wirdToday": "Today's wird:"
+    },
+    "channels": {
+      "reminders": "Daily reading reminder",
+      "azkar": "Azkar reminders",
+      "prayer": "Prayer times"
     }
   },
   "settings": {
@@ -581,6 +651,7 @@
       "reading": "Reading",
       "listening": "Listening",
       "reminders": "Habit & Reminders",
+      "prayerNotifications": "Prayer notifications",
       "about": "About"
     },
     "language": {
@@ -610,7 +681,8 @@
       "permissionDeniedTitle": "Cannot send reminders",
       "permissionDeniedBody": "Taybah needs permission to send daily reminders. You can enable them in your device settings.",
       "khatma": "Khatma",
-      "khatmaValue": "30 days"
+      "khatmaValue": "30 days",
+      "azkarReminders": "Azkar reminders"
     },
     "about": {
       "sources": "Sources and acknowledgments",
@@ -749,6 +821,100 @@
     "unavailable": {
       "title": "Azkar are not available yet",
       "body": "The content arrives once publishing rights are complete"
+    },
+    "audio": {
+      "play": "Play recording",
+      "pause": "Pause recording",
+      "replay": "Replay",
+      "position": "{{elapsed}} of {{total}}",
+      "unavailableOffline": "Not available offline",
+      "unavailableOfflineHint": "This recording needs an internet connection",
+      "autoplay": "Auto-play",
+      "autoplayHint": "Moves to the next dhikr when the recording ends",
+      "licence": "Licence: {{licence}}"
+    },
+    "download": {
+      "download": "Download recording",
+      "cancel": "Cancel download",
+      "remove": "Delete recording",
+      "retry": "Try again",
+      "done": "Downloaded",
+      "rowDone": "{{size}} · Downloaded",
+      "failed": "Download failed",
+      "progress": "Downloading · {{percent}}%"
+    },
+    "downloads": {
+      "title": "Saved audio",
+      "storage": "Storage used",
+      "megabytes": "{{value}} MB",
+      "removeAll": "Delete all",
+      "emptyTitle": "No recordings are available yet",
+      "emptyBody": "Recordings will appear here once their use is licensed."
+    },
+    "reminders": {
+      "title": "Azkar reminders",
+      "disclaimer": "The reminder time is your choice, not a set time for the dhikr.",
+      "dailyAlert": "Daily alert",
+      "entryAction": "Remind me of this dhikr",
+      "trigger": {
+        "label": "Reminder time",
+        "clock": "Set time",
+        "prayer": "After prayer"
+      },
+      "time": "Time",
+      "chooseTime": "Choose a time",
+      "prayer": "Prayer",
+      "offset": "Offset",
+      "offsetAt": "At prayer time",
+      "offsetAfter_one": "{{number}} minute after",
+      "offsetAfter_two": "{{number}} minutes after",
+      "offsetAfter_other": "{{number}} minutes after",
+      "offsetAfter_few": "{{number}} minutes after",
+      "offsetAfter_many": "{{number}} minutes after",
+      "offsetLess": "Decrease offset",
+      "offsetMore": "Increase offset",
+      "needsLocation": "Set your location in Prayer to use this option",
+      "setLocation": "Set location",
+      "deniedTitle": "Notifications are off for Taybah",
+      "deniedBody": "Turn them on in your device settings to receive reminders.",
+      "notificationTitle": "{{name}}",
+      "notificationEntryTitle": "Azkar reminder",
+      "notificationBody": "Your chosen reminder",
+      "limitReached": "Reminder limit reached"
     }
+  },
+  "sibha": {
+    "title": "Misbaha",
+    "close": "Close",
+    "reset": "Reset",
+    "resetTitle": "Reset the counter?",
+    "resetBody": "The counter goes back to zero. Today's total is kept.",
+    "resetConfirm": "Reset",
+    "label": "Optional label",
+    "labelA11y": "Optional label",
+    "target": "Target",
+    "targetCustom": "Custom",
+    "counter": {
+      "label": "Counter",
+      "hint": "Tap to count",
+      "value": "{{current}} of {{total}}",
+      "plain": "{{current}}",
+      "ofTarget": "of {{total}}"
+    },
+    "hint": "Tap anywhere to count",
+    "customTitle": "Custom target",
+    "customBody": "Enter a number from 1 to 9999",
+    "customField": "Number of counts",
+    "customSave": "Save"
+  },
+  "dailyGoals": {
+    "title": "My daily goals",
+    "save": "Save",
+    "note": "Goals are saved on this device and are not sent to anyone.",
+    "wird": "Daily wird (khatma)",
+    "misbaha": "Daily misbaha target",
+    "misbahaCount": "Counts per day",
+    "decrease": "Decrease",
+    "increase": "Increase"
   }
 }

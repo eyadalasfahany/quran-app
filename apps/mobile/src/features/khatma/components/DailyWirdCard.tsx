@@ -1,3 +1,4 @@
+import { amiriNaturalLeading, typeScale } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -40,7 +41,11 @@ export function DailyWirdCard({
         <UiText tone="onBrandMuted" variant="caption" weight={500}>
           {t('khatma.dailyWirdLabel')}
         </UiText>
-        <UiText tone="onBrand" variant="displayLg">
+        <UiText
+          style={{ lineHeight: Math.round(typeScale.displayLg.size * amiriNaturalLeading) }}
+          tone="onBrandSurface"
+          variant="displayLg"
+        >
           {t('khatma.pagesPerDay', { count: pagesPerDay, formatted: formatNumber(pagesPerDay, locale) })}
         </UiText>
         <UiText tone="onBrandMuted" variant="caption">

@@ -1,3 +1,4 @@
+import { amiriNaturalLeading, typeScale } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -62,7 +63,11 @@ export function ContinueReadingCard({
       <UiText tone="onBrandMuted" variant="caption" weight={500}>
         {t('home.continueReading')}
       </UiText>
-      <UiText tone="onBrand" variant="displayLg">
+      <UiText
+        style={{ lineHeight: Math.round(typeScale.displayLg.size * amiriNaturalLeading) }}
+        tone="onBrandSurface"
+        variant="displayLg"
+      >
         {title}
       </UiText>
       <UiText tone="onBrandMuted" variant="subhead">
@@ -73,7 +78,7 @@ export function ContinueReadingCard({
           <View style={[track, { backgroundColor: theme.colors.onBrandSurface, opacity: TRACK_OPACITY }, StyleSheet.absoluteFill]} />
           <View style={[track, { backgroundColor: theme.colors.gold, width: `${percent}%` }]} testID={`${testID}-progress`} />
         </View>
-        <UiText tone="onBrand" variant="caption" weight={600}>
+        <UiText tone="onBrandSurface" variant="caption" weight={600}>
           {t('home.resume')}
         </UiText>
       </View>

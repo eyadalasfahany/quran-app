@@ -5,7 +5,7 @@ import { Alert, FlatList, View } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { useLocale } from '@/core/i18n/useLocale';
-import { ContentColumn } from '@/core/layout';
+import { ContentColumn, useTabContentBottom } from '@/core/layout';
 import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
 
@@ -15,10 +15,8 @@ import { ReciterSurahRow } from '../components/ReciterSurahRow';
 import { useReciterDownloads as useReciterDownloadRows } from '../data/downloads';
 import { cancel, enqueueAll, enqueueSurah, remove, removeReciter } from '../downloads/manager';
 import { useDownloadProgress } from '../downloads/store';
-import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { useReciterSurahs } from '../hooks/useReciterSurahs';
-import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
 import { recitationStyleKey } from '../player-view';
 import { playSurahFromReciter } from '../reciter-playback';
 import { downloadReciterPack, useReciterDownloads as usePackDownloads } from '../reciter-downloads';
@@ -36,7 +34,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   const locale = useLocale();
   const { ready } = useContentDb();
   const { reciters } = useReciterCatalogue(ready);
-  const miniShown = useMiniPlayerVisible('tabs');
+  const bottom = useTabContentBottom();
   const reciter = reciters.find((item) => item.resourceId === resourceId);
   const known = reciter !== undefined;
   const installed = reciter?.installed === true;
@@ -135,7 +133,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
     <Screen testID="screen-reciter">
       <ContentColumn gutter={FRAME_GUTTER}>
         <FlatList
-          contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
+          contentContainerStyle={{ paddingBottom: bottom }}
           data={installed ? surahs : []}
           keyExtractor={(chapter) => String(chapter.id)}
           ListEmptyComponent={emptyState ?? undefined}

@@ -80,6 +80,10 @@ describe('clearLocalUserData', () => {
     storage.set(storageKeys.readerLastVerseKey, '2:255');
     storage.set(storageKeys.readerLastPage, 42);
     storage.set(storageKeys.audioLastPosition, 12345);
+    storage.set(storageKeys.azkar.recentScopes, JSON.stringify([{ openedAt: 1, scopeKey: 'category:morning' }]));
+    storage.set(storageKeys.sibha.state, JSON.stringify({ count: 3, label: '', target: 33 }));
+    storage.set(storageKeys.sibha.today, JSON.stringify({ date: '2026-11-01', total: 3 }));
+    storage.set(storageKeys.dailyGoals, JSON.stringify({ misbahaTarget: 100, sessions: [], wird: true }));
 
     clearLocalUserData(executor);
 
@@ -97,6 +101,10 @@ describe('clearLocalUserData', () => {
     expect(storage.contains(storageKeys.readerLastVerseKey)).toBe(false);
     expect(storage.contains(storageKeys.readerLastPage)).toBe(false);
     expect(storage.contains(storageKeys.audioLastPosition)).toBe(false);
+    expect(storage.contains(storageKeys.azkar.recentScopes)).toBe(false);
+    expect(storage.contains(storageKeys.sibha.state)).toBe(false);
+    expect(storage.contains(storageKeys.sibha.today)).toBe(false);
+    expect(storage.contains(storageKeys.dailyGoals)).toBe(false);
 
     database.close();
   });

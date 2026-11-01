@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import * as Location from 'expo-location';
+import { Alert, Linking } from 'react-native';
 import { getCoordinates, getStoredLocationSource, getStoredManualCityId, LocationSource } from '../data/location';
 import { PrayerTimesOutput, NextPrayerName, nextPrayer, timesFor } from '../data/prayer-times';
-import { getBellEnabled, setBellEnabled } from '../data/bells';
+import { bellStorageKey, getBellEnabled } from '../data/bells';
+import { setPrayerBell } from '../data/notifications';
 import { formatHijriDate } from '../../../core/i18n/dates';
-import { getLocale } from '../../../core/i18n';
+import { getLocale, i18n } from '../../../core/i18n';
+import { storage } from '../../../core/storage/mmkv';
 import { getCityById } from '../data/cities';
 
 export { useNow } from './useNow';
@@ -80,17 +83,51 @@ export const useHijriDate = (now?: Date) => {
   return useMemo(() => formatHijriDate(now ?? new Date(), locale), [now, locale]);
 };
 
-// A prayer's reminder toggle: persisted to MMKV on tap (step 3); the scheduler reads it in step 4.
+/** The refusal alert: the same copy and settings link as the daily reminder (Phase 4). */
+function presentPermissionDenied(): void {
+  Alert.alert(
+    i18n.t('settings.reminders.permissionDeniedTitle'),
+    i18n.t('settings.reminders.permissionDeniedBody'),
+    [
+      { text: i18n.t('common.cancel'), style: 'cancel' },
+      { text: i18n.t('common.openSettings'), onPress: () => void Linking.openSettings() },
+    ],
+  );
+}
+
+/**
+ * A prayer's reminder bell, persisted in MMKV and live: the Salah row and the Settings section share it. Turning it on
+ * asks for notification permission first; a refusal leaves it off and shows the guidance alert (ADR 0030 §3). Each
+ * applied change re-plans the prayer notifications.
+ */
 export const useBell = (name: NextPrayerName) => {
-  const [enabled, setEnabled] = useState(() => getBellEnabled(name));
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const listener = storage.addOnValueChangedListener((key) => {
+        if (key === bellStorageKey(name)) {
+          onChange();
+        }
+      });
+      return () => listener.remove();
+    },
+    [name],
+  );
+  const enabled = useSyncExternalStore(subscribe, () => getBellEnabled(name));
+
+  const setEnabled = useCallback(
+    async (on: boolean): Promise<boolean> => {
+      const applied = await setPrayerBell(name, on);
+      if (!applied) {
+        presentPermissionDenied();
+      }
+      return applied;
+    },
+    [name],
+  );
 
   const toggle = useCallback(() => {
-    setEnabled((previous) => {
-      const next = !previous;
-      setBellEnabled(name, next);
-      return next;
-    });
-  }, [name]);
+    void setEnabled(!getBellEnabled(name));
+  }, [name, setEnabled]);
 
-  return { enabled, toggle };
+  return { enabled, setEnabled, toggle };
 };

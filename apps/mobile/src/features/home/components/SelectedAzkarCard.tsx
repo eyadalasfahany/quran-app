@@ -1,0 +1,68 @@
+import { Pressable, View } from 'react-native';
+
+import { useTheme } from '@/core/theme';
+import { UiText, useContrastColors } from '@/shared/ui';
+
+const TRACK_HEIGHT = 4;
+// The card is 148 pt wide with 16 pt padding and 10 pt between its parts (quran-app-screens.html, #Main).
+const CARD_WIDTH = 148;
+const CARD_PADDING = 16;
+const CARD_GAP = 10;
+
+/**
+ * One Azkar session in Home's «أذكار مختارة» row (quran-app-screens.html, #Main): the session's name, a thin bar for
+ * today's progress and its count, which sits at the end of the card. It opens the session's category.
+ */
+export function SelectedAzkarCard({
+  title,
+  progressText,
+  fraction,
+  onPress,
+  testID = 'home-selected-azkar-card',
+}: {
+  title: string;
+  progressText: string;
+  /** 0 to 1 for the current period. */
+  fraction: number;
+  onPress: () => void;
+  testID?: string;
+}) {
+  const theme = useTheme();
+  const colors = useContrastColors();
+  const clamped = Math.min(Math.max(fraction, 0), 1);
+
+  return (
+    <Pressable
+      accessibilityLabel={`${title}, ${progressText}`}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => ({
+        backgroundColor: theme.colors.surfaceRaised,
+        borderColor: colors.line,
+        borderRadius: theme.radius.lg,
+        borderWidth: theme.stroke.hairline,
+        gap: CARD_GAP,
+        opacity: pressed ? theme.opacity.pressed : 1,
+        padding: CARD_PADDING,
+        width: CARD_WIDTH,
+      })}
+      testID={testID}
+    >
+      <UiText variant="headline">{title}</UiText>
+      <View style={{ backgroundColor: colors.line, borderRadius: TRACK_HEIGHT / 2, height: TRACK_HEIGHT, overflow: 'hidden' }}>
+        <View
+          style={{
+            backgroundColor: theme.colors.brand,
+            borderRadius: TRACK_HEIGHT / 2,
+            height: TRACK_HEIGHT,
+            width: `${Math.round(clamped * 100)}%`,
+          }}
+          testID={`${testID}-progress`}
+        />
+      </View>
+      <UiText style={{ alignSelf: 'flex-end' }} tone="muted" variant="caption">
+        {progressText}
+      </UiText>
+    </Pressable>
+  );
+}

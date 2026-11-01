@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react-native';
 
+import { makeRecording } from '../../../../jest/azkar-audio-fixtures';
 import { renderUi } from '../../../../jest/render-ui';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -69,6 +70,20 @@ describe('AzkarReaderActions', () => {
     const { ui } = renderActions();
     await renderUi(ui);
     expect(screen.getByRole('button', { name: 'إزالة من المفضلة' })).toBeTruthy();
+  });
+
+  it('draws no audio or download control without a licensed recording', async () => {
+    const { ui } = renderActions({ recording: null, unitKey: 'fixture:item-1' });
+    await renderUi(ui);
+    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'تنزيل التسجيل' })).toBeNull();
+  });
+
+  it('draws the play control of a playable licensed recording in the action row', async () => {
+    const { ui } = renderActions({ recording: makeRecording(), unitKey: 'fixture:item-1' });
+    await renderUi(ui);
+    expect(screen.getByRole('button', { name: 'تشغيل التسجيل' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'حجم النص' })).toBeOnTheScreen();
   });
 
   it('renders the English labels', async () => {

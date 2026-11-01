@@ -1,5 +1,5 @@
 import { makeUnit } from '../../../jest/azkar-ui-fixtures';
-import { allUnitsDone, completedUnitKeys, readerProgress, referenceNumber, resolveReaderPosition } from './reader-model';
+import { allUnitsDone, completedUnitKeys, readerProgress, referenceNumber, resolveReaderPosition, showsCounter } from './reader-model';
 
 describe('allUnitsDone', () => {
   it('is true only when every unit is complete, and false for an empty session', () => {
@@ -69,5 +69,17 @@ describe('referenceNumber', () => {
 
   it('keeps a non-numeric reference as written', () => {
     expect(referenceNumber('FIXTURE-001', 'ar')).toBe('FIXTURE-001');
+  });
+});
+
+describe('showsCounter', () => {
+  it('shows the counter only for a sourced count above 1', () => {
+    expect(showsCounter(3)).toBe(true);
+    expect(showsCounter(2)).toBe(true);
+    // A count of 1 is one recitation: the reader shows «تم», never «١ من ١».
+    expect(showsCounter(1)).toBe(false);
+    // No sourced count is never a counter (it is not defaulted to 1).
+    expect(showsCounter(null)).toBe(false);
+    expect(showsCounter(0)).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 
-import { registerReminderDeepLinks } from './reminder-deeplink';
+import { isReminderRoute, registerReminderDeepLinks } from './reminder-deeplink';
 
 jest.mock('expo-router', () => ({
   router: { navigate: jest.fn() },
@@ -37,12 +37,34 @@ describe('registerReminderDeepLinks', () => {
     expect(router.navigate).toHaveBeenCalledWith('/read/2:255');
   });
 
-  it.each(['/settings', 'not-a-route', 42, undefined])('ignores the payload route %s', (route) => {
-    registerReminderDeepLinks();
+  it.each(['/settings', 'not-a-route', 42, undefined, '/azkarx', '/salah', 'azkar/category/morning'])(
+    'ignores the payload route %s',
+    (route) => {
+      registerReminderDeepLinks();
 
-    tapListener()(response('reminder-1', route));
+      tapListener()(response('reminder-1', route));
 
-    expect(router.navigate).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['/azkar/category/morning', '/azkar/entry/hisn-al-muslim%3Aentry-000075'])(
+    'opens the Azkar reminder route %s',
+    (route) => {
+      registerReminderDeepLinks();
+
+      // A distinct identifier per tap: the cold-start de-duplication is keyed by it.
+      tapListener()(response(`azkar-${route}`, route));
+
+      expect(router.navigate).toHaveBeenCalledWith(route);
+    },
+  );
+
+  it('recognises only the allowed prefixes', () => {
+    expect(isReminderRoute('/read/2:255')).toBe(true);
+    expect(isReminderRoute('/azkar/category/morning')).toBe(true);
+    expect(isReminderRoute('/sibha')).toBe(false);
+    expect(isReminderRoute(null)).toBe(false);
   });
 
   it('swallows the cold-start duplicate of a tap, but not a later tap', () => {

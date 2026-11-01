@@ -43,6 +43,14 @@ export function resolveReaderPosition(
   return { index: firstIncomplete, finished: false };
 }
 
+/**
+ * Whether a unit shows the counter. A sourced count of 1 is one recitation and gets «تم» (ADR 0031 §6), so only a count
+ * above 1 shows the counter. `null` (no sourced count) never does.
+ */
+export function showsCounter(requiredCount: number | null): boolean {
+  return requiredCount !== null && requiredCount > 1;
+}
+
 /** Whether every unit of the session is done. An empty session is not. */
 export function allUnitsDone(units: readonly ReaderUnit[], completed: ReadonlySet<string>): boolean {
   return units.length > 0 && units.every((unit) => completed.has(unit.unitKey));

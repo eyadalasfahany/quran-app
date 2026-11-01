@@ -10,7 +10,7 @@ import { AzkarItemCard } from '../components/AzkarItemCard';
 import { AzkarScreenHeader } from '../components/AzkarScreenHeader';
 import { useFavoriteCards } from '../data';
 import { toggleFavorite } from '../data/favorites-repository';
-import { azkarHref } from '../routes';
+import { azkarHref, goBackOr } from '../routes';
 
 const BOOKMARK = { ios: 'bookmark.fill', android: 'bookmark' } as const;
 const EMPTY_ICON = { ios: 'bookmark', android: 'bookmark' } as const;
@@ -28,10 +28,10 @@ export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { te
     <Screen testID={testID}>
       <ContentColumn gutter={theme.size.gutterHome}>
         <View style={{ flex: 1, gap: theme.space[5], paddingTop: theme.space[2] }}>
-          <AzkarScreenHeader onBack={() => router.back()} title={t('azkar.browse.favourites')} />
+          <AzkarScreenHeader onBack={() => goBackOr(azkarHref.home)} title={t('azkar.browse.favourites')} />
           {cards.length === 0 ? (
             <EmptyState
-              action={{ label: t('azkar.favourites.browse'), onPress: () => router.back() }}
+              action={{ label: t('azkar.favourites.browse'), onPress: () => goBackOr(azkarHref.home) }}
               body={t('azkar.favourites.emptyBody')}
               icon={EMPTY_ICON}
               testID="azkar-favorites-empty"

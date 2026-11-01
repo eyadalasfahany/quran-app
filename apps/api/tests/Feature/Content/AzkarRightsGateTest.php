@@ -35,8 +35,19 @@ function sourceResourceAttributes(PermissionStatus $status, ResourceGroup $group
         'permission_status' => $status,
     ]);
 
+    // ADR 0031 §1: an azkar pack also needs the source's own import flag, enabled for these fixtures.
+    config(['azkar.'.$source->code.'.import_enabled' => true]);
+
     return ['source_id' => $source->id, 'group' => $group, 'version' => 1];
 }
+
+it('refuses an azkar pack from a granted source while its import flag is off', function (): void {
+    $resource = Resource::factory()->create(sourceResourceAttributes(PermissionStatus::Granted, ResourceGroup::Azkar));
+    config(['azkar.gate-granted-azkar.import_enabled' => false]);
+
+    expect(fn () => app(PackBuilder::class)->build($resource))->toThrow(PackBuildException::class, 'import is locked')
+        ->and(ContentPack::query()->where('resource_id', $resource->id)->count())->toBe(0);
+});
 
 it('refuses to build a pack for a source whose rights are not cleared', function (PermissionStatus $status): void {
     $resource = Resource::factory()->create(sourceResourceAttributes($status, ResourceGroup::Azkar));
@@ -80,6 +91,8 @@ it('packs an azkar chapter row through the azkar snapshot queries', function ():
 it('omits a pending source from the manifest and from its pack and change endpoints', function (): void {
     $pending = Resource::factory()->create(sourceResourceAttributes(PermissionStatus::Pending, ResourceGroup::Azkar));
     $granted = Resource::factory()->create(sourceResourceAttributes(PermissionStatus::Granted, ResourceGroup::Azkar));
+    // ADR 0031 §12: only the primary source is listed, so this granted source is made the primary for this test.
+    config(['azkar.primary_source' => 'gate-granted-azkar']);
     app(PackBuilder::class)->build($granted);
 
     // A pack recorded before the source was downgraded must still stay out of the manifest.

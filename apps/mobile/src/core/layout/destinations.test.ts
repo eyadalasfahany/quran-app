@@ -15,13 +15,15 @@ describe('tabDestinations', () => {
 
   it('puts مصحفي in the middle of the five tabs', () => {
     expect(tabDestinations).toHaveLength(5);
-    expect(tabDestinations[2].name).toBe('(my-quran)');
-    expect(tabDestinations[2].symbol).toBe('person.crop.circle');
-    expect(tabDestinations[2].androidIcon).toBe('account_circle');
+    const myQuran = byName('(my-quran)');
+    expect(tabDestinations.indexOf(myQuran)).toBe(2);
+    expect(myQuran.symbol).toBe('person.crop.circle');
+    expect(myQuran.androidIcon).toBe('account_circle');
   });
 
   it('has the menu tab last, with the line-3 icon, its label and route', () => {
-    const menuTab = tabDestinations[4];
+    const menuTab = byName('(menu)');
+    expect(tabDestinations.indexOf(menuTab)).toBe(4);
     expect(menuTab.label).toBe('tabs.menu');
     expect(menuTab.symbol).toBe('line.3.horizontal');
     expect(menuTab.androidIcon).toBe('menu');
@@ -35,9 +37,9 @@ describe('tabDestinations', () => {
 });
 
 describe('destinations', () => {
-  it('keeps the Salah route as a destination the menu can open', () => {
+  it('keeps the Salah route as a destination the menu can open, at /salah', () => {
     expect(byName('(salah)')).toMatchObject({
-      href: '/(main)/(salah)',
+      href: '/salah',
       label: 'tabs.salah',
       symbol: 'moon.stars',
       androidIcon: 'mosque',
@@ -72,9 +74,9 @@ describe('sidebarDestinations', () => {
 
 describe('destinations consistency', () => {
   it('every tab and sidebar entry is a known destination', () => {
-    const hrefs = new Set(destinations.map((d) => d.href));
+    const hrefs = new Set<string>(destinations.map((d) => String(d.href)));
     for (const destination of [...tabDestinations, ...sidebarDestinations]) {
-      expect(hrefs.has(destination.href)).toBe(true);
+      expect(hrefs.has(String(destination.href))).toBe(true);
     }
   });
 });

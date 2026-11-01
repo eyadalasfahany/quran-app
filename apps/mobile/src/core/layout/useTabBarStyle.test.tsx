@@ -1,7 +1,7 @@
 import { highContrast } from '@quran/design-tokens';
 import { renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
-import { AccessibilityInfo, I18nManager, Platform } from 'react-native';
+import { AccessibilityInfo, I18nManager } from 'react-native';
 
 import { featureComponentLiterals } from '../../../jest/ui-source';
 import { ThemeProvider, themes } from '@/core/theme';
@@ -34,26 +34,6 @@ describe('useTabBarStyle', () => {
       tintColor: colors.brand,
       unstable_nativeProps: { direction: 'ltr' },
     });
-  });
-
-  it.each(['light', 'dark'] as const)('on Android labels every tab and uses the brand wash indicator in %s (#HomeAndroid)', async (name) => {
-    const original = Platform.OS;
-    Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
-    try {
-      const { result } = await renderHook(() => useTabBarStyle(), { wrapper: wrapper(name) });
-
-      expect(result.current.labelVisibilityMode).toBe('labeled');
-      expect(result.current.indicatorColor).toBe(themes[name].colors.glassSelected);
-    } finally {
-      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => original });
-    }
-  });
-
-  it('leaves iOS without Android-only tab bar props', async () => {
-    const { result } = await renderHook(() => useTabBarStyle(), { wrapper: wrapper('light') });
-
-    expect(result.current).not.toHaveProperty('labelVisibilityMode');
-    expect(result.current).not.toHaveProperty('indicatorColor');
   });
 
   it('sets label weight through the font file, never fontWeight', async () => {

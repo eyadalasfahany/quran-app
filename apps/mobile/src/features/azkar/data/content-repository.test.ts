@@ -3,15 +3,19 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { at, openAzkarContentDb } from '../../../../jest/azkar-test-db';
+import { activeAzkarResourceId } from './active-resource';
 import {
+  getCategory,
   getEntry,
   getQuranSegmentVerses,
   hasAzkarContent,
   listCategories,
   listCategoryEntries,
+  listCategoryIds,
   listCategoryUnits,
 } from './content-repository';
 import { loadAzkarDevFixtures } from './dev-fixtures';
+import { searchAzkarEntries } from './search';
 
 // Verse rows are placeholders: the real Quran text comes from the Tanzil seed, never from these tests.
 function insertPlaceholderVerses(database: DatabaseSync): void {
@@ -242,5 +246,126 @@ describe('azkar content repository', () => {
         (verse) => verse.verseKey,
       ),
     ).toEqual(['1:1', '1:2']);
+  });
+});
+
+/**
+ * Installs one azkar resource with one category, one entry, one item and one text segment. The text is a placeholder;
+ * `source` makes each resource's rows distinguishable. Both resources share the category id, as two upstream books do.
+ */
+function installAzkarSource(executor: SqlExecutor, resourceId: number, source: string): void {
+  executor.run(
+    `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at) VALUES (?, 'azkar', 1, 'hash', 0)`,
+    [resourceId],
+  );
+  executor.run(
+    `INSERT INTO azkar_chapters (resource_id, id, source_chapter_id, number, title_ar, title_en) VALUES (?, 1, ?, 1, ?, 'FIXTURE chapter')`,
+    [resourceId, `${source}-chapter-1`, `[عنوان ${source}]`],
+  );
+  executor.run(
+    `INSERT INTO azkar_entries (resource_id, id, entry_key, chapter_id, position, source_reference, entry_type, occasion,
+       timing_type, timing_prayer, timing_policy_id, review_status, source_version, imported_at)
+     VALUES (?, 1, ?, 1, 1, 'FIXTURE-1', 'invocation', 'morning', 'time_period', NULL, NULL, 'sourced', ?, 0)`,
+    [resourceId, `${source}:entry-1`, source],
+  );
+  executor.run(
+    `INSERT INTO azkar_items (resource_id, id, entry_id, item_key, variation_key, position, kind, required_count,
+       speaker, source_dua_id, text_en, transliteration, source_text_sha256, repeat_group, repeat_times)
+     VALUES (?, 1, 1, ?, 'default', 1, 'recitation', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL)`,
+    [resourceId, `${source}:item-1`],
+  );
+  executor.run(
+    `INSERT INTO azkar_segments (resource_id, item_id, position, kind, text_ar, quran_surah, quran_verse_from, quran_verse_to, text_search)
+     VALUES (?, 1, 1, 'text', ?, NULL, NULL, NULL, ?)`,
+    [resourceId, `FIXTURE shared text ${source}`, `fixture shared text ${source}`],
+  );
+  executor.run(
+    `INSERT INTO azkar_categories (resource_id, id, kind, position, occasion, progress_period)
+     VALUES (?, 'morning', 'session', 1, 'morning', 'daily')`,
+    [resourceId],
+  );
+  executor.run(
+    `INSERT INTO azkar_entry_categories (resource_id, category_id, entry_id, variation_key, position)
+     VALUES (?, 'morning', 1, '*', 1)`,
+    [resourceId],
+  );
+}
+
+describe('azkar active resource', () => {
+  let database: DatabaseSync;
+  let executor: SqlExecutor;
+
+  beforeEach(() => {
+    const opened = openAzkarContentDb();
+    database = opened.database;
+    executor = opened.executor;
+  });
+
+  afterEach(() => {
+    database.close();
+  });
+
+  it('falls back to the dev fixture id when no real azkar resource is installed', () => {
+    expect(activeAzkarResourceId(executor)).toBe(-1);
+  });
+
+  it('picks the lowest installed azkar resource id, deterministically', () => {
+    installAzkarSource(executor, 3, 'hisn');
+    installAzkarSource(executor, 2, 'opendua');
+
+    expect(activeAzkarResourceId(executor)).toBe(2);
+  });
+
+  it('lists each category once when two azkar resources are installed', () => {
+    installAzkarSource(executor, 2, 'opendua');
+    installAzkarSource(executor, 3, 'hisn');
+
+    const categories = listCategories(executor, 'ar');
+    expect(categories.map((category) => [category.id, category.unitCount])).toEqual([['morning', 1]]);
+    expect(listCategoryIds(executor)).toEqual(['morning']);
+    expect(getCategory(executor, 'morning')?.resourceId).toBe(2);
+  });
+
+  it('reads the entries, units and entry detail of the active resource only', () => {
+    installAzkarSource(executor, 2, 'opendua');
+    installAzkarSource(executor, 3, 'hisn');
+
+    const entries = listCategoryEntries(executor, 'morning');
+    expect(entries.map((entry) => entry.entry.entryKey)).toEqual(['opendua:entry-1']);
+    expect(listCategoryUnits(executor, 'morning', 'ar').map((unit) => unit.entryKey)).toEqual(['opendua:entry-1']);
+    expect(getEntry(executor, 'opendua:entry-1')?.items.map((item) => item.itemKey)).toEqual(['opendua:item-1']);
+    expect(getEntry(executor, 'hisn:entry-1')).toBeUndefined();
+  });
+
+  it('searches the active resource only, so a match is never reported twice', () => {
+    installAzkarSource(executor, 2, 'opendua');
+    installAzkarSource(executor, 3, 'hisn');
+
+    const hits = searchAzkarEntries(executor, 'shared');
+    expect(hits.map((hit) => hit.entryKey)).toEqual(['opendua:entry-1']);
+    expect(hasAzkarContent(executor)).toBe(true);
+  });
+
+  it('ignores dev fixtures once a real azkar resource is installed', () => {
+    loadAzkarDevFixtures(executor);
+    installAzkarSource(executor, 2, 'opendua');
+
+    expect(listCategoryIds(executor)).toEqual(['morning']);
+    expect(getCategory(executor, 'evening')).toBeUndefined();
+    expect(getEntry(executor, 'fixture:entry-001')).toBeUndefined();
+  });
+
+  it('reads the fixtures when no real azkar resource is installed', () => {
+    loadAzkarDevFixtures(executor);
+
+    expect(listCategoryIds(executor)).toContain('evening');
+    expect(hasAzkarContent(executor)).toBe(true);
+  });
+
+  it('reports no content when only a removed resource left no rows behind', () => {
+    installAzkarSource(executor, 2, 'opendua');
+    executor.run('DELETE FROM installed_resources WHERE resource_id = 2');
+
+    expect(hasAzkarContent(executor)).toBe(false);
   });
 });

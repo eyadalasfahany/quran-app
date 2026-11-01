@@ -32,6 +32,15 @@ jest.mock("@/features/library/data/hooks", () => ({
 }));
 
 // The user database is not open under Jest; the reader's khatma marker and Home's card read no plan.
+// The Azkar cards read the content database, which is not open under Jest; the menu tab mounts here.
+jest.mock("@/features/azkar/data", () => ({
+  ...jest.requireActual("@/features/azkar/data"),
+  useAzkarAvailable: () => false,
+  useContinueAzkar: () => null,
+  useRecentAzkarItems: () => [],
+  useSessionCategoryProgress: () => [],
+}));
+
 jest.mock("@/features/khatma/data/hooks", () => ({
   useActivePlan: () => ({ data: [] }),
   usePlanLogs: () => ({ data: [] }),

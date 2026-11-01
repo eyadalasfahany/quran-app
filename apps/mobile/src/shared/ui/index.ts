@@ -8,6 +8,8 @@ export { Divider } from './Divider';
 export { DownloadRow, type DownloadRowActionLabels, type DownloadRowState } from './DownloadRow';
 export { DrawnPath } from './DrawnPath';
 export { EmptyState, type EmptyStateAction } from './EmptyState';
+export { FloatingTabBar } from './FloatingTabBar';
+export { FloatingTabBarItem } from './FloatingTabBarItem';
 export { GlassSurface } from './GlassSurface';
 export { GoldFrame, type GoldFrameVariant } from './GoldFrame';
 export { highlightColors, highlightFill, highlightToken, type HighlightColor } from './highlight';

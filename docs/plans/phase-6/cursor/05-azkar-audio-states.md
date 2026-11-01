@@ -10,6 +10,15 @@ You are working in the Taybah monorepo, Expo app `apps/mobile`, branch `ft/azkar
 - With no legal audio, **render no audio controls at all**: no disabled play or download buttons.
 - **Don't build a second download manager.** Add the `AzkarDownloadPort` interface and `NoAudioDownloadPort`. Generalising `features/audio/downloads/manager.ts` waits until a licensed recording exists; add that follow-up note to `docs/plans/phase-6.md`.
 
+**Developer, 1 Nov 2026: build the full player now; it shows only for licensed recordings (none today).**
+- **Player:**
+  - play/pause, a thin progress bar with elapsed and total time, and replay
+  - it plays the current unit's recording
+  - optional «تشغيل تلقائي» (a stored preference): when the unit's audio ends, the reader advances, keeping the counter rules (it never counts on the user's behalf)
+  - stops on leaving the reader, on switching units, and when another audio starts
+  - Reduce Motion respected; lock-screen metadata only if the Quran player pattern allows it without touching `playerStore`
+- **Visibility:** everything renders nothing while `audioAvailability()` is `none`. Tests use a fake licensed recording (a placeholder URL, `rights_verified_at` set) to cover the player.
+
 **Build:**
 - `audio/availability.ts`, `audio/attribution.ts`, `audio/downloads.ts`
 - `playAzkarRecording`, which must not touch the Quran `playerStore`

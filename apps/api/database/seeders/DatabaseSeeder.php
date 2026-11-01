@@ -17,6 +17,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Development and staging only. Production never runs a seeder: its content sources and users are not seeded here.
+        if (app()->isProduction()) {
+            throw new \RuntimeException('DatabaseSeeder must not run in production.');
+        }
+
         $this->call(ContentSourceSeeder::class);
 
         // User::factory(10)->create();

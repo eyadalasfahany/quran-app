@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import type { TFunction } from 'i18next';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useCallback, useMemo, useState } from 'react';
@@ -5,8 +6,14 @@ import { useTranslation } from 'react-i18next';
 
 import { openContentDb } from '@/core/db/content/open';
 import { openUserDb } from '@/core/db/user/open';
+import { formatNumber } from '@/core/i18n/numbers';
 import type { Locale } from '@/core/i18n/locale';
 import { useCatalogVersion } from '@/core/sync/catalog-version';
+
+import { azkarHref } from '../routes';
+import { buildRecentAzkarEntries } from './recent-azkar';
+import { categoryPeriodProgress } from './category-progress';
+import { useRecentScopes } from './recent-scopes';
 
 import {
   getCategory,
@@ -239,5 +246,84 @@ export function useFavoriteCards(): FavoriteCard[] {
     () => readOr<FavoriteCard[]>([], () => listFavoriteCards(executor, favorites)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [executor, favorites, revision],
+  );
+}
+
+/** A session category with its progress in the current period (Home's «أذكار مختارة» and the daily goals). */
+export type SessionCategoryProgress = {
+  id: string;
+  title: string;
+  completed: number;
+  total: number;
+  done: boolean;
+};
+
+/** The session categories, in content order, each with today's progress. Re-reads when progress or content moves. */
+export function useSessionCategoryProgress(locale: Locale): SessionCategoryProgress[] {
+  const { t } = useTranslation();
+  const categories = useAzkarCategories(locale);
+  const summaries = useAzkarProgressSummaries();
+
+  return useMemo(
+    () =>
+      categories
+        .filter((category) => category.kind === 'session')
+        .map((category) => ({
+          id: category.id,
+          title: categoryLabel(t, category.id),
+          ...categoryPeriodProgress(category, summaries, new Date()),
+        })),
+    // `t` changes with the language, so the labels follow it.
+    [categories, summaries, t],
+  );
+}
+
+/** A «آخر الأذكار» row: where it opens, its title and its progress line. */
+export type RecentAzkarItem = {
+  key: string;
+  title: string;
+  meta: string;
+  done: boolean;
+  href: Href;
+};
+
+/**
+ * The recently opened Azkar, newest first, each opening the reader where the user left off (the reader resumes at the
+ * first incomplete unit). Scopes that no longer resolve are left out. Content that is not open yet reads as empty.
+ */
+export function useRecentAzkarItems(locale: Locale): RecentAzkarItem[] {
+  const { t } = useTranslation();
+  const revision = useContentRevision();
+  const scopes = useRecentScopes();
+  const summaries = useAzkarProgressSummaries();
+
+  return useMemo(
+    () =>
+      readOr<RecentAzkarItem[]>([], () => {
+        const { executor } = openContentDb();
+        const resolve = resolveAzkarScope(executor, locale, new Date());
+        return buildRecentAzkarEntries(scopes, resolve, summaries).map((entry) => {
+          const { scope } = entry;
+          const title = scope.categoryId
+            ? categoryLabel(t, scope.categoryId)
+            : scope.occasion
+              ? t(`azkar.occasions.${scope.occasion}` as never)
+              : t('azkar.reader.entryTitle');
+          const progress = t('azkar.reader.progress', {
+            current: formatNumber(entry.completed, locale),
+            total: formatNumber(entry.total, locale),
+          });
+          return {
+            done: entry.done,
+            href: scope.categoryId ? azkarHref.read(scope.categoryId) : azkarHref.entry(scope.entryKey ?? ''),
+            key: scope.scopeKey,
+            meta: entry.done ? `${progress} · ${t('home.recentAzkar.complete')}` : progress,
+            title,
+          };
+        });
+      }),
+    // `t` changes with the language, so the labels follow it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [locale, revision, scopes, summaries, t],
   );
 }

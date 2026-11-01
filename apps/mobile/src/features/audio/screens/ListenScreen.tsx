@@ -6,7 +6,7 @@ import { FlatList } from 'react-native';
 import { useContentDb } from '@/core/db/content/open';
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
-import { ContentColumn } from '@/core/layout';
+import { ContentColumn, useTabContentBottom } from '@/core/layout';
 import { useCatalogVersion } from '@/core/sync';
 import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 
@@ -15,7 +15,6 @@ import { ReciterListHeader } from '../components/ReciterListHeader';
 import { ReciterRow, type ReciterRowStatus } from '../components/ReciterRow';
 import { ReciterRowSkeleton } from '../components/ReciterRowSkeleton';
 import { useDoneCountsByReciter } from '../data/downloads';
-import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { recitationStyleKey, reciterInitial } from '../player-view';
 import { pause } from '../player';
@@ -30,7 +29,6 @@ import {
   type ReciterEntry,
   type ReciterFilter,
 } from '../reciter-list';
-import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
 import { setReciterId } from '../settings';
 
 // The frame's 16 pt gutter.
@@ -50,7 +48,7 @@ export function ListenScreen() {
   const { reciters, selectedId, playingId } = useReciterCatalogue(ready);
   const downloads = useReciterDownloads((state) => state.byId);
   const doneCounts = useDoneCountsByReciter();
-  const miniShown = useMiniPlayerVisible('tabs');
+  const bottom = useTabContentBottom();
   const syncSettled = useCatalogVersion((state) => state.syncSettled);
   // Until the first catalogue sync has run, an empty list is loading, not «no reciters».
   const loading = !ready || (reciters.length === 0 && !syncSettled);
@@ -95,7 +93,7 @@ export function ListenScreen() {
     <Screen testID="screen-listen">
       <ContentColumn gutter={FRAME_GUTTER}>
         <FlatList
-          contentContainerStyle={{ paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}
+          contentContainerStyle={{ paddingBottom: bottom }}
           data={rows}
           keyExtractor={(reciter) => String(reciter.resourceId)}
           // A React element, not an inline component: its type stays the same across renders, so the search

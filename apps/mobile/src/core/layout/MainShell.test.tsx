@@ -1,7 +1,7 @@
 import { fireEvent, within } from '@testing-library/react-native';
 import { router, useSegments } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { Dimensions, Text } from 'react-native';
+import { Dimensions, Platform, Text } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../jest/ui-source';
@@ -252,6 +252,33 @@ describe('MainShell', () => {
     expect(view.getByTestId('sidebar').props.accessibilityLabel).toBe(labels[locale].nav);
     expect(view.getByRole('tab', { name: labels[locale].mushaf })).toBeOnTheScreen();
     expect(flatStyle(view.getByTestId('main-shell').props.style).flexDirection).toBe('row');
+  });
+
+  describe('on Android (ADR 0033)', () => {
+    const originalOs = Platform.OS;
+
+    beforeEach(() => {
+      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => 'android' });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(Platform, 'OS', { configurable: true, get: () => originalOs });
+    });
+
+    it('floats the mini player above the floating bar: 12 + 64 from the edge, then the 12 pt gap', async () => {
+      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      const view = await renderUi(shell(false));
+
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style).bottom).toBe(88);
+    });
+
+    it('keeps the sidebar on expanded windows, with no floating bar beside it', async () => {
+      setWindowWidth(1000);
+      const view = await renderUi(shell(true));
+
+      expect(view.getByTestId('sidebar')).toBeOnTheScreen();
+      expect(view.queryByTestId('floating-tab-bar')).toBeNull();
+    });
   });
 
   it('has no raw colour literals', () => {
