@@ -101,7 +101,9 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const anchor = useReadingAnchor();
   const mode = useReaderSettings((state) => state.mode);
   const fontScale = useReaderSettings((state) => state.fontScale);
+  const tafsirId = useReaderSettings((state) => state.tafsirId);
   const selection = useReaderSelection();
+  const inlineTafsirOpen = useReaderSelection((state) => state.inlineTafsirOpen);
   const highlights = useHighlightsByVerseId();
   const activeKhatmaPlan = useActivePlan().data[0] ?? null;
   const khatmaMarkerVerseId = useKhatmaMarkerVerseId(activeKhatmaPlan?.id);
@@ -236,13 +238,9 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     }
   };
 
-  // Same calls as the ayah sheet's tafsir tile: the tab is set first, because the tafsir route reads it on mount.
-  const openTafsir = (key: string) => {
+  const onReadingTafsir = (key: string) => {
     useReaderSelection.getState().selectVerse(key, placement);
-    useReaderSelection.getState().setPanelTab('tafsir');
-    if (placement === 'sheet') {
-      router.push(`/tafsir/${key}` as Href);
-    }
+    useReaderSelection.getState().toggleInlineTafsir();
   };
 
   // A sheet covers the reader without changing it: the toolbar stays, the page keeps its inset and scroll,
@@ -429,7 +427,9 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 horizontalGutter={gutter}
                 mode="reading"
                 onOpenAyahActions={selectVerse}
-                onOpenTafsir={openTafsir}
+                onOpenTafsir={onReadingTafsir}
+                showInlineTafsir={inlineTafsirOpen}
+                tafsirId={tafsirId}
                 onPause={pause}
                 onPlayVerseKey={(key) => void playVerse(key)}
                 onSelectVerseKey={selectVerse}

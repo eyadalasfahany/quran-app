@@ -29,4 +29,18 @@ describe('reader selection', () => {
     expect(useReaderSelection.getState().verseKey).toBe('2:255');
     expect(useReaderSelection.getState().panelOpen).toBe(false);
   });
+
+  it('toggles inline tafsir mode and resets with the store', () => {
+    expect(useReaderSelection.getState().inlineTafsirOpen).toBe(false);
+
+    useReaderSelection.getState().toggleInlineTafsir();
+    expect(useReaderSelection.getState().inlineTafsirOpen).toBe(true);
+
+    useReaderSelection.getState().toggleInlineTafsir();
+    expect(useReaderSelection.getState().inlineTafsirOpen).toBe(false);
+
+    useReaderSelection.getState().toggleInlineTafsir();
+    resetReaderSelection();
+    expect(useReaderSelection.getState().inlineTafsirOpen).toBe(false);
+  });
 });

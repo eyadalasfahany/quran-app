@@ -24,6 +24,7 @@ export function ReadingAyahHeader({
   onPlay,
   onOpenActions,
   onOpenTafsir,
+  tafsirPressed = false,
   testID,
 }: {
   verseNumber: number;
@@ -36,6 +37,8 @@ export function ReadingAyahHeader({
   onPlay?: () => void;
   onOpenActions?: () => void;
   onOpenTafsir?: () => void;
+  /** Reading mode inline tafsir is on: the tafsir control shows selected. */
+  tafsirPressed?: boolean;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -71,6 +74,7 @@ export function ReadingAyahHeader({
           iconSize={size.iconMd}
           label={t('reader.ayahPanel.tafsir')}
           onPress={onOpenTafsir ?? noop}
+          pressed={tafsirPressed}
           testID={testID ? `${testID}-tafsir` : undefined}
           tone="muted"
         />

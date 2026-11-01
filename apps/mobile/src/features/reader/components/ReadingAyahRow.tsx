@@ -29,7 +29,9 @@ export function ReadingAyahRow({
   onOpenTafsir,
   onPlay,
   followedText,
+  inlineTafsir,
   rowRef,
+  tafsirInlineActive = false,
   testID,
 }: {
   verseNumber: number;
@@ -55,6 +57,10 @@ export function ReadingAyahRow({
   followedText?: FollowedTextProps;
   /** Set on the row the reader follows: the word follow-scroll measures the Text inside this row. */
   rowRef?: (node: HostInstance | null) => void;
+  /** Tafsir passage under the ayah when reading-mode inline tafsir is on. */
+  inlineTafsir?: React.ReactNode;
+  /** Inline tafsir mode is active globally: the header tafsir button shows pressed. */
+  tafsirInlineActive?: boolean;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
@@ -83,6 +89,7 @@ export function ReadingAyahRow({
         onOpenActions={onOpenActions}
         onOpenTafsir={onOpenTafsir}
         onPlay={onPlay}
+        tafsirPressed={tafsirInlineActive}
         playing={playing}
         testID={testID ? `${testID}-header` : undefined}
         verseNumber={verseNumber}
@@ -116,6 +123,7 @@ export function ReadingAyahRow({
           />
         </View>
       </Pressable>
+      {inlineTafsir}
       <Divider style={{ marginTop: theme.space[4] }} testID={testID ? `${testID}-divider` : undefined} />
     </View>
   );

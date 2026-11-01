@@ -16,6 +16,7 @@ import type { HighlightColor } from '@/features/library/data/model';
 import { BismillahLine } from './components/BismillahLine';
 import { MeasuredRow } from './components/MeasuredRow';
 import { ReaderModeFade } from './components/ReaderModeFade';
+import { InlineTafsirPassage } from './components/InlineTafsirPassage';
 import { ReadingAyahRow } from './components/ReadingAyahRow';
 import { SurahHeader } from './components/SurahHeader';
 import { readingColumnWidth } from './layout';
@@ -59,6 +60,10 @@ export type ReadingListProps = {
   onSelectVerseKey: (verseKey: string) => void;
   onOpenAyahActions: (verseKey: string) => void;
   onOpenTafsir?: (verseKey: string) => void;
+  /** When true, each ayah row shows tafsir under the Quran text. */
+  showInlineTafsir?: boolean;
+  /** Saved default tafsir resource; inline rows use it when `showInlineTafsir` is true. */
+  tafsirId?: number | null;
   onPlayVerseKey?: (verseKey: string) => void;
   /** Pauses the player; the recited row's play control calls it while playing. */
   onPause?: () => void;
@@ -87,6 +92,8 @@ export function ReadingList({
   onSelectVerseKey,
   onOpenAyahActions,
   onOpenTafsir,
+  showInlineTafsir = false,
+  tafsirId = null,
   onPlayVerseKey,
   onPause,
   onVisibleVerseKey,
@@ -138,7 +145,7 @@ export function ReadingList({
     };
   }, [centerId, endExtendCount, startExtendCount]);
 
-  const signature = heightCacheSignature(columnWidth, fontScale, 'reading');
+  const signature = `${heightCacheSignature(columnWidth, fontScale, 'reading')}:inline=${showInlineTafsir ? 1 : 0}:tafsir=${tafsirId ?? 'none'}`;
   useEffect(() => {
     heightCache.current.clearForSignature(signature);
   }, [signature]);
@@ -316,8 +323,8 @@ export function ReadingList({
 
   // FlashList repaints rows only when data or extraData changes; renderItem reads these three.
   const rowExtraData = useMemo(
-    () => ({ activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey }),
-    [activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey],
+    () => ({ activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey, showInlineTafsir, tafsirId }),
+    [activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey, showInlineTafsir, tafsirId],
   );
 
   const renderItem = ({ item }: ListRenderItemInfo<ReadingRow>) => {
@@ -357,6 +364,17 @@ export function ReadingList({
           fontScale={fontScale}
           followedText={followKey === verse.verseKey ? word.textProps(verse.verseKey) : undefined}
           highlightColor={highlightsByVerseId.get(verse.id) ?? null}
+          inlineTafsir={
+            showInlineTafsir ? (
+              <InlineTafsirPassage
+                executor={executor}
+                fontScale={fontScale}
+                resourceId={tafsirId}
+                testID={testID ? `${testID}-inline-tafsir-${verse.verseKey}` : undefined}
+                verse={verse}
+              />
+            ) : undefined
+          }
           khatmaMarked={khatmaMarkerVerseId === verse.id}
           onLongPress={openActions}
           onOpenActions={openActions}
@@ -366,6 +384,7 @@ export function ReadingList({
           playing={recitedPlaying}
           recited={recited}
           rowRef={followKey === verse.verseKey ? setFollowedRow : undefined}
+          tafsirInlineActive={showInlineTafsir}
           testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
           textImlaei={verse.textImlaei}
           textUthmani={verse.textUthmani}

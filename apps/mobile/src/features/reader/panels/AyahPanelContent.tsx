@@ -79,7 +79,8 @@ export function AyahPanelContent({
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const fontScale = useReaderSettings((state) => state.fontScale);
   const savedTafsirId = useReaderSettings((state) => state.tafsirId);
-  // Switching tafsir here is a reading choice, not a download choice, so it stays out of the settings.
+  const setSavedTafsirId = useReaderSettings((state) => state.setTafsirId);
+  // Session override until it is persisted via `setSavedTafsirId` (chip or «عرض»).
   const [pickedTafsirId, setPickedTafsirId] = useState<number | null>(null);
   const [opened, setOpened] = useState<ReadonlySet<number>>(() => new Set());
   const [reloads, setReloads] = useState(0);
@@ -126,9 +127,18 @@ export function AyahPanelContent({
     [data, executor, selectedReadable, tafsirIdInUse],
   );
 
+  const selectTafsir = (resourceId: number) => {
+    const tafsir = tafsirs.find((row) => row.resourceId === resourceId);
+    setPickedTafsirId(resourceId);
+    if (tafsir?.installed) {
+      setOpened((current) => new Set(current).add(resourceId));
+      setSavedTafsirId(resourceId);
+    }
+  };
+
   const openTafsir = (resourceId: number) => {
     setOpened((current) => new Set(current).add(resourceId));
-    setPickedTafsirId(resourceId);
+    selectTafsir(resourceId);
   };
   const retrySync = () => {
     runDeviceContentSync()
@@ -224,7 +234,7 @@ export function AyahPanelContent({
             onOpenTafsir={openTafsir}
             onPrevious={previousKey === undefined ? undefined : () => onVerseChange(previousKey)}
             onRetry={retrySync}
-            onSelect={setPickedTafsirId}
+            onSelect={selectTafsir}
             selectedDownload={selectedDownload}
             selectedId={tafsirIdInUse}
             tafsirs={tafsirs}

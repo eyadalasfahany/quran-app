@@ -63,9 +63,11 @@ let mockReadingProps:
   | {
       anchorVerseKey?: string;
       contentBottomInset?: number;
+      onOpenTafsir?: (verseKey: string) => void;
       onSelectVerseKey?: (verseKey: string) => void;
       onUserScrollStart?: () => void;
       onVisibleVerseKey?: (verseKey: string) => void;
+      showInlineTafsir?: boolean;
       testID?: string;
     }
   | undefined;
@@ -246,6 +248,23 @@ describe('ReaderScreen', () => {
     });
     expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
     expect(Haptics.impactAsync).toHaveBeenCalledWith('light');
+  });
+
+  it('toggles inline tafsir in reading mode without opening the tafsir sheet', async () => {
+    mockExecutor = (await openReaderTestContent()).executor;
+    useReaderSettings.getState().setMode('reading');
+    await renderUi(reader());
+
+    expect(useReaderSelection.getState().inlineTafsirOpen).toBe(false);
+    expect(mockReadingProps?.showInlineTafsir).toBe(false);
+
+    await act(async () => {
+      mockReadingProps?.onOpenTafsir?.('2:255');
+    });
+
+    expect(useReaderSelection.getState().inlineTafsirOpen).toBe(true);
+    expect(useReaderSelection.getState().verseKey).toBe('2:255');
+    expect(mockRouterPush).not.toHaveBeenCalledWith('/tafsir/2:255');
   });
 
   it.each(locales)('puts the Quran on the page surface, as the design does, in %s', async (locale) => {

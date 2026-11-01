@@ -8,16 +8,20 @@ type ReaderSelectionState = {
   verseKey: string | null;
   panelTab: PanelTab;
   panelOpen: boolean;
+  /** Reading mode: tafsir passages show under each ayah in the list. */
+  inlineTafsirOpen: boolean;
   selectVerse: (verseKey: string, placement: PanelPlacement) => void;
   setPanelTab: (panelTab: PanelTab) => void;
   setPanelOpen: (panelOpen: boolean) => void;
   closePanel: () => void;
+  toggleInlineTafsir: () => void;
 };
 
 const initialSelection = {
   verseKey: null,
   panelTab: 'actions' as const,
   panelOpen: false,
+  inlineTafsirOpen: false,
 };
 
 export const useReaderSelection = create<ReaderSelectionState>((set) => ({
@@ -33,6 +37,9 @@ export const useReaderSelection = create<ReaderSelectionState>((set) => ({
   },
   closePanel: () => {
     set({ panelOpen: false });
+  },
+  toggleInlineTafsir: () => {
+    set((state) => ({ inlineTafsirOpen: !state.inlineTafsirOpen }));
   },
 }));
 

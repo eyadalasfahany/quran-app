@@ -10,7 +10,7 @@ import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { openUserTestStore } from '../../../../jest/user-test-db';
 import { getVerseByKey } from '../data/verses';
-import { resetReaderSettingsStore } from '../settings';
+import { resetReaderSettingsStore, useReaderSettings } from '../settings';
 import { AyahPanelContent } from './AyahPanelContent';
 import { resetTafsirDownloads, useTafsirDownloads } from './tafsir-downloads';
 
@@ -225,6 +225,37 @@ describe('AyahPanelContent', () => {
       expect(view.getByTestId('ayah-panel-content-tafsir-download-row-14')).toBeOnTheScreen();
       expect(view.queryByText('الثناء على الله بصفاته كلها.')).toBeNull();
       expect(view.getByTestId('ayah-panel-content-tafsir-steps')).toBeOnTheScreen();
+    });
+
+    it('persists the chip choice and swaps the passage when another installed tafsir is selected', async () => {
+      const view = await renderTafsir(await catalogueDb([16, 14]), 'ar');
+
+      expect(view.getByText('تفسير ابن كثير للآية.')).toBeOnTheScreen();
+
+      await fireEvent.press(view.getByTestId('ayah-panel-content-tafsir-option-16'));
+
+      expect(view.getByText('الثناء على الله بصفاته كلها.')).toBeOnTheScreen();
+      expect(view.queryByText('تفسير ابن كثير للآية.')).toBeNull();
+      expect(useReaderSettings.getState().tafsirId).toBe(16);
+    });
+
+    it('shows the passage when an installed tafsir chip is tapped after it finished downloading in this session', async () => {
+      const db = await catalogueDb([16]);
+      jest.mocked(installResource).mockImplementation(async (id) => {
+        installTafsir(db, id);
+        return { status: 'installed' };
+      });
+      const view = await renderTafsir(db, 'ar');
+
+      await fireEvent.press(view.getByTestId('ayah-panel-content-tafsir-option-14'));
+      await fireEvent.press(view.getByTestId('ayah-panel-content-tafsir-download-row-14-action'));
+      await waitFor(() => expect(view.getByRole('button', { name: rowAction('عرض') })).toBeOnTheScreen());
+
+      await fireEvent.press(view.getByTestId('ayah-panel-content-tafsir-option-14'));
+
+      expect(view.getByText('تفسير ابن كثير للآية.')).toBeOnTheScreen();
+      expect(view.queryByTestId('ayah-panel-content-tafsir-download-row-14')).toBeNull();
+      expect(useReaderSettings.getState().tafsirId).toBe(14);
     });
 
     it.each([

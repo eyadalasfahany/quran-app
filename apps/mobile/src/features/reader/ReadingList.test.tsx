@@ -164,6 +164,24 @@ function simulateTopVisibleVerse(verseKey: string) {
 }
 
 describe('ReadingList', () => {
+  it('shows inline tafsir under ayahs when inline mode is on', async () => {
+    const view = await renderUi(
+      <ReadingList
+        anchorVerseKey="18:10"
+        mode="reading"
+        onOpenAyahActions={() => undefined}
+        onSelectVerseKey={() => undefined}
+        showInlineTafsir
+        tafsirId={null}
+        testID="list"
+      />,
+    );
+
+    await waitFor(() => {
+      expect(view.getAllByTestId(/^list-inline-tafsir-/).length).toBeGreaterThan(0);
+    });
+  });
+
   it('renders around the anchor 18:10', async () => {
     const verse = getVerseByKey(mockTestExecutor, '18:10');
     expect(verse).toBeDefined();

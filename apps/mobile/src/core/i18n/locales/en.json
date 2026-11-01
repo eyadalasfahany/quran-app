@@ -267,6 +267,9 @@
       "noEntry": "This tafsir has no passage for this ayah.",
       "fallbackName": "Tafsir {{id}}"
     },
+    "inlineTafsir": {
+      "noTafsirSelected": "Choose a tafsir in reading settings to show passages here."
+    },
     "settings": {
       "title": "Reading settings",
       "close": "Close",

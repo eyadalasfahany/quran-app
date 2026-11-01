@@ -1,4 +1,5 @@
 import { fireEvent, within } from '@testing-library/react-native';
+import { View } from 'react-native';
 
 import { formatNumber, i18n } from '@/core/i18n';
 import { themes } from '@/core/theme';
@@ -195,6 +196,21 @@ describe('ReadingAyahRow', () => {
     expect(within(text).queryByRole('button', { name: 'التفسير' })).toBeNull();
     expect(view.getByRole('button', { name: 'التفسير' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'المزيد' })).toBeOnTheScreen();
+  });
+
+  it('renders inline tafsir between the ayah text and the divider', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        inlineTafsir={<View testID="inline-slot" />}
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        verseNumber={1}
+      />,
+    );
+
+    expect(view.getByTestId('inline-slot')).toBeOnTheScreen();
   });
 
   it('opens tafsir from the header tafsir button', async () => {
