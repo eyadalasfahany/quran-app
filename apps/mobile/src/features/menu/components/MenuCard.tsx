@@ -57,7 +57,8 @@ export function MenuCard({
     >
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2] }}>
         <Icon color={theme.colors.brand} name={icon} />
-        <UiText tone="muted" variant="caption">
+        {/* Shrinks so a long caption ("In the Quran and Azkar") wraps inside the card instead of running past it. */}
+        <UiText style={{ flexShrink: 1 }} testID={`${testID}-caption`} tone="muted" variant="caption">
           {caption}
         </UiText>
       </View>

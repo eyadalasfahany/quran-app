@@ -18,6 +18,14 @@ describe('MenuCard', () => {
     expect(screen.getByTestId('card-preview')).toHaveTextContent('القراءة بالصفحة والسورة');
   });
 
+  it('lets a long caption wrap inside the card in English', async () => {
+    await renderUi(
+      <MenuCard caption="In the Quran and Azkar" icon={ICON} onPress={jest.fn()} testID="card" title="Search" />,
+      { locale: 'en' },
+    );
+    expect(flatStyle(screen.getByTestId('card-caption').props.style).flexShrink).toBe(1);
+  });
+
   it('draws no preview line without one', async () => {
     await renderUi(<MenuCard caption="البحث" icon={ICON} onPress={jest.fn()} testID="card" title="البحث" />);
 

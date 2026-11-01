@@ -36,6 +36,11 @@ describe('app.config', () => {
     expect(configFor(undefined).ios?.bundleIdentifier).toBe('com.taybahapp.taybah.dev');
   });
 
+  it('bundles google-services.json for production Android only', () => {
+    expect(configFor('production').android?.googleServicesFile).toBe('./google-services.json');
+    expect(configFor('development').android?.googleServicesFile).toBeUndefined();
+  });
+
   it('uses the Taybah mark for the icon and the vertical artwork for the splash', () => {
     const config = configFor('production');
 

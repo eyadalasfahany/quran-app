@@ -81,6 +81,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: variant.id,
+      ...(variantKey === 'production' && { googleServicesFile: './google-services.json' }),
       adaptiveIcon: {
         backgroundColor: '#F9F7F2',
         // 1024×1024, logo in ~66% safe zone for the circular mask (see generate-brand-assets.mjs).
