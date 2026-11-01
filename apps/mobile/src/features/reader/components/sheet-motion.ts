@@ -40,15 +40,23 @@ export function layoutSheet(motion: SheetMotion, detents: SheetDetents): void {
   }
 }
 
-/** Opens the card at mid. Reduce Motion sets the position at once and fades the card in. */
-export function openSheet(motion: SheetMotion, reduceMotion: boolean, springConfig: WithSpringConfig): void {
-  motion.detent.value = 'mid';
+/**
+ * Opens the card at its opening detent (mid, or full in a short window). Reduce Motion sets the position at once
+ * and fades the card in.
+ */
+export function openSheet(
+  motion: SheetMotion,
+  reduceMotion: boolean,
+  springConfig: WithSpringConfig,
+  opening: 'full' | 'mid' = 'mid',
+): void {
+  motion.detent.value = opening;
   if (reduceMotion) {
-    motion.top.value = motion.positions.value.mid;
+    motion.top.value = motion.positions.value[opening];
     motion.fade.value = withTiming(1, timing('slow'));
     return;
   }
-  motion.top.value = withSpring(motion.positions.value.mid, springConfig);
+  motion.top.value = withSpring(motion.positions.value[opening], springConfig);
 }
 
 /** Moves the card to a detent without a drag. */

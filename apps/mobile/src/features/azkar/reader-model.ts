@@ -44,8 +44,8 @@ export function resolveReaderPosition(
 }
 
 /**
- * Whether a unit shows the counter. A sourced count of 1 is one recitation and gets «تم» (ADR 0031 §6), so only a count
- * above 1 shows the counter. `null` (no sourced count) never does.
+ * Whether a unit shows a repetition line: a sourced count above 1 only (a group of one has none). The reader itself
+ * always shows the ring, for every unit (ADR 0031 §6).
  */
 export function showsCounter(requiredCount: number | null): boolean {
   return requiredCount !== null && requiredCount > 1;
@@ -54,6 +54,28 @@ export function showsCounter(requiredCount: number | null): boolean {
 /** Whether every unit of the session is done. An empty session is not. */
 export function allUnitsDone(units: readonly ReaderUnit[], completed: ReadonlySet<string>): boolean {
   return units.length > 0 && units.every((unit) => completed.has(unit.unitKey));
+}
+
+/**
+ * The unit the reader moves to once `from` completes: the next unit not yet done, else the first one not yet done
+ * (the reader resumes there), else the last unit, where the mark-complete action shows once every unit is done. A
+ * finished unit is never the destination, so the reader does not land on a dead tap surface.
+ */
+export function nextUnitIndex(units: readonly ReaderUnit[], completed: ReadonlySet<string>, from: number): number {
+  const last = Math.max(0, units.length - 1);
+  if (units.length === 0 || allUnitsDone(units, completed)) {
+    return last;
+  }
+  const later = units.slice(from + 1).findIndex((unit) => !completed.has(unit.unitKey));
+  if (later !== -1) {
+    return from + 1 + later;
+  }
+  return units.findIndex((unit) => !completed.has(unit.unitKey));
+}
+
+/** The direction of a move, for motion: forward (1) in reading order, back (-1). */
+export function moveDirection(from: number, to: number): 1 | -1 {
+  return to >= from ? 1 : -1;
 }
 
 /** Share of the progress bar and the «٥ من ٢٤» count: the unit being read, or every unit when finished. */

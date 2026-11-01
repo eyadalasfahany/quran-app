@@ -15,6 +15,28 @@ describe('MushafPagePlaceholder', () => {
     expect(onSwitch).toHaveBeenCalled();
   });
 
+  it('retries the page font from «إعادة المحاولة», and keeps reading mode under it when both are offered', async () => {
+    const onRetry = jest.fn();
+    const onSwitch = jest.fn();
+    const view = await renderUi(<MushafPagePlaceholder onRetry={onRetry} onSwitchToReading={onSwitch} testID="ph" />);
+
+    await fireEvent.press(view.getByRole('button', { name: 'إعادة المحاولة' }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+
+    await fireEvent.press(view.getByRole('button', { name: 'اقرأ في وضع القراءة' }));
+    expect(onSwitch).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers the retry alone when there is no reading-mode action', async () => {
+    const onRetry = jest.fn();
+    const view = await renderUi(<MushafPagePlaceholder onRetry={onRetry} />);
+
+    expect(view.getAllByRole('button')).toHaveLength(1);
+    await fireEvent.press(view.getByRole('button', { name: 'إعادة المحاولة' }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
   it('uses the missing-layout copy', async () => {
     const view = await renderUi(<MushafPagePlaceholder variant="missing-layout" />);
     expect(view.getByText('لم تُثبَّت هذه الصفحة بعد. يمكنك قراءة الآية نفسها في وضع القراءة.')).toBeOnTheScreen();

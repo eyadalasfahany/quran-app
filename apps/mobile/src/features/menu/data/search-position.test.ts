@@ -15,3 +15,15 @@ describe('menuSearchBottom', () => {
     expect(menuSearchBottom('ios', 0, true)).toBe(92 + 16 + 76);
   });
 });
+
+describe('menuSearchBottom in a short window (ADR 0036)', () => {
+  it('sits only above the bottom safe area when the tabs are a rail', () => {
+    expect(menuSearchBottom('android', 21, false, true)).toBe(21 + 16);
+    expect(menuSearchBottom('ios', 21, false, true)).toBe(21 + 16);
+  });
+
+  it('keeps the tall-window position unchanged', () => {
+    expect(menuSearchBottom('android', 0, false)).toBe(76 + 16);
+    expect(menuSearchBottom('ios', 0, false)).toBe(92 + 16);
+  });
+});

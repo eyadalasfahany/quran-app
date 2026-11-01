@@ -2,9 +2,10 @@ import { fireEvent } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
-import { LocationPickerSheet } from './LocationPickerSheet';
+import { LocationPickerSheet, resultsMaxHeight } from './LocationPickerSheet';
 
 const INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 
@@ -92,5 +93,40 @@ describe('LocationPickerSheet', () => {
     await fireEvent.press(view.getByLabelText('إغلاق'));
 
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('LocationPickerSheet keyboard and height (ADR 0036)', () => {
+  afterEach(() => {
+    resetWindowSize();
+  });
+
+  it('lifts the sheet with the keyboard through a keyboard-avoiding view', async () => {
+    const view = await renderUi(sheet());
+
+    expect(view.getByTestId('salah-location-sheet-keyboard')).toBeTruthy();
+    expect(view.getByTestId('salah-location-sheet-search')).toBeTruthy();
+  });
+
+  it('caps the results at 320 on a tall window', async () => {
+    const view = await renderUi(sheet());
+
+    expect(flatStyle(view.getByTestId('salah-location-sheet-results').props.style).maxHeight).toBe(320);
+  });
+
+  it('caps the results at half the window on a short one, so the field stays in view', async () => {
+    setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height);
+    const view = await renderUi(sheet());
+
+    expect(flatStyle(view.getByTestId('salah-location-sheet-results').props.style).maxHeight).toBe(195);
+  });
+
+  it.each([
+    [300, 150],
+    [390, 195],
+    [700, 320],
+    [1000, 320],
+  ])('resultsMaxHeight(%i) is %i', (windowHeight, expected) => {
+    expect(resultsMaxHeight(windowHeight)).toBe(expected);
   });
 });

@@ -1,7 +1,8 @@
 import { fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { Dimensions } from 'react-native';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 
 import { SettingsScreen } from './SettingsScreen';
@@ -91,6 +92,31 @@ describe('SettingsScreen', () => {
 
     const expectedTitle = locale === 'en' ? 'Settings' : 'الإعدادات';
     expect(view.getByRole('header', { name: expectedTitle })).toBeOnTheScreen();
+  });
+
+  describe('on a wide window', () => {
+    afterEach(() => {
+      Dimensions.set({
+        screen: { fontScale: 1, height: 1334, scale: 1, width: 750 },
+        window: { fontScale: 1, height: 1334, scale: 1, width: 750 },
+      });
+    });
+
+    it('caps the rows in a 720 pt column centred on a 1366 pt window, so they do not stretch', async () => {
+      Dimensions.set({
+        screen: { fontScale: 1, height: 1024, scale: 1, width: 1366 },
+        window: { fontScale: 1, height: 1024, scale: 1, width: 1366 },
+      });
+      const view = await renderUi(<SettingsScreen />);
+
+      expect(flatStyle(view.getByTestId('settings-column').props.style)).toMatchObject({ alignSelf: 'center', maxWidth: 720 });
+    });
+
+    it('keeps the 16 pt gutter the rows had on a phone', async () => {
+      const view = await renderUi(<SettingsScreen />);
+
+      expect(flatStyle(view.getByTestId('settings-column').props.style)).toMatchObject({ paddingHorizontal: 16 });
+    });
   });
 
   it('has no raw colour literals', () => {

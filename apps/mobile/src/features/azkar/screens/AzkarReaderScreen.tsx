@@ -10,6 +10,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
 import { ContentColumn, useWindowClass } from '@/core/layout';
+import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { useTheme } from '@/core/theme';
 import { Screen } from '@/shared/ui';
 
@@ -20,7 +21,6 @@ import { AzkarAudioPlayer } from '../components/AzkarAudioPlayer';
 import { AzkarCompletion } from '../components/AzkarCompletion';
 import { AzkarCounter } from '../components/AzkarCounter';
 import { AzkarDetailsPanel } from '../components/AzkarDetailsPanel';
-import { AzkarDoneButton } from '../components/AzkarDoneButton';
 import { AzkarEnglishLine } from '../components/AzkarEnglishLine';
 import { AzkarMarkCompleteButton } from '../components/AzkarMarkCompleteButton';
 import { AzkarReaderActions } from '../components/AzkarReaderActions';
@@ -30,21 +30,25 @@ import { AzkarSourceLine } from '../components/AzkarSourceLine';
 import { AzkarStepNote } from '../components/AzkarStepNote';
 import { AzkarTapSurface } from '../components/AzkarTapSurface';
 import { AzkarTextSizeControl } from '../components/AzkarTextSizeControl';
+import { AzkarUnitMotion, type UnitDirection } from '../components/AzkarUnitMotion';
 import { AzkarVariationSwitch } from '../components/AzkarVariationSwitch';
 import { DhikrText } from '../components/DhikrText';
 import { useAzkarFontScale, useCategoryUnits, useEntry, useScopeProgress, useVariationChoices } from '../data/hooks';
-import { getCategory, getEntry, getQuranSegmentVerses } from '../data/content-repository';
+import { getCategory, getEntry } from '../data/content-repository';
+import { quranSegmentKey, resolveQuranVerses } from '../data/quran-segments';
 import { recordRecentScope } from '../data/recent-scopes';
 import { periodKey, scopeKeyForCategory, scopeKeyForEntry, SESSION_UNIT_KEY } from '../data/progress';
 import { markSessionComplete, recordTap, resetScope, resetUnit } from '../data/progress-repository';
 import { azkarShareText } from '../data/share-text';
 import { buildReaderUnits, type ReaderUnit } from '../data/reader-units';
-import type { AzkarCategory, AzkarEntryDetail } from '../data/model';
+import type { AzkarCategory, AzkarEntryDetail, AzkarSegment } from '../data/model';
 import { completeHaptic, tapHaptic } from '../haptics';
 import { azkarHref, goBackOr } from '../routes';
 import {
   allUnitsDone,
   completedUnitKeys,
+  moveDirection,
+  nextUnitIndex,
   readerProgress,
   referenceNumber,
   resolveReaderPosition,
@@ -92,6 +96,8 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
+  // The catalogue revision: a catalogue write or pack import re-resolves the unit's Quran (see `quranVerses`).
+  const catalogRevision = useCatalogVersion((state) => state.version);
   const windowClass = useWindowClass();
   const insets = useSafeAreaInsets();
   const { executor } = openContentDb();
@@ -144,6 +150,9 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
 
   // The pending auto-advance. Cancelled by any manual move, on blur and on unmount, so it never moves the reader later.
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // The direction of the latest move, so the dhikr content slides the way the reader moved (AzkarUnitMotion). State, so
+  // the slide reads it on the render that changes the unit.
+  const [direction, setDirection] = useState<UnitDirection>(1);
   const cancelAdvance = useCallback(() => {
     if (advanceTimer.current !== undefined) {
       clearTimeout(advanceTimer.current);
@@ -190,6 +199,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
       }
       cancelAdvance();
       setAutoStartAudio(true);
+      setDirection(1);
       setView(position.index + 1);
     };
   });
@@ -197,8 +207,19 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   const reference = unitEntry?.entry.sourceReference.trim() ?? '';
   const sourceLine = t('azkar.share.source', { number: referenceNumber(reference, locale) });
 
-  const resolveVerses = (segment: Parameters<typeof getQuranSegmentVerses>[1]) =>
-    getQuranSegmentVerses(executor, segment).map((verse) => verse.textUthmani);
+  // The unit's Quran, resolved from `verses` once per unit (and per locale and catalogue revision), never during render.
+  // The share text and the dhikr blocks read these resolved verses, so a tap re-renders without SQL.
+  const quranVerses = useMemo(
+    () =>
+      resolveQuranVerses(
+        executor,
+        unit === undefined ? [] : [...unit.preface, ...unit.body, ...unit.afterword],
+      ),
+    // Keyed on the unit and the locale: the unit's text changes only with them (and with the catalogue, below).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executor, unit?.unitKey, locale, catalogRevision],
+  );
+  const resolveVerses = (segment: AzkarSegment) => quranVerses.get(quranSegmentKey(segment)) ?? [];
 
   const onTap = () => {
     // A manual move ends any pending audio-driven start, so a later unit never starts on its own by mistake.
@@ -215,16 +236,20 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     tapHaptic();
     if (result.completedNow) {
       completeHaptic();
-      // Auto-advance to the next unit; the last unit stays put with the «إتمام» action.
-      if (position.index < total - 1) {
+      // Auto-advance to the next unit that is not done yet. When every unit is done, the reader moves to the last one,
+      // where the mark-complete action shows. The live rows may not include this tap yet, so it is counted here.
+      const done = new Set(completed);
+      done.add(unit.unitKey);
+      const target = nextUnitIndex(units, done, position.index);
+      if (target !== position.index) {
         cancelAdvance();
-        const next = position.index + 1;
+        setDirection(moveDirection(position.index, target));
         if (reduceMotion) {
-          setView(next);
+          setView(target);
         } else {
           advanceTimer.current = setTimeout(() => {
             advanceTimer.current = undefined;
-            setView(next);
+            setView(target);
           }, AUTO_ADVANCE_DELAY_MS);
         }
       }
@@ -241,6 +266,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     cancelAdvance();
     clearAutoStart();
     resetScope(scopeKey, period);
+    setDirection(1);
     setView(0);
   };
 
@@ -252,6 +278,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   const moveTo = (index: number) => {
     cancelAdvance();
     clearAutoStart();
+    setDirection(moveDirection(position.index, index));
     setView(index);
   };
 
@@ -273,55 +300,56 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     router.push(`/azkar/details/${encodeURIComponent(unit.entryKey)}` as Href);
   };
 
-  // A sourced count of 1 is one recitation: «تم», never «١ من ١» (ADR 0031 §6). Only a count above 1 gets the counter.
-  const counted = unit !== undefined && showsCounter(unit.requiredCount);
   const showPanel = windowClass === 'expanded' && panelOpen && unit !== undefined;
 
+  // The dhikr content slides in when the unit changes (AzkarUnitMotion). The key is the unit, so a move within it does not.
   const body =
     unit === undefined ? null : (
-      <ScrollView contentContainerStyle={{ flexGrow: 1, gap: theme.space[5], justifyContent: 'center', paddingVertical: theme.space[5] }}>
-        <View style={{ gap: theme.space[5] }}>
-          <AzkarStepNote items={unit.preface} testID="azkar-preface" />
-          {unit.variations.length > 1 ? (
-            <AzkarVariationSwitch
-              activeVariation={unit.activeVariation}
-              onChange={(key) => choose(unit.entryKey, key)}
-              variations={unit.variations}
-            />
-          ) : null}
-          <AzkarStepNote items={[]} repeatCount={repeatCountFor(unit)} testID="azkar-repeat" />
-          {unit.body.map((item) => (
-            <View key={item.itemKey} style={{ gap: theme.space[2] }}>
-              <DhikrText fontScale={fontScale} resolveQuran={(segment) => resolveVerses(segment).join(' ')} segments={item.segments} />
-              <AzkarEnglishLine text={locale === 'en' ? item.textEn : null} />
-            </View>
-          ))}
-          <AzkarStepNote items={unit.afterword} testID="azkar-afterword" />
-          {reference.length > 0 ? <AzkarSourceLine onPressDetails={openDetails} reference={reference} /> : null}
-        </View>
-        <AzkarReaderActions
-          entryKey={unit.entryKey}
-          onAudioEnded={onAudioEnded}
-          onShare={onShare}
-          onTextSize={() => setTextSizeOpen((open) => !open)}
-          recording={recording}
-          textSizeOpen={textSizeOpen}
-          unitKey={unit.unitKey}
-        />
-        {recording === null ? null : (
-          <AzkarAudioPlayer
-            autoStart={autoStartAudio}
-            autoplay={autoplay}
-            key={unit.unitKey}
-            onAutoStarted={clearAutoStart}
-            onAutoplayChange={setAutoplay}
-            onEnded={onAudioEnded}
+      <AzkarUnitMotion direction={direction} style={{ flex: 1 }} unitKey={unit.unitKey}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, gap: theme.space[5], justifyContent: 'center', paddingVertical: theme.space[5] }}>
+          <View style={{ gap: theme.space[5] }}>
+            <AzkarStepNote items={unit.preface} testID="azkar-preface" />
+            {unit.variations.length > 1 ? (
+              <AzkarVariationSwitch
+                activeVariation={unit.activeVariation}
+                onChange={(key) => choose(unit.entryKey, key)}
+                variations={unit.variations}
+              />
+            ) : null}
+            <AzkarStepNote items={[]} repeatCount={repeatCountFor(unit)} testID="azkar-repeat" />
+            {unit.body.map((item) => (
+              <View key={item.itemKey} style={{ gap: theme.space[2] }}>
+                <DhikrText fontScale={fontScale} quranVerses={quranVerses} segments={item.segments} />
+                <AzkarEnglishLine text={locale === 'en' ? item.textEn : null} />
+              </View>
+            ))}
+            <AzkarStepNote items={unit.afterword} testID="azkar-afterword" />
+            {reference.length > 0 ? <AzkarSourceLine onPressDetails={openDetails} reference={reference} /> : null}
+          </View>
+          <AzkarReaderActions
+            entryKey={unit.entryKey}
+            onAudioEnded={onAudioEnded}
+            onShare={onShare}
+            onTextSize={() => setTextSizeOpen((open) => !open)}
             recording={recording}
+            textSizeOpen={textSizeOpen}
             unitKey={unit.unitKey}
           />
-        )}
-        {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
-      </ScrollView>
+          {recording === null ? null : (
+            <AzkarAudioPlayer
+              autoStart={autoStartAudio}
+              autoplay={autoplay}
+              key={unit.unitKey}
+              onAutoStarted={clearAutoStart}
+              onAutoplayChange={setAutoplay}
+              onEnded={onAudioEnded}
+              recording={recording}
+              unitKey={unit.unitKey}
+            />
+          )}
+          {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
+        </ScrollView>
+      </AzkarUnitMotion>
     );
 
   const reader = (
@@ -344,16 +372,17 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
           >
             {sessionDone && position.index === total - 1 ? (
               <AzkarMarkCompleteButton onPress={onMarkComplete} />
-            ) : counted ? (
+            ) : (
+              // Every unit has the ring: a sourced count, a count of 1 (one tap completes it), or the single variant
+              // for no sourced count (ADR 0031 §6).
               <AzkarCounter
+                completed={unitDone}
                 onReset={onReset}
                 onTap={onTap}
                 position={position.index + 1}
-                requiredCount={unit.requiredCount ?? 0}
+                requiredCount={unit.requiredCount}
                 value={currentCount}
               />
-            ) : (
-              <AzkarDoneButton completed={unitDone} onPress={onTap} />
             )}
           </AzkarReaderControls>
         </View>

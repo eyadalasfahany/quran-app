@@ -152,6 +152,23 @@ final class ImportAzkarCommand extends Command
             ['warnings', count($report->warnings())],
         ]);
 
+        $secondary = $sourced['required_count_secondary'] ?? null;
+
+        if (is_array($secondary)) {
+            $this->line(sprintf(
+                'Secondary %s: %s',
+                $secondary['code'],
+                $secondary['used'] ? 'used for missing counts' : 'not used ('.$secondary['reason'].')',
+            ));
+        }
+
+        foreach ($sourced['required_count_sources'] ?? [] as $code => $count) {
+            $this->line(sprintf('  required_count from %s: %d', $code, $count));
+        }
+
+        $this->line(sprintf('  required_count conflicts (primary kept): %d', count($sourced['required_count_conflicts'] ?? [])));
+        $this->line(sprintf('  required_count ambiguous (left null): %d', count($sourced['required_count_ambiguous'] ?? [])));
+
         $counts = [];
 
         foreach ($report->issues as $issue) {

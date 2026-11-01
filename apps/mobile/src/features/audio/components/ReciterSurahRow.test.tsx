@@ -115,6 +115,34 @@ describe('ReciterSurahRow', () => {
     expect(view.getByRole('button', { name: /^Delete download / })).toBeOnTheScreen();
   });
 
+  it('says a surah that is not downloaded is not available offline, while the device is offline', async () => {
+    const view = await renderRow({ offline: true, status: undefined }, 'ar');
+
+    expect(view.getByText('غير متاح دون اتصال')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: rowAction('تنزيل') })).toBeOnTheScreen();
+  });
+
+  it('says it in English too', async () => {
+    const view = await renderRow({ offline: true, status: undefined }, 'en');
+
+    expect(view.getByText('Not available offline')).toBeOnTheScreen();
+  });
+
+  it('asks for one connection to verify a finished download that needs it', async () => {
+    const view = await renderRow({ status: 'done', sizeBytes: 5_033_165, verifyNeeded: true }, 'ar');
+
+    expect(view.getByText('اتصل مرة للتحقق من التنزيلات')).toBeOnTheScreen();
+    expect(view.queryByText('٤٫٨ م.ب')).toBeNull();
+  });
+
+  it('keeps the play button for a finished download that needs verifying, so the player can say why', async () => {
+    const h = handlers();
+    const view = await renderRow({ ...h, status: 'done', verifyNeeded: true }, 'en');
+
+    await fireEvent.press(view.getByRole('button', { name: /^Play / }));
+    expect(h.onPlay).toHaveBeenCalled();
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/audio/components/ReciterSurahRow.tsx')).toEqual([]);
   });

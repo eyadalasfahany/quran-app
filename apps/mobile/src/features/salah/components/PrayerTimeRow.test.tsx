@@ -8,6 +8,12 @@ import { PrayerTimeRow } from './PrayerTimeRow';
 const SCENE = 1;
 
 describe('PrayerTimeRow', () => {
+  it('is memoised, so the times card does not re-render rows whose props did not change', () => {
+    // React.memo wraps the row: its type carries the memo tag, which is what keeps unchanged rows from re-rendering.
+    expect((PrayerTimeRow as unknown as { $$typeof: symbol }).$$typeof).toBe(Symbol.for('react.memo'));
+  });
+
+
   it.each(locales)('renders the prayer name and time (%s)', async (locale) => {
     const view = await renderUi(<PrayerTimeRow focusY={0.8} name="الفجر" scene={SCENE} testID="row" time="٥:١٠" />, { locale });
 

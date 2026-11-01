@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+import { BackHandler, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolation,
@@ -12,9 +12,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useWidthClass } from '@/core/layout/useWindowClass';
 import { spring, useTheme } from '@/core/theme';
 
-import { sheetDetents, type Detent } from '../form-sheet';
+import { isShortWindow, openingDetent, sheetDetents, SHEET_CARD_MAX_WIDTH, type Detent } from '../form-sheet';
 import { SheetContext, type SheetContextValue } from './sheet-context';
 import {
   beginDrag,
@@ -31,14 +32,24 @@ import {
  * A reader sheet: a custom card in a transparent modal over a scrim (ADR 0013), with a mid detent at
  * half the window and a full detent under the safe area (ADR 0020). The card slides up on open,
  * drags between detents and slides down to close. The stack's own animation is off.
+ *
+ * Two window cases change the shape. On a window at least 600 pt wide (medium or expanded by width, ADR 0036) the card is
+ * centred, 560 wide at most (spec §4). In a short window (under 500 pt) mid would hide the content, so the sheet opens at
+ * full, its only detent, and scrolls there.
  */
 export function SheetHost({ children, testID = 'sheet-host' }: { children: ReactNode; testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { height } = useWindowDimensions();
+  // Width decides the card shape, not the layout class: a landscape phone is wide, so it gets the centred card (ADR 0036).
+  const widthClass = useWidthClass();
+  const centred = widthClass !== 'compact';
+  const short = isShortWindow(height);
   const { top: safeTop } = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
   const detents = useMemo(() => sheetDetents(height, safeTop), [height, safeTop]);
+  // Read once at mount: a resize that crosses the short-window line is handled by the effect below, not by a re-open.
+  const [opening] = useState<'full' | 'mid'>(() => openingDetent(height));
 
   // The shared values the card, scrim and gestures read on the UI thread.
   const positions = useSharedValue(detents);
@@ -69,7 +80,7 @@ export function SheetHost({ children, testID = 'sheet-host' }: { children: React
   );
 
   // The detent is mirrored into React state for consumers; the shared value is the source for gestures.
-  const [detent, setDetent] = useState<Detent>('mid');
+  const [detent, setDetent] = useState<Detent>(opening);
   const closing = useRef(false);
   const springConfig = useMemo(() => spring(), []);
 
@@ -78,11 +89,11 @@ export function SheetHost({ children, testID = 'sheet-host' }: { children: React
     layoutSheet(motion, detents);
   }, [detents, motion]);
 
-  // Open at mid. The card starts closed, so the first frame is off screen.
+  // Open at the opening detent (mid, or full in a short window). The card starts closed, so the first frame is off screen.
   const reduceMotionAtOpen = useRef(reduceMotion);
   useEffect(() => {
-    openSheet(motion, reduceMotionAtOpen.current, springConfig);
-  }, [motion, springConfig]);
+    openSheet(motion, reduceMotionAtOpen.current, springConfig, opening);
+  }, [motion, opening, springConfig]);
 
   const leaveRoute = useCallback(() => {
     router.back();
@@ -98,17 +109,26 @@ export function SheetHost({ children, testID = 'sheet-host' }: { children: React
   }, [leaveRoute, motion, reduceMotion, springConfig]);
 
   const moveTo = useCallback(
-    (target: 'full' | 'mid') => {
+    (requested: 'full' | 'mid') => {
       if (closing.current) {
         return;
       }
+      // In a short window mid is the full detent, so a request for mid stays at full and the content keeps scrolling.
+      const target = short ? 'full' : requested;
       setDetent(target);
       snapSheet(motion, target, springConfig);
     },
-    [motion, springConfig],
+    [motion, short, springConfig],
   );
   const expand = useCallback(() => moveTo('full'), [moveTo]);
   const collapse = useCallback(() => moveTo('mid'), [moveTo]);
+
+  // A resize that makes the window short while the card rests at mid moves it to full.
+  useEffect(() => {
+    if (short && detent === 'mid') {
+      moveTo('full');
+    }
+  }, [detent, moveTo, short]);
 
   // Android back slides the sheet down rather than leaving it to the stack.
   useEffect(() => {
@@ -170,10 +190,19 @@ export function SheetHost({ children, testID = 'sheet-host' }: { children: React
           <Animated.View
             accessibilityViewIsModal
             onAccessibilityEscape={close}
-            style={[{ bottom: 0, left: 0, position: 'absolute', right: 0 }, cardStyle]}
+            style={[
+              { bottom: 0, left: 0, position: 'absolute', right: 0 },
+              centred ? { alignItems: 'center' } : null,
+              cardStyle,
+            ]}
             testID={testID}
           >
-            {children}
+            <View
+              style={{ flex: 1, maxWidth: centred ? SHEET_CARD_MAX_WIDTH : undefined, width: '100%' }}
+              testID={`${testID}-column`}
+            >
+              {children}
+            </View>
           </Animated.View>
         </GestureDetector>
       </SheetContext.Provider>

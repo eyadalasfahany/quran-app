@@ -8,14 +8,13 @@ import { ensureNotificationChannel, NOTIFICATION_CHANNELS } from '@/features/not
 import { ensureReminderPermission } from '@/features/notifications/permission';
 import {
   currentSyncState,
-  needsResync,
   readSyncState,
   writeSyncState,
   type SyncCoordinates,
 } from '@/features/notifications/sync-state';
 
 import { BELL_PRAYERS, getBellEnabled, setBellEnabled } from './bells';
-import { getCoordinates } from './location';
+import { getCoordinates, type CoordinatesOptions } from './location';
 import { type NextPrayerName, type PrayerTimesOutput, timesFor } from './prayer-times';
 
 /**
@@ -118,9 +117,26 @@ async function cancelPrayerNotifications(): Promise<void> {
 }
 
 /**
+ * The settings a schedule depends on besides the day, the time zone and the coordinates: the bells that are on and the
+ * location choice (automatic, or the manual city's stored key). A change to any of them re-plans at once.
+ */
+function scheduleSettings(): string {
+  return JSON.stringify({
+    prayers: enabledPrayers(),
+    source: storage.getString(storageKeys.salah.locationSource) ?? null,
+    manualCityId: storage.getString(storageKeys.salah.manualCityId) ?? null,
+    manualLat: storage.getNumber(storageKeys.salah.manualLat) ?? null,
+    manualLng: storage.getNumber(storageKeys.salah.manualLng) ?? null,
+  });
+}
+
+// Kept beside the sync state, under a key derived from it (the shared sync-state record has no room for it).
+const settingsKey = `${storageKeys.salah.notificationsSync}.settings`;
+
+/**
  * Cancels every prayer notification, then schedules the rolling window for the enabled prayers (idempotent: running
- * it twice gives the same pending set). Records the state it was computed for, so the foreground check can skip it
- * while nothing moved. A failure part-way clears that record, so the next check plans again.
+ * it twice gives the same pending set). Records the state and the settings it was computed for, so the foreground check
+ * can skip it while nothing moved. A failure part-way clears that record, so the next check plans again.
  */
 export async function syncPrayerNotifications({ now, coords }: { now: Date; coords: SyncCoordinates | null }): Promise<void> {
   const fires = prayerFireDates(enabledPrayers(), now, coords);
@@ -137,9 +153,11 @@ export async function syncPrayerNotifications({ now, coords }: { now: Date; coor
     }
   } catch (error) {
     storage.remove(storageKeys.salah.notificationsSync);
+    storage.remove(settingsKey);
     throw error;
   }
   writeSyncState(storageKeys.salah.notificationsSync, currentSyncState(now, coords));
+  storage.set(settingsKey, scheduleSettings());
 }
 
 // Two syncs never interleave: a launch, a foreground check and a location change can all start at once, and each
@@ -153,8 +171,8 @@ function serialized<T>(task: () => Promise<T>): Promise<T> {
 }
 
 /** The coordinates a sync needs: read only when a prayer is on, so a GPS fix is never requested for nothing. */
-async function coordinatesForSync(): Promise<SyncCoordinates | null> {
-  return enabledPrayers().length > 0 ? getCoordinates() : null;
+async function coordinatesForSync(options: CoordinatesOptions = {}): Promise<SyncCoordinates | null> {
+  return enabledPrayers().length > 0 ? getCoordinates(options) : null;
 }
 
 /**
@@ -172,8 +190,13 @@ export function resyncPrayerNotifications(now: Date = new Date()): Promise<void>
 }
 
 /**
- * Re-plans only when the local day, the time zone or the coordinates moved since the last sync, or nothing was synced
- * yet (the foreground check). Resolves to whether a sync ran. With no prayer on and nothing synced, it does nothing.
+ * Re-plans only when the local day, the time zone or the settings (bells, location choice) moved since the last sync, or
+ * nothing was synced yet. Resolves to whether a sync ran. With no prayer on and nothing synced, it does nothing.
+ *
+ * The cheap checks come first and the location is read only when one of them has moved: a foreground check with nothing
+ * changed reads nothing. A changed day or time zone takes the last known position (no GPS fix on the foreground); a
+ * changed setting (a bell, or the city) takes the normal read. Coordinates that move on their own are picked up on the
+ * next day or launch, not on each foreground.
  */
 export function resyncPrayerNotificationsIfNeeded(now: Date = new Date()): Promise<boolean> {
   return serialized(async () => {
@@ -182,10 +205,14 @@ export function resyncPrayerNotificationsIfNeeded(now: Date = new Date()): Promi
       if (previous === null && enabledPrayers().length === 0) {
         return false;
       }
-      const coords = await coordinatesForSync();
-      if (!needsResync(previous, currentSyncState(now, coords))) {
+      const settingsMoved = storage.getString(settingsKey) !== scheduleSettings();
+      const current = currentSyncState(now, null);
+      const dayOrZoneMoved =
+        previous === null || previous.day !== current.day || previous.timeZone !== current.timeZone;
+      if (!settingsMoved && !dayOrZoneMoved) {
         return false;
       }
+      const coords = await coordinatesForSync({ lastKnownOnly: !settingsMoved });
       await syncPrayerNotifications({ now, coords });
       return true;
     } catch (error) {

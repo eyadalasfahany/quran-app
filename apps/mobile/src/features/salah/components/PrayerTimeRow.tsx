@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { View, type ImageSourcePropType } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -20,7 +20,7 @@ const SCRIM = {
  * reminder bell at the end. الشروق passes no `bell` and keeps an empty 44 pt slot, and the
  * active prayer draws the 3 pt brand bar on its start edge.
  */
-export function PrayerTimeRow({
+function PrayerTimeRowView({
   name,
   time,
   scene,
@@ -103,3 +103,9 @@ export function PrayerTimeRow({
     </View>
   );
 }
+
+/**
+ * Memoised: the times card re-renders when the prayer state changes, and a row whose name, time, bell and active state
+ * did not change keeps its photo and its scrim.
+ */
+export const PrayerTimeRow = memo(PrayerTimeRowView);

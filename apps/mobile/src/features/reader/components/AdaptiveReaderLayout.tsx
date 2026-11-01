@@ -44,10 +44,10 @@ export function AdaptiveReaderLayout({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const measuredWidth = useWindowDimensions().width;
+  const { width: measuredWidth, height: measuredHeight } = useWindowDimensions();
   const liveClass = useWindowClass();
   const resolvedWidth = width ?? measuredWidth;
-  const resolvedClass = windowClass ?? (width === undefined ? liveClass : windowClassFor(width));
+  const resolvedClass = windowClass ?? (width === undefined ? liveClass : windowClassFor(width, measuredHeight));
   const placement = panelPlacementFor(resolvedWidth, resolvedClass);
   const showPanel = placement !== 'sheet' && panelOpen;
   // The strip is reserved only while a docked panel is shown; a closed panel leaves the stage full width.

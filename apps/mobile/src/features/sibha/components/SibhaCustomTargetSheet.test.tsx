@@ -86,3 +86,13 @@ describe('SibhaCustomTargetSheet', () => {
     expect(rawColorLiteralsInFeature('src/features/sibha/components/SibhaCustomTargetSheet.tsx')).toEqual([]);
   });
 });
+
+describe('SibhaCustomTargetSheet keyboard (ADR 0036)', () => {
+  it('lifts the card with the keyboard through a keyboard-avoiding view', async () => {
+    const rendered = await renderUi(<SibhaCustomTargetSheet initialValue={null} onClose={jest.fn()} onSave={jest.fn()} visible />);
+
+    expect(rendered.getByTestId('sibha-custom-sheet-keyboard')).toBeOnTheScreen();
+    expect(rendered.getByTestId('sibha-custom-sheet')).toBeOnTheScreen();
+    expect(rendered.getByTestId('sibha-custom-sheet-input')).toBeOnTheScreen();
+  });
+});

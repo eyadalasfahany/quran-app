@@ -4,6 +4,7 @@ import { View, useWindowDimensions } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
+import { useScreenInsets } from '@/core/layout/useScreenInsets';
 import { useTheme } from '@/core/theme';
 import type { HighlightColor } from '@/features/library/data/model';
 import { firstVerseOfPage, pageForVerse } from '@/features/reader/anchor/page';
@@ -46,7 +47,9 @@ export function MushafList({
 }: MushafListProps) {
   const theme = useTheme();
   const { width: windowWidth } = useWindowDimensions();
-  const contentWidth = mushafContentWidth(windowWidth, horizontalGutter);
+  // The screen pads the side insets, so the page is sized from what is left of the window after them.
+  const sides = useScreenInsets();
+  const contentWidth = mushafContentWidth(windowWidth - sides.start - sides.end, horizontalGutter);
   const framePadding = theme.space[2];
   const pageHeight = mushafPageHeight(contentWidth, framePadding);
   const listRef = useRef<FlashListRef<number>>(null);

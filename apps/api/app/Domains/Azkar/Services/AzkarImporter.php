@@ -8,6 +8,7 @@ use App\Domains\Azkar\Data\ImportIssue;
 use App\Domains\Azkar\Data\ImportPlan;
 use App\Domains\Azkar\Data\ImportReport;
 use App\Domains\Azkar\Data\ImportStats;
+use App\Domains\Azkar\Data\RequiredCountPlan;
 use App\Domains\Azkar\Exceptions\CatalogueUnreadableException;
 use App\Domains\Azkar\Exceptions\SnapshotException;
 use App\Domains\Azkar\Repositories\Contracts\AzkarImportRepository;
@@ -40,15 +41,17 @@ final class AzkarImporter
         private readonly PackBuilder $packs,
         private readonly HadeethEncSnapshot $hadeethSnapshot,
         private readonly HadeethEncNotes $hadeethNotes,
+        private readonly RequiredCountResolver $requiredCountResolver,
     ) {}
 
     /**
      * @param  bool  $buildPacks  Build the azkar pack now, in this process, instead of queueing it (release runs).
      * @param  bool  $skipBlocked  Local only: leave out entries with errors and import the rest (ADR 0031 §11).
+     * @param  ?string  $secondaryPath  The secondary source's file or snapshot. Null means its default location.
      *
      * @throws \LogicException When $skipBlocked is requested in production.
      */
-    public function run(string $path, bool $dryRun, bool $buildPacks = false, bool $skipBlocked = false, ?string $sourceCode = null): ImportReport
+    public function run(string $path, bool $dryRun, bool $buildPacks = false, bool $skipBlocked = false, ?string $sourceCode = null, ?string $secondaryPath = null): ImportReport
     {
         if ($skipBlocked && app()->isProduction()) {
             throw new \LogicException('Skipping blocked entries is refused in production (ADR 0031 §11).');
@@ -86,8 +89,10 @@ final class AzkarImporter
         $issues = [...$issues, ...$this->validator->validate($parsed->data, $profile)];
         $enrichment = $this->enrichment($profile, $parsed->data);
         $issues = [...$issues, ...$enrichment['issues']];
+        $requiredCounts = $this->requiredCounts($profile, $parsed->data, $secondaryPath);
+        $issues = [...$issues, ...$requiredCounts['issues']];
         $blocked = $this->blockedEntries($issues);
-        $plan = $this->transformer->plan($parsed->data, $sourceVersion, $now->getTimestampMs(), $blocked, $profile, $enrichment['notes']);
+        $plan = $this->transformer->plan($parsed->data, $sourceVersion, $now->getTimestampMs(), $blocked, $profile, $enrichment['notes'], $requiredCounts['plan']->fills);
 
         $sourceId = $this->resources->sourceId($sourceCode);
         $existing = $sourceId === null ? null : $this->resources->findBySource($sourceId, ResourceGroup::Azkar, $sourceKey);
@@ -130,6 +135,7 @@ final class AzkarImporter
             profile: $profile,
             skipped: $skipped,
             enrichment: $enrichment['report'],
+            requiredCounts: $requiredCounts,
         );
     }
 
@@ -238,6 +244,68 @@ final class AzkarImporter
     }
 
     /**
+     * ADR 0031 §6 and §12 (developer, 1 Nov 2026). The secondary fills a missing count and reports a difference, and it
+     * is read only while its own lock is open: the same flag and permission its import needs. Any problem reading it
+     * leaves the counts as the primary has them. A conflict keeps the primary's count.
+     *
+     * @param  array<string, mixed>  $catalogue
+     * @return array{plan: RequiredCountPlan, issues: list<ImportIssue>, secondary: array{code: string, used: bool, reason: string|null}}
+     */
+    private function requiredCounts(SourceProfile $profile, array $catalogue, ?string $secondaryPath): array
+    {
+        $secondaryCode = $this->sources->secondaryCode($profile->code);
+        $secondaryProfile = $this->sources->for($secondaryCode)->profile();
+        $unused = static fn (string $reason): array => [
+            'plan' => RequiredCountPlan::none(),
+            'issues' => [],
+            'secondary' => ['code' => $secondaryCode, 'used' => false, 'reason' => $reason],
+        ];
+
+        $locks = $this->lockReasons($secondaryProfile);
+
+        if ($locks !== []) {
+            return $unused('locked: '.implode(' ', $locks));
+        }
+
+        try {
+            $parsed = $this->sources->for($secondaryCode)->parse($secondaryPath ?? $this->defaultPath($secondaryCode));
+        } catch (CatalogueUnreadableException $exception) {
+            return $unused('unavailable: '.$exception->issueCode);
+        }
+
+        if (! hash_equals($secondaryProfile->pinnedSha256, $parsed->sha256)) {
+            return $unused('unavailable: checksum_mismatch');
+        }
+
+        $plan = $this->requiredCountResolver->resolve($catalogue, $profile, $parsed->data, $secondaryCode);
+        $issues = [];
+
+        foreach ($plan->conflicts as $conflict) {
+            $issues[] = new ImportIssue(ImportIssue::WARNING, 'required_count_conflict', 'item:'.$conflict['item'], $conflict['entry_index'], $conflict['entry']);
+        }
+
+        foreach ($plan->ambiguous as $ambiguous) {
+            $issues[] = new ImportIssue(ImportIssue::WARNING, 'required_count_ambiguous', 'item:'.$ambiguous['item'], $ambiguous['entry_index'], $ambiguous['entry']);
+        }
+
+        return [
+            'plan' => $plan,
+            'issues' => $issues,
+            'secondary' => ['code' => $secondaryCode, 'used' => true, 'reason' => null],
+        ];
+    }
+
+    /**
+     * The snapshot or catalogue file a source is read from when the caller gives no path (the same places the commands use).
+     */
+    private function defaultPath(string $code): string
+    {
+        return $code === 'hisnmuslim'
+            ? storage_path('app/azkar/hisnmuslim/'.(string) config('azkar.hisnmuslim.snapshot_date'))
+            : storage_path('app/azkar/catalogue-'.(string) config('azkar.opendua.version').'.json');
+    }
+
+    /**
      * @param  list<string>  $reasons
      */
     private function locked(CarbonImmutable $now, array $reasons): ImportReport
@@ -281,6 +349,7 @@ final class AzkarImporter
      * @param  array<string, mixed>  $resource
      * @param  list<array{entry: string, codes: list<string>}>  $skipped
      * @param  array<string, mixed>  $enrichment
+     * @param  ?array{plan: RequiredCountPlan, issues: list<ImportIssue>, secondary: array{code: string, used: bool, reason: string|null}}  $requiredCounts
      */
     private function report(
         CarbonImmutable $now,
@@ -295,9 +364,12 @@ final class AzkarImporter
         SourceProfile $profile,
         array $skipped = [],
         array $enrichment = [],
+        ?array $requiredCounts = null,
     ): ImportReport {
         $stats = $plan->stats;
         $englishAvailable = $stats->englishStored + $stats->englishSkipped;
+        $countPlan = $requiredCounts['plan'] ?? RequiredCountPlan::none();
+        $secondaryCode = $requiredCounts['secondary']['code'] ?? '';
 
         return new ImportReport(
             generatedAt: $now->toIso8601ZuluString('millisecond'),
@@ -318,6 +390,16 @@ final class AzkarImporter
             sourced: [
                 'items_with_required_count' => $stats->itemsWithRequiredCount,
                 'items_without_required_count' => $stats->itemsWithoutRequiredCount,
+                // ADR 0031 §6 and §12 (developer, 1 Nov 2026): counts by the source that gave them, the secondary's status,
+                // and every conflict (primary kept) and ambiguous item (left null). Keys and counts only.
+                'required_count_sources' => $requiredCounts === null ? [] : [
+                    $profile->code => $stats->requiredCountBySource[$profile->code] ?? 0,
+                    $secondaryCode => $stats->requiredCountBySource[$secondaryCode] ?? 0,
+                ],
+                'required_count_secondary' => $requiredCounts['secondary'] ?? null,
+                'required_count_without_secondary' => $countPlan->withoutSecondary,
+                'required_count_conflicts' => $countPlan->conflicts,
+                'required_count_ambiguous' => $countPlan->ambiguous,
                 'entries_with_explanations' => 0,
                 'entries_with_virtues' => 0,
                 'entries_with_contexts' => 0,

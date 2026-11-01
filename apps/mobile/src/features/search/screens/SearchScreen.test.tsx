@@ -1,5 +1,7 @@
 import { router } from 'expo-router';
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { fireEvent, waitFor, within } from '@testing-library/react-native';
+import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -8,6 +10,21 @@ import { themes } from '@/core/theme';
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { SearchScreen } from './SearchScreen';
+
+// Records the props the avoiding view is given: React Native strips `behavior` before the host view, so the tree can't show it.
+const mockKeyboardAvoiding = jest.fn();
+
+jest.mock('react-native/Libraries/Components/Keyboard/KeyboardAvoidingView', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    __esModule: true,
+    default: (props: { children?: ReactNode; testID?: string }) => {
+      mockKeyboardAvoiding(props);
+      return createElement(View, { testID: props.testID }, props.children);
+    },
+  };
+});
 
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
@@ -98,6 +115,36 @@ describe('SearchScreen', () => {
 
     await waitFor(() => expect(view.getByTestId('search-no-results')).toHaveTextContent('لا توجد نتائج'));
     expect(view.queryByTestId('search-empty')).toBeNull();
+  });
+
+  describe('keyboard in a short window', () => {
+    let platformOS: { restore: () => void } | undefined;
+    afterEach(() => {
+      platformOS?.restore();
+      platformOS = undefined;
+    });
+
+    it('lifts the column with padding on iOS, so the results stay in view with the keyboard up', async () => {
+      platformOS = jest.replaceProperty(Platform, 'OS', 'ios');
+      const view = await renderUi(<SearchScreen />);
+
+      // React Native keeps the behaviour prop off the host view, so the avoiding view is recorded by a thin mock.
+      expect(mockKeyboardAvoiding).toHaveBeenLastCalledWith(expect.objectContaining({ behavior: 'padding' }));
+      expect(view.getByTestId('search-keyboard')).toBeOnTheScreen();
+    });
+
+    it('shrinks the column by height on Android, the same avoiding view', async () => {
+      platformOS = jest.replaceProperty(Platform, 'OS', 'android');
+      await renderUi(<SearchScreen />);
+
+      expect(mockKeyboardAvoiding).toHaveBeenLastCalledWith(expect.objectContaining({ behavior: 'height' }));
+    });
+
+    it('keeps the search field inside the avoiding view, so it stays visible while the results scroll', async () => {
+      const view = await renderUi(<SearchScreen />);
+
+      expect(within(view.getByTestId('search-keyboard')).getByTestId('search-field-input')).toBeOnTheScreen();
+    });
   });
 
   it.each(locales)('leaves search through Cancel in %s', async (locale) => {

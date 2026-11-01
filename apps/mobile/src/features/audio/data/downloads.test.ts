@@ -2,6 +2,8 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { openUserTestStore } from '../../../../jest/user-test-db';
 import {
+  needsVerification,
+  verifyNeededCounts,
   countDoneForReciter,
   deleteDownload,
   getDownload,
@@ -127,6 +129,35 @@ describe('downloads repository', () => {
     upsertDownload(row(7, { status: 'paused', resumeData: '{"resumeData":"x"}' }), { db: executor });
 
     expect(getDownload(7, { db: executor })?.resumeData).toBe('{"resumeData":"x"}');
+  });
+});
+
+describe('needsVerification and verifyNeededCounts', () => {
+  const now = 1_000_000_000_000;
+  const DAY = 24 * 60 * 60 * 1000;
+
+  it('needs verifying a finished download older than 7 days, or never verified', () => {
+    expect(needsVerification({ status: 'done', verifiedAt: now - 8 * DAY }, now)).toBe(true);
+    expect(needsVerification({ status: 'done', verifiedAt: null }, now)).toBe(true);
+  });
+
+  it('does not need verifying one verified within 7 days, nor a download that is not done', () => {
+    expect(needsVerification({ status: 'done', verifiedAt: now - DAY }, now)).toBe(false);
+    expect(needsVerification({ status: 'downloading', verifiedAt: null }, now)).toBe(false);
+  });
+
+  it('counts the surahs that need verifying per reciter, and leaves a reciter with none out', () => {
+    const counts = verifyNeededCounts(
+      [
+        { reciterResourceId: 30, status: 'done', verifiedAt: now - 8 * DAY },
+        { reciterResourceId: 30, status: 'done', verifiedAt: now - 9 * DAY },
+        { reciterResourceId: 30, status: 'done', verifiedAt: now - DAY },
+        { reciterResourceId: 31, status: 'done', verifiedAt: now - DAY },
+      ],
+      now,
+    );
+
+    expect(counts).toEqual({ 30: 2 });
   });
 });
 

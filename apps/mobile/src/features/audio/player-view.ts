@@ -39,6 +39,8 @@ export const ERROR_KEYS = {
   'not-found': 'player.errors.notFound',
   'invalid-chapter': 'player.errors.invalidChapter',
   'invalid-verse': 'player.errors.invalidVerse',
+  offline: 'player.errors.offline',
+  'verify-required': 'player.errors.verifyRequired',
 } as const satisfies Record<PlayerErrorCode, string>;
 
 export type ErrorKey = (typeof ERROR_KEYS)[PlayerErrorCode];

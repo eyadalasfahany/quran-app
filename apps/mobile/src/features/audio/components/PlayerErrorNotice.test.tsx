@@ -14,6 +14,8 @@ const messages: Record<PlayerErrorCode, string> = {
   'not-found': ar.player.errors.notFound,
   'invalid-chapter': ar.player.errors.invalidChapter,
   'invalid-verse': ar.player.errors.invalidVerse,
+  offline: ar.player.errors.offline,
+  'verify-required': ar.player.errors.verifyRequired,
 };
 const codes = Object.keys(messages) as PlayerErrorCode[];
 

@@ -2,16 +2,20 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { EmptyState } from '@/shared/ui';
+import { Button, EmptyState } from '@/shared/ui';
 
+// The offline or failed-font placeholder. «إعادة المحاولة» retries the font; the reading-mode action sits under it
+// when both are offered.
 export function MushafPagePlaceholder({
   variant = 'offline',
   onSwitchToReading,
+  onRetry,
   testID,
 }: {
   /** Offline or failed font download vs missing mushaf layout data. */
   variant?: 'offline' | 'missing-layout';
   onSwitchToReading?: () => void;
+  onRetry?: () => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -32,13 +36,24 @@ export function MushafPagePlaceholder({
     >
       <EmptyState
         action={
-          onSwitchToReading
-            ? { label: t('reader.mushaf.switchToReading'), onPress: onSwitchToReading }
-            : undefined
+          onRetry
+            ? { label: t('reader.mushaf.retry'), onPress: onRetry }
+            : onSwitchToReading
+              ? { label: t('reader.mushaf.switchToReading'), onPress: onSwitchToReading }
+              : undefined
         }
         body={t(bodyKey)}
         title={t('reader.mushaf.placeholderTitle')}
       />
+      {onRetry && onSwitchToReading ? (
+        <Button
+          label={t('reader.mushaf.switchToReading')}
+          onPress={onSwitchToReading}
+          style={{ alignSelf: 'center' }}
+          testID={testID ? `${testID}-reading` : undefined}
+          variant="secondary"
+        />
+      ) : null}
     </View>
   );
 }

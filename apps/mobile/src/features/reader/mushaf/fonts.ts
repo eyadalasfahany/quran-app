@@ -1,9 +1,11 @@
 import * as Font from 'expo-font';
 import { Directory, File, Paths } from 'expo-file-system';
 
+import { isNetworkError, requestSignal } from '@/core/api/request-timeout';
 import { qcfV2FontKeys, storage } from '@/core/storage/mmkv';
 
 import {
+  FONT_FETCH_TIMEOUT_MS,
   FONT_PREFETCH_RADIUS,
   FONT_RELEASE_RADIUS,
   FONT_REVALIDATE_MS,
@@ -21,12 +23,24 @@ type DownloadAllState = {
   promise: Promise<void>;
 };
 
+/** A font response whose body arrived. `contentLength` is null when the server did not send the header. */
+type FontResponse = {
+  bytes: Uint8Array;
+  etag: string | null;
+  lastModified: string | null;
+  contentLength: number | null;
+};
+
+type FetchedFont = { kind: 'ok'; font: FontResponse } | { kind: 'not-modified' } | { kind: 'failed' };
+
 const inflight = new Map<number, Promise<string>>();
 const loadedFamilies = new Set<string>();
 let viewportPage = 1;
 let downloadAll: DownloadAllState | null = null;
 /** expo-font 58 exposes unloadAsync on web only. Native calls reject with ERR_UNAVAILABLE. */
 let fontUnloadAvailable = true;
+/** Set when a revalidation run hits a network error. The session stops asking the CDN; the cached fonts keep working. */
+let revalidationBackedOff = false;
 
 export function pageFontUrl(page: number): string {
   return `https://${QCF_V2_FONT_HOST}/fonts/quran/hafs/v2/ttf/p${page}.ttf`;
@@ -92,19 +106,27 @@ export async function releasePageFont(page: number): Promise<void> {
   }
 }
 
+/**
+ * Revalidates the cached fonts, one page at a time. The first network error ends the run and backs off the rest of
+ * the session, so an offline launch makes one request, not 604. Other errors end the run but are tried again later.
+ */
 export async function revalidatePageFonts(now = Date.now()): Promise<void> {
-  const tasks: Promise<void>[] = [];
-  for (let page = 1; page <= MUSHAF_PAGE_COUNT; page += 1) {
-    if (shouldSkipRevalidation(page, now)) {
-      continue;
-    }
-    const file = fontFile(page);
-    if (!file.exists) {
-      continue;
-    }
-    tasks.push(revalidatePageFont(page, now));
+  if (revalidationBackedOff) {
+    return;
   }
-  await Promise.all(tasks);
+  for (let page = 1; page <= MUSHAF_PAGE_COUNT; page += 1) {
+    if (shouldSkipRevalidation(page, now) || !fontFile(page).exists) {
+      continue;
+    }
+    try {
+      await revalidatePageFont(page, now);
+    } catch (error) {
+      if (isNetworkError(error)) {
+        revalidationBackedOff = true;
+      }
+      throw error;
+    }
+  }
 }
 
 export function downloadAllPageFonts(onProgress?: (progress: PageFontProgress) => void): {
@@ -135,61 +157,117 @@ async function runDownloadAll(signal: AbortSignal, onProgress?: (progress: PageF
   }
 }
 
-async function ensurePageFontFile(page: number): Promise<string> {
+/** A file is usable when it has bytes and no unfinished `.part` sits beside it. Otherwise it is missing. */
+function isUsablePageFontFile(page: number): boolean {
   const file = fontFile(page);
+  return file.exists && file.size > 0 && !partFile(page).exists;
+}
+
+async function ensurePageFontFile(page: number): Promise<string> {
   ensureFontDirectory();
-  if (file.exists) {
-    return file.uri;
+  if (!isUsablePageFontFile(page)) {
+    await downloadPageFont(page);
   }
-  await downloadPageFont(page);
-  return file.uri;
+  return fontFile(page).uri;
 }
 
 async function downloadPageFont(page: number): Promise<void> {
-  const url = pageFontUrl(page);
-  assertQfFontUrl(url);
-  const response = await fetch(url);
-  if (!response.ok) {
+  const fetched = await fetchFont(page);
+  if (fetched.kind !== 'ok') {
     throw new Error(`Could not download mushaf page font ${page}.`);
   }
-  storeResponseMetadata(page, response.headers);
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  const file = fontFile(page);
-  ensureFontDirectory();
-  if (file.exists) {
-    file.delete();
-  }
-  await file.write(bytes);
+  await storeFont(page, fetched.font);
+  storeResponseMetadata(page, fetched.font);
 }
 
 async function revalidatePageFont(page: number, now: number): Promise<void> {
-  const url = pageFontUrl(page);
-  assertQfFontUrl(url);
-  const headers = conditionalHeaders(page);
-  const response = await fetch(url, { headers });
-  if (response.status === 304) {
+  const fetched = await fetchFont(page, conditionalHeaders(page));
+  if (fetched.kind === 'not-modified') {
     storage.set(qcfV2FontKeys.revalidatedAt(page), String(now));
     return;
   }
-  if (!response.ok) {
+  if (fetched.kind !== 'ok') {
     throw new Error(`Could not revalidate mushaf page font ${page}.`);
   }
+  await storeFont(page, fetched.font);
+  // Only a font that is now on disk counts as revalidated.
+  storeResponseMetadata(page, fetched.font);
   storage.set(qcfV2FontKeys.revalidatedAt(page), String(now));
-  storeResponseMetadata(page, response.headers);
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  const file = fontFile(page);
-  if (file.exists) {
-    file.delete();
-  }
-  await file.write(bytes);
-  const family = fontFamilyForPage(page);
-  if (loadedFamilies.has(family)) {
-    if (await unloadLoadedFamily(family)) {
-      loadedFamilies.delete(family);
+  await reloadLoadedFamily(page);
+}
+
+/** Fetches one page font with the request timeout. A timeout or an unreachable server throws a NetworkError. */
+async function fetchFont(page: number, headers: HeadersInit = {}): Promise<FetchedFont> {
+  const url = pageFontUrl(page);
+  assertQfFontUrl(url);
+  const request = requestSignal(FONT_FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { headers, signal: request.signal });
+    if (response.status === 304) {
+      return { kind: 'not-modified' };
     }
-    await Font.loadAsync({ [family]: file.uri });
-    loadedFamilies.add(family);
+    if (!response.ok) {
+      return { kind: 'failed' };
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    return {
+      kind: 'ok',
+      font: {
+        bytes,
+        contentLength: parseContentLength(response.headers.get('Content-Length')),
+        etag: response.headers.get('ETag'),
+        lastModified: response.headers.get('Last-Modified'),
+      },
+    };
+  } catch (error) {
+    throw request.fail(error);
+  } finally {
+    request.done();
   }
+}
+
+/**
+ * Writes the font to `p{N}.ttf.part`, checks its size, then renames it over `p{N}.ttf`. The good file is untouched
+ * until the new bytes are complete. A failure removes the partial file and leaves the old one as it was.
+ */
+async function storeFont(page: number, font: FontResponse): Promise<void> {
+  const { bytes, contentLength } = font;
+  if (bytes.byteLength === 0) {
+    throw new Error(`Mushaf page font ${page} arrived empty.`);
+  }
+  if (contentLength !== null && contentLength !== bytes.byteLength) {
+    throw new Error(`Mushaf page font ${page} arrived incomplete.`);
+  }
+  ensureFontDirectory();
+  const part = partFile(page);
+  if (part.exists) {
+    part.delete();
+  }
+  try {
+    await part.write(bytes);
+    if (part.size !== bytes.byteLength) {
+      throw new Error(`Mushaf page font ${page} was written incomplete.`);
+    }
+    await part.move(fontFile(page), { overwrite: true });
+  } catch (error) {
+    if (part.exists) {
+      part.delete();
+    }
+    throw error;
+  }
+}
+
+/** Replaces a page font that expo-font already has registered, so the new bytes are used this session. */
+async function reloadLoadedFamily(page: number): Promise<void> {
+  const family = fontFamilyForPage(page);
+  if (!loadedFamilies.has(family)) {
+    return;
+  }
+  if (await unloadLoadedFamily(family)) {
+    loadedFamilies.delete(family);
+  }
+  await Font.loadAsync({ [family]: fontFile(page).uri });
+  loadedFamilies.add(family);
 }
 
 function shouldSkipRevalidation(page: number, now: number): boolean {
@@ -214,19 +292,29 @@ function conditionalHeaders(page: number): HeadersInit {
   return headers;
 }
 
-function storeResponseMetadata(page: number, headers: Headers): void {
-  const etag = headers.get('ETag');
-  const lastModified = headers.get('Last-Modified');
-  if (etag !== null) {
-    storage.set(qcfV2FontKeys.etag(page), etag);
+function storeResponseMetadata(page: number, font: FontResponse): void {
+  if (font.etag !== null) {
+    storage.set(qcfV2FontKeys.etag(page), font.etag);
   }
-  if (lastModified !== null) {
-    storage.set(qcfV2FontKeys.lastModified(page), lastModified);
+  if (font.lastModified !== null) {
+    storage.set(qcfV2FontKeys.lastModified(page), font.lastModified);
   }
+}
+
+function parseContentLength(header: string | null): number | null {
+  if (header === null) {
+    return null;
+  }
+  const length = Number(header);
+  return Number.isInteger(length) && length >= 0 ? length : null;
 }
 
 function fontFile(page: number): File {
   return new File(fontDirectory(), `p${page}.ttf`);
+}
+
+function partFile(page: number): File {
+  return new File(fontDirectory(), `p${page}.ttf.part`);
 }
 
 function fontDirectory(): Directory {
@@ -289,6 +377,7 @@ export function resetMushafFontsForTests(): void {
   loadedFamilies.clear();
   viewportPage = 1;
   fontUnloadAvailable = true;
+  revalidationBackedOff = false;
   downloadAll?.abort.abort();
   downloadAll = null;
 }

@@ -182,6 +182,60 @@ describe('Sidebar', () => {
     });
   });
 
+  describe('scrolling and side insets', () => {
+    function withInsets(side: { left: number; right: number }, footer?: string) {
+      return (
+        <SafeAreaProvider initialMetrics={{ frame: { height: 411, width: 900, x: 0, y: 0 }, insets: { ...insets, ...side } }}>
+          <Sidebar footer={footer ? <Text>{footer}</Text> : undefined} items={entries()} label="التنقل الرئيسي" />
+        </SafeAreaProvider>
+      );
+    }
+
+    it('keeps the destinations in a vertical scroll view that fills the sidebar', async () => {
+      const view = await renderUi(withInsets({ left: 0, right: 0 }));
+      const scroll = view.getByTestId('sidebar-scroll');
+
+      expect(scroll.props.showsVerticalScrollIndicator).toBe(false);
+      expect(flatStyle(scroll.props.style)).toMatchObject({ flex: 1 });
+      expect(within(scroll).getAllByRole('tab')).toHaveLength(3);
+    });
+
+    it('pins the footer outside the scroll view, so it stays at the bottom when the list scrolls', async () => {
+      const view = await renderUi(withInsets({ left: 0, right: 0 }, 'mini footer'));
+
+      expect(within(view.getByTestId('sidebar-scroll')).queryByTestId('sidebar-footer')).toBeNull();
+      expect(view.getByTestId('sidebar-footer')).toBeOnTheScreen();
+    });
+
+    it('spaces the scrolling destinations 8 pt apart', async () => {
+      const view = await renderUi(withInsets({ left: 0, right: 0 }));
+
+      expect(flatStyle(view.getByTestId('sidebar-scroll').props.contentContainerStyle)).toMatchObject({
+        gap: themes.light.space[2],
+      });
+    });
+
+    it('adds the leading and trailing insets to the sidebar edges in LTR', async () => {
+      const view = await renderUi(withInsets({ left: 44, right: 12 }), { locale: 'en' });
+      const container = flatStyle(view.getByTestId('sidebar').parent?.props.style);
+
+      expect(container).toMatchObject({
+        paddingEnd: 12,
+        paddingStart: 44 + themes.light.space[4],
+      });
+    });
+
+    it('mirrors the side insets in RTL, so the notch side is the trailing one', async () => {
+      const view = await renderUi(withInsets({ left: 44, right: 12 }), { locale: 'ar' });
+      const container = flatStyle(view.getByTestId('sidebar').parent?.props.style);
+
+      expect(container).toMatchObject({
+        paddingEnd: 44,
+        paddingStart: 12 + themes.light.space[4],
+      });
+    });
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('Sidebar.tsx')).toEqual([]);
   });

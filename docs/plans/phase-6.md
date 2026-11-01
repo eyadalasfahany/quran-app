@@ -28,7 +28,7 @@ Spec §15 · ADR 0031 (sources, rights, provenance, data ownership) · research:
 | :--- | :--- | :--- |
 | D1 | Canonical source | OpenDua Hisn al-Muslim, pinned version + SHA-256; production import blocked until written rights |
 | D2 | Arabic chapter titles | Named, permitted Arabic source only; field nullable, pending |
-| D3 | Repetition | `required_count` nullable; counter when sourced, «تم» otherwise; never assume 1 |
+| D3 | Repetition | `required_count` nullable; counter when sourced (a count of 1 included), single ring «تم» otherwise; never assume 1 (amended 1 Nov 2026, see below) |
 | D4 | Quran passages | Reviewed verse-reference map; rendered from `content.db.verses`; no translation (ADR 0014) |
 | D5 | English / transliteration | Non-Quranic duas only, when the licence covers them, with attribution |
 | D6 | Audio | No OpenDua audio until written rights; rights fields on every recording; no controls without legal audio |
@@ -77,6 +77,24 @@ Approved behaviour for the reader:
 - **Auto-advance:** when a unit completes (its sourced count is reached, or «تم» is tapped), the reader moves to the next unit after a short pause, so the success haptic and the full ring are seen. Reduce Motion moves without animation. Previous and next still work by hand, and a completed unit can be revisited.
 - **Last unit:** when every unit in the session is done, the reader does not jump away. It shows a «إتمام» / "Mark as complete" button, and tapping it records the session as complete for its period, then shows the completion screen («أتممت أذكار …», «البدء من جديد», «العودة»).
 - Session completion is stored in `user.db.azkar_progress` under a reserved unit key `__session__` for the scope and period. No migration is needed. «البدء من جديد» clears it with the rest of the scope.
+
+## Counter for a count of one and for no sourced count (developer, 1 Nov 2026)
+
+Amends ADR 0031 §6 and §12 (last bullet). The reader has one control for every unit, the 120 pt ring (`AzkarCounter`):
+- **A sourced count of 1:** the same counter as any count, reading «٠ من ١», then «١ من ١» with a full ring. One tap completes it. The value keeps the counter's «من» format from the approved `AzkarReader` frame; the developer's «٠ / ١» example was not used, so every counter reads the same way. Confirm if «/» is wanted.
+- **No sourced count (null):** the single variant. An empty ring with a check and «تم» / "Done" in its centre, and no number. One tap fills the ring and completes the unit. Accessible role and label as the counter: a button labelled «وضع علامة «تم»» / "Mark as done".
+- The bottom «تم» pill is removed. The previous and next arrows stay.
+- Completion is one path for every unit. Auto-advance goes to the next unit not yet done, else the first open one, else the last unit, where «إتمام» shows once every unit is done. Before, it went to the next index even when that unit was already done. Then the reader sat on a finished unit with a dead tap surface and no «إتمام», so a session looked unfinished. That was the root cause of the reported non-completion.
+- **Opening at an entry:** a category list card opens the reader at its unit with `?unit=` (already in place); the reader honours it while no move has been made. Other lists open the entry's first unit.
+- **Motion:** the dhikr content slides and fades on a unit change (forward enters from the reading-start side, as a pushed screen does); each count bumps the ring with a spring, and completion pulses it; the completion screen scales in; category rows fade in with a stagger when they mount. Reduce Motion: fades only, and nothing scales.
+
+## Count from the secondary source (developer, 1 Nov 2026)
+
+Amends ADR 0031 §6 (the dated note there is the decision of record). The primary (OpenDua) has `times` for only a few items. The import fills a missing `required_count` from hisnmuslim's `REPEAT` for the same book number, and records `required_count_source` (server-side only, not in the pack schema).
+- Pairing is by book number, and by position only when both sides have the same number of recitations. Otherwise the item stays `null` and is reported as ambiguous.
+- A primary count is never replaced. A difference is a warning, and the primary's count is kept.
+- The secondary is used only while its own lock is open. In production, while it is locked, nothing is filled.
+- Local result (1 Nov 2026): 36 counts from OpenDua, 179 filled from hisnmuslim, 5 conflicts kept at OpenDua's count, 41 ambiguous items left `null`. Entry `hisn-al-muslim:entry-000084` now reads 1.
 
 ## Progress periods (UX policy, not a ruling)
 

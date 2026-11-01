@@ -43,8 +43,23 @@ function openRoute(response: Notifications.NotificationResponse | null): void {
   router.navigate(route);
 }
 
-/** A tap on the reminder opens the reading position or Azkar screen it pointed at (spec §13), including cold start. */
+// The listener is kept so it can be removed. Registering twice would open every tap twice.
+let subscription: { remove: () => void } | null = null;
+
+/**
+ * A tap on the reminder opens the reading position or Azkar screen it pointed at (spec §13), including cold start.
+ * Idempotent: a second call while registered does nothing.
+ */
 export function registerReminderDeepLinks(): void {
-  Notifications.addNotificationResponseReceivedListener(openRoute);
+  if (subscription !== null) {
+    return;
+  }
+  subscription = Notifications.addNotificationResponseReceivedListener(openRoute) ?? { remove: () => undefined };
   void Notifications.getLastNotificationResponseAsync().then(openRoute);
+}
+
+/** Removes the tap listener, so the next `registerReminderDeepLinks` adds exactly one. */
+export function unregisterReminderDeepLinks(): void {
+  subscription?.remove();
+  subscription = null;
 }

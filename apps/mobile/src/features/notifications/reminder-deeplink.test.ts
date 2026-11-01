@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 
-import { isReminderRoute, registerReminderDeepLinks } from './reminder-deeplink';
+import { isReminderRoute, registerReminderDeepLinks, unregisterReminderDeepLinks } from './reminder-deeplink';
 
 jest.mock('expo-router', () => ({
   router: { navigate: jest.fn() },
@@ -27,6 +27,41 @@ function tapListener() {
 describe('registerReminderDeepLinks', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  // Registration is idempotent, so each test starts unregistered.
+  afterEach(() => {
+    unregisterReminderDeepLinks();
+  });
+
+  it('adds one tap listener however many times it is called', () => {
+    registerReminderDeepLinks();
+    registerReminderDeepLinks();
+    registerReminderDeepLinks();
+
+    expect(Notifications.addNotificationResponseReceivedListener).toHaveBeenCalledTimes(1);
+    expect(Notifications.getLastNotificationResponseAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens each tap once after repeated registration', () => {
+    registerReminderDeepLinks();
+    registerReminderDeepLinks();
+
+    tapListener()(response('reminder-once', '/read/2:255'));
+
+    expect(router.navigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes the tap listener on unregister, so a later registration adds exactly one again', () => {
+    const remove = jest.fn();
+    jest.mocked(Notifications.addNotificationResponseReceivedListener).mockReturnValueOnce({ remove } as never);
+
+    registerReminderDeepLinks();
+    unregisterReminderDeepLinks();
+    expect(remove).toHaveBeenCalledTimes(1);
+
+    registerReminderDeepLinks();
+    expect(Notifications.addNotificationResponseReceivedListener).toHaveBeenCalledTimes(2);
   });
 
   it('navigates to the reading position carried by the tapped reminder', () => {
@@ -94,6 +129,29 @@ describe('registerReminderDeepLinks', () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it('opens a cold-start tap once when the listener also delivers it', async () => {
+    jest
+      .mocked(Notifications.getLastNotificationResponseAsync)
+      .mockResolvedValueOnce(response('reminder-cold-dup', '/salah'));
+
+    registerReminderDeepLinks();
+    const listener = tapListener();
+    listener(response('reminder-cold-dup', '/salah'));
+    await Promise.resolve();
+
+    expect(router.navigate).toHaveBeenCalledTimes(1);
+    expect(router.navigate).toHaveBeenCalledWith('/salah');
+  });
+
+  it('opens a tap made while the app is in the foreground through the response listener', () => {
+    registerReminderDeepLinks();
+
+    tapListener()(response('reminder-foreground', '/azkar/category/morning'));
+
+    expect(router.navigate).toHaveBeenCalledWith('/azkar/category/morning');
+    expect(Notifications.getLastNotificationResponseAsync).toHaveBeenCalledTimes(1);
   });
 
   it('opens the route from the cold-start response', async () => {

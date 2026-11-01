@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import { useTheme } from '@/core/theme';
+import { useScaleIn, useTheme } from '@/core/theme';
 import { Button, Icon, UiText } from '@/shared/ui';
 
 const CHECK = { ios: 'checkmark', android: 'check' } as const;
@@ -26,9 +27,11 @@ export function AzkarCompletion({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  // The finished state grows in (ADR 0031 §6; Reduce Motion: a fade).
+  const entering = useScaleIn();
 
   return (
-    <View style={{ flex: 1, gap: theme.space[4], paddingHorizontal: theme.space[4] }} testID={testID}>
+    <Animated.View entering={entering} style={{ flex: 1, gap: theme.space[4], paddingHorizontal: theme.space[4] }} testID={testID}>
       <View style={{ alignItems: 'center', flex: 1, gap: theme.space[3], justifyContent: 'center' }}>
         <View
           style={{
@@ -51,6 +54,6 @@ export function AzkarCompletion({
       </View>
       <Button label={t('azkar.reader.completionBack')} onPress={onBack} stretch testID="azkar-completion-back" variant="primary" />
       <Button label={t('azkar.reader.restart')} onPress={onRestart} stretch testID="azkar-completion-restart" variant="secondary" />
-    </View>
+    </Animated.View>
   );
 }

@@ -27,8 +27,9 @@ final class AzkarTransformer
      * @param  array<string, mixed>  $catalogue
      * @param  array<int, true>  $blockedEntries  Entry indexes that have at least one error.
      * @param  array<string, list<array<string, mixed>>>  $notesByEntryKey  HadeethEnc notes by entry key (ADR 0031 §12).
+     * @param  array<string, array{count: int, source: string}>  $requiredCountFills  Counts taken from the secondary source, by item key (ADR 0031 §6).
      */
-    public function plan(array $catalogue, string $sourceVersion, int $importedAt, array $blockedEntries, SourceProfile $profile, array $notesByEntryKey = []): ImportPlan
+    public function plan(array $catalogue, string $sourceVersion, int $importedAt, array $blockedEntries, SourceProfile $profile, array $notesByEntryKey = [], array $requiredCountFills = []): ImportPlan
     {
         $collectionId = $profile->collectionId;
         $storeEnglish = $profile->storeEnglish;
@@ -82,8 +83,9 @@ final class AzkarTransformer
                     $itemId++;
                     // ADR 0031 §5: English is stored only when the licence covers it and the item holds no Quran segment.
                     $englishStored = $storeEnglish && ($item->textAr === null || $this->spanCount($item->textAr) === 0);
+                    [$requiredCount, $requiredCountSource] = $this->requiredCountOf($item, $profile, $requiredCountFills);
                     $this->countEnglish($item, $englishStored, $stats);
-                    $this->countItem($item, $stats);
+                    $this->countItem($item, $requiredCount, $requiredCountSource, $stats);
 
                     $items[] = [
                         'id' => $itemId,
@@ -92,7 +94,8 @@ final class AzkarTransformer
                         'variation_key' => $item->variationKey,
                         'position' => $item->position,
                         'kind' => $item->kind,
-                        'required_count' => $item->requiredCount,
+                        'required_count' => $requiredCount,
+                        'required_count_source' => $requiredCountSource,
                         'speaker' => $item->speaker,
                         'source_dua_id' => $item->sourceDuaId,
                         'text_en' => $englishStored ? $item->textEn : null,
@@ -340,7 +343,24 @@ final class AzkarTransformer
         }
     }
 
-    private function countItem(FlatItem $item, ImportStats $stats): void
+    /**
+     * The primary's own count, or the secondary's count for an item the primary left empty (ADR 0031 §6, §12).
+     *
+     * @param  array<string, array{count: int, source: string}>  $fills
+     * @return array{0: int|null, 1: string|null}
+     */
+    private function requiredCountOf(FlatItem $item, SourceProfile $profile, array $fills): array
+    {
+        if ($item->requiredCount !== null) {
+            return [$item->requiredCount, $profile->code];
+        }
+
+        $fill = $fills[$item->itemKey] ?? null;
+
+        return $fill === null ? [null, null] : [$fill['count'], $fill['source']];
+    }
+
+    private function countItem(FlatItem $item, ?int $requiredCount, ?string $requiredCountSource, ImportStats $stats): void
     {
         match ($item->kind) {
             'recitation' => $stats->itemsRecitation++,
@@ -348,11 +368,14 @@ final class AzkarTransformer
             default => $stats->itemsNarration++,
         };
 
-        if ($item->requiredCount === null) {
+        if ($requiredCount === null || $requiredCountSource === null) {
             $stats->itemsWithoutRequiredCount++;
-        } else {
-            $stats->itemsWithRequiredCount++;
+
+            return;
         }
+
+        $stats->itemsWithRequiredCount++;
+        $stats->requiredCountBySource[$requiredCountSource] = ($stats->requiredCountBySource[$requiredCountSource] ?? 0) + 1;
     }
 
     /**

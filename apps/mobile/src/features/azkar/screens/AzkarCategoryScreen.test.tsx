@@ -92,6 +92,14 @@ describe('AzkarCategoryScreen', () => {
     expect(screen.getAllByTestId('azkar-count-chip')).toHaveLength(1);
   });
 
+  it('fades each row in as the list mounts', async () => {
+    await renderUi(<AzkarCategoryScreen categoryId="morning" />);
+
+    expect(screen.getByTestId('azkar-category-row-1').props.entering).toBeDefined();
+    expect(screen.getByTestId('azkar-category-row-2').props.entering).toBeDefined();
+    expect(screen.getByTestId('azkar-category-card-2')).toBeOnTheScreen();
+  });
+
   it('marks an entry done when all its units are completed and counts the progress', async () => {
     mocked.useScopeProgress.mockReturnValue({
       data: [rowFor('fixture:item-1', true), rowFor('fixture:item-2', true)],

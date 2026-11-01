@@ -7,9 +7,10 @@ import { I18nManager, Platform } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import '@/core/layout/hide-scroll-indicators';
+import { installForegroundNotificationHandler } from '@/features/notifications/foreground';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { registerReminderDeepLinks } from '@/features/notifications/reminder-deeplink';
-import { openContentDb, useContentDb } from '@/core/db/content/open';
+import { openContentDb, useContentDbBootstrap } from '@/core/db/content/open';
 import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { modalLikeScreenOptions, pushScreenOptions } from '@/core/layout/push-screen-options';
@@ -17,7 +18,6 @@ import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
-import { azkarDevFixturesEnabled, loadAzkarDevFixtures } from '@/features/azkar/data/dev-fixtures';
 import { useAzkarRemindersForeground } from '@/features/azkar/reminders/use-azkar-reminders-foreground';
 import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
 import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNotificationsSync';
@@ -35,6 +35,9 @@ export const unstable_settings = {
 // A direction mismatch reloads before paint, so the splash stays up.
 const directionCheck = ensureDirection();
 
+// Reminders that arrive while the app is open must show a pop-up too (installed once, before first render).
+installForegroundNotificationHandler();
+
 export default function RootLayout() {
   const themeName = useResolvedTheme();
   const reduceMotion = useReducedMotion() ?? false;
@@ -42,7 +45,7 @@ export default function RootLayout() {
   const modalLikeOptions = modalLikeScreenOptions({ platform: Platform.OS, reduceMotion });
   const [loaded, error] = useFonts(bundledFonts);
   const [directionReady, setDirectionReady] = useState(directionCheck.ready);
-  const content = useContentDb();
+  const content = useContentDbBootstrap();
   const user = useUserDb();
   useContentSync();
   usePlaybackReadingPlace(content.ready);
@@ -84,12 +87,15 @@ export default function RootLayout() {
     }
   }, [user.error]);
 
-  // Development only: placeholder Azkar rows for the UI (never shipped; see dev-fixtures.ts).
+  // Development only: placeholder Azkar rows for the UI (never shipped; see dev-fixtures.ts). The condition is inline and
+  // the module is required inside it, so a release bundle drops the fixtures (a static import or a helper call would keep them).
   useEffect(() => {
-    if (!content.ready || !azkarDevFixturesEnabled()) {
+    if (!content.ready || !(__DEV__ && process.env.EXPO_PUBLIC_AZKAR_DEV_FIXTURES === '1')) {
       return;
     }
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- dev-only; the require keeps the fixtures out of release bundles.
+      const { loadAzkarDevFixtures } = require('@/features/azkar/data/dev-fixtures') as typeof import('@/features/azkar/data/dev-fixtures');
       loadAzkarDevFixtures(openContentDb().executor);
     } catch (error) {
       console.error(error);

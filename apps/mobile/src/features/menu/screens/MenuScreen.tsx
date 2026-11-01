@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ContentColumn } from '@/core/layout';
+import { ContentColumn, useIsShortWindow, useTabRailSideInset, useWidthClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
 import { azkarHref } from '@/features/azkar/routes';
@@ -11,6 +11,7 @@ import { Screen, ScreenHeader, type IconName } from '@/shared/ui';
 
 import { MenuCard } from '../components/MenuCard';
 import { MenuGrid } from '../components/MenuGrid';
+import { MenuSalahCard } from '../components/MenuSalahCard';
 import { MenuSearchButton } from '../components/MenuSearchButton';
 import { menuSearchBottom } from '../data/search-position';
 import { useAzkarMenuPreview } from '../hooks/useAzkarMenuPreview';
@@ -45,9 +46,14 @@ export function MenuScreen() {
   const miniShown = useMiniPlayerVisible('tabs');
   const previews = useMenuPreviews();
   const azkar = useAzkarMenuPreview();
+  // Three columns where the window is wide, a landscape phone included (ADR 0036); two on a phone in portrait.
+  const columns = useWidthClass() === 'compact' ? 2 : 3;
 
   // The floating search button sits above the tab bar. The list keeps clear of it, and of the button's own row.
-  const searchBottom = menuSearchBottom(Platform.OS, insets.bottom, miniShown);
+  const short = useIsShortWindow();
+  const searchBottom = menuSearchBottom(Platform.OS, insets.bottom, miniShown, short);
+  // The rail takes the start edge in a short window; the search button clears it when that edge is the left one.
+  const railSide = useTabRailSideInset();
 
   // A card that is not shown is null: MenuGrid drops it, so the two columns still alternate over the cards shown.
   const reading = previews.continueReading;
@@ -77,14 +83,11 @@ export function MenuScreen() {
         title={resume.title}
       />
     ) : null,
-    <MenuCard
+    <MenuSalahCard
       caption={t('menu.salah.caption')}
       icon={ICON.salah}
       key="salah"
       onPress={() => router.push('/salah' as Href)}
-      preview={previews.prayerPreview}
-      testID="menu-card-salah"
-      title={previews.prayerTitle}
     />,
     azkar.available ? (
       <MenuCard
@@ -203,10 +206,10 @@ export function MenuScreen() {
           testID="menu-scroll"
         >
           <ScreenHeader testID="menu-title" title={t('menu.title')} />
-          <MenuGrid>{cards}</MenuGrid>
+          <MenuGrid columns={columns}>{cards}</MenuGrid>
         </ScrollView>
       </ContentColumn>
-      <MenuSearchButton bottom={searchBottom} onPress={() => router.push('/search')} />
+      <MenuSearchButton bottom={searchBottom} onPress={() => router.push('/search')} railInset={railSide} />
     </Screen>
   );
 }

@@ -15,6 +15,15 @@ export const FULL_SHEET_RADIUS = 28;
 /** The mid detent sits at half the window height for every sheet (ADR 0020). */
 export const MID_DETENT_RATIO = 0.5;
 
+/**
+ * A window shorter than this (a landscape phone is about 390 to 430 pt) cannot show half its height as a usable
+ * sheet. Such a sheet opens at full, which is its only detent, and its content scrolls there.
+ */
+export const SHORT_WINDOW_HEIGHT = 500;
+
+/** On medium and expanded windows the sheet is a centred card no wider than this (spec §4, ADR 0013). */
+export const SHEET_CARD_MAX_WIDTH = 560;
+
 /** A drag moves the sheet to the next detent once it passes this share of the distance to it. */
 export const DETENT_DISTANCE_RATIO = 0.25;
 
@@ -33,14 +42,29 @@ export type Detent = 'full' | 'mid' | 'closed';
 
 export type SheetDetents = { full: number; mid: number; closed: number };
 
+/** Whether the window is too short for a half-height sheet (see SHORT_WINDOW_HEIGHT). An unknown height is not short. */
+export function isShortWindow(windowHeight: number): boolean {
+  return windowHeight > 0 && windowHeight < SHORT_WINDOW_HEIGHT;
+}
+
+/** The detent a sheet opens at: mid, or full in a short window, where mid would hide the content. */
+export function openingDetent(windowHeight: number): 'full' | 'mid' {
+  return isShortWindow(windowHeight) ? 'full' : 'mid';
+}
+
 /**
  * Card top for each detent. Full sits under the safe area with the card's margin;
  * mid is half the window; closed is the card fully below the bottom edge.
+ * In a short window mid is the full detent, so the sheet has one resting place and its content scrolls there.
  */
 export function sheetDetents(windowHeight: number, safeTop: number): SheetDetents {
   'worklet';
   const height = windowHeight > 0 ? windowHeight : PHONE_FRAME_HEIGHT;
   const full = Math.min(safeTop + SHEET_MARGIN, height);
+  // Inline rather than isShortWindow(): this function is a worklet, and worklets cannot call plain functions.
+  if (height < SHORT_WINDOW_HEIGHT) {
+    return { closed: height, full, mid: full };
+  }
   const mid = Math.min(Math.max(full, height * MID_DETENT_RATIO), height);
   return { closed: height, full, mid };
 }

@@ -10,7 +10,9 @@ import { useTheme } from '@/core/theme';
 import { Sidebar } from '@/shared/ui';
 
 import { sidebarDestinations } from './destinations';
-import { miniPlayerBottom } from './tab-bar-clearance';
+import { miniPlayerBottom, tabBarSideClearance } from './tab-bar-clearance';
+import { TabRailContext } from './TabRailContext';
+import { useIsShortWindow } from './useWindowClass';
 
 export function MainShell({ expanded, children }: { expanded: boolean; children: ReactNode }) {
   const { t } = useTranslation();
@@ -24,8 +26,12 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
     setLastActive(current);
   }
   const active = current ?? lastActive;
+  // A short window draws the tabs as a rail on the start edge (ADR 0036): the screens and the mini player clear it there.
+  const short = useIsShortWindow();
+  const railSide = tabBarSideClearance(short);
 
   return (
+    <TabRailContext.Provider value={railSide}>
     <View style={{ backgroundColor: theme.colors.surface, flex: 1, flexDirection: 'row' }} testID="main-shell">
       {expanded ? (
         <Sidebar
@@ -61,10 +67,10 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
         <View
           pointerEvents="box-none"
           style={{
-            bottom: miniPlayerBottom(Platform.OS, insets.bottom),
+            bottom: miniPlayerBottom(Platform.OS, insets.bottom, short),
             end: MINI_PLAYER_SIDE,
             position: 'absolute',
-            start: MINI_PLAYER_SIDE,
+            start: railSide + MINI_PLAYER_SIDE,
           }}
           testID="mini-player-dock"
         >
@@ -72,5 +78,6 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
         </View>
       )}
     </View>
+    </TabRailContext.Provider>
   );
 }

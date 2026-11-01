@@ -1,18 +1,20 @@
 import { router, type Href } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, FlatList, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { useLocale } from '@/core/i18n/useLocale';
+import { useOnline } from '@/core/network/useOnline';
 import { ContentColumn, useTabContentBottom } from '@/core/layout';
-import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
+import { useTheme } from '@/core/theme';
+import { ConfirmDialog, EmptyState, OfflineBanner, Screen, SkeletonGroup } from '@/shared/ui';
 import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
 
 import { ReciterPageActions } from '../components/ReciterPageActions';
 import { ReciterPageHeader } from '../components/ReciterPageHeader';
 import { ReciterSurahRow } from '../components/ReciterSurahRow';
-import { useReciterDownloads as useReciterDownloadRows } from '../data/downloads';
+import { needsVerification, useReciterDownloads as useReciterDownloadRows } from '../data/downloads';
 import { cancel, enqueueAll, enqueueSurah, remove, removeReciter } from '../downloads/manager';
 import { useDownloadProgress } from '../downloads/store';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
@@ -32,6 +34,8 @@ const INSTALL_SKELETON_WIDTHS = ['58%', '46%', '64%', '52%', '60%', '44%', '56%'
 export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   const { t } = useTranslation();
   const locale = useLocale();
+  const theme = useTheme();
+  const online = useOnline();
   const { ready } = useContentDb();
   const { reciters } = useReciterCatalogue(ready);
   const bottom = useTabContentBottom();
@@ -42,6 +46,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   const { surahs, total } = useReciterSurahs(resourceId, ready, installed);
   const { data: rows = [] } = useReciterDownloadRows(resourceId);
   const progressById = useDownloadProgress((state) => state.byId);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // The surah list comes from the reciter's pack, so the pack installs first. The effect runs once per reciter;
   // a failed install waits for «إعادة المحاولة» rather than retrying on every render.
@@ -65,16 +70,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   };
 
   const confirmDeleteAll = () => {
-    Alert.alert(t('listen.reciter.deleteTitle'), t('listen.reciter.deleteBody'), [
-      { style: 'cancel', text: t('listen.reciter.cancel') },
-      {
-        onPress: () => {
-          removeReciter(resourceId);
-        },
-        style: 'destructive',
-        text: t('listen.reciter.deleteConfirm'),
-      },
-    ]);
+    setDeleteOpen(true);
   };
 
   const retryInstall = () => {
@@ -132,6 +128,13 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   return (
     <Screen testID="screen-reciter">
       <ContentColumn gutter={FRAME_GUTTER}>
+        {/* The frame's notice floats over the top of the list (quran-app-screens.html, Offline). */}
+        <View
+          pointerEvents="box-none"
+          style={{ left: FRAME_GUTTER, position: 'absolute', right: FRAME_GUTTER, top: theme.space[2], zIndex: 1 }}
+        >
+          <OfflineBanner visible={!online} />
+        </View>
         <FlatList
           contentContainerStyle={{ paddingBottom: bottom }}
           data={installed ? surahs : []}
@@ -158,10 +161,12 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
                 onPlay={() => {
                   void playSurahFromReciter(resourceId, item.id);
                 }}
+                offline={!online}
                 progress={row === undefined ? 0 : (progressById[row.audioFileId] ?? row.progress)}
                 showDivider={index < surahs.length - 1}
                 sizeBytes={row?.sizeBytes ?? null}
                 status={row?.status}
+                verifyNeeded={row !== undefined && needsVerification(row)}
                 testID={`surah-row-${item.id}`}
                 title={locale === 'ar' ? item.nameArabic : item.nameSimple}
               />
@@ -171,6 +176,20 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
           testID="reciter-downloads-list"
         />
       </ContentColumn>
+      <ConfirmDialog
+        cancelLabel={t('listen.reciter.cancel')}
+        confirmLabel={t('listen.reciter.deleteConfirm')}
+        destructive
+        message={t('listen.reciter.deleteBody')}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={() => {
+          setDeleteOpen(false);
+          removeReciter(resourceId);
+        }}
+        testID="reciter-delete-dialog"
+        title={t('listen.reciter.deleteTitle')}
+        visible={deleteOpen}
+      />
     </Screen>
   );
 }

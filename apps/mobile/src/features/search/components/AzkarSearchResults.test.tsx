@@ -1,63 +1,101 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 
-import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { renderUi } from '../../../../jest/render-ui';
-import { useAzkarSearch } from '@/features/azkar/data';
+import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { locales, renderUi } from '../../../../jest/render-ui';
+import { type AzkarCategoryListItem, useAzkarCategories, useAzkarSearch } from '@/features/azkar/data';
 
 import { AzkarSearchResults } from './AzkarSearchResults';
 
 jest.mock('@/features/azkar/data', () => ({
-  useAzkarSearch: jest.fn(),
+  useAzkarCategories: jest.fn(() => []),
+  useAzkarSearch: jest.fn(() => ({ entries: [], categoryIds: [] })),
 }));
 
-const hits = [
-  { entryKey: 'entry:one', preview: 'نص تجريبي ١ — ليس ذكرًا', highlight: { start: 0, end: 4 } },
-  { entryKey: 'entry:two', preview: 'نص تجريبي ٢ — ليس ذكرًا', highlight: null },
-];
+// Placeholder fixtures: the id is a real session id, the count is a placeholder, and no dhikr text is used.
+const chapter: AzkarCategoryListItem = {
+  id: 'morning',
+  resourceId: 1,
+  kind: 'session',
+  position: 1,
+  occasion: null,
+  progressPeriod: 'session',
+  unitCount: 3,
+};
+const hit = { entryKey: 'entry:morning:1', preview: 'نص تجريبي ١ — ليس ذكرًا', highlight: null };
 
 describe('AzkarSearchResults', () => {
   beforeEach(() => {
     jest.mocked(useAzkarSearch).mockReturnValue({ entries: [], categoryIds: [] });
+    jest.mocked(useAzkarCategories).mockReturnValue([chapter]);
   });
 
-  it('renders nothing for an empty query', async () => {
-    await renderUi(<AzkarSearchResults onOpen={jest.fn()} query="   " />);
+  it('lists matching chapters and dhikr, each with its own heading', async () => {
+    jest.mocked(useAzkarSearch).mockReturnValue({ entries: [hit], categoryIds: ['morning'] });
+    const view = await renderUi(
+      <AzkarSearchResults onOpenChapter={jest.fn()} onOpenEntry={jest.fn()} pending={false} query="الصباح" />,
+    );
 
-    expect(screen.queryByTestId('search-azkar-results')).toBeNull();
-    expect(screen.queryByTestId('search-azkar-results-empty')).toBeNull();
+    expect(view.getByTestId('search-azkar-results-chapters')).toHaveTextContent('الأبواب');
+    expect(view.getByTestId('search-azkar-results-chapter-morning')).toBeOnTheScreen();
+    expect(view.getByTestId('search-azkar-results-entries')).toHaveTextContent('الأذكار');
+    expect(view.getByTestId('search-azkar-results-result-1')).toBeOnTheScreen();
   });
 
-  it('says so when no entry matches', async () => {
-    await renderUi(<AzkarSearchResults onOpen={jest.fn()} query="شيء" />);
+  it('opens the chapter or the dhikr that is tapped', async () => {
+    jest.mocked(useAzkarSearch).mockReturnValue({ entries: [hit], categoryIds: ['morning'] });
+    const onOpenChapter = jest.fn();
+    const onOpenEntry = jest.fn();
+    const view = await renderUi(
+      <AzkarSearchResults onOpenChapter={onOpenChapter} onOpenEntry={onOpenEntry} pending={false} query="الصباح" />,
+    );
 
-    expect(screen.getByTestId('search-azkar-results-empty')).toHaveTextContent('لا توجد نتائج');
+    await fireEvent.press(view.getByTestId('search-azkar-results-chapter-morning'));
+    await fireEvent.press(view.getByTestId('search-azkar-results-result-1'));
+
+    expect(onOpenChapter).toHaveBeenCalledWith('morning');
+    expect(onOpenEntry).toHaveBeenCalledWith('entry:morning:1');
   });
 
-  it('lists one row per matching entry, numbered from one', async () => {
-    jest.mocked(useAzkarSearch).mockReturnValue({ entries: hits, categoryIds: [] });
-    await renderUi(<AzkarSearchResults onOpen={jest.fn()} query="تجريبي" />);
+  it.each(locales)('says no results match, with a suggestion to try another word, in %s', async (locale) => {
+    const title = locale === 'ar' ? 'لا توجد نتائج مطابقة' : 'No matching results';
+    const suggestion = locale === 'ar' ? 'جرّب كلمة أخرى.' : 'Try another word.';
+    const view = await renderUi(
+      <AzkarSearchResults onOpenChapter={jest.fn()} onOpenEntry={jest.fn()} pending={false} query="لا شيء" />,
+      { locale },
+    );
 
-    expect(screen.getByTestId('search-azkar-results-result-1')).toBeOnTheScreen();
-    expect(screen.getByTestId('search-azkar-results-result-2')).toBeOnTheScreen();
+    await waitFor(() => expect(view.getByTestId('search-azkar-results-empty')).toBeOnTheScreen());
+    expect(view.getByRole('header', { name: title })).toBeOnTheScreen();
+    expect(view.getByText(suggestion)).toBeOnTheScreen();
   });
 
-  it('opens the entry of the row that is tapped', async () => {
-    const onOpen = jest.fn();
-    jest.mocked(useAzkarSearch).mockReturnValue({ entries: hits, categoryIds: [] });
-    await renderUi(<AzkarSearchResults onOpen={onOpen} query="تجريبي" />);
+  it('shows nothing while the query is still debouncing, so no empty state flashes', async () => {
+    const view = await renderUi(
+      <AzkarSearchResults onOpenChapter={jest.fn()} onOpenEntry={jest.fn()} pending query="لا شيء" />,
+    );
 
-    await fireEvent.press(screen.getByTestId('search-azkar-results-result-2'));
-
-    expect(onOpen).toHaveBeenCalledWith('entry:two');
+    expect(view.queryByTestId('search-azkar-results-empty')).toBeNull();
+    expect(view.queryByTestId('search-azkar-results')).toBeNull();
   });
 
-  it('searches the query it is given', async () => {
-    await renderUi(<AzkarSearchResults onOpen={jest.fn()} query="تجريبي" />);
+  it('shows nothing for a blank query', async () => {
+    const view = await renderUi(
+      <AzkarSearchResults onOpenChapter={jest.fn()} onOpenEntry={jest.fn()} pending={false} query="   " />,
+    );
 
-    expect(useAzkarSearch).toHaveBeenCalledWith('تجريبي');
+    expect(view.queryByTestId('search-azkar-results-empty')).toBeNull();
   });
 
-  it('uses theme tokens rather than raw colours', () => {
-    expect(rawColorLiteralsInFeature('src/features/search/components/AzkarSearchResults.tsx')).toEqual([]);
+  it('keeps the results on screen while a newer query is still debouncing', async () => {
+    jest.mocked(useAzkarSearch).mockReturnValue({ entries: [hit], categoryIds: [] });
+    const view = await renderUi(
+      <AzkarSearchResults onOpenChapter={jest.fn()} onOpenEntry={jest.fn()} pending query="الصباح" />,
+    );
+
+    expect(view.getByTestId('search-azkar-results-result-1')).toBeOnTheScreen();
+  });
+
+  it('draws its colours from the theme, with no literal colour in the component', () => {
+    expect(featureComponentLiterals('features/search/components/AzkarSearchResults.tsx')).toEqual([]);
   });
 });

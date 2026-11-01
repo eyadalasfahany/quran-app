@@ -87,8 +87,15 @@ describe("main tabs by platform (ADR 0033)", () => {
   const originalOs = Platform.OS;
 
   // The root waits for fonts and the content database before it draws, so a render is only ready once the shell is.
-  async function renderMain(width: number) {
-    setWidth(width);
+  async function renderMain(width: number, height = 800) {
+    if (height === 800) {
+      setWidth(width);
+    } else {
+      Dimensions.set({
+        screen: { fontScale: 1, height, scale: 1, width },
+        window: { fontScale: 1, height, scale: 1, width },
+      });
+    }
     await renderRouter("./app");
     await screen.findByTestId("main-shell");
   }
@@ -138,6 +145,21 @@ describe("main tabs by platform (ADR 0033)", () => {
 
       expect(mockNativeTabsProps.at(-1)).toMatchObject({ hidden: true });
     });
+
+    it("renders the vertical rail, not the native tabs, in a short landscape window (ADR 0036)", async () => {
+      await renderMain(844, 390);
+
+      expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
+      expect(screen.queryByTestId("native-tabs")).toBeNull();
+      expect(mockNativeTabsProps).toHaveLength(0);
+    });
+
+    it("keeps the native tabs in a tall window, as before", async () => {
+      await renderMain(390, 844);
+
+      expect(screen.getByTestId("native-tabs")).toBeOnTheScreen();
+      expect(screen.queryByTestId("floating-tab-bar")).toBeNull();
+    });
   });
 
   describe("on Android", () => {
@@ -151,6 +173,13 @@ describe("main tabs by platform (ADR 0033)", () => {
       expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
       expect(screen.queryByTestId("native-tabs")).toBeNull();
       expect(mockNativeTabsProps).toHaveLength(0);
+    });
+
+    it("renders the same vertical rail in a short landscape window (ADR 0036)", async () => {
+      await renderMain(844, 390);
+
+      expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
+      expect(screen.queryByTestId("native-tabs")).toBeNull();
     });
   });
 });

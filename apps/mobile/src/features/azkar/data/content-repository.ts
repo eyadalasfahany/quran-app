@@ -80,6 +80,22 @@ const ENTRY_SELECT = `
   FROM azkar_entries
 `;
 
+/** The entry columns, qualified for a join on `azkar_entries e` (the same aliases as `ENTRY_SELECT`). */
+const JOINED_ENTRY_COLUMNS = `
+    e.resource_id AS resourceId,
+    e.id AS id,
+    e.entry_key AS entryKey,
+    e.chapter_id AS chapterId,
+    e.position AS position,
+    e.source_reference AS sourceReference,
+    e.entry_type AS entryType,
+    e.occasion AS occasion,
+    e.timing_type AS timingType,
+    e.timing_prayer AS timingPrayer,
+    e.review_status AS reviewStatus,
+    e.source_version AS sourceVersion,
+    e.imported_at AS importedAt`;
+
 const ITEM_SELECT = `
   SELECT
     resource_id AS resourceId,
@@ -182,7 +198,8 @@ type RecordingRow = Omit<AzkarRecording, 'streamAllowed' | 'downloadAllowed' | '
   redistributionAllowed: number;
 };
 
-type CategoryLinkRow = { resourceId: number; entryId: number; chapterNumber: number; linkVariationKey: string };
+/** A category link joined to its entry: the entry columns (`EntryRow`) plus the link's variation and chapter number. */
+type CategoryLinkRow = { chapterNumber: number; linkVariationKey: string };
 
 export function hasAzkarContent(db: SqlExecutor): boolean {
   return db.get<{ one: number }>('SELECT 1 AS one FROM azkar_entries WHERE resource_id = ? LIMIT 1', [activeAzkarResourceId(db)]) !== undefined;
@@ -229,12 +246,11 @@ export function listCategoryEntries(
   categoryId: string,
   overrides: VariationOverrides = {},
 ): AzkarCategoryEntry[] {
-  const links = db.all<CategoryLinkRow>(
-    `SELECT
-       ec.resource_id AS resourceId,
-       ec.entry_id AS entryId,
-       c.number AS chapterNumber,
-       ec.variation_key AS linkVariationKey
+  // One join reads the links with their entries and chapters, so no entry is fetched on its own.
+  const links = db.all<EntryRow & CategoryLinkRow>(
+    `SELECT ${JOINED_ENTRY_COLUMNS},
+       ec.variation_key AS linkVariationKey,
+       c.number AS chapterNumber
      FROM azkar_entry_categories ec
      JOIN azkar_entries e ON e.resource_id = ec.resource_id AND e.id = ec.entry_id
      JOIN azkar_chapters c ON c.resource_id = e.resource_id AND c.id = e.chapter_id
@@ -243,26 +259,28 @@ export function listCategoryEntries(
     [activeAzkarResourceId(db), categoryId],
   );
 
-  const result: AzkarCategoryEntry[] = [];
-  for (const link of links) {
-    const entryRow = db.get<EntryRow>(`${ENTRY_SELECT} WHERE resource_id = ? AND id = ?`, [link.resourceId, link.entryId]);
-    if (entryRow === undefined) {
-      continue;
-    }
+  const entries = links.map((link) => ({ link, entry: asEntry(link) }));
+  // The items of every entry in two queries, not two per entry.
+  const itemsByEntry = loadItemsByEntry(
+    db,
+    entries.map(({ entry }) => entry),
+  );
 
-    const entry = asEntry(entryRow);
-    const selection = selectEntry(db, entry, link.linkVariationKey, overrides[entry.entryKey]);
-    result.push({
+  return entries.map(({ link, entry }) => {
+    const selection = selectEntry(itemsByEntry.get(entryMapKey(entry)) ?? [], {
+      entry,
+      linkVariationKey: link.linkVariationKey,
+      requested: overrides[entry.entryKey],
+    });
+    return {
       entry,
       chapterNumber: link.chapterNumber,
       variationKey: link.linkVariationKey,
       variations: selection.variations,
       activeVariation: selection.activeVariation,
       items: selection.items,
-    });
-  }
-
-  return result;
+    };
+  });
 }
 
 /** The reader units of a category, in entry order. Each entry counts once, through its active variation. */
@@ -298,7 +316,8 @@ export function getEntry(
   }
 
   const entry = asEntry(row);
-  const selection = selectEntry(db, entry, null, overrides[entry.entryKey]);
+  const items = loadItemsByEntry(db, [entry]).get(entryMapKey(entry)) ?? [];
+  const selection = selectEntry(items, { entry, linkVariationKey: null, requested: overrides[entry.entryKey] });
   const chapterRow = db.get<ChapterRow>(`${CHAPTER_SELECT} WHERE resource_id = ? AND id = ?`, [
     entry.resourceId,
     entry.chapterId,
@@ -336,40 +355,111 @@ export function getQuranSegmentVerses(
   return getVerseRange(db, from, to);
 }
 
-/** Every alternative of an entry in upstream order: the lowest item id first. `labelIndex` is 1-based. */
-function loadVariations(db: SqlExecutor, resourceId: number, entryId: number): AzkarVariation[] {
-  return db
-    .all<{ key: string }>(
-      `SELECT variation_key AS key FROM azkar_items
-       WHERE resource_id = ? AND entry_id = ?
-       GROUP BY variation_key
-       ORDER BY min(id)`,
-      [resourceId, entryId],
-    )
-    .map((row, index) => ({ key: row.key, labelIndex: index + 1, labelEn: null }));
+/** One entry's alternative choice, as the reader needs it: the requested or first alternative, or a fixed link's. */
+type EntrySelection = { variations: AzkarVariation[]; activeVariation: string; items: AzkarItemDetail[] };
+
+/** An entry and what its link asks for. `linkVariationKey` null is the detail view (every alternative offered). */
+type EntryRequest = { entry: AzkarEntry; linkVariationKey: string | null; requested: string | undefined };
+
+/** Items with their segments, keyed by `entryMapKey`, for many entries at once. */
+type ItemsByEntry = Map<string, AzkarItemDetail[]>;
+
+const ENTRY_QUERY_CHUNK = 400;
+
+function entryMapKey(entry: Pick<AzkarEntry, 'resourceId' | 'id'>): string {
+  return `${entry.resourceId}:${entry.id}`;
+}
+
+/**
+ * The items (with their segments) of many entries, read in one query per chunk of entries rather than two per entry.
+ * Items come back in `variation_key, position, id` order and segments in `item_id, position` order, so every entry's
+ * list keeps the order a single-entry read gives.
+ */
+function loadItemsByEntry(db: SqlExecutor, entries: readonly Pick<AzkarEntry, 'resourceId' | 'id'>[]): ItemsByEntry {
+  const byEntry: ItemsByEntry = new Map();
+  const idsByResource = new Map<number, number[]>();
+  for (const entry of entries) {
+    const ids = idsByResource.get(entry.resourceId) ?? [];
+    ids.push(entry.id);
+    idsByResource.set(entry.resourceId, ids);
+  }
+
+  for (const [resourceId, allIds] of idsByResource) {
+    for (let start = 0; start < allIds.length; start += ENTRY_QUERY_CHUNK) {
+      const ids = allIds.slice(start, start + ENTRY_QUERY_CHUNK);
+      const marks = ids.map(() => '?').join(', ');
+      const items = db.all<ItemRow>(
+        `${ITEM_SELECT} WHERE resource_id = ? AND entry_id IN (${marks}) ORDER BY entry_id, variation_key, position, id`,
+        [resourceId, ...ids],
+      );
+      if (items.length === 0) {
+        continue;
+      }
+
+      const segments = db.all<SegmentRow>(
+        `${SEGMENT_SELECT}
+         JOIN azkar_items i ON i.resource_id = s.resource_id AND i.id = s.item_id
+         WHERE i.resource_id = ? AND i.entry_id IN (${marks})
+         ORDER BY s.item_id, s.position`,
+        [resourceId, ...ids],
+      );
+
+      const segmentsByItem = new Map<number, AzkarSegment[]>();
+      for (const row of segments) {
+        const list = segmentsByItem.get(row.itemId) ?? [];
+        list.push(asSegment(row));
+        segmentsByItem.set(row.itemId, list);
+      }
+
+      for (const row of items) {
+        const key = entryMapKey({ resourceId: row.resourceId, id: row.entryId });
+        const list = byEntry.get(key) ?? [];
+        list.push({ ...asItem(row), segments: segmentsByItem.get(row.id) ?? [] });
+        byEntry.set(key, list);
+      }
+    }
+  }
+
+  return byEntry;
+}
+
+/**
+ * Every alternative of an entry, in upstream order: the lowest item id first. `labelIndex` is 1-based. `items` are the
+ * entry's items of every variation.
+ */
+function alternativesOf(items: readonly AzkarItemDetail[]): { key: string; minId: number }[] {
+  const firstIds = new Map<string, number>();
+  for (const item of items) {
+    const current = firstIds.get(item.variationKey);
+    if (current === undefined || item.id < current) {
+      firstIds.set(item.variationKey, item.id);
+    }
+  }
+  return [...firstIds].sort((a, b) => a[1] - b[1]).map(([key, minId]) => ({ key, minId }));
 }
 
 /**
  * The alternative an entry shows. A link with a specific variation fixes it (no switching, `variations` empty). A `'*'`
  * link, or no link (the detail view), offers every alternative and uses the requested one when it exists, else the
- * first in upstream order.
+ * first in upstream order. Works on the items already loaded for the entry (see `loadItemsByEntry`).
  */
-function selectEntry(
-  db: SqlExecutor,
-  entry: AzkarEntry,
-  linkVariationKey: string | null,
-  requested: string | undefined,
-): { variations: AzkarVariation[]; activeVariation: string; items: AzkarItemDetail[] } {
+function selectEntry(items: readonly AzkarItemDetail[], request: EntryRequest): EntrySelection {
+  const { linkVariationKey, requested } = request;
   if (linkVariationKey !== null && linkVariationKey !== ALL_VARIATIONS) {
     return {
       variations: [],
       activeVariation: linkVariationKey,
-      items: loadItems(db, entry.resourceId, entry.id, linkVariationKey),
+      items: items.filter((item) => item.variationKey === linkVariationKey),
     };
   }
 
-  const variations = loadVariations(db, entry.resourceId, entry.id);
-  const chosen = variations.find((variation) => variation.key === requested) ?? variations[0];
+  const alternatives = alternativesOf(items);
+  const chosen = alternatives.find((alternative) => alternative.key === requested) ?? alternatives[0];
+  const variations: AzkarVariation[] = alternatives.map((alternative, index) => ({
+    key: alternative.key,
+    labelIndex: index + 1,
+    labelEn: null,
+  }));
   if (chosen === undefined) {
     return { variations, activeVariation: ALL_VARIATIONS, items: [] };
   }
@@ -377,40 +467,8 @@ function selectEntry(
   return {
     variations,
     activeVariation: chosen.key,
-    items: loadItems(db, entry.resourceId, entry.id, chosen.key),
+    items: items.filter((item) => item.variationKey === chosen.key),
   };
-}
-
-/** Items of one entry with their segments. `variationKey` null keeps every variation. */
-function loadItems(db: SqlExecutor, resourceId: number, entryId: number, variationKey: string | null): AzkarItemDetail[] {
-  const filterVariation = variationKey !== null && variationKey !== ALL_VARIATIONS;
-  const items = db.all<ItemRow>(
-    `${ITEM_SELECT}
-     WHERE resource_id = ? AND entry_id = ?${filterVariation ? ' AND variation_key = ?' : ''}
-     ORDER BY variation_key, position, id`,
-    filterVariation ? [resourceId, entryId, variationKey] : [resourceId, entryId],
-  );
-
-  if (items.length === 0) {
-    return [];
-  }
-
-  const segments = db.all<SegmentRow>(
-    `${SEGMENT_SELECT}
-     JOIN azkar_items i ON i.resource_id = s.resource_id AND i.id = s.item_id
-     WHERE i.resource_id = ? AND i.entry_id = ?
-     ORDER BY s.item_id, s.position`,
-    [resourceId, entryId],
-  );
-
-  const byItem = new Map<number, AzkarSegment[]>();
-  for (const row of segments) {
-    const list = byItem.get(row.itemId) ?? [];
-    list.push(asSegment(row));
-    byItem.set(row.itemId, list);
-  }
-
-  return items.map((row) => ({ ...asItem(row), segments: byItem.get(row.id) ?? [] }));
 }
 
 function loadNotes(db: SqlExecutor, resourceId: number, entryId: number): Record<AzkarNoteKind, AzkarNote[]> {

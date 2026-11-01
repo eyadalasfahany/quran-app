@@ -14,7 +14,7 @@ export type PackDownloadOptions = {
 };
 
 export type ContentApi = {
-  getManifest: (etag?: string) => Promise<ManifestResult>;
+  getManifest: (etag?: string, signal?: AbortSignal) => Promise<ManifestResult>;
   getChanges: (query: ChangesQuery) => Promise<ChangesResult>;
   downloadPack: (url: string, toPath: string, options?: PackDownloadOptions) => Promise<void>;
 };

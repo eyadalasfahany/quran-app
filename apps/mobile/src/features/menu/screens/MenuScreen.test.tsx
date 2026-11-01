@@ -9,6 +9,7 @@ import { qiblaBearing } from '@/features/salah/data/prayer-times';
 import { usePrayerLocation } from '@/features/salah/hooks';
 
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
+import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { MenuScreen } from './MenuScreen';
 
@@ -290,5 +291,26 @@ describe('MenuScreen', () => {
     await renderUi(<MenuScreen />);
 
     expect(screen.queryByTestId('menu-card-downloads')).toBeNull();
+  });
+});
+
+describe('MenuScreen columns (ADR 0036)', () => {
+  afterEach(() => {
+    resetWindowSize();
+  });
+
+  it('lays the cards out in two columns on a phone in portrait', async () => {
+    setWindowSize(390, 844);
+    await renderUi(<MenuScreen />);
+
+    expect(screen.getByTestId('menu-grid-column-1')).toBeOnTheScreen();
+    expect(screen.queryByTestId('menu-grid-column-2')).toBeNull();
+  });
+
+  it('lays the cards out in three columns on a landscape phone, which is wide', async () => {
+    setWindowSize(844, 390);
+    await renderUi(<MenuScreen />);
+
+    expect(screen.getByTestId('menu-grid-column-2')).toBeOnTheScreen();
   });
 });

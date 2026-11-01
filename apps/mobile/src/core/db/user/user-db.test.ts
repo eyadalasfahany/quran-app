@@ -190,7 +190,7 @@ describe('user.db schema', () => {
     const contentPath = join(directory, 'content.db');
     const content = new DatabaseSync(contentPath);
     content.exec('CREATE TABLE verses (id integer primary key, text_uthmani text not null)');
-    content.prepare(`INSERT INTO verses (id, text_uthmani) VALUES (1, 'بِسْمِ ٱللَّهِ')`).run();
+    content.prepare(`INSERT INTO verses (id, text_uthmani) VALUES (1, 'FIXTURE text 1 — not a dhikr')`).run();
     content.close();
 
     const user = openMigrated(userPath);

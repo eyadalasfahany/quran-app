@@ -143,12 +143,23 @@
       "waitingWifi": "Waiting for Wi-Fi",
       "paused": "Paused",
       "delete": "Delete download",
-      "play": "Play"
+      "play": "Play",
+      "offline": "Not available offline"
     },
     "empty": {
       "title": "No matching reciter",
       "body": "Try another name, or clear the search."
+    },
+    "catalogue": {
+      "title": "Connect once to load reciters",
+      "body": "After the first connection, the reciter list stays on this device."
     }
+  },
+  "network": {
+    "offlineBanner": "You are offline. The mushaf and downloaded recitations work as usual.",
+    "needsInternet": "Needs an internet connection",
+    "verifyDownloads": "Connect once to verify your downloads",
+    "staleContent": "Connect to update the content"
   },
   "nav": {
     "main": "Main navigation"
@@ -163,7 +174,8 @@
       "placeholderTitle": "This page is not ready",
       "placeholderBody": "Connect to load this page.",
       "missingLayoutBody": "This page is not installed yet. You can read the same ayah in Reading mode.",
-      "switchToReading": "Read in Reading mode"
+      "switchToReading": "Read in Reading mode",
+      "retry": "Try again"
     },
     "sources": {
       "title": "Sources",
@@ -372,7 +384,14 @@
       "label": "Search in",
       "quran": "Quran",
       "azkar": "Azkar"
-    }
+    },
+    "placeholderAzkar": "Search Azkar",
+    "hintAzkar": "Search by a word from the dhikr or a chapter title",
+    "azkarIdleHint": "Search by a word or part of one. Matching chapters and azkar appear here.",
+    "azkarChaptersHeading": "Topics",
+    "azkarEntriesHeading": "Azkar",
+    "azkarNoResultsTitle": "No matching results",
+    "azkarNoResultsSuggestion": "Try another word."
   },
   "ui": {
     "loading": "Loading",
@@ -569,7 +588,9 @@
       "loadFailed": "The audio file could not be played. Try again.",
       "notFound": "This audio file is not available right now.",
       "invalidChapter": "This surah is not available.",
-      "invalidVerse": "This ayah is not available."
+      "invalidVerse": "This ayah is not available.",
+      "offline": "Not available offline. Download this surah to listen without a connection.",
+      "verifyRequired": "Connect once to verify your downloads"
     }
   },
   "khatma": {
@@ -764,6 +785,8 @@
       "label": "Counter for dhikr {{position}}",
       "value": "{{current}} of {{total}}",
       "hint": "Tap to count",
+      "doneLabel": "Mark as done",
+      "doneHint": "Tap to mark done",
       "reset": "Reset count"
     },
     "details": {
@@ -893,7 +916,7 @@
     "close": "Close",
     "reset": "Reset",
     "resetTitle": "Reset the counter?",
-    "resetBody": "The counter goes back to zero. Today's total is kept.",
+    "resetBody": "The count and the rounds go back to zero. Today's total is kept.",
     "resetConfirm": "Reset",
     "label": "Optional label",
     "labelA11y": "Optional label",
@@ -904,13 +927,16 @@
       "hint": "Tap to count",
       "value": "{{current}} of {{total}}",
       "plain": "{{current}}",
-      "ofTarget": "of {{total}}"
+      "ofTarget": "of {{total}}",
+      "valueRound": "{{current}} of {{total}}, round {{round}}"
     },
     "hint": "Tap anywhere to count",
     "customTitle": "Custom target",
     "customBody": "Enter a number from 1 to 9999",
     "customField": "Number of counts",
-    "customSave": "Save"
+    "customSave": "Save",
+    "targetNone": "No limit",
+    "rounds": "Round {{round}}"
   },
   "dailyGoals": {
     "title": "My daily goals",

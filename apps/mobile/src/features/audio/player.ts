@@ -12,6 +12,7 @@ import { openContentDb } from '@/core/db/content/open';
 import { openUserDb } from '@/core/db/user/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { getLocale } from '@/core/i18n/locale';
+import { networkIsOffline } from '@/core/network/network-state';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 
@@ -124,6 +125,41 @@ function lookupAudio(db: SqlExecutor, reciterId: number, chapterId: number): Aud
   const recitationId = recitationIdForResource(db, reciterId);
   const audio = recitationId === undefined ? undefined : chapterAudio(db, recitationId, chapterId);
   return audio === undefined ? { error: 'not-installed' } : { audio };
+}
+
+/** Whether a surah can play without the network. */
+type LocalAudioState =
+  /** Downloaded and verified within the last 7 days. */
+  | 'local'
+  /** Downloaded, but not verified for longer than 7 days. The licence rule stops it playing offline. */
+  | 'stale'
+  /** Not downloaded. */
+  | 'missing';
+
+function localAudioState(reciterId: number, chapterId: number): LocalAudioState {
+  let state: LocalAudioState = 'missing';
+  for (const row of listDownloadsForReciter(reciterId, { db: openUserDb().executor })) {
+    if (row.chapterId !== chapterId || row.status !== 'done' || !fileForDownloadPath(row.localPath).exists) {
+      continue;
+    }
+    if (isPlayableOffline(row)) {
+      return 'local';
+    }
+    state = 'stale';
+  }
+  return state;
+}
+
+/**
+ * Why a surah cannot start: it has no playable local copy and the device is known to be offline. Null when the
+ * stream may be tried. Checked before the load, so the reader sees the message at once instead of a timeout.
+ */
+function offlineFailure(reciterId: number, chapterId: number): PlayerErrorCode | null {
+  const local = localAudioState(reciterId, chapterId);
+  if (local === 'local' || !networkIsOffline()) {
+    return null;
+  }
+  return local === 'stale' ? 'verify-required' : 'offline';
 }
 
 /** The content row's duration: only a placeholder until the loaded track reports its own. */
@@ -428,7 +464,10 @@ function startWatchdog(index: number): void {
       return;
     }
     active.playlist.pause();
-    current.markFailed('load-failed');
+    // Offline with no local copy, the stream was never going to load: say so, not a generic failure.
+    const chapterId = active.chapterIds[index];
+    const offline = chapterId === undefined ? null : offlineFailure(active.reciterId, chapterId);
+    current.markFailed(offline ?? 'load-failed');
   }, LOAD_TIMEOUT_MS);
 }
 
@@ -577,6 +616,13 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
   const lookup = lookupAudio(db, reciterId, chapterId);
   if ('error' in lookup) {
     store().markFailed(lookup.error);
+    return;
+  }
+  const offline = offlineFailure(reciterId, chapterId);
+  if (offline !== null) {
+    clearWatchdog();
+    queue?.playlist.pause();
+    store().markFailed(offline);
     return;
   }
   store().beginLoad({ reciterId, chapterId, positionMs, durationMs: lookup.audio.durationMs });

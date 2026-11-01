@@ -14,6 +14,7 @@ jest.mock('@shopify/flash-list', () => ({
 
 jest.mock('@/core/db/content/open', () => ({
   useContentDb: () => ({ ready: true, error: null }),
+  useContentDbBootstrap: () => ({ ready: true, error: null }),
   openContentDb: () => {
     throw new Error('openContentDb is unavailable under Jest.');
   },
@@ -157,7 +158,7 @@ jest.mock('expo-location', () => ({
 
 // Local notifications are a native module; tests drive them through these fakes.
 jest.mock('expo-notifications', () => ({
-  AndroidImportance: { DEFAULT: 3 },
+  AndroidImportance: { DEFAULT: 3, HIGH: 4 },
   SchedulableTriggerInputTypes: { CALENDAR: 'calendar', DATE: 'date', DAILY: 'daily' },
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
@@ -167,6 +168,7 @@ jest.mock('expo-notifications', () => ({
   requestPermissionsAsync: jest.fn(() => Promise.resolve({ granted: true })),
   scheduleNotificationAsync: jest.fn(() => Promise.resolve('scheduled-notification-id')),
   setNotificationChannelAsync: jest.fn(() => Promise.resolve(null)),
+  setNotificationHandler: jest.fn(),
 }));
 
 // The time picker is a native view. Render a stand-in that keeps the props reachable.

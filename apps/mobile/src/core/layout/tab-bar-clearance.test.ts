@@ -1,4 +1,14 @@
-import { FLOATING_TAB_BAR, miniPlayerBottom, tabBarFootprint, tabContentClearance } from './tab-bar-clearance';
+import type { PlatformOSType } from 'react-native';
+
+import {
+  FLOATING_TAB_BAR,
+  miniPlayerBottom,
+  TAB_RAIL_CLEARANCE,
+  tabBarFootprint,
+  tabBarMode,
+  tabBarSideClearance,
+  tabContentClearance,
+} from './tab-bar-clearance';
 
 describe('miniPlayerBottom', () => {
   it('clears the iOS tab bar by the frame footprint (28 + 64) and the 12 pt gap', () => {
@@ -42,5 +52,41 @@ describe('tabContentClearance', () => {
   it('pads Android screens by the floating bar footprint, so no content sits under it', () => {
     expect(tabContentClearance('android', 0)).toBe(76);
     expect(tabContentClearance('android', 24)).toBe(100);
+  });
+});
+
+describe('tab rail in a short window (ADR 0036, developer 1 Nov 2026)', () => {
+  it('reserves 100 pt on the start edge: 12 offset, 76 wide, 12 gap', () => {
+    expect(TAB_RAIL_CLEARANCE).toBe(100);
+    expect(tabBarSideClearance(true)).toBe(100);
+    expect(tabBarSideClearance(false)).toBe(0);
+  });
+
+  it.each<[PlatformOSType, boolean, 'native' | 'headless']>([
+    // iOS keeps its native tabs in tall windows; a short window is the rail on both platforms.
+    ['ios', false, 'native'],
+    ['ios', true, 'headless'],
+    ['android', false, 'headless'],
+    ['android', true, 'headless'],
+  ])('tabBarMode(%s, short %s) is %s', (platform, short, expected) => {
+    expect(tabBarMode(platform, short)).toBe(expected);
+  });
+
+  it('has no bottom bar in a short window, so the footprint is the bottom safe area only', () => {
+    expect(tabBarFootprint('android', 21, true)).toBe(21);
+    expect(tabBarFootprint('ios', 21, true)).toBe(21);
+    expect(miniPlayerBottom('ios', 21, true)).toBe(33);
+    expect(miniPlayerBottom('android', 0, true)).toBe(12);
+  });
+
+  it('gives tab screens no bottom clearance in a short window, on either platform', () => {
+    expect(tabContentClearance('android', 21, true)).toBe(0);
+    expect(tabContentClearance('ios', 21, true)).toBe(0);
+  });
+
+  it('keeps the tall-window clearance unchanged', () => {
+    expect(tabContentClearance('android', 0)).toBe(76);
+    expect(tabContentClearance('ios', 0)).toBe(0);
+    expect(miniPlayerBottom('ios', 0)).toBe(104);
   });
 });

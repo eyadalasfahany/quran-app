@@ -2,6 +2,7 @@ import { storage } from '@/core/storage/mmkv';
 import { getCoordinates } from '@/features/salah/data/location';
 
 import { resyncAzkarReminders, resyncAzkarRemindersIfNeeded } from './resync';
+import { readLastKnownCoordinates } from './last-known-coordinates';
 import { syncAzkarReminders } from './reminder-service';
 import { listReminders, type AzkarReminder } from './reminders-repository';
 import { currentSyncState, writeRemindersSyncState } from './resync-state';
@@ -19,8 +20,14 @@ jest.mock('./reminders-repository', () => ({
   listReminders: jest.fn(),
 }));
 
+// The foreground check reads the last known position, never a GPS fix (see last-known-coordinates.ts).
+jest.mock('./last-known-coordinates', () => ({
+  readLastKnownCoordinates: jest.fn(),
+}));
+
 const LONDON = { lat: 51.5074, lng: -0.1278 };
 const NOW = new Date(2026, 9, 31, 12, 0, 0, 0);
+const NEXT_DAY = new Date(2026, 10, 1, 9, 0);
 
 function reminder(overrides: Partial<AzkarReminder> = {}): AzkarReminder {
   return {
@@ -38,6 +45,14 @@ function reminder(overrides: Partial<AzkarReminder> = {}): AzkarReminder {
   };
 }
 
+const CLOCK_REMINDER = reminder({ triggerType: 'clock', clockTime: '06:30', prayer: null, offsetMinutes: null });
+
+/** A synced record for `now` in this device's zone, with the given coordinates key. */
+function syncedAt(now: Date, coordsKey: string) {
+  const today = currentSyncState(now, null);
+  return { day: today.day, timeZone: today.timeZone, coordsKey };
+}
+
 describe('Azkar reminder resync', () => {
   beforeEach(() => {
     storage.clearAll();
@@ -49,6 +64,7 @@ describe('Azkar reminder resync', () => {
       return Promise.resolve({ needsLocation: false, unscheduled: [] });
     });
     jest.mocked(getCoordinates).mockResolvedValue(LONDON);
+    jest.mocked(readLastKnownCoordinates).mockResolvedValue(LONDON);
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
@@ -72,7 +88,7 @@ describe('Azkar reminder resync', () => {
     });
 
     it('does not read the location for a clock reminder, which needs none', async () => {
-      jest.mocked(listReminders).mockReturnValue([reminder({ triggerType: 'clock', clockTime: '06:30', prayer: null, offsetMinutes: null })]);
+      jest.mocked(listReminders).mockReturnValue([CLOCK_REMINDER]);
 
       await resyncAzkarReminders(NOW);
 
@@ -115,7 +131,7 @@ describe('Azkar reminder resync', () => {
     it('does nothing when the day, the time zone and the coordinates are unchanged', async () => {
       await resyncAzkarRemindersIfNeeded(NOW);
       jest.clearAllMocks();
-      jest.mocked(getCoordinates).mockResolvedValue(LONDON);
+      jest.mocked(readLastKnownCoordinates).mockResolvedValue(LONDON);
 
       await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(false);
 
@@ -126,7 +142,7 @@ describe('Azkar reminder resync', () => {
       await resyncAzkarRemindersIfNeeded(NOW);
       jest.clearAllMocks();
 
-      await expect(resyncAzkarRemindersIfNeeded(new Date(2026, 10, 1, 9, 0))).resolves.toBe(true);
+      await expect(resyncAzkarRemindersIfNeeded(NEXT_DAY)).resolves.toBe(true);
 
       expect(syncAzkarReminders).toHaveBeenCalledTimes(1);
     });
@@ -140,36 +156,29 @@ describe('Azkar reminder resync', () => {
     });
 
     it('syncs when the coordinates changed, whichever source they came from', async () => {
-      writeRemindersSyncState({
-        day: '2026-10-31',
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        coordsKey: '21.42,39.83',
-      });
+      writeRemindersSyncState(syncedAt(NOW, '21.42,39.83'));
 
       await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(true);
       expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NOW, coords: LONDON });
     });
 
     it('syncs when the location was removed', async () => {
-      writeRemindersSyncState({
-        day: '2026-10-31',
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        coordsKey: '51.51,-0.13',
-      });
-      jest.mocked(getCoordinates).mockResolvedValueOnce(null);
+      writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
+      jest.mocked(readLastKnownCoordinates).mockResolvedValueOnce(null);
 
       await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(true);
       expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NOW, coords: null });
     });
 
-    it('ignores the coordinates for a clock reminder, so a foreground return reads no GPS', async () => {
-      jest.mocked(listReminders).mockReturnValue([reminder({ triggerType: 'clock', clockTime: '06:30', prayer: null, offsetMinutes: null })]);
+    it('ignores the coordinates for a clock reminder, so a foreground return reads no location', async () => {
+      jest.mocked(listReminders).mockReturnValue([CLOCK_REMINDER]);
 
       await resyncAzkarRemindersIfNeeded(NOW);
       jest.clearAllMocks();
 
       await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(false);
       expect(getCoordinates).not.toHaveBeenCalled();
+      expect(readLastKnownCoordinates).not.toHaveBeenCalled();
     });
 
     it('does nothing when no reminder is scheduled', async () => {
@@ -177,14 +186,50 @@ describe('Azkar reminder resync', () => {
 
       await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(false);
       expect(getCoordinates).not.toHaveBeenCalled();
+      expect(readLastKnownCoordinates).not.toHaveBeenCalled();
       expect(syncAzkarReminders).not.toHaveBeenCalled();
     });
 
     it('logs a failed check and reports no sync', async () => {
-      jest.mocked(getCoordinates).mockRejectedValueOnce(new Error('gps'));
+      jest.mocked(readLastKnownCoordinates).mockRejectedValueOnce(new Error('gps'));
+      writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
 
       await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(false);
       expect(console.error).toHaveBeenCalled();
+    });
+
+    describe('reads the location only when it can matter', () => {
+      it('never asks the device for a GPS fix on a foreground check', async () => {
+        await resyncAzkarRemindersIfNeeded(NOW);
+        writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
+        jest.clearAllMocks();
+
+        await resyncAzkarRemindersIfNeeded(NOW);
+
+        expect(getCoordinates).not.toHaveBeenCalled();
+        expect(readLastKnownCoordinates).toHaveBeenCalledTimes(1);
+      });
+
+      it('reads the last known position, not GPS, when the day changed', async () => {
+        writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
+
+        await expect(resyncAzkarRemindersIfNeeded(NEXT_DAY)).resolves.toBe(true);
+
+        expect(readLastKnownCoordinates).toHaveBeenCalledTimes(1);
+        expect(getCoordinates).not.toHaveBeenCalled();
+        expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NEXT_DAY, coords: LONDON });
+      });
+
+      it('syncs on a day change without any location read for a clock reminder', async () => {
+        jest.mocked(listReminders).mockReturnValue([CLOCK_REMINDER]);
+        writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
+
+        await expect(resyncAzkarRemindersIfNeeded(NEXT_DAY)).resolves.toBe(true);
+
+        expect(readLastKnownCoordinates).not.toHaveBeenCalled();
+        expect(getCoordinates).not.toHaveBeenCalled();
+        expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NEXT_DAY, coords: null });
+      });
     });
   });
 });

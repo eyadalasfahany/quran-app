@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Linking } from 'react-native';
+import { Linking } from 'react-native';
 
 import { formatTime, useLocale } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -9,9 +9,12 @@ import {
   readReminderTime,
   syncDailyReminder,
 } from '@/features/notifications/reminder-service';
+import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { ToggleRow } from '@/shared/ui/ToggleRow';
 
 import { ReminderTimeSheet } from './ReminderTimeSheet';
+
+const PERMISSION_ICON = { ios: 'bell.slash', android: 'notifications_off' } as const;
 
 function storedTimeAsDate(): Date {
   const { hour, minute } = readReminderTime();
@@ -37,6 +40,8 @@ export function DailyReminderRow() {
   const [enabled, setEnabled] = useState(() => storage.getBoolean(storageKeys.dailyReminder) === true);
   const [time, setTime] = useState(storedTimeAsDate);
   const [pickerOpen, setPickerOpen] = useState(false);
+  // The permission notice: shown when notifications were refused, with a way to the Settings app.
+  const [deniedOpen, setDeniedOpen] = useState(false);
 
   const apply = (on: boolean) => {
     setEnabled(on);
@@ -54,14 +59,7 @@ export function DailyReminderRow() {
         apply(true);
         return;
       }
-      Alert.alert(
-        t('settings.reminders.permissionDeniedTitle'),
-        t('settings.reminders.permissionDeniedBody'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('common.openSettings'), onPress: () => void Linking.openSettings() },
-        ],
-      );
+      setDeniedOpen(true);
     });
   };
 
@@ -90,6 +88,20 @@ export function DailyReminderRow() {
           value={time}
         />
       ) : null}
+      <ConfirmDialog
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.openSettings')}
+        icon={PERMISSION_ICON}
+        message={t('settings.reminders.permissionDeniedBody')}
+        onCancel={() => setDeniedOpen(false)}
+        onConfirm={() => {
+          setDeniedOpen(false);
+          void Linking.openSettings();
+        }}
+        testID="daily-reminder-denied"
+        title={t('settings.reminders.permissionDeniedTitle')}
+        visible={deniedOpen}
+      />
     </>
   );
 }

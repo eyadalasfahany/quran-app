@@ -42,7 +42,7 @@ describe('notification channels', () => {
 
       expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith('azkar', {
         name: 'تذكير الأذكار',
-        importance: AndroidImportance.DEFAULT,
+        importance: AndroidImportance.HIGH,
       });
     } finally {
       restore.restore();

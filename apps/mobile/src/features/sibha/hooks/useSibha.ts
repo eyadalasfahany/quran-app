@@ -1,18 +1,26 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { completeHaptic, tapHaptic } from '@/features/azkar/haptics';
 
-import { SIBHA_LABEL_MAX, type SibhaState } from '../data/model';
+import { resetCount, SIBHA_LABEL_MAX, withTarget, type SibhaState } from '../data/model';
 import { readSibhaState, recordSibhaTap, saveSibhaState } from '../data/store';
+
+/**
+ * A tap within this many milliseconds of the previous accepted tap is ignored: a double tap counts once, with no
+ * second haptic. The same window the Azkar reader uses (a copy, so the misbaha does not import from Azkar's data).
+ */
+export const SIBHA_TAP_GUARD_MS = 120;
 
 export type Sibha = {
   count: number;
   target: number | null;
   label: string;
-  /** Counts one tap: a count haptic, and a success haptic on the tap that reaches the target. */
+  rounds: number;
+  /** Counts one tap: a count haptic, and a success haptic on the tap that completes a round. */
   tap: () => void;
-  /** Sets the count back to zero. Today's total is kept. */
+  /** Sets the count and the rounds back to zero. Today's total is kept. */
   reset: () => void;
+  /** Sets the target (null is «بلا حد»). A change starts the rounds again. */
   chooseTarget: (target: number | null) => void;
   setLabel: (label: string) => void;
 };
@@ -29,8 +37,19 @@ export function useSibha(): Sibha {
     setState(next);
   }, []);
 
+  // The time of the last accepted tap, for the double-tap guard. Before counting and before the haptic, so a rejected
+  // tap changes nothing.
+  const lastTapAt = useRef<number | null>(null);
+
   const tap = useCallback(() => {
-    const result = recordSibhaTap(new Date());
+    const at = Date.now();
+    const previous = lastTapAt.current;
+    if (previous !== null && at - previous >= 0 && at - previous < SIBHA_TAP_GUARD_MS) {
+      return;
+    }
+    lastTapAt.current = at;
+
+    const result = recordSibhaTap(new Date(at));
     setState(result.state);
     tapHaptic();
     if (result.reachedTarget) {
@@ -39,12 +58,12 @@ export function useSibha(): Sibha {
   }, []);
 
   const reset = useCallback(() => {
-    commit({ ...readSibhaState(), count: 0 });
+    commit(resetCount(readSibhaState()));
   }, [commit]);
 
   const chooseTarget = useCallback(
     (target: number | null) => {
-      commit({ ...readSibhaState(), target });
+      commit(withTarget(readSibhaState(), target));
     },
     [commit],
   );
@@ -56,5 +75,14 @@ export function useSibha(): Sibha {
     [commit],
   );
 
-  return { count: state.count, label: state.label, reset, setLabel, tap, target: state.target, chooseTarget };
+  return {
+    chooseTarget,
+    count: state.count,
+    label: state.label,
+    reset,
+    rounds: state.rounds,
+    setLabel,
+    tap,
+    target: state.target,
+  };
 }

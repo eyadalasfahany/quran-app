@@ -81,7 +81,8 @@ describe('useTafsirDownloads', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(useTafsirDownloads.getState().byId[14]).toEqual({ status: 'failed', progress: 0 });
+    // A network failure keeps its reason, so the row can say it needs a connection.
+    expect(useTafsirDownloads.getState().byId[14]).toEqual({ progress: 0, reason: 'network', status: 'failed' });
     expect(useTafsirDownloads.getState().installedVersion).toBe(0);
   });
 

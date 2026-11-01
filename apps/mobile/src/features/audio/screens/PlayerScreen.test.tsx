@@ -231,7 +231,10 @@ describe('PlayerScreen', () => {
     expect(style('player-progress-track', hidden)).toMatchObject({ height: 4, borderRadius: 2 });
     expect(style('player-options')).toMatchObject({ borderRadius: 28, padding: 6 });
     expect(style('now-playing-ayah')).toMatchObject({ borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16 });
-    expect(flatStyle(view.getByTestId('player-scroll').props.contentContainerStyle)).toMatchObject({ paddingHorizontal: 24 });
+    expect(flatStyle(view.getByTestId('player-scroll').props.contentContainerStyle)).toMatchObject({
+      paddingEnd: 24,
+      paddingStart: 24,
+    });
     expect(view.getByRole('button', { name: 'تصغير المشغّل' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'الآية السابقة' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'الآية التالية' })).toBeOnTheScreen();

@@ -18,6 +18,15 @@ describe('SearchBar', () => {
     expect(flatStyle(view.getByTestId('search-bar').props.style)).toMatchObject({ flexDirection: 'row' });
   });
 
+  it('takes the scope placeholder, which is also the field label', async () => {
+    const view = await renderUi(
+      <SearchBar onCancel={noop} onChangeText={noop} onSubmit={noop} placeholder="ابحث في الأذكار" value="" />,
+    );
+
+    expect(view.getByPlaceholderText('ابحث في الأذكار')).toBeOnTheScreen();
+    expect(view.getByTestId('search-field-input').props.accessibilityLabel).toBe('ابحث في الأذكار');
+  });
+
   it('cancels, types and submits', async () => {
     const onCancel = jest.fn();
     const onChangeText = jest.fn();

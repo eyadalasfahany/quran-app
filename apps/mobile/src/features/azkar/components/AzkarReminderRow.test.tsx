@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { Alert, Linking } from 'react-native';
+import { Linking } from 'react-native';
 
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
@@ -10,6 +10,9 @@ import { listReminders, saveReminder, type AzkarReminder } from '../reminders/re
 import { resyncAzkarReminders } from '../reminders/resync';
 
 import { AzkarReminderRow } from './AzkarReminderRow';
+
+// The dialog's notice fades in, so until its animation ends its elements count as hidden to the query.
+const SHOWN = { includeHiddenElements: true } as const;
 
 jest.mock('expo-router', () => ({
   ...jest.requireActual('expo-router'),
@@ -81,7 +84,6 @@ describe('AzkarReminderRow', () => {
     jest.mocked(useHasReminderLocation).mockReturnValue(true);
     jest.mocked(Notifications.getPermissionsAsync).mockResolvedValue({ granted: true } as never);
     jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValue({ granted: true } as never);
-    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     jest.spyOn(Linking, 'openSettings').mockImplementation(() => Promise.resolve());
   });
 
@@ -125,15 +127,32 @@ describe('AzkarReminderRow', () => {
 
     fireEvent(screen.getByTestId('azkar-reminder-row'), 'valueChange', true);
 
-    await waitFor(() => expect(Alert.alert).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText('لا يمكن إرسال التذكيرات', SHOWN)).toBeOnTheScreen());
     // The revert: nothing was written, so the row never turned on and nothing was scheduled.
     expect(saveReminder).not.toHaveBeenCalled();
     expect(resyncAzkarReminders).not.toHaveBeenCalled();
     expect(screen.getByTestId('azkar-reminder-row').props.value).toBe(false);
     expect(onPermissionDenied).toHaveBeenCalledTimes(1);
+  });
 
-    const buttons = jest.mocked(Alert.alert).mock.calls[0]?.[2] ?? [];
-    buttons.find((button) => button.style !== 'cancel')?.onPress?.();
+  it('offers the Settings app from the refused-permission notice, and cancel only closes it', async () => {
+    jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    await renderRow();
+
+    fireEvent(screen.getByTestId('azkar-reminder-row'), 'valueChange', true);
+    await waitFor(() => expect(screen.getByText('لا يمكن إرسال التذكيرات', SHOWN)).toBeOnTheScreen());
+
+    fireEvent.press(screen.getByRole('button', { name: 'إلغاء', ...SHOWN }));
+    expect(Linking.openSettings).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByText('لا يمكن إرسال التذكيرات', SHOWN)).toBeNull());
+
+    jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    fireEvent(screen.getByTestId('azkar-reminder-row'), 'valueChange', true);
+    await waitFor(() => expect(screen.getByText('لا يمكن إرسال التذكيرات', SHOWN)).toBeOnTheScreen());
+    fireEvent.press(screen.getByRole('button', { name: 'فتح الإعدادات', ...SHOWN }));
+
     expect(Linking.openSettings).toHaveBeenCalledTimes(1);
   });
 
@@ -145,11 +164,14 @@ describe('AzkarReminderRow', () => {
 
     fireEvent(screen.getByTestId('azkar-reminder-row'), 'valueChange', true);
 
-    expect(Alert.alert).toHaveBeenCalledTimes(1);
-    expect(jest.mocked(Alert.alert).mock.calls[0]?.[0]).toBe('بلغت الحد الأقصى للتذكيرات');
+    await waitFor(() => expect(screen.getByText('بلغت الحد الأقصى للتذكيرات', SHOWN)).toBeOnTheScreen());
     expect(Notifications.getPermissionsAsync).not.toHaveBeenCalled();
     expect(saveReminder).not.toHaveBeenCalled();
     expect(screen.getByTestId('azkar-reminder-row').props.value).toBe(false);
+    // The limit notice has one button, «تم», and it closes the notice.
+    expect(screen.queryByRole('button', { name: 'إلغاء', ...SHOWN })).toBeNull();
+    fireEvent.press(screen.getByRole('button', { name: 'تم', ...SHOWN }));
+    await waitFor(() => expect(screen.queryByText('بلغت الحد الأقصى للتذكيرات', SHOWN)).toBeNull());
   });
 
   it('turns off when the pool is full: turning off always fits', async () => {
@@ -159,7 +181,7 @@ describe('AzkarReminderRow', () => {
 
     fireEvent(screen.getByTestId('azkar-reminder-row'), 'valueChange', false);
 
-    expect(Alert.alert).not.toHaveBeenCalled();
+    expect(screen.queryByText('بلغت الحد الأقصى للتذكيرات', SHOWN)).toBeNull();
     expect(lastSaved()).toMatchObject({ enabled: false });
   });
 

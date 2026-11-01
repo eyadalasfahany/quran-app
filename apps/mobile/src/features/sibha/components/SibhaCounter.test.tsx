@@ -1,7 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { SibhaCounter } from './SibhaCounter';
 
 describe('SibhaCounter', () => {
@@ -72,7 +72,65 @@ describe('SibhaCounter', () => {
     expect(view.getByRole('button', { name: 'Counter' }).props.accessibilityValue).toEqual({ text: '33 of 100' });
   });
 
+  it('shows no rounds pill while no round is complete', async () => {
+    const view = await renderUi(<SibhaCounter count={5} onReset={jest.fn()} onTap={jest.fn()} rounds={0} target={33} />);
+
+    expect(view.queryByTestId('sibha-counter-rounds')).toBeNull();
+    expect(view.getByRole('button', { name: 'العداد' }).props.accessibilityValue).toEqual({ text: '٥ من ٣٣' });
+  });
+
+  it('shows the completed rounds above the count, and in the counter value', async () => {
+    const view = await renderUi(<SibhaCounter count={5} onReset={jest.fn()} onTap={jest.fn()} rounds={2} target={33} />);
+
+    expect(view.getByText('الدورة ٢')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'العداد' }).props.accessibilityValue).toEqual({
+      text: '٥ من ٣٣، الدورة ٢',
+    });
+  });
+
+  it('hides the rounds without a target, since no target means no rounds', async () => {
+    const view = await renderUi(<SibhaCounter count={40} onReset={jest.fn()} onTap={jest.fn()} rounds={3} target={null} />);
+
+    expect(view.queryByTestId('sibha-counter-rounds')).toBeNull();
+    expect(view.getByRole('button', { name: 'العداد' }).props.accessibilityValue).toEqual({ text: '٤٠' });
+  });
+
+  it('reads the round in English', async () => {
+    const view = await renderUi(<SibhaCounter count={1} onReset={jest.fn()} onTap={jest.fn()} rounds={1} target={99} />, {
+      locale: 'en',
+    });
+
+    expect(view.getByText('Round 1')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'Counter' }).props.accessibilityValue).toEqual({
+      text: '1 of 99, round 1',
+    });
+  });
+
   it('uses theme tokens rather than raw colours', () => {
     expect(rawColorLiteralsInFeature('src/features/sibha/components/SibhaCounter.tsx')).toEqual([]);
+  });
+});
+
+describe('SibhaCounter size (ADR 0036)', () => {
+  it('draws the ring and its button at the size it is given', async () => {
+    const view = await renderUi(<SibhaCounter count={33} onReset={jest.fn()} onTap={jest.fn()} size={200} target={100} />);
+
+    expect(flatStyle(view.getByTestId('sibha-counter').props.style)).toMatchObject({ height: 200, width: 200 });
+    const radius = (200 - 10) / 2;
+    expect(view.getByTestId('sibha-counter-ring').props.strokeDashoffset).toBeCloseTo(2 * Math.PI * radius * (1 - 0.33), 5);
+  });
+
+  it('scales the count with the ring, so it still fits a small ring', async () => {
+    const view = await renderUi(<SibhaCounter count={33} onReset={jest.fn()} onTap={jest.fn()} size={160} target={100} />);
+
+    // 120 × 160 / 280, rounded.
+    expect(flatStyle(view.getByTestId('sibha-counter-count').props.style).fontSize).toBe(69);
+  });
+
+  it('keeps the frame size of 280 and a 120 count by default', async () => {
+    const view = await renderUi(<SibhaCounter count={33} onReset={jest.fn()} onTap={jest.fn()} target={100} />);
+
+    expect(flatStyle(view.getByTestId('sibha-counter').props.style)).toMatchObject({ height: 280, width: 280 });
+    expect(flatStyle(view.getByTestId('sibha-counter-count').props.style).fontSize).toBe(120);
   });
 });

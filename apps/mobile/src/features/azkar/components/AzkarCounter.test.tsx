@@ -8,7 +8,7 @@ import { AzkarCounter, COUNTER_SIZE } from './AzkarCounter';
 
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
-  return { ...actual, useReducedMotion: jest.fn(() => false) };
+  return { __esModule: true, ...actual, default: actual.default, useReducedMotion: jest.fn(() => false) };
 });
 
 const mockReduce = useReducedMotion as unknown as jest.Mock;
@@ -22,56 +22,136 @@ function renderCounter(props: Partial<Parameters<typeof AzkarCounter>[0]> = {}, 
 describe('AzkarCounter', () => {
   beforeEach(() => mockReduce.mockReturnValue(false));
 
-  it('is a 120 pt button labelled with its position and valued with «٢ من ٣»', async () => {
-    const { ui } = renderCounter();
-    await renderUi(ui);
-    const counter = screen.getByRole('button', { name: 'عداد الذكر ٢' });
-    expect(counter.props.accessibilityValue).toEqual({ text: '٢ من ٣' });
-    expect(counter.props.style).toEqual(expect.objectContaining({ height: COUNTER_SIZE, width: COUNTER_SIZE }));
-    expect(screen.getByText('٢ من ٣')).toBeTruthy();
+  describe('a sourced count above 1', () => {
+    it('is a 120 pt button labelled with its position and valued with «٢ من ٣»', async () => {
+      const { ui } = renderCounter();
+      await renderUi(ui);
+      const counter = screen.getByRole('button', { name: 'عداد الذكر ٢' });
+      expect(counter.props.accessibilityValue).toEqual({ text: '٢ من ٣' });
+      expect(counter.props.style).toEqual(expect.objectContaining({ height: COUNTER_SIZE, width: COUNTER_SIZE }));
+      expect(screen.getByText('٢ من ٣')).toBeTruthy();
+      expect(screen.queryByTestId('azkar-counter-done')).toBeNull();
+      expect(screen.queryByTestId('azkar-counter-check')).toBeNull();
+    });
+
+    it('calls onTap when pressed', async () => {
+      const { ui, handlers } = renderCounter();
+      await renderUi(ui);
+      await press(screen.getByRole('button', { name: 'عداد الذكر ٢' }));
+      expect(handlers.onTap).toHaveBeenCalledTimes(1);
+    });
+
+    it('exposes a reset accessibility action that calls onReset', async () => {
+      const { ui, handlers } = renderCounter();
+      await renderUi(ui);
+      const counter = screen.getByRole('button', { name: 'عداد الذكر ٢' });
+      expect(counter.props.accessibilityActions).toEqual([{ label: 'إعادة الضبط', name: 'reset' }]);
+      fireEvent(counter, 'accessibilityAction', { nativeEvent: { actionName: 'reset' } });
+      expect(handlers.onReset).toHaveBeenCalledTimes(1);
+    });
+
+    it('ignores other accessibility actions', async () => {
+      const { ui, handlers } = renderCounter();
+      await renderUi(ui);
+      fireEvent(screen.getByRole('button', { name: 'عداد الذكر ٢' }), 'accessibilityAction', { nativeEvent: { actionName: 'other' } });
+      expect(handlers.onReset).not.toHaveBeenCalled();
+    });
+
+    it('draws the ring for the value under Reduce Motion without animating', async () => {
+      mockReduce.mockReturnValue(true);
+      const { ui } = renderCounter({ value: 3 });
+      await renderUi(ui);
+      expect(screen.getByTestId('azkar-counter-ring')).toBeTruthy();
+      expect(screen.getByText('٣ من ٣')).toBeTruthy();
+    });
+
+    it('renders in English with the English labels', async () => {
+      const { ui } = renderCounter({ value: 1 });
+      await renderUi(ui, { locale: 'en' });
+      expect(screen.getByRole('button', { name: 'Counter for dhikr 2' }).props.accessibilityValue).toEqual({ text: '1 of 3' });
+    });
   });
 
-  it('shows zero of one before the first tap of a single-count dhikr', async () => {
-    const { ui } = renderCounter({ requiredCount: 1, value: 0 });
-    await renderUi(ui);
-    expect(screen.queryByText('٠ من ١')).toBeTruthy();
+  describe('a sourced count of 1 (one recitation, ADR 0031 §6)', () => {
+    it('is the same ring, reading «٠ من ١» before the tap', async () => {
+      const { ui } = renderCounter({ requiredCount: 1, value: 0 });
+      await renderUi(ui);
+      expect(screen.getByRole('button', { name: 'عداد الذكر ٢' }).props.accessibilityValue).toEqual({ text: '٠ من ١' });
+      expect(screen.getByText('٠ من ١')).toBeTruthy();
+      expect(screen.getByTestId('azkar-counter-ring')).toBeTruthy();
+    });
+
+    it('reads «١ من ١» once the count is reached', async () => {
+      const { ui } = renderCounter({ requiredCount: 1, value: 1, completed: true });
+      await renderUi(ui);
+      expect(screen.getByRole('button', { name: 'عداد الذكر ٢' }).props.accessibilityValue).toEqual({ text: '١ من ١' });
+    });
+
+    it('completes on one tap through onTap', async () => {
+      const { ui, handlers } = renderCounter({ requiredCount: 1, value: 0 });
+      await renderUi(ui);
+      await press(screen.getByRole('button', { name: 'عداد الذكر ٢' }));
+      expect(handlers.onTap).toHaveBeenCalledTimes(1);
+    });
+
+    it('has no check and no «تم» label in its centre', async () => {
+      const { ui } = renderCounter({ requiredCount: 1, value: 0 });
+      await renderUi(ui);
+      expect(screen.queryByTestId('azkar-counter-done')).toBeNull();
+      expect(screen.queryByTestId('azkar-counter-check')).toBeNull();
+    });
   });
 
-  it('calls onTap when pressed', async () => {
-    const { ui, handlers } = renderCounter();
-    await renderUi(ui);
-    await press(screen.getByRole('button', { name: 'عداد الذكر ٢' }));
-    expect(handlers.onTap).toHaveBeenCalledTimes(1);
-  });
+  describe('no sourced count (the single variant, ADR 0031 §6)', () => {
+    it('is a 120 pt ring button labelled «وضع علامة «تم»», with no number', async () => {
+      const { ui } = renderCounter({ requiredCount: null, value: 0 });
+      await renderUi(ui);
+      const button = screen.getByRole('button', { name: 'وضع علامة «تم»' });
+      expect(button.props.style).toEqual(expect.objectContaining({ height: COUNTER_SIZE, width: COUNTER_SIZE }));
+      expect(button.props.accessibilityValue?.text).toBeUndefined();
+      expect(screen.queryByText(/من/)).toBeNull();
+      expect(screen.getByTestId('azkar-counter-ring')).toBeTruthy();
+    });
 
-  it('exposes a reset accessibility action that calls onReset', async () => {
-    const { ui, handlers } = renderCounter();
-    await renderUi(ui);
-    const counter = screen.getByRole('button', { name: 'عداد الذكر ٢' });
-    expect(counter.props.accessibilityActions).toEqual([{ label: 'إعادة الضبط', name: 'reset' }]);
-    fireEvent(counter, 'accessibilityAction', { nativeEvent: { actionName: 'reset' } });
-    expect(handlers.onReset).toHaveBeenCalledTimes(1);
-  });
+    it('shows a check and the «تم» label inside the ring', async () => {
+      const { ui } = renderCounter({ requiredCount: null, value: 0 });
+      await renderUi(ui);
+      expect(screen.getByTestId('azkar-counter-check', { includeHiddenElements: true })).toBeTruthy();
+      expect(screen.getByTestId('azkar-counter-done')).toBeTruthy();
+      expect(screen.getByText('تم')).toBeTruthy();
+    });
 
-  it('ignores other accessibility actions', async () => {
-    const { ui, handlers } = renderCounter();
-    await renderUi(ui);
-    fireEvent(screen.getByRole('button', { name: 'عداد الذكر ٢' }), 'accessibilityAction', { nativeEvent: { actionName: 'other' } });
-    expect(handlers.onReset).not.toHaveBeenCalled();
-  });
+    it('calls onTap once when pressed, and does not read a count', async () => {
+      const { ui, handlers } = renderCounter({ requiredCount: null, value: 0 });
+      await renderUi(ui);
+      await press(screen.getByRole('button', { name: 'وضع علامة «تم»' }));
+      expect(handlers.onTap).toHaveBeenCalledTimes(1);
+    });
 
-  it('draws the ring for the value under Reduce Motion without animating', async () => {
-    mockReduce.mockReturnValue(true);
-    const { ui } = renderCounter({ value: 3 });
-    await renderUi(ui);
-    expect(screen.getByTestId('azkar-counter-ring')).toBeTruthy();
-    expect(screen.getByText('٣ من ٣')).toBeTruthy();
-  });
+    it('keeps the reset action, so a done unit can be reset', async () => {
+      const { ui, handlers } = renderCounter({ requiredCount: null, completed: true });
+      await renderUi(ui);
+      const button = screen.getByRole('button', { name: 'وضع علامة «تم»' });
+      expect(button.props.accessibilityActions).toEqual([{ label: 'إعادة الضبط', name: 'reset' }]);
+      fireEvent(button, 'accessibilityAction', { nativeEvent: { actionName: 'reset' } });
+      expect(handlers.onReset).toHaveBeenCalledTimes(1);
+    });
 
-  it('renders in English with the English labels', async () => {
-    const { ui } = renderCounter({ value: 1 });
-    await renderUi(ui, { locale: 'en' });
-    expect(screen.getByRole('button', { name: 'Counter for dhikr 2' }).props.accessibilityValue).toEqual({ text: '1 of 3' });
+    it('fills the ring when completed, under Reduce Motion too', async () => {
+      mockReduce.mockReturnValue(true);
+      const { ui } = renderCounter({ requiredCount: null, completed: true });
+      await renderUi(ui);
+      expect(screen.getByTestId('azkar-counter-ring')).toBeTruthy();
+      expect(screen.getByTestId('azkar-counter-done')).toBeTruthy();
+    });
+
+    it('renders in English with the English label and hint', async () => {
+      const { ui } = renderCounter({ requiredCount: null, value: 0 });
+      await renderUi(ui, { locale: 'en' });
+      expect(screen.getByRole('button', { name: 'Mark as done' })).toBeTruthy();
+      expect(screen.getByText('Done')).toBeTruthy();
+      expect(screen.getByText('Tap to mark done')).toBeTruthy();
+    });
   });
 
   it('uses theme tokens rather than raw colours', () => {

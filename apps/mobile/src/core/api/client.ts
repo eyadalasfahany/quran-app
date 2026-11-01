@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import { getLocale } from '@/core/i18n';
 
 import { apiBaseUrl } from './base-url';
+import { REQUEST_TIMEOUT_MS, requestSignal } from './request-timeout';
 
 export class ApiError extends Error {
   readonly status: number;
@@ -20,8 +21,10 @@ export class ApiError extends Error {
 
 type ApiGetOptions = {
   headers?: Record<string, string>;
+  /** The caller's cancel. It combines with the request timeout: either one aborts the request. */
   signal?: AbortSignal;
   query?: Record<string, string | number | null | undefined>;
+  timeoutMs?: number;
 };
 
 export async function apiGet(path: keyof paths, options: ApiGetOptions = {}): Promise<Response> {
@@ -38,16 +41,24 @@ export async function apiGet(path: keyof paths, options: ApiGetOptions = {}): Pr
   const query = search.toString();
   const href = query.length === 0 ? url.href : `${url.href}?${query}`;
 
-  return fetch(href, {
-    headers: {
-      Accept: 'application/json',
-      'Accept-Language': getLocale(),
-      'X-Platform': appPlatform(),
-      'X-App-Version': appVersion(),
-      ...options.headers,
-    },
-    ...(options.signal === undefined ? {} : { signal: options.signal }),
-  });
+  // The timeout covers the wait for the response headers. A timeout or an unreachable server throws a NetworkError.
+  const request = requestSignal(options.timeoutMs ?? REQUEST_TIMEOUT_MS, options.signal);
+  try {
+    return await fetch(href, {
+      headers: {
+        Accept: 'application/json',
+        'Accept-Language': getLocale(),
+        'X-Platform': appPlatform(),
+        'X-App-Version': appVersion(),
+        ...options.headers,
+      },
+      signal: request.signal,
+    });
+  } catch (error) {
+    throw request.fail(error);
+  } finally {
+    request.done();
+  }
 }
 
 export async function apiError(response: Response): Promise<ApiError> {

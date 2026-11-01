@@ -307,13 +307,46 @@ describe('prayer notifications', () => {
       expect(scheduledCalls()).toHaveLength(16);
     });
 
-    it('a coordinate change (manual city or GPS) re-plans exactly once', async () => {
+    it('a manual city change re-plans exactly once, reading the location in the normal way', async () => {
       await resyncPrayerNotifications(NOW);
       jest.mocked(Notifications.scheduleNotificationAsync).mockClear();
+      jest.mocked(getCoordinates).mockClear();
       jest.mocked(getCoordinates).mockResolvedValue({ lat: 21.4225, lng: 39.8262 });
+      storage.set(storageKeys.salah.locationSource, 'manual');
+      storage.set(storageKeys.salah.manualLat, 21.4225);
+      storage.set(storageKeys.salah.manualLng, 39.8262);
 
       await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(true);
       expect(scheduledCalls()).toHaveLength(16);
+      expect(getCoordinates).toHaveBeenCalledWith({ lastKnownOnly: false });
+    });
+
+    it('a GPS-only move is not read on a foreground check: no location read while day, zone and settings hold', async () => {
+      await resyncPrayerNotifications(NOW);
+      jest.mocked(Notifications.scheduleNotificationAsync).mockClear();
+      jest.mocked(getCoordinates).mockClear();
+      jest.mocked(getCoordinates).mockResolvedValue({ lat: 21.4225, lng: 39.8262 });
+
+      await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(false);
+      expect(getCoordinates).not.toHaveBeenCalled();
+      expect(scheduledCalls()).toHaveLength(0);
+    });
+
+    it('a new day on the foreground reads the last known position only, never a fresh GPS fix', async () => {
+      await resyncPrayerNotifications(NOW);
+      jest.mocked(getCoordinates).mockClear();
+
+      await expect(resyncPrayerNotificationsIfNeeded(local(2026, 11, 1, 8))).resolves.toBe(true);
+      expect(getCoordinates).toHaveBeenCalledWith({ lastKnownOnly: true });
+    });
+
+    it('a changed bell re-plans on the foreground check, reading the location in the normal way', async () => {
+      await resyncPrayerNotifications(NOW);
+      jest.mocked(getCoordinates).mockClear();
+      storage.set(bellKey('isha'), true);
+
+      await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(true);
+      expect(getCoordinates).toHaveBeenCalledWith({ lastKnownOnly: false });
     });
 
     it('concurrent triggers (launch, foreground, location) coalesce into one schedule', async () => {

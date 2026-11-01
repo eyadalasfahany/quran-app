@@ -228,10 +228,12 @@ describe('AyahPanelContent', () => {
     });
 
     it.each([
-      ['ar', 'تعذّر التنزيل'],
-      ['en', 'Download failed'],
-    ] as const)('starts a failed download with its failure in the subtitle, in %s', async (locale, failedLabel) => {
-      jest.mocked(installResource).mockResolvedValue({ status: 'failed', reason: 'network' });
+      ['ar', 'network', 'يتطلب اتصالًا بالإنترنت'],
+      ['en', 'network', 'Needs an internet connection'],
+      ['ar', 'checksum', 'تعذّر التنزيل'],
+      ['en', 'checksum', 'Download failed'],
+    ] as const)('shows the %s failure in the subtitle, in %s', async (locale, reason, failedLabel) => {
+      jest.mocked(installResource).mockResolvedValue({ status: 'failed', reason });
       const view = await renderTafsir(await catalogueDb([]), locale);
 
       await fireEvent.press(view.getByTestId('ayah-panel-content-tafsir-downloads-row-16-action'));

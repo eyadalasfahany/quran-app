@@ -57,7 +57,11 @@ const mockLocation = jest.fn(() => ({
 
 jest.mock('../hooks', () => ({
   ...jest.requireActual('../hooks'),
-  useNow: () => mockNow,
+  // The screen's clock is pinned to mockNow; the times are the real engine's for that instant.
+  usePrayerClock: (coords: { lat: number; lng: number } | null) => ({
+    now: mockNow,
+    times: coords ? jest.requireActual<typeof import('../data/prayer-times')>('../data/prayer-times').timesFor(mockNow, coords) : null,
+  }),
   usePrayerLocation: () => mockLocation(),
 }));
 
@@ -136,6 +140,40 @@ describe('SalahScreen', () => {
 
     await fireEvent.press(view.getByTestId('salah-no-location-action'));
     expect(view.getByTestId('salah-location-sheet')).toBeTruthy();
+  });
+
+  it('shows the loading state, not the empty state, while the location read is pending with permission granted', async () => {
+    mockLocation.mockReturnValue({
+      source: 'auto',
+      coords: null,
+      cityId: undefined,
+      cityName: undefined,
+      permissionStatus: 'granted',
+      pending: true,
+      refresh: jest.fn(),
+    } as never);
+
+    const view = await renderUi(screen());
+
+    expect(view.getByTestId('salah-locating')).toBeTruthy();
+    expect(view.queryByTestId('salah-no-location')).toBeNull();
+  });
+
+  it('shows the empty state once the read has finished without a location', async () => {
+    mockLocation.mockReturnValue({
+      source: 'auto',
+      coords: null,
+      cityId: undefined,
+      cityName: undefined,
+      permissionStatus: 'granted',
+      pending: false,
+      refresh: jest.fn(),
+    } as never);
+
+    const view = await renderUi(screen());
+
+    expect(view.queryByTestId('salah-locating')).toBeNull();
+    expect(view.getByTestId('salah-no-location')).toBeTruthy();
   });
 
   describe('mini player clearance', () => {

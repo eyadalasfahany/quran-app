@@ -1,14 +1,19 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  I18nManager,
   ScrollView,
   View,
   type HostInstance,
-  type NativeSyntheticEvent,
   type ScrollViewInstance,
 } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { GestureDetector, GestureHandlerRootView, useNativeGesture, usePanGesture } from 'react-native-gesture-handler';
 import Animated, { LayoutAnimationConfig, useReducedMotion, useSharedValue } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
+import { screenInsetsFor, type ScreenInsets } from '@/core/layout/useScreenInsets';
+import { useIsShortWindow } from '@/core/layout/useWindowClass';
 import { useTheme } from '@/core/theme';
 import { UiText, type HighlightColor } from '@/shared/ui';
 
@@ -22,29 +27,31 @@ import { FocusAyah } from './FocusAyah';
 import { FocusProgress } from './FocusProgress';
 import { FocusTransport, type RepeatTarget } from './FocusTransport';
 
-const PULL = 36;
 const PAGE_GUTTER = 28;
+// A vertical swipe covers this much height to turn the page, or is a flick of this speed over the minimum travel.
+export const FOCUS_SWIPE_DISTANCE = 60;
+export const FOCUS_SWIPE_FLICK = 600;
+export const FOCUS_SWIPE_MIN_TRAVEL = 16;
 
-type PageDrag = {
-  contentOffset: { y: number };
-  contentSize: { height: number };
-  layoutMeasurement: { height: number };
-  velocity?: { y: number } | null;
-};
+export type FocusSwipe = { translationY: number; velocityY: number };
+export type FocusEdges = { atStart: boolean; atEnd: boolean };
 
-/** A pull past the ayah, or a flick while already at that edge, turns the page. */
-export function focusPageFromDrag(event: PageDrag): 'next' | 'previous' | null {
-  const maxOffset = Math.max(0, event.contentSize.height - event.layoutMeasurement.height);
-  const offset = event.contentOffset.y;
-  const velocity = event.velocity?.y ?? 0;
-  if (offset > maxOffset + PULL || (velocity < -0.25 && offset >= maxOffset - 1)) {
-    return 'next';
+/**
+ * A vertical swipe turns the page: up to the next ayah, down to the previous one. A scrolled ayah (a long one in a short
+ * window) turns only from its own edge, so the swipe never fights its scroll.
+ */
+export function focusSwipeTurn(swipe: FocusSwipe, edges: FocusEdges): 'next' | 'previous' | null {
+  const { translationY: y, velocityY: v } = swipe;
+  if (y <= -FOCUS_SWIPE_MIN_TRAVEL && (y <= -FOCUS_SWIPE_DISTANCE || v <= -FOCUS_SWIPE_FLICK)) {
+    return edges.atEnd ? 'next' : null;
   }
-  if (offset < -PULL || (velocity > 0.25 && offset <= 1)) {
-    return 'previous';
+  if (y >= FOCUS_SWIPE_MIN_TRAVEL && (y >= FOCUS_SWIPE_DISTANCE || v >= FOCUS_SWIPE_FLICK)) {
+    return edges.atStart ? 'previous' : null;
   }
   return null;
 }
+
+const NO_INSETS = { bottom: 0, left: 0, right: 0, top: 0 };
 
 export function FocusStage({
   verseNumber,
@@ -93,9 +100,9 @@ export function FocusStage({
   /** Whether the player is playing, so the play control shows pause. */
   playing?: boolean;
   onPlay?: () => void;
-  /** A swipe began: the reader is moving by hand, so following pauses. */
+  /** A swipe began, or a scroll: the reader is moving by hand, so following pauses. */
   onDragStart?: () => void;
-  /** The swipe ended. */
+  /** The swipe or scroll ended. */
   onDragFinish?: () => void;
   /** Room for FocusChrome, which floats over the top of Focus. */
   topInset?: number;
@@ -108,6 +115,12 @@ export function FocusStage({
   const { t } = useTranslation();
   const theme = useTheme();
   const reduceMotion = useReducedMotion();
+  const short = useIsShortWindow();
+  // The side insets (a camera cutout in landscape) keep the stage, the progress marks and the transport clear.
+  const insets: ScreenInsets = screenInsetsFor(
+    useContext(SafeAreaInsetsContext) ?? NO_INSETS,
+    I18nManager.isRTL,
+  );
   const direction = useSharedValue<FocusTurnDirection>(1);
   const turn = useMemo(() => focusTurnAnimations(direction, reduceMotion), [direction, reduceMotion]);
 
@@ -116,7 +129,11 @@ export function FocusStage({
   // followed Text is measured inside it and its screen top is that offset minus the tracked scroll offset.
   const scrollRef = useRef<ScrollViewInstance>(null);
   const scrollOffset = useRef(0);
+  const contentHeight = useRef(0);
+  const viewportHeight = useRef(0);
   const contentRef = useRef<HostInstance>(null);
+  // The viewport's height, as state, so the ayah can fit it once it is measured.
+  const [viewport, setViewport] = useState(0);
   useEffect(() => {
     scrollOffset.current = 0;
   }, [verseNumber]);
@@ -167,83 +184,124 @@ export function FocusStage({
     turnTo(number > verseNumber ? 'next' : 'previous', () => onSelectVerse(number));
   };
 
-  const onDragEnd = (event: NativeSyntheticEvent<PageDrag>) => {
-    onDragFinish?.();
-    const way = focusPageFromDrag(event.nativeEvent);
+  // Runs on the JS thread once the swipe is released. The edges are read from the tracked scroll state.
+  const finishSwipe = (translationY: number, velocityY: number) => {
+    const maxOffset = Math.max(0, contentHeight.current - viewportHeight.current);
+    const way = focusSwipeTurn(
+      { translationY, velocityY },
+      { atEnd: scrollOffset.current >= maxOffset - 1, atStart: scrollOffset.current <= 1 },
+    );
     if (way !== null) {
       go(way);
     }
   };
+  // Only a mostly vertical drag starts the swipe; a horizontal one (the progress marks) fails it.
+  const swipe = usePanGesture({
+    activeOffsetY: [-10, 10],
+    failOffsetX: [-20, 20],
+    onDeactivate: (event) => {
+      'worklet';
+      scheduleOnRN(finishSwipe, event.translationY, event.velocityY);
+    },
+  });
+  // The scroll's native gesture runs alongside the swipe, so a drag that scrolls a long ayah also counts as a swipe
+  // only at the scroll's edge.
+  const scrollGesture = useNativeGesture({ simultaneousWith: swipe });
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <View style={{ flex: 1, paddingBottom: theme.space[8], paddingTop: topInset }} testID={testID}>
       <View style={{ flex: 1, overflow: 'hidden' }}>
         <FocusProgress onSelect={onSelectVerse === undefined ? undefined : selectPage} verseNumber={verseNumber} versesCount={versesCount} />
         {/* The ayah shown when Focus opens is already in place; only a turn animates. */}
         <LayoutAnimationConfig skipEntering>
           <Animated.View entering={turn.entering} exiting={turn.exiting} key={verseNumber} style={{ flex: 1 }}>
-            <View {...word.viewportProps} style={{ flex: 1 }}>
-              <ScrollView
-                alwaysBounceVertical
-                contentContainerStyle={{ flexGrow: 1, paddingHorizontal: PAGE_GUTTER }}
-                onScroll={(event) => {
-                  scrollOffset.current = event.nativeEvent.contentOffset.y;
+            <GestureDetector gesture={swipe}>
+              <View
+                {...word.viewportProps}
+                accessibilityHint={short ? t('reader.focus.nextHint') : undefined}
+                onLayout={(event) => {
+                  word.viewportProps.onLayout(event);
+                  viewportHeight.current = event.nativeEvent.layout.height;
+                  setViewport(event.nativeEvent.layout.height);
                 }}
-                onScrollBeginDrag={onDragStart}
-                onScrollEndDrag={onDragEnd}
-                ref={scrollRef}
-                scrollEventThrottle={16}
-                showsVerticalScrollIndicator={false}
-                testID={`${testID}-scroll`}
+                style={{ flex: 1, paddingEnd: insets.end, paddingStart: insets.start }}
+                testID={`${testID}-viewport`}
               >
-                {/* The content child: it fills the scroll content from its top, so the spacing lives here. */}
-                <View
-                  ref={contentRef}
-                  style={{ flex: 1, justifyContent: 'space-evenly', paddingVertical: theme.space[4] }}
-                >
-                  {previousText !== null && previousNumber !== null ? (
-                    <FocusAside
-                      fontScale={fontScale}
-                      testID={`${testID}-previous`}
-                      textUthmani={previousText}
-                      verseNumber={previousNumber}
-                    />
-                  ) : (
-                    <View />
-                  )}
-                  <FocusAyah
-                    activeWord={activeWord}
-                    followedText={word.textProps(String(verseNumber))}
-                    fontScale={fontScale}
-                    highlightColor={highlightColor}
-                    recited={recited}
-                    onOpenActions={onOpenActions}
-                    testID={testID}
-                    textImlaei={textImlaei}
-                    textUthmani={textUthmani}
-                    verseNumber={verseNumber}
-                  />
-                  {nextText !== null && nextNumber !== null ? (
-                    <FocusAside fontScale={fontScale} testID={`${testID}-next`} textUthmani={nextText} verseNumber={nextNumber} />
-                  ) : (
-                    <View />
-                  )}
-                </View>
-              </ScrollView>
-            </View>
+                <GestureDetector gesture={scrollGesture}>
+                  <ScrollView
+                    alwaysBounceVertical
+                    contentContainerStyle={{ flexGrow: 1, paddingHorizontal: PAGE_GUTTER }}
+                    onContentSizeChange={(_width, height) => {
+                      contentHeight.current = height;
+                    }}
+                    onScroll={(event) => {
+                      scrollOffset.current = event.nativeEvent.contentOffset.y;
+                    }}
+                    onScrollBeginDrag={onDragStart}
+                    onScrollEndDrag={() => onDragFinish?.()}
+                    ref={scrollRef}
+                    scrollEventThrottle={16}
+                    showsVerticalScrollIndicator={false}
+                    testID={`${testID}-scroll`}
+                  >
+                    {/* The content child: it fills the scroll content from its top, so the spacing lives here. */}
+                    <View
+                      ref={contentRef}
+                      style={{ flex: 1, justifyContent: 'space-evenly', paddingVertical: theme.space[4] }}
+                    >
+                      {/* A short window has no room for the neighbours: only the current ayah is drawn. */}
+                      {!short && previousText !== null && previousNumber !== null ? (
+                        <FocusAside
+                          fontScale={fontScale}
+                          testID={`${testID}-previous`}
+                          textUthmani={previousText}
+                          verseNumber={previousNumber}
+                        />
+                      ) : (
+                        <View />
+                      )}
+                      <FocusAyah
+                        activeWord={activeWord}
+                        fitHeight={viewport > 0 ? viewport - theme.space[4] * 2 : undefined}
+                        followedText={word.textProps(String(verseNumber))}
+                        fontScale={fontScale}
+                        highlightColor={highlightColor}
+                        recited={recited}
+                        onOpenActions={onOpenActions}
+                        testID={testID}
+                        textImlaei={textImlaei}
+                        textUthmani={textUthmani}
+                        verseNumber={verseNumber}
+                      />
+                      {!short && nextText !== null && nextNumber !== null ? (
+                        <FocusAside fontScale={fontScale} testID={`${testID}-next`} textUthmani={nextText} verseNumber={nextNumber} />
+                      ) : (
+                        <View />
+                      )}
+                    </View>
+                  </ScrollView>
+                </GestureDetector>
+              </View>
+            </GestureDetector>
           </Animated.View>
         </LayoutAnimationConfig>
       </View>
-      <UiText align="center" style={{ marginBottom: theme.size.focusHintGap }} tone="muted" variant="label" weight={400}>
-        {t('reader.focus.nextHint')}
-      </UiText>
-      <FocusTransport
-        onNext={onNext === undefined ? undefined : () => go('next')}
-        onPlay={onPlay}
-        onPrevious={onPrevious === undefined ? undefined : () => go('previous')}
-        playing={playing}
-        repeatTarget={repeatTarget}
-      />
+      {short ? null : (
+        <UiText align="center" style={{ marginBottom: theme.size.focusHintGap }} tone="muted" variant="label" weight={400}>
+          {t('reader.focus.nextHint')}
+        </UiText>
+      )}
+      <View style={{ paddingEnd: insets.end, paddingStart: insets.start }} testID={`${testID}-transport`}>
+        <FocusTransport
+          onNext={onNext === undefined ? undefined : () => go('next')}
+          onPlay={onPlay}
+          onPrevious={onPrevious === undefined ? undefined : () => go('previous')}
+          playing={playing}
+          repeatTarget={repeatTarget}
+        />
+      </View>
     </View>
+    </GestureHandlerRootView>
   );
 }

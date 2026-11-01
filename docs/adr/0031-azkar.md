@@ -63,6 +63,16 @@ Dorar (الدرر السنية) offers an official hadith API with an approved a
 - With a count, the reader shows a counter (`٢ / ٣`). Without one, it shows a single «تم» / "Done" action. No open-ended tally unless a source explicitly supports unrestricted repetition.
 - `required_count` (content) and `current_count` (user) live in different databases and never overwrite each other.
 
+**Amended 1 Nov 2026 (developer):** every unit has the same 120 pt ring control (`AzkarCounter`), in one of two variants.
+- **A sourced count** (including 1): the counter, with the value in the centre. A count of 1 reads «٠ من ١», then «١ من ١» with a full ring, and completes on one tap. The value uses the counter's format («من», as in the approved `AzkarReader` frame), not «/».
+- **No sourced count** (`required_count` null): the single variant. The ring is empty, with a check and «تم» / "Done" in its centre, and no number. One tap fills the ring and completes the unit. Its accessible label is «وضع علامة «تم»» / "Mark as done", with the same button role as the counter.
+- Either way the unit completes through the same path (`recordTap`), so auto-advance and the last unit's «إتمام» work the same. The bottom «تم» pill is removed.
+
+**Count from the secondary source, developer 1 Nov 2026:** when the primary source has no `times` for an item, `required_count` is filled from the secondary source's `REPEAT` for the same item, and `required_count_source` records `hisnmuslim`. The match is by book number. Where one book number has several recitations, an item is paired by position only when both sides have the same number of recitations. Otherwise it stays `null` and the import report lists it as ambiguous. Nothing is invented: no source with no count, no match or no readable snapshot leaves the count `null`.
+- A count the primary has is never replaced. When the secondary gives a different number, the primary's count is kept and the difference is a `required_count_conflict` warning.
+- The secondary is read only while its own lock is open (its import flag and granted permission, as for its import). In production, while it is locked, counts stay as OpenDua has them.
+- The import report lists the counts by source, the conflicts and the ambiguous items. `required_count_source` is server-side provenance: it is not in the content pack schema, so the app never receives it.
+
 ### 7. Timing and reminders are separate concepts
 - **Religious timing metadata (content):**
   - `occasion`, a semantic code: `morning`, `evening`, `after_prayer`, `before_sleep`, `after_waking`, `entering_home`, `leaving_home`, `entering_mosque`, `leaving_mosque`, `travel`, …
@@ -123,7 +133,9 @@ Dorar (الدرر السنية) offers an official hadith API with an approved a
 - **HadeethEnc** (official API; published terms allow use without modification, with attribution) enriches entries with `explanation`, `grade` and `reference` notes.
   - Links between an Azkar entry and a HadeethEnc hadith are **candidates** found by matching the dhikr text inside the hadith text. They are listed in a review file and become notes in production only when marked `reviewed`. HadeethEnc's «الفوائد» (benefits) are not mapped to `virtue`; they are not stored for now.
   - `content_sources` row `hadeethenc`: `pending` in production until the written confirmation the content plan already asks for.
-- **Repeat count of 1** from a source means one recitation. The reader shows «تم», never «١ من ١».
+- **Repeat count of 1** from a source means one recitation. The reader shows the counter ring, reading «٠ من ١» and then «١ من ١» with a full ring, and one tap completes it.
+
+**Amended 1 Nov 2026 (developer):** this bullet previously said the reader shows «تم» and never «١ من ١». The count of 1 now uses the same ring as every counter (§6), and the «تم» pill is gone. A missing count (null) uses the single ring variant, which has no number. Both complete through the same path, so auto-advance and «إتمام» behave the same for every unit.
 
 ## Consequences
 

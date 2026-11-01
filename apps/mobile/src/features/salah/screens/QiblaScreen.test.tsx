@@ -1,8 +1,10 @@
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
+
+import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -10,6 +12,7 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { requestLocationPermissions } from '../data/location';
 import { usePrayerLocation } from '../hooks';
 import { useQiblaHeading } from '../hooks/useQiblaHeading';
+import { useScreenActive } from '../hooks/useScreenActive';
 import { QiblaScreen } from './QiblaScreen';
 
 jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
@@ -19,9 +22,12 @@ jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn(() => Promise.resolve()),
 }));
 
+// The insets are read per render, so a test can give the screen a landscape notch (left or right).
+let mockInsets = { bottom: 34, left: 0, right: 0, top: 59 };
+
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
-  return { ...actual, useSafeAreaInsets: () => ({ bottom: 34, left: 0, right: 0, top: 59 }) };
+  return { ...actual, useSafeAreaInsets: () => mockInsets };
 });
 
 jest.mock('react-native-reanimated', () => {
@@ -43,6 +49,7 @@ jest.mock('../data/distance', () => ({
 const mockLocationWithCoords = {
   cityName: undefined,
   coords: { lat: 24.7136, lng: 46.6753 },
+  pending: false,
   permissionStatus: Location.PermissionStatus.GRANTED,
   refresh: jest.fn(() => Promise.resolve()),
   source: 'auto' as const,
@@ -52,11 +59,30 @@ jest.mock('../hooks', () => ({ usePrayerLocation: jest.fn(() => mockLocationWith
 
 jest.mock('../hooks/useQiblaHeading', () => ({
   ...jest.requireActual<typeof import('../hooks/useQiblaHeading')>('../hooks/useQiblaHeading'),
-  useQiblaHeading: jest.fn(() => ({ accuracy: 'good', heading: 14, supported: true })),
+  useQiblaHeading: jest.fn(),
 }));
 
-const mockHeading = (value: { heading: number | null; accuracy: 'good' | 'poor' | 'unavailable'; supported: boolean }) =>
-  jest.mocked(useQiblaHeading).mockReturnValue(value);
+// The screen is focused and foregrounded in these tests; the gating itself is covered in useScreenActive.test.
+jest.mock('../hooks/useScreenActive', () => ({ useScreenActive: jest.fn(() => true) }));
+
+type MockHeading = {
+  /** The live heading in degrees, or null before the first sample. */
+  heading: number | null;
+  accuracy: 'good' | 'poor' | 'unavailable';
+  supported: boolean;
+  /** Whether the hook reports the needle as aligned (its hysteresis decides; the screen only shows it). */
+  aligned?: boolean;
+};
+
+/** What useQiblaHeading returns for a given sample: the heading as a SharedValue, as the hook exposes it. */
+const mockHeading = ({ heading, accuracy, supported, aligned = false }: MockHeading) =>
+  jest.mocked(useQiblaHeading).mockReturnValue({
+    aligned,
+    accuracy,
+    hasHeading: heading !== null,
+    headingValue: { value: heading ?? 0 } as never,
+    supported,
+  });
 
 describe('QiblaScreen', () => {
   beforeEach(() => {
@@ -137,7 +163,7 @@ describe('QiblaScreen', () => {
   });
 
   it('shows the aligned pill and fires the success haptic when the needle settles on the marker', async () => {
-    mockHeading({ accuracy: 'good', heading: 242, supported: true }); // |244 − 242| ≤ 3
+    mockHeading({ accuracy: 'good', aligned: true, heading: 242, supported: true }); // |244 − 242| ≤ 3, decided by the hook
     const view = await renderUi(<QiblaScreen />);
 
     expect(view.getByText('أنت باتجاه القبلة')).toBeOnTheScreen();
@@ -157,13 +183,31 @@ describe('QiblaScreen', () => {
     expect(Haptics.notificationAsync).not.toHaveBeenCalled();
   });
 
-  it('renders the static dial and no haptic under Reduce Motion, even when aligned', async () => {
-    jest.mocked(useReducedMotion).mockReturnValue(true);
-    mockHeading({ accuracy: 'good', heading: 244, supported: true });
+  it('does not watch the compass while the screen is not focused or the app is backgrounded', async () => {
+    jest.mocked(useScreenActive).mockReturnValueOnce(false);
+
+    await renderUi(<QiblaScreen />);
+
+    expect(useQiblaHeading).toHaveBeenCalledWith(false, 244);
+  });
+
+  it('a failed haptic is caught and the screen keeps working', async () => {
+    jest.mocked(Haptics.notificationAsync).mockRejectedValueOnce(new Error('haptics unavailable'));
+    mockHeading({ accuracy: 'good', aligned: true, heading: 242, supported: true });
+
     const view = await renderUi(<QiblaScreen />);
 
-    // The hook is not even asked to watch: enabled = bearing !== null && !reduceMotion.
-    expect(useQiblaHeading).toHaveBeenCalledWith(false);
+    expect(view.getByText('أنت باتجاه القبلة')).toBeOnTheScreen();
+    await waitFor(() => expect(Haptics.notificationAsync).toHaveBeenCalledTimes(1));
+  });
+
+  it('renders the static dial and no haptic under Reduce Motion, even when aligned', async () => {
+    jest.mocked(useReducedMotion).mockReturnValue(true);
+    mockHeading({ accuracy: 'good', aligned: true, heading: 244, supported: true });
+    const view = await renderUi(<QiblaScreen />);
+
+    // The hook is not even asked to watch: enabled = bearing !== null && !reduceMotion && the screen is active.
+    expect(useQiblaHeading).toHaveBeenCalledWith(false, 244);
     expect(view.queryByText('أنت باتجاه القبلة')).toBeNull();
     expect(Haptics.notificationAsync).not.toHaveBeenCalled();
     expect(JSON.stringify(view.getByTestId('qibla-compass-needle').props.style)).toContain('244deg');
@@ -171,5 +215,96 @@ describe('QiblaScreen', () => {
 
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/salah/screens/QiblaScreen.tsx')).toEqual([]);
+  });
+});
+
+describe('QiblaScreen layout (ADR 0036)', () => {
+  afterEach(() => {
+    mockInsets = { bottom: 34, left: 0, right: 0, top: 59 };
+    resetWindowSize();
+  });
+
+  // The layout event lands in a state update, so it is awaited inside act (the dial sizes from it).
+  async function layout(element: { props: object }, width: number, height: number): Promise<void> {
+    await act(async () => {
+      fireEvent(element as Parameters<typeof fireEvent>[0], 'layout', {
+        nativeEvent: { layout: { height, width, x: 0, y: 0 } },
+      });
+    });
+  }
+
+  it('stacks the dial above its labels in a tall window', async () => {
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByTestId('qibla-stage')).toBeOnTheScreen();
+    expect(view.queryByTestId('qibla-row')).toBeNull();
+  });
+
+  it('sets the dial beside its labels and meta panel in a short window', async () => {
+    setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height);
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByTestId('qibla-row')).toBeOnTheScreen();
+    expect(view.getByTestId('qibla-dial-column')).toBeOnTheScreen();
+    expect(view.getByTestId('qibla-meta-panel')).toBeOnTheScreen();
+    expect(view.queryByTestId('qibla-stage')).toBeNull();
+  });
+
+  it('draws the dial at the space it is given, under its 336 frame size', async () => {
+    const view = await renderUi(<QiblaScreen />);
+
+    await layout(view.getByTestId('qibla-stage'), 390, 300);
+
+    // The stage is 300 high with no labels measured yet, so the dial gets 300 less the 16 gap.
+    expect(flatStyle(view.getByTestId('qibla-dial').props.style).width).toBe(284);
+    expect(flatStyle(view.getByTestId('qibla-compass').props.style).width).toBe(284);
+  });
+
+  it('never draws the dial above 336, even in a tall stage', async () => {
+    const view = await renderUi(<QiblaScreen />);
+
+    await layout(view.getByTestId('qibla-stage'), 390, 1200);
+
+    expect(flatStyle(view.getByTestId('qibla-dial').props.style).width).toBe(336);
+  });
+
+  it('keeps the dial at least 160 even when the stage is very small', async () => {
+    const view = await renderUi(<QiblaScreen />);
+
+    await layout(view.getByTestId('qibla-stage'), 390, 100);
+
+    expect(flatStyle(view.getByTestId('qibla-dial').props.style).width).toBe(160);
+  });
+
+  it('scales the ambient glow with the dial', async () => {
+    const view = await renderUi(<QiblaScreen />);
+
+    await layout(view.getByTestId('qibla-stage'), 390, 300);
+
+    // 284 × 480 / 336, rounded.
+    expect(flatStyle(view.getByTestId('qibla-glow').props.style).width).toBe(406);
+  });
+
+  it('fits the dial to the short window\'s dial column', async () => {
+    setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height);
+    const view = await renderUi(<QiblaScreen />);
+
+    await layout(view.getByTestId('qibla-dial-column'), 400, 300);
+
+    expect(flatStyle(view.getByTestId('qibla-dial').props.style).width).toBe(300);
+  });
+
+  it.each([
+    // Arabic: the notch on the right is the start edge, so it moves the start padding.
+    ['ar', 12, 44],
+    ['en', 44, 12],
+  ] as const)('pads the header by the reading-direction insets in %s', async (locale, start, end) => {
+    mockInsets = { bottom: 34, left: 44, right: 12, top: 59 };
+    const view = await renderUi(<QiblaScreen />, { locale });
+
+    const style = flatStyle(view.getByTestId('qibla-header').props.style);
+    expect(style.paddingStart).toBe(start + 20);
+    expect(style.paddingEnd).toBe(end + 20);
+    expect(style.paddingTop).toBe(59);
   });
 });

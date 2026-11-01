@@ -1,17 +1,18 @@
 import { type Href, router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View, type LayoutChangeEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { formatNumber, useLocale } from '@/core/i18n';
+import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey, idToVerseKey } from '@/features/reader/data/verses';
-import { Button, IconButton, Screen, UiText } from '@/shared/ui';
+import { Button, ConfirmDialog, IconButton, Screen, UiText } from '@/shared/ui';
 
 import { DailyWirdCard } from '../components/DailyWirdCard';
 import { KhatmaDurationPicker } from '../components/KhatmaDurationPicker';
@@ -31,6 +32,7 @@ import {
 import { resolvePlanBounds } from '../plan-bounds';
 
 const BACK_ICON = { ios: 'chevron.left', android: 'chevron_left' } as const;
+const END_PLAN_ICON = { ios: 'stop.circle', android: 'stop_circle' } as const;
 
 export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) {
   const { t } = useTranslation();
@@ -50,6 +52,14 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
   const [durationTouched, setDurationTouched] = useState(false);
   const [startTouched, setStartTouched] = useState(false);
   const [syncedPlanId, setSyncedPlanId] = useState<string | null>(null);
+  const [endOpen, setEndOpen] = useState(false);
+  // The footer CTA sits below the scroll view, so the scroll content gets the footer's height as its bottom padding:
+  // the last card can scroll fully clear of the CTA (on a landscape phone it otherwise hides under it).
+  const [footerHeight, setFooterHeight] = useState(0);
+  const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout;
+    setFooterHeight((previous) => (previous === height ? previous : height));
+  }, []);
 
   const content = useMemo(() => {
     if (!ready) {
@@ -172,29 +182,23 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
     if (plan === null) {
       return;
     }
-    Alert.alert(t('khatma.endPlan.title'), t('khatma.endPlan.message'), [
-      { style: 'cancel', text: t('khatma.endPlan.cancel') },
-      {
-        style: 'destructive',
-        text: t('khatma.endPlan.confirm'),
-        onPress: () => {
-          endPlan(plan.id, 'abandoned');
-        },
-      },
-    ]);
+    setEndOpen(true);
   };
 
   const showLastRead = content?.lastRead?.id !== 1;
 
   return (
     <Screen testID={testID} topInset={false}>
+      {/* The plan is one centred column, capped at 720 like the reading column, so a wide window does not stretch it (ADR 0036). */}
+      <ContentColumn gutter={theme.space[4]} testID="khatma-column">
       <ScrollView
         contentContainerStyle={{
           gap: theme.space[4],
-          paddingBottom: insets.bottom + theme.space[8] + theme.size.touchTarget,
-          paddingHorizontal: theme.space[4],
+          paddingBottom: footerHeight,
           paddingTop: insets.top + theme.space[4],
         }}
+        style={{ flex: 1 }}
+        testID="khatma-scroll"
       >
         <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2] }}>
           <IconButton
@@ -250,14 +254,7 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
         ) : null}
       </ScrollView>
 
-      <View
-        style={{
-          bottom: insets.bottom + theme.space[4],
-          left: theme.space[4],
-          position: 'absolute',
-          right: theme.space[4],
-        }}
-      >
+      <View onLayout={onFooterLayout} style={{ paddingBottom: insets.bottom + theme.space[4] }} testID="khatma-footer">
         <Button
           label={saveMode ? t('khatma.savePlan') : t('home.continueReading')}
           onPress={onPrimary}
@@ -266,6 +263,24 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
           variant="primary"
         />
       </View>
+      </ContentColumn>
+      <ConfirmDialog
+        cancelLabel={t('khatma.endPlan.cancel')}
+        confirmLabel={t('khatma.endPlan.confirm')}
+        destructive
+        icon={END_PLAN_ICON}
+        message={t('khatma.endPlan.message')}
+        onCancel={() => setEndOpen(false)}
+        onConfirm={() => {
+          setEndOpen(false);
+          if (plan !== null) {
+            endPlan(plan.id, 'abandoned');
+          }
+        }}
+        testID="khatma-end-dialog"
+        title={t('khatma.endPlan.title')}
+        visible={endOpen}
+      />
     </Screen>
   );
 }

@@ -1,9 +1,10 @@
 import { type Href, router } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { ScrollView } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
+import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useActivePlan } from '@/features/khatma/data';
 import { Screen } from '@/shared/ui';
@@ -30,33 +31,33 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
 
   return (
     <Screen testID={testID}>
-      <View style={{ paddingHorizontal: theme.space[4] }}>
+      {/* The column caps the rows at 720 on wide windows (spec §4) and keeps the 16 gutter the rows had. */}
+      <ContentColumn gutter={theme.space[4]} testID="settings-column">
         <SettingsHeader onBack={() => router.back()} />
-      </View>
-      <ScrollView
-        contentContainerStyle={{
-          gap: theme.space[4],
-          paddingBottom: theme.space[6],
-          paddingHorizontal: theme.space[4],
-          paddingTop: theme.space[4],
-        }}
-        style={{ flex: 1 }}
-      >
-        <LanguageSection />
-        <ReadingSection
-          onPressAppearance={() => router.push('/reader-settings' as Href)}
-          onPressQuranFont={() => router.push('/reader-settings' as Href)}
-        />
-        <ListeningSection
-          onPressReciter={() => router.navigate('/(main)/(listen)' as Href)}
-        />
-        <HabitsSection
-          khatmaValue={khatmaValue}
-          onPressKhatma={() => router.push('/khatma' as Href)}
-        />
-        <PrayerNotificationsSection />
-        <AboutSection onPressSources={() => router.push('/settings/sources' as Href)} />
-      </ScrollView>
+        <ScrollView
+          contentContainerStyle={{
+            gap: theme.space[4],
+            paddingBottom: theme.space[6],
+            paddingTop: theme.space[4],
+          }}
+          style={{ flex: 1 }}
+        >
+          <LanguageSection />
+          <ReadingSection
+            onPressAppearance={() => router.push('/reader-settings' as Href)}
+            onPressQuranFont={() => router.push('/reader-settings' as Href)}
+          />
+          <ListeningSection
+            onPressReciter={() => router.navigate('/(main)/(listen)' as Href)}
+          />
+          <HabitsSection
+            khatmaValue={khatmaValue}
+            onPressKhatma={() => router.push('/khatma' as Href)}
+          />
+          <PrayerNotificationsSection />
+          <AboutSection onPressSources={() => router.push('/settings/sources' as Href)} />
+        </ScrollView>
+      </ContentColumn>
     </Screen>
   );
 }

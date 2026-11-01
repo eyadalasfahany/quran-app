@@ -4,7 +4,16 @@ export { tabDestinations, sidebarDestinations, type Destination } from './destin
 export { MainShell } from './MainShell';
 export { SectionScreen } from './SectionScreen';
 export { useTabBarStyle, type TabBarStyle } from './useTabBarStyle';
-export { useWindowClass } from './useWindowClass';
-export { nextWindowClass, windowClassFor, type WindowClass } from './window-class';
+export { useIsShortWindow, useWidthClass, useWindowClass } from './useWindowClass';
+export {
+  isShortWindowHeight,
+  nextWindowClass,
+  widthClassFor,
+  windowClassFor,
+  WINDOW_SHORT_HEIGHT,
+  type WindowClass,
+} from './window-class';
 export { useTabBarClearance } from './useTabBarClearance';
+export { TabRailContext, useTabRailSideInset } from './TabRailContext';
+export { tabBarMode, TAB_RAIL, TAB_RAIL_CLEARANCE, tabBarSideClearance } from './tab-bar-clearance';
 export { useTabContentBottom } from './useTabContentBottom';

@@ -15,6 +15,11 @@ import { FOLLOW_VIEW_POSITION, recitedWordOffset } from './word-follow';
 import { measureWithin } from './measure-within';
 import { WORD_SETTLE_MS } from './useWordFollow';
 
+// The list sizes its column from the side insets; a portrait phone has none.
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ bottom: 0, left: 0, right: 0, top: 0 }),
+}));
+
 type TestNode = NonNullable<Awaited<ReturnType<typeof renderUi>>['root']>;
 
 type FlashListTestState = {

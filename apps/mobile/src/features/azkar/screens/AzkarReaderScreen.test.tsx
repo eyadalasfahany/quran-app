@@ -18,6 +18,8 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 import { AzkarReaderScreen } from './AzkarReaderScreen';
 
 const ENTRY_KEY = 'fixture:entry-001';
+/** The accessible label of the single ring (a unit with no sourced count), in Arabic. */
+const DONE_LABEL = 'وضع علامة «تم»';
 const SCOPE = scopeKeyForEntry(ENTRY_KEY);
 
 const mockEntry = jest.fn();
@@ -64,7 +66,7 @@ jest.mock('../data/progress-repository', () => ({
 
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
-  return { ...actual, useReducedMotion: jest.fn(() => false) };
+  return { __esModule: true, ...actual, default: actual.default, useReducedMotion: jest.fn(() => false) };
 });
 
 const mockReduceMotion = useReducedMotion as unknown as jest.Mock;
@@ -172,14 +174,17 @@ describe('AzkarReaderScreen', () => {
     expect(screen.getByRole('button', { name: 'عداد الذكر ١' }).props.accessibilityValue).toEqual({ text: '٢ من ٣' });
   });
 
-  it('shows the Done button and no number when the unit has no sourced count', async () => {
+  it('shows the single ring, with no number, when the unit has no sourced count', async () => {
     mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: null })]));
     await renderReader();
 
-    expect(screen.getByRole('button', { name: 'تم' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: DONE_LABEL })).toBeTruthy();
+    expect(screen.getByTestId('azkar-counter-ring')).toBeTruthy();
     // The top bar's «١ من ١» is the position in the reader, not the unit's count.
     expect(screen.queryByTestId('azkar-counter-value')).toBeNull();
     expect(screen.queryByRole('button', { name: /عداد الذكر/ })).toBeNull();
+    // No «تم» pill at the bottom: the ring is the only control.
+    expect(screen.queryByRole('button', { name: 'تم' })).toBeNull();
   });
 
   it('records the scope it opens, for Home’s recent Azkar', async () => {
@@ -189,14 +194,14 @@ describe('AzkarReaderScreen', () => {
     expect(readRecentScopes().map((scope) => scope.scopeKey)).toEqual([SCOPE]);
   });
 
-  it('shows «تم», not a counter, for a sourced count of one, and records its tap as the whole count', async () => {
+  it('shows the same ring for a sourced count of one, reading «٠ من ١», and records its tap as the whole count', async () => {
     progress.recordTap.mockReturnValue({ accepted: true, completedNow: true } as never);
     mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: 1 })]));
     await renderReader();
 
-    expect(screen.queryByRole('button', { name: /عداد الذكر/ })).toBeNull();
-    expect(screen.queryByTestId('azkar-counter-value')).toBeNull();
-    await press(screen.getByRole('button', { name: 'تم' }));
+    expect(screen.getByRole('button', { name: 'عداد الذكر ١' }).props.accessibilityValue).toEqual({ text: '٠ من ١' });
+    expect(screen.queryByRole('button', { name: 'تم' })).toBeNull();
+    await press(screen.getByRole('button', { name: 'عداد الذكر ١' }));
 
     expect(progress.recordTap).toHaveBeenCalledWith(SCOPE, 'session', 'fixture:item-1', 1);
     expect(haptics.completeHaptic).toHaveBeenCalledTimes(1);
@@ -214,7 +219,7 @@ describe('AzkarReaderScreen', () => {
   it('records a Done tap for a unit with no sourced count, with a null count', async () => {
     mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: null })]));
     await renderReader();
-    await press(screen.getByRole('button', { name: 'تم' }));
+    await press(screen.getByRole('button', { name: DONE_LABEL }));
 
     expect(progress.recordTap).toHaveBeenCalledWith(SCOPE, 'session', 'fixture:item-1', null);
   });
@@ -372,9 +377,9 @@ describe('AzkarReaderScreen', () => {
 
       expect(progress.recordTap).toHaveBeenCalledWith(SCOPE, 'session', 'fixture:item-1', null);
       expect(haptics.completeHaptic).toHaveBeenCalledTimes(1);
-      // A single unit is the last one: once it is done, «إتمام» replaces the «تم» action.
+      // A single unit is the last one: once it is done, «إتمام» replaces the ring.
       expect(screen.getByRole('button', { name: 'إتمام' })).toBeTruthy();
-      expect(screen.queryByRole('button', { name: 'تم' })).toBeNull();
+      expect(screen.queryByRole('button', { name: DONE_LABEL })).toBeNull();
       await press(screen.getByText(TEXT));
       expect(progress.recordTap).toHaveBeenCalledTimes(1);
     });
@@ -482,10 +487,10 @@ describe('AzkarReaderScreen', () => {
       expect(progress.recordTap).not.toHaveBeenCalled();
     });
 
-    it('counts a «تم» press once, not twice', async () => {
+    it('counts a single-ring press once, not twice', async () => {
       mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: null }), makeItem({ id: 2, requiredCount: null, position: 2 })]));
       await renderReader();
-      await press(screen.getByRole('button', { name: 'تم' }));
+      await press(screen.getByRole('button', { name: DONE_LABEL }));
 
       expect(progress.recordTap).toHaveBeenCalledTimes(1);
       expect(haptics.tapHaptic).toHaveBeenCalledTimes(1);
@@ -517,10 +522,10 @@ describe('AzkarReaderScreen', () => {
   describe('auto-advance and session completion (fake timers, real progress in user.db)', () => {
     const TEXT = /نص تجريبي/;
     const ARABIC_DIGITS = '٠١٢٣٤٥٦٧٨٩';
-    // A unit with a sourced count of one has «تم» in place of the counter (ADR 0031 §6), so either can answer.
+    // Every unit has the ring: a count of one and a unit with no sourced count are answered by the same ring (ADR 0031 §6).
     const counterOf = (position: number) =>
       screen.getByRole('button', {
-        name: new RegExp(`^(عداد الذكر ${String(position).replace(/\d/g, (d) => ARABIC_DIGITS[Number(d)] ?? d)}|تم)$`),
+        name: new RegExp(`^(عداد الذكر ${String(position).replace(/\d/g, (d) => ARABIC_DIGITS[Number(d)] ?? d)}|${DONE_LABEL})$`),
       });
     let clock = 0;
     let store: AzkarStore;
@@ -575,7 +580,7 @@ describe('AzkarReaderScreen', () => {
     it('advances after a Done tap on a unit with no sourced count, too', async () => {
       mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: null }), makeItem({ id: 2, requiredCount: 1, position: 2 })]));
       await renderReader();
-      await press(screen.getByRole('button', { name: 'تم' }));
+      await press(screen.getByRole('button', { name: DONE_LABEL }));
       await act(async () => {
         jest.advanceTimersByTime(600);
       });
@@ -598,7 +603,7 @@ describe('AzkarReaderScreen', () => {
         jest.advanceTimersByTime(600);
       });
 
-      expect(screen.getByRole('button', { name: /^(Counter for dhikr 2|Done)$/ })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /^(Counter for dhikr 2|Mark as done)$/ })).toBeTruthy();
     });
 
     it('does not advance when a completed unit is revisited', async () => {
@@ -672,6 +677,72 @@ describe('AzkarReaderScreen', () => {
       expect(screen.getByRole('header', { name: /^أتممت / })).toBeTruthy();
     });
 
+    it('completes the whole session by tapping anywhere, with count-one and no-count units among a counted one', async () => {
+      mockEntry.mockReturnValue(
+        entryWith([
+          makeItem({ id: 1, requiredCount: 1 }),
+          makeItem({ id: 2, requiredCount: null, position: 2 }),
+          makeItem({ id: 3, requiredCount: 2, position: 3 }),
+        ]),
+      );
+      await renderReader();
+      await press(screen.getByText(TEXT));
+      await act(async () => {
+        jest.advanceTimersByTime(600);
+      });
+      await press(screen.getByText(TEXT));
+      await act(async () => {
+        jest.advanceTimersByTime(600);
+      });
+      await press(screen.getByText(TEXT));
+      clock += 200;
+      await press(screen.getByText(TEXT));
+      await act(async () => {
+        jest.advanceTimersByTime(1_000);
+      });
+
+      expect(progress.recordTap).toHaveBeenCalledTimes(4);
+      await press(screen.getByRole('button', { name: 'إتمام' }));
+      expect(screen.getByRole('header', { name: /^أتممت / })).toBeTruthy();
+    });
+
+    it('lands on the last unit, not a finished one, when the last open unit completes', async () => {
+      mockEntry.mockReturnValue(
+        entryWith([
+          makeItem({ id: 1, requiredCount: 1 }),
+          makeItem({ id: 2, requiredCount: 1, position: 2 }),
+          makeItem({ id: 3, requiredCount: 1, position: 3 }),
+        ]),
+      );
+      actual.recordTap(SCOPE, 'session', 'fixture:item-2', 1, store);
+      clock += 200;
+      actual.recordTap(SCOPE, 'session', 'fixture:item-3', 1, store);
+      await renderReader();
+      await press(screen.getByText(TEXT));
+      await act(async () => {
+        jest.advanceTimersByTime(600);
+      });
+
+      // Every unit is done, so the reader is on the last one, where «إتمام» shows, and not on a finished unit.
+      expect(screen.getByRole('button', { name: 'إتمام' })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'عداد الذكر ٢' })).toBeNull();
+      expect(screen.getAllByText('٣ من ٣').length).toBeGreaterThan(0);
+    });
+
+    it('opens at the unit it is given, not the first one', async () => {
+      mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: 3 }), makeItem({ id: 2, requiredCount: 3, position: 2 })]));
+      await renderReader({ startUnitKey: 'fixture:item-2' });
+
+      expect(screen.getByRole('button', { name: 'عداد الذكر ٢' })).toBeTruthy();
+    });
+
+    it('opens at the first open unit when the given key is unknown', async () => {
+      mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: 3 }), makeItem({ id: 2, requiredCount: 3, position: 2 })]));
+      await renderReader({ startUnitKey: 'fixture:missing' });
+
+      expect(screen.getByRole('button', { name: 'عداد الذكر ١' })).toBeTruthy();
+    });
+
     it('reopening a marked session shows the completion screen, and «البدء من جديد» clears the mark', async () => {
       actual.recordTap(SCOPE, 'session', 'fixture:item-1', 1, store);
       clock += 200;
@@ -682,8 +753,8 @@ describe('AzkarReaderScreen', () => {
       expect(screen.getByRole('header', { name: /^أتممت / })).toBeTruthy();
 
       await press(screen.getByRole('button', { name: 'البدء من جديد' }));
-      // A count of one has «تم» in place of the counter: a restart makes it tappable again.
-      expect(screen.getByRole('button', { name: 'تم' })).toBeEnabled();
+      // A restart clears the marks: the first unit's ring is tappable again.
+      expect(screen.getByRole('button', { name: 'عداد الذكر ١' })).toBeEnabled();
       expect(actual.isSessionComplete(SCOPE, 'session', store)).toBe(false);
     });
 

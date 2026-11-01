@@ -1,5 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
-import { Alert } from 'react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 
 import { clearLocalUserData } from '@/core/db/user/clear';
 
@@ -11,16 +10,15 @@ jest.mock('@/core/db/user/clear', () => ({
   clearLocalUserData: jest.fn(),
 }));
 
-describe('AboutSection', () => {
-  let alertSpy: jest.SpiedFunction<typeof Alert.alert>;
+// The dialog fades in, so until its animation ends its elements count as hidden to the query.
+const SHOWN = { includeHiddenElements: true } as const;
 
+const CLEAR_TITLE = 'مسح البيانات المحلية؟';
+const CLEAR_MESSAGE = 'هل أنت متأكد من مسح العلامات المحفوظة والتظليلات والملاحظات والختمة؟ لا يمكن التراجع عن هذا الإجراء.';
+
+describe('AboutSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    alertSpy.mockRestore();
   });
 
   it('renders section title and both rows in Arabic', async () => {
@@ -35,38 +33,51 @@ describe('AboutSection', () => {
     const onPressSources = jest.fn();
     const view = await renderUi(<AboutSection onPressSources={onPressSources} />);
 
-    fireEvent.press(view.getByTestId('about-sources-row'));
+    await fireEvent.press(view.getByTestId('about-sources-row'));
 
     expect(onPressSources).toHaveBeenCalledTimes(1);
   });
 
-  it('shows a confirmation alert and clears local data when confirmed without a custom handler', async () => {
+  it('asks in the shared dialog before clearing, and does nothing until confirmed', async () => {
     const view = await renderUi(<AboutSection />);
 
-    fireEvent.press(view.getByRole('button', { name: 'مسح البيانات المحلية' }));
+    await fireEvent.press(view.getByRole('button', { name: 'مسح البيانات المحلية' }));
 
-    expect(alertSpy).toHaveBeenCalledWith(
-      'مسح البيانات المحلية؟',
-      'هل أنت متأكد من مسح العلامات المحفوظة والتظليلات والملاحظات والختمة؟ لا يمكن التراجع عن هذا الإجراء.',
-      expect.any(Array),
-    );
+    expect(view.getByText(CLEAR_TITLE, SHOWN)).toBeOnTheScreen();
+    expect(view.getByText(CLEAR_MESSAGE, SHOWN)).toBeOnTheScreen();
+    expect(view.getByTestId('about-clear-data-dialog-icon-glyph', SHOWN).props.children.props.name).toEqual({
+      ios: 'trash',
+      android: 'delete_forever',
+    });
+    expect(clearLocalUserData).not.toHaveBeenCalled();
+  });
 
-    const buttons = alertSpy.mock.calls[0]?.[2] as { text: string; style?: string; onPress?: () => void }[];
-    const confirm = buttons.find((button) => button.style === 'destructive');
-    confirm?.onPress?.();
+  it('clears local data when confirmed without a custom handler, and closes the dialog', async () => {
+    const view = await renderUi(<AboutSection />);
+    await fireEvent.press(view.getByTestId('about-clear-data-row'));
+
+    await fireEvent.press(view.getByRole('button', { name: 'مسح البيانات', ...SHOWN }));
 
     expect(clearLocalUserData).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(view.queryByText(CLEAR_TITLE, SHOWN)).toBeNull());
+  });
+
+  it('closes without clearing when cancelled', async () => {
+    const view = await renderUi(<AboutSection />);
+    await fireEvent.press(view.getByTestId('about-clear-data-row'));
+
+    await fireEvent.press(view.getByRole('button', { name: 'إلغاء', ...SHOWN }));
+
+    expect(clearLocalUserData).not.toHaveBeenCalled();
+    await waitFor(() => expect(view.queryByText(CLEAR_TITLE, SHOWN)).toBeNull());
   });
 
   it('calls onClearData when provided and the destructive action is confirmed', async () => {
     const onClearData = jest.fn();
     const view = await renderUi(<AboutSection onClearData={onClearData} />);
 
-    fireEvent.press(view.getByTestId('about-clear-data-row'));
-
-    const buttons = alertSpy.mock.calls[0]?.[2] as { style?: string; onPress?: () => void }[];
-    const confirm = buttons.find((button) => button.style === 'destructive');
-    confirm?.onPress?.();
+    await fireEvent.press(view.getByTestId('about-clear-data-row'));
+    await fireEvent.press(view.getByRole('button', { name: 'مسح البيانات', ...SHOWN }));
 
     expect(onClearData).toHaveBeenCalledTimes(1);
     expect(clearLocalUserData).not.toHaveBeenCalled();

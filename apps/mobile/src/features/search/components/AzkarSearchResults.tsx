@@ -1,60 +1,104 @@
-import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
+import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { AzkarSearchResultRow } from '@/features/azkar/components/AzkarSearchResultRow';
-import { useAzkarSearch } from '@/features/azkar/data';
+import { AzkarSectionTitle } from '@/features/azkar/components/AzkarSectionTitle';
+import { AzkarTopicTile } from '@/features/azkar/components/AzkarTopicTile';
+import { useAzkarCategories, useAzkarSearch } from '@/features/azkar/data';
+import { EmptyState } from '@/shared/ui';
 
-import { SearchMessage } from './SearchMessage';
+const SEARCH_ICON = { ios: 'magnifyingglass', android: 'search' } as const;
 
 /**
- * The «الأذكار» scope of search (ADR 0031): the Azkar entries whose text matches, one row each, opened in the Azkar
- * reader. Only text segments are searched, so no Quran text appears here. Mount it only when Azkar content is
- * installed; the search screen decides that.
+ * The «الأذكار» scope of search (ADR 0031, quran-app-screens.html #AzkarSearch): the chapters whose title matches,
+ * then the dhikr whose text matches, each opened in the Azkar reader. Only text segments are searched, so no Quran
+ * text appears here. Mount it only when Azkar content is installed; the search screen decides that.
+ *
+ * `pending` means the query is still debouncing. Stale results may stay on screen, but the empty state waits, so a
+ * scope switch or a fast typist never flashes «لا توجد نتائج» for a query that has not settled yet.
  */
 export function AzkarSearchResults({
   query,
-  onOpen,
+  pending,
+  onOpenChapter,
+  onOpenEntry,
   testID = 'search-azkar-results',
 }: {
   query: string;
-  onOpen: (entryKey: string) => void;
+  pending: boolean;
+  onOpenChapter: (categoryId: string) => void;
+  onOpenEntry: (entryKey: string) => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { entries } = useAzkarSearch(query);
+  const locale = useLocale();
+  const { entries, categoryIds } = useAzkarSearch(query);
+  const categories = useAzkarCategories(locale);
 
-  if (query.trim().length === 0) {
-    return null;
-  }
-  if (entries.length === 0) {
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const chapters = categoryIds
+    .map((id) => categoryById.get(id))
+    .filter((category) => category !== undefined);
+
+  if (chapters.length === 0 && entries.length === 0) {
+    if (pending || query.trim().length === 0) {
+      return null;
+    }
     return (
-      <View style={{ paddingTop: theme.space[4] }}>
-        <SearchMessage message={t('search.noResults')} testID={`${testID}-empty`} />
+      <View style={{ flex: 1, paddingTop: theme.space[8] }}>
+        <EmptyState
+          body={t('search.azkarNoResultsSuggestion')}
+          icon={SEARCH_ICON}
+          testID={`${testID}-empty`}
+          title={t('search.azkarNoResultsTitle')}
+        />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, minHeight: 240 }}>
-      <FlashList
-        data={entries}
-        ItemSeparatorComponent={() => <View style={{ height: theme.space[2] }} />}
-        keyExtractor={(hit) => hit.entryKey}
-        renderItem={({ item, index }) => (
-          <AzkarSearchResultRow
-            highlight={item.highlight}
-            number={index + 1}
-            onPress={() => onOpen(item.entryKey)}
-            preview={item.preview}
-            testID={`${testID}-result-${index + 1}`}
-          />
-        )}
-        showsVerticalScrollIndicator={false}
-        testID={testID}
-      />
-    </View>
+    <ScrollView
+      contentContainerStyle={{ gap: theme.space[5], paddingBottom: theme.space[8] }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      style={{ flex: 1 }}
+      testID={testID}
+    >
+      {chapters.length > 0 ? (
+        <View style={{ gap: theme.space[3] }}>
+          <AzkarSectionTitle testID={`${testID}-chapters`} title={t('search.azkarChaptersHeading')} />
+          {chapters.map((category) => (
+            <AzkarTopicTile
+              countText={t('azkar.browse.topicCount', {
+                count: category.unitCount,
+                number: formatNumber(category.unitCount, locale),
+              })}
+              key={category.id}
+              onPress={() => onOpenChapter(category.id)}
+              testID={`${testID}-chapter-${category.id}`}
+              title={t(`azkar.categories.${category.id}` as never)}
+            />
+          ))}
+        </View>
+      ) : null}
+      {entries.length > 0 ? (
+        <View style={{ gap: theme.space[3] }}>
+          <AzkarSectionTitle testID={`${testID}-entries`} title={t('search.azkarEntriesHeading')} />
+          {entries.map((hit, index) => (
+            <AzkarSearchResultRow
+              highlight={hit.highlight}
+              key={hit.entryKey}
+              number={index + 1}
+              onPress={() => onOpenEntry(hit.entryKey)}
+              preview={hit.preview}
+              testID={`${testID}-result-${index + 1}`}
+            />
+          ))}
+        </View>
+      ) : null}
+    </ScrollView>
   );
 }

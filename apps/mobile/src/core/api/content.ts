@@ -17,13 +17,14 @@ export type ChangesQuery = {
   limit?: number;
 };
 
-export async function getManifest(etag?: string): Promise<ManifestResult> {
+// The signal is the caller's cancel; the request timeout applies on top of it.
+export async function getManifest(etag?: string, signal?: AbortSignal): Promise<ManifestResult> {
   const headers: Record<string, string> = {};
   if (etag !== undefined && etag.length > 0) {
     headers['If-None-Match'] = etag;
   }
 
-  const response = await apiGet(MANIFEST_PATH, { headers });
+  const response = await apiGet(MANIFEST_PATH, { headers, signal });
   if (response.status === 304) {
     return { status: 304 };
   }

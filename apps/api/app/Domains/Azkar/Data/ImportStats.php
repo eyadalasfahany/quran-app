@@ -21,6 +21,8 @@ final class ImportStats extends Data
         public int $itemsNarration = 0,
         public int $itemsWithRequiredCount = 0,
         public int $itemsWithoutRequiredCount = 0,
+        /** @var array<string, int> Emitted items with a count, by the source that gave it (ADR 0031 §6, §12). */
+        public array $requiredCountBySource = [],
         public int $segmentsText = 0,
         public int $segmentsQuran = 0,
         public int $quranPassagesMapped = 0,

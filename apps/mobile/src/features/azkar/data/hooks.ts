@@ -1,10 +1,11 @@
 import type { Href } from 'expo-router';
 import type { TFunction } from 'i18next';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { openContentDb } from '@/core/db/content/open';
+import type { SqlExecutor } from '@/core/db/sql-executor';
 import { openUserDb } from '@/core/db/user/open';
 import { formatNumber } from '@/core/i18n/numbers';
 import type { Locale } from '@/core/i18n/locale';
@@ -13,6 +14,7 @@ import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { azkarHref } from '../routes';
 import { buildRecentAzkarEntries } from './recent-azkar';
 import { categoryPeriodProgress } from './category-progress';
+import { azkarProgressSummaries } from './progress-summary-store';
 import { useRecentScopes } from './recent-scopes';
 
 import {
@@ -28,7 +30,7 @@ import { readAzkarFontScale, saveAzkarFontScale } from './font-scale';
 import { liveFavoritesQuery, liveIsFavoriteQuery, liveProgressSummaryQuery, liveScopeProgressQuery } from './live-queries';
 import { listFavoriteCards, type FavoriteCard } from './favorite-cards';
 import type { AzkarCategory, AzkarCategoryListItem, AzkarEntryDetail } from './model';
-import { completedUnitsIn, pickLastActiveScope, type ScopeResolution, type ScopeSummary } from './progress';
+import { completedUnitsIn, periodKey, pickLastActiveScope, type ScopeResolution, type ScopeSummary } from './progress';
 import type { ReaderUnit } from './reader-units';
 import { resolveAzkarScope, type ResolvedAzkarScope } from './scope-resolver';
 import { matchesCategoryLabel, searchAzkarEntries, type AzkarSearchHit } from './search';
@@ -73,14 +75,43 @@ export function useAzkarAvailable(): boolean {
   );
 }
 
+type CategorySummaryCache = { executor: SqlExecutor; revision: number; items: AzkarCategoryListItem[] };
+
+// One summary list per locale, shared by every hook that reads it (Home's two session hooks, the daily goals, search,
+// the category list and the reminders). Building it reads every category's entries, so it must not run per consumer.
+const categorySummaryCache = new Map<Locale, CategorySummaryCache>();
+
+/**
+ * The category summaries (with `unitCount`) for `locale`, built once per catalogue revision and then shared. A new
+ * revision (a catalogue write or a pack import) or a new database handle rebuilds them.
+ */
+export function cachedCategorySummaries(executor: SqlExecutor, locale: Locale, revision: number): AzkarCategoryListItem[] {
+  const cached = categorySummaryCache.get(locale);
+  if (cached !== undefined && cached.executor === executor && cached.revision === revision) {
+    return cached.items;
+  }
+
+  const items = listCategories(executor, locale);
+  categorySummaryCache.set(locale, { executor, revision, items });
+  return items;
+}
+
 export function useAzkarCategories(locale: Locale): AzkarCategoryListItem[] {
   const revision = useContentRevision();
   const { executor } = openContentDb();
   return useMemo(
-    () => readOr<AzkarCategoryListItem[]>([], () => listCategories(executor, locale)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => readOr<AzkarCategoryListItem[]>([], () => cachedCategorySummaries(executor, locale, revision)),
     [executor, locale, revision],
   );
+}
+
+/**
+ * The local date and period keys that a «today» value depends on. Hooks that read `new Date()` add this to their deps,
+ * so a render after midnight (or the nightly boundary at noon) re-resolves the period, as `useHomeWird` does with its
+ * date key.
+ */
+function periodClock(now: Date): string {
+  return `${periodKey('daily', now)}|${periodKey('nightly', now)}`;
 }
 
 /** A category's reader units. `overrides` comes from `useVariationChoices` (memoised by the caller). */
@@ -186,20 +217,12 @@ function categoryLabel(t: TFunction, id: string): string {
   return t(`azkar.categories.${id}` as never);
 }
 
-/** Every (scope, period) progress summary. Session rows and the continue card read it; it is live. */
+/**
+ * Every (scope, period) progress summary. Session rows and the continue card read it; it is live. All consumers share one
+ * query and one change listener (`progress-summary-store.ts`), so Home's four consumers cost one read.
+ */
 export function useAzkarProgressSummaries(): ScopeSummary[] {
-  const { db } = openUserDb();
-  const { data } = useLiveQuery(liveProgressSummaryQuery(db));
-  return useMemo(
-    () =>
-      data.map((row) => ({
-        scopeKey: row.scopeKey,
-        periodKey: row.periodKey,
-        completedUnits: Number(row.completedUnits),
-        updatedAt: row.updatedAt ?? 0,
-      })),
-    [data],
-  );
+  return useSyncExternalStore(azkarProgressSummaries.subscribe, azkarProgressSummaries.getSnapshot);
 }
 
 /** One category by id, or undefined. Re-reads when the catalogue changes. */
@@ -221,12 +244,15 @@ export function useContinueAzkar(locale: Locale): { scope: ResolvedAzkarScope; c
   const revision = useContentRevision();
   const { executor } = openContentDb();
   const summaries = useAzkarProgressSummaries();
+  const now = new Date();
+  const clock = periodClock(now);
 
-  // `revision` is not read in the body, but a catalogue change must rebuild the resolver.
+  // `revision` is not read in the body, but a catalogue change must rebuild the resolver. `clock` does the same at
+  // midnight (and noon), so a period that rolled over is resolved again.
   const resolve = useMemo(
-    () => resolveAzkarScope(executor, locale, new Date()),
+    () => resolveAzkarScope(executor, locale, now),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [executor, locale, revision],
+    [executor, locale, revision, clock],
   );
   const picked = useMemo(() => pickLastActiveScope(summaries, resolve), [resolve, summaries]);
 
@@ -263,6 +289,8 @@ export function useSessionCategoryProgress(locale: Locale): SessionCategoryProgr
   const { t } = useTranslation();
   const categories = useAzkarCategories(locale);
   const summaries = useAzkarProgressSummaries();
+  const now = new Date();
+  const clock = periodClock(now);
 
   return useMemo(
     () =>
@@ -271,10 +299,11 @@ export function useSessionCategoryProgress(locale: Locale): SessionCategoryProgr
         .map((category) => ({
           id: category.id,
           title: categoryLabel(t, category.id),
-          ...categoryPeriodProgress(category, summaries, new Date()),
+          ...categoryPeriodProgress(category, summaries, now),
         })),
-    // `t` changes with the language, so the labels follow it.
-    [categories, summaries, t],
+    // `t` changes with the language, so the labels follow it. `clock` re-reads today's period after midnight.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [categories, summaries, t, clock],
   );
 }
 
@@ -296,12 +325,14 @@ export function useRecentAzkarItems(locale: Locale): RecentAzkarItem[] {
   const revision = useContentRevision();
   const scopes = useRecentScopes();
   const summaries = useAzkarProgressSummaries();
+  const now = new Date();
+  const clock = periodClock(now);
 
   return useMemo(
     () =>
       readOr<RecentAzkarItem[]>([], () => {
         const { executor } = openContentDb();
-        const resolve = resolveAzkarScope(executor, locale, new Date());
+        const resolve = resolveAzkarScope(executor, locale, now);
         return buildRecentAzkarEntries(scopes, resolve, summaries).map((entry) => {
           const { scope } = entry;
           const title = scope.categoryId
@@ -322,8 +353,8 @@ export function useRecentAzkarItems(locale: Locale): RecentAzkarItem[] {
           };
         });
       }),
-    // `t` changes with the language, so the labels follow it.
+    // `t` changes with the language, so the labels follow it. `clock` resolves the periods again after midnight.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [locale, revision, scopes, summaries, t],
+    [locale, revision, scopes, summaries, t, clock],
   );
 }

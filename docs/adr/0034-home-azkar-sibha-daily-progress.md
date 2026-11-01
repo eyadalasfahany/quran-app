@@ -61,3 +61,15 @@ How the decisions above were finally built. Where a note narrows or fills a gap 
 - **Recent Azkar rows.** A completed scope shows «· مكتملة» after its count. The frame's «· اليوم» suffix on in-progress daily rows is not implemented; it has no rule in this ADR.
 - **Label field.** Empty, it shows the hint «تسمية اختيارية» / "Optional label" with no brackets. The brackets in the frame are placeholder notation, not UI text.
 - **Wird card.** Home shows the Khatma wird card only while the wird is not a tracked daily goal. When the wird goal is on, the progress row is the only wird display, so the wird is never shown twice.
+
+### Misbaha rounds and no limit (developer, 1 Nov 2026)
+
+This amends the «Misbaha target» note above: there is now an explicit «بلا حد» (no limit) chip, not only a toggle back to none.
+
+- **No limit.** The «بلا حد» chip follows «مخصص». No target is the stored state: the count only grows, the ring stays empty and no round is counted. Pressing the active preset clears the target to «بلا حد», as before. The choice persists with the other target values.
+- **Rounds.** With a target, reaching it completes a round: a success haptic, `rounds` goes up by one (saved in the counter's MMKV value), the count returns to zero and counting continues in the same session. The test is `count >= target`, so a count already past a lowered target completes a round on the next tap. The rounds show as a «الدورة ٢» pill above the count, hidden at zero.
+- **Daily total.** Every tap still counts toward today's total. A completed round does not change it.
+- **Reset.** Clears the count and the rounds. The daily total, the target and the label stay. The confirmation says so (ar.json and en.json, `sibha.resetBody`).
+- **Changing the target** (a preset, the custom sheet or «بلا حد») starts the rounds again at zero and keeps the count.
+- **In-app confirmations (developer, 1 Nov 2026).** `ConfirmDialog` (`src/shared/ui`) replaces `Alert.alert` for in-app confirmations: the misbaha reset, the permission notices (with «فتح الإعدادات» through `Linking.openSettings`), the reminder limit notice, removing Azkar and reciter downloads, ending a Khatma and clearing local data. The OS permission prompts are unchanged. Salah's bell alert (`features/salah/hooks`) still uses `Alert` because Salah was out of this change; it is a follow-up.
+- **Frames (await developer approval).** `Sibha` and `SibhaDark` show the rounds pill and the «بلا حد» chip. The new `SibhaResetDialog` frame and the `ConfirmDialog` component in `quran-app-design-system.html` are drawn from tokens and await approval.

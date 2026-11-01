@@ -1,5 +1,14 @@
 import { makeUnit } from '../../../jest/azkar-ui-fixtures';
-import { allUnitsDone, completedUnitKeys, readerProgress, referenceNumber, resolveReaderPosition, showsCounter } from './reader-model';
+import {
+  allUnitsDone,
+  completedUnitKeys,
+  moveDirection,
+  nextUnitIndex,
+  readerProgress,
+  referenceNumber,
+  resolveReaderPosition,
+  showsCounter,
+} from './reader-model';
 
 describe('allUnitsDone', () => {
   it('is true only when every unit is complete, and false for an empty session', () => {
@@ -73,13 +82,51 @@ describe('referenceNumber', () => {
 });
 
 describe('showsCounter', () => {
-  it('shows the counter only for a sourced count above 1', () => {
+  it('is a repetition line for a sourced count above 1 only', () => {
     expect(showsCounter(3)).toBe(true);
     expect(showsCounter(2)).toBe(true);
-    // A count of 1 is one recitation: the reader shows «تم», never «١ من ١».
+    // A count of 1 is one recitation: it has no repetition line (the ring itself still shows, ADR 0031 §6).
     expect(showsCounter(1)).toBe(false);
-    // No sourced count is never a counter (it is not defaulted to 1).
+    // No sourced count is never a repetition line (it is not defaulted to 1).
     expect(showsCounter(null)).toBe(false);
     expect(showsCounter(0)).toBe(false);
+  });
+});
+
+describe('nextUnitIndex', () => {
+  it('moves to the next unit that is not done', () => {
+    expect(nextUnitIndex(units, new Set(['a']), 0)).toBe(1);
+    expect(nextUnitIndex(units, new Set(['a', 'b']), 0)).toBe(2);
+  });
+
+  it('skips finished units ahead, so the reader never lands on one', () => {
+    expect(nextUnitIndex(units, new Set(['b']), 0)).toBe(2);
+  });
+
+  it('wraps to the first unit not done when none ahead is open', () => {
+    // The last incomplete unit is the one just finished: the reader resumes at the earlier open unit.
+    expect(nextUnitIndex(units, new Set(['b', 'c']), 2)).toBe(0);
+  });
+
+  it('goes to the last unit once every unit is done, so «إتمام» shows there', () => {
+    expect(nextUnitIndex(units, new Set(['a', 'b', 'c']), 0)).toBe(2);
+    // While one unit is still open, the reader goes to that one instead.
+    expect(nextUnitIndex(units, new Set(['b', 'c']), 0)).toBe(0);
+  });
+
+  it('stays on the last unit when it is the only one left', () => {
+    expect(nextUnitIndex(units, new Set(['a', 'b', 'c']), 2)).toBe(2);
+  });
+
+  it('is 0 for an empty session', () => {
+    expect(nextUnitIndex([], new Set(), 0)).toBe(0);
+  });
+});
+
+describe('moveDirection', () => {
+  it('is forward for a move to a later unit or the same one, and back for an earlier one', () => {
+    expect(moveDirection(0, 1)).toBe(1);
+    expect(moveDirection(2, 2)).toBe(1);
+    expect(moveDirection(2, 0)).toBe(-1);
   });
 });

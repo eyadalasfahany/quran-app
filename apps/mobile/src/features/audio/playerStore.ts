@@ -13,7 +13,11 @@ export type PlayerErrorCode =
   | 'load-failed'
   | 'not-found'
   | 'invalid-chapter'
-  | 'invalid-verse';
+  | 'invalid-verse'
+  /** Not downloaded and the device is offline: the stream cannot start. */
+  | 'offline'
+  /** Downloaded, but not verified in the last 7 days, and the device is offline (the licence rule). */
+  | 'verify-required';
 
 export type PlayerState = {
   reciterId: number | null;

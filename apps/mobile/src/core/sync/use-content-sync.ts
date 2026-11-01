@@ -4,10 +4,14 @@ import { AppState } from 'react-native';
 import { useContentDb } from '@/core/db/content/open';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
+import { withDeadline } from '../api/request-timeout';
 import { markSyncSettled } from './catalog-version';
 import { runDeviceContentSync } from './device-sync';
 
 export const CONTENT_SYNC_FOREGROUND_MS = 6 * 60 * 60 * 1000;
+// A run that has not finished by now is given up on, so the next foreground sync can start. The run itself is not
+// cancelled (syncContent takes no signal yet), so it may still finish in the background.
+export const CONTENT_SYNC_RUN_TIMEOUT_MS = 10 * 60 * 1000;
 
 type SyncRun = () => Promise<unknown>;
 
@@ -33,8 +37,7 @@ export function createContentSyncScheduler(run: SyncRun, now: () => number = Dat
       return;
     }
     running = true;
-    void Promise.resolve()
-      .then(run)
+    void withDeadline(Promise.resolve().then(run), CONTENT_SYNC_RUN_TIMEOUT_MS)
       .then(() => {
         storage.set(storageKeys.contentLastSyncAt, String(now()));
       })

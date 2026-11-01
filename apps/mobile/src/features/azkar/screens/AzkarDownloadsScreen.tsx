@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { Button, Card, EmptyState, Screen } from '@/shared/ui';
+import { Button, Card, ConfirmDialog, EmptyState, Screen } from '@/shared/ui';
 
 import { NoAudioDownloadPort, type AzkarDownloadPort } from '../audio/downloads';
 import { useAzkarDownloads } from '../audio/hooks';
@@ -31,12 +32,11 @@ export function AzkarDownloadsScreen({
   const downloads = useAzkarDownloads(port);
   const { entries } = downloads;
 
+  const [removeOpen, setRemoveOpen] = useState(false);
+
   // «حذف الكل» asks first: the removal cannot be undone from this screen.
   const confirmRemoveAll = () => {
-    Alert.alert(t('azkar.downloads.removeAllTitle'), t('azkar.downloads.removeAllBody'), [
-      { text: t('azkar.downloads.removeAllCancel'), style: 'cancel' },
-      { text: t('azkar.downloads.removeAllConfirm'), style: 'destructive', onPress: downloads.removeAll },
-    ]);
+    setRemoveOpen(true);
   };
 
   return (
@@ -74,6 +74,20 @@ export function AzkarDownloadsScreen({
           )}
         </View>
       </ContentColumn>
+      <ConfirmDialog
+        cancelLabel={t('azkar.downloads.removeAllCancel')}
+        confirmLabel={t('azkar.downloads.removeAllConfirm')}
+        destructive
+        message={t('azkar.downloads.removeAllBody')}
+        onCancel={() => setRemoveOpen(false)}
+        onConfirm={() => {
+          setRemoveOpen(false);
+          downloads.removeAll();
+        }}
+        testID="azkar-downloads-remove-dialog"
+        title={t('azkar.downloads.removeAllTitle')}
+        visible={removeOpen}
+      />
     </Screen>
   );
 }

@@ -6,6 +6,7 @@ import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import {
   CONTENT_SYNC_FOREGROUND_MS,
+  CONTENT_SYNC_RUN_TIMEOUT_MS,
   createContentSyncScheduler,
   shouldSyncOnForeground,
   useContentSync,
@@ -104,6 +105,42 @@ describe('content sync trigger', () => {
     await flush();
 
     expect(useCatalogVersion.getState().syncSettled).toBe(true);
+  });
+
+  it('gives up on a hung run after the run timeout, so the next foreground sync can start', async () => {
+    jest.useFakeTimers();
+    try {
+      const now = 90_000_000;
+      let calls = 0;
+      const scheduler = createContentSyncScheduler(() => {
+        calls += 1;
+        // The first run never settles; the second one finishes.
+        return calls === 1 ? new Promise<void>(() => undefined) : Promise.resolve();
+      }, () => now);
+
+      scheduler.start();
+      await flush();
+      expect(calls).toBe(1);
+
+      // Still inside the timeout: a foreground sync is not allowed to start a second run.
+      scheduler.onForeground();
+      await flush();
+      expect(calls).toBe(1);
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(CONTENT_SYNC_RUN_TIMEOUT_MS);
+      });
+      expect(useCatalogVersion.getState().syncSettled).toBe(true);
+
+      storage.remove(storageKeys.contentLastSyncAt);
+      scheduler.onForeground();
+      await flush();
+
+      expect(calls).toBe(2);
+      expect(storage.getString(storageKeys.contentLastSyncAt)).toBe(String(now));
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('marks the catalogue settled even when the run fails, so an empty list is not loading forever', async () => {

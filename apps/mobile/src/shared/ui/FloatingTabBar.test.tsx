@@ -2,18 +2,20 @@ import { within } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
+import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../jest/window-size';
 import { rawColorLiterals } from '../../../jest/ui-source';
 import { themes } from '@/core/theme';
 
 import { FloatingTabBar } from './FloatingTabBar';
 
 let mockBottomInset = 0;
+let mockSideInsets = { left: 0, right: 0 };
 
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
   return {
     ...actual,
-    useSafeAreaInsets: () => ({ bottom: mockBottomInset, left: 0, right: 0, top: 0 }),
+    useSafeAreaInsets: () => ({ bottom: mockBottomInset, left: mockSideInsets.left, right: mockSideInsets.right, top: 0 }),
   };
 });
 
@@ -40,6 +42,21 @@ function bar(hidden = false) {
 describe('FloatingTabBar', () => {
   beforeEach(() => {
     mockBottomInset = 0;
+    mockSideInsets = { left: 0, right: 0 };
+  });
+
+  it('insets the capsule from the leading and trailing edges in LTR', async () => {
+    mockSideInsets = { left: 44, right: 12 };
+    const view = await renderUi(bar(), { locale: 'en' });
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({ end: 16 + 12, start: 16 + 44 });
+  });
+
+  it('mirrors the side insets in RTL, so the notch side is the trailing one', async () => {
+    mockSideInsets = { left: 44, right: 12 };
+    const view = await renderUi(bar(), { locale: 'ar' });
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({ end: 16 + 44, start: 16 + 12 });
   });
 
   it('renders a tablist with its label and the items', async () => {
@@ -119,5 +136,75 @@ describe('FloatingTabBar', () => {
 
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('FloatingTabBar.tsx')).toEqual([]);
+  });
+});
+
+describe('FloatingTabBar as a vertical rail in a short window (ADR 0036)', () => {
+  beforeEach(() => {
+    mockBottomInset = 0;
+    mockSideInsets = { left: 0, right: 0 };
+  });
+
+  afterEach(() => {
+    resetWindowSize();
+  });
+
+  it('draws the rail on the start edge, 12 past the start safe area, and vertically centred', async () => {
+    setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height);
+    mockSideInsets = { left: 44, right: 12 };
+    const view = await renderUi(bar(), { locale: 'en' });
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({
+      justifyContent: 'center',
+      start: 12 + 44,
+      top: 0,
+      bottom: 0,
+    });
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style).end).toBeUndefined();
+  });
+
+  it('mirrors the rail to the right edge in Arabic, where the start edge is the right one', async () => {
+    setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height);
+    mockSideInsets = { left: 44, right: 12 };
+    const view = await renderUi(bar(), { locale: 'ar' });
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({ start: 12 + 12 });
+  });
+
+  it('stacks the items in a column of 76 by 324, the rail size', async () => {
+    setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height);
+    const view = await renderUi(bar());
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({
+      flexDirection: 'column',
+      height: 324,
+      width: 76,
+    });
+  });
+
+  it('shortens the rail to fit a window under 348 high, keeping 12 clear above and below', async () => {
+    setWindowSize(844, 300);
+    const view = await renderUi(bar());
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar').props.style).height).toBe(276);
+  });
+
+  it('keeps the tablist role, its label and every item in the rail', async () => {
+    setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height);
+    const view = await renderUi(bar(), { locale: 'en' });
+
+    const list = view.getByTestId('floating-tab-bar');
+    expect(list.props.accessibilityRole).toBe('tablist');
+    expect(list.props.accessibilityLabel).toBe(labels.ar);
+    expect(within(list).getByText('first')).toBeOnTheScreen();
+    expect(within(list).getByText('second')).toBeOnTheScreen();
+  });
+
+  it('keeps the tall-window bar as a row at the bottom', async () => {
+    setWindowSize(390, 844);
+    const view = await renderUi(bar());
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({ flexDirection: 'row', height: 64 });
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style).bottom).toBe(12);
   });
 });

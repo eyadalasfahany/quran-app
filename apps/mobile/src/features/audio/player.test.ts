@@ -1,5 +1,7 @@
+import { getNetworkStateAsync } from 'expo-network';
 import { AppState } from 'react-native';
 
+import { resetNetworkStateForTests, startNetworkWatch, useNetworkStatus } from '@/core/network/network-state';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
@@ -1221,5 +1223,116 @@ describe('playing downloaded surahs', () => {
     await playChapter(1);
 
     expect(sourcesOfLastPlaylist()[0]).toEqual({ uri: 'https://example.test/1.mp3' });
+  });
+});
+
+describe('offline gate', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const LOCAL_1 = 'file:///documents/audio/30/1.mp3';
+  const ONLINE = { isConnected: true, isInternetReachable: true, type: 'WIFI' } as Awaited<ReturnType<typeof getNetworkStateAsync>>;
+  const OFFLINE = { isConnected: false, isInternetReachable: false, type: 'NONE' } as Awaited<ReturnType<typeof getNetworkStateAsync>>;
+
+  /** Makes the next network read answer, then waits for it, so the gate sees that state. */
+  async function network(state: Awaited<ReturnType<typeof getNetworkStateAsync>>): Promise<void> {
+    jest.mocked(getNetworkStateAsync).mockResolvedValueOnce(state);
+    resetNetworkStateForTests();
+    startNetworkWatch();
+    await flush();
+  }
+
+  function download(overrides: Partial<DownloadRow>): void {
+    upsertDownload(
+      {
+        audioFileId: 100,
+        reciterResourceId: 30,
+        chapterId: 1,
+        audioUrl: 'https://example.test/1.mp3',
+        sourceSizeBytes: null,
+        localPath: 'audio/30/1.mp3',
+        sizeBytes: 5000,
+        status: 'done',
+        progress: 1,
+        resumeData: null,
+        downloadedAt: Date.now(),
+        verifiedAt: Date.now(),
+        ...overrides,
+      },
+      { db: mockUser.executor ?? undefined },
+    );
+  }
+
+  beforeEach(() => {
+    resetFakeFileSystem();
+    resetNetworkStateForTests();
+  });
+
+  afterEach(() => {
+    resetNetworkStateForTests();
+  });
+
+  it('does not try the stream for a surah that is not downloaded, and says so at once', async () => {
+    await network(OFFLINE);
+
+    await playChapter(2);
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'offline' });
+    expect(audio.createAudioPlaylist).not.toHaveBeenCalled();
+  });
+
+  it('gives the same offline message from an ayah', async () => {
+    await network(OFFLINE);
+
+    await playFromVerse('2:1');
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'offline' });
+  });
+
+  it('plays a surah downloaded and verified within 7 days while offline, from its local file', async () => {
+    download({});
+    putFile(LOCAL_1, 5000);
+    await network(OFFLINE);
+
+    await playChapter(1);
+
+    expect(usePlayerStore.getState().error).toBeNull();
+    expect(audio.createAudioPlaylist.mock.calls.at(-1)?.[0].sources[0]).toEqual({ uri: LOCAL_1 });
+  });
+
+  it('asks for one connection to verify a download older than 7 days, while offline', async () => {
+    download({ verifiedAt: Date.now() - 8 * DAY });
+    putFile(LOCAL_1, 5000);
+    await network(OFFLINE);
+
+    await playChapter(1);
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'verify-required' });
+    expect(audio.createAudioPlaylist).not.toHaveBeenCalled();
+  });
+
+  it('streams a surah older than 7 days while online, as before', async () => {
+    download({ verifiedAt: Date.now() - 8 * DAY });
+    putFile(LOCAL_1, 5000);
+    await network(ONLINE);
+
+    await playChapter(1);
+
+    expect(usePlayerStore.getState().error).toBeNull();
+    expect(audio.createAudioPlaylist.mock.calls.at(-1)?.[0].sources[0]).toEqual({ uri: 'https://example.test/1.mp3' });
+  });
+
+  it('says offline, not a generic load failure, when the network drops while a stream waits to load', async () => {
+    await network(ONLINE);
+    jest.useFakeTimers();
+    try {
+      await playChapter(2);
+      expect(usePlayerStore.getState().status).toBe('loading');
+
+      useNetworkStatus.setState({ online: false });
+      jest.advanceTimersByTime(10_000);
+
+      expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'offline' });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

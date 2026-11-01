@@ -47,3 +47,34 @@ describe('MenuGrid', () => {
     expect(rawColorLiteralsInFeature('src/features/menu/components/MenuGrid.tsx')).toEqual([]);
   });
 });
+
+describe('MenuGrid columns (ADR 0036)', () => {
+  it('deals the children across three columns when asked for three', async () => {
+    await renderUi(
+      <MenuGrid columns={3}>
+        {names.map((name) => (
+          <Text key={name}>{name}</Text>
+        ))}
+      </MenuGrid>,
+    );
+
+    expect(within(screen.getByTestId('menu-grid-column-0')).getByText('one')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('menu-grid-column-0')).getByText('four')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('menu-grid-column-1')).getByText('two')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('menu-grid-column-1')).getByText('five')).toBeOnTheScreen();
+    expect(within(screen.getByTestId('menu-grid-column-2')).getByText('three')).toBeOnTheScreen();
+    expect(screen.queryByTestId('menu-grid-column-3')).toBeNull();
+  });
+
+  it('keeps two columns by default, as on a phone', async () => {
+    await renderUi(
+      <MenuGrid>
+        {names.map((name) => (
+          <Text key={name}>{name}</Text>
+        ))}
+      </MenuGrid>,
+    );
+
+    expect(screen.queryByTestId('menu-grid-column-2')).toBeNull();
+  });
+});

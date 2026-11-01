@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, TextInput, View } from 'react-native';
 
 import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
@@ -51,6 +51,12 @@ export function SibhaCustomTargetSheet({
 
   return (
     <Modal animationType="fade" onRequestClose={onClose} statusBarTranslucent transparent visible={visible}>
+      {/* The card rises with the keyboard, so the number field stays in view on a short window (ADR 0036). */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        testID={`${testID}-keyboard`}
+      >
       <View style={{ flex: 1, justifyContent: 'center', padding: theme.space[5] }} testID={testID}>
         <Pressable
           accessibilityLabel={t('sibha.close')}
@@ -110,6 +116,7 @@ export function SibhaCustomTargetSheet({
           <Button label={t('common.cancel')} onPress={onClose} stretch testID={`${testID}-cancel`} variant="ghost" />
         </View>
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

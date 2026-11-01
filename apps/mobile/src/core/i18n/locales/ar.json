@@ -143,12 +143,23 @@
       "waitingWifi": "بانتظار Wi-Fi",
       "paused": "متوقف",
       "delete": "حذف التنزيل",
-      "play": "تشغيل"
+      "play": "تشغيل",
+      "offline": "غير متاح دون اتصال"
     },
     "empty": {
       "title": "لا يوجد قارئ مطابق",
       "body": "جرّب اسمًا آخر، أو امسح البحث."
+    },
+    "catalogue": {
+      "title": "اتصل مرة لتحميل القرّاء",
+      "body": "بعد أول اتصال تبقى قائمة القرّاء على جهازك."
     }
+  },
+  "network": {
+    "offlineBanner": "أنت غير متصل. المصحف والتلاوات المحمّلة تعمل كالمعتاد.",
+    "needsInternet": "يتطلب اتصالًا بالإنترنت",
+    "verifyDownloads": "اتصل مرة للتحقق من التنزيلات",
+    "staleContent": "اتصل لتحديث المحتوى"
   },
   "nav": {
     "main": "التنقل الرئيسي"
@@ -163,7 +174,8 @@
       "placeholderTitle": "هذه الصفحة غير جاهزة",
       "placeholderBody": "اتصل بالإنترنت لتحميل هذه الصفحة.",
       "missingLayoutBody": "لم تُثبَّت هذه الصفحة بعد. يمكنك قراءة الآية نفسها في وضع القراءة.",
-      "switchToReading": "اقرأ في وضع القراءة"
+      "switchToReading": "اقرأ في وضع القراءة",
+      "retry": "إعادة المحاولة"
     },
     "sources": {
       "title": "المصادر",
@@ -372,7 +384,14 @@
       "label": "نطاق البحث",
       "quran": "القرآن",
       "azkar": "الأذكار"
-    }
+    },
+    "placeholderAzkar": "ابحث في الأذكار",
+    "hintAzkar": "ابحث بكلمة من الذكر أو باسم الباب",
+    "azkarIdleHint": "ابحث بالكلمة أو بجزء منها، وستظهر الأبواب والأذكار التي تطابقها.",
+    "azkarChaptersHeading": "الأبواب",
+    "azkarEntriesHeading": "الأذكار",
+    "azkarNoResultsTitle": "لا توجد نتائج مطابقة",
+    "azkarNoResultsSuggestion": "جرّب كلمة أخرى."
   },
   "ui": {
     "loading": "جارٍ التحميل",
@@ -569,7 +588,9 @@
       "loadFailed": "تعذّر تشغيل الملف الصوتي. حاول مرة أخرى.",
       "notFound": "الملف الصوتي غير متوفر الآن.",
       "invalidChapter": "هذه السورة غير متاحة.",
-      "invalidVerse": "هذه الآية غير متاحة."
+      "invalidVerse": "هذه الآية غير متاحة.",
+      "offline": "غير متاح دون اتصال. حمّل السورة لتسمعها بدون إنترنت.",
+      "verifyRequired": "اتصل مرة للتحقق من التنزيلات"
     }
   },
   "khatma": {
@@ -764,6 +785,8 @@
       "label": "عداد الذكر {{position}}",
       "value": "{{current}} من {{total}}",
       "hint": "اضغط للعدّ",
+      "doneLabel": "وضع علامة «تم»",
+      "doneHint": "اضغط للإتمام",
       "reset": "إعادة الضبط"
     },
     "details": {
@@ -893,7 +916,7 @@
     "close": "إغلاق",
     "reset": "إعادة الضبط",
     "resetTitle": "إعادة ضبط العداد؟",
-    "resetBody": "يعود العداد إلى صفر. لا يتأثر مجموع اليوم.",
+    "resetBody": "يعود العداد والدورات إلى صفر. لا يتأثر مجموع اليوم.",
     "resetConfirm": "إعادة الضبط",
     "label": "تسمية اختيارية",
     "labelA11y": "تسمية اختيارية",
@@ -904,13 +927,16 @@
       "hint": "اضغط للعدّ",
       "value": "{{current}} من {{total}}",
       "plain": "{{current}}",
-      "ofTarget": "من {{total}}"
+      "ofTarget": "من {{total}}",
+      "valueRound": "{{current}} من {{total}}، الدورة {{round}}"
     },
     "hint": "اضغط في أي مكان للعدّ",
     "customTitle": "هدف مخصص",
     "customBody": "أدخل عددًا من ١ إلى ٩٩٩٩",
     "customField": "عدد التسبيحات",
-    "customSave": "حفظ"
+    "customSave": "حفظ",
+    "targetNone": "بلا حد",
+    "rounds": "الدورة {{round}}"
   },
   "dailyGoals": {
     "title": "أهدافي اليومية",

@@ -294,6 +294,34 @@ describe('installResource', () => {
     });
   });
 
+  it('passes the cancel signal to the manifest request, so a cancelled install stops waiting on the network', async () => {
+    const entry = resource({ id: 86, pack: { url: '/api/v1/content/packs/86/1', size_bytes: 1, sha256: 'abc' } });
+    const seen: (AbortSignal | undefined)[] = [];
+    const api: ContentApi = {
+      // Like the real request: it waits, and rejects when the caller's signal aborts.
+      getManifest: (_etag, signal) => {
+        seen.push(signal);
+        return new Promise((_resolve, reject) => {
+          signal?.addEventListener('abort', () => reject(new Error('aborted')));
+        });
+      },
+      getChanges: async () => {
+        throw new Error('changes');
+      },
+      downloadPack: serveFrom(new Map()),
+    };
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const controller = new AbortController();
+      const pending = installResourceWith(installDeps(executor, cacheDir, api), 86, { signal: controller.signal });
+      await Promise.resolve();
+      controller.abort();
+
+      await expect(pending).resolves.toEqual({ status: 'cancelled' });
+      expect(seen[0]).toBe(controller.signal);
+    });
+  });
+
   it('shares one promise between concurrent calls for the same resource', async () => {
     const bytes = gzipPack(85, [{ groupTafsirId: 1, html: EXACT }]);
     const entry = resource({ id: 85, pack: { url: '/api/v1/content/packs/85/1', size_bytes: bytes.byteLength, sha256: await sha256(bytes) } });

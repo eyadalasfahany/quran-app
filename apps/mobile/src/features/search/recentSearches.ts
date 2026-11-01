@@ -37,3 +37,8 @@ export function removeRecentSearch(query: string): string[] {
   storage.set(storageKeys.searchRecentQueries, JSON.stringify(next));
   return next;
 }
+
+export function clearRecentSearches(): string[] {
+  storage.remove(storageKeys.searchRecentQueries);
+  return [];
+}

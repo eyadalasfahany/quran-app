@@ -1,12 +1,11 @@
+import { memo } from 'react';
 import { View } from 'react-native';
 
 import { displayText, ORNATE_CLOSE, ORNATE_OPEN, QuranText, UiText } from '@/shared/ui';
 import { useTheme } from '@/core/theme';
 
 import type { AzkarSegment } from '../data/model';
-
-/** Resolves a `quran` segment to its verse text (`verses.text_uthmani`, joined). Empty when it does not resolve. */
-export type QuranSegmentText = (segment: AzkarSegment) => string;
+import { quranSegmentKey } from '../data/quran-segments';
 
 type Block = { kind: 'text'; text: string } | { kind: 'quran'; segment: AzkarSegment };
 
@@ -34,16 +33,20 @@ export function dhikrBlocks(segments: readonly AzkarSegment[]): Block[] {
 /**
  * A unit's Arabic segments in order. Text uses the `dhikr` display token; Quran uses the Quran font through
  * `QuranText`, never the dhikr font. Both scale with the reader's text size. Text never truncates.
+ *
+ * The Quran is resolved by the caller (`resolveQuranVerses`, once per unit) and passed in as `quranVerses`, keyed by
+ * `quranSegmentKey`. Nothing here reads the database, so a re-render costs no SQL. Memoised: the reader re-renders on
+ * every tap, and the unit's text does not change with it.
  */
-export function DhikrText({
+export const DhikrText = memo(function DhikrText({
   segments,
   fontScale = 1,
-  resolveQuran,
+  quranVerses,
   testID = 'azkar-dhikr-text',
 }: {
   segments: readonly AzkarSegment[];
   fontScale?: number;
-  resolveQuran: QuranSegmentText;
+  quranVerses: ReadonlyMap<string, readonly string[]>;
   testID?: string;
 }) {
   const theme = useTheme();
@@ -59,7 +62,7 @@ export function DhikrText({
             </UiText>
           );
         }
-        const verses = resolveQuran(block.segment);
+        const verses = (quranVerses.get(quranSegmentKey(block.segment)) ?? []).join(' ');
         if (verses.length === 0) {
           return null;
         }
@@ -71,4 +74,4 @@ export function DhikrText({
       })}
     </View>
   );
-}
+});

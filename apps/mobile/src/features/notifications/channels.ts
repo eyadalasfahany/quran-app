@@ -35,6 +35,8 @@ export async function ensureNotificationChannel(id: NotificationChannelId): Prom
   }
   await Notifications.setNotificationChannelAsync(id, {
     name: i18n.t(CHANNEL_NAME_KEYS[id]),
-    importance: AndroidImportance.DEFAULT,
+    // HIGH lets a reminder show as a heads-up pop-up. Android fixes a channel's importance at creation, so an
+    // install that already has this channel keeps its old importance until the channel gets a new id.
+    importance: AndroidImportance.HIGH,
   });
 }

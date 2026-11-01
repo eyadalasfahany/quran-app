@@ -1,7 +1,5 @@
 import * as Notifications from 'expo-notifications';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
-import { Alert, Linking } from 'react-native';
-
 import { i18n } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
@@ -12,8 +10,6 @@ describe('useBell', () => {
     storage.clearAll();
     jest.clearAllMocks();
     await i18n.changeLanguage('ar');
-    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-    jest.spyOn(Linking, 'openSettings').mockImplementation(() => Promise.resolve());
   });
 
   it('starts off, with nothing pre-enabled', async () => {
@@ -39,10 +35,10 @@ describe('useBell', () => {
 
     expect(storage.getBoolean(storageKeys.salah.bellDhuhr)).toBe(true);
     expect(result.current.enabled).toBe(true);
-    expect(Alert.alert).not.toHaveBeenCalled();
+    expect(result.current.permissionDenied).toBe(false);
   });
 
-  it('when permission is denied the toggle stays off and the guidance alert is shown', async () => {
+  it('when permission is denied the toggle stays off and the caller is told to show the dialog', async () => {
     jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
     jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
     const { result } = await renderHook(() => useBell('asr'));
@@ -53,16 +49,25 @@ describe('useBell', () => {
 
     expect(result.current.enabled).toBe(false);
     expect(storage.getBoolean(storageKeys.salah.bellAsr)).toBeUndefined();
-    expect(Alert.alert).toHaveBeenCalledTimes(1);
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'لا يمكن إرسال التذكيرات',
-      expect.any(String),
-      expect.any(Array),
-    );
+    expect(result.current.permissionDenied).toBe(true);
+  });
 
-    const buttons = jest.mocked(Alert.alert).mock.calls[0]?.[2] ?? [];
-    buttons.find((button) => button.style !== 'cancel')?.onPress?.();
-    expect(Linking.openSettings).toHaveBeenCalledTimes(1);
+  it('dismissing the dialog clears the denial without touching the bell', async () => {
+    jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+    const { result } = await renderHook(() => useBell('isha'));
+
+    await act(async () => {
+      await result.current.setEnabled(true);
+    });
+    expect(result.current.permissionDenied).toBe(true);
+
+    await act(async () => {
+      result.current.dismissPermissionDenied();
+    });
+
+    expect(result.current.permissionDenied).toBe(false);
+    expect(result.current.enabled).toBe(false);
   });
 
   it('toggle flips the stored bell both ways', async () => {

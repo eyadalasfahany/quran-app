@@ -11,14 +11,9 @@ import { getVerseByKey } from '@/features/reader/data/verses';
 import { planProgress, toLocalDateString, useActivePlan, usePlanLogs } from '@/features/khatma/data';
 import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { qiblaBearing } from '@/features/salah/data/prayer-times';
-import { useNextPrayer, useNow, usePrayerLocation, useTodayTimes } from '@/features/salah/hooks';
-
-import { prayerClock } from '@/core/i18n/clock';
-import { minutesUntil, remainingLabel } from '@/core/i18n/durations';
+import { usePrayerLocation } from '@/features/salah/hooks';
 
 export type MenuPreviews = {
-  prayerTitle: string;
-  prayerPreview: string;
   qiblaPreview: string;
   /** Null without an active plan: the Khatma card then shows no preview line. */
   khatmaPreview: string | null;
@@ -26,26 +21,24 @@ export type MenuPreviews = {
   continueReading: { title: string; preview: string; href: Href } | null;
 };
 
-// A minute tick is enough: the menu only shows minutes, and the Salah screen keeps the second-by-second countdown.
-const MENU_TICK_MS = 60_000;
-
-/** Live previews for the menu cards. Every string is localised here, so the screen only places them. */
+/**
+ * Live previews for the menu cards. Every string is localised here, so the screen only places them. The prayer card has
+ * its own minute clock (`MenuSalahCard`), so this hook keeps no timer and the menu does not re-render each minute.
+ */
 export function useMenuPreviews(): MenuPreviews {
   const { t } = useTranslation();
   const locale = useLocale();
-  const now = useNow(MENU_TICK_MS);
 
-  // Prayer and Qibla (read-only use of the Salah hooks).
+  // Qibla: the bearing from the saved or GPS location (read-only use of the Salah hooks).
   const { coords } = usePrayerLocation();
-  const times = useTodayTimes(coords, now);
-  const next = useNextPrayer(times, coords, now);
   const bearing = useMemo(() => (coords ? qiblaBearing(coords) : null), [coords]);
 
   // Khatma: today's day of the active plan.
   const { ready } = useContentDb();
   const activePlan = useActivePlan().data[0] ?? null;
   const planLogs = usePlanLogs(activePlan?.id);
-  const today = toLocalDateString(now);
+  // Read on each render: the day rolls over on the next render after midnight (as `useHomeWird` does).
+  const today = toLocalDateString(new Date());
   const khatmaPreview = useMemo(() => {
     if (activePlan === null || !ready) {
       return null;
@@ -92,20 +85,7 @@ export function useMenuPreviews(): MenuPreviews {
     }
   }, [hasSavedPosition, ready, savedVerseKey, locale, t]);
 
-  if (next === null || coords === null) {
-    return {
-      prayerTitle: t('menu.salah.title'),
-      prayerPreview: t('menu.salah.noLocation'),
-      qiblaPreview: t('menu.qibla.noLocation'),
-      khatmaPreview,
-      continueReading,
-    };
-  }
-
-  const remaining = remainingLabel(minutesUntil(next.time, now), locale, t);
   return {
-    prayerTitle: t(`home.salah.${next.name}`),
-    prayerPreview: t('menu.salah.preview', { remaining, time: prayerClock(next.time, locale) }),
     qiblaPreview:
       bearing === null
         ? t('menu.qibla.noLocation')

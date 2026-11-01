@@ -8,12 +8,12 @@ import { isPresetTarget, SIBHA_TARGET_PRESETS } from '../data/model';
 
 import { SibhaTargetChip } from './SibhaTargetChip';
 
-/** A chip's value: a preset target, or `custom` for the number sheet. */
-export type SibhaChoice = number | 'custom';
+/** A chip's value: a preset target, `custom` for the number sheet, or `none` for no limit («بلا حد»). */
+export type SibhaChoice = number | 'custom' | 'none';
 
 /**
- * The target row (quran-app-screens.html, #Sibha): 33, 99, 100 and «مخصص». The chips sit in content order, so the first
- * preset is at the reading start. A custom target selects the custom chip.
+ * The target row (quran-app-screens.html, #Sibha): 33, 99, 100, «مخصص» and «بلا حد». The chips sit in content order, so
+ * the first preset is at the reading start. No target (null) selects «بلا حد», and a custom target selects «مخصص».
  */
 export function SibhaTargetChips({
   target,
@@ -50,6 +50,12 @@ export function SibhaTargetChips({
         onPress={() => onChoose('custom')}
         selected={customSelected}
         testID={`${testID}-custom`}
+      />
+      <SibhaTargetChip
+        label={t('sibha.targetNone')}
+        onPress={() => onChoose('none')}
+        selected={target === null}
+        testID={`${testID}-none`}
       />
     </View>
   );

@@ -234,15 +234,15 @@ apps/mobile/
 
 **Responsive layout (phones, iPad, foldables)**
 
-Layout is driven by the window's width class from `useWindowDimensions`, never by `Platform.isPad` or the device model. iPad Split View at one third, a folded phone and a phone in portrait all get the compact layout; an unfolded foldable or an iPad in landscape gets the expanded one.
+Layout is driven by the window's size from `useWindowDimensions`, never by `Platform.isPad` or the device model. iPad Split View at one third, a folded phone and a phone in portrait all get the compact layout; an unfolded foldable or an iPad in landscape gets the expanded one. A short window (under 480 pt high) is a landscape phone: it keeps the compact layout with the bottom tab bar, whatever its width (ADR 0036). The sidebar needs a window that is both wide and not short.
 
 | Window class | Width (dp/pt) | Typical cases | Navigation | Reader | Ayah actions and tafsir | Player |
 | --- | --- | --- | --- | --- | --- | --- |
-| Compact | under 600 | Phones, folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs | Full width | Bottom sheets (mid 50% and full detents, ADR 0020) | Mini-player bar, full-screen player |
+| Compact | under 600, or any window under 480 high | Phones, phones in landscape (ADR 0036), folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs; a vertical tab rail on the start edge in a short window (ADR 0036) | Full width | Bottom sheets (mid 50% and full detents, ADR 0020) | Mini-player bar, full-screen player |
 | Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (a 560-wide card, ADR 0013, with the same detents) | Mini-player bar, full-screen player |
-| Expanded | 840 and up | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | Sidebar | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player in the sidebar footer; full player as a modal |
+| Expanded | 840 and up, and 480 or taller | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | Sidebar | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player in the sidebar footer; full player as a modal |
 
-- **`useWindowClass()`** returns `compact | medium | expanded` with a small hysteresis (±16) so a resize near a boundary doesn't flicker.
+- **`useWindowClass()`** returns `compact | medium | expanded`. The width classes keep a small hysteresis (±16) so a resize near a boundary doesn't flicker. A window under 480 pt high is compact whatever its width (ADR 0036). **`useWidthClass()`** returns the width class alone, for the sheet card and the menu columns, which a landscape phone still gets wide. **`useIsShortWindow()`** reports the height rule for the Qibla dial and the misbaha ring, which reflow beside their text.
 - **`AdaptiveSplit`** renders one pane in compact and medium, and two panes in expanded. The ayah and tafsir routes render into the side pane when it exists and as sheets otherwise, so the routes don't change between form factors.
 - **Reading column width:** Reading and Focus modes cap the Quran text column at about 720 pt and center it; long Arabic lines on a 13-inch iPad are hard to track.
 - **Mushaf page sizing:** page-exact mode keeps 15 lines per page. Page width is `min(window width − gutters, 600)` (the tablet frames, ADR 0013) and the QCF font size is derived from that width, so a page never re-wraps; wide windows show the page centered with margin, not stretched.
@@ -679,7 +679,7 @@ For each change, in one transaction per request:
 **Azkar (`features/azkar`, ADR 0031)**
 
 - **Reading:** a calm focused reader, one item at a time, with the category progress bar above it. The Arabic is set in the display face (Amiri), never in the Quran font. Quran segments render from `content.db.verses` in the Quran font and follow every Quran rule here. Text size follows the azkar size preference (MMKV), on the same stepper pattern as reader settings.
-- **Counter:** a 44 pt+ target; one count per tap with a short guard against double taps; a selection haptic per count and a success haptic on completion; VoiceOver announces «٢ من ٣». With no sourced count, the control is «تم». Reduce Motion drops the fill animation.
+- **Counter:** a 44 pt+ target; one count per tap with a short guard against double taps; a selection haptic per count and a success haptic on completion; VoiceOver announces «٢ من ٣». A count of 1 uses the same counter, and one tap completes it. When the primary source has no count, the import takes the secondary source's count for the same book number (hisnmuslim REPEAT; only while that source is unlocked; ambiguous pairings stay null; the primary wins on conflict; provenance in `azkar_items.required_count_source`, API only; developer, 1 Nov 2026; ADR 0031 §6). With no sourced count, the control is the single ring (an empty ring, a check and «تم», one tap completes; developer, 1 Nov 2026; ADR 0031 §6). Each count bumps the ring with a spring and completion pulses it; Reduce Motion drops the fill and the bump.
 - **Progressive disclosure:** instruction and the book's narration sit beside the text. Explanation, context, virtue, reference and grade open in a details sheet (side panel on expanded), each section shown only when sourced.
 - **Search:** over `azkar_segments.text_search` (text segments only, normalised as `text_search`), category and occasion. Quran segments are searched through `search_quran`, never through copied text.
 - **Share:** the Arabic text (Quran segments resolved from `verses`) and the source line (book and number), with nothing appended.
@@ -802,6 +802,8 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | 5. Salah & Qibla (on-device) | — | adhan-js times, الصلاة tab, local prayer notifications, qibla compass, five-tab navigation (ADR 0030) | Offline: times, qibla and notifications work in airplane mode; frames #Salah/#Qibla verified |
 | 6. Azkar (on-device) | 20–23 | Hisn al-Muslim from a pinned, rights-gated OpenDua pack; Azkar home, category and focused reader with a sourced counter or «تم»; progress, favourites, search, share; sourced notes hidden when empty; category reminders (clock or prayer-relative); audio rights model with no unlicensed audio; Dorar adapter on the API only (ADR 0031) | Offline reader, progress and reminders work in airplane mode; frames verified; **no production content until the ADR 0031 release blockers clear** |
 | 7. Beta and store review | 23–27 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
+
+**Proposed follow-up (not a phase, not approved): widgets and Apple Watch.** Home-screen and lock-screen widgets (iOS, Android) and a watchOS companion app with complications, fed by one local snapshot written by the app; the watch never calls the API. ADR 0035 (proposed) holds the decision and the decisions that need the developer; the plan is `docs/plans/widgets-watch.md`. Nothing in the current phase changes. Default placement is v1.1, because the iOS and watch targets compile only on a Mac or EAS.
 
 **Cut lines**
 

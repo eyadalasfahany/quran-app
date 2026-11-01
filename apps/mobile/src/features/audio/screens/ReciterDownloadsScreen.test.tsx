@@ -1,6 +1,5 @@
 import { cleanup, fireEvent } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
-import { Alert } from 'react-native';
 
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
@@ -17,6 +16,9 @@ import { openAudioTestDb } from '../data/test-db';
 import { resetAudioSettingsStore } from '../settings';
 
 import { ReciterDownloadsScreen } from './ReciterDownloadsScreen';
+
+// The confirmation fades in, so until its animation ends its elements count as hidden to the query.
+const SHOWN = { includeHiddenElements: true } as const;
 
 const mockContent: { executor: SqlExecutor | null } = { executor: null };
 const mockRows: { value: Partial<DownloadRow>[] } = { value: [] };
@@ -220,7 +222,7 @@ describe('ReciterDownloadsScreen', () => {
     });
 
     it('shows a done surah with its size, plays it from the pill and deletes its file from the trailing button', async () => {
-      mockRows.value = [row(100, 1, { status: 'done', sizeBytes: 5_033_165 })];
+      mockRows.value = [row(100, 1, { status: 'done', sizeBytes: 5_033_165, verifiedAt: Date.now() })];
       const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
 
       expect(view.getByText('٤٫٨ م.ب')).toBeOnTheScreen();
@@ -256,24 +258,27 @@ describe('ReciterDownloadsScreen', () => {
 
     it('asks first with a destructive «حذف» and a «إلغاء», and removes the reciter only on confirm', async () => {
       mockRows.value = [row(100, 1, { status: 'done' })];
-      const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
       const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
 
       await fireEvent.press(view.getByRole('button', { name: 'حذف التنزيلات' }));
 
-      expect(alert).toHaveBeenCalledTimes(1);
-      const call = alert.mock.calls[0];
-      const buttons = call?.[2] ?? [];
-      expect(call?.[0]).toBe('حذف التنزيلات؟');
-      expect(buttons).toEqual([
-        expect.objectContaining({ style: 'cancel', text: 'إلغاء' }),
-        expect.objectContaining({ style: 'destructive', text: 'حذف' }),
-      ]);
+      // The confirmation fades in, so its elements count as hidden to the query until the animation ends.
+      expect(view.getByText('حذف التنزيلات؟', SHOWN)).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: 'إلغاء', ...SHOWN })).toBeOnTheScreen();
       expect(deleteReciter).not.toHaveBeenCalled();
 
-      buttons[1]?.onPress?.();
+      await fireEvent.press(view.getByRole('button', { name: 'حذف', ...SHOWN }));
       expect(deleteReciter).toHaveBeenCalledWith(30);
-      alert.mockRestore();
+    });
+
+    it('keeps the downloads when the removal is cancelled', async () => {
+      mockRows.value = [row(100, 1, { status: 'done' })];
+      const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
+
+      await fireEvent.press(view.getByRole('button', { name: 'حذف التنزيلات' }));
+      await fireEvent.press(view.getByRole('button', { name: 'إلغاء', ...SHOWN }));
+
+      expect(deleteReciter).not.toHaveBeenCalled();
     });
   });
 

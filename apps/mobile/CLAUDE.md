@@ -11,7 +11,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - Colors, spacing, radii and type come from `@quran/design-tokens`, which is transcribed from the HTML design system. No raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
 - Text styles set the per-weight family (`IBMPlexSansArabic-Bold`) and never `fontWeight`; on Android a weight on top of a bold face can fake-bold it.
 - Motion follows spec §12 ("Motion").
-  - Tabs are native components with system motion on iOS. Android draws the floating tab bar from `#Main` with `expo-router/ui` headless tabs (ADR 0033). The full player is a transparent modal with its own slide-up and drag-to-dismiss, built like the reader sheets (developer, 29 Oct 2026). Reader sheets are custom cards in a transparent modal (ADR 0013).
+  - Tabs are native components with system motion on iOS in tall windows. Android draws the floating tab bar from `#Main` with `expo-router/ui` headless tabs (ADR 0033). In a short window both platforms draw the vertical tab rail with the same headless tabs (ADR 0036). The full player is a transparent modal with its own slide-up and drag-to-dismiss, built like the reader sheets (developer, 29 Oct 2026). Reader sheets are custom cards in a transparent modal (ADR 0013).
   - Custom motion uses `src/core/theme/motion.ts`:
     - `timing('instant' | 'fast' | 'standard' | 'slow')` for opacity and color.
     - `spring()` for position, size and drag release.
@@ -26,6 +26,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 
 ## Components and screens (rule)
 
+- **Confirmations:** an in-app confirmation uses `ConfirmDialog` (`src/shared/ui`), not `Alert.alert`, so it follows the app theme and reading direction (developer, 1 Nov 2026; ADR 0034).
 - **Components:** every UI component lives in its own file:
   - Design-system pieces in `src/shared/ui/<ComponentName>.tsx`.
   - Feature pieces in `src/features/<feature>/components/<ComponentName>.tsx`.
@@ -60,7 +61,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 ## Responsive layout (phones, iPad, foldables)
 
 - Use `useWindowClass()` → `compact` (< 600), `medium` (600–839), `expanded` (≥ 840). Never `Platform.isPad`, never device names. A one-step resize stays in the current class until the width clears the boundary by 16; a jump across both boundaries takes the new class immediately.
-- Compact and medium: native bottom tabs. Expanded: the same tabs with the bar hidden, plus `Sidebar` (300 pt, from the expanded-window drawing). The sidebar navigates the same routes, so the active tab survives the switch. iOS 26's adaptable sidebar is not used; its breakpoint is not 840, and Android tablets share this sidebar.
+- Compact and medium, tall windows: native bottom tabs on iOS and the floating bar on Android (ADR 0033). A short window (under 480 pt high, a landscape phone) shows the five tabs as a vertical rail on the start edge, on both platforms (ADR 0036, developer 1 Nov 2026). `tabBarMode(platform, short)` picks the implementation. Screens clear the rail on the start side (`TabRailContext`), not the bottom. Expanded: the same tabs with the bar hidden, plus `Sidebar` (300 pt, from the expanded-window drawing). The sidebar navigates the same routes, so the active tab survives the switch. iOS 26's adaptable sidebar is not used; its breakpoint is not 840, and Android tablets share this sidebar.
 - `useGlass()` is true only when Liquid Glass is available and Reduce Transparency is off. Otherwise a glass surface is solid `glassFallback` with a `line` hairline.
 - Compact: sheets. Medium: centered column, large sheets. Expanded: centered column plus a persistent side panel.
 - Ayah actions and tafsir render in the side panel when it exists and as sheets otherwise; the routes are the same.

@@ -11,6 +11,7 @@ import { Button, Screen } from '@/shared/ui';
 
 import { AzkarCategoryHeader } from '../components/AzkarCategoryHeader';
 import { AzkarItemCard } from '../components/AzkarItemCard';
+import { AzkarStaggeredRow } from '../components/AzkarStaggeredRow';
 import {
   buildCategoryCards,
   categoryProgress,
@@ -66,15 +67,16 @@ export function AzkarCategoryScreen({ categoryId, testID = 'screen-azkar-categor
           />
           <ScrollView contentContainerStyle={{ gap: theme.space[3], paddingBottom: theme.space[8] }}>
             {cards.map((card, index) => (
-              <AzkarItemCard
-                done={card.done}
-                key={card.entryKey}
-                number={index + 1}
-                onPress={() => router.push(azkarHref.read(categoryId, card.unitKey))}
-                preview={card.preview}
-                requiredCount={card.requiredCount}
-                testID={`azkar-category-card-${index + 1}`}
-              />
+              <AzkarStaggeredRow index={index} key={card.entryKey} testID={`azkar-category-row-${index + 1}`}>
+                <AzkarItemCard
+                  done={card.done}
+                  number={index + 1}
+                  onPress={() => router.push(azkarHref.read(categoryId, card.unitKey))}
+                  preview={card.preview}
+                  requiredCount={card.requiredCount}
+                  testID={`azkar-category-card-${index + 1}`}
+                />
+              </AzkarStaggeredRow>
             ))}
           </ScrollView>
           <View style={{ paddingBottom: insets.bottom + theme.space[4] }}>

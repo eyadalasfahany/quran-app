@@ -39,3 +39,23 @@ describe('MenuSearchButton', () => {
     expect(rawColorLiteralsInFeature('src/features/menu/components/MenuSearchButton.tsx')).toEqual([]);
   });
 });
+
+describe('MenuSearchButton beside the tab rail (ADR 0036)', () => {
+  it('clears the rail on the left in English, where the rail is on the left too', async () => {
+    const view = await renderUi(<MenuSearchButton bottom={16} onPress={jest.fn()} railInset={100} />, { locale: 'en' });
+
+    expect(flatStyle(view.getByTestId('menu-search-row').props.style)).toMatchObject({ paddingLeft: 20 + 100, paddingHorizontal: 20 });
+  });
+
+  it('keeps its left clearance in Arabic, where the rail is on the right', async () => {
+    const view = await renderUi(<MenuSearchButton bottom={16} onPress={jest.fn()} railInset={100} />, { locale: 'ar' });
+
+    expect(flatStyle(view.getByTestId('menu-search-row').props.style)).toMatchObject({ paddingLeft: 20, paddingHorizontal: 20 });
+  });
+
+  it('keeps the tall-window padding when no rail is given', async () => {
+    const view = await renderUi(<MenuSearchButton bottom={16} onPress={jest.fn()} />, { locale: 'en' });
+
+    expect(flatStyle(view.getByTestId('menu-search-row').props.style)).toMatchObject({ paddingLeft: 20 });
+  });
+});

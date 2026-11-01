@@ -4,22 +4,31 @@ import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import { FloatingTab } from '@/core/layout/FloatingTab';
-import { tabDestinations, MainShell, useTabBarStyle, useWindowClass } from '@/core/layout';
+import { tabDestinations, MainShell, tabBarMode, useIsShortWindow, useTabBarStyle, useWindowClass } from '@/core/layout';
 import { FloatingTabBar } from '@/shared/ui';
 
 export const unstable_settings = {
   anchor: '(home)',
 };
 
+/**
+ * The five tabs. A tall window keeps the native tabs on iOS and the floating bar on Android (ADR 0033). A short window
+ * (a landscape phone) shows the same destinations as a vertical rail on both platforms (ADR 0036; developer, 1 Nov 2026).
+ * The headless navigator is the one the rail and the Android bar use, so the route, the open tab and its stack carry over
+ * when the window turns short or tall. Only the native-versus-headless choice depends on the platform, and only in tall
+ * windows.
+ */
 export default function MainLayout() {
   const { t } = useTranslation();
   const tabBar = useTabBarStyle();
   const expanded = useWindowClass() === 'expanded';
+  const short = useIsShortWindow();
+  const headless = tabBarMode(Platform.OS, short) === 'headless';
 
   return (
     <MainShell expanded={expanded}>
-      {Platform.OS === 'android' ? (
-        // Android draws its own floating bar from the same destinations (ADR 0033). iOS keeps the native tabs below.
+      {headless ? (
+        // The floating bar on Android, the vertical rail in a short window on either platform (ADR 0033, ADR 0036).
         <Tabs>
           <TabSlot />
           <TabList asChild>

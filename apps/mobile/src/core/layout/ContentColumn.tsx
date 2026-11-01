@@ -7,7 +7,7 @@ import { useTheme } from '@/core/theme';
 export const CONTENT_COLUMN_MAX_WIDTH = 720;
 
 // The side gutter defaults to space[6] (24). Home and the surah index pass their frame's gutter.
-export function ContentColumn({ children, gutter }: { children: ReactNode; gutter?: number }) {
+export function ContentColumn({ children, gutter, testID }: { children: ReactNode; gutter?: number; testID?: string }) {
   const theme = useTheme();
 
   return (
@@ -19,6 +19,7 @@ export function ContentColumn({ children, gutter }: { children: ReactNode; gutte
         paddingHorizontal: gutter ?? theme.space[6],
         width: '100%',
       }}
+      testID={testID}
     >
       {children}
     </View>

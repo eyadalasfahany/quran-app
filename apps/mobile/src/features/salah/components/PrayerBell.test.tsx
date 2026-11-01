@@ -1,6 +1,5 @@
 import * as Notifications from 'expo-notifications';
 import { fireEvent, waitFor } from '@testing-library/react-native';
-import { Alert } from 'react-native';
 
 import { renderUi } from '../../../../jest/render-ui';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -38,18 +37,16 @@ describe('PrayerBell', () => {
     await waitFor(() => expect(storage.getBoolean(storageKeys.salah.bellFajr)).toBe(false));
   });
 
-  it('refused permission leaves the bell muted and shows the guidance alert', async () => {
+  it('refused permission leaves the bell muted and shows the permission dialog', async () => {
     jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
     jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     const view = await renderUi(<PrayerBell prayer="fajr" testID="bell" />);
 
     fireEvent.press(view.getByTestId('bell'));
 
-    await waitFor(() => expect(alert).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(view.getByText('لا يمكن إرسال التذكيرات')).toBeOnTheScreen());
     expect(storage.getBoolean(storageKeys.salah.bellFajr)).toBeUndefined();
     expect(view.getByTestId('bell').props.accessibilityState).toMatchObject({ selected: false });
-    alert.mockRestore();
   });
 
   it('labels each prayer in English too', async () => {

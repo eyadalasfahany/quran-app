@@ -1,5 +1,5 @@
 import { type Href, router } from 'expo-router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
@@ -17,11 +17,10 @@ import { ContinueReadingCard } from '@/features/home/components/ContinueReadingC
 import { ContinueReadingSkeleton } from '@/features/home/components/ContinueReadingSkeleton';
 import { DailyProgressCard } from '@/features/home/components/DailyProgressCard';
 import { HomeTileRow } from '@/features/home/components/HomeTileRow';
-import { NextPrayerCard } from '@/features/home/components/NextPrayerCard';
+import { HomeNextPrayer } from '@/features/home/components/HomeNextPrayer';
 import { RecentAzkarSection } from '@/features/home/components/RecentAzkarSection';
 import { RecentListensSection } from '@/features/home/components/RecentListensSection';
 import { SelectedAzkarSection } from '@/features/home/components/SelectedAzkarSection';
-import { useNextPrayerCard } from '@/features/home/data/next-prayer';
 import { useRecentListenItems } from '@/features/home/data/recent-listen-items';
 import { useDailyProgress } from '@/features/home/hooks/useDailyProgress';
 import { useHomeWird } from '@/features/home/hooks/useHomeWird';
@@ -71,11 +70,12 @@ export function HomeScreen() {
   const azkarAvailable = useAzkarAvailable();
   const homeWird = useHomeWird();
   const { goals } = useDailyGoals();
-  const nextPrayer = useNextPrayerCard();
   const continueAzkar = useAzkarMenuPreview().resume;
   const progress = useDailyProgress();
   const selectedAzkar = useSelectedAzkarItems();
   const recentAzkar = useRecentAzkarItems(locale);
+  // Stable, so the memoised next-prayer card does not re-render for a new callback identity.
+  const openSalah = useCallback(() => router.push('/salah' as Href), []);
 
   const continueReading = useMemo(() => {
     if (!ready) {
@@ -127,7 +127,7 @@ export function HomeScreen() {
             surahName={continueReading.chapter.nameArabic}
           />
         ) : null}
-        <NextPrayerCard card={nextPrayer} onPress={() => router.push('/salah' as Href)} />
+        <HomeNextPrayer onPress={openSalah} />
         {azkarAvailable && continueAzkar ? (
           <ContinueAzkarHomeCard
             onPress={() => router.push(continueAzkar.href)}

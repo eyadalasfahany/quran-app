@@ -47,6 +47,22 @@ final class AzkarSourceRegistry
     }
 
     /**
+     * The other source, used for cross-verification and for counts the primary lacks (ADR 0031 §12).
+     *
+     * @throws InvalidArgumentException When no other source is registered.
+     */
+    public function secondaryCode(string $primaryCode): string
+    {
+        foreach ($this->codes() as $code) {
+            if ($code !== $primaryCode) {
+                return $code;
+            }
+        }
+
+        throw new InvalidArgumentException('No secondary Azkar source is registered for ['.$primaryCode.'].');
+    }
+
+    /**
      * @return list<string>
      */
     public function codes(): array

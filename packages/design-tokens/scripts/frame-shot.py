@@ -66,7 +66,9 @@ def render(frame_id, out):
     if 0 <= host < fig_end:
         open_at = s.find('<div', host + 1)
         screen = element_at(s, open_at)
-        width, height = 390, 844
+        # A phone frame declares 390 x 844 inline; a landscape frame (ADR 0036) declares its own size, 844 x 390.
+        inline = re.search(r'width:\s*(\d+)px;\s*height:\s*(\d+)px', screen[:screen.find('>') + 1])
+        width, height = (int(inline.group(1)), int(inline.group(2))) if inline else (390, 844)
     else:
         device = s.find('class="xw-device"', start)
         if not 0 <= device < fig_end:
