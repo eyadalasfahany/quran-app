@@ -18,7 +18,6 @@ export type MushafListProps = {
   horizontalGutter?: number;
   topInset?: number;
   bottomInset?: number;
-  selectedVerseId?: number | null;
   activeVerseId?: number | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   onVisiblePage?: (page: number, verseKey: string) => void;
@@ -36,7 +35,6 @@ export function MushafList({
   horizontalGutter = 0,
   topInset = 0,
   bottomInset = 0,
-  selectedVerseId = null,
   activeVerseId = null,
   highlightsByVerseId = NO_HIGHLIGHTS,
   onVisiblePage,
@@ -113,7 +111,6 @@ export function MushafList({
         onSelectVerseId={onSelectVerseId}
         onSwitchToReading={onSwitchToReading}
         page={page}
-        selectedVerseId={selectedVerseId}
         testID={testID ? `${testID}-page-${page}` : undefined}
       />
     ),
@@ -127,15 +124,14 @@ export function MushafList({
       onOpenAyahActions,
       onSelectVerseId,
       onSwitchToReading,
-      selectedVerseId,
       testID,
     ],
   );
 
-  // FlashList repaints pages only when data or extraData changes; renderPage reads these three.
+  // FlashList repaints pages only when data or extraData changes; renderPage reads these from props.
   const pageExtraData = useMemo(
-    () => ({ activeVerseId, highlightsByVerseId, selectedVerseId }),
-    [activeVerseId, highlightsByVerseId, selectedVerseId],
+    () => ({ activeVerseId, highlightsByVerseId }),
+    [activeVerseId, highlightsByVerseId],
   );
 
   return (

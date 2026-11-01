@@ -171,17 +171,6 @@ describe('HafsMushafPage', () => {
     expect(onOpenActions).toHaveBeenNthCalledWith(2, '1:1');
   });
 
-  it('marks the selected ayah and labels its marker', async () => {
-    const view = await renderUi(fatihaPage({ onOpenActions: () => undefined, selectedVerseKey: '1:1' }));
-
-    expect(view.getByRole('header', { name: 'سورة الفاتحة' })).toBeOnTheScreen();
-    const marker = view.getByRole('button', { name: 'الآية ١' });
-    expect(marker.props.accessibilityState).toMatchObject({ selected: true });
-    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
-      themes.light.colors.highlightActive,
-    );
-  });
-
   it.each(locales)('keeps the Quran text right to left in %s', async (locale) => {
     const view = await renderUi(fatihaPage(), { locale });
 
@@ -231,28 +220,6 @@ describe('HafsMushafPage', () => {
       themes.light.colors.highlightGreen,
     );
     expect(flatStyle(view.getByTestId('page-ayah-1:2').props.style).backgroundColor).toBeUndefined();
-  });
-
-  // ADR 0012: a saved colour fills the ayah even when it is selected; the selected marker carries the selection.
-  it.each(locales)('selected and highlighted: fills with the colour and marks it selected (%s)', async (locale) => {
-    const view = await renderUi(
-      fatihaPage({ highlightsByVerseId: new Map([[1, 'green']]), onOpenActions: () => undefined, selectedVerseKey: '1:1' }),
-      { locale },
-    );
-
-    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
-      themes.light.colors.highlightGreen,
-    );
-    const marker = view.getByRole('button', { name: i18n.t('ui.ayahNumber', { number: formatNumber(1, locale) }) });
-    expect(marker.props.accessibilityState).toMatchObject({ selected: true });
-  });
-
-  it.each(locales)('selected only: shows the selection wash (%s)', async (locale) => {
-    const view = await renderUi(fatihaPage({ onOpenActions: () => undefined, selectedVerseKey: '1:1' }), { locale });
-
-    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
-      themes.light.colors.highlightActive,
-    );
   });
 
   it.each(locales)('highlighted only: fills with the colour (%s)', async (locale) => {

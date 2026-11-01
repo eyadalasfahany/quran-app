@@ -28,7 +28,13 @@ export const requestLocationPermissions = async () => {
 };
 
 /** A live GPS fix that takes longer than this is abandoned, so a slow fix never holds up the screen or a sync. */
-export const LOCATION_FIX_TIMEOUT_MS = 8000;
+export const LOCATION_FIX_TIMEOUT_MS = 15_000;
+
+/** A last-known fix younger than this is used without asking the GPS for a live fix. */
+export const LAST_KNOWN_FRESH_MS = 5 * 60 * 1000;
+
+/** A last-known fix older than this is never used; it may be from another city. */
+export const LAST_KNOWN_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export type CoordinatesOptions = {
   /** Use the last known position and never ask the GPS for a fix (the foreground check). */
@@ -70,38 +76,47 @@ export const getCoordinates = async (options: CoordinatesOptions = {}): Promise<
 
   try {
     const lastKnown = await Location.getLastKnownPositionAsync();
+    const usable =
+      lastKnown && Date.now() - lastKnown.timestamp < LAST_KNOWN_MAX_AGE_MS ? lastKnown : null;
+
     if (options.lastKnownOnly) {
-      return lastKnown ? { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude } : null;
+      return usable ? { lat: usable.coords.latitude, lng: usable.coords.longitude } : null;
     }
-    if (lastKnown && Date.now() - lastKnown.timestamp < 30 * 60 * 1000) {
+
+    if (lastKnown && Date.now() - lastKnown.timestamp < LAST_KNOWN_FRESH_MS) {
       return { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude };
     }
 
-    try {
-      const current = await withTimeout(
-        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
-        LOCATION_FIX_TIMEOUT_MS,
-      );
-      return { lat: current.coords.latitude, lng: current.coords.longitude };
-    } catch {
-      // Simulator and some devices have no live GPS fix. A stale last-known
-      // reading is still enough to compute a bearing; otherwise the empty state.
-      if (lastKnown) {
-        return { lat: lastKnown.coords.latitude, lng: lastKnown.coords.longitude };
-      }
-      return null;
+    const live = await readLiveCoordinates();
+    if (live) {
+      return live;
     }
+
+    if (usable) {
+      return { lat: usable.coords.latitude, lng: usable.coords.longitude };
+    }
+    return null;
   } catch {
     return null;
   }
 };
+
+async function readLiveCoordinates(): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const request = Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+    const current = await withTimeout(request, LOCATION_FIX_TIMEOUT_MS);
+    return { lat: current.coords.latitude, lng: current.coords.longitude };
+  } catch {
+    return null;
+  }
+}
 
 export const setManualLocation = (location: ManualLocation) => {
   storage.set(storageKeys.salah.locationSource, 'manual');
   if (location.id) {
     storage.set(storageKeys.salah.manualCityId, location.id);
   } else {
-  storage.remove(storageKeys.salah.manualCityId);
+    storage.remove(storageKeys.salah.manualCityId);
   }
   storage.set(storageKeys.salah.manualLat, location.lat);
   storage.set(storageKeys.salah.manualLng, location.lng);

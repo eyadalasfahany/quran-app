@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 
-import { startNetworkWatch, useNetworkStatus } from './network-state';
+import { ONLINE_DEBOUNCE_MS, startNetworkWatch, useNetworkStatus } from './network-state';
 
-/** A change must hold this long before the UI follows it, so a flaky link does not flicker a banner. */
-export const ONLINE_DEBOUNCE_MS = 1_000;
+export { ONLINE_DEBOUNCE_MS } from './network-state';
 
 /**
  * Whether the UI should show the device as online. It follows the network state after ONLINE_DEBOUNCE_MS, so a

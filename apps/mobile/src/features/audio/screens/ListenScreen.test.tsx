@@ -1,10 +1,8 @@
 import { cleanup, fireEvent, within } from '@testing-library/react-native';
-import { getNetworkStateAsync } from 'expo-network';
 import type { ComponentProps } from 'react';
 import { Dimensions } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
-import { resetNetworkStateForTests, useNetworkStatus } from '@/core/network/network-state';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { installResource } from '@/core/sync';
@@ -371,18 +369,6 @@ describe('ListenScreen', () => {
     expect(view.getByRole('header', { name: 'اتصل مرة لتحميل القرّاء' })).toBeOnTheScreen();
     expect(view.queryByTestId('reciter-empty')).toBeNull();
     expect(view.queryByTestId('reciter-loading')).toBeNull();
-  });
-
-  it('shows the offline notice at once while the device is offline', async () => {
-    mockCatalog.settled = true;
-    resetNetworkStateForTests();
-    useNetworkStatus.setState({ online: false });
-    jest.mocked(getNetworkStateAsync).mockResolvedValueOnce({ isConnected: false, isInternetReachable: false, type: 'NONE' } as Awaited<ReturnType<typeof getNetworkStateAsync>>);
-
-    const view = await renderUi(<ListenScreen />);
-
-    expect(view.getByLabelText('أنت غير متصل. المصحف والتلاوات المحمّلة تعمل كالمعتاد.')).toBeOnTheScreen();
-    resetNetworkStateForTests();
   });
 
   it('keeps the no-match message for a search over a catalogue that has reciters', async () => {

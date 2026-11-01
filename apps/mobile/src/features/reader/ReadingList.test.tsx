@@ -334,7 +334,7 @@ describe('ReadingList', () => {
     expect(onSelectVerseKey).toHaveBeenCalledWith('18:10');
   });
 
-  // FlashList repaints rows only when extraData changes, so the list must hand it the colours and selection.
+  // FlashList repaints rows only when extraData changes, so the list must hand it the colours.
   it('repaints a row with its new colour when the highlights change', async () => {
     const verse = getVerseByKey(mockTestExecutor, '18:10');
     const list = (highlights: ReadonlyMap<number, HighlightColor>) => (
@@ -360,29 +360,6 @@ describe('ReadingList', () => {
       expect(flatStyle(view.getByText(verse!.textUthmani).parent!.props.style).backgroundColor).toBe(
         themes.light.colors.highlightGreen,
       );
-    });
-  });
-
-  it('passes the selected ayah through extraData so the selection repaints', async () => {
-    const list = (selectedVerseKey: string | null) => (
-      <ReadingList
-        anchorVerseKey="18:10"
-        mode="reading"
-        onOpenAyahActions={() => undefined}
-        onSelectVerseKey={() => undefined}
-        selectedVerseKey={selectedVerseKey}
-        testID="list"
-      />
-    );
-    const view = await renderUi(list(null));
-    await waitFor(() => {
-      expect(view.getByTestId('list-ayah-18:10')).toBeOnTheScreen();
-    });
-
-    view.rerender(<ThemeProvider name="light">{list('18:10')}</ThemeProvider>);
-
-    await waitFor(() => {
-      expect(flashListTestState.lastExtraData).toMatchObject({ selectedVerseKey: '18:10' });
     });
   });
 });

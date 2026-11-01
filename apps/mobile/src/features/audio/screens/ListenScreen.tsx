@@ -6,7 +6,7 @@ import { FlatList, View } from 'react-native';
 import { useContentDb } from '@/core/db/content/open';
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
-import { ContentColumn, useTabContentBottom } from '@/core/layout';
+import { ContentColumn, useTabBarScrollHandlers, useTabContentBottom } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useCatalogVersion } from '@/core/sync';
 import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
@@ -52,6 +52,7 @@ export function ListenScreen() {
   const doneCounts = useDoneCountsByReciter();
   const verifyCounts = useVerifyNeededCounts();
   const bottom = useTabContentBottom();
+  const tabScroll = useTabBarScrollHandlers();
   const syncSettled = useCatalogVersion((state) => state.syncSettled);
   // Until the first catalogue sync has run, an empty list is loading, not «no reciters».
   const loading = !ready || (reciters.length === 0 && !syncSettled);
@@ -102,6 +103,7 @@ export function ListenScreen() {
         <FlatList
           contentContainerStyle={{ paddingBottom: bottom }}
           data={rows}
+          {...tabScroll}
           keyExtractor={(reciter) => String(reciter.resourceId)}
           // A React element, not an inline component: its type stays the same across renders, so the search
           // field is not remounted (and does not lose focus) when the query changes the list.

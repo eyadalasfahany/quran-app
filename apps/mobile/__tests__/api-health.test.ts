@@ -30,9 +30,13 @@ describe('fetchHealth', () => {
 
     await fetchHealth('http://localhost:8000');
 
-    expect(fetchMock).toHaveBeenCalledWith('http://localhost:8000/api/v1/health', {
-      headers: { Accept: 'application/json' },
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:8000/api/v1/health',
+      expect.objectContaining({
+        headers: { Accept: 'application/json' },
+        signal: expect.any(AbortSignal),
+      }),
+    );
   });
 
   it('returns the report when every check passes', async () => {

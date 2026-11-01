@@ -1,10 +1,11 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as Location from 'expo-location';
+import { AppState, type AppStateStatus } from 'react-native';
 
 import { storage } from '@/core/storage/mmkv';
 
-import { getCoordinates, getLocationPermissionStatus, setAutoLocation } from '../data/location';
-import { invalidatePrayerLocation } from '../data/location-cache';
+import { getCoordinates, getLocationPermissionStatus, setAutoLocation, setManualLocation } from '../data/location';
+import { invalidatePrayerLocation, LOCATION_CACHE_TTL_MS } from '../data/location-cache';
 import { usePrayerLocation } from './index';
 
 jest.mock('../data/location', () => ({
@@ -14,15 +15,36 @@ jest.mock('../data/location', () => ({
 }));
 
 const RIYADH = { lat: 24.7136, lng: 46.6753 };
+const JEDDAH = { lat: 21.5433, lng: 39.1728 };
 
 describe('usePrayerLocation', () => {
+  const appStateHandlers: ((state: AppStateStatus) => void)[] = [];
+  let clock = 1_000_000;
+
+  function fireAppStateActive() {
+    for (const handler of appStateHandlers) {
+      handler('active');
+    }
+  }
+
   beforeEach(() => {
     storage.clearAll();
     invalidatePrayerLocation();
     jest.clearAllMocks();
+    appStateHandlers.length = 0;
+    clock = 1_000_000;
+    jest.spyOn(Date, 'now').mockImplementation(() => clock);
     setAutoLocation();
     jest.mocked(getLocationPermissionStatus).mockResolvedValue(Location.PermissionStatus.GRANTED);
     jest.mocked(getCoordinates).mockResolvedValue(RIYADH);
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, handler) => {
+      appStateHandlers.push(handler);
+      return { remove: jest.fn() } as never;
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('is pending until the first read lands, then holds the coordinates', async () => {
@@ -60,6 +82,86 @@ describe('usePrayerLocation', () => {
 
     expect(later.result.current.pending).toBe(false);
     expect(later.result.current.coords).toEqual(RIYADH);
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-reads location when the app returns to the foreground after permission was denied', async () => {
+    jest.mocked(getLocationPermissionStatus).mockResolvedValueOnce(Location.PermissionStatus.DENIED);
+    jest.mocked(getCoordinates).mockResolvedValueOnce(null);
+
+    const { result } = await renderHook(() => usePrayerLocation());
+    await waitFor(() => expect(result.current.pending).toBe(false));
+    expect(result.current.coords).toBeNull();
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+
+    jest.mocked(getLocationPermissionStatus).mockResolvedValue(Location.PermissionStatus.GRANTED);
+    jest.mocked(getCoordinates).mockResolvedValue(RIYADH);
+
+    await act(async () => {
+      fireAppStateActive();
+    });
+    await waitFor(() => expect(result.current.coords).toEqual(RIYADH));
+    expect(getCoordinates).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not re-read on foreground when automatic location already has coordinates', async () => {
+    const { result } = await renderHook(() => usePrayerLocation());
+    await waitFor(() => expect(result.current.pending).toBe(false));
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      fireAppStateActive();
+    });
+
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-reads on foreground once the cached location is older than the TTL', async () => {
+    const { result } = await renderHook(() => usePrayerLocation());
+    await waitFor(() => expect(result.current.pending).toBe(false));
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+
+    clock += LOCATION_CACHE_TTL_MS;
+    jest.mocked(getCoordinates).mockResolvedValueOnce(JEDDAH);
+
+    await act(async () => {
+      fireAppStateActive();
+    });
+    await waitFor(() => expect(result.current.coords).toEqual(JEDDAH));
+    expect(getCoordinates).toHaveBeenCalledTimes(2);
+  });
+
+  it('two mounted consumers share one read on foreground', async () => {
+    const first = await renderHook(() => usePrayerLocation());
+    const second = await renderHook(() => usePrayerLocation());
+    await waitFor(() => expect(first.result.current.pending).toBe(false));
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+
+    clock += LOCATION_CACHE_TTL_MS;
+    jest.mocked(getCoordinates).mockClear();
+
+    await act(async () => {
+      fireAppStateActive();
+    });
+    await waitFor(() => expect(second.result.current.coords).toEqual(RIYADH));
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+  });
+
+  it('manual source never re-reads on foreground', async () => {
+    setManualLocation({ id: 'makkah', lat: 21.4225, lng: 39.8262 });
+    invalidatePrayerLocation();
+    jest.mocked(getCoordinates).mockResolvedValue({ lat: 21.4225, lng: 39.8262 });
+
+    const { result } = await renderHook(() => usePrayerLocation());
+    await waitFor(() => expect(result.current.pending).toBe(false));
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+
+    clock += LOCATION_CACHE_TTL_MS;
+
+    await act(async () => {
+      fireAppStateActive();
+    });
+
     expect(getCoordinates).toHaveBeenCalledTimes(1);
   });
 

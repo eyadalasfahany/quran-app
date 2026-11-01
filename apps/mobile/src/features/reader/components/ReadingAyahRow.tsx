@@ -17,7 +17,6 @@ export function ReadingAyahRow({
   textUthmani,
   textImlaei,
   fontScale = 1,
-  selected = false,
   recited = false,
   khatmaMarked = false,
   activeWord = null,
@@ -37,10 +36,9 @@ export function ReadingAyahRow({
   textUthmani: string;
   textImlaei: string | null;
   fontScale?: number;
-  selected?: boolean;
   /** The ayah the player is reciting: the neutral wash, the brand marker and rule (ADR 0012). */
   recited?: boolean;
-  /** The ayah marked as the khatma position when it is not selected or recited. */
+  /** The ayah marked as the khatma position when it is not recited. */
   khatmaMarked?: boolean;
   /** The recited word (1-based), when the ayah has word segments. */
   activeWord?: number | null;
@@ -63,7 +61,7 @@ export function ReadingAyahRow({
   const theme = useTheme();
   const colors = useContrastColors();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
-  const active = selected || recited;
+  const active = recited;
   const labelText = textImlaei ?? textUthmani;
   const ayahLabel = t('ui.ayahNumber', { number: formatNumber(verseNumber, locale) });
   const khatmaSuffix = khatmaMarked ? t('reader.ayahPanel.khatmaMark') : '';
@@ -72,7 +70,7 @@ export function ReadingAyahRow({
       ? `${labelText} ${ayahLabel}${khatmaSuffix ? ` ${khatmaSuffix}` : ''}`
       : `${labelText} ${ayahLabel} ${t(`ui.highlight.${highlightColor}`)}${khatmaSuffix ? ` ${khatmaSuffix}` : ''}`;
 
-  // The user's colour wins the fill; the selection wash shows only on an ayah without one (ADR 0012).
+  // The user's colour wins the fill; the recited wash shows only on an ayah without one (ADR 0012).
   const quranBackground = highlightFill(colors, highlightColor) ?? (active ? colors.highlightActive : 'transparent');
 
   // The header's buttons sit outside the text's Pressable, so each one stays reachable by screen readers.

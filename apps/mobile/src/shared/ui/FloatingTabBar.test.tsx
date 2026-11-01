@@ -90,15 +90,15 @@ describe('FloatingTabBar', () => {
       borderColor: colors.line,
       borderRadius: 32,
       boxShadow: shadows.glass,
+      flexDirection: 'row',
       height: 64,
-      padding: 6,
     });
   });
 
   it('lays the items out in a row, so RTL mirrors their order', async () => {
     const view = await renderUi(bar());
 
-    expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({ flexDirection: 'row', gap: 4 });
+    expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({ flexDirection: 'row' });
   });
 
   it('sits 16 from each side and 12 above the system navigation inset', async () => {

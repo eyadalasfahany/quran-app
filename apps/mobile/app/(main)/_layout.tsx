@@ -4,7 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import { FloatingTab } from '@/core/layout/FloatingTab';
-import { tabDestinations, MainShell, tabBarMode, useIsShortWindow, useTabBarStyle, useWindowClass } from '@/core/layout';
+import {
+  tabDestinations,
+  MainShell,
+  tabBarMode,
+  useIsShortWindow,
+  useTabBarHiddenOnScroll,
+  useTabBarStyle,
+  useWindowClass,
+} from '@/core/layout';
 import { FloatingTabBar } from '@/shared/ui';
 
 export const unstable_settings = {
@@ -24,6 +32,7 @@ export default function MainLayout() {
   const expanded = useWindowClass() === 'expanded';
   const short = useIsShortWindow();
   const headless = tabBarMode(Platform.OS, short) === 'headless';
+  const tabBarScrollHidden = useTabBarHiddenOnScroll();
 
   return (
     <MainShell expanded={expanded}>
@@ -48,7 +57,7 @@ export default function MainLayout() {
           </TabList>
         </Tabs>
       ) : (
-        <NativeTabs {...tabBar} hidden={expanded}>
+        <NativeTabs {...tabBar} hidden={expanded || tabBarScrollHidden}>
           {tabDestinations.map((item) => (
             <NativeTabs.Trigger key={item.name} name={item.name}>
               <NativeTabs.Trigger.Label>{t(item.label)}</NativeTabs.Trigger.Label>

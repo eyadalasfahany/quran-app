@@ -17,3 +17,6 @@ export { useTabBarClearance } from './useTabBarClearance';
 export { TabRailContext, useTabRailSideInset } from './TabRailContext';
 export { tabBarMode, TAB_RAIL, TAB_RAIL_CLEARANCE, tabBarSideClearance } from './tab-bar-clearance';
 export { useTabContentBottom } from './useTabContentBottom';
+export { TabBarScrollSync } from './TabBarScrollSync';
+export { useTabBarHiddenOnScroll } from './useTabBarHiddenOnScroll';
+export { useTabBarScrollHandlers } from './useTabBarScrollHandlers';

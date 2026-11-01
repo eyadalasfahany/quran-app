@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { tabDestinations, type Destination, SectionScreen, useWindowClass } from '@/core/layout';
+import { tabDestinations, type Destination, SectionScreen, useTabBarScrollHandlers, useWindowClass } from '@/core/layout';
 import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { useAzkarAvailable, useRecentAzkarItems } from '@/features/azkar/data';
@@ -62,6 +62,7 @@ export function HomeScreen() {
   const lastReadVerseKey = useLastReadVerseKey();
   // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
   const expanded = useWindowClass() === 'expanded';
+  const tabScroll = useTabBarScrollHandlers();
   const recentItems = useRecentListenItems(2);
   // A recent listen is playing when the player holds its reciter and surah and is playing or loading it.
   const playerActive = usePlayerStore((state) => state.status === 'playing' || state.status === 'loading');
@@ -115,6 +116,7 @@ export function HomeScreen() {
         showsVerticalScrollIndicator={false}
         style={{ flex: 1 }}
         testID="home-scroll"
+        {...tabScroll}
       >
         <StaleContentBanner visible={stale} />
         {!ready ? (

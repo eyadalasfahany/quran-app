@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { ContentColumn, useTabContentBottom } from '@/core/layout';
+import { ContentColumn, useTabBarScrollHandlers, useTabContentBottom } from '@/core/layout';
 import { ContinueReadingRow } from '@/features/library/components/ContinueReadingRow';
 import { IndexSegment, type IndexSegmentKey } from '@/features/library/components/IndexSegment';
 import { JuzRow } from '@/features/library/components/JuzRow';
@@ -39,6 +39,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
   const bottom = useTabContentBottom();
+  const tabScroll = useTabBarScrollHandlers();
   const [segment, setSegment] = useState<IndexSegmentKey>('surahs');
 
   const { continueReading, rows } = useMemo(() => {
@@ -121,6 +122,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             data={rows}
+            {...tabScroll}
             keyExtractor={keyExtractor}
             ListEmptyComponent={
               ready ? undefined : (

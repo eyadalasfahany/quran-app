@@ -18,7 +18,6 @@ export function MushafPage({
   chapterStarts,
   chapterForVerse,
   activeVerseId = null,
-  selectedVerseId = null,
   highlightByVerse,
   khatmaMarkerVerseId = null,
   onVersePress,
@@ -31,7 +30,6 @@ export function MushafPage({
   chapterStarts: readonly ChapterRecord[];
   chapterForVerse: (verseId: number) => number | undefined;
   activeVerseId?: number | null;
-  selectedVerseId?: number | null;
   highlightByVerse?: ReadonlyMap<number, HighlightColor>;
   khatmaMarkerVerseId?: number | null;
   onVersePress?: (verseId: number) => void;
@@ -63,7 +61,6 @@ export function MushafPage({
               lineHeight={lineHeight}
               onVerseLongPress={onVerseLongPress}
               onVersePress={onVersePress}
-              selectedVerseId={selectedVerseId}
               testID={testID ? `${testID}-line-${slot.line}` : undefined}
               words={slot.words}
             />

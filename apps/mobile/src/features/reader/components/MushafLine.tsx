@@ -11,7 +11,6 @@ export function MushafLine({
   fontSize,
   lineHeight,
   activeVerseId = null,
-  selectedVerseId = null,
   highlightByVerse,
   khatmaMarkerVerseId = null,
   onVersePress,
@@ -23,7 +22,6 @@ export function MushafLine({
   fontSize: number;
   lineHeight: number;
   activeVerseId?: number | null;
-  selectedVerseId?: number | null;
   highlightByVerse?: ReadonlyMap<number, HighlightColor>;
   /** Gold end-of-ayah glyph (`charType === 'end'`) on the marked verse. */
   khatmaMarkerVerseId?: number | null;
@@ -32,9 +30,7 @@ export function MushafLine({
   testID?: string;
 }) {
   const theme = useTheme();
-  const activeOnLine = words.some(
-    (word) => word.verseId === activeVerseId || word.verseId === selectedVerseId,
-  );
+  const activeOnLine = words.some((word) => word.verseId === activeVerseId);
 
   return (
     <View
@@ -59,7 +55,6 @@ export function MushafLine({
             style={wordStyle(word, {
               activeVerseId,
               khatmaMarkerVerseId,
-              selectedVerseId,
               highlightByVerse,
               theme,
             })}
@@ -78,7 +73,6 @@ function wordStyle(
   ctx: {
     activeVerseId: number | null;
     khatmaMarkerVerseId: number | null;
-    selectedVerseId: number | null;
     highlightByVerse?: ReadonlyMap<number, HighlightColor>;
     theme: Theme;
   },
@@ -95,7 +89,7 @@ function wordStyle(
   if (highlight !== undefined) {
     return { backgroundColor: highlight, color };
   }
-  if (word.verseId === ctx.activeVerseId || word.verseId === ctx.selectedVerseId) {
+  if (word.verseId === ctx.activeVerseId) {
     return { backgroundColor: ctx.theme.colors.highlightActive, color };
   }
   return { color };

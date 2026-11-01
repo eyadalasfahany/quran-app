@@ -12,6 +12,7 @@ import { useOnline } from '@/core/network/useOnline';
 import { useTheme } from '@/core/theme';
 import { OfflineBanner, Sidebar } from '@/shared/ui';
 
+import { TabBarScrollSync } from './TabBarScrollSync';
 import { sidebarDestinations } from './destinations';
 import { miniPlayerBottom, tabBarSideClearance } from './tab-bar-clearance';
 import { TabRailContext } from './TabRailContext';
@@ -41,6 +42,7 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
   return (
     <TabRailContext.Provider value={railSide}>
     <View style={{ backgroundColor: theme.colors.surface, flex: 1, flexDirection: 'row' }} testID="main-shell">
+      <TabBarScrollSync />
       {expanded ? (
         <Sidebar
           items={[

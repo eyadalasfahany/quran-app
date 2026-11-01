@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
 import { openContentDb, useContentDb } from '@/core/db/content/open';
-import { SectionScreen, useTabBarClearance } from '@/core/layout';
+import { SectionScreen, useTabBarClearance, useTabBarScrollHandlers } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useAllHighlights, useAllNotes, useBookmarks } from '@/features/library/data';
 import { KhatmaSummaryCard } from '@/features/khatma/components/KhatmaSummaryCard';
@@ -38,6 +38,7 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
   const { t } = useTranslation();
   const theme = useTheme();
   const barClearance = useTabBarClearance();
+  const tabScroll = useTabBarScrollHandlers();
   const { ready } = useContentDb();
   const bookmarks = useBookmarks();
   const highlights = useAllHighlights();
@@ -118,6 +119,7 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
         contentContainerStyle={{ gap: theme.space[3], paddingBottom: barClearance + theme.space[4] }}
         style={{ flex: 1 }}
         testID={`${testID}-list`}
+        {...tabScroll}
       >
         {activeTab === 'bookmarks' ? (
           <BookmarkListCard item={bookmark} onOpenMushaf={openMushaf} onOpenVerse={openVerse} />

@@ -8,6 +8,7 @@ import {
   LOCATION_CACHE_TTL_MS,
   loadPrayerLocation,
   peekPrayerLocation,
+  reloadPrayerLocation,
 } from './location-cache';
 
 jest.mock('./location', () => ({
@@ -122,6 +123,24 @@ describe('prayer location cache', () => {
     expect(snapshot.source).toBe('auto');
     expect(snapshot.cityName).toBeUndefined();
     expect(storage.getString(storageKeys.salah.locationSource)).toBe('auto');
+  });
+
+  it('reloadPrayerLocation re-reads when a fresh entry exists', async () => {
+    await loadPrayerLocation();
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
+
+    await reloadPrayerLocation();
+
+    expect(getCoordinates).toHaveBeenCalledTimes(2);
+  });
+
+  it('two concurrent reloadPrayerLocation calls share one read', async () => {
+    await loadPrayerLocation();
+    jest.mocked(getCoordinates).mockClear();
+
+    await Promise.all([reloadPrayerLocation(), reloadPrayerLocation()]);
+
+    expect(getCoordinates).toHaveBeenCalledTimes(1);
   });
 
   function tick(ms: number) {

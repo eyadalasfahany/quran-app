@@ -26,7 +26,6 @@ export type HafsMushafListProps = {
   bottomInset?: number;
   // Bottom padding inside the scroll, so the last page line scrolls clear of the reader's mini player bar.
   contentBottomInset?: number;
-  selectedVerseKey?: string | null;
   /** The ayah the player is reciting; it gets the recited wash and brand marker. */
   recitedVerseKey?: string | null;
   /** The recited word's 1-based position, marked inside the recited ayah. */
@@ -38,9 +37,8 @@ export type HafsMushafListProps = {
   onVisiblePage?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
-  /** A drag began or ended: the reader is scrolling by hand, so following pauses. */
+  /** A drag began: the reader is scrolling by hand, so following pauses. */
   onUserScrollStart?: () => void;
-  onUserScrollEnd?: () => void;
   testID?: string;
 };
 
@@ -50,7 +48,6 @@ export function HafsMushafList({
   topInset = 0,
   bottomInset = 0,
   contentBottomInset = 0,
-  selectedVerseKey = null,
   recitedVerseKey = null,
   recitedWord = null,
   followKey = null,
@@ -60,7 +57,6 @@ export function HafsMushafList({
   onSelectVerseKey,
   onOpenAyahActions,
   onUserScrollStart,
-  onUserScrollEnd,
   testID,
 }: HafsMushafListProps) {
   const theme = useTheme();
@@ -226,9 +222,8 @@ export function HafsMushafList({
       khatmaMarkerVerseId,
       recitedVerseKey,
       recitedWord,
-      selectedVerseKey,
     }),
-    [focusVerseKey, followKey, highlightsByVerseId, khatmaMarkerVerseId, recitedVerseKey, recitedWord, selectedVerseKey],
+    [focusVerseKey, followKey, highlightsByVerseId, khatmaMarkerVerseId, recitedVerseKey, recitedWord],
   );
 
   const renderPage = useCallback(
@@ -255,7 +250,6 @@ export function HafsMushafList({
         page={page}
         recitedVerseKey={recitedVerseKey}
         recitedWord={recitedWord}
-        selectedVerseKey={selectedVerseKey}
         testID={testID}
       />
     ),
@@ -274,7 +268,6 @@ export function HafsMushafList({
       recitedVerseKey,
       recitedWord,
       scrollToFocus,
-      selectedVerseKey,
       testID,
     ],
   );
@@ -292,9 +285,7 @@ export function HafsMushafList({
           maintainVisibleContentPosition={{}}
           onEndReached={() => setPageWindow((current) => extendPageWindow(current, 'end'))}
           onEndReachedThreshold={0.6}
-          onMomentumScrollEnd={onUserScrollEnd}
           onScrollBeginDrag={onUserScrollStart}
-          onScrollEndDrag={onUserScrollEnd}
           onStartReached={() => {
             if (!settlingRef.current) {
               setPageWindow((current) => extendPageWindow(current, 'start'));

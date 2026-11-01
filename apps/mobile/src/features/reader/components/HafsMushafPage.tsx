@@ -33,7 +33,6 @@ export function HafsMushafPage({
   verses,
   chapters,
   fontScale = 1,
-  selectedVerseKey = null,
   recitedVerseKey = null,
   recitedWord = null,
   highlightsByVerseId,
@@ -49,7 +48,6 @@ export function HafsMushafPage({
   verses: readonly VerseRecord[];
   chapters: ReadonlyMap<number, ChapterRecord>;
   fontScale?: number;
-  selectedVerseKey?: string | null;
   /** The ayah the player is reciting. Ayah level only: the Mushaf text is one paragraph per surah. */
   recitedVerseKey?: string | null;
   /** The recited word's 1-based position in that ayah, when its timings have word segments. */
@@ -113,9 +111,8 @@ export function HafsMushafPage({
               variant="quranMushaf"
             >
               {run.map((verse, index) => {
-                const selected = selectedVerseKey === verse.verseKey;
                 const recited = recitedVerseKey === verse.verseKey;
-                const marked = selected || recited;
+                const marked = recited;
                 const khatmaMarked = khatmaMarkerVerseId === verse.id && !marked;
                 // The reader's highlight colour fills the ayah; the selection wash shows only without one (ADR 0012).
                 const highlight = highlightsByVerseId?.get(verse.id) ?? null;

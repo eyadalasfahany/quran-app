@@ -17,6 +17,7 @@ import { storage, storageKeys } from "@/core/storage/mmkv";
 jest.mock("@/features/audio/data/downloads", () => ({
   ...jest.requireActual("@/features/audio/data/downloads"),
   useDoneCountsByReciter: () => ({}),
+  useVerifyNeededCounts: () => ({}),
 }));
 
 jest.mock("@/features/audio/data/recent-listens-hooks", () => ({
@@ -45,6 +46,10 @@ jest.mock("@/features/azkar/data", () => ({
   useContinueAzkar: () => null,
   useRecentAzkarItems: () => [],
   useSessionCategoryProgress: () => [],
+}));
+
+jest.mock("@/core/sync/useStaleContent", () => ({
+  useStaleContent: jest.fn(() => false),
 }));
 
 jest.mock("expo-symbols", () => {

@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { AppState } from 'react-native';
 import * as Location from 'expo-location';
 import { getStoredLocationSource } from '../data/location';
-import { invalidatePrayerLocation, loadPrayerLocation, peekPrayerLocation, type PrayerLocationSnapshot } from '../data/location-cache';
+import {
+  invalidatePrayerLocation,
+  loadPrayerLocation,
+  peekPrayerLocation,
+  reloadPrayerLocation,
+  type PrayerLocationSnapshot,
+} from '../data/location-cache';
 import { PrayerTimesOutput, NextPrayerName, nextPrayer, timesFor } from '../data/prayer-times';
 import { bellStorageKey, getBellEnabled } from '../data/bells';
 import { setPrayerBell } from '../data/notifications';
@@ -66,6 +73,48 @@ export const usePrayerLocation = (): PrayerLocation => {
     setPending(true);
     return load();
   }, [load]);
+
+  const snapshotRef = useRef(snapshot);
+  useEffect(() => {
+    snapshotRef.current = snapshot;
+  });
+
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  /** Re-read after Settings or when GPS had no fix; skip the full-screen locating state. */
+  const refreshIfNeededOnForeground = useCallback(async () => {
+    if (getStoredLocationSource() !== 'auto') {
+      return;
+    }
+    const view = snapshotRef.current ?? peekPrayerLocation();
+    const needsRead =
+      peekPrayerLocation() === null ||
+      view?.coords === null ||
+      view?.permissionStatus !== Location.PermissionStatus.GRANTED;
+    if (!needsRead) {
+      return;
+    }
+    const next = await reloadPrayerLocation();
+    if (mountedRef.current) {
+      setSnapshot(next);
+      setPending(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        void refreshIfNeededOnForeground();
+      }
+    });
+    return () => subscription.remove();
+  }, [refreshIfNeededOnForeground]);
 
   const view = snapshot ?? { ...EMPTY_SNAPSHOT, source: getStoredLocationSource() };
   return {

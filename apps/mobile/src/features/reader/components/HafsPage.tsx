@@ -17,7 +17,6 @@ export function HafsPage({
   executor,
   chapters,
   fontScale,
-  selectedVerseKey,
   recitedVerseKey = null,
   recitedWord = null,
   highlightsByVerseId,
@@ -35,7 +34,6 @@ export function HafsPage({
   executor: SqlExecutor;
   chapters: ReadonlyMap<number, ChapterRecord>;
   fontScale: number;
-  selectedVerseKey: string | null;
   /** The ayah the player is reciting. */
   recitedVerseKey?: string | null;
   recitedWord?: number | null;
@@ -92,7 +90,6 @@ export function HafsPage({
         onPressVerse={onSelectVerseKey}
         recitedVerseKey={recitedVerseKey}
         recitedWord={recitedWord}
-        selectedVerseKey={selectedVerseKey}
         testID={testID ? `${testID}-page-${page}` : undefined}
         verses={verses}
       />

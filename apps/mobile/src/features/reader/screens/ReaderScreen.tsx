@@ -246,20 +246,12 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   };
 
   // A sheet covers the reader without changing it: the toolbar stays, the page keeps its inset and scroll,
-  // and the resume pill doesn't appear for the ayah the sheet was opened on.
+  // and the resume pill stays hidden while the sheet is open.
   const sheetOpen = segments.some((segment) => segment === 'reader-settings' || segment === 'ayah' || segment === 'tafsir');
-  // Focus pages one ayah at a time with its own transport, so the resume pill has nothing to return to.
   const focus = mode === 'focus';
-  // While playing, a drag away from the recited ayah shows the pill back to it, in every mode.
   const shownKey = focus ? viewKey : visibleVerseKey;
   const recitingAway = playing && recitedVerseKey !== null && !follow.following && shownKey !== recitedVerseKey;
-  const selectionPill =
-    !focus &&
-    selection.verseKey !== null &&
-    visibleVerseKey !== null &&
-    visibleVerseKey !== selection.verseKey &&
-    pinnedVerseKey !== selection.verseKey;
-  const showResume = !sheetOpen && (recitingAway || selectionPill);
+  const showResume = !sheetOpen && recitingAway;
 
   // Play from the focused ayah, or pause when the player is active.
   const playFocused = () => {
@@ -331,14 +323,8 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               {showResume ? (
                 <ResumePill
                   onPress={() => {
-                    if (recitingAway) {
-                      follow.resume();
-                      setPinnedVerseKey(null);
-                      return;
-                    }
-                    if (selection.verseKey !== null) {
-                      setPinnedVerseKey(selection.verseKey);
-                    }
+                    follow.resume();
+                    setPinnedVerseKey(null);
                   }}
                 />
               ) : null}
@@ -389,7 +375,6 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 khatmaMarkerVerseId={khatmaMarkerVerseId}
                 onOpenAyahActions={selectVerse}
                 onSelectVerseKey={selectVerse}
-                onUserScrollEnd={follow.onUserScrollEnd}
                 onUserScrollStart={follow.onUserScrollStart}
                 onVisiblePage={(page, key) => {
                   // The page holding the ayah the reader is at keeps that ayah, not the page's first one, so a
@@ -404,7 +389,6 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 }}
                 recitedVerseKey={recitedVerseKey}
                 recitedWord={activeWord}
-                selectedVerseKey={selection.verseKey}
                 testID="reader-mushaf"
                 topInset={topInset}
               />
@@ -419,7 +403,6 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onPlay={audioAvailable ? playFocused : undefined}
                 onStep={stepRecitation}
                 onUserMove={follow.onUserScrollStart}
-                onUserMoveEnd={follow.onUserScrollEnd}
                 onVerseChange={(key) => {
                   setPinnedVerseKey(key);
                   if (!active) {
@@ -450,7 +433,6 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 onPause={pause}
                 onPlayVerseKey={(key) => void playVerse(key)}
                 onSelectVerseKey={selectVerse}
-                onUserScrollEnd={follow.onUserScrollEnd}
                 onUserScrollStart={follow.onUserScrollStart}
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);
@@ -461,7 +443,6 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 }}
                 playing={playing}
                 recitedVerseKey={recitedVerseKey}
-                selectedVerseKey={selection.verseKey}
                 testID="reader-reading"
                 topInset={topInset}
               />

@@ -37,6 +37,8 @@ export type PlayerState = {
   activeWord: number | null;
   /** The ayah range being repeated in the current surah. Null when no repeat is set. */
   repeat: RepeatRange | null;
+  /** Monotonic counter bumped on each user play/resume command; the reader uses it to resume following (ADR 0037). */
+  playCommand: number;
 };
 
 export type LoadRequest = {
@@ -78,6 +80,7 @@ export type PlayerActions = {
   advanceRepeat: () => void;
   restore: (request: RestoreRequest) => void;
   reset: () => void;
+  bumpPlayCommand: () => void;
 };
 
 export const initialPlayerState: PlayerState = {
@@ -93,6 +96,7 @@ export const initialPlayerState: PlayerState = {
   activeVerseId: null,
   activeWord: null,
   repeat: null,
+  playCommand: 0,
 };
 
 export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
@@ -150,6 +154,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       repeat: null,
     }),
   reset: () => set(initialPlayerState),
+  bumpPlayCommand: () => set((state) => ({ playCommand: state.playCommand + 1 })),
 }));
 
 export function isChapterId(value: unknown): value is number {

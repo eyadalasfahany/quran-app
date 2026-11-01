@@ -4,6 +4,7 @@ import { ScrollView } from 'react-native';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { ThemeProvider, themes } from '@/core/theme';
+import { usePlayerStore } from '@/features/audio/playerStore';
 
 import { NowPlayingAyah, type AyahWord } from './NowPlayingAyah';
 
@@ -133,6 +134,7 @@ describe('NowPlayingAyah follow', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     scrollTo().mockClear();
+    usePlayerStore.getState().reset();
   });
 
   afterEach(() => {
@@ -175,7 +177,7 @@ describe('NowPlayingAyah follow', () => {
     expect(scrollTo(view).mock.calls.filter(([options]) => options.animated)).toEqual([]);
   });
 
-  it('pauses following on a drag, and resumes it 5 s after the drag ends', async () => {
+  it('pauses following on a drag and stays paused until a new play command', async () => {
     const view = await renderFollowing();
     const scroll = view.getByTestId('now-playing-scroll');
     scrollTo(view).mockClear();
@@ -186,14 +188,13 @@ describe('NowPlayingAyah follow', () => {
     expect(scrollTo(view)).not.toHaveBeenCalledWith(expect.objectContaining({ animated: true }));
 
     await act(async () => {
-      jest.advanceTimersByTime(4999);
+      jest.advanceTimersByTime(10_000);
     });
     expect(scrollTo(view)).not.toHaveBeenCalledWith(expect.objectContaining({ animated: true }));
 
     await act(async () => {
-      jest.advanceTimersByTime(1);
+      usePlayerStore.getState().bumpPlayCommand();
     });
-    // 302 pt viewport: the line at 250 lands at 250 - 302 / 3.
     expect(scrollTo(view)).toHaveBeenLastCalledWith({ animated: true, y: expect.closeTo(250 - 302 / 3, 5) });
   });
 

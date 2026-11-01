@@ -11,11 +11,12 @@ import { themes } from '@/core/theme';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { pageForVerse } from '@/features/reader/anchor/page';
 import { verseKeyToId } from '../data/verses';
+import * as readingAnchor from '../anchor/reading-anchor';
+import { resetReaderSelection, useReaderSelection } from '../selection';
 
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
-import { resetReaderSelection } from '../selection';
 import { resetReaderSettingsStore, useReaderSettings } from '../settings';
 import { ReaderScreen } from './ReaderScreen';
 
@@ -42,6 +43,7 @@ let mockMushafProps:
       anchorVerseKey: string;
       contentBottomInset?: number;
       highlightsByVerseId?: ReadonlyMap<number, string>;
+      onSelectVerseKey?: (verseKey: string) => void;
       onVisiblePage?: (page: number, verseKey: string) => void;
       onUserScrollStart?: () => void;
     }
@@ -50,7 +52,7 @@ jest.mock('../HafsMushafList', () => {
   const { createElement } = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
-    HafsMushafList: (props: { anchorVerseKey: string; contentBottomInset?: number; testID?: string; topInset?: number }) => {
+    HafsMushafList: (props: NonNullable<typeof mockMushafProps> & { testID?: string; topInset?: number }) => {
       mockMushafProps = props;
       return createElement(View, { style: { paddingTop: props.topInset }, testID: props.testID });
     },
@@ -61,6 +63,7 @@ let mockReadingProps:
   | {
       anchorVerseKey?: string;
       contentBottomInset?: number;
+      onSelectVerseKey?: (verseKey: string) => void;
       onUserScrollStart?: () => void;
       onVisibleVerseKey?: (verseKey: string) => void;
       testID?: string;
@@ -91,9 +94,16 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light' },
 }));
 
+const mockRouterPush = jest.fn();
 jest.mock('expo-router', () => ({
   ...jest.requireActual('expo-router'),
   useSegments: jest.fn(() => []),
+  router: {
+    back: jest.fn(),
+    canGoBack: jest.fn(() => true),
+    push: (...args: unknown[]) => mockRouterPush(...args),
+    replace: jest.fn(),
+  },
 }));
 
 // The app root provides the insets; the toolbar clears the top inset itself, so the screen adds none.
@@ -116,6 +126,7 @@ describe('ReaderScreen', () => {
     resetReaderSettingsStore();
     resetReaderSelection();
     jest.mocked(useSegments).mockReturnValue([] as unknown as ReturnType<typeof useSegments>);
+    mockRouterPush.mockClear();
     mockExecutor = undefined;
   });
 
@@ -425,6 +436,188 @@ describe('ReaderScreen', () => {
       });
       expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
       expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
+    });
+  });
+
+  describe('ADR 0037 follow and tap', () => {
+    let writeAnchor: jest.SpiedFunction<typeof readingAnchor.writeReadingAnchor>;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      usePlayerStore.getState().reset();
+      writeAnchor = jest.spyOn(readingAnchor, 'writeReadingAnchor').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+      usePlayerStore.getState().reset();
+      writeAnchor.mockRestore();
+    });
+
+    async function playingAt(verseKey: string, mode: 'mushaf' | 'reading' | 'focus') {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode(mode);
+      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 2, positionMs: 0, durationMs: 48_000 });
+      usePlayerStore.getState().markPlaying();
+      usePlayerStore.setState({ activeVerseId: verseKeyToId(executor, verseKey) ?? null });
+      return { executor, verseKey };
+    }
+
+    async function scrollAwayFromRecitation(mode: 'mushaf' | 'reading', executor: SqlExecutor) {
+      await act(async () => {
+        if (mode === 'mushaf') {
+          mockMushafProps?.onUserScrollStart?.();
+          mockMushafProps?.onVisiblePage?.(pageForVerse(executor, '2:250')!, '2:250');
+        } else {
+          mockReadingProps?.onUserScrollStart?.();
+          mockReadingProps?.onVisibleVerseKey?.('2:250');
+        }
+      });
+    }
+
+    it.each(['mushaf', 'reading'] as const)(
+      'in %s, a drag pauses following and it stays paused after 10 s with no jump back',
+      async (mode) => {
+        const { executor } = await playingAt('2:256', mode);
+        await renderUi(reader('2:256'));
+        const anchorBefore = mode === 'mushaf' ? mockMushafProps?.anchorVerseKey : mockReadingProps?.anchorVerseKey;
+
+        await scrollAwayFromRecitation(mode, executor);
+        await act(async () => {
+          jest.advanceTimersByTime(10_000);
+        });
+
+        if (mode === 'mushaf') {
+          expect(mockMushafProps?.anchorVerseKey).toBe(anchorBefore);
+        } else {
+          expect(mockReadingProps?.anchorVerseKey).toBe(anchorBefore);
+        }
+      },
+    );
+
+    it.each(['mushaf', 'reading'] as const)(
+      'in %s, the resume pill appears off the recited ayah and resumes following',
+      async (mode) => {
+        const { executor } = await playingAt('2:256', mode);
+        const view = await renderUi(reader('2:256'));
+        await scrollAwayFromRecitation(mode, executor);
+
+        expect(view.getByTestId('reader-resume')).toBeOnTheScreen();
+        await act(async () => {
+          fireEvent.press(view.getByRole('button', { name: 'العودة إلى الآية الحالية' }));
+        });
+
+        if (mode === 'mushaf') {
+          expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
+        } else {
+          expect(mockReadingProps?.anchorVerseKey).toBe('2:256');
+        }
+      },
+    );
+
+    it.each(['mushaf', 'reading'] as const)(
+      'in %s, a play command resumes following but an automatic ayah advance does not',
+      async (mode) => {
+        const { executor } = await playingAt('2:256', mode);
+        await renderUi(reader('2:256'));
+        await scrollAwayFromRecitation(mode, executor);
+
+        await act(async () => {
+          usePlayerStore.getState().bumpPlayCommand();
+        });
+        if (mode === 'mushaf') {
+          expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
+        } else {
+          expect(mockReadingProps?.anchorVerseKey).toBe('2:256');
+        }
+
+        await scrollAwayFromRecitation(mode, executor);
+        const anchorPaused = mode === 'mushaf' ? mockMushafProps?.anchorVerseKey : mockReadingProps?.anchorVerseKey;
+
+        await act(async () => {
+          usePlayerStore.setState({ activeVerseId: verseKeyToId(executor, '2:257') ?? null });
+        });
+
+        if (mode === 'mushaf') {
+          expect(mockMushafProps?.anchorVerseKey).toBe(anchorPaused);
+        } else {
+          expect(mockReadingProps?.anchorVerseKey).toBe(anchorPaused);
+        }
+      },
+    );
+
+    it.each(['mushaf', 'reading'] as const)(
+      'in %s, tapping an ayah opens selection without highlight, anchor write or player change',
+      async (mode) => {
+        mockExecutor = (await openReaderTestContent()).executor;
+        useReaderSettings.getState().setMode(mode);
+        const playerBefore = usePlayerStore.getState();
+        await renderUi(reader('2:255'));
+
+        writeAnchor.mockClear();
+        await act(async () => {
+          if (mode === 'mushaf') {
+            mockMushafProps?.onSelectVerseKey?.('2:250');
+          } else {
+            mockReadingProps?.onSelectVerseKey?.('2:250');
+          }
+        });
+
+        expect(useReaderSelection.getState().verseKey).toBe('2:250');
+        expect(writeAnchor).not.toHaveBeenCalled();
+        expect(usePlayerStore.getState()).toMatchObject({
+          chapterId: playerBefore.chapterId,
+          status: playerBefore.status,
+          activeVerseId: playerBefore.activeVerseId,
+        });
+        expect(mockMushafProps).not.toHaveProperty('selectedVerseKey');
+        expect(mockReadingProps).not.toHaveProperty('selectedVerseKey');
+      },
+    );
+
+    it.each(['mushaf', 'reading'] as const)(
+      'in %s, no resume pill after tapping an ayah and scrolling away while idle',
+      async (mode) => {
+        mockExecutor = (await openReaderTestContent()).executor;
+        useReaderSettings.getState().setMode(mode);
+        const view = await renderUi(reader('2:255'));
+
+        await act(async () => {
+          if (mode === 'mushaf') {
+            mockMushafProps?.onSelectVerseKey?.('2:250');
+            mockMushafProps?.onVisiblePage?.(pageForVerse(mockExecutor!, '2:252')!, '2:252');
+          } else {
+            mockReadingProps?.onSelectVerseKey?.('2:250');
+            mockReadingProps?.onVisibleVerseKey?.('2:252');
+          }
+        });
+
+        expect(view.queryByTestId('reader-resume')).toBeNull();
+      },
+    );
+
+    it('in focus, shows the resume pill off the recited ayah and returns on press', async () => {
+      await playingAt('2:256', 'focus');
+      const view = await renderUi(reader('2:255'));
+
+      expect(view.getByTestId('reader-resume')).toBeOnTheScreen();
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'العودة إلى الآية الحالية' }));
+      });
+      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
+    });
+
+    it('in focus, tapping opens selection without writing the anchor', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('focus');
+      const view = await renderUi(reader('1:1'));
+      writeAnchor.mockClear();
+
+      await fireEvent.press(view.getByTestId('focus-stage-marker'));
+
+      expect(useReaderSelection.getState().verseKey).toBe('1:1');
+      expect(writeAnchor).not.toHaveBeenCalled();
     });
   });
 

@@ -1,22 +1,21 @@
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
 import { useWindowDimensions, View } from 'react-native';
+import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
+import { useTabBarHiddenOnScroll } from '@/core/layout/useTabBarHiddenOnScroll';
 import { FLOATING_TAB_BAR, TAB_RAIL } from '@/core/layout/tab-bar-clearance';
 import { useScreenInsets } from '@/core/layout/useScreenInsets';
 import { useIsShortWindow } from '@/core/layout/useWindowClass';
+import { spring } from '@/core/theme/motion';
 import { useTheme } from '@/core/theme';
 
 import { GlassSurface } from './GlassSurface';
 
 // The floating tab bar (ADR 0033 §2): a 64 pt capsule, 16 from each side, 12 above the system navigation inset.
-// The side insets (a notch in landscape) push the capsule in from that edge, in reading direction. The surface is the
-// solid glassFallback with a hairline and the token shadow (Android has no glass). Items sit in a row, so RTL mirrors
-// their order: the first tab is the rightmost one in Arabic. `hidden` drops the bar on expanded windows, where the
-// sidebar takes over.
+// Scrolling down in a tab screen slides it off the bottom edge; scrolling up brings it back.
 //
-// In a short window the same items stand in a vertical rail on the start edge, 12 past the start safe area, vertically
-// centred (developer, 1 Nov 2026; ADR 0036). Items stack top to bottom; each keeps its icon over its label. The rail
-// is drawn on both platforms; the items and their roles are the same.
+// In a short window the same items stand in a vertical rail on the start edge (ADR 0036).
 export function FloatingTabBar({
   label,
   hidden = false,
@@ -30,13 +29,32 @@ export function FloatingTabBar({
   const insets = useScreenInsets();
   const short = useIsShortWindow();
   const { height } = useWindowDimensions();
+  const scrollHidden = useTabBarHiddenOnScroll();
+  const slide = useSharedValue(0);
+  const hideDistance = FLOATING_TAB_BAR.height + FLOATING_TAB_BAR.offset + insets.bottom + 16;
+
+  useEffect(() => {
+    slide.value = withSpring(scrollHidden ? 1 : 0, spring());
+  }, [scrollHidden, slide]);
+
+  const bottom = insets.bottom + FLOATING_TAB_BAR.offset;
+  const fullStart = FLOATING_TAB_BAR.side + insets.start;
+  const trailEnd = FLOATING_TAB_BAR.side + insets.end;
+
+  const dockStyle = useAnimatedStyle(() => ({
+    bottom,
+    end: trailEnd,
+    opacity: interpolate(slide.value, [0, 1], [1, 0]),
+    position: 'absolute' as const,
+    start: fullStart,
+    transform: [{ translateY: interpolate(slide.value, [0, 1], [0, hideDistance]) }],
+  }));
 
   if (hidden) {
     return null;
   }
 
   if (short) {
-    // The rail keeps 12 clear above and below, so a short window still shows it whole.
     const railHeight = Math.min(TAB_RAIL.height, height - TAB_RAIL.offset * 2);
     return (
       <View
@@ -65,16 +83,7 @@ export function FloatingTabBar({
   }
 
   return (
-    <View
-      pointerEvents="box-none"
-      testID="floating-tab-bar-dock"
-      style={{
-        bottom: insets.bottom + FLOATING_TAB_BAR.offset,
-        end: FLOATING_TAB_BAR.side + insets.end,
-        position: 'absolute',
-        start: FLOATING_TAB_BAR.side + insets.start,
-      }}
-    >
+    <Animated.View pointerEvents={scrollHidden ? 'none' : 'box-none'} testID="floating-tab-bar-dock" style={dockStyle}>
       <GlassSurface
         accessibilityLabel={label}
         accessibilityRole="tablist"
@@ -90,6 +99,6 @@ export function FloatingTabBar({
       >
         {children}
       </GlassSurface>
-    </View>
+    </Animated.View>
   );
 }

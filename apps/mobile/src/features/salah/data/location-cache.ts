@@ -96,3 +96,11 @@ export function invalidatePrayerLocation(): void {
   entry = null;
   inFlight = null;
 }
+
+/** Re-reads unless a read is already in flight, which the caller then shares. Several screens call this at once on foreground. */
+export function reloadPrayerLocation(): Promise<PrayerLocationSnapshot> {
+  if (inFlight === null) {
+    invalidatePrayerLocation();
+  }
+  return loadPrayerLocation();
+}

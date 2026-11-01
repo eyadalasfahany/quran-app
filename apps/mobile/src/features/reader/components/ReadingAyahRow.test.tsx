@@ -54,49 +54,6 @@ describe('ReadingAyahRow', () => {
     return flatStyle(text.parent!.props.style);
   }
 
-  it('shows the active wash and brand rule when selected', async () => {
-    const view = await renderUi(
-      <ReadingAyahRow onPress={() => undefined} selected testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
-    );
-    expect(quranBlockStyle(view)).toMatchObject({
-      backgroundColor: colors.highlightActive,
-      borderStartColor: colors.brand,
-      borderStartWidth: themes.light.stroke.activeRule,
-    });
-    expect(view.getByRole('button', { name: 'text الآية ١' }).props.accessibilityState).toMatchObject({ selected: true });
-  });
-
-  // ADR 0012: a user's colour fills the ayah; the selection wash shows only on an ayah without one.
-  it.each(locales)('selected and highlighted: fills with the colour and keeps the brand rule (%s)', async (locale) => {
-    const view = await renderUi(
-      <ReadingAyahRow
-        highlightColor="green"
-        onPress={() => undefined}
-        selected
-        testID="row"
-        textImlaei="text"
-        textUthmani="ٱللَّهُ"
-        verseNumber={1}
-      />,
-      { locale },
-    );
-    expect(quranBlockStyle(view)).toMatchObject({
-      backgroundColor: colors.highlightGreen,
-      borderStartColor: colors.brand,
-      borderStartWidth: themes.light.stroke.activeRule,
-    });
-    const name = `text ${i18n.t('ui.ayahNumber', { number: formatNumber(1, locale) })} ${i18n.t('ui.highlight.green')}`;
-    expect(view.getByRole('button', { name }).props.accessibilityState).toMatchObject({ selected: true });
-  });
-
-  it.each(locales)('selected only: shows the selection wash (%s)', async (locale) => {
-    const view = await renderUi(
-      <ReadingAyahRow onPress={() => undefined} selected testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,
-      { locale },
-    );
-    expect(quranBlockStyle(view)).toMatchObject({ backgroundColor: colors.highlightActive, borderStartColor: colors.brand });
-  });
-
   it.each(locales)('highlighted only: fills with the colour and no brand rule (%s)', async (locale) => {
     const view = await renderUi(
       <ReadingAyahRow highlightColor="rose" onPress={() => undefined} testID="row" textImlaei="text" textUthmani="ٱللَّهُ" verseNumber={1} />,

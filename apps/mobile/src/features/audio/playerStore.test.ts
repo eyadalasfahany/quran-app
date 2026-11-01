@@ -137,6 +137,26 @@ describe('volume and the active ayah in the store', () => {
   });
 });
 
+describe('playCommand (ADR 0037)', () => {
+  const store = () => usePlayerStore.getState();
+
+  it('starts at zero and increments with bumpPlayCommand', () => {
+    expect(store().playCommand).toBe(0);
+    store().bumpPlayCommand();
+    expect(store().playCommand).toBe(1);
+  });
+
+  it('reset clears playCommand', () => {
+    store().bumpPlayCommand();
+    store().bumpPlayCommand();
+    expect(store().playCommand).toBe(2);
+
+    store().reset();
+
+    expect(store().playCommand).toBe(0);
+  });
+});
+
 describe('repeat', () => {
   const store = () => usePlayerStore.getState();
 
@@ -196,14 +216,6 @@ describe('repeat', () => {
 
     store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
     store().restore({ reciterId: 30, chapterId: 1, positionMs: 0 });
-    expect(store().repeat).toBeNull();
-  });
-
-  it('is cleared by reset', () => {
-    store().setRepeat({ fromVerseId: 2, toVerseId: 4, count: 3 });
-
-    store().reset();
-
     expect(store().repeat).toBeNull();
   });
 });

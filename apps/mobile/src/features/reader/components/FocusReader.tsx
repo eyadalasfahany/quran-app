@@ -24,7 +24,6 @@ export function FocusReader({
   onVerseChange,
   onStep,
   onUserMove,
-  onUserMoveEnd,
   onOpenActions,
 }: {
   verseKey: string;
@@ -43,7 +42,6 @@ export function FocusReader({
   onStep?: (verseKey: string, way: 'next' | 'previous') => void;
   /** The reader moved by hand (step, swipe or progress): following pauses. */
   onUserMove?: () => void;
-  onUserMoveEnd?: () => void;
   onOpenActions?: (verseKey: string) => void;
 }) {
   const stage = useMemo(() => {
@@ -76,7 +74,6 @@ export function FocusReader({
   const { chapter, next, previous, verse } = stage;
   const moveTo = (key: string, way: 'next' | 'previous' | null) => {
     onUserMove?.();
-    onUserMoveEnd?.();
     if (way !== null) {
       onStep?.(key, way);
     }
@@ -91,7 +88,6 @@ export function FocusReader({
       highlightColor={highlightsByVerseId?.get(verse.id) ?? null}
       nextNumber={next?.verseNumber ?? null}
       nextText={next?.textUthmani ?? null}
-      onDragFinish={onUserMoveEnd}
       onDragStart={onUserMove}
       onNext={next === undefined ? undefined : () => moveTo(next.verseKey, 'next')}
       onOpenActions={onOpenActions === undefined ? undefined : () => onOpenActions(verse.verseKey)}

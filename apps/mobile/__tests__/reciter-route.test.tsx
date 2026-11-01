@@ -35,10 +35,15 @@ jest.mock('@/features/khatma/data/hooks', () => ({
   useKhatmaMarkerVerseId: () => null,
 }));
 
+jest.mock('@/core/sync/useStaleContent', () => ({
+  useStaleContent: jest.fn(() => false),
+}));
+
 // The user database is not open under Jest; the Listen tab (the route's parent) reads no downloads.
 jest.mock('@/features/audio/data/downloads', () => ({
   ...jest.requireActual<typeof import('@/features/audio/data/downloads')>('@/features/audio/data/downloads'),
   useDoneCountsByReciter: () => ({}),
+  useVerifyNeededCounts: () => ({}),
   useReciterDownloads: () => ({ data: [] }),
 }));
 

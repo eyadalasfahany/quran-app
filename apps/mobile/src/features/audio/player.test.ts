@@ -1,7 +1,7 @@
 import { getNetworkStateAsync } from 'expo-network';
 import { AppState } from 'react-native';
 
-import { resetNetworkStateForTests, startNetworkWatch, useNetworkStatus } from '@/core/network/network-state';
+import { resetNetworkStateForTests, startNetworkWatch, useNetworkStatus, ONLINE_DEBOUNCE_MS } from '@/core/network/network-state';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
@@ -1238,6 +1238,12 @@ describe('offline gate', () => {
     resetNetworkStateForTests();
     startNetworkWatch();
     await flush();
+    if (state.isConnected === false || state.isInternetReachable === false) {
+      useNetworkStatus.setState({
+        online: false,
+        changedAt: Date.now() - ONLINE_DEBOUNCE_MS,
+      });
+    }
   }
 
   function download(overrides: Partial<DownloadRow>): void {
@@ -1327,12 +1333,42 @@ describe('offline gate', () => {
       await playChapter(2);
       expect(usePlayerStore.getState().status).toBe('loading');
 
-      useNetworkStatus.setState({ online: false });
+      useNetworkStatus.setState({ online: false, changedAt: Date.now() - ONLINE_DEBOUNCE_MS });
       jest.advanceTimersByTime(10_000);
 
       expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'offline' });
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+describe('playCommand (ADR 0037)', () => {
+  it('increments on playChapter, playFromVerse and resume, not on pause, seek or nextAyah', async () => {
+    const command = () => usePlayerStore.getState().playCommand;
+
+    await playChapter(1);
+    await flush();
+    expect(command()).toBe(1);
+
+    await playFromVerse('1:7');
+    await flush();
+    expect(command()).toBe(2);
+
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true });
+    pause();
+    expect(command()).toBe(2);
+
+    await resume();
+    await flush();
+    expect(command()).toBe(3);
+
+    seek(1000);
+    expect(command()).toBe(3);
+
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 1 });
+    await nextAyah();
+    await flush();
+    expect(command()).toBe(3);
   });
 });

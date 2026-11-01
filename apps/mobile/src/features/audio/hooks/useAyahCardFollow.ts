@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ScrollViewInstance } from 'react-native';
 
-import { FOLLOW_RESUME_MS, FOLLOWING, pauseFollow, scrollEnded, settleFollow, type FollowState } from '@/features/reader/follow';
+import { usePlayerStore } from '@/features/audio/playerStore';
+import { FOLLOWING, pauseFollow, type FollowState } from '@/features/reader/follow';
 import { recitedWordOffset, type TextLine } from '@/features/reader/word-follow';
 
 import { ayahFollowTarget } from '../ayah-follow';
 
 /**
- * Keeps the ayah card's recited word on screen while the player plays (developer, 29 Oct 2026). A drag on the card
- * pauses following; the drag's end starts the 5 s clock, the same rule as the reader. A new ayah scrolls the card
- * to its top. The card's Text reports its lines, and its scroll view reports its offset and height.
+ * Keeps the ayah card's recited word on screen while the player plays. A drag pauses following until a new play
+ * command (ADR 0037, same rule as the reader).
  */
 export function useAyahCardFollow({
   activeWord,
@@ -31,19 +31,19 @@ export function useAyahCardFollow({
   scrollRef: RefObject<ScrollViewInstance | null>;
 }) {
   const offsetRef = useRef(0);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const [layout, setLayout] = useState<{ label: string; lines: readonly TextLine[] } | null>(null);
   const [follow, setFollow] = useState<FollowState>(FOLLOWING);
+  const playCommand = usePlayerStore((store) => store.playCommand);
+  const seenPlayCommand = useRef(playCommand);
 
-  const clearTimer = useCallback(() => {
-    if (timer.current !== null) {
-      clearTimeout(timer.current);
-      timer.current = null;
+  useEffect(() => {
+    if (playCommand === seenPlayCommand.current) {
+      return;
     }
-  }, []);
-
-  useEffect(() => clearTimer, [clearTimer]);
+    seenPlayCommand.current = playCommand;
+    setFollow(FOLLOWING);
+  }, [playCommand]);
 
   // A new ayah starts at its top.
   useEffect(() => {
@@ -83,19 +83,12 @@ export function useAyahCardFollow({
   }, []);
 
   const onScrollBeginDrag = useCallback(() => {
-    clearTimer();
     setFollow(pauseFollow(Date.now()));
-  }, [clearTimer]);
+  }, []);
 
   const onScrollEndDrag = useCallback(() => {
-    clearTimer();
-    const now = Date.now();
-    setFollow((current) => scrollEnded(current, now));
-    timer.current = setTimeout(() => {
-      timer.current = null;
-      setFollow((current) => settleFollow(current, Date.now()));
-    }, FOLLOW_RESUME_MS);
-  }, [clearTimer]);
+    // Following stays paused until a new play command (ADR 0037).
+  }, []);
 
   return { onScroll, onScrollBeginDrag, onScrollEndDrag, onTextLayout, onViewportLayout };
 }

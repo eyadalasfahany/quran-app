@@ -57,7 +57,6 @@ function listPage(page: number, props: Partial<Parameters<typeof MushafListPage>
       framePadding={framePadding}
       highlightsByVerseId={new Map()}
       page={page}
-      selectedVerseId={null}
       testID="mushaf-page"
       {...props}
     />

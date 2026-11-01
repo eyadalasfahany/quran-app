@@ -6,6 +6,7 @@ import { Dimensions, Platform, Text } from 'react-native';
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../jest/ui-source';
 import type { SqlExecutor } from '@/core/db/sql-executor';
+import { resetNetworkStateForTests, useNetworkStatus } from '@/core/network/network-state';
 import { ThemeProvider, themes } from '@/core/theme';
 import { openAudioTestDb } from '@/features/audio/data/test-db';
 import { usePlayerStore } from '@/features/audio/playerStore';
@@ -165,6 +166,20 @@ describe('MainShell', () => {
       backgroundColor: themes.light.colors.surface,
       flex: 1,
     });
+  });
+
+  it('shows the offline notice while the device is offline', async () => {
+    resetNetworkStateForTests();
+    useNetworkStatus.setState({ online: false });
+    try {
+      const view = await renderUi(shell(false));
+
+      expect(
+        view.getByLabelText('أنت غير متصل. المصحف والتلاوات المحمّلة تعمل كالمعتاد.'),
+      ).toBeOnTheScreen();
+    } finally {
+      resetNetworkStateForTests();
+    }
   });
 
   it('adds the sidebar beside the tabs on expanded windows', async () => {

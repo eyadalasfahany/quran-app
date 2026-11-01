@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ContentColumn, useIsShortWindow, useTabRailSideInset, useWidthClass } from '@/core/layout';
+import { ContentColumn, useIsShortWindow, useTabBarScrollHandlers, useTabRailSideInset, useWidthClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
 import { azkarHref } from '@/features/azkar/routes';
@@ -42,6 +42,7 @@ const ICON = {
 export function MenuScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const tabScroll = useTabBarScrollHandlers();
   const insets = useSafeAreaInsets();
   const miniShown = useMiniPlayerVisible('tabs');
   const previews = useMenuPreviews();
@@ -204,6 +205,7 @@ export function MenuScreen() {
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           testID="menu-scroll"
+          {...tabScroll}
         >
           <ScreenHeader testID="menu-title" title={t('menu.title')} />
           <MenuGrid columns={columns}>{cards}</MenuGrid>

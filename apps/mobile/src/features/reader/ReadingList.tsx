@@ -40,7 +40,6 @@ export type ReadingListProps = {
   mode?: 'reading';
   anchorVerseKey: string;
   fontScale?: number;
-  selectedVerseKey?: string | null;
   recitedVerseKey?: string | null;
   /** The recited word (1-based) inside the recited ayah, when the reciter has word segments. */
   activeWord?: number | null;
@@ -64,9 +63,8 @@ export type ReadingListProps = {
   /** Pauses the player; the recited row's play control calls it while playing. */
   onPause?: () => void;
   onVisibleVerseKey?: (verseKey: string) => void;
-  /** A drag began or ended: the reader is scrolling by hand, so following pauses. */
+  /** A drag began: the reader is scrolling by hand, so following pauses. */
   onUserScrollStart?: () => void;
-  onUserScrollEnd?: () => void;
   testID?: string;
 };
 
@@ -75,7 +73,6 @@ const NO_HIGHLIGHTS: ReadonlyMap<number, HighlightColor> = new Map();
 export function ReadingList({
   anchorVerseKey,
   fontScale = 1,
-  selectedVerseKey = null,
   recitedVerseKey = null,
   activeWord = null,
   audioAvailable = false,
@@ -94,7 +91,6 @@ export function ReadingList({
   onPause,
   onVisibleVerseKey,
   onUserScrollStart,
-  onUserScrollEnd,
   testID,
 }: ReadingListProps) {
   const theme = useTheme();
@@ -320,8 +316,8 @@ export function ReadingList({
 
   // FlashList repaints rows only when data or extraData changes; renderItem reads these three.
   const rowExtraData = useMemo(
-    () => ({ activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey, selectedVerseKey }),
-    [activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey, selectedVerseKey],
+    () => ({ activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey }),
+    [activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey],
   );
 
   const renderItem = ({ item }: ListRenderItemInfo<ReadingRow>) => {
@@ -342,7 +338,6 @@ export function ReadingList({
     }
 
     const { verse } = item;
-    const selected = selectedVerseKey === verse.verseKey;
     const recited = recitedVerseKey === verse.verseKey;
     const openActions = () => onOpenAyahActions(verse.verseKey);
     const openTafsir = onOpenTafsir === undefined ? undefined : () => onOpenTafsir(verse.verseKey);
@@ -371,7 +366,6 @@ export function ReadingList({
           playing={recitedPlaying}
           recited={recited}
           rowRef={followKey === verse.verseKey ? setFollowedRow : undefined}
-          selected={selected}
           testID={testID ? `${testID}-ayah-${verse.verseKey}` : undefined}
           textImlaei={verse.textImlaei}
           textUthmani={verse.textUthmani}
@@ -402,9 +396,7 @@ export function ReadingList({
             maintainVisibleContentPosition={{ autoscrollToTopThreshold: 10 }}
             onEndReached={extendEnd}
             onEndReachedThreshold={0.6}
-            onMomentumScrollEnd={onUserScrollEnd}
             onScrollBeginDrag={onUserScrollStart}
-            onScrollEndDrag={onUserScrollEnd}
             onStartReached={extendStart}
             onStartReachedThreshold={0.6}
             onViewableItemsChanged={onViewableItemsChanged}

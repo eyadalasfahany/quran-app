@@ -3,6 +3,7 @@ import { addNetworkStateListener, getNetworkStateAsync } from 'expo-network';
 import {
   isOnlineState,
   networkIsOffline,
+  ONLINE_DEBOUNCE_MS,
   resetNetworkStateForTests,
   startNetworkWatch,
   useNetworkStatus,
@@ -72,11 +73,46 @@ describe('networkIsOffline', () => {
     expect(networkIsOffline()).toBe(false);
   });
 
-  it('is true only once the device is known to be offline', () => {
-    useNetworkStatus.setState({ online: false });
+  it('is false when offline for less than the debounce window', () => {
+    useNetworkStatus.setState({ online: false, changedAt: Date.now() });
+    expect(networkIsOffline()).toBe(false);
+  });
+
+  it('is true once offline has held for at least the debounce window', () => {
+    useNetworkStatus.setState({ online: false, changedAt: Date.now() - ONLINE_DEBOUNCE_MS });
+    expect(networkIsOffline()).toBe(true);
+  });
+
+  it('does not restart the debounce window on repeated identical offline events', async () => {
+    read.mockResolvedValueOnce({ isConnected: true, isInternetReachable: true, type: 'WIFI' } as never);
+    let emit: ((state: { isConnected: boolean; isInternetReachable: boolean }) => void) | undefined;
+    listen.mockImplementationOnce((listener) => {
+      emit = listener as unknown as typeof emit;
+      return { remove: jest.fn() };
+    });
+
+    jest.useFakeTimers();
+    try {
+      startNetworkWatch();
+      await settle();
+      emit?.({ isConnected: false, isInternetReachable: false });
+      const firstAt = useNetworkStatus.getState().changedAt;
+      jest.advanceTimersByTime(500);
+      emit?.({ isConnected: false, isInternetReachable: false });
+      expect(useNetworkStatus.getState().changedAt).toBe(firstAt);
+      expect(networkIsOffline()).toBe(false);
+      jest.advanceTimersByTime(500);
+      expect(networkIsOffline()).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('is false at once when the device is back online', () => {
+    useNetworkStatus.setState({ online: false, changedAt: Date.now() - ONLINE_DEBOUNCE_MS });
     expect(networkIsOffline()).toBe(true);
 
-    useNetworkStatus.setState({ online: true });
+    useNetworkStatus.setState({ online: true, changedAt: Date.now() });
     expect(networkIsOffline()).toBe(false);
   });
 

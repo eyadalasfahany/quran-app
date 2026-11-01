@@ -51,6 +51,10 @@ jest.mock('@/core/db/content/open', () => ({
   useContentDb: () => ({ error: null, ready: mockContentDb.ready }),
 }));
 
+jest.mock('@/core/sync/useStaleContent', () => ({
+  useStaleContent: jest.fn(() => false),
+}));
+
 jest.mock('@/features/reader/data/verses', () => ({
   getVerseByKey: jest.fn(),
 }));

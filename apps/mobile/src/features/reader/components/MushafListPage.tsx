@@ -24,7 +24,6 @@ export function MushafListPage({
   framePadding,
   executor,
   chapterStarts,
-  selectedVerseId,
   activeVerseId,
   highlightsByVerseId,
   khatmaMarkerVerseId = null,
@@ -38,7 +37,6 @@ export function MushafListPage({
   framePadding: number;
   executor: SqlExecutor;
   chapterStarts: readonly ChapterRecord[];
-  selectedVerseId: number | null;
   activeVerseId: number | null;
   highlightsByVerseId: ReadonlyMap<number, HighlightColor>;
   khatmaMarkerVerseId?: number | null;
@@ -104,7 +102,6 @@ export function MushafListPage({
         lines={lines}
         onVerseLongPress={onOpenAyahActions}
         onVersePress={onSelectVerseId}
-        selectedVerseId={selectedVerseId}
         testID={testID}
       />
     </View>

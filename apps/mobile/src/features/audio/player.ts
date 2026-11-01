@@ -105,6 +105,11 @@ let lastTick: { reciterId: number; chapterId: number; positionMs: number } | nul
 
 const store = () => usePlayerStore.getState();
 
+/** Reader follow resumes on each explicit play or resume from the user (ADR 0037). */
+function bumpPlayCommand(): void {
+  store().bumpPlayCommand();
+}
+
 function contentDb(): SqlExecutor {
   return openContentDb().executor;
 }
@@ -664,6 +669,7 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
 /** Plays a surah from `fromMs` with the saved reciter (or the default one). */
 export function playChapter(chapterId: number, fromMs = 0): Promise<void> {
   return guarded(async () => {
+    bumpPlayCommand();
     releaseRepeat();
     await loadChapter(chapterId, fromMs, currentReciterId(contentDb()));
   });
@@ -672,6 +678,7 @@ export function playChapter(chapterId: number, fromMs = 0): Promise<void> {
 /** Plays from the start of an ayah: its surah file, seeked to the ayah's start. With no timings, from 0. */
 export function playFromVerse(verseKey: string): Promise<void> {
   return guarded(async () => {
+    bumpPlayCommand();
     releaseRepeat();
     const db = contentDb();
     const verse = getVerseByKey(db, verseKey);
@@ -814,6 +821,7 @@ export function resume(): Promise<void> {
     if (state.chapterId === null) {
       return;
     }
+    bumpPlayCommand();
     if (queue !== null && loadedChapterId === state.chapterId && state.status !== 'error') {
       startPlayback(queue, queue.playlist.currentIndex);
       store().markPlaying();

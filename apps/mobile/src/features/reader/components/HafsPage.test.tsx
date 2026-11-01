@@ -25,7 +25,6 @@ function hafsPage(page: number, props: Partial<Parameters<typeof HafsPage>[0]> =
       executor={executor}
       fontScale={1}
       page={page}
-      selectedVerseKey={null}
       testID="hafs"
       {...props}
     />
@@ -73,8 +72,8 @@ describe('HafsPage', () => {
     expect(flatStyle(view.getByTestId('hafs-page-1-ayah-1:1').props.style).backgroundColor).toBeUndefined();
   });
 
-  it('marks the selected ayah for assistive tech', async () => {
-    const view = await renderUi(hafsPage(1, { onOpenAyahActions: () => undefined, selectedVerseKey: '1:2' }));
+  it('marks the recited ayah for assistive tech', async () => {
+    const view = await renderUi(hafsPage(1, { onOpenAyahActions: () => undefined, recitedVerseKey: '1:2' }));
 
     expect(view.getByRole('button', { name: 'الآية ٢' }).props.accessibilityState).toMatchObject({ selected: true });
     expect(view.getByRole('button', { name: 'الآية ١' }).props.accessibilityState).toMatchObject({ selected: false });
