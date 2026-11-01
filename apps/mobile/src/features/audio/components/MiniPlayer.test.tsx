@@ -3,6 +3,8 @@ import { router } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { Dimensions, I18nManager } from 'react-native';
 
+import { scaleFontSize, textScaleFor } from '@quran/design-tokens';
+
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import type { SqlExecutor } from '@/core/db/sql-executor';
@@ -329,10 +331,11 @@ describe('MiniPlayer sidebar variant', () => {
     });
   });
 
-  it('sizes the tile at 44 with radius 14, and sets the title at 17/600 and the caption at 13', async () => {
+  it('sizes the tile at 44 with radius 14, and the text follows the window factor (ADR 0043)', async () => {
     setWindowWidth(1000);
     loadSurah('paused');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
+    const factor = textScaleFor({ width: 1000, height: 844 });
 
     expect(flatStyle(view.getByTestId('mini-player-tile', hidden).props.style)).toMatchObject({
       borderRadius: 14,
@@ -341,9 +344,9 @@ describe('MiniPlayer sidebar variant', () => {
     });
     expect(flatStyle(view.getByText('مشاري راشد العفاسي').props.style)).toMatchObject({
       fontFamily: uiFontFamilies[600],
-      fontSize: 17,
+      fontSize: scaleFontSize(17, factor),
     });
-    expect(flatStyle(view.getByText('الفاتحة').props.style).fontSize).toBe(13);
+    expect(flatStyle(view.getByText('الفاتحة').props.style).fontSize).toBe(scaleFontSize(13, factor));
   });
 
   it('shows the surah alone while no ayah is active', async () => {

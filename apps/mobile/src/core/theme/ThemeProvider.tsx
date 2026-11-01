@@ -1,12 +1,15 @@
 import type { ThemeName } from '@quran/design-tokens';
-import { createContext, use, type ReactNode } from 'react';
+import { createContext, use, useMemo, type ReactNode } from 'react';
 
-import { themes, type Theme } from './theme';
+import { useTextScale } from './useTextScale';
+import { themes, withTextScale, type Theme } from './theme';
 
 const ThemeContext = createContext<Theme>(themes.light);
 
 export function ThemeProvider({ name, children }: { name: ThemeName; children: ReactNode }) {
-  return <ThemeContext value={themes[name]}>{children}</ThemeContext>;
+  const factor = useTextScale();
+  const value = useMemo(() => withTextScale(themes[name], factor), [name, factor]);
+  return <ThemeContext value={value}>{children}</ThemeContext>;
 }
 
 export function useTheme(): Theme {

@@ -88,8 +88,12 @@ export function SegmentedControl<K extends string>({
             testID={testID ? `${testID}-${option.key}` : undefined}
           >
             {option.leading}
+            {/* Labels never break mid-word; they shrink a little instead ("Bookmarks" in English). */}
             <UiText
+              adjustsFontSizeToFit
               align="center"
+              minimumFontScale={0.75}
+              numberOfLines={1}
               tone={selected ? 'ink' : 'muted'}
               variant="subhead"
               weight={selected ? 600 : 500}

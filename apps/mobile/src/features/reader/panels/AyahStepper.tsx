@@ -63,7 +63,8 @@ export function AyahStepper({
           alignItems: 'center',
           flexDirection: 'row',
           gap: theme.space[1],
-          maxWidth: '50%',
+          // English labels are longer; Arabic still shrinks to fit.
+          maxWidth: '70%',
           padding: theme.space[1],
         }}
         testID={`${testID}-pill`}
@@ -121,7 +122,16 @@ function StepButton({
       })}
       testID={testID}
     >
-      <UiText align="center" scale="bar" tone={tone} variant={pill ? 'caption' : 'subhead'} weight={600}>
+      <UiText
+        adjustsFontSizeToFit
+        align="center"
+        minimumFontScale={0.8}
+        numberOfLines={1}
+        scale="bar"
+        tone={tone}
+        variant={pill ? 'caption' : 'subhead'}
+        weight={600}
+      >
         {label}
       </UiText>
     </Pressable>

@@ -9,7 +9,13 @@ export function NowPlayingTitle({ reciter, surah, style }: { reciter: string; su
 
   return (
     <View style={{ alignItems: 'center', gap: 6 }}>
-      <UiText accessibilityRole="header" style={{ color: theme.colors.playerInk }} testID="now-playing-reciter" variant="title">
+      <UiText
+        accessibilityRole="header"
+        align="center"
+        style={{ color: theme.colors.playerInk }}
+        testID="now-playing-reciter"
+        variant="title"
+      >
         {reciter}
       </UiText>
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: 8 }}>

@@ -615,7 +615,7 @@
     "startLabel": "Start from",
     "startLastRead": "Where I left off · {{place}}",
     "startBeginning": "From the beginning · Al-Fatiha",
-    "lastReadPlace": "{{surah}} {{ayah}}",
+    "lastReadPlace": "{{surah}} · ayah {{ayah}}",
     "progressTitle": "Progress",
     "progressDay": "Day {{day}}",
     "progressFootnote": "If you miss a day, remaining pages are spread over the days ahead. No streak counter.",

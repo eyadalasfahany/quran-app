@@ -37,6 +37,12 @@ describe('AyahStepper', () => {
     expect(screen.getByRole('button', { name: 'Next ayah' }).props.accessibilityState).toEqual({ disabled: false });
   });
 
+  it('keeps each label on one line that shrinks, so English never wraps mid-word', async () => {
+    const screen = await renderUi(<AyahStepper variant="pill" />, { locale: 'en' });
+
+    expect(screen.getByText('Previous ayah').props).toMatchObject({ adjustsFontSizeToFit: true, numberOfLines: 1 });
+  });
+
   it('floats the pill above the bottom edge, centred, at the frame inset', async () => {
     const screen = await renderUi(<AyahStepper variant="pill" />, { locale: 'ar' });
     const bar = flatStyle(screen.getByTestId('ayah-stepper').props.style);

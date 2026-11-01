@@ -1,7 +1,14 @@
-import { typeScale, type ColorTokens, type FontWeight, type TypeToken } from '@quran/design-tokens';
-import { Text, type StyleProp, type TextProps, type TextStyle } from 'react-native';
+import {
+  scaleFontSize,
+  scaleLineHeight,
+  typeScale,
+  type ColorTokens,
+  type FontWeight,
+  type TypeToken,
+} from '@quran/design-tokens';
+import { StyleSheet, Text, type StyleProp, type TextProps, type TextStyle } from 'react-native';
 
-import { displayFontFamilies, uiFontFamilies } from '@/core/theme';
+import { displayFontFamilies, uiFontFamilies, useTextScale } from '@/core/theme';
 
 import { maxFontScale } from './textStyles';
 import { useContrastColors } from './useContrastColors';
@@ -49,17 +56,27 @@ export function UiText({
   const ui = token.family === 'ui';
   const resolvedWeight = weight ?? token.weight;
   const fontFamily = ui ? uiFontFamilies[resolvedWeight] : displayFontFamilies[resolvedWeight >= 600 ? 700 : 400];
+  const factor = useTextScale();
+  // UiText is the one place the window text factor is applied (ADR 0043), to the final size, token or override alike.
+  const flat: TextStyle = StyleSheet.flatten([
+    // 'left' is the start edge: React Native flips it to the right under RTL. Natural alignment would instead follow
+    // the language iOS picked at launch, which lags an in-app language switch until the next cold start.
+    { color: textToneColor(colors, tone), fontFamily, fontSize: token.size, lineHeight: token.lineHeight, textAlign: 'left' },
+    align ? { textAlign: align } : null,
+    style,
+  ]) ?? {};
+  const textStyle: TextStyle = {
+    ...flat,
+    fontSize: factor !== 1 && typeof flat.fontSize === 'number' ? scaleFontSize(flat.fontSize, factor) : flat.fontSize,
+    lineHeight: factor !== 1 && typeof flat.lineHeight === 'number' ? scaleLineHeight(flat.lineHeight, factor) : flat.lineHeight,
+  };
 
   return (
     <Text
       dynamicTypeRamp={'ramp' in token ? token.ramp : undefined}
       maxFontSizeMultiplier={maxFontScale[scale]}
       {...rest}
-      style={[
-        { color: textToneColor(colors, tone), fontFamily, fontSize: token.size, lineHeight: token.lineHeight },
-        align ? { textAlign: align } : null,
-        style,
-      ]}
+      style={textStyle}
     >
       {children}
     </Text>

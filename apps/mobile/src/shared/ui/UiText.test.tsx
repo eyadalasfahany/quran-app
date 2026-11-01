@@ -1,5 +1,6 @@
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
+import { resetWindowSize, setWindowSize } from '../../../jest/window-size';
 import { themes } from '@/core/theme';
 
 import { maxFontScale } from './textStyles';
@@ -70,6 +71,19 @@ describe('UiText', () => {
     expect(flatStyle(view.getByText('نص').props.style).textAlign).toBe('center');
   });
 
+  // 'left' is the start edge (React Native flips it under RTL), so alignment never waits for a cold start.
+  it.each(locales)('aligns to the start edge by default in %s', async (locale) => {
+    const view = await renderUi(<UiText>نص</UiText>, { locale });
+
+    expect(flatStyle(view.getByText('نص').props.style).textAlign).toBe('left');
+  });
+
+  it('lets a style override the default alignment', async () => {
+    const view = await renderUi(<UiText style={{ textAlign: 'right' }}>نص</UiText>);
+
+    expect(flatStyle(view.getByText('نص').props.style).textAlign).toBe('right');
+  });
+
   it('follows Increase Contrast through the muted tone', async () => {
     const view = await renderUi(<UiText tone="muted">نص</UiText>, { theme: 'dark' });
 
@@ -78,5 +92,32 @@ describe('UiText', () => {
 
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('UiText.tsx')).toEqual([]);
+  });
+
+  describe('window text scale (ADR 0043)', () => {
+    afterEach(() => {
+      resetWindowSize();
+    });
+
+    it('scales the body token in a 440 x 956 window', async () => {
+      setWindowSize(440, 956);
+      const view = await renderUi(<UiText>نص</UiText>);
+
+      expect(flatStyle(view.getByText('نص').props.style)).toMatchObject({ fontSize: 19.2, lineHeight: 29 });
+    });
+
+    it('scales an override style once, in the same window', async () => {
+      setWindowSize(440, 956);
+      const view = await renderUi(<UiText style={{ fontSize: 30, lineHeight: 40 }}>نص</UiText>);
+
+      expect(flatStyle(view.getByText('نص').props.style)).toMatchObject({ fontSize: 33.9, lineHeight: 45 });
+    });
+
+    it('keeps the frame sizes in a 390 x 844 window', async () => {
+      setWindowSize(390, 844);
+      const view = await renderUi(<UiText>نص</UiText>);
+
+      expect(flatStyle(view.getByText('نص').props.style)).toMatchObject({ fontSize: 17, lineHeight: 26 });
+    });
   });
 });

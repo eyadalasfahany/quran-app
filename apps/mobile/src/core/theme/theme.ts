@@ -3,6 +3,7 @@ import {
   colors,
   opacity,
   radius,
+  scaleTextStyle,
   shadows,
   size,
   space,
@@ -39,11 +40,12 @@ const uiTypeTokens = (Object.keys(typeScale) as TypeToken[]).filter(
   (token): token is UiTypeToken => typeScale[token].family === 'ui',
 );
 
-function uiText(): Record<UiTypeToken, TextStyle> {
+function uiText(factor = 1): Record<UiTypeToken, TextStyle> {
   return Object.fromEntries(
     uiTypeTokens.map((token) => {
-      const { size: fontSize, lineHeight, weight } = typeScale[token];
-      return [token, { fontFamily: uiFontFamilies[weight], fontSize, lineHeight }];
+      const { size, lineHeight, weight } = typeScale[token];
+      const scaled = scaleTextStyle({ size, lineHeight }, factor);
+      return [token, { fontFamily: uiFontFamilies[weight], fontSize: scaled.size, lineHeight: scaled.lineHeight }];
     }),
   ) as Record<UiTypeToken, TextStyle>;
 }
@@ -61,6 +63,11 @@ function createTheme(name: ThemeName): Theme {
     blur,
     text: uiText(),
   };
+}
+
+// The window text factor (ADR 0043) applies to the UI text styles only; a factor of 1 keeps the theme as it is.
+export function withTextScale(theme: Theme, factor: number): Theme {
+  return factor === 1 ? theme : { ...theme, text: uiText(factor) };
 }
 
 export const themes = Object.fromEntries(themeNames.map((name) => [name, createTheme(name)])) as Record<

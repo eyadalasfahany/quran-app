@@ -117,7 +117,7 @@ apps/api/app/
 ├── Domains/
 │   ├── Content/        verses, words, layouts, tafsir, packs, change feed
 │   ├── Audio/          recitations, chapter audio, timings
-│   ├── Hadith/         categories, hadiths, translations, daily rotation
+│   ├── Hadith/         full collections (ADR 0042); categories, daily rotation deferred
 │   ├── Identity/       users, email codes, Google, Apple, tokens, deletion, export
 │   ├── Sync/           user-data push/pull, conflict resolution, tombstones
 │   ├── Devices/        device registry, push tokens, notification preferences
@@ -168,9 +168,10 @@ Sync/
 | `ApplyResourceSnapshotJob` | `sync` | On `RESOURCE_CREATE` / `RESOURCE_INVALIDATE` | Downloads the snapshot and replaces that resource's rows |
 | `BuildContentPackJob` | `packs` | After a resource's version bumps | Builds the gzipped SQLite pack, stores size and SHA-256 |
 | `VerifyTextIntegrityJob` | `sync` | After every `quran_core` change | Recomputes ayah checksums; blocks pack publish on mismatch |
-| `SyncHadithJob` | `sync` | Daily 02:30 UTC | Pulls HadeethEnc categories and hadiths for `ar`, `en` |
+| `SyncHadithJob` | `sync` | Daily 02:30 UTC | Pulls HadeethEnc categories and hadiths for `ar`, `en` **Deferred (ADR 0042).** |
 | `SyncHijriJob` | `default` | Daily 00:05 UTC | Caches today's Hijri date from AlAdhan |
-| `SendDailyHadithJob` | `push` | Every 15 minutes | Sends to devices whose local send time has arrived |
+| `SendDailyHadithJob` | `push` | Every 15 minutes | Sends to devices whose local send time has arrived **Deferred (ADR 0042).** |
+| `hadith:import` (command, scheduled) | `default` | Weekly, Sunday 03:30 UTC | Re-imports the pinned fawazahmed0 snapshot (ADR 0042). A no-op while `HADITH_COLLECTIONS_IMPORT_ENABLED` is off or the pinned hashes are unchanged. Runs in the production release script from Phase 7 step 17 |
 | `ReadExpoReceiptsJob` | `push` | Every 30 minutes | Reads push receipts, disables dead tokens |
 | `PruneTombstonesJob` | `default` | Daily | Hard-deletes user rows tombstoned over 90 days ago |
 | `PruneLoginCodesJob` | `default` | Hourly | Deletes expired or used codes |
@@ -200,7 +201,9 @@ apps/mobile/
 │   ├── player.tsx                    full-screen player
 │   ├── search.tsx, khatma.tsx
 │   ├── azkar/index.tsx, category/[id].tsx, read/[categoryId].tsx, details/[entryKey].tsx (sheet), search.tsx, favorites.tsx, reminders.tsx (sheet), downloads.tsx   Phase 6, ADR 0031
-│   ├── hadith/index.tsx, category/[id].tsx, [id].tsx
+│   ├── hadith/index.tsx, search.tsx, downloads.tsx                          Phase 7, ADR 0042
+│   ├── hadith/[collection]/index.tsx, books/[book]/index.tsx, books/[book]/chapters/[chapter].tsx, hadith/[number].tsx
+│   │   (a book lists its hadith directly when the source has no chapters; HadeethEnc category/detail routes: deferred)
 │   ├── settings/index.tsx, downloads.tsx, account.tsx, sources.tsx
 │   ├── auth/sign-in.tsx, auth/verify.tsx
 │   └── delete-account.tsx            sheet
@@ -227,10 +230,12 @@ apps/mobile/
 | --- | --- | --- |
 | Quran text, layouts, tafsir, timings | `content.db`, read through feature repositories with Drizzle | Offline, large, read-only on device |
 | Bookmarks, highlights, notes, khatma, settings, outbox | `user.db`, Drizzle `useLiveQuery` | Reactive lists; survives content re-downloads |
-| Account, online tafsir lookups, hadith browsing | TanStack Query | Caching, retries, background refetch |
+| Account, online tafsir lookups, deferred HadeethEnc browsing | TanStack Query | Caching, retries, background refetch |
 | Player queue, active ayah and word, repeat range | Zustand `playerStore` | Read by reader, mini-player and player at 10 Hz |
 | Last-read verse and page, onboarding flags, theme | MMKV | Synchronous read before the database opens, for the 1.5 s cold start |
 | Auth token | `expo-secure-store` | Keychain / Keystore |
+
+Hadith collections read from `content.db` packs (ADR 0042), not through TanStack Query.
 
 **Responsive layout (phones, iPad, foldables)**
 
@@ -245,6 +250,7 @@ Layout is driven by the window's size from `useWindowDimensions`, never by `Plat
 - **`useWindowClass()`** returns `compact | medium | expanded`. The width classes keep a small hysteresis (±16) so a resize near a boundary doesn't flicker. A window under 480 pt high is compact whatever its width (ADR 0036). **`useWidthClass()`** returns the width class alone, for the sheet card and the menu columns, which a landscape phone still gets wide. **`useIsShortWindow()`** reports the height rule for the Qibla dial and the misbaha ring, which reflow beside their text.
 - **`AdaptiveSplit`** renders one pane in compact and medium, and two panes in expanded. The ayah and tafsir routes render into the side pane when it exists and as sheets otherwise, so the routes don't change between form factors.
 - **Reading column width:** Reading and Focus modes cap the Quran text column at about 720 pt and center it; long Arabic lines on a 13-inch iPad are hard to track.
+- **Interface text size:** interface and display text scale with the window's shorter side, `clamp(shortSide / 390, 0.9, 1.15)`, from `textScaleFor()` in the design tokens (ADR 0043). Dynamic Type multiplies on top. Quran text, icons and spacing do not scale this way.
 - **Mushaf page sizing:** page-exact mode keeps 15 lines per page. Page width is `min(window width − gutters, 600)` (the tablet frames, ADR 0013) and the QCF font size is derived from that width, so a page never re-wraps; wide windows show the page centered with margin, not stretched.
 - **Fold, unfold, rotate and resize keep your place.** `useReadingAnchor` records the top visible verse key; on a size change the FlashList re-measures and scrolls back to that verse. Nothing is reloaded.
 - **Hinge:** v1 treats an unfolded foldable as a normal medium or expanded window. A hinge-aware two-pane split, which needs a small native module wrapping Jetpack WindowManager, is a post-launch item (section 15).
@@ -271,11 +277,13 @@ Verses use QF's integer id (1–6,236) as the primary key, with `verse_key` (`2:
 | Table | Columns | Keys and indexes |
 | --- | --- | --- |
 | `content_sources` | `id` bigint, `code` varchar(32), `name` varchar(120), `licence_url` varchar(500), `attribution_ar` text, `attribution_en` text, `permission_status` enum(`granted`,`pending`,`not_required`,`denied`), `notes` text, timestamps | PK `id`; unique `code` |
-| `resources` | `id` bigint, `source_id` FK, `group` enum(`quran_core`,`mushafs`,`tafsirs`,`recitations`,`chapter_recitations`,`hadith`) (QF's names, ADR 0008; `translations`, `word_by_word_translations` and `word_by_word_transliterations` stay in `ResourceGroup` as ignored cases, never stored, packed or listed, ADR 0014), `source_key` varchar(64), `name` varchar(200), `author_name` varchar(200) null, `language_code` varchar(8), `direction` enum(`rtl`,`ltr`), `version` int unsigned, `checksum` char(64) null, `is_active` bool, `synced_at` datetime(6) | PK `id`; unique (`source_id`,`group`,`source_key`); index (`group`,`language_code`) |
+| `resources` | `id` bigint, `source_id` FK, `group` enum(`quran_core`,`mushafs`,`tafsirs`,`recitations`,`chapter_recitations`,`hadith`,`hadith_collections`) (QF's names, ADR 0008; `translations`, `word_by_word_translations` and `word_by_word_transliterations` stay in `ResourceGroup` as ignored cases, never stored, packed or listed, ADR 0014) and `hadith_collections` (ADR 0042; `hadith` stays reserved for the deferred HadeethEnc pack). The database column is `string(64)`; the enum is the PHP `ResourceGroup`, `source_key` varchar(64), `name` varchar(200), `author_name` varchar(200) null, `language_code` varchar(8), `direction` enum(`rtl`,`ltr`), `version` int unsigned, `checksum` char(64) null, `is_active` bool, `synced_at` datetime(6) | PK `id`; unique (`source_id`,`group`,`source_key`); index (`group`,`language_code`) |
 | `sync_states` | `id`, `environment` enum(`prelive`,`production`), `resource_group` varchar(32), `sync_token` text, `last_sequence` bigint unsigned, `last_success_at` datetime(6) null, `last_error` text null | unique (`environment`,`resource_group`) |
 | `sync_runs` | `id`, `resource_group`, `started_at`, `finished_at` null, `status` enum(`running`,`ok`,`failed`), `mutations_applied` int, `error` text null | index (`resource_group`,`started_at`) |
 | `content_packs` | `id`, `resource_id` FK, `version` int unsigned, `path` varchar(500), `size_bytes` bigint, `sha256` char(64), `row_count` int, `schema_version` smallint, `built_at` | unique (`resource_id`,`version`) |
 | `content_changes` | `id` bigint auto-increment (the device cursor), `resource_id` FK, `version` int unsigned, `entity` varchar(32), `entity_key` varchar(64), `op` enum(`upsert`,`delete`), `payload` json null, `created_at` | PK `id`; index (`resource_id`,`id`) |
+
+Hadith sources in `content_sources`: `fawazahmed0` (Unlicense, `not_required`; `notes` holds the developer's provenance note) and `sunnahcom` (key requested, `pending`). The only lock is the env flag `HADITH_COLLECTIONS_IMPORT_ENABLED`, a kill switch (ADR 0042 §3).
 
 **Quran content mirror** (translation tables removed by ADR 0014)
 
@@ -297,7 +305,22 @@ Verses use QF's integer id (1–6,236) as the primary key, with `verse_key` (`2:
 | `chapter_audio_files` | `id`, `recitation_id` FK, `chapter_id` FK, `audio_url` varchar(500), `size_bytes` bigint null, `duration_ms` int unsigned, `format` varchar(8) | unique (`recitation_id`,`chapter_id`) |
 | `recitation_timings` | `audio_file_id` FK, `verse_id`, `verse_key` varchar(7), `start_ms` int unsigned, `end_ms` int unsigned, `segments` json null (`[[word_position, start_ms, end_ms], …]`) | PK (`audio_file_id`,`verse_id`); `start_ms < end_ms` is checked on the device, not by the database (ADR 0021) |
 
-**Hadith**
+**Hadith: full collections (ADR 0042)**
+
+**Hadith: full collections (ADR 0042).** Every table carries `resource_id` first (one resource per collection) and every row carries `source_id` → `content_sources`. Arabic columns are `utf8mb4_0900_bin` and hold the source bytes; only `text_search` is normalised. Nothing here changes when the source changes from fawazahmed0/hadith-api to Sunnah.com. fawazahmed0 has no chapter level, so `hadith_chapters` stays empty for it.
+
+| Table | Columns | Keys and indexes |
+| --- | --- | --- |
+| `hadith_collections` | `resource_id` FK, `id`, `slug` varchar(32) (canonical), `source_id` FK, `source_code` varchar(32), `title_ar` varchar(200) null (developer-approved map), `title_en` varchar(200) null, `author_ar` varchar(200) null, `author_en` varchar(200) null, `attribution_ar` text, `attribution_en` text, `source_url` varchar(500) null, `total_hadith` int, `books_count` int, `source_version` varchar(64) (the pinned commit SHA), `imported_at` datetime(6) | PK (`resource_id`,`id`); unique `slug` |
+| `hadith_books` | `resource_id`, `id`, `book_number` varchar(16) (fawazahmed0 section number as text), `title_ar` varchar(500) null (developer-approved map), `title_en` varchar(500) null, `position` int, `hadith_count` int, `source_id` FK, `source_key` varchar(96) | PK (`resource_id`,`id`); unique (`source_id`,`source_key`); index (`resource_id`,`position`) |
+| `hadith_chapters` | `resource_id`, `id`, `book_id`, `chapter_number` int (Taybah ordinal in the book; not stable across sources), `source_chapter_key` varchar(32) null (Sunnah.com float id as text), `title_ar` text null, `title_en` text null, `position` int, `hadith_count` int, `source_id` FK, `source_key` varchar(96) | PK (`resource_id`,`id`); unique (`source_id`,`source_key`); index (`resource_id`,`book_id`,`position`). **Empty for fawazahmed0.** |
+| `hadith_entries` | `resource_id`, `id`, `book_id`, `chapter_id` null, `hadith_number` varchar(32) (text: decimal numbers exist, Sunnah.com numbers can carry suffixes), `arabic_number` varchar(32) null, `position` int, `text_ar` text (byte-exact, from the `ara-{c}` edition), `text_en` text null and `narrator_en` text null (empty for fawazahmed0: no English is fetched), `text_search` text, `source_url` varchar(500) null (null for fawazahmed0), `source_id` FK, `source_key` varchar(96), `source_text_sha256` char(64), `source_version` varchar(64), `imported_at` datetime(6) | PK (`resource_id`,`id`); unique (`source_id`,`source_key`); index (`resource_id`,`hadith_number`) (not unique until the import dry run shows whether duplicates exist); index (`resource_id`,`book_id`,`chapter_id`,`position`) |
+| `hadith_grades` | `resource_id`, `id`, `entry_id`, `grade` varchar(120) (as received), `graded_by` varchar(200) null (fawazahmed0 `name`; Sunnah.com `graded_by`), `source_id` FK, `source_key` varchar(96) | PK (`resource_id`,`id`); index (`resource_id`,`entry_id`). Every grade is stored. It is served only when `hadith.grades_visible` (a constant in `config/hadith.php`, `false` through Phase 7) is true and `graded_by` is not null; the API and the pack builder apply this rule, so the pack table is empty. No `review_status` column; a later phase can add one additively. |
+| `hadith_ref_aliases` | `resource_id`, `old_number` varchar(32), `new_number` varchar(32) null, `match` enum(`exact_text`,`similar_text`,`number_only`,`none`), `since_version` int | PK (`resource_id`,`old_number`,`since_version`). Empty until a source switch. |
+
+**Hadith: HadeethEnc (deferred, ADR 0042)**
+
+**Deferred (ADR 0042): HadeethEnc daily hadith and topics. The tables below, and the `devices` columns `push_daily_hadith` and `daily_hadith_time`, are not created in Phase 7.**
 
 | Table | Columns | Keys and indexes |
 | --- | --- | --- |
@@ -356,10 +379,12 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `tafsir_entries` | `id`, `resource_id`, `first_verse_id`, `last_verse_id`, `html` | index (`resource_id`,`first_verse_id`) |
 | `recitations`, `chapter_audio_files` | as backend | — |
 | `recitation_timings` | `audio_file_id`, `verse_id`, `start_ms`, `end_ms`, `segments` (JSON text) | PK (`audio_file_id`,`verse_id`) |
-| `hadith_categories`, `hadiths`, `hadith_translations`, `hadith_category_hadith` | as backend, `ar` + interface language only | — |
+| `hadith_categories`, `hadiths`, `hadith_translations`, `hadith_category_hadith` | **Deferred (ADR 0042):** HadeethEnc pack, not built in Phase 7 | — |
 | `azkar_chapters`, `azkar_entries`, `azkar_items`, `azkar_segments`, `azkar_categories`, `azkar_entry_categories`, `azkar_notes`, `azkar_recordings` | Azkar pack group (ADR 0031): canonical Hisn al-Muslim structure with per-row provenance. Quran passages are `quran` segments that reference `verses`, never copied text. Every religious note carries its own source; recordings carry rights flags | keyed by `resource_id` plus their own ids; `azkar_entries.entry_key` unique |
+| `hadith_collections`, `hadith_books`, `hadith_chapters`, `hadith_entries`, `hadith_grades`, `hadith_ref_aliases` | Hadith collections pack group (ADR 0042): one pack per collection, columns as backend without `source_id` and `source_key`. `hadith_grades` contains only visible grades; none are visible through Phase 7, so it is empty. `hadith_chapters` is empty for fawazahmed0; `hadith_ref_aliases` is empty until a source switch. Arabic text byte-exact | keyed by `resource_id` plus their own ids; `hadith_entries` index (`resource_id`,`hadith_number`) |
 | `search_quran` | FTS5 virtual table: `verse_id` UNINDEXED, `text_search` | `tokenize='unicode61 remove_diacritics 2'` |
 | `search_study` | FTS5 virtual table: `resource_id` UNINDEXED, `verse_id` UNINDEXED, `body` | filled from downloaded tafsir only (ADR 0014) |
+| `search_hadith` | FTS5 virtual table: `entry_id` UNINDEXED, `resource_id` UNINDEXED, `text_search`, built on the device after a collection pack installs (ADR 0042) | `tokenize='unicode61 remove_diacritics 2'` |
 
 **`user.db`** stores synced data plus local-only state.
 
@@ -372,6 +397,7 @@ The app opens two SQLite databases with `expo-sqlite` and Drizzle: `content.db`,
 | `recent_listens` | `audio_file_id`, `reciter_resource_id`, `chapter_id`, `last_position_ms`, `played_at` | for Home's "last listened". Local only, no sync columns. The reciter and surah are kept so a row draws without a content lookup, and the table holds the 20 newest (step 4c) |
 | `search_history` | `query`, `searched_at` | local only, capped at 20 |
 | `azkar_favorites`, `azkar_progress`, `azkar_reminders` | favourite `entry_key`s; per (`scope_key`, `period_key`, `item_key`) `current_count` and `completed_at`; reminder target, trigger (`clock` or `prayer_relative`) and scheduled notification ids | local only (ADR 0027, 0031). Keyed by stable `entry_key` / `item_key`, so a content re-import keeps them. Cleared by «مسح البيانات» |
+| `hadith_bookmarks`, `hadith_reading_position` | saved hadith keyed by `collection_slug` + `hadith_number` (text), plus `book_number` as a fallback place, `numbering_source`, `status` (`ok` or `unverified`), `created_at`; one last-read place per collection | local only (ADR 0027, 0042). Never stores a database, book or chapter id, so a source switch can remap by alias. Added to `PERSONAL_TABLES`; cleared by «مسح البيانات». Separate from the single Quran bookmark of ADR 0028 |
 
 **Packs and the first launch**
 
@@ -393,14 +419,16 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 4. `RESOURCE_CREATE` / `RESOURCE_INVALIDATE` → dispatch `ApplyResourceSnapshotJob` (replace that resource's rows in one transaction). `ROW_*` → upsert or delete one row and write a `content_changes` row. `RESOURCE_DELETE` → mark the resource inactive and write a delete change.
 5. On any change, bump `resources.version` once per run (not per row), then dispatch `BuildContentPackJob`.
 6. `quran_core` changes also dispatch `VerifyTextIntegrityJob`: the job recomputes SHA-256 per script over the 6,236 ayahs in id order and compares it with the stored source checksum. A mismatch marks the version unpublishable and alerts; the previous pack stays live.
-7. Normalization on ingest: tafsir HTML is sanitized to the whitelist from the content plan; `text_search` is derived (diacritics and tatweel removed, alef forms → ا, ى → ي, ة → ه). Source text columns are stored byte-for-byte as received.
+7. Normalization on ingest: tafsir HTML is sanitized to the whitelist from the content plan; `text_search` is derived (diacritics and tatweel removed, alef forms → ا, ى → ي, ة → ه). Source text columns are stored byte-for-byte as received. Hadith `text_search` is produced by a hadith normaliser that also removes bidirectional and zero-width marks (U+200E/F, U+061C, U+202A–202E, U+2066–2069, U+200B–200D, U+FEFF); the stored `text_ar` keeps every byte as received.
 
 **Hop 2: backend → packs and change feed**
 
 - **Pack:** `BuildContentPackJob` writes a SQLite file with only that resource's tables, `VACUUM`s it, gzips it, stores it under `storage/app/private/packs/{resource}/{version}.sqlite.gz` (the `local` disk; on Railway that path is on the volume mounted at `/app/storage/app`, ADR 0040) and records size and SHA-256. Cloudflare caches pack URLs, which are immutable because the version is in the path.
 - **Change feed:** `content_changes` keeps row-level changes for 30 days. A device within that window applies only the delta; an older device gets `410 Gone` and downloads the latest pack.
-- **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`, `azkar:{id}` (ADR 0031). No translation or word-by-word pack exists (ADR 0014).
+- **Pack contents by group:** `quran_core` (chapters, verses, words, one mushaf's layouts), `mushaf:{id}` (extra layouts), `tafsir:{id}`, `recitation:{id}` (reciter, files, timings), `hadith:{lang}`, `azkar:{id}` (ADR 0031), `hadith_collections:{slug}` (one pack per collection, ADR 0042; `hadith:{lang}` remains the deferred HadeethEnc pack). No translation or word-by-word pack exists (ADR 0014).
 - **Azkar is not synced from QF.** `php artisan azkar:import` reads a pinned OpenDua catalogue file (version + SHA-256), validates it, splits Quran passages into verse references from a reviewed map, writes an import report and bumps the `azkar` resource version. It refuses to write unless the `opendua` content source is `granted` (set by a reviewed migration, ADR 0038) and `AZKAR_OPENDUA_IMPORT_ENABLED=true`. The pack builder refuses an `azkar` pack unless its source is `granted` and its import flag (`AZKAR_OPENDUA_IMPORT_ENABLED`) is on (ADR 0031 §1). `azkar:import --skip-blocked` is local only: it leaves out entries with errors and lists them, and production refuses it. Each Quran map row carries a status (ADR 0031 §11): production accepts only `reviewed` rows; other environments also accept `candidate` rows and list them as warnings; `unmatched` rows always block their entry. `azkar:quran-map-candidates` generates the rows from the bundled Tanzil text, `azkar:import --download` fetches and SHA-256-verifies the pinned file, and `azkar:source-permission` (local only) sets the source status. The production release (`docker/release.sh`, Railway pre-deploy) runs `migrate --force`, then `azkar:import --download --if-unlocked --build-packs`; it builds the pack in-process, not on the queue. See `docs/runbooks/railway-release.md`. Only the `azkar` resource of `azkar.primary_source` (default `opendua`) is listed in the manifest, the change feed or the pack endpoint; any other Azkar resource stays imported for comparison (ADR 0031 §12).
+- **Hadith collections are not synced from QF (ADR 0042).** The source is fawazahmed0/hadith-api, read directly as static JSON from jsDelivr **at a pinned commit SHA** (never `@1`); `config/hadith.php` records the commit and each file's SHA-256, and a file with another hash is refused. `php artisan hadith:snapshot` downloads `editions.json`, `info.json` and the `ara-{c}` Arabic editions (and nothing else: no English edition, and `ara-{c}1` is not stored) into `storage/app/hadith`. `php artisan hadith:import` validates the snapshot, writes the six `hadith_*` tables per collection in one transaction (section → book; hadith assigned to a book by `section_details` ranges, cross-checked against `reference.book`; hadith numbers with no text skipped and listed; every grade stored with its named grader), bumps that collection's resource version, and writes an import report (counts against the source's counts, skipped numbers, duplicate numbers, section 0, range mismatches, graders seen). All ten collections (`bukhari`, `muslim`, `abudawud`, `tirmidhi`, `ibnmajah`, `nasai`, `malik`, `nawawi`, `qudsi`, `dehlawi`) are imported, packed and served; there is no per-collection approval. It runs under a cache lock and does nothing unless `HADITH_COLLECTIONS_IMPORT_ENABLED=true`, a kill switch that is `false` in `.env.example` and set to `true` in production at release. The pack builder, the manifest and the `/hadith/collections` endpoints apply the same flag, and the builder leaves out grades (`hadith.grades_visible` is false). Titles come from `config/hadith_titles.php` (ADR 0042 §4a: ummahapi.com collection names, developer-approved authors, section titles from the dev-only, never-in-production `hadith:match-section-titles` proposal); a missing Arabic title stays null and the app shows «مجموعة {n}» / «كتاب {n}». The weekly scheduler entry is a no-op unless the pinned hashes change. `docker/release.sh` runs `hadith:import --download --if-unlocked --build-packs` (the Azkar pattern) from step 17, not before. Bumping the commit SHA is a change the developer approves.
+- **Source switch (ADR 0042 §8).** Replacing the source is a re-import, not a merge. The collection's `resources` row is kept (same `resource_id` and `source_key`; `source_id` updated, `version` bumped), the change feed for it is cleared with a floor version so older devices get `410` and download the new pack, and `hadith_ref_aliases` maps old numbers to new ones for the app to apply to saved items.
 - **Azkar enrichment (ADR 0031 §12):**
   - `azkar:snapshot hadeethenc` pins HadeethEnc's Azkar categories.
   - `azkar:hadeethenc-links` proposes entry→hadith links: ids and evidence only, from containment of at least 40 normalised characters.
@@ -436,21 +464,26 @@ One JSON API under `/api/v1`, used only by our app. These rules apply to every e
 
 ## 9. API endpoints
 
-Twenty-seven endpoints cover v1. The OpenAPI file generated from the code is the source of truth; this table is the plan it must match.
+Twenty-seven endpoints cover v1; Phase 7 adds five hadith collection endpoints (ADR 0042). The OpenAPI file generated from the code is the source of truth; this table is the plan it must match.
 
 | Method | Path | Auth | Purpose | Main responses |
 | --- | --- | --- | --- | --- |
 | GET | `/health` | none | API, database and Redis reachability for the app and monitoring; `Cache-Control: no-store` (ADR 0001) | 200, 503 |
-| GET | `/bootstrap` | none | Min app version, feature flags, today's Hijri date, daily hadith id, source credits | 200 |
+| GET | `/bootstrap` | none | Min app version, feature flags, today's Hijri date, daily hadith id, source credits. The daily hadith id is deferred (ADR 0042) | 200 |
 | GET | `/content/manifest` | none | Every available resource with latest version, pack URL, size, SHA-256 | 200, 304 |
 | GET | `/content/packs/{resource_id}/{version}` | none | Gzipped SQLite pack (redirect to the cached file) | 302, 404 |
 | GET | `/content/changes` | none | Row changes for one resource since a version (`resource_id`, `since_version`, `cursor`) | 200, 410 |
 | GET | `/content/tafsirs/{resource_id}/verses/{verse_key}` | none | One tafsir entry for an ayah before the pack is downloaded | 200, 404 |
 | GET | `/content/resources` | none | Catalogue of tafsirs with names and authors (`?group=&language=`); translation groups are never listed (ADR 0014) | 200 |
-| GET | `/hadith/categories` | none | Category tree | 200 |
-| GET | `/hadith/categories/{id}/hadiths` | none | Hadiths in a category, paginated | 200 |
-| GET | `/hadith/{id}` | none | One hadith with grade, attribution, explanation, benefits, source URL | 200, 404 |
-| GET | `/hadith/daily` | none | Approved hadith for `?date=` (default today in `X-Timezone`) | 200, 404 |
+| GET | `/hadith/categories` | none | Category tree **Deferred (ADR 0042, HadeethEnc).** | 200 |
+| GET | `/hadith/categories/{id}/hadiths` | none | Hadiths in a category, paginated **Deferred (ADR 0042, HadeethEnc).** | 200 |
+| GET | `/hadith/{id}` | none | One hadith with grade, attribution, explanation, benefits, source URL **Deferred (ADR 0042, HadeethEnc).** | 200, 404 |
+| GET | `/hadith/daily` | none | Approved hadith for `?date=` (default today in `X-Timezone`) **Deferred (ADR 0042, HadeethEnc).** | 200, 404 |
+| GET | `/hadith/collections` | none | Collections served while the kill switch is on: slug, titles (null when no Arabic title), counts, source credit, pack resource id | 200 |
+| GET | `/hadith/collections/{slug}/books` | none | Books of a collection | 200, 404 |
+| GET | `/hadith/collections/{slug}/books/{book}/chapters` | none | Chapters of a book (an empty list when the source has none) | 200, 404 |
+| GET | `/hadith/collections/{slug}/books/{book}/hadiths` | none | Hadiths of a book, `?chapter=`, cursor-paginated | 200, 404 |
+| GET | `/hadith/collections/{slug}/hadiths/{number}` | none | One hadith: Arabic text, number, breadcrumb, source credit, `source_url` when present. **No `grades` while `hadith.grades_visible` is false (all of Phase 7)** | 200, 404 |
 | POST | `/auth/email/request` | none | Send a 6-digit code | 202, 422, 429 |
 | POST | `/auth/email/verify` | none | Exchange code for a token | 200, 422, 429 |
 | POST | `/auth/google` | none | Exchange Google ID token for a token | 200, 401, 422 |
@@ -687,7 +720,7 @@ For each change, in one transaction per request:
 
 ## 13. Notifications, environments and monitoring
 
-Reminders are local; only the daily hadith and rare announcements come from the server. Local and production both use QF production keys (ADR 0041); sync tokens and mirrors stay per environment. There is no staging server (ADR 0022).
+Reminders are local; only the daily hadith (deferred, ADR 0042) and rare announcements come from the server. Local and production both use QF production keys (ADR 0041); sync tokens and mirrors stay per environment. There is no staging server (ADR 0022).
 
 **Notifications**
 
@@ -697,7 +730,7 @@ Reminders are local; only the daily hadith and rare announcements come from the 
     - shared `channels.ts` (Android channels `reminders` and `azkar`) and `budget.ts` (iOS limit 64: daily reminder 1, prayer notifications 40, Azkar 23)
     - deep-link allowlist `/read/`, `/azkar/`
     - resync on launch, on foreground when the day, time zone or coordinates key changed, and on any edit
-- **Daily hadith push:** `SendDailyHadithJob` runs every 15 minutes, selects devices with `push_daily_hadith = 1` whose local time just passed `daily_hadith_time` and who haven't received today's hadith, and sends in batches of 100 through the Expo Push API. Quiet hours 23:00–07:00 local are enforced server-side.
+- **Deferred (ADR 0042).** **Daily hadith push:** `SendDailyHadithJob` runs every 15 minutes, selects devices with `push_daily_hadith = 1` whose local time just passed `daily_hadith_time` and who haven't received today's hadith, and sends in batches of 100 through the Expo Push API. Quiet hours 23:00–07:00 local are enforced server-side.
 - **Payload:** title and body in the device's locale, `data: { "route": "/hadith/123" }`; tapping opens that route through Expo Router.
 - **Receipts:** `ReadExpoReceiptsJob` sets `push_disabled_at` on `DeviceNotRegistered`.
 
@@ -772,7 +805,7 @@ For each window, Maestro runs "open reader at 2:255 → rotate or resize → ass
 
 ## 15. Solo delivery plan
 
-A store launch is about 24 focused developer-weeks of work, with Hadith, extra scripts and push moved to v1.1. Doing the full content-plan scope solo would add about 7 to 8 more weeks before launch.
+A store launch is about 24 focused developer-weeks of work, with HadeethEnc, extra scripts and push moved to v1.1. Doing the full content-plan scope solo would add about 7 to 8 more weeks before launch.
 
 ```text
 Focused developer-weeks (not calendar weeks)
@@ -786,9 +819,10 @@ wk 12 ── 16   Listening and audio
 wk 16 ── 18   My Quran, Khatma & Settings (Local-only)
 wk 18 ── 20   Salah & Qibla (on-device)
 wk 20 ── 23   Azkar (Hisn al-Muslim, on-device)
+parallel      Hadith collections (Phase 7, ADR 0042; not on the launch critical path)
 wk 23 ── 27   Beta and store review
 wk 27         ★ Store launch
-wk 27 ── 33   v1.1: Hadith and more (post-launch)
+wk 27 ── 33   v1.1: HadeethEnc daily hadith, extra scripts and more (post-launch)
 ```
 
 Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your weekly hours`: at 20 hours a week, about 48 calendar weeks.
@@ -802,7 +836,8 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 | 4. My Quran, Khatma & Settings (Local-only) | 16–18 | Settings (language switch, theme, reader/audio shortcuts, local data reset); My Quran library (bookmarks, highlights, notes); Khatma planner and logs; local daily reminders (ADR 0027) | Settings language switches app locale and direction; local bookmarks, highlights, notes and khatma persist and function offline |
 | 5. Salah & Qibla (on-device) | — | adhan-js times, الصلاة tab, local prayer notifications, qibla compass, five-tab navigation (ADR 0030) | Offline: times, qibla and notifications work in airplane mode; frames #Salah/#Qibla verified |
 | 6. Azkar (on-device) | 20–23 | Hisn al-Muslim from a pinned, rights-gated OpenDua pack; Azkar home, category and focused reader with a sourced counter or «تم»; progress, favourites, search, share; sourced notes hidden when empty; category reminders (clock or prayer-relative); audio rights model with no unlicensed audio; Dorar adapter on the API only (ADR 0031) | Offline reader, progress and reminders work in airplane mode; frames verified; **no production content until the ADR 0031 release blockers clear** (blocker 1 closed by ADR 0038) |
-| 7. Beta and store review | 23–27 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
+| 7. Hadith collections (parallel with Phase 6) | not scheduled | Full collections (collection → book → hadith; chapters when a source has them) from fawazahmed0/hadith-api pinned to a commit, all ten collections, Arabic only, per-collection packs, collections/books/hadith screens, search, own cover art, hidden grades, saved items by collection slug + number; Sunnah.com switch blocked on the key (ADR 0042) | Offline reading and search in airplane mode; frames verified; production serves the ten collections once the developer turns the kill switch on at release |
+| 8. Beta and store review | 23–27 | Onboarding, accessibility pass, store pages in Arabic and English, production server and keys, TestFlight and Play testing, review | Crash-free sessions over 99.5% in beta; store approval |
 
 **Proposed follow-up (not a phase, not approved): widgets and Apple Watch.** Home-screen and lock-screen widgets (iOS, Android) and a watchOS companion app with complications, fed by one local snapshot written by the app; the watch never calls the API. ADR 0035 (proposed) holds the decision and the decisions that need the developer; the plan is `docs/plans/widgets-watch.md`. Nothing in the current phase changes. Default placement is v1.1, because the iOS and watch targets compile only on a Mac or EAS.
 
@@ -810,7 +845,8 @@ Weeks here are focused 40-hour weeks. Calendar time is roughly `24 × 40 ÷ your
 
 | Item | Status | Saves | Reason |
 | --- | --- | --- | --- |
-| Hadith section and daily hadith push | v1.1, after listening | \~3 weeks | Needs HadeethEnc confirmation and reviewer sign-off anyway. Home's الحديث tile comes with it (ADR 0017) |
+| Hadith collections (Phase 7) | Parallel; ships with the kill switch on | — | All ten collections ship; no reviewer gate. The Home tile and Menu card appear only when a collection pack is installed (ADR 0017, 0042) |
+| HadeethEnc daily hadith, topics and daily push | Deferred (ADR 0042) | \~2 weeks | Needs HadeethEnc written confirmation |
 | IndoPak and Tajweed scripts | v1.1 | \~1.5 weeks | Uthmani Hafs and Madani page-exact cover most readers |
 | Quran translations and word-by-word meanings | Removed (ADR 0014) | — | Not built in any version |
 | Hinge-aware foldable split, keyboard shortcuts | v1.1 | \~1 week | Needs a native module; the base responsive layout already works |
@@ -836,7 +872,9 @@ One question blocks the build: whether QF accepts device copies served from our 
 - [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player, Settings and the sidebar. The 30 current screens are phone-only (390 pt).
 - [x] Design: the Mushaf page cap on large iPads is 600, as drawn in the tablet frames (ADR 0013).
 - [x] Product: app name and bundle ID: **Taybah** («طيبة»), `com.taybahapp.taybah` (27 Oct 2026). Register `taybahapp.com` before launch.
-- [ ] HadeethEnc: written confirmation of app use (blocks Hadith launch only).
+- [ ] HadeethEnc: written confirmation of app use (blocks Hadith launch only). Deferred with the HadeethEnc work (ADR 0042).
+- [ ] Sunnah.com: API key (GitHub issue on sunnah-com/api) and written terms for offline packs, redistribution, attribution and grader credit (blocks the switch only).
+- [ ] Developer: approve the drafted Arabic author names and the hadithapi.com section-title proposal in `config/hadith_titles.php` (collection names come from ummahapi.com), and the source-line wording; missing titles fall back to numbers and do not block release (ADR 0042 §4, §4a).
 
 **Risks**
 
@@ -849,6 +887,8 @@ One question blocks the build: whether QF accepts device copies served from our 
 | Foldable hinge cuts through text in book posture | Awkward reading on unfolded devices | Centered column avoids the hinge in most layouts; hinge-aware split is post-launch |
 | Apple refresh-token handling breaks | Account deletion can't revoke the Apple grant | Test deletion of an Apple account in every release build |
 | Self-hosted server is a single point of failure | API down; reading still works offline | Nightly off-site backups, monthly restore test, uptime alerts |
+| fawazahmed0's data comes partly from sunnah.com and Shamela (its `References.md`); the Unlicense does not necessarily clear those rights | Upstream rights complaint | Accepted by the developer for now; classical texts are centuries old; grades hidden; Sunnah.com's written terms close it (ADR 0042) |
+| Hadith numbering may differ between sources | Saved hadith could point at the wrong hadith after the Sunnah.com switch | `hadith_ref_aliases` plus unmatched saved items flagged, never silently re-pointed (ADR 0042 §8) |
 
 ## References
 

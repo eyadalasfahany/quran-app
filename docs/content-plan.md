@@ -137,9 +137,11 @@ This lists every external source the app could pull from, and which one we use f
 
 | API | Gives us | Access | Terms that matter | Decision |
 | --- | --- | --- | --- | --- |
-| [HadeethEnc](https://documenter.getpostman.com/view/5211979/TVev3j7q) API v1 | Curated hadiths with grade, explanation and benefits, by category; 72 languages | No key | No changes; credit HadeethEnc | **Primary** for v1 |
-| [Sunnah.com](https://sunnah.com/developers) | Full collections, Arabic and English | API key by GitHub request | Not published; confirm before building | **Later**: v2 |
-| [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) | Collections with grades, static JSON | Public CDN | Grade sources not documented | **Not used** |
+| [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) | Ten collections (36,512 hadith numbers) as static JSON: Arabic editions with diacritics, sections, hadith and Arabic numbers, named graders and grades. No chapter level, no per-hadith URL. Edition metadata lists author "Unknown" and no source; `References.md` lists upstream sites (sunnah.com, al-maktaba.org/Shamela and others); no Arabic names (English collection and section names only) | Public CDN (jsDelivr), no key, no rate limit; **pinned to a commit SHA** | Unlicense on the repository. From the repository author; part of the data comes from sunnah.com and Shamela, so the Unlicense does not necessarily clear upstream rights | **Primary for Phase 7**, read directly, Arabic only, all ten collections, one kill-switch flag. Grades stored, hidden through Phase 7 (ADR 0042) |
+| [Sunnah.com](https://sunnah.com/developers) API v1 | Full collections, books, chapters, hadiths with grader and grade, a public page per hadith; offline dump on key requests | API key by GitHub request (requested 1 Nov 2026) | Not published; confirm offline storage, redistribution, attribution and credit | **Long-term target**: replaces fawazahmed0 through `SunnahComSource` with no schema, endpoint, pack or screen change |
+| [HadeethEnc](https://documenter.getpostman.com/view/5211979/TVev3j7q) API v1 | Curated hadiths with grade, explanation and benefits, by category; 72 languages | No key | No changes; credit HadeethEnc | **Deferred (ADR 0042)**: daily hadith, topics and explanations. Still used by the Azkar enrichment (ADR 0031 §12) |
+| hadithapi.com | Seven collections, Arabic, English, Urdu | API key (dev-only `HADITH_API_KEY`) | No terms, licence or offline-storage permission published | **Hadith data not used.** Arabic section (كتاب) titles taken once through the dev-only `hadith:match-section-titles` (two-way 95% match, titles only), developer-approved; Sunnah.com titles replace them (ADR 0042 §4a) |
+| ummahapi.com | A proxy of fawazahmed0; drops books and graders. `GET /api/hadith/collections` has `arabic_name` | No key | Not stated | **Hadith data not used.** The ten Arabic collection names only (ADR 0042 §4a) |
 | Dorar.net (الدرر السنية) | Hadith text, narrator, muhaddith, source, page, grade, canonical URL, explanation and related links | Official API with an approved access token (developer, 31 Oct 2026) | No bulk import, no scraping, no full mirror; nothing stored in offline packs without separate written permission; caching within their published limits; keep attribution and the Dorar URL | **Backend-only adapter** for Azkar references (ADR 0031 §2); token in `apps/api` env only |
 
 **Adhkar and duas**
@@ -171,8 +173,9 @@ The Settings design already has "dark mode after Maghrib", and reminders may fol
 - [ ] MP3Quran: permission to stream reciters and radio in the app
 - [ ] OpenDua (`opendua@hdfund.org`): Arabic attribution wording, Arabic chapter titles, audio streaming, offline download and re-hosting and the attribution wording (non-blocking, ADR 0040). Redistribution of the Arabic dataset is settled by ADR 0038 and no longer a blocker.
 - [ ] Dorar: access token and the written terms on caching and storage
-- [ ] HadeethEnc: confirm app use in writing
-- [ ] Sunnah.com: API key and terms
+- [ ] HadeethEnc: confirm app use in writing (deferred, ADR 0042)
+- [ ] Sunnah.com: API key (GitHub issue on sunnah-com/api, requested 1 Nov 2026) and written terms for offline packs, redistribution, attribution and grader credit (blocks the switch only)
+- [ ] Developer: approve Arabic author names and the section-title proposal in `config/hadith_titles.php`, and the source-line wording; optional, missing titles fall back to numbers (ADR 0042)
 
 ## Architecture
 
@@ -280,21 +283,25 @@ The exact tafsir IDs are confirmed by calling `/resources/tafsirs` with our prel
 
 ## Hadith
 
-The Hadith section launches with HadeethEnc's curated hadiths and explanations; full collections from Sunnah.com follow once they grant API access and confirm terms.
+The first Hadith release is **full collections** (collection → book → hadith; chapters appear when a source has them), read offline from per-collection packs (ADR 0042). HadeethEnc's curated hadiths, explanations, daily hadith and daily push are **deferred**.
 
 | Source | What it gives us | Access | Terms we must follow | Use |
 | --- | --- | --- | --- | --- |
-| [HadeethEnc.com](https://hadeethenc.com/en/home/about) | Curated, frequently cited hadiths with simplified explanations; Arabic plus about 70 languages | Free API ([docs](https://documenter.getpostman.com/view/5211979/TVev3j7q)) | No modification, addition or deletion; credit HadeethEnc as the source | v1: daily hadith, topics, search, detail |
-| [Sunnah.com](https://sunnah.com/developers) | Full collections (Bukhari, Muslim, Abu Dawud, Tirmidhi and others), Arabic and English | API key requested through their GitHub; only part of the data so far; no offline dump yet | Not stated: confirm app use, offline storage and credit before building | v2: browse full collections |
-| [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) | Collections in many languages with grades, as static JSON | Public CDN, Unlicense | Grade sources are not documented | Not used unless the reviewer approves specific content |
-| Dorar.net | Strong Arabic grading and takhrij | No official public API | Unofficial packages read the website | Not used without Dorar's permission |
+| fawazahmed0/hadith-api | Ten collections: Arabic with diacritics, sections, numbers, named graders | Static JSON on jsDelivr, pinned to a commit; no key | Unlicense from the repository author; part of the data comes from sunnah.com and Shamela, so upstream rights are not necessarily cleared | Phase 7 source; Arabic only; all ten collections, kill-switch flag |
+| [Sunnah.com](https://sunnah.com/developers) | Full collections, grades with graders, chapters, a page per hadith, offline dump on request | API key via GitHub | To confirm in writing | Long-term target; replaces fawazahmed0 |
+| HadeethEnc.com | Curated hadiths with explanations | Free API | No modification, addition or deletion; credit HadeethEnc | Deferred |
+| hadithapi.com | Arabic section titles only | Dev-only key | None published | One-off title match, developer-approved; no hadith data |
+| ummahapi.com | The ten Arabic collection names only | No key | Not stated | Names only; no hadith data |
+| Dorar.net | Hadith references (backend adapter, Azkar only) | Token | Per ADR 0031 §2 | Unchanged |
 
-- **Pipeline:** the backend pulls HadeethEnc categories and hadiths for Arabic and English into MySQL on a schedule; the app downloads them as a small pack and works offline, like the Quran content.
-- **Display:** every hadith shows its grade, its source collection and narrator, and a link back to the source page. Explanations are shown in full, never shortened or rewritten.
+- **Pipeline:** the backend imports the pinned snapshot into MySQL (`hadith_collections`, `hadith_books`, `hadith_chapters`, `hadith_entries`, `hadith_grades`, `hadith_ref_aliases`), builds one pack per collection, and the app downloads the packs and reads offline. The only lock is the kill-switch flag `HADITH_COLLECTIONS_IMPORT_ENABLED` (false in `.env.example`, true in production at release).
+- **Display:** every hadith shows its collection, book, number and a source line. **No grade is shown through Phase 7**; grades are stored with their named graders and stay hidden. A link to the source page is shown only when the source provides one. Arabic only: no English edition is stored. Hadith text is never shortened, altered or rewritten.
+- **Arabic names:** fawazahmed0 has none. `config/hadith_titles.php` holds them with a source per entry: collection names from ummahapi.com, author names from the developer (drafted, pending approval), section names from a one-off hadithapi.com match (accepted only at ≥ 95% in both directions; titles only). A missing name stays empty: the app shows «مجموعة {n}» / «كتاب {n}», never the English source name in the Arabic interface.
+- **Covers:** each collection has an own-design cover rendered from tokens; no published-edition images.
+- **Stable references:** saved items use collection slug + hadith number; a source switch ships an alias table and flags unmatched items.
 - **No AI:** no generated explanations, summaries or translations of hadith.
-- **Review:** the content reviewer signs off on the Hadith section, including the daily hadith rotation, before launch.
-- **Tables:** `hadith_categories`, `hadiths` (source, source id, Arabic text, grade, narrator, collection reference), `hadith_translations` (hadith id, language, text, explanation, benefits).
-- **Next steps:** request a Sunnah.com API key now; confirm HadeethEnc's API terms for app use in writing.
+- **Review (amended for Phase 7 collections, ADR 0042):** there is no content reviewer for these collections; the developer decides the Arabic names, the source-line wording and the gap list. The content plan's "the content reviewer signs off on the Hadith section" is not applied to them. Azkar's own reviewer rules (ADR 0031) are unchanged.
+- **Tables (deferred):** `hadith_categories`, `hadiths`, `hadith_translations`, `daily_hadiths` stay as the HadeethEnc design.
 
 ## Languages & localization
 
@@ -341,7 +348,7 @@ Personal reminders are scheduled on the device; push from the server is used for
 | --- | --- | --- | --- |
 | Daily reading reminder | Local (`expo-notifications`) | "وِردك اليوم: ٤ صفحات" at the user's chosen time | Off until turned on |
 | Khatma reminder | Local | Gentle note when the day's pages aren't read yet; never mentions streaks | Off |
-| Daily hadith | Push from Laravel | Today's hadith, opening the Hadith detail screen | Off, offered in onboarding |
+| Daily hadith (deferred, ADR 0042) | Push from Laravel | Today's hadith, opening the Hadith detail screen | Off, offered in onboarding |
 | Announcements | Push | New features or content packs, rarely | Off |
 
 - **Permission:** requested only when the user turns a notification on, never at first launch.
@@ -436,7 +443,7 @@ Builds, store submission and over-the-air fixes all run through EAS, with two ch
   - App Store privacy labels and Google Play data-safety form: email, account id, bookmarks and notes, crash data; no tracking
   - in-app account deletion, plus a web link for deletion requests (Google Play asks for both)
   - store screenshots in Arabic and English
-- **Credits:** Quran Foundation, Tanzil, King Fahd Complex and HadeethEnc credited in Settings and in the store description.
+- **Credits:** Quran Foundation, Tanzil, King Fahd Complex and HadeethEnc credited in Settings and in the store description. fawazahmed0/hadith-api (Unlicense) is credited when a collection ships, and Sunnah.com when it becomes the source. HadeethEnc is credited when its content ships (deferred, ADR 0042).
 
 ## Self-hosting
 
@@ -459,7 +466,7 @@ Four phases take the app to the stores in about 18 weeks. The first gate, QF con
 |---|---|---|
 | Foundations | 1 to 4 | QF access, prelive keys · Laravel 13, sync job · Auth: email, Google, Apple · Expo app, design tokens · Arabic, English, RTL · CI, production on Railway |
 | Reading | 5 to 9 | Onboarding · Fonts, display modes · Vertical virtual scroll · Tafsir · Search, bookmarks · User data sync |
-| Listening and Hadith | 10 to 14 | Player, lock screen · Ayah and word highlight · Downloads, range repeat · Notes, khatma planner · Hadith v1 · Push, reminders |
+| Listening and Hadith | 10 to 14 | Player, lock screen · Ayah and word highlight · Downloads, range repeat · Notes, khatma planner · Hadith collections (Phase 7, parallel) · Push, reminders |
 | Beta and launch | 15 to 18 | TestFlight, Play beta · Accessibility pass · Store pages AR and EN · Production server, keys · Store review · Public launch |
 
 Gates: **QF confirms device-sync design** (end of Foundations) → **All 604 pages render verified** (end of Reading) → **Feature freeze, beta build ready** (end of Listening and Hadith).

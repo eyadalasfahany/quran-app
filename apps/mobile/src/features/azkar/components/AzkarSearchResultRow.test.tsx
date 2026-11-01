@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react-native';
 
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { AzkarSearchResultRow } from './AzkarSearchResultRow';
 
@@ -36,6 +36,14 @@ describe('AzkarSearchResultRow', () => {
   it('renders the English number', async () => {
     await renderUi(<AzkarSearchResultRow highlight={null} number={3} onPress={jest.fn()} preview={PREVIEW} />, { locale: 'en' });
     expect(screen.getByRole('button', { name: `3, ${PREVIEW}` })).toBeOnTheScreen();
+  });
+
+  it('keeps the Arabic preview right-aligned and RTL in English', async () => {
+    await renderUi(<AzkarSearchResultRow highlight={null} number={1} onPress={jest.fn()} preview={PREVIEW} />, {
+      locale: 'en',
+    });
+
+    expect(flatStyle(screen.getByText(PREVIEW).props.style)).toMatchObject({ textAlign: 'right', writingDirection: 'rtl' });
   });
 
   it('uses theme tokens rather than raw colours', () => {

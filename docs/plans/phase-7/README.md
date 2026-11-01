@@ -1,15 +1,15 @@
 # Phase 7 step briefs
 
-One file per step of [`../phase-7.md`](../phase-7.md), written when the step starts (none exist yet). The reviewer checks each diff against ADR 0042 (Proposed), the spec and the approved frames; the developer commits. Phase 7 runs on branch `ft/hadith`, in parallel with Phase 6 (`ft/azkar`). Source: fawazahmed0/hadith-api, pinned to a commit SHA (revised 1 Nov 2026; hadithapi.com and ummahapi.com are not used).
+One file per step of [`../phase-7.md`](../phase-7.md), written when the step starts (none exist yet). The reviewer checks each diff against ADR 0042 (Accepted), the spec and the approved frames; the developer commits. Phase 7 runs on branch `ft/hadith`, in parallel with Phase 6 (`ft/azkar`). Source: fawazahmed0/hadith-api, pinned to a commit SHA (revised 1 Nov 2026; hadithapi.com and ummahapi.com are not used).
 
 | Step | Brief | Status |
 | --- | --- | --- |
-| 1 | Docs, ADR 0042, spec patch ([`spec-changes.md`](spec-changes.md)) | Drafted, revised for fawazahmed0 (1 Nov 2026); patch not applied |
-| 2 | Env, config, kill switch (remove `HADITH_API_KEY`, pin, titles map skeleton) | |
+| 1 | Docs, ADR 0042, spec patch ([`spec-changes.md`](spec-changes.md)) | Done (1 Nov 2026): ADR 0042 accepted, patch applied |
+| 2 | Env, config, kill switch (dev-only `HADITH_API_KEY`, pin, titles map with ummahapi.com names and authors) | |
 | 3 | MySQL schema | |
 | 4 | Pack contract and hadith search normaliser | |
 | 5 | Source interface and fawazahmed0 client, snapshot | |
-| 6 | Importer and `hadith:import` command | |
+| 6 | Importer, `hadith:import` command, dev-only `hadith:match-section-titles` | |
 | 7 | API endpoints and contract | |
 | 8 | Design frames (developer approval gate) | |
 | 9 | Cover tokens and `CollectionCover` | |
@@ -34,7 +34,8 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 - fawazahmed0 has no chapter (باب) level: a book lists its hadith directly. The chapter screens, columns and endpoint exist for Sunnah.com and are tested with fixtures.
 - Saved items reference collection slug + hadith number, never a database id, book id or chapter ordinal.
 - `HADITH_COLLECTIONS_IMPORT_ENABLED` is the only lock: a kill switch, `false` in `.env.example`, `true` in production at release. Add the hadith command to `docker/release.sh` only in step 17.
-- There is no provider key. `HADITH_API_KEY` is removed from `.env.example`; never open or print `apps/api/.env`.
+- No key is needed for hadith data. `HADITH_API_KEY` is optional, **dev-only**, empty in `.env.example`, never read in production and redacted from logs, used only by `hadith:match-section-titles`. Never open or print `apps/api/.env`.
+- **Titles only from the other sources.** Hadith data comes only from fawazahmed0. Collection names come from ummahapi.com (data in `config/hadith_titles.php`), Arabic authors were approved by the developer on 1 Nov 2026, and section titles come from the one-off hadithapi.com matcher (accept only at ≥95% in both directions; titles only, never hadith text or grades; refuses to run in production; not scheduled; not in `release.sh`; the command writes a proposal, never `config/`).
 - Schema, endpoints, packs and screens must not need a change at the Sunnah.com switch (step 18).
 - `apps/mobile/CLAUDE.md` and `apps/api/CLAUDE.md` apply in full: one component per file with its colocated test, tokens via `useTheme()`, i18n for every string, `laravel-standards` for API code, `useWindowClass()` for layout.
 - UI work follows `apple-design`, is reviewed against its frame in `quran-app-screens.html`, and is checked on the iPhone 17 simulator against `frame-shot.py` output. No UI code before step 8 is approved.

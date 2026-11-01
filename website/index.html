@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-default-lang="ar">
+<head>
+  <meta charset="utf-8">
+  <script>
+    (function () {
+      var b = document.createElement('base');
+      var p = location.pathname;
+      if (location.protocol === 'file:') {
+        b.href = location.href.replace(/[^/]*$/, '');
+      } else if (/\.html$/i.test(p)) {
+        b.href = p.replace(/[^/]*$/, '') || '/';
+      } else {
+        b.href = '/';
+      }
+      document.head.prepend(b);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>طيبة — Taybah | تطبيق قرآن مجاني</title>
+  <meta name="description" content="طيبة: تطبيق قرآن مجاني، عربي أولاً، يعمل دون اتصال. قراءة، استماع، مواقيت الصلاة، الأذكار، والحديث.">
+  <link rel="alternate" hreflang="ar" href="https://taybahapp.com/">
+  <link rel="alternate" hreflang="en" href="https://taybahapp.com/?lang=en">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%231f4d40' width='32' height='32' rx='8'/%3E%3Ctext x='16' y='22' text-anchor='middle' fill='%23f7f3ea' font-size='18' font-family='serif'%3Eط%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-logo" href="index.html">
+        <span class="site-logo__mark" aria-hidden="true">ط</span>
+        <span data-i18n="logo">طيبة</span>
+      </a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html" aria-current="page" data-i18n="nav-home">الرئيسية</a>
+        <a href="support.html" data-i18n="nav-support">الدعم</a>
+        <a href="privacy.html" data-i18n="nav-privacy">الخصوصية</a>
+        <a href="terms.html" data-i18n="nav-terms">الشروط</a>
+      </nav>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <a href="?lang=ar" data-lang-btn="ar" aria-current="true">العربية</a>
+        <a href="?lang=en" data-lang-btn="en">English</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="hero__eyebrow" data-i18n="hero-eyebrow">مجاني · بلا إعلانات · بلا تتبع</p>
+      <h1 class="hero__title" data-i18n="hero-title">قرآنك معك — قراءة، استماع، وعبادة يومية</h1>
+      <p class="hero__lead" data-i18n="hero-lead">
+        طيبة تطبيق قرآن عربي أولاً لـ iOS و Android: مصحف وتفسير وبحث، تشغيل صوتي مع تمييز الآية، مواقيت الصلاة واتجاه القبلة، الأذكار، خطة الختمة، ومجموعات الحديث — وكل ذلك يعمل دون اتصال بعد تنزيل المحتوى.
+      </p>
+      <div class="hero__cta">
+        <span class="btn btn--primary store-badge store-badge--soon" data-i18n="store-soon">قريباً على App Store و Google Play</span>
+        <a class="btn btn--secondary" href="support.html" data-i18n="hero-support">تواصل معنا</a>
+      </div>
+      <div class="pill-row">
+        <span class="pill" data-i18n="pill-offline">يعمل دون اتصال</span>
+        <span class="pill" data-i18n="pill-rtl">عربي وإنجليزي</span>
+        <span class="pill" data-i18n="pill-devices">هاتف، iPad، وتابلت</span>
+      </div>
+    </div>
+    <div class="hero__card">
+      <p class="hero__arabic-name" lang="ar">طيبة</p>
+      <p class="hero__tagline" data-i18n="hero-card">
+        «طيبة» — اسم المدينة المنورة. التطبيق مجاني بالكامل: لا اشتراكات ولا تبرعات ولا بيع لبياناتك.
+      </p>
+    </div>
+  </section>
+
+  <main>
+    <section class="section" aria-labelledby="features-heading">
+      <h2 id="features-heading" class="section__title" data-i18n="features-title">ماذا يقدّم طيبة؟</h2>
+      <div class="features">
+        <article class="feature">
+          <h3 data-i18n="f1-title">قارئ القرآن</h3>
+          <p data-i18n="f1-body">مصحف Uthmani و IndoPak و Tajweed، أوضاع قراءة متعددة، تفسير، بحث سريع، إشارات مرجعية وتمييز وملاحظات — مع الحفاظ على نص القرآن كما ورد.</p>
+        </article>
+        <article class="feature">
+          <h3 data-i18n="f2-title">استماع</h3>
+          <p data-i18n="f2-body">تشغيل السور والآيات مع تمييز الكلمة، تنزيل للاستماع دون اتصال، وتكرار نطاق — من مصادر Quran Foundation.</p>
+        </article>
+        <article class="feature">
+          <h3 data-i18n="f3-title">الصلاة والقبلة</h3>
+          <p data-i18n="f3-body">مواقيت الصلاة حسب موقعك (يُحسب على جهازك)، بوصلة القبلة، وتذكيرات محلية اختيارية.</p>
+        </article>
+        <article class="feature">
+          <h3 data-i18n="f4-title">الأذكار</h3>
+          <p data-i18n="f4-body">أذكار حسب المناسبة مع عدّادات وتذكيرات — محتوى من مصادر مرخّصة مع الإسناد داخل التطبيق.</p>
+        </article>
+        <article class="feature">
+          <h3 data-i18n="f5-title">الحديث</h3>
+          <p data-i18n="f5-body">مجموعات حديثية للقراءة والبحث والحفظ — دون تلخيص آلي أو محتوى مُولَّد.</p>
+        </article>
+        <article class="feature">
+          <h3 data-i18n="f6-title">خطّتي وختمة</h3>
+          <p data-i18n="f6-body">متابعة القراءة، خطة ختمة، وإعدادات قراءة واستماع — بياناتك الشخصية تبقى على جهازك في الإصدار الأول.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section prose">
+      <h2 class="section__title" data-i18n="about-title">عن المشروع</h2>
+      <p data-i18n="about-p1">
+        طيبة تطبيق واحد من مطوّر واحد: Expo للجوال و Laravel API مستضافة ذاتياً. المحتوى الديني من مصادر خارجية موثوقة ويُنسب إليها في الإعدادات.
+      </p>
+      <p data-i18n="about-p2">
+        لا نستخدم الذكاء الاصطناعي لإنشاء أو تلخيص القرآن أو التفسير أو الحديث. لا نبيع بياناتك ولا نعرض إعلانات.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <div>
+        <p class="site-footer__copy" data-i18n="footer-copy">© Taybah. جميع الحقوق محفوظة.</p>
+        <p class="site-footer__copy" data-i18n="footer-bundle" dir="ltr">Bundle ID: com.taybahapp.taybah</p>
+      </div>
+      <nav aria-label="Footer">
+        <a href="support.html" data-i18n="nav-support">الدعم</a>
+        <a href="privacy.html" data-i18n="nav-privacy">سياسة الخصوصية</a>
+        <a href="terms.html" data-i18n="nav-terms">شروط الاستخدام</a>
+        <a href="delete-account.html" data-i18n="nav-delete">حذف البيانات</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/js/i18n.js"></script>
+</body>
+</html>

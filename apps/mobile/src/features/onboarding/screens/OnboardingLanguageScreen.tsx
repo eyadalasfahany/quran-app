@@ -15,6 +15,9 @@ export function OnboardingLanguageScreen({ testID = 'onboarding-language' }: { t
   const theme = useTheme();
   const [locale, setLocalLocale] = useState<Locale>(() => suggestLocale());
 
+  const tagline = t('onboarding.language.tagline');
+  const taglineEn = t('onboarding.language.taglineEn');
+
   const continueNext = () => {
     setLocale(locale);
     router.push('/(onboarding)/script');
@@ -36,11 +39,14 @@ export function OnboardingLanguageScreen({ testID = 'onboarding-language' }: { t
             {t('onboarding.language.title')}
           </UiText>
           <UiText align="center" tone="muted" variant="body">
-            {t('onboarding.language.tagline')}
+            {tagline}
           </UiText>
-          <UiText align="center" tone="muted" variant="caption">
-            {t('onboarding.language.taglineEn')}
-          </UiText>
+          {/* The second line is the English gloss under the Arabic tagline; in English it would repeat the first. */}
+          {taglineEn !== tagline ? (
+            <UiText align="center" tone="muted" variant="caption">
+              {taglineEn}
+            </UiText>
+          ) : null}
         </View>
         <View
           accessibilityLabel={t('onboarding.language.groupLabel')}

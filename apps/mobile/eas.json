@@ -21,7 +21,7 @@
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production",
-        "EXPO_PUBLIC_API_URL": "https://quranmobile-production.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "app.taybah-app.com"
       }
     }
   },

@@ -25,18 +25,23 @@ export function displayText(token: DisplayTypeToken, scale = 1): TextStyle {
   return { fontFamily: displayFontFamilies[weight], fontSize: size * scale, lineHeight: lineHeight * scale };
 }
 
+// Arabic text reads right to left and right-aligned in both languages, even in English (LTR) screens.
+export const arabicTextDirection: TextStyle = {
+  // iOS mirrors textAlign left/right to the layout direction. Keeping this
+  // node LTR leaves 'right' on the physical right; the words still run RTL.
+  direction: 'ltr',
+  textAlign: 'right',
+  writingDirection: 'rtl',
+};
+
 // Quran text ignores the system text size and follows the reader's own 80–160% setting.
 export function quranText(token: QuranTypeToken, fontScale = 1): TextStyle {
   const { size, lineHeightRatio } = quranTypeScale[token];
   const fontSize = size * fontScale;
   return {
-    // iOS mirrors textAlign left/right to the layout direction. Keeping this
-    // node LTR leaves 'right' on the physical right; the words still run RTL.
-    direction: 'ltr',
+    ...arabicTextDirection,
     fontFamily: quranFontFamily,
     fontSize,
     lineHeight: Math.round(fontSize * lineHeightRatio),
-    textAlign: 'right',
-    writingDirection: 'rtl',
   };
 }

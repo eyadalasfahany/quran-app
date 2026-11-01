@@ -1,6 +1,6 @@
 # 0042 — Hadith: full collections from fawazahmed0/hadith-api, Sunnah.com later
 
-Date: 2026-11-01 · Status: **Proposed** (developer decisions of 1 Nov 2026 recorded; this ADR waits for the developer's acceptance) · Amends spec §4, §5, §6, §7, §9, §15, the content plan (Hadith section, hadith sources tables; the fawazahmed0 row), ADR 0017 (Home tiles) and ADR 0032 (Menu cards). Defers part of spec §3, §5, §9, §13 (HadeethEnc, daily hadith). Plan: `docs/plans/phase-7.md`.
+Date: 2026-11-01 · Status: **Accepted (developer, 1 Nov 2026)** (all recommended defaults in the plan's open questions accepted) · Amends spec §4, §5, §6, §7, §9, §15, the content plan (Hadith section, hadith sources tables; the fawazahmed0 row), ADR 0017 (Home tiles) and ADR 0032 (Menu cards). Defers part of spec §3, §5, §9, §13 (HadeethEnc, daily hadith). Plan: `docs/plans/phase-7.md`.
 
 Numbering note: the first request asked for 0041, but `0041-local-uses-qf-production.md` is already accepted, so this ADR is 0042.
 
@@ -13,7 +13,7 @@ The spec and the content plan planned the Hadith section around HadeethEnc (cura
 On 1 Nov 2026 the developer decided:
 - Build full collections first. HadeethEnc is deferred.
 - Source now: **fawazahmed0/hadith-api**, read directly from its static JSON. Sunnah.com remains the long-term target; the developer is requesting its API key.
-- Not used: **hadithapi.com** (evaluated: publishes no terms, licence or offline-storage permission) and **ummahapi.com** (evaluated: it only proxies fawazahmed0 and drops books and graders).
+- **Hadith data is not taken from** hadithapi.com (publishes no terms, licence or offline-storage permission) or ummahapi.com (it only proxies fawazahmed0 and drops books and graders). **Titles are**: ummahapi.com supplies the ten Arabic collection names and hadithapi.com supplies Arabic section titles through a one-off matching command (section 4a).
 
 Facts about fawazahmed0/hadith-api (verified by the developer on 1 Nov 2026; this ADR does not re-fetch them):
 - Licence **Unlicense**. Latest commit `df57907be35291c91ad6a6691180e22ca9920784` (2026-06-03). Static JSON on jsDelivr (`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@<ref>/...`). No key and no rate limit.
@@ -54,14 +54,40 @@ Mapping for fawazahmed0: collection → `hadith_collections`; **section → book
   2. The developer makes the decisions the reviewer would have made: the Arabic names (section 4), the wording of the source line, an internal note on the editions' provenance, the list of skipped hadith numbers, any range exception, and every SHA bump. Each is recorded in `config/hadith.php`, `config/hadith_titles.php` or `content_sources.notes`, not in a code path.
   3. The `content_sources` row `fawazahmed0` records the Unlicense (`licence_url` = the repository's licence file, `permission_status = not_required`). The Unlicense covers the repository author's work; it does not by itself establish the rights of third parties (editors, graders), which is why grades stay hidden and the edition's provenance is recorded as a note the developer accepts.
 - **What the kill switch does:** the same flag gates the importer, the pack builder, the manifest and the `/hadith/collections` endpoints in every environment. The scheduler entry is a no-op while the flag is off or the pinned hashes are unchanged. The import joins `docker/release.sh` (`hadith:import --download --if-unlocked --build-packs`, the Azkar pattern) in step 17 (release wiring), not before.
-- There is no provider key. `HADITH_API_KEY` is removed from `.env.example`.
+- **No provider key for hadith data.** `HADITH_API_KEY` stays in `.env.example` as an **optional, dev-only** entry, empty, with the comment "dev-only, used by hadith:match-section-titles". It is never read in production and is redacted from logs (section 4a).
 
 ### 4. Arabic names come from a map the developer approves
-fawazahmed0 has **no Arabic names**: collection names are English (for example "Sahih al Bukhari"), 0 of Bukhari's 98 section names contain Arabic, and there are no Arabic author names. The Arabic titles for the 10 collections, their authors and the ~407 sections come from a map in `config/hadith_titles.php` that **the developer supplies and approves**, each entry with its source named. A missing title stays `null`. The app never shows an invented or machine-translated Arabic title (ADR 0031 §1.4), and the English source name is never shown in the Arabic interface. **A missing title does not block shipping a collection**; the fallback is:
+fawazahmed0 has **no Arabic names**: collection names are English (for example "Sahih al Bukhari"), 0 of Bukhari's 98 section names contain Arabic, and there are no Arabic author names. The names come from three places, all recorded as data in `config/hadith_titles.php`, each entry with its `source`. The developer approves the file. A missing title stays `null`, the app never shows an invented or machine-translated Arabic title (ADR 0031 §1.4), and the English source name is never shown in the Arabic interface. **A missing title does not block shipping a collection**; the fallback is:
 - **Collection:** the cover shows its ornament and no title; the list row and header show «مجموعة {n}» / "Collection {n}", where n is the collection's fixed position in `config/hadith.php`. The name appears as an i18n label, not as source text.
 - **Book:** the row shows «كتاب {n}» / "Book {n}" with n = `book_number`.
 - **English interface:** may show the source's English `title_en` when there is no Arabic title.
 - A collection whose Arabic title arrives later gets its cover title with a pack version bump; no app release.
+
+### 4a. Where the titles come from
+Hadith data comes from fawazahmed0 and nowhere else. The titles:
+1. **Arabic collection names: ummahapi.com** (`GET /api/hadith/collections`, field `arabic_name`; the developer verified it on 1 Nov 2026). Only the ten names are used, entered as data with `source: ummahapi.com`. No hadith data is taken from ummahapi.com, which has no book or section endpoint and no Arabic section names.
+
+| Slug | Arabic name (ummahapi.com `arabic_name`) | Arabic author (drafted by the orchestrator, **approved by the developer, 1 Nov 2026**) |
+| --- | --- | --- |
+| `bukhari` | صحيح البخاري | الإمام محمد بن إسماعيل البخاري |
+| `muslim` | صحيح مسلم | الإمام مسلم بن الحجاج النيسابوري |
+| `abudawud` | سنن أبي داود | الإمام أبو داود سليمان بن الأشعث السجستاني |
+| `tirmidhi` | جامع الترمذي | الإمام أبو عيسى محمد بن عيسى الترمذي |
+| `ibnmajah` | سنن ابن ماجه | الإمام محمد بن يزيد ابن ماجه القزويني |
+| `nasai` | سنن النسائي | الإمام أحمد بن شعيب النسائي |
+| `malik` | موطأ مالك | الإمام مالك بن أنس |
+| `nawawi` | الأربعون النووية | الإمام يحيى بن شرف النووي |
+| `qudsi` | الأحاديث القدسية | null (several compilers) |
+| `dehlawi` | الأربعون لولي الله الدهلوي | الإمام شاه ولي الله الدهلوي |
+
+2. **Arabic author names: the developer.** Drafted by the orchestrator (the table above), **approved by the developer on 1 Nov 2026**, entered with `source: developer`. `qudsi` has none (several compilers) and stays null.
+3. **Arabic كتاب (section) names: a one-off match against hadithapi.com.** hadithapi.com's `/api/{bookSlug}/chapters` has `chapterArabic` (these are Sunnah.com "books"), and `/api/hadiths` gives `chapterId` per `hadithNumber`. Counts differ, so a match is accepted only under a strict two-way rule, by the command below.
+- **Never in production:** it refuses to run when `APP_ENV=production`, is not scheduled and is not in `docker/release.sh`. It needs `HADITH_API_KEY`, an **optional, dev-only** key: empty in `.env.example` with the comment "dev-only, used by hadith:match-section-titles", never read in production, and redacted from logs, exceptions, reports and proposal files (the key is a query parameter).
+- **Scope:** only the six collections hadithapi.com shares (hadithapi slugs `sahih-bukhari`, `sahih-muslim`, `al-tirmidhi`, `abu-dawood`, `ibn-e-majah`, `sunan-nasai`, for `bukhari`, `muslim`, `tirmidhi`, `abudawud`, `ibnmajah`, `nasai`). `malik` has no counterpart and stays numbered. `nawawi`, `qudsi` and `dehlawi` have one section and open straight to the hadith list, so they need no section title.
+- **What it reads from hadithapi.com:** `/api/{bookSlug}/chapters` (`id`, `chapterArabic`) and, from `/api/hadiths`, only `hadithNumber` and `chapterId`. **Only titles are taken. Never hadith text, grades or anything else**: nothing else is written to disk.
+- **Match rule:** for each fawazahmed0 section, take its hadith numbers that have text (from the `section_details` ranges). Accept a hadithapi chapter's `chapterArabic` only when **at least 95% of those numbers map to that single chapter AND at least 95% of that chapter's hadith map back to the section**. Otherwise the title is null and the UI shows «كتاب {n}».
+- **Output:** a **proposal file** (`storage/app/hadith/proposals/section-titles.json`) and a report listing every accepted and rejected match with both percentages and the counts (Bukhari: fawazahmed0 has 97 named sections against hadithapi.com's 99 chapters). Each accepted title is recorded as received (no edits) with `source: hadithapi.com`. **The command never writes `config/`**: the developer reads the proposal, approves and commits it into `config/hadith_titles.php`.
+- **Why this is acceptable (ADR 0042 §4):** titles are short factual names of classical book divisions; it is a one-off import the developer approves; hadithapi.com publishes no terms, so the risk is noted and accepted. Sunnah.com's titles replace these at step 18.
 
 ### 5. Grades are hidden (D4 stands)
 - Every grade row is stored with its named grader, but **no grade is shown through Phase 7** (D4 stands). **Simplest option chosen:** there is no `review_status` column and no `reviewed_graders` list. A single constant, `hadith.grades_visible` in `config/hadith.php`, is `false`; the API Resources and the pack builder serialise a grade only when it is `true` and `graded_by` is not null. The pack's `hadith_grades` table therefore ships empty.
@@ -104,7 +130,7 @@ When the key and its written terms exist:
 
 ## Consequences
 
-- The content plan's fawazahmed0 row ("Not used", "grade sources are not documented") is amended: used as the Phase 7 source under the lock above. The hadithapi.com row becomes "evaluated, not used: no terms". ummahapi.com is recorded as evaluated and not used.
+- The content plan's fawazahmed0 row ("Not used", "grade sources are not documented") is amended: used as the Phase 7 hadith source. The hadithapi.com row becomes "hadith data not used (no terms); Arabic section titles taken once through a dev-only matcher, developer-approved". The ummahapi.com row becomes "hadith data not used; the ten Arabic collection names only". Sources: data from fawazahmed0; collection names from ummahapi.com; section titles from hadithapi.com (one-off match); author names from the developer.
 - Spec §15 numbering: Hadith collections become Phase 7 and Beta becomes Phase 8; the cut-line row is split.
 - ADR 0032's Menu card list gains الحديث, and the `Menu`, `MenuDark` and `MenuEnglish` frames change.
 - `apps/mobile/CLAUDE.md` "Where state lives": collection reading moves from TanStack Query to `content.db`.
@@ -112,4 +138,4 @@ When the key and its written terms exist:
 - **This amends the content plan's "the content reviewer signs off on the Hadith section" (and its "Not used unless the reviewer approves" for fawazahmed0) for Phase 7 collections: there is no reviewer, and the developer decides.** Azkar's own reviewer rules in ADR 0031 are untouched.
 - Sunnah.com is not a production blocker any more; it is the blocker for the switch (grader attribution by Sunnah.com, chapters, URLs).
 - **Provenance risk, accepted by the developer for now.** The editions' provenance is partly documented: fawazahmed0's `References.md` lists the sites the data came from "directly or indirectly" (al-maktaba.org/Shamela, sunnah.com, iium.edu.my/deed/hadith, hadithbd.com, zubairalizai.com, and al-maktaba.org books 1755 and 32832 for Abu Dawud's Albani and Arnaut grades, among others), so part of the data comes from sunnah.com and Shamela. The Unlicense comes from the repository author and does not necessarily clear those upstream rights. The classical Arabic texts themselves are centuries old. The edition metadata still says author "Unknown" with an empty source. Sunnah.com's written terms (step 18, the switch) close this. The developer keeps a note in `content_sources.notes` and keeps grades hidden. With no reviewer, nobody else checks the Arabic text against a printed edition; text integrity is limited to "stored equals source".
-- The developer should remove `HADITH_API_KEY` from the local `apps/api/.env` (it is no longer used). Agents never open that file.
+- `HADITH_API_KEY` is needed only for the dev-only title matcher; it lives in the developer's local `apps/api/.env` and never in production. Agents never open that file.

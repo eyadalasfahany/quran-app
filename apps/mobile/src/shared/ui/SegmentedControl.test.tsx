@@ -101,6 +101,12 @@ describe('SegmentedControl', () => {
     expect(view.queryByTestId('lead-tafsir')).toBeNull();
   });
 
+  it('keeps each label on one line that shrinks rather than breaking mid-word', async () => {
+    const view = await renderUi(control());
+
+    expect(view.getByText('الخيارات').props).toMatchObject({ adjustsFontSizeToFit: true, numberOfLines: 1 });
+  });
+
   it('calls onChange with the key and plays a selection haptic', async () => {
     const onChange = jest.fn();
     const view = await renderUi(control('actions', onChange));

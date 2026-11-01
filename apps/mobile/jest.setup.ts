@@ -1,7 +1,11 @@
 import { createFakeAudioPlaylist as mockCreateFakeAudioPlaylist } from './jest/fake-audio-player';
 import { deviceLanguageCode } from './jest/device-language';
+import { resetWindowSize } from './jest/window-size';
 
 import '@/core/layout/hide-scroll-indicators';
+
+// The phone frames' size (390 x 844). Without it Jest's default window gives a 1.15 text factor (ADR 0043).
+resetWindowSize();
 
 // Gesture handler installs its UI-thread bindings through Worklets, which has no UI runtime under Jest.
 jest.mock('react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings', () => ({

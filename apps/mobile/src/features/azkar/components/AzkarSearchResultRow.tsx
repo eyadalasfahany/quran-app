@@ -2,7 +2,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { displayText, highlightFill, NumberMedallion, UiText, useContrastColors } from '@/shared/ui';
+import { arabicTextDirection, displayText, highlightFill, NumberMedallion, UiText, useContrastColors } from '@/shared/ui';
 
 export type MatchRange = { start: number; end: number };
 
@@ -52,7 +52,7 @@ export function AzkarSearchResultRow({
     >
       <NumberMedallion number={number} testID={`${testID}-medallion`} />
       <View style={{ flex: 1 }}>
-        <UiText numberOfLines={2} style={displayText('dhikrList')} variant="body">
+        <UiText numberOfLines={2} style={[displayText('dhikrList'), arabicTextDirection]} variant="body">
           {before}
           {match ? <Text style={fill ? { backgroundColor: fill } : undefined}>{match}</Text> : null}
           {after}

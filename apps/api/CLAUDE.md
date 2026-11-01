@@ -5,7 +5,7 @@ Spec: `docs/technical-spec.md` §3 (structure), §5 (schema), §7 (pipeline), §
 ## Structure
 
 - Domains under `app/Domains/{Content,Audio,Hadith,Identity,Sync,Devices,Notifications}`.
-- External providers under `app/Integrations/{QuranFoundation,HadeethEnc,AlAdhan,Expo}`, each implementing `ContentSource` where it supplies content.
+- External providers under `app/Integrations/{QuranFoundation,HadeethEnc,HadithApiFawaz,AlAdhan,Expo}` (and `HadithApiCom`, a minimal dev-only client for `hadith:match-section-titles`; later `SunnahCom`; ADR 0042), each implementing `ContentSource` where it supplies content.
 - Shared helpers in `app/Support` (`ArabicNormalizer`, `HtmlSanitizer`, `VerseKey`, `ProblemDetails`).
 
 ## Layering (enforced by Pest `arch()` tests)

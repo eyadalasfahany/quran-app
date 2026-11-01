@@ -35,9 +35,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     owner: 'themayman',
     version: '1.0.0',
     scheme: variant.scheme,
-    // The home-screen name follows the device language.
+    // The home-screen name follows the device language. Each language needs its own entry: iOS picks the
+    // app's localization only from the bundled lproj folders, so without en.lproj an English reader still
+    // gets Arabic natural text alignment and Arabic system labels.
     locales: {
       ar: { ios: { CFBundleDisplayName: variant.nameAr }, android: { app_name: variant.nameAr } },
+      en: { ios: { CFBundleDisplayName: variant.name }, android: { app_name: variant.name } },
     },
     // Layout follows window size; no orientation lock anywhere (spec §4).
     orientation: 'default',

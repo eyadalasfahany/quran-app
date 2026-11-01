@@ -69,3 +69,28 @@ export const typeScale = {
 
 export type QuranTypeToken = keyof typeof quranTypeScale;
 export type TypeToken = keyof typeof typeScale;
+
+// Interface text follows the window's shorter side (ADR 0043). 390 is the frames' width, so it gives 1.
+export const textScaleRange = { baseWidth: 390, min: 0.9, max: 1.15 } as const;
+
+export function textScaleFor(window: { width: number; height: number }): number {
+  const shortSide = Math.min(window.width, window.height);
+  if (!(shortSide > 0)) return 1;
+  const ratio = shortSide / textScaleRange.baseWidth;
+  const clamped = Math.min(textScaleRange.max, Math.max(textScaleRange.min, ratio));
+  return Math.round(clamped * 100) / 100;
+}
+
+// Integer percent math avoids float drift: 17 * 1.15 is 19.549999…, which must round to 19.6.
+export function scaleFontSize(size: number, factor: number): number {
+  return Math.round((size * Math.round(factor * 100)) / 10) / 10;
+}
+
+export function scaleLineHeight(lineHeight: number, factor: number): number {
+  return Math.round((lineHeight * Math.round(factor * 100)) / 100);
+}
+
+// Size and line height move together, so Amiri keeps its natural leading.
+export function scaleTextStyle(style: { size: number; lineHeight: number }, factor: number): { size: number; lineHeight: number } {
+  return { size: scaleFontSize(style.size, factor), lineHeight: scaleLineHeight(style.lineHeight, factor) };
+}

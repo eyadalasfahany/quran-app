@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react-native';
 
 import { quranSegment, textSegment } from '../../../../jest/azkar-ui-fixtures';
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { ORNATE_CLOSE, ORNATE_OPEN } from '@/shared/ui';
 import { quranSegmentKey } from '../data/quran-segments';
@@ -48,6 +48,15 @@ describe('DhikrText', () => {
   it('renders the same placeholder in English without changing the Arabic', async () => {
     await renderUi(<DhikrText quranVerses={new Map()} segments={[textSegment('نص تجريبي ٤')]} />, { locale: 'en' });
     expect(screen.getByText('نص تجريبي ٤')).toBeTruthy();
+  });
+
+  it('keeps the dhikr centred but reads it RTL in English', async () => {
+    await renderUi(<DhikrText quranVerses={new Map()} segments={[textSegment('نص تجريبي ٤')]} />, { locale: 'en' });
+
+    expect(flatStyle(screen.getByText('نص تجريبي ٤').props.style)).toMatchObject({
+      textAlign: 'center',
+      writingDirection: 'rtl',
+    });
   });
 
   it('groups consecutive text and keeps each Quran block in order', () => {

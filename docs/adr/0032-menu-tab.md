@@ -37,3 +37,5 @@ The developer asked (1 Nov 2026) for the الصلاة tab to become a menu tab t
 - Prayer times move one tap deeper on phones. The menu's الصلاة card shows the next prayer, so the most-used information stays visible.
 - Only navigation code and its tests change: `destinations.ts` (tab list vs sidebar list), `app/(main)/_layout.tsx` and `router.test.tsx`. The `#Salah` / `#SalahDark` / `#Qibla` frames and all Salah code stay as they are.
 - Azkar gains a permanent entry point without a sixth tab.
+
+Amended by ADR 0042 (1 Nov 2026): the menu gains an الحديث card, shown only while at least one hadith collection pack is installed; the `Menu`, `MenuDark` and `MenuEnglish` frames are updated in Phase 7 step 8.

@@ -51,7 +51,8 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 | --- | --- |
 | Quran text, layouts, tafsir, timings | `content.db` via feature repositories (Drizzle) |
 | Bookmarks, highlights, notes, khatma, settings, outbox | `user.db`, Drizzle `useLiveQuery` |
-| Account, online lookups, hadith browsing | TanStack Query |
+| Hadith collections (ADR 0042) | `content.db` via feature repositories; saved hadith and last-read place in `user.db` |
+| Account, online lookups, deferred HadeethEnc browsing | TanStack Query |
 | Player queue, active ayah and word, repeat | Zustand `playerStore` |
 | Last-read verse and page, onboarding flags, theme | MMKV (read before the DB opens) |
 | Auth token | `expo-secure-store` |

@@ -25,6 +25,14 @@ describe('NowPlayingTitle', () => {
     expect(flatStyle(view.getByText('مرتّل').props.style).color).toBe(colors.playerAccent);
   });
 
+  it('centres the reciter name, so a long name does not hug the start edge', async () => {
+    const view = await renderUi(<NowPlayingTitle reciter="مشاري راشد العفاسي" style={null} surah="سورة الفاتحة" />, {
+      locale: 'en',
+    });
+
+    expect(flatStyle(view.getByTestId('now-playing-reciter').props.style).textAlign).toBe('center');
+  });
+
   it('hides the style pill when the style is unknown (null)', async () => {
     const view = await renderUi(<NowPlayingTitle reciter="r" style={null} surah="s" />);
 

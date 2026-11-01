@@ -3,6 +3,8 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { Button, IconButton } from '@/shared/ui';
 
+const BACK = { ios: 'chevron.left', android: 'chevron_left' } as const;
+
 export function OnboardingTopBar({
   onBack,
   onSkip,
@@ -29,7 +31,7 @@ export function OnboardingTopBar({
       testID={testID}
     >
       {onBack ? (
-        <IconButton icon={{ ios: 'chevron.right', android: 'chevron_right' }} label={backLabel} mirrorInRtl onPress={onBack} variant="raised" />
+        <IconButton icon={BACK} label={backLabel} mirrorInRtl onPress={onBack} testID="onboarding-back" variant="raised" />
       ) : (
         <View style={{ width: theme.size.touchTarget }} />
       )}

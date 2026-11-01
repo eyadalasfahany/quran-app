@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-default-lang="ar">
+<head>
+  <meta charset="utf-8">
+  <script>
+    (function () {
+      var b = document.createElement('base');
+      var p = location.pathname;
+      if (location.protocol === 'file:') {
+        b.href = location.href.replace(/[^/]*$/, '');
+      } else if (/\.html$/i.test(p)) {
+        b.href = p.replace(/[^/]*$/, '') || '/';
+      } else {
+        b.href = '/';
+      }
+      document.head.prepend(b);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>سياسة الخصوصية — طيبة | Taybah Privacy</title>
+  <meta name="description" content="كيف تتعامل طيبة مع بياناتك — بدون تتبع وبدون إعلانات.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%231f4d40' width='32' height='32' rx='8'/%3E%3Ctext x='16' y='22' text-anchor='middle' fill='%23f7f3ea' font-size='18' font-family='serif'%3Eط%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-logo" href="index.html"><span class="site-logo__mark" aria-hidden="true">ط</span><span class="lang-ar">طيبة</span><span class="lang-en" hidden>Taybah</span></a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html"><span class="lang-ar">الرئيسية</span><span class="lang-en" hidden>Home</span></a>
+        <a href="support.html"><span class="lang-ar">الدعم</span><span class="lang-en" hidden>Support</span></a>
+        <a href="privacy.html" aria-current="page"><span class="lang-ar">الخصوصية</span><span class="lang-en" hidden>Privacy</span></a>
+        <a href="terms.html"><span class="lang-ar">الشروط</span><span class="lang-en" hidden>Terms</span></a>
+      </nav>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <a href="?lang=ar" data-lang-btn="ar" aria-current="true">العربية</a>
+        <a href="?lang=en" data-lang-btn="en">English</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="prose">
+    <article class="lang-ar">
+      <h1>سياسة الخصوصية</h1>
+      <p class="meta">آخر تحديث: 2 نوفمبر 2026 · التطبيق: Taybah (<span dir="ltr">com.taybahapp.taybah</span>)</p>
+      <p>توضّح هذه السياسة كيف يتعامل تطبيق <strong>طيبة</strong> مع المعلومات عند استخدامك للتطبيق والموقع taybahapp.com. طيبة <strong>مجاني، بلا إعلانات، ولا يستخدم تتبعاً إعلانياً</strong> (لا نبيع بياناتك ولا نشاركها لأغراض إعلانية).</p>
+
+      <h2>1. ملخص سريع (v1)</h2>
+      <ul>
+        <li><strong>بياناتك الشخصية للقراءة</strong> (إشارات مرجعية، تمييز، ملاحظات، ختمة، إعدادات): تُخزَّن على <strong>جهازك</strong> في v1؛ لا حسابات سحابية ولا مزامنة حساب في هذا الإصدار.</li>
+        <li><strong>الموقع</strong>: يُستخدم لمواقيت الصلاة والقبلة؛ يُحسب على الجهاز ويُخزَّن محلياً عند اختيارك موقعاً تلقائياً أو يدوياً.</li>
+        <li><strong>الشبكة</strong>: التطبيق يتصل بخادم Taybah API لتنزيل حزم المحتوى (قرآن، تفسير، أذكار، حديث…) ويشغّل الصوت من CDN Quran Foundation عند الاستماع.</li>
+        <li><strong>لا تتبع</strong>: لا نستخدم SDKs إعلانية ولا نربط نشاطك بملفات تعريف لأطراف ثالثة لأغراض تسويق.</li>
+      </ul>
+
+      <h2>2. من نحن</h2>
+      <p>مشغّل التطبيق هو مطوّر طيبة. للاستفسارات: <a href="mailto:eyadalasfahani@gmail.com">eyadalasfahani@gmail.com</a>.</p>
+
+      <h2>3. ما الذي نجمعه؟</h2>
+      <h3>3.1 على جهازك (لا يُرسل تلقائياً في v1)</h3>
+      <ul>
+        <li>إشارات مرجعية، تمييز، ملاحظات، موضع القراءة، خطط الختمة وسجلاتها</li>
+        <li>إعدادات القراءة والاستماع والمظهر واللغة</li>
+        <li>تنزيلات الصوت وحزم المحتوى المخزّنة في قاعدة محتوى قابلة لإعادة البناء</li>
+        <li>إحداثيات أو مدينة مختارة للصلاة والقبلة</li>
+        <li>جدولة التذكيرات المحلية (قراءة، صلاة، أذكار)</li>
+      </ul>
+
+      <h3>3.2 عند الاتصال بالخادم</h3>
+      <p>طلبات HTTPS إلى API قد تسجّل معلومات تقنية قياسية على الخادم (عنوان IP، وقت الطلب، User-Agent، رؤوس ETag للتخزين المؤقت). هذه السجلات تُستخدم للتشغيل والأمان وليس للتتبع الإعلاني.</p>
+      <p>في v1 <strong>لا</strong> نجمع بريداً إلكترونياً أو معرّف حساب من التطبيق لأن تسجيل الدخول غير متاح.</p>
+
+      <h3>3.3 مستقبلاً (حسابات ومزامنة)</h3>
+      <p>إذا أُضيفت لاحقاً حسابات ومزامنة سحابية، قد يشمل ذلك البريد الإلكتروني ومعرّف الحساب ومزامنة الإشارات والملاحظات بين أجهزتك. سنحدّث هذه السياسة قبل تفعيل ذلك ونطلب موافقتك حيث يقتضي القانون.</p>
+
+      <h2>4. أذونات الجهاز</h2>
+      <ul>
+        <li><strong>الموقع (اختياري)</strong>: «أثناء استخدام التطبيق» لحساب مواقيت الصلاة والقبلة.</li>
+        <li><strong>الإشعارات (اختياري)</strong>: لتذكيرات القراءة والصلاة والأذكار التي تفعّلها.</li>
+        <li><strong>البوصلة</strong>: على الأجهزة المدعومة لعرض اتجاه القبلة.</li>
+      </ul>
+
+      <h2>5. خدمات خارجية</h2>
+      <ul>
+        <li><strong>Quran Foundation</strong>: محتوى قرآن وتفسير وصوت؛ الصوت قد يُشغَّل مباشرة من CDN الخاص بهم.</li>
+        <li><strong>خطوط mushaf</strong>: من CDN عام Quran Foundation وفق شروطهم.</li>
+        <li><strong>مصادر أذكار وحديث</strong>: كما هو موضّح في «المصادر» داخل التطبيق؛ قد تتضمن تنزيلات من خادمنا.</li>
+      </ul>
+      <p>كل مزوّد له سياسة خصوصية مستقلة عند زيارة روابطه خارج التطبيق.</p>
+
+      <h2>6. التحليلات والأعطال</h2>
+      <p>قد نستخدم أدوات تشخيص أعطال (مثل Sentry) في إصدارات مستقبلية لتحسين الاستقرار. إذا فُعِّلت، سنذكر ذلك هنا وفي نماذج خصوصية المتاجر. لا نستخدمها للإعلانات.</p>
+
+      <h2>7. الاحتفاظ والحذف</h2>
+      <p>البيانات على جهازك تبقى حتى تحذف التطبيق أو تستخدم <strong>مسح كل البيانات المحلية</strong> من الإعدادات. راجع <a href="delete-account.html">حذف البيانات</a>.</p>
+      <p>سجلات الخادم تُحتفظ لفترة تشغيلية محدودة ثم تُدور.</p>
+
+      <h2>8. الأطفال</h2>
+      <p>التطبيق مناسب للعائلة ولا يجمع عن قصد بيانات شخصية من الأطفال عبر الإنترنت في v1.</p>
+
+      <h2>9. حقوقك</h2>
+      <p>حسب بلدك قد يكون لك حق الوصول أو التصحيح أو الحذف. تواصل معنا على البريد أعلاه.</p>
+
+      <h2>10. تغييرات</h2>
+      <p>قد نحدّث هذه الصفحة؛ تاريخ «آخر تحديث» يعكس النسخة الحالية.</p>
+
+      <div class="callout">هذه السياسة معلوماتية وليست استشارة قانونية. للمتاجر (Apple/Google) استخدم أيضاً الإفصاحات داخل لوحات التطوير.</div>
+    </article>
+
+    <article class="lang-en" hidden dir="ltr">
+      <h1>Privacy Policy</h1>
+      <p class="meta">Last updated: 2 November 2026 · App: Taybah (com.taybahapp.taybah)</p>
+      <p>This policy explains how the <strong>Taybah</strong> app and taybahapp.com handle information. Taybah is <strong>free, ad-free, and does not use advertising tracking</strong> (we do not sell your data or share it for ads).</p>
+
+      <h2>1. Quick summary (v1)</h2>
+      <ul>
+        <li><strong>Reading data</strong> (bookmarks, highlights, notes, khatma, settings) is stored on <strong>your device</strong> in v1; no cloud accounts or account sync in this release.</li>
+        <li><strong>Location</strong> is used for prayer times and qibla; computed on device and cached locally when you choose automatic or manual location.</li>
+        <li><strong>Network</strong>: the app calls the Taybah API for content packs (Quran, tafsir, adhkar, hadith, etc.) and streams audio from Quran Foundation’s CDN when you listen.</li>
+        <li><strong>No tracking</strong>: no ad SDKs and no cross-app profiling for marketing.</li>
+      </ul>
+
+      <h2>2. Who we are</h2>
+      <p>The app is operated by the Taybah developer. Contact: <a href="mailto:eyadalasfahani@gmail.com">eyadalasfahani@gmail.com</a>.</p>
+
+      <h2>3. What we collect</h2>
+      <h3>3.1 On your device (not uploaded automatically in v1)</h3>
+      <ul>
+        <li>Bookmarks, highlights, notes, reading position, khatma plans and logs</li>
+        <li>Reading, audio, appearance, and language settings</li>
+        <li>Downloaded audio and content packs in a replaceable content database</li>
+        <li>Coordinates or chosen city for salah and qibla</li>
+        <li>Local notification schedules you enable</li>
+      </ul>
+
+      <h3>3.2 When contacting our server</h3>
+      <p>HTTPS requests to our API may produce standard server logs (IP address, time, User-Agent, cache headers). These are used for operations and security, not advertising.</p>
+      <p>In v1 we do <strong>not</strong> collect email or account identifiers from the app because sign-in is not offered.</p>
+
+      <h3>3.3 Future (accounts and sync)</h3>
+      <p>If cloud accounts and sync are added later, that may include email, account id, and syncing bookmarks and notes across devices. We will update this policy before enabling that and ask for consent where required.</p>
+
+      <h2>4. Device permissions</h2>
+      <ul>
+        <li><strong>Location (optional)</strong>: while using the app, for prayer times and qibla.</li>
+        <li><strong>Notifications (optional)</strong>: for reading, prayer, and adhkar reminders you turn on.</li>
+        <li><strong>Compass</strong>: on supported hardware for qibla direction.</li>
+      </ul>
+
+      <h2>5. Third-party services</h2>
+      <ul>
+        <li><strong>Quran Foundation</strong>: Quran content, tafsir, and audio; audio may play directly from their CDN.</li>
+        <li><strong>Mushaf fonts</strong>: from Quran Foundation’s public CDN under their terms.</li>
+        <li><strong>Adhkar and hadith sources</strong>: as listed in in-app Sources; some files may be downloaded from our server.</li>
+      </ul>
+
+      <h2>6. Analytics and crashes</h2>
+      <p>We may use crash diagnostics (e.g. Sentry) in future builds to improve stability. If enabled, we will note it here and in store privacy forms. Not used for ads.</p>
+
+      <h2>7. Retention and deletion</h2>
+      <p>On-device data remains until you delete the app or use <strong>Clear all local data</strong> in Settings. See <a href="delete-account.html">Delete data</a>.</p>
+      <p>Server logs are kept for a limited operational period then rotated.</p>
+
+      <h2>8. Children</h2>
+      <p>The app is family-friendly and does not knowingly collect personal data from children online in v1.</p>
+
+      <h2>9. Your rights</h2>
+      <p>Depending on your region you may have access, correction, or deletion rights. Email us at the address above.</p>
+
+      <h2>10. Changes</h2>
+      <p>We may update this page; the “Last updated” date reflects the current version.</p>
+
+      <div class="callout">This policy is informational, not legal advice. For App Store and Google Play, complete their in-console privacy questionnaires as well.</div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__copy">© Taybah</p>
+      <nav aria-label="Footer">
+        <a href="support.html"><span class="lang-ar">الدعم</span><span class="lang-en" hidden>Support</span></a>
+        <a href="terms.html"><span class="lang-ar">الشروط</span><span class="lang-en" hidden>Terms</span></a>
+        <a href="delete-account.html"><span class="lang-ar">حذف البيانات</span><span class="lang-en" hidden>Delete data</span></a>
+      </nav>
+    </div>
+  </footer>
+  <script src="assets/js/legal-lang.js"></script>
+</body>
+</html>

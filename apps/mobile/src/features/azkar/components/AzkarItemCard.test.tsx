@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { AzkarItemCard } from './AzkarItemCard';
 
@@ -57,6 +57,14 @@ describe('AzkarItemCard', () => {
 
     expect(screen.getByRole('button', { name: 'Entry 4' })).toBeOnTheScreen();
     expect(screen.getByTestId('azkar-item-card-medallion', { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+
+  it('keeps the Arabic preview right-aligned and RTL in English', async () => {
+    await renderUi(<AzkarItemCard number={1} onPress={jest.fn()} preview={PREVIEW} requiredCount={null} />, {
+      locale: 'en',
+    });
+
+    expect(flatStyle(screen.getByText(PREVIEW).props.style)).toMatchObject({ textAlign: 'right', writingDirection: 'rtl' });
   });
 
   it('uses theme tokens rather than raw colours', () => {

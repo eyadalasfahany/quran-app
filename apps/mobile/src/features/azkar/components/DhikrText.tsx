@@ -56,8 +56,15 @@ export const DhikrText = memo(function DhikrText({
     <View style={{ gap: theme.space[4] }} testID={testID}>
       {blocks.map((block, index) => {
         if (block.kind === 'text') {
+          // Arabic reads RTL in English too; the centre alignment stays.
           return (
-            <UiText key={index} align="center" style={displayText('dhikr', fontScale)} variant="dhikr" weight={400}>
+            <UiText
+              key={index}
+              align="center"
+              style={[displayText('dhikr', fontScale), { writingDirection: 'rtl' }]}
+              variant="dhikr"
+              weight={400}
+            >
               {block.text}
             </UiText>
           );

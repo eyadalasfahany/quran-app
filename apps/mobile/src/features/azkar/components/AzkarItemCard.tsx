@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { displayText, Icon, NumberMedallion, UiText, useContrastColors } from '@/shared/ui';
+import { arabicTextDirection, displayText, Icon, NumberMedallion, UiText, useContrastColors } from '@/shared/ui';
 
 import { AzkarCountChip } from './AzkarCountChip';
 
@@ -64,7 +64,7 @@ export function AzkarItemCard({
       <NumberMedallion number={number} testID={`${testID}-medallion`} />
       <View style={{ flex: 1 }}>
         {preview ? (
-          <UiText numberOfLines={2} style={displayText('dhikrList')} variant="body">
+          <UiText numberOfLines={2} style={[displayText('dhikrList'), arabicTextDirection]} variant="body">
             {preview}
           </UiText>
         ) : null}

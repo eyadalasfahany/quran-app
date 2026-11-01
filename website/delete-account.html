@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-default-lang="ar">
+<head>
+  <meta charset="utf-8">
+  <script>
+    (function () {
+      var b = document.createElement('base');
+      var p = location.pathname;
+      if (location.protocol === 'file:') {
+        b.href = location.href.replace(/[^/]*$/, '');
+      } else if (/\.html$/i.test(p)) {
+        b.href = p.replace(/[^/]*$/, '') || '/';
+      } else {
+        b.href = '/';
+      }
+      document.head.prepend(b);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>حذف البيانات — طيبة | Taybah Delete Data</title>
+  <meta name="description" content="كيف تحذف بياناتك المحلية في طيبة v1 وكيف تطلب حذف حساب مستقبلي.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%231f4d40' width='32' height='32' rx='8'/%3E%3Ctext x='16' y='22' text-anchor='middle' fill='%23f7f3ea' font-size='18' font-family='serif'%3Eط%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-logo" href="index.html"><span class="site-logo__mark" aria-hidden="true">ط</span><span class="lang-ar">طيبة</span><span class="lang-en" hidden>Taybah</span></a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html"><span class="lang-ar">الرئيسية</span><span class="lang-en" hidden>Home</span></a>
+        <a href="support.html"><span class="lang-ar">الدعم</span><span class="lang-en" hidden>Support</span></a>
+        <a href="privacy.html"><span class="lang-ar">الخصوصية</span><span class="lang-en" hidden>Privacy</span></a>
+        <a href="terms.html"><span class="lang-ar">الشروط</span><span class="lang-en" hidden>Terms</span></a>
+      </nav>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <a href="?lang=ar" data-lang-btn="ar" aria-current="true">العربية</a>
+        <a href="?lang=en" data-lang-btn="en">English</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="prose">
+    <article class="lang-ar">
+      <h1>حذف بياناتك</h1>
+      <p class="meta">آخر تحديث: 2 نوفمبر 2026</p>
+
+      <h2>الإصدار الأول (v1) — بلا حساب سحابي</h2>
+      <p>طيبة v1 <strong>لا يتضمن تسجيل دخول</strong>. لا نخزّن إشاراتك المرجعية أو ملاحظاتك على خوادمنا. كل بياناتك الشخصية للقراءة موجودة على جهازك فقط.</p>
+
+      <h3>مسح كل البيانات المحلية</h3>
+      <ol>
+        <li>افتح التطبيق → <strong>الإعدادات</strong> (من «قرآني» أو القائمة).</li>
+        <li>انتقل إلى قسم <strong>حول والبيانات</strong> (About &amp; data).</li>
+        <li>اختر <strong>مسح كل البيانات المحلية</strong> وأكّد.</li>
+      </ol>
+      <p>سيُحذف: الإشارات المرجعية، التمييز، الملاحظات، الختمة، موضع القراءة، والإعدادات المحفوظة في قاعدة المستخدم. <strong>لا</strong> يحذف هذا تنزيلات الصوت أو حزم القرآن المخزّنة في قاعدة المحتوى — يمكنك حذف التنزيلات من شاشة التنزيلات أو بإزالة التطبيق.</p>
+
+      <h3>حذف التطبيق بالكامل</h3>
+      <p>إزالة Taybah من جهازك تحذف قواعد البيانات المحلية وكل الملفات داخل مساحة التطبيق.</p>
+
+      <h2>حسابات مستقبلية</h2>
+      <p>إذا أُضيفت لاحقاً حسابات ومزامنة سحابية:</p>
+      <ul>
+        <li>ستتمكن من <strong>حذف حسابك داخل التطبيق</strong> (شاشة مخصصة مع تأكيد).</li>
+        <li>يمكنك أيضاً طلب الحذف عبر البريد: <a href="mailto:eyadalasfahani@gmail.com?subject=Account%20deletion">eyadalasfahani@gmail.com</a> (مطلوب لسياسات Google Play).</li>
+      </ul>
+      <p>عند الحذف من الخادم تُزال بيانات المزامنة (إشارات، ملاحظات، إعدادات الحساب) وفق <a href="privacy.html">سياسة الخصوصية</a>.</p>
+
+      <div class="callout">للمساعدة: <a href="support.html">صفحة الدعم</a>.</div>
+    </article>
+
+    <article class="lang-en" hidden dir="ltr">
+      <h1>Delete your data</h1>
+      <p class="meta">Last updated: 2 November 2026</p>
+
+      <h2>Version 1 — no cloud account</h2>
+      <p>Taybah v1 has <strong>no sign-in</strong>. We do not store your bookmarks or notes on our servers. All personal reading data lives on your device only.</p>
+
+      <h3>Clear all local data</h3>
+      <ol>
+        <li>Open the app → <strong>Settings</strong> (from My Quran or the menu).</li>
+        <li>Go to <strong>About &amp; data</strong>.</li>
+        <li>Choose <strong>Clear all local data</strong> and confirm.</li>
+      </ol>
+      <p>This removes bookmarks, highlights, notes, khatma, reading position, and settings stored in the user database. It does <strong>not</strong> remove downloaded audio or Quran content packs — delete those from Downloads or by uninstalling the app.</p>
+
+      <h3>Uninstall the app</h3>
+      <p>Removing Taybah from your device deletes local databases and all files in the app sandbox.</p>
+
+      <h2>Future accounts</h2>
+      <p>If cloud accounts and sync are added later:</p>
+      <ul>
+        <li>You will be able to <strong>delete your account in the app</strong> (dedicated screen with confirmation).</li>
+        <li>You may also request deletion by email: <a href="mailto:eyadalasfahani@gmail.com?subject=Account%20deletion">eyadalasfahani@gmail.com</a> (required for Google Play policies).</li>
+      </ul>
+      <p>Server-side deletion removes synced data (bookmarks, notes, account settings) as described in the <a href="privacy.html">Privacy Policy</a>.</p>
+
+      <div class="callout">Need help? See <a href="support.html">Support</a>.</div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__copy">© Taybah</p>
+      <nav aria-label="Footer">
+        <a href="support.html"><span class="lang-ar">الدعم</span><span class="lang-en" hidden>Support</span></a>
+        <a href="privacy.html"><span class="lang-ar">الخصوصية</span><span class="lang-en" hidden>Privacy</span></a>
+        <a href="terms.html"><span class="lang-ar">الشروط</span><span class="lang-en" hidden>Terms</span></a>
+      </nav>
+    </div>
+  </footer>
+  <script src="assets/js/legal-lang.js"></script>
+</body>
+</html>
