@@ -79,8 +79,8 @@ return [
     // chapter reciter id (resources.source_key). Names are not Quran text. An override wins over QF's Arabic name.
     'reciter_display_names' => [
         'ar' => [
+            1 => 'عبد الباسط عبد الصمد',
             4 => 'أبو بكر الشاطري',
-            12 => 'محمود خليل الحصري (المعلم)',
             158 => 'عبدالله علي جابر',
             159 => 'ماهر المعيقلي',
             160 => 'بندر بليلة',

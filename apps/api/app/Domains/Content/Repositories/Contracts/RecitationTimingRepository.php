@@ -21,5 +21,7 @@ interface RecitationTimingRepository
      */
     public function anyHaveSegments(array $audioFileIds): bool;
 
+    public function exists(int $audioFileId, int $verseId): bool;
+
     public function delete(int $audioFileId, int $verseId): void;
 }

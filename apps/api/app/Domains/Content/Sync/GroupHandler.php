@@ -27,5 +27,9 @@ interface GroupHandler
      */
     public function replaceFromSnapshot(Resource $resource, Snapshot $snapshot): int;
 
-    public function applyRow(Resource $resource, Mutation $mutation): ContentChangeData;
+    /**
+     * Returns null when the mutation changed nothing on our side (a skipped QF record). The sync still advances
+     * last_sequence in that case.
+     */
+    public function applyRow(Resource $resource, Mutation $mutation): ?ContentChangeData;
 }

@@ -130,15 +130,15 @@ export function MenuScreen() {
       testID="menu-card-khatma"
       title={t('menu.khatma.title')}
     />,
-    <MenuCard
-      caption={t('menu.home.caption')}
-      icon={ICON.home}
-      key="home"
-      onPress={() => router.navigate('/(main)/(home)')}
-      preview={t('menu.home.subtitle')}
-      testID="menu-card-home"
-      title={t('menu.home.title')}
-    />,
+    // <MenuCard
+    //   caption={t('menu.home.caption')}
+    //   icon={ICON.home}
+    //   key="home"
+    //   onPress={() => router.navigate('/(main)/(home)')}
+    //   preview={t('menu.home.subtitle')}
+    //   testID="menu-card-home"
+    //   title={t('menu.home.title')}
+    // />,
     <MenuCard
       caption={t('menu.mushaf.caption')}
       icon={ICON.mushaf}

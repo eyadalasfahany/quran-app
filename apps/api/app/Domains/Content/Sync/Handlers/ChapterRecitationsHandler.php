@@ -22,6 +22,7 @@ use App\Integrations\QuranFoundation\Mutation;
 use App\Integrations\QuranFoundation\MutationType;
 use App\Integrations\QuranFoundation\ReciterCatalogEntry;
 use App\Integrations\QuranFoundation\Snapshot;
+use Illuminate\Support\Facades\Log;
 
 final class ChapterRecitationsHandler implements GroupHandler
 {
@@ -58,18 +59,41 @@ final class ChapterRecitationsHandler implements GroupHandler
     public function replaceFromSnapshot(Resource $resource, Snapshot $snapshot): int
     {
         $files = [];
+        $skipped = [];
+        $untimed = [];
         $timings = [];
 
         foreach ($snapshot->records as $record) {
             $type = $this->recordType($record);
 
-            if ($type === 'chapter_audio_file') {
+            if ($type === 'chapter_audio_file' && $this->isNonSurahFile($record)) {
+                $skipped[] = $record;
+            } elseif ($type === 'chapter_audio_file') {
                 $files[] = $record;
+            } elseif ($type === 'audio_segment' && $this->isUntimedSegment($record)) {
+                $untimed[] = $record;
             } elseif ($type === 'audio_segment') {
                 $timings[] = $this->timingRow($record);
             } else {
                 throw new SyncException('Unknown chapter recitation record type ['.$type.'].');
             }
+        }
+
+        if ($skipped !== []) {
+            Log::warning('Quran Foundation chapter recitation snapshot has audio files that are not surahs; they are skipped.', [
+                'resource_id' => $resource->source_key,
+                'count' => count($skipped),
+                'record_id' => $this->requiredInt($skipped[0], 'id'),
+                'file_name' => $this->optionalString($skipped[0], 'file_name'),
+            ]);
+        }
+
+        if ($untimed !== []) {
+            Log::warning('Quran Foundation chapter recitation snapshot has audio segments without a valid timing; they are skipped.', [
+                'resource_id' => $resource->source_key,
+                'count' => count($untimed),
+                'verse_key' => $this->optionalString($untimed[0], 'verse_key'),
+            ]);
         }
 
         $names = $this->names($resource, $this->artist($files));
@@ -106,7 +130,7 @@ final class ChapterRecitationsHandler implements GroupHandler
         return count([...$fileRows, ...$timingRows, $recitation]);
     }
 
-    public function applyRow(Resource $resource, Mutation $mutation): ContentChangeData
+    public function applyRow(Resource $resource, Mutation $mutation): ?ContentChangeData
     {
         if ($mutation->type === MutationType::RowDelete) {
             return $this->delete($resource, $mutation);
@@ -126,11 +150,98 @@ final class ChapterRecitationsHandler implements GroupHandler
             throw new SyncException('Chapter recitation record is missing record_type.');
         }
 
-        return match ($type ?? $this->recordType($mutation->data)) {
+        $recordType = $type ?? $this->recordType($mutation->data);
+
+        if ($this->isSkippedRow($recordType, $mutation->data)) {
+            return $this->skipRow($resource, $mutation, $recordType, $mutation->data);
+        }
+
+        return match ($recordType) {
             'chapter_audio_file' => $this->upsertFile($resource, $mutation->data),
             'audio_segment' => $this->upsertTiming($resource, $mutation->data),
             default => throw new SyncException('Unknown chapter recitation record type ['.($type ?? '').'].'),
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $record
+     */
+    private function isSkippedRow(string $recordType, array $record): bool
+    {
+        return match ($recordType) {
+            'chapter_audio_file' => $this->isNonSurahFile($record),
+            'audio_segment' => $this->isUntimedSegment($record),
+            default => false,
+        };
+    }
+
+    /**
+     * A skipped row is logged and not stored. If a stored row exists for it (an update made a valid record skipped),
+     * that row is removed through the same removeRow() path as RowDelete. Returns null when nothing changed.
+     *
+     * @param  array<string, mixed>  $record
+     */
+    private function skipRow(Resource $resource, Mutation $mutation, string $recordType, array $record): ?ContentChangeData
+    {
+        Log::warning('Quran Foundation chapter recitation row is not stored; it is skipped.', [
+            'resource_id' => $resource->source_key,
+            'record_type' => $recordType,
+            'record_id' => $mutation->recordKey,
+            'verse_key' => $recordType === 'audio_segment' ? $this->optionalString($record, 'verse_key') : null,
+        ]);
+
+        if (! $this->rowExists($recordType, $mutation->recordKey)) {
+            return null;
+        }
+
+        return $this->removeRow($this->requireRecitation($resource), $recordType, $mutation->recordKey);
+    }
+
+    private function rowExists(string $recordType, ?string $recordKey): bool
+    {
+        if ($recordKey === null) {
+            return false;
+        }
+
+        if ($recordType === 'chapter_audio_file') {
+            return preg_match('/^[0-9]+$/', $recordKey) === 1 && $this->files->find((int) $recordKey) !== null;
+        }
+
+        if ($recordType === 'audio_segment' && preg_match('/^([0-9]+):([0-9]+)$/', $recordKey, $matches) === 1) {
+            return $this->timings->exists((int) $matches[1], (int) $matches[2]);
+        }
+
+        return false;
+    }
+
+    /**
+     * QF sends extra chapter_audio_file records with no chapter and no audio URL (for example a non-surah file). Only a
+     * record with neither is skipped; a null chapter_id with an audio URL is still an error.
+     *
+     * @param  array<string, mixed>  $record
+     */
+    private function isNonSurahFile(array $record): bool
+    {
+        return ($record['chapter_id'] ?? null) === null && ($record['audio_url'] ?? null) === null;
+    }
+
+    /**
+     * QF sends some audio segments with no timing (null, or 0 to 0). They cannot be highlighted, so a segment is
+     * skipped when either timestamp is null or missing, or when both are ints and from is not before to. A non-int
+     * timestamp is not skipped; timingRow() still rejects it.
+     *
+     * @param  array<string, mixed>  $record
+     */
+    private function isUntimedSegment(array $record): bool
+    {
+        $start = $record['timestamp_from'] ?? null;
+        $end = $record['timestamp_to'] ?? null;
+
+        if ($start === null || $end === null) {
+            return true;
+        }
+
+        return is_int($start) && is_int($end) && $start >= $end;
     }
 
     /**
@@ -436,13 +547,16 @@ final class ChapterRecitationsHandler implements GroupHandler
 
     private function delete(Resource $resource, Mutation $mutation): ContentChangeData
     {
-        $recitation = $this->requireRecitation($resource);
+        return $this->removeRow($this->requireRecitation($resource), $mutation->recordType, $mutation->recordKey);
+    }
 
-        return match ($mutation->recordType) {
-            'recitation' => $this->deleteRecitation($recitation, $mutation->recordKey),
-            'chapter_audio_file' => $this->deleteFile($recitation, $mutation->recordKey),
-            'audio_segment' => $this->deleteTiming($recitation, $mutation->recordKey),
-            default => throw new SyncException('Unknown chapter recitation record type ['.($mutation->recordType ?? '').'].'),
+    private function removeRow(Recitation $recitation, ?string $recordType, ?string $recordKey): ContentChangeData
+    {
+        return match ($recordType) {
+            'recitation' => $this->deleteRecitation($recitation, $recordKey),
+            'chapter_audio_file' => $this->deleteFile($recitation, $recordKey),
+            'audio_segment' => $this->deleteTiming($recitation, $recordKey),
+            default => throw new SyncException('Unknown chapter recitation record type ['.($recordType ?? '').'].'),
         };
     }
 

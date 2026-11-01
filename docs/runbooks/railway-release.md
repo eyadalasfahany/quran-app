@@ -51,7 +51,7 @@ Set on the API service unless noted. The QF variables go on the API, Horizon and
 
 ## First QF production sync
 
-**Deploy the sync fixes first** (1 Nov 2026). Production QF returns bootstrap mutations unsorted, and some Arabic tafsirs (90, 93, and all of 925) have records with a null `group_tafsir_id`. A build without the ordering fix in `ContentSyncService` and the group-leader fallback in `TafsirsHandler` fails `content:sync tafsirs` on production.
+**Deploy the sync fixes first** (1 Nov 2026). Production QF returns bootstrap mutations unsorted, and some Arabic tafsirs (90, 93, and all of 925) have records with a null `group_tafsir_id`. A build without the ordering fix in `ContentSyncService` and the group-leader fallback in `TafsirsHandler` fails `content:sync tafsirs` on production. In the chapter reciters, 3, 5 and 19 each carry a "Dua.mp3" file with no chapter and no URL, and 168 has four ayah timings with no valid range (33:7, 33:8, 36:40, 101:3). `ChapterRecitationsHandler` skips both with a warning. A build without that fails `content:sync chapter_recitations`.
 
 The production mirror has its own sync tokens (`sync_states` is keyed by environment), so the first run bootstraps from QF snapshots. The scheduler runs every group in `quran.sync.groups` daily at 02:00 UTC. To start sooner, from a shell in the API container (`railway ssh`):
 

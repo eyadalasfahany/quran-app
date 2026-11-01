@@ -282,9 +282,12 @@ final class ContentSyncService
                     $version = null;
                 } else {
                     $change = $handler->applyRow($resource, $mutation);
-                    $version = $this->touchVersion($resource, $versions);
-                    $this->changes->insert($resource->id, $version, $change);
-                    $written = 1;
+
+                    if ($change !== null) {
+                        $version = $this->touchVersion($resource, $versions);
+                        $this->changes->insert($resource->id, $version, $change);
+                        $written = 1;
+                    }
                 }
 
                 $state->last_sequence = $mutation->sequence;

@@ -44,6 +44,14 @@ final class EloquentRecitationTimingRepository extends EloquentRepository implem
             ->exists();
     }
 
+    public function exists(int $audioFileId, int $verseId): bool
+    {
+        return $this->query()
+            ->where('audio_file_id', $audioFileId)
+            ->where('verse_id', $verseId)
+            ->exists();
+    }
+
     public function delete(int $audioFileId, int $verseId): void
     {
         $this->query()

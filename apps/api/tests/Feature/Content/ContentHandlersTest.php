@@ -325,6 +325,224 @@ it('applies both chapter-recitation pages and normalizes timings', function (): 
         ]);
 });
 
+it('skips a chapter audio file with no chapter and no audio url in a snapshot and keeps the 114 surah files', function (): void {
+    /** @var list<MessageLogged> $warnings */
+    $warnings = [];
+
+    Log::listen(function (MessageLogged $event) use (&$warnings): void {
+        if ($event->level === 'warning' && $event->message === 'Quran Foundation chapter recitation snapshot has audio files that are not surahs; they are skipped.') {
+            $warnings[] = $event;
+        }
+    });
+
+    $surahFiles = array_map(fn (int $chapterId): array => audioFile(10000 + $chapterId, $chapterId, 10, 10000), range(1, 114));
+    $segment = audioSegment(1, [[1, 0.0, 960.0]]);
+    $segment['audio_file_id'] = 10001;
+    $extra = [
+        'record_type' => 'chapter_audio_file',
+        'id' => 99999,
+        'audio_recitation_id' => 1,
+        'chapter_id' => null,
+        'audio_url' => null,
+        'duration' => 10,
+        'duration_ms' => null,
+        'file_size' => 100,
+        'format' => 'mp3',
+        'file_name' => 'FIXTURE-extra.mp3',
+        'metadata' => null,
+    ];
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], extra: [
+        CONTENT_HOST.'/api/v4/resources/snapshots/chapter_recitations/6' => contentSnapshot('chapter_recitations', 6, [
+            ...$surahFiles,
+            $extra,
+            $segment,
+        ]),
+    ]);
+
+    expect(SyncRun::query()->sole()->status)->toBe(SyncRunStatus::Ok)
+        ->and(ChapterAudioFile::query()->count())->toBe(114)
+        ->and(ChapterAudioFile::query()->where('id', 99999)->exists())->toBeFalse()
+        ->and(Recitation::query()->sole()->has_word_segments)->toBeTrue()
+        ->and($warnings)->toHaveCount(1)
+        ->and($warnings[0]->context)->toMatchArray(['count' => 1, 'record_id' => 99999, 'file_name' => 'FIXTURE-extra.mp3']);
+});
+
+it('skips untimed audio segments in a snapshot, keeps the valid timings and logs one warning', function (): void {
+    /** @var list<MessageLogged> $warnings */
+    $warnings = [];
+
+    Log::listen(function (MessageLogged $event) use (&$warnings): void {
+        if ($event->level === 'warning' && $event->message === 'Quran Foundation chapter recitation snapshot has audio segments without a valid timing; they are skipped.') {
+            $warnings[] = $event;
+        }
+    });
+
+    $file = audioFile(10001, 1, 10, 10000);
+    $valid = audioSegment(1, [[1, 0.0, 960.0]]);
+    $valid['audio_file_id'] = 10001;
+    $zeroZero = audioSegment(7, [[1, 0.0, 960.0]]);
+    $zeroZero['audio_file_id'] = 10001;
+    $zeroZero['timestamp_from'] = 0;
+    $zeroZero['timestamp_to'] = 0;
+    $nullNull = audioSegment(8, [[1, 0.0, 960.0]]);
+    $nullNull['audio_file_id'] = 10001;
+    $nullNull['timestamp_from'] = null;
+    $nullNull['timestamp_to'] = null;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], extra: [
+        CONTENT_HOST.'/api/v4/resources/snapshots/chapter_recitations/6' => contentSnapshot('chapter_recitations', 6, [
+            $file,
+            $zeroZero,
+            $nullNull,
+            $valid,
+        ]),
+    ]);
+
+    expect(SyncRun::query()->sole()->status)->toBe(SyncRunStatus::Ok)
+        ->and(RecitationTiming::query()->pluck('verse_id')->all())->toBe([1])
+        ->and(RecitationTiming::query()->sole()->start_ms)->toBe(0)
+        ->and(RecitationTiming::query()->sole()->end_ms)->toBe(6300)
+        ->and(Recitation::query()->sole()->has_word_segments)->toBeTrue()
+        ->and($warnings)->toHaveCount(1)
+        ->and($warnings[0]->context)->toMatchArray(['resource_id' => '6', 'count' => 2, 'verse_key' => '1:7']);
+});
+
+it('still fails a chapter recitation snapshot when an audio segment timestamp is a string', function (): void {
+    $segment = audioSegment(1, [[1, 0.0, 960.0]]);
+    $segment['audio_file_id'] = 10734;
+    $segment['timestamp_from'] = '0';
+
+    expect(fn () => runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], extra: [
+        CONTENT_HOST.'/api/v4/resources/snapshots/chapter_recitations/6' => contentSnapshot('chapter_recitations', 6, [
+            audioFile(10734, 1, 10, 10000),
+            $segment,
+        ]),
+    ]))->toThrow(SyncException::class, 'Sync record is missing timestamp_from.');
+
+    expect(RecitationTiming::query()->count())->toBe(0)
+        ->and(SyncState::query()->first()?->last_sequence ?? 0)->toBe(0);
+});
+
+it('fails a chapter recitation snapshot when a file has no chapter but has an audio url', function (): void {
+    $broken = audioFile(20001, 1, 10, 10000);
+    $broken['chapter_id'] = null;
+
+    expect(fn () => runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], extra: [
+        CONTENT_HOST.'/api/v4/resources/snapshots/chapter_recitations/6' => contentSnapshot('chapter_recitations', 6, [$broken]),
+    ]))->toThrow(SyncException::class, 'Sync record is missing chapter_id.');
+
+    expect(ChapterAudioFile::query()->count())->toBe(0)
+        ->and(SyncState::query()->first()?->last_sequence ?? 0)->toBe(0);
+});
+
+it('skips a row-created non-surah audio file after bootstrap, keeps the sequence and logs one warning', function (): void {
+    /** @var list<MessageLogged> $warnings */
+    $warnings = [];
+
+    Log::listen(function (MessageLogged $event) use (&$warnings): void {
+        if ($event->level === 'warning' && $event->message === 'Quran Foundation chapter recitation row is not stored; it is skipped.') {
+            $warnings[] = $event;
+        }
+    });
+
+    bootstrapChapterRecitationResource();
+
+    $dua = audioFile(20001, 1, 10, 10000);
+    $dua['chapter_id'] = null;
+    $dua['audio_url'] = null;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_CREATE', '20001', 'chapter_audio_file', $dua),
+    ], 'token-row');
+
+    expect(SyncRun::query()->latest('id')->firstOrFail()->status)->toBe(SyncRunStatus::Ok)
+        ->and(SyncState::query()->firstOrFail()->last_sequence)->toBe(11)
+        ->and(ChapterAudioFile::query()->where('id', 20001)->exists())->toBeFalse()
+        ->and(ChapterAudioFile::query()->count())->toBe(1)
+        ->and(ContentChange::query()->count())->toBe(0)
+        ->and(Resource::query()->where('source_key', '6')->firstOrFail()->version)->toBe(1)
+        ->and($warnings)->toHaveCount(1)
+        ->and($warnings[0]->context)->toMatchArray(['resource_id' => '6', 'record_type' => 'chapter_audio_file', 'record_id' => '20001']);
+});
+
+it('skips a row-created untimed audio segment after bootstrap and logs its verse key', function (): void {
+    /** @var list<MessageLogged> $warnings */
+    $warnings = [];
+
+    Log::listen(function (MessageLogged $event) use (&$warnings): void {
+        if ($event->level === 'warning' && $event->message === 'Quran Foundation chapter recitation row is not stored; it is skipped.') {
+            $warnings[] = $event;
+        }
+    });
+
+    bootstrapChapterRecitationResource();
+
+    $untimed = audioSegment(2, [[4, 1.2, 3.8]]);
+    $untimed['timestamp_from'] = null;
+    $untimed['timestamp_to'] = null;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_CREATE', '10734:2', 'audio_segment', $untimed),
+    ], 'token-row');
+
+    expect(SyncRun::query()->latest('id')->firstOrFail()->status)->toBe(SyncRunStatus::Ok)
+        ->and(SyncState::query()->firstOrFail()->last_sequence)->toBe(11)
+        ->and(RecitationTiming::query()->where('verse_id', 2)->exists())->toBeFalse()
+        ->and(RecitationTiming::query()->count())->toBe(1)
+        ->and(ContentChange::query()->count())->toBe(0)
+        ->and(Resource::query()->where('source_key', '6')->firstOrFail()->version)->toBe(1)
+        ->and($warnings)->toHaveCount(1)
+        ->and($warnings[0]->context)->toMatchArray(['record_type' => 'audio_segment', 'verse_key' => '1:2']);
+});
+
+it('removes a stored timing when an update makes it untimed, recording a delete change', function (): void {
+    bootstrapChapterRecitationResource();
+
+    $zeroZero = audioSegment(1, [[1, 0.0, 960.0]]);
+    $zeroZero['audio_file_id'] = 10734;
+    $zeroZero['timestamp_from'] = 0;
+    $zeroZero['timestamp_to'] = 0;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_UPDATE', '10734:1', 'audio_segment', $zeroZero),
+    ], 'token-row');
+
+    $change = ContentChange::query()->sole();
+
+    expect(SyncState::query()->firstOrFail()->last_sequence)->toBe(11)
+        ->and(RecitationTiming::query()->count())->toBe(0)
+        ->and(Resource::query()->where('source_key', '6')->firstOrFail()->version)->toBe(2)
+        ->and($change->entity)->toBe('recitation_timing')
+        ->and($change->entity_key)->toBe('10734:1')
+        ->and($change->op)->toBe(ChangeOperation::Delete)
+        ->and($change->version)->toBe(2)
+        ->and($change->payload)->toBeNull();
+});
+
+it('still fails a row update that clears chapter_id on a file with an audio url, without advancing the sequence', function (): void {
+    bootstrapChapterRecitationResource();
+
+    $broken = audioFile(10734, 1, 10, 10000);
+    $broken['chapter_id'] = null;
+
+    expect(fn () => runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_UPDATE', '10734', 'chapter_audio_file', $broken),
+    ], 'token-row'))->toThrow(SyncException::class, 'Sync record is missing chapter_id.');
+
+    expect(SyncState::query()->firstOrFail()->last_sequence)->toBe(10)
+        ->and(ChapterAudioFile::query()->findOrFail(10734)->chapter_id)->toBe(1)
+        ->and(ContentChange::query()->count())->toBe(0);
+});
+
 it('falls back to the audio metadata artist when the reciter is not in the catalog', function (): void {
     runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:99', reciterRoutes(), [
         contentResourceMutation('chapter_recitations', 99, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/99'),
@@ -386,6 +604,13 @@ it('stores a QF Arabic reciter name with Arabic letters unchanged', function ():
 
     expect(Recitation::query()->firstOrFail()->reciter_name_ar)->toBe($arabic);
 });
+
+function bootstrapChapterRecitationResource(): void
+{
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ]);
+}
 
 /**
  * @param  array<string, mixed>  $routes
