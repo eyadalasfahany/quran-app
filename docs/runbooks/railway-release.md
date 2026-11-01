@@ -62,6 +62,8 @@ php artisan content:sync mushafs
 php artisan content:sync chapter_recitations
 ```
 
+Command-line PHP in the image has a 1 GB memory limit (`$PHP_INI_DIR/php-cli.ini`, set in `docker/Dockerfile`). On an image built before that, add `-d memory_limit=1G` after `php`, or the tafsir and reciter snapshots fail with "Allowed memory size of 134217728 bytes exhausted". There is no Horizon service yet, so after a manual sync build the packs with `php artisan queue:work redis --queue=packs,default --stop-when-empty --tries=1`.
+
 Each run prints `mutations_applied`, `resources_touched` and `rows`. Horizon builds the packs; `GET /api/v1/content/manifest` then lists each resource with its version, size and SHA-256.
 
 ## Unlocking Azkar in production

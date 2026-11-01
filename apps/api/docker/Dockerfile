@@ -38,6 +38,11 @@ RUN install-php-extensions \
     pdo_mysql \
     zip
 
+# Command-line PHP (content sync, queue workers, scheduler, release) gets 1 GB: a QF snapshot such as a
+# full tafsir or a reciter's 6,236 timings exceeds the 128 MB default. PHP reads php-cli.ini only for the
+# CLI SAPI, so FrankenPHP web requests keep the default limit.
+RUN printf 'memory_limit = 1G\n' > "$PHP_INI_DIR/php-cli.ini"
+
 WORKDIR /app
 
 COPY --from=vendor /app/vendor ./vendor
