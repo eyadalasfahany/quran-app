@@ -25,6 +25,8 @@ export { ListRow } from './ListRow';
 export { MedallionOutline } from './MedallionOutline';
 export { NumberMedallion } from './NumberMedallion';
 export { OfflineBanner } from './OfflineBanner';
+export { OnboardingRadioCard } from './OnboardingRadioCard';
+export { OnboardingStepIndicator } from './OnboardingStepIndicator';
 export { PageDivider } from './PageDivider';
 export { QuranText } from './QuranText';
 export { Rosette } from './Rosette';

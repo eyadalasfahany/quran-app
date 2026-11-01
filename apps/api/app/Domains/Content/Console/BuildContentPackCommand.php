@@ -17,7 +17,7 @@ final class BuildContentPackCommand extends Command
 
     public function handle(PackBuilder $packs, ResourceRepository $resources): int
     {
-        $argument = $this->argument('resource_id');
+        $argument = (string) $this->argument('resource_id');
 
         if (preg_match('/^[1-9][0-9]*$/', $argument) !== 1) {
             $this->error('Resource id must be a positive integer.');

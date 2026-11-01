@@ -133,6 +133,20 @@ it('uses a stable epoch timestamp when no pack has been built', function (): voi
         ->assertJsonPath('resources', []);
 });
 
+it('omits a resource from the manifest when its pack file is missing on disk', function (): void {
+    $resource = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'version' => 2,
+        'is_active' => true,
+    ]);
+    $pack = app(PackBuilder::class)->build($resource);
+    Storage::disk('local')->delete($pack->path);
+
+    $this->getJson('/api/v1/content/manifest')
+        ->assertOk()
+        ->assertJsonPath('resources', []);
+});
+
 it('streams a pack and rejects an unknown or inactive one', function (): void {
     $resource = Resource::factory()->create([
         'group' => ResourceGroup::Tafsirs,

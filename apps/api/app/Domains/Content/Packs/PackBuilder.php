@@ -35,7 +35,12 @@ final class PackBuilder
         $existing = $this->packs->findForVersion($resource->id, $resource->version);
 
         if ($existing !== null) {
-            return $this->data($existing);
+            if (Storage::disk('local')->exists($existing->path)) {
+                return $this->data($existing);
+            }
+
+            // DB row without a file (ephemeral disk after deploy). Drop the row so build can record again.
+            $existing->delete();
         }
 
         $temp = storage_path('app/tmp/pack-'.$resource->id.'-'.$resource->version.'-'.bin2hex(random_bytes(8)).'.sqlite');

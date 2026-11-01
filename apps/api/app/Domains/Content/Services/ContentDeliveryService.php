@@ -49,6 +49,10 @@ final class ContentDeliveryService
                 continue;
             }
 
+            if (! Storage::disk('local')->exists($pack->path)) {
+                continue;
+            }
+
             if ($newest === null || $pack->built_at->greaterThan($newest)) {
                 $newest = $pack->built_at;
             }

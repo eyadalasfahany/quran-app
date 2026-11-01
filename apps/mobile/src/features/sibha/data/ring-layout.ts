@@ -1,5 +1,7 @@
 /** The ring's frame size (quran-app-screens.html, #Sibha). The counter is never drawn larger. */
 export const SIBHA_RING_SIZE = 280;
+/** Progress ring stroke width on #Sibha. */
+export const SIBHA_RING_STROKE = 10;
 /** The smallest ring a short or cramped window draws (ADR 0036). */
 export const SIBHA_RING_MIN = 160;
 

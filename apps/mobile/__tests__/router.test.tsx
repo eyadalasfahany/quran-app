@@ -74,6 +74,7 @@ function setWidth(width: number): void {
 describe("adaptive nav", () => {
   // The app starts in Arabic; these tests use the English labels, so they save English first (as a reader would).
   beforeEach(async () => {
+    storage.set(storageKeys.onboardingCompleted, true);
     storage.set(storageKeys.locale, "en");
     I18nManager.isRTL = false;
     await i18n.changeLanguage("en");

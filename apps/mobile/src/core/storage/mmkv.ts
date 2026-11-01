@@ -5,6 +5,7 @@ import { createMMKV } from 'react-native-mmkv';
 export const storage = createMMKV({ id: 'quran-prefs' });
 
 export const storageKeys = {
+  onboardingCompleted: 'onboarding.completed',
   locale: 'locale',
   directionReloadPending: 'directionReloadPending',
   selectedResourceIds: 'content.selectedResourceIds',

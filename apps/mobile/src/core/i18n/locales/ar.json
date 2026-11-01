@@ -938,6 +938,34 @@
     "targetNone": "بلا حد",
     "rounds": "الدورة {{round}}"
   },
+  "onboarding": {
+    "back": "رجوع",
+    "skip": "تخطي",
+    "continue": "متابعة",
+    "startReading": "ابدأ القراءة",
+    "stepOfThree": "الخطوة {{step}} من {{total}}",
+    "language": {
+      "title": "طيبة",
+      "tagline": "مصحفك، بهدوء. اقرأ واستمع واحفظ.",
+      "taglineEn": "Your Quran, calmly. Read, listen and memorize.",
+      "groupLabel": "لغة التطبيق · App language",
+      "arabic": "العربية",
+      "arabicDetail": "الافتراضية",
+      "english": "English",
+      "englishDetail": "Interface only"
+    },
+    "script": {
+      "title": "كيف تحب أن تقرأ؟",
+      "subtitle": "اختر طريقة العرض. يمكنك تغييرها في أي وقت من الإعدادات.",
+      "previewCaption": "معاينة: الرسم العثماني · حفص",
+      "modeGroup": "طريقة العرض"
+    },
+    "reciter": {
+      "title": "اختر قارئك",
+      "subtitle": "استمع قبل الاختيار. التلاوة تُبث مباشرة ولا يُنزّل شيء الآن.",
+      "groupLabel": "القارئ الافتراضي"
+    }
+  },
   "dailyGoals": {
     "title": "أهدافي اليومية",
     "save": "حفظ",

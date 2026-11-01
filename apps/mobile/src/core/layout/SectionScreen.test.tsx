@@ -34,11 +34,11 @@ describe('SectionScreen', () => {
     const view = await renderUi(<SectionScreen testID="screen" title="الاستماع" />);
 
     expect(view.getByRole('header', { name: 'الاستماع' })).toBeOnTheScreen();
+    expect(flatStyle(view.getByText('الاستماع').props.style).lineHeight).toBeGreaterThanOrEqual(36);
     expect(flatStyle(view.getByText('الاستماع').props.style)).toMatchObject({
       color: themes.light.colors.ink,
       fontFamily: 'Amiri-Bold',
       fontSize: 28,
-      lineHeight: 36,
     });
     expect(flatStyle(view.getByTestId('screen').props.style)).toMatchObject({
       backgroundColor: themes.light.colors.surface,

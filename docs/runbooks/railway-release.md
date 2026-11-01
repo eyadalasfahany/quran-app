@@ -66,6 +66,28 @@ Command-line PHP in the image has a 1 GB memory limit (`$PHP_INI_DIR/php-cli.ini
 
 Each run prints `mutations_applied`, `resources_touched` and `rows`. Horizon builds the packs; `GET /api/v1/content/manifest` then lists each resource with its version, size and SHA-256.
 
+**Pack files live on the `local` disk** (`storage/app/private/packs/`). Railway’s container filesystem is ephemeral: a redeploy without a mounted volume drops every `.sqlite.gz` while MySQL still has `content_packs` rows. The manifest then advertises packs that return 404 and the app cannot install reciters or tafsirs. Mount a Railway volume on `/app/storage/app/private` (or the image’s equivalent) on the **API** service so packs survive deploys. After any deploy that lost files, rebuild from a shell in the API container:
+
+```bash
+php artisan content:ensure-packs --prune-orphans
+```
+
+On an image **before** `content:ensure-packs` shipped, prune then build per resource (pass the id as a **string** to `Artisan::call`):
+
+```bash
+php artisan tinker --execute 'App\Domains\Content\Models\ContentPack::query()->cursor()->each(function ($p) { if (! Illuminate\Support\Facades\Storage::disk("local")->exists($p->path)) { $p->delete(); } });'
+php artisan tinker --execute 'App\Domains\Content\Models\Resource::query()->where("is_active", true)->orderBy("id")->pluck("id")->each(fn (int $id) => Artisan::call("content:build-pack", ["resource_id" => (string) $id]));'
+```
+
+If packs still 404 after a rebuild loop, the gzip was never written. On the API shell, confirm the volume mount and that files exist:
+
+```bash
+php artisan tinker --execute 'echo storage_path("app/private/packs");'
+ls -la storage/app/private/packs 2>/dev/null | head
+```
+
+The mount path must be **`/app/storage/app/private`** (not `storage/app/private` relative to the wrong root). Spot-check: `curl -I "https://<api>/api/v1/content/packs/<resource_id>/<version>"` should be `200` with `Content-Type: application/gzip`.
+
 ## Unlocking Azkar in production
 
 This is a reviewed change, never a command on the server:

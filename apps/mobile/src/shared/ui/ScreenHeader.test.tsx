@@ -1,5 +1,7 @@
 import { Text } from 'react-native';
 
+import { amiriNaturalLeading, typeScale } from '@quran/design-tokens';
+
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 import { themes } from '@/core/theme';
@@ -14,7 +16,7 @@ describe('ScreenHeader', () => {
     expect(flatStyle(view.getByText('الفهرس').props.style)).toMatchObject({
       fontFamily: 'Amiri-Bold',
       fontSize: 28,
-      lineHeight: 36,
+      lineHeight: Math.round(typeScale.displayMd.size * amiriNaturalLeading),
     });
   });
 

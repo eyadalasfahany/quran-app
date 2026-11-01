@@ -1,3 +1,4 @@
+import { amiriNaturalLeading } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
@@ -6,11 +7,11 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
-import { SIBHA_RING_SIZE } from '../data/ring-layout';
+import { SIBHA_RING_SIZE, SIBHA_RING_STROKE } from '../data/ring-layout';
+import { SibhaRingBead } from './SibhaRingBead';
 import { SibhaRoundsBadge } from './SibhaRoundsBadge';
 
-const STROKE = 10;
-// The Sibha frame sets the count at 120 with a line height of 1.
+// Frame count size (#Sibha); line height uses Amiri natural leading so glyphs are not clipped.
 const COUNT_SIZE = 120;
 
 /**
@@ -39,9 +40,10 @@ export function SibhaCounter({
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const radius = (size - STROKE) / 2;
+  const radius = (size - SIBHA_RING_STROKE) / 2;
   const circumference = 2 * Math.PI * radius;
   const countSize = Math.round((COUNT_SIZE * size) / SIBHA_RING_SIZE);
+  const countLineHeight = Math.round(countSize * amiriNaturalLeading);
   const fraction = target === null ? 0 : Math.min(count / target, 1);
   const current = formatNumber(count, locale);
   const shownRounds = target === null ? 0 : rounds;
@@ -68,10 +70,10 @@ export function SibhaCounter({
         }
       }}
       onPress={onTap}
-      style={{ height: size, width: size }}
+      style={{ height: size, overflow: 'visible', width: size }}
       testID={testID}
     >
-      <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+      <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center', overflow: 'visible' }}>
         <Svg height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }} width={size}>
           <Circle
             cx={size / 2}
@@ -79,7 +81,7 @@ export function SibhaCounter({
             fill={theme.colors.surfaceRaised}
             r={radius}
             stroke={theme.colors.fillSecondary}
-            strokeWidth={STROKE}
+            strokeWidth={SIBHA_RING_STROKE}
           />
           <Circle
             cx={size / 2}
@@ -89,17 +91,18 @@ export function SibhaCounter({
             stroke={theme.colors.brand}
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - fraction)}
-            strokeLinecap="round"
-            strokeWidth={STROKE}
+            strokeLinecap="butt"
+            strokeWidth={SIBHA_RING_STROKE}
             testID={`${testID}-ring`}
           />
         </Svg>
-        <View style={{ alignItems: 'center', gap: theme.space[2] }}>
+        {target === null ? null : <SibhaRingBead fraction={fraction} size={size} testID={`${testID}-bead`} />}
+        <View style={{ alignItems: 'center', gap: theme.space[2], paddingVertical: theme.space[1] }}>
           <SibhaRoundsBadge rounds={shownRounds} testID={`${testID}-rounds`} />
           <UiText
             align="center"
             importantForAccessibility="no"
-            style={{ fontSize: countSize, lineHeight: countSize }}
+            style={{ fontSize: countSize, lineHeight: countLineHeight }}
             testID={`${testID}-count`}
             variant="displayLg"
           >

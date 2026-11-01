@@ -308,6 +308,32 @@ it('does not rebuild a pack that already exists for the version', function (): v
     }
 });
 
+it('rebuilds a pack when the database row exists but the file on disk is gone', function (): void {
+    $resource = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'version' => 2,
+    ]);
+
+    $first = app(PackBuilder::class)->build($resource);
+    $path = ContentPack::query()->firstOrFail()->path;
+
+    Storage::disk('local')->delete($path);
+    expect(Storage::disk('local')->exists($path))->toBeFalse();
+
+    Carbon::setTestNow('2026-10-27 06:00:00');
+
+    try {
+        $second = app(PackBuilder::class)->build($resource->fresh());
+
+        expect(ContentPack::query()->count())->toBe(1)
+            ->and(Storage::disk('local')->exists($path))->toBeTrue()
+            ->and($second->version)->toBe($first->version)
+            ->and($second->builtAt->toIso8601ZuluString('millisecond'))->toBe('2026-10-27T06:00:00.000Z');
+    } finally {
+        Carbon::setTestNow();
+    }
+});
+
 it('leaves the previous pack and manifest unchanged when a build cannot be stored', function (): void {
     $root = storage_path('framework/testing/pack-disk-'.bin2hex(random_bytes(4)));
     mkdir($root, 0777, true);

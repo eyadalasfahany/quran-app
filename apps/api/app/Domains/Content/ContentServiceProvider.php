@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Content;
 
 use App\Domains\Content\Console\BuildContentPackCommand;
+use App\Domains\Content\Console\EnsureContentPacksCommand;
 use App\Domains\Content\Console\SyncContentCommand;
 use App\Domains\Content\Events\ResourceContentChanged;
 use App\Domains\Content\Listeners\QueuePackBuild;
@@ -83,6 +84,7 @@ final class ContentServiceProvider extends ServiceProvider
         $this->commands([
             SyncContentCommand::class,
             BuildContentPackCommand::class,
+            EnsureContentPacksCommand::class,
         ]);
 
         Event::listen(ResourceContentChanged::class, QueuePackBuild::class);

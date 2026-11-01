@@ -938,6 +938,34 @@
     "targetNone": "No limit",
     "rounds": "Round {{round}}"
   },
+  "onboarding": {
+    "back": "Back",
+    "skip": "Skip",
+    "continue": "Continue",
+    "startReading": "Start reading",
+    "stepOfThree": "Step {{step}} of {{total}}",
+    "language": {
+      "title": "Taybah",
+      "tagline": "Your Quran, calmly. Read, listen and memorize.",
+      "taglineEn": "Your Quran, calmly. Read, listen and memorize.",
+      "groupLabel": "App language",
+      "arabic": "Arabic",
+      "arabicDetail": "Default",
+      "english": "English",
+      "englishDetail": "Interface only"
+    },
+    "script": {
+      "title": "How do you like to read?",
+      "subtitle": "Choose a display mode. You can change it anytime in Settings.",
+      "previewCaption": "Preview: Uthmani · Hafs",
+      "modeGroup": "Display mode"
+    },
+    "reciter": {
+      "title": "Choose your reciter",
+      "subtitle": "Listen before you choose. Recitation streams live; nothing is downloaded now.",
+      "groupLabel": "Default reciter"
+    }
+  },
   "dailyGoals": {
     "title": "My daily goals",
     "save": "Save",

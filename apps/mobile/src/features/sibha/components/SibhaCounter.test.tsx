@@ -1,3 +1,4 @@
+import { amiriNaturalLeading } from '@quran/design-tokens';
 import { fireEvent } from '@testing-library/react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -17,6 +18,18 @@ describe('SibhaCounter', () => {
 
     expect(view.getByTestId('sibha-counter-count')).toHaveTextContent('٧');
     expect(view.queryByText(/من/)).toBeNull();
+  });
+
+  it('shows the bead when there is a target', async () => {
+    const view = await renderUi(<SibhaCounter count={3} onReset={jest.fn()} onTap={jest.fn()} target={100} />);
+
+    expect(view.getByTestId('sibha-counter-bead')).toBeOnTheScreen();
+  });
+
+  it('hides the bead without a target', async () => {
+    const view = await renderUi(<SibhaCounter count={3} onReset={jest.fn()} onTap={jest.fn()} target={null} />);
+
+    expect(view.queryByTestId('sibha-counter-bead')).toBeNull();
   });
 
   it('draws the ring to half at half the target', async () => {
@@ -132,5 +145,8 @@ describe('SibhaCounter size (ADR 0036)', () => {
 
     expect(flatStyle(view.getByTestId('sibha-counter').props.style)).toMatchObject({ height: 280, width: 280 });
     expect(flatStyle(view.getByTestId('sibha-counter-count').props.style).fontSize).toBe(120);
+    expect(flatStyle(view.getByTestId('sibha-counter-count').props.style).lineHeight).toBe(
+      Math.round(120 * amiriNaturalLeading),
+    );
   });
 });
