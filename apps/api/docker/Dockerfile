@@ -64,7 +64,8 @@ ENV APP_ENV=production \
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/release.sh /usr/local/bin/release.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/release.sh
+COPY docker/start-web.sh /usr/local/bin/start-web.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/release.sh /usr/local/bin/start-web.sh
 
 EXPOSE 8080
 

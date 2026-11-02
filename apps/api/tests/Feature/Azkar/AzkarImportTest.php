@@ -14,12 +14,14 @@ use App\Domains\Content\Models\AzkarItem;
 use App\Domains\Content\Models\AzkarNote;
 use App\Domains\Content\Models\AzkarRecording;
 use App\Domains\Content\Models\AzkarSegment;
+use App\Domains\Content\Models\ContentPack;
 use App\Domains\Content\Models\ContentSource;
 use App\Domains\Content\Models\Resource;
 use App\Support\QuranText\SearchTextNormalizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -425,6 +427,59 @@ it('replaces the azkar rows in one transaction, bumps the version and queues the
         ->and(AzkarNote::query()->count())->toBe(0);
 
     Bus::assertDispatched(BuildContentPackJob::class, fn (BuildContentPackJob $job): bool => $job->resourceId === $resource->id);
+});
+
+it('defers the pack: the importer writes rows and returns a deferred pack without building or queuing it', function (): void {
+    azkarEnableWetImport();
+
+    $report = app(AzkarImporter::class)->run(azkarFixturePath(), false, deferPack: true);
+
+    expect($report->status)->toBe(ImportReport::STATUS_IMPORTED)
+        ->and($report->resource['version_after'])->toBe(1)
+        ->and($report->resource['pack'])->toBe(['built' => false, 'queued' => false, 'deferred' => true])
+        ->and(AzkarItem::query()->count())->toBe(7);
+
+    Bus::assertNotDispatched(BuildContentPackJob::class);
+});
+
+it('refuses to combine build-packs and defer-pack in the importer', function (): void {
+    azkarEnableWetImport();
+
+    expect(fn () => app(AzkarImporter::class)->run(azkarFixturePath(), false, buildPacks: true, deferPack: true))
+        ->toThrow(LogicException::class, 'Choose --build-packs or --defer-pack, not both.')
+        ->and(AzkarItem::query()->count())->toBe(0);
+});
+
+it('the command with defer-pack writes the rows, builds and queues no pack, and exits zero', function (): void {
+    azkarEnableWetImport();
+    Storage::fake('local');
+    $reportPath = storage_path('framework/testing/azkar/deferred-report.json');
+
+    $this->artisan('azkar:import', ['path' => azkarFixturePath(), '--defer-pack' => true, '--report' => $reportPath])
+        ->assertExitCode(0);
+
+    $resource = Resource::query()->where('group', ResourceGroup::Azkar->value)->firstOrFail();
+
+    expect($resource->version)->toBe(1)
+        ->and(AzkarItem::query()->count())->toBe(7)
+        ->and(ContentPack::query()->where('resource_id', $resource->id)->count())->toBe(0)
+        ->and(Storage::disk('local')->allFiles())->toBe([]);
+
+    Bus::assertNotDispatched(BuildContentPackJob::class);
+});
+
+it('the command refuses build-packs together with defer-pack and writes nothing', function (): void {
+    azkarEnableWetImport();
+    $reportPath = storage_path('framework/testing/azkar/both-flags-report.json');
+
+    $this->artisan('azkar:import', ['path' => azkarFixturePath(), '--build-packs' => true, '--defer-pack' => true, '--report' => $reportPath])
+        ->expectsOutputToContain('Choose --build-packs or --defer-pack, not both.')
+        ->assertExitCode(1);
+
+    expect(AzkarItem::query()->count())->toBe(0)
+        ->and(Resource::query()->count())->toBe(0);
+
+    Bus::assertNotDispatched(BuildContentPackJob::class);
 });
 
 it('a wet import with errors writes no rows and does not create or bump the resource', function (): void {

@@ -30,6 +30,7 @@ final class ImportAzkarCommand extends Command
         {--dry-run : Validate and transform in memory; write no rows}
         {--if-unlocked : While the wet import is locked, print why and exit 0 (release runs)}
         {--build-packs : After a successful wet import, build the azkar pack now instead of queueing it}
+        {--defer-pack : After a successful wet import, neither build nor queue the azkar pack; the web service builds it at start (Railway pre-deploy, ADR 0044)}
         {--skip-blocked : Local only: leave out entries with errors and import the rest; the report lists them}
         {--source= : The source to import: opendua or hisnmuslim (default: config azkar.primary_source)}
         {--report= : Where to write the JSON report (default storage/app/azkar/reports/<timestamp>.json)}';
@@ -38,6 +39,12 @@ final class ImportAzkarCommand extends Command
 
     public function handle(AzkarImporter $importer, CatalogueDownloader $downloader, AzkarSourceRegistry $sources): int
     {
+        if ($this->option('build-packs') && $this->option('defer-pack')) {
+            $this->error('Choose --build-packs or --defer-pack, not both.');
+
+            return self::FAILURE;
+        }
+
         $dryRun = (bool) $this->option('dry-run');
         $requested = $this->option('source');
 
@@ -85,7 +92,7 @@ final class ImportAzkarCommand extends Command
         }
 
         try {
-            $report = $importer->run($path, $dryRun, (bool) $this->option('build-packs'), (bool) $this->option('skip-blocked'), $profile->code);
+            $report = $importer->run($path, $dryRun, (bool) $this->option('build-packs'), (bool) $this->option('skip-blocked'), $profile->code, deferPack: (bool) $this->option('defer-pack'));
         } catch (PackBuildException $exception) {
             $this->error('The import wrote the rows, but the pack build failed: '.$exception->getMessage());
 

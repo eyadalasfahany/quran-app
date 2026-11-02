@@ -51,10 +51,19 @@ final class AzkarImporter
      *
      * @throws \LogicException When $skipBlocked is requested in production.
      */
-    public function run(string $path, bool $dryRun, bool $buildPacks = false, bool $skipBlocked = false, ?string $sourceCode = null, ?string $secondaryPath = null): ImportReport
+    /**
+     * @param  bool  $deferPack  Neither build nor queue the pack; the web service builds it at start (Railway pre-deploy has no volume, ADR 0044).
+     *
+     * @throws \LogicException
+     */
+    public function run(string $path, bool $dryRun, bool $buildPacks = false, bool $skipBlocked = false, ?string $sourceCode = null, ?string $secondaryPath = null, bool $deferPack = false): ImportReport
     {
         if ($skipBlocked && app()->isProduction()) {
             throw new \LogicException('Skipping blocked entries is refused in production (ADR 0031 §11).');
+        }
+
+        if ($buildPacks && $deferPack) {
+            throw new \LogicException('Choose --build-packs or --defer-pack, not both.');
         }
 
         $now = CarbonImmutable::now('UTC');
@@ -111,7 +120,7 @@ final class AzkarImporter
         ];
 
         if (! $dryRun && ! $hasErrors) {
-            $resource = $this->write($parsed->sha256, $parsed->data, $plan, $sourceId, $sourceKey, $sourceCode, $buildPacks);
+            $resource = $this->write($parsed->sha256, $parsed->data, $plan, $sourceId, $sourceKey, $sourceCode, $buildPacks, $deferPack);
             $status = ImportReport::STATUS_IMPORTED;
         }
 
@@ -178,7 +187,7 @@ final class AzkarImporter
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private function write(string $sha256, array $data, ImportPlan $plan, ?int $sourceId, string $sourceKey, string $sourceCode, bool $buildPacks): array
+    private function write(string $sha256, array $data, ImportPlan $plan, ?int $sourceId, string $sourceKey, string $sourceCode, bool $buildPacks, bool $deferPack): array
     {
         if ($sourceId === null) {
             throw new \LogicException('The source ['.$sourceCode.'] must be seeded before a wet import.');
@@ -212,7 +221,7 @@ final class AzkarImporter
             return [$resource->id, $before, $resource->version];
         });
 
-        if (! $buildPacks) {
+        if (! $buildPacks && ! $deferPack) {
             BuildContentPackJob::dispatch($resourceId);
         }
 
@@ -222,7 +231,11 @@ final class AzkarImporter
             'id' => $resourceId,
             'version_before' => $versionBefore,
             'version_after' => $versionAfter,
-            'pack' => $buildPacks ? $this->buildPackNow($resourceId) : ['built' => false, 'queued' => true],
+            'pack' => match (true) {
+                $buildPacks => $this->buildPackNow($resourceId),
+                $deferPack => ['built' => false, 'queued' => false, 'deferred' => true],
+                default => ['built' => false, 'queued' => true],
+            },
         ];
     }
 

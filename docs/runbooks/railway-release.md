@@ -13,9 +13,11 @@ Each deploy runs the release once, as Railway's **pre-deploy command**, before t
 `docker/release.sh` runs these steps and stops at the first failure. A failed pre-deploy stops the deploy; the previous version keeps serving.
 
 1. **`php artisan migrate --force`.** Schema changes are additive in production (CLAUDE.md).
-2. **`php artisan azkar:import --download --if-unlocked --build-packs`.**
+2. **`php artisan azkar:import --download --if-unlocked --defer-pack`.** Railway's pre-deploy container has **no volume**, so nothing here may write a pack file (ADR 0044).
    - **While locked** (the default in production: `AZKAR_OPENDUA_IMPORT_ENABLED=false` or the `opendua` source is not `granted`): prints the reasons and exits **0**. Nothing is downloaded or written.
-   - **When unlocked:** downloads the pinned catalogue into `storage/app/azkar/` and checks its SHA-256 against `azkar.opendua.catalogue_sha256` before writing anything. It validates every record, replaces the `azkar` rows in one transaction, bumps the resource version, and builds the `azkar` pack **in this process** (not on the queue, so the deploy log shows the result). Any validation error, pin mismatch or pack failure exits non-zero and fails the deploy.
+   - **When unlocked:** downloads the pinned catalogue into `storage/app/azkar/` and checks its SHA-256 against `azkar.opendua.catalogue_sha256` before writing anything. It validates every record, replaces the `azkar` rows in one transaction, and bumps the resource version. It neither builds nor queues the pack. Any validation error or pin mismatch exits non-zero and fails the deploy.
+
+**Web start (`docker/start-web.sh`, API service only):** runs `php artisan content:ensure-packs`, then FrankenPHP. This builds the new azkar pack and any other missing pack on the volume. A failure prints `FAIL <id>` in the deploy log and the API still starts; the manifest leaves that resource out until it is rebuilt.
 
 The entrypoint (`docker/entrypoint.sh`) also runs `config:cache` and `migrate --force` at container start, so the same migrations run again harmlessly. It does not seed.
 

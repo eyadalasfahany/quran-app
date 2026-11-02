@@ -6,7 +6,7 @@
   },
   "deploy": {
     "preDeployCommand": ["/usr/local/bin/entrypoint.sh", "/usr/local/bin/release.sh"],
-    "startCommand": "/usr/local/bin/entrypoint.sh frankenphp run --config /etc/caddy/Caddyfile",
+    "startCommand": "/usr/local/bin/entrypoint.sh /usr/local/bin/start-web.sh",
     "healthcheckPath": "/up",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",

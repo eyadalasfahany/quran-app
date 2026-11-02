@@ -130,7 +130,7 @@ Dorar (الدرر السنية) offers an official hadith API with an approved a
   - The 9 entries whose passages are still `unmatched` are left out of every import, production included: entries 50, 70, 76, 99, 110, 206, 207, 235 and 236. Production ships 258 of 267 entries.
   - The exclusion is a reviewed list in `config/azkar.php` (`excluded_entries`), not a general skip. Errors on any other entry still fail the import, and `--skip-blocked` stays local only.
   - An entry comes back by identifying its passages, marking its map rows `reviewed` and removing it from the list. The review sheet is `docs/plans/phase-6/quran-map-review.md`.
-- **Production deploy (Railway, ADR 0022):** schema migrations, then the Azkar import, which downloads the pinned file, verifies its SHA-256, and no-ops with exit 0 while locked. Then the pack build. No seeders, factories or dev fixtures run in production.
+- **Production deploy (Railway, ADR 0022):** schema migrations, then the Azkar import, which downloads the pinned file, verifies its SHA-256, and no-ops with exit 0 while locked. Then the pack build, which runs at web start, not in pre-deploy, and does not block start (amended 2 Nov 2026, ADR 0044). No seeders, factories or dev fixtures run in production.
 
 ### 12. Additional sources (developer, 1 Nov 2026)
 - **hisnmuslim.com** (the book's official site; its JSON API was checked live on 1 Nov 2026) becomes a second canonical adapter. It provides 132 chapters with **Arabic titles**, per-dhikr Arabic text, a `REPEAT` on every entry, and per-dhikr MP3s.
