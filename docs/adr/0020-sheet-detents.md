@@ -1,6 +1,6 @@
 # 0020 — Sheet detents
 
-Date: 2026-10-29 · Status: accepted · Amends ADR 0013 (sheet heights), spec §4 and §12
+Date: 2026-10-29 · Status: accepted · Amends ADR 0013 (sheet heights), spec §4 and §12 · Amended by ADR 0050 (tafsir and note open the ayah sheet to full)
 
 ## Context
 

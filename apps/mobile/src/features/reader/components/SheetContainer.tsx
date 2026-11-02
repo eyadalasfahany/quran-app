@@ -37,6 +37,10 @@ export function SheetContainer({
   const [currentTab, setCurrentTab] = useState<PanelTab>(tab);
   const [currentKey, setCurrentKey] = useState(verseKey);
   const changeTab = (next: PanelTab) => {
+    // The tafsir reads at full height, so switching to it lifts the sheet.
+    if (next === 'tafsir') {
+      sheet?.expand();
+    }
     setCurrentTab(next);
     onTabChange?.(next);
   };

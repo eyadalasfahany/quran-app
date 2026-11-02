@@ -1,6 +1,9 @@
+import { useMemo, type ReactNode } from 'react';
 import { act, fireEvent } from '@testing-library/react-native';
 import * as Clipboard from 'expo-clipboard';
 import { Share } from 'react-native';
+import { GestureHandlerRootView, usePanGesture, type PanGesture } from 'react-native-gesture-handler';
+import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 
 import { themes } from '@/core/theme';
 import { pause } from '@/features/audio/player';
@@ -14,7 +17,24 @@ import { openUserTestStore } from '../../../../jest/user-test-db';
 import { createPlan } from '@/features/khatma/data';
 import { getKhatmaMarkerVerseId } from '@/features/khatma/data/repository';
 
+import { SheetContext, type SheetContextValue } from '../components/sheet-context';
 import { AyahActionsPanel } from './AyahActionsPanel';
+
+/** A mid-detent sheet around the content, with a real pan gesture and the given expand. */
+function InSheet({ expand, children }: { expand: () => void; children: ReactNode }) {
+  const panGesture: PanGesture = usePanGesture({});
+  const scrollOffset: SharedValue<number> = useSharedValue(0);
+  const scrollTouched: SharedValue<boolean> = useSharedValue(false);
+  const value = useMemo<SheetContextValue>(
+    () => ({ close: jest.fn(), collapse: jest.fn(), detent: 'mid', expand, panGesture, scrollOffset, scrollTouched }),
+    [expand, panGesture, scrollOffset, scrollTouched],
+  );
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SheetContext.Provider value={value}>{children}</SheetContext.Provider>
+    </GestureHandlerRootView>
+  );
+}
 
 jest.mock('expo-crypto', () => ({ randomUUID: () => globalThis.crypto.randomUUID() }));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
@@ -153,6 +173,20 @@ describe('AyahActionsPanel', () => {
     expect(view.queryByTestId('ayah-actions-panel-note-editor')).toBeNull();
     await fireEvent.press(view.getByRole('button', { name: 'Note' }));
     expect(view.getByTestId('ayah-actions-panel-note-editor')).toBeOnTheScreen();
+  });
+
+  it('lifts the sheet to full height when the note editor opens, and not when it closes', async () => {
+    const { store } = openUserTestStore();
+    const expand = jest.fn();
+    const view = await renderUi(<InSheet expand={expand}>{panel({ store })}</InSheet>, { locale: 'en' });
+
+    await fireEvent.press(view.getByRole('button', { name: 'Note' }));
+    expect(expand).toHaveBeenCalledTimes(1);
+    expect(view.getByTestId('ayah-actions-panel-note-editor')).toBeOnTheScreen();
+
+    await fireEvent.press(view.getByRole('button', { name: 'Note' }));
+    expect(expand).toHaveBeenCalledTimes(1);
+    expect(view.queryByTestId('ayah-actions-panel-note-editor')).toBeNull();
   });
 
   it('shows the tafsir tile only when it can open', async () => {
