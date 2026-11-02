@@ -306,6 +306,17 @@
       "fontScale": "حجم خط المصحف",
       "decreaseFont": "تصغير الخط",
       "increaseFont": "تكبير الخط",
+      "fontLabel": "خط المصحف",
+      "fonts": {
+        "amiriQuran": {
+          "name": "أميري",
+          "subtitle": "الرسم العثماني · خط أميري القرآني"
+        },
+        "scheherazadeNew": {
+          "name": "شهرزاد",
+          "subtitle": "الرسم العثماني · خط شهرزاد الجديد"
+        }
+      },
       "themeLabel": "المظهر",
       "themes": {
         "automatic": "تلقائي",
@@ -734,7 +745,6 @@
     },
     "reading": {
       "quranFont": "خط المصحف",
-      "quranFontValue": "العثماني · حفص",
       "appearance": "طريقة العرض والمظهر",
       "appearanceValue": "مصحف · تلقائي",
       "darkAfterMaghrib": "الوضع الداكن تلقائيًا بعد المغرب",

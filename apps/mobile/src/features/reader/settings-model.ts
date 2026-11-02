@@ -1,4 +1,5 @@
 import { storage, storageKeys } from '@/core/storage/mmkv';
+import { DEFAULT_QURAN_FONT, isQuranFont, type QuranFont } from '@/core/theme';
 
 import { READER_MODES, type ReaderMode } from './anchor/reading-anchor';
 
@@ -10,6 +11,7 @@ export const FONT_SCALE_STEP = 0.1;
 export type ReaderSettings = {
   mode: ReaderMode;
   fontScale: number;
+  quranFont: QuranFont;
   tafsirId: number | null;
 };
 
@@ -31,6 +33,7 @@ type PersistedReaderSettings = {
   version?: unknown;
   mode?: unknown;
   fontScale?: unknown;
+  quranFont?: unknown;
   tafsirChosen?: unknown;
   tafsirId?: unknown;
 };
@@ -39,6 +42,7 @@ export function defaultReaderSettings(): LoadedReaderSettings {
   return {
     mode: 'reading',
     fontScale: 1,
+    quranFont: DEFAULT_QURAN_FONT,
     tafsirId: null,
     tafsirChosen: false,
   };
@@ -65,6 +69,8 @@ export function migrateReaderSettings(raw: unknown): LoadedReaderSettings {
   return {
     mode: isReaderMode(blob.mode) ? blob.mode : defaults.mode,
     fontScale: clampFontScale(blob.fontScale),
+    // Added by ADR 0048 without a version bump: an older blob, or a value no longer offered, reads the default.
+    quranFont: isQuranFont(blob.quranFont) ? blob.quranFont : defaults.quranFont,
     tafsirChosen,
     tafsirId,
   };
@@ -95,6 +101,7 @@ export function writeReaderSettings(settings: LoadedReaderSettings): void {
     version: READER_SETTINGS_VERSION,
     mode: settings.mode,
     fontScale: clampFontScale(settings.fontScale),
+    quranFont: settings.quranFont,
     tafsirChosen: settings.tafsirChosen,
     tafsirId: settings.tafsirId,
   };

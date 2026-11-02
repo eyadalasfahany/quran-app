@@ -16,7 +16,7 @@ import { ensureDirection } from '@/core/i18n';
 import { modalLikeScreenOptions, pushScreenOptions } from '@/core/layout/push-screen-options';
 import { useWindowClass } from '@/core/layout/useWindowClass';
 import { useContentSync } from '@/core/sync/use-content-sync';
-import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
+import { bundledFonts, QuranFontProvider, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
 import { useAzkarRemindersForeground } from '@/features/azkar/reminders/use-azkar-reminders-foreground';
@@ -24,6 +24,7 @@ import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
 import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNotificationsSync';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
+import { useReaderSettings } from '@/features/reader/settings';
 import { AnimatedSplashOverlay } from '@/shared/ui/AnimatedSplashOverlay';
 
 void SplashScreen.preventAutoHideAsync();
@@ -42,6 +43,7 @@ installForegroundNotificationHandler();
 
 export default function RootLayout() {
   const themeName = useResolvedTheme();
+  const quranFont = useReaderSettings((state) => state.quranFont);
   const reduceMotion = useReducedMotion() ?? false;
   const pushOptions = pushScreenOptions({ isRTL: I18nManager.isRTL, platform: Platform.OS, reduceMotion });
   const modalLikeOptions = modalLikeScreenOptions({ platform: Platform.OS, reduceMotion });
@@ -121,6 +123,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider name={themeName}>
+      <QuranFontProvider font={quranFont}>
       {!splashFinished && <AnimatedSplashOverlay appReady={ready} onFinished={finishSplash} />}
       {ready && splashFinished && <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />}
       {ready && splashFinished && (
@@ -145,6 +148,7 @@ export default function RootLayout() {
         <Stack.Screen name="salah" options={expanded ? { animation: 'none' } : pushOptions} />
       </Stack>
       )}
+      </QuranFontProvider>
     </ThemeProvider>
   );
 }

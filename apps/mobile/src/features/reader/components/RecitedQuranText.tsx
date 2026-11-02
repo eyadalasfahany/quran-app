@@ -1,7 +1,7 @@
 import { useState, type ComponentProps } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 
-import { useTheme } from '@/core/theme';
+import { useQuranFont, useTheme } from '@/core/theme';
 import { QuranText } from '@/shared/ui';
 
 import { splitRecitedText } from '../recited-text';
@@ -27,11 +27,12 @@ export function RecitedQuranText({
   ...props
 }: Omit<QuranTextProps, 'children'> & { text: string; activeWord: number | null; wordMotion?: 'span' | 'pill' }) {
   const theme = useTheme();
+  const font = useQuranFont();
   const { onTextLayout, style, ...rest } = props;
   const pillMode = wordMotion === 'pill' && activeWord !== null;
   const variant = props.variant;
   const fontScale = props.fontScale ?? 1;
-  const key = `${variant}|${fontScale}|${text}`;
+  const key = `${variant}|${fontScale}|${font}|${text}`;
 
   const pieces = splitRecitedText(text, activeWord ?? 0);
   const tokens = tokensOf(pieces);

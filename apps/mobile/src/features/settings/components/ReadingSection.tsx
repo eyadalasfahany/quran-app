@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { DEFAULT_QURAN_FONT } from '@/core/theme';
 import { readDarkAfterMaghrib, saveDarkAfterMaghrib } from '@/core/theme/appearance';
 import { ListRow, ToggleRow, UiText } from '@/shared/ui';
 
@@ -51,7 +52,7 @@ export function ReadingSection({
         title={t('settings.reading.quranFont')}
         trailing={
           <UiText tone="muted" variant="subhead">
-            {fontValue ?? t('settings.reading.quranFontValue')}
+            {fontValue ?? t(`reader.settings.fonts.${DEFAULT_QURAN_FONT}.name`)}
           </UiText>
         }
       />

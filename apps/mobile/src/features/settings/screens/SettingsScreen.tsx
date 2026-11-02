@@ -7,6 +7,7 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useActivePlan } from '@/features/khatma/data';
+import { useReaderSettings } from '@/features/reader/settings';
 import { Screen } from '@/shared/ui';
 
 import { AboutSection } from '../components/AboutSection';
@@ -21,6 +22,7 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
   const { t } = useTranslation();
   const locale = useLocale();
   const theme = useTheme();
+  const quranFont = useReaderSettings((state) => state.quranFont);
   const activePlan = useActivePlan().data[0] ?? null;
   const khatmaValue = useMemo(() => {
     if (activePlan === null) {
@@ -44,6 +46,7 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
         >
           <LanguageSection />
           <ReadingSection
+            fontValue={t(`reader.settings.fonts.${quranFont}.name`)}
             onPressAppearance={() => router.push('/reader-settings' as Href)}
             onPressQuranFont={() => router.push('/reader-settings' as Href)}
           />

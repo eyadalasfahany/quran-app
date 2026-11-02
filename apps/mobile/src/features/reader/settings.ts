@@ -4,6 +4,7 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { clearManifestEtag } from '@/core/sync/manifest-etag';
 import { readSavedSelectionIds, writeSavedSelectionIds } from '@/core/sync/selection';
+import type { QuranFont } from '@/core/theme';
 
 import type { ReaderMode } from './anchor/reading-anchor';
 import {
@@ -20,6 +21,7 @@ export type { ReaderSettings } from './settings-model';
 type ReaderSettingsStore = LoadedReaderSettings & {
   setMode: (mode: ReaderMode) => void;
   setFontScale: (fontScale: number) => void;
+  setQuranFont: (quranFont: QuranFont) => void;
   setTafsirId: (tafsirId: number | null) => void;
 };
 
@@ -80,6 +82,9 @@ export const useReaderSettings = create<ReaderSettingsStore>(() => ({
   },
   setFontScale: (fontScale) => {
     commit(useReaderSettings.getState(), { ...useReaderSettings.getState(), fontScale });
+  },
+  setQuranFont: (quranFont) => {
+    commit(useReaderSettings.getState(), { ...useReaderSettings.getState(), quranFont });
   },
   setTafsirId: (tafsirId) => {
     const current = useReaderSettings.getState();

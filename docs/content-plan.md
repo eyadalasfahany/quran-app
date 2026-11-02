@@ -34,8 +34,9 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Downloads | `expo-file-system` | \~58.0.12 | Audio and pack downloads with progress |
 | Network | `expo-network` | \~58.0.4 | Wi-Fi-only audio downloads |
 | Pack checksum | `expo-crypto` | \~58.0.7 | SHA-256 of downloaded packs |
-| Reading fonts | Amiri and Amiri Quran (bundled assets, SIL OFL) | 1.003 | Uthmani ayah text in Reading and Focus modes, surah names and display type. Older than 12 months: accepted for a stable typeface (ADR 0011) |
-| Mushaf fonts | QCF V2 page fonts, loaded at runtime from `verses.quran.foundation` | QF CDN | Fetched on first use, cached on the device, revalidated every 30 days; never served by our API; credit "Quran fonts provided by Quran Foundation" (ADR 0011) |
+| Reading fonts | Amiri and Amiri Quran (bundled assets, SIL OFL) | 1.003 | Default Quran font for the Mushaf, Reading and Focus modes, plus surah names and display type. Older than 12 months: accepted for a stable typeface (ADR 0011, ADR 0048) |
+| Quran font (second choice) | Scheherazade New (bundled asset, SIL OFL 1.1), `github.com/silnrsi/font-scheherazade` | 4.500 (released 2026-04-15) | Optional Quran font in the reader settings picker; Regular weight only. Inside the 12-month rule. Release zip SHA-512 checked against the release's `SHA512SUMS.txt` (ADR 0048) |
+| Mushaf fonts (unused, kept) | QCF V2 page fonts, loaded at runtime from `verses.quran.foundation` | QF CDN | Not used by the reader screen since ADR 0048; code kept until the developer decides. When used: fetched on first use, cached on the device, revalidated every 30 days; never served by our API; credit "Quran fonts provided by Quran Foundation" (ADR 0011) |
 | Pack decompression | `fflate` | 0.8.3 | Gunzips content packs on the device; pure JS, fastest available (ADR 0008) |
 | Server data | `@tanstack/react-query` | 5.105.0 | Caching, retries and background refetch for API calls |
 | App state | `zustand` | 5.0.16 | Small global state: player, reader settings |
@@ -51,7 +52,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Tafsir rendering | `@native-html/render` | 1.0.4 | Renders sanitized tafsir HTML. Replaces `react-native-render-html`, which has had no release since January 2022 |
 | Vector ornaments | `react-native-svg` | 15.16.0 | The surah cartouche's pointed frame and the Continue reading rosette, drawn in with Reanimated animated props; the version SDK 58 pins |
 | Clipboard | `expo-clipboard` | \~58.0.4 | Copies an ayah, exactly as stored, with its marker and reference from the ayah actions |
-| Fonts | `expo-font` | \~58.0.10 | Bundles KFGQPC Quran fonts, Amiri, IBM Plex Sans Arabic |
+| Fonts | `expo-font` | \~58.0.10 | Bundles Amiri, Scheherazade New and IBM Plex Sans Arabic |
 | Errors | `@sentry/react-native` | \~8.28.0 | Crash and error reporting, at the version SDK 58 pins |
 | Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0 | Over-the-air JavaScript fixes and store builds |
 | Development builds | `expo-dev-client` | \~58.0.15 | The EAS development profile; MMKV and other native modules don't run in Expo Go |
@@ -102,7 +103,9 @@ Quran Foundation (QF) is the primary source, synced through its Content Sync API
 | Mushaf page layouts and word positions | QF Content Sync `mushafs` | Synced | Same as above |
 | Tafsir | QF Content Sync `tafsirs` | Synced per resource the user picks | Displayed unmodified, in original context. Translations and word-by-word meanings removed (ADR 0014) |
 | Recitation audio + verse/word timing | QF Content Sync `chapter_recitations` | Timing synced; audio streamed or downloaded per surah | Audio is QF content; offline download rules to confirm with QF |
-| Mushaf fonts (KFGQPC, QCF page fonts, IndoPak) | QF font files | Bundled in the app binary | Allowed only inside the app, with an active Developer Console account and visible QF credit ([fonts terms](https://api-docs.quran.com/legal/mushaf-fonts-and-images/)) |
+| Mushaf fonts (QCF page fonts, IndoPak) | QF font files | Not used by the app (ADR 0048); the QCF code is kept | Would be allowed only inside the app, with an active Developer Console account and visible QF credit ([fonts terms](https://api-docs.quran.com/legal/mushaf-fonts-and-images/)) |
+| KFGQPC Hafs Uthmanic Script | The King Fahd Complex's own font, not a QF font | Not used (rejected, ADR 0048) | Misrenders Tanzil's encoding in 67% of verses; its embedded EULA forbids modifying or reproducing the font |
+| Scheherazade New, Amiri Quran | SIL fonts (OFL 1.1) | Bundled in the app binary | OFL licence file ships with each font; no QF terms apply |
 | Fallback Quran text for first launch with no network | [Tanzil](https://tanzil.net/docs/text_license) Uthmani text | Bundled in the app binary | CC BY 3.0, verbatim copies only, credit and link to tanzil.net |
 
 Monetization is allowed without a separate licence (paid app, subscriptions, ads, donations) as long as QF content is only shown to end users and never resold or exposed as a dataset or API. Training ML models on QF content needs written consent.
@@ -399,9 +402,9 @@ All reading is served from the device database; the network is only used for syn
 - **Backend cache:** Redis in front of the mirror for API responses to the app. Nothing derived from QF is cached longer than 7 days outside the Content Sync mirror.
 - **Device storage:** SQLite (`expo-sqlite` or `op-sqlite`) with one content pack per script and per language. Users download only what they pick.
 - **Fonts and display types:** the user picks a script and a display mode in settings, and the choice is applied instantly.
-  - Scripts: Uthmani Hafs (KFGQPC), Madani page-exact (QCF page fonts), IndoPak Nastaleeq, Uthmani Tajweed (colour-coded rules).
-  - Display modes: Mushaf (page-exact lines), Reading (ayah list), Focus (one ayah, large).
-  - QCF page fonts are one font per page (604 files), so they load lazily per visible page and stay cached.
+  - Scripts: Uthmani in Amiri Quran (default) or Scheherazade New, both bundled and applied everywhere Quran text shows (ADR 0048). IndoPak Nastaleeq and Uthmani Tajweed come later, when their content exists.
+  - Display modes: Mushaf (Tanzil text on the 604 printed pages, flowed by width), Reading (ayah list), Focus (one ayah, large).
+  - QCF page fonts (one font per page, 604 files) are no longer used by the reader screen (ADR 0048).
 - **Vertical scrolling:** every mode scrolls down continuously, with pages stacked and a thin page / juz divider between them. The list is virtualized (FlashList), measured per page so jumping to any ayah lands exactly.
 - **Budgets:** last-read ayah visible within 1.5 s of cold start; 60 fps while scrolling; under 150 MB device storage for one script and no audio (to verify once packs are built).
 
@@ -503,7 +506,7 @@ Team split: backend developers own the sync job, mirror and API; the Next.js dev
 | QF revokes or suspends credentials | Sync stops; content may need deletion | Follow the terms strictly; keep the Tanzil fallback for reading |
 | Device copy built from our backend is judged to be outside Content Sync | Licence breach | Confirm the device-sync design with QF before launch |
 | QF schema or rate limits change | Sync breaks | Contract tests on prelive; alerting on sync age and 429s |
-| QCF page-font rendering bugs on some Android devices | Wrong-looking mushaf | Device lab test of all 604 pages per release; fallback to KFGQPC Hafs |
+| A Quran font misrenders Tanzil text or Mushaf pages overflow (QCF no longer used, ADR 0048) | Wrong-looking mushaf | Device test of all 604 pages in both fonts per release; if one font fails, ship Amiri Quran alone |
 | Tanzil and QF text differ in encoding | Mismatched word positions | Use Tanzil only before the first sync, then switch to QF text everywhere |
 
 **Questions to send to QF (developers@quran.com)**
@@ -511,7 +514,7 @@ Team split: backend developers own the sync job, mirror and API; the Next.js dev
 - [ ] May the app keep its offline copy by syncing from our backend's mirror, which itself uses Content Sync?
 - [ ] May downloaded recitation audio be kept on the device beyond 7 days, and does it count as Content Sync content?
 - [ ] What are the production rate limits for Content Sync and the Content API?
-- [ ] Which QCF and IndoPak font files are approved for bundling, and the exact credit wording?
+- [x] Quran fonts: Amiri Quran and Scheherazade New (both OFL) are bundled; KFGQPC is rejected and QCF is unused (ADR 0048). Open only if QCF or IndoPak returns: which of those QF font files are approved for bundling, and the exact credit wording?
 
 ## Sources
 

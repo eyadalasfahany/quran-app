@@ -1,6 +1,6 @@
 # 0011 — Phase 2: mushaf fonts on first use, bundled Amiri, local user data
 
-Date: 2026-10-27 · Status: accepted · Amends root CLAUDE.md non-negotiable #2, ADR 0009 (`user.db` timing) and the content-plan fonts row
+Date: 2026-10-27 · Status: accepted · Partly superseded by 0048 · Amends root CLAUDE.md non-negotiable #2, ADR 0009 (`user.db` timing) and the content-plan fonts row
 
 ## Context
 

@@ -4,7 +4,7 @@ import { View, type LayoutChangeEvent } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useIsShortWindow } from '@/core/layout/useWindowClass';
-import { useTheme } from '@/core/theme';
+import { useQuranFont, useTheme } from '@/core/theme';
 import { AyahMarker, highlightFill, useContrastColors, type HighlightColor } from '@/shared/ui';
 
 import type { FollowedTextProps } from '../useWordFollow';
@@ -76,11 +76,12 @@ export function FocusAyah({
   // The user's colour fills the ayah; the recitation's wash shows only without one (ADR 0012).
   const background = highlightFill(colors, highlightColor) ?? (recited ? colors.highlightActive : undefined);
 
-  // The fit is kept per budget (the stage's height and this block's width). A new budget starts at full size, and the
-  // block's measured height then steps it down.
+  // The fit is kept per budget (the stage's height, this block's width and the Quran font). A new budget starts at
+  // full size, and the block's measured height then steps it down.
+  const font = useQuranFont();
   const [width, setWidth] = useState(0);
   const [fitState, setFitState] = useState({ key: '', value: 1 });
-  const budget = `${fitHeight ?? 'none'}:${width}`;
+  const budget = `${fitHeight ?? 'none'}:${width}:${font}`;
   const fit = fitHeight === undefined || fitState.key !== budget ? 1 : fitState.value;
 
   const onBlockLayout = (event: LayoutChangeEvent) => {
@@ -89,7 +90,7 @@ export function FocusAyah({
     if (fitHeight === undefined) {
       return;
     }
-    const key = `${fitHeight}:${laidOutWidth}`;
+    const key = `${fitHeight}:${laidOutWidth}:${font}`;
     setFitState((previous) => {
       const base = previous.key === key ? previous.value : 1;
       return { key, value: nextFocusFit(base, height, fitHeight) };

@@ -2,7 +2,7 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
-import { themes } from '@/core/theme';
+import { QuranFontProvider, themes } from '@/core/theme';
 
 import { AyahEndMark } from './AyahEndMark';
 
@@ -17,6 +17,16 @@ describe('AyahEndMark', () => {
     expect(mark.props.children[3]).toBe('\uFD3E');
     expect(view.getByText('٢٥٥')).toBeOnTheScreen();
     expect(flatStyle(mark.props.style).fontFamily).toBe('AmiriQuran');
+  });
+
+  it('draws the mark in the chosen Quran font', async () => {
+    const view = await renderUi(
+      <QuranFontProvider font="scheherazadeNew">
+        <AyahEndMark number={7} testID="mark" />
+      </QuranFontProvider>,
+    );
+
+    expect(flatStyle(view.getByTestId('mark').props.style).fontFamily).toBe('ScheherazadeNew-Regular');
   });
 
   it('opens with a right-to-left mark, so the brackets keep their sides when the mark stands alone', async () => {

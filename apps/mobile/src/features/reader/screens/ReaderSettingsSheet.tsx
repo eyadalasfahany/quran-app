@@ -10,6 +10,7 @@ import { useSheet } from '../components/sheet-context';
 import { useReaderSettings } from '../settings';
 import { FontScaleStepper } from '../settings/components/FontScaleStepper';
 import { ModePicker } from '../settings/components/ModePicker';
+import { QuranFontPicker } from '../settings/components/QuranFontPicker';
 import { SettingsSection } from '../settings/components/SettingsSection';
 import { ThemePicker } from '../settings/components/ThemePicker';
 
@@ -23,8 +24,10 @@ export function ReaderSettingsSheet() {
   const { t } = useTranslation();
   const mode = useReaderSettings((state) => state.mode);
   const fontScale = useReaderSettings((state) => state.fontScale);
+  const quranFont = useReaderSettings((state) => state.quranFont);
   const setMode = useReaderSettings((state) => state.setMode);
   const setFontScale = useReaderSettings((state) => state.setFontScale);
+  const setQuranFont = useReaderSettings((state) => state.setQuranFont);
   const sheet = useSheet();
 
   return (
@@ -63,6 +66,9 @@ export function ReaderSettingsSheet() {
         </SettingsSection>
         <SettingsSection label={t('reader.settings.fontScale')} layout="inline">
           <FontScaleStepper onChange={setFontScale} value={fontScale} />
+        </SettingsSection>
+        <SettingsSection label={t('reader.settings.fontLabel')}>
+          <QuranFontPicker onChange={setQuranFont} value={quranFont} />
         </SettingsSection>
       </SheetScrollView>
     </SheetFrame>

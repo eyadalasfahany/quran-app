@@ -251,14 +251,14 @@ Layout is driven by the window's size from `useWindowDimensions`, never by `Plat
 - **`AdaptiveSplit`** renders one pane in compact and medium, and two panes in expanded. The ayah and tafsir routes render into the side pane when it exists and as sheets otherwise, so the routes don't change between form factors.
 - **Reading column width:** Reading and Focus modes cap the Quran text column at about 720 pt and center it; long Arabic lines on a 13-inch iPad are hard to track.
 - **Interface text size:** interface and display text scale with the window's shorter side, `clamp(shortSide / 390, 0.9, 1.15)`, from `textScaleFor()` in the design tokens (ADR 0043). Dynamic Type multiplies on top. Quran text, icons and spacing do not scale this way.
-- **Mushaf page sizing:** page-exact mode keeps 15 lines per page. Page width is `min(window width − gutters, 600)` (the tablet frames, ADR 0013) and the QCF font size is derived from that width, so a page never re-wraps; wide windows show the page centered with margin, not stretched.
+- **Mushaf page sizing:** Mushaf mode shows the 604 printed pages as Tanzil text in the chosen Quran font (ADR 0048). A page is the ayahs whose `page` column holds that page number; each surah on it flows as one paragraph under its cartouche, wrapped by width. The line count per page is therefore not fixed and a page's height is measured, not derived. Page width is `min(window width − gutters, 600)` (the tablet frames, ADR 0013); wide windows show the page centered with margin, not stretched. Lines are justified for Amiri Quran and start-aligned for Scheherazade New (ADR 0048 §11).
 - **Fold, unfold, rotate and resize keep your place.** `useReadingAnchor` records the top visible verse key; on a size change the FlashList re-measures and scrolls back to that verse. Nothing is reloaded.
 - **Hinge:** v1 treats an unfolded foldable as a normal medium or expanded window. A hinge-aware two-pane split, which needs a small native module wrapping Jetpack WindowManager, is a post-launch item (section 15).
 - **Orientation and multitasking config:** `orientation: "default"`, `ios.supportsTablet: true`, all four iPad orientations declared (required for Split View and Stage Manager), Android `resizeableActivity` left on. No orientation lock anywhere.
 - **Input:** pointer hover states on iPad and Android tablets come from Pressable's hover events. Hardware-keyboard shortcuts (space to play or pause, arrows for next ayah) are post-launch.
 - **Safe areas:** every screen uses safe-area insets; Liquid Glass bars float above content on iOS 26, and Android uses edge-to-edge with the same insets.
 
-**Cold start path (target under 1.5 s):** read last-read verse and page from MMKV → open `content.db` → query only that page → render. Fonts for that script are bundled; QCF page fonts load for the visible page and its neighbours only.
+**Cold start path (target under 1.5 s):** read last-read verse and page from MMKV → open `content.db` → query only that page → render. The chosen Quran font is bundled, so nothing is fetched on this path.
 
 ## 5. Backend database schema (MySQL 9.7)
 
@@ -352,7 +352,7 @@ Every table below shares the same sync columns: `id` uuid (client-generated, PK)
 | `khatma_plans` | `duration_days` smallint, `start_verse_id` FK, `start_date` date, `status` enum(`active`,`completed`,`abandoned`), `completed_at` null | one active plan per user |
 | `khatma_logs` | `plan_id` FK, `date` date, `pages_read` smallint, `last_verse_id` FK | unique (`plan_id`,`date`) |
 | `reading_positions` | `verse_id` FK, `page` smallint, `mushaf_id` FK | one row per user (`id` derived from `user_id`) |
-| `user_settings` | `settings` json (script, mode, theme, font scale, default tafsir, default reciter, Wi-Fi-only, dark after Maghrib, reminder time) | one row per user |
+| `user_settings` | `settings` json (script: `amiriQuran` or `scheherazadeNew` (ADR 0048), mode, theme, font scale, default tafsir, default reciter, Wi-Fi-only, dark after Maghrib, reminder time) | one row per user |
 
 Account deletion hard-deletes the user; cascades remove every row above, and `devices.user_id` is set to null.
 
@@ -652,8 +652,8 @@ For each change, in one transaction per request:
 **Reader (`features/reader`)**
 
 - **One list, three modes.** Every mode is a vertical FlashList. Mushaf mode's items are pages (604); Reading and Focus modes' items are ayahs (6,236). Switching mode keeps the anchor verse.
-- **Item sizing:** Mushaf pages have a known height for a given width (15 lines × line height derived from the page width), so `overrideItemLayout` gives exact offsets and jump-to-ayah lands without measuring. Reading-mode rows are measured and cached per (mode, window width, font scale) key, with no translation part (ADR 0014); a fold, unfold or rotation clears the cache and restores the anchor.
-- **Mushaf rendering:** each line is one `Text` run of QCF v2 glyph codes in that page's font, justified by the font itself. The page font is loaded with `expo-font` when the page is within two of the viewport. On web, a family more than ten pages from the viewport is unloaded. expo-font 58 implements unload on web only, so on iOS and Android the family stays registered for the process and the app does not call `unloadAsync` (ADR 0011). The font file stays on disk either way. KFGQPC Hafs, IndoPak and Tajweed scripts render ayah text in the bundled fonts and flow lines by width instead.
+- **Item sizing:** Mushaf pages are measured as they render, because a page's height depends on the font and the width (ADR 0048). The list opens at the anchor page, so nothing above it is estimated, waits for that page to measure, then scrolls to the surah paragraph holding the ayah; earlier pages are added as the reader scrolls up (`HafsMushafList`). Reading-mode rows are measured and cached per (mode, window width, font scale, Quran font) key, with no translation part (ADR 0014); a fold, unfold or rotation clears the cache and restores the anchor.
+- **Mushaf rendering (ADR 0048, superseding the QCF design of ADR 0011):** each surah on a page is one `Text` paragraph of Tanzil ayah text in the chosen bundled Quran font (Amiri Quran or Scheherazade New), with an ayah-end mark after each ayah, flowed by width. Alignment is per font: justified for Amiri Quran, start for Scheherazade New, whose iOS justification stretches letters inside words. The text is never altered to fit a font. The QCF V2 page-font path (runtime download from QF's CDN, ADR 0011) is no longer used by the screen; its code is kept until the developer decides to delete it. IndoPak and Tajweed scripts are not offered in v1 (ADR 0010).
 - **Ayah hit-testing:** each word is a nested `Text` with an `onPress` that resolves to its `verse_id`. Ayah actions (sheet on compact, side panel on expanded) open on long-press, on a tap on the ayah marker, and from the ayah-actions glass button; each ayah also exposes them as accessibility actions (ADR 0012).
 - **Highlights:** user highlights are background spans on the same nested `Text`, coloured from theme tokens. The audio-active ayah adds the `highlight-active` wash (or keeps the user highlight), fills its marker with `brand` and, in Reading mode, draws a leading `brand` rule; the glyphs never change (ADR 0012).
 - **Accessibility:** each ayah exposes its Imla'i text plus "الآية ٥" as its accessibility label, as the content plan requires, followed by its highlight colour name when it has one.
@@ -780,7 +780,7 @@ The Quran text checksum is the one test that blocks everything; layout checks ac
 | App unit and component | Jest, `jest-expo`, React Native Testing Library | Repositories, sync engine, timing search, window classes, RTL | Every PR touching `apps/mobile` |
 | Text integrity | `packages/quran-text-check` | 6,236-ayah checksum per script on the backend mirror and inside a built pack | Every content sync and every release |
 | End-to-end | Maestro | Onboarding, read and resume, play and highlight, search, sign-in, delete account, offline | Nightly on staging builds, and before release |
-| Mushaf rendering | Maestro screenshots of all 604 pages per script | Compared with the previous release | Releases touching fonts or layout |
+| Mushaf rendering | Maestro screenshots of all 604 pages in each Quran font (Amiri Quran, Scheherazade New) | Compared with the previous release | Releases touching fonts or layout |
 
 **Device and window matrix (every release)**
 
@@ -868,7 +868,7 @@ One question blocks the build: whether QF accepts device copies served from our 
 - [ ] QF: what must happen to QF content on a device that has been offline for more than 7 days?
 - [ ] QF: may downloaded recitation audio be kept beyond 7 days?
 - [ ] QF: production rate limits for Content Sync and the Content API.
-- [ ] QF: approved QCF and IndoPak font files and exact credit wording.
+- [x] Quran fonts: the second font is Scheherazade New (OFL); KFGQPC was rejected after the render check, and QCF is unused by the screen (ADR 0048). Open only if QCF returns or IndoPak ships: QF's approval of those font files and the exact credit wording.
 - [x] QF: prelive returns only Al-Fatihah and Al-Baqarah. Production keys arrived on 1 Nov 2026, and local syncs the full dataset (ADR 0041).
 - [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player, Settings and the sidebar. The 30 current screens are phone-only (390 pt).
 - [x] Design: the Mushaf page cap on large iPads is 600, as drawn in the tablet frames (ADR 0013).
@@ -883,7 +883,7 @@ One question blocks the build: whether QF accepts device copies served from our 
 | --- | --- | --- |
 | One developer, full scope | Launch slips repeatedly | Cut lines in section 15; ship the reader and listening first |
 | QF rejects the backend-mirror device copy | Device sync must be redesigned to sync from QF directly | Ask before Phase 2; keep `content-sync.ts` behind one interface so the source can change |
-| QCF page fonts mis-render on some Android devices or at tablet sizes | Wrong-looking mushaf | 604-page screenshot pass per release on phone, iPad and foldable; fall back to KFGQPC Hafs |
+| A Quran font mis-renders Tanzil text, or Mushaf pages overflow or re-wrap at tablet sizes (QCF is no longer used, ADR 0048) | Wrong-looking mushaf | 604-page screenshot pass per release in both fonts on phone, iPad and foldable; if one font fails, ship Amiri Quran alone |
 | FlashList anchor lost on fold, unfold or Split View resize | Reader jumps to another page | `useReadingAnchor` plus the resize test in every release |
 | Foldable hinge cuts through text in book posture | Awkward reading on unfolded devices | Centered column avoids the hinge in most layouts; hinge-aware split is post-launch |
 | Apple refresh-token handling breaks | Account deletion can't revoke the Apple grant | Test deletion of an Apple account in every release build |

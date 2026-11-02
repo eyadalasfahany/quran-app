@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Text, View, type HostInstance } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
-import { useTheme } from '@/core/theme';
+import { quranFonts, useQuranFont, useTheme } from '@/core/theme';
 import {
   AyahEndMark,
   GoldFrame,
@@ -69,6 +69,7 @@ export function HafsMushafPage({
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const focusRunRef = useRef<HostInstance>(null);
   const theme = useTheme();
+  const font = useQuranFont();
   const colors = useContrastColors();
 
   return (
@@ -104,7 +105,7 @@ export function HafsMushafPage({
             ) : null}
             <QuranText
               {...(followed ? follow.textProps(first.verseKey) : undefined)}
-              align="justify"
+              align={quranFonts[font].mushafAlign}
               fontScale={fontScale}
               style={{ width: '100%' }}
               testID={testID ? `${testID}-text-${first.verseKey}` : undefined}

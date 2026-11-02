@@ -27,12 +27,20 @@ describe('ReadingSection', () => {
     await i18n.changeLanguage('ar');
   });
 
+  it.each([
+    ['ar', 'شهرزاد'],
+    ['en', 'Scheherazade'],
+  ] as const)('shows the chosen Quran font as the font row value (%s)', async (locale, name) => {
+    const view = await renderUi(<ReadingSection fontValue={name} />, { locale });
+    expect(view.getByText(name)).toBeOnTheScreen();
+  });
+
   it('renders section title and reading rows with default values', async () => {
     const view = await renderUi(<ReadingSection />);
 
     expect(view.getByRole('header', { name: 'القراءة' })).toBeOnTheScreen();
     expect(view.getByText('خط المصحف')).toBeOnTheScreen();
-    expect(view.getByText('العثماني · حفص')).toBeOnTheScreen();
+    expect(view.getByText('أميري')).toBeOnTheScreen();
     expect(view.getByText('طريقة العرض والمظهر')).toBeOnTheScreen();
     expect(view.getByText('مصحف · تلقائي')).toBeOnTheScreen();
     expect(view.getByText('الوضع الداكن تلقائيًا بعد المغرب')).toBeOnTheScreen();
