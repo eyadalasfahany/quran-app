@@ -46,6 +46,7 @@ export { SurahCartouche } from './SurahCartouche';
 export {
   arabicTextDirection,
   displayText,
+  latinTextDirection,
   maxFontScale,
   quranText,
   uiTextProps,

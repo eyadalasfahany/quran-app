@@ -1,6 +1,8 @@
 import { fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Dimensions } from 'react-native';
+import { Dimensions, Linking } from 'react-native';
+
+import { i18n } from '@/core/i18n';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
@@ -19,6 +21,20 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
+const SOURCE_KEYS = ['qf', 'tanzil', 'kfgqpc', 'opendua', 'adhan', 'fonts'] as const;
+
+const OPENDUA_ATTRIBUTION =
+  "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts.";
+
+const SOURCE_PRESS_CASES = [
+  { key: 'qf', url: 'https://quran.foundation' },
+  { key: 'tanzil', url: 'https://tanzil.net' },
+  { key: 'kfgqpc', url: 'https://qurancomplex.gov.sa' },
+  { key: 'opendua', url: 'https://opendua.org/developers' },
+  { key: 'adhan', url: 'https://github.com/batoulapps/adhan-js' },
+  { key: 'fonts', url: 'https://openfontlicense.org' },
+] as const;
+
 describe('SourcesScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -36,6 +52,55 @@ describe('SourcesScreen', () => {
     expect(view.getByTestId('sources-qf-fonts')).toBeOnTheScreen();
     expect(view.getByTestId('sources-header')).toBeOnTheScreen();
     expect(view.getByRole('header')).toBeOnTheScreen();
+  });
+
+  it.each(locales)('renders the five source rows and the QF font credit in %s', async (locale) => {
+    const view = await renderUi(<SourcesScreen testID="sources" />, { locale });
+
+    for (const key of SOURCE_KEYS) {
+      expect(view.getByTestId(`sources-${key}`)).toBeOnTheScreen();
+      expect(view.getByText(i18n.t(`reader.sources.${key}.title`, { lng: locale }))).toBeOnTheScreen();
+      expect(view.getByText(i18n.t(`reader.sources.${key}.subtitle`, { lng: locale }))).toBeOnTheScreen();
+    }
+    expect(view.getByTestId('sources-group')).toBeOnTheScreen();
+    expect(view.getByTestId('sources-qf-fonts')).toHaveTextContent(i18n.t('reader.sources.qfFonts', { lng: locale }));
+  });
+
+  it.each(locales)('shows the OpenDua attribution exactly, left to right, in %s', async (locale) => {
+    const view = await renderUi(<SourcesScreen testID="sources" />, { locale });
+
+    expect(view.getByText(OPENDUA_ATTRIBUTION)).toBeOnTheScreen();
+    expect(flatStyle(view.getByText(OPENDUA_ATTRIBUTION).props.style)).toMatchObject({
+      direction: 'ltr',
+      textAlign: 'left',
+      writingDirection: 'ltr',
+    });
+  });
+
+  it.each(SOURCE_PRESS_CASES)('opens $url when the $key row is pressed', async ({ key, url }) => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    const view = await renderUi(<SourcesScreen testID="sources" />);
+
+    fireEvent.press(view.getByTestId(`sources-${key}`));
+
+    expect(openURL).toHaveBeenCalledTimes(1);
+    expect(openURL).toHaveBeenCalledWith(url);
+  });
+
+  it('exposes every source row as a button', async () => {
+    const view = await renderUi(<SourcesScreen testID="sources" />);
+
+    expect(view.getAllByRole('button').length).toBeGreaterThanOrEqual(SOURCE_KEYS.length);
+    for (const key of SOURCE_KEYS) {
+      expect(view.getByTestId(`sources-${key}`)).toHaveProp('accessibilityRole', 'button');
+    }
+  });
+
+  it('renders the Arabic King Fahd title under RTL', async () => {
+    const view = await renderUi(<SourcesScreen testID="sources" />, { locale: 'ar' });
+
+    expect(view.getByText('مجمع الملك فهد لطباعة المصحف الشريف')).toBeOnTheScreen();
+    expect(view.getByTestId('sources-kfgqpc')).toBeOnTheScreen();
   });
 
   it('has a back button that returns to Settings', async () => {

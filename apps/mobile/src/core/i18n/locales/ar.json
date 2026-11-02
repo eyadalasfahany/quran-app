@@ -179,7 +179,31 @@
     },
     "sources": {
       "title": "المصادر",
-      "qfFonts": "خطوط القرآن مقدَّمة من Quran Foundation"
+      "qfFonts": "خطوط القرآن مقدَّمة من Quran Foundation",
+      "qf": {
+        "title": "Quran Foundation",
+        "subtitle": "نص القرآن والتفاسير والتلاوات وخطوط المصحف"
+      },
+      "tanzil": {
+        "title": "Tanzil · tanzil.net",
+        "subtitle": "نص القرآن المضمَّن · CC BY 3.0"
+      },
+      "kfgqpc": {
+        "title": "مجمع الملك فهد لطباعة المصحف الشريف",
+        "subtitle": "خطوط صفحات المصحف"
+      },
+      "opendua": {
+        "title": "OpenDua · حصن المسلم",
+        "subtitle": "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts."
+      },
+      "adhan": {
+        "title": "adhan",
+        "subtitle": "حساب مواقيت الصلاة · MIT"
+      },
+      "fonts": {
+        "title": "Amiri · IBM Plex Sans Arabic",
+        "subtitle": "خطوط الواجهة · SIL OFL"
+      }
     },
     "toolbar": {
       "back": "رجوع",

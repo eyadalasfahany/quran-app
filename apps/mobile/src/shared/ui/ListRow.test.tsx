@@ -126,6 +126,35 @@ describe('ListRow', () => {
     expect(flatStyle(view.getByText('مسح البيانات المحلية').props.style).color).toBe(colors.danger);
   });
 
+  it.each(locales)('keeps a Latin subtitle left to right and left-aligned in %s', async (locale) => {
+    const view = await renderUi(<ListRow subtitle="Hisn al-Muslim" subtitleDirection="ltr" title="row" />, { locale });
+
+    expect(flatStyle(view.getByText('Hisn al-Muslim').props.style)).toMatchObject({
+      direction: 'ltr',
+      textAlign: 'left',
+      writingDirection: 'ltr',
+    });
+  });
+
+  it.each(locales)('keeps a Latin subtitle left to right in the index density in %s', async (locale) => {
+    const view = await renderUi(
+      <ListRow density="index" subtitle="Hisn al-Muslim" subtitleDirection="ltr" title="row" />,
+      { locale },
+    );
+
+    expect(flatStyle(view.getByText('Hisn al-Muslim').props.style)).toMatchObject({
+      direction: 'ltr',
+      textAlign: 'left',
+      writingDirection: 'ltr',
+    });
+  });
+
+  it('leaves the subtitle direction to the locale when the prop is not set', async () => {
+    const view = await renderUi(<ListRow subtitle="مكية · ٧ آيات" title="الفاتحة" />);
+
+    expect(flatStyle(view.getByText('مكية · ٧ آيات').props.style).writingDirection).toBeUndefined();
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('ListRow.tsx')).toEqual([]);
   });
