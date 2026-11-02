@@ -100,14 +100,14 @@ export function prayerFireDates(
   return fires;
 }
 
-/** Title «حان وقت صلاة الفجر» and a neutral body; the route opens الصلاة on tap. */
+/** Title «حان وقت صلاة الفجر» and a short body of its own per prayer; the route opens الصلاة on tap. */
 export function prayerNotificationContent(
   prayer: NextPrayerName,
   sound: PrayerSoundId = getPrayerSound(),
 ): PrayerNotificationContent {
   return {
     title: i18n.t('notifications.prayer.title', { name: i18n.t(PRAYER_NAME_KEYS[prayer]) }),
-    body: i18n.t('notifications.prayer.body'),
+    body: i18n.t(`notifications.prayer.body.${prayer}`),
     data: { route: PRAYER_ROUTE },
     sound: contentSound(sound),
   };

@@ -114,6 +114,14 @@ describe('SalahScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/salah/qibla');
   });
 
+  it('opens the adhan sound picker from the header speaker button', async () => {
+    const view = await renderUi(screen());
+
+    await fireEvent.press(view.getByTestId('salah-header-sound'));
+
+    expect(router.push).toHaveBeenCalledWith('/adhan-sound');
+  });
+
   it('opens the location sheet from the header and stores a picked city', async () => {
     const view = await renderUi(screen());
 

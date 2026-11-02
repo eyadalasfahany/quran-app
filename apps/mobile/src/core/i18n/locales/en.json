@@ -528,6 +528,14 @@
       "system": "System sound",
       "silent": "Silent"
     },
+    "adhanSound": {
+      "title": "Adhan sound",
+      "default": "Default",
+      "footer": "The sound plays when your phone is not on silent.",
+      "preview": "Play {{name}}",
+      "stopPreview": "Stop {{name}}",
+      "a11y": "Adhan sound"
+    },
     "title": "Prayer",
     "next": "Next prayer",
     "remaining": "{{time}} left",
@@ -687,7 +695,13 @@
   "notifications": {
     "prayer": {
       "title": "Time for {{name}} prayer",
-      "body": "Tap to open prayer times"
+      "body": {
+        "fajr": "Prayer is better than sleep",
+        "dhuhr": "Take a few minutes for Dhuhr",
+        "asr": "Pause for Asr",
+        "maghrib": "Maghrib is in. Time to pray",
+        "isha": "End your day with Isha"
+      }
     },
     "reminder": {
       "title": "Your daily wird",

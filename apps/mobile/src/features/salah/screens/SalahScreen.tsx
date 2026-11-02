@@ -102,7 +102,12 @@ export function SalahScreen() {
     <Screen testID="screen-salah">
       <ContentColumn>
         <View style={{ flex: 1, gap: theme.size.sectionGap }}>
-          <SalahDateHeader onLocationPress={() => setSheetOpen(true)} subtitle={subtitle} title={t('salah.title')} />
+          <SalahDateHeader
+            onLocationPress={() => setSheetOpen(true)}
+            onSoundPress={() => router.push('/adhan-sound' as Href)}
+            subtitle={subtitle}
+            title={t('salah.title')}
+          />
           {locating ? (
             <View style={{ flex: 1, paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}>
               <SalahLocating />

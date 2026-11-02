@@ -180,9 +180,22 @@ describe('prayer notifications', () => {
       const content = prayerNotificationContent('fajr');
 
       expect(content.title).toBe('حان وقت صلاة الفجر');
-      expect(content.body).toBe('اضغط لفتح مواقيت الصلاة');
+      expect(content.body).toBe('الصلاة خير من النوم');
       expect(content.data).toEqual({ route: '/salah' });
       expect(content.sound).toBe('allahu_akbar_short.wav');
+    });
+
+    it('gives each prayer its own body, in Arabic and English', async () => {
+      const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const;
+      for (const locale of ['ar', 'en']) {
+        await i18n.changeLanguage(locale);
+        const bodies = prayers.map((prayer) => prayerNotificationContent(prayer).body);
+        expect(new Set(bodies).size).toBe(prayers.length);
+        for (const body of bodies) {
+          expect(body).not.toMatch(/^notifications\./);
+        }
+      }
+      await i18n.changeLanguage('ar');
     });
 
     it('titles it in English when the reader has chosen English', async () => {

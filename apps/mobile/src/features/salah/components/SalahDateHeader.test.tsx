@@ -27,4 +27,30 @@ describe('SalahDateHeader', () => {
     expect(onLocationPress).toHaveBeenCalledTimes(1);
     expect(view.getByTestId('salah-header-location').props.accessibilityLabel).toBe('الموقع');
   });
+
+  it('shows the adhan sound button before the location button, and opens the picker from it', async () => {
+    const onSoundPress = jest.fn();
+    const view = await renderUi(<SalahDateHeader onLocationPress={() => undefined} onSoundPress={onSoundPress} subtitle="s" title="الصلاة" />);
+
+    const sound = view.getByTestId('salah-header-sound');
+    expect(sound.props.accessibilityLabel).toBe('صوت الأذان');
+    expect(view.getByTestId('salah-header-location')).toBeOnTheScreen();
+
+    await fireEvent.press(sound);
+
+    expect(onSoundPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the location button alone when there is no sound handler', async () => {
+    const view = await renderUi(<SalahDateHeader onLocationPress={() => undefined} subtitle="s" title="الصلاة" />);
+
+    expect(view.queryByTestId('salah-header-sound')).toBeNull();
+    expect(view.getByTestId('salah-header-location')).toBeOnTheScreen();
+  });
+
+  it.each(locales)('labels the sound button in %s', async (locale) => {
+    const view = await renderUi(<SalahDateHeader onLocationPress={() => undefined} onSoundPress={() => undefined} subtitle="s" title="الصلاة" />, { locale });
+
+    expect(view.getByRole('button', { name: locale === 'en' ? 'Adhan sound' : 'صوت الأذان' })).toBeOnTheScreen();
+  });
 });
