@@ -1,26 +1,15 @@
-import { useId, useMemo, useRef, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  type HostInstance,
-  type LayoutChangeEvent,
-} from "react-native";
-import Svg, { ClipPath, Defs, G, Rect } from "react-native-svg";
+import { useId, useMemo, useRef, useState } from 'react';
+import { StyleSheet, View, type HostInstance, type LayoutChangeEvent } from 'react-native';
+import Svg, { ClipPath, Defs, G, Rect } from 'react-native-svg';
 
-import { useTheme } from "@/core/theme";
+import { useTheme } from '@/core/theme';
 
-import { DrawnPath } from "./DrawnPath";
-import {
-  circle,
-  joinOutlines,
-  path,
-  type Outline,
-  type Point,
-} from "./svg-path";
-import { UiText } from "./UiText";
-import { useDrawOnView } from "./useDrawOnView";
+import { DrawnPath } from './DrawnPath';
+import { circle, joinOutlines, path, type Outline, type Point } from './svg-path';
+import { UiText } from './UiText';
+import { useDrawOnView } from './useDrawOnView';
 
-export type CartoucheVariant = "full" | "compact";
+export type CartoucheVariant = 'full' | 'compact';
 
 // View heights (ADR 0049): the full header is the band plus a rosette above and below it; the compact one is the band alone.
 const HEIGHT = { compact: 52, full: 112 } as const;
@@ -53,7 +42,7 @@ type StrokeTokens = {
 export function SurahCartouche({
   name,
   testID,
-  variant = "compact",
+  variant = 'compact',
 }: {
   name: string;
   testID?: string;
@@ -61,12 +50,11 @@ export function SurahCartouche({
 }) {
   const theme = useTheme();
   const ref = useRef<HostInstance>(null);
-  const clipId = `surah-rosette-${useId().replace(/:/g, "")}`;
+  const clipId = `surah-rosette-${useId().replace(/:/g, '')}`;
   const [size, setSize] = useState({ height: 0, width: 0 });
   const progress = useDrawOnView(ref, name);
   const strokes = useMemo(
-    () =>
-      size.width > 0 ? cartoucheStrokes(size.width, variant, theme.stroke) : [],
+    () => (size.width > 0 ? cartoucheStrokes(size.width, variant, theme.stroke) : []),
     [size.width, variant, theme.stroke],
   );
 
@@ -103,9 +91,9 @@ export function SurahCartouche({
       onLayout={onLayout}
       ref={ref}
       style={{
-        alignItems: "center",
-        alignSelf: "stretch",
-        justifyContent: "center",
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        justifyContent: 'center',
         minHeight: HEIGHT[variant],
         paddingHorizontal: END_WIDTH + theme.space[3],
       }}
@@ -143,35 +131,22 @@ export function SurahCartouche({
                     />
                   </ClipPath>
                 </Defs>
-                <G
-                  clipPath={`url(#${clipId})`}
-                  testID={testID ? `${testID}-rosette` : undefined}
-                >
-                  {rosette.map((stroke, index) =>
-                    drawStroke(stroke, index + band.length),
-                  )}
+                <G clipPath={`url(#${clipId})`} testID={testID ? `${testID}-rosette` : undefined}>
+                  {rosette.map((stroke, index) => drawStroke(stroke, index + band.length))}
                 </G>
               </>
             ) : null}
           </G>
         </Svg>
       ) : null}
-      <UiText
-        align="center"
-        style={{ writingDirection: "rtl" }}
-        variant="displaySm"
-      >
+      <UiText align="center" style={{ writingDirection: 'rtl' }} variant="displaySm">
         {name}
       </UiText>
     </View>
   );
 }
 
-function cartoucheStrokes(
-  width: number,
-  variant: CartoucheVariant,
-  stroke: StrokeTokens,
-): Stroke[] {
+function cartoucheStrokes(width: number, variant: CartoucheVariant, stroke: StrokeTokens): Stroke[] {
   const { top, bottom } = BAND[variant];
   const strokes: Stroke[] = [
     { outline: bandOutline(width, top, bottom, 0), width: stroke.frame },
@@ -180,7 +155,7 @@ function cartoucheStrokes(
       width: stroke.frameRule,
     },
   ];
-  if (variant === "full") {
+  if (variant === 'full') {
     strokes.push(...rosetteStrokes(width / 2, HEIGHT.full / 2, stroke));
   }
   return strokes;
@@ -188,12 +163,7 @@ function cartoucheStrokes(
 
 // One closed band: flat top and bottom, a stepped notch at each corner, and a concave sweep to a point at each end.
 // Only the straight run stretches with the width; the ends keep their shape.
-function bandOutline(
-  width: number,
-  top: number,
-  bottom: number,
-  inset: number,
-): Outline {
+function bandOutline(width: number, top: number, bottom: number, inset: number): Outline {
   const t = top + inset;
   const b = bottom - inset;
   const m = (top + bottom) / 2;
@@ -206,42 +176,35 @@ function bandOutline(
   const W = width;
 
   return path([
-    ["M", [k, t]],
-    ["L", [W - k, t]],
-    ["L", [W - k, t + n]],
-    ["L", [W - sx, t + n]],
-    ["L", [W - sx, m - sy]],
-    ["Q", [W - sx - 2, m - 2], [W - tip, m]],
-    ["Q", [W - sx - 2, m + 2], [W - sx, m + sy]],
-    ["L", [W - sx, b - n]],
-    ["L", [W - k, b - n]],
-    ["L", [W - k, b]],
-    ["L", [k, b]],
-    ["L", [k, b - n]],
-    ["L", [sx, b - n]],
-    ["L", [sx, m + sy]],
-    ["Q", [sx + 2, m + 2], [tip, m]],
-    ["Q", [sx + 2, m - 2], [sx, m - sy]],
-    ["L", [sx, t + n]],
-    ["L", [k, t + n]],
-    ["Z"],
+    ['M', [k, t]],
+    ['L', [W - k, t]],
+    ['L', [W - k, t + n]],
+    ['L', [W - sx, t + n]],
+    ['L', [W - sx, m - sy]],
+    ['Q', [W - sx - 2, m - 2], [W - tip, m]],
+    ['Q', [W - sx - 2, m + 2], [W - sx, m + sy]],
+    ['L', [W - sx, b - n]],
+    ['L', [W - k, b - n]],
+    ['L', [W - k, b]],
+    ['L', [k, b]],
+    ['L', [k, b - n]],
+    ['L', [sx, b - n]],
+    ['L', [sx, m + sy]],
+    ['Q', [sx + 2, m + 2], [tip, m]],
+    ['Q', [sx + 2, m - 2], [sx, m - sy]],
+    ['L', [sx, t + n]],
+    ['L', [k, t + n]],
+    ['Z'],
   ]);
 }
 
 // Twelve ogee petals with an inner rule, a bead past each tip and three dots inside; twelve pointed leaves between them; a ring.
-function rosetteStrokes(
-  cx: number,
-  cy: number,
-  stroke: StrokeTokens,
-): Stroke[] {
+function rosetteStrokes(cx: number, cy: number, stroke: StrokeTokens): Stroke[] {
   const R = ROSETTE_RADIUS;
   const step = (2 * Math.PI) / 12;
   const w = step / 2;
   const r0 = R * 0.6;
-  const pol = (r: number, a: number): Point => [
-    cx + r * Math.sin(a),
-    cy - r * Math.cos(a),
-  ];
+  const pol = (r: number, a: number): Point => [cx + r * Math.sin(a), cy - r * Math.cos(a)];
   const dot = (r: number, a: number, radius: number) => {
     const [x, y] = pol(r, a);
     return circle(x, y, radius);
@@ -254,36 +217,16 @@ function rosetteStrokes(
     const a = k * step;
     petals.push(
       path([
-        ["M", pol(r0, a - w)],
-        [
-          "C",
-          pol(R * 0.86, a - w * 1.05),
-          pol(R * 0.9, a - w * 0.08),
-          pol(R, a),
-        ],
-        [
-          "C",
-          pol(R * 0.9, a + w * 0.08),
-          pol(R * 0.86, a + w * 1.05),
-          pol(r0, a + w),
-        ],
+        ['M', pol(r0, a - w)],
+        ['C', pol(R * 0.86, a - w * 1.05), pol(R * 0.9, a - w * 0.08), pol(R, a)],
+        ['C', pol(R * 0.9, a + w * 0.08), pol(R * 0.86, a + w * 1.05), pol(r0, a + w)],
       ]),
     );
     details.push(
       path([
-        ["M", pol(r0 + 3, a - w * 0.62)],
-        [
-          "C",
-          pol(R * 0.8, a - w * 0.66),
-          pol(R * 0.84, a - w * 0.06),
-          pol(R - 8, a),
-        ],
-        [
-          "C",
-          pol(R * 0.84, a + w * 0.06),
-          pol(R * 0.8, a + w * 0.66),
-          pol(r0 + 3, a + w * 0.62),
-        ],
+        ['M', pol(r0 + 3, a - w * 0.62)],
+        ['C', pol(R * 0.8, a - w * 0.66), pol(R * 0.84, a - w * 0.06), pol(R - 8, a)],
+        ['C', pol(R * 0.84, a + w * 0.06), pol(R * 0.8, a + w * 0.66), pol(r0 + 3, a + w * 0.62)],
       ]),
       dot(R + 4, a, 1.6),
       dot(R * 0.74, a, 0.6),
@@ -296,9 +239,9 @@ function rosetteStrokes(
     const l1 = R * 0.66;
     leaves.push(
       path([
-        ["M", pol(l0, c - lw)],
-        ["Q", pol(l1 * 0.95, c - lw * 0.9), pol(l1, c)],
-        ["Q", pol(l1 * 0.95, c + lw * 0.9), pol(l0, c + lw)],
+        ['M', pol(l0, c - lw)],
+        ['Q', pol(l1 * 0.95, c - lw * 0.9), pol(l1, c)],
+        ['Q', pol(l1 * 0.95, c + lw * 0.9), pol(l0, c + lw)],
       ]),
     );
   }

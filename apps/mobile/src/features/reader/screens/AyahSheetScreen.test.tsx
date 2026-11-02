@@ -23,6 +23,8 @@ setUpTests();
 
 // Every ayah sheet opens at the mid detent: half the window, the card's top edge.
 const MID = Dimensions.get('window').height * 0.5;
+// The full detent: the 47 pt safe area plus the 8 pt card margin.
+const FULL = 47 + 8;
 
 /** Runs the card's spring to its end. */
 async function settle() {
@@ -47,14 +49,14 @@ describe('AyahSheetScreen', () => {
     expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: MID });
   });
 
-  it('stays at the mid detent when the reader switches to tafsir', async () => {
+  it('expands to the full detent when the reader opens the tafsir (ADR 0050)', async () => {
     const view = await renderUi(<AyahSheetScreen initialTab="actions" verseKey="1:2" />, { locale: 'en' });
     await settle();
 
     await fireEvent.press(view.getByRole('tab', { name: 'Tafsir' }));
     await settle();
 
-    expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: MID });
+    expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: FULL });
   });
 
   it('opens the tafsir route at the mid detent too', async () => {

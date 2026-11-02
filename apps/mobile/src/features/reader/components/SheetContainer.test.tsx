@@ -1,4 +1,7 @@
+import { useMemo, type ReactNode } from 'react';
 import { fireEvent } from '@testing-library/react-native';
+import { GestureHandlerRootView, usePanGesture, type PanGesture } from 'react-native-gesture-handler';
+import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
@@ -6,6 +9,23 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { SheetContainer } from './SheetContainer';
+import { SheetContext, type SheetContextValue } from './sheet-context';
+
+/** A mid-detent sheet around the content, with a real pan gesture and the given expand. */
+function InSheet({ expand, children }: { expand: () => void; children: ReactNode }) {
+  const panGesture: PanGesture = usePanGesture({});
+  const scrollOffset: SharedValue<number> = useSharedValue(0);
+  const scrollTouched: SharedValue<boolean> = useSharedValue(false);
+  const value = useMemo<SheetContextValue>(
+    () => ({ close: jest.fn(), collapse: jest.fn(), detent: 'mid', expand, panGesture, scrollOffset, scrollTouched }),
+    [expand, panGesture, scrollOffset, scrollTouched],
+  );
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SheetContext.Provider value={value}>{children}</SheetContext.Provider>
+    </GestureHandlerRootView>
+  );
+}
 
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
 
@@ -40,6 +60,23 @@ describe('SheetContainer', () => {
     await fireEvent.press(view.getByRole('tab', { name: 'Tafsir' }));
 
     expect(onTabChange).toHaveBeenCalledWith('tafsir');
+  });
+
+  it('lifts the sheet to full height when the tafsir opens', async () => {
+    const expand = jest.fn();
+    const view = await renderUi(
+      <InSheet expand={expand}>
+        <SheetContainer executor={executor} tab="actions" verseKey="1:2" />
+      </InSheet>,
+      { locale: 'en' },
+    );
+
+    await fireEvent.press(view.getByRole('button', { name: 'Tafsir' }));
+    expect(expand).toHaveBeenCalledTimes(1);
+    expect(view.getByText('No tafsir downloaded')).toBeOnTheScreen();
+
+    await fireEvent.press(view.getByRole('tab', { name: 'Options' }));
+    expect(expand).toHaveBeenCalledTimes(1);
   });
 
   it('moves to the next ayah inside the sheet', async () => {

@@ -15,6 +15,7 @@ import { setHighlight, toggleBookmark, type Note, type UserStore } from '@/featu
 import { ActionTile, HighlightRow, type HighlightColor, type IconName, UiText } from '@/shared/ui';
 
 import { idToVerseKey } from '../data/verses';
+import { useSheet } from '../components/sheet-context';
 import { SheetScrollView } from '../components/SheetScrollView';
 import { NoteEditor } from './NoteEditor';
 import { ayahShareText } from './panel-text';
@@ -97,6 +98,7 @@ export function AyahActionsPanel({
   const [isBookmarked, setIsBookmarked] = useState(bookmarked);
   const [color, setColor] = useState<HighlightColor | null>(highlight);
   const [editingNote, setEditingNote] = useState(false);
+  const sheet = useSheet();
   const [copied, setCopied] = useState(false);
   // Writes show at once; a newer stored value from the props (a live query) replaces them.
   const [synced, setSynced] = useState({ bookmarked, highlight, verseId });
@@ -222,7 +224,13 @@ export function AyahActionsPanel({
       icon: icons.note,
       key: 'note',
       label: t('reader.ayahPanel.note'),
-      onPress: () => setEditingNote((open) => !open),
+      // Opening the editor lifts the sheet to its full detent, so the editor isn't below the fold.
+      onPress: () => {
+        if (!editingNote) {
+          sheet?.expand();
+        }
+        setEditingNote(!editingNote);
+      },
       selected: editingNote,
     },
     { icon: icons.copy, key: 'copy', label: t('reader.ayahPanel.copy'), onPress: () => void onCopy() },
