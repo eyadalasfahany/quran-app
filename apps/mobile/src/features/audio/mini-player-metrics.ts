@@ -2,11 +2,8 @@ import { MINI_PLAYER_BOTTOM_GAP } from '@/core/layout/tab-bar-clearance';
 
 // The mini player's numbers, read from the two phone frames (quran-app-screens.html: #Main for tabs,
 // #Mushaf and #Reading for reader). Padding is logical: the start edge is the right in Arabic, and the
-// English frames mirror it.
-// `sidebar` is the expanded window's footer (#ExpandedHome, `xw-mini`). It is solid, not glass, and it has no
-// fixed height: its height comes from its content, so it is kept out of the bar metrics below.
-export type BarMiniPlayerVariant = 'tabs' | 'reader';
-export type MiniPlayerVariant = BarMiniPlayerVariant | 'sidebar';
+// English frames mirror it. The tabs bar is the same on tablets as on phones (ADR 0051).
+export type MiniPlayerVariant = 'tabs' | 'reader';
 
 export type MiniPlayerMetrics = {
   height: number;
@@ -20,7 +17,7 @@ export type MiniPlayerMetrics = {
   subtitle: { variant: 'caption' | 'label'; weight: 400 };
 };
 
-export const MINI_PLAYER_METRICS: Record<BarMiniPlayerVariant, MiniPlayerMetrics> = {
+export const MINI_PLAYER_METRICS: Record<MiniPlayerVariant, MiniPlayerMetrics> = {
   tabs: {
     height: 64,
     paddingStart: 10,
@@ -42,21 +39,6 @@ export const MINI_PLAYER_METRICS: Record<BarMiniPlayerVariant, MiniPlayerMetrics
     subtitle: { variant: 'label', weight: 400 },
   },
 };
-
-/** The sidebar footer's numbers, from `.xw-mini` and its children in #ExpandedHome. */
-export const MINI_PLAYER_SIDEBAR = {
-  /** `.xw-mini` padding, and its radius (radius-lg, 20). */
-  padding: 12,
-  radius: 20,
-  /** `.xw-avatar`: 44 with radius 14, the same tile as the tabs bar. */
-  tileSize: 44,
-  tileRadius: 14,
-  title: { variant: 'headline', weight: 600 },
-  subtitle: { variant: 'caption', weight: 400 },
-  /** `.xw-progress`: 3 high, radius 2, in the `line` track. */
-  progressHeight: 3,
-  progressRadius: 2,
-} as const;
 
 /** Gap between the bar's children (tile, text, button) on both frames. */
 export const MINI_PLAYER_GAP = 12;

@@ -46,6 +46,14 @@ export function QiblaMetaPanel({
   const dividerStyle = { borderTopColor: theme.colors.playerLine, borderTopWidth: 1 };
   const labelStyle = { color: theme.colors.playerMuted, flex: 1 };
   const valueStyle = { color: theme.colors.playerInk };
+  const accuracyText =
+    accuracy === 'good'
+      ? t('home.salah.qiblaScreen.accuracyGood')
+      : accuracy === 'fair'
+        ? t('home.salah.qiblaScreen.accuracyFair')
+        : accuracy === 'poor'
+          ? t('home.salah.qiblaScreen.accuracyPoor')
+          : t('home.salah.qiblaScreen.accuracyUnavailable');
 
   return (
     <View
@@ -74,20 +82,18 @@ export function QiblaMetaPanel({
         <UiText style={labelStyle} variant="subhead">
           {t('home.salah.qiblaScreen.accuracy')}
         </UiText>
+        {/* The label is always set: Android keeps a stale content description when the prop goes back to undefined,
+            so TalkBack read «غير متاحة» while the row showed «جيدة». */}
         <UiText
-          accessibilityLabel={accuracy === 'unavailable' ? t('home.salah.qiblaScreen.accuracyUnavailableA11y') : undefined}
+          accessibilityLabel={
+            accuracy === 'unavailable' ? t('home.salah.qiblaScreen.accuracyUnavailableA11y') : accuracyText
+          }
           style={valueStyle}
           testID="qibla-accuracy-value"
           variant="subhead"
           weight={600}
         >
-          {accuracy === 'good'
-            ? t('home.salah.qiblaScreen.accuracyGood')
-            : accuracy === 'fair'
-              ? t('home.salah.qiblaScreen.accuracyFair')
-              : accuracy === 'poor'
-                ? t('home.salah.qiblaScreen.accuracyPoor')
-                : t('home.salah.qiblaScreen.accuracyUnavailable')}
+          {accuracyText}
         </UiText>
       </View>
 

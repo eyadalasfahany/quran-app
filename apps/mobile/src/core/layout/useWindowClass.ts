@@ -25,8 +25,8 @@ export function useWidthClass(): WindowClass {
 
 /**
  * The layout class (ADR 0036): compact for every short window (under 480 pt high) and otherwise the width class. The
- * sidebar, the docked reader panel and the side panels follow this class, so they appear only on windows that are both
- * wide and not short.
+ * docked reader panel and the side panels follow this class, so they appear only on windows that are both wide and not
+ * short. The tab bar does not depend on it (ADR 0051).
  */
 export function useWindowClass(): WindowClass {
   const widthClass = useWidthClass();

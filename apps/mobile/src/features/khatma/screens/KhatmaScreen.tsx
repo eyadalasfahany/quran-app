@@ -12,7 +12,8 @@ import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey, idToVerseKey } from '@/features/reader/data/verses';
-import { Button, ConfirmDialog, IconButton, Screen, UiText } from '@/shared/ui';
+import { goBackOr, MENU_TAB } from '@/core/navigation/go-back';
+import { BackButton, Button, ConfirmDialog, Screen, UiText } from '@/shared/ui';
 
 import { DailyWirdCard } from '../components/DailyWirdCard';
 import { KhatmaDurationPicker } from '../components/KhatmaDurationPicker';
@@ -31,7 +32,6 @@ import {
 } from '../data';
 import { resolvePlanBounds } from '../plan-bounds';
 
-const BACK_ICON = { ios: 'chevron.left', android: 'chevron_left' } as const;
 const END_PLAN_ICON = { ios: 'stop.circle', android: 'stop_circle' } as const;
 
 export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) {
@@ -201,14 +201,7 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
         testID="khatma-scroll"
       >
         <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2] }}>
-          <IconButton
-            icon={BACK_ICON}
-            label={t('settings.back')}
-            mirrorInRtl
-            onPress={() => router.back()}
-            testID="khatma-back"
-            variant="raised"
-          />
+          <BackButton onPress={() => goBackOr(MENU_TAB)} testID="khatma-back" />
           <UiText accessibilityRole="header" style={{ flex: 1, fontSize: 26, lineHeight: 36 }} variant="displayMd">
             {t('khatma.title')}
           </UiText>

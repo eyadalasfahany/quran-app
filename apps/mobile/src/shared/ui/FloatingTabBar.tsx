@@ -4,6 +4,7 @@ import { useWindowDimensions, View } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 import { useTabBarHiddenOnScroll } from '@/core/layout/useTabBarHiddenOnScroll';
+import { CONTENT_COLUMN_MAX_WIDTH } from '@/core/layout/ContentColumn';
 import { FLOATING_TAB_BAR, TAB_RAIL } from '@/core/layout/tab-bar-clearance';
 import { useScreenInsets } from '@/core/layout/useScreenInsets';
 import { useIsShortWindow } from '@/core/layout/useWindowClass';
@@ -15,20 +16,13 @@ import { GlassSurface } from './GlassSurface';
 // The floating tab bar (ADR 0033 §2): a 64 pt capsule, 16 from each side, 12 above the system navigation inset.
 // Scrolling down in a tab screen slides it off the bottom edge like a sheet (no fade); scrolling up brings it back.
 //
-// In a short window the same items stand in a vertical rail on the start edge (ADR 0036).
-export function FloatingTabBar({
-  label,
-  hidden = false,
-  children,
-}: {
-  label: string;
-  hidden?: boolean;
-  children?: ReactNode;
-}) {
+// In a short window the same items stand in a vertical rail on the start edge (ADR 0036). Tablets get the same bar as
+// phones (ADR 0051), capped at the content column's width and centred; only the short-window rail changes the layout.
+export function FloatingTabBar({ label, children }: { label: string; children?: ReactNode }) {
   const theme = useTheme();
   const insets = useScreenInsets();
   const short = useIsShortWindow();
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const scrollHidden = useTabBarHiddenOnScroll();
   const slide = useSharedValue(0);
   const hideDistance = FLOATING_TAB_BAR.height + FLOATING_TAB_BAR.offset + insets.bottom + 16;
@@ -38,8 +32,10 @@ export function FloatingTabBar({
   }, [scrollHidden, slide]);
 
   const bottom = insets.bottom + FLOATING_TAB_BAR.offset;
-  const fullStart = FLOATING_TAB_BAR.side + insets.start;
-  const trailEnd = FLOATING_TAB_BAR.side + insets.end;
+  // On a wide window the capsule is no wider than the content column, centred, like the iPad's compact tab bar.
+  const centring = Math.max(0, (width - CONTENT_COLUMN_MAX_WIDTH) / 2);
+  const fullStart = Math.max(FLOATING_TAB_BAR.side + insets.start, centring);
+  const trailEnd = Math.max(FLOATING_TAB_BAR.side + insets.end, centring);
 
   const dockStyle = useAnimatedStyle(() => ({
     bottom,
@@ -48,10 +44,6 @@ export function FloatingTabBar({
     start: fullStart,
     transform: [{ translateY: interpolate(slide.value, [0, 1], [0, hideDistance]) }],
   }));
-
-  if (hidden) {
-    return null;
-  }
 
   if (short) {
     const railHeight = Math.min(TAB_RAIL.height, height - TAB_RAIL.offset * 2);

@@ -14,7 +14,7 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { back: jest.fn(), canGoBack: jest.fn(() => true), replace: jest.fn() } }));
 
 jest.mock('react-native-android-widget', () => ({
   requestPinWidget: jest.fn(async () => true),

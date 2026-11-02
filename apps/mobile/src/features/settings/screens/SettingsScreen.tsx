@@ -7,6 +7,7 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useActivePlan } from '@/features/khatma/data';
+import { goBackOr, MENU_TAB } from '@/core/navigation/go-back';
 import { Screen } from '@/shared/ui';
 
 import { AboutSection } from '../components/AboutSection';
@@ -39,7 +40,7 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
     <Screen testID={testID}>
       {/* The column caps the rows at 720 on wide windows (spec §4) and keeps the 16 gutter the rows had. */}
       <ContentColumn gutter={theme.space[4]} testID="settings-column">
-        <SettingsHeader onBack={() => router.back()} />
+        <SettingsHeader onBack={() => goBackOr(MENU_TAB)} />
         <ScrollView
           contentContainerStyle={{
             gap: theme.space[4],

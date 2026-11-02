@@ -15,7 +15,6 @@ import {
   MINI_PLAYER_GAP,
   MINI_PLAYER_GLYPH_SIZE,
   MINI_PLAYER_METRICS,
-  MINI_PLAYER_SIDEBAR,
   type MiniPlayerVariant,
 } from '../mini-player-metrics';
 import { useIdleReciter } from '../hooks/useIdleReciter';
@@ -30,9 +29,9 @@ import { MiniPlayerTile } from './MiniPlayerTile';
 import { PlayerIconButton } from './PlayerIconButton';
 import { PAUSE_ICON, PLAY_ICON } from './player-icons';
 
-// The bar shown above the tabs (`tabs`) and at the foot of the reader (`reader`), and the solid footer of the
-// expanded sidebar (`sidebar`). It draws nothing while useMiniPlayerVisible is false. Tapping the row opens the
-// full player; the button beside it toggles playback. The two are siblings, so the button is never inside another button.
+// The bar shown above the tabs (`tabs`, on every window: ADR 0051) and at the foot of the reader (`reader`). It draws
+// nothing while useMiniPlayerVisible is false. Tapping the row opens the full player; the button beside it toggles
+// playback. The two are siblings, so the button is never inside another button.
 export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlayerVariant; topVerseKey?: string | null }) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -61,66 +60,6 @@ export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlaye
     void resume();
   };
   const fraction = playbackFraction(positionMs, durationMs);
-
-  if (variant === 'sidebar') {
-    // The caption is the surah plus the ayah while one is active («الكهف · الآية ١٠»), else the surah alone.
-    const surah = chapterName ?? '';
-    const subtitle =
-      ayahNumber === null
-        ? surah
-        : t('player.mini.caption', { surah, ayah: t('ui.ayahNumber', { number: formatNumber(ayahNumber, locale) }) });
-
-    return (
-      <View
-        style={{
-          backgroundColor: theme.colors.surfaceRaised,
-          borderColor: theme.colors.line,
-          borderRadius: MINI_PLAYER_SIDEBAR.radius,
-          borderWidth: theme.stroke.hairline,
-          gap: MINI_PLAYER_GAP,
-          padding: MINI_PLAYER_SIDEBAR.padding,
-        }}
-        testID="mini-player-sidebar"
-      >
-        <View style={{ alignItems: 'center', flexDirection: 'row', gap: MINI_PLAYER_GAP }}>
-          <Pressable
-            accessibilityHint={t('player.mini.hint')}
-            accessibilityLabel={t('player.mini.label', { reciter: reciterName, surah: subtitle })}
-            accessibilityRole="button"
-            onPress={() => router.push('/player')}
-            style={{ alignItems: 'center', flex: 1, flexDirection: 'row', gap: MINI_PLAYER_GAP, minWidth: 0 }}
-            testID="mini-player-open"
-          >
-            <MiniPlayerTile
-              glyph="brand"
-              letter={reciterInitial(reciterName)}
-              radius={MINI_PLAYER_SIDEBAR.tileRadius}
-              size={MINI_PLAYER_SIDEBAR.tileSize}
-            />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <UiText variant={MINI_PLAYER_SIDEBAR.title.variant} weight={MINI_PLAYER_SIDEBAR.title.weight}>
-                {reciterName}
-              </UiText>
-              <UiText numberOfLines={1} tone="muted" variant={MINI_PLAYER_SIDEBAR.subtitle.variant} weight={MINI_PLAYER_SIDEBAR.subtitle.weight}>
-                {subtitle}
-              </UiText>
-            </View>
-          </Pressable>
-          <PlayerIconButton
-            background={theme.colors.brand}
-            glyphColor={theme.colors.onBrand}
-            glyphSize={MINI_PLAYER_GLYPH_SIZE}
-            hitSize={MINI_PLAYER_BUTTON_SIZE}
-            icon={isPlaying ? PAUSE_ICON : PLAY_ICON}
-            label={isPlaying ? t('player.pause') : t('player.play')}
-            onPress={toggle}
-            testID="mini-player-toggle"
-          />
-        </View>
-        <MiniPlayerProgressLine fraction={fraction} placement="inline" />
-      </View>
-    );
-  }
 
   // Plays from the top ayah on screen with the catalogue's reciter (installing its pack first if needed).
   const playIdle = (verseKey: string | null) => {

@@ -17,7 +17,8 @@ import { useQiblaHeading } from '../hooks/useQiblaHeading';
 import { useScreenActive } from '../hooks/useScreenActive';
 import { QiblaScreen } from './QiblaScreen';
 
-jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
+// With history, back pops (router.back); with none, the screen falls back to the Salah tab (go-back.ts).
+jest.mock('expo-router', () => ({ router: { back: jest.fn(), canGoBack: jest.fn(() => true), replace: jest.fn() } }));
 
 jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'success' },

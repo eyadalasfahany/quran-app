@@ -41,6 +41,12 @@ export type MoonEveningContext = {
     odehV: number;
     odehZone: VisibilityZone;
   } | null;
+  /** The evening's own facts: its civil day, the conjunction before its sunset, and the age at that sunset. */
+  evening: {
+    civilDay: Date;
+    conjunction: Date;
+    ageAtSunsetMs: number;
+  };
 };
 
 function sunMoonTimesForLocalDay(dayAtLocalNoon: Date, location: MoonLocation): SightingEvening {
@@ -76,10 +82,15 @@ export function sightingEveningForDate(
   const day29 = month.days[Math.min(28, month.length - 1)]!.gregorian;
   let evening = sunMoonTimesForLocalDay(day29, location);
 
-  const conjunction = findPreviousConjunction(evening.sunset);
+  // The conjunction that ends this month: the first after mid-month. (findPreviousConjunction(sunset) could never be
+  // after the sunset, so a conjunction after the day-29 sunset was missed and the evening before the new moon was used.)
+  const conjunction = findNextConjunction(month.days[14]!.gregorian);
   if (evening.sunset.getTime() < conjunction.getTime()) {
-    const after = new Date(conjunction.getTime() + 60_000);
-    evening = sunMoonTimesForLocalDay(after, location);
+    evening = sunMoonTimesForLocalDay(new Date(conjunction.getTime() + 60_000), location);
+    // A conjunction later in the day than that day's sunset: the first sunset after it is the next day's.
+    if (evening.sunset.getTime() <= conjunction.getTime()) {
+      evening = sunMoonTimesForLocalDay(new Date(conjunction.getTime() + 24 * 3_600_000), location);
+    }
   }
 
   return evening;
@@ -102,9 +113,11 @@ export function buildMoonEvening(
   if (!evening) {
     return null;
   }
-  const state = moonStateAt(now);
-  const previousConjunction = findPreviousConjunction(now);
-  const nextConjunction = findNextConjunction(now);
+  // The phase describes the sighting evening, not this moment: the card shows the age at that sunset next to it, so
+  // the illumination and the disc are at that sunset too, and the next conjunction is the one after that evening.
+  const state = moonStateAt(evening.sunset);
+  const previousConjunction = findPreviousConjunction(evening.sunset);
+  const nextConjunction = findNextConjunction(evening.sunset);
   const raw = estimateCrescentVisibility(evening, location);
   const estimate =
     raw.status === 'ok'
@@ -113,6 +126,8 @@ export function buildMoonEvening(
           odehZone: raw.zone,
         }
       : null;
+
+  const conjunctionBeforeSunset = findPreviousConjunction(evening.sunset);
 
   return {
     phase: {
@@ -128,5 +143,10 @@ export function buildMoonEvening(
       moonrise: evening.moonrise,
     },
     estimate,
+    evening: {
+      civilDay: evening.civilDay,
+      conjunction: conjunctionBeforeSunset,
+      ageAtSunsetMs: evening.sunset.getTime() - conjunctionBeforeSunset.getTime(),
+    },
   };
 }

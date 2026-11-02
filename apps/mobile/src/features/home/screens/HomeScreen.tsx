@@ -10,7 +10,6 @@ import {
   SectionScreen,
   useTabBarScrollHandlers,
   useTabContentBottom,
-  useWindowClass,
 } from '@/core/layout';
 import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
@@ -70,8 +69,6 @@ export function HomeScreen() {
   const locale = useLocale();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
-  // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
-  const expanded = useWindowClass() === 'expanded';
   const tabScroll = useTabBarScrollHandlers();
   const bottom = useTabContentBottom();
   const recentItems = useRecentListenItems(2);
@@ -125,7 +122,7 @@ export function HomeScreen() {
   const hijriAvailable = isHijriCalendarAvailable();
 
   return (
-    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={expanded ? undefined : <SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
+    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={<SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
       <ScrollView
         contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: bottom + theme.space[4] }}
         showsVerticalScrollIndicator={false}

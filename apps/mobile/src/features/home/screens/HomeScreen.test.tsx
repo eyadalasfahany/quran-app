@@ -187,12 +187,12 @@ describe('HomeScreen', () => {
     expect(view.getByTestId('home-search')).toBeOnTheScreen();
   });
 
-  it('drops the header search button on expanded windows, where the sidebar holds search', async () => {
+  it('keeps the header search button on expanded windows, where the tab bar is the same as on a phone (ADR 0051)', async () => {
     setWindowWidth(900);
     const view = await renderUi(<HomeScreen />);
 
-    expect(view.queryByTestId('home-search')).toBeNull();
-    expect(view.queryByRole('button', { name: 'بحث' })).toBeNull();
+    expect(view.getByTestId('home-search')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'بحث' })).toBeOnTheScreen();
     expect(view.getByRole('header', { name: 'السلام عليكم' })).toBeOnTheScreen();
   });
 

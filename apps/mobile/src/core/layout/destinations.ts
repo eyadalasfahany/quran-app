@@ -42,7 +42,7 @@ export const destinations = [
   },
   {
     // Not /(main)/(salah): that route has no tab item, so the native tabs render it blank. It is reached at /salah,
-    // a root stack route outside the tabs (app/salah/index.tsx), from the menu card and the expanded sidebar.
+    // a root stack route outside the tabs (app/salah/index.tsx), from the menu card (ADR 0032).
     name: '(salah)',
     href: '/salah',
     label: 'tabs.salah',
@@ -74,8 +74,3 @@ function destinationNamed(name: DestinationName): Destination {
 // (quran-app-screens.html). The الصلاة tab gave its place to القائمة (ADR 0032); its route stays registered.
 const tabOrder: readonly DestinationName[] = ['(home)', '(mushaf)', '(my-quran)', '(listen)', '(menu)'];
 export const tabDestinations: Destination[] = tabOrder.map(destinationNamed);
-
-// The expanded-window sidebar pins مصحفي to the top (ADR 0010), then follows the tab order. It keeps الصلاة and
-// gains no القائمة (ADR 0032 §4).
-const sidebarOrder: readonly DestinationName[] = ['(my-quran)', '(home)', '(mushaf)', '(listen)', '(salah)'];
-export const sidebarDestinations: Destination[] = sidebarOrder.map(destinationNamed);

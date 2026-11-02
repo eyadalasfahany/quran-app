@@ -42,6 +42,8 @@ describe('QiblaMetaPanel', () => {
     const view = await renderUi(<QiblaMetaPanel {...PROPS} accuracy={accuracy} />);
 
     expect(view.getByTestId('qibla-accuracy-value')).toHaveTextContent(label);
+    // Always an explicit label, so Android can't keep a stale «unavailable» description.
+    expect(view.getByTestId('qibla-accuracy-value').props.accessibilityLabel).toBe(label);
   });
 
   it.each([

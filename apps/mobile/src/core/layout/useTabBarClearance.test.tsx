@@ -53,10 +53,19 @@ describe('useTabBarClearance', () => {
     expect(result.current).toBe(100);
   });
 
-  it('is 0 in an expanded window, where the sidebar replaces the tab bar', async () => {
+  it('keeps the same bar clearance in an expanded window as on a phone (ADR 0051)', async () => {
     setPlatform('ios');
     mockBottomInset = 34;
     setWindow(1024, 768);
+    const { result } = await renderHook(() => useTabBarClearance());
+
+    expect(result.current).toBe(92);
+  });
+
+  it('is 0 in a short window, where the rail takes the start edge (ADR 0036)', async () => {
+    setPlatform('ios');
+    mockBottomInset = 34;
+    setWindow(844, 390);
     const { result } = await renderHook(() => useTabBarClearance());
 
     expect(result.current).toBe(0);

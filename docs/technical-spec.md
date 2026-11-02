@@ -182,14 +182,14 @@ Sync/
 
 ## 4. App code structure (`apps/mobile`)
 
-Routes live in `app/` and stay thin; everything else lives in feature folders under `src/`. One adaptive shell serves phones, iPads and foldables: the same routes render as tabs and sheets in a narrow window and as a sidebar with side panels in a wide one.
+Routes live in `app/` and stay thin; everything else lives in feature folders under `src/`. One adaptive shell serves phones, iPads and foldables: the same routes render as tabs and sheets in a narrow window, and as the same tabs with side panels in a wide one (ADR 0048).
 
 ```
 apps/mobile/
 ├── app/                              Expo Router (file-based)
 │   ├── _layout.tsx                   providers, DB ready gate, onboarding redirect
 │   ├── (onboarding)/language.tsx, script.tsx, reciter.tsx
-│   ├── (main)/_layout.tsx            AdaptiveNav: native tabs or sidebar by window class
+│   ├── (main)/_layout.tsx            AdaptiveNav: native tabs (iOS) or the floating bar (Android), a rail when short
 │   ├── (main)/(home)/index.tsx
 │   ├── (main)/(mushaf)/index.tsx     surah and juz index
 │   ├── (main)/(listen)/index.tsx, reciter/[id].tsx
@@ -239,13 +239,13 @@ Hadith collections read from `content.db` packs (ADR 0042), not through TanStack
 
 **Responsive layout (phones, iPad, foldables)**
 
-Layout is driven by the window's size from `useWindowDimensions`, never by `Platform.isPad` or the device model. iPad Split View at one third, a folded phone and a phone in portrait all get the compact layout; an unfolded foldable or an iPad in landscape gets the expanded one. A short window (under 480 pt high) is a landscape phone: it keeps the compact layout with the bottom tab bar, whatever its width (ADR 0036). The sidebar needs a window that is both wide and not short.
+Layout is driven by the window's size from `useWindowDimensions`, never by `Platform.isPad` or the device model. iPad Split View at one third, a folded phone and a phone in portrait all get the compact layout; an unfolded foldable or an iPad in landscape gets the expanded one. A short window (under 480 pt high) is a landscape phone: it keeps the compact layout with the bottom tab bar, whatever its width (ADR 0036). The side panels need a window that is both wide and not short. The tab bar is the same on every window that is not short, tablets included (ADR 0051).
 
 | Window class | Width (dp/pt) | Typical cases | Navigation | Reader | Ayah actions and tafsir | Player |
 | --- | --- | --- | --- | --- | --- | --- |
 | Compact | under 600, or any window under 480 high | Phones, phones in landscape (ADR 0036), folded foldables, iPad Slide Over and 1/3 Split View | Native bottom tabs; a vertical tab rail on the start edge in a short window (ADR 0036) | Full width | Bottom sheets (mid 50% and full detents, ADR 0020) | Mini-player bar, full-screen player |
 | Medium | 600–839 | Unfolded foldables in portrait, iPad mini portrait, iPad 1/2 Split View | Native tabs; iPadOS may show its adaptive tab bar | Centered text column, max width | Large sheets (a 560-wide card, ADR 0013, with the same detents) | Mini-player bar, full-screen player |
-| Expanded | 840 and up, and 480 or taller | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | Sidebar | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player in the sidebar footer; full player as a modal |
+| Expanded | 840 and up, and 480 or taller | iPad landscape and full screen, unfolded foldables in landscape, Android tablets | The phone tab bar: native tabs on iOS, the floating bar on Android (ADR 0051) | Centered column beside a side panel | Persistent side panel, 360–420 wide | Mini-player above the tab bar, as on a phone; full player as a modal |
 
 - **`useWindowClass()`** returns `compact | medium | expanded`. The width classes keep a small hysteresis (±16) so a resize near a boundary doesn't flicker. A window under 480 pt high is compact whatever its width (ADR 0036). **`useWidthClass()`** returns the width class alone, for the sheet card and the menu columns, which a landscape phone still gets wide. **`useIsShortWindow()`** reports the height rule for the Qibla dial and the misbaha ring, which reflow beside their text.
 - **`AdaptiveSplit`** renders one pane in compact and medium, and two panes in expanded. The ayah and tafsir routes render into the side pane when it exists and as sheets otherwise, so the routes don't change between form factors.
@@ -690,7 +690,7 @@ For each change, in one transaction per request:
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
-  - The qibla compass rotates with device heading via a Reanimated spring; under Reduce Motion it renders a static dial (bearing + fixed arrow).
+  - The qibla compass face stays fixed; the Kaaba marker, gold arc and needle spring to `bearing − heading` with a Reanimated spring, so the Kaaba reaches the top when the phone faces the qibla (ADR 0049). Under Reduce Motion it renders a static dial (marker at the bearing, fixed arrow).
 
 | Interaction | Component | Motion | Reduce Motion |
 | --- | --- | --- | --- |
@@ -881,7 +881,7 @@ One question blocks the build: whether QF accepts device copies served from our 
 - [ ] QF: production rate limits for Content Sync and the Content API.
 - [ ] QF: approved QCF and IndoPak font files and exact credit wording.
 - [x] QF: prelive returns only Al-Fatihah and Al-Baqarah. Production keys arrived on 1 Nov 2026, and local syncs the full dataset (ADR 0041).
-- [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player, Settings and the sidebar. The 30 current screens are phone-only (390 pt).
+- [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player and Settings. The 30 current screens are phone-only (390 pt).
 - [x] Design: the Mushaf page cap on large iPads is 600, as drawn in the tablet frames (ADR 0013).
 - [x] Product: app name and bundle ID: **Taybah** («طيبة»), `com.taybahapp.taybah` (27 Oct 2026). Register `taybahapp.com` before launch.
 - [ ] HadeethEnc: written confirmation of app use (blocks Hadith launch only). Deferred with the HadeethEnc work (ADR 0042).

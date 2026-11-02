@@ -1,4 +1,5 @@
-import { router } from 'expo-router';
+import type { Href } from 'expo-router';
+import { goBackOr } from '@/core/navigation/go-back';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
@@ -19,7 +20,7 @@ export function SourcesScreen({ testID }: { testID?: string }) {
         <ContentColumn gutter={0} testID={testID ? `${testID}-column` : undefined}>
           <View style={{ paddingHorizontal: theme.space[4] }}>
             <SettingsHeader
-              onBack={() => router.back()}
+              onBack={() => goBackOr('/settings' as Href)}
               testID={testID ? `${testID}-header` : undefined}
               title={t('reader.sources.title')}
             />

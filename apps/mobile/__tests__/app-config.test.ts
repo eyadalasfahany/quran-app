@@ -49,6 +49,7 @@ describe('app.config', () => {
     expect(config.android?.adaptiveIcon).toEqual({
       backgroundColor: '#F9F7F2',
       foregroundImage: './assets/images/android-adaptive-foreground.png',
+      monochromeImage: './assets/images/android-adaptive-monochrome.png',
     });
     expect(config.plugins).toContainEqual([
       'expo-splash-screen',

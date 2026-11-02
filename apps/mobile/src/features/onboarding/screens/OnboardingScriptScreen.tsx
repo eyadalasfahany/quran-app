@@ -1,4 +1,5 @@
-import { router } from 'expo-router';
+import { type Href, router } from 'expo-router';
+import { goBackOr } from '@/core/navigation/go-back';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
@@ -41,7 +42,7 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
         >
           <OnboardingTopBar
             backLabel={t('onboarding.back')}
-            onBack={() => router.back()}
+            onBack={() => goBackOr('/(onboarding)/language' as Href)}
             onSkip={() => router.push('/(onboarding)/reciter')}
             skipLabel={t('onboarding.skip')}
           />

@@ -168,7 +168,6 @@
       "makkah": "Meccan",
       "madinah": "Medinan"
     },
-    "surahMeta": "{{place}} · {{count}} ayahs",
     "mushaf": {
       "placeholderTitle": "This page is not ready",
       "placeholderBody": "Connect to load this page.",
@@ -667,6 +666,7 @@
     "settingsDuration_other": "{{formatted}} days"
   },
   "common": {
+    "back": "Back",
     "cancel": "Cancel",
     "done": "Done",
     "openSettings": "Open Settings",
@@ -1269,52 +1269,78 @@
   },
   "moon": {
     "title": "Moon sighting",
-    "offline": "Calculated on this device; no network needed.",
+    "offline": "Calculated on your device, no internet needed.",
     "locationA11y": "Location: {{label}}",
+    "evening": "Evening of {{hijri}} · {{day}}",
+    "conjunctionValue": "{{day}} · {{time}}",
     "summary": {
-      "age": "Age",
-      "ageUnit": "days",
-      "illumination": "Illumination",
-      "illuminationUnit": "%"
+      "age": "Moon age at sunset",
+      "illumination": "Illuminated"
+    },
+    "age": {
+      "hours_zero": "{{formatted}} h",
+      "hours_one": "{{formatted}} h",
+      "hours_other": "{{formatted}} h",
+      "minutes_zero": "{{formatted}} min",
+      "minutes_one": "{{formatted}} min",
+      "minutes_other": "{{formatted}} min",
+      "hoursMinutes": "{{hours}} {{minutes}}"
     },
     "times": {
-      "title": "Times",
-      "conjunction": "New moon (conjunction)",
+      "conjunction": "Conjunction (new moon)",
       "sunset": "Sunset",
       "moonset": "Moonset",
-      "moonrise": "Moonrise",
+      "moonsetCompared": "Moonset compared with sunset",
+      "nextConjunction": "Next conjunction",
       "unavailable": "—"
+    },
+    "compare": {
+      "before_one": "{{formatted}} min before",
+      "before_other": "{{formatted}} min before",
+      "after_one": "{{formatted}} min after",
+      "after_other": "{{formatted}} min after",
+      "same": "At the same time"
+    },
+    "span": {
+      "minutes_one": "1 minute",
+      "minutes_other": "{{formatted}} minutes",
+      "hours_one": "1 hour",
+      "hours_other": "{{formatted}} hours",
+      "days_one": "1 day",
+      "days_other": "{{formatted}} days"
     },
     "estimate": {
       "title": "Visibility estimate",
-      "criterion": "TODO-REVIEW: Odeh (2004) criterion label — reviewer Arabic/English copy",
-      "odehV": "Odeh V",
-      "zone": "Zone",
-      "result": "Result"
-    },
-    "zones": {
-      "a": "TODO-REVIEW: Zone A (Odeh) — reviewer copy",
-      "b": "TODO-REVIEW: Zone B (Odeh) — reviewer copy",
-      "c": "TODO-REVIEW: Zone C (Odeh) — reviewer copy",
-      "d": "TODO-REVIEW: Zone D (Odeh) — reviewer copy"
+      "criterion": "Criterion: Odeh (2004)",
+      "odehV": "V = {{value}}",
+      "zone": "Zone {{letter}}",
+      "letters": {
+        "a": "A",
+        "b": "B",
+        "c": "C",
+        "d": "D"
+      }
     },
     "zoneResults": {
-      "a": "TODO-REVIEW: Zone A result sentence — reviewer copy",
-      "b": "TODO-REVIEW: Zone B result sentence — reviewer copy",
-      "c": "TODO-REVIEW: Zone C result sentence — reviewer copy",
-      "d": "TODO-REVIEW: Zone D result sentence — reviewer copy"
+      "a": "Visible to the naked eye",
+      "b": "Visible with optical aid; may be seen with the naked eye",
+      "c": "Visible with optical aid only",
+      "d": "Not visible even with optical aid"
     },
-    "disclaimer": "TODO-REVIEW: Astronomical estimate only; official moon-sighting announcements govern — reviewer copy",
+    "disclaimer": "An astronomical estimate for your location, not a ruling on the start of a month. The official announcement in your country governs.",
     "unavailable": "Estimate unavailable at this latitude or when the moon does not set after sunset.",
     "noLocation": {
-      "title": "Location not set",
-      "body": "Set your location in Prayer to see moon times and the visibility estimate.",
-      "action": "Open Prayer"
+      "title": "Set your location",
+      "body": "We need your location to calculate sunset, moonset and the visibility estimate. We read the location set in Prayer and never change it.",
+      "action": "Open location in Prayer"
     },
     "menu": {
-      "caption": "Estimate",
+      "caption": "Crescent",
       "title": "Moon sighting",
-      "a11y": "Moon sighting: {{preview}}"
+      "a11y": "Moon sighting: {{preview}}",
+      "noLocation": "Set your location",
+      "conjunctionIn": "Conjunction in {{duration}}",
+      "conjunctionAgo": "Conjunction {{duration}} ago"
     },
     "phaseDiscA11y": "Moon phase, {{percent}} percent illuminated",
     "sources": {

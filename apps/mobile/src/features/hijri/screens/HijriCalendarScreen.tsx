@@ -8,6 +8,7 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { formatNumber } from '@/core/i18n/numbers';
 import { useTheme } from '@/core/theme';
 import { AzkarScreenHeader } from '@/features/azkar/components/AzkarScreenHeader';
+import { goBackOr, MENU_TAB } from '@/core/navigation/go-back';
 import { EmptyState, Screen, IconButton } from '@/shared/ui';
 
 import { useHijriAdjustment } from '../data/adjustment';
@@ -51,7 +52,7 @@ export function HijriCalendarScreen({ now, testID = 'screen-hijri-calendar' }: {
 
   const header = (
     <AzkarScreenHeader
-      onBack={() => router.back()}
+      onBack={() => goBackOr(MENU_TAB)}
       testID="hijri-screen-header"
       title={t('hijri.title')}
       trailing={

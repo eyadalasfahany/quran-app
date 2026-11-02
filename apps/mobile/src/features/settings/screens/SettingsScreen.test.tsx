@@ -16,7 +16,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), navigate: jest.fn(), push: jest.fn() },
+  router: { back: jest.fn(), canGoBack: jest.fn(() => true), navigate: jest.fn(), push: jest.fn(), replace: jest.fn() },
 }));
 
 jest.mock('@/features/khatma/data', () => ({

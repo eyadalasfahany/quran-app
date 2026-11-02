@@ -25,9 +25,11 @@ export function SurahHeader({ chapter, testID }: { chapter: ChapterRecord; testI
     >
       <SurahCartouche name={chapter.nameArabic} testID={testID ? `${testID}-cartouche` : undefined} />
       <UiText align="center" tone="muted" variant="caption">
-        {t('reader.surahMeta', {
+        {/* The index's plural keys, so the count agrees in Arabic («٧ آيات», «٢٨٦ آية») and English. */}
+        {t('library.surah.meta', {
           place: t(placeKey),
-          count: formatNumber(chapter.versesCount, locale),
+          count: chapter.versesCount,
+          n: formatNumber(chapter.versesCount, locale),
         })}
       </UiText>
     </View>

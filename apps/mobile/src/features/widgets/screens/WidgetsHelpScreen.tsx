@@ -1,4 +1,5 @@
-import { router } from 'expo-router';
+import type { Href } from 'expo-router';
+import { goBackOr } from '@/core/navigation/go-back';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
@@ -24,7 +25,7 @@ export function WidgetsHelpScreen({ testID = 'widgets-help-screen' }: { testID?:
   return (
     <Screen testID={testID}>
       <ContentColumn gutter={theme.space[4]} testID="widgets-help-column">
-        <SettingsHeader onBack={() => router.back()} testID="widgets-help-header" title={t('widgetsHelp.title')} />
+        <SettingsHeader onBack={() => goBackOr('/settings' as Href)} testID="widgets-help-header" title={t('widgetsHelp.title')} />
         <ScrollView
           contentContainerStyle={{ gap: theme.space[4], paddingBottom: theme.space[6], paddingTop: theme.space[4] }}
           style={{ flex: 1 }}

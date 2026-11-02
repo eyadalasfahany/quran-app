@@ -44,7 +44,7 @@ const ROWS = [
  * feature component. The screen re-renders when the prayer state changes (at a prayer time or at midnight, from
  * usePrayerClock); the hero's one-second countdown ticks in its own component.
  */
-export function SalahScreen() {
+export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
@@ -103,7 +103,12 @@ export function SalahScreen() {
     <Screen testID="screen-salah">
       <ContentColumn>
         <View style={{ flex: 1, gap: theme.size.sectionGap }}>
-          <SalahDateHeader onLocationPress={() => setSheetOpen(true)} subtitle={subtitle} title={t('salah.title')} />
+          <SalahDateHeader
+            onBack={onBack}
+            onLocationPress={() => setSheetOpen(true)}
+            subtitle={subtitle}
+            title={t('salah.title')}
+          />
           {locating ? (
             <View style={{ flex: 1, paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}>
               <SalahLocating />

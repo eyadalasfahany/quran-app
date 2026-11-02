@@ -6,6 +6,7 @@ import { ScrollView } from 'react-native';
 import { useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
+import { goBackOr, MENU_TAB } from '@/core/navigation/go-back';
 import { azkarHref } from '@/features/azkar/routes';
 import { useAzkarAvailable, useAzkarCategories } from '@/features/azkar/data';
 import { useHasReminderLocation, useNotificationsGranted } from '@/features/azkar/reminders/hooks';
@@ -67,7 +68,7 @@ export function RemindersScreen({ testID = 'reminders-screen' }: { testID?: stri
   return (
     <Screen testID={testID}>
       <ContentColumn gutter={theme.space[4]} testID="reminders-column">
-        <SettingsHeader onBack={() => router.back()} testID="reminders-header" title={t('reminders.title')} />
+        <SettingsHeader onBack={() => goBackOr(MENU_TAB)} testID="reminders-header" title={t('reminders.title')} />
         <ScrollView
           contentContainerStyle={{ gap: theme.space[4], paddingBottom: theme.space[6], paddingTop: theme.space[4] }}
           style={{ flex: 1 }}

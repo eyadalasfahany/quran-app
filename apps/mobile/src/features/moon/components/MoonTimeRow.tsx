@@ -3,6 +3,10 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
+/**
+ * One row of the times card: a muted label at the start and the value at the end. The value runs left to right, as
+ * the frame sets it (bdi dir="ltr"), so «٩ نوفمبر · ١٠:٠٢ ص» keeps its order in Arabic.
+ */
 export function MoonTimeRow({
   label,
   value,
@@ -23,16 +27,18 @@ export function MoonTimeRow({
         borderBottomColor: last ? 'transparent' : theme.colors.line,
         borderBottomWidth: last ? 0 : 1,
         flexDirection: 'row',
+        gap: theme.space[2],
         justifyContent: 'space-between',
         minHeight: theme.size.touchTarget,
-        paddingVertical: theme.space[2],
       }}
       testID={testID}
     >
       <UiText style={{ color: theme.colors.inkMuted }} variant="subhead">
         {label}
       </UiText>
-      <UiText variant="body">{value}</UiText>
+      <UiText style={{ writingDirection: 'ltr' }} testID={testID ? `${testID}-value` : undefined} variant="headline">
+        {value}
+      </UiText>
     </View>
   );
 }

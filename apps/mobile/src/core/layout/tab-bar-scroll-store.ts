@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { nextTabBarScrollOffsetState, type TabBarScrollOffsetState } from './tab-bar-scroll-offset';
 
 type TabBarScrollStore = TabBarScrollOffsetState & {
-  /** When false, scroll offsets are ignored (expanded window, short rail, or outside main tabs). */
+  /** When false, scroll offsets are ignored (short rail, or outside main tabs). */
   tracking: boolean;
   setTracking: (tracking: boolean) => void;
   reset: () => void;

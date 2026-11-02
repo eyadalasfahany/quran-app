@@ -1,6 +1,4 @@
-import { router, useSegments } from 'expo-router';
-import { useEffect, useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, type ReactNode } from 'react';
 import { Platform, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,27 +9,22 @@ import { useOfflineStrip } from '@/core/network/useOfflineStrip';
 import { useOnline } from '@/core/network/useOnline';
 import { useTheme } from '@/core/theme';
 import { spring } from '@/core/theme/motion';
-import { OfflineBanner, Sidebar } from '@/shared/ui';
+import { OfflineBanner } from '@/shared/ui';
 
 import { TabBarScrollSync } from './TabBarScrollSync';
-import { sidebarDestinations } from './destinations';
 import { miniPlayerBottom, miniPlayerHiddenTabsBottom, tabBarSideClearance } from './tab-bar-clearance';
 import { TabRailContext } from './TabRailContext';
 import { useTabBarHiddenOnScroll } from './useTabBarHiddenOnScroll';
 import { useIsShortWindow } from './useWindowClass';
 
-export function MainShell({ expanded, children }: { expanded: boolean; children: ReactNode }) {
-  const { t } = useTranslation();
+/**
+ * The shell around every main tab. The tab bar is the same on every window that is not short, tablets included (ADR 0051):
+ * the screens and the mini player clear it at the bottom, exactly as on a phone. A short window draws the tabs as a rail on
+ * the start edge (ADR 0036), and the screens and the mini player clear that side instead.
+ */
+export function MainShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const segments: readonly string[] = useSegments();
-  const current = sidebarDestinations.find((item) => segments.includes(item.name))?.name;
-  // A sheet's route names no tab; the tab under it stays the selected one.
-  const [lastActive, setLastActive] = useState(current ?? '(home)');
-  if (current !== undefined && current !== lastActive) {
-    setLastActive(current);
-  }
-  const active = current ?? lastActive;
   // A short window draws the tabs as a rail on the start edge (ADR 0036): the screens and the mini player clear it there.
   const short = useIsShortWindow();
   const railSide = tabBarSideClearance(short);
@@ -39,6 +32,7 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
   const playerBottom = miniPlayerBottom(Platform.OS, insets.bottom, short);
   const playerDrop = playerBottom - miniPlayerHiddenTabsBottom(Platform.OS, insets.bottom, short);
   const playerSlide = useSharedValue(0);
+  // The mini player drops into the tab bar's slot while scrolling hides the bar.
   useEffect(() => {
     playerSlide.value = withSpring(tabsScrollHidden ? 1 : 0, spring());
   }, [tabsScrollHidden, playerSlide]);
@@ -51,48 +45,19 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
 
   return (
     <TabRailContext.Provider value={railSide}>
-    <View style={{ backgroundColor: theme.colors.surface, flex: 1, flexDirection: 'row' }} testID="main-shell">
-      <TabBarScrollSync />
-      {expanded ? (
-        <Sidebar
-          items={[
-            ...sidebarDestinations.map((item) => ({
-              androidIcon: item.androidIcon,
-              key: item.name,
-              label: t(item.label),
-              onPress: () => router.navigate(item.href),
-              selected: item.name === active,
-              symbol: item.symbol,
-              testID: `sidebar-${item.testID}`,
-            })),
-            {
-              androidIcon: 'settings' as const,
-              key: 'settings',
-              label: t('settings.title'),
-              onPress: () => router.push('/settings'),
-              selected: false,
-              symbol: 'gearshape',
-              testID: 'sidebar-settings',
-            },
-          ]}
-          label={t('nav.main')}
-          footer={<MiniPlayer variant="sidebar" />}
-          search={{ label: t('search.placeholder'), onPress: () => router.push('/search') }}
-        />
-      ) : null}
-      <View style={{ flex: 1 }}>
-        <Animated.View style={[{ flex: 1 }, pushDown]}>{children}</Animated.View>
-        <View
-          pointerEvents="none"
-          style={{ end: 0, position: 'absolute', start: railSide, top: insets.top }}
-          testID="offline-strip-dock"
-        >
-          <OfflineBanner motion={offlineStrip} visible={!online} />
+      <View style={{ backgroundColor: theme.colors.surface, flex: 1, flexDirection: 'row' }} testID="main-shell">
+        <TabBarScrollSync />
+        <View style={{ flex: 1 }}>
+          <Animated.View style={[{ flex: 1 }, pushDown]}>{children}</Animated.View>
+          <View
+            pointerEvents="none"
+            style={{ end: 0, position: 'absolute', start: railSide, top: insets.top }}
+            testID="offline-strip-dock"
+          >
+            <OfflineBanner motion={offlineStrip} visible={!online} />
+          </View>
         </View>
-      </View>
-      {/* Compact and medium only: the frames float the mini player above the tab bar. Expanded windows get
-          the sidebar footer instead (above). */}
-      {expanded ? null : (
+        {/* The frames float the mini player above the tab bar on every window (ADR 0051). */}
         <Animated.View
           pointerEvents="box-none"
           style={[
@@ -108,8 +73,7 @@ export function MainShell({ expanded, children }: { expanded: boolean; children:
         >
           <MiniPlayer variant="tabs" />
         </Animated.View>
-      )}
-    </View>
+      </View>
     </TabRailContext.Provider>
   );
 }

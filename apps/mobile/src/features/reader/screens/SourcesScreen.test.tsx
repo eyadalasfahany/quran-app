@@ -8,7 +8,7 @@ import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { SourcesScreen } from './SourcesScreen';
 
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), push: jest.fn() },
+  router: { back: jest.fn(), canGoBack: jest.fn(() => true), push: jest.fn(), replace: jest.fn() },
 }));
 
 jest.mock('react-native-safe-area-context', () => {

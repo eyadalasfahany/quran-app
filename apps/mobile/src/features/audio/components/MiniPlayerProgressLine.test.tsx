@@ -29,17 +29,6 @@ describe('MiniPlayerProgressLine', () => {
     expect(track).toMatchObject({ end: 0, flexDirection: 'row', position: 'absolute', start: 0, top: 0 });
   });
 
-  it.each(locales)('in the inline placement, is a track in the flow with the line token behind the fill in %s', async (locale) => {
-    const view = await renderUi(<MiniPlayerProgressLine fraction={0.64} placement="inline" />, { locale });
-    const track = flatStyle(view.getByTestId('mini-player-progress', { includeHiddenElements: true }).props.style);
-    const fill = flatStyle(view.getByTestId('mini-player-progress-fill', { includeHiddenElements: true }).props.style);
-
-    expect(track).toMatchObject({ borderRadius: 2, backgroundColor: colors.line, flexDirection: 'row', height: 3, overflow: 'hidden' });
-    expect(track.position).toBeUndefined();
-    expect(track.start).toBeUndefined();
-    expect(fill).toMatchObject({ backgroundColor: colors.gold, height: 3, width: '64%' });
-  });
-
   it('is hidden from screen readers', async () => {
     const view = await renderUi(<MiniPlayerProgressLine fraction={0} />);
 

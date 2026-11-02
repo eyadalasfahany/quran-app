@@ -60,7 +60,7 @@ An `apple-design` skill review of the HTML design files and tokens found problem
    - Toggles use the platform `Switch`.
    - Sidebar hover and pressed are half-strength `glass-selected`, with a keyboard focus ring.
 8. **Not changed**
-   - The custom sidebar stays. The HIG only says "consider a convertible tab bar", and the Phase 0 reasons hold: the 840 breakpoint and Android parity.
+   - The custom sidebar stays. The HIG only says "consider a convertible tab bar", and the Phase 0 reasons hold: the 840 breakpoint and Android parity. **Superseded in part by ADR 0051:** the sidebar is no longer the navigation on tablets; they use the phone tab bar.
 
 ## Consequences
 

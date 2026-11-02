@@ -32,7 +32,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), push: jest.fn() },
+  router: { back: jest.fn(), canGoBack: jest.fn(() => true), push: jest.fn(), replace: jest.fn() },
 }));
 
 let mockExecutor: SqlExecutor | undefined;

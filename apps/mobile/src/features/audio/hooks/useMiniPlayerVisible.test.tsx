@@ -41,7 +41,7 @@ describe('useMiniPlayerVisible', () => {
     usePlayerStore.getState().reset();
   });
 
-  it.each(['tabs', 'reader', 'sidebar'] as const)('is hidden while the player is idle (%s)', async (variant) => {
+  it.each(['tabs', 'reader'] as const)('is hidden while the player is idle (%s)', async (variant) => {
     const { result } = await renderHook(() => useMiniPlayerVisible(variant));
 
     expect(result.current).toBe(false);
@@ -54,8 +54,6 @@ describe('useMiniPlayerVisible', () => {
       expect(reader.result.current).toBe(true);
       const tabs = await renderHook(() => useMiniPlayerVisible('tabs'));
       expect(tabs.result.current).toBe(false);
-      const sidebar = await renderHook(() => useMiniPlayerVisible('sidebar'));
-      expect(sidebar.result.current).toBe(false);
     } finally {
       mockReciter = null;
     }
@@ -87,41 +85,25 @@ describe('useMiniPlayerVisible', () => {
     expect(result.current).toBe(true);
   });
 
-  it('is hidden on an expanded window, even while playing', async () => {
+  it('is shown on an expanded window while playing, as on a phone (ADR 0051)', async () => {
     setWindowWidth(1000);
     setStatus('playing');
     const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
-    expect(result.current).toBe(false);
-  });
-
-  it('shows the sidebar footer on an expanded window while playing', async () => {
-    setWindowWidth(1000);
-    setStatus('playing');
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
-
     expect(result.current).toBe(true);
   });
 
-  it.each(['compact', 'medium'] as const)('hides the sidebar footer on a %s window, even while playing', async (windowClass) => {
-    setWindowWidth(windowClass === 'compact' ? 390 : 700);
-    setStatus('playing');
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
-
-    expect(result.current).toBe(false);
-  });
-
-  it('shows the sidebar footer on an expanded window once a surah is loaded and paused', async () => {
+  it('is shown on an expanded window once a surah is loaded and paused', async () => {
     setWindowWidth(1000);
     setStatus('paused');
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
+    const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
     expect(result.current).toBe(true);
   });
 
-  it('hides the sidebar footer on an expanded window while idle', async () => {
+  it('is hidden on an expanded window while idle', async () => {
     setWindowWidth(1000);
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
+    const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
     expect(result.current).toBe(false);
   });

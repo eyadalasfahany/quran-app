@@ -177,6 +177,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundColor: '#F9F7F2',
         // 1024×1024, logo in ~66% safe zone for the circular mask (see generate-brand-assets.mjs).
         foregroundImage: './assets/images/android-adaptive-foreground.png',
+        // Android 13+ themed icon: the same logo as a white silhouette (generate-brand-assets.mjs).
+        monochromeImage: './assets/images/android-adaptive-monochrome.png',
       },
       predictiveBackGestureEnabled: false,
       // Exact prayer and reminder alarms (ADR 0035 §5, prompt 12 builds the request flow). Not USE_EXACT_ALARM.
@@ -184,7 +186,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       'expo-router',
-      'expo-notifications',
+      // Android status-bar icon: the logo as a white silhouette (an opaque icon shows as a white square), tinted brand.
+      ['expo-notifications', { icon: './assets/images/notification-icon.png', color: '#1F4D40' }],
 
       [
         'expo-splash-screen',

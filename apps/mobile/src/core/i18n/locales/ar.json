@@ -168,7 +168,6 @@
       "makkah": "مكية",
       "madinah": "مدنية"
     },
-    "surahMeta": "{{place}} · {{count}} آية",
     "mushaf": {
       "placeholderTitle": "هذه الصفحة غير جاهزة",
       "placeholderBody": "اتصل بالإنترنت لتحميل هذه الصفحة.",
@@ -667,6 +666,7 @@
     "settingsDuration_other": "{{formatted}} يوم"
   },
   "common": {
+    "back": "رجوع",
     "cancel": "إلغاء",
     "done": "تم",
     "openSettings": "فتح الإعدادات",
@@ -1269,52 +1269,99 @@
   },
   "moon": {
     "title": "رؤية الهلال",
-    "offline": "يُحسب على الجهاز دون اتصال.",
+    "offline": "يُحسب على جهازك دون إنترنت.",
     "locationA11y": "الموقع: {{label}}",
+    "evening": "مساء {{hijri}} · {{day}}",
+    "conjunctionValue": "{{day}} · {{time}}",
     "summary": {
-      "age": "العمر",
-      "ageUnit": "يوم",
-      "illumination": "الإضاءة",
-      "illuminationUnit": "٪"
+      "age": "عمر القمر عند الغروب",
+      "illumination": "نسبة الإضاءة"
+    },
+    "age": {
+      "hours_zero": "{{formatted}} ساعة",
+      "hours_one": "ساعة",
+      "hours_two": "ساعتان",
+      "hours_few": "{{formatted}} ساعات",
+      "hours_many": "{{formatted}} ساعة",
+      "hours_other": "{{formatted}} ساعة",
+      "minutes_zero": "{{formatted}} دقيقة",
+      "minutes_one": "دقيقة",
+      "minutes_two": "دقيقتان",
+      "minutes_few": "{{formatted}} دقائق",
+      "minutes_many": "{{formatted}} دقيقة",
+      "minutes_other": "{{formatted}} دقيقة",
+      "hoursMinutes": "{{hours}} و{{minutes}}"
     },
     "times": {
-      "title": "الأوقات",
-      "conjunction": "محاق (اقتران)",
-      "sunset": "الغروب",
+      "conjunction": "الاقتران (المحاق)",
+      "sunset": "غروب الشمس",
       "moonset": "غروب القمر",
-      "moonrise": "شروق القمر",
+      "moonsetCompared": "غروب القمر مقارنةً بالشمس",
+      "nextConjunction": "الاقتران التالي",
       "unavailable": "—"
     },
-    "estimate": {
-      "title": "تقدير الرؤية",
-      "criterion": "TODO-REVIEW: معيار Odeh (2004) — نص المراجع",
-      "odehV": "قيمة Odeh V",
-      "zone": "المنطقة",
-      "result": "النتيجة"
+    "compare": {
+      "before_one": "قبلها بدقيقة",
+      "before_two": "قبلها بدقيقتين",
+      "before_few": "قبلها بـ {{formatted}} دقائق",
+      "before_many": "قبلها بـ {{formatted}} دقيقة",
+      "before_other": "قبلها بـ {{formatted}} دقيقة",
+      "after_one": "بعدها بدقيقة",
+      "after_two": "بعدها بدقيقتين",
+      "after_few": "بعدها بـ {{formatted}} دقائق",
+      "after_many": "بعدها بـ {{formatted}} دقيقة",
+      "after_other": "بعدها بـ {{formatted}} دقيقة",
+      "same": "في الوقت نفسه"
     },
-    "zones": {
-      "a": "TODO-REVIEW: المنطقة A (Odeh) — نص المراجع",
-      "b": "TODO-REVIEW: المنطقة B (Odeh) — نص المراجع",
-      "c": "TODO-REVIEW: المنطقة C (Odeh) — نص المراجع",
-      "d": "TODO-REVIEW: المنطقة D (Odeh) — نص المراجع"
+    "span": {
+      "minutes_one": "دقيقة",
+      "minutes_two": "دقيقتين",
+      "minutes_few": "{{formatted}} دقائق",
+      "minutes_many": "{{formatted}} دقيقة",
+      "minutes_other": "{{formatted}} دقيقة",
+      "hours_one": "ساعة",
+      "hours_two": "ساعتين",
+      "hours_few": "{{formatted}} ساعات",
+      "hours_many": "{{formatted}} ساعة",
+      "hours_other": "{{formatted}} ساعة",
+      "days_one": "يوم",
+      "days_two": "يومين",
+      "days_few": "{{formatted}} أيام",
+      "days_many": "{{formatted}} يومًا",
+      "days_other": "{{formatted}} يومًا"
+    },
+    "estimate": {
+      "title": "تقدير إمكان الرؤية",
+      "criterion": "المعيار: عودة (Odeh) ٢٠٠٤",
+      "odehV": "قيمة V = {{value}}",
+      "zone": "المنطقة {{letter}}",
+      "letters": {
+        "a": "أ",
+        "b": "ب",
+        "c": "ج",
+        "d": "د"
+      }
     },
     "zoneResults": {
-      "a": "TODO-REVIEW: جملة نتيجة المنطقة A — نص المراجع",
-      "b": "TODO-REVIEW: جملة نتيجة المنطقة B — نص المراجع",
-      "c": "TODO-REVIEW: جملة نتيجة المنطقة C — نص المراجع",
-      "d": "TODO-REVIEW: جملة نتيجة المنطقة D — نص المراجع"
+      "a": "ممكنة بالعين المجردة",
+      "b": "ممكنة بالمنظار، وقد تُرى بالعين المجردة",
+      "c": "ممكنة بالمنظار فقط",
+      "d": "غير ممكنة حتى بالمنظار"
     },
-    "disclaimer": "TODO-REVIEW: تقدير فلكي؛ الإعلانات الرسمية هي المعتمدة — نص المراجع",
+    "disclaimer": "تقدير فلكي لموقعك وليس حكمًا بدخول الشهر. المعتمد هو إعلان الجهة الرسمية في بلدك.",
     "unavailable": "التقدير غير متاح عند هذا العرض أو إذا لم يغرب القمر بعد الغروب.",
     "noLocation": {
-      "title": "لم يُضبط الموقع",
-      "body": "اضبط موقعك من الصلاة لعرض أوقات القمر وتقدير الرؤية.",
-      "action": "فتح الصلاة"
+      "title": "حدّد موقعك",
+      "body": "نحتاج موقعك لحساب غروب الشمس والقمر وتقدير الرؤية. نقرأ الموقع المحدّد في شاشة الصلاة ولا نغيّره.",
+      "action": "فتح الموقع في الصلاة"
     },
     "menu": {
-      "caption": "تقدير",
+      "caption": "الهلال",
       "title": "رؤية الهلال",
-      "a11y": "رؤية الهلال: {{preview}}"
+      "a11y": "رؤية الهلال: {{preview}}",
+      "noLocation": "حدّد موقعك",
+      "conjunctionIn": "الاقتران خلال {{duration}}",
+      "conjunctionAgo": "الاقتران قبل {{duration}}"
     },
     "phaseDiscA11y": "طور القمر، إضاءة {{percent}} بالمئة",
     "sources": {

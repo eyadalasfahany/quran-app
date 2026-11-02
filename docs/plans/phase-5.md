@@ -3,7 +3,7 @@
 Spec §15 (new phase row lands with step 1), ADR 0027 (local-only), ADR 0010 (frames before code). Content plan pins `adhan` 4.4.6 + `expo-location` ~58.0.19. **Exit criterion:**
 - الصلاة tab shows today's five prayer times + شروق, a next-prayer countdown, and the Hijri + Gregorian date, computed on-device and fully functional offline.
 - Per-prayer local notifications fire at the prayer time with no network and no account.
-- Qibla compass at `/salah/qibla` rotates live with the device heading and points to Makkah, with calibration guidance when sensor accuracy is poor.
+- Qibla compass at `/salah/qibla` keeps its face fixed and moves the Kaaba marker live with the device heading to point to Makkah (ADR 0049), with calibration guidance when sensor accuracy is poor.
 - Location comes from GPS when permitted and from a searchable bundled city list otherwise; the choice persists across launches.
 - Tab bar has five tabs with مصحفي in the center; the sidebar keeps مصحفي first.
 - Visual conformance verified on the iPhone 17 simulator against `#Salah`, `#SalahDark`, `#Qibla` and the updated sidebar frames, in Arabic and English.
@@ -43,7 +43,7 @@ Spec §15 (new phase row lands with step 1), ADR 0027 (local-only), ADR 0010 (fr
 | **2** | **Salah data layer** | `src/features/salah/data/`: location service (permission flow, GPS, gazetteer search, persisted source in MMKV), `adhan` wrapper (times + qibla bearing, Umm al-Qura/Shafi'i), on-device Hijri (`formatHijriDate`). Unit tests with known city/date fixtures. `npx expo install expo-location`; `adhan` 4.4.6 per content plan. | Step 1 |
 | **3** | **الصلاة screen + five tabs** | `SalahScreen` per `#Salah`: date header (Hijri + Gregorian), next-prayer hero (name, time, countdown), times list (٥ + شروق) with per-prayer bell, qibla row → `/salah/qibla`. `destinations.ts` gains `(salah)`; مصحفي takes the tab-bar center; sidebar gains الصلاة. i18n ar/en. | Step 2 |
 | **4** | **Prayer notifications** | Scheduling engine (rolling 8 days, refresh on foreground/location/toggle), per-prayer toggles wired to the bell, Settings master row, deep link to الصلاة on tap. Tests: schedule math, refresh triggers, toggle persistence. | Step 3 |
-| **5** | **Qibla compass** | `/salah/qibla` per `#Qibla`: live rotating dial, bearing degrees, distance caption, calibration prompt, Reduce-Motion static variant. Hook tests with mocked heading. | Step 2 |
+| **5** | **Qibla compass** | `/salah/qibla` per `#Qibla`: fixed dial with a live-moving Kaaba marker (ADR 0049), bearing degrees, distance caption, calibration prompt, Reduce-Motion static variant. Hook tests with mocked heading. | Step 2 |
 | **6** | **Phase 5 exit check** | iPhone 17 simulator + iPad: airplane-mode pass (times, qibla, notifications), ar/en both directions, visual review against all new/updated frames, notification delivery on a real device build. | Steps 3–5 |
 
 ---

@@ -8,6 +8,7 @@ import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useAzkarAvailable } from '@/features/azkar/data';
+import { goBackOr, HOME_TAB } from '@/core/navigation/go-back';
 import { azkarHref } from '@/features/azkar/routes';
 import { getWords, type WordRecord } from '@/features/reader/data/words';
 import { AzkarSearchIdle } from '@/features/search/components/AzkarSearchIdle';
@@ -171,7 +172,7 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
         <ContentColumn>
           <View style={{ gap: theme.space[2], paddingTop: theme.space[2] }}>
             <SearchBar
-              onCancel={() => router.back()}
+              onCancel={() => goBackOr(HOME_TAB)}
               onChangeText={(text) => {
                 setQuery(text);
                 setResultLimit(SEARCH_PAGE_SIZE);

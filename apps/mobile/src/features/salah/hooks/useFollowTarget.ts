@@ -9,8 +9,8 @@ import { normalize180, shortestTurn } from '../data/qibla-math';
 const FOLLOW_SPRING = spring();
 
 /**
- * Follows a target on the UI thread, shared by the dial turn (useDialTurn) and the needle (QiblaNeedle) so the two cannot
- * drift apart.
+ * Follows a target on the UI thread. QiblaCompass uses it once for the qibla angle, which the Kaaba marker, the gold arc
+ * and the needle all read, so the three cannot drift apart.
  *
  * `sources` are the SharedValues the target is computed from, and `targetFor` is a worklet that receives their current
  * values, in the same order, with the `following` state. While not following it returns the rest value. While following,

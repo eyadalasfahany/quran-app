@@ -88,6 +88,9 @@ function setPlatform(os: Platform["OS"]): void {
   Object.defineProperty(Platform, "OS", { configurable: true, get: () => os });
 }
 
+// Each test renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
 describe("main tabs by platform (ADR 0033)", () => {
   const originalOs = Platform.OS;
 
@@ -147,10 +150,11 @@ describe("main tabs by platform (ADR 0033)", () => {
       });
     });
 
-    it("hides the native bar on expanded windows, as before", async () => {
+    it("shows the native bar on expanded windows, as on a phone (ADR 0051)", async () => {
       await renderMain(900);
 
-      expect(mockNativeTabsProps.at(-1)).toMatchObject({ hidden: true });
+      expect(screen.getByTestId("native-tabs")).toBeOnTheScreen();
+      expect(mockNativeTabsProps.at(-1)).toMatchObject({ hidden: false });
     });
 
     it("renders the vertical rail, not the native tabs, in a short landscape window (ADR 0036)", async () => {
@@ -184,6 +188,13 @@ describe("main tabs by platform (ADR 0033)", () => {
 
     it("renders the same vertical rail in a short landscape window (ADR 0036)", async () => {
       await renderMain(844, 390);
+
+      expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
+      expect(screen.queryByTestId("native-tabs")).toBeNull();
+    });
+
+    it("renders the floating bar on an expanded window, as on a phone (ADR 0051)", async () => {
+      await renderMain(900);
 
       expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
       expect(screen.queryByTestId("native-tabs")).toBeNull();

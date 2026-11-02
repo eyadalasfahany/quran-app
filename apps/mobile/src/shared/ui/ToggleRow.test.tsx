@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 import { locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 
-import { ToggleRow } from './ToggleRow';
+import { switchThumbColor, ToggleRow } from './ToggleRow';
 
 describe('ToggleRow', () => {
   it('renders a labelled platform switch with its state', async () => {
@@ -13,6 +13,15 @@ describe('ToggleRow', () => {
 
     expect(toggle.props.value).toBe(true);
     expect(toggle.props.accessibilityState).toEqual({ checked: true });
+  });
+
+  it('keeps the system thumb on iOS and gives Android an ink-muted off thumb', () => {
+    const colors = { inkMuted: '#a7b3ad', surfaceRaised: '#172421' };
+
+    expect(switchThumbColor('ios', false, colors)).toBeUndefined();
+    expect(switchThumbColor('ios', true, colors)).toBeUndefined();
+    expect(switchThumbColor('android', false, colors)).toBe('#a7b3ad');
+    expect(switchThumbColor('android', true, colors)).toBe('#172421');
   });
 
   it('includes the subtitle in the label', async () => {

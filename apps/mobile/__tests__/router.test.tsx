@@ -88,12 +88,11 @@ describe("adaptive nav", () => {
     jest.useRealTimers();
   });
 
-  it("keeps the active section when the window class switches between tabs and the sidebar", async () => {
+  it("keeps the active section when the window grows to a tablet width, with the same tab bar (ADR 0051)", async () => {
     setWidth(390);
     const view = await renderRouter("./app");
 
     expect(view.getSegments()).toEqual(["(main)", "(home)"]);
-    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
 
     await act(async () => {
       router.navigate("/(main)/(mushaf)");
@@ -101,51 +100,14 @@ describe("adaptive nav", () => {
 
     expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
 
-    await act(async () => {
-      setWidth(700);
-    });
+    for (const width of [700, 900, 390]) {
+      await act(async () => {
+        setWidth(width);
+      });
 
-    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
-    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
-
-    await act(async () => {
-      setWidth(900);
-    });
-
-    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
-    expect(
-      screen.getByTestId("sidebar-mushaf").props.accessibilityState,
-    ).toEqual({ selected: true });
-    expect(
-      screen
-        .getAllByTestId("sidebar-symbol")
-        .map((symbol) => symbol.props.name),
-    ).toEqual([
-      { ios: "person.crop.circle", android: "account_circle" },
-      { ios: "house", android: "home" },
-      { ios: "book", android: "menu_book" },
-      { ios: "headphones", android: "headphones" },
-      // الصلاة joined the sidebar after الاستماع in Phase 5 (ADR 0030).
-      { ios: "moon.stars", android: "mosque" },
-      // The sidebar's pinned settings entry (step 1).
-      { ios: "gearshape", android: "settings" },
-    ]);
-
-    await act(async () => {
-      fireEvent.press(screen.getByTestId("sidebar-home"));
-    });
-
-    expect(view.getSegments()).toEqual(["(main)", "(home)"]);
-    expect(screen.getByTestId("sidebar-home").props.accessibilityState).toEqual(
-      { selected: true },
-    );
-
-    await act(async () => {
-      setWidth(390);
-    });
-
-    expect(view.getSegments()).toEqual(["(main)", "(home)"]);
-    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
+      expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
+      expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
+    }
   });
 
 });
@@ -219,11 +181,19 @@ describe("android floating tab bar (ADR 0033)", () => {
     expect(view.getSegments()).toEqual(["(main)", "(listen)"]);
   });
 
-  it("hides the floating bar on expanded windows, where the sidebar takes over", async () => {
-    await renderMain(900);
+  it("shows the floating bar on expanded windows, as on a phone, with the open tab selected (ADR 0051)", async () => {
+    const view = await renderMain(900);
 
-    expect(screen.queryByTestId("floating-tab-bar")).toBeNull();
-    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
+    expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
+    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
+    expect(within(floatingBar()).getByTestId("home").props.accessibilityState).toEqual({ selected: true });
+
+    await act(async () => {
+      router.navigate("/(main)/(mushaf)");
+    });
+
+    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
+    expect(within(floatingBar()).getByTestId("mushaf").props.accessibilityState).toEqual({ selected: true });
   });
 
   it("keeps the Salah route reachable without a bar item, as the native tabs do", async () => {

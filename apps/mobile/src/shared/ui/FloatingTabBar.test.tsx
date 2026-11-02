@@ -34,9 +34,9 @@ const labels = {
   en: 'Main navigation',
 } as const;
 
-function bar(hidden = false) {
+function bar() {
   return (
-    <FloatingTabBar hidden={hidden} label={labels.ar}>
+    <FloatingTabBar label={labels.ar}>
       <Text>first</Text>
       <Text>second</Text>
     </FloatingTabBar>
@@ -125,11 +125,21 @@ describe('FloatingTabBar', () => {
     expect(flatStyle(dock.props.style).bottom).toBe(12);
   });
 
-  it('draws nothing on expanded windows, where the sidebar takes over', async () => {
-    const view = await renderUi(bar(true));
+  it('draws the same bar on an expanded window, capped at the 720 content column and centred (ADR 0051)', async () => {
+    setWindowSize(1024, 768);
+    try {
+      const view = await renderUi(bar());
 
-    expect(view.queryByTestId('floating-tab-bar')).toBeNull();
-    expect(view.queryByText('first')).toBeNull();
+      expect(view.getByTestId('floating-tab-bar')).toBeOnTheScreen();
+      // (1024 − 720) / 2 = 152 on each side.
+      expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({
+        bottom: 12,
+        end: 152,
+        start: 152,
+      });
+    } finally {
+      resetWindowSize();
+    }
   });
 
   describe('while scrolling has hidden the tabs', () => {

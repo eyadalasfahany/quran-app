@@ -1,6 +1,5 @@
 import {
   act,
-  fireEvent,
   renderRouter,
   screen,
 } from "expo-router/testing-library";
@@ -93,7 +92,7 @@ describe("salah route", () => {
     expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
   });
 
-  it("opens the Salah screen from the expanded sidebar", async () => {
+  it("opens the Salah screen on an expanded window, where the sidebar is gone (ADR 0051)", async () => {
     setWidth(390);
     const view = await renderRouter("./app");
 
@@ -101,10 +100,10 @@ describe("salah route", () => {
       setWidth(900);
     });
 
-    expect(screen.getByTestId("sidebar-salah")).toBeOnTheScreen();
+    expect(screen.queryByTestId("sidebar-salah")).not.toBeOnTheScreen();
 
     await act(async () => {
-      fireEvent.press(screen.getByTestId("sidebar-salah"));
+      router.navigate("/salah");
     });
 
     expect(view.getSegments()).toEqual(["salah"]);

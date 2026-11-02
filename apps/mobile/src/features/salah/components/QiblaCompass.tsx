@@ -1,16 +1,20 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { I18nManager, View } from 'react-native';
-import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { arabizeDigits } from '@/core/i18n/numbers';
 import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { dialAnchor, dialPlacement } from '../data/dial-placement';
-import { useDialTurn, dialRotationFor } from '../hooks/useDialTurn';
+import { needleAngleFor } from '../data/qibla-math';
+import { useFollowTarget } from '../hooks/useFollowTarget';
 
+import { QiblaArc } from './QiblaArc';
 import { QiblaDial } from './QiblaDial';
 import { QiblaHub } from './QiblaHub';
+import { QiblaKaabaMarker } from './QiblaKaabaMarker';
 import { QiblaLubber } from './QiblaLubber';
 import { QiblaNeedle } from './QiblaNeedle';
 
@@ -19,14 +23,17 @@ import { QiblaNeedle } from './QiblaNeedle';
 const DIAL = 336;
 
 /**
- * The qibla instrument (#Qibla) as a real compass. While live, the whole dial face turns by −heading on the UI thread, so
- * ش points to true north and the Kaaba marker to Makkah's real direction on screen. The cardinals, numerals and the
- * Kaaba glyph stay upright. A fixed lubber mark at the top shows the phone's facing direction, and the needle springs
- * to `bearing − heading`, so it lines up with the marker when the phone faces the qibla.
+ * The qibla instrument (#Qibla) as a real compass. The face stays fixed on screen (ADR 0049): the cardinals, numerals and
+ * ticks are a reference ring, and only the three moving layers turn. They all read one qibla angle, computed here once:
  *
- * The heading arrives as a SharedValue, so ten updates a second move only animated transforms: the face (QiblaDial)
- * and the hub are memoised and do not re-render with it. When not live (no compass yet, unsupported hardware, Reduce
- * Motion) the dial is the static north-up instrument and the needle rests on the marker (D6). `aligned` draws the halo.
+ * - While live, the angle is `bearing − heading` (the shortest turn), so the Kaaba marker (with its halo), the gold arc
+ *   and the needle show the qibla relative to where the phone points. When the phone faces the qibla, the marker sits at
+ *   the top under the fixed lubber mark.
+ * - When not live (no compass yet, unsupported hardware, Reduce Motion) the angle is the `bearing`, so the marker rests
+ *   at the bearing on the north-up dial, as before.
+ *
+ * The heading arrives as a SharedValue, so ten updates a second move only animated transforms: the face (QiblaDial) and
+ * the hub are memoised and do not re-render with it. `aligned` draws the halo.
  */
 export function QiblaCompass({
   bearing,
@@ -54,11 +61,19 @@ export function QiblaCompass({
   const theme = useTheme();
 
   const following = live && !reduceMotion;
-  // The dial's turn follows the heading with the needle's spring; it stays at 0 (north-up) when not following.
-  const turn = useDialTurn(heading, following);
-  const dialStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${dialRotationFor(turn.value)}deg` }],
-  }));
+
+  // The bearing is read on the UI thread too: it is the angle's rest target while not following.
+  const bearingValue = useSharedValue(bearing);
+  useEffect(() => {
+    bearingValue.value = bearing;
+  }, [bearing, bearingValue]);
+
+  // The one qibla angle, shared by the marker, the arc and the needle so they can never drift apart.
+  const angle = useFollowTarget(following, bearing, [bearingValue, heading], (follow, [target, live]) => {
+    'worklet';
+    return follow ? needleAngleFor(target, live) : target;
+  });
+
   const isRTL = I18nManager.isRTL;
   // The scaled instrument is centred in the `size` box by a translate, not `left` (see dialPlacement).
   const instrument = dialPlacement((size - DIAL) / 2, (size - DIAL) / 2, DIAL, DIAL, isRTL, size);
@@ -89,11 +104,14 @@ export function QiblaCompass({
           </View>
         ) : null}
 
-        <Animated.View pointerEvents="none" style={[dialAnchor(DIAL, DIAL), dialStyle]} testID={`${testID}-dial`}>
-          <QiblaDial bearing={bearing} turn={turn} />
-        </Animated.View>
+        {/* The fixed face: it takes no transform and never turns. */}
+        <View pointerEvents="none" style={dialAnchor(DIAL, DIAL)} testID={`${testID}-dial`}>
+          <QiblaDial />
+        </View>
+        <QiblaArc angle={angle} following={following} />
+        <QiblaKaabaMarker angle={angle} />
         <QiblaLubber testID={`${testID}-lubber`} />
-        <QiblaNeedle bearing={bearing} following={following} heading={heading} testID={`${testID}-needle`} />
+        <QiblaNeedle angle={angle} testID={`${testID}-needle`} />
         <QiblaHub />
       </View>
     </View>

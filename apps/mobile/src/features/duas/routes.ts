@@ -1,4 +1,4 @@
-import { router, type Href } from 'expo-router';
+import type { Href } from 'expo-router';
 
 /** Duas routes (app/duas/*). */
 export const duasHref = {
@@ -11,10 +11,4 @@ export const duasHref = {
   homeTab: '/(main)/(home)' as Href,
 };
 
-export function goBackOr(fallback: Href): void {
-  if (router.canGoBack()) {
-    router.back();
-    return;
-  }
-  router.replace(fallback);
-}
+export { goBackOr } from '@/core/navigation/go-back';

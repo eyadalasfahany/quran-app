@@ -1,12 +1,9 @@
-import { useEffect } from 'react';
-import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
 
-import { needleAngleFor } from '../data/qibla-math';
 import { dialAnchor } from '../data/dial-placement';
-import { useFollowTarget } from '../hooks/useFollowTarget';
 
 // The frame's needle geometry, on the 336 dial (quran-app-screens.html, #Qibla). Only this rotates.
 const DIAL = 336;
@@ -16,41 +13,22 @@ const DART_PATH = 'M168 64 L172.5 168 L168 177 L163.5 168 Z';
 const COUNTERWEIGHT_PATH = 'M168 168 L165.4 204 L168 209 L170.6 204 Z';
 
 /**
- * The needle of the qibla instrument. While `following` it springs to `bearing − heading`, reading the heading straight
- * from its SharedValue on the UI thread, so the heading never has to pass through React. When not following (Reduce
- * Motion, no compass yet, unsupported hardware) it rests on the marker with no animation (D6).
- *
- * The turn is always the shortest one (useFollowTarget), so the needle never swings through 0° on a 350° change.
+ * The needle of the qibla instrument. It turns by the qibla angle (`bearing − heading` while the phone is live, the bearing
+ * at rest), read from the shared SharedValue on the UI thread, so the heading never has to pass through React. QiblaCompass
+ * computes the angle once and gives the same value to the marker and the arc, so the three cannot drift apart.
  */
 export function QiblaNeedle({
-  bearing,
-  heading,
-  following,
+  angle,
   testID = 'qibla-compass-needle',
 }: {
-  /** Degrees from true north, 0…360. */
-  bearing: number;
-  /** The live true-north heading of the screen's top edge, written by useQiblaHeading. */
-  heading: SharedValue<number>;
-  /** Whether the needle follows the heading (false: it rests on the marker). */
-  following: boolean;
+  /** The qibla angle in degrees clockwise from the top, shared with the marker and the arc (see QiblaCompass). */
+  angle: SharedValue<number>;
   testID?: string;
 }) {
   const theme = useTheme();
 
-  // The bearing is read on the UI thread too: it is the needle's rest target while not following.
-  const bearingValue = useSharedValue(bearing);
-  useEffect(() => {
-    bearingValue.value = bearing;
-  }, [bearing, bearingValue]);
-
-  const needleAngle = useFollowTarget(following, bearing, [bearingValue, heading], (follow, [target, live]) => {
-    'worklet';
-    return follow ? needleAngleFor(target, live) : target;
-  });
-
   const needleStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${needleAngle.value}deg` }],
+    transform: [{ rotate: `${angle.value}deg` }],
   }));
 
   return (

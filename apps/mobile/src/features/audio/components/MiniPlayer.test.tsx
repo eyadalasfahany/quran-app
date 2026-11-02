@@ -1,9 +1,7 @@
-import { fireEvent, within } from '@testing-library/react-native';
+import { fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { Dimensions, I18nManager } from 'react-native';
-
-import { scaleFontSize, textScaleFor } from '@quran/design-tokens';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -130,12 +128,20 @@ describe('MiniPlayer', () => {
     expect(view.queryByTestId('mini-player-reader')).toBeNull();
   });
 
-  it.each(['tabs', 'reader'] as const)('draws nothing on an expanded window, even while playing (%s)', async (variant) => {
+  it('draws nothing on an expanded window, where the reader panel takes over, even while playing', async () => {
     setWindowWidth(1000);
     loadSurah('playing');
-    const view = await renderUi(<MiniPlayer variant={variant} />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
 
-    expect(view.queryByTestId(`mini-player-${variant}`)).toBeNull();
+    expect(view.queryByTestId('mini-player-reader')).toBeNull();
+  });
+
+  it('draws the tabs bar on an expanded window while playing, as on a phone (ADR 0051)', async () => {
+    setWindowWidth(1000);
+    loadSurah('playing');
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+
+    expect(view.getByTestId('mini-player-tabs')).toBeOnTheScreen();
   });
 
   it('shows the tab variant at the frame numbers: 64 high, 20 radius, 10 start and 12 end padding', async () => {
@@ -282,156 +288,6 @@ describe('MiniPlayer', () => {
 
     expect(view.getByRole('button', { name: 'تشغيل' }).props.accessibilityState).toEqual({ disabled: false });
     expect(view.getAllByRole('button')).toHaveLength(2);
-  });
-
-  it('uses no raw colour literals', () => {
-    expect(rawColorLiteralsInFeature('src/features/audio/components/MiniPlayer.tsx')).toEqual([]);
-  });
-});
-
-describe('MiniPlayer sidebar variant', () => {
-  // The tile is hidden from screen readers, so its queries ask for hidden elements.
-  const hidden = { includeHiddenElements: true };
-
-  it('draws nothing while the player is idle', async () => {
-    setWindowWidth(1000);
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    expect(view.queryByTestId('mini-player-sidebar')).toBeNull();
-  });
-
-  it.each([390, 700])('draws nothing on a window of %i wide, even while playing', async (width) => {
-    setWindowWidth(width);
-    loadSurah('playing');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    expect(view.queryByTestId('mini-player-sidebar')).toBeNull();
-  });
-
-  it('shows on an expanded window while playing', async () => {
-    setWindowWidth(1000);
-    loadSurah('playing');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    expect(view.getByTestId('mini-player-sidebar')).toBeOnTheScreen();
-  });
-
-  it('is solid, not glass: a raised surface with a line hairline and a 20 radius', async () => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-    const card = flatStyle(view.getByTestId('mini-player-sidebar').props.style);
-
-    expect(card).toMatchObject({
-      backgroundColor: colors.surfaceRaised,
-      borderColor: colors.line,
-      borderRadius: 20,
-      borderWidth: themes.light.stroke.hairline,
-      padding: 12,
-    });
-  });
-
-  it('sizes the tile at 44 with radius 14, and the text follows the window factor (ADR 0043)', async () => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-    const factor = textScaleFor({ width: 1000, height: 844 });
-
-    expect(flatStyle(view.getByTestId('mini-player-tile', hidden).props.style)).toMatchObject({
-      borderRadius: 14,
-      height: 44,
-      width: 44,
-    });
-    expect(flatStyle(view.getByText('مشاري راشد العفاسي').props.style)).toMatchObject({
-      fontFamily: uiFontFamilies[600],
-      fontSize: scaleFontSize(17, factor),
-    });
-    expect(flatStyle(view.getByText('الفاتحة').props.style).fontSize).toBe(scaleFontSize(13, factor));
-  });
-
-  it('shows the surah alone while no ayah is active', async () => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    expect(view.getByText('الفاتحة')).toBeOnTheScreen();
-  });
-
-  it('adds the ayah number to the caption while an ayah is active, read from the content database', async () => {
-    setWindowWidth(1000);
-    db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search)
-       VALUES (7, '1:7', 1, 7, 1, 1, 1, 1, 'none', 'a', 'a')`);
-    loadSurah('playing');
-    usePlayerStore.getState().setActive(7, null);
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    expect(view.getByText('الفاتحة · الآية ٧')).toBeOnTheScreen();
-    expect(view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة · الآية ٧' })).toBeOnTheScreen();
-  });
-
-  it('fills the inline progress track to a quarter, in the line token, with the gold fill', async () => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-    const track = flatStyle(view.getByTestId('mini-player-progress', hidden).props.style);
-    const fill = flatStyle(view.getByTestId('mini-player-progress-fill', hidden).props.style);
-
-    expect(track).toMatchObject({ backgroundColor: colors.line, borderRadius: 2, flexDirection: 'row', height: 3 });
-    expect(track.position).toBeUndefined();
-    expect(fill).toMatchObject({ backgroundColor: colors.gold, height: 3, width: '25%' });
-  });
-
-  it.each(locales)('shows the English names in %s and keeps the fill at the start edge', async (locale) => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { locale, theme: 'light' });
-
-    expect(view.getByText(locale === 'en' ? 'Mishari Rashid' : 'مشاري راشد العفاسي')).toBeOnTheScreen();
-    expect(flatStyle(view.getByTestId('mini-player-progress', hidden).props.style).flexDirection).toBe('row');
-  });
-
-  it('opens the full player when the row is tapped', async () => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    fireEvent.press(view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة' }));
-
-    expect(router.push).toHaveBeenCalledWith('/player');
-    expect(pause).not.toHaveBeenCalled();
-    expect(resume).not.toHaveBeenCalled();
-  });
-
-  it('pauses from the button while playing, and resumes from it while paused', async () => {
-    setWindowWidth(1000);
-    loadSurah('playing');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
-    expect(pause).toHaveBeenCalledTimes(1);
-    expect(router.push).not.toHaveBeenCalled();
-  });
-
-  it('resumes from the button while paused', async () => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-
-    fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
-    expect(resume).toHaveBeenCalledTimes(1);
-    expect(pause).not.toHaveBeenCalled();
-  });
-
-  it('has two buttons, the row (with its hint) and the toggle, and the toggle has its own label', async () => {
-    setWindowWidth(1000);
-    loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-    const row = view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة' });
-
-    expect(row.props.accessibilityHint).toBe('يفتح المشغّل');
-    expect(view.getByRole('button', { name: 'تشغيل' }).props.accessibilityState).toEqual({ disabled: false });
-    expect(view.getAllByRole('button')).toHaveLength(2);
-    expect(within(view.getByTestId('mini-player-sidebar')).getByTestId('mini-player-toggle')).toBeOnTheScreen();
   });
 
   it('uses no raw colour literals', () => {

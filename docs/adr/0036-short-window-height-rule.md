@@ -22,7 +22,7 @@ The developer asked (1 Nov 2026) how a landscape phone should lay out. The answe
    - The menu grid uses three columns when the width is not compact, so a landscape phone gets three.
 5. **Height decides these, through the layout class.**
    - The docked reader panel and the side panels follow `useWindowClass()`, so they never appear in a short window.
-   - The sidebar, the expanded Home header and the expanded Azkar panel follow it too.
+   - The expanded Home header and the expanded Azkar panel follow it too. The sidebar no longer follows it (ADR 0051).
 6. **Threshold.** 480 pt is the layout threshold. The reader sheet keeps its own 500 pt short-sheet threshold (ADR 0020, SHORT_WINDOW_HEIGHT), where a half-height sheet would hide its content. A window from 480 to 499 pt high is therefore compact with tabs, and its sheets open at full. The two thresholds are deliberately separate.
 7. **Hysteresis.** The height rule is a hard threshold. A rotation is a jump, and the ±16 hysteresis remains on the width classes only.
 8. **Short-window fitting.** The layouts that cannot scroll away their content lay out beside each other in a short window:

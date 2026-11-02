@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { I18nManager, View, type LayoutChangeEvent } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import type { Href } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
@@ -15,6 +15,7 @@ import { CompassCalibrationNotice } from '../components/CompassCalibrationNotice
 import { QiblaAlignedPill } from '../components/QiblaAlignedPill';
 import { QiblaBearingLabel } from '../components/QiblaBearingLabel';
 import { QiblaCompass } from '../components/QiblaCompass';
+import { goBackOr } from '@/core/navigation/go-back';
 import { QiblaIconButton } from '../components/QiblaIconButton';
 import { QiblaMetaPanel } from '../components/QiblaMetaPanel';
 import { QiblaNoLocation } from '../components/QiblaNoLocation';
@@ -205,7 +206,7 @@ export function QiblaScreen() {
           icon={BACK_ICON}
           label={t('home.salah.qiblaScreen.back')}
           mirrorInRtl
-          onPress={() => router.back()}
+          onPress={() => goBackOr('/salah' as Href)}
           testID="qibla-back"
         />
         <View style={{ alignItems: 'center', flex: 1, gap: 2 }}>

@@ -93,6 +93,46 @@ for (const [name, w, h, logoSize] of posters) {
 fs.copyFileSync(logoSrc, path.join(brand, 'taybah-nabawi-logo.png'));
 magick(logoSrc, '-resize', '512x512', path.join(out, 'splash-icon.png'));
 
+// Android notification small icon and themed-icon (Android 13+) monochrome layer: the same logo as a white
+// silhouette on transparent (Android tints both; an opaque icon would show as a white square).
+const logoBg = '#FBF8F1';
+magick(
+  logoSrc,
+  '-fuzz',
+  '8%',
+  '-transparent',
+  logoBg,
+  '-fill',
+  'white',
+  '-colorize',
+  '100',
+  '-resize',
+  '96x96',
+  path.join(out, 'notification-icon.png'),
+);
+magick(
+  '-size',
+  '1024x1024',
+  'xc:none',
+  '(',
+  logoSrc,
+  '-fuzz',
+  '8%',
+  '-transparent',
+  logoBg,
+  '-fill',
+  'white',
+  '-colorize',
+  '100',
+  '-resize',
+  '672x672',
+  ')',
+  '-gravity',
+  'center',
+  '-composite',
+  path.join(out, 'android-adaptive-monochrome.png'),
+);
+
 const featureGraphic = path.join(brand, 'app-store-assets/taybah-google-play-feature-graphic.png');
 fs.mkdirSync(path.dirname(featureGraphic), { recursive: true });
 magick(
