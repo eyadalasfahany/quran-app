@@ -14,18 +14,28 @@ import { spring } from '@/core/theme/motion';
 import { OfflineBanner, Sidebar } from '@/shared/ui';
 
 import { TabBarScrollSync } from './TabBarScrollSync';
-import { sidebarDestinations } from './destinations';
+import { sidebarDestinations, type Destination } from './destinations';
 import { miniPlayerBottom, miniPlayerHiddenTabsBottom, tabBarSideClearance } from './tab-bar-clearance';
 import { TabRailContext } from './TabRailContext';
 import { useTabBarHiddenOnScroll } from './useTabBarHiddenOnScroll';
 import { useIsShortWindow } from './useWindowClass';
 
-export function MainShell({ expanded, children }: { expanded: boolean; children: ReactNode }) {
+export function MainShell({
+  expanded,
+  active: activeDestination,
+  children,
+}: {
+  expanded: boolean;
+  // A shell whose route names no sidebar group (/salah, ADR 0032 amendment) passes its destination.
+  active?: Destination['name'];
+  children: ReactNode;
+}) {
   const { t } = useTranslation();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const segments: readonly string[] = useSegments();
-  const current = sidebarDestinations.find((item) => segments.includes(item.name))?.name;
+  const matched = sidebarDestinations.find((item) => segments.includes(item.name))?.name;
+  const current = activeDestination ?? matched;
   // A sheet's route names no tab; the tab under it stays the selected one.
   const [lastActive, setLastActive] = useState(current ?? '(home)');
   if (current !== undefined && current !== lastActive) {

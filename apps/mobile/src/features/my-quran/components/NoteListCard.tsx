@@ -6,6 +6,7 @@ import { EmptyState, Icon, IconButton } from '@/shared/ui';
 
 import type { SavedNoteItem } from '../data/saved-items';
 import { SavedVerseRow } from './SavedVerseRow';
+import { chapterDisplayName } from '@/features/reader/data/chapters';
 
 const NOTE_ICON = { ios: 'note.text', android: 'edit_note' } as const;
 const EDIT_ICON = { ios: 'pencil', android: 'edit' } as const;
@@ -48,7 +49,7 @@ export function NoteListCard({
   return (
     <>
       {items.map(({ row, verse, chapter }) => {
-        const surah = chapter?.nameArabic ?? verse.verseKey;
+        const surah = chapter === undefined ? verse.verseKey : chapterDisplayName(chapter, locale);
         const title = t('myQuran.reference', { ayah: formatNumber(verse.verseNumber, locale), surah });
 
         return (

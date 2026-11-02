@@ -40,6 +40,19 @@ describe('ReciterRow', () => {
     expect(propValues(view.toJSON(), 'd')).toEqual(['M6 5h4v14H6zM14 5h4v14h-4z']);
   });
 
+  it('draws the buffering ring on its own play button while starting', async () => {
+    const view = await renderUi(<ReciterRow {...base} playLabel="إيقاف مؤقت" starting />);
+
+    expect(await view.findByTestId('row-play-buffering', { includeHiddenElements: true })).toBeTruthy();
+    expect(propValues(view.toJSON(), 'd')[0]).toBe('M6 5h4v14H6zM14 5h4v14h-4z');
+  });
+
+  it('draws no buffering ring when its reciter is not starting', async () => {
+    const view = await renderUi(<ReciterRow {...base} />);
+
+    expect(view.queryByTestId('row-play-buffering', { includeHiddenElements: true })).toBeNull();
+  });
+
   it('shows the name, the style tag and the play button, with a 66 pt minimum height', async () => {
     const view = await renderUi(<ReciterRow {...base} />);
 

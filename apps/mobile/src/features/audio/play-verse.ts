@@ -27,12 +27,15 @@ export function catalogueReciter(): CatalogReciter | null {
  * tab does; if that fails, nothing plays and the pack's row shows the failure there.
  */
 export async function playVerse(verseKey: string): Promise<void> {
+  const store = usePlayerStore.getState();
+  store.beginStarting({ kind: 'verse', verseKey });
   const reciter = catalogueReciter();
   if (reciter === null) {
-    usePlayerStore.getState().markFailed('no-reciter');
+    store.markFailed('no-reciter');
     return;
   }
   if (!reciter.installed && !(await downloadReciterPack(reciter.resourceId))) {
+    store.clearStarting();
     return;
   }
   if (getReciterId() !== reciter.resourceId) {

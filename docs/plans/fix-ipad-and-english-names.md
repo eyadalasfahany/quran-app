@@ -1,6 +1,6 @@
 # Fix plan: iPad reader panel, iPad Prayer sidebar, English surah names
 
-Date: 2 Nov 2026 · Status: decided (developer, 2 Nov 2026): 1A, 2A, 3A-everywhere · Branch: `fix/ipad-and-english-names` (off `main`)
+Date: 2 Nov 2026 · Status: steps 1–4 implemented on `main`, not committed (2 Nov 2026). Open: no ring on the two non-circular play controls (ReciterSurahRow pill, «تشغيل من هنا» tile) until a design exists · Branch: `main` (developer, 2 Nov 2026)
 
 Found while capturing store screenshots on the iPad Pro 13" and iPhone 17 simulators (`docs/branding/app-store-assets/store-screenshots`). Three bugs, three independent steps, one Haiku brief each (delegation rule). Each step ships with its tests and passes `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`, plus the simulator visual check.
 
@@ -79,20 +79,73 @@ Recent listens and reciter downloads already choose by locale (`locale === 'ar' 
 
 ---
 
-## Step 4: one current ayah, and the mini player follows it (developer rule, 2 Nov 2026)
+## Step 4: one current ayah, and play buttons show loading (developer rules, 2 Nov 2026)
 
-**Rule.** The app has one current ayah, `reader.lastVerseKey`. While audio plays, it is the ayah being recited, and scrolling doesn't move it (ADR 0028 §2, ADR 0037 §5). When nothing plays, it is the reading place. Everything that shows or resumes a place reads it: the Home card, the Index row, Khatma's "Where I left off", the reader's return, and now the **mini player**.
+Two rules from the developer, planned together because both change every play entry point.
 
-**Change from today.** When idle, the mini player shows the last-played item. Under the rule, an idle mini player shows the current ayah with the default reciter, and ▶ starts from that ayah. Example: pause on 2:255, read on to 2:260, and the mini player shows "Al-Baqarah · Ayah 260" and recites from 2:260.
+### Rule A: one current ayah
+**Rule.** The app has one current ayah: `reader.lastVerseKey`, read through `useLastReadVerseKey()` (`src/features/reader/anchor/useLastReadVerseKey.ts`).
+- While audio plays, it is the ayah being recited. Playback writes it through `writePlayedPlace` (ADR 0028 §2), and scrolling doesn't move it.
+- When nothing plays, it is the reading place (ADR 0037 §5).
 
-**Reciters list (developer, 2 Nov 2026).** ▶ on any reciter in the reciters list plays that reciter from the current ayah, not from the start of a surah. Choosing a specific surah on a reciter's page still starts that surah; confirm this when the step is planned.
+The Home card, the Index row and Khatma's "Where I left off" already read it. Two things don't yet:
 
-**Before briefing.**
-- Trace how the mini player gets its item (`usePlayerNames`, `playerStore`, `MiniPlayer`), and the reciters list play action (`(listen)` tab, `reciter/[id]`).
-- Define what an idle mini player does when the current ayah's reciter pack isn't installed.
-- Write an ADR that amends ADR 0028 and records the rule.
+**A1. The mini player** (`MiniPlayer.tsx`, all three variants: `tabs`, `reader`, `sidebar`).
+- *Today.* An idle player shows the reader's top ayah, in the `reader` variant only (`useIdleReciter`, `useVerseCaption(topVerseKey)`, `playIdle(topVerseKey)`). A paused player shows the last-played surah and ayah, and ▶ resumes it.
+- *New.* Whenever the player isn't `playing` or `loading` (idle, paused, error), every variant shows the current ayah's surah and ayah with the reciter a play would use (`catalogueReciter()`). ▶ calls `playVerse(currentVerseKey)`, which starts at the beginning of that ayah, as the developer chose. While playing or loading, nothing changes: the bar shows what is playing.
+- *Visibility.* `tabs` and `sidebar` show today only once something has loaded (`useMiniPlayerVisible`). They will also show while idle once a current ayah has been saved (`storage.contains(readerLastVerseKey)`) and a reciter resolves. That is the rule the `reader` variant already uses. A fresh install with nothing read shows no bar.
+- *Cold start.* `restoreLastSession()` still restores the audio session as paused, so the full player keeps its surah and position. The bar shows the current ayah, per the rule.
 
-This touches audio and the reader, so it is planned in detail as its own step after steps 1–3.
+**A2. The reciters list** (`ListenScreen` → `ReciterRow` → `playReciter`, in `reciter-playback.ts`).
+- *Today.* ▶ plays the reciter from the start of the loaded surah, or surah 1 (`playChapter(chapterId ?? 1)`).
+- *New.* ▶ plays that reciter from the current ayah:
+  - pack not installed: install first, as today;
+  - `setReciterId(resourceId)`;
+  - `playFromVerse(currentVerseKey)`.
+- *Unchanged.* If the same reciter is already playing, it keeps playing. If it is paused on the current ayah, it resumes.
+- *Out of scope, keep as is.* A surah tapped on a reciter's page (`playSurahFromReciter`) still starts that surah. Home's "Recently listened" (`playRecentListen`) still resumes its own saved position. Say so in the ADR.
+
+**Decided (developer, 2 Nov 2026).** The idle bar on tabs and sidebar is OK. ▶ always starts the current ayah from its beginning (`playVerse`), including when it is the paused ayah (the simpler path).
+
+### Rule B: loading until audio starts, on the mini player and every play button
+**Approved design.** «Loading states», approved 2026-10-30 in `quran-app-screens.html`: while the player is loading, the play/pause button shows the pause glyph with a thin ring that turns once per `duration-pulse`, and the mini bars draw the same ring at their size. Reduce Motion: the ring stays still and pulses (opacity 1 ↔ 0.55, like the skeletons). It was never built.
+
+**Gap.** Status is `loading` only once the file loads. The pack install that `playVerse` and `playReciter` run first leaves the status `idle`/`paused` for seconds, with no feedback.
+
+**Change.**
+- *Store.* `playerStore` gets `startingTarget: PlayTarget | null`. `PlayTarget` is `{ kind: 'verse', verseKey } | { kind: 'reciter', resourceId } | { kind: 'surah', resourceId, chapterId } | { kind: 'listen', resourceId, chapterId }`.
+  - Every play entry point sets it on tap, before any install: `playVerse`, `playReciter`, `playRecentListen`, `playSurahFromReciter`, the mini player's ▶, and the full player's ▶.
+  - It clears when the status becomes `playing`, `paused` or `error`, or when the install fails.
+- *Hook.* `useIsStarting(target)` is true while `startingTarget` matches that button's target, or while status is `loading` and the loaded item matches. The mini player and full player use "any target", so they show the ring for any start.
+- *Component.* New design-system component `BufferingRing` (`src/shared/ui/BufferingRing.tsx` and its own test).
+  - Draws a thin ring around its child at the button's size, stroke `theme.stroke.regular`, colour `accent`.
+  - Turns with `duration.pulse` linear, repeating. Under Reduce Motion it pulses opacity with `pulseTiming()` instead.
+  - Accessibility: `accessibilityState={{ busy: true }}`, label «جارٍ التحميل» / "Loading" (new i18n key `player.loading`).
+- *Buttons that wrap their glyph in the ring and show pause while starting:*
+  - the mini player (all variants);
+  - the full player;
+  - the reader ayah row ▶ (`ReadingAyahRow`) and the ayah panel's «تشغيل من هنا» (`AyahActionsPanel`);
+  - the reciters list rows (`ReciterRow`);
+  - the reciter page surah rows (`ReciterSurahRow`);
+  - Home's "Recently listened" rows;
+  - the onboarding reciter preview, if it plays audio.
+
+  Each one shows the ring only for its own target.
+
+**Tests.**
+- `playerStore`: `startingTarget` set and cleared on playing, paused, error and failed install.
+- `reciter-playback` / `play-verse`: target set before the install; `playReciter` plays from the current ayah; same-reciter cases unchanged.
+- `useMiniPlayerVisible`: the idle `tabs`/`sidebar` rule.
+- `MiniPlayer`: idle and paused show the current ayah; ▶ calls `playVerse(current)`; the ring shows while starting.
+- `BufferingRing`: render, the Reduce Motion pulse, busy role and label, ar and en.
+- Each listed button: ring while its own target starts, none for another target.
+
+**Visual check.** iPhone 17 and iPad:
+- Pause on 2:255, scroll to 2:260: the bar says Ayah 260.
+- Tap a reciter in Listen: it starts at the current ayah, with the ring during the pack install.
+- Compare the ring with the «Loading states» frame.
+
+**ADR 0046** (new): one current ayah drives the mini player and the reciters list, amending ADR 0028; every play entry shows the approved buffering ring from tap to first audio.
 
 ---
 

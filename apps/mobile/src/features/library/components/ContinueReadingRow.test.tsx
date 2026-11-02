@@ -45,7 +45,7 @@ describe('ContinueReadingRow', () => {
       locale,
     });
     const name =
-      locale === 'ar' ? 'آخر قراءة: البقرة · الآية ٢٥٥, متابعة' : 'Last read: البقرة · ayah 255, Continue';
+      locale === 'ar' ? 'آخر قراءة: البقرة · الآية ٢٥٥, متابعة' : 'Last read: Al-Baqarah · ayah 255, Continue';
 
     expect(view.getByRole('button', { name })).toBeOnTheScreen();
   });

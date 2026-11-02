@@ -6,7 +6,7 @@ import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { formatNumber, useLocale } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
-import { getChapter } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { planProgress, toLocalDateString, useActivePlan, usePlanLogs } from '@/features/khatma/data';
 import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
@@ -73,7 +73,7 @@ export function useMenuPreviews(): MenuPreviews {
         return null;
       }
       return {
-        title: chapter.nameArabic,
+        title: chapterDisplayName(chapter, locale),
         preview: t('menu.continueReading.preview', {
           ayah: formatNumber(verse.verseNumber, locale),
           page: formatNumber(verse.page, locale),

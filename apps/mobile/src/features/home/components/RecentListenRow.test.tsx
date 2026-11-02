@@ -93,6 +93,12 @@ describe('RecentListenRow', () => {
     expect(view.getByRole('button', { name: 'Play Surah Al-Kahf' })).toBeOnTheScreen();
   });
 
+  it('draws the buffering ring on its own play button only while starting', async () => {
+    const view = await renderUi(<RecentListenRow {...props} filled={false} starting testID="row" />);
+
+    expect(await view.findByTestId('row-play-buffering', { includeHiddenElements: true })).toBeTruthy();
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/home/components/RecentListenRow.tsx')).toEqual([]);
   });

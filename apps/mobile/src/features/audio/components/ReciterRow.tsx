@@ -21,6 +21,7 @@ export function ReciterRow({
   playLabel,
   playHint,
   playing = false,
+  starting = false,
   downloadProgress,
   onSelect,
   onPlay,
@@ -39,6 +40,8 @@ export function ReciterRow({
   playHint?: string;
   /** This reciter is playing: the play button shows pause. */
   playing?: boolean;
+  /** This reciter's audio is starting: the play button shows pause with the buffering ring. */
+  starting?: boolean;
   /** 0 to 1 while the pack downloads, null otherwise. */
   downloadProgress: number | null;
   onSelect: () => void;
@@ -108,6 +111,7 @@ export function ReciterRow({
         onPress={onPlay}
         playing={playing}
         progress={downloadProgress}
+        starting={starting}
         testID={testID ? `${testID}-play` : undefined}
       />
       <IconButton

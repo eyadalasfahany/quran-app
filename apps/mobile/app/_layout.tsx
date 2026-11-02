@@ -14,6 +14,7 @@ import { openContentDb, useContentDbBootstrap } from '@/core/db/content/open';
 import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { modalLikeScreenOptions, pushScreenOptions } from '@/core/layout/push-screen-options';
+import { useWindowClass } from '@/core/layout/useWindowClass';
 import { useContentSync } from '@/core/sync/use-content-sync';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
@@ -43,6 +44,8 @@ export default function RootLayout() {
   const reduceMotion = useReducedMotion() ?? false;
   const pushOptions = pushScreenOptions({ isRTL: I18nManager.isRTL, platform: Platform.OS, reduceMotion });
   const modalLikeOptions = modalLikeScreenOptions({ platform: Platform.OS, reduceMotion });
+  // On an expanded window the Salah shell keeps the sidebar, so the screen appears without a slide (ADR 0032 amendment).
+  const expanded = useWindowClass() === 'expanded';
   const [loaded, error] = useFonts(bundledFonts);
   const [directionReady, setDirectionReady] = useState(directionCheck.ready);
   const content = useContentDbBootstrap();
@@ -136,6 +139,7 @@ export default function RootLayout() {
         <Stack.Screen name="azkar/read/[categoryId]" options={modalLikeOptions} />
         <Stack.Screen name="azkar/entry/[entryKey]" options={modalLikeOptions} />
         <Stack.Screen name="sibha" options={pushOptions} />
+        <Stack.Screen name="salah" options={expanded ? { animation: 'none' } : pushOptions} />
       </Stack>
     </ThemeProvider>
   );

@@ -102,6 +102,19 @@ describe('HighlightListCard', () => {
     expect(await view.findByText('البقرة · الآية ٢٥٦')).toBeOnTheScreen();
   });
 
+  it('names the surah by its transliteration in English', async () => {
+    const { store } = openUserTestStore();
+    setHighlight(262, 'gold', store);
+    const row = getHighlights([262], store)[0]!;
+    const view = await renderUi(
+      <HighlightListCard items={[{ row, verse, chapter }]} onOpenMushaf={jest.fn()} onOpenVerse={jest.fn()} store={store} />,
+      { locale: 'en' },
+    );
+
+    expect(view.getByRole('button', { name: /^Al-Baqarah · Ayah 255,/ })).toBeOnTheScreen();
+    expect(view.queryByText(/البقرة/)).toBeNull();
+  });
+
   it('removes the highlight through the repository', async () => {
     const { store } = openUserTestStore();
     setHighlight(262, 'blue', store);

@@ -8,7 +8,7 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { installResource } from '@/core/sync';
 
-import { pause, playChapter } from '../player';
+import { pause, playChapter, playFromVerse } from '../player';
 import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
 import { usePlayerStore } from '../playerStore';
 import { resetReciterDownloads } from '../reciter-downloads';
@@ -29,7 +29,11 @@ jest.mock('@/core/db/content/open', () => ({
   useContentDb: () => ({ ready: true, error: null }),
 }));
 
-jest.mock('../player', () => ({ pause: jest.fn(), playChapter: jest.fn(() => Promise.resolve()) }));
+jest.mock('../player', () => ({
+  pause: jest.fn(),
+  playChapter: jest.fn(() => Promise.resolve()),
+  playFromVerse: jest.fn(() => Promise.resolve()),
+}));
 // The first catalogue sync's state: a test flips it to show the loading skeleton.
 const mockCatalog: { settled: boolean } = { settled: true };
 jest.mock('@/core/sync', () => ({
@@ -62,6 +66,7 @@ jest.mock('react-native-safe-area-context', () => {
 
 const install = jest.mocked(installResource);
 const play = jest.mocked(playChapter);
+const playAyah = jest.mocked(playFromVerse);
 
 // Afasy: installed, Murattal. Husary: installed, Muallim. Siddiq: not installed, but the catalogue still gives its style.
 let close: () => void;
@@ -90,7 +95,7 @@ beforeEach(() => {
   storage.remove(storageKeys.audioReciterId);
   resetAudioSettingsStore();
   resetReciterDownloads();
-  usePlayerStore.setState({ chapterId: null, reciterId: null, status: 'idle' });
+  usePlayerStore.setState({ chapterId: null, reciterId: null, startingTarget: null, status: 'idle' });
   install.mockReset();
   play.mockClear();
   mockDoneCounts.value = {};
@@ -275,14 +280,23 @@ describe('ListenScreen', () => {
     expect(view.getByTestId('reciter-row-31-status')).toHaveTextContent('للتعليم والتكرار');
   });
 
-  it('plays an installed reciter from its play button without installing', async () => {
+  it('draws the buffering ring only on the reciter that is starting', async () => {
+    usePlayerStore.setState({ startingTarget: { kind: 'reciter', resourceId: 31 } });
+    const view = await renderUi(<ListenScreen />);
+
+    expect(await view.findByTestId('reciter-row-31-play-buffering', { includeHiddenElements: true })).toBeTruthy();
+    expect(view.queryByTestId('reciter-row-30-play-buffering', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('plays an installed reciter from the current ayah, from its button, without installing', async () => {
     const view = await renderUi(<ListenScreen />);
 
     await fireEvent.press(view.getByRole('button', { name: 'تشغيل مشاري راشد العفاسي' }));
 
     expect(install).not.toHaveBeenCalled();
     expect(getReciterId()).toBe(30);
-    expect(play).toHaveBeenCalledWith(1);
+    expect(playAyah).toHaveBeenCalledWith('1:1');
+    expect(play).not.toHaveBeenCalled();
   });
 
   it('installs an uninstalled reciter first, then plays it', async () => {
@@ -292,7 +306,7 @@ describe('ListenScreen', () => {
     await fireEvent.press(view.getByRole('button', { name: 'تشغيل محمد صديق المنشاوي' }));
 
     expect(install).toHaveBeenCalledWith(32, expect.any(Object));
-    expect(play).toHaveBeenCalledWith(1);
+    expect(playAyah).toHaveBeenCalledWith('1:1');
     expect(getReciterId()).toBe(32);
   });
 

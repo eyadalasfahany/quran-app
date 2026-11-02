@@ -23,6 +23,7 @@ import { recitationStyleKey } from '../player-view';
 import { playSurahFromReciter } from '../reciter-playback';
 import { downloadReciterPack, useReciterDownloads as usePackDownloads } from '../reciter-downloads';
 import { reciterDisplayName } from '../reciter-list';
+import { chapterDisplayName } from '@/features/reader/data/chapters';
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
@@ -162,7 +163,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
                 status={row?.status}
                 verifyNeeded={row !== undefined && needsVerification(row)}
                 testID={`surah-row-${item.id}`}
-                title={locale === 'ar' ? item.nameArabic : item.nameSimple}
+                title={chapterDisplayName(item, locale)}
               />
             );
           }}

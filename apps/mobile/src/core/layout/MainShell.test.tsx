@@ -75,6 +75,11 @@ const searchLabels = {
   en: 'Search the Quran',
 } as const;
 
+const prayerLabels = {
+  ar: 'الصلاة',
+  en: 'Prayer',
+} as const;
+
 const labels = {
   ar: { nav: 'التنقل الرئيسي', mushaf: 'المصحف' },
   en: { nav: 'Main navigation', mushaf: 'Mushaf' },
@@ -261,6 +266,42 @@ describe('MainShell', () => {
 
     expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
     expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it('selects the destination it is given, over the route segments', async () => {
+    jest.mocked(useSegments).mockReturnValue(segments('salah'));
+    const view = await renderUi(
+      <MainShell expanded active="(salah)">
+        <Text>tabs</Text>
+      </MainShell>,
+    );
+
+    expect(view.getByTestId('sidebar-salah').props.accessibilityState).toEqual({ selected: true });
+    expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it('keeps the segment match when no destination is given', async () => {
+    jest.mocked(useSegments).mockReturnValue(segments('(main)', '(mushaf)'));
+    const view = await renderUi(
+      <MainShell expanded>
+        <Text>tabs</Text>
+      </MainShell>,
+    );
+
+    expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
+    expect(view.getByTestId('sidebar-salah').props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it.each(locales)('selects Prayer in the sidebar on /salah in %s', async (locale) => {
+    jest.mocked(useSegments).mockReturnValue(segments('salah'));
+    const view = await renderUi(
+      <MainShell expanded active="(salah)">
+        <Text>tabs</Text>
+      </MainShell>,
+      { locale },
+    );
+
+    expect(view.getByRole('tab', { name: prayerLabels[locale], selected: true })).toBeOnTheScreen();
   });
 
   it('keeps the tab under a sheet selected while the sheet is open', async () => {

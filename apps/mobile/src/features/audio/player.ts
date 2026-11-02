@@ -13,7 +13,7 @@ import { openUserDb } from '@/core/db/user/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { getLocale } from '@/core/i18n/locale';
 import { networkIsOffline } from '@/core/network/network-state';
-import { getChapter } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 
 import { activeTimingIndex, activeWordPosition, ayahSeekStartMs } from './active-ayah';
@@ -183,7 +183,7 @@ function lockScreenMetadata(db: SqlExecutor, reciterId: number, chapterId: numbe
   const reciter = listReciters(db).find((row) => row.resourceId === reciterId);
   const reciterName = reciter === undefined ? undefined : (arabic ? reciter.nameAr : reciter.name) ?? reciter.nameAr ?? reciter.name ?? undefined;
   return {
-    title: chapter === undefined ? undefined : arabic ? chapter.nameArabic : chapter.nameEn,
+    title: chapter === undefined ? undefined : chapterDisplayName(chapter, arabic ? 'ar' : 'en'),
     artist: reciterName,
     artworkUrl: appIconUrl(),
   };

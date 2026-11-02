@@ -1,6 +1,7 @@
 import { act, fireEvent } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { Dimensions, Text } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { ThemeProvider, themes } from '@/core/theme';
 import { MINI_PLAYER_METRICS, MINI_PLAYER_READER_BOTTOM } from '@/features/audio/mini-player-metrics';
@@ -11,6 +12,12 @@ import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { PANEL_INSET, panelStripWidth, SIDE_PANEL_WIDTH } from '../layout';
 import { useReaderMiniCollapse } from '../mini-bar-collapse';
 import { AdaptiveReaderLayout } from './AdaptiveReaderLayout';
+import { READER_TOOLBAR_CLEARANCE } from './ReaderToolbar';
+
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  return { __esModule: true, ...actual, default: actual.default, useReducedMotion: jest.fn(() => false) };
+});
 
 const widths = [
   [375, 'sheet'],
@@ -41,6 +48,7 @@ const barTop = MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_METRICS.reader.height;
 beforeEach(() => {
   setWindowWidth(390);
   usePlayerStore.getState().reset();
+  jest.mocked(useReducedMotion).mockReturnValue(false);
 });
 
 function themed(node: ReactElement) {
@@ -212,6 +220,75 @@ describe('AdaptiveReaderLayout', () => {
     const view = await renderUi(layout(375));
 
     expect(view.queryByTestId('reader-resume-slot')).toBeNull();
+  });
+
+  describe('overlay scrim and panel (iPad portrait)', () => {
+    const HIDDEN = { includeHiddenElements: true } as const;
+    it.each([900, 1099])('dims the page and lifts the panel below the toolbar at %s pt', async (width) => {
+      const view = await renderUi(layout(width, { topInset: 20 }));
+
+      const fill = flatStyle(view.getByTestId('reader-overlay-scrim-fill', HIDDEN).props.style);
+      expect(fill.backgroundColor).toBe(themes.light.colors.scrim);
+      expect(fill.position).toBe('absolute');
+
+      const host = flatStyle(view.getByTestId('reader-panel-host', HIDDEN).props.style);
+      expect(host.top).toBe(20 + READER_TOOLBAR_CLEARANCE + PANEL_INSET);
+      expect(host.top).toBe(100);
+      expect(host.backgroundColor).toBe(themes.light.colors.surfaceRaised);
+      expect(host.borderRadius).toBe(themes.light.radius.xl);
+      expect(host.boxShadow).toBe(themes.light.shadows.glass);
+    });
+
+    it.each([1100, 1366])('leaves a docked panel without a scrim, a solid background or the toolbar offset at %s pt', async (width) => {
+      const view = await renderUi(layout(width, { topInset: 20 }));
+
+      expect(view.queryByTestId('reader-overlay-scrim')).toBeNull();
+      const host = flatStyle(view.getByTestId('reader-panel-host', HIDDEN).props.style);
+      expect(host.top).toBe(20 + PANEL_INSET);
+      expect(host.backgroundColor).toBeUndefined();
+    });
+
+    it.each([375, 700])('draws no panel and no scrim in the sheet placement at %s pt', async (width) => {
+      const view = await renderUi(layout(width));
+
+      expect(view.queryByTestId('reader-panel-host')).toBeNull();
+      expect(view.queryByTestId('reader-overlay-scrim')).toBeNull();
+    });
+
+    it('draws no scrim on an overlay window while the panel is closed', async () => {
+      const view = await renderUi(layout(900, { panelOpen: false }));
+
+      expect(view.queryByTestId('reader-overlay-scrim')).toBeNull();
+    });
+
+    it('calls onCloseOverlay when the scrim is pressed', async () => {
+      const onCloseOverlay = jest.fn();
+      const view = await renderUi(layout(900, { onCloseOverlay }));
+
+      await fireEvent.press(view.getByTestId('reader-overlay-scrim-fill', { includeHiddenElements: true }));
+      expect(onCloseOverlay).toHaveBeenCalledTimes(1);
+    });
+
+    it('labels the scrim as the panel dismiss control', async () => {
+      const view = await renderUi(layout(900));
+
+      expect(view.getByTestId('reader-overlay-scrim', HIDDEN).props.accessibilityLabel).toEqual(expect.any(String));
+      expect(view.getByTestId('reader-overlay-scrim', HIDDEN).props.accessibilityLabel).not.toBe('');
+    });
+
+    it.each(locales)('draws the dimmed overlay and the lifted panel in %s', async (locale) => {
+      const view = await renderUi(layout(900, { topInset: 20 }), { locale });
+
+      expect(view.getByTestId('reader-overlay-scrim-fill', HIDDEN)).toBeOnTheScreen();
+      expect(flatStyle(view.getByTestId('reader-panel-host', HIDDEN).props.style).top).toBe(100);
+    });
+
+    it('draws the scrim at full strength under Reduce Motion, with no fade', async () => {
+      jest.mocked(useReducedMotion).mockReturnValue(true);
+      const view = await renderUi(layout(900));
+
+      expect(flatStyle(view.getByTestId('reader-overlay-scrim-fill', HIDDEN).props.style).opacity).toBe(1);
+    });
   });
 
   it('has no raw colour literals', () => {

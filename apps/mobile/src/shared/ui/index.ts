@@ -2,6 +2,7 @@ export { ActionTile } from './ActionTile';
 export { AyahEndMark, ORNATE_CLOSE, ORNATE_OPEN } from './AyahEndMark';
 export { AyahMarker, FOCUS_MARKER_SIZE } from './AyahMarker';
 export { Button, type ButtonSize, type ButtonVariant } from './Button';
+export { BufferingRing } from './BufferingRing';
 export { Card, type CardTone } from './Card';
 export { Chip } from './Chip';
 export { ConfirmDialog } from './ConfirmDialog';

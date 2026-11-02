@@ -15,6 +15,7 @@ export function OnboardingReciterRow({
   playLabel,
   playHint,
   playing = false,
+  starting = false,
   onSelect,
   onPlay,
   testID,
@@ -26,6 +27,7 @@ export function OnboardingReciterRow({
   playLabel: string;
   playHint?: string;
   playing?: boolean;
+  starting?: boolean;
   onSelect: () => void;
   onPlay: () => void;
   testID?: string;
@@ -76,7 +78,7 @@ export function OnboardingReciterRow({
           ) : null}
         </View>
       </Pressable>
-      <ReciterPlayButton hint={playHint} label={playLabel} onPress={onPlay} playing={playing} progress={null} />
+      <ReciterPlayButton hint={playHint} label={playLabel} onPress={onPlay} playing={playing} progress={null} starting={starting} testID={testID ? `${testID}-play` : undefined} />
     </View>
   );
 }

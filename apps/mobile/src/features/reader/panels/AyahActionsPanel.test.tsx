@@ -238,6 +238,18 @@ describe('AyahActionsPanel play while recited', () => {
     jest.mocked(pause).mockClear();
   });
 
+  it('shows pause on the play tile while this ayah starts, and only for this ayah', async () => {
+    usePlayerStore.setState({ startingTarget: { kind: 'verse', verseKey: '1:2' } });
+    const own = await renderUi(panel({ verseKey: '1:2' }));
+    expect(own.getByRole('button', { name: 'إيقاف مؤقت' })).toBeOnTheScreen();
+    usePlayerStore.getState().reset();
+
+    usePlayerStore.setState({ startingTarget: { kind: 'verse', verseKey: '1:3' } });
+    const other = await renderUi(panel({ verseKey: '1:2' }));
+    expect(other.getByRole('button', { name: 'تشغيل من هنا' })).toBeOnTheScreen();
+    usePlayerStore.getState().reset();
+  });
+
   it('shows pause on the play tile while this ayah is recited, and pauses from it', async () => {
     // verseId 2 is the panel's ayah (panel() below).
     usePlayerStore.setState({ activeVerseId: 2, status: 'playing' });

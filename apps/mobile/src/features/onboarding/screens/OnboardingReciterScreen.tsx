@@ -9,6 +9,7 @@ import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { pause } from '@/features/audio/player';
 import { recitationStyleKey, reciterInitial } from '@/features/audio/player-view';
+import { isStartingFor, reciterMatch, useStartState } from '@/features/audio/hooks/useIsStarting';
 import { playReciter } from '@/features/audio/reciter-playback';
 import { reciterDisplayName, type ReciterEntry } from '@/features/audio/reciter-list';
 import { setReciterId } from '@/features/audio/settings';
@@ -33,6 +34,7 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
   const theme = useTheme();
   const { ready } = useContentDb();
   const { reciters, selectedId, playingId } = useReciterCatalogue(ready);
+  const startState = useStartState();
 
   const rows = useMemo(() => reciters.slice(0, ONBOARDING_RECITER_COUNT), [reciters]);
 
@@ -40,6 +42,7 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
     const name = reciterDisplayName(item, locale, t('listen.unnamed'));
     const styleKey = recitationStyleKey(item.style);
     const playing = item.resourceId === playingId;
+    const starting = isStartingFor(startState, reciterMatch(item.resourceId));
     return (
       <OnboardingReciterRow
         key={item.resourceId}
@@ -53,8 +56,9 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
           void playReciter(item.resourceId, item.installed);
         }}
         onSelect={() => setReciterId(item.resourceId)}
-        playLabel={playing ? t('player.pause') : t('listen.play', { name })}
+        playLabel={playing || starting ? t('player.pause') : t('listen.play', { name })}
         playing={playing}
+        starting={starting}
         selected={item.resourceId === selectedId}
         styleLabel={styleKey === null ? null : t(styleKey)}
         testID={`onboarding-reciter-${item.resourceId}`}

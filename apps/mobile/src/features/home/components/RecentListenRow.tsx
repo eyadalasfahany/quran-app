@@ -19,6 +19,7 @@ export function RecentListenRow({
   playLabel,
   filled,
   playing = false,
+  starting = false,
   onPlay,
   testID,
 }: {
@@ -32,6 +33,8 @@ export function RecentListenRow({
   filled: boolean;
   /** This listen is playing: its button shows pause. */
   playing?: boolean;
+  /** This listen is starting: its button shows pause with the buffering ring. */
+  starting?: boolean;
   onPlay: () => void;
   testID?: string;
 }) {
@@ -67,6 +70,7 @@ export function RecentListenRow({
         label={playLabel}
         onPress={onPlay}
         playing={playing}
+        starting={starting}
         testID={testID ? `${testID}-play` : undefined}
       />
     </View>

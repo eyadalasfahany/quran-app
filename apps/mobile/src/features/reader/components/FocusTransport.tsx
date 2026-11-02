@@ -5,7 +5,10 @@ import { formatNumber, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { hasAyahTimings, setRepeat } from '@/features/audio/player';
 import { usePlayerStore } from '@/features/audio/playerStore';
-import { GlassSurface, Icon, UiText } from '@/shared/ui';
+import { BufferingRing, GlassSurface, Icon, UiText } from '@/shared/ui';
+
+// A tap while the focused ayah starts does nothing: a second start would load it again.
+const ignoreTap = () => undefined;
 
 const UP = { ios: 'chevron.up', android: 'keyboard_arrow_up' } as const;
 const DOWN = { ios: 'chevron.down', android: 'keyboard_arrow_down' } as const;
@@ -32,6 +35,7 @@ export function FocusTransport({
   onNext,
   onPlay,
   playing = false,
+  starting = false,
   repeatTarget = null,
   testID = 'focus-transport',
 }: {
@@ -40,6 +44,8 @@ export function FocusTransport({
   /** Plays from the focused ayah, or pauses when playing. Undefined disables the control. */
   onPlay?: () => void;
   playing?: boolean;
+  /** The focused ayah's play is starting: the play control shows pause with the buffering ring. */
+  starting?: boolean;
   /** The focused ayah the repeat applies to. Null disables the repeat control. */
   repeatTarget?: RepeatTarget | null;
   testID?: string;
@@ -109,23 +115,31 @@ export function FocusTransport({
         >
           <Icon color={ink} name={UP} size={theme.size.icon} />
         </Pressable>
-        <Pressable
-          accessibilityLabel={playing ? t('player.pause') : t('reader.focus.play')}
-          accessibilityRole="button"
-          disabled={onPlay === undefined}
-          onPress={onPlay}
-          style={{
-            alignItems: 'center',
-            backgroundColor: theme.colors.brand,
-            borderRadius: theme.radius.pill,
-            height: CONTROL,
-            justifyContent: 'center',
-            width: CONTROL,
-          }}
-          testID={`${testID}-play`}
+        <BufferingRing
+          active={starting}
+          color={theme.colors.onBrand}
+          size={CONTROL}
+          testID={`${testID}-play-ring`}
         >
-          <Icon color={theme.colors.onBrand} name={playing ? PAUSE : PLAY} size={theme.size.icon} />
-        </Pressable>
+          <Pressable
+            accessibilityLabel={playing || starting ? t('player.pause') : t('reader.focus.play')}
+            accessibilityRole="button"
+            accessibilityState={starting ? { busy: true, disabled: onPlay === undefined } : { disabled: onPlay === undefined }}
+            disabled={onPlay === undefined}
+            onPress={playing || !starting ? onPlay : ignoreTap}
+            style={{
+              alignItems: 'center',
+              backgroundColor: theme.colors.brand,
+              borderRadius: theme.radius.pill,
+              height: CONTROL,
+              justifyContent: 'center',
+              width: CONTROL,
+            }}
+            testID={`${testID}-play`}
+          >
+            <Icon color={theme.colors.onBrand} name={playing || starting ? PAUSE : PLAY} size={theme.size.icon} />
+          </Pressable>
+        </BufferingRing>
         <Pressable
           accessibilityLabel={t('reader.focus.next')}
           accessibilityRole="button"

@@ -48,6 +48,7 @@ export function ReaderMiniBar({
   reciterName,
   subtitle,
   playing,
+  starting = false,
   fraction,
   onOpen,
   onToggle,
@@ -57,6 +58,8 @@ export function ReaderMiniBar({
   reciterName: string;
   subtitle: string;
   playing: boolean;
+  /** Audio is starting: the button shows pause with the buffering ring. */
+  starting?: boolean;
   fraction: number;
   onOpen: () => void;
   onToggle: () => void;
@@ -143,9 +146,10 @@ export function ReaderMiniBar({
                 glyphColor={theme.colors.onBrand}
                 glyphSize={MINI_PLAYER_GLYPH_SIZE}
                 hitSize={MINI_PLAYER_BUTTON_SIZE}
-                icon={playing ? PAUSE_ICON : PLAY_ICON}
-                label={playing ? t('player.pause') : t('player.play')}
+                icon={playing || starting ? PAUSE_ICON : PLAY_ICON}
+                label={playing || starting ? t('player.pause') : t('player.play')}
                 onPress={onToggle}
+                starting={starting}
                 testID="mini-player-toggle"
               />
             </Animated.View>

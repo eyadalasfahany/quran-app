@@ -3,7 +3,7 @@ import { Pressable } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import type { ChapterRecord } from '@/features/reader/data/chapters';
+import { chapterDisplayName, type ChapterRecord } from '@/features/reader/data/chapters';
 import { Card, Icon, UiText } from '@/shared/ui';
 
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
@@ -24,7 +24,7 @@ export function ContinueReadingRow({
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const label = t('library.index.lastRead', { ayah: formatNumber(ayah, locale), surah: chapter.nameArabic });
+  const label = t('library.index.lastRead', { ayah: formatNumber(ayah, locale), surah: chapterDisplayName(chapter, locale) });
   const resume = t('library.index.resume');
 
   return (

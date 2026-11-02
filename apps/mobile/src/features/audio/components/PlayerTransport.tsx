@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
+import { useIsStarting } from '../hooks/useIsStarting';
 import { NEXT_AYAH_ICON, PAUSE_ICON, PLAY_ICON, PREVIOUS_AYAH_ICON } from './player-icons';
 import { PlayerIconButton } from './PlayerIconButton';
 
@@ -25,6 +26,12 @@ export function PlayerTransport({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  // A start from any play control (before the file loads too) shows the pause glyph and the buffering ring.
+  const starting = useIsStarting();
+  const showPause = isPlaying || starting;
+  // While a start is under way (and not yet playing), a tap does nothing; a loading file can still be paused.
+  const ignoreTap = () => undefined;
+  const togglePlay = isPlaying || !starting ? onTogglePlay : ignoreTap;
 
   return (
     <View
@@ -47,9 +54,10 @@ export function PlayerTransport({
         glyphSize={30}
         hitSize={76}
         radius={38}
-        icon={isPlaying ? PAUSE_ICON : PLAY_ICON}
-        label={isPlaying ? t('player.pause') : t('player.play')}
-        onPress={onTogglePlay}
+        icon={showPause ? PAUSE_ICON : PLAY_ICON}
+        label={showPause ? t('player.pause') : t('player.play')}
+        onPress={togglePlay}
+        starting={starting}
         testID="player-toggle"
       />
       <PlayerIconButton

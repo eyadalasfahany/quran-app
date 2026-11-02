@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { openContentDb } from '@/core/db/content/open';
 import { useCatalogVersion } from '@/core/sync';
 import { useLocale } from '@/core/i18n/useLocale';
-import { getChapter } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 
 import { listReciters, type CatalogReciter } from '../data/reciters';
 import { useReciterDownloads } from '../reciter-downloads';
@@ -46,7 +46,7 @@ export function usePlayerNames(): PlayerNames {
 
   // An empty Arabic or English name falls back to the other language, as a missing one does.
   const reciterName = (locale === 'ar' ? reciter?.nameAr || reciter?.name : reciter?.name || reciter?.nameAr) || '';
-  const chapterName = chapter === undefined ? null : locale === 'ar' ? chapter.nameArabic : chapter.nameEn;
+  const chapterName = chapter === undefined ? null : chapterDisplayName(chapter, locale);
 
   return { reciter, reciterName, chapterName };
 }

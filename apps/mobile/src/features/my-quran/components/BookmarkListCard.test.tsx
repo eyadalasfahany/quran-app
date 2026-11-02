@@ -69,6 +69,19 @@ describe('BookmarkListCard', () => {
     expect(onOpenVerse).toHaveBeenCalledWith('2:255');
   });
 
+  it('names the surah by its transliteration in English', async () => {
+    const { store } = openUserTestStore();
+    toggleBookmark(262, store);
+    const row = listBookmarks(store)[0]!;
+    const view = await renderUi(
+      <BookmarkListCard item={{ row, verse, chapter }} onOpenMushaf={jest.fn()} onOpenVerse={jest.fn()} store={store} />,
+      { locale: 'en' },
+    );
+
+    expect(view.getByRole('button', { name: /^Al-Baqarah · Ayah 255,/ })).toBeOnTheScreen();
+    expect(view.queryByText(/البقرة/)).toBeNull();
+  });
+
   it('removes the bookmark through the repository', async () => {
     const { store } = openUserTestStore();
     toggleBookmark(262, store);

@@ -15,6 +15,7 @@ import { useReaderMiniCollapse } from '@/features/reader/mini-bar-collapse';
 import { playVerse } from '../play-verse';
 import { pause, resume } from '../player';
 import { usePlayerStore } from '../playerStore';
+import { storage, storageKeys } from '@/core/storage/mmkv';
 
 import { MiniPlayer } from './MiniPlayer';
 
@@ -71,6 +72,7 @@ beforeEach(() => {
   db.executor.run(`INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
      (100, 1, 1, 'https://example.test/1.mp3', 48000, 'mp3')`);
   usePlayerStore.getState().reset();
+  storage.remove(storageKeys.readerLastVerseKey);
   useReaderMiniCollapse.getState().setCollapsed(false);
   jest.mocked(playVerse).mockClear();
   jest.mocked(pause).mockClear();
@@ -115,17 +117,36 @@ describe('MiniPlayer', () => {
   });
 
   it('draws the reader bar while idle when a reciter resolves, with the play glyph and no progress line', async () => {
-    const view = await renderUi(<MiniPlayer topVerseKey="1:1" variant="reader" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.getByTestId('mini-player-reader')).toBeOnTheScreen();
     expect(view.queryByTestId('mini-player-progress')).toBeNull();
     expect(view.getByRole('button', { name: 'تشغيل' })).toBeOnTheScreen();
   });
 
+  it('shows the pause glyph and the buffering ring while a start is pending, and no ring otherwise', async () => {
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+    expect(view.queryByTestId('mini-player-toggle-ring', { includeHiddenElements: true })).toBeNull();
+
+    usePlayerStore.getState().beginStarting({ kind: 'verse', verseKey: '1:1' });
+
+    expect(await view.findByTestId('mini-player-toggle-ring', { includeHiddenElements: true })).toBeTruthy();
+    expect(view.getByRole('button', { name: 'إيقاف مؤقت' }).props.accessibilityState).toEqual({ busy: true, disabled: false });
+  });
+
+  it('ignores a second tap while a start is under way', async () => {
+    usePlayerStore.getState().beginStarting({ kind: 'verse', verseKey: '1:1' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+    fireEvent.press(await view.findByRole('button', { name: 'إيقاف مؤقت' }));
+
+    expect(playVerse).not.toHaveBeenCalled();
+  });
+
   it('draws nothing while idle in the reader variant when no reciter resolves', async () => {
     db.executor.run('DELETE FROM catalog_resources');
     db.executor.run('DELETE FROM installed_resources');
-    const view = await renderUi(<MiniPlayer topVerseKey="1:1" variant="reader" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.queryByTestId('mini-player-reader')).toBeNull();
   });
@@ -155,7 +176,7 @@ describe('MiniPlayer', () => {
   });
 
   it('sizes the tab tile and sets the tab text sizes', async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
 
     expect(flatStyle(view.getByTestId('mini-player-tile', { includeHiddenElements: true }).props.style)).toMatchObject({
@@ -171,7 +192,7 @@ describe('MiniPlayer', () => {
   });
 
   it('sizes the reader tile and sets the reader text sizes', async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(flatStyle(view.getByTestId('mini-player-tile', { includeHiddenElements: true }).props.style)).toMatchObject({
@@ -184,7 +205,7 @@ describe('MiniPlayer', () => {
   });
 
   it("shows the reciter's name and the surah's bare name, without the «سورة» prefix", async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
 
     expect(view.getByText('مشاري راشد العفاسي')).toBeOnTheScreen();
@@ -193,15 +214,15 @@ describe('MiniPlayer', () => {
   });
 
   it('shows the English names in English', async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { locale: 'en', theme: 'light' });
 
     expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
-    expect(view.getByText('The Opener')).toBeOnTheScreen();
+    expect(view.getByText('Al-Fatiha')).toBeOnTheScreen();
   });
 
   it('opens the full player when the bar is tapped', async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
 
     fireEvent.press(view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة' }));
@@ -227,12 +248,13 @@ describe('MiniPlayer', () => {
     expect(flatStyle(view.getByTestId('mini-player-toggle-icon', { includeHiddenElements: true }).props.style).transform).toBeUndefined();
   });
 
-  it('resumes when the button is pressed while paused', async () => {
+  it('starts the current ayah from its beginning when the button is pressed while paused', async () => {
     loadSurah('paused');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
 
     fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
-    expect(resume).toHaveBeenCalledTimes(1);
+    expect(playVerse).toHaveBeenCalledWith('1:1');
+    expect(resume).not.toHaveBeenCalled();
     expect(pause).not.toHaveBeenCalled();
   });
 
@@ -252,7 +274,7 @@ describe('MiniPlayer', () => {
   });
 
   it('fills the progress line to a quarter at 12 s of 48 s', async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
     const fill = flatStyle(view.getByTestId('mini-player-progress-fill', { includeHiddenElements: true }).props.style);
 
@@ -261,7 +283,7 @@ describe('MiniPlayer', () => {
   });
 
   it.each(locales)('lays the progress line out from the start edge in %s', async (locale) => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { locale, theme: 'light' });
     const track = flatStyle(view.getByTestId('mini-player-progress', { includeHiddenElements: true }).props.style);
 
@@ -269,7 +291,7 @@ describe('MiniPlayer', () => {
   });
 
   it('describes the bar as a button with the reciter and surah, and a hint that it opens the player', async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
     const bar = view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة' });
 
@@ -333,7 +355,7 @@ describe('MiniPlayer sidebar variant', () => {
 
   it('sizes the tile at 44 with radius 14, and the text follows the window factor (ADR 0043)', async () => {
     setWindowWidth(1000);
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
     const factor = textScaleFor({ width: 1000, height: 844 });
 
@@ -351,7 +373,7 @@ describe('MiniPlayer sidebar variant', () => {
 
   it('shows the surah alone while no ayah is active', async () => {
     setWindowWidth(1000);
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
 
     expect(view.getByText('الفاتحة')).toBeOnTheScreen();
@@ -371,7 +393,7 @@ describe('MiniPlayer sidebar variant', () => {
 
   it('fills the inline progress track to a quarter, in the line token, with the gold fill', async () => {
     setWindowWidth(1000);
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
     const track = flatStyle(view.getByTestId('mini-player-progress', hidden).props.style);
     const fill = flatStyle(view.getByTestId('mini-player-progress-fill', hidden).props.style);
@@ -383,7 +405,7 @@ describe('MiniPlayer sidebar variant', () => {
 
   it.each(locales)('shows the English names in %s and keeps the fill at the start edge', async (locale) => {
     setWindowWidth(1000);
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { locale, theme: 'light' });
 
     expect(view.getByText(locale === 'en' ? 'Mishari Rashid' : 'مشاري راشد العفاسي')).toBeOnTheScreen();
@@ -392,7 +414,7 @@ describe('MiniPlayer sidebar variant', () => {
 
   it('opens the full player when the row is tapped', async () => {
     setWindowWidth(1000);
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
 
     fireEvent.press(view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة' }));
@@ -412,21 +434,24 @@ describe('MiniPlayer sidebar variant', () => {
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it('resumes from the button while paused', async () => {
+  it('starts the current ayah from the button while paused, instead of resuming', async () => {
     setWindowWidth(1000);
     loadSurah('paused');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
 
     fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
-    expect(resume).toHaveBeenCalledTimes(1);
+    expect(playVerse).toHaveBeenCalledWith('1:1');
+    expect(resume).not.toHaveBeenCalled();
     expect(pause).not.toHaveBeenCalled();
   });
 
   it('has two buttons, the row (with its hint) and the toggle, and the toggle has its own label', async () => {
     setWindowWidth(1000);
+    db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search)
+       VALUES (1, '1:1', 1, 1, 1, 1, 1, 1, 'none', 'a', 'a')`);
     loadSurah('paused');
     const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
-    const row = view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة' });
+    const row = view.getByRole('button', { name: 'مشاري راشد العفاسي، الفاتحة · الآية ١' });
 
     expect(row.props.accessibilityHint).toBe('يفتح المشغّل');
     expect(view.getByRole('button', { name: 'تشغيل' }).props.accessibilityState).toEqual({ disabled: false });
@@ -447,10 +472,11 @@ describe('MiniPlayer reader variant', () => {
   beforeEach(() => {
     db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search)
        VALUES (3, '1:3', 1, 3, 1, 1, 1, 1, 'none', 'a', 'a')`);
+    storage.set(storageKeys.readerLastVerseKey, '1:3');
   });
 
-  it('captions the idle bar with the surah and the top ayah on screen, and plays from that ayah', async () => {
-    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+  it('captions the idle bar with the current ayah, and plays from that ayah', async () => {
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.getByText('الفاتحة · الآية ٣')).toBeOnTheScreen();
     fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
@@ -458,23 +484,23 @@ describe('MiniPlayer reader variant', () => {
   });
 
   it('names the idle bar with the resolved reciter in English', async () => {
-    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { locale: 'en', theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale: 'en', theme: 'light' });
 
     expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
-    expect(view.getByText('The Opener · Ayah 3')).toBeOnTheScreen();
+    expect(view.getByText('Al-Fatiha · Ayah 3')).toBeOnTheScreen();
   });
 
   it('shows the active ayah beside the surah while playing, and the gold progress line', async () => {
     loadSurah('playing');
     usePlayerStore.getState().setActive(3, null);
-    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.getByText('الفاتحة · الآية ٣')).toBeOnTheScreen();
     expect(view.getByTestId('mini-player-progress', { includeHiddenElements: true })).toBeOnTheScreen();
   });
 
   it('draws the down chevron at the top centre, in inkMuted at 70%, and it takes no touches', async () => {
-    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
     const chevron = view.getByTestId('mini-player-chevron', { includeHiddenElements: true });
 
     expect(chevron.props.pointerEvents).toBe('none');
@@ -482,7 +508,7 @@ describe('MiniPlayer reader variant', () => {
   });
 
   it('gives the bar only the collapse accessibility action (the capsule expands), with the player label', async () => {
-    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
     const row = view.getByTestId('mini-player-open');
 
     expect(row.props.accessibilityActions).toEqual([
@@ -492,7 +518,7 @@ describe('MiniPlayer reader variant', () => {
 
   it('draws the capsule when collapsed, labelled to show the player, and a tap expands it', async () => {
     useReaderMiniCollapse.getState().setCollapsed(true);
-    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.queryByTestId('mini-player-reader')).toBeNull();
     fireEvent.press(view.getByRole('button', { name: 'إظهار المشغّل' }));
@@ -500,24 +526,92 @@ describe('MiniPlayer reader variant', () => {
     expect(view.queryByTestId('mini-player-reader')).toBeNull();
   });
 
-  it('puts the gold progress line on the capsule while playing, and not while idle', async () => {
+  it('puts the gold progress line on the capsule while playing', async () => {
     useReaderMiniCollapse.getState().setCollapsed(true);
     loadSurah('playing');
-    const playing = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
-    expect(playing.getByTestId('mini-player-progress', { includeHiddenElements: true })).toBeOnTheScreen();
-    playing.unmount();
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
-    usePlayerStore.getState().reset();
-    const idle = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
-    expect(idle.queryByTestId('mini-player-progress', { includeHiddenElements: true })).toBeNull();
+    expect(view.getByTestId('mini-player-progress', { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+
+  it('shows no progress line on the capsule while idle', async () => {
+    useReaderMiniCollapse.getState().setCollapsed(true);
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+    expect(view.queryByTestId('mini-player-progress', { includeHiddenElements: true })).toBeNull();
   });
 
   it('hides the chevron-less capsule on an expanded window', async () => {
     setWindowWidth(1000);
     useReaderMiniCollapse.getState().setCollapsed(true);
     loadSurah('playing');
-    const view = await renderUi(<MiniPlayer topVerseKey="1:3" variant="reader" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.queryByTestId('mini-player-capsule')).toBeNull();
+  });
+});
+
+// ADR 0046: whenever nothing plays, the bar shows the current ayah and its button starts that ayah.
+describe('MiniPlayer current ayah', () => {
+  beforeEach(() => {
+    db.executor.run(`INSERT INTO chapters (id, name_arabic, name_simple, name_en, revelation_place, revelation_order,
+       verses_count, bismillah_pre, page_start, page_end) VALUES (2, 'البقرة', 'Al-Baqarah', 'The Cow', 'madinah', 87, 286, 1, 2, 49)`);
+    db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search)
+       VALUES (262, '2:260', 2, 260, 3, 6, 11, 42, 'none', 'a', 'a')`);
+    storage.set(storageKeys.readerLastVerseKey, '2:260');
+    // Paused on 2:255 (surah 2), while the current ayah has moved on to 2:260.
+    const store = usePlayerStore.getState();
+    store.beginLoad({ reciterId: 30, chapterId: 2, positionMs: 12_000, durationMs: 48_000 });
+    store.markPlaying();
+    store.markPaused();
+  });
+
+  it.each(['tabs', 'reader'] as const)('shows the current ayah while paused on another, and starts it from its beginning (%s)', async (variant) => {
+    const view = await renderUi(<MiniPlayer variant={variant} />, { theme: 'light' });
+
+    expect(view.getByText('البقرة · الآية ٢٦٠')).toBeOnTheScreen();
+    expect(view.queryByText('البقرة · الآية ٢٥٥')).toBeNull();
+    fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
+    expect(playVerse).toHaveBeenCalledWith('2:260');
+    expect(resume).not.toHaveBeenCalled();
+  });
+
+  it('shows the current ayah on the sidebar footer on an expanded window, and starts it', async () => {
+    setWindowWidth(1000);
+    const view = await renderUi(<MiniPlayer variant="sidebar" />, { theme: 'light' });
+
+    expect(view.getByText('البقرة · الآية ٢٦٠')).toBeOnTheScreen();
+    fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
+    expect(playVerse).toHaveBeenCalledWith('2:260');
+  });
+
+  it('shows the current ayah in English', async () => {
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText('Al-Baqarah · Ayah 260')).toBeOnTheScreen();
+  });
+
+  it('shows the current ayah and the reciter in English on the sidebar footer', async () => {
+    setWindowWidth(1000);
+    const view = await renderUi(<MiniPlayer variant="sidebar" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
+    expect(view.getByText('Al-Baqarah · Ayah 260')).toBeOnTheScreen();
+  });
+
+  it('hides the progress line while nothing plays, since it belongs to the audio that stopped', async () => {
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+
+    expect(view.queryByTestId('mini-player-progress', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('shows what is playing, with the pause button, once audio plays again', async () => {
+    usePlayerStore.getState().markPlaying();
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+
+    expect(view.getByText('البقرة')).toBeOnTheScreen();
+    fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
+    expect(pause).toHaveBeenCalledTimes(1);
+    expect(playVerse).not.toHaveBeenCalled();
   });
 });

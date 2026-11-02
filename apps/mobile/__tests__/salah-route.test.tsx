@@ -8,6 +8,8 @@ import { router } from "expo-router";
 import type { ComponentProps } from "react";
 import { Dimensions, I18nManager } from "react-native";
 
+import { locales } from "../jest/render-ui";
+
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
 
@@ -69,12 +71,15 @@ function setWidth(width: number): void {
   });
 }
 
-// The الصلاة route sits in the root stack, outside the tabs (app/salah/index.tsx).
-describe("salah route", () => {
+// The الصلاة route sits in the root stack, outside the tabs (app/salah/index.tsx). On an expanded window it keeps the
+// sidebar through its own shell (app/salah/_layout.tsx, ADR 0032 amendment).
+describe.each(locales)("salah route in %s", (locale) => {
   beforeEach(async () => {
-    storage.set(storageKeys.locale, "en");
-    I18nManager.isRTL = false;
-    await i18n.changeLanguage("en");
+    // Without this, "/" redirects to onboarding, which covers the tabs and the sidebar.
+    storage.set(storageKeys.onboardingCompleted, true);
+    storage.set(storageKeys.locale, locale);
+    I18nManager.isRTL = locale === "ar";
+    await i18n.changeLanguage(locale);
   });
 
   it("renders the Salah screen at /salah inside the root stack", async () => {
@@ -89,7 +94,19 @@ describe("salah route", () => {
     expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
   });
 
-  it("opens the Salah screen from the expanded sidebar", async () => {
+  it("renders no sidebar at /salah on a compact window", async () => {
+    setWidth(390);
+    await renderRouter("./app");
+
+    await act(async () => {
+      router.navigate("/salah");
+    });
+
+    expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
+    expect(screen.queryByTestId("sidebar")).toBeNull();
+  });
+
+  it("opens the Salah screen from the expanded sidebar, with the sidebar kept and Prayer selected", async () => {
     setWidth(390);
     const view = await renderRouter("./app");
 
@@ -105,5 +122,36 @@ describe("salah route", () => {
 
     expect(view.getSegments()).toEqual(["salah"]);
     expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
+    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
+    expect(screen.getByTestId("sidebar-salah").props.accessibilityState).toEqual({ selected: true });
+  });
+
+  it("opens Qibla from the Salah screen inside the Salah stack, keeping the sidebar on an expanded window", async () => {
+    setWidth(900);
+    const view = await renderRouter("./app");
+
+    await act(async () => {
+      router.navigate("/salah");
+    });
+    await act(async () => {
+      router.push("/salah/qibla");
+    });
+
+    expect(view.getSegments()).toEqual(["salah", "qibla"]);
+    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
+    expect(screen.getByTestId("sidebar-salah").props.accessibilityState).toEqual({ selected: true });
+  });
+
+  it("keeps the sidebar with Prayer selected when /salah opens on an expanded window", async () => {
+    setWidth(900);
+    await renderRouter("./app");
+
+    await act(async () => {
+      router.navigate("/salah");
+    });
+
+    expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
+    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
+    expect(screen.getByTestId("sidebar-salah").props.accessibilityState).toEqual({ selected: true });
   });
 });

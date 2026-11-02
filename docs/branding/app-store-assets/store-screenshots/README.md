@@ -1,6 +1,6 @@
 # Taybah store screenshots
 
-80 finished screenshots: 5 store sizes × 2 languages × the same 8-slide journey. Every app screen is a real capture of the running app (iPhone 17 and iPad Pro 13" simulators, location al-Madinah), and Quran text appears only inside those captures.
+96 finished screenshots: 6 store sizes × 2 languages × the same 8-slide journey. Every app screen is a real capture of the running app (iPhone 17 and iPad Pro 13" simulators, location al-Madinah), and Quran text appears only inside those captures.
 
 ```bash
 docs/branding/app-store-assets/store-screenshots/generate.sh             # everything
@@ -15,6 +15,7 @@ Needs Google Chrome and ImageMagick. Captions live in `sources/manifest.json`; t
 | --- | --- | --- |
 | `app-store/iphone-6.3/{ar,en}` | 1206 × 2622 | App Store Connect → iPhone 6.3" (Arabic page / English page) |
 | `app-store/ipad-13/{ar,en}` | 2064 × 2752 | App Store Connect → iPad 13" |
+| `app-store/iphone-duo/{ar,en}` | 2007 × 2853 | App Store Connect → iPhone Duo (inner display, portrait). Composed from the iPad captures: the iOS 27.1 runtime the Duo simulator needs isn't installed |
 | `google-play/phone/{ar,en}` | 1080 × 1920 | Play Console → Main store listing → Phone screenshots (default ar, en-US translation) |
 | `google-play/tablet-7/{ar,en}` | 1080 × 1920 | Play Console → 7-inch tablet screenshots |
 | `google-play/tablet-10/{ar,en}` | 1440 × 2560 | Play Console → 10-inch tablet screenshots |

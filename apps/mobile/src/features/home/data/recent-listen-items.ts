@@ -8,7 +8,7 @@ import { listReciters } from '@/features/audio/data/reciters';
 import { recitationStyleKey, reciterInitial } from '@/features/audio/player-view';
 import { reciterDisplayName } from '@/features/audio/reciter-list';
 import type { RecentListen } from '@/features/audio/data/recent-listens';
-import { getChapter } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 
 export type RecentListenItem = {
   key: string;
@@ -46,7 +46,7 @@ export function useRecentListenItems(limit = 2): RecentListenItem[] {
           return [];
         }
         const name = reciterDisplayName(reciter, locale, t('listen.unnamed'));
-        const surah = t('reader.surahTitle', { name: locale === 'ar' ? chapter.nameArabic : chapter.nameSimple });
+        const surah = t('reader.surahTitle', { name: chapterDisplayName(chapter, locale) });
         const styleKey = recitationStyleKey(reciter.style);
         return [
           {

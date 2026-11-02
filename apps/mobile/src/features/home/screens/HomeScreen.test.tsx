@@ -101,6 +101,7 @@ jest.mock('@/features/salah/hooks', () => ({
 }));
 
 jest.mock('@/features/reader/data/chapters', () => ({
+  ...jest.requireActual('@/features/reader/data/chapters'),
   getChapter: jest.fn(),
 }));
 
@@ -215,6 +216,21 @@ describe('HomeScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/read/2:255');
   });
 
+  it("names the continue row's surah by its transliteration in English, and in Arabic in Arabic", async () => {
+    storage.set(storageKeys.readerLastVerseKey, '2:255');
+    jest.mocked(openContentDb).mockReturnValue({ executor: {} } as ReturnType<typeof openContentDb>);
+    jest.mocked(getVerseByKey).mockReturnValue(verse);
+    jest.mocked(getChapter).mockReturnValue(chapter);
+
+    const english = await renderUi(<HomeScreen />, { locale: 'en' });
+    expect(english.getByTestId('home-continue-reading')).toHaveTextContent(/Al-Baqarah/);
+    expect(english.getByTestId('home-continue-reading')).not.toHaveTextContent(/البقرة/);
+
+    const arabic = await renderUi(<HomeScreen />, { locale: 'ar' });
+    expect(arabic.getByTestId('home-continue-reading')).toHaveTextContent(/البقرة/);
+    expect(arabic.getByTestId('home-continue-reading')).not.toHaveTextContent(/Al-Baqarah/);
+  });
+
   it('renders the Surahs, Misbaha, Saved and Reciters tiles without Azkar content', async () => {
     mockAzkar.available = false;
     const view = await renderUi(<HomeScreen />);
@@ -302,6 +318,24 @@ describe('HomeScreen recent listens', () => {
 
     expect(pause).toHaveBeenCalledTimes(1);
     expect(playRecentListen).not.toHaveBeenCalled();
+  });
+
+  it('shows the buffering ring and pause on the listen that is starting', async () => {
+    jest.mocked(useRecentListens).mockReturnValue({ data: [listen] } as unknown as ReturnType<typeof useRecentListens>);
+    usePlayerStore.setState({ startingTarget: { kind: 'listen', resourceId: 31, chapterId: 2 } });
+
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByRole('button', { name: 'إيقاف مؤقت' }).props.accessibilityState).toEqual({ busy: true });
+  });
+
+  it('keeps play on a listen when another listen is the one starting', async () => {
+    jest.mocked(useRecentListens).mockReturnValue({ data: [listen] } as unknown as ReturnType<typeof useRecentListens>);
+    usePlayerStore.setState({ startingTarget: { kind: 'listen', resourceId: 31, chapterId: 3 } });
+
+    const view = await renderUi(<HomeScreen />);
+
+    expect(view.getByRole('button', { name: 'تشغيل سورة البقرة' }).props.accessibilityState).not.toEqual({ busy: true });
   });
 
   it('keeps play on a listen whose surah is not the one playing', async () => {

@@ -2,7 +2,8 @@ import { size } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { AyahMarker, IconButton, type IconName } from '@/shared/ui';
+import { useTheme } from '@/core/theme';
+import { AyahMarker, BufferingRing, IconButton, type IconName } from '@/shared/ui';
 
 const noop = () => undefined;
 
@@ -14,13 +15,14 @@ const icons = {
 } as const satisfies Record<string, IconName>;
 
 // The ayah's header row: the end-of-ayah mark at the start, then play, tafsir and more at the end. While `playing`,
-// the play control shows pause and `onPlay` is the pause action.
+// the play control shows pause and `onPlay` is the pause action. While `starting`, it shows pause with the buffering ring.
 export function ReadingAyahHeader({
   verseNumber,
   active = false,
   fontScale = 1,
   audioAvailable = false,
   playing = false,
+  starting = false,
   onPlay,
   onOpenActions,
   onOpenTafsir,
@@ -34,6 +36,8 @@ export function ReadingAyahHeader({
   audioAvailable?: boolean;
   /** This ayah is being recited: the play control shows pause. */
   playing?: boolean;
+  /** This ayah's play is starting: the play control shows pause and the buffering ring turns. */
+  starting?: boolean;
   onPlay?: () => void;
   onOpenActions?: () => void;
   onOpenTafsir?: () => void;
@@ -42,6 +46,7 @@ export function ReadingAyahHeader({
   testID?: string;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const audioHint = audioAvailable ? undefined : t('reader.ayahPanel.audioUnavailable');
 
   return (
@@ -57,17 +62,25 @@ export function ReadingAyahHeader({
         testID={testID ? `${testID}-marker` : undefined}
       />
       <View style={{ flexDirection: 'row' }}>
-        <IconButton
-          disabled={!audioAvailable || onPlay === undefined}
-          hint={audioHint}
-          icon={playing ? icons.pause : icons.play}
-          iconSize={size.iconSm}
-          label={playing ? t('player.pause') : t('reader.ayahRow.play')}
-          mirrorInRtl
-          onPress={onPlay ?? noop}
-          testID={testID ? `${testID}-play` : undefined}
-          tone="muted"
-        />
+        <BufferingRing
+          active={starting}
+          color={theme.colors.brand}
+          size={theme.size.touchTarget}
+          testID={testID ? `${testID}-play-ring` : undefined}
+        >
+          <IconButton
+            busy={starting}
+            disabled={!audioAvailable || onPlay === undefined}
+            hint={audioHint}
+            icon={playing || starting ? icons.pause : icons.play}
+            iconSize={size.iconSm}
+            label={playing || starting ? t('player.pause') : t('reader.ayahRow.play')}
+            mirrorInRtl
+            onPress={playing || !starting ? (onPlay ?? noop) : noop}
+            testID={testID ? `${testID}-play` : undefined}
+            tone="muted"
+          />
+        </BufferingRing>
         <IconButton
           disabled={onOpenTafsir === undefined}
           icon={icons.tafsir}

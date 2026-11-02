@@ -8,7 +8,10 @@ import { usePlayerNames } from './usePlayerNames';
 
 jest.mock('@/core/db/content/open', () => ({ openContentDb: jest.fn() }));
 jest.mock('../data/reciters', () => ({ listReciters: jest.fn() }));
-jest.mock('@/features/reader/data/chapters', () => ({ getChapter: jest.fn(() => undefined) }));
+jest.mock('@/features/reader/data/chapters', () => ({
+  ...jest.requireActual('@/features/reader/data/chapters'),
+  getChapter: jest.fn(() => undefined),
+}));
 jest.mock('@/core/i18n/useLocale', () => ({ useLocale: () => 'ar' }));
 
 const open = jest.mocked(openContentDb);

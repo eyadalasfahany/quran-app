@@ -109,7 +109,7 @@ describe('PlayerScreen', () => {
     const view = await renderUi(<PlayerScreen />, { locale: 'en', theme: 'dark' });
 
     expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
-    expect(view.getByText('Surah The Opener')).toBeOnTheScreen();
+    expect(view.getByText('Surah Al-Fatiha')).toBeOnTheScreen();
     expect(view.getByText('Murattal')).toBeOnTheScreen();
   });
 

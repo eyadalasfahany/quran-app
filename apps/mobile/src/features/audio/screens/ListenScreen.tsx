@@ -16,6 +16,7 @@ import { ReciterListHeader } from '../components/ReciterListHeader';
 import { ReciterRow, type ReciterRowStatus } from '../components/ReciterRow';
 import { ReciterRowSkeleton } from '../components/ReciterRowSkeleton';
 import { useDoneCountsByReciter, useVerifyNeededCounts } from '../data/downloads';
+import { isStartingFor, reciterMatch, useStartState } from '../hooks/useIsStarting';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { recitationStyleKey, reciterInitial } from '../player-view';
 import { pause } from '../player';
@@ -48,6 +49,7 @@ export function ListenScreen() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ReciterFilter>('all');
   const { reciters, selectedId, playingId } = useReciterCatalogue(ready);
+  const startState = useStartState();
   const downloads = useReciterDownloads((state) => state.byId);
   const doneCounts = useDoneCountsByReciter();
   const verifyCounts = useVerifyNeededCounts();
@@ -141,6 +143,7 @@ export function ListenScreen() {
             const name = reciterDisplayName(item, locale, t('listen.unnamed'));
             const styleKey = recitationStyleKey(item.style);
             const playing = item.resourceId === playingId;
+            const starting = isStartingFor(startState, reciterMatch(item.resourceId));
             return (
               <ReciterRow
                 downloadProgress={download?.status === 'downloading' ? download.progress : null}
@@ -161,8 +164,9 @@ export function ListenScreen() {
                 }}
                 optionsLabel={t('listen.options')}
                 playHint={download?.status === 'downloading' ? t('ui.download.downloading') : undefined}
-                playLabel={playing ? t('player.pause') : t('listen.play', { name })}
+                playLabel={playing || starting ? t('player.pause') : t('listen.play', { name })}
                 playing={playing}
+                starting={starting}
                 selected={item.resourceId === selectedId}
                 status={statusFor(
                   item,

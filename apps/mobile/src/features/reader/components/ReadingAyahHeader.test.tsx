@@ -36,6 +36,32 @@ describe('ReadingAyahHeader', () => {
     expect(onPlay).toHaveBeenCalledTimes(1);
   });
 
+  it('shows pause and the buffering ring while this ayah starts, busy', async () => {
+    const view = await renderUi(
+      <ReadingAyahHeader audioAvailable onPlay={() => undefined} starting testID="head" verseNumber={1} />,
+      { locale: 'en' },
+    );
+
+    expect(view.getByTestId('head-play-ring', { includeHiddenElements: true })).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Pause' }).props.accessibilityState).toMatchObject({ busy: true });
+  });
+
+  it('draws no buffering ring for a play that is not starting', async () => {
+    const view = await renderUi(<ReadingAyahHeader audioAvailable testID="head" verseNumber={1} />, { locale: 'en' });
+
+    expect(view.queryByTestId('head-play-ring', { includeHiddenElements: true })).toBeNull();
+    expect(view.getByRole('button', { name: 'Play ayah' }).props.accessibilityState).not.toMatchObject({ busy: true });
+  });
+
+  it('ignores a second tap while this ayah starts', async () => {
+    const onPlay = jest.fn();
+    const view = await renderUi(<ReadingAyahHeader audioAvailable onPlay={onPlay} starting verseNumber={1} />, { locale: 'en' });
+
+    fireEvent.press(view.getByRole('button', { name: 'Pause' }));
+
+    expect(onPlay).not.toHaveBeenCalled();
+  });
+
   it.each(locales)('flips the play triangle in RTL and never the pause glyph (%s)', async (locale) => {
     const view = await renderUi(
       <ReadingAyahHeader audioAvailable onPlay={() => undefined} testID="hdr" verseNumber={1} />,

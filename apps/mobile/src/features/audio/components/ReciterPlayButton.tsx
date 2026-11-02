@@ -2,14 +2,20 @@ import { Pressable } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
+import { BufferingRing } from '@/shared/ui/BufferingRing';
 import { useContrastColors } from '@/shared/ui';
+
+// A tap while the reciter starts does nothing: a second start would load the same reciter again.
+const ignoreTap = () => undefined;
 
 const PLAY_GLYPH = 'M8 5v14l11-7z';
 const PAUSE_GLYPH = 'M6 5h4v14H6zM14 5h4v14h-4z';
 const GLYPH_SIZE = 16;
 const RING_RADIUS = 21; // Sits on the 1 pt border of the 44 pt button.
 
-// The row's play button. While `progress` is a number (0 to 1) a determinate ring fills around it.
+// The row's play button. While `progress` is a number (0 to 1) a determinate ring fills around it. While the reciter's
+// audio starts (`starting`), the button shows pause and the buffering ring turns; a download's determinate ring takes
+// precedence while a pack downloads, so the two never draw together.
 // The frame has no downloading state; the ring is the design gap the step brief asks the developer to approve.
 // The play triangle never flips: playback glyphs map to the timeline, not the reading direction.
 export function ReciterPlayButton({
@@ -17,6 +23,7 @@ export function ReciterPlayButton({
   progress,
   hint,
   playing = false,
+  starting = false,
   onPress,
   testID,
 }: {
@@ -26,6 +33,8 @@ export function ReciterPlayButton({
   hint?: string;
   /** This reciter is playing: the button draws pause. */
   playing?: boolean;
+  /** This reciter's audio is starting: the button draws pause and the buffering ring turns. */
+  starting?: boolean;
   onPress: () => void;
   testID?: string;
 }) {
@@ -33,67 +42,77 @@ export function ReciterPlayButton({
   const colors = useContrastColors();
   const size = theme.size.touchTarget;
   const downloading = progress !== null;
+  const buffering = starting && !downloading;
   const fraction = Math.min(1, Math.max(0, progress ?? 0));
   const circumference = 2 * Math.PI * RING_RADIUS;
 
   return (
-    <Pressable
-      accessibilityHint={hint}
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ busy: downloading }}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        alignItems: 'center',
-        backgroundColor: theme.colors.surfaceRaised,
-        borderColor: colors.line,
-        borderRadius: size / 2,
-        borderWidth: theme.stroke.hairline,
-        height: size,
-        justifyContent: 'center',
-        opacity: pressed ? theme.opacity.pressed : 1,
-        width: size,
-      })}
-      testID={testID}
+    <BufferingRing
+      active={buffering}
+      color={theme.colors.brand}
+      size={size}
+      testID={testID ? `${testID}-buffering` : undefined}
     >
-      <Svg
-        height={GLYPH_SIZE}
-        testID={testID ? `${testID}-glyph` : undefined}
-        viewBox="0 0 24 24"
-        width={GLYPH_SIZE}
+      <Pressable
+        accessibilityHint={hint}
+        accessibilityLabel={label}
+        accessibilityRole="button"
+        accessibilityState={{ busy: downloading || starting }}
+        onPress={playing || !starting ? onPress : ignoreTap}
+        style={({ pressed }) => ({
+          alignItems: 'center',
+          backgroundColor: theme.colors.surfaceRaised,
+          borderColor: colors.line,
+          borderRadius: size / 2,
+          borderWidth: theme.stroke.hairline,
+          height: size,
+          justifyContent: 'center',
+          opacity: pressed ? theme.opacity.pressed : 1,
+          width: size,
+        })}
+        testID={testID}
       >
-        <Path d={playing ? PAUSE_GLYPH : PLAY_GLYPH} fill={theme.colors.brand} />
-      </Svg>
-      {downloading ? (
         <Svg
-          height={size}
-          style={{ position: 'absolute' }}
-          testID={testID ? `${testID}-ring` : undefined}
-          viewBox={`0 0 ${size} ${size}`}
-          width={size}
+          height={GLYPH_SIZE}
+          testID={testID ? `${testID}-glyph` : undefined}
+          viewBox="0 0 24 24"
+          width={GLYPH_SIZE}
         >
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            fill="none"
-            r={RING_RADIUS}
-            stroke={colors.line}
-            strokeWidth={theme.stroke.selectedRing}
-          />
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            fill="none"
-            r={RING_RADIUS}
-            stroke={theme.colors.brand}
-            strokeDasharray={[circumference, circumference]}
-            strokeDashoffset={circumference * (1 - fraction)}
-            strokeLinecap="round"
-            strokeWidth={theme.stroke.selectedRing}
-            transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          />
+          <Path d={playing || starting ? PAUSE_GLYPH : PLAY_GLYPH} fill={theme.colors.brand} />
         </Svg>
-      ) : null}
-    </Pressable>
+        {downloading ? (
+          <Svg
+            height={size}
+            style={{ position: 'absolute' }}
+            testID={testID ? `${testID}-ring` : undefined}
+            viewBox={`0 0 ${size} ${size}`}
+            width={size}
+          >
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              fill="none"
+              r={RING_RADIUS}
+
+              strokeWidth={theme.stroke.selectedRing}
+              stroke={colors.line}
+            />
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              fill="none"
+              r={RING_RADIUS}
+
+              strokeWidth={theme.stroke.selectedRing}
+              stroke={theme.colors.brand}
+              strokeDasharray={[circumference, circumference]}
+              strokeDashoffset={circumference * (1 - fraction)}
+              strokeLinecap="round"
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            />
+          </Svg>
+        ) : null}
+      </Pressable>
+    </BufferingRing>
   );
 }

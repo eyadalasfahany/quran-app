@@ -47,7 +47,10 @@ jest.mock('@/core/db/content/open', () => ({
 }));
 
 jest.mock('@/features/reader/data/verses', () => ({ getVerseByKey: jest.fn() }));
-jest.mock('@/features/reader/data/chapters', () => ({ getChapter: jest.fn() }));
+jest.mock('@/features/reader/data/chapters', () => ({
+  ...jest.requireActual('@/features/reader/data/chapters'),
+  getChapter: jest.fn(),
+}));
 jest.mock('@/features/reader/anchor/useLastReadVerseKey', () => ({
   useLastReadVerseKey: () => '2:255',
 }));
@@ -96,7 +99,7 @@ describe('MenuScreen', () => {
     withLocation(LONDON);
     withAzkar(false);
     jest.mocked(getVerseByKey).mockReturnValue(reading as never);
-    jest.mocked(getChapter).mockReturnValue({ nameArabic: 'البقرة' } as never);
+    jest.mocked(getChapter).mockReturnValue({ nameArabic: 'البقرة', nameSimple: 'Al-Baqarah' } as never);
     storage.set(storageKeys.readerLastVerseKey, '2:255');
   });
 

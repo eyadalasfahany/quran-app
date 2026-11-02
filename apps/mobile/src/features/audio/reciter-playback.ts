@@ -1,30 +1,28 @@
-import { playChapter, resume } from './player';
+import { resolveInitialAnchor } from '../reader/anchor/reading-anchor';
+import { playChapter, playFromVerse, resume } from './player';
 import { usePlayerStore } from './playerStore';
 import { setReciterId } from './settings';
 import { downloadReciterPack } from './reciter-downloads';
 
 /**
- * Plays a reciter from the current surah (or surah 1). An uninstalled pack is installed first; if that
- * fails, nothing changes. The reciter already loaded is not restarted: playing stays as it is, and paused
- * resumes where it stopped.
- * TODO(phase 3 step 3): while playing, switch at the current ayah's startMs in the new file. Until then
- * the surah starts from 0.
+ * Plays a reciter from the current ayah (ADR 0046): `reader.lastVerseKey`, the one ayah the app has. A pack that
+ * isn't installed is installed first; if that fails, nothing changes. A reciter already playing or loading is kept
+ * as it is. Otherwise the reciter starts the current ayah from its start, even when that ayah is the paused one.
  */
 export async function playReciter(resourceId: number, installed: boolean): Promise<void> {
+  const store = usePlayerStore.getState();
+  store.beginStarting({ kind: 'reciter', resourceId });
   const current = usePlayerStore.getState();
-  if (current.reciterId === resourceId && current.chapterId !== null) {
-    if (current.status === 'paused') {
-      await resume();
-    }
-    if (current.status !== 'idle' && current.status !== 'error') {
-      return;
-    }
+  if (current.reciterId === resourceId && (current.status === 'playing' || current.status === 'loading')) {
+    current.clearStarting();
+    return;
   }
   if (!installed && !(await downloadReciterPack(resourceId))) {
+    store.clearStarting();
     return;
   }
   setReciterId(resourceId);
-  await playChapter(usePlayerStore.getState().chapterId ?? 1);
+  await playFromVerse(resolveInitialAnchor().verseKey);
 }
 
 /**
@@ -35,6 +33,8 @@ export async function playRecentListen(
   listen: { reciterResourceId: number; chapterId: number; lastPositionMs: number },
   installed: boolean,
 ): Promise<void> {
+  const store = usePlayerStore.getState();
+  store.beginStarting({ kind: 'listen', resourceId: listen.reciterResourceId, chapterId: listen.chapterId });
   // The surah already loaded with this reciter is not restarted at the saved position, which can be up to
   // 15 s behind: playing stays as it is, and paused resumes where it stopped.
   const current = usePlayerStore.getState();
@@ -44,10 +44,12 @@ export async function playRecentListen(
       return;
     }
     if (current.status === 'playing' || current.status === 'loading') {
+      current.clearStarting();
       return;
     }
   }
   if (!installed && !(await downloadReciterPack(listen.reciterResourceId))) {
+    store.clearStarting();
     return;
   }
   setReciterId(listen.reciterResourceId);
@@ -59,6 +61,7 @@ export async function playRecentListen(
  * before it lists the surahs, so nothing is installed here.
  */
 export async function playSurahFromReciter(resourceId: number, chapterId: number): Promise<void> {
+  usePlayerStore.getState().beginStarting({ kind: 'surah', resourceId, chapterId });
   setReciterId(resourceId);
   await playChapter(chapterId);
 }

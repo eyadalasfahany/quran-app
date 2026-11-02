@@ -5,6 +5,8 @@ import type { HighlightColor } from '@/shared/ui';
 
 import { getChapter } from '../data/chapters';
 import { getVerseByKey } from '../data/verses';
+import { useIsStarting, verseMatch } from '@/features/audio/hooks/useIsStarting';
+
 import { FocusStage } from './FocusStage';
 
 function neighbourKey(chapterId: number, verseNumber: number): string {
@@ -67,6 +69,9 @@ export function FocusReader({
     }
   }, [verseKey]);
 
+  // Called before the early return: hooks stay unconditional. The focused ayah's play is starting (ADR 0046).
+  const starting = useIsStarting(verseMatch(verseKey));
+
   if (stage === null) {
     return null;
   }
@@ -95,6 +100,7 @@ export function FocusReader({
       onPrevious={previous === undefined ? undefined : () => moveTo(previous.verseKey, 'previous')}
       onSelectVerse={(number) => moveTo(neighbourKey(verse.chapterId, number), null)}
       playing={playing}
+      starting={starting}
       previousNumber={previous?.verseNumber ?? null}
       previousText={previous?.textUthmani ?? null}
       recited={verse.verseKey === recitedVerseKey}

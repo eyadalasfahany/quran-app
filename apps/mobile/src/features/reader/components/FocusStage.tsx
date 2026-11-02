@@ -68,6 +68,7 @@ export function FocusStage({
   activeWord = null,
   following = false,
   playing = false,
+  starting = false,
   onPlay,
   onDragStart,
   onDragFinish,
@@ -99,6 +100,8 @@ export function FocusStage({
   following?: boolean;
   /** Whether the player is playing, so the play control shows pause. */
   playing?: boolean;
+  /** The focused ayah's play is starting: the control shows pause with the buffering ring. */
+  starting?: boolean;
   onPlay?: () => void;
   /** A swipe began, or a scroll: the reader is moving by hand, so following pauses. */
   onDragStart?: () => void;
@@ -298,6 +301,7 @@ export function FocusStage({
           onPlay={onPlay}
           onPrevious={onPrevious === undefined ? undefined : () => go('previous')}
           playing={playing}
+          starting={starting}
           repeatTarget={repeatTarget}
         />
       </View>

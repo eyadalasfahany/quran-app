@@ -30,7 +30,7 @@ import { ReaderModeFade } from '../components/ReaderModeFade';
 import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToolbar';
 import { ResumePill } from '../components/ResumePill';
 import { SidePanel } from '../components/SidePanel';
-import { getChapter, listChapters } from '../data/chapters';
+import { chapterDisplayName, getChapter, listChapters } from '../data/chapters';
 import { getVerseByKey, idToVerseKey } from '../data/verses';
 import { HafsMushafList } from '../HafsMushafList';
 import { panelPlacementFor, panelStripWidth } from '../layout';
@@ -74,8 +74,8 @@ function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): Re
     return { juz: null, page: null, place: null, title: verseKey, verseId: null };
   }
   const chapter = getChapter(executor, verse.chapterId);
-  const title = chapter === undefined ? verseKey : locale === 'ar' ? chapter.nameArabic : chapter.nameEn;
-  const place = chapter === undefined ? null : { current: verse.verseNumber, surah: chapter.nameArabic, total: chapter.versesCount };
+  const title = chapter === undefined ? verseKey : chapterDisplayName(chapter, locale);
+  const place = chapter === undefined ? null : { current: verse.verseNumber, surah: chapterDisplayName(chapter, locale), total: chapter.versesCount };
   return { juz: verse.juz, page: verse.page, place, title, verseId: verse.id };
 }
 
@@ -313,7 +313,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           </SidePanel>
         }
         panelOpen={selection.panelOpen}
-        miniPlayer={showMiniBar ? <MiniPlayer topVerseKey={visibleVerseKey ?? viewKey} variant="reader" /> : undefined}
+        miniPlayer={showMiniBar ? <MiniPlayer variant="reader" /> : undefined}
         resume={
           showMarkedPill || showResume ? (
             <View style={{ alignItems: 'center', gap: theme.space[2] }}>
