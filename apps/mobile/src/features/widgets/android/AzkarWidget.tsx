@@ -2,51 +2,50 @@
 // Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
 // must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
 
-import { FlexWidget } from 'react-native-android-widget';
-
 import { formatNumber } from '@/core/i18n/numbers';
 
 import { card } from './card';
 import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
-import { block, column, grow, label, row } from './primitives';
+import { block, column, grow, label, ringWithCentre, row } from './primitives';
+import { clampPercent, ringSvg } from './ring';
 import { widgetPaths } from '../snapshot/deep-links';
 import type { WidgetAzkarSession } from '../snapshot/types';
 
-/** One session: a check or an empty ring, its title, and its count for the period. */
+/** The frame's mini session ring (WidgetContinueReading Azkar row): 44 dp, 5 dp stroke. */
+const RING_SIZE = 44;
+const RING_STROKE = 5;
+
+function sessionPercent(session: WidgetAzkarSession): number {
+  if (session.complete) {
+    return 100;
+  }
+  return session.total > 0 ? clampPercent((session.done / session.total) * 100) : 0;
+}
+
+/** One session: a progress ring (and a check when complete), with its title under it. */
 function sessionTile(ctx: WidgetContext, session: WidgetAzkarSession) {
-  const { labels, locale, palette, rtl } = ctx;
-  const status = session.complete
-    ? labels.complete
-    : `${formatNumber(session.done, locale)} / ${formatNumber(session.total, locale)}`;
-  const check = (
-    <FlexWidget
-      key="check"
-      style={{
-        alignItems: 'center',
-        backgroundColor: session.complete ? palette.brand : palette.surfaceRaised,
-        borderColor: palette.line,
-        borderRadius: 11,
-        borderWidth: session.complete ? 0 : 1.5,
-        height: 22,
-        justifyContent: 'center',
-        width: 22,
-      }}
-    >
-      {session.complete
-        ? label('✓', { align: 'center', color: palette.onBrand, font: WIDGET_FONTS.bold, size: 12 }, rtl)
-        : null}
-    </FlexWidget>
+  const { palette, rtl } = ctx;
+  const percent = sessionPercent(session);
+  const centre = session.complete
+    ? label('✓', { align: 'center', color: palette.brand, font: WIDGET_FONTS.bold, size: 14 }, rtl)
+    : null;
+  const ring = ringWithCentre(
+    ringSvg({
+      fill: palette.brand,
+      percent,
+      size: RING_SIZE,
+      stroke: RING_STROKE,
+      track: palette.surface,
+    }),
+    RING_SIZE,
+    centre,
   );
   return grow(
-    column(
-      [
-        check,
-        label(session.title, { align: 'center', color: palette.ink, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-        label(status, { align: 'center', color: palette.inkMuted, font: WIDGET_FONTS.regular, size: 11 }, rtl),
-      ],
-      { alignItems: 'center', paddingHorizontal: 2 },
-    ),
+    column([ring, label(session.title, { align: 'center', color: palette.ink, font: WIDGET_FONTS.medium, size: 11 }, rtl)], {
+      alignItems: 'center',
+      flexGap: 6,
+    }),
     { alignItems: 'center' },
   );
 }

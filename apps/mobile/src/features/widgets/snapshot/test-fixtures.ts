@@ -23,6 +23,7 @@ export const TEST_LABELS: WidgetLabels = {
   prayerMaghrib: 'PRAYER maghrib',
   progressEmpty: 'LABEL progressEmpty',
   progressTitle: 'LABEL progressTitle',
+  remaining: 'LABEL remaining',
   resume: 'LABEL resume',
   stale: 'LABEL stale',
   wirdTitle: 'LABEL wirdTitle',

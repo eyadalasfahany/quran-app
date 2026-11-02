@@ -1,7 +1,9 @@
 import { fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
-import { renderUi } from '../../../../jest/render-ui';
+import { MENU_TAB } from '@/core/navigation/go-back';
+
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 
 import { MoonSightingScreen } from './MoonSightingScreen';
 
@@ -13,6 +15,12 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), canGoBack: jest.fn(() => true), push: jest.fn(), replace: jest.fn() },
 }));
+
+const canGoBack = jest.mocked(router.canGoBack);
+const back = jest.mocked(router.back);
+const replace = jest.mocked(router.replace);
+
+const hidden = { includeHiddenElements: true };
 
 const location: { snapshot: unknown; pending: boolean } = { snapshot: null, pending: false };
 
@@ -31,8 +39,33 @@ const NOW = new Date(2026, 10, 9, 12, 0);
 
 describe('MoonSightingScreen', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+    canGoBack.mockReturnValue(true);
     location.snapshot = null;
     location.pending = false;
+  });
+
+  it('pops the stack when the header back control is pressed and history exists', async () => {
+    const view = await renderUi(<MoonSightingScreen now={NOW} />);
+    fireEvent.press(view.getByTestId('moon-screen-header-back'));
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('replaces with the menu tab when back is pressed with no stack history', async () => {
+    canGoBack.mockReturnValue(false);
+    const view = await renderUi(<MoonSightingScreen now={NOW} />);
+    fireEvent.press(view.getByTestId('moon-screen-header-back'));
+    expect(back).not.toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith(MENU_TAB);
+    expect(MENU_TAB).toBe('/(main)/(menu)');
+  });
+
+  it.each(locales)('mirrors the header back chevron only in RTL (%s)', async (locale) => {
+    const view = await renderUi(<MoonSightingScreen now={NOW} />, { locale });
+    expect(flatStyle(view.getByTestId('moon-screen-header-back-icon', hidden).props.style).transform).toEqual(
+      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
+    );
   });
 
   it('shows no-location when coords are missing', async () => {

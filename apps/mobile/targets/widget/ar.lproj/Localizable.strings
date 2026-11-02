@@ -8,3 +8,11 @@
 "widget_misbaha_desc" = "عدّاد المسبحة ومجموع اليوم";
 "widget_lock_name" = "شاشة القفل";
 "widget_lock_desc" = "الصلاة القادمة ونسبة التقدّم";
+"widget_azkar_name" = "الأذكار · اليوم";
+"widget_azkar_desc" = "تقدّم جلسات الأذكار اليوم";
+"widget_lock_prayer_name" = "الصلاة القادمة (القفل)";
+"widget_lock_prayer_desc" = "ضمن السطر والمستطيل مع عدّ تنازلي";
+"widget_lock_progress_name" = "تقدّم اليوم (القفل)";
+"widget_lock_progress_desc" = "حلقة أهداف اليوم على شاشة القفل";
+"widget_lock_prayer_circle_name" = "موعد الصلاة (القفل)";
+"widget_lock_prayer_circle_desc" = "اسم الصلاة ووقتها في دائرة";

@@ -8,3 +8,11 @@
 "widget_misbaha_desc" = "Counter and today's total";
 "widget_lock_name" = "Lock screen";
 "widget_lock_desc" = "Next prayer and progress percent";
+"widget_azkar_name" = "Azkar today";
+"widget_azkar_desc" = "Today's adhkar session progress";
+"widget_lock_prayer_name" = "Next prayer (lock)";
+"widget_lock_prayer_desc" = "Inline and rectangular next prayer with countdown";
+"widget_lock_progress_name" = "Today's progress (lock)";
+"widget_lock_progress_desc" = "Daily goals ring on the lock screen";
+"widget_lock_prayer_circle_name" = "Prayer time (lock)";
+"widget_lock_prayer_circle_desc" = "Next prayer name and time in a circle";

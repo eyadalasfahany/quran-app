@@ -102,6 +102,8 @@ export const WIDGET_LABEL_KEYS = [
   'prayerAsr',
   'prayerMaghrib',
   'prayerIsha',
+  /** iOS home/lock countdown caption (Android has no countdown). */
+  'remaining',
 ] as const;
 
 export type WidgetLabelKey = (typeof WIDGET_LABEL_KEYS)[number];

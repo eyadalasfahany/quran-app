@@ -2,9 +2,13 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { renderUi } from '../../../../jest/render-ui';
 
-import { MenuMoonCard } from './MenuMoonCard';
+import { MENU_MOON_ICON, MenuMoonCard } from './MenuMoonCard';
 
 describe('MenuMoonCard', () => {
+  it('maps the card glyph to moon.fill on iOS and dark_mode on Android', () => {
+    expect(MENU_MOON_ICON).toEqual({ ios: 'moon.fill', android: 'dark_mode' });
+  });
+
   it('opens moon sighting when pressed', async () => {
     const onPress = jest.fn();
     const view = await renderUi(<MenuMoonCard onPress={onPress} preview="الاقتران خلال ٧ ساعات" testID="card" />);

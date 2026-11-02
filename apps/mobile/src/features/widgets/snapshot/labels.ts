@@ -26,6 +26,7 @@ export function buildWidgetLabels(t: TFunction): WidgetLabels {
     prayerMaghrib: t('widgets.prayers.maghrib'),
     progressEmpty: t('widgets.progressEmpty'),
     progressTitle: t('widgets.progressTitle'),
+    remaining: t('widgets.remaining'),
     resume: t('widgets.resume'),
     stale: t('widgets.stale'),
     wirdTitle: t('widgets.wirdTitle'),

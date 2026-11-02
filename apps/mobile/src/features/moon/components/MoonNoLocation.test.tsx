@@ -2,9 +2,13 @@ import { fireEvent } from '@testing-library/react-native';
 
 import { renderUi } from '../../../../jest/render-ui';
 
-import { MoonNoLocation } from './MoonNoLocation';
+import { MOON_NO_LOCATION_ICON, MoonNoLocation } from './MoonNoLocation';
 
 describe('MoonNoLocation', () => {
+  it('maps the empty-state glyph to location.slash on iOS and location_off on Android', () => {
+    expect(MOON_NO_LOCATION_ICON).toEqual({ ios: 'location.slash', android: 'location_off' });
+  });
+
   it('asks for the location in Arabic and calls onOpenSalah from the action button', async () => {
     const onOpenSalah = jest.fn();
     const view = await renderUi(<MoonNoLocation onOpenSalah={onOpenSalah} />);

@@ -5,6 +5,7 @@
 import { FlexWidget } from 'react-native-android-widget';
 
 import { card } from './card';
+import { withAlpha } from './theme';
 import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
 import { label, row, spacer } from './primitives';
@@ -46,7 +47,7 @@ export function NextPrayerWideWidget(ctx: WidgetContext) {
     return (
       <FlexWidget
         style={{
-          backgroundColor: isNext ? palette.highlightActive : palette.surfaceRaised,
+          backgroundColor: isNext ? palette.highlightActive : withAlpha(palette.surfaceRaised, 0),
           borderRadius: 12,
           flex: 1,
           flexDirection: 'column',

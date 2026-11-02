@@ -2,10 +2,14 @@ import { MisbahaWidget } from './MisbahaWidget';
 import { widgetContext } from './context';
 import { MISBAHA_TAP_ACTION } from './names';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { ofKind, textsOf } from './test-tree';
+import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
-const ctx = (snapshot = fullSnapshot()) => widgetContext({ mode: 'light', now, scheme: 'taybah', snapshot });
+const ctx = (
+  locale: 'ar' | 'en' = 'en',
+  mode: 'light' | 'dark' = 'light',
+  snapshot = fullSnapshot({ locale }),
+) => widgetContext({ mode, now, scheme: 'taybah', snapshot });
 
 describe('MisbahaWidget', () => {
   it('shows the count against the target', () => {
@@ -25,6 +29,20 @@ describe('MisbahaWidget', () => {
 
   it('shows the no-target label when the target is off', () => {
     const snapshot = fullSnapshot({ misbaha: { count: 5, target: null, todayTotal: 5 } });
-    expect(textsOf(MisbahaWidget(ctx(snapshot)))).toContain('LABEL misbahaNoTarget');
+    expect(textsOf(MisbahaWidget(ctx('en', 'light', snapshot)))).toContain('LABEL misbahaNoTarget');
+  });
+
+  it('uses Arabic-Indic digits in Arabic', () => {
+    expect(hasArabicIndicNumerals(MisbahaWidget(ctx('ar')))).toBe(true);
+  });
+
+  it('right-aligns full-width labels in Arabic', () => {
+    expect(startAlignedFullWidthLabels(MisbahaWidget(ctx('ar')), true)).toBe(true);
+  });
+
+  it('uses the dark palette in dark mode', () => {
+    const light = styleOf(ofKind(MisbahaWidget(ctx('en', 'light')), 'LinearLayoutWidget')[0]!);
+    const dark = styleOf(ofKind(MisbahaWidget(ctx('en', 'dark')), 'LinearLayoutWidget')[0]!);
+    expect(light.backgroundColor).not.toBe(dark.backgroundColor);
   });
 });

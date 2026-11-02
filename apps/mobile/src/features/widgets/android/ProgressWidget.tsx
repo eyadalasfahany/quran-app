@@ -59,7 +59,7 @@ export function ProgressWidget(ctx: WidgetContext) {
   const { progress } = snapshot;
   const percentText = formatPercent(progress.percent, ctx.locale);
   const ring = ringWithCentre(
-    ringSvg({ fill: palette.brand, percent: progress.percent, size: RING_SIZE, stroke: RING_STROKE, track: palette.fillSecondary }),
+    ringSvg({ fill: palette.brand, percent: progress.percent, size: RING_SIZE, stroke: RING_STROKE, track: palette.surface }),
     RING_SIZE,
     label(percentText, { align: 'center', color: palette.ink, font: WIDGET_FONTS.bold, size: 22 }, rtl),
   );
@@ -68,7 +68,7 @@ export function ProgressWidget(ctx: WidgetContext) {
   const body =
     rows.length === 0
       ? label(labels.progressEmpty, { color: palette.inkMuted, font: WIDGET_FONTS.regular, maxLines: 2, size: 13 }, rtl)
-      : column(rows, { flexGap: 6 });
+      : column(rows, { flexGap: 2 });
 
   // The row fills the card's height, so the ring and the text block sit in the middle, as the frame draws them.
   return card(
@@ -82,7 +82,7 @@ export function ProgressWidget(ctx: WidgetContext) {
               [label(labels.progressTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl), block({ height: 6 }), body],
               { flex: 1 },
             ),
-            { paddingHorizontal: 10 },
+            { paddingHorizontal: 14 },
           ),
         ],
         rtl,

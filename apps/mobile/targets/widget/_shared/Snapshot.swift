@@ -19,6 +19,7 @@ struct TaybahSnapshot: Codable {
     let openApp: String
     let stale: String
     let progressTitle: String
+    let remaining: String?
     let progressEmpty: String
     let continueReading: String
     let resume: String

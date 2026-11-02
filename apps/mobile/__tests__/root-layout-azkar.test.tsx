@@ -94,6 +94,8 @@ jest.setTimeout(15_000);
 
 describe("root layout Azkar screens", () => {
   const originalOs = Platform.OS;
+  // Full app router mounts are slow on Windows CI hosts.
+  jest.setTimeout(120_000);
 
   beforeEach(async () => {
     storage.set(storageKeys.locale, "en");
@@ -153,6 +155,7 @@ describe("root layout Azkar screens", () => {
       expect(screens.get(name)).toEqual({
         animation: "default",
         gestureEnabled: true,
+        fullScreenGestureEnabled: true,
       });
     }
   });

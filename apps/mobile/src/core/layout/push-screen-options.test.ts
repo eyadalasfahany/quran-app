@@ -15,22 +15,36 @@ describe('pushScreenOptions', () => {
     });
   });
 
-  it('keeps the native default on iOS in both directions', () => {
+  it('keeps the native default on iOS in both directions with a full-screen pop gesture', () => {
     for (const isRTL of [false, true]) {
       expect(pushScreenOptions({ platform: 'ios', isRTL, reduceMotion: false })).toEqual({
         animation: 'default',
         gestureEnabled: true,
+        fullScreenGestureEnabled: true,
       });
     }
   });
 
   it('fades on both platforms in both directions when Reduce Motion is on', () => {
-    for (const platform of ['ios', 'android']) {
-      for (const isRTL of [false, true]) {
-        expect(pushScreenOptions({ platform, isRTL, reduceMotion: true })).toEqual({
-          animation: 'fade',
-          gestureEnabled: true,
-        });
+    for (const isRTL of [false, true]) {
+      expect(pushScreenOptions({ platform: 'android', isRTL, reduceMotion: true })).toEqual({
+        animation: 'fade',
+        gestureEnabled: true,
+      });
+      expect(pushScreenOptions({ platform: 'ios', isRTL, reduceMotion: true })).toEqual({
+        animation: 'fade',
+        gestureEnabled: true,
+        fullScreenGestureEnabled: true,
+      });
+    }
+  });
+
+  it('does not set fullScreenGestureEnabled on Android', () => {
+    for (const isRTL of [false, true]) {
+      for (const reduceMotion of [false, true]) {
+        expect(pushScreenOptions({ platform: 'android', isRTL, reduceMotion })).not.toHaveProperty(
+          'fullScreenGestureEnabled',
+        );
       }
     }
   });

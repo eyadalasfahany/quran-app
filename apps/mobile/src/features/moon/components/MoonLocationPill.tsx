@@ -4,7 +4,7 @@ import { Pressable } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { Icon, type IconName, UiText } from '@/shared/ui';
 
-const LOCATION: IconName = { ios: 'mappin', android: 'place' };
+export const MOON_LOCATION_ICON: IconName = { ios: 'mappin', android: 'place' };
 
 /**
  * The Salah location, shown in the sighting header (#MoonSighting). It is read-only here: tapping it opens Salah,
@@ -40,7 +40,7 @@ export function MoonLocationPill({
       })}
       testID={testID}
     >
-      <Icon color={theme.colors.brand} name={LOCATION} size={18} testID={`${testID}-icon`} />
+      <Icon color={theme.colors.brand} name={MOON_LOCATION_ICON} size={18} testID={`${testID}-icon`} />
       <UiText variant="subhead">{label}</UiText>
     </Pressable>
   );

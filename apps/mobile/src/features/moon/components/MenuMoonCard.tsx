@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import { MenuCard } from '@/features/menu/components/MenuCard';
 
-const MOON = { ios: 'moon.fill', android: 'dark_mode' } as const;
+export const MENU_MOON_ICON = { ios: 'moon.fill', android: 'dark_mode' } as const;
 
 export function MenuMoonCard({
   preview,
@@ -18,7 +18,7 @@ export function MenuMoonCard({
   return (
     <MenuCard
       caption={t('moon.menu.caption')}
-      icon={MOON}
+      icon={MENU_MOON_ICON}
       onPress={onPress}
       preview={preview}
       testID={testID}

@@ -58,7 +58,7 @@ export function MisbahaWidget(ctx: WidgetContext) {
   const ring = column(
     [
       ringWithCentre(
-        ringSvg({ fill: palette.brand, percent, size: RING_SIZE, stroke: RING_STROKE, track: palette.fillSecondary }),
+        ringSvg({ fill: palette.brand, percent, size: RING_SIZE, stroke: RING_STROKE, track: palette.surface }),
         RING_SIZE,
         column(
           [

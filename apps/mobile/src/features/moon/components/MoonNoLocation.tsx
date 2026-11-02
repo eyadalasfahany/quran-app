@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { EmptyState, type IconName } from '@/shared/ui';
 
-const NO_LOCATION: IconName = { ios: 'location.slash', android: 'location_off' };
+export const MOON_NO_LOCATION_ICON: IconName = { ios: 'location.slash', android: 'location_off' };
 
 export function MoonNoLocation({ onOpenSalah, testID = 'moon-no-location' }: { onOpenSalah: () => void; testID?: string }) {
   const { t } = useTranslation();
@@ -15,7 +15,7 @@ export function MoonNoLocation({ onOpenSalah, testID = 'moon-no-location' }: { o
       <EmptyState
         action={{ label: t('moon.noLocation.action'), onPress: onOpenSalah }}
         body={t('moon.noLocation.body')}
-        icon={NO_LOCATION}
+        icon={MOON_NO_LOCATION_ICON}
         testID={`${testID}-empty`}
         title={t('moon.noLocation.title')}
       />

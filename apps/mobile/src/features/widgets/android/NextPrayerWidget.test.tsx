@@ -1,7 +1,7 @@
 import { NextPrayerWidget } from './NextPrayerWidget';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { ofKind, styleOf, textsOf } from './test-tree';
+import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (locale: 'ar' | 'en' = 'en', mode: 'light' | 'dark' = 'light', snapshot = fullSnapshot({ locale })) =>
@@ -35,5 +35,13 @@ describe('NextPrayerWidget', () => {
     const light = styleOf(ofKind(NextPrayerWidget(ctx('en', 'light')), 'LinearLayoutWidget')[0]!);
     const dark = styleOf(ofKind(NextPrayerWidget(ctx('en', 'dark')), 'LinearLayoutWidget')[0]!);
     expect(light.backgroundColor).not.toBe(dark.backgroundColor);
+  });
+
+  it('uses Arabic-Indic digits in the prayer time in Arabic', () => {
+    expect(hasArabicIndicNumerals(NextPrayerWidget(ctx('ar')))).toBe(true);
+  });
+
+  it('right-aligns full-width labels in Arabic', () => {
+    expect(startAlignedFullWidthLabels(NextPrayerWidget(ctx('ar')), true)).toBe(true);
   });
 });

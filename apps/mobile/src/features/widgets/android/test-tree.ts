@@ -36,3 +36,26 @@ export function ofKind(node: ReactNode, name: string): AnyElement[] {
 export function styleOf(element: AnyElement): Record<string, unknown> {
   return (element.props.style ?? {}) as Record<string, unknown>;
 }
+
+const ARABIC_INDIC = /[\u0660-\u0669\u066a\u066b]/;
+
+/** True when at least one text node uses Arabic-Indic digits or the Arabic percent sign. */
+export function hasArabicIndicNumerals(node: ReactNode): boolean {
+  return textsOf(node).some((text) => ARABIC_INDIC.test(text));
+}
+
+/** Every full-width label's `textAlign` in the tree (labels that fill the column width). */
+export function fullWidthLabelAligns(node: ReactNode): ('left' | 'right' | 'center')[] {
+  return walk(node)
+    .filter((element) => typeof element.props.text === 'string' && styleOf(element).width === 'match_parent')
+    .map((element) => styleOf(element).textAlign as 'left' | 'right' | 'center');
+}
+
+/** Full-width labels that follow reading direction (not explicitly centred). */
+export function startAlignedFullWidthLabels(node: ReactNode, rtl: boolean): boolean {
+  const expected = rtl ? 'right' : 'left';
+  return walk(node)
+    .filter((element) => typeof element.props.text === 'string' && styleOf(element).width === 'match_parent')
+    .filter((element) => styleOf(element).textAlign !== 'center')
+    .every((element) => styleOf(element).textAlign === expected);
+}

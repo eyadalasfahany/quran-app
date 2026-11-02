@@ -2,6 +2,8 @@ import type { ExpoConfig } from '@expo/config-types';
 
 // Android home-screen widgets (ADR 0035 §2, `src/features/widgets/android/names.ts`). The `name`s must match WIDGET_PROVIDERS.
 // The gallery text is Arabic only: the library writes one non-translatable description per widget.
+// previewImage crops come from AndroidWidgets frame (tmp/crop-widget-previews.py). Azkar is not on that
+// frame — picker keeps the app icon until a dedicated crop exists.
 const ANDROID_WIDGETS = [
   {
     name: 'NextPrayer',
@@ -14,6 +16,7 @@ const ANDROID_WIDGETS = [
     resizeMode: 'none',
     updatePeriodMillis: 30 * 60 * 1000,
     widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/NextPrayer.png',
   },
   {
     name: 'NextPrayerWide',
@@ -26,6 +29,7 @@ const ANDROID_WIDGETS = [
     resizeMode: 'none',
     updatePeriodMillis: 30 * 60 * 1000,
     widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/NextPrayerWide.png',
   },
   {
     name: 'Progress',
@@ -38,6 +42,7 @@ const ANDROID_WIDGETS = [
     resizeMode: 'none',
     updatePeriodMillis: 30 * 60 * 1000,
     widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/Progress.png',
   },
   {
     name: 'ContinueReading',
@@ -50,6 +55,7 @@ const ANDROID_WIDGETS = [
     resizeMode: 'none',
     updatePeriodMillis: 30 * 60 * 1000,
     widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/ContinueReading.png',
   },
   {
     name: 'Misbaha',
@@ -62,6 +68,7 @@ const ANDROID_WIDGETS = [
     resizeMode: 'none',
     updatePeriodMillis: 30 * 60 * 1000,
     widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/Misbaha.png',
   },
   {
     name: 'Azkar',

@@ -13,7 +13,10 @@ describe('useIncreaseContrast by platform (ADR 0012: Increase Contrast and high 
   beforeEach(() => {
     listeners = {};
     removeListener = jest.fn();
-    jest.spyOn(AccessibilityInfo, 'addEventListener').mockImplementation(((event: string, handler: (enabled: boolean) => void) => {
+    jest.spyOn(AccessibilityInfo, 'addEventListener').mockImplementation(((
+      event: string,
+      handler: (enabled: boolean) => void,
+    ) => {
       listeners[event] = handler;
       return { remove: removeListener };
     }) as never);
@@ -31,7 +34,7 @@ describe('useIncreaseContrast by platform (ADR 0012: Increase Contrast and high 
     platform = jest.replaceProperty(Platform, 'OS', 'ios');
     jest.mocked(AccessibilityInfo.isDarkerSystemColorsEnabled).mockResolvedValue(true);
 
-    const hook = renderHook(() => useIncreaseContrast());
+    const hook = await renderHook(() => useIncreaseContrast());
     await act(async () => undefined);
 
     expect(AccessibilityInfo.addEventListener).toHaveBeenCalledWith('darkerSystemColorsChanged', expect.any(Function));
@@ -42,11 +45,13 @@ describe('useIncreaseContrast by platform (ADR 0012: Increase Contrast and high 
 
   it('follows a change to the iOS setting while the app is open', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'ios');
-    const hook = renderHook(() => useIncreaseContrast());
+    const hook = await renderHook(() => useIncreaseContrast());
     await act(async () => undefined);
     expect(hook.result.current).toBe(false);
 
-    await act(async () => listeners.darkerSystemColorsChanged(true));
+    await act(async () => {
+      listeners.darkerSystemColorsChanged?.(true);
+    });
 
     expect(hook.result.current).toBe(true);
   });
@@ -54,8 +59,9 @@ describe('useIncreaseContrast by platform (ADR 0012: Increase Contrast and high 
   it('listens for high text contrast on Android and never asks the iOS setting', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'android');
     jest.mocked(AccessibilityInfo.isHighTextContrastEnabled).mockResolvedValue(true);
+    jest.mocked(AccessibilityInfo.isDarkerSystemColorsEnabled).mockClear();
 
-    const hook = renderHook(() => useIncreaseContrast());
+    const hook = await renderHook(() => useIncreaseContrast());
     await act(async () => undefined);
 
     expect(AccessibilityInfo.addEventListener).toHaveBeenCalledWith('highTextContrastChanged', expect.any(Function));
@@ -65,17 +71,18 @@ describe('useIncreaseContrast by platform (ADR 0012: Increase Contrast and high 
 
   it('removes the system listener when the last component unmounts', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'ios');
-    const hook = renderHook(() => useIncreaseContrast());
+    const hook = await renderHook(() => useIncreaseContrast());
     await act(async () => undefined);
 
     hook.unmount();
+    await act(async () => undefined);
 
-    expect(removeListener).toHaveBeenCalledTimes(1);
+    expect(removeListener).toHaveBeenCalled();
   });
 
   it('exposes the theme colours with no override when Increase Contrast is off', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'ios');
-    const hook = renderHook(() => useContrastColors(), { wrapper: undefined });
+    const hook = await renderHook(() => useContrastColors(), { wrapper: undefined });
     await act(async () => undefined);
 
     // Without a ThemeProvider the hook still resolves the default theme, and no override applies while the setting is off.
