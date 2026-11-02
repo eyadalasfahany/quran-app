@@ -62,9 +62,13 @@ export function label(text: string, options: TextOptions, rtl: boolean) {
   );
 }
 
+/**
+ * A horizontal row, full width by default. A FlexWidget wraps its content otherwise, and a wrap-content row gives its
+ * `flex` children no width: the progress card's text column vanished and its ring sat on the left even in Arabic.
+ */
 export function row(children: ReactNode[], rtl: boolean, style: FlexWidgetStyle = {}, click: ClickActionProps = {}) {
   return (
-    <FlexWidget {...click} style={{ alignItems: 'center', flexDirection: 'row', ...style }}>
+    <FlexWidget {...click} style={{ alignItems: 'center', flexDirection: 'row', width: 'match_parent', ...style }}>
       {orderedChildren(children, rtl)}
     </FlexWidget>
   );

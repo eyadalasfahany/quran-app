@@ -14,7 +14,7 @@
     "db:generate:user": "drizzle-kit generate --config drizzle.user.config.ts",
     "seed:build": "node scripts/build-content-seed.mjs",
     "assets:brand": "node scripts/generate-brand-assets.mjs",
-    "postinstall": "node scripts/patch-nitro-exception-ptr.mjs && node scripts/patch-expo-audio-exact-seek.mjs"
+    "postinstall": "node scripts/patch-nitro-exception-ptr.mjs && node scripts/patch-expo-audio-exact-seek.mjs && node scripts/patch-expo-dev-launcher-widget-host.mjs"
   },
   "dependencies": {
     "@bacons/apple-targets": "5.0.0",

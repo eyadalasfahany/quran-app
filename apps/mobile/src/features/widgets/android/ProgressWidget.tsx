@@ -68,7 +68,7 @@ export function ProgressWidget(ctx: WidgetContext) {
   const body =
     rows.length === 0
       ? label(labels.progressEmpty, { color: palette.inkMuted, font: WIDGET_FONTS.regular, maxLines: 2, size: 13 }, rtl)
-      : column(rows, { flexGap: 2 });
+      : column(rows, { flexGap: 2, width: 'match_parent' });
 
   // The row fills the card's height, so the ring and the text block sit in the middle, as the frame draws them.
   return card(
@@ -80,7 +80,8 @@ export function ProgressWidget(ctx: WidgetContext) {
           grow(
             column(
               [label(labels.progressTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl), block({ height: 6 }), body],
-              { flex: 1 },
+              // Full width: a wrap-content column left the rows narrow, with the values beside the labels, not at the far edge.
+              { flex: 1, width: 'match_parent' },
             ),
             { paddingHorizontal: 14 },
           ),

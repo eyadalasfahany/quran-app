@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 
 import { WIDGET_FONTS } from './fonts';
-import { label, startAlign } from './primitives';
+import { label, row, startAlign } from './primitives';
 
 type TextProps = { style: { textAlign?: string; width?: string } };
 
@@ -26,5 +26,20 @@ describe('label', () => {
     const element = label('٦:٣٧ م', { ...options, inline: true }, true) as ReactElement<TextProps>;
 
     expect(element.props.style.width).toBeUndefined();
+  });
+});
+
+describe('row', () => {
+  type RowProps = { style: { width?: string; flex?: number } };
+
+  it('fills its parent’s width, so flex children get space (the progress card’s text column was 0 wide)', () => {
+    const element = row([], true, { flex: 1 }) as ReactElement<RowProps>;
+    expect(element.props.style.width).toBe('match_parent');
+    expect(element.props.style.flex).toBe(1);
+  });
+
+  it('lets a caller set its own width', () => {
+    const element = row([], false, { width: 'wrap_content' }) as ReactElement<RowProps>;
+    expect(element.props.style.width).toBe('wrap_content');
   });
 });
