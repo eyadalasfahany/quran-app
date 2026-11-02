@@ -89,6 +89,9 @@ function setPlatform(os: (typeof Platform)["OS"]): void {
   Object.defineProperty(Platform, "OS", { configurable: true, get: () => os });
 }
 
+// Each file renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
 describe("root layout Azkar screens", () => {
   const originalOs = Platform.OS;
 

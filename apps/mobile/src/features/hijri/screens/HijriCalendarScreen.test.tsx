@@ -46,12 +46,12 @@ describe('HijriCalendarScreen', () => {
     const view = await renderUi(<HijriCalendarScreen now={NOW} />);
 
     await act(async () => {
-      fireEvent.press(view.getByTestId('hijri-month-header-next'));
+      await fireEvent.press(view.getByTestId('hijri-month-header-next'));
     });
     expect(view.getByTestId('hijri-month-header-title')).toHaveTextContent('جمادى الآخرة ١٤٤٨');
 
     await act(async () => {
-      fireEvent.press(view.getByTestId('hijri-month-header-today'));
+      await fireEvent.press(view.getByTestId('hijri-month-header-today'));
     });
     expect(view.getByTestId('hijri-month-header-title')).toHaveTextContent('جمادى الأولى ١٤٤٨');
   });
@@ -60,7 +60,7 @@ describe('HijriCalendarScreen', () => {
     const view = await renderUi(<HijriCalendarScreen now={NOW} />);
 
     await act(async () => {
-      fireEvent.press(view.getByTestId('hijri-month-header-previous'));
+      await fireEvent.press(view.getByTestId('hijri-month-header-previous'));
     });
 
     expect(view.getByTestId('hijri-month-header-title')).toHaveTextContent('ربيع الآخر ١٤٤٨');
@@ -78,10 +78,10 @@ describe('HijriCalendarScreen', () => {
   it('opens the adjust sheet from the header and from the row', async () => {
     const view = await renderUi(<HijriCalendarScreen now={NOW} />);
 
-    fireEvent.press(view.getByTestId('hijri-adjust-button'));
+    await fireEvent.press(view.getByTestId('hijri-adjust-button'));
     expect(router.push).toHaveBeenLastCalledWith('/hijri/adjust');
 
-    fireEvent.press(view.getByTestId('hijri-adjust-row-press'));
+    await fireEvent.press(view.getByTestId('hijri-adjust-row-press'));
     expect(router.push).toHaveBeenCalledTimes(2);
   });
 

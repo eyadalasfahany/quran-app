@@ -11,7 +11,8 @@ describe('HijriWeekdayRow', () => {
 
     expect(view.getByTestId('row-0', hidden)).toHaveTextContent('س');
     expect(view.getByTestId('row-1', hidden)).toHaveTextContent('ح');
-    expect(view.getByTestId('row-6', hidden)).toHaveTextContent('خ');
+    // Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, Friday: the seventh letter is Friday (ج), as in the frame.
+    expect(view.getByTestId('row-6', hidden)).toHaveTextContent('ج');
   });
 
   it('shows Sunday first in English', async () => {

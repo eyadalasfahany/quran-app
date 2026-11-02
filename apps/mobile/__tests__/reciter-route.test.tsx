@@ -59,6 +59,9 @@ jest.mock('@/features/audio/screens/ReciterDownloadsScreen', () => {
   };
 });
 
+// Each file renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
 describe('reciter route', () => {
   // The app starts in Arabic; these tests use the English labels, so they save English first (as a reader would).
   beforeEach(async () => {

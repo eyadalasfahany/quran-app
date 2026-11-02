@@ -44,9 +44,9 @@ export function QiblaNeedle({
     bearingValue.value = bearing;
   }, [bearing, bearingValue]);
 
-  const needleAngle = useFollowTarget(following, bearing, (follow) => {
+  const needleAngle = useFollowTarget(following, bearing, [bearingValue, heading], (follow, [target, live]) => {
     'worklet';
-    return follow ? needleAngleFor(bearingValue.value, heading.value) : bearingValue.value;
+    return follow ? needleAngleFor(target, live) : target;
   });
 
   const needleStyle = useAnimatedStyle(() => ({

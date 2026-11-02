@@ -70,6 +70,9 @@ function setWidth(width: number): void {
 }
 
 // The الصلاة route sits in the root stack, outside the tabs (app/salah/index.tsx).
+// Each file renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
 describe("salah route", () => {
   beforeEach(async () => {
     storage.set(storageKeys.locale, "en");

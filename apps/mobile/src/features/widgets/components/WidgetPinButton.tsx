@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { requestPinWidget } from 'react-native-android-widget';
 
 import type { WidgetProviderName } from '../android/names';
 import { Button } from '@/shared/ui';
@@ -23,7 +24,6 @@ export function WidgetPinButton({
     if (Platform.OS !== 'android') {
       return;
     }
-    const { requestPinWidget } = await import('react-native-android-widget');
     const ok = await requestPinWidget({ widgetName });
     if (!ok) {
       setPinSupported(false);

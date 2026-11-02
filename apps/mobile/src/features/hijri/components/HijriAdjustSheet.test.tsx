@@ -45,7 +45,7 @@ describe('HijriAdjustSheet', () => {
     await openSheet(view);
 
     expect(view.getByTestId('sheet-compare-before')).toBeOnTheScreen();
-    fireEvent.press(view.getByTestId('sheet-segment-2'));
+    await fireEvent.press(view.getByTestId('sheet-segment-2'));
 
     expect(view.getByTestId('sheet-compare-after')).toBeOnTheScreen();
   });
@@ -55,8 +55,8 @@ describe('HijriAdjustSheet', () => {
     const view = await renderUi(<HijriAdjustSheet onClose={onClose} testID="sheet" />);
     await openSheet(view);
 
-    fireEvent.press(view.getByTestId('sheet-segment--1'));
-    fireEvent.press(view.getByTestId('sheet-save'));
+    await fireEvent.press(view.getByTestId('sheet-segment--1'));
+    await fireEvent.press(view.getByTestId('sheet-save'));
 
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
     expect(storage.getNumber(storageKeys.hijriAdjustDays)).toBe(-1);
@@ -68,8 +68,8 @@ describe('HijriAdjustSheet', () => {
     const view = await renderUi(<HijriAdjustSheet onClose={onClose} testID="sheet" />);
     await openSheet(view);
 
-    fireEvent.press(view.getByTestId('sheet-reset'));
-    fireEvent.press(view.getByTestId('sheet-save'));
+    await fireEvent.press(view.getByTestId('sheet-reset'));
+    await fireEvent.press(view.getByTestId('sheet-save'));
 
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
     expect(storage.getNumber(storageKeys.hijriAdjustDays)).toBeUndefined();
@@ -80,8 +80,8 @@ describe('HijriAdjustSheet', () => {
     const view = await renderUi(<HijriAdjustSheet onClose={onClose} testID="sheet" />);
     await openSheet(view);
 
-    fireEvent.press(view.getByTestId('sheet-segment-2'));
-    fireEvent.press(view.getByTestId('sheet-header-close'));
+    await fireEvent.press(view.getByTestId('sheet-segment-2'));
+    await fireEvent.press(view.getByTestId('sheet-header-close'));
 
     expect(onClose).toHaveBeenCalled();
     expect(storage.getNumber(storageKeys.hijriAdjustDays)).toBeUndefined();

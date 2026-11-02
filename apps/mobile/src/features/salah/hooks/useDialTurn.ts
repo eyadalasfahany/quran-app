@@ -30,8 +30,8 @@ export function uprightRotationFor(turn: number): number {
  * No React state changes per sample: the turn lives in the SharedValue, and only animated styles read it.
  */
 export function useDialTurn(heading: SharedValue<number>, following: boolean): SharedValue<number> {
-  return useFollowTarget(following, 0, (follow) => {
+  return useFollowTarget(following, 0, [heading], (follow, [live]) => {
     'worklet';
-    return follow ? heading.value : 0;
+    return follow ? live : 0;
   });
 }

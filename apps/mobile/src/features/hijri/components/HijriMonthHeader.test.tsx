@@ -25,8 +25,8 @@ describe('HijriMonthHeader', () => {
       <HijriMonthHeader onNext={onNext} onPrevious={onPrevious} subtitle={SUBTITLE} testID={TEST_ID} title={TITLE} />,
     );
 
-    fireEvent.press(view.getByTestId(`${TEST_ID}-previous`));
-    fireEvent.press(view.getByTestId(`${TEST_ID}-next`));
+    await fireEvent.press(view.getByTestId(`${TEST_ID}-previous`));
+    await fireEvent.press(view.getByTestId(`${TEST_ID}-next`));
 
     expect(onPrevious).toHaveBeenCalledTimes(1);
     expect(onNext).toHaveBeenCalledTimes(1);
@@ -53,7 +53,7 @@ describe('HijriMonthHeader', () => {
       />,
     );
 
-    fireEvent.press(view.getByTestId(`${TEST_ID}-today`));
+    await fireEvent.press(view.getByTestId(`${TEST_ID}-today`));
 
     expect(onToday).toHaveBeenCalledTimes(1);
   });
