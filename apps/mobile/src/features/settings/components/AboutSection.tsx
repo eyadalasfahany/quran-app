@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { clearLocalUserData } from '@/core/db/user/clear';
 import { ConfirmDialog, ListRow, UiText } from '@/shared/ui';
 
+import { clearPersonalData } from '../data/clear-personal-data';
 import { SettingsGroup } from './SettingsGroup';
 
 const CLEAR_DATA_ICON = { ios: 'trash', android: 'delete_forever' } as const;
@@ -24,9 +24,10 @@ export function AboutSection({
     setConfirmOpen(false);
     if (onClearData) {
       onClearData();
-    } else {
-      clearLocalUserData();
+      return;
     }
+    // Never rejects: each step logs its own failure.
+    void clearPersonalData();
   };
 
   return (

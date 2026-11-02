@@ -17,9 +17,5 @@ final class SourceProfile
         public readonly string $collectionId,
         public readonly string $sourceKey,
         public readonly string $displayName,
-        public readonly bool $importEnabled,
-        public readonly bool $storeEnglish,
-        public readonly bool $audioRightsVerified,
-        public readonly string $importFlagKey,
     ) {}
 }

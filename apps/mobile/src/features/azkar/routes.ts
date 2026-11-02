@@ -1,4 +1,4 @@
-import { router, type Href } from 'expo-router';
+import type { Href } from 'expo-router';
 
 /** Azkar routes (app/azkar/*). Segments are encoded, so content keys with `:` or `-` stay one segment. */
 export const azkarHref = {
@@ -7,6 +7,8 @@ export const azkarHref = {
   favorites: '/azkar/favorites' as Href,
   /** Saved audio: the downloads screen (ADR 0031 §8). */
   downloads: '/azkar/downloads' as Href,
+  /** The full Azkar player, a sheet over the reader (ADR 0031 §8). */
+  player: '/azkar/player' as Href,
   category: (categoryId: string): Href => `/azkar/category/${encodeURIComponent(categoryId)}` as Href,
   read: (categoryId: string, unitKey?: string): Href => {
     const base = `/azkar/read/${encodeURIComponent(categoryId)}`;
@@ -25,14 +27,4 @@ export const azkarHref = {
   homeTab: '/(main)/(home)' as Href,
 };
 
-/**
- * Back or close. With history it pops; a screen opened with nothing under it (a deep link or a restored
- * launch) replaces itself with its parent instead, so the user is never left on a dead end.
- */
-export function goBackOr(fallback: Href): void {
-  if (router.canGoBack()) {
-    router.back();
-    return;
-  }
-  router.replace(fallback);
-}
+export { goBackOr } from '@/core/navigation/go-back';

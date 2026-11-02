@@ -24,25 +24,49 @@ return [
         'catalogue_url' => 'https://opendua.hdfund.org/v0.0.4/catalogue.json',
         // Milliseconds between download attempts. Tests set it to 0.
         'retry_delay_ms' => 1000,
-        // §1, ADR 0038: the production import lock. The source is granted; this flag and the reviewed Quran map keep production locked.
-        'import_enabled' => (bool) env('AZKAR_OPENDUA_IMPORT_ENABLED', false),
-        // §5: English and transliteration are stored only when the licence covers them. Default off.
-        'store_english' => false,
-        // §8: recordings are imported only with verified rights. Default off.
-        'audio_rights_verified' => false,
     ],
 
-    // §8: rights for imported recordings. Read only when audio_rights_verified is true.
+    /*
+    | ADR 0045 (2 Nov 2026, features enabled by default): the import, the English, the recordings and the
+    | streaming and download allowances are always on. There are no switches. The protections that remain are the pinned SHA-256 checks,
+    | production's acceptance of only reviewed Quran map rows (ADR 0031 §11), validation failures and excluded_entries.
+    */
+
+    // §8, ADR 0040 (developer, 1 Nov 2026). The licence is the attribution line, shown to users with a link to
+    // licence_url. OpenDua has published no audio licence text (its licence URL answers 404), so no licence wording is
+    // claimed here. Streaming and download are always allowed for the shipped recordings (see AzkarTransformer).
     'recording_rights' => [
-        'stream_allowed' => false,
-        'download_allowed' => false,
         'redistribution_allowed' => false,
         'attribution_ar' => null,
-        'attribution_en' => null,
-        'licence' => null,
-        'licence_url' => null,
-        // ISO 8601 date the rights were verified in writing, or null.
-        'rights_verified_at' => null,
+        'attribution_en' => 'Recitation by Muhammad Jumah for OpenDua',
+        'licence' => 'Recitation by Muhammad Jumah for OpenDua',
+        'licence_url' => 'https://opendua.org/developers',
+        // ISO 8601 date the developer decided these rights (ADR 0040, ADR 0042). Not a signed licence.
+        'rights_verified_at' => '2026-11-01',
+    ],
+
+    /*
+    | ADR 0040 §2, step 14: the Taybah-hosted recording files live on the azkar_audio disk at {audio_version}/<file>.
+    | A recording is imported only when its file is listed in the pinned manifest (below) and has the manifest's size on
+    | that disk. Until the files are provisioned, every recording is left out and the import report warns about it.
+    | No OpenDua URL reaches the app: rows carry /api/v1/azkar/audio/{version}/<file> only.
+    */
+    'audio_version' => '0.0.2',
+
+    'audio' => [
+        // The archive's manifest, committed as data (ids, sizes and hashes; never audio). Its SHA-256 is pinned below
+        // and checked before any use; the per-file hashes inside it are what azkar:audio-sync and azkar:audio-verify check.
+        // This copy is the published manifest at audio.opendua.org/hisn/v0.0.2/manifest.json (fetched 2 Nov 2026).
+        'manifest_path' => base_path('resources/azkar/audio/hisn-0.0.2.manifest.json'),
+        'manifest_sha256' => 'c5a947bbb55c8e18bbc92759f7aef8a8505b5ae6827939ea301438e55a82eb42',
+        // Where azkar:audio-sync downloads the shipped files from (ADR 0040 decision 2: copied once, never proxied).
+        'base_url' => 'https://audio.opendua.org',
+        // Per IP, for GET /api/v1/azkar/audio/{version}/{file} (spec §8). Separate from the content limiter: one play
+        // issues several Range requests, and «download all» fetches every shipped file.
+        'rate_limit_per_minute' => 600,
+        // Milliseconds between downloads, and before a retry. Tests set both to 0.
+        'gap_ms' => 300,
+        'retry_delay_ms' => 1000,
     ],
 
     // §4 and the Arabic title rule, keyed by chapter number. Source: hisnmuslim.com, the book's own site, from the pinned
@@ -226,12 +250,12 @@ return [
     | ADR 0031 §12. The primary source supplies the canonical catalogue. The other source is used only to cross-verify.
     | opendua is the default until the developer chooses otherwise.
     */
-    'primary_source' => env('AZKAR_PRIMARY_SOURCE', 'opendua'),
+    'primary_source' => 'opendua',
 
     /*
-    | hisnmuslim.com (ADR 0031 §12). Locked in production until written permission arrives, like OpenDua: its own
-    | content_sources row, its own import flag, and its own snapshot pin. The snapshot is fetched politely (sequential,
-    | a gap between requests) and verified against the pinned manifest SHA-256 before an import uses it.
+    | hisnmuslim.com (ADR 0031 §12). A second source for cross-checks and missing counts, with its own snapshot pin. The
+    | snapshot is fetched politely (sequential, a gap between requests) and verified against the pinned manifest SHA-256
+    | before an import uses it.
     */
     'hisnmuslim' => [
         'code' => 'hisnmuslim',
@@ -239,14 +263,13 @@ return [
         'chapter_url' => 'https://www.hisnmuslim.com/api/ar/{id}.json',
         'gap_ms' => 300,
         'retry_delay_ms' => 1000,
-        'import_enabled' => (bool) env('AZKAR_HISNMUSLIM_IMPORT_ENABLED', false),
         // The pin: the snapshot date and the SHA-256 of its whole manifest. Set by `azkar:snapshot hisnmuslim`.
         'snapshot_date' => '2026-11-01',
         'snapshot_sha256' => '6d87857bc527bb2466497439b2fe62c875fa9732d3c7fd1df995d60c1606adec',
     ],
     /*
-    | ADR 0031 §12. HadeethEnc enriches entries with explanation, grade and reference notes. Locked: its content_sources
-    | row must be granted AND AZKAR_HADEETHENC_ENABLED on. The snapshot is pinned like the others.
+    | ADR 0031 §12. HadeethEnc enriches entries with explanation, grade and reference notes. The snapshot is pinned like
+    | the others; a snapshot that is not on the server leaves the notes out with a reason, and the import still runs.
     */
     'hadeethenc' => [
         'code' => 'hadeethenc',
@@ -258,7 +281,6 @@ return [
         'per_page' => 100,
         'gap_ms' => 300,
         'retry_delay_ms' => 1000,
-        'enabled' => (bool) env('AZKAR_HADEETHENC_ENABLED', false),
         // A dhikr shorter than this (normalised characters) is not linked: short phrases occur in many hadiths.
         'min_match_chars' => 40,
         'snapshot_date' => '2026-11-01',

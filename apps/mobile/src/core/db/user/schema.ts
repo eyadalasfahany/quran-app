@@ -172,7 +172,7 @@ export const azkarProgress = sqliteTable(
   ],
 );
 
-export const azkarReminderTargetTypes = ['category', 'entry'] as const;
+export const azkarReminderTargetTypes = ['category', 'entry', 'my_dua'] as const;
 export const azkarReminderTriggerTypes = ['clock', 'prayer_relative'] as const;
 
 // A reminder preference («وقت التذكير»), not the time of the dhikr. `notification_ids` is a JSON array.
@@ -192,3 +192,17 @@ export const azkarReminders = sqliteTable(
   },
   (table) => [uniqueIndex('azkar_reminders_target_idx').on(table.targetType, table.targetKey)],
 );
+
+export const myDuas = sqliteTable('my_duas', {
+  id: text('id').primaryKey(),
+  title: text('title'),
+  body: text('body').notNull(),
+  textSearch: text('text_search').notNull(),
+  createdAt: integer('created_at').notNull(),
+  updatedAt: integer('updated_at').notNull(),
+});
+
+export const duaFavorites = sqliteTable('dua_favorites', {
+  duaKey: text('dua_key').primaryKey(),
+  createdAt: integer('created_at').notNull(),
+});

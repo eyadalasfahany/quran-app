@@ -13,7 +13,7 @@ describe('AzkarSearchResultRow', () => {
     await renderUi(<AzkarSearchResultRow highlight={{ end: start + 6, start }} number={1} onPress={jest.fn()} preview={PREVIEW} />);
 
     const row = screen.getByTestId('azkar-search-result');
-    expect(row.props.accessibilityLabel).toBe(`١, ${PREVIEW}`);
+    expect(row.props.accessibilityLabel).toBe(`١، ${PREVIEW}`);
     expect(screen.getByText('الصباح')).toBeOnTheScreen();
     expect(screen.getByRole('button')).toBeOnTheScreen();
   });
@@ -22,7 +22,7 @@ describe('AzkarSearchResultRow', () => {
     await renderUi(<AzkarSearchResultRow highlight={null} number={2} onPress={jest.fn()} preview={PREVIEW} />);
 
     expect(screen.queryByText('الصباح')).toBeNull();
-    expect(screen.getByRole('button', { name: `٢, ${PREVIEW}` })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: `٢، ${PREVIEW}` })).toBeOnTheScreen();
   });
 
   it('opens the entry on press', async () => {

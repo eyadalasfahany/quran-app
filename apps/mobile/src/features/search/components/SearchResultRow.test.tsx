@@ -73,7 +73,7 @@ describe('SearchResultRow', () => {
   });
 
   it.each([
-    ['ar', 'الحمد لله رب العالمين الآية ٢, الفاتحة · ٢'],
+    ['ar', 'الحمد لله رب العالمين الآية ٢، الفاتحة · ٢'],
     ['en', 'الحمد لله رب العالمين Ayah 2, Al-Fatihah · 2'],
   ] as const)('labels the ayah with its Imla\'i text, number and reference in %s', async (locale, name) => {
     const view = await renderUi(

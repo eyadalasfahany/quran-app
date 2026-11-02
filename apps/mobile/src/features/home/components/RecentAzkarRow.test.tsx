@@ -16,7 +16,7 @@ describe('RecentAzkarRow', () => {
     const onPress = jest.fn();
     const view = await renderUi(<RecentAzkarRow meta="٦ من ٦ · مكتملة" onPress={onPress} title="أذكار بعد الصلاة" />);
 
-    await fireEvent.press(view.getByRole('button', { name: 'أذكار بعد الصلاة, ٦ من ٦ · مكتملة' }));
+    await fireEvent.press(view.getByRole('button', { name: 'أذكار بعد الصلاة، ٦ من ٦ · مكتملة' }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
   });

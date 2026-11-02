@@ -7,7 +7,7 @@ Refactor the OpenDua importer behind an interface, without changing its behaviou
 - `AzkarCatalogueSource`: `code()`, `fetchSnapshot(): Snapshot` (files plus a SHA-256 manifest), `parse(Snapshot): ParsedCatalogue` (the existing DTOs).
 - `OpenDuaSource` wraps the current parser.
 - `azkar:import --source=opendua|hisnmuslim`. Default is `config('azkar.primary_source')`.
-- Each source has its own lock pair (its `content_sources` row plus `AZKAR_<SOURCE>_IMPORT_ENABLED`) and its own pinned snapshot manifest.
+- Each source has its own pinned snapshot manifest. There is no per-source import switch (removed 2 Nov 2026, ADR 0045).
 
 ## 2. `HisnMuslimSource`
 - **Fetch** `https://www.hisnmuslim.com/api/ar/husn_ar.json` (index: `ID`, `TITLE`, `AUDIO_URL`, `TEXT`), then each chapter file `api/ar/{ID}.json`. The file's top-level key is the chapter title; each entry has `ID`, `ARABIC_TEXT`, `LANGUAGE_ARABIC_TRANSLATED_TEXT`, `TRANSLATED_TEXT`, `REPEAT`, `AUDIO`.

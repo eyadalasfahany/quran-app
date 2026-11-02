@@ -16,10 +16,13 @@ type PushInput = ScreenMotionInput & {
  */
 export function pushScreenOptions({ platform, isRTL, reduceMotion }: PushInput): NativeStackNavigationOptions {
   if (reduceMotion) {
+    if (platform === 'ios') {
+      return { animation: 'fade', gestureEnabled: true, fullScreenGestureEnabled: true };
+    }
     return { animation: 'fade', gestureEnabled: true };
   }
   if (platform === 'ios') {
-    return { animation: 'default', gestureEnabled: true };
+    return { animation: 'default', gestureEnabled: true, fullScreenGestureEnabled: true };
   }
   return { animation: isRTL ? 'slide_from_left' : 'slide_from_right', gestureEnabled: true };
 }

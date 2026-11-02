@@ -62,15 +62,13 @@ describe('ReadingAyahHeader', () => {
     expect(onPlay).not.toHaveBeenCalled();
   });
 
-  it.each(locales)('flips the play triangle in RTL and never the pause glyph (%s)', async (locale) => {
+  it.each(locales)('never flips the play triangle, which points right in both languages (ADR 0029, %s)', async (locale) => {
     const view = await renderUi(
       <ReadingAyahHeader audioAvailable onPlay={() => undefined} testID="hdr" verseNumber={1} />,
       { locale },
     );
     const [icon] = view.getByTestId('hdr-play').children;
-    expect(flatStyle(typeof icon === 'object' ? icon.props.style : undefined).transform).toEqual(
-      locale === 'ar' ? [{ scaleX: -1 }] : undefined,
-    );
+    expect(flatStyle(typeof icon === 'object' ? icon.props.style : undefined).transform).toBeUndefined();
   });
 
   it('opens tafsir and ayah actions from their buttons', async () => {

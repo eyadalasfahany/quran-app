@@ -32,7 +32,9 @@ export function AzkarSessionRow({
   const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
-  const label = completed ? `${title}, ${progressText}, ${t('azkar.browse.completed')}` : `${title}, ${progressText}`;
+  const label = completed
+    ? t('common.a11yTriple', { label: title, title: progressText, detail: t('azkar.browse.completed') })
+    : t('common.a11yPair', { label: title, title: progressText });
 
   return (
     <Pressable

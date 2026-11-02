@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -25,12 +26,13 @@ export function RecentAzkarRow({
   onPress: () => void;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
 
   return (
     <Pressable
-      accessibilityLabel={`${title}, ${meta}`}
+      accessibilityLabel={t('common.a11yPair', { label: title, title: meta })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({ alignItems: 'center', flexDirection: 'row', gap: ROW_GAP, opacity: pressed ? theme.opacity.pressed : 1 })}

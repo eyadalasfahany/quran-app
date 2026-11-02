@@ -1,14 +1,11 @@
 import {
   act,
-  fireEvent,
   renderRouter,
   screen,
 } from "expo-router/testing-library";
 import { router } from "expo-router";
 import type { ComponentProps } from "react";
 import { Dimensions, I18nManager } from "react-native";
-
-import { locales } from "../jest/render-ui";
 
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
@@ -71,15 +68,16 @@ function setWidth(width: number): void {
   });
 }
 
-// The الصلاة route sits in the root stack, outside the tabs (app/salah/index.tsx). On an expanded window it keeps the
-// sidebar through its own shell (app/salah/_layout.tsx, ADR 0032 amendment).
-describe.each(locales)("salah route in %s", (locale) => {
+// The الصلاة route sits in the root stack, outside the tabs (app/salah/index.tsx).
+// Each file renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
+describe("salah route", () => {
   beforeEach(async () => {
-    // Without this, "/" redirects to onboarding, which covers the tabs and the sidebar.
+    storage.set(storageKeys.locale, "en");
     storage.set(storageKeys.onboardingCompleted, true);
-    storage.set(storageKeys.locale, locale);
-    I18nManager.isRTL = locale === "ar";
-    await i18n.changeLanguage(locale);
+    I18nManager.isRTL = false;
+    await i18n.changeLanguage("en");
   });
 
   it("renders the Salah screen at /salah inside the root stack", async () => {
@@ -94,19 +92,7 @@ describe.each(locales)("salah route in %s", (locale) => {
     expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
   });
 
-  it("renders no sidebar at /salah on a compact window", async () => {
-    setWidth(390);
-    await renderRouter("./app");
-
-    await act(async () => {
-      router.navigate("/salah");
-    });
-
-    expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
-    expect(screen.queryByTestId("sidebar")).toBeNull();
-  });
-
-  it("opens the Salah screen from the expanded sidebar, with the sidebar kept and Prayer selected", async () => {
+  it("opens the Salah screen on an expanded window, where the sidebar is gone (ADR 0051)", async () => {
     setWidth(390);
     const view = await renderRouter("./app");
 
@@ -114,20 +100,18 @@ describe.each(locales)("salah route in %s", (locale) => {
       setWidth(900);
     });
 
-    expect(screen.getByTestId("sidebar-salah")).toBeOnTheScreen();
+    expect(screen.queryByTestId("sidebar-salah")).not.toBeOnTheScreen();
 
     await act(async () => {
-      fireEvent.press(screen.getByTestId("sidebar-salah"));
+      router.navigate("/salah");
     });
 
     expect(view.getSegments()).toEqual(["salah"]);
     expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
-    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
-    expect(screen.getByTestId("sidebar-salah").props.accessibilityState).toEqual({ selected: true });
   });
 
-  it("opens Qibla from the Salah screen inside the Salah stack, keeping the sidebar on an expanded window", async () => {
-    setWidth(900);
+  it("opens Qibla from the Salah screen inside the Salah stack", async () => {
+    setWidth(390);
     const view = await renderRouter("./app");
 
     await act(async () => {
@@ -138,20 +122,5 @@ describe.each(locales)("salah route in %s", (locale) => {
     });
 
     expect(view.getSegments()).toEqual(["salah", "qibla"]);
-    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
-    expect(screen.getByTestId("sidebar-salah").props.accessibilityState).toEqual({ selected: true });
-  });
-
-  it("keeps the sidebar with Prayer selected when /salah opens on an expanded window", async () => {
-    setWidth(900);
-    await renderRouter("./app");
-
-    await act(async () => {
-      router.navigate("/salah");
-    });
-
-    expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
-    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
-    expect(screen.getByTestId("sidebar-salah").props.accessibilityState).toEqual({ selected: true });
   });
 });

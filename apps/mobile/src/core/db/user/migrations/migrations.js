@@ -6,6 +6,7 @@ import m0001 from './0001_recent_listens.sql';
 import m0002 from './0002_audio_downloads.sql';
 import m0003 from './0003_volatile_madrox.sql';
 import m0004 from './0004_unknown_nitro.sql';
+import m0005 from './0005_my_duas.sql';
 
   export default {
     journal,
@@ -14,7 +15,8 @@ import m0004 from './0004_unknown_nitro.sql';
 m0001,
 m0002,
 m0003,
-m0004
+m0004,
+m0005
     }
   }
   

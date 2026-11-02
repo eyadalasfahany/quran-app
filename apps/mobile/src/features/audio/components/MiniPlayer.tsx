@@ -20,7 +20,6 @@ import {
   MINI_PLAYER_GAP,
   MINI_PLAYER_GLYPH_SIZE,
   MINI_PLAYER_METRICS,
-  MINI_PLAYER_SIDEBAR,
   type MiniPlayerVariant,
 } from '../mini-player-metrics';
 import { pause } from '../player';
@@ -89,61 +88,6 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
       ? surah
       : t('player.mini.caption', { surah, ayah: t('ui.ayahNumber', { number: formatNumber(ayah, locale) }) });
 
-  if (variant === 'sidebar') {
-    const subtitle = captioned(shownSurah, shownAyah);
-
-    return (
-      <View
-        style={{
-          backgroundColor: theme.colors.surfaceRaised,
-          borderColor: theme.colors.line,
-          borderRadius: MINI_PLAYER_SIDEBAR.radius,
-          borderWidth: theme.stroke.hairline,
-          gap: MINI_PLAYER_GAP,
-          padding: MINI_PLAYER_SIDEBAR.padding,
-        }}
-        testID="mini-player-sidebar"
-      >
-        <View style={{ alignItems: 'center', flexDirection: 'row', gap: MINI_PLAYER_GAP }}>
-          <Pressable
-            accessibilityHint={t('player.mini.hint')}
-            accessibilityLabel={t('player.mini.label', { reciter: shownReciter, surah: subtitle })}
-            accessibilityRole="button"
-            onPress={() => router.push('/player')}
-            style={{ alignItems: 'center', flex: 1, flexDirection: 'row', gap: MINI_PLAYER_GAP, minWidth: 0 }}
-            testID="mini-player-open"
-          >
-            <MiniPlayerTile
-              glyph="brand"
-              letter={reciterInitial(shownReciter)}
-              radius={MINI_PLAYER_SIDEBAR.tileRadius}
-              size={MINI_PLAYER_SIDEBAR.tileSize}
-            />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <UiText variant={MINI_PLAYER_SIDEBAR.title.variant} weight={MINI_PLAYER_SIDEBAR.title.weight}>
-                {shownReciter}
-              </UiText>
-              <UiText numberOfLines={1} tone="muted" variant={MINI_PLAYER_SIDEBAR.subtitle.variant} weight={MINI_PLAYER_SIDEBAR.subtitle.weight}>
-                {subtitle}
-              </UiText>
-            </View>
-          </Pressable>
-          <PlayerIconButton
-            background={theme.colors.brand}
-            glyphColor={theme.colors.onBrand}
-            glyphSize={MINI_PLAYER_GLYPH_SIZE}
-            hitSize={MINI_PLAYER_BUTTON_SIZE}
-            icon={showPause ? PAUSE_ICON : PLAY_ICON}
-            label={showPause ? t('player.pause') : t('player.play')}
-            onPress={onToggle}
-            starting={starting}
-            testID="mini-player-toggle"
-          />
-        </View>
-        {isPlaying ? <MiniPlayerProgressLine fraction={fraction} placement="inline" /> : null}
-      </View>
-    );
-  }
 
   if (variant === 'reader') {
     const readerSubtitle = captioned(shownSurah, shownAyah);

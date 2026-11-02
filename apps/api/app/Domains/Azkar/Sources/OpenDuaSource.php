@@ -28,10 +28,6 @@ final class OpenDuaSource implements AzkarCatalogueSource
             collectionId: (string) config('azkar.opendua.collection_id'),
             sourceKey: (string) config('azkar.opendua.source_key'),
             displayName: 'OpenDua',
-            importEnabled: (bool) config('azkar.opendua.import_enabled'),
-            storeEnglish: (bool) config('azkar.opendua.store_english', false),
-            audioRightsVerified: (bool) config('azkar.opendua.audio_rights_verified', false),
-            importFlagKey: 'AZKAR_OPENDUA_IMPORT_ENABLED',
         );
     }
 

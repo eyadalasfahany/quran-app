@@ -73,15 +73,15 @@
     "continueAzkar": {
       "caption": "تابع الأذكار"
     },
-    "home": {
-      "caption": "الصفحة",
-      "title": "الرئيسية",
-      "subtitle": "القراءة الأخيرة وما تابعته"
-    },
     "favorites": {
       "caption": "المحفوظات",
       "title": "الأذكار المفضلة",
       "subtitle": "ما حفظته من الأذكار"
+    },
+    "reminders": {
+      "caption": "التذكير",
+      "title": "التذكيرات",
+      "subtitle": "الصلاة والأذكار والورد"
     }
   },
   "time": {
@@ -133,7 +133,6 @@
       "deleteBody": "تُحذف الملفات الصوتية المحمّلة لهذا القارئ من الجهاز. يمكنك تنزيلها مرة أخرى في أي وقت.",
       "deleteConfirm": "حذف",
       "cancel": "إلغاء",
-      "installing": "جارٍ تنزيل بيانات القارئ",
       "installFailed": "تعذّر تنزيل بيانات القارئ",
       "retry": "إعادة المحاولة",
       "notFound": "لم نجد هذا القارئ"
@@ -169,7 +168,6 @@
       "makkah": "مكية",
       "madinah": "مدنية"
     },
-    "surahMeta": "{{place}} · {{count}} آية",
     "mushaf": {
       "placeholderTitle": "هذه الصفحة غير جاهزة",
       "placeholderBody": "اتصل بالإنترنت لتحميل هذه الصفحة.",
@@ -317,6 +315,8 @@
           "subtitle": "الرسم العثماني · خط شهرزاد الجديد"
         }
       },
+      "decreaseGlyph": "أ−",
+      "increaseGlyph": "أ+",
       "themeLabel": "المظهر",
       "themes": {
         "automatic": "تلقائي",
@@ -333,8 +333,6 @@
   "library": {
     "index": {
       "title": "الفهرس",
-      "continueReading": "تابع القراءة",
-      "continueSubtitle": "{{surah}} · {{verseKey}} · {{ayah}}",
       "segmentLabel": "عرض الفهرس",
       "segments": {
         "surahs": "السور",
@@ -401,7 +399,6 @@
     }
   },
   "search": {
-    "title": "البحث",
     "placeholder": "ابحث في القرآن",
     "cancel": "إلغاء",
     "hint": "ابحث بالآية، رقم السورة، أو اسمها",
@@ -489,10 +486,16 @@
         "kmUnit": "كم",
         "accuracy": "دقة البوصلة",
         "accuracyGood": "جيدة",
+        "accuracyFair": "متوسطة",
         "accuracyPoor": "منخفضة",
+        "accuracyUnavailable": "—",
+        "accuracyUnavailableA11y": "غير متاحة",
+        "waitingLocation": "بانتظار تحديد الموقع",
         "location": "الموقع",
         "locationAuto": "تلقائي",
         "unsupportedNote": "هذا الجهاز لا يدعم البوصلة؛ الاتجاه المعروض محسوب من موقعك",
+        "northUpNote": "القرص ثابت على الشمال الحقيقي؛ يدور مع الجهاز عند توفّر البوصلة",
+        "northUpReduceMotion": "القرص ثابت على الشمال الحقيقي لأن تقليل الحركة مفعّل",
         "noLocationTitle": "الموقع غير محدد",
         "noLocationBody": "نحتاج موقعك لحساب اتجاه القبلة والمسافة",
         "setLocation": "تحديد الموقع",
@@ -649,15 +652,20 @@
   "khatma": {
     "title": "خطة الختمة",
     "durationLabel": "أختم خلال",
-    "durationDays": "{{formatted}} يومًا",
+    "durationDays_zero": "{{formatted}} يوم",
+    "durationDays_one": "يوم واحد",
+    "durationDays_two": "يومان",
+    "durationDays_few": "{{formatted}} أيام",
+    "durationDays_many": "{{formatted}} يومًا",
+    "durationDays_other": "{{formatted}} يوم",
     "dailyWirdLabel": "وردك اليومي",
-    "pagesPerDay_one": "{{formatted}} صفحة",
-    "pagesPerDay_two": "{{formatted}} صفحتان",
+    "pagesPerDay_one": "صفحة واحدة",
+    "pagesPerDay_two": "صفحتان",
     "pagesPerDay_few": "{{formatted}} صفحات",
     "pagesPerDay_many": "{{formatted}} صفحة",
     "pagesPerDay_other": "{{formatted}} صفحة",
-    "juzApprox_one": "حوالي {{formatted}} جزء يوميًا",
-    "juzApprox_two": "حوالي {{formatted}} جزءين يوميًا",
+    "juzApprox_one": "حوالي جزء واحد يوميًا",
+    "juzApprox_two": "حوالي جزأين يوميًا",
     "juzApprox_few": "حوالي {{formatted}} أجزاء يوميًا",
     "juzApprox_many": "حوالي {{formatted}} جزءًا يوميًا",
     "juzApprox_other": "حوالي {{formatted}} جزء يوميًا",
@@ -679,7 +687,12 @@
       "cancel": "إلغاء"
     },
     "summary": {
-      "planName": "ختمة {{formatted}} يومًا",
+      "planName_zero": "ختمة {{formatted}} يوم",
+      "planName_one": "ختمة يوم واحد",
+      "planName_two": "ختمة يومين",
+      "planName_few": "ختمة {{formatted}} أيام",
+      "planName_many": "ختمة {{formatted}} يومًا",
+      "planName_other": "ختمة {{formatted}} يوم",
       "dayProgress": "اليوم {{day}} من {{total}}",
       "emptyTitle": "ابدأ ختمة",
       "emptyBody": "حدّد مدة الختمة وتابع وردك اليومي.",
@@ -695,13 +708,22 @@
       "ahead_many": "متقدّم بـ{{formatted}} يومًا",
       "ahead_other": "متقدّم بـ{{formatted}} يوم"
     },
-    "settingsDuration": "{{formatted}} يومًا"
+    "settingsDuration_zero": "{{formatted}} يوم",
+    "settingsDuration_one": "يوم واحد",
+    "settingsDuration_two": "يومان",
+    "settingsDuration_few": "{{formatted}} أيام",
+    "settingsDuration_many": "{{formatted}} يومًا",
+    "settingsDuration_other": "{{formatted}} يوم"
   },
   "common": {
+    "back": "رجوع",
     "appName": "طيبة",
     "cancel": "إلغاء",
     "done": "تم",
-    "openSettings": "فتح الإعدادات"
+    "openSettings": "فتح الإعدادات",
+    "a11yPair": "{{label}}، {{title}}",
+    "a11yTriple": "{{label}}، {{title}}، {{detail}}",
+    "a11yAction": "{{action}} {{title}}"
   },
   "notifications": {
     "prayer": {
@@ -723,6 +745,7 @@
       "reminders": "تذكير بالورد اليومي",
       "azkar": "تذكير الأذكار",
       "prayer": "إشعارات الصلاة",
+      "goals": "أهداف يومية وتذكيرات الجمعة",
       "prayerVoice": "الصلاة: {{name}}",
       "prayerSilent": "الصلاة (صامت)"
     }
@@ -764,8 +787,9 @@
       "permissionDeniedTitle": "لا يمكن إرسال التذكيرات",
       "permissionDeniedBody": "تحتاج طيبة إلى إذن لإرسال التذكيرات اليومية. يمكنك تفعيلها من إعدادات الجهاز.",
       "khatma": "الختمة",
-      "khatmaValue": "٣٠ يومًا",
-      "azkarReminders": "تذكير الأذكار"
+      "azkarReminders": "تذكير الأذكار",
+      "hub": "كل التذكيرات",
+      "hubHint": "الصلاة والأذكار والورد والجمعة"
     },
     "about": {
       "sources": "المصادر والشكر",
@@ -774,8 +798,7 @@
       "clearDataTitle": "مسح البيانات المحلية؟",
       "clearDataMessage": "هل أنت متأكد من مسح العلامات المحفوظة والتظليلات والملاحظات والختمة؟ لا يمكن التراجع عن هذا الإجراء.",
       "clearDataConfirm": "مسح البيانات",
-      "cancel": "إلغاء",
-      "dataCleared": "تم مسح البيانات المحلية بنجاح"
+      "cancel": "إلغاء"
     }
   },
   "azkar": {
@@ -910,12 +933,9 @@
     "audio": {
       "play": "تشغيل التسجيل",
       "pause": "إيقاف التسجيل مؤقتًا",
-      "replay": "إعادة التشغيل",
       "position": "{{elapsed}} من {{total}}",
       "unavailableOffline": "غير متاح دون اتصال",
       "unavailableOfflineHint": "يتطلب هذا التسجيل اتصالًا بالإنترنت",
-      "autoplay": "تشغيل تلقائي",
-      "autoplayHint": "ينتقل إلى الذكر التالي عند انتهاء التسجيل",
       "licence": "الترخيص: {{licence}}"
     },
     "download": {
@@ -952,7 +972,6 @@
       },
       "time": "الوقت",
       "chooseTime": "اختر وقتًا",
-      "prayer": "الصلاة",
       "offset": "الإزاحة",
       "offsetAt": "عند الصلاة",
       "offsetAfter_one": "بعد دقيقة",
@@ -970,10 +989,79 @@
       "notificationEntryTitle": "تذكير الأذكار",
       "notificationBody": "تذكيرك الذي اخترته",
       "limitReached": "بلغت الحد الأقصى للتذكيرات"
+    },
+    "player": {
+      "open": "فتح المشغّل",
+      "openHint": "يفتح مشغّل الأذكار الكامل",
+      "previous": "الذكر السابق",
+      "next": "الذكر التالي",
+      "remaining": "-{{time}}",
+      "repetition": "التكرار {{current}} من {{total}}",
+      "repetitionShort": "{{current}} من {{total}}",
+      "queuePosition": "الذكر {{current}} من {{total}}",
+      "finished": "انتهت التسجيلات في هذا القسم",
+      "repeat": {
+        "option": "التكرار",
+        "count": "حسب العدد",
+        "once": "مرة واحدة",
+        "continuous": "تكرار متواصل"
+      },
+      "sleep": {
+        "endOfUnit": "نهاية الذكر"
+      },
+      "seek": "موضع التشغيل",
+      "seekHint": "اضغط لتغيير موضع التشغيل"
+    }
+  },
+  "duas": {
+    "home": {
+      "title": "الأدعية",
+      "favourites": "المفضلة",
+      "mineEyebrow": "من كتابتك",
+      "mineTitle": "أدعيتي",
+      "sourcesHeading": "المصادر",
+      "hisnTitle": "حصن المسلم",
+      "hisnDetail": "حسب الموضوع",
+      "topicsHeading": "المواضيع",
+      "attribution": "محتوى حصن المسلم من OpenDua · الأدعية النبوية من HadeethEnc عند توفرها"
+    },
+    "favorites": {
+      "title": "المفضلة",
+      "emptyTitle": "لا توجد أدعية مفضلة بعد",
+      "emptyBody": "احفظ أي دعاء من القوائم لتجده هنا.",
+      "browse": "تصفح الأدعية"
+    },
+    "mine": {
+      "title": "أدعيتي",
+      "writtenByYou": "من كتابتك",
+      "open": "فتح",
+      "reminder": "تذكير",
+      "untitled": "دعاء بدون عنوان",
+      "emptyTitle": "لا توجد أدعية بعد",
+      "emptyBody": "اكتب دعاءك الخاص واحفظه على هذا الجهاز.",
+      "add": "إضافة دعاء"
+    },
+    "editor": {
+      "close": "إغلاق",
+      "newTitle": "دعاء جديد",
+      "editTitle": "تعديل الدعاء",
+      "titleLabel": "عنوان (اختياري)",
+      "titlePlaceholder": "عنوان قصير",
+      "bodyLabel": "نص الدعاء",
+      "bodyPlaceholder": "اكتب الدعاء هنا",
+      "save": "حفظ",
+      "delete": "حذف الدعاء",
+      "deleteTitle": "حذف هذا الدعاء؟",
+      "deleteBody": "سيُحذف الدعاء وتذكيره من هذا الجهاز.",
+      "deleteConfirm": "حذف",
+      "deleteCancel": "إلغاء"
+    },
+    "reminders": {
+      "notificationTitle": "{{name}}",
+      "notificationBody": "تذكيرك الذي اخترته"
     }
   },
   "sibha": {
-    "title": "المسبحة",
     "close": "إغلاق",
     "reset": "إعادة الضبط",
     "resetTitle": "إعادة ضبط العداد؟",
@@ -1039,6 +1127,304 @@
     "startKhatma": "ابدأ ختمة",
     "openSibha": "فتح المسبحة",
     "prayerNotifications": "إشعارات الصلاة",
-    "bell": "تذكير {{name}}"
+    "bell": "تذكير {{name}}",
+    "reminders": "التذكيرات",
+    "remindersHint": "الصلاة والأذكار والورد"
+  },
+  "reminders": {
+    "title": "التذكيرات",
+    "intro": "تُحفظ التذكيرات على هذا الجهاز. لا يُرسل أي تذكير حتى تفعّله.",
+    "sections": {
+      "prayer": "أوقات الصلاة",
+      "azkar": "الأذكار",
+      "daily": "الورد والأهداف"
+    },
+    "prayerSummary": "مواقيت الصلاة",
+    "prayerSummaryHint": "تُدار أجراس الصلاة من شاشة الصلاة",
+    "friday": {
+      "title": "سورة الكهف يوم الجمعة",
+      "modeDhuhr": "وقت الظهر",
+      "modeClock": "وقت محدد",
+      "dhuhrSubtitle": "وقت الظهر يوم الجمعة",
+      "everyFriday": "كل جمعة {{time}}",
+      "needsLocation": "حدّد موقعك لاستخدام وقت الظهر",
+      "notificationTitle": "سورة الكهف يوم الجمعة",
+      "notificationBody": "اضغط لفتح السورة"
+    },
+    "misbaha": {
+      "title": "هدف المسبحة اليومي",
+      "everyDay": "كل يوم {{time}}",
+      "notificationTitle": "هدف المسبحة اليومي",
+      "notificationBody": "اضغط لفتح المسبحة"
+    },
+    "clock": {
+      "label": "الوقت",
+      "choose": "اختر وقتًا"
+    },
+    "status": {
+      "off": "متوقف",
+      "scheduled": "مفعّل",
+      "permissionDenied": "الإشعارات متوقفة",
+      "budgetFull": "بلغت الحد الأقصى",
+      "needsLocation": "حدّد موقعك",
+      "needsTime": "اختر وقتًا"
+    },
+    "test": {
+      "action": "إرسال تذكير تجريبي",
+      "title": "طيبة",
+      "body": "هذا تذكير تجريبي",
+      "sent": "سيظهر التذكير التجريبي خلال ٥ ثوانٍ",
+      "devAction": "تذكير بعد دقيقتين (للتطوير)",
+      "devSent": "يظهر التذكير التجريبي بعد دقيقتين"
+    },
+    "recommended": {
+      "title": "التذكيرات المقترحة",
+      "intro": "فعّل ما تريده من هذه التذكيرات. لا يُرسل شيء قبل موافقتك، ويمكنك إيقاف أي تذكير لاحقًا.",
+      "prayers": "أوقات الصلاة الخمسة",
+      "morning": "أذكار الصباح بعد صلاة الفجر",
+      "evening": "أذكار المساء بعد صلاة العصر",
+      "friday": "سورة الكهف يوم الجمعة",
+      "note": "لا يُقترح وقت محدد للأذكار، فهي تُرتبط بالصلاة فقط.",
+      "accept": "فعّل التذكيرات المقترحة",
+      "choose": "اختيار بنفسي"
+    }
+  },
+  "widgets": {
+    "nextPrayer": "الصلاة القادمة",
+    "noLocation": "حدّد موقعك لعرض أوقات الصلاة",
+    "openApp": "افتح طيبة لتحديث الودجة",
+    "stale": "افتح طيبة لعرض المواقيت",
+    "progressTitle": "تقدّم اليوم",
+    "remaining": "المتبقي",
+    "progressEmpty": "حدّد أهدافك اليومية",
+    "continueReading": "تابع القراءة",
+    "resume": "تابع",
+    "ayahLabel": "الآية",
+    "pageLabel": "صفحة",
+    "wirdTitle": "وردك اليوم",
+    "wirdUnit": "صفحات",
+    "of": "من",
+    "misbaha": "المسبحة",
+    "misbahaNoTarget": "بلا حد",
+    "countAction": "عدّ",
+    "azkarTitle": "الأذكار",
+    "azkarEmpty": "تظهر الأذكار بعد تحميلها",
+    "complete": "تم",
+    "prayers": {
+      "fajr": "الفجر",
+      "dhuhr": "الظهر",
+      "asr": "العصر",
+      "maghrib": "المغرب",
+      "isha": "العشاء"
+    }
+  },
+  "widgetsHelp": {
+    "entryTitle": "الودجات والساعة",
+    "entryHint": "إضافة الودجات وتطبيق الساعة",
+    "title": "الودجات والساعة",
+    "intro": "تعرض الودجات المواقيت والتقدّم وموضع القراءة والعدّ — لا نص قرآني ولا نص ذكر.",
+    "sections": {
+      "catalog": "الودجات المتاحة",
+      "android": "أندرويد",
+      "ios": "آيفون",
+      "watch": "الساعة"
+    },
+    "items": {
+      "nextPrayer": {
+        "title": "الصلاة القادمة",
+        "body": "اسم الصلاة ووقتها ومكانك — بدون نص قرآني"
+      },
+      "nextPrayerWide": {
+        "title": "مواقيت اليوم",
+        "body": "الصلاة القادمة ومواقيت اليوم الخمسة"
+      },
+      "progress": {
+        "title": "تقدّم اليوم",
+        "body": "حلقة أهدافك اليومية والصفوف التي اخترتها"
+      },
+      "continueReading": {
+        "title": "تابع القراءة",
+        "body": "اسم السورة ورقم الآية والصفحة — بدون نص الآية"
+      },
+      "misbaha": {
+        "title": "المسبحة",
+        "body": "العدّاد والهدف وزر «+» يزيد دون فتح التطبيق"
+      },
+      "azkar": {
+        "title": "الأذكار",
+        "body": "أسماء الجلسات وحالة الإتمام — بدون نص الذكر"
+      }
+    },
+    "android": {
+      "step1": "المس الشاشة الرئيسية، ثم «الودجات».",
+      "step2": "ابحث عن «طيبة» واسحب الودجة إلى الشاشة.",
+      "step3": "أو استخدم «إضافة إلى الشاشة الرئيسية» أدناه.",
+      "pinAction": "إضافة إلى الشاشة الرئيسية",
+      "pinA11y": "إضافة ودجة {{widget}} إلى الشاشة الرئيسية"
+    },
+    "ios": {
+      "step1": "المس الشاشة الرئيسية مطولًا حتى تتحرك الأيقونات، ثم «+».",
+      "step2": "ابحث عن «طيبة» واختر الودجة.",
+      "step3": "اضغط «إضافة ودجة» وضعها حيث تريد."
+    },
+    "watch": {
+      "body": "تطبيق Wear OS وودجة الساعة وApple Watch تأتي مع تطبيقات الساعة (قريبًا)."
+    }
+  },
+  "hijri": {
+    "title": "التقويم الهجري",
+    "openLabel": "افتح التقويم الهجري",
+    "previousMonth": "الشهر الهجري السابق",
+    "nextMonth": "الشهر الهجري التالي",
+    "today": "اليوم",
+    "gregorianRange": "{{from}} – {{to}}",
+    "note": "التاريخ حسب تقويم أم القرى الحسابي؛ قد يختلف يومًا عن إعلان بلدك.",
+    "unavailable": "التقويم الهجري غير متاح على هذا الجهاز.",
+    "day": {
+      "a11y": "{{hijri}}، يوافق {{gregorian}}",
+      "today": "اليوم، {{hijri}}، يوافق {{gregorian}}",
+      "occasion": "{{hijri}}، يوافق {{gregorian}}، {{occasion}}"
+    },
+    "adjust": {
+      "row": "تعديل التاريخ",
+      "unit": "يوم",
+      "title": "تعديل التاريخ الهجري",
+      "body": "إن اختلف تاريخ بلدك عن تقويم أم القرى بيومٍ أو يومين، اضبط الفرق هنا. يُطبَّق على كل شاشة تعرض التاريخ الهجري.",
+      "ummAlQura": "حسب أم القرى",
+      "after": "بعد التعديل",
+      "save": "حفظ",
+      "reset": "إعادة الضبط",
+      "open": "تعديل التاريخ الهجري",
+      "value": "{{value}} يوم",
+      "close": "إغلاق"
+    },
+    "occasions": {
+      "title": "المناسبات القادمة",
+      "empty": "لا توجد مناسبات قريبة.",
+      "daysAway_zero": "اليوم",
+      "daysAway_one": "بعد يوم",
+      "daysAway_two": "بعد يومين",
+      "daysAway_few": "بعد {{number}} أيام",
+      "daysAway_many": "بعد {{number}} يومًا",
+      "daysAway_other": "بعد {{number}} يومًا"
+    },
+    "occasion": {
+      "muharram1": "رأس السنة الهجرية",
+      "muharram10": "عاشوراء",
+      "ramadan1": "بداية شهر رمضان",
+      "shawwal1": "عيد الفطر",
+      "dhulHijjah9": "يوم عرفة",
+      "dhulHijjah10": "عيد الأضحى",
+      "whiteDays": "الأيام البيض"
+    },
+    "menu": {
+      "caption": "اليوم",
+      "title": "التقويم الهجري",
+      "a11y": "التقويم الهجري: {{date}}"
+    },
+    "home": {
+      "pillLabel": "التقويم الهجري: {{date}}"
+    }
+  },
+  "moon": {
+    "title": "رؤية الهلال",
+    "offline": "يُحسب على جهازك دون إنترنت.",
+    "locationA11y": "الموقع: {{label}}",
+    "evening": "مساء {{hijri}} · {{day}}",
+    "conjunctionValue": "{{day}} · {{time}}",
+    "summary": {
+      "age": "عمر القمر عند الغروب",
+      "illumination": "نسبة الإضاءة"
+    },
+    "age": {
+      "hours_zero": "{{formatted}} ساعة",
+      "hours_one": "ساعة",
+      "hours_two": "ساعتان",
+      "hours_few": "{{formatted}} ساعات",
+      "hours_many": "{{formatted}} ساعة",
+      "hours_other": "{{formatted}} ساعة",
+      "minutes_zero": "{{formatted}} دقيقة",
+      "minutes_one": "دقيقة",
+      "minutes_two": "دقيقتان",
+      "minutes_few": "{{formatted}} دقائق",
+      "minutes_many": "{{formatted}} دقيقة",
+      "minutes_other": "{{formatted}} دقيقة",
+      "hoursMinutes": "{{hours}} و{{minutes}}"
+    },
+    "times": {
+      "conjunction": "الاقتران (المحاق)",
+      "sunset": "غروب الشمس",
+      "moonset": "غروب القمر",
+      "moonsetCompared": "غروب القمر مقارنةً بالشمس",
+      "nextConjunction": "الاقتران التالي",
+      "unavailable": "—"
+    },
+    "compare": {
+      "before_one": "قبلها بدقيقة",
+      "before_two": "قبلها بدقيقتين",
+      "before_few": "قبلها بـ {{formatted}} دقائق",
+      "before_many": "قبلها بـ {{formatted}} دقيقة",
+      "before_other": "قبلها بـ {{formatted}} دقيقة",
+      "after_one": "بعدها بدقيقة",
+      "after_two": "بعدها بدقيقتين",
+      "after_few": "بعدها بـ {{formatted}} دقائق",
+      "after_many": "بعدها بـ {{formatted}} دقيقة",
+      "after_other": "بعدها بـ {{formatted}} دقيقة",
+      "same": "في الوقت نفسه"
+    },
+    "span": {
+      "minutes_one": "دقيقة",
+      "minutes_two": "دقيقتين",
+      "minutes_few": "{{formatted}} دقائق",
+      "minutes_many": "{{formatted}} دقيقة",
+      "minutes_other": "{{formatted}} دقيقة",
+      "hours_one": "ساعة",
+      "hours_two": "ساعتين",
+      "hours_few": "{{formatted}} ساعات",
+      "hours_many": "{{formatted}} ساعة",
+      "hours_other": "{{formatted}} ساعة",
+      "days_one": "يوم",
+      "days_two": "يومين",
+      "days_few": "{{formatted}} أيام",
+      "days_many": "{{formatted}} يومًا",
+      "days_other": "{{formatted}} يومًا"
+    },
+    "estimate": {
+      "title": "تقدير إمكان الرؤية",
+      "criterion": "المعيار: عودة (Odeh) ٢٠٠٤",
+      "odehV": "قيمة V = {{value}}",
+      "zone": "المنطقة {{letter}}",
+      "letters": {
+        "a": "أ",
+        "b": "ب",
+        "c": "ج",
+        "d": "د"
+      }
+    },
+    "zoneResults": {
+      "a": "ممكنة بالعين المجردة",
+      "b": "ممكنة بالمنظار، وقد تُرى بالعين المجردة",
+      "c": "ممكنة بالمنظار فقط",
+      "d": "غير ممكنة حتى بالمنظار"
+    },
+    "disclaimer": "تقدير فلكي لموقعك وليس حكمًا بدخول الشهر. المعتمد هو إعلان الجهة الرسمية في بلدك.",
+    "unavailable": "التقدير غير متاح عند هذا العرض أو إذا لم يغرب القمر بعد الغروب.",
+    "noLocation": {
+      "title": "حدّد موقعك",
+      "body": "نحتاج موقعك لحساب غروب الشمس والقمر وتقدير الرؤية. نقرأ الموقع المحدّد في شاشة الصلاة ولا نغيّره.",
+      "action": "فتح الموقع في الصلاة"
+    },
+    "menu": {
+      "caption": "الهلال",
+      "title": "رؤية الهلال",
+      "a11y": "رؤية الهلال: {{preview}}",
+      "noLocation": "حدّد موقعك",
+      "conjunctionIn": "الاقتران خلال {{duration}}",
+      "conjunctionAgo": "الاقتران قبل {{duration}}"
+    },
+    "phaseDiscA11y": "طور القمر، إضاءة {{percent}} بالمئة",
+    "sources": {
+      "suncalc": "مواقع الشمس والقمر: suncalc (BSD-2-Clause)"
+    }
   }
 }

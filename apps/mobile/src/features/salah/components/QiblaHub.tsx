@@ -1,10 +1,13 @@
 import { memo } from 'react';
-import { View } from 'react-native';
+import { I18nManager, View } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
 
+import { dialPlacement } from '../data/dial-placement';
+
 const CENTER = 168;
+const HUB = 62;
 
 /**
  * The hub of the qibla instrument: the user's position dot. A 5 px player-bg ring, then the gold glow, then the 52 px
@@ -13,22 +16,20 @@ const CENTER = 168;
  */
 function QiblaHubFace() {
   const theme = useTheme();
+  // Placed with a translate, not `left`: `left` is swapped in RTL and would move the hub off the dial's centre.
+  const placement = dialPlacement(CENTER - HUB / 2, CENTER - HUB / 2, HUB, HUB, I18nManager.isRTL);
 
   return (
     <View
       pointerEvents="none"
       style={{
+        ...placement,
         alignItems: 'center',
         borderColor: theme.colors.playerBg,
         borderRadius: 31,
         borderWidth: 5,
         boxShadow: `0 0 18px ${theme.colors.qiblaGoldHalo}`,
-        height: 62,
         justifyContent: 'center',
-        left: CENTER - 31,
-        position: 'absolute',
-        top: CENTER - 31,
-        width: 62,
       }}
       testID="qibla-compass-hub"
     >

@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\File;
 
 /**
  * Imports the pinned OpenDua catalogue (ADR 0031). A dry run validates and transforms in memory and writes no rows.
- * A wet import is refused, and writes nothing, until the locks in config/azkar.php are open.
+ * A wet import writes nothing when validation fails (the pinned checksums and the reviewed Quran map still apply).
  *
- * --if-unlocked lets a release run this safely: while locked it prints why and exits 0. Validation errors still fail
- * an unlocked run.
+ * --defer-pack (or --no-pack) writes the rows only: the pack is built at container start (docker/start-web.sh, ADR 0040).
+ * Validation failures still fail the run.
  */
 final class ImportAzkarCommand extends Command
 {
@@ -28,9 +28,9 @@ final class ImportAzkarCommand extends Command
         {path? : The pinned OpenDua catalogue file (omit with --download)}
         {--download : Download the pinned catalogue into storage/app/azkar and verify its SHA-256 first}
         {--dry-run : Validate and transform in memory; write no rows}
-        {--if-unlocked : While the wet import is locked, print why and exit 0 (release runs)}
         {--build-packs : After a successful wet import, build the azkar pack now instead of queueing it}
-        {--defer-pack : After a successful wet import, neither build nor queue the azkar pack; the web service builds it at start (Railway pre-deploy, ADR 0044)}
+        {--defer-pack : After a successful wet import, neither build nor queue the azkar pack; the web service builds it at start (ADR 0044)}
+        {--no-pack : Alias for --defer-pack}
         {--skip-blocked : Local only: leave out entries with errors and import the rest; the report lists them}
         {--source= : The source to import: opendua or hisnmuslim (default: config azkar.primary_source)}
         {--report= : Where to write the JSON report (default storage/app/azkar/reports/<timestamp>.json)}';
@@ -39,8 +39,10 @@ final class ImportAzkarCommand extends Command
 
     public function handle(AzkarImporter $importer, CatalogueDownloader $downloader, AzkarSourceRegistry $sources): int
     {
-        if ($this->option('build-packs') && $this->option('defer-pack')) {
-            $this->error('Choose --build-packs or --defer-pack, not both.');
+        $deferPack = (bool) $this->option('defer-pack') || (bool) $this->option('no-pack');
+
+        if ($this->option('build-packs') && $deferPack) {
+            $this->error('Choose --build-packs or --defer-pack (--no-pack), not both.');
 
             return self::FAILURE;
         }
@@ -54,20 +56,6 @@ final class ImportAzkarCommand extends Command
             $this->error($exception->getMessage());
 
             return self::FAILURE;
-        }
-
-        if ($this->option('if-unlocked') && ! $dryRun) {
-            $reasons = $importer->lockReasons($profile);
-
-            if ($reasons !== []) {
-                $this->info('Azkar import skipped: the wet import is locked.');
-
-                foreach ($reasons as $reason) {
-                    $this->line(' - '.$reason);
-                }
-
-                return self::SUCCESS;
-            }
         }
 
         if ($this->option('skip-blocked') && app()->isProduction()) {
@@ -92,19 +80,9 @@ final class ImportAzkarCommand extends Command
         }
 
         try {
-            $report = $importer->run($path, $dryRun, (bool) $this->option('build-packs'), (bool) $this->option('skip-blocked'), $profile->code, deferPack: (bool) $this->option('defer-pack'));
+            $report = $importer->run($path, $dryRun, (bool) $this->option('build-packs'), (bool) $this->option('skip-blocked'), $profile->code, deferPack: $deferPack);
         } catch (PackBuildException $exception) {
             $this->error('The import wrote the rows, but the pack build failed: '.$exception->getMessage());
-
-            return self::FAILURE;
-        }
-
-        if ($report->status === ImportReport::STATUS_LOCKED) {
-            $this->error('The wet import is locked and nothing was written:');
-
-            foreach ($report->lockReasons as $reason) {
-                $this->line(' - '.$reason);
-            }
 
             return self::FAILURE;
         }
@@ -154,6 +132,7 @@ final class ImportAzkarCommand extends Command
             ['english skipped', $english['skipped'] ?? 0],
             ['recordings upstream', $recordings['upstream'] ?? 0],
             ['recordings imported', $recordings['imported'] ?? 0],
+            ['recordings missing file (left out)', $recordings['missing_file'] ?? 0],
             ['recordings legally downloadable', $recordings['legally_downloadable'] ?? 0],
             ['changed upstream texts', $changed['count'] ?? 0],
             ['errors', count($report->errors())],

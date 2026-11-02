@@ -37,7 +37,7 @@ describe('ContinueAzkarHomeCard', () => {
     const onPress = jest.fn();
     const view = await renderUi(<ContinueAzkarHomeCard onPress={onPress} resume={resume} />);
 
-    const card = view.getByRole('button', { name: 'تابع الأذكار, أذكار الصباح, ٢ من ٣' });
+    const card = view.getByRole('button', { name: 'تابع الأذكار، أذكار الصباح، ٢ من ٣' });
     await fireEvent.press(card);
 
     expect(onPress).toHaveBeenCalledTimes(1);

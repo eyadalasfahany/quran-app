@@ -6,7 +6,6 @@ namespace App\Domains\Azkar\Repositories\Eloquent;
 
 use App\Domains\Azkar\Data\ImportPlan;
 use App\Domains\Azkar\Repositories\Contracts\AzkarImportRepository;
-use App\Domains\Content\Enums\PermissionStatus;
 use App\Domains\Content\Models\AzkarCategory;
 use App\Domains\Content\Models\AzkarChapter;
 use App\Domains\Content\Models\AzkarEntry;
@@ -15,32 +14,11 @@ use App\Domains\Content\Models\AzkarItem;
 use App\Domains\Content\Models\AzkarNote;
 use App\Domains\Content\Models\AzkarRecording;
 use App\Domains\Content\Models\AzkarSegment;
-use App\Domains\Content\Models\ContentSource;
 use Illuminate\Database\Eloquent\Model;
 
 final class EloquentAzkarImportRepository implements AzkarImportRepository
 {
     private const int CHUNK = 500;
-
-    public function sourcePermissionStatus(string $code): ?PermissionStatus
-    {
-        $source = ContentSource::query()->where('code', $code)->first();
-
-        return $source instanceof ContentSource ? $source->permission_status : null;
-    }
-
-    public function setSourcePermissionStatus(string $code, PermissionStatus $status): bool
-    {
-        $source = ContentSource::query()->where('code', $code)->first();
-
-        if (! $source instanceof ContentSource) {
-            return false;
-        }
-
-        ContentSource::query()->where('code', $code)->update(['permission_status' => $status->value]);
-
-        return true;
-    }
 
     public function itemTextHashes(int $resourceId): array
     {

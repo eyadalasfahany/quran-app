@@ -14,7 +14,6 @@ beforeEach(function (): void {
 
     config()->set('services.dorar.base_url', 'https://dorar.test/api');
     config()->set('services.dorar.token', 'test-dorar-token');
-    config()->set('services.dorar.enabled', true);
 });
 
 it('throws the mapping-unavailable exception until the Dorar schema is documented', function (): void {

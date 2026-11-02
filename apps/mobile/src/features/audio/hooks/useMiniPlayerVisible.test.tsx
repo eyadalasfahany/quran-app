@@ -44,7 +44,7 @@ describe('useMiniPlayerVisible', () => {
     storage.remove(storageKeys.readerLastVerseKey);
   });
 
-  it.each(['tabs', 'reader', 'sidebar'] as const)('is hidden while the player is idle (%s)', async (variant) => {
+  it.each(['tabs', 'reader'] as const)('is hidden while the player is idle (%s)', async (variant) => {
     const { result } = await renderHook(() => useMiniPlayerVisible(variant));
 
     expect(result.current).toBe(false);
@@ -55,46 +55,27 @@ describe('useMiniPlayerVisible', () => {
     try {
       const reader = await renderHook(() => useMiniPlayerVisible('reader'));
       expect(reader.result.current).toBe(true);
+      const tabs = await renderHook(() => useMiniPlayerVisible('tabs'));
+      expect(tabs.result.current).toBe(false);
     } finally {
       mockReciter = null;
     }
   });
 
-  it.each(['tabs', 'sidebar'] as const)('shows the %s bar while idle once an ayah is saved and a reciter resolves', async (variant) => {
-    setWindowWidth(variant === 'sidebar' ? 1000 : 390);
+  it.each([390, 1000])('shows the tabs bar while idle once an ayah is saved and a reciter resolves (%i wide, ADR 0051)', async (width) => {
+    setWindowWidth(width);
     mockReciter = { resourceId: 30 };
     storage.set(storageKeys.readerLastVerseKey, '2:255');
     try {
-      const { result } = await renderHook(() => useMiniPlayerVisible(variant));
+      const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
       expect(result.current).toBe(true);
     } finally {
       mockReciter = null;
     }
   });
 
-  it.each(['tabs', 'sidebar'] as const)('hides the %s bar while idle with a reciter but no saved ayah', async (variant) => {
-    setWindowWidth(variant === 'sidebar' ? 1000 : 390);
+  it('hides the tabs bar while idle with a reciter but no saved ayah', async () => {
     mockReciter = { resourceId: 30 };
-    try {
-      const { result } = await renderHook(() => useMiniPlayerVisible(variant));
-      expect(result.current).toBe(false);
-    } finally {
-      mockReciter = null;
-    }
-  });
-
-  it.each(['tabs', 'sidebar'] as const)('hides the %s bar while idle with a saved ayah but no reciter', async (variant) => {
-    setWindowWidth(variant === 'sidebar' ? 1000 : 390);
-    storage.set(storageKeys.readerLastVerseKey, '2:255');
-    const { result } = await renderHook(() => useMiniPlayerVisible(variant));
-
-    expect(result.current).toBe(false);
-  });
-
-  it('keeps the tabs bar hidden on an expanded window while idle, even with a saved ayah and a reciter', async () => {
-    setWindowWidth(1000);
-    mockReciter = { resourceId: 30 };
-    storage.set(storageKeys.readerLastVerseKey, '2:255');
     try {
       const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
       expect(result.current).toBe(false);
@@ -103,15 +84,11 @@ describe('useMiniPlayerVisible', () => {
     }
   });
 
-  it('keeps the sidebar footer hidden on a compact window while idle, even with a saved ayah and a reciter', async () => {
-    mockReciter = { resourceId: 30 };
+  it('hides the tabs bar while idle with a saved ayah but no reciter', async () => {
     storage.set(storageKeys.readerLastVerseKey, '2:255');
-    try {
-      const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
-      expect(result.current).toBe(false);
-    } finally {
-      mockReciter = null;
-    }
+    const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
+
+    expect(result.current).toBe(false);
   });
 
   it('hides the idle reader bar on an expanded window, even with a reciter', async () => {
@@ -140,41 +117,25 @@ describe('useMiniPlayerVisible', () => {
     expect(result.current).toBe(true);
   });
 
-  it('is hidden on an expanded window, even while playing', async () => {
+  it('is shown on an expanded window while playing, as on a phone (ADR 0051)', async () => {
     setWindowWidth(1000);
     setStatus('playing');
     const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
-    expect(result.current).toBe(false);
-  });
-
-  it('shows the sidebar footer on an expanded window while playing', async () => {
-    setWindowWidth(1000);
-    setStatus('playing');
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
-
     expect(result.current).toBe(true);
   });
 
-  it.each(['compact', 'medium'] as const)('hides the sidebar footer on a %s window, even while playing', async (windowClass) => {
-    setWindowWidth(windowClass === 'compact' ? 390 : 700);
-    setStatus('playing');
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
-
-    expect(result.current).toBe(false);
-  });
-
-  it('shows the sidebar footer on an expanded window once a surah is loaded and paused', async () => {
+  it('is shown on an expanded window once a surah is loaded and paused', async () => {
     setWindowWidth(1000);
     setStatus('paused');
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
+    const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
     expect(result.current).toBe(true);
   });
 
-  it('hides the sidebar footer on an expanded window while idle', async () => {
+  it('is hidden on an expanded window while idle', async () => {
     setWindowWidth(1000);
-    const { result } = await renderHook(() => useMiniPlayerVisible('sidebar'));
+    const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
     expect(result.current).toBe(false);
   });

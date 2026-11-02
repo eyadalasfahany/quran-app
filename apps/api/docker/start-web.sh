@@ -1,7 +1,44 @@
 #!/bin/sh
-# Web service start (ADR 0044). Railway mounts the pack volume only here, not in pre-deploy, so missing packs
-# (a new azkar version, or recovery after volume loss) are built now. A failed build is logged and never blocks
-# start: the manifest leaves out packs whose file is missing, and a volume service has no old version serving.
-set -e
-php artisan content:ensure-packs || echo "content:ensure-packs failed; serving without the missing packs." >&2
+# Web service start (ADR 0040, ADR 0044, plan step 14). Railway's startCommand for the API service runs this through
+# entrypoint.sh (config:cache first). It is never called from entrypoint.sh, because Horizon and the scheduler share that
+# file and the volume is mounted only on the web service.
+#
+# Order: create the storage folders, verify the Azkar audio, fetch the pinned secondary snapshots, import the Azkar rows
+# (DB rows only, --defer-pack), build any missing packs, then serve. The import runs here and not in release.sh, because
+# only this container mounts the volume that holds the audio: run before the audio is in place, it would drop the
+# recording rows. Every task logs and continues, so a failure never blocks serving; the current versions keep serving.
+set -u
+
+cd /app || exit 1
+
+mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/azkar-audio \
+  || echo "WARNING: could not create the storage folders under /app/storage/app"
+
+if php artisan azkar:audio-verify; then
+  echo "start: Azkar audio verified"
+else
+  echo "WARNING: Azkar audio is missing or damaged; recordings whose files are missing are left out, and Azkar packs that list audio are not built. Run azkar:audio-sync (runbook)."
+fi
+
+# Pinned secondary snapshots (ADR 0031 §12; ADR 0046 decision 11 reuses the HadeethEnc snapshot). A snapshot is kept only
+# when its SHA-256 matches its pin; otherwise the import runs without it and the report says why.
+snapshot_pinned() {
+  php artisan azkar:snapshot "$1" --pinned || echo "WARNING: $1 snapshot not fetched or not matching its pin; the import runs without it (see the report)."
+}
+
+snapshot_pinned hisnmuslim
+snapshot_pinned hadeethenc
+
+if php artisan azkar:import --download --defer-pack; then
+  echo "start: Azkar rows up to date"
+else
+  echo "WARNING: the Azkar import did not finish (download, checksum, validation or pin); the current Azkar version keeps serving. The report lists the reason."
+fi
+
+if php artisan content:ensure-packs; then
+  echo "start: content packs up to date"
+else
+  echo "WARNING: some content packs could not be built; the lines above name them. Serving continues."
+fi
+
 exec frankenphp run --config /etc/caddy/Caddyfile

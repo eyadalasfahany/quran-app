@@ -70,6 +70,9 @@ function setWidth(width: number): void {
   });
 }
 
+// Each file renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
 describe("menu tab and Salah route", () => {
   beforeEach(async () => {
     storage.set(storageKeys.locale, "en");

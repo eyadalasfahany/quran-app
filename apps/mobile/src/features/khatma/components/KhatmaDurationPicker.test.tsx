@@ -10,7 +10,7 @@ describe('KhatmaDurationPicker', () => {
     const onChange = jest.fn();
     const view = await renderUi(<KhatmaDurationPicker onChange={onChange} value={30} />);
 
-    fireEvent.press(view.getByRole('tab', { name: '٧ يومًا' }));
+    fireEvent.press(view.getByRole('tab', { name: '٧ أيام' }));
 
     expect(onChange).toHaveBeenCalledWith(7);
   });

@@ -8,6 +8,7 @@ import { useActivePlan } from '@/features/khatma/data';
 import { SheetHost } from '@/features/reader/components/SheetHost';
 import { useSheet } from '@/features/reader/components/sheet-context';
 import { DailyReminderRow } from '@/features/settings/components/DailyReminderRow';
+import { RemindersEntryRow } from '@/features/reminders/components/RemindersEntryRow';
 import { ToggleRow } from '@/shared/ui';
 
 import { DailyGoalsSheet } from '../components/DailyGoalsSheet';
@@ -95,6 +96,7 @@ function DailyGoalsCard() {
           title={t('dailyGoals.openSibha')}
         />
         <DailyReminderRow />
+        <RemindersEntryRow subtitle={t('dailyGoals.remindersHint')} testID="goal-reminders-hub" title={t('dailyGoals.reminders')} />
         <GoalLinkRow
           onPress={() => router.push('/salah' as Href)}
           testID="goal-prayer-notifications"

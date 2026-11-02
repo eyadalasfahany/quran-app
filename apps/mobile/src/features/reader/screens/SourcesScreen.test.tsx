@@ -10,7 +10,7 @@ import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { SourcesScreen } from './SourcesScreen';
 
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), push: jest.fn() },
+  router: { back: jest.fn(), canGoBack: jest.fn(() => true), push: jest.fn(), replace: jest.fn() },
 }));
 
 jest.mock('react-native-safe-area-context', () => {
@@ -50,6 +50,7 @@ describe('SourcesScreen', () => {
   it.each(locales)('lists the QF font credit under the screen title in %s', async (locale) => {
     const view = await renderUi(<SourcesScreen testID="sources" />, { locale });
     expect(view.getByTestId('sources-qf-fonts')).toBeOnTheScreen();
+    expect(view.getByTestId('sources-suncalc')).toBeOnTheScreen();
     expect(view.getByTestId('sources-header')).toBeOnTheScreen();
     expect(view.getByRole('header')).toBeOnTheScreen();
   });
@@ -120,6 +121,7 @@ describe('SourcesScreen', () => {
 
     expect(flatStyle(view.getByTestId('sources-column').props.style)).toMatchObject({ alignSelf: 'center', maxWidth: 720 });
     expect(view.getByTestId('sources-qf-fonts')).toBeOnTheScreen();
+    expect(view.getByTestId('sources-suncalc')).toBeOnTheScreen();
   });
 
   it('uses theme tokens only', () => {

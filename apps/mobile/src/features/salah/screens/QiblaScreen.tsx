@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, type LayoutChangeEvent } from 'react-native';
+import { I18nManager, View, type LayoutChangeEvent } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import type { Href } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
@@ -15,9 +15,11 @@ import { CompassCalibrationNotice } from '../components/CompassCalibrationNotice
 import { QiblaAlignedPill } from '../components/QiblaAlignedPill';
 import { QiblaBearingLabel } from '../components/QiblaBearingLabel';
 import { QiblaCompass } from '../components/QiblaCompass';
+import { goBackOr } from '@/core/navigation/go-back';
 import { QiblaIconButton } from '../components/QiblaIconButton';
 import { QiblaMetaPanel } from '../components/QiblaMetaPanel';
 import { QiblaNoLocation } from '../components/QiblaNoLocation';
+import { dialPlacement } from '../data/dial-placement';
 import { distanceToMakkah } from '../data/distance';
 import { requestLocationPermissions } from '../data/location';
 import { qiblaDialSize, qiblaGlowSize } from '../data/qibla-layout';
@@ -77,7 +79,7 @@ export function QiblaScreen() {
   // foreground. Blur or background stops the sensors; focus starts them again.
   const active = useScreenActive();
   const compass = useQiblaHeading(bearing !== null && !reduceMotion && active, bearing);
-  const { headingValue, hasHeading, accuracy, supported } = compass;
+  const { headingValue, hasHeading, accuracy, supported, awaitingLocation } = compass;
   const live = bearing !== null && hasHeading && !reduceMotion && supported;
   // The hook decides alignment (with hysteresis) on the sensor thread; the screen only shows it while the dial is live.
   const aligned = live && compass.aligned;
@@ -114,7 +116,7 @@ export function QiblaScreen() {
     <View style={{ alignItems: 'center', height: dialSize, justifyContent: 'center', width: dialSize }} testID="qibla-dial">
       <View
         pointerEvents="none"
-        style={{ height: glowSize, left: (dialSize - glowSize) / 2, position: 'absolute', top: (dialSize - glowSize) / 2, width: glowSize }}
+        style={dialPlacement((dialSize - glowSize) / 2, (dialSize - glowSize) / 2, glowSize, glowSize, I18nManager.isRTL, dialSize)}
         testID="qibla-glow"
       >
         <Svg height={glowSize} width={glowSize}>
@@ -147,11 +149,31 @@ export function QiblaScreen() {
           <UiText align="center" style={{ color: theme.colors.playerMuted }} variant="caption">
             {t('home.salah.qiblaScreen.unsupportedNote')}
           </UiText>
-        ) : live && accuracy === 'poor' ? (
+        ) : bearing !== null && (accuracy === 'poor' || accuracy === 'fair') ? (
+          // Poor or fair compass: the notice shows whether or not the dial is live (poor holds the dial still, fair turns it).
           <CompassCalibrationNotice testID="qibla-calibrate" />
         ) : aligned ? (
           <QiblaAlignedPill testID="qibla-aligned" />
-        ) : null}
+        ) : live && !awaitingLocation ? null : (
+          // No live heading yet (no compass sample, or Reduce Motion): the dial is the north-up one. The copy says why.
+          // While Android waits for a location fix, the waiting line is added below the north-up note.
+          <View style={{ alignItems: 'center', gap: 2 }}>
+            {live ? null : (
+              <UiText align="center" style={{ color: theme.colors.playerMuted }} testID="qibla-north-up" variant="caption">
+                {t(
+                  reduceMotion
+                    ? 'home.salah.qiblaScreen.northUpReduceMotion'
+                    : 'home.salah.qiblaScreen.northUpNote',
+                )}
+              </UiText>
+            )}
+            {awaitingLocation ? (
+              <UiText align="center" style={{ color: theme.colors.playerMuted }} testID="qibla-waiting-location" variant="caption">
+                {t('home.salah.qiblaScreen.waitingLocation')}
+              </UiText>
+            ) : null}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -184,7 +206,7 @@ export function QiblaScreen() {
           icon={BACK_ICON}
           label={t('home.salah.qiblaScreen.back')}
           mirrorInRtl
-          onPress={() => router.back()}
+          onPress={() => goBackOr('/salah' as Href)}
           testID="qibla-back"
         />
         <View style={{ alignItems: 'center', flex: 1, gap: 2 }}>

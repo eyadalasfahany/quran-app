@@ -1,18 +1,9 @@
-import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import Animated, {
-  useAnimatedReaction,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  type SharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
-import { spring } from '@/core/theme/motion';
 
-import { needleAngleFor, normalize180, shortestTurn } from '../hooks/useQiblaHeading';
+import { dialAnchor } from '../data/dial-placement';
 
 // The frame's needle geometry, on the 336 dial (quran-app-screens.html, #Qibla). Only this rotates.
 const DIAL = 336;
@@ -22,62 +13,26 @@ const DART_PATH = 'M168 64 L172.5 168 L168 177 L163.5 168 Z';
 const COUNTERWEIGHT_PATH = 'M168 168 L165.4 204 L168 209 L170.6 204 Z';
 
 /**
- * The needle of the qibla instrument. While `following` it springs to `bearing − heading`, reading the heading straight
- * from its SharedValue on the UI thread, so the heading never has to pass through React. When not following (Reduce
- * Motion, no compass yet, unsupported hardware) it rests on the marker with no animation (D6).
- *
- * The turn is always the shortest one (`shortestTurn`), so the needle never swings through 0° on a 350° change.
+ * The needle of the qibla instrument. It turns by the qibla angle (`bearing − heading` while the phone is live, the bearing
+ * at rest), read from the shared SharedValue on the UI thread, so the heading never has to pass through React. QiblaCompass
+ * computes the angle once and gives the same value to the marker and the arc, so the three cannot drift apart.
  */
 export function QiblaNeedle({
-  bearing,
-  heading,
-  following,
+  angle,
   testID = 'qibla-compass-needle',
 }: {
-  /** Degrees from true north, 0…360. */
-  bearing: number;
-  /** The live true-north heading of the screen's top edge, written by useQiblaHeading. */
-  heading: SharedValue<number>;
-  /** Whether the needle follows the heading (false: it rests on the marker). */
-  following: boolean;
+  /** The qibla angle in degrees clockwise from the top, shared with the marker and the arc (see QiblaCompass). */
+  angle: SharedValue<number>;
   testID?: string;
 }) {
   const theme = useTheme();
-  const springConfig = spring();
-
-  const needleAngle = useSharedValue(bearing);
-  const bearingValue = useSharedValue(bearing);
-  const followValue = useSharedValue(following);
-
-  useEffect(() => {
-    bearingValue.value = bearing;
-    followValue.value = following;
-  }, [bearing, following, bearingValue, followValue]);
-
-  // The target only changes when the heading moves across a needle step, the bearing changes, or following toggles;
-  // the reaction then runs on the UI thread and springs to it.
-  useAnimatedReaction(
-    () => (followValue.value ? needleAngleFor(bearingValue.value, heading.value) : bearingValue.value),
-    (target, previous) => {
-      if (previous === target) {
-        return;
-      }
-      if (!followValue.value) {
-        // Static dial: the needle rests on the marker, no animation.
-        needleAngle.value = target;
-        return;
-      }
-      const delta = shortestTurn(normalize180(needleAngle.value), target);
-      needleAngle.value = withSpring(needleAngle.value + delta, springConfig);
-    },
-  );
 
   const needleStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${needleAngle.value}deg` }],
+    transform: [{ rotate: `${angle.value}deg` }],
   }));
 
   return (
-    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, needleStyle]} testID={testID}>
+    <Animated.View pointerEvents="none" style={[dialAnchor(DIAL, DIAL), needleStyle]} testID={testID}>
       <Svg height={DIAL} width={DIAL}>
         <Defs>
           <LinearGradient id="qibla-dart" x1="0" x2="0" y1="1" y2="0">

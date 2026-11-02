@@ -1,0 +1,549 @@
+FAIL src/features/hijri/data/labels.test.ts (5.717 s)
+  ● Hijri labels › formats a single occasion with the Hijri date and the Gregorian day
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "1 Ramadan"
+    Received string:    "Ramadan 1, 1448 · February 8"
+
+      35 |     const text = formatOccasionRange(ramadan!, 'en', 0);
+      36 |
+    > 37 |     expect(text).toContain('1 Ramadan');
+         |                  ^
+      38 |     expect(text).toContain('February 8');
+      39 |   });
+      40 |
+
+      at Object.toContain (src/features/hijri/data/labels.test.ts:37:18)
+
+FAIL src/features/hijri/components/HijriMonthHeader.test.tsx (16.95 s)
+  ● Console
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (../../node_modules/react/cjs/react.development.js:630:17)
+      at ../../node_modules/react/cjs/react.development.js:920:17
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (../../node_modules/react/cjs/react.development.js:630:17)
+      at ../../node_modules/react/cjs/react.development.js:920:17
+
+  ● HijriMonthHeader › offers the return to today when away, and calls it
+
+    Unable to find an element with role: button, name: اليوم
+
+      40 |     );
+      41 |
+    > 42 |     fireEvent.press(view.getByRole('button', { name: 'اليوم' }));
+         |                          ^
+      43 |
+      44 |     expect(onToday).toHaveBeenCalledTimes(1);
+      45 |   });
+
+      at Object.getByRole (src/features/hijri/components/HijriMonthHeader.test.tsx:42:26)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriMonthHeader › renders in English with the English labels
+
+    Unable to find an element with role: button, name: Previous Hijri month
+
+      50 |     });
+      51 |
+    > 52 |     expect(view.getByRole('button', { name: 'Previous Hijri month' })).toBeOnTheScreen();
+         |                 ^
+      53 |     expect(view.getByRole('button', { name: 'Next Hijri month' })).toBeOnTheScreen();
+      54 |   });
+      55 | });
+
+      at Object.getByRole (src/features/hijri/components/HijriMonthHeader.test.tsx:52:17)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/features/hijri/components/HijriWeekdayRow.test.tsx (17.179 s)
+  ● HijriWeekdayRow › shows seven letters, Saturday first in Arabic
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      خ
+    Received:
+      ج
+
+      12 |     expect(view.getByTestId('row-0', hidden)).toHaveTextContent('س');
+      13 |     expect(view.getByTestId('row-1', hidden)).toHaveTextContent('ح');
+    > 14 |     expect(view.getByTestId('row-6', hidden)).toHaveTextContent('خ');
+         |                                               ^
+      15 |   });
+      16 |
+      17 |   it('shows Sunday first in English', async () => {
+
+      at Object.toHaveTextContent (src/features/hijri/components/HijriWeekdayRow.test.tsx:14:47)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/features/hijri/components/OccasionList.test.tsx (17.244 s)
+  ● OccasionList › shows the section title over one row per occasion
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 6
+    Received array:  [<View accessibilityLabel="الأيام البيض, ١٣–١٥ جمادى الآخرة ١٤٤٨ · ٢٣–٢٥ نوفمبر, بعد ٢٣ يومًا" accessibilityRole="text" accessible={true} style={[{"backgroundColor": "#fffdf8", "borderRadius": 20, "padding": 16}, {"borderColor": "#e7dfcc", "borderWidth": 1}, undefined]} testID="list-row-whiteDays-1795428000000"><View style={{"alignItems": "center", "flexDirection": "row", "gap": 12}}><View style={{"flex": 1, "gap": 4}}><Text dynamicTypeRamp="headline" maxFontSizeMultiplier={2} style={{"color": "#13231f", "fontFamily": "IBMPlexSansArabic-SemiBold", "fontSize": 17, "lineHeight": 24, "textAlign": "left"}}>الأيام البيض</Text><Text dynamicTypeRamp="footnote" maxFontSizeMultiplier={2} style={{"color": "#5b6a64", "fontFamily": "IBMPlexSansArabic-Regular", "fontSize": 13, "lineHeight": 18, "textAlign": "left"}}>١٣–١٥ جمادى الآخرة ١٤٤٨ · ٢٣–٢٥ نوفمبر</Text></View><View style={{"backgroundColor": "#efe8d8", "borderRadius": 999, "paddingHorizontal": 12, "paddingVertical": 4}} testID="list-row-whiteDays-1795428000000-chip"><Text dynamicTypeRamp="footnote" maxFontSizeMultiplier={2} style={{"color": "#5b6a64", "fontFamily": "IBMPlexSansArabic-Regular", "fontSize": 13, "lineHeight": 18, "textAlign": "left"}}>بعد ٢٣ يومًا</Text></View><View style={{"backgroundColor": "#a07c33", "borderRadius": 4, "height": 8, "width": 8}} testID="list-row-whiteDays-1795428000000-dot" /></View></View>, <View style={{"backgroundColor": "#efe8d8", "borderRadius": 999, "paddingHorizontal": 12, "paddingVertical": 4}} testID="list-row-whiteDays-1795428000000-chip"><Text dynamicTypeRamp="footnote" maxFontSizeMultiplier={2} style={{"color": "#5b6a64", "fontFamily": "IBMPlexSansArabic-Regular", "fontSize": 13, "lineHeight": 18, "textAlign": "left"}}>بعد ٢٣ يومًا</Text></View>, <View style={{"backgroundColor": "#a07c33", "borderRadius": 4, "height": 8, "width": 8}} testID="list-row-whiteDays-1795428000000-dot" />, <View accessibilityLabel="الأيام البيض, ١٣–١٥ رجب ١٤٤٨ · ٢٢–٢٤ ديسمبر, بعد ٥٢ يومًا" accessibilityRole="text" accessible={true} style={[{"backgroundColor": "#fffdf8", "borderRadius": 20, "padding": 16}, {"borderColor": "#e7dfcc", "borderWidth": 1}, undefined]} testID="list-row-whiteDays-1797933600000"><View style={{"alignItems": "center", "flexDirection": "row", "gap": 12}}><View style={{"flex": 1, "gap": 4}}><Text dynamicTypeRamp="headline" maxFontSizeMultiplier={2} style={{"color": "#13231f", "fontFamily": "IBMPlexSansArabic-SemiBold", "fontSize": 17, "lineHeight": 24, "textAlign": "left"}}>الأيام البيض</Text><Text dynamicTypeRamp="footnote" maxFontSizeMultiplier={2} style={{"color": "#5b6a64", "fontFamily": "IBMPlexSansArabic-Regular", "fontSize": 13, "lineHeight": 18, "textAlign": "left"}}>١٣–١٥ رجب ١٤٤٨ · ٢٢–٢٤ ديسمبر</Text></View><View style={{"backgroundColor": "#efe8d8", "borderRadius": 999, "paddingHorizontal": 12, "paddingVertical": 4}} testID="list-row-whiteDays-1797933600000-chip"><Text dynamicTypeRamp="footnote" maxFontSizeMultiplier={2} style={{"color": "#5b6a64", "fontFamily": "IBMPlexSansArabic-Regular", "fontSize": 13, "lineHeight": 18, "textAlign": "left"}}>بعد ٥٢ يومًا</Text></View><View style={{"backgroundColor": "#a07c33", "borderRadius": 4, "height": 8, "width": 8}} testID="list-row-whiteDays-1797933600000-dot" /></View></View>, <View style={{"backgroundColor": "#efe8d8", "borderRadius": 999, "paddingHorizontal": 12, "paddingVertical": 4}} testID="list-row-whiteDays-1797933600000-chip"><Text dynamicTypeRamp="footnote" maxFontSizeMultiplier={2} style={{"color": "#5b6a64", "fontFamily": "IBMPlexSansArabic-Regular", "fontSize": 13, "lineHeight": 18, "textAlign": "left"}}>بعد ٥٢ يومًا</Text></View>, <View style={{"backgroundColor": "#a07c33", "borderRadius": 4, "height": 8, "width": 8}} testID="list-row-whiteDays-1797933600000-dot" />]
+
+      13 |
+      14 |     expect(view.getByRole('header', { name: 'المناسبات القادمة' })).toBeOnTheScreen();
+    > 15 |     expect(view.getAllByTestId(/^list-row-/)).toHaveLength(items.length);
+         |                                               ^
+      16 |     expect(view.getByText('الأيام البيض')).toBeOnTheScreen();
+      17 |   });
+      18 |
+
+      at Object.toHaveLength (src/features/hijri/components/OccasionList.test.tsx:15:47)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/features/hijri/components/HijriAdjustSheet.test.tsx (21.837 s)
+  ● Console
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (../../node_modules/react/cjs/react.development.js:630:17)
+      at ../../node_modules/react/cjs/react.development.js:920:17
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (../../node_modules/react/cjs/react.development.js:630:17)
+      at ../../node_modules/react/cjs/react.development.js:920:17
+
+  ● HijriAdjustSheet › offers −2 to +2 and starts from the saved value
+
+    Unable to find an element with role: tablist
+
+    <View>
+      <View
+        pointerEvents="none"
+        style={
+          {
+            "opacity": 0,
+          }
+        }
+        testID="sheet-scrim"
+      />
+      <View
+        accessibilityLabel="إغلاق"
+        accessibilityRole="button"
+        accessible={true}
+        testID="sheet-backdrop"
+      />
+      <View
+        pointerEvents="box-none"
+      >
+        <View
+          accessibilityViewIsModal={true}
+          testID="sheet"
+        >
+          <View
+            testID="sheet-column"
+          >
+            <View
+              testID="sheet-frame"
+            >
+              <View
+                testID="sheet-frame-card"
+              >
+                <View
+                  accessibilityLabel="مقبض اللوحة"
+                  accessibilityRole="button"
+                  accessible={true}
+                  testID="sheet-frame-grabber-area"
+                >
+                  <View
+                    testID="sheet-frame-grabber"
+                  />
+                </View>
+                <View>
+                  <View
+                    testID="sheet-header"
+                  >
+                    <View>
+                      <Text
+                        accessibilityRole="header"
+                        testID="sheet-header-title"
+                      >
+                        تعديل التاريخ الهجري
+                      </Text>
+                    </View>
+                    <View
+                      accessibilityLabel="إغلاق"
+                      accessibilityRole="button"
+                      accessibilityState={
+                        {
+                          "disabled": false,
+                        }
+                      }
+                      accessible={true}
+                      testID="sheet-header-close"
+                    >
+                      <View
+                        accessibilityElementsHidden={true}
+                        importantForAccessibility="no-hide-descendants"
+                        testID="sheet-header-close-icon"
+                      >
+                        <ViewManagerAdapter_SymbolModule />
+                      </View>
+                    </View>
+                  </View>
+                  <View
+                    pointerEvents="box-none"
+                  >
+                    <RCTScrollView>
+                      <View>
+                        <View>
+                          <Text
+                            testID="sheet-body"
+                          >
+                            إن اختلف تاريخ بلدك عن تقويم أم القرى بيومٍ أو يومين، اضبط الفرق هنا. يُطبَّق على كل شاشة تعرض التاريخ الهجري.
+                          </Text>
+                          <View
+                            accessibilityLabel="تعديل التاريخ الهجري"
+                            accessibilityRole="tablist"
+                            testID="sheet-segment"
+                          >
+                            <View
+                              accessibilityRole="tab"
+                              accessibilityState={
+                                {
+                                  "selected": false,
+                                }
+                              }
+                              accessible={true}
+                              testID="sheet-segment--2"
+                            >
+                              <Text>
+                                −٢
+                              </Text>
+                            </View>
+                            <View
+                              accessibilityRole="tab"
+                              accessibilityState={
+                                {
+                                  "selected": false,
+                                }
+                              }
+                              accessible={true}
+                              testID="sheet-segment--1"
+                            >
+                              <Text>
+                                −١
+                              </Text>
+                            </View>
+                            <View
+                              accessibilityRole="tab"
+                              accessibilityState={
+                                {
+                                  "selected": false,
+                                }
+                              }
+                              accessible={true}
+                              testID="sheet-segment-0"
+                            >
+                              <Text>
+                                ٠
+                              </Text>
+                            </View>
+                            <View
+                              accessibilityRole="tab"
+                              accessibilityState={
+                                {
+                                  "selected": true,
+                                }
+                              }
+                              accessible={true}
+                              testID="sheet-segment-1"
+                            >
+                              <Text>
+                                +١
+                              </Text>
+                            </View>
+                            <View
+                              accessibilityRole="tab"
+                              accessibilityState={
+                                {
+                                  "selected": false,
+                                }
+                              }
+                              accessible={true}
+                              testID="sheet-segment-2"
+                            >
+                              <Text>
+                                +٢
+                              </Text>
+                            </View>
+                          </View>
+                          <View
+                            testID="sheet-compare"
+                          >
+                            <View
+                              testID="sheet-compare-before"
+                            >
+                              <View>
+                                <Text>
+                                  حسب أم القرى
+                                </Text>
+                              </View>
+                              <Text>
+                                ٢٢ جمادى الأولى ١٤٤٨
+                              </Text>
+                            </View>
+                            <View
+                              testID="sheet-compare-after"
+                            >
+                              <View>
+                                <Text>
+                                  بعد التعديل
+                                </Text>
+                              </View>
+                              <Text>
+                                ٢٣ جمادى الأولى ١٤٤٨
+                              </Text>
+                            </View>
+                          </View>
+                          <View>
+                            <View
+                              accessibilityLabel="إعادة الضبط"
+                              accessibilityRole="button"
+                              accessibilityState={
+                                {
+                                  "disabled": false,
+                                }
+                              }
+                              accessible={true}
+                              testID="sheet-reset"
+                            >
+                              <Text>
+                                إعادة الضبط
+                              </Text>
+                            </View>
+                            <View
+                              accessibilityLabel="حفظ"
+                              accessibilityRole="button"
+                              accessibilityState={
+                                {
+                                  "disabled": false,
+                                }
+                              }
+                              accessible={true}
+                              testID="sheet-save"
+                            >
+                              <Text>
+                                حفظ
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    </RCTScrollView>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+
+      35 |     await openSheet(view);
+      36 |
+    > 37 |     expect(view.getByRole('tablist')).toBeOnTheScreen();
+         |                 ^
+      38 |     expect(view.getByRole('tab', { name: '+١', selected: true })).toBeOnTheScreen();
+      39 |     expect(view.getByRole('tab', { name: '−٢' })).toBeOnTheScreen();
+      40 |     expect(view.getByRole('tab', { name: '٠' })).toBeOnTheScreen();
+
+      at Object.getByRole (src/features/hijri/components/HijriAdjustSheet.test.tsx:37:17)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriAdjustSheet › saves the draft to MMKV and closes
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: -1
+    Received: undefined
+
+      60 |
+      61 |     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    > 62 |     expect(storage.getNumber(storageKeys.hijriAdjustDays)).toBe(-1);
+         |                                                            ^
+      63 |   });
+      64 |
+      65 |   it('reset returns the draft to zero, and saving zero clears the stored value', async () => {
+
+      at Object.toBe (src/features/hijri/components/HijriAdjustSheet.test.tsx:62:60)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriAdjustSheet › reset returns the draft to zero, and saving zero clears the stored value
+
+    Unable to find an element with role: button, name: إعادة الضبط
+
+      69 |     await openSheet(view);
+      70 |
+    > 71 |     fireEvent.press(view.getByRole('button', { name: 'إعادة الضبط' }));
+         |                          ^
+      72 |     fireEvent.press(view.getByRole('button', { name: 'حفظ' }));
+      73 |
+      74 |     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+
+      at Object.getByRole (src/features/hijri/components/HijriAdjustSheet.test.tsx:71:26)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriAdjustSheet › closing without saving writes nothing
+
+    Unable to find an element with role: tab, name: +٢
+
+      81 |     await openSheet(view);
+      82 |
+    > 83 |     fireEvent.press(view.getByRole('tab', { name: '+٢' }));
+         |                          ^
+      84 |     fireEvent.press(view.getByRole('button', { name: 'إغلاق' }));
+      85 |
+      86 |     expect(onClose).toHaveBeenCalled();
+
+      at Object.getByRole (src/features/hijri/components/HijriAdjustSheet.test.tsx:83:26)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriAdjustSheet › renders in English
+
+    Unable to find an element with role: button, name: Save
+
+      92 |     await openSheet(view);
+      93 |
+    > 94 |     expect(view.getByRole('button', { name: 'Save' })).toBeOnTheScreen();
+         |                 ^
+      95 |     expect(view.getByRole('tab', { name: '+1' })).toBeOnTheScreen();
+      96 |   });
+      97 | });
+
+      at Object.getByRole (src/features/hijri/components/HijriAdjustSheet.test.tsx:94:17)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/features/hijri/screens/HijriCalendarScreen.test.tsx (26.652 s)
+  ● Console
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (../../node_modules/react/cjs/react.development.js:630:17)
+      at ../../node_modules/react/cjs/react.development.js:920:17
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (../../node_modules/react/cjs/react.development.js:630:17)
+      at ../../node_modules/react/cjs/react.development.js:920:17
+
+  ● HijriCalendarScreen › moves to the next month, and returns to today from there
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      جمادى الآخرة ١٤٤٨
+    Received:
+      جمادى الأولى ١٤٤٨
+
+      47 |
+      48 |     fireEvent.press(view.getByRole('button', { name: 'الشهر الهجري التالي' }));
+    > 49 |     expect(view.getByTestId('hijri-month-header-title')).toHaveTextContent('جمادى الآخرة ١٤٤٨');
+         |                                                          ^
+      50 |
+      51 |     fireEvent.press(view.getByRole('button', { name: 'اليوم' }));
+      52 |     expect(view.getByTestId('hijri-month-header-title')).toHaveTextContent('جمادى الأولى ١٤٤٨');
+
+      at Object.toHaveTextContent (src/features/hijri/screens/HijriCalendarScreen.test.tsx:49:58)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriCalendarScreen › moves to the previous month
+
+    expect(instance).toHaveTextContent()
+
+    Expected instance to have text content:
+      ربيع الآخر ١٤٤٨
+    Received:
+      جمادى الأولى ١٤٤٨
+
+      58 |     fireEvent.press(view.getByRole('button', { name: 'الشهر الهجري السابق' }));
+      59 |
+    > 60 |     expect(view.getByTestId('hijri-month-header-title')).toHaveTextContent('ربيع الآخر ١٤٤٨');
+         |                                                          ^
+      61 |   });
+      62 |
+      63 |   it('shows the saved adjustment in the row and keeps the month the adjusted date is in', async () => {
+
+      at Object.toHaveTextContent (src/features/hijri/screens/HijriCalendarScreen.test.tsx:60:58)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriCalendarScreen › puts the grid and the occasions side by side in a short window
+
+    Unable to find an element with testID: hijri-month-grid
+
+      84 |     const view = await renderUi(<HijriCalendarScreen now={NOW} />);
+      85 |
+    > 86 |     expect(view.getByTestId('hijri-month-grid')).toBeOnTheScreen();
+         |                 ^
+      87 |     expect(view.getByTestId('occasion-list')).toBeOnTheScreen();
+      88 |   });
+      89 |
+
+      at Object.getByTestId (src/features/hijri/screens/HijriCalendarScreen.test.tsx:86:17)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriCalendarScreen › says so when the platform has no Umm al-Qura calendar, and offers no month
+
+    Unable to find an element with testID: hijri-unavailable
+
+      92 |     const view = await renderUi(<HijriCalendarScreen now={NOW} />);
+      93 |
+    > 94 |     expect(view.getByTestId('hijri-unavailable')).toBeOnTheScreen();
+         |                 ^
+      95 |     expect(view.queryByTestId('hijri-month-grid')).toBeNull();
+      96 |     expect(view.queryByRole('button', { name: 'الشهر الهجري التالي' })).toBeNull();
+      97 |   });
+
+      at Object.getByTestId (src/features/hijri/screens/HijriCalendarScreen.test.tsx:94:17)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● HijriCalendarScreen › renders in English with Sunday first and the English title
+
+    Unable to find an element with testID: hijri-month-header-title
+
+      100 |     const view = await renderUi(<HijriCalendarScreen now={NOW} />, { locale: 'en' });
+      101 |
+    > 102 |     expect(view.getByTestId('hijri-month-header-title')).toHaveTextContent('Jumada I 1448');
+          |                 ^
+      103 |     expect(view.getByTestId('hijri-weekday-row-0', { includeHiddenElements: true })).toHaveTextContent('S');
+      104 |   });
+      105 | });
+
+      at Object.getByTestId (src/features/hijri/screens/HijriCalendarScreen.test.tsx:102:17)
+      at asyncGeneratorStep (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (../../node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+Test Suites: 6 failed, 12 passed, 18 total
+Tests:       15 failed, 79 passed, 94 total
+Snapshots:   0 total
+Time:        28.896 s
+Ran all test suites matching src/features/hijri.

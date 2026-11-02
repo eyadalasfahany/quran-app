@@ -1,4 +1,4 @@
-import { destinations, sidebarDestinations, tabDestinations } from './destinations';
+import { destinations, tabDestinations } from './destinations';
 
 const byName = (name: string) => {
   const found = destinations.find((d) => d.name === name);
@@ -53,29 +53,10 @@ describe('destinations', () => {
   });
 });
 
-describe('sidebarDestinations', () => {
-  it('keeps the sidebar order and still includes الصلاة', () => {
-    expect(sidebarDestinations.map((d) => d.name)).toEqual([
-      '(my-quran)',
-      '(home)',
-      '(mushaf)',
-      '(listen)',
-      '(salah)',
-    ]);
-    const myQuranSidebar = sidebarDestinations.find((d) => d.name === '(my-quran)');
-    expect(myQuranSidebar?.symbol).toBe('person.crop.circle');
-    expect(myQuranSidebar?.androidIcon).toBe('account_circle');
-  });
-
-  it('does not add القائمة to the sidebar', () => {
-    expect(sidebarDestinations.map((d) => d.name)).not.toContain('(menu)');
-  });
-});
-
 describe('destinations consistency', () => {
-  it('every tab and sidebar entry is a known destination', () => {
+  it('every tab is a known destination', () => {
     const hrefs = new Set<string>(destinations.map((d) => String(d.href)));
-    for (const destination of [...tabDestinations, ...sidebarDestinations]) {
+    for (const destination of tabDestinations) {
       expect(hrefs.has(String(destination.href))).toBe(true);
     }
   });

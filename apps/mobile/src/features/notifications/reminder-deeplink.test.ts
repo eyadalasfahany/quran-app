@@ -109,7 +109,9 @@ describe('registerReminderDeepLinks', () => {
     expect(isReminderRoute('/salahx')).toBe(false);
     expect(isReminderRoute('/read/2:255')).toBe(true);
     expect(isReminderRoute('/azkar/category/morning')).toBe(true);
-    expect(isReminderRoute('/sibha')).toBe(false);
+    expect(isReminderRoute('/sibha')).toBe(true);
+    expect(isReminderRoute('/reminders')).toBe(true);
+    expect(isReminderRoute('/sibhax')).toBe(false);
     expect(isReminderRoute(null)).toBe(false);
   });
 

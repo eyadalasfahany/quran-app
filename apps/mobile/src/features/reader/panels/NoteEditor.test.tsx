@@ -123,13 +123,13 @@ describe('NoteEditor', () => {
 
     await fireEvent.changeText(input, 'A note in English');
     expect(flatStyle(view.getByTestId('note-editor-input').props.style)).toMatchObject({
-      textAlign: 'left',
+      textAlign: 'auto',
       writingDirection: 'ltr',
     });
 
     await fireEvent.changeText(input, 'ملاحظة بالعربية');
     expect(flatStyle(view.getByTestId('note-editor-input').props.style)).toMatchObject({
-      textAlign: 'right',
+      textAlign: 'auto',
       writingDirection: 'rtl',
     });
   });

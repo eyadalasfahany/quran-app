@@ -128,7 +128,7 @@ export function AzkarDownloadRow({
       {entry.state === 'downloading' ? (
         <IconButton
           icon={CANCEL_ICON}
-          label={`${t('azkar.download.cancel')} ${entry.title}`}
+          label={t('common.a11yAction', { action: t('azkar.download.cancel'), title: entry.title })}
           onPress={() => onCancel(entry.recordingKey)}
           testID={`${testID}-cancel`}
           tone="muted"
@@ -138,7 +138,7 @@ export function AzkarDownloadRow({
       {entry.state === 'done' ? (
         <IconButton
           icon={REMOVE_ICON}
-          label={`${t('azkar.download.remove')} ${entry.title}`}
+          label={t('common.a11yAction', { action: t('azkar.download.remove'), title: entry.title })}
           onPress={() => onRemove(entry.recordingKey)}
           testID={`${testID}-remove`}
           tone="muted"

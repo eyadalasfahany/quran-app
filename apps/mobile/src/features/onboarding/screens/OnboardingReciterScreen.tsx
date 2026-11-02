@@ -19,6 +19,7 @@ import { OnboardingFooter } from '@/features/onboarding/components/OnboardingFoo
 import { OnboardingReciterRow } from '@/features/onboarding/components/OnboardingReciterRow';
 import { OnboardingTopBar } from '@/features/onboarding/components/OnboardingTopBar';
 import { DailyReminderRow } from '@/features/settings/components/DailyReminderRow';
+import { goBackOr } from '@/core/navigation/go-back';
 import { Card, Screen, UiText } from '@/shared/ui';
 
 const ONBOARDING_RECITER_COUNT = 4;
@@ -81,7 +82,7 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
         >
           <OnboardingTopBar
             backLabel={t('onboarding.back')}
-            onBack={() => router.back()}
+            onBack={() => goBackOr('/(onboarding)/script' as Href)}
             onSkip={finishOnboarding}
             skipLabel={t('onboarding.skip')}
           />

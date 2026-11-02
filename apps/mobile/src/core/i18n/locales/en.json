@@ -73,15 +73,15 @@
     "continueAzkar": {
       "caption": "Continue azkar"
     },
-    "home": {
-      "caption": "Start",
-      "title": "Home",
-      "subtitle": "Recent reading and listening"
-    },
     "favorites": {
       "caption": "Saved",
       "title": "Favourite azkar",
       "subtitle": "Azkar you saved"
+    },
+    "reminders": {
+      "caption": "Reminders",
+      "title": "Reminders",
+      "subtitle": "Prayer, Azkar and wird"
     }
   },
   "time": {
@@ -133,7 +133,6 @@
       "deleteBody": "The downloaded audio of this reciter is removed from this device. You can download it again at any time.",
       "deleteConfirm": "Delete",
       "cancel": "Cancel",
-      "installing": "Downloading the reciter's data",
       "installFailed": "The reciter's data could not be downloaded",
       "retry": "Try again",
       "notFound": "This reciter was not found"
@@ -169,7 +168,6 @@
       "makkah": "Meccan",
       "madinah": "Medinan"
     },
-    "surahMeta": "{{place}} · {{count}} ayahs",
     "mushaf": {
       "placeholderTitle": "This page is not ready",
       "placeholderBody": "Connect to load this page.",
@@ -317,6 +315,8 @@
           "subtitle": "Uthmani script, Scheherazade New font"
         }
       },
+      "decreaseGlyph": "A−",
+      "increaseGlyph": "A+",
       "themeLabel": "Appearance",
       "themes": {
         "automatic": "System",
@@ -333,8 +333,6 @@
   "library": {
     "index": {
       "title": "Index",
-      "continueReading": "Continue reading",
-      "continueSubtitle": "{{surah}} · {{verseKey}} · ayah {{ayah}}",
       "segmentLabel": "Index view",
       "segments": {
         "surahs": "Surahs",
@@ -401,7 +399,6 @@
     }
   },
   "search": {
-    "title": "Search",
     "placeholder": "Search the Quran",
     "cancel": "Cancel",
     "hint": "Search by ayah text, surah number, or name",
@@ -489,10 +486,16 @@
         "kmUnit": "km",
         "accuracy": "Compass accuracy",
         "accuracyGood": "Good",
+        "accuracyFair": "Fair",
         "accuracyPoor": "Low",
+        "accuracyUnavailable": "—",
+        "accuracyUnavailableA11y": "Unavailable",
+        "waitingLocation": "Waiting for your location",
         "location": "Location",
         "locationAuto": "Automatic",
         "unsupportedNote": "This device has no compass; the direction shown is computed from your location",
+        "northUpNote": "The dial is fixed to true north; it turns with your phone once the compass is ready",
+        "northUpReduceMotion": "The dial stays fixed to true north because Reduce Motion is on",
         "noLocationTitle": "Location not set",
         "noLocationBody": "We need your location to compute the qibla direction and distance",
         "setLocation": "Set location",
@@ -649,7 +652,12 @@
   "khatma": {
     "title": "Khatma plan",
     "durationLabel": "Finish in",
-    "durationDays": "{{formatted}} days",
+    "durationDays_zero": "{{formatted}} days",
+    "durationDays_one": "{{formatted}} day",
+    "durationDays_two": "{{formatted}} days",
+    "durationDays_few": "{{formatted}} days",
+    "durationDays_many": "{{formatted}} days",
+    "durationDays_other": "{{formatted}} days",
     "dailyWirdLabel": "Your daily portion",
     "pagesPerDay_one": "{{formatted}} page",
     "pagesPerDay_two": "{{formatted}} pages",
@@ -679,7 +687,12 @@
       "cancel": "Cancel"
     },
     "summary": {
-      "planName": "{{formatted}}-day khatma",
+      "planName_zero": "{{formatted}}-day khatma",
+      "planName_one": "{{formatted}}-day khatma",
+      "planName_two": "{{formatted}}-day khatma",
+      "planName_few": "{{formatted}}-day khatma",
+      "planName_many": "{{formatted}}-day khatma",
+      "planName_other": "{{formatted}}-day khatma",
       "dayProgress": "Day {{day}} of {{total}}",
       "emptyTitle": "Start a khatma",
       "emptyBody": "Choose how long you want to finish the Quran and track your daily portion.",
@@ -695,13 +708,22 @@
       "ahead_many": "{{count}} days ahead",
       "ahead_other": "{{count}} days ahead"
     },
-    "settingsDuration": "{{formatted}} days"
+    "settingsDuration_zero": "{{formatted}} days",
+    "settingsDuration_one": "{{formatted}} day",
+    "settingsDuration_two": "{{formatted}} days",
+    "settingsDuration_few": "{{formatted}} days",
+    "settingsDuration_many": "{{formatted}} days",
+    "settingsDuration_other": "{{formatted}} days"
   },
   "common": {
+    "back": "Back",
     "appName": "Taybah",
     "cancel": "Cancel",
     "done": "Done",
-    "openSettings": "Open Settings"
+    "openSettings": "Open Settings",
+    "a11yPair": "{{label}}, {{title}}",
+    "a11yTriple": "{{label}}, {{title}}, {{detail}}",
+    "a11yAction": "{{action}} {{title}}"
   },
   "notifications": {
     "prayer": {
@@ -723,6 +745,7 @@
       "reminders": "Daily reading reminder",
       "azkar": "Azkar reminders",
       "prayer": "Prayer times",
+      "goals": "Daily goals and Friday reminders",
       "prayerVoice": "Prayer: {{name}}",
       "prayerSilent": "Prayer (silent)"
     }
@@ -764,8 +787,9 @@
       "permissionDeniedTitle": "Cannot send reminders",
       "permissionDeniedBody": "Taybah needs permission to send daily reminders. You can enable them in your device settings.",
       "khatma": "Khatma",
-      "khatmaValue": "30 days",
-      "azkarReminders": "Azkar reminders"
+      "azkarReminders": "Azkar reminders",
+      "hub": "All reminders",
+      "hubHint": "Prayer, Azkar, wird and Friday"
     },
     "about": {
       "sources": "Sources and acknowledgments",
@@ -774,8 +798,7 @@
       "clearDataTitle": "Clear local data?",
       "clearDataMessage": "Are you sure you want to clear your local bookmarks, highlights, notes, and Khatma? This action cannot be undone.",
       "clearDataConfirm": "Clear data",
-      "cancel": "Cancel",
-      "dataCleared": "Local data cleared successfully"
+      "cancel": "Cancel"
     }
   },
   "azkar": {
@@ -910,12 +933,9 @@
     "audio": {
       "play": "Play recording",
       "pause": "Pause recording",
-      "replay": "Replay",
       "position": "{{elapsed}} of {{total}}",
       "unavailableOffline": "Not available offline",
       "unavailableOfflineHint": "This recording needs an internet connection",
-      "autoplay": "Auto-play",
-      "autoplayHint": "Moves to the next dhikr when the recording ends",
       "licence": "Licence: {{licence}}"
     },
     "download": {
@@ -952,7 +972,6 @@
       },
       "time": "Time",
       "chooseTime": "Choose a time",
-      "prayer": "Prayer",
       "offset": "Offset",
       "offsetAt": "At prayer time",
       "offsetAfter_one": "{{number}} minute after",
@@ -970,10 +989,79 @@
       "notificationEntryTitle": "Azkar reminder",
       "notificationBody": "Your chosen reminder",
       "limitReached": "Reminder limit reached"
+    },
+    "player": {
+      "open": "Open the player",
+      "openHint": "Opens the full Azkar player",
+      "previous": "Previous dhikr",
+      "next": "Next dhikr",
+      "remaining": "-{{time}}",
+      "repetition": "Repetition {{current}} of {{total}}",
+      "repetitionShort": "{{current}} of {{total}}",
+      "queuePosition": "Dhikr {{current}} of {{total}}",
+      "finished": "The recordings in this section have finished",
+      "repeat": {
+        "option": "Repeat",
+        "count": "By count",
+        "once": "Once",
+        "continuous": "Continuous"
+      },
+      "sleep": {
+        "endOfUnit": "End of this dhikr"
+      },
+      "seek": "Playback position",
+      "seekHint": "Tap to change the playback position"
+    }
+  },
+  "duas": {
+    "home": {
+      "title": "Duas",
+      "favourites": "Favourites",
+      "mineEyebrow": "Your own",
+      "mineTitle": "My duas",
+      "sourcesHeading": "Sources",
+      "hisnTitle": "Hisn al-Muslim",
+      "hisnDetail": "By topic",
+      "topicsHeading": "Topics",
+      "attribution": "Hisn al-Muslim content from OpenDua · Prophetic duas from HadeethEnc when available"
+    },
+    "favorites": {
+      "title": "Favourites",
+      "emptyTitle": "No favourite duas yet",
+      "emptyBody": "Save a dua from the lists to find it here.",
+      "browse": "Browse duas"
+    },
+    "mine": {
+      "title": "My duas",
+      "writtenByYou": "Written by you",
+      "open": "Open",
+      "reminder": "Reminder",
+      "untitled": "Untitled dua",
+      "emptyTitle": "No duas yet",
+      "emptyBody": "Write your own dua and keep it on this device.",
+      "add": "Add a dua"
+    },
+    "editor": {
+      "close": "Close",
+      "newTitle": "New dua",
+      "editTitle": "Edit dua",
+      "titleLabel": "Title (optional)",
+      "titlePlaceholder": "Short title",
+      "bodyLabel": "Dua text",
+      "bodyPlaceholder": "Write your dua here",
+      "save": "Save",
+      "delete": "Delete dua",
+      "deleteTitle": "Delete this dua?",
+      "deleteBody": "The dua and its reminder will be removed from this device.",
+      "deleteConfirm": "Delete",
+      "deleteCancel": "Cancel"
+    },
+    "reminders": {
+      "notificationTitle": "{{name}}",
+      "notificationBody": "Your chosen reminder"
     }
   },
   "sibha": {
-    "title": "Misbaha",
     "close": "Close",
     "reset": "Reset",
     "resetTitle": "Reset the counter?",
@@ -1039,6 +1127,283 @@
     "startKhatma": "Start a khatma",
     "openSibha": "Open misbaha",
     "prayerNotifications": "Prayer notifications",
-    "bell": "Reminder {{name}}"
+    "bell": "Reminder {{name}}",
+    "reminders": "Reminders",
+    "remindersHint": "Prayer, Azkar and wird"
+  },
+  "reminders": {
+    "title": "Reminders",
+    "intro": "Reminders are saved on this device. Nothing is sent until you turn one on.",
+    "sections": {
+      "prayer": "Prayer times",
+      "azkar": "Azkar",
+      "daily": "Wird and goals"
+    },
+    "prayerSummary": "Prayer times",
+    "prayerSummaryHint": "Prayer bells are managed on the Prayer screen",
+    "friday": {
+      "title": "Surat al-Kahf on Friday",
+      "modeDhuhr": "Dhuhr time",
+      "modeClock": "Chosen time",
+      "dhuhrSubtitle": "Dhuhr time on Friday",
+      "everyFriday": "Every Friday at {{time}}",
+      "needsLocation": "Set your location to use Dhuhr time",
+      "notificationTitle": "Surat al-Kahf on Friday",
+      "notificationBody": "Tap to open the surah"
+    },
+    "misbaha": {
+      "title": "Daily misbaha goal",
+      "everyDay": "Every day at {{time}}",
+      "notificationTitle": "Daily misbaha goal",
+      "notificationBody": "Tap to open the misbaha"
+    },
+    "clock": {
+      "label": "Time",
+      "choose": "Choose a time"
+    },
+    "status": {
+      "off": "Off",
+      "scheduled": "On",
+      "permissionDenied": "Notifications are off",
+      "budgetFull": "Limit reached",
+      "needsLocation": "Set your location",
+      "needsTime": "Choose a time"
+    },
+    "test": {
+      "action": "Send a test reminder",
+      "title": "Taybah",
+      "body": "This is a test reminder",
+      "sent": "The test reminder appears in 5 seconds",
+      "devAction": "Reminder in 2 minutes (dev)",
+      "devSent": "The test reminder appears in 2 minutes"
+    },
+    "recommended": {
+      "title": "Recommended reminders",
+      "intro": "Choose what you want from these reminders. Nothing is sent before you agree, and you can turn any of them off later.",
+      "prayers": "All five prayer times",
+      "morning": "Morning Azkar after Fajr",
+      "evening": "Evening Azkar after Asr",
+      "friday": "Surat al-Kahf on Friday",
+      "note": "No clock time is suggested for Azkar: they follow the prayers.",
+      "accept": "Turn on the recommended reminders",
+      "choose": "Let me choose"
+    }
+  },
+  "widgets": {
+    "nextPrayer": "Next prayer",
+    "noLocation": "Set your location to see prayer times",
+    "openApp": "Open Taybah to update the widget",
+    "stale": "Open Taybah to see prayer times",
+    "progressTitle": "Today's progress",
+    "remaining": "Remaining",
+    "progressEmpty": "Choose your daily goals",
+    "continueReading": "Continue reading",
+    "resume": "Resume",
+    "ayahLabel": "Ayah",
+    "pageLabel": "Page",
+    "wirdTitle": "Today's wird",
+    "wirdUnit": "pages",
+    "of": "of",
+    "misbaha": "Misbaha",
+    "misbahaNoTarget": "No target",
+    "countAction": "Count",
+    "azkarTitle": "Azkar",
+    "azkarEmpty": "Azkar appear once they are downloaded",
+    "complete": "Done",
+    "prayers": {
+      "fajr": "Fajr",
+      "dhuhr": "Dhuhr",
+      "asr": "Asr",
+      "maghrib": "Maghrib",
+      "isha": "Isha"
+    }
+  },
+  "widgetsHelp": {
+    "entryTitle": "Widgets and watch",
+    "entryHint": "Add widgets and the watch app",
+    "title": "Widgets and watch",
+    "intro": "Widgets show prayer times, progress, your reading place and counts — never Quran or dhikr text.",
+    "sections": {
+      "catalog": "Available widgets",
+      "android": "Android",
+      "ios": "iPhone",
+      "watch": "Watch"
+    },
+    "items": {
+      "nextPrayer": {
+        "title": "Next prayer",
+        "body": "Prayer name, time and your place — no Quran text"
+      },
+      "nextPrayerWide": {
+        "title": "Today's prayer times",
+        "body": "The next prayer and all five times for today"
+      },
+      "progress": {
+        "title": "Today's progress",
+        "body": "Your daily-goals ring and the rows you chose"
+      },
+      "continueReading": {
+        "title": "Continue reading",
+        "body": "Surah name, ayah number and page — no ayah text"
+      },
+      "misbaha": {
+        "title": "Misbaha",
+        "body": "Counter and target; «+» counts without opening the app"
+      },
+      "azkar": {
+        "title": "Azkar",
+        "body": "Session names and done state — no dhikr text"
+      }
+    },
+    "android": {
+      "step1": "Touch the Home screen, then open Widgets.",
+      "step2": "Find Taybah and drag a widget onto the screen.",
+      "step3": "Or use Add to Home screen below.",
+      "pinAction": "Add to Home screen",
+      "pinA11y": "Add {{widget}} widget to the Home screen"
+    },
+    "ios": {
+      "step1": "Touch and hold the Home Screen until the icons jiggle, then tap +.",
+      "step2": "Search for Taybah and choose a widget.",
+      "step3": "Tap Add Widget and place it where you want."
+    },
+    "watch": {
+      "body": "The Wear OS app and tile and the Apple Watch app arrive with the watch apps (coming soon)."
+    }
+  },
+  "hijri": {
+    "title": "Hijri calendar",
+    "openLabel": "Open the Hijri calendar",
+    "previousMonth": "Previous Hijri month",
+    "nextMonth": "Next Hijri month",
+    "today": "Today",
+    "gregorianRange": "{{from}} – {{to}}",
+    "note": "Dates follow the Umm al-Qura calculated calendar and may differ by a day from your country’s announcement.",
+    "unavailable": "The Hijri calendar is not available on this device.",
+    "day": {
+      "a11y": "{{hijri}}, {{gregorian}}",
+      "today": "Today, {{hijri}}, {{gregorian}}",
+      "occasion": "{{hijri}}, {{gregorian}}, {{occasion}}"
+    },
+    "adjust": {
+      "row": "Adjust the date",
+      "unit": "days",
+      "title": "Adjust the Hijri date",
+      "body": "If your country’s date differs from Umm al-Qura by a day or two, set the difference here. It applies to every screen that shows the Hijri date.",
+      "ummAlQura": "Umm al-Qura",
+      "after": "After adjustment",
+      "save": "Save",
+      "reset": "Reset",
+      "open": "Adjust the Hijri date",
+      "value": "{{value}} days",
+      "close": "Close"
+    },
+    "occasions": {
+      "title": "Upcoming occasions",
+      "empty": "No occasions soon.",
+      "daysAway_zero": "Today",
+      "daysAway_one": "In {{number}} day",
+      "daysAway_two": "In {{number}} days",
+      "daysAway_few": "In {{number}} days",
+      "daysAway_many": "In {{number}} days",
+      "daysAway_other": "In {{number}} days"
+    },
+    "occasion": {
+      "muharram1": "Islamic New Year",
+      "muharram10": "Ashura",
+      "ramadan1": "Start of Ramadan",
+      "shawwal1": "Eid al-Fitr",
+      "dhulHijjah9": "Day of Arafah",
+      "dhulHijjah10": "Eid al-Adha",
+      "whiteDays": "White days"
+    },
+    "menu": {
+      "caption": "Today",
+      "title": "Hijri calendar",
+      "a11y": "Hijri calendar: {{date}}"
+    },
+    "home": {
+      "pillLabel": "Hijri calendar: {{date}}"
+    }
+  },
+  "moon": {
+    "title": "Moon sighting",
+    "offline": "Calculated on your device, no internet needed.",
+    "locationA11y": "Location: {{label}}",
+    "evening": "Evening of {{hijri}} · {{day}}",
+    "conjunctionValue": "{{day}} · {{time}}",
+    "summary": {
+      "age": "Moon age at sunset",
+      "illumination": "Illuminated"
+    },
+    "age": {
+      "hours_zero": "{{formatted}} h",
+      "hours_one": "{{formatted}} h",
+      "hours_other": "{{formatted}} h",
+      "minutes_zero": "{{formatted}} min",
+      "minutes_one": "{{formatted}} min",
+      "minutes_other": "{{formatted}} min",
+      "hoursMinutes": "{{hours}} {{minutes}}"
+    },
+    "times": {
+      "conjunction": "Conjunction (new moon)",
+      "sunset": "Sunset",
+      "moonset": "Moonset",
+      "moonsetCompared": "Moonset compared with sunset",
+      "nextConjunction": "Next conjunction",
+      "unavailable": "—"
+    },
+    "compare": {
+      "before_one": "{{formatted}} min before",
+      "before_other": "{{formatted}} min before",
+      "after_one": "{{formatted}} min after",
+      "after_other": "{{formatted}} min after",
+      "same": "At the same time"
+    },
+    "span": {
+      "minutes_one": "1 minute",
+      "minutes_other": "{{formatted}} minutes",
+      "hours_one": "1 hour",
+      "hours_other": "{{formatted}} hours",
+      "days_one": "1 day",
+      "days_other": "{{formatted}} days"
+    },
+    "estimate": {
+      "title": "Visibility estimate",
+      "criterion": "Criterion: Odeh (2004)",
+      "odehV": "V = {{value}}",
+      "zone": "Zone {{letter}}",
+      "letters": {
+        "a": "A",
+        "b": "B",
+        "c": "C",
+        "d": "D"
+      }
+    },
+    "zoneResults": {
+      "a": "Visible to the naked eye",
+      "b": "Visible with optical aid; may be seen with the naked eye",
+      "c": "Visible with optical aid only",
+      "d": "Not visible even with optical aid"
+    },
+    "disclaimer": "An astronomical estimate for your location, not a ruling on the start of a month. The official announcement in your country governs.",
+    "unavailable": "Estimate unavailable at this latitude or when the moon does not set after sunset.",
+    "noLocation": {
+      "title": "Set your location",
+      "body": "We need your location to calculate sunset, moonset and the visibility estimate. We read the location set in Prayer and never change it.",
+      "action": "Open location in Prayer"
+    },
+    "menu": {
+      "caption": "Crescent",
+      "title": "Moon sighting",
+      "a11y": "Moon sighting: {{preview}}",
+      "noLocation": "Set your location",
+      "conjunctionIn": "Conjunction in {{duration}}",
+      "conjunctionAgo": "Conjunction {{duration}} ago"
+    },
+    "phaseDiscA11y": "Moon phase, {{percent}} percent illuminated",
+    "sources": {
+      "suncalc": "Sun and moon positions: suncalc (BSD-2-Clause)"
+    }
   }
 }

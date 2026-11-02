@@ -75,7 +75,6 @@ export function ReadingAyahHeader({
             icon={playing || starting ? icons.pause : icons.play}
             iconSize={size.iconSm}
             label={playing || starting ? t('player.pause') : t('reader.ayahRow.play')}
-            mirrorInRtl
             onPress={playing || !starting ? (onPlay ?? noop) : noop}
             testID={testID ? `${testID}-play` : undefined}
             tone="muted"

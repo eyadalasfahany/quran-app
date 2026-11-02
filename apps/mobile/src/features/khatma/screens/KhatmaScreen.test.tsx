@@ -131,7 +131,7 @@ describe('KhatmaScreen saveMode', () => {
     mockUseActivePlan.mockReturnValue({ data: [activePlan] });
     const view = await renderUi(<KhatmaScreen />);
 
-    await fireEvent.press(view.getByRole('tab', { name: '٧ يومًا' }));
+    await fireEvent.press(view.getByRole('tab', { name: '٧ أيام' }));
 
     expect(await view.findByRole('button', { name: 'حفظ الخطة' })).toBeOnTheScreen();
     expect(view.queryByTestId('khatma-progress-grid')).toBeNull();

@@ -1,4 +1,4 @@
-import { act, fireEvent, within } from '@testing-library/react-native';
+import { act } from '@testing-library/react-native';
 import { router, useSegments } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { Dimensions, Platform, Text } from 'react-native';
@@ -8,23 +8,24 @@ import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../jest/ui-source';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { resetNetworkStateForTests, useNetworkStatus } from '@/core/network/network-state';
-import { ThemeProvider, themes } from '@/core/theme';
+import { themes } from '@/core/theme';
 import { openAudioTestDb } from '@/features/audio/data/test-db';
 import { usePlayerStore } from '@/features/audio/playerStore';
 
 import { MainShell } from './MainShell';
 import { miniPlayerBottom, miniPlayerHiddenTabsBottom } from './tab-bar-clearance';
 import { useTabBarScrollStore } from './tab-bar-scroll-store';
+import { useTabRailSideInset } from './TabRailContext';
 
 setUpTests();
 
 let db: { executor: SqlExecutor; close: () => void };
 
-// The mini player reads the window class itself, so an expanded shell needs an expanded window too.
-function setWindowWidth(width: number) {
+// The mini player reads the window class itself, so every window size is set on the window, not on the shell.
+function setWindowWidth(width: number, height = 844) {
   Dimensions.set({
-    screen: { fontScale: 1, height: 844, scale: 1, width },
-    window: { fontScale: 1, height: 844, scale: 1, width },
+    screen: { fontScale: 1, height, scale: 1, width },
+    window: { fontScale: 1, height, scale: 1, width },
   });
 }
 
@@ -70,28 +71,20 @@ function segments(...names: string[]) {
   return names as unknown as ReturnType<typeof useSegments>;
 }
 
-const searchLabels = {
-  ar: 'ابحث في القرآن',
-  en: 'Search the Quran',
-} as const;
-
-const prayerLabels = {
-  ar: 'الصلاة',
-  en: 'Prayer',
-} as const;
-
-const labels = {
-  ar: { nav: 'التنقل الرئيسي', mushaf: 'المصحف' },
-  en: { nav: 'Main navigation', mushaf: 'Mushaf' },
-} as const;
-
-function shell(expanded: boolean) {
+function shell() {
   return (
-    <MainShell expanded={expanded}>
+    <MainShell>
       <Text>tabs</Text>
     </MainShell>
   );
 }
+
+// Reads the start-side clearance a tab screen gets from the shell (TabRailContext).
+function RailInsetProbe() {
+  return <Text testID="rail-inset">{String(useTabRailSideInset())}</Text>;
+}
+
+const playing = { reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 };
 
 describe('MainShell', () => {
   beforeEach(() => {
@@ -139,8 +132,8 @@ describe('MainShell', () => {
     }
 
     it('drops the mini player into the tab bar slot by the difference of the two bottoms, and returns it when the bar comes back', async () => {
-      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
-      const view = await renderUi(shell(false));
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell());
       const drop = miniPlayerBottom(Platform.OS, 0, false) - miniPlayerHiddenTabsBottom(Platform.OS, 0, false);
 
       await act(async () => {
@@ -159,68 +152,108 @@ describe('MainShell', () => {
 
   describe('mini player placement', () => {
     it('floats the mini player above the tabs on a compact window while something is loaded', async () => {
-      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
-      const view = await renderUi(shell(false));
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell());
 
       expect(view.getByTestId('mini-player-dock')).toBeOnTheScreen();
       expect(view.getByTestId('mini-player-tabs')).toBeOnTheScreen();
     });
 
     it('shows nothing while the player is idle', async () => {
-      const view = await renderUi(shell(false));
+      const view = await renderUi(shell());
 
       expect(view.queryByTestId('mini-player-tabs')).toBeNull();
     });
 
-    it('puts the mini player in the sidebar footer on an expanded window while something is loaded', async () => {
+    it('clears the rail on the start edge, not the bottom, on an expanded window (ADR 0051, amended 2 Nov 2026)', async () => {
       setWindowWidth(1000);
-      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
-      const view = await renderUi(shell(true));
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell());
 
-      expect(within(view.getByTestId('sidebar-footer')).getByTestId('mini-player-sidebar')).toBeOnTheScreen();
-      expect(view.queryByTestId('mini-player-dock')).toBeNull();
+      expect(view.getByTestId('mini-player-tabs')).toBeOnTheScreen();
+      // The bottom is the bottom safe area plus the 12 gap (no bottom bar); the start is the rail's 100 plus the 16 side.
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({
+        bottom: miniPlayerBottom(Platform.OS, 0, true),
+        start: 100 + 16,
+      });
     });
 
-    it('shows no sidebar mini player on an expanded window while the player is idle', async () => {
+    it('keeps the phone placement above the bottom bar, with no start clearance, on a phone (ADR 0051)', async () => {
+      setWindowWidth(390);
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell());
+
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({
+        bottom: miniPlayerBottom(Platform.OS, 0, false),
+        start: 16,
+      });
+    });
+
+    it.each(locales)('clears the rail on the start edge of an expanded window in %s (ADR 0051, amended)', async (locale) => {
+      setWindowWidth(1024, 768);
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell(), { locale });
+
+      // The start side is a logical edge: the rail's clearance is the same value in LTR and RTL, and RN mirrors it.
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({ start: 116 });
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style).end).toBe(16);
+    });
+
+    it('shows nothing on an expanded window while the player is idle', async () => {
       setWindowWidth(1000);
-      const view = await renderUi(shell(true));
+      const view = await renderUi(shell());
 
-      expect(view.queryByTestId('mini-player-sidebar')).toBeNull();
-    });
-
-    it('shows no sidebar mini player on a compact window, even while something is loaded', async () => {
-      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
-      const view = await renderUi(shell(false));
-
-      expect(view.queryByTestId('mini-player-sidebar')).toBeNull();
-      expect(view.queryByTestId('sidebar-footer')).toBeNull();
-    });
-
-    it('hides the mini player on an expanded window, where the sidebar takes its place', async () => {
-      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
-      const view = await renderUi(shell(true));
-
-      expect(view.queryByTestId('mini-player-dock')).toBeNull();
       expect(view.queryByTestId('mini-player-tabs')).toBeNull();
     });
   });
 
-  it('renders only the tabs on compact and medium windows', async () => {
-    const view = await renderUi(shell(false));
+  it.each([390, 700, 1000])('renders the content and no sidebar on a window %i wide (ADR 0051)', async (width) => {
+    setWindowWidth(width);
+    const view = await renderUi(shell());
 
     expect(view.getByText('tabs')).toBeOnTheScreen();
     expect(view.queryByTestId('sidebar')).toBeNull();
+    expect(view.queryByTestId('sidebar-footer')).toBeNull();
     expect(flatStyle(view.getByTestId('main-shell').props.style)).toMatchObject({
       backgroundColor: themes.light.colors.surface,
       flex: 1,
     });
   });
 
+  it.each([
+    ['a 390 by 844 phone', 390, 844, 0],
+    ['a 1024 by 768 tablet', 1024, 768, 100],
+    ['a 1024 by 1366 iPad in portrait', 1024, 1366, 100],
+    ['a 1280 by 800 tablet', 1280, 800, 100],
+  ])('gives the tab screens the rail clearance on the start edge for %s', async (_name, width, height, inset) => {
+    setWindowWidth(width, height);
+    const view = await renderUi(
+      <MainShell>
+        <RailInsetProbe />
+      </MainShell>,
+    );
+
+    expect(view.getByTestId('rail-inset').props.children).toBe(String(inset));
+  });
+
+  it('keeps the offline notice clear of the rail on a tablet, on the start edge (ADR 0051, amended)', async () => {
+    setWindowWidth(1024, 768);
+    resetNetworkStateForTests();
+    useNetworkStatus.setState({ online: false });
+    try {
+      const view = await renderUi(shell());
+
+      expect(flatStyle(view.getByTestId('offline-strip-dock').props.style)).toMatchObject({ start: 100, top: 0 });
+    } finally {
+      resetNetworkStateForTests();
+    }
+  });
+
   it('shows the offline notice while the device is offline', async () => {
     resetNetworkStateForTests();
     useNetworkStatus.setState({ online: false });
     try {
-      const view = await renderUi(shell(false));
+      const view = await renderUi(shell());
 
       expect(
         view.getByLabelText('أنت غير متصل. المصحف والتلاوات المحمّلة تعمل كالمعتاد.'),
@@ -230,127 +263,12 @@ describe('MainShell', () => {
     }
   });
 
-  it('adds the sidebar beside the tabs on expanded windows', async () => {
-    const view = await renderUi(shell(true));
+  it.each(locales)('shows the mini player on an expanded window in %s', async (locale) => {
+    setWindowWidth(1000);
+    usePlayerStore.getState().beginLoad(playing);
+    const view = await renderUi(shell(), { locale });
 
-    expect(view.getByTestId('sidebar')).toBeOnTheScreen();
-    expect(view.getByText('tabs')).toBeOnTheScreen();
-    expect(view.getAllByRole('tab').map((tab) => tab.props.testID)).toEqual([
-      'sidebar-my-quran',
-      'sidebar-home',
-      'sidebar-mushaf',
-      'sidebar-listen',
-      'sidebar-salah',
-      'sidebar-settings',
-    ]);
-  });
-
-  it('opens search from a field at the top of the expanded sidebar', async () => {
-    const view = await renderUi(shell(true));
-
-    await fireEvent.press(view.getByTestId('sidebar-search'));
-
-    expect(router.push).toHaveBeenCalledWith('/search');
-    expect(router.navigate).not.toHaveBeenCalled();
-  });
-
-  it('shows no search field on compact and medium windows', async () => {
-    const view = await renderUi(shell(false));
-
-    expect(view.queryByTestId('sidebar-search')).toBeNull();
-  });
-
-  it('selects the destination of the current route', async () => {
-    jest.mocked(useSegments).mockReturnValue(segments('(main)', '(mushaf)'));
-    const view = await renderUi(shell(true));
-
-    expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
-    expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: false });
-  });
-
-  it('selects the destination it is given, over the route segments', async () => {
-    jest.mocked(useSegments).mockReturnValue(segments('salah'));
-    const view = await renderUi(
-      <MainShell expanded active="(salah)">
-        <Text>tabs</Text>
-      </MainShell>,
-    );
-
-    expect(view.getByTestId('sidebar-salah').props.accessibilityState).toEqual({ selected: true });
-    expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: false });
-  });
-
-  it('keeps the segment match when no destination is given', async () => {
-    jest.mocked(useSegments).mockReturnValue(segments('(main)', '(mushaf)'));
-    const view = await renderUi(
-      <MainShell expanded>
-        <Text>tabs</Text>
-      </MainShell>,
-    );
-
-    expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
-    expect(view.getByTestId('sidebar-salah').props.accessibilityState).toEqual({ selected: false });
-  });
-
-  it.each(locales)('selects Prayer in the sidebar on /salah in %s', async (locale) => {
-    jest.mocked(useSegments).mockReturnValue(segments('salah'));
-    const view = await renderUi(
-      <MainShell expanded active="(salah)">
-        <Text>tabs</Text>
-      </MainShell>,
-      { locale },
-    );
-
-    expect(view.getByRole('tab', { name: prayerLabels[locale], selected: true })).toBeOnTheScreen();
-  });
-
-  it('keeps the tab under a sheet selected while the sheet is open', async () => {
-    jest.mocked(useSegments).mockReturnValue(segments('(main)', '(mushaf)'));
-    const view = await renderUi(shell(true));
-
-    jest.mocked(useSegments).mockReturnValue(['reader-settings'] as unknown as ReturnType<typeof useSegments>);
-    await view.rerender(<ThemeProvider name="light">{shell(true)}</ThemeProvider>);
-
-    expect(view.getByTestId('sidebar-mushaf').props.accessibilityState).toEqual({ selected: true });
-    expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: false });
-  });
-
-  it('falls back to home when no destination matches', async () => {
-    jest.mocked(useSegments).mockReturnValue([] as unknown as ReturnType<typeof useSegments>);
-    const view = await renderUi(shell(true));
-
-    expect(view.getByTestId('sidebar-home').props.accessibilityState).toEqual({ selected: true });
-  });
-
-  it('navigates to a destination from the sidebar', async () => {
-    const view = await renderUi(shell(true));
-
-    await fireEvent.press(view.getByTestId('sidebar-listen'));
-
-    expect(router.navigate).toHaveBeenCalledWith('/(main)/(listen)');
-  });
-
-  it('opens settings from the sidebar with push, not navigate', async () => {
-    const view = await renderUi(shell(true));
-
-    await fireEvent.press(view.getByTestId('sidebar-settings'));
-
-    expect(router.push).toHaveBeenCalledWith('/settings');
-    expect(router.navigate).not.toHaveBeenCalled();
-  });
-
-  it.each(locales)('labels the search field in %s', async (locale) => {
-    const view = await renderUi(shell(true), { locale });
-
-    expect(view.getByRole('button', { name: searchLabels[locale] })).toBeOnTheScreen();
-  });
-
-  it.each(locales)('labels the sidebar and its tabs in %s', async (locale) => {
-    const view = await renderUi(shell(true), { locale });
-
-    expect(view.getByTestId('sidebar').props.accessibilityLabel).toBe(labels[locale].nav);
-    expect(view.getByRole('tab', { name: labels[locale].mushaf })).toBeOnTheScreen();
-    expect(flatStyle(view.getByTestId('main-shell').props.style).flexDirection).toBe('row');
+    expect(view.getByTestId('mini-player-tabs')).toBeOnTheScreen();
   });
 
   describe('on Android (ADR 0033)', () => {
@@ -365,18 +283,19 @@ describe('MainShell', () => {
     });
 
     it('floats the mini player above the floating bar: 12 + 64 from the edge, then the 12 pt gap', async () => {
-      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
-      const view = await renderUi(shell(false));
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell());
 
       expect(flatStyle(view.getByTestId('mini-player-dock').props.style).bottom).toBe(88);
     });
 
-    it('keeps the sidebar on expanded windows, with no floating bar beside it', async () => {
+    it('clears the rail, not the floating bar, on an expanded window on Android (ADR 0051, amended)', async () => {
       setWindowWidth(1000);
-      const view = await renderUi(shell(true));
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell());
 
-      expect(view.getByTestId('sidebar')).toBeOnTheScreen();
-      expect(view.queryByTestId('floating-tab-bar')).toBeNull();
+      // No bottom bar on a tablet: 0 safe-area inset + the 12 gap, and the rail's 116 from the start edge.
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({ bottom: 12, start: 116 });
     });
   });
 

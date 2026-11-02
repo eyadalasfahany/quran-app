@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/react-native';
+import { act, fireEvent, screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
 import { renderUi } from '../../../../jest/render-ui';
 import { useAzkarCategories } from '../data';
@@ -79,5 +80,27 @@ describe('AzkarRemindersScreen', () => {
     await renderUi(<AzkarRemindersScreen />);
 
     expect(screen.queryByTestId('azkar-reminders-denied')).toBeNull();
+  });
+
+  describe('closing', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.mocked(router.back).mockClear();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('closes the sheet from its X button, and leaves the route', async () => {
+      const view = await renderUi(<AzkarRemindersScreen />);
+
+      await fireEvent.press(view.getByTestId('azkar-reminders-header-close'));
+      await act(async () => {
+        jest.advanceTimersByTime(3000);
+      });
+
+      expect(router.back).toHaveBeenCalledTimes(1);
+    });
   });
 });

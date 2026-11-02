@@ -4,7 +4,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { at, openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { getQuranSegmentVerses, listCategoryUnits } from './content-repository';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { azkarShareText } from './share-text';
 
 const SOURCE = 'حصن المسلم · 1';

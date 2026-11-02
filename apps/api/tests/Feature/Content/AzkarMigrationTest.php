@@ -159,6 +159,12 @@ it('drops every azkar table on down and restores it on up', function (): void {
         azkarMigration($name)->up();
     }
 
+    // The later azkar changes (widened imported_at, repeat columns, required_count_source) are part of the schema too.
+    // Without them a later test that imports into azkar_items fails on a missing column.
+    foreach (['widen_azkar_entries_imported_at', 'add_repeat_columns_to_azkar_items_table', 'add_required_count_source_to_azkar_items_table'] as $name) {
+        azkarMigration($name)->up();
+    }
+
     foreach (array_keys(azkarTableContract()) as $table) {
         expect(Schema::hasTable($table))->toBeTrue();
     }

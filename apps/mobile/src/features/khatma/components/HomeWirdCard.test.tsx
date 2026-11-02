@@ -93,6 +93,16 @@ describe('HomeWirdCard', () => {
     expect(button.props.accessibilityLabel).toMatch(/[%٪]/);
   });
 
+  it.each(locales)('joins title, subtitle and percent with the locale separator (%s)', async (locale) => {
+    const view = await renderUi(<HomeWirdCard {...BASE} pagesRead={242} />, { locale });
+    const label: string = view.getByRole('button').props.accessibilityLabel;
+    const separator = locale === 'ar' ? '، ' : ', ';
+    const parts = label.split(separator);
+
+    expect(parts).toHaveLength(3);
+    expect(parts[2]).toMatch(locale === 'ar' ? /^[٠-٩]+٪$/ : /^\d+%$/);
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/khatma/components/HomeWirdCard.tsx')).toEqual([]);
   });

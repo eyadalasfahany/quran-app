@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { render } from '@testing-library/react-native';
+import { render, within } from '@testing-library/react-native';
 
 import { i18n } from '@/core/i18n';
 import { ThemeProvider } from '@/core/theme';
@@ -9,26 +9,33 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 
 import { QiblaDial } from './QiblaDial';
 
-// Counts how often the marker glyph renders: it sits inside the dial, so the count moves only when the dial re-renders.
-const mockKaabaRenders = jest.fn();
-jest.mock('./KaabaGlyph', () => {
+// Counts how often a label renders: the labels sit in the face, so the count moves only when the face re-renders.
+const mockLabelRenders = jest.fn();
+jest.mock('@/shared/ui/UiText', () => {
   const react = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  const actual = jest.requireActual<typeof import('@/shared/ui/UiText')>('@/shared/ui/UiText');
   return {
-    KaabaGlyph: () => {
-      mockKaabaRenders();
-      return react.createElement(View, { testID: 'kaaba-glyph' });
+    ...actual,
+    UiText: (props: Parameters<typeof actual.UiText>[0]) => {
+      mockLabelRenders();
+      return react.createElement(actual.UiText, props);
     },
   };
 });
 
-describe('QiblaDial', () => {
+/** The rotate transforms of a view's style: the face and its labels carry none. */
+function rotatesOf(view: Awaited<ReturnType<typeof renderUi>>, testID: string): unknown[] {
+  const style = flatStyle(view.getByTestId(testID).props.style);
+  return ((style.transform ?? []) as object[]).filter((t) => 'rotate' in t);
+}
+
+describe('QiblaDial (the static face)', () => {
   beforeEach(() => {
-    mockKaabaRenders.mockClear();
+    mockLabelRenders.mockClear();
   });
 
   it('draws the cardinals and the eight degree numerals', async () => {
-    const view = await renderUi(<QiblaDial bearing={244} />);
+    const view = await renderUi(<QiblaDial />);
 
     for (const cardinal of ['ش', 'ج', 'غ', 'ق']) {
       expect(view.getByText(cardinal)).toBeOnTheScreen();
@@ -39,47 +46,112 @@ describe('QiblaDial', () => {
   });
 
   it.each(locales)('localizes cardinals and numerals in %s', async (locale) => {
-    const view = await renderUi(<QiblaDial bearing={244} />, { locale });
+    const view = await renderUi(<QiblaDial />, { locale });
 
     expect(view.getByText(locale === 'ar' ? '٣٠' : '30')).toBeOnTheScreen();
     expect(view.getByText(locale === 'ar' ? 'ش' : 'N')).toBeOnTheScreen();
   });
 
-  it('parks the marker on the gold arc at the bearing', async () => {
-    const view = await renderUi(<QiblaDial bearing={244} />);
+  it('never turns: the labels carry no rotation, so the cardinals and numerals are a fixed reference ring', async () => {
+    const view = await renderUi(<QiblaDial />);
 
-    const marker = view.getByTestId('qibla-compass-marker');
-    const rotate = (flatStyle(marker.props.style).transform as { rotate: string }[]).find((t) => 'rotate' in t);
-    expect(rotate?.rotate).toBe('244deg');
+    for (const testID of [
+      'qibla-dial-label-cardinalNorth',
+      'qibla-dial-label-cardinalWest',
+      'qibla-dial-numeral-30',
+      'qibla-dial-numeral-330',
+    ]) {
+      expect(rotatesOf(view, testID)).toEqual([]);
+    }
   });
 
-  // A plain renderUi rerender would swap the root (its ThemeProvider), which remounts the dial. The wrapper keeps the
-  // provider in place so only the dial's own memo decides whether it renders again.
+  it('carries no Kaaba marker: that is a separate layer above the face', async () => {
+    const view = await renderUi(<QiblaDial />);
+
+    expect(view.queryByTestId('qibla-compass-marker', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('takes no props: the face is the same whatever the compass does', async () => {
+    const first = await renderUi(<QiblaDial />);
+    const second = await renderUi(<QiblaDial />);
+
+    expect(first.toJSON()).toEqual(second.toJSON());
+  });
+
+  describe('label placement (regression: RTL mirrored the cardinals and numerals)', () => {
+    const FACE = 336;
+    const CENTRE = FACE / 2;
+
+    /** Where React Native draws a placed label: `left` is swapped in RTL, so its anchor there is the right edge. */
+    function physicalCentre(view: Awaited<ReturnType<typeof renderUi>>, testID: string, isRTL: boolean): number {
+      const style = flatStyle(view.getByTestId(testID).props.style);
+      const width = style.width as number;
+      const translateX = (style.transform as { translateX: number }[]).find((t) => 'translateX' in t)?.translateX ?? 0;
+      const edge = isRTL ? FACE - width - (style.left as number) : (style.left as number);
+      return edge + translateX + width / 2;
+    }
+
+    it.each(locales)('puts ق on the east (right of centre) and غ on the west in %s', async (locale) => {
+      const isRTL = locale === 'ar';
+      const view = await renderUi(<QiblaDial />, { locale });
+
+      expect(physicalCentre(view, 'qibla-dial-label-cardinalEast', isRTL)).toBeCloseTo(280, 5);
+      expect(physicalCentre(view, 'qibla-dial-label-cardinalWest', isRTL)).toBeCloseTo(56, 5);
+      expect(physicalCentre(view, 'qibla-dial-label-cardinalEast', isRTL)).toBeGreaterThan(CENTRE);
+      expect(physicalCentre(view, 'qibla-dial-label-cardinalWest', isRTL)).toBeLessThan(CENTRE);
+    });
+
+    it.each(locales)('keeps each cardinal letter on its own side in %s', async (locale) => {
+      const isRTL = locale === 'ar';
+      const view = await renderUi(<QiblaDial />, { locale });
+
+      expect(within(view.getByTestId('qibla-dial-label-cardinalEast')).getByText(isRTL ? 'ق' : 'E')).toBeOnTheScreen();
+      expect(within(view.getByTestId('qibla-dial-label-cardinalWest')).getByText(isRTL ? 'غ' : 'W')).toBeOnTheScreen();
+    });
+
+    it.each(locales)('puts 30 on the right and 330 on the left in %s', async (locale) => {
+      const isRTL = locale === 'ar';
+      const view = await renderUi(<QiblaDial />, { locale });
+
+      expect(physicalCentre(view, 'qibla-dial-numeral-30', isRTL)).toBeCloseTo(224, 5);
+      expect(physicalCentre(view, 'qibla-dial-numeral-330', isRTL)).toBeCloseTo(112, 5);
+      expect(physicalCentre(view, 'qibla-dial-numeral-30', isRTL)).toBeGreaterThan(CENTRE);
+      expect(physicalCentre(view, 'qibla-dial-numeral-330', isRTL)).toBeLessThan(CENTRE);
+    });
+
+    it.each(locales)('places every label with a translate and no left offset, in %s', async (locale) => {
+      const view = await renderUi(<QiblaDial />, { locale });
+
+      for (const testID of [
+        'qibla-dial-label-cardinalNorth',
+        'qibla-dial-label-cardinalSouth',
+        'qibla-dial-label-cardinalWest',
+        'qibla-dial-label-cardinalEast',
+        'qibla-dial-numeral-30',
+        'qibla-dial-numeral-330',
+      ]) {
+        const style = flatStyle(view.getByTestId(testID).props.style);
+        expect(style.left).toBe(0);
+        expect((style.transform as object[]).some((t) => 'translateX' in t)).toBe(true);
+      }
+    });
+  });
+
+  // A plain renderUi rerender would swap the root (its ThemeProvider), which remounts the face. The wrapper keeps the
+  // provider in place so only the face's own memo decides whether it renders again.
   const themed = ({ children }: { children: ReactNode }) => <ThemeProvider name="light">{children}</ThemeProvider>;
 
   beforeAll(async () => {
     await i18n.changeLanguage('ar');
   });
 
-  it('does not re-render when re-rendered with the same bearing (memoised)', async () => {
-    const view = await render(<QiblaDial bearing={244} />, { wrapper: themed });
-    const afterMount = mockKaabaRenders.mock.calls.length;
+  it('does not re-render when its parent re-renders (memoised, no props)', async () => {
+    const view = await render(<QiblaDial />, { wrapper: themed });
+    const afterMount = mockLabelRenders.mock.calls.length;
 
-    await view.rerender(<QiblaDial bearing={244} />);
+    await view.rerender(<QiblaDial />);
 
-    expect(mockKaabaRenders.mock.calls.length).toBe(afterMount);
-  });
-
-  it('re-renders when the bearing changes', async () => {
-    const view = await render(<QiblaDial bearing={244} />, { wrapper: themed });
-    const afterMount = mockKaabaRenders.mock.calls.length;
-
-    await view.rerender(<QiblaDial bearing={100} />);
-
-    expect(mockKaabaRenders.mock.calls.length).toBeGreaterThan(afterMount);
-    const marker = view.getByTestId('qibla-compass-marker');
-    const rotate = (flatStyle(marker.props.style).transform as { rotate: string }[]).find((t) => 'rotate' in t);
-    expect(rotate?.rotate).toBe('100deg');
+    expect(mockLabelRenders.mock.calls.length).toBe(afterMount);
   });
 
   it('has no raw colour literals', () => {

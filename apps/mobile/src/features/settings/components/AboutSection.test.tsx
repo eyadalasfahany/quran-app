@@ -1,13 +1,12 @@
 import { fireEvent, waitFor } from '@testing-library/react-native';
 
-import { clearLocalUserData } from '@/core/db/user/clear';
-
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { clearPersonalData } from '../data/clear-personal-data';
 import { AboutSection } from './AboutSection';
 
-jest.mock('@/core/db/user/clear', () => ({
-  clearLocalUserData: jest.fn(),
+jest.mock('../data/clear-personal-data', () => ({
+  clearPersonalData: jest.fn(() => Promise.resolve({ failed: [] })),
 }));
 
 // The dialog fades in, so until its animation ends its elements count as hidden to the query.
@@ -49,16 +48,16 @@ describe('AboutSection', () => {
       ios: 'trash',
       android: 'delete_forever',
     });
-    expect(clearLocalUserData).not.toHaveBeenCalled();
+    expect(clearPersonalData).not.toHaveBeenCalled();
   });
 
-  it('clears local data when confirmed without a custom handler, and closes the dialog', async () => {
+  it('clears local data through clearPersonalData when confirmed without a custom handler, and closes the dialog', async () => {
     const view = await renderUi(<AboutSection />);
     await fireEvent.press(view.getByTestId('about-clear-data-row'));
 
     await fireEvent.press(view.getByRole('button', { name: 'مسح البيانات', ...SHOWN }));
 
-    expect(clearLocalUserData).toHaveBeenCalledTimes(1);
+    expect(clearPersonalData).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(view.queryByText(CLEAR_TITLE, SHOWN)).toBeNull());
   });
 
@@ -68,7 +67,7 @@ describe('AboutSection', () => {
 
     await fireEvent.press(view.getByRole('button', { name: 'إلغاء', ...SHOWN }));
 
-    expect(clearLocalUserData).not.toHaveBeenCalled();
+    expect(clearPersonalData).not.toHaveBeenCalled();
     await waitFor(() => expect(view.queryByText(CLEAR_TITLE, SHOWN)).toBeNull());
   });
 
@@ -80,7 +79,7 @@ describe('AboutSection', () => {
     await fireEvent.press(view.getByRole('button', { name: 'مسح البيانات', ...SHOWN }));
 
     expect(onClearData).toHaveBeenCalledTimes(1);
-    expect(clearLocalUserData).not.toHaveBeenCalled();
+    expect(clearPersonalData).not.toHaveBeenCalled();
   });
 
   it.each(locales)('renders correctly under %s', async (locale) => {

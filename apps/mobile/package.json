@@ -2,7 +2,7 @@
   "name": "@quran/mobile",
   "version": "1.0.0",
   "private": true,
-  "main": "expo-router/entry",
+  "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "ios": "expo run:ios",
@@ -14,9 +14,10 @@
     "db:generate:user": "drizzle-kit generate --config drizzle.user.config.ts",
     "seed:build": "node scripts/build-content-seed.mjs",
     "assets:brand": "node scripts/generate-brand-assets.mjs",
-    "postinstall": "node scripts/patch-nitro-exception-ptr.mjs && node scripts/patch-expo-audio-exact-seek.mjs"
+    "postinstall": "node scripts/patch-nitro-exception-ptr.mjs && node scripts/patch-expo-audio-exact-seek.mjs && node scripts/patch-expo-dev-launcher-widget-host.mjs"
   },
   "dependencies": {
+    "@bacons/apple-targets": "5.0.0",
     "@native-html/render": "1.0.4",
     "@quran/api-contract": "*",
     "@quran/design-tokens": "*",
@@ -24,6 +25,7 @@
     "@react-native-community/datetimepicker": "9.2.1",
     "@shopify/flash-list": "2.3.2",
     "adhan": "4.4.6",
+    "app-group-store": "file:./modules/app-group-store",
     "drizzle-orm": "0.45.4",
     "expo": "~58.0.21",
     "expo-audio": "~58.0.10",
@@ -53,6 +55,7 @@
     "react": "19.3.0",
     "react-i18next": "17.1.9",
     "react-native": "0.88.1",
+    "react-native-android-widget": "0.26.0",
     "react-native-gesture-handler": "~3.3.0",
     "react-native-mmkv": "4.3.2",
     "react-native-nitro-modules": "0.37.1",
@@ -60,7 +63,9 @@
     "react-native-safe-area-context": "~5.10.1",
     "react-native-screens": "~4.30.0",
     "react-native-svg": "15.16.0",
+    "react-native-watch-connectivity": "2.0.0",
     "react-native-worklets": "0.13.0",
+    "suncalc": "2.1.1",
     "zustand": "^5.0.16"
   },
   "devDependencies": {
@@ -68,6 +73,7 @@
     "@types/jest": "30.0.0",
     "@types/node": "^26.6.6",
     "@types/react": "~19.3.0",
+    "astronomy-engine": "^2.1.19",
     "babel-plugin-inline-import": "3.0.0",
     "babel-preset-expo": "~58.0.0",
     "drizzle-kit": "0.31.11",
@@ -87,7 +93,8 @@
     ],
     "resolver": "react-native-reanimated/jest/resolver",
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^app-group-store$": "<rootDir>/modules/app-group-store/src/index.ts"
     }
   }
 }

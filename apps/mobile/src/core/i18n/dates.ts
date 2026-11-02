@@ -34,10 +34,20 @@ function hijriFormatter(locale: Locale): Intl.DateTimeFormat {
   return created;
 }
 
-/** «٢٠ جمادى الأولى ١٤٤٨» / "Jumada I 20, 1448" — Umm al-Qura Hijri date for the Salah header. */
-export function formatHijriDate(date: Date, locale: Locale = getLocale()): string {
+/** The local calendar day `days` after `date`, at noon (a DST day never moves it). Clamped to the −2…+2 range (ADR 0048). */
+function shiftedDay(date: Date, days: number): Date {
+  const clamped = Math.min(2, Math.max(-2, Math.round(days)));
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + clamped, 12, 0, 0, 0);
+}
+
+/**
+ * «٢٠ جمادى الأولى ١٤٤٨» / "Jumada I 20, 1448" — Umm al-Qura Hijri date for the Salah header and the Hijri screens.
+ * `adjustDays` shifts the Gregorian day first (the user's adjustment, ADR 0048); 0 leaves the date as it was.
+ */
+export function formatHijriDate(date: Date, locale: Locale = getLocale(), adjustDays = 0): string {
+  const shown = adjustDays === 0 ? date : shiftedDay(date, adjustDays);
   const text = hijriFormatter(locale)
-    .format(date)
+    .format(shown)
     .replace(/\s?(هـ|AH)$/, '')
     .trim();
   return locale === 'ar' ? arabizeDigits(text) : text;

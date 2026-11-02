@@ -21,7 +21,7 @@ ADR 0031 §1, §3–§7. Builds on step 2. **The pipeline must be complete and t
 
 ## Locks (ADR 0031 §1)
 - **Pin:** `azkar.opendua.version` (`0.0.4`) and `azkar.opendua.catalogue_sha256` (`231dfca7b1d0b5bea8ead8125c8d556121a115c40c9e348e08f4b3ede5194958`). A file whose SHA-256 differs is an error. A new upstream version is adopted only by changing the pin on purpose.
-- **Wet import** requires `azkar.opendua.import_enabled` (env `AZKAR_OPENDUA_IMPORT_ENABLED`, default `false`) **and** `content_sources.code = 'opendua'` with `permission_status` `granted`. Otherwise the command prints why, writes nothing, and exits non-zero.
+- **Wet import** has no switch and no permission gate (removed 2 Nov 2026, ADR 0045; `permission_status` is provenance only). Otherwise the command prints why, writes nothing, and exits non-zero.
 - **`--dry-run`** is always allowed. It parses, validates and transforms in memory, writes the report, and touches no table.
 
 ## Transformation rules (exact)

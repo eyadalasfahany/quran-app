@@ -10,7 +10,6 @@ import {
   SectionScreen,
   useTabBarScrollHandlers,
   useTabContentBottom,
-  useWindowClass,
 } from '@/core/layout';
 import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
@@ -39,6 +38,9 @@ import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKe
 import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useAzkarMenuPreview } from '@/features/menu/hooks/useAzkarMenuPreview';
+import { HomeDatePill } from '@/features/hijri/components/HomeDatePill';
+import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
+import { isHijriCalendarAvailable } from '@/features/hijri/data/hijri-date';
 import { useStaleContent } from '@/core/sync/useStaleContent';
 import { SearchButton, SkeletonGroup, StaleContentBanner, type IconName } from '@/shared/ui';
 
@@ -68,8 +70,6 @@ export function HomeScreen() {
   const locale = useLocale();
   const { ready } = useContentDb();
   const lastReadVerseKey = useLastReadVerseKey();
-  // Expanded windows keep search in the sidebar (MainShell), so the header drops its button there.
-  const expanded = useWindowClass() === 'expanded';
   const tabScroll = useTabBarScrollHandlers();
   const bottom = useTabContentBottom();
   const recentItems = useRecentListenItems(2);
@@ -119,8 +119,12 @@ export function HomeScreen() {
     { icon: RECITERS_ICON, key: 'reciters', label: t('home.tiles.reciters'), onPress: () => router.navigate(tabHref('(listen)')) },
   ];
 
+  // The Hijri date pill (ADR 0048): today's date with the user's adjustment; hidden when the platform has no calendar.
+  const hijriDate = useHijriDate();
+  const hijriAvailable = isHijriCalendarAvailable();
+
   return (
-    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={expanded ? undefined : <SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
+    <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={<SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
       <ScrollView
         contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: bottom + theme.space[4] }}
         showsVerticalScrollIndicator={false}
@@ -129,6 +133,13 @@ export function HomeScreen() {
         {...tabScroll}
       >
         <StaleContentBanner visible={stale} />
+        {hijriAvailable ? (
+          <HomeDatePill
+            label={t('hijri.home.pillLabel', { date: hijriDate })}
+            onPress={() => router.push('/hijri' as Href)}
+            text={hijriDate}
+          />
+        ) : null}
         {!ready ? (
           <SkeletonGroup testID="home-continue-loading">
             <ContinueReadingSkeleton testID="home-continue-reading-skeleton" />

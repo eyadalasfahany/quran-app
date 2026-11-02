@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -34,6 +35,7 @@ export function ContinueAzkarHomeCard({
   onPress: () => void;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
 
@@ -45,7 +47,7 @@ export function ContinueAzkarHomeCard({
 
   return (
     <Pressable
-      accessibilityLabel={`${resume.caption}, ${resume.title}, ${resume.preview}`}
+      accessibilityLabel={t('common.a11yTriple', { label: resume.caption, title: resume.title, detail: resume.preview })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

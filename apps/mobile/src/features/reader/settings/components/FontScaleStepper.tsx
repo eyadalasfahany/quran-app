@@ -2,13 +2,13 @@ import { amiriNaturalLeading } from '@quran/design-tokens';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View, type PressableStateCallbackType, type ViewStyle } from 'react-native';
 
-import { formatNumber, type Locale } from '@/core/i18n';
+import { formatPercent, type Locale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
 import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP } from '../../settings-model';
 
-/** The "أ−" and "أ+" glyph sizes on quran-app-screens.html (Reader settings). */
+/** The "أ−" and "أ+" glyph sizes on quran-app-screens.html (Reader settings). The glyphs themselves come from i18n. */
 export const STEP_GLYPH_SMALL = 16;
 export const STEP_GLYPH_LARGE = 20;
 /** Minimum width of the percent label (frame: min-width 52px). */
@@ -33,7 +33,7 @@ export function FontScaleStepper({
   const theme = useTheme();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const percent = Math.round(value * 100);
-  const percentLabel = `${formatNumber(percent, locale)}${locale === 'ar' ? '٪' : '%'}`;
+  const percentLabel = formatPercent(percent, locale);
   const atMin = value <= FONT_SCALE_MIN;
   const atMax = value >= FONT_SCALE_MAX;
 
@@ -76,7 +76,7 @@ export function FontScaleStepper({
         testID="reader-font-decrease"
       >
         <UiText style={glyphStyle(STEP_GLYPH_SMALL)} variant="displaySm" weight={400}>
-          أ−
+          {t('reader.settings.decreaseGlyph')}
         </UiText>
       </Pressable>
       <UiText
@@ -99,7 +99,7 @@ export function FontScaleStepper({
         testID="reader-font-increase"
       >
         <UiText style={glyphStyle(STEP_GLYPH_LARGE)} variant="displaySm" weight={400}>
-          أ+
+          {t('reader.settings.increaseGlyph')}
         </UiText>
       </Pressable>
     </View>

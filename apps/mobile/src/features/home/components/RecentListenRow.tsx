@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -38,6 +39,7 @@ export function RecentListenRow({
   onPlay: () => void;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   return (
@@ -59,7 +61,7 @@ export function RecentListenRow({
           {letter}
         </UiText>
       </View>
-      <View accessibilityLabel={`${name}, ${subtitle}`} accessible style={{ flex: 1, gap: TEXT_GAP, minWidth: 0 }}>
+      <View accessibilityLabel={t('common.a11yPair', { label: name, title: subtitle })} accessible style={{ flex: 1, gap: TEXT_GAP, minWidth: 0 }}>
         <UiText variant="headline">{name}</UiText>
         <UiText tone="muted" variant="caption">
           {subtitle}

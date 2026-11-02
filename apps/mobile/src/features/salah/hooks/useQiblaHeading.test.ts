@@ -8,15 +8,14 @@ import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jes
 import {
   ALIGNED_ENTER_DEGREES,
   ALIGNED_LEAVE_DEGREES,
+  accuracyForLevel,
   DEVICE_TOP,
-  needleAngleFor,
   nextAligned,
   normalize180,
   normalize360,
   removeQuietly,
   screenTurnDegrees,
   screenUpAxis,
-  shortestTurn,
   topEdgeAzimuth,
   useQiblaHeading,
   type Vec3,
@@ -156,23 +155,23 @@ describe('useQiblaHeading', () => {
     await settle();
     expect(watchHeadingAsync).toHaveBeenCalled();
 
-    await act(async () => callback({ trueHeading: 244, magHeading: 240, accuracy: 10 }));
+    await act(async () => callback({ trueHeading: 244, magHeading: 240, accuracy: 3 }));
     expect(result.current.headingValue.value).toBe(244);
     expect(result.current.hasHeading).toBe(true);
     expect(result.current.accuracy).toBe('good');
 
     // Inside the 100 ms throttle window: dropped.
     tick(50);
-    await act(async () => callback({ trueHeading: 100, magHeading: 100, accuracy: 10 }));
+    await act(async () => callback({ trueHeading: 100, magHeading: 100, accuracy: 3 }));
     expect(result.current.headingValue.value).toBe(244);
 
     // Past the window: accepted.
     tick(110);
-    await act(async () => callback({ trueHeading: 100, magHeading: 100, accuracy: 10 }));
+    await act(async () => callback({ trueHeading: 100, magHeading: 100, accuracy: 3 }));
     expect(result.current.headingValue.value).toBe(100);
   });
 
-  it('marks accuracy poor for negative or high accuracy values', async () => {
+  it('marks accuracy poor at calibration level 0 (and below), and fair at level 1', async () => {
     let callback: Location.LocationHeadingCallback = () => undefined;
     watchHeadingAsync.mockImplementation((cb) => {
       callback = cb;
@@ -182,12 +181,53 @@ describe('useQiblaHeading', () => {
     const { result } = await renderHook(() => useQiblaHeading(true));
     await settle();
 
-    await act(async () => callback({ trueHeading: 10, magHeading: 10, accuracy: -1 }));
+    await act(async () => callback({ trueHeading: 10, magHeading: 10, accuracy: 0 }));
     expect(result.current.accuracy).toBe('poor');
 
     tick(110);
-    await act(async () => callback({ trueHeading: 10, magHeading: 10, accuracy: 21 }));
+    await act(async () => callback({ trueHeading: 10, magHeading: 10, accuracy: 1 }));
+    expect(result.current.accuracy).toBe('fair');
+  });
+
+  it('level 1 (fair) turns the dial and is not aligned, even inside the bearing', async () => {
+    let callback: Location.LocationHeadingCallback = () => undefined;
+    watchHeadingAsync.mockImplementation((cb) => {
+      callback = cb;
+      return Promise.resolve({ remove: jest.fn() });
+    });
+    const { result } = await renderHook(() => useQiblaHeading(true, 244));
+    await settle();
+
+    await act(async () => callback({ trueHeading: 242, magHeading: 242, accuracy: 1 }));
+
+    expect(result.current.headingValue.value).toBe(242);
+    expect(result.current.hasHeading).toBe(true);
+    expect(result.current.accuracy).toBe('fair');
+    expect(result.current.aligned).toBe(false);
+  });
+
+  it('level 0 never turns the dial: it holds the last heading, and a first level-0 reading is not a heading', async () => {
+    let callback: Location.LocationHeadingCallback = () => undefined;
+    watchHeadingAsync.mockImplementation((cb) => {
+      callback = cb;
+      return Promise.resolve({ remove: jest.fn() });
+    });
+    const { result } = await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    await act(async () => callback({ trueHeading: 300, magHeading: 300, accuracy: 0 }));
+    expect(result.current.hasHeading).toBe(false);
+    expect(result.current.headingValue.value).toBe(0);
+
+    tick(110);
+    await act(async () => callback({ trueHeading: 42, magHeading: 42, accuracy: 3 }));
+    expect(result.current.headingValue.value).toBe(42);
+
+    tick(110);
+    await act(async () => callback({ trueHeading: 100, magHeading: 100, accuracy: 0 }));
     expect(result.current.accuracy).toBe('poor');
+    expect(result.current.headingValue.value).toBe(42);
+    expect(result.current.hasHeading).toBe(true);
   });
 
   it('treats a negative true heading (iOS uncalibrated) as poor and keeps the last heading', async () => {
@@ -200,13 +240,70 @@ describe('useQiblaHeading', () => {
     const { result } = await renderHook(() => useQiblaHeading(true));
     await settle();
 
-    await act(async () => callback({ trueHeading: 42, magHeading: 42, accuracy: 5 }));
+    await act(async () => callback({ trueHeading: 42, magHeading: 42, accuracy: 3 }));
     expect(result.current.headingValue.value).toBe(42);
 
     tick(110);
-    await act(async () => callback({ trueHeading: -1, magHeading: 40, accuracy: -1 }));
+    await act(async () => callback({ trueHeading: -1, magHeading: 40, accuracy: 0 }));
     expect(result.current.accuracy).toBe('poor');
     expect(result.current.headingValue.value).toBe(42);
+  });
+
+  it('is not a heading until a fair-or-better sample arrives: a poor first reading keeps the dial north-up', async () => {
+    let callback: Location.LocationHeadingCallback = () => undefined;
+    watchHeadingAsync.mockImplementation((cb) => {
+      callback = cb;
+      return Promise.resolve({ remove: jest.fn() });
+    });
+
+    const { result } = await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    await act(async () => callback({ trueHeading: 120, magHeading: 120, accuracy: 0 }));
+    expect(result.current.accuracy).toBe('poor');
+    expect(result.current.hasHeading).toBe(false);
+
+    tick(110);
+    await act(async () => callback({ trueHeading: 121, magHeading: 121, accuracy: 1 }));
+    expect(result.current.accuracy).toBe('fair');
+    expect(result.current.hasHeading).toBe(true);
+
+    tick(110);
+    await act(async () => callback({ trueHeading: 121, magHeading: 121, accuracy: 3 }));
+    expect(result.current.accuracy).toBe('good');
+  });
+
+  it('resets to north-up when disabled (blur, background, Reduce Motion) and resumes on the next good sample', async () => {
+    let callback: Location.LocationHeadingCallback = () => undefined;
+    watchHeadingAsync.mockImplementation((cb) => {
+      callback = cb;
+      return Promise.resolve({ remove: jest.fn() });
+    });
+    const { result, rerender } = await renderHook(
+      ({ enabled }: { enabled: boolean }) => useQiblaHeading(enabled, 244),
+      { initialProps: { enabled: true } },
+    );
+    await settle();
+
+    await act(async () => callback({ trueHeading: 100, magHeading: 100, accuracy: 3 }));
+    expect(result.current.hasHeading).toBe(true);
+    expect(result.current.accuracy).toBe('good');
+
+    await rerender({ enabled: false });
+    expect(result.current.hasHeading).toBe(false);
+    expect(result.current.accuracy).toBe('unavailable');
+    expect(result.current.aligned).toBe(false);
+
+    await rerender({ enabled: true });
+    await settle();
+    tick(110);
+    await act(async () => callback({ trueHeading: 120, magHeading: 120, accuracy: 0 }));
+    expect(result.current.hasHeading).toBe(false);
+
+    tick(110);
+    await act(async () => callback({ trueHeading: 121, magHeading: 121, accuracy: 3 }));
+    expect(result.current.hasHeading).toBe(true);
+    expect(result.current.headingValue.value).toBe(121);
   });
 
   it('treats missing accuracy with a live heading as good (some Android devices)', async () => {
@@ -270,12 +367,12 @@ describe('useQiblaHeading', () => {
     });
     await settle();
 
-    await act(async () => callback({ trueHeading: 200, magHeading: 200, accuracy: 5 }));
+    await act(async () => callback({ trueHeading: 200, magHeading: 200, accuracy: 3 }));
     const afterFirst = renders;
     // Five more headings, all good accuracy, none aligned with 244: no state changes, so no renders.
     for (const heading of [201, 202, 203, 204, 205]) {
       tick(110);
-      await act(async () => callback({ trueHeading: heading, magHeading: heading, accuracy: 5 }));
+      await act(async () => callback({ trueHeading: heading, magHeading: heading, accuracy: 3 }));
     }
 
     expect(renders).toBe(afterFirst);
@@ -291,11 +388,11 @@ describe('useQiblaHeading', () => {
     const { result } = await renderHook(() => useQiblaHeading(true, 244));
     await settle();
 
-    await act(async () => callback({ trueHeading: 242, magHeading: 242, accuracy: 5 }));
+    await act(async () => callback({ trueHeading: 242, magHeading: 242, accuracy: 3 }));
     expect(result.current.aligned).toBe(true);
 
     tick(110);
-    await act(async () => callback({ trueHeading: 242, magHeading: 242, accuracy: 25 }));
+    await act(async () => callback({ trueHeading: 242, magHeading: 242, accuracy: 0 }));
     expect(result.current.accuracy).toBe('poor');
     expect(result.current.aligned).toBe(false);
   });
@@ -309,15 +406,15 @@ describe('useQiblaHeading', () => {
     const { result } = await renderHook(() => useQiblaHeading(true, 244));
     await settle();
 
-    await act(async () => callback({ trueHeading: 244, magHeading: 244, accuracy: 5 }));
+    await act(async () => callback({ trueHeading: 244, magHeading: 244, accuracy: 3 }));
     expect(result.current.aligned).toBe(true);
 
     tick(110);
-    await act(async () => callback({ trueHeading: 238, magHeading: 238, accuracy: 5 })); // 6°: still aligned
+    await act(async () => callback({ trueHeading: 238, magHeading: 238, accuracy: 3 })); // 6°: still aligned
     expect(result.current.aligned).toBe(true);
 
     tick(110);
-    await act(async () => callback({ trueHeading: 237, magHeading: 237, accuracy: 5 })); // 7°: leaves
+    await act(async () => callback({ trueHeading: 237, magHeading: 237, accuracy: 3 })); // 7°: leaves
     expect(result.current.aligned).toBe(false);
   });
 
@@ -330,7 +427,7 @@ describe('useQiblaHeading', () => {
     const { result } = await renderHook(() => useQiblaHeading(true, null));
     await settle();
 
-    await act(async () => callback({ trueHeading: 244, magHeading: 244, accuracy: 5 }));
+    await act(async () => callback({ trueHeading: 244, magHeading: 244, accuracy: 3 }));
     expect(result.current.aligned).toBe(false);
   });
 
@@ -366,18 +463,14 @@ describe('hysteresis and the needle maths', () => {
     expect(normalize180(360)).toBe(0);
   });
 
-  it('shortestTurn never swings through 0° for a 350° change', () => {
-    expect(shortestTurn(10, 20)).toBe(10);
-    expect(shortestTurn(350, 10)).toBe(20);
-    expect(shortestTurn(10, 350)).toBe(-20);
-  });
-
-  it('needleAngleFor is bearing − heading, normalized to −180…180', () => {
-    expect(needleAngleFor(244, 14)).toBe(-130); // 230°, written the shortest way round
-    expect(needleAngleFor(244, 0)).toBe(-116);
-    expect(needleAngleFor(10, 350)).toBe(20);
-    expect(needleAngleFor(350, 10)).toBe(-20);
-    expect(needleAngleFor(244, 244)).toBe(0);
+  it('accuracyForLevel reads the 0–3 calibration level: 0 poor, 1 fair, 2 and 3 good, missing good', () => {
+    expect(accuracyForLevel(0)).toBe('poor');
+    expect(accuracyForLevel(-1)).toBe('poor');
+    expect(accuracyForLevel(1)).toBe('fair');
+    expect(accuracyForLevel(2)).toBe('good');
+    expect(accuracyForLevel(3)).toBe('good');
+    expect(accuracyForLevel(undefined)).toBe('good');
+    expect(accuracyForLevel(null)).toBe('good');
   });
 
   it('normalize360 maps any angle into 0…360 and keeps 359 and 1 across north', () => {
@@ -515,18 +608,60 @@ describe('useQiblaHeading on Android (sensor-derived top edge)', () => {
     expect(circularGap(result.current.headingValue.value, 1)).toBeLessThan(0.01);
   });
 
-  it('reads poor with no heading until expo-location supplies declination (no location yet)', async () => {
+  it('waits for location, not poor calibration, while expo-location has no declination (trueHeading −1)', async () => {
     const hook = await renderHook(() => useQiblaHeading(true));
     await settle();
     const { gravity, magnetic } = readingsFor(30, 0);
     await act(async () => {
-      headingEvent({ trueHeading: -1, magHeading: 20, accuracy: -1 });
+      headingEvent({ trueHeading: -1, magHeading: 20, accuracy: 0 });
       accelerometerEvent({ x: gravity[0], y: gravity[1], z: gravity[2], timestamp: 0 });
       magnetometerEvent({ x: magnetic[0], y: magnetic[1], z: magnetic[2], timestamp: 0 });
     });
 
-    expect(hook.result.current.accuracy).toBe('poor');
+    expect(hook.result.current.awaitingLocation).toBe(true);
+    expect(hook.result.current.accuracy).toBe('unavailable');
     expect(hook.result.current.hasHeading).toBe(false);
+    expect(hook.result.current.aligned).toBe(false);
+  });
+
+  it('is not waiting once the declination arrives: the heading goes live with the real accuracy', async () => {
+    const hook = await renderHook(() => useQiblaHeading(true));
+    await settle();
+    const { gravity, magnetic } = readingsFor(30, 0);
+    const sensors = async () => {
+      await act(async () => {
+        accelerometerEvent({ x: gravity[0], y: gravity[1], z: gravity[2], timestamp: 0 });
+        magnetometerEvent({ x: magnetic[0], y: magnetic[1], z: magnetic[2], timestamp: 0 });
+      });
+    };
+    await act(async () => {
+      headingEvent({ trueHeading: -1, magHeading: 20, accuracy: 0 });
+    });
+    await sensors();
+    expect(hook.result.current.awaitingLocation).toBe(true);
+
+    tick(200);
+    await act(async () => {
+      headingEvent({ trueHeading: 25, magHeading: 20, accuracy: 3 });
+    });
+    await sensors();
+
+    expect(hook.result.current.awaitingLocation).toBe(false);
+    expect(hook.result.current.hasHeading).toBe(true);
+    expect(hook.result.current.accuracy).toBe('good');
+  });
+
+  it('is not waiting on iOS: an uncalibrated −1 heading there is still poor calibration', async () => {
+    platform.restore();
+    platform = jest.replaceProperty(Platform, 'OS', 'ios');
+    const hook = await renderHook(() => useQiblaHeading(true));
+    await settle();
+    await act(async () => {
+      headingEvent({ trueHeading: -1, magHeading: 20, accuracy: 0 });
+    });
+
+    expect(hook.result.current.awaitingLocation).toBe(false);
+    expect(hook.result.current.accuracy).toBe('poor');
   });
 
   it('keeps the accelerometer running on Android in portrait (the tilt-compensated heading needs it)', async () => {
@@ -546,5 +681,61 @@ describe('useQiblaHeading on Android (sensor-derived top edge)', () => {
 
     expect(hook.result.current.supported).toBe(false);
     expect(removeAccelerometer).toHaveBeenCalled();
+  });
+});
+
+describe('useQiblaHeading on iOS (CoreLocation trueHeading, ADR 0030, ADR 0049)', () => {
+  let platform: { restore: () => void } | undefined;
+
+  beforeEach(() => {
+    installDefaults();
+    platform = jest.replaceProperty(Platform, 'OS', 'ios');
+  });
+
+  afterEach(() => {
+    platform?.restore();
+    platform = undefined;
+    jest.restoreAllMocks();
+    resetWindowSize();
+  });
+
+  /** Captures the heading callback the hook registers with expo-location. */
+  function captureHeading() {
+    const captured: { callback: Location.LocationHeadingCallback } = { callback: () => undefined };
+    watchHeadingAsync.mockImplementation((cb) => {
+      captured.callback = cb;
+      return Promise.resolve({ remove: jest.fn() });
+    });
+    return captured;
+  }
+
+  it('uses trueHeading as the top edge in portrait, with no turn', async () => {
+    const captured = captureHeading();
+    const hook = await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    await act(async () => captured.callback({ trueHeading: 130, magHeading: 128, accuracy: 3 }));
+
+    expect(hook.result.current.headingValue.value).toBe(130);
+    expect(hook.result.current.hasHeading).toBe(true);
+  });
+
+  it('adds the 90 degree landscape turn to trueHeading when the window is landscape', async () => {
+    await act(async () => setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height));
+    const captured = captureHeading();
+    const hook = await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    await act(async () => captured.callback({ trueHeading: 130, magHeading: 128, accuracy: 3 }));
+
+    expect(hook.result.current.headingValue.value).toBe(220);
+  });
+
+  it('does not run the Android magnetometer or the Android declination path on iOS', async () => {
+    captureHeading();
+    await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    expect(magnetometerListen).not.toHaveBeenCalled();
   });
 });

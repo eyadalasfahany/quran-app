@@ -5,7 +5,7 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 | Step | Brief | Status |
 | --- | --- | --- |
 | 1 | Docs, ADR 0042, spec patch ([`spec-changes.md`](spec-changes.md)) | Done (1 Nov 2026): ADR 0042 accepted, patch applied |
-| 2 | Env, config, kill switch (dev-only `HADITH_API_KEY`, pin, titles map with ummahapi.com names and authors) | |
+| 2 | Env, config (dev-only `HADITH_API_KEY`, pin, titles map with ummahapi.com names and authors) | |
 | 3 | MySQL schema | |
 | 4 | Pack contract and hadith search normaliser | |
 | 5 | Source interface and fawazahmed0 client, snapshot | |
@@ -33,7 +33,7 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 - A hadith with no text in the source is not imported and is listed in the report. A missing Arabic title stays `null` and does not block shipping: the UI shows «مجموعة {n}» / «كتاب {n}» (i18n labels) and an ornament-only cover, never an invented or translated title and never the English source name in the Arabic interface.
 - fawazahmed0 has no chapter (باب) level: a book lists its hadith directly. The chapter screens, columns and endpoint exist for Sunnah.com and are tested with fixtures.
 - Saved items reference collection slug + hadith number, never a database id, book id or chapter ordinal.
-- `HADITH_COLLECTIONS_IMPORT_ENABLED` is the only lock: a kill switch, `false` in `.env.example`, `true` in production at release. Add the hadith command to `docker/release.sh` only in step 17.
+- There is no switch or lock (ADR 0045, 2 Nov 2026): the import runs on every deploy, like Azkar. Add the hadith command to `docker/release.sh` only in step 17.
 - No key is needed for hadith data. `HADITH_API_KEY` is optional, **dev-only**, empty in `.env.example`, never read in production and redacted from logs, used only by `hadith:match-section-titles`. Never open or print `apps/api/.env`.
 - **Titles only from the other sources.** Hadith data comes only from fawazahmed0. Collection names come from ummahapi.com (data in `config/hadith_titles.php`), Arabic authors were approved by the developer on 1 Nov 2026, and section titles come from the one-off hadithapi.com matcher (accept only at ≥95% in both directions; titles only, never hadith text or grades; refuses to run in production; not scheduled; not in `release.sh`; the command writes a proposal, never `config/`).
 - Schema, endpoints, packs and screens must not need a change at the Sunnah.com switch (step 18).

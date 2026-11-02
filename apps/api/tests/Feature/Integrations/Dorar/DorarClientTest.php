@@ -16,7 +16,6 @@ beforeEach(function (): void {
 
     config()->set('services.dorar.base_url', 'https://dorar.test/api');
     config()->set('services.dorar.token', DORAR_TEST_TOKEN);
-    config()->set('services.dorar.enabled', true);
     config()->set('services.dorar.token_header', 'Authorization');
     config()->set('services.dorar.token_prefix', 'Bearer ');
     config()->set('services.dorar.timeout_seconds', 5);

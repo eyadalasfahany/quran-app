@@ -23,7 +23,7 @@ describe('ContinueAzkarCard', () => {
     expect(screen.getByText('أذكار الصباح')).toBeOnTheScreen();
     expect(screen.getByText('١٢ من ٢٤')).toBeOnTheScreen();
     expect(screen.getByText('متابعة')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'تابع, أذكار الصباح, ١٢ من ٢٤' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'تابع، أذكار الصباح، ١٢ من ٢٤' })).toBeOnTheScreen();
   });
 
   it('sets the bar to the completed share', async () => {

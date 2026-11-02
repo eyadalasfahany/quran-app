@@ -1,13 +1,16 @@
-import type { SharedValue } from 'react-native-reanimated';
+import { renderHook } from '@testing-library/react-native';
+import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 
 import { QiblaNeedle } from './QiblaNeedle';
 
-// The reanimated Jest mock freezes animated styles at render. The live spring is therefore covered by the
-// needleAngleFor and shortestTurn unit tests; here the static rest position and the wiring are asserted.
-const headingAt = (value: number): SharedValue<number> => ({ value }) as unknown as SharedValue<number>;
+/** A real SharedValue, so the animated style reads it on mount as it does in the app. */
+async function sharedAt(initial: number): Promise<SharedValue<number>> {
+  const { result } = await renderHook(() => useSharedValue(initial));
+  return result.current;
+}
 
 function needleRotation(view: Awaited<ReturnType<typeof renderUi>>): number {
   const style = flatStyle(view.getByTestId('qibla-compass-needle').props.style);
@@ -16,28 +19,26 @@ function needleRotation(view: Awaited<ReturnType<typeof renderUi>>): number {
 }
 
 describe('QiblaNeedle', () => {
-  it('rests on the marker when it is not following the heading', async () => {
-    const view = await renderUi(<QiblaNeedle bearing={244} following={false} heading={headingAt(10)} />);
+  it('turns by the qibla angle it is given', async () => {
+    const view = await renderUi(<QiblaNeedle angle={await sharedAt(46)} />);
 
-    expect(needleRotation(view)).toBe(244);
+    expect(needleRotation(view)).toBe(46);
   });
 
-  it('starts on the marker while following, before the first heading reaction lands', async () => {
-    const view = await renderUi(<QiblaNeedle bearing={244} following heading={headingAt(244)} />);
+  it('points at the marker when the angle is the bearing (not live)', async () => {
+    const view = await renderUi(<QiblaNeedle angle={await sharedAt(244)} />);
 
     expect(needleRotation(view)).toBe(244);
   });
 
   it('is a non-interactive layer', async () => {
-    const view = await renderUi(<QiblaNeedle bearing={10} following={false} heading={headingAt(0)} />);
+    const view = await renderUi(<QiblaNeedle angle={await sharedAt(10)} />);
 
     expect(view.getByTestId('qibla-compass-needle').props.pointerEvents).toBe('none');
   });
 
   it('takes a custom test id', async () => {
-    const view = await renderUi(
-      <QiblaNeedle bearing={10} following={false} heading={headingAt(0)} testID="custom-needle" />,
-    );
+    const view = await renderUi(<QiblaNeedle angle={await sharedAt(10)} testID="custom-needle" />);
 
     expect(view.getByTestId('custom-needle')).toBeOnTheScreen();
   });

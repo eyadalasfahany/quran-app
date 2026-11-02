@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Azkar\Services;
 
+use App\Domains\Azkar\Audio\AzkarAudioFiles;
+use App\Domains\Azkar\Audio\AzkarAudioManifest;
 use App\Domains\Azkar\Data\FlatItem;
 use App\Domains\Azkar\Data\ImportPlan;
 use App\Domains\Azkar\Data\ImportStats;
@@ -13,7 +15,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * Turns a validated catalogue into rows for the eight canonical tables (ADR 0031 transformation rules).
- * Pure: it reads config and the catalogue and writes nothing. Entries listed in $blockedEntries are not emitted.
+ * Reads config, the catalogue and the audio store's file sizes, and writes nothing. Entries in $blockedEntries are not emitted.
  */
 final class AzkarTransformer
 {
@@ -21,6 +23,8 @@ final class AzkarTransformer
         private readonly StepFlattener $flattener,
         private readonly QuranSegmenter $segmenter,
         private readonly QuranReferencePolicy $policy,
+        private readonly AzkarAudioManifest $audio,
+        private readonly AzkarAudioFiles $files,
     ) {}
 
     /**
@@ -32,8 +36,6 @@ final class AzkarTransformer
     public function plan(array $catalogue, string $sourceVersion, int $importedAt, array $blockedEntries, SourceProfile $profile, array $notesByEntryKey = [], array $requiredCountFills = []): ImportPlan
     {
         $collectionId = $profile->collectionId;
-        $storeEnglish = $profile->storeEnglish;
-        $recordingsVerified = $profile->audioRightsVerified;
         $rights = $this->recordingRights();
         $references = $this->references();
         $stats = new ImportStats(entriesBlocked: count($blockedEntries));
@@ -82,7 +84,7 @@ final class AzkarTransformer
                 foreach ($flat->items as $item) {
                     $itemId++;
                     // ADR 0031 §5: English is stored only when the licence covers it and the item holds no Quran segment.
-                    $englishStored = $storeEnglish && ($item->textAr === null || $this->spanCount($item->textAr) === 0);
+                    $englishStored = $item->textAr === null || $this->spanCount($item->textAr) === 0;
                     [$requiredCount, $requiredCountSource] = $this->requiredCountOf($item, $profile, $requiredCountFills);
                     $this->countEnglish($item, $englishStored, $stats);
                     $this->countItem($item, $requiredCount, $requiredCountSource, $stats);
@@ -119,29 +121,37 @@ final class AzkarTransformer
                         }
                     }
 
-                    if ($recordingsVerified) {
-                        foreach ($item->recordings as $recording) {
-                            $recordingId++;
-                            $recordings[] = [
-                                'id' => $recordingId,
-                                'recording_key' => $item->itemKey.':'.$recording['id'],
-                                'item_id' => $itemId,
-                                'reciter_name' => $reciterNames[$recording['reciterId']] ?? $recording['reciterId'],
-                                'reciter_name_ar' => null,
-                                'source' => 'opendua',
-                                'remote_url' => $recording['url'],
-                                'duration_ms' => $recording['durationSeconds'] * 1000,
-                                'size_bytes' => null,
-                                'stream_allowed' => $rights['stream_allowed'],
-                                'download_allowed' => $rights['download_allowed'],
-                                'redistribution_allowed' => $rights['redistribution_allowed'],
-                                'attribution_ar' => $rights['attribution_ar'],
-                                'attribution_en' => $rights['attribution_en'],
-                                'licence' => $rights['licence'],
-                                'licence_url' => $rights['licence_url'],
-                                'rights_verified_at' => $rights['rights_verified_at'],
-                            ];
+                    foreach ($item->recordings as $recording) {
+                        $file = $this->audioFile($recording['url']);
+
+                        // ADR 0040 §2: the app gets only Taybah's own URL, so a recording without its file is left out.
+                        if ($file === null) {
+                            $stats->recordingsMissingFile++;
+
+                            continue;
                         }
+
+                        $recordingId++;
+                        $recordings[] = [
+                            'id' => $recordingId,
+                            'recording_key' => $item->itemKey.':'.$recording['id'],
+                            'item_id' => $itemId,
+                            'reciter_name' => $reciterNames[$recording['reciterId']] ?? $recording['reciterId'],
+                            'reciter_name_ar' => null,
+                            'source' => 'opendua',
+                            'remote_url' => $file['remote_url'],
+                            'duration_ms' => $recording['durationSeconds'] * 1000,
+                            'size_bytes' => $file['size_bytes'],
+                            // ADR 0045 (2 Nov 2026): streaming and download are always allowed for a shipped recording.
+                            'stream_allowed' => 1,
+                            'download_allowed' => 1,
+                            'redistribution_allowed' => $rights['redistribution_allowed'],
+                            'attribution_ar' => $rights['attribution_ar'],
+                            'attribution_en' => $rights['attribution_en'],
+                            'licence' => $rights['licence'],
+                            'licence_url' => $rights['licence_url'],
+                            'rights_verified_at' => $rights['rights_verified_at'],
+                        ];
                     }
                 }
             }
@@ -180,7 +190,7 @@ final class AzkarTransformer
         $stats->recordingsUpstream = count(array_unique(array_filter($recordingIds, static fn (string $id): bool => $id !== '')));
         $stats->entries = count($entries);
         $stats->recordingsImported = count($recordings);
-        $stats->recordingsDownloadable = $rights['download_allowed'] === 1 ? count($recordings) : 0;
+        $stats->recordingsDownloadable = count($recordings);
 
         return new ImportPlan(
             chapters: $chapters,
@@ -486,7 +496,26 @@ final class AzkarTransformer
     }
 
     /**
-     * @return array{stream_allowed: int, download_allowed: int, redistribution_allowed: int, attribution_ar: string|null, attribution_en: string|null, licence: string, licence_url: string|null, rights_verified_at: int|null}
+     * The Taybah-hosted file for an upstream recording URL (ADR 0040 §2), matched by its file name. Null when the file
+     * is not in the audio store. The row never carries the upstream URL.
+     *
+     * @return array{remote_url: string, size_bytes: int}|null
+     */
+    private function audioFile(string $upstreamUrl): ?array
+    {
+        $name = basename((string) parse_url($upstreamUrl, PHP_URL_PATH));
+        $track = $name === '' ? null : $this->audio->track($name);
+
+        // The file must be a shipped track of the pinned manifest, and be on the disk at the manifest's size.
+        if ($track === null || ! $this->files->hasExpectedSize($track)) {
+            return null;
+        }
+
+        return ['remote_url' => '/api/v1/azkar/audio/'.$this->files->version().'/'.$name, 'size_bytes' => $track->bytes];
+    }
+
+    /**
+     * @return array{redistribution_allowed: int, attribution_ar: string|null, attribution_en: string|null, licence: string, licence_url: string|null, rights_verified_at: int|null}
      */
     private function recordingRights(): array
     {
@@ -495,8 +524,6 @@ final class AzkarTransformer
         $verifiedAt = is_string($rights['rights_verified_at'] ?? null) ? CarbonImmutable::parse($rights['rights_verified_at'], 'UTC')->getTimestampMs() : null;
 
         return [
-            'stream_allowed' => ($rights['stream_allowed'] ?? false) === true ? 1 : 0,
-            'download_allowed' => ($rights['download_allowed'] ?? false) === true ? 1 : 0,
             'redistribution_allowed' => ($rights['redistribution_allowed'] ?? false) === true ? 1 : 0,
             'attribution_ar' => is_string($rights['attribution_ar'] ?? null) ? $rights['attribution_ar'] : null,
             'attribution_en' => is_string($rights['attribution_en'] ?? null) ? $rights['attribution_en'] : null,

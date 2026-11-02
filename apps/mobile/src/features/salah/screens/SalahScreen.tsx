@@ -23,7 +23,8 @@ import { SalahLocating } from '../components/SalahLocating';
 import { requestLocationPermissions, setAutoLocation, setManualLocation } from '../data/location';
 import { prevPrayer, qiblaBearing, type NextPrayerName, type PrayerTimesOutput } from '../data/prayer-times';
 import { formatPrayerTime } from '../data/time-format';
-import { useHijriDate, useNextPrayer, usePrayerClock, usePrayerLocation } from '../hooks';
+import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
+import { useNextPrayer, usePrayerClock, usePrayerLocation } from '../hooks';
 
 const EMPTY_LOCATION: IconName = { ios: 'location.slash', android: 'location_off' };
 
@@ -43,7 +44,7 @@ const ROWS = [
  * feature component. The screen re-renders when the prayer state changes (at a prayer time or at midnight, from
  * usePrayerClock); the hero's one-second countdown ticks in its own component.
  */
-export function SalahScreen() {
+export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
@@ -103,6 +104,7 @@ export function SalahScreen() {
       <ContentColumn>
         <View style={{ flex: 1, gap: theme.size.sectionGap }}>
           <SalahDateHeader
+            onBack={onBack}
             onLocationPress={() => setSheetOpen(true)}
             onSoundPress={() => router.push('/adhan-sound' as Href)}
             subtitle={subtitle}

@@ -30,7 +30,7 @@ export function SurahResultRow({
 
   return (
     <Pressable
-      accessibilityLabel={`${title}, ${hint}`}
+      accessibilityLabel={t('common.a11yPair', { label: title, title: hint })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({ opacity: pressed ? theme.opacity.pressed : 1 })}

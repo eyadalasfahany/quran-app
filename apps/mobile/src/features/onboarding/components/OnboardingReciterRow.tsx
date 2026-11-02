@@ -47,8 +47,8 @@ export function OnboardingReciterRow({
         flexDirection: 'row',
         gap: theme.space[2],
         minHeight: 64,
-        paddingLeft: theme.space[3],
-        paddingRight: theme.space[2],
+        paddingEnd: theme.space[2],
+        paddingStart: theme.space[3],
         paddingVertical: theme.space[1],
       }}
       testID={testID}

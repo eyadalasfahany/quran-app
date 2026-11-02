@@ -86,16 +86,6 @@ final class Resource extends Model
     }
 
     /**
-     * ADR 0031 §1: a resource is packed or listed only when its source's rights are granted or not required.
-     */
-    public function hasDeliverableRights(): bool
-    {
-        $source = $this->source;
-
-        return $source instanceof ContentSource && $source->permission_status->allowsDelivery();
-    }
-
-    /**
      * @return HasMany<TafsirEntry, $this>
      */
     public function tafsirEntries(): HasMany

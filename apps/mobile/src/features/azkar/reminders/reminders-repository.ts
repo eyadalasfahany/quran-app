@@ -10,7 +10,7 @@ import type { ReminderPrayer } from './schedule';
  * no outbox, and «مسح البيانات» clears it. One row per target (a session category or a single entry).
  */
 
-export type ReminderTargetType = 'category' | 'entry';
+export type ReminderTargetType = 'category' | 'entry' | 'my_dua';
 export type ReminderTriggerType = 'clock' | 'prayer_relative';
 
 export type AzkarReminder = {
@@ -97,7 +97,7 @@ function parseNotificationIds(raw: string | null): string[] {
 
 /** Maps a stored row to the domain shape. Unknown codes throw, like the other Azkar readers. */
 export function rowToReminder(row: AzkarReminderRow): AzkarReminder {
-  if (row.targetType !== 'category' && row.targetType !== 'entry') {
+  if (row.targetType !== 'category' && row.targetType !== 'entry' && row.targetType !== 'my_dua') {
     throw new Error(`Unknown azkar reminder target "${row.targetType}".`);
   }
   if (row.triggerType !== 'clock' && row.triggerType !== 'prayer_relative') {
@@ -173,4 +173,9 @@ export function setNotificationIds(id: string, ids: readonly string[], store?: R
 export function deleteReminder(id: string, store?: RemindersStore): void {
   const { db } = resolveStore(store);
   db.run('DELETE FROM azkar_reminders WHERE id = ?', [id]);
+}
+
+export function deleteReminderForTarget(targetType: ReminderTargetType, targetKey: string, store?: RemindersStore): void {
+  const { db } = resolveStore(store);
+  db.run('DELETE FROM azkar_reminders WHERE target_type = ? AND target_key = ?', [targetType, targetKey]);
 }

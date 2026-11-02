@@ -4,7 +4,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { listCategoryUnits } from './content-repository';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { resolveAzkarScope } from './scope-resolver';
 
 const NOW = new Date(2026, 10, 1, 9, 0);

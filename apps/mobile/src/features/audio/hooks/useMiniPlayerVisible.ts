@@ -5,9 +5,12 @@ import type { MiniPlayerVariant } from '../mini-player-metrics';
 import { usePlayerStore } from '../playerStore';
 import { useIdleReciter } from './useIdleReciter';
 
-// The bar shows once something has loaded. While idle, the reader bar shows when a reciter resolves; the tabs and
-// sidebar bars show the same way once a current ayah has been saved (ADR 0046), so a fresh install shows no bar.
-// Tabs and the reader bar are hidden on an expanded window; the sidebar footer shows only there.
+// Whether a mini player bar shows. The bar and everything that makes room for it (list insets, the resume
+// pill) read this one rule, so they can't disagree. The bar shows once something has loaded. While idle, the reader
+// bar shows when a reciter resolves; the tabs bar shows the same way once a current ayah has been saved (ADR 0046),
+// so a fresh install shows no bar. `tabs` shows on every window, tablets included, as it does on a phone (ADR 0051).
+// `reader` is a phone and medium placement, hidden on expanded windows, where the reader's own panel takes over. The
+// reader adds its own mode check (Reading and Mushaf only).
 export function useMiniPlayerVisible(variant: MiniPlayerVariant): boolean {
   const status = usePlayerStore((state) => state.status);
   const windowClass = useWindowClass();
@@ -15,11 +18,8 @@ export function useMiniPlayerVisible(variant: MiniPlayerVariant): boolean {
   const idleReciter = useIdleReciter(!loaded) !== null;
   const hasCurrentAyah = useHasCurrentAyah();
 
-  if (variant === 'sidebar') {
-    return windowClass === 'expanded' && (loaded || (hasCurrentAyah && idleReciter));
-  }
   if (variant === 'reader') {
     return (loaded || idleReciter) && windowClass !== 'expanded';
   }
-  return windowClass !== 'expanded' && (loaded || (hasCurrentAyah && idleReciter));
+  return loaded || (hasCurrentAyah && idleReciter);
 }

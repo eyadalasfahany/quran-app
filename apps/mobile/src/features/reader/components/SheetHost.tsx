@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 import { BackHandler, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
 import Animated, {
@@ -38,7 +37,6 @@ import {
  * full, its only detent, and scrolls there.
  */
 export function SheetHost({ children, testID = 'sheet-host' }: { children: ReactNode; testID?: string }) {
-  const { t } = useTranslation();
   const theme = useTheme();
   const { height } = useWindowDimensions();
   // Width decides the card shape, not the layout class: a landscape phone is wide, so it gets the centred card (ADR 0036).
@@ -179,9 +177,10 @@ export function SheetHost({ children, testID = 'sheet-host' }: { children: React
           style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.scrim }, scrimStyle]}
           testID="sheet-scrim"
         />
+        {/* A tap target only: the sheet's X and the system back gesture already close it, so it is hidden from VoiceOver and TalkBack. */}
         <Pressable
-          accessibilityLabel={t('reader.sheet.close')}
-          accessibilityRole="button"
+          accessible={false}
+          importantForAccessibility="no"
           onPress={close}
           style={StyleSheet.absoluteFill}
           testID="sheet-backdrop"

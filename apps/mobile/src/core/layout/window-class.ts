@@ -3,7 +3,7 @@ export const WINDOW_EXPANDED_MIN = 840;
 export const WINDOW_HYSTERESIS = 16;
 /**
  * A window shorter than this is a landscape phone (ADR 0036): it keeps the compact layout with the bottom tab bar,
- * whatever its width. The sidebar needs a window that is both wide and not short.
+ * whatever its width. The side panels need a window that is both wide and not short.
  */
 export const WINDOW_SHORT_HEIGHT = 480;
 

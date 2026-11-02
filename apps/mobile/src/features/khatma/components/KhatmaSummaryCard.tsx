@@ -45,7 +45,7 @@ export function KhatmaSummaryCard({
   }
 
   const title = t('khatma.summary.planName', {
-    duration: formatNumber(durationDays, locale),
+    count: durationDays,
     formatted: formatNumber(durationDays, locale),
   });
   const subtitle = t('khatma.summary.dayProgress', {
@@ -59,7 +59,7 @@ export function KhatmaSummaryCard({
 
   return (
     <Pressable
-      accessibilityLabel={`${title}, ${subtitle}`}
+      accessibilityLabel={t('common.a11yPair', { label: title, title: subtitle })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

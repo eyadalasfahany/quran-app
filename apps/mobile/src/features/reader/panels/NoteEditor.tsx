@@ -103,7 +103,7 @@ export function NoteEditor({
               color: theme.colors.ink,
               minHeight: NOTE_FIELD_MIN_HEIGHT,
               padding: theme.space[3],
-              textAlign: direction === 'rtl' ? 'right' : 'left',
+              textAlign: 'auto',
               textAlignVertical: 'top',
               writingDirection: direction,
             },

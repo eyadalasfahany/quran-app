@@ -12,7 +12,7 @@ describe('windowClassFor (ADR 0036)', () => {
     [844, 390, 'compact'],
     [956, 440, 'compact'],
     [1024, 479, 'compact'],
-    // Wide and not short: the sidebar's windows.
+    // Wide and not short: the side panels' windows.
     [1024, 480, 'expanded'],
     [1024, 768, 'expanded'],
     [1366, 1024, 'expanded'],

@@ -29,7 +29,7 @@ export function ContinueReadingRow({
 
   return (
     <Pressable
-      accessibilityLabel={`${label}, ${resume}`}
+      accessibilityLabel={t('common.a11yPair', { label, title: resume })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({ marginBottom: theme.size.blockGap, opacity: pressed ? theme.opacity.pressed : 1 })}

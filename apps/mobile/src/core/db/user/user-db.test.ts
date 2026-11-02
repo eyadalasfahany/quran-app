@@ -57,9 +57,11 @@ describe('user.db schema', () => {
       'azkar_reminders',
       'bookmarks',
       'downloads',
+      'dua_favorites',
       'highlights',
       'khatma_logs',
       'khatma_plans',
+      'my_duas',
       'notes',
       'outbox',
       'recent_listens',
@@ -249,11 +251,13 @@ describe('user.db schema', () => {
       '0002_audio_downloads',
       '0003_volatile_madrox',
       '0004_unknown_nitro',
+      '0005_my_duas',
     ]);
     expect(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8')).toMatch(/^CREATE TABLE `recent_listens`/);
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0001');
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0002');
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0003');
+    expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0005');
   });
 
   it('adds khatma tables in migration 0003 with one live active plan per user', () => {

@@ -1,4 +1,5 @@
-import { router } from 'expo-router';
+import type { Href } from 'expo-router';
+import { goBackOr } from '@/core/navigation/go-back';
 import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, View } from 'react-native';
 
@@ -29,7 +30,7 @@ export function SourcesScreen({ testID }: { testID?: string }) {
         <ContentColumn gutter={0} testID={testID ? `${testID}-column` : undefined}>
           <View style={{ gap: theme.space[4], paddingHorizontal: theme.space[4] }}>
             <SettingsHeader
-              onBack={() => router.back()}
+              onBack={() => goBackOr('/settings' as Href)}
               testID={testID ? `${testID}-header` : undefined}
               title={t('reader.sources.title')}
             />
@@ -56,6 +57,15 @@ export function SourcesScreen({ testID }: { testID?: string }) {
                 variant="caption"
               >
                 {t('reader.sources.qfFonts')}
+              </UiText>
+              {/* suncalc is BSD-2-Clause, so its notice ships with the app (ADR 0043). */}
+              <UiText
+                style={{ marginHorizontal: theme.space[1] + 2 }}
+                testID={testID ? `${testID}-suncalc` : undefined}
+                tone="muted"
+                variant="caption"
+              >
+                {t('moon.sources.suncalc')}
               </UiText>
             </View>
           </View>

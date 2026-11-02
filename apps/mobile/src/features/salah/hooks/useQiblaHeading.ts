@@ -4,7 +4,40 @@ import * as Location from 'expo-location';
 import { Accelerometer, Magnetometer } from 'expo-sensors';
 import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 
-export type CompassAccuracy = 'good' | 'poor' | 'unavailable';
+import { normalize180, normalize360 } from '../data/qibla-math';
+
+// The needle maths lives in data/qibla-math (no sensor imports there); re-exported here for existing importers.
+export { needleAngleFor, normalize180, normalize360, shortestTurn } from '../data/qibla-math';
+
+/**
+ * How the compass is trusted. `fair` still turns the dial but shows the calibration notice; `poor` holds the dial still
+ * and shows the notice; `good` also draws the aligned halo and haptic.
+ */
+export type CompassAccuracy = 'good' | 'fair' | 'poor' | 'unavailable';
+
+/**
+ * expo-location reports heading accuracy as a 0–3 calibration level, not in degrees. 0 is unreliable: iOS sends it when
+ * CoreLocation's headingAccuracy is above 50° or negative, and Android sends SensorManager's status 0. 1 is low, 2 is
+ * medium and 3 is high. The Android path below reads the same event field (sample.accuracy), so both share the unit.
+ */
+export const HEADING_LEVEL_UNRELIABLE = 0;
+export const HEADING_LEVEL_LOW = 1;
+/** The first level that counts as good for the aligned halo and haptic (levels 2 and 3). */
+export const HEADING_LEVEL_GOOD = 2;
+
+/**
+ * The screen's accuracy for a calibration level. A missing level (some Android devices omit it) reads as good, as it did
+ * before levels were used.
+ */
+export function accuracyForLevel(level: number | null | undefined): CompassAccuracy {
+  if (level === undefined || level === null) {
+    return 'good';
+  }
+  if (level <= HEADING_LEVEL_UNRELIABLE) {
+    return 'poor';
+  }
+  return level < HEADING_LEVEL_GOOD ? 'fair' : 'good';
+}
 
 /** A vector in device coordinates: x to the right edge, y to the top edge, z out of the screen. */
 export type Vec3 = readonly [number, number, number];
@@ -16,32 +49,6 @@ export const DEVICE_TOP: Vec3 = [0, 1, 0];
 export const ALIGNED_ENTER_DEGREES = 3;
 /** ...and stays aligned until it is more than this many degrees away (leaving). The gap stops chatter at the edge. */
 export const ALIGNED_LEAVE_DEGREES = 6;
-
-/** Normalize an angle into −180…180 so the needle always takes the shortest turn. */
-export function normalize180(angle: number): number {
-  'worklet';
-  return ((((angle + 180) % 360) + 360) % 360) - 180;
-}
-
-/** Normalize an angle into 0…360 (359 and 1 stay one degree apart across north). */
-export function normalize360(angle: number): number {
-  return ((angle % 360) + 360) % 360;
-}
-
-/** The signed shortest turn between two headings, in −180…180. */
-export function shortestTurn(from: number, to: number): number {
-  'worklet';
-  return normalize180(to - from);
-}
-
-/**
- * The needle's target on the fixed north-referenced dial: `bearing − heading`,
- * normalized so it always takes the shortest turn (no 350° swings through 0°).
- */
-export function needleAngleFor(bearing: number, heading: number): number {
-  'worklet';
-  return normalize180(bearing - heading);
-}
 
 /**
  * Whether the needle counts as aligned with the marker, given its signed gap in degrees. Entering uses
@@ -172,11 +179,13 @@ export function useQiblaHeading(enabled: boolean, bearing: number | null = null)
   const [supported, setSupported] = useState(true);
   const [hasHeading, setHasHeading] = useState(false);
   const [aligned, setAligned] = useState(false);
+  const [awaitingLocation, setAwaitingLocation] = useState(false);
 
   // Values as last committed to React state, so a sample that changes nothing sets nothing.
   const accuracyRef = useRef<CompassAccuracy>('unavailable');
   const hasHeadingRef = useRef(false);
   const alignedRef = useRef(false);
+  const awaitingRef = useRef(false);
   const lastUpdate = useRef(0);
   const sample = useRef<Sample>({ gravity: null, magnetic: null, declination: null, accuracy: undefined });
   const bearingRef = useRef(bearing);
@@ -204,6 +213,12 @@ export function useQiblaHeading(enabled: boolean, bearing: number | null = null)
       setAligned(next);
     }
   };
+  const commitAwaiting = (next: boolean) => {
+    if (awaitingRef.current !== next) {
+      awaitingRef.current = next;
+      setAwaitingLocation(next);
+    }
+  };
 
   const publish = (next: number | null, reading: number | null | undefined) => {
     const now = Date.now();
@@ -212,20 +227,20 @@ export function useQiblaHeading(enabled: boolean, bearing: number | null = null)
     }
     lastUpdate.current = now;
 
-    if (next === null) {
-      // iOS reports −1 while the compass is uncalibrated or unavailable.
+    const nextAccuracy = accuracyForLevel(reading);
+    // iOS reports no heading (−1) while the compass is uncalibrated, and level 0 is unreliable. Either way the dial holds
+    // its last heading and does not turn.
+    if (next === null || nextAccuracy === 'poor') {
       commitAccuracy('poor');
       commitAligned(false);
       return;
     }
     headingValue.value = next;
+    // The first heading at fair or better makes the dial live. Poor readings before it keep the dial north-up.
     if (!hasHeadingRef.current) {
       hasHeadingRef.current = true;
       setHasHeading(true);
     }
-    // Some Android devices omit accuracy; a live heading then reads as good.
-    const nextAccuracy: CompassAccuracy =
-      reading === undefined || reading === null ? 'good' : reading < 0 || reading > 20 ? 'poor' : 'good';
     commitAccuracy(nextAccuracy);
     const target = bearingRef.current;
     commitAligned(
@@ -240,9 +255,18 @@ export function useQiblaHeading(enabled: boolean, bearing: number | null = null)
     if (!gravity || !magnetic) {
       return;
     }
+    // Android's trueHeading is −1 until expo-location has a fix, so no declination is not a calibration problem: the
+    // screen waits for the location instead. The compass accuracy is unknown until then.
+    if (declination === null) {
+      commitAwaiting(true);
+      commitAccuracy('unavailable');
+      commitAligned(false);
+      return;
+    }
+    commitAwaiting(false);
     const up = landscapeRef.current ? screenUpAxis(true, landscapeSign.current) : DEVICE_TOP;
     const azimuth = topEdgeAzimuth(gravity, magnetic, up);
-    publish(azimuth === null || declination === null ? null : normalize360(azimuth + declination), sample.current.accuracy);
+    publish(azimuth === null ? null : normalize360(azimuth + declination), sample.current.accuracy);
   };
 
   // The heading watch (and, on Android, the magnetometer), while enabled and location permission is granted.
@@ -313,8 +337,13 @@ export function useQiblaHeading(enabled: boolean, bearing: number | null = null)
       cancelled = true;
       subscriptions.forEach(removeQuietly);
       subscriptions.length = 0;
-      // Nothing is measured while disabled, so the needle is not aligned until a new sample says so.
+      // Nothing is measured while disabled (blur, background, Reduce Motion): the dial goes back to north-up, and the
+      // needle is not aligned, until a new good sample says otherwise.
+      hasHeadingRef.current = false;
+      setHasHeading(false);
+      commitAccuracy('unavailable');
       commitAligned(false);
+      commitAwaiting(false);
     };
     // publish and computeAndroid read only refs, the sample and the SharedValue, which are stable. Listing them would
     // restart the sensor subscriptions on every render, so they are left out on purpose.
@@ -348,5 +377,5 @@ export function useQiblaHeading(enabled: boolean, bearing: number | null = null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [needsAccelerometer]);
 
-  return { headingValue, hasHeading, accuracy, supported, aligned };
+  return { headingValue, hasHeading, accuracy, supported, aligned, awaitingLocation };
 }

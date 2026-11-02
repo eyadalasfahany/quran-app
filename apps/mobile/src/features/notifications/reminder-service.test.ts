@@ -128,6 +128,18 @@ describe('syncDailyReminder', () => {
     expect(body).not.toBe('حان وقت قراءة وردك من القرآن الكريم');
   });
 
+  it('says the two-page wird with the dual noun, not a numeral before it', async () => {
+    storage.set(storageKeys.dailyReminder, true);
+    getActivePlan.mockReturnValue({ id: 'plan-1', startVerseId: 1, startDate: '2026-10-01', durationDays: 30 });
+    resolvePlanBounds.mockReturnValue({ startPage: 1, pagesTotal: 604 });
+    planProgress.mockReturnValue({ todayTarget: 2 });
+
+    await syncDailyReminder();
+
+    const { body } = scheduledContent().content;
+    expect(body).toBe('وِردك اليوم: صفحتان');
+  });
+
   it('falls back to the generic body when the plan data cannot be read', async () => {
     storage.set(storageKeys.dailyReminder, true);
     getActivePlan.mockImplementation(() => {

@@ -22,7 +22,7 @@ Its shape can't be configured to match the frame. The developer asked (1 Nov 202
    - **Icons:** the Material symbols already in `destinations.ts`.
 3. **Same behaviour as the native bar:**
    - same destinations, order and testIDs
-   - hidden on expanded windows, where the sidebar takes over
+   - shown on expanded windows as on phones (ADR 0051 retired the expanded sidebar; the bar is not hidden on tablets)
    - RTL mirrors the order (first tab rightmost in Arabic)
    - role `tablist` / `tab` with selected state and labels; 44 pt+ targets
    - no custom tab-switch animation

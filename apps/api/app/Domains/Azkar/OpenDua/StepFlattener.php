@@ -246,6 +246,9 @@ final class StepFlattener
 
         $speaker = is_string($step['speaker'] ?? null) ? $step['speaker'] : null;
         $recordings = $this->recordings($step, $path, $issues, $entryIndex, $entryKey);
+        // Developer decision (1 Nov 2026, ADR 0040 plan step 5): a step's recordings belong to its first item only, so
+        // the reader shows the audio once. The list is handed to the first item that is emitted, then cleared.
+        $carry = $recordings;
 
         foreach ($rawItems as $itemIndex => $rawItem) {
             $itemPath = $path.'/items['.$itemIndex.']';
@@ -302,8 +305,9 @@ final class StepFlattener
                 requiredCount: $requiredCount,
                 repeatGroup: $repeatGroup,
                 repeatTimes: $repeatTimes,
-                recordings: $recordings,
+                recordings: $carry,
             );
+            $carry = [];
         }
     }
 

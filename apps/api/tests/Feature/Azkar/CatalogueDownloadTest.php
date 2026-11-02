@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Domains\Azkar\Exceptions\CatalogueDownloadException;
 use App\Domains\Azkar\OpenDua\CatalogueDownloader;
-use App\Domains\Content\Models\ContentSource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -81,29 +80,6 @@ it('the import command downloads, verifies and dry-runs without writing rows', f
         ->assertExitCode(0);
 
     File::delete(storage_path('framework/testing/azkar-map/download-report.json'));
-});
-
-it('the import command skips without any request while locked, when --if-unlocked is given', function (): void {
-    config(['azkar.opendua.import_enabled' => false]);
-
-    $this->artisan('azkar:import', ['--download' => true, '--if-unlocked' => true])
-        ->expectsOutputToContain('Azkar import skipped')
-        ->assertExitCode(0);
-
-    Http::assertNothingSent();
-});
-
-it('the import command still fails on validation errors once unlocked, even with --if-unlocked', function (): void {
-    config([
-        'azkar.opendua.import_enabled' => true,
-        'azkar.quran_references' => [],
-        'azkar.opendua.catalogue_sha256' => hash_file('sha256', base_path('tests/Fixtures/azkar/opendua-fixture.json')),
-    ]);
-    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
-    $path = base_path('tests/Fixtures/azkar/opendua-fixture.json');
-
-    $this->artisan('azkar:import', ['path' => $path, '--if-unlocked' => true, '--report' => storage_path('framework/testing/azkar-map/unlocked.json')])
-        ->assertExitCode(1);
 });
 
 it('the import command needs a path or --download, and not both', function (): void {

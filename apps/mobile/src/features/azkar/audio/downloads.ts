@@ -31,6 +31,11 @@ export interface AzkarDownloadPort {
   removeCategory(categoryId: string): void;
   /** Bytes used by downloaded recordings. */
   storageBytes(): number;
+  /**
+   * The local file of a downloaded recording, or null. The player plays it before streaming (ADR 0040). Optional, so a
+   * port without files (none is bound today) streams every recording.
+   */
+  localUri?(recordingKey: string): string | null;
 }
 
 /** The port the app binds today: no recording is licensed, so nothing is downloadable and nothing is stored. */

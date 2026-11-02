@@ -19,6 +19,8 @@ export const NOTIFICATION_CHANNELS = {
   reminders: 'reminders',
   /** Azkar reminders (ADR 0031 §7). */
   azkar: 'azkar',
+  /** Daily goal reminders from the reminders hub: the Friday Surat al-Kahf and the misbaha target (ADR 0034). */
+  goals: 'goals',
   /** Prayer-time notifications with the system sound (ADR 0030 §3). */
   prayer: 'prayer',
 } as const;
@@ -29,6 +31,7 @@ const CHANNEL_NAME_KEYS = {
   reminders: 'notifications.channels.reminders',
   azkar: 'notifications.channels.azkar',
   prayer: 'notifications.channels.prayer',
+  goals: 'notifications.channels.goals',
 } as const satisfies Record<NotificationChannelId, string>;
 
 /** Prefix of every adhan voice channel (`prayer_adhan_<voice id>`, ADR 0047 §4). */

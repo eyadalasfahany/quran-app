@@ -74,7 +74,7 @@ describe('tabContentClearance', () => {
   });
 });
 
-describe('tab rail in a short window (ADR 0036, developer 1 Nov 2026)', () => {
+describe('tab rail in a short or expanded window (ADR 0036; ADR 0051 as amended 2 Nov 2026)', () => {
   it('reserves 100 pt on the start edge: 12 offset, 76 wide, 12 gap', () => {
     expect(TAB_RAIL_CLEARANCE).toBe(100);
     expect(tabBarSideClearance(true)).toBe(100);
@@ -91,14 +91,14 @@ describe('tab rail in a short window (ADR 0036, developer 1 Nov 2026)', () => {
     expect(tabBarMode(platform, short)).toBe(expected);
   });
 
-  it('has no bottom bar in a short window, so the footprint is the bottom safe area only', () => {
+  it('has no bottom bar on a rail window, so the footprint is the bottom safe area only', () => {
     expect(tabBarFootprint('android', 21, true)).toBe(21);
     expect(tabBarFootprint('ios', 21, true)).toBe(21);
     expect(miniPlayerBottom('ios', 21, true)).toBe(33);
     expect(miniPlayerBottom('android', 0, true)).toBe(12);
   });
 
-  it('gives tab screens no bottom clearance in a short window, on either platform', () => {
+  it('gives tab screens no bottom clearance on a rail window, on either platform', () => {
     expect(tabContentClearance('android', 21, true)).toBe(0);
     expect(tabContentClearance('ios', 21, true)).toBe(0);
   });

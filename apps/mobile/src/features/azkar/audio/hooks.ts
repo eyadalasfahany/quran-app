@@ -2,9 +2,7 @@ import { addNetworkStateListener, getNetworkStateAsync, type NetworkState } from
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 
 import type { AzkarRecording } from '../data/model';
-import { readAzkarAutoplay, saveAzkarAutoplay } from './autoplay';
 import { NoAudioDownloadPort, type AzkarDownloadEntry, type AzkarDownloadPort } from './downloads';
-import { useAzkarPlaybackStore, type AzkarPlaybackStatus } from './playback';
 
 /** Whether the device can reach the network. A connected device with unknown reachability counts as online. */
 export function isOnline(state: NetworkState): boolean {
@@ -91,28 +89,4 @@ export function useAzkarDownloads(port: AzkarDownloadPort = NoAudioDownloadPort)
   }, [port]);
 
   return useMemo(() => ({ entries, storageBytes, cancel, remove, retry, removeAll }), [entries, storageBytes, cancel, remove, retry, removeAll]);
-}
-
-/** The «تشغيل تلقائي» preference, saved in MMKV. */
-export function useAzkarAutoplay(): [boolean, (value: boolean) => void] {
-  const [value, setValue] = useState(readAzkarAutoplay);
-  const update = useCallback((next: boolean) => setValue(saveAzkarAutoplay(next)), []);
-  return [value, update];
-}
-
-/**
- * The playback state of one reader unit. A unit that is not the loaded one reads as idle, so only the unit that
- * plays shows a playing state.
- */
-export function useAzkarUnitPlayback(unitKey: string): {
-  active: boolean;
-  status: AzkarPlaybackStatus;
-  positionMs: number;
-  durationMs: number;
-} {
-  const active = useAzkarPlaybackStore((state) => state.unitKey === unitKey);
-  const status = useAzkarPlaybackStore((state) => (state.unitKey === unitKey ? state.status : 'idle'));
-  const positionMs = useAzkarPlaybackStore((state) => (state.unitKey === unitKey ? state.positionMs : 0));
-  const durationMs = useAzkarPlaybackStore((state) => (state.unitKey === unitKey ? state.durationMs : 0));
-  return { active, status, positionMs, durationMs };
 }

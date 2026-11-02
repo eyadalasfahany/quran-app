@@ -1,6 +1,6 @@
 # Step 14 — Azkar audio in production and persistent file storage
 
-Plan only. Nothing here is implemented. Written 1 Nov 2026 by the planner.
+Written 1 Nov 2026 by the planner. **Implemented 2 Nov 2026** (code and docs; the Railway dashboard steps are the developer's). The status and the deviations are at the end.
 
 **Rests on:**
 - ADR 0040 (`docs/adr/0040-azkar-audio-hosted-by-taybah.md`, draft in this change), which supersedes ADR 0038 decision 3 and amends ADR 0031 §8 and release blocker 5.
@@ -12,7 +12,7 @@ Plan only. Nothing here is implemented. Written 1 Nov 2026 by the planner.
 ## What is wrong today (facts, with sources)
 
 1. **Packs are lost on every redeploy.** `PackBuilder::store()` writes to `Storage::disk('local')`, root `storage/app/private` (`config/filesystems.php`). The image has no volume (`docker/Dockerfile`, `WORKDIR /app`), and `content_packs` rows live in MySQL. After a redeploy the row exists and the file does not, so `GET /content/packs/{resource}/{version}` fails. `PackBuilder::build()` returns an existing row via `findForVersion()` and never rebuilds it, so the loss is permanent until the row is deleted.
-2. **The release builds a pack nobody can read.** `railway.json` runs `entrypoint.sh release.sh` as the pre-deploy command, a separate container; `release.sh` ends with `azkar:import --download --if-unlocked --build-packs`. Its filesystem is discarded, and Railway does not mount volumes there (pre-deploy docs, and the volumes guide: mounted when the container starts, checked 1 Nov 2026). Production is locked today (`AZKAR_OPENDUA_IMPORT_ENABLED=false`), so this has not bitten yet.
+2. **The release builds a pack nobody can read.** `railway.json` runs `entrypoint.sh release.sh` as the pre-deploy command, a separate container; `release.sh` ended with `azkar:import --download --if-unlocked --build-packs` (changed 2 Nov 2026: now `--download --defer-pack`, and `--if-unlocked` is removed). Its filesystem is discarded, and Railway does not mount volumes there (pre-deploy docs, and the volumes guide: mounted when the container starts, checked 1 Nov 2026). Production is locked today (`AZKAR_OPENDUA_IMPORT_ENABLED=false`), so this has not bitten yet.
 3. **`BuildContentPackJob` never runs.** `QueuePackBuild` dispatches it; `QUEUE_CONNECTION` defaults to `database` (`config/queue.php`); no Horizon service exists on Railway (developer, 1 Nov 2026).
 4. **`APP_URL` is `http://localhost:8000`** on Railway. ADR 0022 says it should be `https://quranmobile-production.up.railway.app`.
 5. **Audio rows are never imported** (`audio_rights_verified` false, `recording_rights` empty in `config/azkar.php`), and each catalogue `recordings[].url` points at `https://audio.opendua.org/hisn/v0.0.2/OD-NNN.mp3`.
@@ -32,8 +32,8 @@ Plan only. Nothing here is implemented. Written 1 Nov 2026 by the planner.
 | Work | Runs | Why |
 | --- | --- | --- |
 | `migrate --force` | Pre-deploy (kept) | Needs only MySQL. A failure stops the deploy and the old version keeps serving. |
-| Azkar import, DB rows only | Pre-deploy (`azkar:import --download --if-unlocked --no-pack`, step 3) | Needs MySQL and the network, not the volume. Validation errors still fail the deploy. |
-| Pack build, audio verification | Web container start (`docker/start-web.sh`, steps 2 and 7), before FrankenPHP | Only place the volume is mounted. Runs only in the web service's `startCommand`, never in `entrypoint.sh` (Horizon and Scheduler share it). |
+| Azkar import, DB rows only | Pre-deploy (`azkar:import --download --defer-pack`, step 3; `--if-unlocked` removed 2 Nov 2026) | Needs MySQL and the network, not the volume. Validation errors still fail the deploy. |
+| Pack build, audio verification | Web container start (`docker/start-web.sh`: `mkdir`, `azkar:audio-verify`, `content:ensure-packs`), before FrankenPHP | Only place the volume is mounted. Runs only in the web service's `startCommand`, never in `entrypoint.sh` (Horizon and Scheduler share it). |
 | First audio copy | One-time `railway ssh` (step 9) | 58 MB, minutes long. Keeping it out of the start path keeps `/up` fast. The command is resumable. |
 
 Rejected: a one-off `railway ssh` for packs. A volume loss or a fresh deploy would leave the manifest pointing at missing files until someone remembered to run it. Start-time self-heal fixes that every time.
@@ -88,7 +88,7 @@ The catalogue's `recordings[].url` ends in the track file name, so the mapping i
 
 These are my proposals. The developer's decisions cover only the attribution line, that audio ships and that Taybah hosts it. `attribution.ts` passes `licence` and `licenceUrl` to the UI, so the wording is user-visible.
 
-`config/azkar.php`: `audio_rights_verified` becomes `(bool) env('AZKAR_AUDIO_ENABLED', false)`. `recording_rights` would be:
+`config/azkar.php`: the env switch `AZKAR_AUDIO_ENABLED` was never built and is removed (2 Nov 2026, ADR 0045). `recording_rights` is:
 
 | Key | Proposed value | Why |
 | --- | --- | --- |
@@ -136,24 +136,26 @@ Each step is one reviewable change. Do not start a step before the previous one'
   4. Deploy. Expect a short outage. Verify persistence: `railway ssh` → `echo ok > storage/app/private/.volume-check`, redeploy, `cat` it again. Delete the file.
   5. `curl -s https://quranmobile-production.up.railway.app/up` returns 200.
 
-### Step 2 — Self-healing packs (`content:heal-packs`)
+### Step 2 — Self-healing packs (`content:ensure-packs`)
 
-- **Files:** new `app/Domains/Content/Console/HealPacksCommand.php` (`content:heal-packs {--only=} {--except=} {--dry-run}`), new `Content/Services/PackHealer.php`, a `ContentPackRepository` method to delete a stale row, registered in `ContentServiceProvider`; `docker/start-web.sh` calls `content:heal-packs --only=azkar` in the foreground and `--except=azkar` in the background (`&`), each with `|| echo` so a failure never blocks the server.
+**Current (2 Nov 2026):** the plan's `HealPacksCommand` was not built. `content:ensure-packs` (existing) does the heal, and `docker/start-web.sh` calls it in the foreground. The bullets below are the original plan, kept for the record.
+
+- **Files (original plan, not built):** new `app/Domains/Content/Console/HealPacksCommand.php` (`content:heal-packs {--only=} {--except=} {--dry-run}`), new `Content/Services/PackHealer.php`, a `ContentPackRepository` method to delete a stale row, registered in `ContentServiceProvider`; `docker/start-web.sh` calls `content:heal-packs --only=azkar` in the foreground and `--except=azkar` in the background (`&`), each with `|| echo` so a failure never blocks the server.
 - **Behaviour:** for each active, deliverable resource: (a) if the current `version` has no `content_packs` row, build it; (b) if a row exists but `Storage::disk('local')->exists($pack->path)` is false, delete the row and rebuild (the new gzip has a new SHA-256 and the same version; devices that hold the version keep working). Locked Azkar resources (`PackBuildException`) are reported and skipped, not failed. `--dry-run` lists what it would do. Safe on every start: with all files present it only runs `exists()` calls.
 - **Memory note:** `--except=azkar &` rebuilds large QF packs inside the web container's memory limit while it serves requests. Non-blocking; if it shows up in Railway metrics, run it by hand through `railway ssh` instead (`--dry-run` first).
 - **Tests (Pest, `Storage::fake('local')`):** missing file → row replaced, file exists, `size_bytes` and `sha256` match the new bytes; file present → untouched, no build call; no pack row for the current version → built; locked Azkar resource → reported, exit 0; `--only` and `--except` filters; `--dry-run` writes nothing; a pack build failure under `QUEUE_CONNECTION=sync` surfaces as a non-zero exit from the command that triggers it (`content:sync` path), documented.
 - **Gates:** `composer qa`.
-- **Developer by hand:** after deploy, `railway ssh` → `php artisan content:heal-packs --dry-run`; read the list; run it without `--dry-run`. This also repairs any QF pack rows already in production whose files vanished.
+- **Developer by hand:** after deploy, `railway ssh` → `php artisan content:ensure-packs` (it builds only what is missing). This also repairs any QF pack rows already in production whose files vanished.
 
-### Step 3 — Idempotent Azkar import, DB only (`--no-pack`)
+### Step 3 — Idempotent Azkar import, DB only (`--defer-pack`)
 
-- **Files:** `app/Domains/Azkar/Console/ImportAzkarCommand.php` (new `--no-pack`; skips `BuildContentPackJob::dispatch` and `buildPackNow`); `AzkarImporter.php` (skip when the stored fingerprint matches); new `Azkar/Services/AzkarImportFingerprint.php`; one additive migration: nullable `import_fingerprint` (string 64) on `resources` (additive, allowed in production, `.ai/rules/migrations.md` to be read by the implementer); `docker/release.sh` gets back `azkar:import --download --if-unlocked --no-pack`.
+- **Files:** `app/Domains/Azkar/Console/ImportAzkarCommand.php` (new `--defer-pack`; skips `BuildContentPackJob::dispatch` and `buildPackNow`); `AzkarImporter.php` (skip when the stored fingerprint matches); new `Azkar/Services/AzkarImportFingerprint.php`; one additive migration: nullable `import_fingerprint` (string 64) on `resources` (additive, allowed in production, `.ai/rules/migrations.md` to be read by the implementer); `docker/release.sh` runs `azkar:import --download --defer-pack` (`--if-unlocked` removed 2 Nov 2026).
 - **Fingerprint** = SHA-256 of: catalogue SHA-256, the `azkar` config inputs that change rows (`excluded_entries`, `quran_references`, `chapter_titles_ar`, `chapter_timing`, `session_categories`, `store_english`, the audio block and `audio_rights_verified`, and the audio manifest SHA-256). Without the config inputs, turning audio on would never re-import (`write()` bumps `resources.version` on every run today, so an unguarded import would force every device to re-download on each deploy).
-- **Behaviour:** unchanged fingerprint → prints "unchanged", exits 0, no version bump. Changed → imports, bumps the version, queues nothing. The pack is built at the next start by `content:heal-packs` (step 2), because the current version has no pack row.
+- **Behaviour:** unchanged fingerprint → prints "unchanged", exits 0, no version bump. Changed → imports, bumps the version, queues nothing. The pack is built at the next start by `content:ensure-packs` at start (step 2), because the current version has no pack row.
 - **Manifest gap (checked):** after the pre-deploy import, `resources.version` and `changes_floor_version` are N+1 while the newest pack is still N, until start builds N+1. In `apps/mobile/src/core/sync/content-sync.ts` (lines 171–178) a device already on the pack's version N does nothing, and an older device downloads pack N, so there is no re-download loop, only a short window. A device on N gets a 410 from `GET /content/changes` in the gap (`ContentDeliveryService::changes()`, `sinceVersion < changes_floor_version`), which the app handles as "gone". If step 7 refuses to build N+1 for a long time, that window is long but harmless. A test pins it (below).
-- **Tests:** manifest during the gap lists pack N with `changes_since_min_version` N+1, and `GET /content/changes?since_version=N` returns 410 (pins today's behaviour so a later change is deliberate); unchanged fingerprint → no version bump, no row replacement; each fingerprint input flips it (one test per input class); `--no-pack` dispatches no job (`Queue::fake`) and builds no file; locked import still exits 0 under `--if-unlocked`; existing `AzkarImportTest` still passes.
+- **Tests:** manifest during the gap lists pack N with `changes_since_min_version` N+1, and `GET /content/changes?since_version=N` returns 410 (pins today's behaviour so a later change is deliberate); unchanged fingerprint → no version bump, no row replacement; each fingerprint input flips it (one test per input class); `--defer-pack` dispatches no job (`Queue::fake`) and builds no file; (the `--if-unlocked` case is removed, 2 Nov 2026); existing `AzkarImportTest` still passes.
 - **Gates:** `composer qa`.
-- **Developer by hand:** none yet (the import stays locked until `AZKAR_OPENDUA_IMPORT_ENABLED=true`, which is a separate, existing release item in the runbook).
+- **Developer by hand:** none.
 
 ### Step 4 — Audio manifest, disk and `azkar:audio-sync`
 
@@ -165,13 +167,13 @@ Each step is one reviewable change. Do not start a step before the previous one'
 
 ### Step 5 — Importer writes the audio rows
 
-- **Files:** `config/azkar.php` (the rights block and `audio_rights_verified` env flag above); `app/Domains/Azkar/Services/AzkarTransformer.php` (recording branch only; do not touch the `excluded_entries` work another agent is doing); `Azkar/Validation/CatalogueValidator.php` (new issue code `recording_unmapped`); `Azkar/OpenDua/StepFlattener.php` only if the first-item rule needs the step's item order (it already has it).
-- **Behaviour (when `AZKAR_AUDIO_ENABLED=true`):** for each recording of a non-excluded entry: look up the track by the URL's file name in `AzkarAudioManifest`; check the manifest `entryId` number equals the entry number and the duration matches; write one row on the step's **first item** with `remote_url` = `/api/v1/azkar/audio/0.0.2/<file>`, `size_bytes` = manifest bytes, `source` `opendua`, rights from config. An unmapped or mismatched recording on a shipped entry is an import error (fail closed). Excluded entries produce no rows. Importer report: `recordings.upstream`, `imported` (expect 238), `downloadable` (238), and a new `unmapped` count (expect 0).
+- **Files:** `config/azkar.php` (the rights block; no env flag, removed 2 Nov 2026); `app/Domains/Azkar/Services/AzkarTransformer.php` (recording branch only; do not touch the `excluded_entries` work another agent is doing); `Azkar/Validation/CatalogueValidator.php` (new issue code `recording_unmapped`); `Azkar/OpenDua/StepFlattener.php` only if the first-item rule needs the step's item order (it already has it).
+- **Behaviour (always on; the plan's env switch was removed 2 Nov 2026):** for each recording of a non-excluded entry: look up the track by the URL's file name in `AzkarAudioManifest`; check the manifest `entryId` number equals the entry number and the duration matches; write one row on the step's **first item** with `remote_url` = `/api/v1/azkar/audio/0.0.2/<file>`, `size_bytes` = manifest bytes, `source` `opendua`, rights from config. An unmapped or mismatched recording on a shipped entry is an import error (fail closed). Excluded entries produce no rows. Importer report: `recordings.upstream`, `imported` (expect 238), `downloadable` (238), and a new `unmapped` count (expect 0).
 - **Tests:**
   - 238 rows from a fixture catalogue that copies the real shape (placeholder text, `FIXTURE text 1 — not a dhikr`), including the 7 multi-item step cases (one row each, on the first item) and a nested repeat-group case;
   - excluded entry → no row and no unmapped error;
   - unknown file name, wrong entry number, and duration mismatch → import error;
-  - `AZKAR_AUDIO_ENABLED=false` → zero rows (the rollback path), same as today;
+  - (removed 2 Nov 2026: there is no switch, so no zero-rows test. Rollback is a reviewed change.)
   - **no `opendua.org` substring in any recording row, nor in the SQLite pack built from it** (non-negotiable 2 and ADR 0040 decision 2);
   - `rights_verified_at` is the epoch-ms of 2026-11-01 (existing conversion); `attribution_ar` null, `attribution_en` the ADR string; `licence` not empty;
   - `PackSchemaAzkarTest` and `AzkarMigrationTest` still pass (no schema change).
@@ -198,16 +200,16 @@ Each step is one reviewable change. Do not start a step before the previous one'
 - **Files:** new `apps/mobile/src/features/azkar/audio/audio-url.ts` and `audio-url.test.ts` (`resolveAudioUrl(remoteUrl, apiBase)`: a path starting with `/` is joined to `EXPO_PUBLIC_API_URL`; an absolute `http(s)` URL passes through, which keeps the dev fixtures working); `playback.ts` and its test use it; check that `AzkarReaderScreen` mounts `AzkarAudioButton`, `AzkarAudioPlayer` and `AzkarAttributionLine` for a unit whose recording is playable and shows nothing otherwise; `AzkarAttributionLine` text is the English line when `attribution_ar` is null (existing `attribution.ts` fallback). New i18n strings only if the frames need them (`ar.json` and `en.json` together).
 - **Tests:** playback failure: a 404 or a timeout from the audio endpoint (rollback lever, or a file missing on the volume) must end in a clean `idle`/error state with the unit not stuck in `loading` — `playback.ts` has no error status today, so this step adds one (`onStatus` handling of a player error) and the button returns to its play state; `audio-url` (relative, absolute, trailing slash, empty); `playback.test.ts` passes the resolved URL to `createAudioPlayer`; `availability.test.ts` already covers the 4 states, re-run with `rightsVerifiedAt` set; reader screen test: a unit with a recording shows the button and the attribution «Recitation by Muhammad Jumah for OpenDua», a unit without shows nothing; Arabic and English render (RTL), accessibility roles and labels. Each component that changes keeps its own colocated test.
 - **Gates:** `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`; frontend rule checks.
-- **Visual check (frontend rule):** run the API locally with the real archive (`php artisan azkar:audio-sync --from=/Applications/MAMP/htdocs/quran-app/opendua-audio-hisn-v0.0.2`, `AZKAR_AUDIO_ENABLED=true`, local import per ADR 0031 §11), start the app on the iPhone 17 simulator, open a reader unit with audio, screenshot with `xcrun simctl io booted screenshot`, render `AzkarReaderAudio` with `python3 packages/design-tokens/scripts/frame-shot.py AzkarReaderAudio <out>`, and compare. Also check the offline state (`stream_offline` pill) and the `none` state (no controls). Read the `apple-design` skill first. Do not paste religious text into the review notes.
+- **Visual check (frontend rule):** run the API locally with the real archive (`php artisan azkar:audio-sync --from=/Applications/MAMP/htdocs/quran-app/opendua-audio-hisn-v0.0.2`, local import per ADR 0031 §11), start the app on the iPhone 17 simulator, open a reader unit with audio, screenshot with `xcrun simctl io booted screenshot`, render `AzkarReaderAudio` with `python3 packages/design-tokens/scripts/frame-shot.py AzkarReaderAudio <out>`, and compare. Also check the offline state (`stream_offline` pill) and the `none` state (no controls). Read the `apple-design` skill first. Do not paste religious text into the review notes.
 - **Developer by hand:** play a track on the simulator and, before release, on a real iPhone (background audio, lock screen, silent switch); a new EAS build is needed for this step to reach TestFlight.
 
 ### Step 9 — Production rollout and runbook
 
-- **Files:** rewrite `docs/runbooks/railway-release.md` (what runs and where: pre-deploy migrate and DB import, start-time verify and heal; the services table now says Horizon and Scheduler are not deployed and why; new variables `APP_URL`, `QUEUE_CONNECTION`, `AZKAR_AUDIO_ENABLED`; first audio provisioning; rolling back audio; recovering a lost volume); `docs/plans/phase-6.md` status.
+- **Files:** rewrite `docs/runbooks/railway-release.md` (what runs and where: pre-deploy migrate and DB import, start-time verify and heal; the services table now says Horizon and Scheduler are not deployed and why; new variables `APP_URL` and `QUEUE_CONNECTION` (no Azkar switch, removed 2 Nov 2026); first audio provisioning; rolling back audio; recovering a lost volume); `docs/plans/phase-6.md` status.
 - **Order (this order is what makes it fail closed):**
-  1. Steps 1–7 are deployed with `AZKAR_AUDIO_ENABLED` unset.
+  1. Steps 1–7 are deployed. (The switch the plan named was removed 2 Nov 2026.)
   2. `railway ssh` → `php artisan azkar:audio-sync` (about 238 downloads; rerun if interrupted) → `php artisan azkar:audio-sync --full --verify-only`; expect 238 verified, 0 missing.
-  3. Set `AZKAR_AUDIO_ENABLED=true`. Deploy. Pre-deploy imports the rows (fingerprint changed); start verifies the files and builds the pack.
+  3. Deploy. Pre-deploy imports the rows (fingerprint changed); start verifies the files and builds the pack.
 - **Smoke tests (production):**
   - `GET /api/v1/content/manifest` lists the `azkar` resource with the new version.
   - `curl -s -D- -o /dev/null -H 'Range: bytes=0-99' https://quranmobile-production.up.railway.app/api/v1/azkar/audio/0.0.2/OD-001.mp3` → `206`, `audio/mpeg`.
@@ -241,11 +243,11 @@ Assumes the recommended design (open question 1). If the developer chooses to ge
 
 1. Volume mounted at `/app/storage/app`, a marker file survives a redeploy (step 1 check).
 2. ADR 0040 number clash resolved; ADR 0031, 0038 and 0022, the spec, the content plan and the step-08 brief edited (step 0).
-3. All 238 files verified (`azkar:audio-sync --full --verify-only`) before `AZKAR_AUDIO_ENABLED=true`.
+3. All 238 files verified (`azkar:audio-sync --full --verify-only`) before the first import writes the recording rows (`azkar:audio-verify --full`).
 4. A production Range request returns `206`; the pack has 238 recording rows and no `opendua.org` URL.
 5. Attribution «Recitation by Muhammad Jumah for OpenDua» visible next to the audio on the iPhone 17 simulator, matching the frame.
 6. `APP_URL` corrected; `QUEUE_CONNECTION=sync`; replicas = 1; no Horizon or Scheduler service created.
-7. Not blockers, tracked: the OpenDua email reply (ADR 0040 decision 6). ADR 0031 release blocker 2 (Arabic chapter titles) is unchanged and still applies to Azkar as a whole. The import flag, `APP_ENV=production` and the reviewed Quran map remain the Azkar unlock items in the runbook.
+7. Not blockers, tracked: the OpenDua email reply (ADR 0040 decision 6). ADR 0031 release blocker 2 (Arabic chapter titles) is unchanged and still applies to Azkar as a whole. The reviewed Quran map and `APP_ENV=production` remain the Azkar release items in the runbook (the import flag was removed 2 Nov 2026).
 
 ## Open questions
 
@@ -261,3 +263,28 @@ Assumes the recommended design (open question 1). If the developer chooses to ge
 3. ADR number: this ADR is 0040.
 4. Rights record: as proposed, except the user-visible licence text is softened to the attribution line plus a link to `https://opendua.org/developers` (no claim about OpenDua's recording terms). First copy: the server downloads the 238 files from `audio.opendua.org` and verifies each SHA-256; `--from` stays as the fallback.
 
+## Status (2 Nov 2026)
+
+**Status: done in code (2 Nov 2026).** The Railway dashboard steps (step 1, items 1 to 5, and the order in step 9) are the developer's; the checklist is in `docs/runbooks/railway-release.md`. The switch named in step 6 and step 9 (`AZKAR_AUDIO_ENABLED`) is removed, not built.
+
+| Plan step | Done | Where, and what differs |
+| --- | --- | --- |
+| 0 Decisions on paper | yes (1 Nov) | ADR 0040, 0031, 0038, 0022, spec §7, content plan. Amended again 2 Nov (ADR 0042, below). |
+| 1 Storage and queue | yes | `docker/start-web.sh` (new); `docker/Dockerfile` copies and chmods it; `railway.json` (`startCommand` runs `start-web.sh`, health timeout 120 s); `docker/release.sh` (no `--build-packs`). The volume and variables are the developer's. |
+| 2 Self-healing packs | yes, with a change | `content:ensure-packs` already existed and already does the heal, so the plan's `content:heal-packs` is **not** added. `start-web.sh` calls `content:ensure-packs` in the foreground, not `--except=azkar &`. `PackBuilder::build` already drops a row whose file is gone and rebuilds (tests in `PackBuilderTest` and `EnsureContentPacksCommandTest`; Azkar cases in `AzkarPackAudioAndHealTest`). |
+| 3 Idempotent import, `--defer-pack` | yes, with a change | Migration `2026_11_02_100017_add_import_fingerprint_to_resources_table` (`resources.import_fingerprint`). The fingerprint is a SHA-256 of the **rows the import would write** (`AzkarImportFingerprint`), not of the config inputs the plan listed. Reason: the list missed the secondary pins, the HadeethEnc notes and the recording files; a rows hash cannot miss an input. Tests: `AzkarImportFingerprintTest`. The gap-window 410 test in the plan is not written. |
+| 4 Audio manifest, disk, sync | yes, with a change | `resources/azkar/audio/hisn-0.0.2.manifest.json` is the **published** manifest, not the archive copy (not on this machine; ADR 0040 amendment). The pin is `azkar.audio.manifest_sha256`. Disk `azkar_audio` (`storage/app/azkar-audio`). `azkar:audio-sync [--from=]` and `azkar:audio-verify [--full]` (the plan's `--verify-only` is the verify command). |
+| 5 Importer writes audio rows | yes, with a change | One row per **file** on the **first item** of its step (developer, 1 Nov). Rows exist only for files on the disk at the manifest size. Not built: the plan's `recording_unmapped` error and duration check (the file name and size are the check). Expect **238** rows for 238 files, not 250: the 250 in the brief counted one row per item, which the developer's answer replaces. |
+| 6 Endpoint, limiter, contract | yes | `GET /api/v1/azkar/audio/{version}/{file}` (`AzkarAudioController`, `AzkarAudioService`), limiter `azkar-audio` 600/min. Range 206 and 416 (416 decided in the controller: Symfony answers 200 for a start past the end), `If-None-Match` 304, `ETag` = manifest SHA-256, `Cache-Control` immutable. OpenAPI and `schema.d.ts` regenerated (additive). Tests: `Azkar/Audio/AzkarAudioEndpointTest`. |
+| 7 Fail-closed audio at start | yes | `AzkarAudioReadiness` (called by `PackBuilder::build` for `azkar` resources with recording rows); `start-web.sh` runs `azkar:audio-verify` first. |
+| 8 App: resolve the URL, play | not done | Mobile work, not in this step's brief. Mobile is untouched. |
+| 9 Production rollout and runbook | runbook done; rollout is the developer's | `docs/runbooks/railway-release.md` rewritten. |
+| Release B | not started | As planned. |
+
+**No-switch rule, 2 Nov 2026 (developer; ADR 0045).** «Make everything enabled; no configurable switches.** The switches are removed (`azkar.opendua.import_enabled`, `azkar.hisnmuslim.import_enabled`, `azkar.hadeethenc.enabled`, `azkar.opendua.store_english`, `azkar.opendua.audio_rights_verified`, the recording `stream_allowed`/`download_allowed` config, `services.dorar.enabled`). The permission locks are removed (`lockReasons`, `--if-unlocked`, the `permission_status` checks, `hasDeliverableRights`, `azkar:source-permission`). The `plan` rule for the fingerprint, the first-item rule and the fail-closed check are unchanged. Detail in ADR 0045 (features enabled by default).
+
+**Gaps against this plan, to decide**
+
+1. Manifest: published copy, not the archive copy (ADR 0040 amendment). Confirm, or replace the file and the pin.
+2. Snapshot `--pinned` (plan §6): `azkar:snapshot <source> --pinned` is the pin check. The plan's «onto the volume» is not what happens: the import runs in the pre-deploy container, which has no volume, so the snapshots are fetched into that container. The volume is not involved.
+3. Resolved 2 Nov 2026: the `--if-unlocked` option and the lock reasons are removed, so a release can no longer skip the import while a source is locked. A `pending` source is packed when it is the primary.

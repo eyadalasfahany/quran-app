@@ -33,6 +33,9 @@ Found while capturing store screenshots on the iPad Pro 13" and iPhone 17 simula
 **Cause.** ADR 0032 gave the Prayer tab's place to Menu. Prayer moved to `/salah`, a root stack route outside `(main)` (`src/core/layout/destinations.ts`, comment on the `(salah)` entry). Only `(main)/_layout.tsx` wraps its screens in `MainShell`, which draws the sidebar, so `/salah` renders without it.
 
 **Change (option 2A, recommended).**
+
+> **Superseded by ADR 0051 (2 Nov 2026).** The sidebar is gone, so this change was removed when `main` was merged into `fix/issues`: there is no `app/salah/_layout.tsx` and no `active` prop on `MainShell`, and `/salah` is a pushed screen on every window. See the superseded amendment in ADR 0032.
+
 - Add `app/salah/_layout.tsx`: when `useWindowClass() === 'expanded'`, render `<MainShell expanded active="(salah)">` around the salah `Stack`; otherwise render the `Stack` alone (phones keep today's pushed screen with a back button).
 - `MainShell` gains an optional `active?: DestinationName` prop that wins over the segment lookup, because `/salah`'s segments name no group.
 - Expanded only: open `/salah` from the sidebar with no push animation (add a `Stack.Screen name="salah"` entry to `app/_layout.tsx` with `animation: 'none'` while expanded), so the sidebar doesn't slide in on top of itself.

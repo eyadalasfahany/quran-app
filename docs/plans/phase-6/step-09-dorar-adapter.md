@@ -26,7 +26,7 @@ The developer confirms an official Dorar hadith API reached with an approved acc
   - **Cache:** only when the TTL is above 0, keyed by a hash of the query.
 - **`DorarHadithReferenceSource`:** implements the contract with `DorarClient` plus `DorarResponseMapper`.
   - The mapper has no schema to map until the developer adds Dorar's API documentation. It throws `DorarMappingUnavailableException` with a message pointing to this brief.
-  - The class is bound only when the token is set **and** `services.dorar.enabled` is `true` (env `DORAR_ENABLED`, default `false`).
+  - The class is bound whenever the base URL and the token are set (no switch, ADR 0045; removed 2 Nov 2026).
 - **No route, no job, no scheduled task, no console command that loops over queries.** An HTTP endpoint for the app comes later, with the mapper.
 
 ## Tests (Pest)

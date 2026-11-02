@@ -1,9 +1,24 @@
 import type { ReactNode } from 'react';
-import { Switch, View } from 'react-native';
+import { Platform, Switch, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
 import { ListRow } from './ListRow';
+
+/**
+ * The switch thumb. iOS keeps the system thumb. Android's off thumb is ink-muted so it reads on the fill-secondary
+ * track (3:1 or better in every theme); surface-raised there was near-invisible in dark.
+ */
+export function switchThumbColor(
+  os: string,
+  value: boolean,
+  colors: { surfaceRaised: string; inkMuted: string },
+): string | undefined {
+  if (os === 'ios') {
+    return undefined;
+  }
+  return value ? colors.surfaceRaised : colors.inkMuted;
+}
 
 // A setting that turns on and off, drawn with the platform switch (ADR 0012 §7).
 // `accessory` sits before the switch in the trailing area (the daily goals' reminder bell).
@@ -36,7 +51,7 @@ export function ToggleRow({
       ios_backgroundColor={theme.colors.fillSecondary}
       onValueChange={onValueChange}
       testID={testID}
-      thumbColor={theme.colors.surfaceRaised}
+      thumbColor={switchThumbColor(Platform.OS, value, theme.colors)}
       trackColor={{ false: theme.colors.fillSecondary, true: theme.colors.brand }}
       value={value}
     />

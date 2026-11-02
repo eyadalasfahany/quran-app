@@ -1,14 +1,14 @@
-# Step 2 — Env, config, kill switch, source rows
+# Step 2 — Env, config, source rows (no switch, ADR 0045)
 
 ADR 0042 §3, §4, §4a, §10 (Proposed until the developer's acceptance is recorded). Plan: `docs/plans/phase-7.md` (step 2 row, its tests row, D3, D4, D6, D9, "Titles data"). Read `docs/plans/phase-7/README.md` and `.claude/agent-rules.md` first. **No hadith text of any kind is written in this step.** The only Arabic strings are the ten collection names and the author names listed below; they are config data, not hadith text.
 
 ## Goal
-Put the Phase 7 switches and pins in place with no behaviour yet: the env lines, `config/hadith.php`, `config/hadith_titles.php`, the two `content_sources` rows, and one small kill-switch class that later steps call. No table, endpoint, pack, importer or HTTP client is added here.
+Put the Phase 7 pins in place with no behaviour yet: the env lines, `config/hadith.php`, `config/hadith_titles.php` and the two `content_sources` rows. There is no switch and no gate class (ADR 0045). No table, endpoint, pack, importer or HTTP client is added here.
 
 ## Rules for this step
 - Branch: `ft/hadith`. Check with `git branch --show-current`. Do not commit, push, switch branches or add dependencies.
 - **Never open, print or edit `apps/api/.env`.** Only `.env.example` is touched.
-- Shared files are edited additively and at the end (`.env.example`, `SourcePermissionCommand.php`).
+- Shared files are edited additively and at the end (`.env.example`).
 - Follow the patterns of `config/azkar.php`, the Azkar `content_sources` migrations and `tests/Feature/Content/AzkarMigrationTest.php`. Laravel code follows `apps/api/CLAUDE.md` (strict types, full typing, domain exceptions, `.ai/rules/*`).
 - `docs/technical-spec.md`, ADR 0042 and `docs/plans/phase-7.md` are edited by someone else. Do not touch them.
 
@@ -18,13 +18,10 @@ Create:
 
 | Path | Purpose |
 | --- | --- |
-| `apps/api/config/hadith.php` | pin, kill switch, collections, grades constant |
+| `apps/api/config/hadith.php` | pin, collections, grades constant |
 | `apps/api/config/hadith_titles.php` | collection names, authors, empty section titles |
-| `apps/api/app/Domains/Hadith/Services/HadithKillSwitch.php` | the kill-switch gate |
-| `apps/api/app/Domains/Hadith/Exceptions/HadithCollectionsDisabledException.php` | thrown by the gate |
 | `apps/api/database/migrations/2026_11_01_110001_insert_fawazahmed0_content_source.php` | source row |
 | `apps/api/database/migrations/2026_11_01_110002_insert_sunnahcom_content_source.php` | source row |
-| `apps/api/tests/Feature/Hadith/HadithKillSwitchTest.php` | truth table |
 | `apps/api/tests/Feature/Hadith/HadithEnvExampleTest.php` | `.env.example` lines |
 | `apps/api/tests/Feature/Hadith/HadithConfigTest.php` | `config/hadith.php` shape and API key |
 | `apps/api/tests/Feature/Hadith/HadithTitlesConfigTest.php` | `config/hadith_titles.php` validity |
@@ -34,9 +31,7 @@ Change:
 
 | Path | Change |
 | --- | --- |
-| `apps/api/.env.example` | replace the `HADITH_API_KEY="hADITH_API_KEY"` line; add the flag (see below) |
-| `apps/api/app/Domains/Azkar/Console/SourcePermissionCommand.php` | accept `--source=sunnahcom` (see below) |
-| `apps/api/tests/Feature/Azkar/SourcePermissionCommandTest.php` | add two tests (see below) |
+| `apps/api/.env.example` | replace the `HADITH_API_KEY="hADITH_API_KEY"` line (see below) |
 
 The migration timestamps (`2026_11_01_11xxxx`) are deliberately outside Azkar's `1000xx` series so the two branches do not collide on merge. Do not renumber.
 
@@ -44,16 +39,14 @@ The `app/Domains/Hadith/` directory exists and holds only `.gitkeep`. Leave `.gi
 
 ## `.env.example`
 
-Replace the existing last line `HADITH_API_KEY="hADITH_API_KEY"` (currently at the end of the file, after the OpenDua block) with exactly these lines, in this order:
+Replace the existing last line `HADITH_API_KEY="hADITH_API_KEY"` (currently at the end of the file, after the OpenDua block) with exactly these lines:
 
 ```
-# Hadith collections (ADR 0042). Kill switch: false here; production sets it to true at release (Phase 7 step 17).
-HADITH_COLLECTIONS_IMPORT_ENABLED=false
 # dev-only, used by hadith:match-section-titles
 HADITH_API_KEY=
 ```
 
-Rules: `HADITH_API_KEY=` has no value and no quotes. The comment line directly above it is exactly `# dev-only, used by hadith:match-section-titles`. Each variable appears once. The old placeholder text must be gone. Do not add any other hadith variable (no primary-source env, no per-collection env).
+Rules: `HADITH_API_KEY=` has no value and no quotes. The comment line directly above it is exactly `# dev-only, used by hadith:match-section-titles`. Each variable appears once. The old placeholder text must be gone. Do not add any other hadith variable (no primary-source env, no per-collection env, no import switch: ADR 0045).
 
 ## `config/hadith.php`
 
@@ -67,8 +60,6 @@ return [
 
     'commit' => 'df57907be35291c91ad6a6691180e22ca9920784',
     'cdn_base' => 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api',
-
-    'import_enabled' => (bool) env('HADITH_COLLECTIONS_IMPORT_ENABLED', false),
 
     'grades_visible' => false,
 
@@ -90,7 +81,7 @@ return [
 
 Rules for each key (these are the exact values; do not change them):
 - `commit`: the full 40-character SHA above. The string `@1` must not appear anywhere in the file. `cdn_base` has no `@` and no trailing slash; step 5 builds `{cdn_base}@{commit}/...`.
-- `import_enabled`: the kill switch. Default `false`. It is the only lock (no `approved_collections`, no reviewer list; the key `approved_collections` must not exist anywhere in the file).
+- No import switch key (ADR 0045). No `approved_collections` and no reviewer list: the key `approved_collections` must not exist anywhere in the file.
 - `grades_visible`: a literal `false`, **not** read from env (D4). Only a developer edit changes it.
 - `collections`: exactly the ten slugs, in this order. The index plus one is the collection's fixed position, used for the «مجموعة {n}» fallback (ADR 0042 §4). Format it one slug per line if Pint reformats it.
 - `slug_map`: empty array. Maps a source's slug to the canonical one; used by `SunnahComSource` in step 18.
@@ -150,23 +141,10 @@ return [
 
 No English names here (`title_en` comes from the fawazahmed0 data at import time). No hadith text, grade or section name.
 
-## Kill-switch gate
+## No switch (ADR 0045)
 
-One class, one exception. The same flag gates every environment; it is not an environment check.
+There is no kill-switch class, exception or gate, and no import setting. Every collection is served once its pack is installed, and the import runs on every deploy, like Azkar. Rollback is a code revert or a data migration.
 
-`App\Domains\Hadith\Exceptions\HadithCollectionsDisabledException`: `final class … extends RuntimeException {}` with a one-line PHPDoc ("The Hadith kill switch is off; nothing is imported, packed or listed (ADR 0042 §3)."), like `CatalogueDownloadException`.
-
-`App\Domains\Hadith\Services\HadithKillSwitch` (`final`, no constructor, no state):
-
-```php
-public function isOn(): bool          // (bool) config('hadith.import_enabled', false)
-public function assertOn(): void      // throws HadithCollectionsDisabledException when off
-public function offReason(): string   // 'HADITH_COLLECTIONS_IMPORT_ENABLED is false (hadith.import_enabled). The Hadith kill switch is off (ADR 0042 §3).'
-```
-
-`assertOn()` throws with `offReason()` as the message. No environment check, no `app()->isProduction()`, no cache, no database.
-
-**Where it is called:** nowhere in this step (nothing to gate yet). Later steps call it, and this brief fixes the contract so they do not invent another gate: step 4 (pack builder and manifest), step 6 (`hadith:import`, which prints `offReason()` and exits 0 under `--if-unlocked`), step 7 (`/hadith/collections*`, which answers 404 `hadith_collection_unavailable`). Do not add any call in this step.
 
 ## `content_sources` rows (migrations)
 
@@ -196,25 +174,16 @@ Copy the pattern of `2026_10_31_100009_insert_opendua_content_source.php`: anony
 
 Both wordings of `attribution_*` and `notes` are the plan's recommended defaults; the developer can change them (open question 4 in the plan). Do not "improve" them.
 
-## Command change: `SourcePermissionCommand`
+## Command change: none
 
-File: `apps/api/app/Domains/Azkar/Console/SourcePermissionCommand.php`. Smallest possible edit so the plan's "production refuses to change a source status from the command line" test has a hadith source to point at:
-- Where it resolves the code, replace `$requested === 'hadeethenc' ? 'hadeethenc' : $sources->for($requested)->code()` with `in_array($requested, ['hadeethenc', 'sunnahcom'], true) ? $requested : $sources->for($requested)->code()`.
-- Add `, sunnahcom` to the `--source` option description list.
-- Nothing else changes. `fawazahmed0` is **not** accepted (its status is `not_required` and the command cannot set that). The production refusal (`app()->isProduction()` at the top of `handle()`) stays the first check.
+`azkar:source-permission` was removed on 2 Nov 2026 (ADR 0045, with the Azkar amendment), so nothing sets the `sunnahcom` status from the command line. Its row stays `pending` from its migration; a later reviewed migration changes it.
 
 ## Tests (Pest, `declare(strict_types=1)`, placeholders only)
 
 All under `apps/api/tests/Feature/Hadith/` (they extend `TestCase` through `Pest.php`). Use unique helper function names prefixed `hadith…` (Pest helpers are global).
 
-**`HadithKillSwitchTest.php`** (the truth table). `afterEach`: `app()->detectEnvironment(fn (): string => 'testing');` and restore `config(['hadith.import_enabled' => false])`.
-- `it('mirrors the flag in every environment', …)` with a `dataset` of environments `local`, `testing`, `staging`, `production` crossed with flag `true` and `false` (eight cases, e.g. `foreach` over both arrays or a combined dataset). For each: `app()->detectEnvironment(fn (): string => $env)`, `config(['hadith.import_enabled' => $flag])`; assert `(new HadithKillSwitch)->isOn()` is `$flag`; assert `assertOn()` does not throw when `true` and throws `HadithCollectionsDisabledException` with message from `offReason()` when `false`.
-- `it('is off when the key is missing from config', …)`: `config(['hadith.import_enabled' => null])` gives `isOn() === false`.
-- `it('offReason names the variable and the config key', …)`: the string contains `HADITH_COLLECTIONS_IMPORT_ENABLED` and `hadith.import_enabled`.
-
 **`HadithEnvExampleTest.php`**. Read only `base_path('.env.example')` with `file_get_contents`; split with `preg_split('/\R/', …)`. Never read `.env`.
 - `it('has HADITH_API_KEY empty with the dev-only comment directly above', …)`: exactly one line starts with `HADITH_API_KEY`, it equals `HADITH_API_KEY=`, and the line before it equals `# dev-only, used by hadith:match-section-titles`.
-- `it('has the kill switch false', …)`: exactly one line starts with `HADITH_COLLECTIONS_IMPORT_ENABLED`, and it equals `HADITH_COLLECTIONS_IMPORT_ENABLED=false`.
 - `it('no longer carries the old placeholder', …)`: the contents do not contain `hADITH_API_KEY`.
 
 **`HadithConfigTest.php`** (`config('hadith')`; for the key tests re-evaluate the file with `require config_path('hadith.php')`).
@@ -224,7 +193,6 @@ All under `apps/api/tests/Feature/Hadith/` (they extend `TestCase` through `Pest
 - `it('has no approved_collections', …)`: `config('hadith')` has no `approved_collections` key and the file text does not contain `approved_collections`.
 - `it('names the source and keeps the shared lists empty', …)`: `source_code` and `primary_source` are `fawazahmed0`; `slug_map` and `reference_exceptions` are `[]`.
 - `it('has the twelve file keys with null or sha256 values', …)`: `array_keys(config('hadith.files'))` is identical to the twelve keys in the order above; every value is `null` or matches `/^[0-9a-f]{64}$/`.
-- `it('reads the flag as a boolean, default false', …)`: `config('hadith.import_enabled')` is a `bool`.
 - Key tests, with `$_ENV`/`$_SERVER` set and restored in `afterEach` (copy the cleanup style of `tests/Unit/Support/EnvTest.php`, also restore `APP_ENV`):
   - `it('is null in production even when a key is set', …)`: `$_ENV['APP_ENV'] = 'production'` (and `$_SERVER`), `$_ENV['HADITH_API_KEY'] = 'FIXTURE-KEY'`; `(require config_path('hadith.php'))['api_key']` is `null`.
   - `it('returns the key outside production', …)`: `APP_ENV` `local`, key `FIXTURE-KEY`; value is `'FIXTURE-KEY'`.
@@ -244,17 +212,10 @@ All under `apps/api/tests/Feature/Hadith/` (they extend `TestCase` through `Pest
 - `it('its down removes only its own row', …)`: run `down()` of the fawazahmed0 migration; the `sunnahcom` and `opendua` rows still exist; restore with `up()`.
 - `it('the PermissionStatus enum treats not_required as deliverable and pending as not', …)`: `PermissionStatus::NotRequired->allowsDelivery()` is true, `PermissionStatus::Pending->allowsDelivery()` is false (guards the gate the pack builder will use in step 4).
 
-**`SourcePermissionCommandTest.php`** (existing file; add at the end, same style, same `afterEach` reset):
-- `it('sets the sunnahcom source locally', …)`: `$this->artisan('azkar:source-permission', ['status' => 'pending', '--source' => 'sunnahcom'])->assertExitCode(0)`; the `sunnahcom` row is `pending`.
-- `it('refuses to change sunnahcom in production and leaves it unchanged', …)`: `app()->detectEnvironment(fn (): string => 'production')`; the command with `--source=sunnahcom` and status `granted` prints `Refused` and exits 1; reset the environment to `testing` before asserting that `sunnahcom` is still `pending`. (This is the plan's "production refuses to change a source status from the command line".)
-
-This file uses `RefreshDatabase`, so the `content_sources` migrations run in its transaction setup as for the existing OpenDua tests.
-
 ## Reuse (paths checked)
-- `apps/api/config/azkar.php` (config style, `(bool) env(…, false)` flag)
+- `apps/api/config/azkar.php` (config style)
 - `apps/api/database/migrations/2026_10_31_100009_insert_opendua_content_source.php`, `2026_11_01_100013_insert_hadeethenc_content_source.php` (insert pattern)
 - `apps/api/app/Domains/Content/Enums/PermissionStatus.php`, `Models/ContentSource.php`
-- `apps/api/app/Domains/Azkar/Console/SourcePermissionCommand.php` and `tests/Feature/Azkar/SourcePermissionCommandTest.php`
 - `apps/api/tests/Feature/Content/AzkarMigrationTest.php` (migration test pattern), `tests/Unit/Support/EnvTest.php` (env cleanup)
 - `apps/api/app/Domains/Azkar/Exceptions/CatalogueDownloadException.php` (exception style)
 
@@ -272,9 +233,9 @@ composer qa
 - `ResourceGroup`, `PackSchema`, the pack builder, the manifest, mobile files (step 4).
 - The fawazahmed0 HTTP client, snapshot and the real SHA-256 values (step 5). Do not fetch anything from the network.
 - `hadith:import`, `hadith:match-section-titles`, log redaction of the API key, the scheduler entry (step 6); endpoints (step 7).
-- Any call to `HadithKillSwitch` from other code, `docker/release.sh`, `docs/runbooks/railway-release.md` (step 17).
+- Any Hadith switch or gate (ADR 0045); `docker/release.sh` and `docs/runbooks/railway-release.md` (step 17).
 - Section titles, English titles, any hadith text, grade text or fixture text. Editing `docs/technical-spec.md`, ADR 0042 or `docs/plans/phase-7.md`.
-- Setting `HADITH_COLLECTIONS_IMPORT_ENABLED=true` anywhere. Touching `apps/api/.env`.
+- Any import switch (there is none, ADR 0045). Touching `apps/api/.env`.
 
 ## Open questions for the developer
 

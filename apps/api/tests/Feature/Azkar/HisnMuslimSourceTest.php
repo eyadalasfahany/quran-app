@@ -9,7 +9,6 @@ use App\Domains\Azkar\Sources\AzkarSourceRegistry;
 use App\Domains\Azkar\Sources\HisnMuslimSource;
 use App\Domains\Content\Models\AzkarChapter;
 use App\Domains\Content\Models\AzkarEntry;
-use App\Domains\Content\Models\ContentSource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\File;
@@ -29,7 +28,6 @@ beforeEach(function (): void {
     config([
         'azkar.hisnmuslim.snapshot_date' => HMSRC_DATE,
         'azkar.hisnmuslim.snapshot_sha256' => $sha,
-        'azkar.hisnmuslim.import_enabled' => false,
     ]);
 });
 
@@ -148,18 +146,7 @@ function hmsrcWriteSnapshotAndPin(string $dir, string $repeat): void
     config(['azkar.hisnmuslim.snapshot_sha256' => $sha]);
 }
 
-it('stays locked while its import flag is off, and while its source is pending', function (): void {
-    $report = app(AzkarImporter::class)->run(hmsrcDir(), false, false, false, 'hisnmuslim');
-
-    expect($report->status)->toBe(ImportReport::STATUS_LOCKED)
-        ->and(implode(' ', $report->lockReasons))->toContain('AZKAR_HISNMUSLIM_IMPORT_ENABLED')
-        ->and(implode(' ', $report->lockReasons))->toContain('[pending]');
-});
-
-it('writes its own azkar resource and its rows once both locks are open, and keeps the hisn entry keys', function (): void {
-    config(['azkar.hisnmuslim.import_enabled' => true]);
-    ContentSource::query()->where('code', 'hisnmuslim')->update(['permission_status' => 'granted']);
-
+it('writes its own azkar resource and its rows, and keeps the hisn entry keys', function (): void {
     $report = app(AzkarImporter::class)->run(hmsrcDir(), false, false, false, 'hisnmuslim');
 
     expect($report->status)->toBe(ImportReport::STATUS_IMPORTED)
@@ -176,23 +163,6 @@ it('the import command takes --source=hisnmuslim and dry-runs the given snapshot
 it('the import command refuses an unknown source', function (): void {
     $this->artisan('azkar:import', ['path' => hmsrcDir(), '--dry-run' => true, '--source' => 'nope'])
         ->assertExitCode(1);
-});
-
-it('the local unlock command changes the hisnmuslim row only with --source, and only locally', function (): void {
-    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
-
-    $this->artisan('azkar:source-permission', ['status' => 'granted', '--source' => 'hisnmuslim'])->assertExitCode(0);
-
-    expect(ContentSource::query()->where('code', 'hisnmuslim')->value('permission_status')?->value)->toBe('granted')
-        ->and(ContentSource::query()->where('code', 'opendua')->value('permission_status')?->value)->toBe('pending');
-
-    app()->detectEnvironment(fn (): string => 'production');
-
-    $this->artisan('azkar:source-permission', ['status' => 'granted', '--source' => 'hisnmuslim'])->assertExitCode(1);
-
-    app()->detectEnvironment(fn (): string => 'testing');
-
-    expect(ContentSource::query()->where('code', 'hisnmuslim')->value('permission_status')?->value)->toBe('granted');
 });
 
 it('gives each hisnmuslim entry the browse tags of its chapter number, from the chapter map', function (): void {

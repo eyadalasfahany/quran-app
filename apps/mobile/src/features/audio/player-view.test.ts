@@ -1,7 +1,6 @@
 import {
   ERROR_KEYS,
   fractionAfterDrag,
-  formatClock,
   playbackFraction,
   reciterInitial,
   recitationStyleKey,
@@ -54,25 +53,6 @@ describe('ERROR_KEYS', () => {
       'offline',
       'verify-required',
     ]);
-  });
-});
-
-describe('formatClock', () => {
-  it('formats m:ss with Arabic-Indic digits in Arabic', () => {
-    expect(formatClock(24_000, 'ar')).toBe('٠:٢٤');
-    expect(formatClock(48_000, 'ar')).toBe('٠:٤٨');
-    expect(formatClock(65_000, 'ar')).toBe('١:٠٥');
-  });
-
-  it('formats m:ss with Western digits in English', () => {
-    expect(formatClock(24_000, 'en')).toBe('0:24');
-    expect(formatClock(605_000, 'en')).toBe('10:05');
-  });
-
-  it('shows zero for an unknown duration', () => {
-    expect(formatClock(0, 'ar')).toBe('٠:٠٠');
-    expect(formatClock(0, 'en')).toBe('0:00');
-    expect(formatClock(Number.NaN, 'en')).toBe('0:00');
   });
 });
 

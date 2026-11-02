@@ -33,5 +33,7 @@ final class ImportStats extends Data
         public int $recordingObjects = 0,
         public int $recordingsImported = 0,
         public int $recordingsDownloadable = 0,
+        /** Recordings left out because their file is not in the Taybah audio store (ADR 0040 §2). */
+        public int $recordingsMissingFile = 0,
     ) {}
 }

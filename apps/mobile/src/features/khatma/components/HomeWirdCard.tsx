@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { formatNumber, useLocale } from '@/core/i18n';
+import { formatNumber, formatPercent, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { Icon, UiText, useContrastColors } from '@/shared/ui';
 
@@ -46,7 +46,7 @@ export function HomeWirdCard({
 
   const fraction = pagesTotal > 0 ? Math.min(1, pagesRead / pagesTotal) : 0;
   const percent = Math.round(fraction * 100);
-  const percentLabel = `${formatNumber(percent, locale)}${locale === 'ar' ? '٪' : '%'}`;
+  const percentLabel = formatPercent(percent, locale);
   const dashOffset = RING_CIRCUMFERENCE * (1 - fraction);
 
   const aheadDays = useMemo(
@@ -65,7 +65,7 @@ export function HomeWirdCard({
 
   return (
     <Pressable
-      accessibilityLabel={`${title}, ${subtitle}, ${percentLabel}`}
+      accessibilityLabel={t('common.a11yTriple', { label: title, title: subtitle, detail: percentLabel })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

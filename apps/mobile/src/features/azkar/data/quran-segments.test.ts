@@ -4,7 +4,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { getEntry } from './content-repository';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { quranSegmentKey, resolveQuranVerses } from './quran-segments';
 
 // Verse rows are placeholders: the real Quran text comes from the Tanzil seed, never from these tests.

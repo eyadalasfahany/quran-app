@@ -9,7 +9,8 @@ use App\Domains\Azkar\Console\HadeethEncLinksCommand;
 use App\Domains\Azkar\Console\ImportAzkarCommand;
 use App\Domains\Azkar\Console\QuranMapCandidatesCommand;
 use App\Domains\Azkar\Console\SnapshotCommand;
-use App\Domains\Azkar\Console\SourcePermissionCommand;
+use App\Domains\Azkar\Console\SyncAzkarAudioCommand;
+use App\Domains\Azkar\Console\VerifyAzkarAudioCommand;
 use App\Domains\Azkar\Repositories\Contracts\AzkarImportRepository;
 use App\Domains\Azkar\Repositories\Eloquent\EloquentAzkarImportRepository;
 use Illuminate\Support\ServiceProvider;
@@ -31,10 +32,11 @@ final class AzkarImportServiceProvider extends ServiceProvider
         $this->commands([
             ImportAzkarCommand::class,
             QuranMapCandidatesCommand::class,
-            SourcePermissionCommand::class,
             SnapshotCommand::class,
             CompareSourcesCommand::class,
             HadeethEncLinksCommand::class,
+            SyncAzkarAudioCommand::class,
+            VerifyAzkarAudioCommand::class,
         ]);
     }
 }

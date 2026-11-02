@@ -1,0 +1,710 @@
+{
+  "meta": {
+    "nasaMoonPhaseTableUrl": "https://eclipse.gsfc.nasa.gov/phase/phases248.html",
+    "newMoonCount": 24,
+    "eveningCount": 100,
+    "generatedAt": "2026-11-02T11:39:38.240Z"
+  },
+  "evenings": [
+    {
+      "id": "makkah-1",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2026-11-01T14:44:36.444Z",
+      "calendarDate": "2026-11-01"
+    },
+    {
+      "id": "makkah-2",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2026-11-16T14:38:32.560Z",
+      "calendarDate": "2026-11-16"
+    },
+    {
+      "id": "makkah-3",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2026-12-01T14:37:26.507Z",
+      "calendarDate": "2026-12-01"
+    },
+    {
+      "id": "makkah-4",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2026-12-16T14:41:20.945Z",
+      "calendarDate": "2026-12-16"
+    },
+    {
+      "id": "makkah-5",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2026-12-31T14:49:12.941Z",
+      "calendarDate": "2026-12-31"
+    },
+    {
+      "id": "makkah-6",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-01-15T14:59:08.494Z",
+      "calendarDate": "2027-01-15"
+    },
+    {
+      "id": "makkah-7",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-01-30T15:09:07.733Z",
+      "calendarDate": "2027-01-30"
+    },
+    {
+      "id": "makkah-8",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-02-14T15:17:49.479Z",
+      "calendarDate": "2027-02-14"
+    },
+    {
+      "id": "makkah-9",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-03-01T15:24:47.382Z",
+      "calendarDate": "2027-03-01"
+    },
+    {
+      "id": "makkah-10",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-03-16T15:30:19.613Z",
+      "calendarDate": "2027-03-16"
+    },
+    {
+      "id": "makkah-11",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-03-31T15:35:08.599Z",
+      "calendarDate": "2027-03-31"
+    },
+    {
+      "id": "makkah-12",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-04-15T15:40:01.403Z",
+      "calendarDate": "2027-04-15"
+    },
+    {
+      "id": "makkah-13",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-04-30T15:45:32.602Z",
+      "calendarDate": "2027-04-30"
+    },
+    {
+      "id": "makkah-14",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-05-15T15:51:48.925Z",
+      "calendarDate": "2027-05-15"
+    },
+    {
+      "id": "makkah-15",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-05-30T15:58:18.131Z",
+      "calendarDate": "2027-05-30"
+    },
+    {
+      "id": "makkah-16",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-06-14T16:03:49.854Z",
+      "calendarDate": "2027-06-14"
+    },
+    {
+      "id": "makkah-17",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-06-29T16:06:55.387Z",
+      "calendarDate": "2027-06-29"
+    },
+    {
+      "id": "makkah-18",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-07-14T16:06:20.674Z",
+      "calendarDate": "2027-07-14"
+    },
+    {
+      "id": "makkah-19",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-07-29T16:01:33.046Z",
+      "calendarDate": "2027-07-29"
+    },
+    {
+      "id": "makkah-20",
+      "lat": 21.4225,
+      "lng": 39.8262,
+      "sunsetIso": "2027-08-13T15:52:47.084Z",
+      "calendarDate": "2027-08-13"
+    },
+    {
+      "id": "cairo-1",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-08-28T16:22:45.825Z",
+      "calendarDate": "2027-08-28"
+    },
+    {
+      "id": "cairo-2",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-09-12T16:04:42.591Z",
+      "calendarDate": "2027-09-12"
+    },
+    {
+      "id": "cairo-3",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-09-27T15:45:57.613Z",
+      "calendarDate": "2027-09-27"
+    },
+    {
+      "id": "cairo-4",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-10-12T15:28:03.897Z",
+      "calendarDate": "2027-10-12"
+    },
+    {
+      "id": "cairo-5",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-10-27T15:12:37.292Z",
+      "calendarDate": "2027-10-27"
+    },
+    {
+      "id": "cairo-6",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-11-11T15:01:13.999Z",
+      "calendarDate": "2027-11-11"
+    },
+    {
+      "id": "cairo-7",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-11-26T14:55:18.999Z",
+      "calendarDate": "2027-11-26"
+    },
+    {
+      "id": "cairo-8",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-12-11T14:55:41.027Z",
+      "calendarDate": "2027-12-11"
+    },
+    {
+      "id": "cairo-9",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2027-12-26T15:02:01.737Z",
+      "calendarDate": "2027-12-26"
+    },
+    {
+      "id": "cairo-10",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-01-10T15:12:45.747Z",
+      "calendarDate": "2028-01-10"
+    },
+    {
+      "id": "cairo-11",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-01-25T15:25:34.260Z",
+      "calendarDate": "2028-01-25"
+    },
+    {
+      "id": "cairo-12",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-02-09T15:38:23.486Z",
+      "calendarDate": "2028-02-09"
+    },
+    {
+      "id": "cairo-13",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-02-24T15:50:03.923Z",
+      "calendarDate": "2028-02-24"
+    },
+    {
+      "id": "cairo-14",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-03-10T16:00:23.120Z",
+      "calendarDate": "2028-03-10"
+    },
+    {
+      "id": "cairo-15",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-03-25T16:09:46.452Z",
+      "calendarDate": "2028-03-25"
+    },
+    {
+      "id": "cairo-16",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-04-09T16:18:53.357Z",
+      "calendarDate": "2028-04-09"
+    },
+    {
+      "id": "cairo-17",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-04-24T16:28:15.700Z",
+      "calendarDate": "2028-04-24"
+    },
+    {
+      "id": "cairo-18",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-05-09T16:37:58.600Z",
+      "calendarDate": "2028-05-09"
+    },
+    {
+      "id": "cairo-19",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-05-24T16:47:25.754Z",
+      "calendarDate": "2028-05-24"
+    },
+    {
+      "id": "cairo-20",
+      "lat": 30.0444,
+      "lng": 31.2357,
+      "sunsetIso": "2028-06-08T16:55:17.423Z",
+      "calendarDate": "2028-06-08"
+    },
+    {
+      "id": "jakarta-1",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-06-23T10:47:51.651Z",
+      "calendarDate": "2028-06-23"
+    },
+    {
+      "id": "jakarta-2",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-07-08T10:51:11.995Z",
+      "calendarDate": "2028-07-08"
+    },
+    {
+      "id": "jakarta-3",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-07-23T10:53:43.183Z",
+      "calendarDate": "2028-07-23"
+    },
+    {
+      "id": "jakarta-4",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-08-07T10:54:37.780Z",
+      "calendarDate": "2028-08-07"
+    },
+    {
+      "id": "jakarta-5",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-08-22T10:53:45.813Z",
+      "calendarDate": "2028-08-22"
+    },
+    {
+      "id": "jakarta-6",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-09-06T10:51:31.544Z",
+      "calendarDate": "2028-09-06"
+    },
+    {
+      "id": "jakarta-7",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-09-21T10:48:42.982Z",
+      "calendarDate": "2028-09-21"
+    },
+    {
+      "id": "jakarta-8",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-10-06T10:46:20.503Z",
+      "calendarDate": "2028-10-06"
+    },
+    {
+      "id": "jakarta-9",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-10-21T10:45:25.953Z",
+      "calendarDate": "2028-10-21"
+    },
+    {
+      "id": "jakarta-10",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-11-05T10:46:50.085Z",
+      "calendarDate": "2028-11-05"
+    },
+    {
+      "id": "jakarta-11",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-11-20T10:50:56.159Z",
+      "calendarDate": "2028-11-20"
+    },
+    {
+      "id": "jakarta-12",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-12-05T10:57:22.363Z",
+      "calendarDate": "2028-12-05"
+    },
+    {
+      "id": "jakarta-13",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2028-12-20T11:04:54.659Z",
+      "calendarDate": "2028-12-20"
+    },
+    {
+      "id": "jakarta-14",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2029-01-04T11:11:44.734Z",
+      "calendarDate": "2029-01-04"
+    },
+    {
+      "id": "jakarta-15",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2029-01-19T11:16:10.921Z",
+      "calendarDate": "2029-01-19"
+    },
+    {
+      "id": "jakarta-16",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2029-02-03T11:17:15.895Z",
+      "calendarDate": "2029-02-03"
+    },
+    {
+      "id": "jakarta-17",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2029-02-18T11:14:57.842Z",
+      "calendarDate": "2029-02-18"
+    },
+    {
+      "id": "jakarta-18",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2029-03-05T11:09:57.980Z",
+      "calendarDate": "2029-03-05"
+    },
+    {
+      "id": "jakarta-19",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2029-03-20T11:03:21.231Z",
+      "calendarDate": "2029-03-20"
+    },
+    {
+      "id": "jakarta-20",
+      "lat": -6.2088,
+      "lng": 106.8456,
+      "sunsetIso": "2029-04-04T10:56:20.799Z",
+      "calendarDate": "2029-04-04"
+    },
+    {
+      "id": "london-1",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-04-19T19:04:21.506Z",
+      "calendarDate": "2029-04-19"
+    },
+    {
+      "id": "london-2",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-05-04T19:29:08.371Z",
+      "calendarDate": "2029-05-04"
+    },
+    {
+      "id": "london-3",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-05-19T19:52:12.332Z",
+      "calendarDate": "2029-05-19"
+    },
+    {
+      "id": "london-4",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-06-03T20:10:41.249Z",
+      "calendarDate": "2029-06-03"
+    },
+    {
+      "id": "london-5",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-06-18T20:20:52.999Z",
+      "calendarDate": "2029-06-18"
+    },
+    {
+      "id": "london-6",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-07-03T20:20:02.611Z",
+      "calendarDate": "2029-07-03"
+    },
+    {
+      "id": "london-7",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-07-18T20:07:55.748Z",
+      "calendarDate": "2029-07-18"
+    },
+    {
+      "id": "london-8",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-08-02T19:46:30.273Z",
+      "calendarDate": "2029-08-02"
+    },
+    {
+      "id": "london-9",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-08-17T19:18:29.552Z",
+      "calendarDate": "2029-08-17"
+    },
+    {
+      "id": "london-10",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-09-01T18:46:23.158Z",
+      "calendarDate": "2029-09-01"
+    },
+    {
+      "id": "london-11",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-09-16T18:12:13.476Z",
+      "calendarDate": "2029-09-16"
+    },
+    {
+      "id": "london-12",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-10-01T17:37:44.913Z",
+      "calendarDate": "2029-10-01"
+    },
+    {
+      "id": "london-13",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-10-16T17:04:39.370Z",
+      "calendarDate": "2029-10-16"
+    },
+    {
+      "id": "london-14",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-10-31T16:34:52.870Z",
+      "calendarDate": "2029-10-31"
+    },
+    {
+      "id": "london-15",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-11-15T16:10:50.451Z",
+      "calendarDate": "2029-11-15"
+    },
+    {
+      "id": "london-16",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-11-30T15:55:28.229Z",
+      "calendarDate": "2029-11-30"
+    },
+    {
+      "id": "london-17",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-12-15T15:51:34.881Z",
+      "calendarDate": "2029-12-15"
+    },
+    {
+      "id": "london-18",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2029-12-30T16:00:14.045Z",
+      "calendarDate": "2029-12-30"
+    },
+    {
+      "id": "london-19",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2030-01-14T16:19:20.855Z",
+      "calendarDate": "2030-01-14"
+    },
+    {
+      "id": "london-20",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "sunsetIso": "2030-01-29T16:44:36.790Z",
+      "calendarDate": "2030-01-29"
+    },
+    {
+      "id": "reykjavik-1",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-02-13T17:55:24.134Z",
+      "calendarDate": "2030-02-13"
+    },
+    {
+      "id": "reykjavik-2",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-02-28T18:43:07.057Z",
+      "calendarDate": "2030-02-28"
+    },
+    {
+      "id": "reykjavik-3",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-03-15T19:28:41.017Z",
+      "calendarDate": "2030-03-15"
+    },
+    {
+      "id": "reykjavik-4",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-03-30T20:13:19.194Z",
+      "calendarDate": "2030-03-30"
+    },
+    {
+      "id": "reykjavik-5",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-04-14T20:58:34.980Z",
+      "calendarDate": "2030-04-14"
+    },
+    {
+      "id": "reykjavik-6",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-04-29T21:45:39.538Z",
+      "calendarDate": "2030-04-29"
+    },
+    {
+      "id": "reykjavik-7",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-05-14T22:34:29.666Z",
+      "calendarDate": "2030-05-14"
+    },
+    {
+      "id": "reykjavik-8",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-05-29T23:22:00.721Z",
+      "calendarDate": "2030-05-29"
+    },
+    {
+      "id": "reykjavik-9",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-06-13T23:57:27.400Z",
+      "calendarDate": "2030-06-13"
+    },
+    {
+      "id": "reykjavik-10",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-06-29T00:00:10.830Z",
+      "calendarDate": "2030-06-28"
+    },
+    {
+      "id": "reykjavik-11",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-07-13T23:29:37.482Z",
+      "calendarDate": "2030-07-13"
+    },
+    {
+      "id": "reykjavik-12",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-07-28T22:44:22.351Z",
+      "calendarDate": "2030-07-28"
+    },
+    {
+      "id": "reykjavik-13",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-08-12T21:53:48.565Z",
+      "calendarDate": "2030-08-12"
+    },
+    {
+      "id": "reykjavik-14",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-08-27T21:01:09.688Z",
+      "calendarDate": "2030-08-27"
+    },
+    {
+      "id": "reykjavik-15",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-09-11T20:07:45.097Z",
+      "calendarDate": "2030-09-11"
+    },
+    {
+      "id": "reykjavik-16",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-09-26T19:14:19.942Z",
+      "calendarDate": "2030-09-26"
+    },
+    {
+      "id": "reykjavik-17",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-10-11T18:21:33.702Z",
+      "calendarDate": "2030-10-11"
+    },
+    {
+      "id": "reykjavik-18",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-10-26T17:30:19.122Z",
+      "calendarDate": "2030-10-26"
+    },
+    {
+      "id": "reykjavik-19",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-11-10T16:42:11.048Z",
+      "calendarDate": "2030-11-10"
+    },
+    {
+      "id": "reykjavik-20",
+      "lat": 64.1466,
+      "lng": -21.9426,
+      "sunsetIso": "2030-11-25T16:00:33.437Z",
+      "calendarDate": "2030-11-25"
+    }
+  ]
+}

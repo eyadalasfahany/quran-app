@@ -7,6 +7,7 @@ use App\Domains\Content\Models\ContentPack;
 use App\Domains\Content\Models\ContentSource;
 use App\Domains\Content\Models\Resource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 /*
 | ADR 0031 §12: only the azkar resource of config azkar.primary_source is listed and served. A non-primary azkar resource
@@ -16,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Storage::fake('local');
     ContentSource::query()->whereIn('code', ['opendua', 'hisnmuslim'])->update(['permission_status' => 'granted']);
 
     $this->withHeaders(['Accept' => 'application/json', 'Accept-Language' => 'en']);
@@ -32,6 +34,8 @@ function apsResource(string $code): Resource
         'group' => ResourceGroup::Azkar,
         'version' => 1,
     ]);
+
+    Storage::disk('local')->put('packs/'.$resource->id.'/1.sqlite.gz', 'FIXTURE pack bytes');
 
     ContentPack::query()->create([
         'resource_id' => $resource->id,

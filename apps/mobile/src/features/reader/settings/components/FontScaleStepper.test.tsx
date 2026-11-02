@@ -18,8 +18,9 @@ describe('FontScaleStepper', () => {
     const view = await renderUi(<FontScaleStepper onChange={() => undefined} value={1} />, { locale });
 
     expect(view.getByTestId('reader-font-percent')).toHaveTextContent(locale === 'ar' ? '١٠٠٪' : '100%');
-    expect(view.getByTestId('reader-font-decrease')).toHaveTextContent('أ−');
-    expect(view.getByTestId('reader-font-increase')).toHaveTextContent('أ+');
+    // The glyphs come from i18n: the Arabic frame's «أ−» / «أ+», and the English «A−» / «A+» (en.json).
+    expect(view.getByTestId('reader-font-decrease')).toHaveTextContent(locale === 'ar' ? 'أ−' : 'A−');
+    expect(view.getByTestId('reader-font-increase')).toHaveTextContent(locale === 'ar' ? 'أ+' : 'A+');
     expect(view.getByLabelText(locale === 'ar' ? 'تصغير الخط' : 'Decrease text size')).toBeOnTheScreen();
     expect(view.getByLabelText(locale === 'ar' ? 'تكبير الخط' : 'Increase text size')).toBeOnTheScreen();
   });

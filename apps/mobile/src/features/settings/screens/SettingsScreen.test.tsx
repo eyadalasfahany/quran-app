@@ -16,7 +16,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), navigate: jest.fn(), push: jest.fn() },
+  router: { back: jest.fn(), canGoBack: jest.fn(() => true), navigate: jest.fn(), push: jest.fn(), replace: jest.fn() },
 }));
 
 jest.mock('@/features/khatma/data', () => ({
@@ -71,6 +71,14 @@ describe('SettingsScreen', () => {
     fireEvent.press(view.getByTestId('about-sources-row'));
 
     expect(router.push).toHaveBeenCalledWith('/settings/sources');
+  });
+
+  it('opens widgets help from the widgets row', async () => {
+    const view = await renderUi(<SettingsScreen />);
+
+    fireEvent.press(view.getByTestId('widgets-entry'));
+
+    expect(router.push).toHaveBeenCalledWith('/settings/widgets');
   });
 
   it('navigates to listen from the default reciter row', async () => {

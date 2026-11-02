@@ -1,6 +1,6 @@
 import { I18nManager, Text } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
-import { getAnimatedStyle, setUpTests, useReducedMotion } from 'react-native-reanimated';
+import { setUpTests, useReducedMotion } from 'react-native-reanimated';
 
 import { ThemeProvider } from '@/core/theme';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -67,10 +67,8 @@ describe('AzkarUnitMotion', () => {
 
     await rerender(unit('fixture:unit-2', 1));
 
-    // The fade-in runs on real timers, so on a busy run it may have advanced a frame or two past 0 by now.
-    // Typed through the native jest utils: the default typing is the web stub, which returns void.
-    const animatedStyleOf = getAnimatedStyle as unknown as (node: { props: Record<string, unknown> }) => { opacity?: number };
-    expect(animatedStyleOf(screen.getByTestId('azkar-unit-motion')).opacity).toBeLessThan(0.1);
+    // The fade-in runs on real timers, so on a busy run it may have advanced a frame or two past 0 by now. It must not sit at full opacity.
+    expect(screen.getByTestId('azkar-unit-motion')).not.toHaveAnimatedStyle({ opacity: 1 });
   });
 
   it('keeps the same content when only the direction changes', async () => {

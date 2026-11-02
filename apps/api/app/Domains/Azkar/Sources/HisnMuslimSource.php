@@ -37,10 +37,6 @@ final class HisnMuslimSource implements AzkarCatalogueSource
             collectionId: self::COLLECTION_ID,
             sourceKey: self::CODE,
             displayName: 'hisnmuslim.com',
-            importEnabled: (bool) config('azkar.hisnmuslim.import_enabled', false),
-            storeEnglish: false,
-            audioRightsVerified: false,
-            importFlagKey: 'AZKAR_HISNMUSLIM_IMPORT_ENABLED',
         );
     }
 

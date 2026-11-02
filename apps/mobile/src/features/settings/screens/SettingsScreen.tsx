@@ -8,14 +8,18 @@ import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useActivePlan } from '@/features/khatma/data';
 import { useReaderSettings } from '@/features/reader/settings';
+import { goBackOr, MENU_TAB } from '@/core/navigation/go-back';
 import { Screen } from '@/shared/ui';
 
 import { AboutSection } from '../components/AboutSection';
 import { HabitsSection } from '../components/HabitsSection';
 import { LanguageSection } from '../components/LanguageSection';
 import { ListeningSection } from '../components/ListeningSection';
+import { RemindersEntryRow } from '@/features/reminders/components/RemindersEntryRow';
+import { WidgetsEntryRow } from '@/features/widgets/components/WidgetsEntryRow';
 import { PrayerNotificationsSection } from '../components/PrayerNotificationsSection';
 import { ReadingSection } from '../components/ReadingSection';
+import { SettingsGroup } from '../components/SettingsGroup';
 import { SettingsHeader } from '../components/SettingsHeader';
 
 export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string }) {
@@ -28,14 +32,17 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
     if (activePlan === null) {
       return undefined;
     }
-    return t('khatma.settingsDuration', { formatted: formatNumber(activePlan.durationDays, locale) });
+    return t('khatma.settingsDuration', {
+      count: activePlan.durationDays,
+      formatted: formatNumber(activePlan.durationDays, locale),
+    });
   }, [activePlan, locale, t]);
 
   return (
     <Screen testID={testID}>
       {/* The column caps the rows at 720 on wide windows (spec §4) and keeps the 16 gutter the rows had. */}
       <ContentColumn gutter={theme.space[4]} testID="settings-column">
-        <SettingsHeader onBack={() => router.back()} />
+        <SettingsHeader onBack={() => goBackOr(MENU_TAB)} />
         <ScrollView
           contentContainerStyle={{
             gap: theme.space[4],
@@ -57,6 +64,12 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
             khatmaValue={khatmaValue}
             onPressKhatma={() => router.push('/khatma' as Href)}
           />
+          <SettingsGroup testID="settings-reminders-hub">
+            <RemindersEntryRow subtitle={t('settings.reminders.hubHint')} title={t('settings.reminders.hub')} />
+          </SettingsGroup>
+          <SettingsGroup testID="settings-widgets-entry">
+            <WidgetsEntryRow />
+          </SettingsGroup>
           <PrayerNotificationsSection />
           <AboutSection onPressSources={() => router.push('/settings/sources' as Href)} />
         </ScrollView>

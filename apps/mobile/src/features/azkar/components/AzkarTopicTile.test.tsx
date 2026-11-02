@@ -10,7 +10,7 @@ describe('AzkarTopicTile', () => {
     await renderUi(<AzkarTopicTile countText="١٢ ذكرًا" onPress={jest.fn()} title="الحماية" />);
 
     expect(screen.getByText('الحماية')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'الحماية, ١٢ ذكرًا' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'الحماية، ١٢ ذكرًا' })).toBeOnTheScreen();
   });
 
   it('calls onPress when pressed', async () => {

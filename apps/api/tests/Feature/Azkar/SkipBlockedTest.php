@@ -22,7 +22,6 @@ beforeEach(function (): void {
     Bus::fake();
     config([
         'azkar.opendua.catalogue_sha256' => hash_file('sha256', skpFixturePath()),
-        'azkar.opendua.import_enabled' => true,
         'azkar.quran_references' => [],
     ]);
     ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);

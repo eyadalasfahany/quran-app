@@ -74,7 +74,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 
 - Quran text renders only in its Quran font, exactly as stored. Never ellipsize, truncate or reflow an ayah into the UI font.
 - Each ayah's accessibility label is its Imla'i text plus the ayah number.
-- Audio follows the layout direction (ADR 0012), so it mirrors between Arabic and English. In Arabic, progress bars fill from the right with elapsed time on the right, and next ayah sits on the left with its glyph pointing left. In English all of it mirrors. The play glyph mirrors too, pointing left in Arabic, and every play control shows pause while its audio plays (ADR 0025).
+- Audio follows the layout direction (ADR 0012), so it mirrors between Arabic and English. In Arabic, progress bars fill from the right with elapsed time on the right, and next ayah sits on the left with its glyph pointing left. In English all of it mirrors. The play glyph never flips: it points right in both languages (ADR 0029), and every play control shows pause while its audio plays (ADR 0025).
 
 ## Dependencies and checks
 

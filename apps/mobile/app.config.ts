@@ -1,5 +1,89 @@
 import type { ExpoConfig } from '@expo/config-types';
 
+// Android home-screen widgets (ADR 0035 §2, `src/features/widgets/android/names.ts`). The `name`s must match WIDGET_PROVIDERS.
+// The gallery text is Arabic only: the library writes one non-translatable description per widget.
+// previewImage crops come from AndroidWidgets frame (tmp/crop-widget-previews.py). Azkar is not on that
+// frame — picker keeps the app icon until a dedicated crop exists.
+const ANDROID_WIDGETS = [
+  {
+    name: 'NextPrayer',
+    label: 'الصلاة القادمة',
+    description: 'الصلاة القادمة ووقتها',
+    minWidth: '110dp',
+    minHeight: '110dp',
+    targetCellWidth: 2,
+    targetCellHeight: 2,
+    resizeMode: 'none',
+    updatePeriodMillis: 30 * 60 * 1000,
+    widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/NextPrayer.png',
+  },
+  {
+    name: 'NextPrayerWide',
+    label: 'مواقيت اليوم',
+    description: 'الصلاة القادمة ومواقيت اليوم الخمسة',
+    minWidth: '250dp',
+    minHeight: '110dp',
+    targetCellWidth: 4,
+    targetCellHeight: 2,
+    resizeMode: 'none',
+    updatePeriodMillis: 30 * 60 * 1000,
+    widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/NextPrayerWide.png',
+  },
+  {
+    name: 'Progress',
+    label: 'تقدّم اليوم',
+    description: 'تقدّم أهدافك اليومية',
+    minWidth: '250dp',
+    minHeight: '110dp',
+    targetCellWidth: 4,
+    targetCellHeight: 2,
+    resizeMode: 'none',
+    updatePeriodMillis: 30 * 60 * 1000,
+    widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/Progress.png',
+  },
+  {
+    name: 'ContinueReading',
+    label: 'تابع القراءة',
+    description: 'موضع قراءتك ووردك اليوم',
+    minWidth: '250dp',
+    minHeight: '110dp',
+    targetCellWidth: 4,
+    targetCellHeight: 2,
+    resizeMode: 'none',
+    updatePeriodMillis: 30 * 60 * 1000,
+    widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/ContinueReading.png',
+  },
+  {
+    name: 'Misbaha',
+    label: 'المسبحة',
+    description: 'عدّاد المسبحة ومجموع اليوم',
+    minWidth: '110dp',
+    minHeight: '110dp',
+    targetCellWidth: 2,
+    targetCellHeight: 2,
+    resizeMode: 'none',
+    updatePeriodMillis: 30 * 60 * 1000,
+    widgetCategory: 'home_screen',
+    previewImage: './assets/widget-previews/Misbaha.png',
+  },
+  {
+    name: 'Azkar',
+    label: 'الأذكار',
+    description: 'جلسات الأذكار اليوم',
+    minWidth: '250dp',
+    minHeight: '110dp',
+    targetCellWidth: 4,
+    targetCellHeight: 2,
+    resizeMode: 'none',
+    updatePeriodMillis: 30 * 60 * 1000,
+    widgetCategory: 'home_screen',
+  },
+];
+
 // `expo/config` re-exports this with `export *`, which drops the type.
 // The dynamic config callback only reads `config`.
 type ConfigContext = {
@@ -53,12 +137,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     // Layout follows window size; no orientation lock anywhere (spec §4).
     orientation: 'default',
-    // Home-screen mark from the Nabawi dome logo (square 1024 PNG).
+    // Home-screen mark: Nabawi dome logo (image (93).png → generate-brand-assets.mjs).
     // iOS uses this PNG; a Liquid Glass .icon would replace it.
     icon: './assets/images/icon.png',
     userInterfaceStyle: 'automatic',
     ios: {
       bundleIdentifier: variant.id,
+      // ADR 0016 / ADR 0035: widgets and App Intents require iOS 16.4+; misbaha «+» uses iOS 17 AppIntent.
+      deploymentTarget: '16.4',
+      entitlements: {
+        'com.apple.security.application-groups': [`group.${variant.id}`],
+      },
       supportsTablet: true,
       infoPlist: {
         // All four iPad orientations and no full-screen requirement: needed for Split View and Stage Manager.
@@ -95,16 +184,23 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundColor: '#F9F7F2',
         // 1024×1024, logo in ~66% safe zone for the circular mask (see generate-brand-assets.mjs).
         foregroundImage: './assets/images/android-adaptive-foreground.png',
+        // Android 13+ themed icon: the same logo as a white silhouette (generate-brand-assets.mjs).
+        monochromeImage: './assets/images/android-adaptive-monochrome.png',
       },
       predictiveBackGestureEnabled: false,
+      // Exact prayer and reminder alarms (ADR 0035 §5, prompt 12 builds the request flow). Not USE_EXACT_ALARM.
+      permissions: ['android.permission.SCHEDULE_EXACT_ALARM'],
     },
     plugins: [
       'expo-router',
+      // Android status-bar icon: the logo as a white silhouette (an opaque icon shows as a white square), tinted brand.
       // Prayer notification sounds (ADR 0047): each file is copied into the iOS bundle and Android res/raw. The list
       // must match the catalogue in src/features/salah/data/adhan-sounds.ts (checked by adhan-assets.test.ts).
       [
         'expo-notifications',
         {
+          icon: './assets/images/notification-icon.png',
+          color: '#1F4D40',
           sounds: [
             './assets/adhan/allahu_akbar_short.wav',
             './assets/adhan/adhan_makkah.wav',
@@ -165,6 +261,31 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         'expo-audio',
         { enableBackgroundPlayback: true, microphonePermission: false, recordAudioAndroid: false },
       ],
+      // Android home-screen widgets (ADR 0035). Fonts are the widget faces; a name the widget asks for must have its file
+      // here (`src/features/widgets/android/fonts.ts`, checked by a test).
+      [
+        'react-native-android-widget',
+        {
+          fonts: [
+            './assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Regular.ttf',
+            './assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Medium.ttf',
+            './assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-SemiBold.ttf',
+            './assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Bold.ttf',
+            './assets/fonts/Amiri/Amiri-Bold.ttf',
+          ],
+          // The picker label is a string resource, so the device language picks Arabic or English (see the plugin).
+          widgets: ANDROID_WIDGETS.map((widget) => ({
+            ...widget,
+            label: `@string/widget_${widget.name.toLowerCase()}_label`,
+          })),
+        },
+      ],
+      // Gallery names in Arabic (values) and English (values-en), per widget (plugins/with-widget-gallery-strings.js).
+      ['./plugins/with-widget-gallery-strings.js', { widgets: ANDROID_WIDGETS.map(({ name, label }) => ({ label, name })) }],
+      // android/local.properties sdk.dir, rewritten on every prebuild (plugins/with-android-sdk-location.js).
+      './plugins/with-android-sdk-location.js',
+      // iOS home-screen widgets, lock-screen accessories, watch app and complications (ADR 0035).
+      '@bacons/apple-targets',
     ],
     experiments: {
       typedRoutes: true,

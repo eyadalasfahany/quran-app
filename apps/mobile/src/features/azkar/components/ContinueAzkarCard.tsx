@@ -44,7 +44,11 @@ export function ContinueAzkarCard({
 
   return (
     <Pressable
-      accessibilityLabel={`${t('azkar.browse.continueEyebrow')}, ${resume.title}, ${progressText}`}
+      accessibilityLabel={t('common.a11yTriple', {
+        label: t('azkar.browse.continueEyebrow'),
+        title: resume.title,
+        detail: progressText,
+      })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

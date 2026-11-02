@@ -17,10 +17,9 @@ final class ImportReport extends Data
 
     public const string STATUS_IMPORTED = 'imported';
 
-    public const string STATUS_LOCKED = 'locked';
+    public const string STATUS_UNCHANGED = 'unchanged';
 
     /**
-     * @param  list<string>  $lockReasons
      * @param  array<string, mixed>  $source
      * @param  array<string, mixed>  $content
      * @param  array<string, mixed>  $sourced
@@ -33,7 +32,6 @@ final class ImportReport extends Data
         public readonly string $generatedAt,
         public readonly bool $dryRun,
         public readonly string $status,
-        public readonly array $lockReasons,
         public readonly array $source,
         public readonly array $content,
         public readonly array $sourced,
@@ -54,7 +52,6 @@ final class ImportReport extends Data
             'generated_at' => $this->generatedAt,
             'mode' => $this->dryRun ? 'dry-run' : 'import',
             'status' => $this->status,
-            'lock_reasons' => $this->lockReasons,
             'source' => $this->source,
             'content' => $this->content,
             'sourced' => $this->sourced,
@@ -67,7 +64,7 @@ final class ImportReport extends Data
 
     public function succeeded(): bool
     {
-        return $this->status === self::STATUS_VALID || $this->status === self::STATUS_IMPORTED;
+        return in_array($this->status, [self::STATUS_VALID, self::STATUS_IMPORTED, self::STATUS_UNCHANGED], true);
     }
 
     /**

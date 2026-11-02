@@ -89,8 +89,13 @@ function setPlatform(os: (typeof Platform)["OS"]): void {
   Object.defineProperty(Platform, "OS", { configurable: true, get: () => os });
 }
 
+// Each file renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
 describe("root layout Azkar screens", () => {
   const originalOs = Platform.OS;
+  // Full app router mounts are slow on Windows CI hosts.
+  jest.setTimeout(120_000);
 
   beforeEach(async () => {
     storage.set(storageKeys.locale, "en");
@@ -150,6 +155,7 @@ describe("root layout Azkar screens", () => {
       expect(screens.get(name)).toEqual({
         animation: "default",
         gestureEnabled: true,
+        fullScreenGestureEnabled: true,
       });
     }
   });

@@ -34,11 +34,43 @@ describe('QiblaMetaPanel', () => {
     });
   });
 
-  it('shows poor accuracy as «منخفضة»', async () => {
-    const view = await renderUi(<QiblaMetaPanel {...PROPS} accuracy="poor" />);
+  it.each([
+    ['good', 'جيدة'],
+    ['fair', 'متوسطة'],
+    ['poor', 'منخفضة'],
+  ] as const)('shows %s accuracy as «%s» in Arabic', async (accuracy, label) => {
+    const view = await renderUi(<QiblaMetaPanel {...PROPS} accuracy={accuracy} />);
 
-    expect(view.getByText('منخفضة')).toBeOnTheScreen();
+    expect(view.getByTestId('qibla-accuracy-value')).toHaveTextContent(label);
+    // Always an explicit label, so Android can't keep a stale «unavailable» description.
+    expect(view.getByTestId('qibla-accuracy-value').props.accessibilityLabel).toBe(label);
   });
+
+  it.each([
+    ['good', 'Good'],
+    ['fair', 'Fair'],
+    ['poor', 'Low'],
+  ] as const)('shows %s accuracy as "%s" in English', async (accuracy, label) => {
+    const view = await renderUi(<QiblaMetaPanel {...PROPS} accuracy={accuracy} />, { locale: 'en' });
+
+    expect(view.getByText(label)).toBeOnTheScreen();
+  });
+
+  it('shows unavailable accuracy as a dash, labelled «غير متاحة» for screen readers', async () => {
+    const view = await renderUi(<QiblaMetaPanel {...PROPS} accuracy="unavailable" />);
+
+    const value = view.getByLabelText('غير متاحة');
+    expect(value).toHaveTextContent('—');
+    expect(view.queryByText('منخفضة')).toBeNull();
+    expect(view.queryByText('متوسطة')).toBeNull();
+  });
+
+  it('labels unavailable accuracy "Unavailable" in English', async () => {
+    const view = await renderUi(<QiblaMetaPanel {...PROPS} accuracy="unavailable" />, { locale: 'en' });
+
+    expect(view.getByLabelText('Unavailable')).toHaveTextContent('—');
+  });
+
 
   it('shows the manual city name when the location source is manual', async () => {
     const view = await renderUi(

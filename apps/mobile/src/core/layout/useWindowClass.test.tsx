@@ -56,7 +56,7 @@ describe('useWindowClass (ADR 0036)', () => {
     view.unmount();
   });
 
-  it('drops the sidebar when a wide window is rotated short, and brings it back when it is tall', async () => {
+  it('drops the side panels when a wide window is rotated short, and brings them back when it is tall', async () => {
     setSize(1024, 768);
     const view = await render(<Probes />);
 

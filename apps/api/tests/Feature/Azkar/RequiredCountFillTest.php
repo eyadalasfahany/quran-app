@@ -35,7 +35,6 @@ beforeEach(function (): void {
         ],
         'azkar.hisnmuslim.snapshot_date' => '2001-02-03',
     ]);
-    config(['azkar.opendua.import_enabled' => true]);
     ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
 });
 
@@ -136,7 +135,6 @@ function rcDefaultSnapshot(): string
 
 function rcUnlockSecondary(): void
 {
-    config(['azkar.hisnmuslim.import_enabled' => true]);
     ContentSource::query()->where('code', 'hisnmuslim')->update(['permission_status' => 'granted']);
 }
 
@@ -238,30 +236,6 @@ it('pairs recitations under one book number by position only when both sides hav
     ])
         ->and($plan->ambiguous)->toBe([]);
 });
-
-it('fills nothing while the secondary source is locked, whichever lock is closed', function (bool $flagOn, string $permission): void {
-    config(['azkar.hisnmuslim.import_enabled' => $flagOn]);
-    ContentSource::query()->where('code', 'hisnmuslim')->update(['permission_status' => $permission]);
-
-    $report = rcWetRun(rcDefaultSnapshot());
-
-    $filled = AzkarItem::query()->where('item_key', 'hisn-al-muslim:entry-000001:standard:1')->firstOrFail();
-    $kept = AzkarItem::query()->where('item_key', 'hisn-al-muslim:entry-000002:standard:2')->firstOrFail();
-
-    expect($report->status)->toBe(ImportReport::STATUS_IMPORTED)
-        ->and($filled->required_count)->toBeNull()
-        ->and($filled->required_count_source)->toBeNull()
-        ->and($kept->required_count)->toBe(3)
-        ->and($kept->required_count_source)->toBe('opendua')
-        ->and($report->sourced['required_count_secondary']['used'])->toBeFalse()
-        ->and($report->sourced['required_count_secondary']['reason'])->toStartWith('locked:')
-        ->and($report->sourced['required_count_sources'])->toBe(['opendua' => 1, 'hisnmuslim' => 0])
-        ->and($report->sourced['required_count_conflicts'])->toBe([])
-        ->and(rcWarningCodes($report))->not->toContain('required_count_conflict');
-})->with([
-    'import flag off, permission granted' => [false, 'granted'],
-    'import flag on, permission pending' => [true, 'pending'],
-]);
 
 it('leaves the counts as the primary has them when the secondary cannot be read', function (): void {
     rcUnlockSecondary();

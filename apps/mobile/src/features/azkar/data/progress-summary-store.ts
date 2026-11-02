@@ -45,7 +45,12 @@ export function createSharedSummaries(source: SummarySource): SharedSummaries {
           listener();
         }
       })
-      .catch(() => undefined);
+      .catch((error: unknown) => {
+        // The last good rows stay in place; the next change to the table loads again.
+        if (__DEV__) {
+          console.warn('Azkar progress summaries did not load.', error);
+        }
+      });
   };
 
   return {

@@ -6,7 +6,7 @@ import {
 } from "expo-router/testing-library";
 import { router } from "expo-router";
 import type { ComponentProps } from "react";
-import { Dimensions, I18nManager, Platform } from "react-native";
+import { Dimensions, I18nManager, Platform, StyleSheet } from "react-native";
 import { within } from "@testing-library/react-native";
 
 import { i18n } from "@/core/i18n";
@@ -71,6 +71,9 @@ function setWidth(width: number): void {
   });
 }
 
+// Each file renders the whole app (renderRouter("./app")); the first render pays the cold start under Jest, which takes more than 5 s when the suites run in parallel.
+jest.setTimeout(15_000);
+
 describe("adaptive nav", () => {
   // The app starts in Arabic; these tests use the English labels, so they save English first (as a reader would).
   beforeEach(async () => {
@@ -85,12 +88,11 @@ describe("adaptive nav", () => {
     jest.useRealTimers();
   });
 
-  it("keeps the active section when the window class switches between tabs and the sidebar", async () => {
+  it("keeps the active section when the window grows to a tablet width and back (ADR 0051, amended 2 Nov 2026)", async () => {
     setWidth(390);
     const view = await renderRouter("./app");
 
     expect(view.getSegments()).toEqual(["(main)", "(home)"]);
-    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
 
     await act(async () => {
       router.navigate("/(main)/(mushaf)");
@@ -98,53 +100,26 @@ describe("adaptive nav", () => {
 
     expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
 
-    await act(async () => {
-      setWidth(700);
-    });
+    for (const width of [700, 1024, 390]) {
+      await act(async () => {
+        setWidth(width);
+      });
 
-    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
-    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
-
-    await act(async () => {
-      setWidth(900);
-    });
-
-    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
-    expect(
-      screen.getByTestId("sidebar-mushaf").props.accessibilityState,
-    ).toEqual({ selected: true });
-    expect(
-      screen
-        .getAllByTestId("sidebar-symbol")
-        .map((symbol) => symbol.props.name),
-    ).toEqual([
-      { ios: "person.crop.circle", android: "account_circle" },
-      { ios: "house", android: "home" },
-      { ios: "book", android: "menu_book" },
-      { ios: "headphones", android: "headphones" },
-      // الصلاة joined the sidebar after الاستماع in Phase 5 (ADR 0030).
-      { ios: "moon.stars", android: "mosque" },
-      // The sidebar's pinned settings entry (step 1).
-      { ios: "gearshape", android: "settings" },
-    ]);
-
-    await act(async () => {
-      fireEvent.press(screen.getByTestId("sidebar-home"));
-    });
-
-    expect(view.getSegments()).toEqual(["(main)", "(home)"]);
-    expect(screen.getByTestId("sidebar-home").props.accessibilityState).toEqual(
-      { selected: true },
-    );
-
-    await act(async () => {
-      setWidth(390);
-    });
-
-    expect(view.getSegments()).toEqual(["(main)", "(home)"]);
-    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
+      expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
+      expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
+    }
   });
 
+  it("shows the vertical rail on a tablet, on every platform (ADR 0051, amended 2 Nov 2026)", async () => {
+    setWidth(1024);
+    await renderRouter("./app");
+    await screen.findByTestId("main-shell");
+
+    expect(StyleSheet.flatten(screen.getByTestId("floating-tab-bar").props.style)).toMatchObject({
+      flexDirection: "column",
+      width: 76,
+    });
+  });
 });
 
 describe("android floating tab bar (ADR 0033)", () => {
@@ -216,11 +191,19 @@ describe("android floating tab bar (ADR 0033)", () => {
     expect(view.getSegments()).toEqual(["(main)", "(listen)"]);
   });
 
-  it("hides the floating bar on expanded windows, where the sidebar takes over", async () => {
-    await renderMain(900);
+  it("shows the vertical rail on expanded windows, with the open tab selected (ADR 0051, amended 2 Nov 2026)", async () => {
+    const view = await renderMain(1024);
 
-    expect(screen.queryByTestId("floating-tab-bar")).toBeNull();
-    expect(screen.getByTestId("sidebar")).toBeOnTheScreen();
+    expect(StyleSheet.flatten(screen.getByTestId("floating-tab-bar").props.style)).toMatchObject({ flexDirection: "column" });
+    expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
+    expect(within(floatingBar()).getByTestId("home").props.accessibilityState).toEqual({ selected: true });
+
+    await act(async () => {
+      router.navigate("/(main)/(mushaf)");
+    });
+
+    expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
+    expect(within(floatingBar()).getByTestId("mushaf").props.accessibilityState).toEqual({ selected: true });
   });
 
   it("keeps the Salah route reachable without a bar item, as the native tabs do", async () => {

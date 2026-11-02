@@ -7,7 +7,6 @@ import { IconButton, UiText } from '@/shared/ui';
 import type { AzkarRecording } from '../data/model';
 import { useIsFavorite } from '../data';
 import { toggleFavorite } from '../data/favorites-repository';
-import { AzkarAudioButton } from './AzkarAudioButton';
 import { AzkarDownloadButton } from './AzkarDownloadButton';
 
 const SHARE = { ios: 'square.and.arrow.up', android: 'share' } as const;
@@ -15,9 +14,9 @@ const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 const BOOKMARK_FILLED = { ios: 'bookmark.fill', android: 'bookmark_added' } as const;
 
 /**
- * The actions under the dhikr: text size (Aa), share, favourite and, when the unit has a recording, its audio and
- * download controls (ADR 0031 §8; none today). The favourite is saved per entry in user.db and follows the live
- * query, so it stays in step on every screen.
+ * The actions under the dhikr: text size (Aa), share, favourite and, when the unit has a licensed recording, its download
+ * (ADR 0031 §8). Playback is not here: the reader's player bar owns play and pause. The favourite is saved per entry in
+ * user.db and follows the live query, so it stays in step on every screen.
  */
 export function AzkarReaderActions({
   entryKey,
@@ -25,20 +24,14 @@ export function AzkarReaderActions({
   onTextSize,
   textSizeOpen,
   recording = null,
-  unitKey,
-  onAudioEnded,
   testID = 'azkar-reader-actions',
 }: {
   entryKey: string;
   onShare: () => void;
   onTextSize: () => void;
   textSizeOpen: boolean;
-  /** The unit's licensed recording, or null. Null draws no audio control. */
+  /** The unit's licensed recording, or null. Null draws no download control. */
   recording?: AzkarRecording | null;
-  /** The unit the recording belongs to. Defaults to the entry key. */
-  unitKey?: string;
-  /** Runs when the recording plays to its end. */
-  onAudioEnded?: () => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -71,9 +64,6 @@ export function AzkarReaderActions({
         tone="muted"
         variant="plain"
       />
-      {recording === null ? null : (
-        <AzkarAudioButton onEnded={onAudioEnded} recording={recording} unitKey={unitKey ?? entryKey} />
-      )}
       {recording === null ? null : <AzkarDownloadButton recording={recording} />}
     </View>
   );

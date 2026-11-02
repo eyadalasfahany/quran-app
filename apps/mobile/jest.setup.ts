@@ -1,3 +1,5 @@
+import { resetHijriFormatterForTests } from '@/features/hijri/data/hijri-date';
+
 import { createFakeAudioPlaylist as mockCreateFakeAudioPlaylist } from './jest/fake-audio-player';
 import { deviceLanguageCode } from './jest/device-language';
 import { resetWindowSize } from './jest/window-size';
@@ -6,6 +8,11 @@ import '@/core/layout/hide-scroll-indicators';
 
 // The phone frames' size (390 x 844). Without it Jest's default window gives a 1.15 text factor (ADR 0043).
 resetWindowSize();
+
+afterEach(() => {
+  resetHijriFormatterForTests();
+  jest.useRealTimers();
+});
 
 // Gesture handler installs its UI-thread bindings through Worklets, which has no UI runtime under Jest.
 jest.mock('react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings', () => ({
@@ -148,6 +155,13 @@ jest.mock('react-native-mmkv', () => ({
   createMMKV: () => mockCreateMmkv(),
 }));
 
+// The widget snapshot sync mounts the Azkar progress watcher, which subscribes to table changes. The native
+// listener does not exist under Jest, so the subscription returns a handle whose `remove` is a no-op.
+jest.mock('expo-sqlite', () => ({
+  ...jest.requireActual<typeof import('expo-sqlite')>('expo-sqlite'),
+  addDatabaseChangeListener: jest.fn(() => ({ remove: jest.fn() })),
+}));
+
 // GPS and heading are native. Route tests mount the Salah tab, so the module
 // has to resolve without a device. Feature tests that need a fix override this.
 jest.mock('expo-location', () => ({
@@ -163,7 +177,13 @@ jest.mock('expo-location', () => ({
 // Local notifications are a native module; tests drive them through these fakes.
 jest.mock('expo-notifications', () => ({
   AndroidImportance: { DEFAULT: 3, HIGH: 4 },
-  SchedulableTriggerInputTypes: { CALENDAR: 'calendar', DATE: 'date', DAILY: 'daily' },
+  SchedulableTriggerInputTypes: {
+    CALENDAR: 'calendar',
+    DATE: 'date',
+    DAILY: 'daily',
+    WEEKLY: 'weekly',
+    TIME_INTERVAL: 'timeInterval',
+  },
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
   deleteNotificationChannelAsync: jest.fn(() => Promise.resolve()),
