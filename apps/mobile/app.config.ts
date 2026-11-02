@@ -35,6 +35,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     owner: 'themayman',
     version: '1.0.0',
     scheme: variant.scheme,
+    // EAS Update (spec §14): JavaScript-only fixes reach installed builds on their channel (eas.json).
+    // The fingerprint changes with any native change, so an update never lands on a build it doesn't match.
+    // Launch never waits for the network (offline-first): a new update applies on the next cold start.
+    runtimeVersion: { policy: 'fingerprint' },
+    updates: {
+      url: 'https://u.expo.dev/e58e645e-5912-4da1-8ea8-7bdb73d93f64',
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+    },
     // The home-screen name follows the device language. Each language needs its own entry: iOS picks the
     // app's localization only from the bundled lproj folders, so without en.lproj an English reader still
     // gets Arabic natural text alignment and Arabic system labels.
@@ -135,8 +144,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           locationWhenInUsePermission: 'يحتاج طيبة إلى موقعك لعرض مواقيت الصلاة واتجاه القبلة.',
         },
       ],
-      // Release builds reload through expo-updates after a language change.
-      // No update URL until EAS exists, so this does not check for remote updates.
+      // Release builds reload through expo-updates after a language change, and fetch OTA updates (see `updates`).
       'expo-updates',
       'expo-sqlite',
       'expo-font',

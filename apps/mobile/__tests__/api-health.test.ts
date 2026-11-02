@@ -83,4 +83,16 @@ describe('apiBaseUrl', () => {
 
     expect(() => apiBaseUrl()).toThrow('EXPO_PUBLIC_API_URL is not set');
   });
+
+  it('fails clearly when the scheme is missing', () => {
+    process.env.EXPO_PUBLIC_API_URL = 'app.taybah-app.com';
+
+    expect(() => apiBaseUrl()).toThrow('must start with http:// or https://');
+  });
+
+  it('accepts an https URL', () => {
+    process.env.EXPO_PUBLIC_API_URL = 'https://app.taybah-app.com';
+
+    expect(apiBaseUrl()).toBe('https://app.taybah-app.com');
+  });
 });

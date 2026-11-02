@@ -5,5 +5,9 @@ export function apiBaseUrl(): string {
   if (!url) {
     throw new Error('EXPO_PUBLIC_API_URL is not set. Copy apps/mobile/.env.example to .env.');
   }
+  // A value without a scheme makes every `new URL()` throw.
+  if (!/^https?:\/\//i.test(url)) {
+    throw new Error(`EXPO_PUBLIC_API_URL must start with http:// or https:// (got "${url}").`);
+  }
   return url.replace(/\/+$/, '');
 }

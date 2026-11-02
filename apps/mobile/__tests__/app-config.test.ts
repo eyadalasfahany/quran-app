@@ -125,11 +125,17 @@ describe('app.config', () => {
     expect(configFor('production').plugins).toContainEqual(['expo-localization', { supportsRTL: true }]);
   });
 
-  it('installs expo-updates without a remote update url', () => {
+  it('checks EAS Update on launch without blocking it', () => {
     const config = configFor('production');
 
     expect(config.plugins).toContain('expo-updates');
-    expect(config.updates?.url).toBeUndefined();
+
+    expect(config.runtimeVersion).toEqual({ policy: 'fingerprint' });
+    expect(config.updates).toEqual({
+      url: 'https://u.expo.dev/e58e645e-5912-4da1-8ea8-7bdb73d93f64',
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+    });
   });
 
   it('plays audio in the background on iOS', () => {

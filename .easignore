@@ -13,6 +13,12 @@ docs/
 .cursor/
 .qodo/
 graphify-out/
+website/
+design-assets/
+image/
+/logo.png
+# Local OpenDua audio working copy (ADR 0040); served by the API, never bundled
+/opendua-audio-*/
 
 # OS and editors
 .DS_Store

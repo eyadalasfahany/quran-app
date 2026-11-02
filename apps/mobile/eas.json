@@ -19,9 +19,10 @@
       "extends": "base",
       "environment": "production",
       "autoIncrement": true,
+      "channel": "production",
       "env": {
         "APP_VARIANT": "production",
-        "EXPO_PUBLIC_API_URL": "app.taybah-app.com"
+        "EXPO_PUBLIC_API_URL": "https://app.taybah-app.com"
       }
     }
   },
