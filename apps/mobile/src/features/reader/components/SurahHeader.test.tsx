@@ -1,8 +1,8 @@
 import { highContrast, typeScale } from '@quran/design-tokens';
-import { waitFor } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
-import { formatNumber } from '@/core/i18n';
+import { formatNumber, i18n } from '@/core/i18n';
 import { themes } from '@/core/theme';
 
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
@@ -25,8 +25,17 @@ describe('SurahHeader', () => {
     const view = await renderUi(<SurahHeader chapter={baqarah} testID="header" />, { locale });
     expect(view.getByRole('header')).toBeOnTheScreen();
     expect(view.getByTestId('header-cartouche')).toBeOnTheScreen();
-    expect(view.getByText(baqarah.nameArabic)).toBeOnTheScreen();
+    expect(view.getByText(i18n.t('reader.surahTitle', { name: baqarah.nameArabic }))).toBeOnTheScreen();
     expect(view.getByText(new RegExp(formatNumber(baqarah.versesCount, locale)))).toBeOnTheScreen();
+  });
+
+  it('draws the full cartouche: the band and the rosette, five strokes', async () => {
+    const view = await renderUi(<SurahHeader chapter={baqarah} testID="header" />);
+    await fireEvent(view.getByTestId('header-cartouche'), 'layout', {
+      nativeEvent: { layout: { height: 112, width: 300, x: 0, y: 0 } },
+    });
+
+    expect(view.getAllByTestId(/^header-cartouche-stroke-/, { includeHiddenElements: true })).toHaveLength(5);
   });
 
   it('names the revelation place for each surah', async () => {
