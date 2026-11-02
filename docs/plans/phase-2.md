@@ -24,7 +24,7 @@ Steps 1–3 are on `main` (`05b931e`), and steps 4, 5 and 8 are committed (`46c2
 
 | Step | Result |
 | --- | --- |
-| 1 Design-system components | ✅ 14 components in `src/shared/ui`, Amiri loaded beside IBM Plex, `expo-haptics`. `fontFamilies.quran` stays `KFGQPC HAFS Uthmanic Script`. Reading and Focus use `quranFontFamily` (`AmiriQuran`) in `fonts.ts` |
+| 1 Design-system components | ✅ 14 components in `src/shared/ui`, Amiri loaded beside IBM Plex, `expo-haptics`. `fontFamilies.quran` stays `KFGQPC HAFS Uthmanic Script` (to be renamed to the real default; KFGQPC was rejected, ADR 0048). Reading and Focus use `quranFontFamily` (`AmiriQuran`) in `fonts.ts` |
 | 2 Reader data | ✅ Repositories and the reading anchor. A route key is trimmed and kept only when it matches `2:255`. `useReadingAnchor()` takes no argument |
 | 3 Local user data | ✅ Separate `user.db`, outbox in the same transaction. `npm run db:generate:user` generates its migrations |
 | 4 Reading and Focus | ✅ `ReadingList` windows ayahs, restores the top visible ayah on mode switch and resize, and uses FlashList `maintainVisibleContentPosition` when the window grows upward. Selection is a callback. Step 6 adds `selection.ts` |

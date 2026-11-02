@@ -15,7 +15,7 @@ import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { modalLikeScreenOptions, pushScreenOptions } from '@/core/layout/push-screen-options';
 import { useContentSync } from '@/core/sync/use-content-sync';
-import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
+import { bundledFonts, QuranFontProvider, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
 import { useAzkarRemindersForeground } from '@/features/azkar/reminders/use-azkar-reminders-foreground';
@@ -24,6 +24,7 @@ import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNoti
 import { useReminderGoalsSync } from '@/features/reminders/hooks/useReminderGoalsSync';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
+import { useReaderSettings } from '@/features/reader/settings';
 import { WidgetSnapshotSync } from '@/features/widgets/components/WidgetSnapshotSync';
 import { AnimatedSplashOverlay } from '@/shared/ui/AnimatedSplashOverlay';
 
@@ -43,6 +44,7 @@ installForegroundNotificationHandler();
 
 export default function RootLayout() {
   const themeName = useResolvedTheme();
+  const quranFont = useReaderSettings((state) => state.quranFont);
   const reduceMotion = useReducedMotion() ?? false;
   const pushOptions = pushScreenOptions({ isRTL: I18nManager.isRTL, platform: Platform.OS, reduceMotion });
   const modalLikeOptions = modalLikeScreenOptions({ platform: Platform.OS, reduceMotion });
@@ -107,6 +109,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider name={themeName}>
+      <QuranFontProvider font={quranFont}>
       {/* Keeps the home-screen widgets' snapshot current (ADR 0035 §4). Renders nothing. */}
       <WidgetSnapshotSync enabled={ready} />
       {!splashFinished && <AnimatedSplashOverlay appReady={ready} onFinished={finishSplash} />}
@@ -141,6 +144,7 @@ export default function RootLayout() {
         <Stack.Screen name="moon/index" options={pushOptions} />
       </Stack>
       )}
+      </QuranFontProvider>
     </ThemeProvider>
   );
 }

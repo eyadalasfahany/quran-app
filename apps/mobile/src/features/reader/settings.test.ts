@@ -111,10 +111,45 @@ describe('reader settings', () => {
     expect(JSON.parse(storage.getString(storageKeys.readerSettings) ?? '{}')).toEqual({
       fontScale: 1.3,
       mode: 'focus',
+      quranFont: 'amiriQuran',
       tafsirChosen: true,
       tafsirId: 21,
       version: 1,
     });
+  });
+
+  it('defaults the Quran font to Amiri Quran', () => {
+    expect(useReaderSettings.getState().quranFont).toBe('amiriQuran');
+    expect(readReaderSettings().quranFont).toBe('amiriQuran');
+  });
+
+  it('reads Amiri Quran from a blob saved before the font setting existed', () => {
+    storage.set(storageKeys.readerSettings, JSON.stringify({ fontScale: 1.2, mode: 'mushaf', version: 1 }));
+    resetReaderSettingsStore();
+    expect(useReaderSettings.getState().quranFont).toBe('amiriQuran');
+    expect(useReaderSettings.getState().fontScale).toBe(1.2);
+  });
+
+  it.each(['kfgqpc', 42, null, 'AmiriQuran'])('falls back to Amiri Quran for an unknown font %p', (quranFont) => {
+    storage.set(storageKeys.readerSettings, JSON.stringify({ mode: 'focus', quranFont, version: 1 }));
+    resetReaderSettingsStore();
+    expect(useReaderSettings.getState().quranFont).toBe('amiriQuran');
+    expect(useReaderSettings.getState().mode).toBe('focus');
+  });
+
+  it('persists the chosen Quran font and leaves the other settings alone', () => {
+    useReaderSettings.getState().setMode('mushaf');
+    useReaderSettings.getState().setFontScale(1.4);
+    storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 21, 30]));
+
+    useReaderSettings.getState().setQuranFont('scheherazadeNew');
+    expect(useReaderSettings.getState().quranFont).toBe('scheherazadeNew');
+
+    resetReaderSettingsStore();
+    expect(useReaderSettings.getState().quranFont).toBe('scheherazadeNew');
+    expect(useReaderSettings.getState().mode).toBe('mushaf');
+    expect(useReaderSettings.getState().fontScale).toBe(1.4);
+    expect(selectedResourceIds(resources)).toEqual([1, 21, 30]);
   });
 
   it('ignores a corrupt blob', () => {

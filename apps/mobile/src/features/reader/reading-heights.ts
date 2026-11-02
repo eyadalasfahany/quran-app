@@ -1,5 +1,7 @@
 import { size } from '@quran/design-tokens';
 
+import type { QuranFont } from '@/core/theme';
+
 import type { ReadingListMode } from './reading-list-types';
 
 // Reading rows: the ayah's text estimate plus the 44 pt header row above it.
@@ -8,8 +10,8 @@ export const READING_ROW_ESTIMATE = READING_ROW_TEXT_ESTIMATE + size.touchTarget
 
 export type HeightCacheKey = string;
 
-export function heightCacheSignature(width: number, fontScale: number, mode: ReadingListMode): string {
-  return `${mode}:${width}:${fontScale}`;
+export function heightCacheSignature(width: number, fontScale: number, mode: ReadingListMode, font: QuranFont): string {
+  return `${mode}:${width}:${fontScale}:${font}`;
 }
 
 export class ReadingHeightCache {

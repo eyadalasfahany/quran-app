@@ -1,6 +1,6 @@
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
-import { themes } from '@/core/theme';
+import { QuranFontProvider, themes } from '@/core/theme';
 
 import { QuranText } from './QuranText';
 import { quranText } from './textStyles';
@@ -14,6 +14,18 @@ describe('QuranText', () => {
 
     expect(text.props.children).toBe(ayah);
     expect(flatStyle(text.props.style)).toMatchObject({ ...quranText('quranReading'), color: themes.light.colors.ink });
+  });
+
+  it('follows the chosen Quran font', async () => {
+    const view = await renderUi(
+      <QuranFontProvider font="scheherazadeNew">
+        <QuranText variant="quranReading">{ayah}</QuranText>
+      </QuranFontProvider>,
+    );
+    const text = view.getByText(ayah);
+
+    expect(text.props.children).toBe(ayah);
+    expect(flatStyle(text.props.style).fontFamily).toBe('ScheherazadeNew-Regular');
   });
 
   it('ignores the system text size and follows the reader setting', async () => {

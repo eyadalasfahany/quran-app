@@ -304,6 +304,17 @@
       "fontScale": "Text size",
       "decreaseFont": "Decrease text size",
       "increaseFont": "Increase text size",
+      "fontLabel": "Quran font",
+      "fonts": {
+        "amiriQuran": {
+          "name": "Amiri",
+          "subtitle": "Uthmani script, Amiri Quran font"
+        },
+        "scheherazadeNew": {
+          "name": "Scheherazade",
+          "subtitle": "Uthmani script, Scheherazade New font"
+        }
+      },
       "decreaseGlyph": "A−",
       "increaseGlyph": "A+",
       "themeLabel": "Appearance",
@@ -757,7 +768,6 @@
     },
     "reading": {
       "quranFont": "Quran font",
-      "quranFontValue": "Uthmani · Hafs",
       "appearance": "Reading mode and appearance",
       "appearanceValue": "Mushaf · Auto",
       "darkAfterMaghrib": "Dark mode automatically after Maghrib",

@@ -10,7 +10,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
 import { useScreenInsets } from '@/core/layout/useScreenInsets';
-import { useTheme } from '@/core/theme';
+import { useQuranFont, useTheme } from '@/core/theme';
 import type { HighlightColor } from '@/features/library/data/model';
 
 import { BismillahLine } from './components/BismillahLine';
@@ -102,6 +102,7 @@ export function ReadingList({
   testID,
 }: ReadingListProps) {
   const theme = useTheme();
+  const quranFont = useQuranFont();
   const reduceMotion = useReducedMotion();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   // The screen pads the side insets (a notch in landscape), so the column is what is left of the window after them.
@@ -146,7 +147,7 @@ export function ReadingList({
     };
   }, [centerId, endExtendCount, startExtendCount]);
 
-  const signature = `${heightCacheSignature(columnWidth, fontScale, 'reading')}:inline=${showInlineTafsir ? 1 : 0}:tafsir=${tafsirId ?? 'none'}`;
+  const signature = `${heightCacheSignature(columnWidth, fontScale, 'reading', quranFont)}:inline=${showInlineTafsir ? 1 : 0}:tafsir=${tafsirId ?? 'none'}`;
   useEffect(() => {
     heightCache.current.clearForSignature(signature);
   }, [signature]);

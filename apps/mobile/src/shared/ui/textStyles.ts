@@ -43,12 +43,12 @@ export const latinTextDirection: TextStyle = {
 };
 
 // Quran text ignores the system text size and follows the reader's own 80–160% setting.
-export function quranText(token: QuranTypeToken, fontScale = 1): TextStyle {
+export function quranText(token: QuranTypeToken, fontScale = 1, family: string = quranFontFamily): TextStyle {
   const { size, lineHeightRatio } = quranTypeScale[token];
   const fontSize = size * fontScale;
   return {
     ...arabicTextDirection,
-    fontFamily: quranFontFamily,
+    fontFamily: family,
     fontSize,
     lineHeight: Math.round(fontSize * lineHeightRatio),
   };

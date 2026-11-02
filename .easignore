@@ -6,19 +6,33 @@ apps/api/
 infra/
 docs/
 .github/
-/*.html
+website/
+design-assets/
+graphify-out/
+image/
 /IBM-Plex-Sans-Arabic/
+# Local OpenDua audio working copy (ADR 0040); served by the API, never bundled
+/opendua-audio-*/
+apps/mobile/__tests__/
+apps/mobile/jest/
+
+# Design files and root scratch (the app reads none of them)
+/*.html
+/*.png
+/dump.rdb
+/scratch-*.js
+
+# Agent and editor tooling
 .agents/
 .claude/
 .cursor/
 .qodo/
-graphify-out/
-website/
-design-assets/
-image/
-/logo.png
-# Local OpenDua audio working copy (ADR 0040); served by the API, never bundled
-/opendua-audio-*/
+.rtk/
+/.expo/
+AGENTS.md
+CLAUDE.md
+.mcp.json
+skills-lock.json
 
 # OS and editors
 .DS_Store

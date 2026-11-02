@@ -32,7 +32,8 @@ export function AdhanSoundHeader({
         testID={`${testID}-back`}
         variant="raised"
       />
-      <UiText accessibilityRole="header" variant="displayMd">
+      {/* Amiri's ascenders (the hamza of «الأذان») rise above the 36 pt line box; the padding keeps them from clipping. */}
+      <UiText accessibilityRole="header" style={{ paddingTop: theme.space[2] }} variant="displayMd">
         {title}
       </UiText>
     </View>

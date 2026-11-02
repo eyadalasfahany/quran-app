@@ -1,7 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 
 import { formatNumber, i18n } from '@/core/i18n';
-import { themes } from '@/core/theme';
+import { QuranFontProvider, themes } from '@/core/theme';
 
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -96,6 +96,15 @@ describe('HafsMushafPage', () => {
       textAlign: 'justify',
     });
     expect(view.getByTestId('page-marker-1:1')).toBeOnTheScreen();
+  });
+
+  it('keeps Scheherazade New lines to the start instead of justifying them (ADR 0048 §11)', async () => {
+    const view = await renderUi(<QuranFontProvider font="scheherazadeNew">{fatihaPage()}</QuranFontProvider>);
+    const style = flatStyle(view.getByTestId('page-text-1:1').props.style);
+
+    expect(style.fontFamily).toBe('ScheherazadeNew-Regular');
+    expect(style.textAlign).toBe('right');
+    expect(view.getByTestId('page-ayah-1:1').props.children).toBe(ayahText);
   });
 
   it('renders the ayah byte for byte in its Quran font, never scaled by the system', async () => {

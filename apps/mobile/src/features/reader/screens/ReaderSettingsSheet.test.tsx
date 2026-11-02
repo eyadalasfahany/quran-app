@@ -38,7 +38,30 @@ describe('ReaderSettingsSheet', () => {
     expect(view.getByText('طريقة العرض')).toBeOnTheScreen();
     expect(view.getByText('المظهر')).toBeOnTheScreen();
     expect(view.getByText('حجم خط المصحف')).toBeOnTheScreen();
-    expect(view.queryByText('خط المصحف')).toBeNull();
+    expect(view.getByText('خط المصحف')).toBeOnTheScreen();
+
+    const labels = view
+      .getAllByText(/^(طريقة العرض|المظهر|حجم خط المصحف|خط المصحف)$/)
+      .map((node) => node.props.children as string);
+    expect(labels).toEqual(['طريقة العرض', 'المظهر', 'حجم خط المصحف', 'خط المصحف']);
+  });
+
+  it('applies the chosen Quran font at once, without changing the mode', async () => {
+    useReaderSettings.getState().setMode('mushaf');
+    const view = await renderUi(<ReaderSettingsSheet />);
+    expect(view.getByTestId('reader-font-picker-amiriQuran').props.accessibilityState?.checked).toBe(true);
+
+    await fireEvent.press(view.getByTestId('reader-font-picker-scheherazadeNew'));
+
+    expect(useReaderSettings.getState().quranFont).toBe('scheherazadeNew');
+    expect(useReaderSettings.getState().mode).toBe('mushaf');
+    expect(view.getByTestId('reader-font-picker-scheherazadeNew').props.accessibilityState?.checked).toBe(true);
+  });
+
+  it.each(locales)('names both fonts in %s', async (locale) => {
+    const view = await renderUi(<ReaderSettingsSheet />, { locale });
+    expect(view.getByText(locale === 'ar' ? 'أميري' : 'Amiri')).toBeOnTheScreen();
+    expect(view.getByText(locale === 'ar' ? 'شهرزاد' : 'Scheherazade')).toBeOnTheScreen();
   });
 
   it('shows no Quran preview behind the controls', async () => {
