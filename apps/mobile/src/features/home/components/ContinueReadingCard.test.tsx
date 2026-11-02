@@ -62,7 +62,7 @@ describe('ContinueReadingCard', () => {
 
     expect(button.props.accessibilityLabel).toBe(
       locale === 'ar'
-        ? 'تابع القراءة, سورة البقرة, الآية ٢٥٥ · صفحة ٤٢ · الجزء ٣'
+        ? 'تابع القراءة، سورة البقرة، الآية ٢٥٥ · صفحة ٤٢ · الجزء ٣'
         : 'Continue reading, Surah البقرة, Ayah 255 · page 42 · juz 3',
     );
     expect(button.props.accessibilityHint).toBe(locale === 'ar' ? 'قرأت ٧٪ من المصحف' : '7% of the Quran read');

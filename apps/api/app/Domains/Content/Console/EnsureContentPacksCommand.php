@@ -35,10 +35,6 @@ final class EnsureContentPacksCommand extends Command
             ->get();
 
         foreach ($resources as $resource) {
-            if (! $resource->hasDeliverableRights()) {
-                continue;
-            }
-
             $label = (string) $resource->id;
             $existing = ContentPack::query()
                 ->where('resource_id', $resource->id)

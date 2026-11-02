@@ -489,6 +489,26 @@ function loadNotes(db: SqlExecutor, resourceId: number, entryId: number): Record
   return grouped;
 }
 
+/**
+ * The recordings attached to the given items, in item order. A category reader uses it once for every unit's items,
+ * so it reads the recordings of a whole category in one query instead of one entry at a time (ADR 0031 §8).
+ */
+export function listRecordingsForItems(db: SqlExecutor, itemIds: readonly number[]): AzkarRecording[] {
+  if (itemIds.length === 0) {
+    return [];
+  }
+  const placeholders = itemIds.map(() => '?').join(', ');
+  return db
+    .all<RecordingRow>(
+      `${RECORDING_SELECT}
+       JOIN azkar_items i ON i.resource_id = r.resource_id AND i.id = r.item_id
+       WHERE i.resource_id = ? AND i.id IN (${placeholders})
+       ORDER BY i.position, r.id`,
+      [activeAzkarResourceId(db), ...itemIds],
+    )
+    .map(asRecording);
+}
+
 function loadRecordings(db: SqlExecutor, resourceId: number, entryId: number): AzkarRecording[] {
   return db
     .all<RecordingRow>(

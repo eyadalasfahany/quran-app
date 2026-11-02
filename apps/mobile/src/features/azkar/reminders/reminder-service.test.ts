@@ -6,6 +6,8 @@ import { i18n } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { AZKAR_ROLLING_DAYS, AZKAR_SLOTS } from '@/features/notifications/budget';
 
+import * as myDuasRepository from '@/features/duas/data/my-duas-repository';
+
 import { openAzkarUserDb } from '../../../../jest/azkar-test-db';
 import { reminderContent, syncAzkarReminders } from './reminder-service';
 import {
@@ -247,7 +249,7 @@ describe('syncAzkarReminders within the pending pool', () => {
     }
   }
 
-  it('shrinks the windows so six prayer-relative reminders stay within the 23 pending slots', async () => {
+  it('shrinks the windows so six prayer-relative reminders stay within the 21 pending slots', async () => {
     savePrayerEntries(6);
 
     const result = await syncAzkarReminders({ now: NOW, coords: LONDON, store });
@@ -264,30 +266,31 @@ describe('syncAzkarReminders within the pending pool', () => {
     const result = await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
     expect(live.size).toBe(AZKAR_SLOTS);
-    expect(result.unscheduled).toEqual(['reminder-24']);
+    expect(result.unscheduled).toEqual(['reminder-22', 'reminder-23', 'reminder-24']);
     expect(getReminder('entry', 'e-24', store)?.notificationIds).toEqual([]);
   });
 
   it('cancels the old ids of a reminder that a later sync leaves unscheduled', async () => {
-    savePrayerEntries(23);
+    savePrayerEntries(21);
     await syncAzkarReminders({ now: NOW, coords: LONDON, store });
     expect(live.size).toBe(AZKAR_SLOTS);
 
-    // A 24th reminder arrives: the pool is full, so it is the one left out and nothing else changes.
+    // A 22nd reminder arrives: the pool is full, so it is the one left out and nothing else changes.
     saveReminder(
-      { targetType: 'entry', targetKey: 'e-24', enabled: true, triggerType: 'prayer_relative', clockTime: null, prayer: 'asr', offsetMinutes: 0 },
+      { targetType: 'entry', targetKey: 'e-22', enabled: true, triggerType: 'prayer_relative', clockTime: null, prayer: 'asr', offsetMinutes: 0 },
       store,
     );
     const result = await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
     expect(live.size).toBe(AZKAR_SLOTS);
-    expect(result.unscheduled).toEqual(['reminder-24']);
+    expect(result.unscheduled).toEqual(['reminder-22']);
   });
 });
 
 describe('reminderContent', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('ar');
+    jest.restoreAllMocks();
   });
 
   it('names the category in the title and keeps the body neutral', () => {
@@ -327,5 +330,32 @@ describe('reminderContent', () => {
 
     expect(content.data.route).toBe('/azkar/entry/fixture%3Aentry-001');
     expect(content.title).toBe('تذكير الأذكار');
+  });
+
+  it('routes a my_dua reminder to the editor', () => {
+    jest.spyOn(myDuasRepository, 'getMyDua').mockReturnValue({
+      id: 'dua-1',
+      title: 'FIXTURE title 1 — not a dua',
+      body: 'FIXTURE text 1 — not a dua',
+      textSearch: 'fixture',
+      createdAt: 1,
+      updatedAt: 1,
+    });
+
+    const content = reminderContent({
+      id: 'r',
+      targetType: 'my_dua',
+      targetKey: 'dua-1',
+      enabled: true,
+      triggerType: 'clock',
+      clockTime: '08:00',
+      prayer: null,
+      offsetMinutes: null,
+      notificationIds: [],
+      updatedAt: 1,
+    });
+
+    expect(content.data.route).toBe('/duas/mine/edit?id=dua-1');
+    expect(content.title).toBe('FIXTURE title 1 — not a dua');
   });
 });

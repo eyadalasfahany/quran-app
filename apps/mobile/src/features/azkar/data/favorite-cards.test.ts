@@ -4,7 +4,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { listFavoriteCards } from './favorite-cards';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 
 describe('listFavoriteCards', () => {
   let database: DatabaseSync;

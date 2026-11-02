@@ -438,10 +438,10 @@ describe('HomeScreen Azkar sections', () => {
     mockAzkar.recent = [{ href: '/azkar/read/morning', key: 'category:morning', meta: '١٢ من ٢٤', title: 'أذكار الصباح' }];
 
     const view = await renderUi(<HomeScreen />);
-    await fireEvent.press(view.getByRole('button', { name: 'تابع الأذكار, أذكار الصباح, ٢ من ٣' }));
+    await fireEvent.press(view.getByRole('button', { name: 'تابع الأذكار، أذكار الصباح، ٢ من ٣' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/read/morning');
 
-    await fireEvent.press(view.getByRole('button', { name: 'أذكار الصباح, ١٢ من ٢٤' }));
+    await fireEvent.press(view.getByRole('button', { name: 'أذكار الصباح، ١٢ من ٢٤' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/read/morning');
   });
 
@@ -450,7 +450,7 @@ describe('HomeScreen Azkar sections', () => {
     mockAzkar.sessions = [morningSession];
 
     const view = await renderUi(<HomeScreen />);
-    await fireEvent.press(view.getByRole('button', { name: 'أذكار الصباح, ١٢ من ٢٤' }));
+    await fireEvent.press(view.getByRole('button', { name: 'أذكار الصباح، ١٢ من ٢٤' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/category/morning');
 
     await fireEvent.press(view.getByRole('button', { name: 'عرض الكل' }));
@@ -502,7 +502,7 @@ describe('HomeScreen daily progress', () => {
 
     const view = await renderUi(<HomeScreen />);
 
-    expect(view.getByLabelText('المسبحة, ٥٠ من ١٠٠')).toBeOnTheScreen();
+    expect(view.getByLabelText('المسبحة، ٥٠ من ١٠٠')).toBeOnTheScreen();
   });
 
   it('shows the misbaha goal without Azkar content, and no Azkar sessions', async () => {
@@ -511,7 +511,7 @@ describe('HomeScreen daily progress', () => {
 
     const view = await renderUi(<HomeScreen />);
 
-    expect(view.getByLabelText('المسبحة, ٥٠ من ١٠٠')).toBeOnTheScreen();
+    expect(view.getByLabelText('المسبحة، ٥٠ من ١٠٠')).toBeOnTheScreen();
     expect(view.queryByTestId('home-daily-progress-session:morning')).toBeNull();
   });
 });

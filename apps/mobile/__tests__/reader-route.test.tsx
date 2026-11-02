@@ -1,3 +1,9 @@
+// The widget snapshot sync is native-facing and has its own tests. Mounting it here costs the cold start past Jest's
+// 5 s limit on the first route test, so the route test renders the root without it.
+jest.mock("@/features/widgets/components/WidgetSnapshotSync", () => ({
+  WidgetSnapshotSync: () => null,
+}));
+
 import {
   act,
   fireEvent,
@@ -56,6 +62,7 @@ describe("reader route", () => {
   // The app starts in Arabic; these tests use the English labels, so they save English first (as a reader would).
   beforeEach(async () => {
     storage.set(storageKeys.locale, "en");
+    storage.set(storageKeys.onboardingCompleted, true);
     I18nManager.isRTL = false;
     await i18n.changeLanguage("en");
   });
@@ -79,7 +86,7 @@ describe("reader route", () => {
     });
 
     expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
-  });
+  }, 15000); // The first test of the file pays the cold start of the whole app under Jest (serial run); 5 s is not enough.
 
   it("goes Home when the reader was opened with nothing under it (deep link or launch restore)", async () => {
     const view = await renderRouter("./app", { initialUrl: "/read/2:255" });

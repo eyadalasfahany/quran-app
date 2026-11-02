@@ -2,7 +2,9 @@ import {
   AZKAR_ROLLING_DAYS,
   AZKAR_SLOTS,
   DAILY_REMINDER_SLOTS,
+  FRIDAY_REMINDER_SLOTS,
   IOS_PENDING_LIMIT,
+  MISBAHA_REMINDER_SLOTS,
   PRAYER_NOTIFICATION_SLOTS,
   PRAYER_ROLLING_DAYS,
 } from './budget';
@@ -14,8 +16,13 @@ describe('pending notification budget', () => {
     expect(PRAYER_NOTIFICATION_SLOTS).toBe(40);
   });
 
-  it('gives Azkar what the daily reminder and the prayer notifications leave', () => {
-    expect(AZKAR_SLOTS).toBe(23);
+  it('reserves one slot each for the Friday Surat al-Kahf and the misbaha reminders', () => {
+    expect(FRIDAY_REMINDER_SLOTS).toBe(1);
+    expect(MISBAHA_REMINDER_SLOTS).toBe(1);
+  });
+
+  it('gives Azkar what the other categories leave: 21 of the 64', () => {
+    expect(AZKAR_SLOTS).toBe(21);
     expect(AZKAR_ROLLING_DAYS).toBe(4);
   });
 
@@ -32,6 +39,8 @@ describe('pending notification budget', () => {
   });
 
   it('never exceeds the iOS limit with every category at its reserved size', () => {
-    expect(DAILY_REMINDER_SLOTS + PRAYER_NOTIFICATION_SLOTS + AZKAR_SLOTS).toBe(IOS_PENDING_LIMIT);
+    const reserved =
+      DAILY_REMINDER_SLOTS + PRAYER_NOTIFICATION_SLOTS + FRIDAY_REMINDER_SLOTS + MISBAHA_REMINDER_SLOTS + AZKAR_SLOTS;
+    expect(reserved).toBe(IOS_PENDING_LIMIT);
   });
 });

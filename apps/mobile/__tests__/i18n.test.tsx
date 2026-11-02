@@ -29,10 +29,22 @@ function HomeLabel() {
   return <Text>{t('tabs.home')}</Text>;
 }
 
+// Arabic has four plural forms beyond one and other. English has only one and other, so an Arabic-only plural key is
+// allowed when its English `_other` form exists.
+const ARABIC_ONLY_PLURAL = /_(zero|two|few|many)$/;
+
 describe('string catalogs', () => {
-  it('gives Arabic and English the same keys', () => {
-    expect(leafKeys(ar).sort()).toEqual(leafKeys(en).sort());
-    expect(leafKeys(ar).length).toBeGreaterThan(0);
+  it('gives Arabic and English the same keys, except Arabic-only plural forms', () => {
+    const arKeys = leafKeys(ar);
+    const enKeys = new Set(leafKeys(en));
+    const arSet = new Set(arKeys);
+
+    for (const key of arKeys.filter((k) => !enKeys.has(k))) {
+      expect(key).toMatch(ARABIC_ONLY_PLURAL);
+      expect(enKeys.has(key.replace(ARABIC_ONLY_PLURAL, '_other'))).toBe(true);
+    }
+    expect(leafKeys(en).filter((k) => !arSet.has(k))).toEqual([]);
+    expect(arKeys.length).toBeGreaterThan(0);
   });
 
   it('keeps every string non-empty', () => {

@@ -14,7 +14,7 @@ import {
   listCategoryIds,
   listCategoryUnits,
 } from './content-repository';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { searchAzkarEntries } from './search';
 
 // Verse rows are placeholders: the real Quran text comes from the Tanzil seed, never from these tests.

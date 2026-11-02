@@ -9,9 +9,11 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 /**
@@ -82,11 +84,21 @@ final readonly class ProblemDetailsRenderer
         return new ProblemDetails(
             status: $status,
             code: $code,
-            title: $code === 'http_error' ? (Response::$statusTexts[$status] ?? 'Error') : __("problems.{$code}"),
+            title: $code === 'http_error' ? $this->httpErrorTitle($status) : __("problems.{$code}"),
             detail: $detail === '' ? null : $detail,
             errors: $errors,
             headers: $headers,
         );
+    }
+
+    /**
+     * A status without its own code gets its specific title when one is translated, and the generic one otherwise.
+     */
+    private function httpErrorTitle(int $status): string
+    {
+        $specific = "problems.http_{$status}";
+
+        return __(Lang::has($specific) ? $specific : 'problems.http_error');
     }
 
     /**
@@ -116,9 +128,21 @@ final readonly class ProblemDetailsRenderer
         return str_starts_with($message, 'No query results for model') ? null : $message;
     }
 
+    /**
+     * Laravel words an unknown route in English ("The route … could not be found."). The client gets the translated
+     * title and no detail instead.
+     */
     private function clientDetail(HttpExceptionInterface&Throwable $exception): ?string
     {
-        return $exception->getStatusCode() >= Response::HTTP_INTERNAL_SERVER_ERROR ? null : $exception->getMessage();
+        if ($exception->getStatusCode() >= Response::HTTP_INTERNAL_SERVER_ERROR) {
+            return null;
+        }
+
+        if ($exception instanceof NotFoundHttpException && preg_match('/^The route .* could not be found\.$/', $exception->getMessage()) === 1) {
+            return null;
+        }
+
+        return $exception->getMessage();
     }
 
     /**

@@ -24,7 +24,7 @@ describe('SelectedAzkarCard', () => {
     const onPress = jest.fn();
     const view = await renderUi(<SelectedAzkarCard fraction={0} onPress={onPress} progressText="٠ من ٩" title="أذكار النوم" />);
 
-    await fireEvent.press(view.getByRole('button', { name: 'أذكار النوم, ٠ من ٩' }));
+    await fireEvent.press(view.getByRole('button', { name: 'أذكار النوم، ٠ من ٩' }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
   });

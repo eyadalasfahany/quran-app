@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -23,11 +24,12 @@ export function DailyProgressRow({
   done: boolean;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   return (
     <View
-      accessibilityLabel={`${label}, ${value}`}
+      accessibilityLabel={t('common.a11yPair', { label, title: value })}
       accessibilityRole="text"
       accessibilityState={{ checked: done }}
       style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2], minHeight: ROW_MIN_HEIGHT }}

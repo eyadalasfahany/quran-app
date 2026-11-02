@@ -140,3 +140,10 @@ export async function press(element: TestElement): Promise<void> {
     fireEvent.press(element);
   });
 }
+
+/** A native event (accessibility action, layout) inside an async act, as `press` fires a press. */
+export async function fire(element: TestElement, name: string, payload?: unknown): Promise<void> {
+  await act(async () => {
+    fireEvent(element, name, payload);
+  });
+}

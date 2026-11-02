@@ -7,6 +7,11 @@ import { ContentColumn, useIsShortWindow, useTabBarScrollHandlers, useTabRailSid
 import { useTheme } from '@/core/theme';
 import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
 import { azkarHref } from '@/features/azkar/routes';
+import { MenuHijriCard } from '@/features/hijri/components/MenuHijriCard';
+import { MenuMoonCard } from '@/features/moon/components/MenuMoonCard';
+import { useMoonMenuPreview } from '@/features/moon/hooks/useMoonMenuPreview';
+import { isHijriCalendarAvailable } from '@/features/hijri/data/hijri-date';
+import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
 import { Screen, ScreenHeader, type IconName } from '@/shared/ui';
 
 import { MenuCard } from '../components/MenuCard';
@@ -24,13 +29,13 @@ const ICON = {
   salah: { ios: 'moon.stars', android: 'mosque' },
   qibla: { ios: 'safari', android: 'explore' },
   khatma: { ios: 'checkmark.circle', android: 'check_circle' },
-  home: { ios: 'house', android: 'home' },
   mushaf: { ios: 'book', android: 'menu_book' },
   listen: { ios: 'headphones', android: 'headphones' },
   myQuran: { ios: 'bookmark', android: 'bookmark' },
   search: { ios: 'magnifyingglass', android: 'search' },
   settings: { ios: 'slider.horizontal.3', android: 'tune' },
   sources: { ios: 'info.circle', android: 'info' },
+  reminders: { ios: 'bell', android: 'notifications' },
 } as const satisfies Record<string, IconName>;
 
 /**
@@ -47,6 +52,9 @@ export function MenuScreen() {
   const miniShown = useMiniPlayerVisible('tabs');
   const previews = useMenuPreviews();
   const azkar = useAzkarMenuPreview();
+  const hijriDate = useHijriDate();
+  const hijriAvailable = isHijriCalendarAvailable();
+  const moonPreview = useMoonMenuPreview();
   // Three columns where the window is wide, a landscape phone included (ADR 0036); two on a phone in portrait.
   const columns = useWidthClass() === 'compact' ? 2 : 3;
 
@@ -90,6 +98,9 @@ export function MenuScreen() {
       key="salah"
       onPress={() => router.push('/salah' as Href)}
     />,
+    // The Hijri calendar card (ADR 0048): shown where the platform computes the calendar.
+    hijriAvailable ? <MenuHijriCard key="hijri" onPress={() => router.push('/hijri' as Href)} preview={hijriDate} /> : null,
+    <MenuMoonCard key="moon" onPress={() => router.push('/moon' as Href)} preview={moonPreview} />,
     azkar.available ? (
       <MenuCard
         caption={t('menu.azkar.caption')}
@@ -113,6 +124,15 @@ export function MenuScreen() {
       />
     ) : null,
     <MenuCard
+      caption={t('menu.reminders.caption')}
+      icon={ICON.reminders}
+      key="reminders"
+      onPress={() => router.push('/reminders' as Href)}
+      preview={t('menu.reminders.subtitle')}
+      testID="menu-card-reminders"
+      title={t('menu.reminders.title')}
+    />,
+    <MenuCard
       caption={t('menu.qibla.caption')}
       icon={ICON.qibla}
       key="qibla"
@@ -130,15 +150,6 @@ export function MenuScreen() {
       testID="menu-card-khatma"
       title={t('menu.khatma.title')}
     />,
-    // <MenuCard
-    //   caption={t('menu.home.caption')}
-    //   icon={ICON.home}
-    //   key="home"
-    //   onPress={() => router.navigate('/(main)/(home)')}
-    //   preview={t('menu.home.subtitle')}
-    //   testID="menu-card-home"
-    //   title={t('menu.home.title')}
-    // />,
     <MenuCard
       caption={t('menu.mushaf.caption')}
       icon={ICON.mushaf}

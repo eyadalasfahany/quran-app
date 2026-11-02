@@ -4,7 +4,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { normalizeForSearch } from '@/core/text/normalizeForSearch';
 
 import { at, openAzkarContentDb } from '../../../../jest/azkar-test-db';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { AZKAR_SEARCH_LIMIT, mapMatchToOriginal, matchesCategoryLabel, searchAzkarEntries } from './search';
 
 describe('azkar search', () => {

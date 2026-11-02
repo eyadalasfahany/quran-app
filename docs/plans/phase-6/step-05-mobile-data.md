@@ -74,10 +74,10 @@ A unit is what the reader shows and counts.
 MMKV key `storageKeys.azkar.fontScale` (add an `azkar` block to `src/core/storage/mmkv.ts`). Steps `[0.85, 1, 1.15, 1.3, 1.5]`, default 1, following the reader's font-scale stepper values if they exist; check `src/features/reader/settings`. It multiplies the `dhikr` type token.
 
 ## Development fixtures (`dev-fixtures.ts`)
-- `loadAzkarDevFixtures(executor)` inserts a tiny set with `resource_id = -1`. Call it from `app/_layout.tsx` after the content DB is ready, **only** when `__DEV__ && process.env.EXPO_PUBLIC_AZKAR_DEV_FIXTURES === '1'`. It is idempotent: it deletes `resource_id = -1` rows first.
+- `loadAzkarDevFixtures(executor)` inserts a tiny set with `resource_id = -1`. **Superseded (2 Nov 2026, ADR 0042):** the app never calls it, and the module lives in `src/features/azkar/data/__fixtures__/` for Jest only. It is idempotent: it deletes `resource_id = -1` rows first.
 - **Every text is a marked placeholder:** «نص تجريبي ١ — ليس ذكرًا», `text_en` "FIXTURE text 1 — not a dhikr", `source_version = 'taybah-dev-fixture'`, `review_status = 'sourced'`, chapter `title_ar = '[عنوان تجريبي]'`.
 - **Cover:** the 5 session categories and 3 browse categories; items with counts 3 and 33; items with `required_count = null`; one repeat group (`repeat_times` 3); one instruction-only entry; one entry with a preface instruction; one item with a `quran` segment pointing to an existing verse (1:1); one English-only narration (`text_ar = null`); no recordings; no notes, except one entry with one note of each kind (placeholder text, `source_name = '[مصدر تجريبي]'`) to exercise the details sheet.
-- Add `EXPO_PUBLIC_AZKAR_DEV_FIXTURES=` (empty) to `apps/mobile/.env.example` with a comment.
+- ~~Add `EXPO_PUBLIC_AZKAR_DEV_FIXTURES=` to `apps/mobile/.env.example`.~~ Removed 2 Nov 2026 (ADR 0042).
 
 ## Tests
 `*.test.ts` beside each file:

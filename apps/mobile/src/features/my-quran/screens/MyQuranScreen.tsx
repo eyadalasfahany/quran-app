@@ -32,7 +32,7 @@ const SETTINGS_ICON = { ios: 'gearshape', android: 'settings' } as const;
 
 /**
  * «مصحفي» (#MyQuran): the bookmarks, highlights and notes the reader saved, under one segment.
- * «ختمة» stays disabled until step 3. Local-only (ADR 0027): no sign-in banner.
+ * Local-only (ADR 0027): no sign-in banner.
  */
 export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string }) {
   const { t } = useTranslation();

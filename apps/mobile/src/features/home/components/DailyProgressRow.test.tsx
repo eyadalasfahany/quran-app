@@ -12,10 +12,10 @@ describe('DailyProgressRow', () => {
 
   it('reads as one line with its state for a screen reader', async () => {
     const open = await renderUi(<DailyProgressRow done={false} label="المسبحة" value="٥٠ من ١٠٠" />);
-    expect(open.getByLabelText('المسبحة, ٥٠ من ١٠٠').props.accessibilityState).toEqual({ checked: false });
+    expect(open.getByLabelText('المسبحة، ٥٠ من ١٠٠').props.accessibilityState).toEqual({ checked: false });
 
     const done = await renderUi(<DailyProgressRow done label="أذكار الصباح" value="مكتمل" />);
-    expect(done.getByLabelText('أذكار الصباح, مكتمل').props.accessibilityState).toEqual({ checked: true });
+    expect(done.getByLabelText('أذكار الصباح، مكتمل').props.accessibilityState).toEqual({ checked: true });
   });
 
   it('reads in English', async () => {

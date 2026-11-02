@@ -3,7 +3,14 @@ import { Platform } from 'react-native';
 
 import { i18n } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
-import { IOS_PENDING_LIMIT, AZKAR_SLOTS, DAILY_REMINDER_SLOTS, PRAYER_NOTIFICATION_SLOTS } from '@/features/notifications/budget';
+import {
+  AZKAR_SLOTS,
+  DAILY_REMINDER_SLOTS,
+  FRIDAY_REMINDER_SLOTS,
+  IOS_PENDING_LIMIT,
+  MISBAHA_REMINDER_SLOTS,
+  PRAYER_NOTIFICATION_SLOTS,
+} from '@/features/notifications/budget';
 import { writeSyncState, currentSyncState } from '@/features/notifications/sync-state';
 
 import { getCoordinates } from './location';
@@ -431,8 +438,9 @@ describe('prayer notifications', () => {
   describe('budget fit', () => {
     it('keeps five prayers of 8 days within the prayer share, and the whole pool at the iOS limit', () => {
       expect(PRAYERS.length * 8).toBeLessThanOrEqual(PRAYER_NOTIFICATION_SLOTS);
-      expect(PRAYER_NOTIFICATION_SLOTS + AZKAR_SLOTS + DAILY_REMINDER_SLOTS).toBe(64);
-      expect(PRAYER_NOTIFICATION_SLOTS + AZKAR_SLOTS + DAILY_REMINDER_SLOTS).toBe(IOS_PENDING_LIMIT);
+      const pool = PRAYER_NOTIFICATION_SLOTS + AZKAR_SLOTS + DAILY_REMINDER_SLOTS + FRIDAY_REMINDER_SLOTS + MISBAHA_REMINDER_SLOTS;
+      expect(pool).toBe(64);
+      expect(pool).toBe(IOS_PENDING_LIMIT);
     });
 
     it('never schedules more than the prayer share, even with every bell on', async () => {

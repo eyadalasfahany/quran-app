@@ -7,7 +7,6 @@ import { useContentDb } from '@/core/db/content/open';
 import { useLocale } from '@/core/i18n/useLocale';
 import { useOnline } from '@/core/network/useOnline';
 import { ContentColumn, useTabContentBottom } from '@/core/layout';
-import { useTheme } from '@/core/theme';
 import { ConfirmDialog, EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
 
@@ -35,7 +34,6 @@ const INSTALL_SKELETON_WIDTHS = ['58%', '46%', '64%', '52%', '60%', '44%', '56%'
 export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   const { t } = useTranslation();
   const locale = useLocale();
-  const theme = useTheme();
   const online = useOnline();
   const { ready } = useContentDb();
   const { reciters } = useReciterCatalogue(ready);

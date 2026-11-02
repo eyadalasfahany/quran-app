@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -27,13 +28,14 @@ export function SelectedAzkarCard({
   onPress: () => void;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
   const clamped = Math.min(Math.max(fraction, 0), 1);
 
   return (
     <Pressable
-      accessibilityLabel={`${title}, ${progressText}`}
+      accessibilityLabel={t('common.a11yPair', { label: title, title: progressText })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

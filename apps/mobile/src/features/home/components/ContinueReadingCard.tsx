@@ -40,7 +40,7 @@ export function ContinueReadingCard({
   return (
     <Pressable
       accessibilityHint={t('home.progress', { percent: formatNumber(percent, locale) })}
-      accessibilityLabel={`${t('home.continueReading')}, ${title}, ${place}`}
+      accessibilityLabel={t('common.a11yTriple', { label: t('home.continueReading'), title, detail: place })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

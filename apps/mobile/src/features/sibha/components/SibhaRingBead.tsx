@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { I18nManager } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -28,6 +29,16 @@ export function sibhaBeadPosition(size: number, stroke: number, fraction: number
 }
 
 /**
+ * The bead's translateX from its `left: 0` anchor. React Native swaps left and right in RTL, so there the anchor is the
+ * right edge and the physical x is measured back from it. Transforms are never swapped, so this keeps the bead on the
+ * SVG arc, which is drawn in physical coordinates.
+ */
+export function sibhaBeadTranslateX(physicalLeft: number, size: number, beadSize: number, isRTL: boolean): number {
+  'worklet';
+  return isRTL ? physicalLeft - (size - beadSize) : physicalLeft;
+}
+
+/**
  * A tasbih bead on the progress ring. It springs to the new count on each tap and briefly scales up.
  */
 export function SibhaRingBead({
@@ -46,6 +57,7 @@ export function SibhaRingBead({
   const progress = useSharedValue(fraction);
   const pulse = useSharedValue(1);
   const beadSize = Math.max(12, Math.round(size * 0.046));
+  const isRTL = I18nManager.isRTL;
 
   useEffect(() => {
     progress.value = reduceMotion ? fraction : withSpring(fraction, BEAD_SPRING);
@@ -58,12 +70,17 @@ export function SibhaRingBead({
 
   const animatedStyle = useAnimatedStyle(() => {
     const { left, top } = sibhaBeadPosition(size, stroke, progress.value, beadSize);
+    // Placed with a translate, not `left`/`top`: `left` is swapped in RTL and mirrored the bead away from the arc.
     return {
       height: beadSize,
-      left,
+      left: 0,
       position: 'absolute',
-      top,
-      transform: [{ scale: pulse.value }],
+      top: 0,
+      transform: [
+        { translateX: sibhaBeadTranslateX(left, size, beadSize, isRTL) },
+        { translateY: top },
+        { scale: pulse.value },
+      ],
       width: beadSize,
     };
   });

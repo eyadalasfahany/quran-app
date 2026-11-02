@@ -11,7 +11,7 @@ describe('DailyWirdCard', () => {
 
     expect(view.getByText('وردك اليومي')).toBeOnTheScreen();
     expect(view.getByText('٢١ صفحة')).toBeOnTheScreen();
-    expect(view.getByText('حوالي ١ جزء يوميًا')).toBeOnTheScreen();
+    expect(view.getByText('حوالي جزء واحد يوميًا')).toBeOnTheScreen();
     expect(view.getByTestId('khatma-daily-wird')).toBeOnTheScreen();
     expect(view.getByTestId('khatma-daily-wird').props.style).toMatchObject({
       backgroundColor: themes.light.colors.brandSurface,
@@ -29,6 +29,15 @@ describe('DailyWirdCard', () => {
     const view = await renderUi(<DailyWirdCard juzApprox={1} pagesPerDay={21} />);
 
     expect(flatStyle(view.getByText('٢١ صفحة').props.style).lineHeight).toBeGreaterThanOrEqual(Math.round(34 * amiriNaturalLeading));
+  });
+
+  it('reads a two-page wird with the dual noun and no number, and a two-juz figure without one', async () => {
+    const view = await renderUi(<DailyWirdCard juzApprox={2} pagesPerDay={2} />);
+
+    expect(view.getByText('صفحتان')).toBeOnTheScreen();
+    expect(view.queryByText('٢ صفحتان')).toBeNull();
+    expect(view.getByText('حوالي جزأين يوميًا')).toBeOnTheScreen();
+    expect(view.queryByText('حوالي ٢ جزءين يوميًا')).toBeNull();
   });
 
   it.each(locales)('renders under %s', async (locale) => {

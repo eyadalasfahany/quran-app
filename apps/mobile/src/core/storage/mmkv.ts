@@ -36,8 +36,6 @@ export const storageKeys = {
     recentScopes: 'azkar.recentScopes',
     // JSON: the local day, time zone and coordinates key of the last Azkar reminder sync (ADR 0031 §7).
     remindersSync: 'azkar.remindersSync',
-    // Boolean: «تشغيل تلقائي», whether the reader advances when a unit's licensed recording ends (ADR 0031 §8).
-    audioAutoplay: 'azkar.audioAutoplay',
   },
 
   // Misbaha (ADR 0034 §4). Personal, local only; cleared with the other personal data.
@@ -50,6 +48,30 @@ export const storageKeys = {
 
   // JSON: the daily goals the user chose (ADR 0034 §5). Nothing is on by default.
   dailyGoals: 'dailyGoals',
+
+  // Hijri calendar adjustment in days, −2 to +2 (ADR 0048). Personal, local only; cleared with the other personal data.
+  hijriAdjustDays: 'hijri.adjustDays',
+
+  // JSON: the widget snapshot (ADR 0035 §4), read by the home-screen widgets. Local data only; cleared with personal data.
+  widgets: {
+    snapshot: 'widgets.snapshot',
+    /** Last `widgetTapsTotal` merged from the iOS widget App Group snapshot (ADR 0035 §3.5). */
+    lastMergedWidgetTaps: 'widgets.lastMergedWidgetTaps',
+    /** JSON: last applied watch misbaha seq per install id (`features/watch/misbaha-delta.ts`). */
+    watchMerge: 'widgets.watchMerge',
+  },
+
+  // Reminders hub (ADR 0034, 2 Nov 2026). Local only; cleared with the other personal data.
+  reminders: {
+    // JSON: the Friday Surat al-Kahf reminder: enabled, mode (dhuhr or clock) and clock time.
+    friday: 'reminders.friday',
+    // JSON: the misbaha daily target reminder: enabled and clock time.
+    misbaha: 'reminders.misbaha',
+    // JSON: the local day, time zone and coordinates key of the last goal-reminder sync.
+    goalsSync: 'reminders.goalsSync',
+    // Boolean: the recommended set was offered (shown once, ADR 0034).
+    recommendedShown: 'reminders.recommendedShown',
+  },
 
   // Salah data layer
   salah: {

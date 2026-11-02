@@ -1,0 +1,10 @@
+"widget_next_prayer_name" = "Next prayer";
+"widget_next_prayer_desc" = "Next prayer name and time";
+"widget_progress_name" = "Today's progress";
+"widget_progress_desc" = "Your daily goals progress";
+"widget_reading_name" = "Continue reading";
+"widget_reading_desc" = "Reading place and today's wird";
+"widget_misbaha_name" = "Misbaha";
+"widget_misbaha_desc" = "Counter and today's total";
+"widget_lock_name" = "Lock screen";
+"widget_lock_desc" = "Next prayer and progress percent";

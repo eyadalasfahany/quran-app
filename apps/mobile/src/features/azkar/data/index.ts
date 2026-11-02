@@ -49,7 +49,6 @@ export {
   TAP_GUARD_MS,
 } from './progress';
 export type { TapResult, TapState } from './progress';
-export { loadAzkarDevFixtures, azkarDevFixturesEnabled } from './dev-fixtures';
 export { readAzkarFontScale, saveAzkarFontScale, stepAzkarFontScale } from './font-scale';
 export type { AzkarEntryDetail, AzkarCategoryListItem, AzkarItemDetail, AzkarVariation } from './model';
 export type { VariationOverrides } from './content-repository';

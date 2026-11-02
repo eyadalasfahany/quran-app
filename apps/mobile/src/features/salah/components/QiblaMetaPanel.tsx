@@ -74,10 +74,20 @@ export function QiblaMetaPanel({
         <UiText style={labelStyle} variant="subhead">
           {t('home.salah.qiblaScreen.accuracy')}
         </UiText>
-        <UiText style={valueStyle} variant="subhead" weight={600}>
+        <UiText
+          accessibilityLabel={accuracy === 'unavailable' ? t('home.salah.qiblaScreen.accuracyUnavailableA11y') : undefined}
+          style={valueStyle}
+          testID="qibla-accuracy-value"
+          variant="subhead"
+          weight={600}
+        >
           {accuracy === 'good'
             ? t('home.salah.qiblaScreen.accuracyGood')
-            : t('home.salah.qiblaScreen.accuracyPoor')}
+            : accuracy === 'fair'
+              ? t('home.salah.qiblaScreen.accuracyFair')
+              : accuracy === 'poor'
+                ? t('home.salah.qiblaScreen.accuracyPoor')
+                : t('home.salah.qiblaScreen.accuracyUnavailable')}
         </UiText>
       </View>
 

@@ -1,55 +1,95 @@
 # Railway release (API)
 
-ADR 0022 (Railway), ADR 0031 §11 (Azkar in production). The API service deploys from `apps/api/railway.json`, built from `apps/api/docker/Dockerfile`.
+ADR 0022 (Railway), ADR 0040 (volume, audio and packs on the API service), ADR 0045 (features enabled by default: no environment switches). The API service deploys from `apps/api/railway.json`, built from `apps/api/docker/Dockerfile`.
 
-## What runs, in order
+## Where each piece of work runs
 
-Each deploy runs the release once, as Railway's **pre-deploy command**, before the new version starts. The command is set in `apps/api/railway.json` (`deploy.preDeployCommand`):
+Three phases run in three containers. They do different work because only one of them has the volume.
 
-```
-/usr/local/bin/entrypoint.sh /usr/local/bin/release.sh
-```
+| Phase | Config | Container | Volume | Does |
+| --- | --- | --- | --- | --- |
+| Pre-deploy (release) | `deploy.preDeployCommand` → `docker/release.sh` | a fresh container, discarded afterwards | **no** | `migrate --force` only (B1, 2 Nov 2026) |
+| Container start (web) | `deploy.startCommand` → `entrypoint.sh start-web.sh` | the serving container | **yes**, at `/app/storage/app` | `config:cache` (entrypoint); `azkar:audio-verify`; the two pinned snapshots; `azkar:import --download --defer-pack` (DB rows); `content:ensure-packs` (builds any missing pack); then `exec frankenphp` |
+| Worker services | `railway-horizon.json`, `railway-scheduler.json` | not deployed (see below) | would need it | nothing today |
 
-`docker/release.sh` runs these steps and stops at the first failure. A failed pre-deploy stops the deploy; the previous version keeps serving.
+A failed pre-deploy (a migration error) stops the deploy; the previous version keeps serving. A failed container start (for example a healthcheck timeout) fails the new deployment and the previous one keeps serving. Start-time tasks log and continue, so a missing file never blocks Quran reading, and a failed snapshot or Azkar download warns and keeps the current Azkar version (ADR 0044, amended 2 Nov 2026). An Azkar pack that lists a missing recording is never built (ADR 0040, fail closed).
 
-1. **`php artisan migrate --force`.** Schema changes are additive in production (CLAUDE.md).
-2. **`php artisan azkar:import --download --if-unlocked --defer-pack`.** Railway's pre-deploy container has **no volume**, so nothing here may write a pack file (ADR 0044).
-   - **While locked** (the default in production: `AZKAR_OPENDUA_IMPORT_ENABLED=false` or the `opendua` source is not `granted`): prints the reasons and exits **0**. Nothing is downloaded or written.
-   - **When unlocked:** downloads the pinned catalogue into `storage/app/azkar/` and checks its SHA-256 against `azkar.opendua.catalogue_sha256` before writing anything. It validates every record, replaces the `azkar` rows in one transaction, and bumps the resource version. It neither builds nor queues the pack. Any validation error or pin mismatch exits non-zero and fails the deploy.
+### The pre-deploy step (`docker/release.sh`)
 
-**Web start (`docker/start-web.sh`, API service only):** runs `php artisan content:ensure-packs`, then FrankenPHP. This builds the new azkar pack and any other missing pack on the volume. A failure prints `FAIL <id>` in the deploy log and the API still starts; the manifest leaves that resource out until it is rebuilt.
+1. `php artisan migrate --force`. Schema changes are additive in production (CLAUDE.md). This is the only pre-deploy step: the Azkar import moved to web start on 2 Nov 2026, because the import reads the audio files on the volume that only the web container mounts (ADR 0044, amended).
 
-The entrypoint (`docker/entrypoint.sh`) also runs `config:cache` and `migrate --force` at container start, so the same migrations run again harmlessly. It does not seed.
+### The Azkar import at web start (`docker/start-web.sh`, before `content:ensure-packs`)
+
+1. `php artisan azkar:snapshot hisnmuslim --pinned` and `php artisan azkar:snapshot hadeethenc --pinned`. Each fetches the configured snapshot date and keeps it only if its manifest SHA-256 is the pin in `config/azkar.php`. A failure prints a warning and the start continues. The import then runs without that secondary: the import report says so (`sourced.required_count_secondary.used = false`, with the reason), and HadeethEnc notes are left out with a reason.
+2. `php artisan azkar:import --download --defer-pack`. It downloads the pinned OpenDua catalogue and checks its SHA-256 before writing anything. It validates every record. A validation error, a checksum mismatch, a reviewed-map failure or a failed download prints a warning, writes nothing and keeps the current Azkar version serving (the start continues). When the content changed, it replaces the `azkar` rows in one transaction and bumps the version. When it did not change, it prints `unchanged` and writes nothing. It builds no pack (`--defer-pack`); `content:ensure-packs` does that in the same start.
+
+### The web container start (`docker/start-web.sh`)
+
+1. Creates `storage/app/private/packs`, `storage/app/tmp`, `storage/app/azkar/reports` and `storage/app/azkar-audio` on the volume.
+2. `php artisan azkar:audio-verify`: presence and size of the 238 shipped recordings (fast). A failure logs which files are missing. Use `--full` by hand to hash them too.
+3. `php artisan azkar:snapshot hisnmuslim --pinned` and `php artisan azkar:snapshot hadeethenc --pinned`. When the folder on the volume already matches every pinned file SHA-256, the command logs `already pinned` and skips the download (same pin check as above).
+4. `php artisan azkar:import --download --defer-pack` (see «The Azkar import at web start»).
+5. `php artisan content:ensure-packs`: builds every active resource pack whose row is missing or whose file is gone, Quran packs included. When nothing changed it only checks files, so it is quick. The first start after a volume is attached builds every pack in the foreground, which can take minutes (see «Volume and audio, first time»).
+6. `exec frankenphp run --config /etc/caddy/Caddyfile`.
+
+`entrypoint.sh` never runs the Azkar work and is never edited for it: Horizon and the scheduler share it.
+
+## Railway services
+
+| Railway service | Config | Status |
+| --- | --- | --- |
+| API | `apps/api/railway.json` | Web (FrankenPHP). One replica. Volume at `/app/storage/app`. Pre-deploy: the release above. Start: `start-web.sh`. Health check `GET /up`, timeout 120 s. |
+| Horizon | `apps/api/railway-horizon.json` | **Not deployed** while the API has a volume. A worker service cannot share it, so a pack built there would never be served. `QUEUE_CONNECTION=sync` builds packs inline. |
+| Scheduler | `apps/api/railway-scheduler.json` | **Not deployed** for the same reason. Its work (the QF sync) runs by hand through `railway ssh` until object storage replaces the volume (a new ADR). |
+
+ADR 0022 is amended by ADR 0040. Volumes and replicas exclude each other, so the API has one replica and each deploy has a short outage.
+
+## Environment (Railway variables)
+
+Set on the API service unless noted.
+
+| Variable | Production value | Notes |
+| --- | --- | --- |
+| `APP_ENV` | `production` | Enables the production guards (reviewed Quran map rows only; no seeders). |
+| `APP_URL` | `https://quranmobile-production.up.railway.app` | ADR 0022. Nothing in the API builds absolute URLs for audio or packs: `remote_url` is a relative path (`/api/v1/azkar/audio/0.0.2/OD-001.mp3`), so the value only affects the `public` disk and links. Set it anyway. |
+| `QUEUE_CONNECTION` | `sync` | With no worker, `database` or `redis` would queue jobs that never run (ADR 0040). |
+| `FILESYSTEM_DISK` | `local` (leave the default) | Packs use the `local` disk; audio uses the `azkar_audio` disk, which is always on. |
+| `DORAR_API_BASE_URL`, `DORAR_API_TOKEN` | set when Dorar is granted; empty until then | ADR 0045: Dorar is used whenever both are set, and is the null source otherwise. A credential, not a switch. |
+| `QF_ENV` | `production` | API. Selects `oauth2.quran.foundation` and `apis.quran.foundation` (`config/quran.php`). |
+| `QF_CLIENT_ID`, `QF_CLIENT_SECRET` | QF production values | API. Never in git (ADR 0041). |
+| `QF_CONTACT_EMAIL` | set | API. Used in the download User-Agent. |
+
+There are **no** Azkar, HadeethEnc, hisnmuslim, audio or Dorar enable switches. Nothing turns Azkar on or off with a variable (ADR 0045, 2 Nov 2026). The `content_sources` rows keep their `permission_status` as provenance; it does not gate anything.
+
+## Volume and audio, first time (developer, Railway dashboard and `railway ssh`)
+
+The volume holds the packs and the 238 Azkar recordings (about 55 MiB). Choose a size that also holds the Quran packs; check the manifest sizes after the first sync.
+
+1. **Attach the volume** to the API service: mount path **`/app/storage/app`**, one replica.
+2. **Set the variables** above (`APP_URL`, `QUEUE_CONNECTION=sync`, `APP_ENV=production`). Confirm replicas = 1. Do not create the Horizon or Scheduler services.
+3. **Deploy.** Expect a short outage. Verify persistence: `railway ssh`, then `echo ok > storage/app/private/.volume-check`, redeploy, `cat storage/app/private/.volume-check`, then delete the file.
+4. **Copy the recordings** (one-time; resumable; each file is checked against the manifest's size and SHA-256):
+   ```bash
+   php artisan azkar:audio-sync
+   php artisan azkar:audio-verify --full
+   ```
+   Expect `shipped 238`, `verified 238`, `missing 0`. Rerun `azkar:audio-sync` if it was interrupted. It skips files already verified.
+   The recording rows follow the files, so the import in step 5 must run after this step.
+5. **Write the recording rows and build the pack.** The import writes a recording row only for a file that is on the volume, so the import must run again after step 4, and the pack is then built at start:
+   ```bash
+   php artisan azkar:import --download --defer-pack
+   php artisan content:ensure-packs
+   ```
+   The import prints `imported` with the recording count (`gated.recordings.imported`, expect 238). Its fingerprint changes once the files exist, so the next start's import also picks them up. A redeploy does the same without a shell: the web start imports the rows and builds the pack.
+6. **Smoke tests** (see «Checking a deploy»).
 
 ## What never runs in production
 
 - No seeders. `DatabaseSeeder` throws when `APP_ENV=production`. `ContentSourceSeeder` is not called by the release.
-- No factories and no development fixtures (`EXPO_PUBLIC_AZKAR_DEV_FIXTURES` is a mobile build flag and never reaches the API).
-- `azkar:source-permission` refuses in production. It only sets the `opendua` source in a local database.
-- The Quran reference map only accepts rows marked `reviewed` in production (`config/azkar_quran_map.php`). A `candidate` or `unmatched` row blocks the entry.
-
-## Services
-
-| Railway service | Config | Role |
-| --- | --- | --- |
-| API | `apps/api/railway.json` | Web (FrankenPHP). Pre-deploy: the release above. |
-| Horizon | `apps/api/railway-horizon.json` | Queue workers (`default`, `packs`). Pack builds queued by other code run here. |
-| Scheduler | `apps/api/railway-scheduler.json` | `schedule:work`. |
-
-The release builds the azkar pack synchronously, so it does not depend on Horizon. Horizon still processes the queued `BuildContentPackJob` that the content listeners dispatch.
-
-## Environment (Railway variables)
-
-Set on the API service unless noted. The QF variables go on the API, Horizon and Scheduler services: the scheduler dispatches `SyncQuranFoundationJob`, and Horizon runs it and `BuildContentPackJob`.
-
-| Variable | Production value | Notes |
-| --- | --- | --- |
-| `APP_ENV` | `production` | Enables every production guard above. |
-| `AZKAR_OPENDUA_IMPORT_ENABLED` | `false` until OpenDua confirms in writing | ADR 0031 §1. |
-| `QF_ENV` | `production` | API, Horizon, Scheduler. Selects `oauth2.quran.foundation` and `apis.quran.foundation` (`config/quran.php`). |
-| `QF_CLIENT_ID` | QF production client ID | API, Horizon, Scheduler. Same pair as local `apps/api/.env` (ADR 0041); never in git. |
-| `QF_CLIENT_SECRET` | QF production client secret | API, Horizon, Scheduler. |
-| `QF_CONTACT_EMAIL` | set | API, Horizon, Scheduler. Used in the download User-Agent. |
+- No factories and no development fixtures (`EXPO_PUBLIC_AZKAR_DEV_FIXTURES` was removed, ADR 0045).
+- No `azkar:source-permission`. The command is removed (removed 2 Nov 2026, ADR 0045).
+- The Quran reference map only accepts rows marked `reviewed` in production (`config/azkar_quran_map.php`). A `candidate` or `unmatched` row blocks its entry.
+- No Azkar pack is built by the pre-deploy container (`--defer-pack`).
 
 ## First QF production sync
 
@@ -68,7 +108,7 @@ Command-line PHP in the image has a 1 GB memory limit (`$PHP_INI_DIR/php-cli.ini
 
 Each run prints `mutations_applied`, `resources_touched` and `rows`. Horizon builds the packs; `GET /api/v1/content/manifest` then lists each resource with its version, size and SHA-256.
 
-**Pack files live on the `local` disk** (`storage/app/private/packs/`). Railway’s container filesystem is ephemeral: a redeploy without a mounted volume drops every `.sqlite.gz` while MySQL still has `content_packs` rows. The manifest then advertises packs that return 404 and the app cannot install reciters or tafsirs. Mount a Railway volume on `/app/storage/app/private` (or the image’s equivalent) on the **API** service so packs survive deploys. After any deploy that lost files, rebuild from a shell in the API container:
+**Pack files live on the `local` disk** (`storage/app/private/packs/`). Railway’s container filesystem is ephemeral: a redeploy without a mounted volume drops every `.sqlite.gz` while MySQL still has `content_packs` rows. The manifest then advertises packs that return 404 and the app cannot install reciters or tafsirs. The API service volume is mounted at `/app/storage/app` (ADR 0040), so the packs under `storage/app/private/packs` survive deploys. After any deploy that lost files, rebuild from a shell in the API container:
 
 ```bash
 php artisan content:ensure-packs --prune-orphans
@@ -88,25 +128,62 @@ php artisan tinker --execute 'echo storage_path("app/private/packs");'
 ls -la storage/app/private/packs 2>/dev/null | head
 ```
 
-The mount path must be **`/app/storage/app/private`** (not `storage/app/private` relative to the wrong root). Spot-check: `curl -I "https://<api>/api/v1/content/packs/<resource_id>/<version>"` should be `200` with `Content-Type: application/gzip`.
+The mount path is **`/app/storage/app`** (ADR 0040); the packs are under `storage/app/private/packs` inside it. Spot-check: `curl -I "https://<api>/api/v1/content/packs/<resource_id>/<version>"` should be `200` with `Content-Type: application/gzip`.
 
-## Unlocking Azkar in production
+## Azkar in production (ADR 0031, 0040, 0045)
 
-This is a reviewed change, never a command on the server:
+Azkar is on. There is no switch. What decides the content:
 
-1. ~~OpenDua confirms the rights in writing.~~ Done: ADR 0038 accepts OpenDua's public statements.
-2. ~~A migration sets the `opendua` row in `content_sources` to `granted`.~~ Done: `2026_11_01_100015_grant_opendua_content_source` (ADR 0038).
-3. `APP_ENV=production` is set on the API service. Without it the importer applies local rules and accepts `candidate` map rows.
-4. The reviewed Quran reference map has every row `reviewed` (no `candidate` or `unmatched` row remains; `php artisan azkar:quran-map-candidates` shows the counts). Review sheet: `docs/plans/phase-6/quran-map-review.md`.
-5. `AZKAR_OPENDUA_IMPORT_ENABLED=true` is set on the API service.
-6. The next deploy imports and builds the pack. The import report is in `storage/app/azkar/reports/` inside the container, and the console summary is in the deploy log.
+1. The `opendua` catalogue matches its pinned SHA-256 (`azkar.opendua.catalogue_sha256`) and validates.
+2. The reviewed Quran reference map has every row for the shipped entries `reviewed`. Production refuses any other row, so the import fails and the deploy stops. Check with `php artisan azkar:quran-map-candidates` (counts) and review with `docs/plans/phase-6/quran-map-review.md`. Excluded entries (`config/azkar.php`, `excluded_entries`) are left out and do not block.
+3. The audio manifest matches its pin (`azkar.audio.manifest_sha256`). A recording is imported only when its file is on the volume at the manifest's size.
+
+The secondary sources are read only when their snapshot is on the server and matches its pin. A missing or mismatching snapshot never fails the deploy.
 
 ## Checking a deploy
 
-- Deploy log, pre-deploy step: `Azkar import skipped: the wet import is locked.` is expected until the unlock above (now only the import flag keeps it locked).
-- When unlocked: the summary table, `Status: imported`, and `pack` in the report (`version`, `sha256`, `size_bytes`, `row_count`).
-- `GET /api/v1/content/manifest` lists the `azkar` resource once its pack exists.
+- **Pre-deploy log:** `migrate` only.
+- **Container start log:** `start: Azkar audio verified` (or a warning naming the files); `azkar:snapshot` prints `Snapshot verified against the pin` or a warning; `azkar:import` prints the summary table (`Status: imported` means the rows changed; `Status: unchanged` means nothing was written, the normal result of a redeploy with no content change); then `start: content packs up to date` (or the lines of the packs that failed).
+- **Smoke tests:**
+  - `curl -s https://quranmobile-production.up.railway.app/api/v1/content/manifest` lists the `azkar` resource with its version and pack size.
+  - `curl -s -D- -o /dev/null -H 'Range: bytes=0-99' https://quranmobile-production.up.railway.app/api/v1/azkar/audio/0.0.2/OD-001.mp3` answers `206` with `Content-Type: audio/mpeg`.
+  - Download the pack, `sha256sum` matches the manifest's `sha256`. Its `azkar_recordings` count is 238, and no `remote_url` contains `opendua.org`.
+  - Redeploy once and repeat the first two checks: the audio and the pack persisted.
 
-## Rolling back the content
+## Rolling back
 
-The azkar pack is versioned. To stop serving Azkar content without a code rollback, set `AZKAR_OPENDUA_IMPORT_ENABLED=false` (the next deploy skips the import) and set the `opendua` source back to `pending` in a reviewed migration. The pack builder then refuses to build a new Azkar pack.
+There is no flag (ADR 0045, 2 Nov 2026). Each option is a reviewed change:
+
+- **A bad release:** revert the commit and deploy. The next start's import writes the reverted content and its version (the fingerprint notices the change).
+- **Stop serving Azkar content:** a reviewed migration deletes the `azkar` resource's rows (`azkar_items`, `azkar_recordings` and the rest, scoped by `resource_id`) and the resource's pack row. The manifest then stops listing the resource. Keep the `content_sources` row; its `permission_status` is provenance only.
+- **Stop serving one recording:** remove its file from the volume (`railway ssh`, `rm storage/app/azkar-audio/0.0.2/OD-NNN.mp3`) and run `php artisan azkar:import --download --defer-pack` and `php artisan content:ensure-packs`. The endpoint answers 404 for a missing file, and the next pack carries no row for it.
+- The files stay on the volume until removed by hand.
+
+## Recovering a lost volume
+
+If the volume is empty or lost, nothing is served from the pack table until the files are back. In order, through `railway ssh`:
+
+```bash
+php artisan azkar:audio-sync
+php artisan azkar:audio-verify --full
+php artisan azkar:import --download --defer-pack
+php artisan content:ensure-packs
+```
+
+`content:ensure-packs` also rebuilds the Quran packs. Packs and audio are both rebuildable from MySQL and the pinned sources, so a lost volume costs time, not content.
+
+
+## Developer checklist (dashboard and `railway ssh`, not done by the code)
+
+Tick each box when it is done. The code is in place (2 Nov 2026); these steps are the developer's.
+
+- [ ] API service: volume attached at `/app/storage/app`, replicas = 1.
+- [ ] API service variables: `APP_URL=https://quranmobile-production.up.railway.app`, `APP_ENV=production`, `QUEUE_CONNECTION=sync`. `FILESYSTEM_DISK` left as `local`. No Azkar switch variable exists to set.
+- [ ] No Horizon or Scheduler service created.
+- [ ] Deploy. Expect a short outage. Volume marker: `echo ok > storage/app/private/.volume-check`, redeploy, `cat` it, delete it.
+- [ ] `railway ssh`: `php artisan azkar:audio-sync`, then `php artisan azkar:audio-verify --full` (expect `verified 238`, `missing 0`).
+- [ ] `railway ssh` or the next deploy (the start runs the import): `php artisan azkar:import --download --defer-pack`, then `php artisan content:ensure-packs`. The import prints `imported` with 238 recordings.
+- [ ] Smoke tests: the manifest lists `azkar`; the Range request answers `206`; the pack's `sha256sum` matches the manifest; `azkar_recordings` count is 238 and no `remote_url` contains `opendua.org`.
+- [ ] Redeploy once and repeat the manifest and Range checks: the audio and the pack persisted.
+- [ ] Reviewed Quran map rows for every shipped entry (production refuses any other row).
+- [ ] Dorar variables, only when Dorar is granted.

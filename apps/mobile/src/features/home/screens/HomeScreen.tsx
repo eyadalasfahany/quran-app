@@ -38,6 +38,9 @@ import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKe
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useAzkarMenuPreview } from '@/features/menu/hooks/useAzkarMenuPreview';
+import { HomeDatePill } from '@/features/hijri/components/HomeDatePill';
+import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
+import { isHijriCalendarAvailable } from '@/features/hijri/data/hijri-date';
 import { useStaleContent } from '@/core/sync/useStaleContent';
 import { SearchButton, SkeletonGroup, StaleContentBanner, type IconName } from '@/shared/ui';
 
@@ -117,6 +120,10 @@ export function HomeScreen() {
     { icon: RECITERS_ICON, key: 'reciters', label: t('home.tiles.reciters'), onPress: () => router.navigate(tabHref('(listen)')) },
   ];
 
+  // The Hijri date pill (ADR 0048): today's date with the user's adjustment; hidden when the platform has no calendar.
+  const hijriDate = useHijriDate();
+  const hijriAvailable = isHijriCalendarAvailable();
+
   return (
     <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={expanded ? undefined : <SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
       <ScrollView
@@ -127,6 +134,13 @@ export function HomeScreen() {
         {...tabScroll}
       >
         <StaleContentBanner visible={stale} />
+        {hijriAvailable ? (
+          <HomeDatePill
+            label={t('hijri.home.pillLabel', { date: hijriDate })}
+            onPress={() => router.push('/hijri' as Href)}
+            text={hijriDate}
+          />
+        ) : null}
         {!ready ? (
           <SkeletonGroup testID="home-continue-loading">
             <ContinueReadingSkeleton testID="home-continue-reading-skeleton" />
@@ -138,7 +152,7 @@ export function HomeScreen() {
             juz={continueReading.verse.juz}
             onPress={() => router.push(`/read/${continueReading.verse.verseKey}` as Href)}
             page={continueReading.verse.page}
-            surahName={continueReading.chapter.nameArabic}
+            surahName={locale === 'ar' ? continueReading.chapter.nameArabic : continueReading.chapter.nameSimple}
           />
         ) : null}
         <HomeNextPrayer onPress={openSalah} />

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { View, Pressable } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -48,6 +49,7 @@ export function DownloadRow({
   showDivider?: boolean;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
   const percent = Math.round(Math.min(1, Math.max(0, progress)) * 100);
@@ -70,7 +72,7 @@ export function DownloadRow({
     if (state === 'downloading') {
       return (
         <Pressable
-          accessibilityLabel={`${actionLabels.cancel} ${title}`}
+          accessibilityLabel={t('common.a11yAction', { action: actionLabels.cancel, title })}
           accessibilityRole="button"
           onPress={onCancel}
           style={({ pressed }) => [
@@ -105,7 +107,7 @@ export function DownloadRow({
     return (
       <Pressable
         // Every row has the same actions, so each says which row it acts on («تنزيل البقرة»).
-        accessibilityLabel={`${label} ${title}`}
+        accessibilityLabel={t('common.a11yAction', { action: label, title })}
         accessibilityRole="button"
         onPress={isInstalled ? onOpen : onDownload}
         style={({ pressed }) => [pillStyle, { opacity: pressed ? theme.opacity.pressed : 1 }]}
@@ -172,7 +174,7 @@ export function DownloadRow({
         <IconButton
           icon={DELETE_ICON}
           iconSize={20}
-          label={`${actionLabels.delete} ${title}`}
+          label={t('common.a11yAction', { action: actionLabels.delete ?? '', title })}
           onPress={onDelete}
           testID={testID ? `${testID}-delete` : undefined}
           tone="muted"

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 
 import { useTheme } from '@/core/theme';
@@ -15,12 +16,13 @@ export function AzkarTopicTile({
   onPress: () => void;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
 
   return (
     <Pressable
-      accessibilityLabel={`${title}, ${countText}`}
+      accessibilityLabel={t('common.a11yPair', { label: title, title: countText })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

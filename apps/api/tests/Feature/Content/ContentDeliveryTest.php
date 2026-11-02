@@ -176,7 +176,7 @@ it('streams a pack and rejects an unknown or inactive one', function (): void {
         ->assertHeader('Content-Type', 'application/problem+json')
         ->assertJsonPath('status', 404)
         ->assertJsonPath('code', 'not_found')
-        ->assertJsonPath('detail', 'Content pack not found.');
+        ->assertJsonPath('detail', 'The content pack was not found.');
 
     $this->getJson('/api/v1/content/packs/999999/1')
         ->assertNotFound()
@@ -187,7 +187,7 @@ it('streams a pack and rejects an unknown or inactive one', function (): void {
 
     $this->getJson('/api/v1/content/packs/'.$resource->id.'/2')
         ->assertNotFound()
-        ->assertJsonPath('detail', 'Content pack not found.');
+        ->assertJsonPath('detail', 'The content pack was not found.');
 });
 
 it('pages changes newer than since_version', function (): void {
@@ -369,7 +369,7 @@ it('returns 404 for the pack and the change feed of an ignored resource even whe
         ->assertNotFound()
         ->assertHeader('Content-Type', 'application/problem+json')
         ->assertJsonPath('code', 'not_found')
-        ->assertJsonPath('detail', 'Content pack not found.');
+        ->assertJsonPath('detail', 'The content pack was not found.');
 
     $this->getJson('/api/v1/content/changes?resource_id='.$ignored->id.'&since_version=1')
         ->assertNotFound()

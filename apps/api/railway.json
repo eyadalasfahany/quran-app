@@ -8,7 +8,7 @@
     "preDeployCommand": ["/usr/local/bin/entrypoint.sh", "/usr/local/bin/release.sh"],
     "startCommand": "/usr/local/bin/entrypoint.sh /usr/local/bin/start-web.sh",
     "healthcheckPath": "/up",
-    "healthcheckTimeout": 30,
+    "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }

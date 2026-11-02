@@ -10,7 +10,7 @@ import '@/core/layout/hide-scroll-indicators';
 import { installForegroundNotificationHandler } from '@/features/notifications/foreground';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { registerReminderDeepLinks } from '@/features/notifications/reminder-deeplink';
-import { openContentDb, useContentDbBootstrap } from '@/core/db/content/open';
+import { useContentDbBootstrap } from '@/core/db/content/open';
 import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { modalLikeScreenOptions, pushScreenOptions } from '@/core/layout/push-screen-options';
@@ -21,8 +21,10 @@ import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayer
 import { useAzkarRemindersForeground } from '@/features/azkar/reminders/use-azkar-reminders-foreground';
 import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
 import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNotificationsSync';
+import { useReminderGoalsSync } from '@/features/reminders/hooks/useReminderGoalsSync';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
+import { WidgetSnapshotSync } from '@/features/widgets/components/WidgetSnapshotSync';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -62,6 +64,8 @@ export default function RootLayout() {
   useAzkarRemindersForeground(ready);
   // Re-plans the prayer notifications on launch, on foreground and on a location change (ADR 0030 §3).
   usePrayerNotificationsSync(ready);
+  // Re-plans the Friday Surat al-Kahf and misbaha reminders on launch and on a day, zone or location change (ADR 0034).
+  useReminderGoalsSync(ready);
 
   useEffect(() => {
     if (directionCheck.ready) {
@@ -87,21 +91,6 @@ export default function RootLayout() {
     }
   }, [user.error]);
 
-  // Development only: placeholder Azkar rows for the UI (never shipped; see dev-fixtures.ts). The condition is inline and
-  // the module is required inside it, so a release bundle drops the fixtures (a static import or a helper call would keep them).
-  useEffect(() => {
-    if (!content.ready || !(__DEV__ && process.env.EXPO_PUBLIC_AZKAR_DEV_FIXTURES === '1')) {
-      return;
-    }
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports -- dev-only; the require keeps the fixtures out of release bundles.
-      const { loadAzkarDevFixtures } = require('@/features/azkar/data/dev-fixtures') as typeof import('@/features/azkar/data/dev-fixtures');
-      loadAzkarDevFixtures(openContentDb().executor);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [content.ready]);
-
   useEffect(() => {
     if (ready) {
       void syncDailyReminder();
@@ -118,6 +107,8 @@ export default function RootLayout() {
   return (
     <ThemeProvider name={themeName}>
       <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />
+      {/* Keeps the home-screen widgets' snapshot current (ADR 0035 §4). Renders nothing. */}
+      <WidgetSnapshotSync enabled={ready} />
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themes[themeName].colors.surface } }}
       >
@@ -135,7 +126,16 @@ export default function RootLayout() {
         <Stack.Screen name="azkar/downloads" options={pushOptions} />
         <Stack.Screen name="azkar/read/[categoryId]" options={modalLikeOptions} />
         <Stack.Screen name="azkar/entry/[entryKey]" options={modalLikeOptions} />
+        <Stack.Screen name="duas/index" options={pushOptions} />
+        <Stack.Screen name="duas/favorites" options={pushOptions} />
+        <Stack.Screen name="duas/mine/index" options={pushOptions} />
+        <Stack.Screen name="duas/mine/edit" options={sheetScreenOptions} />
         <Stack.Screen name="sibha" options={pushOptions} />
+        <Stack.Screen name="reminders" options={pushOptions} />
+        <Stack.Screen name="reminders/recommended" options={sheetScreenOptions} />
+        <Stack.Screen name="hijri/adjust" options={sheetScreenOptions} />
+        <Stack.Screen name="hijri/index" options={pushOptions} />
+        <Stack.Screen name="moon/index" options={pushOptions} />
       </Stack>
     </ThemeProvider>
   );

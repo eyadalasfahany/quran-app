@@ -20,18 +20,11 @@ final class PackBuilder
     public function __construct(
         private readonly PackSnapshotRepository $snapshots,
         private readonly ContentPackRepository $packs,
+        private readonly AzkarAudioReadiness $audio,
     ) {}
 
     public function build(Resource $resource): ContentPackData
     {
-        if (! $resource->hasDeliverableRights()) {
-            throw new PackBuildException('Resource ['.$resource->id.'] has no content source cleared for delivery.');
-        }
-
-        if ($resource->group === ResourceGroup::Azkar && ! $this->azkarImportUnlocked($resource)) {
-            throw new PackBuildException('Resource ['.$resource->id.'] is an azkar pack whose import is locked (ADR 0031 §1).');
-        }
-
         $existing = $this->packs->findForVersion($resource->id, $resource->version);
 
         if ($existing !== null) {
@@ -41,6 +34,11 @@ final class PackBuilder
 
             // DB row without a file (ephemeral disk after deploy). Drop the row so build can record again.
             $existing->delete();
+        }
+
+        if ($resource->group === ResourceGroup::Azkar) {
+            // ADR 0040 step 14 §7: no Azkar pack is built while a recording it lists is missing from the audio disk.
+            $this->audio->assertReady($resource->id);
         }
 
         $temp = storage_path('app/tmp/pack-'.$resource->id.'-'.$resource->version.'-'.bin2hex(random_bytes(8)).'.sqlite');
@@ -189,16 +187,5 @@ final class PackBuilder
             schemaVersion: $pack->schema_version,
             builtAt: $pack->built_at,
         );
-    }
-
-    /**
-     * ADR 0031 §1: an azkar pack needs both the source's granted rights (checked above) and its own import flag,
-     * config azkar.<source code>.import_enabled (AZKAR_OPENDUA_IMPORT_ENABLED for opendua).
-     */
-    private function azkarImportUnlocked(Resource $resource): bool
-    {
-        $code = $resource->source?->code;
-
-        return is_string($code) && (bool) config('azkar.'.$code.'.import_enabled', false);
     }
 }

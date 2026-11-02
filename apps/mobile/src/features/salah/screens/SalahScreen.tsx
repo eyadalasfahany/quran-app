@@ -23,7 +23,8 @@ import { SalahLocating } from '../components/SalahLocating';
 import { requestLocationPermissions, setAutoLocation, setManualLocation } from '../data/location';
 import { prevPrayer, qiblaBearing, type NextPrayerName, type PrayerTimesOutput } from '../data/prayer-times';
 import { formatPrayerTime } from '../data/time-format';
-import { useHijriDate, useNextPrayer, usePrayerClock, usePrayerLocation } from '../hooks';
+import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
+import { useNextPrayer, usePrayerClock, usePrayerLocation } from '../hooks';
 
 const EMPTY_LOCATION: IconName = { ios: 'location.slash', android: 'location_off' };
 

@@ -22,7 +22,6 @@ beforeEach(function (): void {
     Bus::fake();
     config([
         'azkar.opendua.catalogue_sha256' => hash_file('sha256', qrsFixturePath()),
-        'azkar.opendua.store_english' => false,
     ]);
 });
 
@@ -122,7 +121,6 @@ it('rejects a row with a status it does not know, as an invalid reference', func
 it('production imports only reviewed rows and writes them when unlocked', function (): void {
     qrsEnvironment('production');
     qrsUseStatuses(['reviewed', 'reviewed']);
-    config(['azkar.opendua.import_enabled' => true]);
     ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
 
     $report = app(AzkarImporter::class)->run(qrsFixturePath(), false);

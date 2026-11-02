@@ -20,6 +20,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SetLocaleFromAcceptLanguage::class);
         $middleware->alias(['no-store' => NoStore::class]);
+
+        // Railway's edge is the only proxy in front of the container. Without this every client shares the IP of that
+        // proxy, so one rate-limit bucket covers all users (rate limiters key on $request->ip()). Trusted here, not in env.
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO,
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

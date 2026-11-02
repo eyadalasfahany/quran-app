@@ -62,3 +62,13 @@ Salah times and Qibla direction will be computed on-device using `adhan-js` and 
 *   **Prayer Times API**: Using an external API for prayer times was rejected due to the requirement for offline functionality and potential rate limits/cost.
 *   **Third-party Qibla SDKs**: Considered but `expo-location` provides sufficient capabilities with less overhead.
 *   **Dynamic Prayer Method Picker**: Deferred to a future version to simplify v1 scope and user experience.
+
+## Amendment: the dial turns with the phone (developer, 1 Nov 2026; frame caption awaiting approval)
+
+The developer reported that the fixed north-up dial was confusing: facing the qibla, the needle pointed up while the Kaaba marker sat off to the side. With a live, good-accuracy heading:
+- The dial face (ticks, numerals, cardinals, gold arc, Kaaba marker) rotates by −heading, so ش points to true north and the Kaaba marker points to Makkah on screen.
+- Cardinals, numerals and the Kaaba glyph stay upright.
+- A fixed lubber mark at the top of the bezel shows the direction the phone faces.
+- The needle still points at bearing − heading, so it lines up with the marker. Facing the qibla, both sit at the lubber mark.
+
+With no live heading (no compass, no good sample yet) or with Reduce Motion, the dial stays static north-up with a note saying so.

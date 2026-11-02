@@ -108,6 +108,8 @@ describe("main tabs by platform (ADR 0033)", () => {
   beforeEach(async () => {
     mockNativeTabsProps.length = 0;
     storage.set(storageKeys.locale, "en");
+    // Onboarding is complete for these tests; without it the root index redirects to the language step.
+    storage.set(storageKeys.onboardingCompleted, true);
     I18nManager.isRTL = false;
     await i18n.changeLanguage("en");
   });

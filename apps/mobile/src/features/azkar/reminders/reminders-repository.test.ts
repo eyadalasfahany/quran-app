@@ -6,6 +6,7 @@ import { clearLocalUserData } from '@/core/db/user/clear';
 import { openAzkarUserDb } from '../../../../jest/azkar-test-db';
 import {
   deleteReminder,
+  deleteReminderForTarget,
   getReminder,
   listReminders,
   rowToReminder,
@@ -155,6 +156,12 @@ describe('azkar reminders repository', () => {
     };
     expect(rowToReminder(row).notificationIds).toEqual([]);
     expect(rowToReminder({ ...row, notificationIds: '["ok",3]' }).notificationIds).toEqual(['ok']);
+  });
+
+  it('deletes a reminder by target', () => {
+    saveReminder({ ...CLOCK, targetType: 'my_dua', targetKey: 'dua-1' }, store);
+    deleteReminderForTarget('my_dua', 'dua-1', store);
+    expect(getReminder('my_dua', 'dua-1', store)).toBeNull();
   });
 
   it('refuses an unknown stored trigger', () => {

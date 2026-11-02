@@ -32,6 +32,8 @@ describe('clearLocalUserData', () => {
       'azkar_favorites',
       'azkar_progress',
       'azkar_reminders',
+      'my_duas',
+      'dua_favorites',
     ]);
   });
 
@@ -47,10 +49,14 @@ describe('clearLocalUserData', () => {
     executor.exec(
       `INSERT INTO azkar_reminders (id, target_type, target_key, enabled, trigger_type, clock_time, prayer, offset_minutes, notification_ids, updated_at) VALUES ('r1', 'category', 'morning', 1, 'clock', '07:00', NULL, NULL, NULL, 100);`,
     );
+    executor.exec(
+      `INSERT INTO my_duas (id, title, body, text_search, created_at, updated_at) VALUES ('d1', NULL, 'FIXTURE text 1 — not a dua', 'fixture', 100, 100);`,
+    );
+    executor.exec(`INSERT INTO dua_favorites (dua_key, created_at) VALUES ('quran:1:1-1', 100);`);
 
     clearLocalUserData(executor);
 
-    for (const table of ['azkar_favorites', 'azkar_progress', 'azkar_reminders']) {
+    for (const table of ['azkar_favorites', 'azkar_progress', 'azkar_reminders', 'my_duas', 'dua_favorites']) {
       expect(database.prepare(`SELECT count(*) as c FROM ${table}`).get()).toEqual({ c: 0 });
     }
 
@@ -107,5 +113,57 @@ describe('clearLocalUserData', () => {
     expect(storage.contains(storageKeys.dailyGoals)).toBe(false);
 
     database.close();
+  });
+
+  it('removes every personal MMKV key and keeps the device settings', () => {
+    const { executor } = openMigrated();
+
+    const personal = [
+      storageKeys.dailyReminder,
+      storageKeys.dailyReminderTime,
+      storageKeys.dailyReminderNotificationId,
+      storageKeys.azkar.searchRecent,
+      storageKeys.azkar.recentScopes,
+      storageKeys.reminders.friday,
+      storageKeys.reminders.misbaha,
+      storageKeys.reminders.recommendedShown,
+      storageKeys.salah.bellFajr,
+      storageKeys.salah.bellDhuhr,
+      storageKeys.salah.bellAsr,
+      storageKeys.salah.bellMaghrib,
+      storageKeys.salah.bellIsha,
+      storageKeys.hijriAdjustDays,
+      storageKeys.widgets.snapshot,
+    ];
+    const deviceSettings = [
+      storageKeys.locale,
+      storageKeys.appearance,
+      storageKeys.darkAfterMaghrib,
+      storageKeys.readerSettings,
+      storageKeys.audioReciterId,
+      storageKeys.azkar.fontScale,
+      storageKeys.azkar.variationChoice,
+      storageKeys.salah.locationSource,
+      storageKeys.salah.manualCityId,
+      storageKeys.onboardingCompleted,
+    ];
+    const scheduleCaches = [
+      storageKeys.azkar.remindersSync,
+      storageKeys.reminders.goalsSync,
+      storageKeys.salah.notificationsSync,
+      `${storageKeys.salah.notificationsSync}.settings`,
+    ];
+    for (const key of [...personal, ...deviceSettings, ...scheduleCaches]) {
+      storage.set(key, 'value');
+    }
+
+    clearLocalUserData(executor);
+
+    for (const key of [...personal, ...scheduleCaches]) {
+      expect(storage.contains(key)).toBe(false);
+    }
+    for (const key of deviceSettings) {
+      expect(storage.contains(key)).toBe(true);
+    }
   });
 });

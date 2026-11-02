@@ -89,11 +89,11 @@ describe('AzkarHomeScreen', () => {
     await renderUi(<AzkarHomeScreen />);
 
     expect(screen.getByRole('header', { name: 'أذكار اليوم' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'أذكار الصباح, ١٢ من ٢٤' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'أذكار المساء, ٠ من ٦' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'أذكار الصباح، ١٢ من ٢٤' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'أذكار المساء، ٠ من ٦' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'المواضيع' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'السفر, ٥ أذكار' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'الطعام والشراب, ٨ أذكار' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'السفر، ٥ أذكار' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'الطعام والشراب، ٨ أذكار' })).toBeOnTheScreen();
   });
 
   it('marks a finished session as completed', async () => {
@@ -102,7 +102,7 @@ describe('AzkarHomeScreen', () => {
     ]);
     await renderUi(<AzkarHomeScreen />);
 
-    expect(screen.getByRole('button', { name: 'أذكار المساء, ٦ من ٦, مكتمل' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'أذكار المساء، ٦ من ٦، مكتمل' })).toBeOnTheScreen();
   });
 
   it('shows the continue card for the scope in progress and opens its reader', async () => {
@@ -119,17 +119,17 @@ describe('AzkarHomeScreen', () => {
     });
     await renderUi(<AzkarHomeScreen />);
 
-    await press(screen.getByRole('button', { name: 'تابع, أذكار الصباح, ١٢ من ٢٤' }));
+    await press(screen.getByRole('button', { name: 'تابع، أذكار الصباح، ١٢ من ٢٤' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/read/morning');
   });
 
   it('opens the category, favourites and search from the screen', async () => {
     await renderUi(<AzkarHomeScreen />);
 
-    await press(screen.getByRole('button', { name: 'أذكار المساء, ٠ من ٦' }));
+    await press(screen.getByRole('button', { name: 'أذكار المساء، ٠ من ٦' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/category/evening');
 
-    await press(screen.getByRole('button', { name: 'السفر, ٥ أذكار' }));
+    await press(screen.getByRole('button', { name: 'السفر، ٥ أذكار' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/category/travel');
 
     await press(screen.getByRole('button', { name: 'المفضلة' }));

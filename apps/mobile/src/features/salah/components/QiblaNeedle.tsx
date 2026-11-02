@@ -1,18 +1,12 @@
 import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import Animated, {
-  useAnimatedReaction,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  type SharedValue,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
-import { spring } from '@/core/theme/motion';
 
-import { needleAngleFor, normalize180, shortestTurn } from '../hooks/useQiblaHeading';
+import { needleAngleFor } from '../data/qibla-math';
+import { dialAnchor } from '../data/dial-placement';
+import { useFollowTarget } from '../hooks/useFollowTarget';
 
 // The frame's needle geometry, on the 336 dial (quran-app-screens.html, #Qibla). Only this rotates.
 const DIAL = 336;
@@ -26,7 +20,7 @@ const COUNTERWEIGHT_PATH = 'M168 168 L165.4 204 L168 209 L170.6 204 Z';
  * from its SharedValue on the UI thread, so the heading never has to pass through React. When not following (Reduce
  * Motion, no compass yet, unsupported hardware) it rests on the marker with no animation (D6).
  *
- * The turn is always the shortest one (`shortestTurn`), so the needle never swings through 0° on a 350° change.
+ * The turn is always the shortest one (useFollowTarget), so the needle never swings through 0° on a 350° change.
  */
 export function QiblaNeedle({
   bearing,
@@ -43,41 +37,24 @@ export function QiblaNeedle({
   testID?: string;
 }) {
   const theme = useTheme();
-  const springConfig = spring();
 
-  const needleAngle = useSharedValue(bearing);
+  // The bearing is read on the UI thread too: it is the needle's rest target while not following.
   const bearingValue = useSharedValue(bearing);
-  const followValue = useSharedValue(following);
-
   useEffect(() => {
     bearingValue.value = bearing;
-    followValue.value = following;
-  }, [bearing, following, bearingValue, followValue]);
+  }, [bearing, bearingValue]);
 
-  // The target only changes when the heading moves across a needle step, the bearing changes, or following toggles;
-  // the reaction then runs on the UI thread and springs to it.
-  useAnimatedReaction(
-    () => (followValue.value ? needleAngleFor(bearingValue.value, heading.value) : bearingValue.value),
-    (target, previous) => {
-      if (previous === target) {
-        return;
-      }
-      if (!followValue.value) {
-        // Static dial: the needle rests on the marker, no animation.
-        needleAngle.value = target;
-        return;
-      }
-      const delta = shortestTurn(normalize180(needleAngle.value), target);
-      needleAngle.value = withSpring(needleAngle.value + delta, springConfig);
-    },
-  );
+  const needleAngle = useFollowTarget(following, bearing, (follow) => {
+    'worklet';
+    return follow ? needleAngleFor(bearingValue.value, heading.value) : bearingValue.value;
+  });
 
   const needleStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${needleAngle.value}deg` }],
   }));
 
   return (
-    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, needleStyle]} testID={testID}>
+    <Animated.View pointerEvents="none" style={[dialAnchor(DIAL, DIAL), needleStyle]} testID={testID}>
       <Svg height={DIAL} width={DIAL}>
         <Defs>
           <LinearGradient id="qibla-dart" x1="0" x2="0" y1="1" y2="0">

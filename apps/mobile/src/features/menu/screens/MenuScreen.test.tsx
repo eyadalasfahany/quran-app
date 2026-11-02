@@ -234,11 +234,10 @@ describe('MenuScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/settings/sources');
   });
 
-  it('opens the four tabs from their cards', async () => {
+  it('opens the three tab cards', async () => {
     await renderUi(<MenuScreen />);
 
-    await fireEvent.press(screen.getByTestId('menu-card-home'));
-    expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(home)');
+    expect(screen.queryByTestId('menu-card-home')).toBeNull();
     await fireEvent.press(screen.getByTestId('menu-card-mushaf'));
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(mushaf)');
     await fireEvent.press(screen.getByTestId('menu-card-listen'));

@@ -7,6 +7,8 @@ export const azkarHref = {
   favorites: '/azkar/favorites' as Href,
   /** Saved audio: the downloads screen (ADR 0031 §8). */
   downloads: '/azkar/downloads' as Href,
+  /** The full Azkar player, a sheet over the reader (ADR 0031 §8). */
+  player: '/azkar/player' as Href,
   category: (categoryId: string): Href => `/azkar/category/${encodeURIComponent(categoryId)}` as Href,
   read: (categoryId: string, unitKey?: string): Href => {
     const base = `/azkar/read/${encodeURIComponent(categoryId)}`;

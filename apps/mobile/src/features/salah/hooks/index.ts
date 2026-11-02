@@ -13,8 +13,6 @@ import { PrayerTimesOutput, NextPrayerName, nextPrayer, timesFor } from '../data
 import { bellStorageKey, getBellEnabled } from '../data/bells';
 import { setPrayerBell } from '../data/notifications';
 import { dateForDayKey, dayKeyOf, nextClockBoundary } from '../data/clock';
-import { formatHijriDate } from '../../../core/i18n/dates';
-import { getLocale } from '../../../core/i18n';
 import { storage } from '../../../core/storage/mmkv';
 
 export { useNow } from './useNow';
@@ -159,10 +157,8 @@ export const useNextPrayer = (times: PrayerTimesOutput | null, coords: { lat: nu
   return useMemo(() => (times && coords ? nextPrayer(times, now ?? new Date(), coords) : null), [times, coords, now]);
 };
 
-export const useHijriDate = (now?: Date) => {
-  const locale = getLocale();
-  return useMemo(() => formatHijriDate(now ?? new Date(), locale), [now, locale]);
-};
+// The Salah header's Hijri line is the shared, adjustment-aware date (ADR 0048, decision 2).
+export { useHijriDate } from '../../hijri/hooks/useHijriDate';
 
 /**
  * A prayer's reminder bell, persisted in MMKV and live: the Salah row and the Settings section share it. Turning it on

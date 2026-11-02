@@ -1,7 +1,6 @@
 import { fireEvent, within } from '@testing-library/react-native';
 import { View } from 'react-native';
 
-import { formatNumber, i18n } from '@/core/i18n';
 import { themes } from '@/core/theme';
 
 import { openReaderTestContent } from '../../../../jest/reader-test-db';

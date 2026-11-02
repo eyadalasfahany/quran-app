@@ -35,10 +35,13 @@ beforeEach(function (): void {
     Bus::fake();
     azkarPinTo(azkarFixturePath());
     azkarUseFixtureReferences();
+    // No snapshot is read on this path: both snapshot dates point at a folder that does not exist (ADR 0042).
+    config(['azkar.hisnmuslim.snapshot_date' => '1900-01-01', 'azkar.hadeethenc.snapshot_date' => '1900-01-01']);
 });
 
 afterEach(function (): void {
     File::deleteDirectory(storage_path('framework/testing/azkar'));
+    File::deleteDirectory(storage_path('framework/testing/azkar-audio'));
 });
 
 function azkarFixturePath(): string
@@ -88,7 +91,6 @@ function azkarUseFixtureReferences(): void
 
 function azkarEnableWetImport(): void
 {
-    config(['azkar.opendua.import_enabled' => true]);
     ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
 }
 
@@ -110,6 +112,102 @@ function azkarErrorCodes(ImportReport $report): array
     return array_values(array_map(fn (array $issue): string => $issue['code'], $report->errors()));
 }
 
+/**
+ * A test manifest with one shipped track, OD-901 (placeholder bytes, ADR 0040). The audio disk is faked, so no real file
+ * is read or written.
+ */
+function azkarUseTestAudio(string $bytes = 'FIXTURE audio bytes'): void
+{
+    $dir = storage_path('framework/testing/azkar-audio-manifest');
+    File::ensureDirectoryExists($dir);
+    $manifest = json_encode(['version' => '0.0.2', 'tracks' => [[
+        'id' => 'OD-901',
+        'entryId' => 'OD-901',
+        'partIndex' => null,
+        'key' => 'hisn/v0.0.2/OD-901.mp3',
+        'bytes' => strlen($bytes),
+        'sha256' => hash('sha256', $bytes),
+        'durationSeconds' => 3,
+    ]]], JSON_THROW_ON_ERROR);
+    $path = $dir.'/manifest.json';
+    File::put($path, $manifest);
+    config(['azkar.audio.manifest_path' => $path, 'azkar.audio.manifest_sha256' => hash('sha256', $manifest)]);
+    Storage::fake('azkar_audio');
+}
+
+it('counts recordings as upstream and imports them only when their file is on the audio disk', function (): void {
+    azkarUseTestAudio();
+    Storage::disk('azkar_audio')->put('0.0.2/OD-901.mp3', 'FIXTURE audio bytes');
+
+    $report = azkarDryRun(azkarFixturePath());
+
+    expect($report->gated['recordings'])->toBe([
+        'upstream' => 1,
+        'upstream_objects' => 1,
+        'imported' => 1,
+        'missing_file' => 0,
+        'legally_downloadable' => 1,
+    ]);
+});
+
+it('leaves out a recording whose file is not on the audio disk, with a warning and no failure', function (): void {
+    azkarUseTestAudio();
+
+    $report = azkarDryRun(azkarFixturePath());
+
+    expect($report->status)->toBe(ImportReport::STATUS_VALID)
+        ->and($report->errors())->toBe([])
+        ->and($report->gated['recordings']['imported'])->toBe(0)
+        ->and($report->gated['recordings']['missing_file'])->toBe(1)
+        ->and(array_column($report->warnings(), 'code'))->toContain('recording_file_missing');
+});
+
+it('leaves out a recording whose file is not the manifest size', function (): void {
+    azkarUseTestAudio();
+    Storage::disk('azkar_audio')->put('0.0.2/OD-901.mp3', 'short');
+
+    $report = azkarDryRun(azkarFixturePath());
+
+    expect($report->gated['recordings']['imported'])->toBe(0)
+        ->and($report->gated['recordings']['missing_file'])->toBe(1);
+});
+
+it('writes the Taybah audio path and the manifest size, never the upstream URL, and always allows stream and download', function (): void {
+    azkarUseTestAudio();
+    Storage::disk('azkar_audio')->put('0.0.2/OD-901.mp3', 'FIXTURE audio bytes');
+    config(['azkar.recording_rights.attribution_en' => 'FIXTURE attribution']);
+    azkarEnableWetImport();
+
+    azkarWetRun(azkarFixturePath());
+
+    $recording = AzkarRecording::query()->firstOrFail();
+
+    expect($recording->remote_url)->toBe('/api/v1/azkar/audio/0.0.2/OD-901.mp3')
+        ->and($recording->size_bytes)->toBe(strlen('FIXTURE audio bytes'))
+        ->and($recording->attribution_en)->toBe('FIXTURE attribution')
+        ->and($recording->stream_allowed)->toBe(1)
+        ->and($recording->download_allowed)->toBe(1)
+        ->and(AzkarRecording::query()->where('remote_url', 'like', '%opendua%')->count())->toBe(0);
+});
+
+it('imports whatever the source permission status says: permission_status is provenance only (ADR 0042, 2 Nov 2026)', function (): void {
+    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
+
+    $report = azkarWetRun(azkarFixturePath());
+
+    expect($report->status)->toBe(ImportReport::STATUS_IMPORTED)
+        ->and(AzkarItem::query()->count())->toBeGreaterThan(0);
+});
+
+it('refuses a dry run file whose SHA-256 differs from the pin, and lists the mismatch', function (): void {
+    config(['azkar.opendua.catalogue_sha256' => str_repeat('0', 64)]);
+
+    $report = azkarDryRun(azkarFixturePath());
+
+    expect($report->status)->toBe(ImportReport::STATUS_INVALID)
+        ->and(azkarErrorCodes($report))->toContain('checksum_mismatch');
+});
+
 it('validates and transforms the fixture in a dry run and writes no rows', function (): void {
     $report = azkarDryRun(azkarFixturePath());
 
@@ -121,9 +219,10 @@ it('validates and transforms the fixture in a dry run and writes no rows', funct
         ->and($report->content['quran_passages'])->toBe(['mapped' => 2, 'unmapped' => 0])
         ->and($report->sourced['items_with_required_count'])->toBe(1)
         ->and($report->sourced['items_without_required_count'])->toBe(6)
-        ->and($report->gated['english'])->toBe(['available' => 7, 'stored' => 0, 'skipped' => 7, 'store_english' => false])
+        ->and($report->gated['english'])->toBe(['available' => 7, 'stored' => 6, 'skipped' => 1])
         ->and($report->gated['recordings']['upstream'])->toBe(1)
         ->and($report->gated['recordings']['imported'])->toBe(0)
+        ->and($report->gated['recordings']['missing_file'])->toBe(1)
         ->and($report->gated['recordings']['legally_downloadable'])->toBe(0)
         ->and($report->changedUpstreamTexts['count'])->toBe(0)
         ->and($report->errors())->toBe([])
@@ -141,6 +240,7 @@ it('reports the warnings the brief lists, with counts only', function (): void {
         'chapter_without_arabic_title' => 3,
         'english_only_step' => 1,
         'dua_placeholders' => 1,
+        'recording_file_missing' => 1,
     ]);
 });
 
@@ -158,46 +258,10 @@ it('blocks only the entry whose Quran passages have no reviewed reference row', 
 });
 
 it('stores English only when enabled, and never for an item with a Quran segment', function (): void {
-    config(['azkar.opendua.store_english' => true]);
 
     $report = azkarDryRun(azkarFixturePath());
 
-    expect($report->gated['english'])->toBe(['available' => 7, 'stored' => 6, 'skipped' => 1, 'store_english' => true]);
-});
-
-it('counts recordings as upstream and imports them only with verified rights', function (): void {
-    config([
-        'azkar.opendua.audio_rights_verified' => true,
-        'azkar.recording_rights' => [
-            'stream_allowed' => true,
-            'download_allowed' => true,
-            'redistribution_allowed' => false,
-            'attribution_ar' => null,
-            'attribution_en' => 'FIXTURE attribution',
-            'licence' => 'FIXTURE licence',
-            'licence_url' => 'https://example.invalid/fixture-licence',
-            'rights_verified_at' => '2026-10-01T00:00:00Z',
-        ],
-    ]);
-
-    $report = azkarDryRun(azkarFixturePath());
-
-    expect($report->gated['recordings'])->toBe([
-        'upstream' => 1,
-        'upstream_objects' => 1,
-        'imported' => 1,
-        'legally_downloadable' => 1,
-        'audio_rights_verified' => true,
-    ]);
-});
-
-it('refuses a dry run file whose SHA-256 differs from the pin, and lists the mismatch', function (): void {
-    config(['azkar.opendua.catalogue_sha256' => str_repeat('0', 64)]);
-
-    $report = azkarDryRun(azkarFixturePath());
-
-    expect($report->status)->toBe(ImportReport::STATUS_INVALID)
-        ->and(azkarErrorCodes($report))->toContain('checksum_mismatch');
+    expect($report->gated['english'])->toBe(['available' => 7, 'stored' => 6, 'skipped' => 1]);
 });
 
 it('reports invalid JSON and invalid UTF-8 as file errors', function (string $bytes, string $code): void {
@@ -326,53 +390,6 @@ it('blocks only the entry with the error, and the other entries still import', f
 
     expect($report->content['entries_imported'])->toBe(3)
         ->and($report->content['entries_blocked'])->toBe(1);
-});
-
-it('refuses a wet import while the import flag is off and writes nothing', function (): void {
-    config(['azkar.opendua.import_enabled' => false]);
-    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
-
-    $report = azkarWetRun(azkarFixturePath());
-
-    expect($report->status)->toBe(ImportReport::STATUS_LOCKED)
-        ->and(implode(' ', $report->lockReasons))->toContain('AZKAR_OPENDUA_IMPORT_ENABLED')
-        ->and(AzkarItem::query()->count())->toBe(0)
-        ->and(Resource::query()->count())->toBe(0);
-
-    Bus::assertNotDispatched(BuildContentPackJob::class);
-});
-
-it('refuses a wet import while the OpenDua source is pending, even with the flag on', function (): void {
-    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
-    config(['azkar.opendua.import_enabled' => true]);
-
-    $report = azkarWetRun(azkarFixturePath());
-
-    expect($report->status)->toBe(ImportReport::STATUS_LOCKED)
-        ->and(implode(' ', $report->lockReasons))->toContain('permission_status is [pending]')
-        ->and(AzkarItem::query()->count())->toBe(0);
-});
-
-it('refuses a wet import when recording rights are enabled without a licence', function (): void {
-    azkarEnableWetImport();
-    config(['azkar.opendua.audio_rights_verified' => true]);
-
-    $report = azkarWetRun(azkarFixturePath());
-
-    expect($report->status)->toBe(ImportReport::STATUS_LOCKED)
-        ->and(implode(' ', $report->lockReasons))->toContain('Recording rights are incomplete');
-});
-
-it('the command prints the lock reasons and exits non-zero without writing a report', function (): void {
-    ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'pending']);
-
-    $reportPath = storage_path('framework/testing/azkar/locked-report.json');
-
-    $this->artisan('azkar:import', ['path' => azkarFixturePath(), '--report' => $reportPath])
-        ->expectsOutputToContain('The wet import is locked')
-        ->assertExitCode(1);
-
-    expect(File::exists($reportPath))->toBeFalse();
 });
 
 it('the dry run command exits zero and writes a report with counts, keys and no Arabic text', function (): void {
@@ -631,8 +648,7 @@ it('takes title_ar from the configured Arabic titles, keyed by chapter number', 
     expect(AzkarChapter::query()->where('id', 1)->firstOrFail()->title_ar)->toBe('عنوان تجريبي للفصل');
 });
 
-it('imports English only when enabled and keeps the transliteration gated with it', function (): void {
-    config(['azkar.opendua.store_english' => true]);
+it('imports English and keeps the transliteration gated with the Quran segment', function (): void {
     azkarEnableWetImport();
     azkarWetRun(azkarFixturePath());
 
@@ -643,6 +659,17 @@ it('imports English only when enabled and keeps the transliteration gated with i
         ->and($english->transliteration)->toBe('FIXTURE transliteration 1 — not a dhikr')
         ->and($quran->text_en)->toBeNull()
         ->and($quran->transliteration)->toBeNull();
+});
+
+it('never stores English for any item that holds a Quran segment (ADR 0014, ADR 0038 decision 4)', function (): void {
+    azkarEnableWetImport();
+    azkarWetRun(azkarFixturePath());
+
+    $quranItemIds = AzkarSegment::query()->where('kind', 'quran')->distinct()->pluck('item_id');
+
+    expect($quranItemIds)->not->toBeEmpty()
+        ->and(AzkarItem::query()->whereIn('id', $quranItemIds)->where(fn ($query) => $query->whereNotNull('text_en')->orWhereNotNull('transliteration'))->count())->toBe(0)
+        ->and(AzkarItem::query()->whereNotNull('text_en')->count())->toBeGreaterThan(0);
 });
 
 function azkarOriginalArabic(string $entry): string

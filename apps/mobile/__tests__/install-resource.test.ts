@@ -295,7 +295,6 @@ describe('installResource', () => {
   });
 
   it('passes the cancel signal to the manifest request, so a cancelled install stops waiting on the network', async () => {
-    const entry = resource({ id: 86, pack: { url: '/api/v1/content/packs/86/1', size_bytes: 1, sha256: 'abc' } });
     const seen: (AbortSignal | undefined)[] = [];
     const api: ContentApi = {
       // Like the real request: it waits, and rejects when the caller's signal aborts.

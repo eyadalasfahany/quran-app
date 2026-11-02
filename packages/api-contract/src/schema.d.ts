@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/azkar/audio/{version}/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.azkar.audio.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/content/changes": {
         parameters: {
             query?: never;
@@ -160,6 +176,55 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "v1.azkar.audio.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version: string;
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "audio/mpeg": string;
+                };
+            };
+            /** @description The recording was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+            416: {
+                headers: {
+                    "Accept-Ranges"?: "bytes";
+                    "Content-Range"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     "v1.content.changes": {
         parameters: {
             query: {

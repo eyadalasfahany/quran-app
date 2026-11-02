@@ -87,13 +87,13 @@ final class ContentDeliveryService
         $resource = $this->resources->find($resourceId);
 
         if ($resource === null || ! $resource->is_active || $resource->group->isIgnored() || ! $this->isServed($resource)) {
-            throw new ModelNotFoundException('Content pack not found.');
+            throw new ModelNotFoundException(__('problems.content_pack_not_found'));
         }
 
         $pack = $this->packs->findForVersion($resourceId, $version);
 
         if ($pack === null || ! Storage::disk('local')->exists($pack->path)) {
-            throw new ModelNotFoundException('Content pack not found.');
+            throw new ModelNotFoundException(__('problems.content_pack_not_found'));
         }
 
         return new ContentPackData(
@@ -118,7 +118,7 @@ final class ContentDeliveryService
         $resource = $this->resources->find($query->resourceId);
 
         if ($resource === null || ! $resource->is_active || $resource->group->isIgnored() || ! $this->isServed($resource)) {
-            throw new ModelNotFoundException('Resource not found.');
+            throw new ModelNotFoundException(__('problems.resource_not_found'));
         }
 
         if ($query->sinceVersion < $resource->changes_floor_version) {
@@ -159,10 +159,6 @@ final class ContentDeliveryService
      */
     private function isServed(Resource $resource): bool
     {
-        if (! $resource->hasDeliverableRights()) {
-            return false;
-        }
-
         // ADR 0031 §12: only the primary Azkar source is served. Other Azkar resources stay imported for comparison.
         if ($resource->group === ResourceGroup::Azkar && $resource->source?->code !== config('azkar.primary_source', 'opendua')) {
             return false;

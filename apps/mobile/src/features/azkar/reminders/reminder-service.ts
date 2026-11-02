@@ -4,6 +4,9 @@ import { Platform } from 'react-native';
 import { i18n } from '@/core/i18n';
 import { ensureNotificationChannel, NOTIFICATION_CHANNELS } from '@/features/notifications/channels';
 
+import { getMyDua } from '@/features/duas/data/my-duas-repository';
+import { duasHref } from '@/features/duas/routes';
+
 import { azkarHref } from '../routes';
 import { planAzkarBudget } from './budget-plan';
 import { type AzkarReminder, listReminders, type RemindersStore, setNotificationIds } from './reminders-repository';
@@ -20,6 +23,15 @@ export function reminderContent(reminder: AzkarReminder): { title: string; body:
       }),
       body,
       data: { route: String(azkarHref.category(reminder.targetKey)) },
+    };
+  }
+  if (reminder.targetType === 'my_dua') {
+    const dua = getMyDua(reminder.targetKey);
+    const name = dua?.title?.trim() ? dua.title.trim() : i18n.t('duas.mine.untitled');
+    return {
+      title: i18n.t('duas.reminders.notificationTitle', { name }),
+      body: i18n.t('duas.reminders.notificationBody'),
+      data: { route: String(duasHref.mineEdit(reminder.targetKey)) },
     };
   }
   return {

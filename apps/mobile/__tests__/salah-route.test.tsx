@@ -73,6 +73,7 @@ function setWidth(width: number): void {
 describe("salah route", () => {
   beforeEach(async () => {
     storage.set(storageKeys.locale, "en");
+    storage.set(storageKeys.onboardingCompleted, true);
     I18nManager.isRTL = false;
     await i18n.changeLanguage("en");
   });

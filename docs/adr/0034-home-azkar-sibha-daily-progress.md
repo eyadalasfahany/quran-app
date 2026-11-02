@@ -73,3 +73,9 @@ This amends the «Misbaha target» note above: there is now an explicit «بلا
 - **Changing the target** (a preset, the custom sheet or «بلا حد») starts the rounds again at zero and keeps the count.
 - **In-app confirmations (developer, 1 Nov 2026).** `ConfirmDialog` (`src/shared/ui`) replaces `Alert.alert` for in-app confirmations: the misbaha reset, the permission notices (with «فتح الإعدادات» through `Linking.openSettings`), the reminder limit notice, removing Azkar and reciter downloads, ending a Khatma and clearing local data. The OS permission prompts are unchanged. Salah's bell alert (`features/salah/hooks`) still uses `Alert` because Salah was out of this change; it is a follow-up.
 - **Frames (await developer approval).** `Sibha` and `SibhaDark` show the rounds pill and the «بلا حد» chip. The new `SibhaResetDialog` frame and the `ConfirmDialog` component in `quran-app-design-system.html` are drawn from tokens and await approval.
+
+## Amendment: the reminders hub and the recommended set (developer, 2 Nov 2026)
+
+- **Reminders hub.** «أهدافي اليومية» lists reminders through a link row. The hub (`/reminders`) is also reachable from Settings and the Menu. It lists the prayer bells, the Azkar sessions, the daily reading reminder, the Friday Surat al-Kahf reminder, the misbaha target reminder, and a test notification. The hub's Hijri row is not built yet.
+- **Recommended set.** Prayer-relative only, no clock time suggested: the five prayers, morning Azkar after Fajr and evening Azkar after Asr (offset 0), and Surat al-Kahf on Friday at the Dhuhr time. It is offered once, after notifications are allowed, and turns on only with the primary button.
+- **Budget.** The 64 pending slots split as: prayers 40, Azkar 21, daily reading 1, Friday 1, misbaha 1 (`notifications/budget.ts`).

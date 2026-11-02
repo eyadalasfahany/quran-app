@@ -28,7 +28,7 @@ One file per step of [`../phase-6.md`](../phase-6.md). The reviewer checks the d
 - **Mobile gates:** `npm run lint && npx tsc --noEmit && npx jest <paths>`. The `hide-scroll-indicators` and `router.test.tsx` baseline failures are fixed on this branch.
 - **Android emulator** (`emulator-5554`, API 37, x86_64). SDK at `$LOCALAPPDATA/Android/Sdk`; export `ANDROID_HOME` to it and put `platform-tools` on `PATH`.
   - **Dev client:** `cd apps/mobile && npx expo run:android`. Afterwards, `npx expo start --dev-client` **from `apps/mobile`**. Starting Metro from the repo root, or opening the app in Expo Go, fails with `Unable to resolve ../../App`; the app needs the dev client because MMKV and Nitro are native.
-  - **Env:** `apps/mobile/.env` (gitignored) sets `EXPO_PUBLIC_API_URL=http://10.0.2.2:8000` and `EXPO_PUBLIC_AZKAR_DEV_FIXTURES=1` (placeholder fixtures in dev only).
+  - **Env:** `apps/mobile/.env` (gitignored) sets `EXPO_PUBLIC_API_URL=http://10.0.2.2:8000`. (The development fixtures flag was removed on 2 Nov 2026, ADR 0042: the app loads no placeholder content.)
   - **Screenshot:** `adb exec-out screencap -p > <scratchpad>/shot.png`. Save it in the scratchpad, never the repo. Compare with `frame-shot.py <frame-id>`.
   - **Drive the UI:** `adb shell input tap X Y`, `adb shell input swipe …`, `adb shell am start -a android.intent.action.VIEW -d "<scheme>://azkar"` for deep links.
   - The iPhone 17 check required by `CLAUDE.md` still needs the developer's Mac. The emulator review is the Android half.

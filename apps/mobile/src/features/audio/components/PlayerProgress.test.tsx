@@ -1,3 +1,4 @@
+import { fire } from '../../../../jest/azkar-ui-fixtures';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { themes } from '@/core/theme';
@@ -96,6 +97,55 @@ describe('PlayerProgress', () => {
     expect(track.props.accessibilityState).toEqual({ disabled: true });
     track.props.onAccessibilityAction({ nativeEvent: { actionName: 'increment' } });
     track.props.onAccessibilityAction({ nativeEvent: { actionName: 'decrement' } });
+    expect(onSeek).not.toHaveBeenCalled();
+  });
+
+  it('drags the same fraction in Arabic (leftward) and English (rightward), and seeks once on release', async () => {
+    const arabic = renderProgress({ durationMs: 100_000, positionMs: 0 }, { locale: 'ar' });
+    const awaitedAr = await arabic.view;
+    await fire(awaitedAr.getByTestId('player-progress'), 'layout', { nativeEvent: { layout: { width: 200, height: 44, x: 0, y: 0 } } });
+    await fire(awaitedAr.getByTestId('player-progress'), 'responderGrant', { nativeEvent: { locationX: 100, pageX: 100 } });
+    await fire(awaitedAr.getByTestId('player-progress'), 'responderMove', { nativeEvent: { locationX: 50, pageX: 50 } });
+    expect(arabic.onSeek).not.toHaveBeenCalled();
+    await fire(awaitedAr.getByTestId('player-progress'), 'responderRelease');
+    expect(arabic.onSeek).toHaveBeenCalledTimes(1);
+    expect(arabic.onSeek).toHaveBeenCalledWith(25_000);
+
+    const english = renderProgress({ durationMs: 100_000, positionMs: 0 }, { locale: 'en' });
+    const awaitedEn = await english.view;
+    await fire(awaitedEn.getByTestId('player-progress'), 'layout', { nativeEvent: { layout: { width: 200, height: 44, x: 0, y: 0 } } });
+    await fire(awaitedEn.getByTestId('player-progress'), 'responderGrant', { nativeEvent: { locationX: 100, pageX: 100 } });
+    await fire(awaitedEn.getByTestId('player-progress'), 'responderMove', { nativeEvent: { locationX: 150, pageX: 150 } });
+    await fire(awaitedEn.getByTestId('player-progress'), 'responderRelease');
+    expect(english.onSeek).toHaveBeenCalledTimes(1);
+    expect(english.onSeek).toHaveBeenCalledWith(25_000);
+  });
+
+  it('the fill and the elapsed label follow the finger during a drag', async () => {
+    const { view } = renderProgress({ durationMs: 100_000, positionMs: 0 }, { locale: 'en' });
+    const awaited = await view;
+    await fire(awaited.getByTestId('player-progress'), 'layout', { nativeEvent: { layout: { width: 200, height: 44, x: 0, y: 0 } } });
+    await fire(awaited.getByTestId('player-progress'), 'responderGrant', { nativeEvent: { locationX: 100, pageX: 100 } });
+    await fire(awaited.getByTestId('player-progress'), 'responderMove', { nativeEvent: { locationX: 150, pageX: 150 } });
+
+    expect(flatStyle(awaited.getByTestId('player-progress-fill').props.style).width).toBe('25%');
+    expect(awaited.getByTestId('player-elapsed')).toHaveTextContent('0:25');
+  });
+
+  it('a tap without a drag does not seek, as before (only the Azkar bar seeks on tap)', async () => {
+    const { view, onSeek } = renderProgress({ durationMs: 100_000, positionMs: 40_000 }, { locale: 'en' });
+    const awaited = await view;
+    await fire(awaited.getByTestId('player-progress'), 'responderGrant', { nativeEvent: { locationX: 10, pageX: 10 } });
+    await fire(awaited.getByTestId('player-progress'), 'responderRelease');
+    expect(onSeek).not.toHaveBeenCalled();
+  });
+
+  it('never seeks on a drag while the duration is unknown', async () => {
+    const { view, onSeek } = renderProgress({ durationMs: 0, positionMs: 0 }, { locale: 'en' });
+    const awaited = await view;
+    await fire(awaited.getByTestId('player-progress'), 'responderGrant', { nativeEvent: { locationX: 10, pageX: 10 } });
+    await fire(awaited.getByTestId('player-progress'), 'responderMove', { nativeEvent: { locationX: 90, pageX: 90 } });
+    await fire(awaited.getByTestId('player-progress'), 'responderRelease');
     expect(onSeek).not.toHaveBeenCalled();
   });
 

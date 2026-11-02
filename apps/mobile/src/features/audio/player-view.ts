@@ -1,6 +1,3 @@
-import { formatNumber } from '@/core/i18n/numbers';
-import type { Locale } from '@/core/i18n/locale';
-
 import type { PlayerErrorCode } from './playerStore';
 
 export const SEEK_STEP_MS = 10_000;
@@ -44,14 +41,6 @@ export const ERROR_KEYS = {
 } as const satisfies Record<PlayerErrorCode, string>;
 
 export type ErrorKey = (typeof ERROR_KEYS)[PlayerErrorCode];
-
-/** m:ss with Arabic-Indic digits in Arabic. Zero renders as 0:00, so the labels show before a duration is known. */
-export function formatClock(ms: number, locale: Locale): string {
-  const totalSeconds = Math.max(0, Math.floor((Number.isFinite(ms) ? ms : 0) / 1000));
-  const minutes = formatNumber(Math.floor(totalSeconds / 60), locale);
-  const seconds = formatNumber(totalSeconds % 60, locale).padStart(2, formatNumber(0, locale));
-  return `${minutes}:${seconds}`;
-}
 
 /** Played share of the file, 0 to 1. Unknown duration (0) means nothing is played yet. */
 export function playbackFraction(positionMs: number, durationMs: number): number {

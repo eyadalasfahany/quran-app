@@ -1,5 +1,9 @@
+import { useCallback } from 'react';
+import type { LayoutChangeEvent } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+
+import type { SharedValue } from 'react-native-reanimated';
 
 import type { OfflineStripMotion } from '@/core/network/useOfflineStrip';
 import { useTheme } from '@/core/theme';
@@ -9,6 +13,11 @@ import { UiText } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
 const OFFLINE_ICON = { ios: 'wifi.slash', android: 'wifi_off' } as const satisfies IconName;
+// Records the measured line height. It is a plain function so the write is not made inside a component's props.
+function recordNaturalHeight(natural: SharedValue<number>, height: number): void {
+  natural.value = height;
+}
+
 // The frame's measures: a 20 pt glyph and 14 pt side padding, with a 10 pt gap between glyph and text.
 const ICON_SIZE = 20;
 const PADDING_X = 14;
@@ -36,6 +45,14 @@ export function OfflineBanner({
   const colors = useContrastColors();
   const message = t('network.offlineBanner');
 
+  const natural = motion.natural;
+  const onLineLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      recordNaturalHeight(natural, event.nativeEvent.layout.height);
+    },
+    [natural],
+  );
+
   const frameStyle = useAnimatedStyle(() => ({ height: motion.layout.value * motion.natural.value }));
   const fadeStyle = useAnimatedStyle(() => ({ opacity: motion.fade.value }));
 
@@ -53,9 +70,7 @@ export function OfflineBanner({
         accessibilityRole="text"
         accessibilityLiveRegion="polite"
         accessible
-        onLayout={(event) => {
-          motion.natural.value = event.nativeEvent.layout.height;
-        }}
+        onLayout={onLineLayout}
         style={[
           {
             alignItems: 'center',

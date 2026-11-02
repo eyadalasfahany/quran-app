@@ -31,8 +31,9 @@ export function SearchResultRow({
   const theme = useTheme();
   const locale = useLocale();
   const ayah = formatNumber(verse.verseNumber, locale);
-  const reference = t('search.resultReference', { ayah, surah: chapter.nameArabic });
-  const accessibilityLabel = `${verse.textImlaei ?? ''} ${t('ui.ayahNumber', { number: ayah })}, ${reference}`;
+  const reference = t('search.resultReference', { ayah, surah: locale === 'ar' ? chapter.nameArabic : chapter.nameSimple });
+  const line = `${verse.textImlaei ?? ''} ${t('ui.ayahNumber', { number: ayah })}`.trim();
+  const accessibilityLabel = t('common.a11yPair', { label: line, title: reference });
 
   return (
     <Pressable

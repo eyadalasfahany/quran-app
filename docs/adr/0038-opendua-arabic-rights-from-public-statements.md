@@ -1,6 +1,6 @@
 # 0038 — OpenDua's Arabic text is accepted on its public statements
 
-Date: 2026-11-01 · Status: accepted (developer, 1 Nov 2026) · Amends ADR 0031 §1.2, §11 and release blocker 1, and the content plan (OpenDua row, open questions)
+Date: 2026-11-01 · Status: accepted (developer, 1 Nov 2026) · Amends ADR 0031 §1.2, §11 and release blocker 1, and the content plan (OpenDua row, open questions) · Decisions 4 and 5 amended by ADR 0042
 
 ## Context
 
@@ -30,15 +30,19 @@ OpenDua's own site says the following. Each quote was checked against the raw HT
    - `attribution_ar` stays empty. No Arabic wording is published, and we don't write one.
    - `notes` cites this ADR.
 3. **Audio is split out and stays blocked.** *(Superseded 1 Nov 2026 by ADR 0040, which ships the audio.)* ADR 0031 §1.2 tied audio to the same confirmation. The recitation is explicitly outside the dataset licence, so §8 is unchanged: no OpenDua recording is streamed, downloaded or bundled without written rights. `audio_rights_verified` and `recording_rights` stay off.
-4. **English stays off.** `store_english` remains `false`. CC BY 4.0 covers OpenDua's English, but the catalogue carries English renderings of Quran passages (for example entry 4, Āl ʿImrān 190–200), and ADR 0014 forbids them. Turning English on for non-Quranic duas is a separate decision.
+4. **English stays off.** *(Amended 1 Nov 2026 by ADR 0042: `store_english` is `true`; English is stored for every item except one with a Quran segment, which this decision requires.)* `store_english` was `false`. CC BY 4.0 covers OpenDua's English, but the catalogue carries English renderings of Quran passages (for example entry 4, Āl ʿImrān 190–200), and ADR 0014 forbids them. Turning English on for non-Quranic duas is a separate decision.
 5. **The other locks stay.**
-   - `AZKAR_OPENDUA_IMPORT_ENABLED` is still `false` until it is set on Railway.
+   - *(Amended by ADR 0042)* `AZKAR_OPENDUA_IMPORT_ENABLED` is removed. The import is on by default, and the reviewed Quran map and the `opendua` row remain the rules.
    - Production still accepts only `reviewed` Quran map rows (ADR 0031 §11). The review sheet is `docs/plans/phase-6/quran-map-review.md`.
    - These production rules apply only when Railway runs with `APP_ENV=production`. That must be set before the import flag is turned on. Otherwise the importer applies local rules and accepts `candidate` map rows.
 
 ## Consequences
 
-- Production Azkar now depends on two steps: the reviewed Quran map, and `AZKAR_OPENDUA_IMPORT_ENABLED=true` (with `APP_ENV=production`) on Railway.
+- Production Azkar now depends on the reviewed Quran map and `APP_ENV=production` on Railway. The `AZKAR_OPENDUA_IMPORT_ENABLED=true` step is removed (ADR 0042: the import is on by default).
 - Release blockers 2 (Arabic chapter titles) and 4 (design approval) in ADR 0031 are not changed by this ADR.
 - If OpenDua later publishes terms that restrict the Arabic, the rollback is the existing one (runbook, «Rolling back the content»): the flag goes off and a reviewed migration sets the source back to `pending`.
 - The written question to `opendua@hdfund.org` is no longer a blocker. It stays open for the Arabic attribution wording and the Arabic chapter titles.
+
+## Amendment pointer, 2 Nov 2026 (ADR 0042)
+
+Decisions 4 and 5 are read with ADR 0042's amendment of 2 Nov 2026. `azkar.opendua.store_english` and `azkar.opendua.audio_rights_verified` are removed; English is always stored except for an item with a Quran segment, and recordings are imported whenever their file is on the audio disk (ADR 0040). The `opendua` row's `permission_status` is provenance only.

@@ -24,12 +24,15 @@ export function ContinueReadingRow({
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const label = t('library.index.lastRead', { ayah: formatNumber(ayah, locale), surah: chapter.nameArabic });
+  const label = t('library.index.lastRead', {
+    ayah: formatNumber(ayah, locale),
+    surah: locale === 'ar' ? chapter.nameArabic : chapter.nameSimple,
+  });
   const resume = t('library.index.resume');
 
   return (
     <Pressable
-      accessibilityLabel={`${label}, ${resume}`}
+      accessibilityLabel={t('common.a11yPair', { label, title: resume })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({ marginBottom: theme.size.blockGap, opacity: pressed ? theme.opacity.pressed : 1 })}

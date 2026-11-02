@@ -1,0 +1,10 @@
+"widget_next_prayer_name" = "الصلاة القادمة";
+"widget_next_prayer_desc" = "الصلاة القادمة ووقتها";
+"widget_progress_name" = "تقدّم اليوم";
+"widget_progress_desc" = "تقدّم أهدافك اليومية";
+"widget_reading_name" = "تابع القراءة";
+"widget_reading_desc" = "موضع قراءتك ووردك اليوم";
+"widget_misbaha_name" = "المسبحة";
+"widget_misbaha_desc" = "عدّاد المسبحة ومجموع اليوم";
+"widget_lock_name" = "شاشة القفل";
+"widget_lock_desc" = "الصلاة القادمة ونسبة التقدّم";

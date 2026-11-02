@@ -30,9 +30,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    // ADR 0031 §2. Dorar is used only through the API. Off unless a token is set and DORAR_ENABLED is true.
+    // ADR 0031 §2, ADR 0045. Dorar is used only through the API. It is used whenever a base URL and a token are set;
+    // without them it behaves as the null source (no HTTP call, no error).
     'dorar' => [
-        'enabled' => (bool) env('DORAR_ENABLED', false),
         'base_url' => env('DORAR_API_BASE_URL', ''),
         'token' => env('DORAR_API_TOKEN', ''),
         'token_header' => env('DORAR_TOKEN_HEADER', 'Authorization'),

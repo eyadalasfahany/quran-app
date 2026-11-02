@@ -67,9 +67,9 @@ describe('AzkarSearchScreen', () => {
     await type('الصباح');
 
     expect(await screen.findByRole('header', { name: 'الأبواب' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'أذكار الصباح, ٢٤ ذكرًا' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'أذكار الصباح، ٢٤ ذكرًا' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'الأذكار' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: `١, ${PREVIEW}` })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: `١، ${PREVIEW}` })).toBeOnTheScreen();
   });
 
   it('opens a matching entry and records the query', async () => {
@@ -80,7 +80,7 @@ describe('AzkarSearchScreen', () => {
     await renderUi(<AzkarSearchScreen />);
     await type('الصباح');
 
-    await press(await screen.findByRole('button', { name: `١, ${PREVIEW}` }));
+    await press(await screen.findByRole('button', { name: `١، ${PREVIEW}` }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/entry/fixture%3Aentry-001');
     expect(readAzkarRecentSearches()).toEqual(['الصباح']);
   });

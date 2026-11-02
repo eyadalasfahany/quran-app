@@ -33,10 +33,17 @@ function isSchedulable(reminder: Planned): boolean {
   return reminder.prayer !== null && reminder.offsetMinutes !== null;
 }
 
-/** Categories before entries, then the oldest update first, then id, so the same input always gives the same plan. */
+const TARGET_PRIORITY: Record<Planned['targetType'], number> = {
+  category: 0,
+  entry: 1,
+  my_dua: 2,
+};
+
+/** Categories before entries before my duas, then the oldest update first, then id. */
 function planOrder(a: Planned, b: Planned): number {
-  if (a.targetType !== b.targetType) {
-    return a.targetType === 'category' ? -1 : 1;
+  const byType = TARGET_PRIORITY[a.targetType] - TARGET_PRIORITY[b.targetType];
+  if (byType !== 0) {
+    return byType;
   }
   return a.updatedAt - b.updatedAt || a.id.localeCompare(b.id);
 }

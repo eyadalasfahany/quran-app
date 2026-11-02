@@ -6,6 +6,8 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
+import { i18n } from '@/core/i18n';
+
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 
@@ -68,17 +70,20 @@ jest.mock('../hooks/useScreenActive', () => ({ useScreenActive: jest.fn(() => tr
 type MockHeading = {
   /** The live heading in degrees, or null before the first sample. */
   heading: number | null;
-  accuracy: 'good' | 'poor' | 'unavailable';
+  accuracy: 'good' | 'fair' | 'poor' | 'unavailable';
   supported: boolean;
   /** Whether the hook reports the needle as aligned (its hysteresis decides; the screen only shows it). */
   aligned?: boolean;
+  /** Android has no declination yet (no location fix): the hook is waiting for the location. */
+  awaitingLocation?: boolean;
 };
 
 /** What useQiblaHeading returns for a given sample: the heading as a SharedValue, as the hook exposes it. */
-const mockHeading = ({ heading, accuracy, supported, aligned = false }: MockHeading) =>
+const mockHeading = ({ heading, accuracy, supported, aligned = false, awaitingLocation = false }: MockHeading) =>
   jest.mocked(useQiblaHeading).mockReturnValue({
     aligned,
     accuracy,
+    awaitingLocation,
     hasHeading: heading !== null,
     headingValue: { value: heading ?? 0 } as never,
     supported,
@@ -211,6 +216,97 @@ describe('QiblaScreen', () => {
     expect(view.queryByText('أنت باتجاه القبلة')).toBeNull();
     expect(Haptics.notificationAsync).not.toHaveBeenCalled();
     expect(JSON.stringify(view.getByTestId('qibla-compass-needle').props.style)).toContain('244deg');
+  });
+
+  it('says the dial is north-up while there is no live heading (no sample yet)', async () => {
+    mockHeading({ accuracy: 'unavailable', heading: null, supported: true });
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByText('القرص ثابت على الشمال الحقيقي؛ يدور مع الجهاز عند توفّر البوصلة')).toBeOnTheScreen();
+    expect(view.getByTestId('qibla-north-up')).toBeOnTheScreen();
+  });
+
+  it('shows the calibration notice, not the north-up note, for poor readings before any good heading', async () => {
+    mockHeading({ accuracy: 'poor', heading: null, supported: true });
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByText('حرّك جهازك على شكل ٨')).toBeOnTheScreen();
+    expect(view.queryByTestId('qibla-north-up')).toBeNull();
+  });
+
+  it('waits for the location, not a calibration notice, while the declination is missing', async () => {
+    mockHeading({ accuracy: 'unavailable', awaitingLocation: true, heading: null, supported: true });
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByTestId('qibla-waiting-location')).toHaveTextContent('بانتظار تحديد الموقع');
+    expect(view.getByTestId('qibla-north-up')).toBeOnTheScreen();
+    expect(view.queryByText('حرّك جهازك على شكل ٨')).toBeNull();
+    expect(view.getByLabelText('غير متاحة')).toBeOnTheScreen();
+  });
+
+  it('shows the waiting line in English', async () => {
+    mockHeading({ accuracy: 'unavailable', awaitingLocation: true, heading: null, supported: true });
+    const view = await renderUi(<QiblaScreen />, { locale: 'en' });
+
+    expect(view.getByText('Waiting for your location')).toBeOnTheScreen();
+    expect(view.getByTestId('qibla-north-up')).toBeOnTheScreen();
+  });
+
+  it('drops the waiting line once the location arrives and the heading is live', async () => {
+    mockHeading({ accuracy: 'unavailable', awaitingLocation: true, heading: null, supported: true });
+    const view = await renderUi(<QiblaScreen />);
+    expect(view.getByTestId('qibla-waiting-location')).toBeOnTheScreen();
+
+    mockHeading({ accuracy: 'good', heading: 14, supported: true });
+    await view.rerender(<QiblaScreen />);
+
+    expect(view.queryByTestId('qibla-waiting-location')).toBeNull();
+    expect(view.queryByTestId('qibla-north-up')).toBeNull();
+  });
+
+  it('shows the calibration notice for fair readings, and the dial is live', async () => {
+    mockHeading({ accuracy: 'fair', heading: 14, supported: true });
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByText('حرّك جهازك على شكل ٨')).toBeOnTheScreen();
+    expect(view.queryByTestId('qibla-north-up')).toBeNull();
+    expect(view.queryByTestId('qibla-aligned')).toBeNull();
+  });
+
+  it('says the dial is north-up under Reduce Motion, even with a live heading, and says why', async () => {
+    jest.mocked(useReducedMotion).mockReturnValue(true);
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByTestId('qibla-north-up')).toBeOnTheScreen();
+    expect(view.getByText('القرص ثابت على الشمال الحقيقي لأن تقليل الحركة مفعّل')).toBeOnTheScreen();
+    expect(view.queryByText('القرص ثابت على الشمال الحقيقي؛ يدور مع الجهاز عند توفّر البوصلة')).toBeNull();
+  });
+
+  it.each(locales)('states the Reduce Motion north-up note in %s', async (locale) => {
+    jest.mocked(useReducedMotion).mockReturnValue(true);
+    const view = await renderUi(<QiblaScreen />, { locale });
+
+    expect(view.getByText(i18n.t('home.salah.qiblaScreen.northUpReduceMotion', { lng: locale }))).toBeOnTheScreen();
+  });
+
+  it('states the no-sample north-up note, not the Reduce Motion one, when the compass is simply not ready', async () => {
+    mockHeading({ accuracy: 'unavailable', heading: null, supported: true });
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.getByText(i18n.t('home.salah.qiblaScreen.northUpNote', { lng: 'ar' }))).toBeOnTheScreen();
+  });
+
+  it('drops the north-up note once the dial is live', async () => {
+    const view = await renderUi(<QiblaScreen />);
+
+    expect(view.queryByTestId('qibla-north-up')).toBeNull();
+  });
+
+  it.each(locales)('states the north-up note in %s', async (locale) => {
+    mockHeading({ accuracy: 'unavailable', heading: null, supported: true });
+    const view = await renderUi(<QiblaScreen />, { locale });
+
+    expect(view.getByText(i18n.t('home.salah.qiblaScreen.northUpNote', { lng: locale }))).toBeOnTheScreen();
   });
 
   it('has no raw colour literals', () => {

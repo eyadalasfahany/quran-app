@@ -48,7 +48,7 @@ describe('SurahResultRow', () => {
 
   it.each(locales)('is one button labelled with the title and hint (%s)', async (locale) => {
     const view = await renderUi(<SurahResultRow chapter={chapter} onPress={() => undefined} />, { locale });
-    const name = locale === 'ar' ? 'سورة البقرة, ٢٨٦ آية · تبدأ صفحة ٢' : 'Surah البقرة, 286 ayahs · starts on page 2';
+    const name = locale === 'ar' ? 'سورة البقرة، ٢٨٦ آية · تبدأ صفحة ٢' : 'Surah Al-Baqarah, 286 ayahs · starts on page 2';
 
     expect(view.getByRole('button', { name })).toBeOnTheScreen();
   });

@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { I18nManager, View } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import Svg, { Circle, Defs, G, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { arabizeDigits } from '@/core/i18n/numbers';
@@ -8,10 +9,13 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui/UiText';
 
+import { dialAnchor, dialPlacement } from '../data/dial-placement';
+
 import { KaabaGlyph } from './KaabaGlyph';
+import { QiblaUpright } from './QiblaUpright';
 
 // The instrument's fixed geometry (quran-app-screens.html, #Qibla): a 336 px dial whose
-// ring, ticks, cardinals and numerals never move. Only the needle rotates.
+// ring, ticks, cardinals and numerals never move on the face. The face turns as a whole (QiblaCompass).
 const DIAL = 336;
 const CENTER = DIAL / 2; // 168
 const MARKER_ORBIT = 130;
@@ -41,15 +45,22 @@ const NUMERALS = [
 ] as const;
 
 /**
- * The static face of the qibla instrument: bezel, ornament, tick rings, the gold arc, cardinals, numerals and the Kaaba
- * marker parked at `bearing`. These are laid out in the 336 geometry; the compass scales the whole instrument about its
- * centre. Memoised on `bearing`: a heading change re-renders only the needle. Theme and locale arrive through context,
- * which re-renders this component on their own, so the dial is never stale.
+ * The face of the qibla instrument: bezel, ornament, tick rings, the gold arc, cardinals, numerals and the Kaaba marker
+ * parked at `bearing`. These are laid out unrotated in the 336 geometry. QiblaCompass turns the whole face by −turn, so ش
+ * points to real north and the marker to Makkah's real direction. The cardinals, numerals and the Kaaba glyph
+ * counter-rotate by +turn (QiblaUpright), so they stay readable.
+ *
+ * Every absolute layer is placed with a translate (dialPlacement), never with `left` or `right`: React Native swaps those
+ * in RTL, which mirrored the labels. The QiblaUpright layers sit inside their placed box and keep their own transform.
+ *
+ * Memoised on `bearing` and `turn` (a stable SharedValue): a heading change does not re-render the face, only the
+ * animated transforms move. Theme and locale arrive through context, which re-renders this component on their own.
  */
-function QiblaDialFace({ bearing }: { bearing: number }) {
+function QiblaDialFace({ bearing, turn }: { bearing: number; turn: SharedValue<number> }) {
   const { t } = useTranslation();
   const locale = useLocale();
   const theme = useTheme();
+  const isRTL = I18nManager.isRTL;
 
   // Gold arc from north to the bearing: 2π·130·(bearing/360) of the r=130 ring.
   const ringLength = 2 * Math.PI * MARKER_ORBIT;
@@ -84,7 +95,7 @@ function QiblaDialFace({ bearing }: { bearing: number }) {
       {/* The 8-point-star ornament, at the frame's 6% opacity. */}
       <Svg
         height={228}
-        style={{ left: ORNAMENT_OFFSET, opacity: 0.06, position: 'absolute', top: ORNAMENT_OFFSET }}
+        style={{ ...dialPlacement(ORNAMENT_OFFSET, ORNAMENT_OFFSET, 228, 228, isRTL), opacity: 0.06 }}
         viewBox="0 0 100 100"
         width={228}
       >
@@ -98,7 +109,7 @@ function QiblaDialFace({ bearing }: { bearing: number }) {
       </Svg>
 
       {/* Tick rings and the gold qibla arc. */}
-      <Svg height={DIAL} style={StyleSheet.absoluteFill} width={DIAL}>
+      <Svg height={DIAL} style={dialAnchor(DIAL, DIAL)} width={DIAL}>
         <Circle
           cx={CENTER}
           cy={CENTER}
@@ -135,66 +146,82 @@ function QiblaDialFace({ bearing }: { bearing: number }) {
         />
       </Svg>
 
-      {/* Cardinals and degree numerals, at the frame's exact positions. */}
+      {/* Cardinals and degree numerals, at the frame's exact positions, upright on screen. */}
       {CARDINALS.map((cardinal) => (
         <View
           key={cardinal.key}
           pointerEvents="none"
-          style={{ alignItems: 'center', height: 22, left: cardinal.x - 20, position: 'absolute', top: cardinal.y - 11, width: 40 }}
+          style={dialPlacement(cardinal.x - 20, cardinal.y - 11, 40, 22, isRTL)}
+          testID={`qibla-dial-label-${cardinal.key}`}
         >
-          <UiText
-            style={{
-              color: cardinal.bright ? theme.colors.playerInk : theme.colors.playerMuted,
-              fontSize: cardinal.size,
-              lineHeight: 22,
-            }}
-            variant="subhead"
-            weight={cardinal.weight}
+          <QiblaUpright
+            style={{ alignItems: 'center', height: 22, width: 40 }}
+            testID={`qibla-dial-label-${cardinal.key}-upright`}
+            turn={turn}
           >
-            {t(`home.salah.qiblaScreen.${cardinal.key}`)}
-          </UiText>
+            <UiText
+              style={{
+                color: cardinal.bright ? theme.colors.playerInk : theme.colors.playerMuted,
+                fontSize: cardinal.size,
+                lineHeight: 22,
+              }}
+              variant="subhead"
+              weight={cardinal.weight}
+            >
+              {t(`home.salah.qiblaScreen.${cardinal.key}`)}
+            </UiText>
+          </QiblaUpright>
         </View>
       ))}
       {NUMERALS.map((numeral) => (
         <View
           key={numeral.degrees}
           pointerEvents="none"
-          style={{ alignItems: 'center', height: 14, left: numeral.x - 20, position: 'absolute', top: numeral.y - 7, width: 40 }}
+          style={dialPlacement(numeral.x - 20, numeral.y - 7, 40, 14, isRTL)}
+          testID={`qibla-dial-numeral-${numeral.degrees}`}
         >
-          <UiText
-            style={{ color: theme.colors.playerMuted, fontSize: 11, lineHeight: 14 }}
-            variant="label"
-            weight={400}
+          <QiblaUpright
+            style={{ alignItems: 'center', height: 14, width: 40 }}
+            testID={`qibla-dial-numeral-${numeral.degrees}-upright`}
+            turn={turn}
           >
-            {locale === 'ar' ? arabizeDigits(String(numeral.degrees)) : String(numeral.degrees)}
-          </UiText>
+            <UiText style={{ color: theme.colors.playerMuted, fontSize: 11, lineHeight: 14 }} variant="label" weight={400}>
+              {locale === 'ar' ? arabizeDigits(String(numeral.degrees)) : String(numeral.degrees)}
+            </UiText>
+          </QiblaUpright>
         </View>
       ))}
 
-      {/* The Kaaba marker, parked on the arc at the bearing; counter-rotated upright. */}
-      <View pointerEvents="none" style={[StyleSheet.absoluteFill, { transform: [{ rotate: `${bearing}deg` }] }]} testID="qibla-compass-marker">
-        <View
-          style={{
-            alignItems: 'center',
-            height: 64,
-            justifyContent: 'center',
-            left: CENTER - 32,
-            position: 'absolute',
-            top: CENTER - MARKER_ORBIT - 32,
-            transform: [{ rotate: `${-bearing}deg` }],
-            width: 64,
-          }}
-        >
-          <Svg height={64} style={StyleSheet.absoluteFill} width={64}>
-            <Defs>
-              <RadialGradient id="qibla-marker-halo" cx="50%" cy="50%" r="50%">
-                <Stop offset="0%" stopColor={theme.colors.qiblaGoldHalo} />
-                <Stop offset="65%" stopColor={theme.colors.qiblaGoldHalo} stopOpacity={0} />
-              </RadialGradient>
-            </Defs>
-            <Circle cx={32} cy={32} r={32} fill="url(#qibla-marker-halo)" />
-          </Svg>
-          <KaabaGlyph size={42} />
+      {/* The Kaaba marker, parked on the arc at the bearing. Inside the marker the glyph is counter-rotated by −bearing,
+          so it is upright within the face; QiblaUpright adds +turn, so it is upright on screen too. */}
+      <View
+        pointerEvents="none"
+        style={{ ...dialAnchor(DIAL, DIAL), transform: [{ rotate: `${bearing}deg` }] }}
+        testID="qibla-compass-marker"
+      >
+        <View style={dialPlacement(CENTER - 32, CENTER - MARKER_ORBIT - 32, 64, 64, isRTL)}>
+          <QiblaUpright style={{ height: 64, width: 64 }} testID="qibla-compass-marker-upright" turn={turn}>
+            <View
+              style={{
+                ...dialAnchor(64, 64),
+                alignItems: 'center',
+                justifyContent: 'center',
+                transform: [{ rotate: `${-bearing}deg` }],
+              }}
+              testID="qibla-compass-marker-glyph"
+            >
+              <Svg height={64} style={dialAnchor(64, 64)} width={64}>
+                <Defs>
+                  <RadialGradient id="qibla-marker-halo" cx="50%" cy="50%" r="50%">
+                    <Stop offset="0%" stopColor={theme.colors.qiblaGoldHalo} />
+                    <Stop offset="65%" stopColor={theme.colors.qiblaGoldHalo} stopOpacity={0} />
+                  </RadialGradient>
+                </Defs>
+                <Circle cx={32} cy={32} r={32} fill="url(#qibla-marker-halo)" />
+              </Svg>
+              <KaabaGlyph size={42} />
+            </View>
+          </QiblaUpright>
         </View>
       </View>
     </>

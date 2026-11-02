@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
@@ -23,6 +24,7 @@ export function AzkarSearchResultRow({
   onPress: () => void;
   testID?: string;
 }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
   const locale = useLocale();
@@ -34,7 +36,7 @@ export function AzkarSearchResultRow({
 
   return (
     <Pressable
-      accessibilityLabel={`${formatNumber(number, locale)}, ${preview}`}
+      accessibilityLabel={t('common.a11yPair', { label: formatNumber(number, locale), title: preview })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({

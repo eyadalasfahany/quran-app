@@ -3,18 +3,8 @@ import { addNetworkStateListener, getNetworkStateAsync } from 'expo-network';
 
 import { makeDownloadEntry, makeFakeDownloadPort, makeRecording } from '../../../../jest/azkar-audio-fixtures';
 import { renderUi } from '../../../../jest/render-ui';
-import { storage, storageKeys } from '@/core/storage/mmkv';
 
-import {
-  isOnline,
-  useAzkarAutoplay,
-  useAzkarDownloads,
-  useAzkarUnitPlayback,
-  useDownloadEntry,
-  useIsDownloaded,
-  useOnline,
-} from './hooks';
-import { resetAzkarPlaybackForTests, useAzkarPlaybackStore } from './playback';
+import { isOnline, useAzkarDownloads, useDownloadEntry, useIsDownloaded, useOnline } from './hooks';
 
 const mockState = getNetworkStateAsync as jest.Mock;
 const mockListen = addNetworkStateListener as jest.Mock;
@@ -177,47 +167,5 @@ describe('useAzkarDownloads', () => {
     const view = await probe(() => useAzkarDownloads());
     expect(view.value.entries).toEqual([]);
     expect(view.value.storageBytes).toBe(0);
-  });
-});
-
-describe('useAzkarAutoplay', () => {
-  afterEach(() => {
-    storage.remove(storageKeys.azkar.audioAutoplay);
-  });
-
-  it('reads the saved preference and saves changes', async () => {
-    storage.set(storageKeys.azkar.audioAutoplay, true);
-    const view = await probe(() => useAzkarAutoplay());
-    expect(view.value[0]).toBe(true);
-
-    await act(async () => {
-
-      view.value[1](false);
-
-    });
-    expect(view.value[0]).toBe(false);
-    expect(storage.getBoolean(storageKeys.azkar.audioAutoplay)).toBe(false);
-  });
-});
-
-describe('useAzkarUnitPlayback', () => {
-  beforeEach(() => {
-    resetAzkarPlaybackForTests();
-  });
-
-  it('reports the loaded recording for its own unit only', async () => {
-    useAzkarPlaybackStore.setState({ unitKey: 'u1', status: 'playing', positionMs: 5_000, durationMs: 65_000 });
-    expect((await probe(() => useAzkarUnitPlayback('u1'))).value).toEqual({
-      active: true,
-      status: 'playing',
-      positionMs: 5_000,
-      durationMs: 65_000,
-    });
-    expect((await probe(() => useAzkarUnitPlayback('u2'))).value).toEqual({
-      active: false,
-      status: 'idle',
-      positionMs: 0,
-      durationMs: 0,
-    });
   });
 });

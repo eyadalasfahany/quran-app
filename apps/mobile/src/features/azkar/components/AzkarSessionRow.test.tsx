@@ -11,13 +11,13 @@ describe('AzkarSessionRow', () => {
 
     expect(screen.getByText('أذكار الصباح')).toBeOnTheScreen();
     expect(screen.getByText('١٢ من ٢٤')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'أذكار الصباح, ١٢ من ٢٤' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'أذكار الصباح، ١٢ من ٢٤' })).toBeOnTheScreen();
   });
 
   it('adds the completed state to its label and draws the check', async () => {
     await renderUi(<AzkarSessionRow completed fraction={1} onPress={jest.fn()} progressText="٦ من ٦" title="بعد الصلاة" />);
 
-    expect(screen.getByRole('button', { name: 'بعد الصلاة, ٦ من ٦, مكتمل' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'بعد الصلاة، ٦ من ٦، مكتمل' })).toBeOnTheScreen();
     expect(screen.getByTestId('azkar-session-row-ring-check', { includeHiddenElements: true })).toBeOnTheScreen();
   });
 
@@ -25,7 +25,7 @@ describe('AzkarSessionRow', () => {
     const onPress = jest.fn();
     await renderUi(<AzkarSessionRow completed={false} fraction={0} onPress={onPress} progressText="٠ من ٩" title="النوم" />);
 
-    await press(screen.getByRole('button', { name: 'النوم, ٠ من ٩' }));
+    await press(screen.getByRole('button', { name: 'النوم، ٠ من ٩' }));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 

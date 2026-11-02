@@ -4,7 +4,7 @@ import type { SqlExecutor, SqlValue } from '@/core/db/sql-executor';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { getEntry, listCategoryEntries, listCategoryUnits } from './content-repository';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 
 /**
  * The batched category read must return exactly what the per-entry read returns, and it must issue a fixed number of

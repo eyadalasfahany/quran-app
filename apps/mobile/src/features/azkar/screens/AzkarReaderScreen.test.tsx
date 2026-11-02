@@ -1,11 +1,13 @@
-import { act, fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen, within } from '@testing-library/react-native';
 import { Share } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
+import { makeRecording } from '../../../../jest/azkar-audio-fixtures';
 import { makeDetail, makeItem, press, quranSegment, textSegment } from '../../../../jest/azkar-ui-fixtures';
 import { openAzkarUserDb } from '../../../../jest/azkar-test-db';
 import { renderUi } from '../../../../jest/render-ui';
 import type { SqlExecutor } from '@/core/db/sql-executor';
+import { initialAzkarPlayerState, useAzkarPlayerStore } from '../audio/azkarPlayerStore';
 import { azkarShareText } from '../data/share-text';
 import { buildReaderUnits } from '../data/reader-units';
 import { scopeKeyForEntry, SESSION_UNIT_KEY } from '../data/progress';
@@ -55,6 +57,7 @@ jest.mock('../data/content-repository', () => ({
   getCategory: jest.fn(() => undefined),
   getEntry: jest.fn(),
   getQuranSegmentVerses: jest.fn(),
+  listRecordingsForItems: jest.fn(() => []),
 }));
 
 jest.mock('../data/progress-repository', () => ({
@@ -104,6 +107,18 @@ jest.mock('expo-router', () => {
     },
   };
 });
+
+const mockOnline = jest.fn(() => true);
+const mockStartPlayback = jest.fn();
+
+jest.mock('../audio/hooks', () => {
+  const actual = jest.requireActual<typeof import('../audio/hooks')>('../audio/hooks');
+  return { ...actual, useOnline: () => mockOnline() };
+});
+
+jest.mock('../audio/start', () => ({
+  startAzkarPlayback: (...args: unknown[]) => mockStartPlayback(...args),
+}));
 
 const progress = progressRepo as jest.Mocked<typeof progressRepo>;
 const contentMock = content as jest.Mocked<typeof content>;
@@ -764,5 +779,51 @@ describe('AzkarReaderScreen', () => {
 
       expect(screen.getByRole('button', { name: 'Mark as complete' })).toBeTruthy();
     });
+  });
+});
+
+describe('the reader player bar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useAzkarPlayerStore.setState(initialAzkarPlayerState);
+    mockWindowClass.mockReturnValue('compact');
+    mockRows.mockReturnValue([]);
+    mockReduceMotion.mockReturnValue(false);
+    mockIsFavorite.mockReturnValue(false);
+    mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: 3 })]));
+    contentMock.getEntry.mockReturnValue(makeDetail());
+    contentMock.getQuranSegmentVerses.mockReturnValue([{ textUthmani: 'آية تجريبية' }] as never);
+    mockOnline.mockReturnValue(true);
+    mockStartPlayback.mockClear();
+    contentMock.listRecordingsForItems.mockReturnValue([]);
+  });
+
+  it('draws no player and no audio control for a unit without a recording', async () => {
+    await renderReader();
+    expect(screen.queryByTestId('azkar-player-bar')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
+  });
+
+  it('draws the bar for a playable recording, showing the repetition of the count so far', async () => {
+    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
+    await renderReader();
+    expect(screen.getByTestId('azkar-player-bar')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'تشغيل التسجيل' })).toBeTruthy();
+    expect(within(screen.getByTestId('azkar-player-bar-repetition')).getByText('٠ من ٣')).toBeTruthy();
+  });
+
+  it('shows the offline message, and no play control, when the recording needs the network while offline', async () => {
+    mockOnline.mockReturnValue(false);
+    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
+    await renderReader();
+    expect(screen.getByText('غير متاح دون اتصال')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
+  });
+
+  it('starts the scope queue from the bar, at the unit that is read', async () => {
+    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
+    await renderReader();
+    await press(screen.getByRole('button', { name: 'تشغيل التسجيل' }));
+    expect(mockStartPlayback).toHaveBeenCalledWith(expect.objectContaining({ index: 0, scope: expect.objectContaining({ scopeKey: SCOPE }) }));
   });
 });

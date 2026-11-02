@@ -23,7 +23,7 @@ describe('SelectedAzkarSection', () => {
     const onOpen = jest.fn();
     const view = await renderUi(<SelectedAzkarSection items={items} onOpen={onOpen} onSeeAll={jest.fn()} />);
 
-    await fireEvent.press(view.getByRole('button', { name: 'أذكار المساء, ٥ من ٢٤' }));
+    await fireEvent.press(view.getByRole('button', { name: 'أذكار المساء، ٥ من ٢٤' }));
 
     expect(onOpen).toHaveBeenCalledWith('evening');
   });

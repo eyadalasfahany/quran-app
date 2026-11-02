@@ -8,7 +8,6 @@ use App\Domains\Azkar\Services\HadeethEncLinker;
 use App\Domains\Azkar\Services\HadeethEncNotes;
 use App\Domains\Azkar\Sources\HadeethEncSnapshot;
 use App\Domains\Azkar\Sources\HadeethEncSnapshotter;
-use App\Domains\Content\Models\ContentSource;
 use App\Support\QuranText\SearchTextNormalizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -169,28 +168,17 @@ it('writes explanation, grade and reference notes from reviewed links in product
         ->and(json_encode($local['notes']))->not->toContain('FIXTURE benefit');
 });
 
-it('reports enrichment as not run while the hadeethenc source is pending, and writes no notes', function (): void {
+it('leaves the notes out with a reason, and the import still runs, when the snapshot is not on the server (ADR 0042)', function (): void {
     config([
         'azkar.opendua.catalogue_sha256' => hash_file('sha256', base_path('tests/Fixtures/azkar/opendua-fixture.json')),
-        'azkar.hadeethenc.enabled' => true,
+        'azkar.hadeethenc.snapshot_date' => '1999-01-01',
     ]);
 
     $report = app(AzkarImporter::class)->run(base_path('tests/Fixtures/azkar/opendua-fixture.json'), true);
 
     expect($report->gated['hadeethenc']['enabled'])->toBeFalse()
-        ->and($report->gated['hadeethenc']['reason'])->toContain('not granted');
-});
-
-it('the hadeethenc source is seeded pending, and the local unlock sets it granted, never in production', function (): void {
-    expect(ContentSource::query()->where('code', 'hadeethenc')->value('permission_status')?->value)->toBe('pending');
-
-    $this->artisan('azkar:source-permission', ['status' => 'granted', '--source' => 'hadeethenc'])->assertExitCode(0);
-
-    expect(ContentSource::query()->where('code', 'hadeethenc')->value('permission_status')?->value)->toBe('granted');
-
-    app()->detectEnvironment(fn (): string => 'production');
-
-    $this->artisan('azkar:source-permission', ['status' => 'pending', '--source' => 'hadeethenc'])->assertExitCode(1);
+        ->and($report->gated['hadeethenc']['reason'])->toContain('not on this server')
+        ->and(array_filter($report->errors(), fn (array $issue): bool => str_starts_with($issue['code'], 'hadeethenc')))->toBe([]);
 });
 
 it('the snapshot the importer reads must match its pin', function (): void {

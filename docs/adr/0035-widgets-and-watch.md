@@ -1,6 +1,6 @@
 # 0035 — Home-screen and lock-screen widgets, and an Apple Watch app
 
-Date: 2026-11-01 · Status: proposed (needs the developer: see "Decisions that need the developer") · Rests on ADR 0010 (frames first), 0016 (iOS 16.4 stays), 0027 (local-only), 0030 (Salah on device), 0031 (Azkar rights), 0034 (Home, misbaha, daily progress) · Would amend spec §2, §4, §13, §14, §15 and the content plan's version table (edits listed at the end; only the §15 pointer is made now)
+Date: 2026-11-01 · Status: accepted (developer, 2 Nov 2026; see "Developer decisions (2 Nov 2026)") · Rests on ADR 0010 (frames first), 0016 (iOS 16.4 stays), 0027 (local-only), 0030 (Salah on device), 0031 (Azkar rights), 0034 (Home, misbaha, daily progress), 0045 (features enabled by default) · Amends spec §2, §4, §13, §14, §15 and the content plan's version table (edits listed at the end)
 
 ## Context
 
@@ -44,7 +44,7 @@ Frame ids in brackets. Values in frames are mock values.
 | **Today's progress** (the daily-goals ring and rows) | small, medium, large | circular (percent only) | 4×2 | `/daily-goals` | Rows are only the goals the user chose (ADR 0034 §5). Nothing chosen: a «حدّد أهدافك» state. [`WidgetProgressMedium`] |
 | **Continue reading** (surah, ayah, page, plus the Khatma wird line) | small, medium | none | 2×2, 4×2 | `/read/<verseKey>` | The only green card. The wird line shows only with an active Khatma plan. No ayah text. [`WidgetContinueReading`] |
 | **Misbaha** (count and target ring) | small | none | 2×2 | `/sibha` | The «+» counts one tap without opening the app (§3.3). Reset is in the app only. [`WidgetContinueReading`, `AndroidWidgets`] |
-| **Azkar status** (five sessions, done or not) | medium | none | none in the first release | `/azkar` | **Gated:** compiled into the binary only when `AZKAR_WIDGET=1` in the build environment (§7). [`WidgetContinueReading`, bottom row] |
+| **Azkar status** (five sessions, done or not) | medium | none | 4×2 | `/azkar` | **Shown whenever Azkar content is installed**, with no build flag (developer decision 6, 2 Nov 2026; ADR 0045). [`WidgetContinueReading`, bottom row] |
 
 Khatma wird has no widget of its own: it is a line in Continue reading and a row in Today's progress, so the gallery stays small (five kinds, one of them gated).
 
@@ -52,7 +52,7 @@ Lock-screen privacy: the lock-screen set shows prayer and the progress percent o
 
 ### 3. Apple Watch
 
-**Scope.** A watchOS companion app (SwiftUI) and WidgetKit complications. Wear OS is out of scope.
+**Scope.** A watchOS companion app (SwiftUI) and WidgetKit complications, with a minimum of watchOS 10. Wear OS is added (developer decision 3, 2 Nov 2026): a Wear OS app and tile, built in prompt 15.
 
 | Screen | Content | Frame |
 | --- | --- | --- |
@@ -154,7 +154,7 @@ Order: **frames approved → platform-neutral snapshot module (testable on Windo
 
 Cut lines, lowest priority first:
 1. Android large (4×4), iOS large (kept only if the medium rows prove too tight).
-2. The Azkar status widget and the watch Azkar screen (also gated by ADR 0031; compiled in only with `AZKAR_WIDGET=1` until the OpenDua blockers clear, because a gallery entry with no content is a dead end, ADR 0017).
+2. The Azkar status widget and the watch Azkar screen. They show only when Azkar content is installed (ADR 0031 governs the content; there is no build flag, decision 6 and ADR 0045), so a gallery entry never leads to nothing (ADR 0017).
 3. The interactive misbaha widget tap (the widget then opens `/sibha`).
 4. `accessoryCorner` and the second complication face.
 5. The watch's target picker (fixed 33/99/100 chips).
@@ -166,18 +166,22 @@ Cut lines, lowest priority first:
 
 "Clear usage" means the user is told how to add and use each surface. Proposed: a **«الودجات والساعة»** row in Settings that opens a help sheet with the steps per platform (add a widget from the home screen or lock screen; install the watch app from the Watch app on the iPhone; what each widget does and what it never shows). It needs a frame and the developer's approval of the entry point before any code (decision 7). Store pages and the first-run need no change.
 
-## Decisions that need the developer
+## Developer decisions (2 Nov 2026)
 
-1. **Approve the widget set, the exclusions and the frames** (ADR 0010): five kinds, no Quran text, the lock screen without reading place or counts.
-2. **Tools and dependencies:** `@bacons/apple-targets` 5.0.0 (iOS and watchOS), `react-native-android-widget` 0.26.0 (Android), `react-native-watch-connectivity` 2.0.0 (phone side of the watch link), instead of `expo-widgets`. Each spike can reject its tool.
-3. **Watch scope and minimum OS:** companion app and complications, no Wear OS; watchOS 10 (more watches) or 11 (the plugin's default, supports Double Tap).
-4. **Misbaha behaviour:** the widget «+» counts without opening the app; the watch keeps its own count and only adds to today's total. Or: widget opens `/sibha`, or one shared live counter.
-5. **Android prayer widget:** time only, no countdown (recommended); or accept a coarse relative text that can lag up to 30 minutes.
-6. **Azkar surfaces:** ship the Azkar widget and the watch Azkar screen only in builds with `AZKAR_WIDGET=1` until ADR 0031's blockers clear; the watch screen is read-only status.
-7. **Navigation:** a Settings row «الودجات والساعة» with a help sheet (needs a frame), versus no in-app help.
-8. **Apple setup and builds:** the App Group names (`group.<bundle id>`), permission to register them, and which route compiles iOS and watch targets: a Mac, or an `eas build` that you approve each time.
-9. **Schedule:** before beta (Android only first), as a post-launch v1.1 item (recommended: it adds iOS targets that cannot be compiled on this machine), or dropped.
-10. **Lock-screen privacy:** confirm prayer and progress percent only on the lock screen.
+The developer accepted the recommendations on 2 Nov 2026 ("complete all tasks"). Each decision below is final.
+
+1. **The widget set, the exclusions and the frames are approved** (ADR 0010): five kinds, no Quran text, and the lock screen without the reading place or the counts.
+2. **The tools are approved:** `@bacons/apple-targets` 5.0.0 (iOS and watchOS), `react-native-android-widget` 0.26.0 (Android, installed and rowed in the content plan), and `react-native-watch-connectivity` 2.0.0 (the phone side of the watch link). Each still passes its spike before release (release blocker 2).
+3. **Watch scope and Wear OS:** a watchOS companion app and complications, with a **minimum of watchOS 10**. **Wear OS is added**, as a tile and an app (prompt 15), with Google's standard Gradle libraries approved: `play-services-wearable`, the Wear tiles and protolayout libraries, and the Wear Compose libraries.
+4. **Misbaha:** the widget «+» counts without opening the app. The watch keeps its own count and adds only to today's total.
+5. **Android prayer widget:** the time only, with no countdown.
+6. **Azkar surfaces:** the Azkar widget and the watch Azkar screen show **whenever Azkar content exists**. There is no build flag (ADR 0045). The watch screen stays read-only status.
+7. **Navigation:** a Settings row «الودجات والساعة» in the Habits area opens a help screen (`app/settings/widgets.tsx`) with the steps for each platform. On Android, a «إضافة إلى الشاشة الرئيسية» button per widget uses the library's `requestPinWidget`.
+8. **Apple setup:** the App Group is `group.com.taybahapp.taybah`, and `group.com.taybahapp.taybah.dev` for the development variant. The iOS and watch targets are built on a Mac by the developer, who tests them manually. No agent runs `eas build`.
+9. **Schedule:** build now, not as a v1.1 item.
+10. **Lock-screen privacy:** the lock screen shows the prayer and the progress percent only.
+
+**Still open:** none.
 
 ## Consequences
 
@@ -195,7 +199,7 @@ Cut lines, lowest priority first:
 4. Widget and watch times equal the app's across a DST change and a time-zone change (golden fixtures).
 5. The watch misbaha test: counts made with the phone app killed reach today's total once, never twice.
 6. «مسح البيانات» clears the snapshot and the widgets show their empty state.
-7. Azkar surfaces absent from builds until ADR 0031's blockers clear.
+7. Azkar surfaces show only when Azkar content is installed (decision 6; no build flag).
 8. The fonts bundled in the extensions have their licences recorded in the content plan.
 9. App Store: watch screenshots and review notes; the privacy label is checked (no data is collected).
 

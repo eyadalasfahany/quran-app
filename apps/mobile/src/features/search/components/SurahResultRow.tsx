@@ -20,7 +20,7 @@ export function SurahResultRow({
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const title = t('reader.surahTitle', { name: chapter.nameArabic });
+  const title = t('reader.surahTitle', { name: locale === 'ar' ? chapter.nameArabic : chapter.nameSimple });
   const hint = t('search.surahResultHint', {
     count: chapter.versesCount,
     n: formatNumber(chapter.versesCount, locale),
@@ -30,7 +30,7 @@ export function SurahResultRow({
 
   return (
     <Pressable
-      accessibilityLabel={`${title}, ${hint}`}
+      accessibilityLabel={t('common.a11yPair', { label: title, title: hint })}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({ opacity: pressed ? theme.opacity.pressed : 1 })}

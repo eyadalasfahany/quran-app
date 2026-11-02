@@ -27,7 +27,7 @@ export function PlayerIconButton({
   /** Corner radius; the default is a full circle. */
   radius?: number;
   glyphColor?: string;
-  /** Directional glyphs flip with the layout direction, play included (it points left in Arabic). Pause is symmetric. */
+  /** Previous/next glyphs flip with the layout direction; play and pause never do (ADR 0029). */
   mirrorInRtl?: boolean;
   testID?: string;
 }) {

@@ -72,7 +72,7 @@ describe('RecentListenRow', () => {
   it('is one labelled group for the reciter and surah, and hides the decorative tile', async () => {
     const view = await renderUi(<RecentListenRow {...props} filled={false} testID="row" />);
 
-    expect(view.getByLabelText('مشاري راشد العفاسي, سورة الكهف · مرتّل')).toBeOnTheScreen();
+    expect(view.getByLabelText('مشاري راشد العفاسي، سورة الكهف · مرتّل')).toBeOnTheScreen();
     expect(view.getByTestId('row-tile', { includeHiddenElements: true }).props.accessibilityElementsHidden).toBe(true);
   });
 

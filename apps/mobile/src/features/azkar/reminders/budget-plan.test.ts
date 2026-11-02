@@ -9,7 +9,7 @@ import { saveReminder, type RemindersStore } from './reminders-repository';
 
 type Planned = Parameters<typeof planAzkarBudget>[0][number];
 
-function prayer(id: string, updatedAt: number, targetType: 'category' | 'entry' = 'entry'): Planned {
+function prayer(id: string, updatedAt: number, targetType: Planned['targetType'] = 'entry'): Planned {
   return {
     id,
     targetType,
@@ -40,17 +40,17 @@ describe('planAzkarBudget', () => {
     expect([...plan.windows.values()]).toEqual([4, 4, 4, 4, 4]);
   });
 
-  it('shrinks the rolling windows before it refuses anything: six prayer reminders share the 23 slots', () => {
+  it('shrinks the rolling windows before it refuses anything: six prayer reminders share the 21 slots', () => {
     const plan = planAzkarBudget(many(6, (index) => prayer(`c${index}`, index, 'category')));
 
     expect(plan.unscheduled).toEqual([]);
     // Each keeps at least one day; the oldest keep their full window, the newest shrink.
-    expect([...plan.windows.values()]).toEqual([4, 4, 4, 4, 4, 3]);
+    expect([...plan.windows.values()]).toEqual([4, 4, 4, 4, 4, 1]);
     expect(sum(plan.windows)).toBe(AZKAR_SLOTS);
   });
 
   it('shrinks no window below one day', () => {
-    const plan = planAzkarBudget(many(23, (index) => prayer(`e${index}`, index)));
+    const plan = planAzkarBudget(many(21, (index) => prayer(`e${index}`, index)));
 
     expect(plan.unscheduled).toEqual([]);
     expect([...plan.windows.values()].every((days) => days === 1)).toBe(true);
@@ -59,16 +59,26 @@ describe('planAzkarBudget', () => {
   it('refuses the newest reminder only when even one slot each does not fit', () => {
     const plan = planAzkarBudget(many(24, (index) => prayer(`e${index}`, index)));
 
-    expect(plan.unscheduled).toEqual(['e24']);
+    expect(plan.unscheduled).toEqual(['e22', 'e23', 'e24']);
     expect(plan.windows.has('e24')).toBe(false);
     expect(sum(plan.windows)).toBeLessThanOrEqual(AZKAR_SLOTS);
   });
 
   it('refuses the newest clock reminder too, counting one slot each', () => {
-    const plan = planAzkarBudget([...many(22, (index) => clock(`k${index}`, index)), clock('k23', 23), clock('k24', 24)]);
+    const plan = planAzkarBudget([...many(20, (index) => clock(`k${index}`, index)), clock('k21', 21), clock('k22', 22)]);
 
-    expect(plan.unscheduled).toEqual(['k24']);
-    expect(plan.windows.get('k23')).toBe(1);
+    expect(plan.unscheduled).toEqual(['k22']);
+    expect(plan.windows.get('k21')).toBe(1);
+  });
+
+  it('orders categories before entries before my duas when the pool is tight', () => {
+    const plan = planAzkarBudget(
+      [prayer('my-dua', 1, 'my_dua'), prayer('entry-old', 2), prayer('category-old', 3, 'category')],
+      1,
+    );
+
+    expect([...plan.windows.keys()]).toEqual(['category-old']);
+    expect(plan.unscheduled).toEqual(['entry-old', 'my-dua']);
   });
 
   it('orders categories before entries, then by the oldest update, then by id', () => {
@@ -103,7 +113,7 @@ describe('planAzkarBudget', () => {
   });
 
   it('uses the Azkar share and the rolling window by default', () => {
-    expect(AZKAR_SLOTS).toBe(23);
+    expect(AZKAR_SLOTS).toBe(21);
     expect(AZKAR_ROLLING_DAYS).toBe(4);
     expect(planAzkarBudget(many(6, (index) => prayer(`c${index}`, index))).windows.get('c1')).toBe(AZKAR_ROLLING_DAYS);
   });
@@ -154,20 +164,20 @@ describe('canScheduleAzkarReminder', () => {
   });
 
   it('refuses a new schedulable reminder when the pool is full', () => {
-    fillPool(23);
+    fillPool(21);
 
     expect(canScheduleAzkarReminder(clockInput('new'), store)).toBe(false);
   });
 
   it('always allows turning a reminder off, and a reminder with nothing to schedule', () => {
-    fillPool(23);
+    fillPool(21);
 
     expect(canScheduleAzkarReminder(clockInput('new', false), store)).toBe(true);
     expect(canScheduleAzkarReminder({ ...clockInput('new'), clockTime: null }, store)).toBe(true);
   });
 
   it('does not count the reminder against itself when it is already in the pool', () => {
-    fillPool(23);
+    fillPool(21);
 
     expect(canScheduleAzkarReminder(clockInput('e-1'), store)).toBe(true);
   });

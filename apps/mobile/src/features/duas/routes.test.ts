@@ -1,0 +1,38 @@
+import { router } from 'expo-router';
+
+import { duasHref, goBackOr } from './routes';
+
+jest.mock('expo-router', () => ({
+  router: { back: jest.fn(), canGoBack: jest.fn(), replace: jest.fn() },
+}));
+
+describe('duasHref', () => {
+  it('builds the fixed routes', () => {
+    expect(duasHref.home).toBe('/duas');
+    expect(duasHref.favorites).toBe('/duas/favorites');
+    expect(duasHref.mine).toBe('/duas/mine');
+  });
+
+  it('opens the editor with an optional id', () => {
+    expect(duasHref.mineEdit()).toBe('/duas/mine/edit');
+    expect(duasHref.mineEdit('abc')).toBe('/duas/mine/edit?id=abc');
+  });
+});
+
+describe('goBackOr', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('pops when history exists', () => {
+    jest.mocked(router.canGoBack).mockReturnValue(true);
+    goBackOr(duasHref.home);
+    expect(router.back).toHaveBeenCalledTimes(1);
+  });
+
+  it('replaces when history is empty', () => {
+    jest.mocked(router.canGoBack).mockReturnValue(false);
+    goBackOr(duasHref.home);
+    expect(router.replace).toHaveBeenCalledWith('/duas');
+  });
+});

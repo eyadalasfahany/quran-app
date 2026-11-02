@@ -7,7 +7,7 @@ import type { ScopeSummary } from './progress';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { cachedCategorySummaries, useSessionCategoryProgress } from './hooks';
-import { loadAzkarDevFixtures } from './dev-fixtures';
+import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { periodKey } from './progress';
 
 // The content database and the progress summaries are injected per test. Names start with `mock` so the factories may use them.

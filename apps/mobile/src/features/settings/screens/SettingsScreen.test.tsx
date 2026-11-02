@@ -73,6 +73,14 @@ describe('SettingsScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/settings/sources');
   });
 
+  it('opens widgets help from the widgets row', async () => {
+    const view = await renderUi(<SettingsScreen />);
+
+    fireEvent.press(view.getByTestId('widgets-entry'));
+
+    expect(router.push).toHaveBeenCalledWith('/settings/widgets');
+  });
+
   it('navigates to listen from the default reciter row', async () => {
     const view = await renderUi(<SettingsScreen />);
 

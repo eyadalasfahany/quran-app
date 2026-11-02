@@ -25,6 +25,7 @@ export function SourcesScreen({ testID }: { testID?: string }) {
             />
           </View>
           <ListRow title={t('reader.sources.qfFonts')} testID={testID ? `${testID}-qf-fonts` : undefined} />
+          <ListRow title={t('moon.sources.suncalc')} testID={testID ? `${testID}-suncalc` : undefined} />
         </ContentColumn>
       </ScrollView>
     </Screen>

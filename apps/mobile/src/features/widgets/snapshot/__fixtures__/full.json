@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "writtenAt": 1793558400000,
+  "locale": "en",
+  "labels": {
+    "ayahLabel": "LABEL ayah",
+    "azkarEmpty": "LABEL azkarEmpty",
+    "azkarTitle": "LABEL azkarTitle",
+    "complete": "LABEL complete",
+    "continueReading": "LABEL continueReading",
+    "countAction": "LABEL countAction",
+    "misbaha": "LABEL misbaha",
+    "misbahaNoTarget": "LABEL misbahaNoTarget",
+    "nextPrayer": "LABEL nextPrayer",
+    "noLocation": "LABEL noLocation",
+    "of": "LABEL of",
+    "openApp": "LABEL openApp",
+    "pageLabel": "LABEL page",
+    "prayerAsr": "PRAYER asr",
+    "prayerDhuhr": "PRAYER dhuhr",
+    "prayerFajr": "PRAYER fajr",
+    "prayerIsha": "PRAYER isha",
+    "prayerMaghrib": "PRAYER maghrib",
+    "progressEmpty": "LABEL progressEmpty",
+    "progressTitle": "LABEL progressTitle",
+    "resume": "LABEL resume",
+    "stale": "LABEL stale",
+    "wirdTitle": "LABEL wirdTitle",
+    "wirdUnit": "LABEL wirdUnit"
+  },
+  "prayer": {
+    "place": "PLACE",
+    "entries": [
+      { "key": "fajr", "at": 1793580000000 },
+      { "key": "dhuhr", "at": 1793603000000 },
+      { "key": "asr", "at": 1793614020000 }
+    ],
+    "validUntil": 1793614020000
+  },
+  "progress": {
+    "percent": 60,
+    "rows": [
+      { "key": "wird", "label": "ROW wird", "value": "VALUE 4 of 10", "done": false },
+      { "key": "misbaha", "label": "ROW misbaha", "value": "VALUE done", "done": true }
+    ]
+  },
+  "reading": { "verseKey": "2:255", "surah": "SURAH placeholder", "ayah": 255, "page": 42 },
+  "wird": { "done": 4, "target": 10 },
+  "misbaha": { "count": 33, "target": 100, "todayTotal": 150 },
+  "azkar": {
+    "sessions": [
+      { "id": "morning", "title": "SESSION one", "done": 10, "total": 10, "complete": true },
+      { "id": "evening", "title": "SESSION two", "done": 6, "total": 24, "complete": false }
+    ]
+  }
+}

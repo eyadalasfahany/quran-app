@@ -17,8 +17,19 @@ export const PRAYER_NOTIFICATION_SLOTS = 40;
 /** Prayer notifications keep a rolling window of this many days per enabled prayer (ADR 0030 §3): 5 prayers × 8 days. */
 export const PRAYER_ROLLING_DAYS = 8;
 
+/** The Friday Surat al-Kahf reminder: one weekly repeating trigger (`features/reminders`). */
+export const FRIDAY_REMINDER_SLOTS = 1;
+
+/** The misbaha daily target reminder: one daily repeating trigger (`features/reminders`). */
+export const MISBAHA_REMINDER_SLOTS = 1;
+
 /** What Azkar reminders may hold: everything the other categories do not reserve. */
-export const AZKAR_SLOTS = IOS_PENDING_LIMIT - DAILY_REMINDER_SLOTS - PRAYER_NOTIFICATION_SLOTS;
+export const AZKAR_SLOTS =
+  IOS_PENDING_LIMIT -
+  DAILY_REMINDER_SLOTS -
+  PRAYER_NOTIFICATION_SLOTS -
+  FRIDAY_REMINDER_SLOTS -
+  MISBAHA_REMINDER_SLOTS;
 
 /**
  * A prayer-relative Azkar reminder keeps one DATE trigger per fire date, for at most this many fire dates. The window

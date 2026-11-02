@@ -110,5 +110,12 @@ magick(
   featureGraphic,
 );
 
+// Widget / watch extension icons (1024 PNG; @bacons/apple-targets `icon` in expo-target.config.js).
+const extensionIconDir = path.join(mobileRoot, 'targets/_assets');
+fs.mkdirSync(extensionIconDir, { recursive: true });
+magick(logoSrc, '-resize', '1024x1024', path.join(extensionIconDir, 'widget-icon.png'));
+magick(logoSrc, '-resize', '1024x1024', path.join(extensionIconDir, 'watch-icon.png'));
+
 console.log('Brand assets written to', out);
+console.log('Widget/watch extension icons:', extensionIconDir);
 console.log('Play feature graphic:', featureGraphic);
