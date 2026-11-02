@@ -106,7 +106,7 @@ export function QiblaCompass({
 
         {/* The fixed face: it takes no transform and never turns. */}
         <View pointerEvents="none" style={dialAnchor(DIAL, DIAL)} testID={`${testID}-dial`}>
-          <QiblaDial />
+          <QiblaDial angle={angle} />
         </View>
         <QiblaArc angle={angle} following={following} />
         <QiblaKaabaMarker angle={angle} />

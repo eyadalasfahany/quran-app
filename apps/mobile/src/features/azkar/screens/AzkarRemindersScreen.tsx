@@ -31,6 +31,18 @@ export function AzkarRemindersScreen({
   entryKey?: string;
   testID?: string;
 }) {
+  return (
+    <SheetHost testID={testID}>
+      <AzkarRemindersCard categoryId={categoryId} entryKey={entryKey} />
+    </SheetHost>
+  );
+}
+
+/**
+ * The sheet's content. It reads the sheet context, so it must sit inside SheetHost; the screen above only hosts it.
+ * (Read in the screen itself, the context is null and close does nothing.)
+ */
+function AzkarRemindersCard({ categoryId, entryKey }: { categoryId?: string; entryKey?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
@@ -44,54 +56,52 @@ export function AzkarRemindersScreen({
   const categoryName = (id: string) => t(`azkar.categories.${id}` as never);
 
   return (
-    <SheetHost testID={testID}>
-      <SheetFrame testID="azkar-reminders-frame">
-        <View style={{ flex: 1, gap: theme.space[4], paddingHorizontal: theme.space[4] }}>
-          <SheetHeader
-            closeLabel={t('azkar.reader.close')}
-            onClose={() => sheet?.close()}
-            size="large"
-            testID="azkar-reminders-header"
-            title={t('azkar.reminders.title')}
-          />
-          <SheetScrollView>
-            <View style={{ gap: theme.space[4], paddingBottom: theme.space[8] }}>
-              <ReminderDisclaimer />
-              {granted === false ? (
-                <AzkarRemindersDeniedNotice onOpenSettings={() => void Linking.openSettings()} />
-              ) : null}
+    <SheetFrame testID="azkar-reminders-frame">
+      <View style={{ flex: 1, gap: theme.space[4], paddingHorizontal: theme.space[4] }}>
+        <SheetHeader
+          closeLabel={t('azkar.reader.close')}
+          onClose={() => sheet?.close()}
+          size="large"
+          testID="azkar-reminders-header"
+          title={t('azkar.reminders.title')}
+        />
+        <SheetScrollView>
+          <View style={{ gap: theme.space[4], paddingBottom: theme.space[8] }}>
+            <ReminderDisclaimer />
+            {granted === false ? (
+              <AzkarRemindersDeniedNotice onOpenSettings={() => void Linking.openSettings()} />
+            ) : null}
 
-              {entryKey !== undefined ? (
-                <View style={{ gap: theme.space[2] }}>
-                  <AzkarSectionTitle title={t('azkar.reminders.entryAction')} />
+            {entryKey !== undefined ? (
+              <View style={{ gap: theme.space[2] }}>
+                <AzkarSectionTitle title={t('azkar.reminders.entryAction')} />
+                <AzkarListCard>
+                  <AzkarReminderRow
+                    onPermissionDenied={refresh}
+                    targetKey={entryKey}
+                    targetType="entry"
+                    testID="azkar-reminder-entry"
+                  />
+                </AzkarListCard>
+              </View>
+            ) : (
+              targets.map((category) => (
+                <View key={category.id} style={{ gap: theme.space[2] }}>
+                  <AzkarSectionTitle title={categoryName(category.id)} testID={`azkar-reminders-section-${category.id}`} />
                   <AzkarListCard>
                     <AzkarReminderRow
                       onPermissionDenied={refresh}
-                      targetKey={entryKey}
-                      targetType="entry"
-                      testID="azkar-reminder-entry"
+                      targetKey={category.id}
+                      targetType="category"
+                      testID={`azkar-reminder-${category.id}`}
                     />
                   </AzkarListCard>
                 </View>
-              ) : (
-                targets.map((category) => (
-                  <View key={category.id} style={{ gap: theme.space[2] }}>
-                    <AzkarSectionTitle title={categoryName(category.id)} testID={`azkar-reminders-section-${category.id}`} />
-                    <AzkarListCard>
-                      <AzkarReminderRow
-                        onPermissionDenied={refresh}
-                        targetKey={category.id}
-                        targetType="category"
-                        testID={`azkar-reminder-${category.id}`}
-                      />
-                    </AzkarListCard>
-                  </View>
-                ))
-              )}
-            </View>
-          </SheetScrollView>
-        </View>
-      </SheetFrame>
-    </SheetHost>
+              ))
+            )}
+          </View>
+        </SheetScrollView>
+      </View>
+    </SheetFrame>
   );
 }

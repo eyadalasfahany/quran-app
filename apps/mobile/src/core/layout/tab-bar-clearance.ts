@@ -21,9 +21,10 @@ export const FLOATING_TAB_BAR = {
   itemRadius: 26,
 } as const;
 
-// A short window (a landscape phone, ADR 0036) shows the tabs as a vertical rail on the leading edge, on both platforms
-// (developer, 1 Nov 2026). It sits 12 past the start safe area, is 76 wide and 324 tall at most, and its five items
-// keep labels under the icons. The screens clear it on that side, not at the bottom.
+// The vertical rail on the start edge (ADR 0036, ADR 0051 as amended 2 Nov 2026). It shows on a short window (a landscape
+// phone) and on an expanded window (a tablet), on both platforms (developer, 1 Nov and 2 Nov 2026). It sits 12 past the
+// start safe area, is 76 wide and 324 tall at most, and its five items keep labels under the icons. The screens clear it
+// on that side, not at the bottom.
 export const TAB_RAIL = {
   offset: 12,
   width: 76,
@@ -34,32 +35,31 @@ export const TAB_RAIL = {
 /** The side clearance a screen keeps from its start edge for the rail, measured from the start safe area. */
 export const TAB_RAIL_CLEARANCE = TAB_RAIL.offset + TAB_RAIL.width + TAB_RAIL.gap;
 
-/** Whether the tabs are the rail: a short window, on either platform. */
-export function tabRailShown(short: boolean): boolean {
-  return short;
+/** Whether the tabs are the rail. Every navigation argument named `rail` comes from `useTabRail()` (ADR 0051, amended). */
+export function tabRailShown(rail: boolean): boolean {
+  return rail;
 }
 
 /**
- * How the tabs are drawn (developer, 1 Nov 2026). A short window always gets the rail. A tall window keeps the native
- * tabs on iOS and the floating bar on Android. The only platform branch is native versus headless, and only in tall
- * windows.
+ * How the tabs are drawn. The rail always gets the headless navigator. A bottom-bar window keeps the native tabs on iOS
+ * and the floating bar on Android. The only platform branch is native versus headless, and only where there is no rail.
  */
-export function tabBarMode(platform: PlatformOSType, short: boolean): 'native' | 'headless' {
-  if (short) {
+export function tabBarMode(platform: PlatformOSType, rail: boolean): 'native' | 'headless' {
+  if (rail) {
     return 'headless';
   }
   return platform === 'android' ? 'headless' : 'native';
 }
 
-/** The side inset a tab screen's content keeps from the start edge: the rail's clearance in a short window, else 0. */
-export function tabBarSideClearance(short: boolean): number {
-  return tabRailShown(short) ? TAB_RAIL_CLEARANCE : 0;
+/** The side inset a tab screen's content keeps from the start edge: the rail's clearance when the tabs are a rail, else 0. */
+export function tabBarSideClearance(rail: boolean): number {
+  return tabRailShown(rail) ? TAB_RAIL_CLEARANCE : 0;
 }
 
 // The space the tab bar takes from the bottom edge, measured from the bottom safe area. A rail takes none; it keeps only
 // the bottom safe area, so the mini player still clears the home indicator.
-export function tabBarFootprint(platform: PlatformOSType, bottomInset: number, short = false): number {
-  if (short) {
+export function tabBarFootprint(platform: PlatformOSType, bottomInset: number, rail = false): number {
+  if (rail) {
     return Math.max(0, bottomInset);
   }
   if (platform === 'android') {
@@ -68,13 +68,13 @@ export function tabBarFootprint(platform: PlatformOSType, bottomInset: number, s
   return IOS_TAB_BAR_FOOTPRINT;
 }
 
-export function miniPlayerBottom(platform: PlatformOSType, bottomInset: number, short = false): number {
-  return tabBarFootprint(platform, bottomInset, short) + MINI_PLAYER_BOTTOM_GAP;
+export function miniPlayerBottom(platform: PlatformOSType, bottomInset: number, rail = false): number {
+  return tabBarFootprint(platform, bottomInset, rail) + MINI_PLAYER_BOTTOM_GAP;
 }
 
 /** While scrolling has hidden the tab bar, the mini player drops into the bar's own slot: the bar and the player are both 64 tall. */
-export function miniPlayerHiddenTabsBottom(platform: PlatformOSType, bottomInset: number, short = false): number {
-  if (short) {
+export function miniPlayerHiddenTabsBottom(platform: PlatformOSType, bottomInset: number, rail = false): number {
+  if (rail) {
     return miniPlayerBottom(platform, bottomInset, true);
   }
   if (platform === 'android') {
@@ -86,10 +86,10 @@ export function miniPlayerHiddenTabsBottom(platform: PlatformOSType, bottomInset
 /**
  * The bottom padding a tab screen's scroll content needs for the bar. Neither bar insets React Native scroll views (the
  * iOS native bar was measured on the iPhone 17 Pro simulator, iOS 26.4, 1 Nov 2026), so both platforms pad by the bar's
- * footprint. A rail has no bottom bar, so a short window needs none.
+ * footprint. A rail has no bottom bar, so a rail window needs none.
  */
-export function tabContentClearance(platform: PlatformOSType, bottomInset: number, short = false): number {
-  if (short) {
+export function tabContentClearance(platform: PlatformOSType, bottomInset: number, rail = false): number {
+  if (rail) {
     return 0;
   }
   return tabBarFootprint(platform, bottomInset);

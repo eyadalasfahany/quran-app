@@ -15,6 +15,7 @@ import { usePlayerStore } from '@/features/audio/playerStore';
 import { MainShell } from './MainShell';
 import { miniPlayerBottom, miniPlayerHiddenTabsBottom } from './tab-bar-clearance';
 import { useTabBarScrollStore } from './tab-bar-scroll-store';
+import { useTabRailSideInset } from './TabRailContext';
 
 setUpTests();
 
@@ -76,6 +77,11 @@ function shell() {
       <Text>tabs</Text>
     </MainShell>
   );
+}
+
+// Reads the start-side clearance a tab screen gets from the shell (TabRailContext).
+function RailInsetProbe() {
+  return <Text testID="rail-inset">{String(useTabRailSideInset())}</Text>;
 }
 
 const playing = { reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 };
@@ -159,13 +165,38 @@ describe('MainShell', () => {
       expect(view.queryByTestId('mini-player-tabs')).toBeNull();
     });
 
-    it('floats the mini player above the tab bar on an expanded window, as on a phone (ADR 0051)', async () => {
+    it('clears the rail on the start edge, not the bottom, on an expanded window (ADR 0051, amended 2 Nov 2026)', async () => {
       setWindowWidth(1000);
       usePlayerStore.getState().beginLoad(playing);
       const view = await renderUi(shell());
 
       expect(view.getByTestId('mini-player-tabs')).toBeOnTheScreen();
-      expect(flatStyle(view.getByTestId('mini-player-dock').props.style).bottom).toBe(miniPlayerBottom(Platform.OS, 0, false));
+      // The bottom is the bottom safe area plus the 12 gap (no bottom bar); the start is the rail's 100 plus the 16 side.
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({
+        bottom: miniPlayerBottom(Platform.OS, 0, true),
+        start: 100 + 16,
+      });
+    });
+
+    it('keeps the phone placement above the bottom bar, with no start clearance, on a phone (ADR 0051)', async () => {
+      setWindowWidth(390);
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell());
+
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({
+        bottom: miniPlayerBottom(Platform.OS, 0, false),
+        start: 16,
+      });
+    });
+
+    it.each(locales)('clears the rail on the start edge of an expanded window in %s (ADR 0051, amended)', async (locale) => {
+      setWindowWidth(1024, 768);
+      usePlayerStore.getState().beginLoad(playing);
+      const view = await renderUi(shell(), { locale });
+
+      // The start side is a logical edge: the rail's clearance is the same value in LTR and RTL, and RN mirrors it.
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({ start: 116 });
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style).end).toBe(16);
     });
 
     it('shows nothing on an expanded window while the player is idle', async () => {
@@ -187,6 +218,35 @@ describe('MainShell', () => {
       backgroundColor: themes.light.colors.surface,
       flex: 1,
     });
+  });
+
+  it.each([
+    ['a 390 by 844 phone', 390, 844, 0],
+    ['a 1024 by 768 tablet', 1024, 768, 100],
+    ['a 1024 by 1366 iPad in portrait', 1024, 1366, 100],
+    ['a 1280 by 800 tablet', 1280, 800, 100],
+  ])('gives the tab screens the rail clearance on the start edge for %s', async (_name, width, height, inset) => {
+    setWindowWidth(width, height);
+    const view = await renderUi(
+      <MainShell>
+        <RailInsetProbe />
+      </MainShell>,
+    );
+
+    expect(view.getByTestId('rail-inset').props.children).toBe(String(inset));
+  });
+
+  it('keeps the offline notice clear of the rail on a tablet, on the start edge (ADR 0051, amended)', async () => {
+    setWindowWidth(1024, 768);
+    resetNetworkStateForTests();
+    useNetworkStatus.setState({ online: false });
+    try {
+      const view = await renderUi(shell());
+
+      expect(flatStyle(view.getByTestId('offline-strip-dock').props.style)).toMatchObject({ start: 100, top: 0 });
+    } finally {
+      resetNetworkStateForTests();
+    }
   });
 
   it('shows the offline notice while the device is offline', async () => {
@@ -229,12 +289,13 @@ describe('MainShell', () => {
       expect(flatStyle(view.getByTestId('mini-player-dock').props.style).bottom).toBe(88);
     });
 
-    it('floats the mini player at the same height on an expanded window (ADR 0051)', async () => {
+    it('clears the rail, not the floating bar, on an expanded window on Android (ADR 0051, amended)', async () => {
       setWindowWidth(1000);
       usePlayerStore.getState().beginLoad(playing);
       const view = await renderUi(shell());
 
-      expect(flatStyle(view.getByTestId('mini-player-dock').props.style).bottom).toBe(88);
+      // No bottom bar on a tablet: 0 safe-area inset + the 12 gap, and the rail's 116 from the start edge.
+      expect(flatStyle(view.getByTestId('mini-player-dock').props.style)).toMatchObject({ bottom: 12, start: 116 });
     });
   });
 

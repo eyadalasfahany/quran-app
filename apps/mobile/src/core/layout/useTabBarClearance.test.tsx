@@ -53,10 +53,28 @@ describe('useTabBarClearance', () => {
     expect(result.current).toBe(100);
   });
 
-  it('keeps the same bar clearance in an expanded window as on a phone (ADR 0051)', async () => {
+  it('is 0 in an expanded window on iOS, where the tablet has the rail and no bottom bar (ADR 0051, amended 2 Nov 2026)', async () => {
     setPlatform('ios');
     mockBottomInset = 34;
     setWindow(1024, 768);
+    const { result } = await renderHook(() => useTabBarClearance());
+
+    expect(result.current).toBe(0);
+  });
+
+  it('is 0 in an expanded window on Android, where the tablet has the rail and no floating bar (ADR 0051, amended)', async () => {
+    setPlatform('android');
+    mockBottomInset = 24;
+    setWindow(1280, 800);
+    const { result } = await renderHook(() => useTabBarClearance());
+
+    expect(result.current).toBe(0);
+  });
+
+  it('keeps the bottom-bar clearance on a medium window, which is still a phone layout (ADR 0051)', async () => {
+    setPlatform('ios');
+    mockBottomInset = 34;
+    setWindow(700, 1000);
     const { result } = await renderHook(() => useTabBarClearance());
 
     expect(result.current).toBe(92);

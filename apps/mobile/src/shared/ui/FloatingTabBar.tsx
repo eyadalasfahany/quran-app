@@ -7,7 +7,7 @@ import { useTabBarHiddenOnScroll } from '@/core/layout/useTabBarHiddenOnScroll';
 import { CONTENT_COLUMN_MAX_WIDTH } from '@/core/layout/ContentColumn';
 import { FLOATING_TAB_BAR, TAB_RAIL } from '@/core/layout/tab-bar-clearance';
 import { useScreenInsets } from '@/core/layout/useScreenInsets';
-import { useIsShortWindow } from '@/core/layout/useWindowClass';
+import { useTabRail } from '@/core/layout/useTabRail';
 import { spring } from '@/core/theme/motion';
 import { useTheme } from '@/core/theme';
 
@@ -16,12 +16,12 @@ import { GlassSurface } from './GlassSurface';
 // The floating tab bar (ADR 0033 §2): a 64 pt capsule, 16 from each side, 12 above the system navigation inset.
 // Scrolling down in a tab screen slides it off the bottom edge like a sheet (no fade); scrolling up brings it back.
 //
-// In a short window the same items stand in a vertical rail on the start edge (ADR 0036). Tablets get the same bar as
-// phones (ADR 0051), capped at the content column's width and centred; only the short-window rail changes the layout.
+// In a short or expanded window (a tablet) the same items stand in a vertical rail on the start edge (ADR 0036; ADR 0051 as
+// amended 2 Nov 2026). A phone and a medium window keep the bottom bar, capped at the content column's width and centred.
 export function FloatingTabBar({ label, children }: { label: string; children?: ReactNode }) {
   const theme = useTheme();
   const insets = useScreenInsets();
-  const short = useIsShortWindow();
+  const rail = useTabRail();
   const { height, width } = useWindowDimensions();
   const scrollHidden = useTabBarHiddenOnScroll();
   const slide = useSharedValue(0);
@@ -32,7 +32,7 @@ export function FloatingTabBar({ label, children }: { label: string; children?: 
   }, [scrollHidden, slide]);
 
   const bottom = insets.bottom + FLOATING_TAB_BAR.offset;
-  // On a wide window the capsule is no wider than the content column, centred, like the iPad's compact tab bar.
+  // A medium window wider than the content column (ADR 0051 §5) gets a capsule no wider than that column, centred.
   const centring = Math.max(0, (width - CONTENT_COLUMN_MAX_WIDTH) / 2);
   const fullStart = Math.max(FLOATING_TAB_BAR.side + insets.start, centring);
   const trailEnd = Math.max(FLOATING_TAB_BAR.side + insets.end, centring);
@@ -45,7 +45,7 @@ export function FloatingTabBar({ label, children }: { label: string; children?: 
     transform: [{ translateY: interpolate(slide.value, [0, 1], [0, hideDistance]) }],
   }));
 
-  if (short) {
+  if (rail) {
     const railHeight = Math.min(TAB_RAIL.height, height - TAB_RAIL.offset * 2);
     return (
       <View

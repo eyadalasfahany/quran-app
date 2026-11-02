@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { I18nManager, View } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import Svg, { Circle, Defs, G, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import { arabizeDigits } from '@/core/i18n/numbers';
@@ -9,6 +10,8 @@ import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui/UiText';
 
 import { dialAnchor, dialPlacement } from '../data/dial-placement';
+
+import { QiblaLabelClearance } from './QiblaLabelClearance';
 
 // The instrument's fixed geometry (quran-app-screens.html, #Qibla): a 336 px dial. The face never turns (ADR 0049): the
 // ring, ticks, cardinals and numerals are a fixed reference ring, and only the Kaaba marker, the gold arc and the needle
@@ -22,10 +25,10 @@ const ORNAMENT_OFFSET = CENTER - 114; // 54
 
 // Cardinals (frame: ش 16 px at 600; ج غ ق 15 px at 500 — the nearest type steps, size set inline).
 const CARDINALS = [
-  { key: 'cardinalNorth', x: 168, y: 56, size: 16, weight: 600, bright: true },
-  { key: 'cardinalSouth', x: 168, y: 280, size: 15, weight: 500, bright: false },
-  { key: 'cardinalWest', x: 56, y: 168, size: 15, weight: 500, bright: false },
-  { key: 'cardinalEast', x: 280, y: 168, size: 15, weight: 500, bright: false },
+  { key: 'cardinalNorth', degrees: 0, x: 168, y: 56, size: 16, weight: 600, bright: true },
+  { key: 'cardinalSouth', degrees: 180, x: 168, y: 280, size: 15, weight: 500, bright: false },
+  { key: 'cardinalWest', degrees: 270, x: 56, y: 168, size: 15, weight: 500, bright: false },
+  { key: 'cardinalEast', degrees: 90, x: 280, y: 168, size: 15, weight: 500, bright: false },
 ] as const;
 
 // Degree numerals at the frame's exact 11 px positions.
@@ -48,10 +51,11 @@ const NUMERALS = [
  * Every absolute layer is placed with a translate (dialPlacement), never with `left` or `right`: React Native swaps those
  * in RTL, which mirrored the labels.
  *
- * Memoised with no props, so the face does not re-render with the compass. Theme and locale arrive through context, which
+ * The labels fade while the Kaaba marker passes over them (QiblaLabelClearance), from `angle` on the UI thread. It is a
+ * stable SharedValue, so the memoised face still does not re-render with the compass. Theme and locale arrive through context, which
  * re-renders it on their own.
  */
-function QiblaDialFace() {
+function QiblaDialFace({ angle }: { angle?: SharedValue<number> }) {
   const { t } = useTranslation();
   const locale = useLocale();
   const theme = useTheme();
@@ -126,9 +130,10 @@ function QiblaDialFace() {
 
       {/* Cardinals and degree numerals, at the frame's exact positions. */}
       {CARDINALS.map((cardinal) => (
-        <View
+        <QiblaLabelClearance
+          angle={angle}
+          degrees={cardinal.degrees}
           key={cardinal.key}
-          pointerEvents="none"
           style={dialPlacement(cardinal.x - 20, cardinal.y - 11, 40, 22, isRTL)}
           testID={`qibla-dial-label-${cardinal.key}`}
         >
@@ -145,12 +150,13 @@ function QiblaDialFace() {
               {t(`home.salah.qiblaScreen.${cardinal.key}`)}
             </UiText>
           </View>
-        </View>
+        </QiblaLabelClearance>
       ))}
       {NUMERALS.map((numeral) => (
-        <View
+        <QiblaLabelClearance
+          angle={angle}
+          degrees={numeral.degrees}
           key={numeral.degrees}
-          pointerEvents="none"
           style={dialPlacement(numeral.x - 20, numeral.y - 7, 40, 14, isRTL)}
           testID={`qibla-dial-numeral-${numeral.degrees}`}
         >
@@ -159,7 +165,7 @@ function QiblaDialFace() {
               {locale === 'ar' ? arabizeDigits(String(numeral.degrees)) : String(numeral.degrees)}
             </UiText>
           </View>
-        </View>
+        </QiblaLabelClearance>
       ))}
     </>
   );

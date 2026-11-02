@@ -1,3 +1,7 @@
+'use no memo';
+// Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
+// must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
+
 import { label, spacer } from './primitives';
 import { card } from './card';
 import { openPath, type WidgetContext } from './context';
@@ -21,8 +25,8 @@ export function NextPrayerWidget(ctx: WidgetContext) {
     const time = prayerTime(ctx, state.at);
     return card(ctx, [
       label(labels.nextPrayer, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-      label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 30 }, rtl),
-      label(time, { color: palette.brand, font: WIDGET_FONTS.bold, size: 24 }, rtl),
+      label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 32 }, rtl),
+      label(time, { color: palette.brand, font: WIDGET_FONTS.bold, size: 26 }, rtl),
       spacer(),
       prayer.place === null
         ? null

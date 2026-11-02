@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
 import type { ComponentProps } from 'react';
+import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -128,5 +129,28 @@ describe('LocationPickerSheet keyboard and height (ADR 0036)', () => {
     [1000, 320],
   ])('resultsMaxHeight(%i) is %i', (windowHeight, expected) => {
     expect(resultsMaxHeight(windowHeight)).toBe(expected);
+  });
+});
+
+describe('LocationPickerSheet keyboard avoidance by platform', () => {
+  let platform: { restore: () => void } | undefined;
+
+  afterEach(() => {
+    platform?.restore();
+    platform = undefined;
+  });
+
+  it('pads the sheet above the keyboard on iOS', async () => {
+    platform = jest.replaceProperty(Platform, 'OS', 'ios');
+    const view = await renderUi(sheet(), { locale: 'ar' });
+
+    expect(view.getByTestId('salah-location-sheet-keyboard').props.behavior).toBe('padding');
+  });
+
+  it('resizes the sheet for the keyboard on Android', async () => {
+    platform = jest.replaceProperty(Platform, 'OS', 'android');
+    const view = await renderUi(sheet(), { locale: 'ar' });
+
+    expect(view.getByTestId('salah-location-sheet-keyboard').props.behavior).toBe('height');
   });
 });

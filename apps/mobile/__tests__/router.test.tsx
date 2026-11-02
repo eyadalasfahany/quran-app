@@ -6,7 +6,7 @@ import {
 } from "expo-router/testing-library";
 import { router } from "expo-router";
 import type { ComponentProps } from "react";
-import { Dimensions, I18nManager, Platform } from "react-native";
+import { Dimensions, I18nManager, Platform, StyleSheet } from "react-native";
 import { within } from "@testing-library/react-native";
 
 import { i18n } from "@/core/i18n";
@@ -88,7 +88,7 @@ describe("adaptive nav", () => {
     jest.useRealTimers();
   });
 
-  it("keeps the active section when the window grows to a tablet width, with the same tab bar (ADR 0051)", async () => {
+  it("keeps the active section when the window grows to a tablet width and back (ADR 0051, amended 2 Nov 2026)", async () => {
     setWidth(390);
     const view = await renderRouter("./app");
 
@@ -100,7 +100,7 @@ describe("adaptive nav", () => {
 
     expect(view.getSegments()).toEqual(["(main)", "(mushaf)"]);
 
-    for (const width of [700, 900, 390]) {
+    for (const width of [700, 1024, 390]) {
       await act(async () => {
         setWidth(width);
       });
@@ -110,6 +110,16 @@ describe("adaptive nav", () => {
     }
   });
 
+  it("shows the vertical rail on a tablet, on every platform (ADR 0051, amended 2 Nov 2026)", async () => {
+    setWidth(1024);
+    await renderRouter("./app");
+    await screen.findByTestId("main-shell");
+
+    expect(StyleSheet.flatten(screen.getByTestId("floating-tab-bar").props.style)).toMatchObject({
+      flexDirection: "column",
+      width: 76,
+    });
+  });
 });
 
 describe("android floating tab bar (ADR 0033)", () => {
@@ -181,10 +191,10 @@ describe("android floating tab bar (ADR 0033)", () => {
     expect(view.getSegments()).toEqual(["(main)", "(listen)"]);
   });
 
-  it("shows the floating bar on expanded windows, as on a phone, with the open tab selected (ADR 0051)", async () => {
-    const view = await renderMain(900);
+  it("shows the vertical rail on expanded windows, with the open tab selected (ADR 0051, amended 2 Nov 2026)", async () => {
+    const view = await renderMain(1024);
 
-    expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
+    expect(StyleSheet.flatten(screen.getByTestId("floating-tab-bar").props.style)).toMatchObject({ flexDirection: "column" });
     expect(screen.queryByTestId("sidebar")).not.toBeOnTheScreen();
     expect(within(floatingBar()).getByTestId("home").props.accessibilityState).toEqual({ selected: true });
 

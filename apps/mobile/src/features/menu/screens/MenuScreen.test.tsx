@@ -8,8 +8,8 @@ import { getVerseByKey } from '@/features/reader/data/verses';
 import { qiblaBearing } from '@/features/salah/data/prayer-times';
 import { usePrayerLocation } from '@/features/salah/hooks';
 
-import { flatStyle, renderUi } from '../../../../jest/render-ui';
-import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
+import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { MenuScreen } from './MenuScreen';
 
@@ -277,13 +277,71 @@ describe('MenuScreen', () => {
     });
   });
 
-  it('opens search from its card and from the floating button', async () => {
+  it('opens search from its card and from the header button', async () => {
     await renderUi(<MenuScreen />);
 
     await fireEvent.press(screen.getByTestId('menu-card-search'));
     expect(router.push).toHaveBeenLastCalledWith('/search');
-    await fireEvent.press(screen.getByTestId('menu-search'));
+    await fireEvent.press(screen.getByRole('button', { name: 'بحث' }));
     expect(router.push).toHaveBeenLastCalledWith('/search');
+  });
+
+  describe('search button in the header (as Home)', () => {
+    it('sits in the header, at the top of the scrolling list, before the grid', async () => {
+      await renderUi(<MenuScreen />);
+
+      const list = screen.getByTestId('menu-scroll');
+      expect(within(list).getByTestId('menu-title')).toBeOnTheScreen();
+      expect(within(screen.getByTestId('menu-title')).getByTestId('menu-search')).toBeOnTheScreen();
+      expect(within(list).getByTestId('menu-grid-column-0')).toBeOnTheScreen();
+    });
+
+    it('is not a floating button any more', async () => {
+      await renderUi(<MenuScreen />);
+
+      expect(screen.queryByTestId('menu-search-row')).toBeNull();
+    });
+
+    it.each(locales)('shares the title row, with no forced direction, in %s', async (locale) => {
+      await renderUi(<MenuScreen />, { locale });
+
+      // The header's flex row holds the title and the button. It has no `direction` override, so the row mirrors with
+      // the reading direction: the button sits on the left in Arabic and on the right in English, as on Home.
+      const title = locale === 'ar' ? 'القائمة' : 'Menu';
+      let row = screen.getByRole('header', { name: title }).parent;
+      while (row && !within(row).queryByTestId('menu-search')) {
+        row = row.parent;
+      }
+      expect(row).not.toBeNull();
+      expect(within(row as NonNullable<typeof row>).getByRole('header', { name: title })).toBeOnTheScreen();
+      expect(flatStyle(row?.props.style)).toMatchObject({ flexDirection: 'row' });
+      expect(flatStyle(row?.props.style).direction).toBeUndefined();
+    });
+
+    it.each(locales)('is labelled for search in %s and pushes /search', async (locale) => {
+      await renderUi(<MenuScreen />, { locale });
+
+      const button = screen.getByRole('button', { name: locale === 'ar' ? 'بحث' : 'Search' });
+      expect(button).toBeOnTheScreen();
+      await fireEvent.press(button);
+      expect(router.push).toHaveBeenLastCalledWith('/search');
+    });
+
+    it.each([
+      ['a phone in portrait', 390, 844],
+      ['a short window, a landscape phone', LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height],
+      ['a tablet', 1024, 1366],
+    ])('appears on %s', async (_label, width, height) => {
+      setWindowSize(width, height);
+      try {
+        await renderUi(<MenuScreen />);
+
+        expect(within(screen.getByTestId('menu-title')).getByTestId('menu-search')).toBeOnTheScreen();
+        expect(screen.getByRole('button', { name: 'بحث' })).toBeOnTheScreen();
+      } finally {
+        resetWindowSize();
+      }
+    });
   });
 
   it('has no Downloads card, since there is no downloads route', async () => {

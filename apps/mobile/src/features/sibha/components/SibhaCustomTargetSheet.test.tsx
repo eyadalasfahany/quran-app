@@ -1,4 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { renderUi } from '../../../../jest/render-ui';
@@ -94,5 +95,32 @@ describe('SibhaCustomTargetSheet keyboard (ADR 0036)', () => {
     expect(rendered.getByTestId('sibha-custom-sheet-keyboard')).toBeOnTheScreen();
     expect(rendered.getByTestId('sibha-custom-sheet')).toBeOnTheScreen();
     expect(rendered.getByTestId('sibha-custom-sheet-input')).toBeOnTheScreen();
+  });
+});
+
+describe('SibhaCustomTargetSheet keyboard avoidance by platform', () => {
+  let platform: { restore: () => void } | undefined;
+
+  afterEach(() => {
+    platform?.restore();
+    platform = undefined;
+  });
+
+  it('pads the card above the keyboard on iOS, so the number field stays in view', async () => {
+    platform = jest.replaceProperty(Platform, 'OS', 'ios');
+    const view = await renderUi(
+      <SibhaCustomTargetSheet initialValue={null} onClose={jest.fn()} onSave={jest.fn()} visible />,
+    );
+
+    expect(view.getByTestId('sibha-custom-sheet-keyboard').props.behavior).toBe('padding');
+  });
+
+  it('resizes the card for the keyboard on Android', async () => {
+    platform = jest.replaceProperty(Platform, 'OS', 'android');
+    const view = await renderUi(
+      <SibhaCustomTargetSheet initialValue={null} onClose={jest.fn()} onSave={jest.fn()} visible />,
+    );
+
+    expect(view.getByTestId('sibha-custom-sheet-keyboard').props.behavior).toBe('height');
   });
 });

@@ -1,3 +1,7 @@
+'use no memo';
+// Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
+// must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
+
 import { FlexWidget } from 'react-native-android-widget';
 
 import { formatNumber } from '@/core/i18n/numbers';

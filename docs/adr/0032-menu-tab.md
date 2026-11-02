@@ -39,3 +39,5 @@ The developer asked (1 Nov 2026) for the الصلاة tab to become a menu tab t
 - Azkar gains a permanent entry point without a sixth tab.
 
 Amended by ADR 0042 (1 Nov 2026): the menu gains an الحديث card, shown only while at least one hadith collection pack is installed; the `Menu`, `MenuDark` and `MenuEnglish` frames are updated in Phase 7 step 8.
+
+Amended (developer, 2 Nov 2026): the search button lives in the header row beside the title, as on Home (`ScreenHeader` trailing `SearchButton`), not as a floating button above the tab bar. The floating-button wording in decisions 3 and 6 is superseded on this point.

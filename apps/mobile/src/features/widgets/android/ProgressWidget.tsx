@@ -1,3 +1,7 @@
+'use no memo';
+// Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
+// must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
+
 import { FlexWidget } from 'react-native-android-widget';
 
 import { formatPercent } from '@/core/i18n/numbers';
@@ -5,7 +9,7 @@ import { formatPercent } from '@/core/i18n/numbers';
 import { card } from './card';
 import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
-import { label, grow, column, row, ringWithCentre, spacer } from './primitives';
+import { block, label, grow, column, row, ringWithCentre } from './primitives';
 import { ringSvg } from './ring';
 import { widgetPaths } from '../snapshot/deep-links';
 import type { WidgetProgressRow } from '../snapshot/types';
@@ -13,7 +17,9 @@ import type { WidgetProgressRow } from '../snapshot/types';
 /** The most rows the 4×2 card fits (the frame shows four). */
 export const PROGRESS_ROWS_SHOWN = 4;
 
+/** The frame's ring: 92 dp with a 9 dp stroke (AndroidWidgets frame, progress card). */
 const RING_SIZE = 92;
+const RING_STROKE = 9;
 
 function progressRow(ctx: WidgetContext, item: WidgetProgressRow) {
   const { palette, rtl } = ctx;
@@ -38,7 +44,7 @@ function progressRow(ctx: WidgetContext, item: WidgetProgressRow) {
     [
       check,
       grow(label(item.label, { color: palette.ink, font: WIDGET_FONTS.medium, size: 13 }, rtl), { paddingHorizontal: 8 }),
-      label(item.value, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      label(item.value, { color: palette.inkMuted, font: WIDGET_FONTS.medium, inline: true, size: 12 }, rtl),
     ],
     rtl,
   );
@@ -53,9 +59,9 @@ export function ProgressWidget(ctx: WidgetContext) {
   const { progress } = snapshot;
   const percentText = formatPercent(progress.percent, ctx.locale);
   const ring = ringWithCentre(
-    ringSvg({ fill: palette.brand, percent: progress.percent, size: RING_SIZE, stroke: 8, track: palette.fillSecondary }),
+    ringSvg({ fill: palette.brand, percent: progress.percent, size: RING_SIZE, stroke: RING_STROKE, track: palette.fillSecondary }),
     RING_SIZE,
-    label(percentText, { align: 'center', color: palette.ink, font: WIDGET_FONTS.bold, size: 20 }, rtl),
+    label(percentText, { align: 'center', color: palette.ink, font: WIDGET_FONTS.bold, size: 22 }, rtl),
   );
 
   const rows = progress.rows.slice(0, PROGRESS_ROWS_SHOWN).map((item) => progressRow(ctx, item));
@@ -64,6 +70,7 @@ export function ProgressWidget(ctx: WidgetContext) {
       ? label(labels.progressEmpty, { color: palette.inkMuted, font: WIDGET_FONTS.regular, maxLines: 2, size: 13 }, rtl)
       : column(rows, { flexGap: 6 });
 
+  // The row fills the card's height, so the ring and the text block sit in the middle, as the frame draws them.
   return card(
     ctx,
     [
@@ -72,17 +79,14 @@ export function ProgressWidget(ctx: WidgetContext) {
           ring,
           grow(
             column(
-              [
-                label(labels.progressTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-                spacer(),
-                body,
-              ],
+              [label(labels.progressTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl), block({ height: 6 }), body],
               { flex: 1 },
             ),
             { paddingHorizontal: 10 },
           ),
         ],
         rtl,
+        { flex: 1 },
       ),
     ],
     {

@@ -125,18 +125,31 @@ describe('FloatingTabBar', () => {
     expect(flatStyle(dock.props.style).bottom).toBe(12);
   });
 
-  it('draws the same bar on an expanded window, capped at the 720 content column and centred (ADR 0051)', async () => {
-    setWindowSize(1024, 768);
+  it('caps the bottom bar at the 720 content column and centres it on a medium window (ADR 0051 §5)', async () => {
+    setWindowSize(800, 1000);
     try {
       const view = await renderUi(bar());
 
       expect(view.getByTestId('floating-tab-bar')).toBeOnTheScreen();
-      // (1024 − 720) / 2 = 152 on each side.
+      // A medium window keeps the bottom bar: (800 − 720) / 2 = 40 on each side.
+      expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({ flexDirection: 'row', height: 64 });
       expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({
         bottom: 12,
-        end: 152,
-        start: 152,
+        end: 40,
+        start: 40,
       });
+    } finally {
+      resetWindowSize();
+    }
+  });
+
+  it('is not the bottom bar on an expanded window: the tablet draws the rail instead (ADR 0051, amended 2 Nov 2026)', async () => {
+    setWindowSize(1024, 768);
+    try {
+      const view = await renderUi(bar());
+
+      expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({ flexDirection: 'column', width: 76 });
+      expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style).bottom).toBe(0);
     } finally {
       resetWindowSize();
     }
@@ -248,5 +261,63 @@ describe('FloatingTabBar as a vertical rail in a short window (ADR 0036)', () =>
 
     expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({ flexDirection: 'row', height: 64 });
     expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style).bottom).toBe(12);
+  });
+});
+
+describe('FloatingTabBar as the rail on a tablet (ADR 0051, amended 2 Nov 2026)', () => {
+  beforeEach(() => {
+    mockBottomInset = 0;
+    mockSideInsets = { left: 0, right: 0 };
+  });
+
+  afterEach(() => {
+    resetWindowSize();
+  });
+
+  it.each<[string, number, number]>([
+    ['a 1024 by 768 window', 1024, 768],
+    ['a 1280 by 800 window', 1280, 800],
+    ['an iPad in landscape, 1366 by 1024', 1366, 1024],
+    ['an iPad in portrait, 1024 by 1366', 1024, 1366],
+    ['an Android tablet in landscape, 2560 by 1600', 2560, 1600],
+    ['an Android tablet in portrait, 1600 by 2560', 1600, 2560],
+  ])('draws a 76 by 324 column on %s', async (_name, width, height) => {
+    setWindowSize(width, height);
+    const view = await renderUi(bar());
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar').props.style)).toMatchObject({
+      flexDirection: 'column',
+      height: 324,
+      width: 76,
+    });
+  });
+
+  it.each<[string, number, number]>([
+    ['an iPad in portrait, 1024 by 1366', 1024, 1366],
+    ['an Android tablet in landscape, 2560 by 1600', 2560, 1600],
+  ])('centres the rail vertically with 0 top and bottom on %s', async (_name, width, height) => {
+    setWindowSize(width, height);
+    const view = await renderUi(bar());
+    const dock = flatStyle(view.getByTestId('floating-tab-bar-dock').props.style);
+
+    expect(dock).toMatchObject({ justifyContent: 'center', position: 'absolute', top: 0, bottom: 0 });
+  });
+
+  it('puts the rail on the start edge in LTR: 12 past the start safe area', async () => {
+    setWindowSize(2560, 1600);
+    mockSideInsets = { left: 44, right: 12 };
+    const view = await renderUi(bar(), { locale: 'en' });
+
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({ start: 12 + 44 });
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style).end).toBeUndefined();
+  });
+
+  it('puts the rail on the start edge in RTL: the right edge, 12 past its safe area', async () => {
+    setWindowSize(2560, 1600);
+    mockSideInsets = { left: 44, right: 12 };
+    const view = await renderUi(bar(), { locale: 'ar' });
+
+    // In Arabic the start inset is the right one (12), so the rail sits 12 + 12 from the right edge.
+    expect(flatStyle(view.getByTestId('floating-tab-bar-dock').props.style)).toMatchObject({ start: 12 + 12 });
   });
 });

@@ -683,3 +683,59 @@ describe('useQiblaHeading on Android (sensor-derived top edge)', () => {
     expect(removeAccelerometer).toHaveBeenCalled();
   });
 });
+
+describe('useQiblaHeading on iOS (CoreLocation trueHeading, ADR 0030, ADR 0049)', () => {
+  let platform: { restore: () => void } | undefined;
+
+  beforeEach(() => {
+    installDefaults();
+    platform = jest.replaceProperty(Platform, 'OS', 'ios');
+  });
+
+  afterEach(() => {
+    platform?.restore();
+    platform = undefined;
+    jest.restoreAllMocks();
+    resetWindowSize();
+  });
+
+  /** Captures the heading callback the hook registers with expo-location. */
+  function captureHeading() {
+    const captured: { callback: Location.LocationHeadingCallback } = { callback: () => undefined };
+    watchHeadingAsync.mockImplementation((cb) => {
+      captured.callback = cb;
+      return Promise.resolve({ remove: jest.fn() });
+    });
+    return captured;
+  }
+
+  it('uses trueHeading as the top edge in portrait, with no turn', async () => {
+    const captured = captureHeading();
+    const hook = await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    await act(async () => captured.callback({ trueHeading: 130, magHeading: 128, accuracy: 3 }));
+
+    expect(hook.result.current.headingValue.value).toBe(130);
+    expect(hook.result.current.hasHeading).toBe(true);
+  });
+
+  it('adds the 90 degree landscape turn to trueHeading when the window is landscape', async () => {
+    await act(async () => setWindowSize(LANDSCAPE_PHONE.width, LANDSCAPE_PHONE.height));
+    const captured = captureHeading();
+    const hook = await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    await act(async () => captured.callback({ trueHeading: 130, magHeading: 128, accuracy: 3 }));
+
+    expect(hook.result.current.headingValue.value).toBe(220);
+  });
+
+  it('does not run the Android magnetometer or the Android declination path on iOS', async () => {
+    captureHeading();
+    await renderHook(() => useQiblaHeading(true));
+    await settle();
+
+    expect(magnetometerListen).not.toHaveBeenCalled();
+  });
+});

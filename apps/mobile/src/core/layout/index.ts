@@ -5,6 +5,7 @@ export { MainShell } from './MainShell';
 export { SectionScreen } from './SectionScreen';
 export { useTabBarStyle, type TabBarStyle } from './useTabBarStyle';
 export { useIsShortWindow, useWidthClass, useWindowClass } from './useWindowClass';
+export { useTabRail } from './useTabRail';
 export {
   isShortWindowHeight,
   nextWindowClass,

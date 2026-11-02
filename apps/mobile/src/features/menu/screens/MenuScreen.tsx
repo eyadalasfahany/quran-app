@@ -1,24 +1,20 @@
 import { router, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Platform, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView } from 'react-native';
 
-import { ContentColumn, useIsShortWindow, useTabBarScrollHandlers, useTabRailSideInset, useWidthClass } from '@/core/layout';
+import { ContentColumn, useTabBarScrollHandlers, useTabContentBottom, useWidthClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
 import { azkarHref } from '@/features/azkar/routes';
 import { MenuHijriCard } from '@/features/hijri/components/MenuHijriCard';
 import { MenuMoonCard } from '@/features/moon/components/MenuMoonCard';
 import { useMoonMenuPreview } from '@/features/moon/hooks/useMoonMenuPreview';
 import { isHijriCalendarAvailable } from '@/features/hijri/data/hijri-date';
 import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
-import { Screen, ScreenHeader, type IconName } from '@/shared/ui';
+import { Screen, ScreenHeader, SearchButton, type IconName } from '@/shared/ui';
 
 import { MenuCard } from '../components/MenuCard';
 import { MenuGrid } from '../components/MenuGrid';
 import { MenuSalahCard } from '../components/MenuSalahCard';
-import { MenuSearchButton } from '../components/MenuSearchButton';
-import { menuSearchBottom } from '../data/search-position';
 import { useAzkarMenuPreview } from '../hooks/useAzkarMenuPreview';
 import { useMenuPreviews } from '../hooks/useMenuPreviews';
 
@@ -40,16 +36,16 @@ const ICON = {
 
 /**
  * The القائمة tab (quran-app-screens.html, #Menu; ADR 0032 §3 and decision 6): a two-column staggered grid of cards,
- * each opening a section, and the floating search button. The continue cards come first and show only when there is
- * something to continue. Azkar cards show only once Azkar content is installed (ADR 0031 §10). Composition only: the
+ * each opening a section, and the search button in the header row beside the title (as Home). The continue cards come
+ * first and show only when there is something to continue. Azkar cards show only once Azkar content is installed (ADR 0031 §10). Composition only: the
  * cards and their previews come from hooks.
  */
 export function MenuScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const tabScroll = useTabBarScrollHandlers();
-  const insets = useSafeAreaInsets();
-  const miniShown = useMiniPlayerVisible('tabs');
+  // The list ends clear of the tab bar and the mini player, as Home's does (`useTabContentBottom`).
+  const bottom = useTabContentBottom();
   const previews = useMenuPreviews();
   const azkar = useAzkarMenuPreview();
   const hijriDate = useHijriDate();
@@ -57,12 +53,6 @@ export function MenuScreen() {
   const moonPreview = useMoonMenuPreview();
   // Three columns where the window is wide, a landscape phone included (ADR 0036); two on a phone in portrait.
   const columns = useWidthClass() === 'compact' ? 2 : 3;
-
-  // The floating search button sits above the tab bar. The list keeps clear of it, and of the button's own row.
-  const short = useIsShortWindow();
-  const searchBottom = menuSearchBottom(Platform.OS, insets.bottom, miniShown, short);
-  // The rail takes the start edge in a short window; the search button clears it when that edge is the left one.
-  const railSide = useTabRailSideInset();
 
   // A card that is not shown is null: MenuGrid drops it, so the two columns still alternate over the cards shown.
   const reading = previews.continueReading;
@@ -211,18 +201,21 @@ export function MenuScreen() {
         <ScrollView
           contentContainerStyle={{
             gap: theme.space[4],
-            paddingBottom: searchBottom + theme.size.touchTarget + theme.space[4],
+            paddingBottom: bottom + theme.space[4],
           }}
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           testID="menu-scroll"
           {...tabScroll}
         >
-          <ScreenHeader testID="menu-title" title={t('menu.title')} />
+          <ScreenHeader
+            testID="menu-title"
+            title={t('menu.title')}
+            trailing={<SearchButton onPress={() => router.push('/search')} testID="menu-search" />}
+          />
           <MenuGrid columns={columns}>{cards}</MenuGrid>
         </ScrollView>
       </ContentColumn>
-      <MenuSearchButton bottom={searchBottom} onPress={() => router.push('/search')} railInset={railSide} />
     </Screen>
   );
 }

@@ -12,7 +12,7 @@ import { SheetHeader } from '@/shared/ui';
 
 import { RecommendedRemindersContent } from '../components/RecommendedRemindersContent';
 import { ReminderPermissionDialog } from '../components/ReminderPermissionDialog';
-import { applyRecommendedSet } from '../data/recommended';
+import { applyRecommendedSet, markRecommendedSetShown } from '../data/recommended';
 
 /**
  * The recommended-set sheet (`/reminders/recommended`; ADR 0034 amendment, 2 Nov 2026). Opened by the hub's first visit,
@@ -20,6 +20,18 @@ import { applyRecommendedSet } from '../data/recommended';
  * A refused permission keeps the sheet open with the device-settings notice.
  */
 export function RecommendedRemindersScreen({ testID = 'recommended-reminders-sheet' }: { testID?: string }) {
+  return (
+    <SheetHost testID={testID}>
+      <RecommendedRemindersCard />
+    </SheetHost>
+  );
+}
+
+/**
+ * The sheet's content. It reads the sheet context, so it must sit inside SheetHost; the screen above only hosts it.
+ * (Read in the screen itself, the context is null and close does nothing.)
+ */
+function RecommendedRemindersCard() {
   const { t } = useTranslation();
   const theme = useTheme();
   const sheet = useSheet();
@@ -42,8 +54,13 @@ export function RecommendedRemindersScreen({ testID = 'recommended-reminders-she
     });
   };
 
+  const choose = () => {
+    markRecommendedSetShown();
+    sheet?.close();
+  };
+
   return (
-    <SheetHost testID={testID}>
+    <>
       <SheetFrame testID="recommended-reminders-frame">
         <View style={{ flex: 1, gap: theme.space[4], paddingHorizontal: theme.space[4] }}>
           <SheetHeader
@@ -55,16 +72,12 @@ export function RecommendedRemindersScreen({ testID = 'recommended-reminders-she
           />
           <SheetScrollView>
             <View style={{ paddingBottom: theme.space[8] }}>
-              <RecommendedRemindersContent
-                hasAzkar={hasAzkar}
-                onAccept={accept}
-                onChoose={() => sheet?.close()}
-              />
+              <RecommendedRemindersContent hasAzkar={hasAzkar} onAccept={accept} onChoose={choose} />
             </View>
           </SheetScrollView>
         </View>
       </SheetFrame>
       <ReminderPermissionDialog onClose={() => setDenied(false)} visible={denied} />
-    </SheetHost>
+    </>
   );
 }

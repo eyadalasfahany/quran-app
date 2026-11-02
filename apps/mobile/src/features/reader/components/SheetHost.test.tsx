@@ -235,7 +235,7 @@ describe('SheetHost', () => {
     expect(view.getByTestId('sheet-host').props.accessibilityViewIsModal).toBe(true);
   });
 
-  it.each(locales)('labels the backdrop as a close button in %s', async (locale) => {
+  it.each(locales)('hides the backdrop from assistive tech, so it is not a second close button in %s', async (locale) => {
     const view = await renderUi(
       <SheetHost>
         <Text>{locale}</Text>
@@ -243,9 +243,26 @@ describe('SheetHost', () => {
       { locale },
     );
 
-    const backdrop = view.getByTestId('sheet-backdrop');
-    expect(backdrop.props.accessibilityRole).toBe('button');
-    expect(backdrop.props.accessibilityLabel).toBe(locale === 'ar' ? 'إغلاق' : 'Close');
+    const backdrop = view.getByTestId('sheet-backdrop', { includeHiddenElements: true });
+    expect(backdrop.props.accessible).toBe(false);
+    expect(backdrop.props.importantForAccessibility).toBe('no');
+    expect(backdrop.props.accessibilityRole).toBeUndefined();
+    expect(backdrop.props.accessibilityLabel).toBeUndefined();
+  });
+
+  it('still closes when the backdrop is tapped, though it is hidden from assistive tech', async () => {
+    const view = await renderUi(
+      <SheetHost>
+        <Text>body</Text>
+      </SheetHost>,
+    );
+
+    await fireEvent.press(view.getByTestId('sheet-backdrop', { includeHiddenElements: true }));
+    await act(async () => {
+      jest.advanceTimersByTime(3000);
+    });
+
+    expect(router.back).toHaveBeenCalledTimes(1);
   });
 
   describe('on a window of a given size', () => {

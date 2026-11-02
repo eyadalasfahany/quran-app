@@ -3,12 +3,11 @@ import { useEffect } from 'react';
 
 import { tabBarScrollCollapseEnabled } from './tab-bar-scroll-collapse';
 import { useTabBarScrollStore } from './tab-bar-scroll-store';
-import { useIsShortWindow } from './useWindowClass';
+import { useTabRail } from './useTabRail';
 
-/** Keeps tab-bar scroll tracking in sync with window class and the active tab. Mount once in `MainShell`. */
+/** Keeps tab-bar scroll tracking in sync with the bar's shape and the active tab. Mount once in `MainShell`. */
 export function TabBarScrollSync() {
-  const short = useIsShortWindow();
-  const enabled = tabBarScrollCollapseEnabled(short);
+  const enabled = tabBarScrollCollapseEnabled(useTabRail());
   const segments = useSegments();
   const tabKey = segments.join('/');
   const setTracking = useTabBarScrollStore((state) => state.setTracking);

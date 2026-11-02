@@ -15,22 +15,22 @@ import { TabBarScrollSync } from './TabBarScrollSync';
 import { miniPlayerBottom, miniPlayerHiddenTabsBottom, tabBarSideClearance } from './tab-bar-clearance';
 import { TabRailContext } from './TabRailContext';
 import { useTabBarHiddenOnScroll } from './useTabBarHiddenOnScroll';
-import { useIsShortWindow } from './useWindowClass';
+import { useTabRail } from './useTabRail';
 
 /**
- * The shell around every main tab. The tab bar is the same on every window that is not short, tablets included (ADR 0051):
- * the screens and the mini player clear it at the bottom, exactly as on a phone. A short window draws the tabs as a rail on
- * the start edge (ADR 0036), and the screens and the mini player clear that side instead.
+ * The shell around every main tab. A phone keeps the bottom bar, and the screens and the mini player clear it at the bottom.
+ * A short window or a tablet draws the tabs as a rail on the start edge (ADR 0036; ADR 0051 as amended 2 Nov 2026), and the
+ * screens and the mini player clear that side instead.
  */
 export function MainShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  // A short window draws the tabs as a rail on the start edge (ADR 0036): the screens and the mini player clear it there.
-  const short = useIsShortWindow();
-  const railSide = tabBarSideClearance(short);
+  // The rail takes the start edge: the screens and the mini player clear it there.
+  const rail = useTabRail();
+  const railSide = tabBarSideClearance(rail);
   const tabsScrollHidden = useTabBarHiddenOnScroll();
-  const playerBottom = miniPlayerBottom(Platform.OS, insets.bottom, short);
-  const playerDrop = playerBottom - miniPlayerHiddenTabsBottom(Platform.OS, insets.bottom, short);
+  const playerBottom = miniPlayerBottom(Platform.OS, insets.bottom, rail);
+  const playerDrop = playerBottom - miniPlayerHiddenTabsBottom(Platform.OS, insets.bottom, rail);
   const playerSlide = useSharedValue(0);
   // The mini player drops into the tab bar's slot while scrolling hides the bar.
   useEffect(() => {
@@ -57,7 +57,7 @@ export function MainShell({ children }: { children: ReactNode }) {
             <OfflineBanner motion={offlineStrip} visible={!online} />
           </View>
         </View>
-        {/* The frames float the mini player above the tab bar on every window (ADR 0051). */}
+        {/* The mini player floats above the bottom bar on a phone, and clears the rail on its start side in a rail window. */}
         <Animated.View
           pointerEvents="box-none"
           style={[

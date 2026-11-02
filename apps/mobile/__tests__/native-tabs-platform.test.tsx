@@ -1,6 +1,6 @@
 import { renderRouter, screen } from "expo-router/testing-library";
 import type { ComponentProps } from "react";
-import { Dimensions, I18nManager, Platform } from "react-native";
+import { Dimensions, I18nManager, Platform, StyleSheet } from "react-native";
 
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
@@ -150,11 +150,20 @@ describe("main tabs by platform (ADR 0033)", () => {
       });
     });
 
-    it("shows the native bar on expanded windows, as on a phone (ADR 0051)", async () => {
-      await renderMain(900);
+    it.each<[string, number, number]>([
+      ["a 1024 by 768 window", 1024, 768],
+      ["a 1280 by 800 window", 1280, 800],
+      ["an iPad in portrait, 1024 by 1366", 1024, 1366],
+    ])("draws the vertical rail, not the native tabs, on %s (ADR 0051, amended 2 Nov 2026)", async (_name, width, height) => {
+      await renderMain(width, height);
 
-      expect(screen.getByTestId("native-tabs")).toBeOnTheScreen();
-      expect(mockNativeTabsProps.at(-1)).toMatchObject({ hidden: false });
+      expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
+      expect(StyleSheet.flatten(screen.getByTestId("floating-tab-bar").props.style)).toMatchObject({
+        flexDirection: "column",
+        width: 76,
+      });
+      expect(screen.queryByTestId("native-tabs")).toBeNull();
+      expect(mockNativeTabsProps).toHaveLength(0);
     });
 
     it("renders the vertical rail, not the native tabs, in a short landscape window (ADR 0036)", async () => {
@@ -193,11 +202,27 @@ describe("main tabs by platform (ADR 0033)", () => {
       expect(screen.queryByTestId("native-tabs")).toBeNull();
     });
 
-    it("renders the floating bar on an expanded window, as on a phone (ADR 0051)", async () => {
-      await renderMain(900);
+    it.each<[string, number, number]>([
+      ["a 1024 by 768 window", 1024, 768],
+      ["a 1280 by 800 window", 1280, 800],
+      ["an Android tablet in landscape, 2560 by 1600", 2560, 1600],
+    ])("draws the vertical rail, not the floating bar row, on %s (ADR 0051, amended 2 Nov 2026)", async (_name, width, height) => {
+      await renderMain(width, height);
 
-      expect(screen.getByTestId("floating-tab-bar")).toBeOnTheScreen();
+      expect(StyleSheet.flatten(screen.getByTestId("floating-tab-bar").props.style)).toMatchObject({
+        flexDirection: "column",
+        width: 76,
+      });
       expect(screen.queryByTestId("native-tabs")).toBeNull();
+    });
+
+    it("keeps the floating bar row on a phone in portrait, 390 by 844 (ADR 0033, ADR 0051 as amended)", async () => {
+      await renderMain(390, 844);
+
+      expect(StyleSheet.flatten(screen.getByTestId("floating-tab-bar").props.style)).toMatchObject({
+        flexDirection: "row",
+        height: 64,
+      });
     });
   });
 });

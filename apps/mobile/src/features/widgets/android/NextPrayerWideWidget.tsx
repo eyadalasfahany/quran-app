@@ -1,3 +1,7 @@
+'use no memo';
+// Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
+// must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
+
 import { FlexWidget } from 'react-native-android-widget';
 
 import { card } from './card';
@@ -61,14 +65,14 @@ export function NextPrayerWideWidget(ctx: WidgetContext) {
       [
         <FlexWidget key="info" style={{ flex: 1, flexDirection: 'column' }}>
           {label(`${labels.nextPrayer}${place}`, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl)}
-          {label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 28 }, rtl)}
+          {label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 30 }, rtl)}
         </FlexWidget>,
         spacer(),
-        label(time, { color: palette.brand, font: WIDGET_FONTS.bold, size: 26 }, rtl),
+        label(time, { color: palette.brand, font: WIDGET_FONTS.bold, inline: true, size: 28 }, rtl),
       ],
       rtl,
     ),
     spacer(),
-    row(tiles, rtl, { flexGap: 4 }),
+    row(tiles, rtl, { flexGap: 2 }),
   ], { accessibilityLabel: `${labels.nextPrayer}: ${name} ${time}`, click });
 }

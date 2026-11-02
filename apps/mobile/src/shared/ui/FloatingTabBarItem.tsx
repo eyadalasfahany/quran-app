@@ -45,7 +45,8 @@ export function FloatingTabBarItem({
       testID={testID}
     >
       <Icon color={tint} name={icon} size={theme.size.iconLg} />
-      <UiText tone={selected ? 'brand' : 'muted'} variant="label" weight={selected ? 600 : 500}>
+      {/* Bar cap, like the other chrome labels: a rail or bar item is 76 pt or 64 pt high and cannot take the 2x content cap. */}
+      <UiText scale="bar" tone={selected ? 'brand' : 'muted'} variant="label" weight={selected ? 600 : 500}>
         {label}
       </UiText>
     </Pressable>

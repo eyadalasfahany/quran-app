@@ -1,3 +1,7 @@
+'use no memo';
+// Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
+// must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
+
 import { Children, type ReactNode } from 'react';
 import {
   FlexWidget,
@@ -23,6 +27,9 @@ export type TextOptions = {
   color: HexColor;
   align?: 'left' | 'right' | 'center';
   maxLines?: number;
+  /** Keep the text its own width, for a label that sits in a row beside others. By default a label fills its column's
+   * width, so its alignment applies (a wrap-content text sat on the left edge even in Arabic). */
+  inline?: boolean;
 };
 
 /** Text aligned to the reading start: right in Arabic, left in English. */
@@ -48,6 +55,7 @@ export function label(text: string, options: TextOptions, rtl: boolean) {
         fontFamily: options.font,
         fontSize: options.size,
         textAlign: options.align ?? startAlign(rtl),
+        ...(options.inline ? {} : { width: 'match_parent' as const }),
       }}
       text={text}
     />
@@ -94,6 +102,16 @@ export function ringWithCentre(ringSvg: string, size: number, centre: ReactNode)
         {centre}
       </FlexWidget>
     </OverlapWidget>
+  );
+}
+
+/**
+ * Children drawn on top of one another, each filling the box: the first is the bottom layer. Used where an element sits
+ * over the layout (the misbaha «+» over the ring's card, as the frame draws it) without taking a row of its own.
+ */
+export function layered(layers: ReactNode[]) {
+  return (
+    <OverlapWidget style={{ height: 'match_parent', width: 'match_parent' }}>{Children.toArray(layers)}</OverlapWidget>
   );
 }
 
