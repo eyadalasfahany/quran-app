@@ -10,7 +10,7 @@ A local notification fires at each enabled prayer time — offline, no account, 
    - Rolling schedule: for each enabled prayer, schedule the next **8 days** of triggers from the on-device times.
    - Refresh triggers: app foreground, location source/coordinate change, any toggle change, timezone change.
    - Cancellation is total-before-reschedule (idempotent; no duplicates).
-   - System default sound; title/body from i18n («حان وقت صلاة الفجر»). No bundled adhan audio (D4).
+   - System default sound; title/body from i18n («حان وقت صلاة الفجر»). No bundled adhan audio (D4; amended by ADR 0047 (proposed), see `docs/plans/adhan-sound.md`).
 2. **Toggles:**
    - Per-prayer bell on `PrayerTimeRow` (wired here) — persisted in MMKV (`storageKeys`), same pattern as the daily reminder; default **off**, nothing pre-enabled.
    - Master section in Settings («إشعارات الصلاة») listing the five prayers, mirroring the same toggles.

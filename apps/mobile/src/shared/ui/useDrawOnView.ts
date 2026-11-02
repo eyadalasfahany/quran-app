@@ -14,13 +14,20 @@ const drawnKeys = new Set<string>();
 
 // 0 → 1 as an ornament's outline draws in, the first time its view is inside the window.
 // With Reduce Motion on, or once its key has drawn, it is 1 from the start.
-export function useDrawOnView(ref: RefObject<HostInstance | null>, key?: string): SharedValue<number> {
+export function useDrawOnView(
+  ref: RefObject<HostInstance | null>,
+  key?: string,
+  enabled = true,
+): SharedValue<number> {
   const reduceMotion = useReducedMotion();
   const { height } = useWindowDimensions();
-  const drawn = reduceMotion || (key !== undefined && drawnKeys.has(key));
+  const drawn = !enabled || reduceMotion || (key !== undefined && drawnKeys.has(key));
   const progress = useSharedValue(drawn ? 1 : 0);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     if (drawn) {
       progress.value = 1;
       return;
@@ -46,7 +53,7 @@ export function useDrawOnView(ref: RefObject<HostInstance | null>, key?: string)
       waiting = false;
       clearInterval(timer);
     };
-  }, [drawn, height, key, progress, ref]);
+  }, [drawn, enabled, height, key, progress, ref]);
 
   return progress;
 }

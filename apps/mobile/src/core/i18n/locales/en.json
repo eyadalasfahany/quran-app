@@ -521,6 +521,13 @@
     }
   },
   "salah": {
+    "prayerSound": {
+      "allahu_akbar_short": "Allahu Akbar",
+      "makkah": "Masjid al-Haram",
+      "madinah": "The Prophet's Mosque",
+      "system": "System sound",
+      "silent": "Silent"
+    },
     "title": "Prayer",
     "next": "Next prayer",
     "remaining": "{{time}} left",
@@ -672,6 +679,7 @@
     "settingsDuration": "{{formatted}} days"
   },
   "common": {
+    "appName": "Taybah",
     "cancel": "Cancel",
     "done": "Done",
     "openSettings": "Open Settings"
@@ -689,7 +697,9 @@
     "channels": {
       "reminders": "Daily reading reminder",
       "azkar": "Azkar reminders",
-      "prayer": "Prayer times"
+      "prayer": "Prayer times",
+      "prayerVoice": "Prayer: {{name}}",
+      "prayerSilent": "Prayer (silent)"
     }
   },
   "settings": {

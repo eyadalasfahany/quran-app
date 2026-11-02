@@ -41,7 +41,7 @@ describe('app.config', () => {
     expect(configFor('development').android?.googleServicesFile).toBeUndefined();
   });
 
-  it('uses the Taybah mark for the icon and the vertical artwork for the splash', () => {
+  it('uses the Taybah mark for the icon and a cream launch poster for the splash', () => {
     const config = configFor('production');
 
     expect(config.icon).toBe('./assets/images/icon.png');

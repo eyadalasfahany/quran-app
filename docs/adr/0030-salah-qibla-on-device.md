@@ -2,6 +2,7 @@
 adr: 0030
 title: Salah and Qibla on-device
 status: accepted
+amended_by: 0047
 date: 2026-10-31
 ---
 
@@ -24,7 +25,7 @@ Salah times and Qibla direction will be computed on-device using `adhan-js` and 
 
 3.  **Local Prayer Notifications**:
     *   **Scheduling**: Notifications for upcoming prayers will be scheduled locally on the device using a rolling 8-day schedule.
-    *   **Sound**: Standard system notification sounds will be used. No bundled Adhan (call to prayer) audio will be included in v1 to keep the app size small and avoid licensing complexities.
+    *   **Sound** (amended by ADR 0047, accepted 2 Nov 2026: the user picks the system sound, silent, or a bundled adhan voice; the rule below is replaced): Standard system notification sounds will be used. No bundled Adhan (call to prayer) audio will be included in v1 to keep the app size small and avoid licensing complexities.
 
 4.  **Navigation**:
     *   **Tab Bar**: A five-tab navigation system will be implemented at the bottom.

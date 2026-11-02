@@ -521,6 +521,13 @@
     }
   },
   "salah": {
+    "prayerSound": {
+      "allahu_akbar_short": "الله أكبر",
+      "makkah": "المسجد الحرام",
+      "madinah": "المسجد النبوي",
+      "system": "صوت النظام",
+      "silent": "صامت"
+    },
     "title": "الصلاة",
     "next": "الصلاة القادمة",
     "remaining": "متبقٍ {{time}}",
@@ -672,6 +679,7 @@
     "settingsDuration": "{{formatted}} يومًا"
   },
   "common": {
+    "appName": "طيبة",
     "cancel": "إلغاء",
     "done": "تم",
     "openSettings": "فتح الإعدادات"
@@ -689,7 +697,9 @@
     "channels": {
       "reminders": "تذكير بالورد اليومي",
       "azkar": "تذكير الأذكار",
-      "prayer": "إشعارات الصلاة"
+      "prayer": "إشعارات الصلاة",
+      "prayerVoice": "الصلاة: {{name}}",
+      "prayerSilent": "الصلاة (صامت)"
     }
   },
   "settings": {

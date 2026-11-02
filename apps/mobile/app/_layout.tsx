@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { I18nManager, Platform } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -24,6 +24,7 @@ import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
 import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNotificationsSync';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
+import { AnimatedSplashOverlay } from '@/shared/ui/AnimatedSplashOverlay';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -48,6 +49,7 @@ export default function RootLayout() {
   const expanded = useWindowClass() === 'expanded';
   const [loaded, error] = useFonts(bundledFonts);
   const [directionReady, setDirectionReady] = useState(directionCheck.ready);
+  const [splashFinished, setSplashFinished] = useState(false);
   const content = useContentDbBootstrap();
   const user = useUserDb();
   useContentSync();
@@ -106,21 +108,22 @@ export default function RootLayout() {
   }, [content.ready]);
 
   useEffect(() => {
-    if (ready) {
+    if (ready && splashFinished) {
       void syncDailyReminder();
       void resyncAzkarReminders();
       registerReminderDeepLinks();
-      void SplashScreen.hideAsync();
     }
-  }, [ready]);
+  }, [ready, splashFinished]);
 
-  if (!ready) {
-    return null;
-  }
+  const finishSplash = useCallback(() => {
+    setSplashFinished(true);
+  }, []);
 
   return (
     <ThemeProvider name={themeName}>
-      <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />
+      {!splashFinished && <AnimatedSplashOverlay appReady={ready} onFinished={finishSplash} />}
+      {ready && splashFinished && <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />}
+      {ready && splashFinished && (
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themes[themeName].colors.surface } }}
       >
@@ -141,6 +144,7 @@ export default function RootLayout() {
         <Stack.Screen name="sibha" options={pushOptions} />
         <Stack.Screen name="salah" options={expanded ? { animation: 'none' } : pushOptions} />
       </Stack>
+      )}
     </ThemeProvider>
   );
 }

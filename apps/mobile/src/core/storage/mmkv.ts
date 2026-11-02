@@ -65,6 +65,8 @@ export const storageKeys = {
     bellIsha: 'salah.bell.isha',
     // JSON: the local day, time zone and coordinates key of the last prayer notification sync (ADR 0030 §3).
     notificationsSync: 'salah.notificationsSync',
+    // The sound of prayer notifications: a catalogue voice id, 'system' or 'silent' (ADR 0047). One setting for all prayers.
+    prayerSound: 'salah.prayerSound',
   },
 } as const;
 
