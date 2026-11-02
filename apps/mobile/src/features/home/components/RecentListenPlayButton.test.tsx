@@ -83,6 +83,29 @@ describe('RecentListenPlayButton', () => {
     expect(JSON.stringify(playing.toJSON())).toContain('M6 5h4v14H6zM14 5h4v14h-4z');
   });
 
+  it('draws the buffering ring, the pause glyph and busy while starting', async () => {
+    const view = await renderUi(<RecentListenPlayButton filled label="إيقاف" onPress={() => undefined} starting testID="play" />);
+
+    expect(await view.findByTestId('play-buffering', { includeHiddenElements: true })).toBeTruthy();
+    expect(propValues(view.toJSON(), 'd')[0]).toBe('M6 5h4v14H6zM14 5h4v14h-4z');
+    expect(view.getByRole('button', { name: 'إيقاف' }).props.accessibilityState).toEqual({ busy: true });
+  });
+
+  it('ignores a second tap while the listen starts', async () => {
+    const onPress = jest.fn();
+    const view = await renderUi(<RecentListenPlayButton filled label="إيقاف" onPress={onPress} starting />);
+
+    fireEvent.press(view.getByRole('button', { name: 'إيقاف' }));
+
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('draws no buffering ring for a listen that is not starting', async () => {
+    const view = await renderUi(<RecentListenPlayButton filled={false} label="تشغيل" onPress={() => undefined} testID="play" />);
+
+    expect(view.queryByTestId('play-buffering', { includeHiddenElements: true })).toBeNull();
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/home/components/RecentListenPlayButton.tsx')).toEqual([]);
   });

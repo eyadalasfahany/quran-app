@@ -37,7 +37,7 @@ const { resolvePlanBounds } = jest.requireMock('@/features/khatma/plan-bounds') 
 function scheduledContent() {
   const call = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[0]?.[0];
   expect(call).toBeDefined();
-  return call as { content: { title: string; body: string; data: { route: string } }; trigger: unknown };
+  return call as { content: { title: string; body: string; data: { route: string }; sound: unknown }; trigger: unknown };
 }
 
 describe('readReminderTime', () => {
@@ -90,6 +90,7 @@ describe('syncDailyReminder', () => {
     expect(call.content.title).toBe('وردك اليومي');
     expect(call.content.body).toBe('حان وقت قراءة وردك من القرآن الكريم');
     expect(call.content.data.route).toBe('/read/2:255');
+    expect(call.content.sound).toBe('default');
     expect(call.trigger).toMatchObject({ hour: 21, minute: 0 });
     expect(storage.getString(storageKeys.dailyReminderNotificationId)).toBe('scheduled-notification-id');
   });

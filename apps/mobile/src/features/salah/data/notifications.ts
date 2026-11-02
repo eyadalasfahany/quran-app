@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 import { i18n } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { PRAYER_ROLLING_DAYS } from '@/features/notifications/budget';
-import { ensureNotificationChannel, NOTIFICATION_CHANNELS } from '@/features/notifications/channels';
+import { ensurePrayerChannel, prayerChannelId, prunePrayerChannels } from '@/features/notifications/channels';
 import { ensureReminderPermission } from '@/features/notifications/permission';
 import {
   currentSyncState,
@@ -13,14 +13,16 @@ import {
   type SyncCoordinates,
 } from '@/features/notifications/sync-state';
 
+import { adhanVoiceFile, getPrayerSound, type PrayerSoundId, setPrayerSoundValue } from './adhan-sounds';
 import { BELL_PRAYERS, getBellEnabled, setBellEnabled } from './bells';
 import { getCoordinates, type CoordinatesOptions } from './location';
 import { type NextPrayerName, type PrayerTimesOutput, timesFor } from './prayer-times';
 
 /**
- * Local prayer-time notifications (ADR 0030 §3, phase-5 D4). Each enabled prayer gets a rolling window of its next
- * `PRAYER_ROLLING_DAYS` fire times, computed from the on-device engine (`timesFor`). The system plays its default
- * sound: no adhan audio ships in v1. Nothing here touches the network or an account.
+ * Local prayer-time notifications (ADR 0030 §3, phase-5 D4, amended by ADR 0047). Each enabled prayer gets a rolling
+ * window of its next `PRAYER_ROLLING_DAYS` fire times, computed from the on-device engine (`timesFor`). The sound is
+ * one setting for all prayers: a bundled adhan voice, the system sound, or silent. Nothing here touches the network or
+ * an account.
  */
 
 /** The route a prayer notification opens: the الصلاة screen (ADR 0030 §4). */
@@ -43,6 +45,22 @@ export interface PrayerNotificationContent {
   title: string;
   body: string;
   data: { route: string };
+  /** The bundled file name (with extension), `'default'` for the system sound, or `false` for silent (ADR 0047). */
+  sound: string | false;
+}
+
+/**
+ * The content `sound` of a prayer sound. Silent is `false`, not an absent key: on iOS (expo-notifications 58) an
+ * absent `sound` plays the default sound.
+ */
+function contentSound(sound: PrayerSoundId): string | false {
+  if (sound === 'silent') {
+    return false;
+  }
+  if (sound === 'system') {
+    return 'default';
+  }
+  return adhanVoiceFile(sound);
 }
 
 /**
@@ -82,19 +100,23 @@ export function prayerFireDates(
   return fires;
 }
 
-/** Title «حان وقت صلاة الفجر» and a neutral body; the route opens الصلاة on tap. */
-export function prayerNotificationContent(prayer: NextPrayerName): PrayerNotificationContent {
+/** Title «حان وقت صلاة الفجر» and a short body of its own per prayer; the route opens الصلاة on tap. */
+export function prayerNotificationContent(
+  prayer: NextPrayerName,
+  sound: PrayerSoundId = getPrayerSound(),
+): PrayerNotificationContent {
   return {
     title: i18n.t('notifications.prayer.title', { name: i18n.t(PRAYER_NAME_KEYS[prayer]) }),
-    body: i18n.t('notifications.prayer.body'),
+    body: i18n.t(`notifications.prayer.body.${prayer}`),
     data: { route: PRAYER_ROUTE },
+    sound: contentSound(sound),
   };
 }
 
-// Android delivers through the prayer channel; iOS has no channels and ignores the field.
-function prayerTrigger(date: Date): Notifications.NotificationTriggerInput {
+// Android delivers through the channel of the chosen sound (the channel fixes the sound); iOS has no channels and ignores the field.
+function prayerTrigger(date: Date, sound: PrayerSoundId): Notifications.NotificationTriggerInput {
   return Platform.OS === 'android'
-    ? { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: NOTIFICATION_CHANNELS.prayer }
+    ? { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: prayerChannelId(sound) }
     : { type: Notifications.SchedulableTriggerInputTypes.DATE, date };
 }
 
@@ -123,6 +145,7 @@ async function cancelPrayerNotifications(): Promise<void> {
 function scheduleSettings(): string {
   return JSON.stringify({
     prayers: enabledPrayers(),
+    sound: getPrayerSound(),
     source: storage.getString(storageKeys.salah.locationSource) ?? null,
     manualCityId: storage.getString(storageKeys.salah.manualCityId) ?? null,
     manualLat: storage.getNumber(storageKeys.salah.manualLat) ?? null,
@@ -140,15 +163,17 @@ const settingsKey = `${storageKeys.salah.notificationsSync}.settings`;
  */
 export async function syncPrayerNotifications({ now, coords }: { now: Date; coords: SyncCoordinates | null }): Promise<void> {
   const fires = prayerFireDates(enabledPrayers(), now, coords);
+  const sound = getPrayerSound();
   try {
     await cancelPrayerNotifications();
+    await prunePrayerChannels();
     if (fires.length > 0) {
-      await ensureNotificationChannel(NOTIFICATION_CHANNELS.prayer);
+      await ensurePrayerChannel(sound);
     }
     for (const fire of fires) {
       await Notifications.scheduleNotificationAsync({
-        content: prayerNotificationContent(fire.prayer),
-        trigger: prayerTrigger(fire.date),
+        content: prayerNotificationContent(fire.prayer, sound),
+        trigger: prayerTrigger(fire.date, sound),
       });
     }
   } catch (error) {
@@ -220,6 +245,15 @@ export function resyncPrayerNotificationsIfNeeded(now: Date = new Date()): Promi
       return false;
     }
   });
+}
+
+/**
+ * Chooses the prayer sound (ADR 0047). No permission prompt: the sound is set on the schedule, not requested. The
+ * setting is written first, then the schedule is re-planned once, so no pending item keeps the old sound or channel.
+ */
+export async function setPrayerSound(id: PrayerSoundId, now: Date = new Date()): Promise<void> {
+  setPrayerSoundValue(id);
+  await resyncPrayerNotifications(now);
 }
 
 /**

@@ -5,6 +5,7 @@ import { I18nManager } from 'react-native';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { themes } from '@/core/theme';
+import { initialPlayerState, usePlayerStore } from '../playerStore';
 
 import { PlayerTransport } from './PlayerTransport';
 
@@ -27,6 +28,10 @@ async function renderTransport(props: Partial<ComponentProps<typeof PlayerTransp
 }
 
 describe('PlayerTransport', () => {
+  beforeEach(() => {
+    usePlayerStore.setState({ ...initialPlayerState });
+  });
+
   afterEach(() => {
     cleanup();
     I18nManager.isRTL = false;
@@ -93,6 +98,24 @@ describe('PlayerTransport', () => {
     expect(handlers.onPrevious).toHaveBeenCalledTimes(1);
     expect(handlers.onTogglePlay).toHaveBeenCalledTimes(1);
     expect(handlers.onNext).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws no buffering ring when nothing is starting', async () => {
+    usePlayerStore.setState({ ...initialPlayerState });
+    const { view } = await renderTransport();
+
+    expect(view.queryByTestId('player-toggle-ring', hidden)).toBeNull();
+  });
+
+  it('shows the pause glyph and the buffering ring from any start, and ignores a second tap on play', async () => {
+    usePlayerStore.setState({ ...initialPlayerState, startingTarget: { kind: 'reciter', resourceId: 30 } });
+    const { view, handlers } = await renderTransport({ isPlaying: false });
+
+    expect(await view.findByTestId('player-toggle-ring', hidden)).toBeTruthy();
+    expect(view.getByRole('button', { name: 'إيقاف مؤقت' }).props.accessibilityState).toEqual({ busy: true, disabled: false });
+    await fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
+
+    expect(handlers.onTogglePlay).not.toHaveBeenCalled();
   });
 
   it('uses no raw colour literals', () => {

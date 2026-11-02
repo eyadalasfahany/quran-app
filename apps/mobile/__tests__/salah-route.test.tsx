@@ -109,4 +109,18 @@ describe("salah route", () => {
     expect(view.getSegments()).toEqual(["salah"]);
     expect(screen.getByTestId("screen-salah")).toBeOnTheScreen();
   });
+
+  it("opens Qibla from the Salah screen inside the Salah stack", async () => {
+    setWidth(390);
+    const view = await renderRouter("./app");
+
+    await act(async () => {
+      router.navigate("/salah");
+    });
+    await act(async () => {
+      router.push("/salah/qibla");
+    });
+
+    expect(view.getSegments()).toEqual(["salah", "qibla"]);
+  });
 });

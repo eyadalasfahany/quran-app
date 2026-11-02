@@ -35,7 +35,8 @@ jest.mock('@/features/reader/data/verses', () => ({
 }));
 
 jest.mock('@/features/reader/data/chapters', () => ({
-  getChapter: () => ({ nameArabic: 'البقرة' }),
+  ...jest.requireActual('@/features/reader/data/chapters'),
+  getChapter: () => ({ nameArabic: 'البقرة', nameSimple: 'Al-Baqarah' }),
 }));
 
 jest.mock('@/features/khatma/plan-bounds', () => ({
@@ -117,6 +118,13 @@ describe('KhatmaScreen saveMode', () => {
     expect(view.getByTestId('khatma-progress-grid')).toBeOnTheScreen();
     expect(view.getByTestId('khatma-end-plan')).toBeOnTheScreen();
     expect(view.getByTestId('khatma-primary-cta')).toHaveTextContent('تابع القراءة');
+  });
+
+  it('names the last-read surah by its transliteration in English', async () => {
+    const view = await renderUi(<KhatmaScreen />, { locale: 'en' });
+
+    expect(view.getByText(/Al-Baqarah · ayah/)).toBeOnTheScreen();
+    expect(view.queryByText(/البقرة/)).toBeNull();
   });
 
   it('switches to save plan after the user changes duration', async () => {

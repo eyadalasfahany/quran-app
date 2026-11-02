@@ -35,6 +35,34 @@ describe('ReciterPlayButton', () => {
     expect(view.queryByTestId('play-ring')).toBeNull();
   });
 
+  it('draws the buffering ring and the pause glyph while starting, and busy', async () => {
+    const view = await renderUi(
+      <ReciterPlayButton label="إيقاف مؤقت" onPress={() => undefined} progress={null} starting testID="play" />,
+    );
+
+    expect(await view.findByTestId('play-buffering', { includeHiddenElements: true })).toBeTruthy();
+    expect(propValues(view.toJSON(), 'd')[0]).toBe('M6 5h4v14H6zM14 5h4v14h-4z');
+    expect(view.getByRole('button', { name: 'إيقاف مؤقت' }).props.accessibilityState).toEqual({ busy: true });
+  });
+
+  it('ignores a second tap while the reciter starts', async () => {
+    const onPress = jest.fn();
+    const view = await renderUi(<ReciterPlayButton label="إيقاف مؤقت" onPress={onPress} progress={null} starting />);
+
+    fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
+
+    expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('gives the download ring precedence over the buffering ring while a pack downloads', async () => {
+    const view = await renderUi(
+      <ReciterPlayButton label="تشغيل" onPress={() => undefined} progress={0.4} starting testID="play" />,
+    );
+
+    expect(view.queryByTestId('play-buffering', { includeHiddenElements: true })).toBeNull();
+    expect(view.getByTestId('play-ring')).toBeTruthy();
+  });
+
   it('draws a determinate ring while downloading and marks the button busy', async () => {
     const view = await renderUi(
       <ReciterPlayButton hint="جارٍ التنزيل" label="تشغيل" onPress={() => undefined} progress={0.5} testID="play" />,

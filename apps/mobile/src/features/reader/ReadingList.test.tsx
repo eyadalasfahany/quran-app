@@ -51,10 +51,9 @@ const flashListTestState: FlashListTestState = {
 };
 
 jest.mock('@shopify/flash-list', () => {
-  // jest.mock factories run before imports are hoisted, so they must require.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories can't use imports.
   const React = require('react');
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories can't use imports.
   const { ScrollView } = require('react-native');
   const FlashList = React.forwardRef(
     (
@@ -78,7 +77,7 @@ jest.mock('@shopify/flash-list', () => {
       },
       ref: React.Ref<{ scrollToIndex: (options: { index: number; animated?: boolean }) => void }>,
     ) => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports -- the mock reads the test's shared state lazily.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- the mock reads this file's shared state.
       const state = require('./ReadingList.test').flashListTestState as FlashListTestState;
 
       state.lastData = data;

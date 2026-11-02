@@ -46,6 +46,8 @@ export const MINI_PLAYER_GAP = 12;
 export const MINI_PLAYER_SIDE = 16;
 /** The gold progress line along the top edge. */
 export const MINI_PLAYER_PROGRESS_HEIGHT = 3;
+/** The inline progress track (`.xw-progress`), used by the adhan sound rows: 3 high, radius 2, in the `line` track. */
+export const MINI_PLAYER_INLINE_PROGRESS = { height: 3, radius: 2 } as const;
 /** The play/pause button: a 44 pt circle with an 18 pt glyph. */
 export const MINI_PLAYER_BUTTON_SIZE = 44;
 export const MINI_PLAYER_GLYPH_SIZE = 18;

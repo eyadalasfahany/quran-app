@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { openContentDb } from '@/core/db/content/open';
 import { useLocale } from '@/core/i18n/useLocale';
-import { getChapter } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 
 export type VerseCaption = { surah: string; ayah: number };
@@ -22,7 +22,7 @@ export function useVerseCaption(verseKey: string | null): VerseCaption | null {
       if (verse === undefined || chapter === undefined) {
         return null;
       }
-      return { ayah: verse.verseNumber, surah: locale === 'ar' ? chapter.nameArabic : chapter.nameEn };
+      return { ayah: verse.verseNumber, surah: chapterDisplayName(chapter, locale) };
     } catch {
       return null;
     }

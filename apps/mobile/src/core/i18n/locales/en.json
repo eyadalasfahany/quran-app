@@ -177,7 +177,31 @@
     },
     "sources": {
       "title": "Sources",
-      "qfFonts": "Quran fonts provided by Quran Foundation"
+      "qfFonts": "Quran fonts provided by Quran Foundation",
+      "qf": {
+        "title": "Quran Foundation",
+        "subtitle": "Quran text, tafsir, recitations and mushaf fonts"
+      },
+      "tanzil": {
+        "title": "Tanzil · tanzil.net",
+        "subtitle": "Bundled Quran text · CC BY 3.0"
+      },
+      "kfgqpc": {
+        "title": "King Fahd Glorious Quran Printing Complex",
+        "subtitle": "Mushaf page fonts"
+      },
+      "opendua": {
+        "title": "OpenDua · Hisn al-Muslim",
+        "subtitle": "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts."
+      },
+      "adhan": {
+        "title": "adhan",
+        "subtitle": "Prayer time calculation · MIT"
+      },
+      "fonts": {
+        "title": "Amiri · IBM Plex Sans Arabic",
+        "subtitle": "Interface fonts · SIL OFL"
+      }
     },
     "toolbar": {
       "back": "Back",
@@ -321,7 +345,7 @@
     },
     "juz": {
       "title": "Juz {{number}}",
-      "startVerse": "Starts at {{verseKey}}"
+      "startVerse": "Starts at Surah {{surah}}, ayah {{ayah}}"
     }
   },
   "myQuran": {
@@ -500,6 +524,21 @@
     }
   },
   "salah": {
+    "prayerSound": {
+      "allahu_akbar_short": "Allahu Akbar",
+      "makkah": "Masjid al-Haram",
+      "madinah": "The Prophet's Mosque",
+      "system": "System sound",
+      "silent": "Silent"
+    },
+    "adhanSound": {
+      "title": "Adhan sound",
+      "default": "Default",
+      "footer": "The sound plays when your phone is not on silent.",
+      "preview": "Play {{name}}",
+      "stopPreview": "Stop {{name}}",
+      "a11y": "Adhan sound"
+    },
     "title": "Prayer",
     "next": "Next prayer",
     "remaining": "{{time}} left",
@@ -667,6 +706,7 @@
   },
   "common": {
     "back": "Back",
+    "appName": "Taybah",
     "cancel": "Cancel",
     "done": "Done",
     "openSettings": "Open Settings",
@@ -677,7 +717,13 @@
   "notifications": {
     "prayer": {
       "title": "Time for {{name}} prayer",
-      "body": "Tap to open prayer times"
+      "body": {
+        "fajr": "Prayer is better than sleep",
+        "dhuhr": "Take a few minutes for Dhuhr",
+        "asr": "Pause for Asr",
+        "maghrib": "Maghrib is in. Time to pray",
+        "isha": "End your day with Isha"
+      }
     },
     "reminder": {
       "title": "Your daily wird",
@@ -688,7 +734,9 @@
       "reminders": "Daily reading reminder",
       "azkar": "Azkar reminders",
       "prayer": "Prayer times",
-      "goals": "Daily goals and Friday reminders"
+      "goals": "Daily goals and Friday reminders",
+      "prayerVoice": "Prayer: {{name}}",
+      "prayerSilent": "Prayer (silent)"
     }
   },
   "settings": {

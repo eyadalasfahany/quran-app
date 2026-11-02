@@ -86,27 +86,15 @@ magick(
 magick(logoSrc, '-resize', '1024x1024', path.join(out, 'taybah-splash-logo.png'));
 
 const posters = [
-  ['taybah-vertical-splash-screen.png', 1440, 3120, 1420],
-  ['taybah-landscape-splash-screen.png', 3120, 1440, 3000],
-  ['taybah-tablet-portrait-splash-screen.png', 2048, 2732, 2000],
-  ['taybah-tablet-landscape-splash-screen.png', 2732, 2048, 2680],
+  ['taybah-vertical-splash-screen.png', 1440, 3120],
+  ['taybah-landscape-splash-screen.png', 3120, 1440],
+  ['taybah-tablet-portrait-splash-screen.png', 2048, 2732],
+  ['taybah-tablet-landscape-splash-screen.png', 2732, 2048],
 ];
 
-for (const [name, w, h, logoSize] of posters) {
-  magick(
-    '-size',
-    `${w}x${h}`,
-    `xc:${bg}`,
-    '(',
-    logoSrc,
-    '-resize',
-    `${logoSize}x${logoSize}`,
-    ')',
-    '-gravity',
-    'center',
-    '-composite',
-    path.join(out, name),
-  );
+// Native launch posters: solid cream only. The animated mark runs in JS (AnimatedSplashOverlay).
+for (const [name, w, h] of posters) {
+  magick('-size', `${w}x${h}`, `xc:${bg}`, path.join(out, name));
   fs.copyFileSync(path.join(out, name), path.join(brand, name));
 }
 

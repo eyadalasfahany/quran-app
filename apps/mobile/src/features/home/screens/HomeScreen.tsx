@@ -16,6 +16,7 @@ import { useTheme } from '@/core/theme';
 import { useAzkarAvailable, useRecentAzkarItems } from '@/features/azkar/data';
 import { azkarHref } from '@/features/azkar/routes';
 import { pause } from '@/features/audio/player';
+import { isStartingFor, listenMatch, useStartState } from '@/features/audio/hooks/useIsStarting';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { playRecentListen } from '@/features/audio/reciter-playback';
 import { ContinueAzkarHomeCard } from '@/features/home/components/ContinueAzkarHomeCard';
@@ -34,7 +35,7 @@ import { useDailyGoals } from '@/features/daily-goals/hooks/useDailyGoals';
 import { useSelectedAzkarItems } from '@/features/home/hooks/useSelectedAzkar';
 import { HomeWirdCard } from '@/features/khatma/components/HomeWirdCard';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
-import { getChapter } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useAzkarMenuPreview } from '@/features/menu/hooks/useAzkarMenuPreview';
 import { HomeDatePill } from '@/features/hijri/components/HomeDatePill';
@@ -76,6 +77,7 @@ export function HomeScreen() {
   const playerActive = usePlayerStore((state) => state.status === 'playing' || state.status === 'loading');
   const playerReciterId = usePlayerStore((state) => state.reciterId);
   const playerChapterId = usePlayerStore((state) => state.chapterId);
+  const startState = useStartState();
   // The Azkar blocks show only once Azkar content is installed (ADR 0017, ADR 0031 §10).
   const azkarAvailable = useAzkarAvailable();
   const homeWird = useHomeWird();
@@ -149,7 +151,7 @@ export function HomeScreen() {
             juz={continueReading.verse.juz}
             onPress={() => router.push(`/read/${continueReading.verse.verseKey}` as Href)}
             page={continueReading.verse.page}
-            surahName={locale === 'ar' ? continueReading.chapter.nameArabic : continueReading.chapter.nameSimple}
+            surahName={chapterDisplayName(continueReading.chapter, locale)}
           />
         ) : null}
         <HomeNextPrayer onPress={openSalah} />
@@ -192,6 +194,7 @@ export function HomeScreen() {
           items={recentItems.map((item) => {
             const playing =
               playerActive && playerReciterId === item.listen.reciterResourceId && playerChapterId === item.listen.chapterId;
+            const starting = isStartingFor(startState, listenMatch(item.listen.reciterResourceId, item.listen.chapterId));
             return {
               key: item.key,
               letter: item.letter,
@@ -203,8 +206,9 @@ export function HomeScreen() {
                 }
                 void playRecentListen(item.listen, item.installed);
               },
-              playLabel: playing ? t('player.pause') : item.playLabel,
+              playLabel: playing || starting ? t('player.pause') : item.playLabel,
               playing,
+              starting,
               subtitle: item.subtitle,
             };
           })}

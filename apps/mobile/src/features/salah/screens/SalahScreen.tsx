@@ -106,6 +106,7 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
           <SalahDateHeader
             onBack={onBack}
             onLocationPress={() => setSheetOpen(true)}
+            onSoundPress={() => router.push('/adhan-sound' as Href)}
             subtitle={subtitle}
             title={t('salah.title')}
           />

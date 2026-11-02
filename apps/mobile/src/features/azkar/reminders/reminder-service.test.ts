@@ -41,7 +41,11 @@ const PRAYER_ENTRY: AzkarReminderInput = {
   offsetMinutes: 10,
 };
 
-type Scheduled = { id: string; content: { title: string; body: string; data: { route: string } }; trigger: Record<string, unknown> };
+type Scheduled = {
+  id: string;
+  content: { title: string; body: string; data: { route: string }; sound: string | false };
+  trigger: Record<string, unknown>;
+};
 
 /**
  * A fake of the native scheduler: schedule adds an id, cancel removes it. `live` is what the device would still deliver,
@@ -94,7 +98,12 @@ describe('syncAzkarReminders', () => {
 
     expect(scheduledCalls()).toEqual([
       {
-        content: { title: 'أذكار الصباح', body: 'تذكيرك الذي اخترته', data: { route: '/azkar/category/morning' } },
+        content: {
+          title: 'أذكار الصباح',
+          body: 'تذكيرك الذي اخترته',
+          data: { route: '/azkar/category/morning' },
+          sound: 'default',
+        },
         trigger: { type: 'calendar', hour: 6, minute: 30, repeats: true },
       },
     ]);
@@ -311,6 +320,7 @@ describe('reminderContent', () => {
       title: 'أذكار المساء',
       body: 'تذكيرك الذي اخترته',
       data: { route: '/azkar/category/evening' },
+      sound: 'default',
     });
   });
 
@@ -330,6 +340,7 @@ describe('reminderContent', () => {
 
     expect(content.data.route).toBe('/azkar/entry/fixture%3Aentry-001');
     expect(content.title).toBe('تذكير الأذكار');
+    expect(content.sound).toBe('default');
   });
 
   it('routes a my_dua reminder to the editor', () => {

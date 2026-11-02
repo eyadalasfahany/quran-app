@@ -6,10 +6,15 @@ import { formatNumber } from '@/core/i18n/numbers';
 import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { GlassSurface, UiText } from '@/shared/ui';
+import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 
+import type { CatalogReciter } from '../data/reciters';
 import { useActiveAyahNumber } from '../hooks/useActiveAyahNumber';
+import { useIdleReciter } from '../hooks/useIdleReciter';
+import { useIsStarting } from '../hooks/useIsStarting';
 import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { usePlayerNames } from '../hooks/usePlayerNames';
+import { useVerseCaption } from '../hooks/useVerseCaption';
 import {
   MINI_PLAYER_BUTTON_SIZE,
   MINI_PLAYER_GAP,
@@ -17,9 +22,7 @@ import {
   MINI_PLAYER_METRICS,
   type MiniPlayerVariant,
 } from '../mini-player-metrics';
-import { useIdleReciter } from '../hooks/useIdleReciter';
-import { useVerseCaption } from '../hooks/useVerseCaption';
-import { pause, resume } from '../player';
+import { pause } from '../player';
 import { playVerse } from '../play-verse';
 import { playbackFraction, reciterInitial } from '../player-view';
 import { usePlayerStore } from '../playerStore';
@@ -29,10 +32,20 @@ import { MiniPlayerTile } from './MiniPlayerTile';
 import { PlayerIconButton } from './PlayerIconButton';
 import { PAUSE_ICON, PLAY_ICON } from './player-icons';
 
-// The bar shown above the tabs (`tabs`, on every window: ADR 0051) and at the foot of the reader (`reader`). It draws
-// nothing while useMiniPlayerVisible is false. Tapping the row opens the full player; the button beside it toggles
-// playback. The two are siblings, so the button is never inside another button.
-export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlayerVariant; topVerseKey?: string | null }) {
+// The reciter's name in the app's language, or '' when no reciter resolves.
+function reciterDisplayName(reciter: CatalogReciter | null, locale: string): string {
+  if (reciter === null) {
+    return '';
+  }
+  return (locale === 'ar' ? reciter.nameAr ?? reciter.name : reciter.name ?? reciter.nameAr) ?? '';
+}
+
+/**
+ * The mini player. While audio plays or loads it shows what is playing, and its button pauses. In every other state
+ * (idle, paused, error) it shows the current ayah (`reader.lastVerseKey`, ADR 0046) with the reciter a play would use,
+ * and its button starts that ayah from its beginning.
+ */
+export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
@@ -42,57 +55,59 @@ export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlaye
   const { reciterName, chapterName } = usePlayerNames();
   const ayahNumber = useActiveAyahNumber();
   const visible = useMiniPlayerVisible(variant);
-  const idle = status === 'idle';
-  // The reader's idle bar: the reciter a play would use, and the caption of the top ayah on screen.
-  const idleReciter = useIdleReciter(variant === 'reader' && idle);
-  const idleCaption = useVerseCaption(variant === 'reader' && idle ? topVerseKey : null);
+  const current = useLastReadVerseKey();
+  const isPlaying = status === 'playing' || status === 'loading';
+  const notPlaying = !isPlaying;
+  // Any start, from a tap on any play control, shows the pause glyph and the buffering ring (ADR 0046).
+  const starting = useIsStarting();
+  const showPause = isPlaying || starting;
+  const idleReciter = useIdleReciter(notPlaying);
+  const idleCaption = useVerseCaption(notPlaying ? current : null);
 
   if (!visible) {
     return null;
   }
 
-  const isPlaying = status === 'playing' || status === 'loading';
-  const toggle = () => {
+  const onToggle = () => {
     if (isPlaying) {
       pause();
       return;
     }
-    void resume();
+    // A start is already under way: a second tap does nothing (it would start the same ayah again).
+    if (starting) {
+      return;
+    }
+    void playVerse(current);
   };
   const fraction = playbackFraction(positionMs, durationMs);
+  const shownReciter = notPlaying ? reciterDisplayName(idleReciter, locale) : reciterName;
+  const shownSurah = notPlaying ? idleCaption?.surah ?? '' : chapterName ?? '';
+  const shownAyah = notPlaying ? idleCaption?.ayah ?? null : ayahNumber;
+  const captioned = (surah: string, ayah: number | null) =>
+    ayah === null
+      ? surah
+      : t('player.mini.caption', { surah, ayah: t('ui.ayahNumber', { number: formatNumber(ayah, locale) }) });
 
-  // Plays from the top ayah on screen with the catalogue's reciter (installing its pack first if needed).
-  const playIdle = (verseKey: string | null) => {
-    if (verseKey !== null) {
-      void playVerse(verseKey);
-    }
-  };
 
   if (variant === 'reader') {
-    const idleName = idleReciter === null ? '' : (locale === 'ar' ? idleReciter.nameAr ?? idleReciter.name : idleReciter.name ?? idleReciter.nameAr) ?? '';
-    const surah = idle ? idleCaption?.surah ?? '' : chapterName ?? '';
-    // Reading shows the ayah beside the surah, as the frame does (#Reading, #ReadingMiniIdle).
-    const ayah = idle ? idleCaption?.ayah ?? null : ayahNumber;
-    const readerSubtitle =
-      ayah === null
-        ? surah
-        : t('player.mini.caption', { surah, ayah: t('ui.ayahNumber', { number: formatNumber(ayah, locale) }) });
+    const readerSubtitle = captioned(shownSurah, shownAyah);
 
     return (
       <ReaderMiniPlayer
         fraction={fraction}
-        idle={idle}
+        idle={notPlaying}
         onOpen={() => router.push('/player')}
-        onToggle={idle ? () => playIdle(topVerseKey) : toggle}
+        onToggle={onToggle}
         playing={isPlaying}
-        reciterName={idle ? idleName : reciterName}
+        reciterName={shownReciter}
+        starting={starting}
         subtitle={readerSubtitle}
       />
     );
   }
 
   const metrics = MINI_PLAYER_METRICS[variant];
-  const subtitle = chapterName ?? '';
+  const subtitle = notPlaying ? captioned(shownSurah, shownAyah) : shownSurah;
 
   return (
     <GlassSurface
@@ -108,10 +123,10 @@ export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlaye
       }}
       testID={`mini-player-${variant}`}
     >
-      <MiniPlayerProgressLine fraction={fraction} />
+      {isPlaying ? <MiniPlayerProgressLine fraction={fraction} /> : null}
       <Pressable
         accessibilityHint={t('player.mini.hint')}
-        accessibilityLabel={t('player.mini.label', { reciter: reciterName, surah: subtitle })}
+        accessibilityLabel={t('player.mini.label', { reciter: shownReciter, surah: subtitle })}
         accessibilityRole="button"
         onPress={() => router.push('/player')}
         style={{ alignItems: 'center', flex: 1, flexDirection: 'row', gap: MINI_PLAYER_GAP, height: '100%', minWidth: 0 }}
@@ -119,13 +134,13 @@ export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlaye
       >
         <MiniPlayerTile
           glyph={metrics.tileGlyph}
-          letter={reciterInitial(reciterName)}
+          letter={reciterInitial(shownReciter)}
           radius={metrics.tileRadius}
           size={metrics.tileSize}
         />
         <View style={{ flex: 1, minWidth: 0 }}>
           <UiText numberOfLines={1} scale="bar" variant={metrics.title.variant} weight={metrics.title.weight}>
-            {reciterName}
+            {shownReciter}
           </UiText>
           <UiText numberOfLines={1} scale="bar" tone="muted" variant={metrics.subtitle.variant} weight={metrics.subtitle.weight}>
             {subtitle}
@@ -137,9 +152,10 @@ export function MiniPlayer({ variant, topVerseKey = null }: { variant: MiniPlaye
         glyphColor={theme.colors.onBrand}
         glyphSize={MINI_PLAYER_GLYPH_SIZE}
         hitSize={MINI_PLAYER_BUTTON_SIZE}
-        icon={isPlaying ? PAUSE_ICON : PLAY_ICON}
-        label={isPlaying ? t('player.pause') : t('player.play')}
-        onPress={toggle}
+        icon={showPause ? PAUSE_ICON : PLAY_ICON}
+        label={showPause ? t('player.pause') : t('player.play')}
+        onPress={onToggle}
+        starting={starting}
         testID="mini-player-toggle"
       />
     </GlassSurface>

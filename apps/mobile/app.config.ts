@@ -194,13 +194,26 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       // Android status-bar icon: the logo as a white silhouette (an opaque icon shows as a white square), tinted brand.
-      ['expo-notifications', { icon: './assets/images/notification-icon.png', color: '#1F4D40' }],
+      // Prayer notification sounds (ADR 0047): each file is copied into the iOS bundle and Android res/raw. The list
+      // must match the catalogue in src/features/salah/data/adhan-sounds.ts (checked by adhan-assets.test.ts).
+      [
+        'expo-notifications',
+        {
+          icon: './assets/images/notification-icon.png',
+          color: '#1F4D40',
+          sounds: [
+            './assets/adhan/allahu_akbar_short.wav',
+            './assets/adhan/adhan_makkah.wav',
+            './assets/adhan/adhan_madinah.wav',
+          ],
+        },
+      ],
 
       [
         'expo-splash-screen',
         {
           backgroundColor: '#F9F7F2',
-          // Phone: portrait poster (1440×3120). Cover fills full width and height (landscape too).
+          // Solid cream poster (1440×3120); the Taybah mark animates in JS after launch.
           image: './assets/images/taybah-vertical-splash-screen.png',
           enableFullScreenImage_legacy: true,
           imageWidth: 390,

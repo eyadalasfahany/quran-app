@@ -88,6 +88,34 @@ describe('PlayerIconButton', () => {
     expect(play.transform).toBeUndefined();
   });
 
+  it('draws no buffering ring and is not busy when not starting', async () => {
+    const view = await renderUi(<PlayerIconButton icon={chevron} label="تشغيل" onPress={() => undefined} testID="btn" />);
+
+    expect(view.queryByTestId('btn-ring', hidden)).toBeNull();
+    expect(view.getByRole('button', { name: 'تشغيل' }).props.accessibilityState).toEqual({ disabled: false });
+  });
+
+  it('draws the buffering ring and marks the button busy while starting, keeping its label', async () => {
+    const view = await renderUi(
+      <PlayerIconButton icon={chevron} label="إيقاف مؤقت" onPress={() => undefined} starting testID="btn" />,
+    );
+    const button = view.getByRole('button', { name: 'إيقاف مؤقت' });
+
+    expect(button.props.accessibilityState).toEqual({ busy: true, disabled: false });
+    expect(view.getByTestId('btn-ring', hidden)).toBeTruthy();
+    expect(view.getByTestId('btn-icon', hidden)).toBeTruthy();
+  });
+
+  it('draws the ring in the glyph colour and sizes it to the hit area', async () => {
+    const view = await renderUi(
+      <PlayerIconButton glyphColor={dark.playerBg} hitSize={20} icon={next} label="تشغيل" onPress={() => undefined} starting testID="btn" />,
+      { theme: 'dark' },
+    );
+
+    expect(flatStyle(view.getByRole('button').props.style)).toMatchObject({ height: 44, width: 44 });
+    expect(view.getByTestId('btn-ring', hidden).props.accessibilityElementsHidden).toBe(true);
+  });
+
   it('uses no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/audio/components/PlayerIconButton.tsx')).toEqual([]);
   });

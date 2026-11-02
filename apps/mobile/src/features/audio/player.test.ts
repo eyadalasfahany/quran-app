@@ -1372,3 +1372,143 @@ describe('playCommand (ADR 0037)', () => {
     expect(command()).toBe(3);
   });
 });
+
+describe('jumping to an ayah while another is playing (seek still pending)', () => {
+  beforeEach(() => {
+    seedAyahs(executor);
+    seedSurahTwoTimings(executor);
+  });
+
+  /** Plays surah 1 inside ayah 1, pauses it, then starts a jump to ayah 3 whose seek stays pending until resolved. */
+  async function jumpToAyahThreePendingSeek(): Promise<{ jump: Promise<void>; landSeek: () => void }> {
+    await playChapter(1);
+    heardAt(1.5);
+    pause();
+
+    let landSeek: () => void = () => undefined;
+    fakePlaylist().seekTo.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          landSeek = resolve;
+        }),
+    );
+    const jump = playFromVerse('1:3');
+    await flush();
+    return { jump, landSeek: () => landSeek() };
+  }
+
+  it('keeps the requested ayah active while the seek is pending, ignoring the old position', async () => {
+    const { jump, landSeek } = await jumpToAyahThreePendingSeek();
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'loading', chapterId: 1, activeVerseId: 3 });
+
+    // The paused playlist still reports its old position, inside ayah 1, until the seek lands.
+    fakePlaylist().emitStatus({ playing: false, isLoaded: true, currentTime: 1.5 });
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'loading', activeVerseId: 3 });
+
+    landSeek();
+    await jump;
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(10);
+  });
+
+  it('marks playing and follows the new position once the seek has landed and playback starts', async () => {
+    const { jump, landSeek } = await jumpToAyahThreePendingSeek();
+    fakePlaylist().emitStatus({ playing: false, isLoaded: true, currentTime: 1.5 });
+
+    landSeek();
+    await jump;
+    expect(fakePlaylist().play).toHaveBeenCalled();
+
+    heardAt(10.5);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'playing', activeVerseId: 3 });
+    heardAt(17);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'playing', activeVerseId: 4 });
+  });
+
+  it('keeps the requested ayah when a playing tick at the old position arrives before a jump to another surah lands', async () => {
+    await playChapter(2);
+    reportAt(1);
+    let landSeek: () => void = () => undefined;
+    fakePlaylist().seekTo.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          landSeek = resolve;
+        }),
+    );
+    const jump = playFromVerse('1:3');
+    await flush();
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, activeVerseId: 3 });
+
+    // Surah 2 is still playing at 1 s, which is inside surah 1's ayah 1, while the seek to ayah 3 is pending.
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 1 });
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3 });
+
+    landSeek();
+    await jump;
+  });
+
+  it('keeps the requested ayah when a paused track on the new surah reports the old position before it plays', async () => {
+    await playChapter(2);
+    reportAt(12);
+
+    // 1:1 starts at 0, so there is no seek: the playlist only moves to surah 1 and reports the old track's time.
+    await playFromVerse('1:1');
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 1, status: 'loading', activeVerseId: 1 });
+    // 12 s on surah 1 is ayah 3, so a tick at the old time would move the highlight there.
+    fakePlaylist().emitStatus({ playing: false, isLoaded: true, currentTime: 12 });
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'loading', activeVerseId: 1 });
+  });
+
+  it('keeps the requested ayah for the first ticks after the seek lands, even when they report just before its start', async () => {
+    // 1:3 starts at 10 s. The first ticks after the seek report about that position, which the highlight lag puts in ayah 2.
+    await playFromVerse('1:3');
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(10);
+
+    reportAt(10);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'playing', activeVerseId: 3 });
+    reportAt(10.05);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3 });
+    reportAt(9.97);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3 });
+
+    // Two seconds on, the highlight follows the timings again.
+    reportAt(12);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3 });
+    reportAt(17);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4 });
+  });
+
+  it('keeps the requested ayah when the track change arrives after the load has set it', async () => {
+    await playChapter(1);
+    heardAt(1.5);
+    pause();
+
+    // The native playlist moves on its own time: the skip does not emit trackChanged at once.
+    fakePlaylist().skipTo.mockImplementationOnce(() => undefined);
+    await playFromVerse('2:1');
+    await flush();
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2, activeVerseId: 8 });
+
+    fakePlaylist().emitTrackChanged(1);
+
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2, status: 'loading', activeVerseId: 8 });
+  });
+
+  it('keeps the requested ayah while ticks are in the gap before its start, and follows the timings after it', async () => {
+    // 1:3 starts at 10 s, but its first word starts at 9.6 s. The seek goes to the word, so the ticks after it
+    // report times in the gap that the timings put in ayah 2.
+    executor.run(`UPDATE recitation_timings SET segments = '[[1,9600,10500],[2,10500,12000]]' WHERE audio_file_id = 100 AND verse_id = 3`);
+    await playFromVerse('1:3');
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(9.6);
+
+    for (const seconds of [9.6, 9.8, 10, 10.05]) {
+      reportAt(seconds);
+      expect(usePlayerStore.getState()).toMatchObject({ status: 'playing', activeVerseId: 3 });
+    }
+
+    reportAt(10.2);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 3 });
+    reportAt(16.5);
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4 });
+  });
+});

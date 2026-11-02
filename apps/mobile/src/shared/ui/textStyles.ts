@@ -34,6 +34,14 @@ export const arabicTextDirection: TextStyle = {
   writingDirection: 'rtl',
 };
 
+// Latin text (an English licence line) reads left to right and left-aligned in both languages, even in Arabic (RTL) screens.
+export const latinTextDirection: TextStyle = {
+  // Keeping this node LTR leaves 'left' on the physical left (iOS mirrors left/right to the layout direction).
+  direction: 'ltr',
+  textAlign: 'left',
+  writingDirection: 'ltr',
+};
+
 // Quran text ignores the system text size and follows the reader's own 80–160% setting.
 export function quranText(token: QuranTypeToken, fontScale = 1): TextStyle {
   const { size, lineHeightRatio } = quranTypeScale[token];

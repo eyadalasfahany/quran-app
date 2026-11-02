@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useTheme } from '@/core/theme';
 
 import { Icon } from './Icon';
+import { latinTextDirection } from './textStyles';
 import { UiText, type TextTone } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
@@ -20,6 +21,7 @@ export function ListRow({
   titleTone = 'ink',
   chevron = true,
   density = 'default',
+  subtitleDirection,
   testID,
 }: {
   title: string;
@@ -38,6 +40,8 @@ export function ListRow({
    * a 14 pt gap, the name in Amiri 19 and the meta line at 12 pt. `default` is every other list.
    */
   density?: 'default' | 'index';
+  /** `ltr`: the subtitle is Latin text (a licence line) that keeps left-to-right reading and alignment in Arabic. */
+  subtitleDirection?: 'ltr';
   testID?: string;
 }) {
   const theme = useTheme();
@@ -49,6 +53,7 @@ export function ListRow({
         borderBottomWidth: theme.stroke.hairline,
       }
     : null;
+  const subtitleStyle = subtitleDirection === 'ltr' ? latinTextDirection : undefined;
   const titleStyle =
     index && titleVariant === 'displaySm'
       ? { fontSize: theme.size.indexNameSize, lineHeight: theme.size.indexNameLineHeight }
@@ -63,11 +68,11 @@ export function ListRow({
         </UiText>
         {subtitle ? (
           index ? (
-            <UiText tone="muted" variant="label" weight={400}>
+            <UiText style={subtitleStyle} tone="muted" variant="label" weight={400}>
               {subtitle}
             </UiText>
           ) : (
-            <UiText tone="muted" variant="caption">
+            <UiText style={subtitleStyle} tone="muted" variant="caption">
               {subtitle}
             </UiText>
           )

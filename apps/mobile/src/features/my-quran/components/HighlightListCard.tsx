@@ -10,6 +10,7 @@ import { EmptyState, highlightFill, IconButton, type HighlightColor } from '@/sh
 import type { SavedHighlightItem } from '../data/saved-items';
 import { HighlightFilterChips, type HighlightFilter } from './HighlightFilterChips';
 import { SavedVerseRow } from './SavedVerseRow';
+import { chapterDisplayName } from '@/features/reader/data/chapters';
 
 const HIGHLIGHT_ICON = { ios: 'highlighter', android: 'border_color' } as const;
 const CLOSE_ICON = { ios: 'xmark', android: 'close' } as const;
@@ -63,7 +64,7 @@ export function HighlightListCard({
     <>
       <HighlightFilterChips onChange={setFilter} value={filter} />
       {visible.map(({ row, verse, chapter }) => {
-        const surah = chapter?.nameArabic ?? verse.verseKey;
+        const surah = chapter === undefined ? verse.verseKey : chapterDisplayName(chapter, locale);
         const title = t('myQuran.reference', { ayah: formatNumber(verse.verseNumber, locale), surah });
 
         return (

@@ -10,6 +10,7 @@ import { installResource } from '@/core/sync';
 import type { DownloadRow } from '../data/downloads';
 import { cancel, enqueueAll, enqueueSurah, remove, removeReciter } from '../downloads/manager';
 import { useDownloadProgress } from '../downloads/store';
+import { usePlayerStore } from '../playerStore';
 import { playSurahFromReciter } from '../reciter-playback';
 import { downloadReciterPack, resetReciterDownloads, useReciterDownloads as usePackDownloads } from '../reciter-downloads';
 import { openAudioTestDb } from '../data/test-db';
@@ -231,6 +232,27 @@ describe('ReciterDownloadsScreen', () => {
 
       await fireEvent.press(view.getByTestId('surah-row-1-delete'));
       expect(deleteOne).toHaveBeenCalledWith(100);
+    });
+  });
+
+  describe('while a surah starts', () => {
+    afterEach(() => {
+      usePlayerStore.getState().reset();
+    });
+
+    it('draws the buffering ring on only the surah that starts', async () => {
+      mockRows.value = [
+        row(100, 1, { status: 'done', sizeBytes: 5_033_165 }),
+        row(101, 3, { status: 'done', sizeBytes: 5_033_165 }),
+      ];
+      usePlayerStore.setState({ startingTarget: { kind: 'surah', resourceId: 30, chapterId: 1 } });
+      const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
+
+      expect(view.getByTestId('surah-row-1-buffering', { includeHiddenElements: true })).toBeTruthy();
+      expect(view.queryByTestId('surah-row-3-buffering', { includeHiddenElements: true })).toBeNull();
+      expect(view.getByTestId('surah-row-1-action').props.accessibilityState).toEqual({ busy: true });
+      await fireEvent.press(view.getByTestId('surah-row-1-action'));
+      expect(playSurah).not.toHaveBeenCalled();
     });
   });
 

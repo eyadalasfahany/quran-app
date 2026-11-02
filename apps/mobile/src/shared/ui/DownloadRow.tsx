@@ -1,11 +1,20 @@
 import { useTranslation } from 'react-i18next';
-import { View, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
+import { BufferingRing } from './BufferingRing';
+import { Icon } from './Icon';
 import { UiText } from './UiText';
 import { IconButton } from './IconButton';
 import { useContrastColors } from './useContrastColors';
+
+const ignoreTap = () => undefined;
+
+// The pause glyph an installed row's open pill shows while its audio starts, inside a buffering ring.
+const PAUSE_ICON = { ios: 'pause.fill', android: 'pause' } as const;
+const PAUSE_GLYPH_SIZE = 16;
+const PAUSE_RING_SIZE = 24;
 
 export type DownloadRowState = 'available' | 'downloading' | 'installed';
 
@@ -32,6 +41,7 @@ export function DownloadRow({
   onOpen,
   onDelete,
   actionLabels,
+  starting = false,
   showDivider = false,
   testID,
 }: {
@@ -46,6 +56,8 @@ export function DownloadRow({
   /** Drawn for an installed row only. */
   onDelete?: () => void;
   actionLabels: DownloadRowActionLabels;
+  /** This row's audio is starting: the open pill shows pause in a buffering ring, busy, and taps do nothing. */
+  starting?: boolean;
   showDivider?: boolean;
   testID?: string;
 }) {
@@ -104,18 +116,44 @@ export function DownloadRow({
 
     const isInstalled = state === 'installed';
     const label = isInstalled ? actionLabels.open : actionLabels.download;
+    // Only the open pill starts audio, so only it shows the start.
+    const buffering = isInstalled && starting;
     return (
       <Pressable
         // Every row has the same actions, so each says which row it acts on («تنزيل البقرة»).
         accessibilityLabel={t('common.a11yAction', { action: label, title })}
         accessibilityRole="button"
-        onPress={isInstalled ? onOpen : onDownload}
+        accessibilityState={buffering ? { busy: true } : undefined}
+        onPress={buffering ? ignoreTap : isInstalled ? onOpen : onDownload}
         style={({ pressed }) => [pillStyle, { opacity: pressed ? theme.opacity.pressed : 1 }]}
         testID={testID ? `${testID}-action` : undefined}
       >
-        <UiText tone="brand" variant="caption" weight={600}>
+        {/* The text keeps its place while the pill shows the start, so the pill keeps its exact size. */}
+        <UiText style={buffering ? { opacity: 0 } : undefined} tone="brand" variant="caption" weight={600}>
           {label}
         </UiText>
+        {buffering ? (
+          <View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}
+          >
+            <BufferingRing
+              active
+              color={theme.colors.brand}
+              size={PAUSE_RING_SIZE}
+              testID={testID ? `${testID}-buffering` : undefined}
+            >
+              <View style={{ alignItems: 'center', height: PAUSE_RING_SIZE, justifyContent: 'center', width: PAUSE_RING_SIZE }}>
+                <Icon
+                  color={theme.colors.brand}
+                  name={PAUSE_ICON}
+                  size={PAUSE_GLYPH_SIZE}
+                  testID={testID ? `${testID}-pause` : undefined}
+                />
+              </View>
+            </BufferingRing>
+          </View>
+        ) : null}
       </Pressable>
     );
   })();

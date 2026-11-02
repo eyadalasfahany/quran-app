@@ -177,7 +177,31 @@
     },
     "sources": {
       "title": "المصادر",
-      "qfFonts": "خطوط القرآن مقدَّمة من Quran Foundation"
+      "qfFonts": "خطوط القرآن مقدَّمة من Quran Foundation",
+      "qf": {
+        "title": "Quran Foundation",
+        "subtitle": "نص القرآن والتفاسير والتلاوات وخطوط المصحف"
+      },
+      "tanzil": {
+        "title": "Tanzil · tanzil.net",
+        "subtitle": "نص القرآن المضمَّن · CC BY 3.0"
+      },
+      "kfgqpc": {
+        "title": "مجمع الملك فهد لطباعة المصحف الشريف",
+        "subtitle": "خطوط صفحات المصحف"
+      },
+      "opendua": {
+        "title": "OpenDua · حصن المسلم",
+        "subtitle": "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts."
+      },
+      "adhan": {
+        "title": "adhan",
+        "subtitle": "حساب مواقيت الصلاة · MIT"
+      },
+      "fonts": {
+        "title": "Amiri · IBM Plex Sans Arabic",
+        "subtitle": "خطوط الواجهة · SIL OFL"
+      }
     },
     "toolbar": {
       "back": "رجوع",
@@ -321,7 +345,7 @@
     },
     "juz": {
       "title": "الجزء {{number}}",
-      "startVerse": "يبدأ من {{verseKey}}"
+      "startVerse": "يبدأ من سورة {{surah}}، الآية {{ayah}}"
     }
   },
   "myQuran": {
@@ -500,6 +524,21 @@
     }
   },
   "salah": {
+    "prayerSound": {
+      "allahu_akbar_short": "الله أكبر",
+      "makkah": "المسجد الحرام",
+      "madinah": "المسجد النبوي",
+      "system": "صوت النظام",
+      "silent": "صامت"
+    },
+    "adhanSound": {
+      "title": "صوت الأذان",
+      "default": "الافتراضي",
+      "footer": "يُسمع الصوت عندما لا يكون الهاتف على الوضع الصامت.",
+      "preview": "تشغيل {{name}}",
+      "stopPreview": "إيقاف {{name}}",
+      "a11y": "صوت الأذان"
+    },
     "title": "الصلاة",
     "next": "الصلاة القادمة",
     "remaining": "متبقٍ {{time}}",
@@ -667,6 +706,7 @@
   },
   "common": {
     "back": "رجوع",
+    "appName": "طيبة",
     "cancel": "إلغاء",
     "done": "تم",
     "openSettings": "فتح الإعدادات",
@@ -677,7 +717,13 @@
   "notifications": {
     "prayer": {
       "title": "حان وقت صلاة {{name}}",
-      "body": "اضغط لفتح مواقيت الصلاة"
+      "body": {
+        "fajr": "الصلاة خير من النوم",
+        "dhuhr": "خذ دقائق من يومك لصلاة الظهر",
+        "asr": "توقّف قليلًا لصلاة العصر",
+        "maghrib": "حلّ المغرب، حان وقت الصلاة",
+        "isha": "اختم يومك بصلاة العشاء"
+      }
     },
     "reminder": {
       "title": "وردك اليومي",
@@ -688,7 +734,9 @@
       "reminders": "تذكير بالورد اليومي",
       "azkar": "تذكير الأذكار",
       "prayer": "إشعارات الصلاة",
-      "goals": "أهداف يومية وتذكيرات الجمعة"
+      "goals": "أهداف يومية وتذكيرات الجمعة",
+      "prayerVoice": "الصلاة: {{name}}",
+      "prayerSilent": "الصلاة (صامت)"
     }
   },
   "settings": {

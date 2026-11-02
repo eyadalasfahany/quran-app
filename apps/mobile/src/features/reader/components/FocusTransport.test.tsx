@@ -39,6 +39,24 @@ describe('FocusTransport', () => {
     expect(view.getAllByRole('button').map((button) => button.props.accessibilityLabel)).toEqual(labels);
   });
 
+  it('draws the buffering ring on the play control only while its ayah starts', async () => {
+    const idle = await renderUi(<FocusTransport onPlay={() => undefined} testID="focus" />, { locale: 'en' });
+    expect(idle.queryByTestId('focus-play-ring', { includeHiddenElements: true })).toBeNull();
+
+    const starting = await renderUi(<FocusTransport onPlay={() => undefined} starting testID="focus" />, { locale: 'en' });
+    expect(await starting.findByTestId('focus-play-ring', { includeHiddenElements: true })).toBeTruthy();
+    expect(starting.getByRole('button', { name: 'Pause' }).props.accessibilityState).toMatchObject({ busy: true });
+  });
+
+  it('ignores a second tap on play while the focused ayah starts', async () => {
+    const onPlay = jest.fn();
+    const view = await renderUi(<FocusTransport onPlay={onPlay} starting />, { locale: 'en' });
+
+    fireEvent.press(view.getByRole('button', { name: 'Pause' }));
+
+    expect(onPlay).not.toHaveBeenCalled();
+  });
+
   it('moves to the previous and next ayah', async () => {
     const onPrevious = jest.fn();
     const onNext = jest.fn();

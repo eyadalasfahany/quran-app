@@ -22,6 +22,7 @@ export function ReadingAyahRow({
   activeWord = null,
   audioAvailable = false,
   playing = false,
+  starting = false,
   highlightColor = null,
   onPress,
   onLongPress,
@@ -47,6 +48,8 @@ export function ReadingAyahRow({
   audioAvailable?: boolean;
   /** This ayah is being recited: its play control shows pause. */
   playing?: boolean;
+  /** This ayah's play is starting: its play control shows pause with the buffering ring. */
+  starting?: boolean;
   highlightColor?: HighlightColor | null;
   onPress?: () => void;
   onLongPress?: () => void;
@@ -91,6 +94,7 @@ export function ReadingAyahRow({
         onPlay={onPlay}
         tafsirPressed={tafsirInlineActive}
         playing={playing}
+        starting={starting}
         testID={testID ? `${testID}-header` : undefined}
         verseNumber={verseNumber}
       />

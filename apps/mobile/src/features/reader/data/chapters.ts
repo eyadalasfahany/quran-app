@@ -1,4 +1,5 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
+import type { Locale } from '@/core/i18n/locale';
 
 export type RevelationPlace = 'makkah' | 'madinah';
 
@@ -35,6 +36,11 @@ const CHAPTER_SELECT = `
     page_end AS pageEnd
   FROM chapters
 `;
+
+/** The surah name the interface shows: Arabic in Arabic, the transliteration ("Al-Baqarah") in English (ADR 0045). */
+export function chapterDisplayName(chapter: Pick<ChapterRecord, 'nameArabic' | 'nameSimple'>, locale: Locale): string {
+  return locale === 'ar' ? chapter.nameArabic : chapter.nameSimple;
+}
 
 export function listChapters(db: SqlExecutor): ChapterRecord[] {
   return db.all<ChapterRow>(`${CHAPTER_SELECT} ORDER BY id`).map(asChapter);

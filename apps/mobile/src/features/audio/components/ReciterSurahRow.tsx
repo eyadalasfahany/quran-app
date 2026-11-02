@@ -51,6 +51,7 @@ export function ReciterSurahRow({
   onCancel,
   onPlay,
   onDelete,
+  starting = false,
   showDivider = false,
   testID,
 }: {
@@ -60,6 +61,8 @@ export function ReciterSurahRow({
   /** 0 to 1, live while it downloads. */
   progress: number;
   sizeBytes: number | null;
+  /** This surah is starting (its reciter and surah loading): the play pill shows pause in a buffering ring. */
+  starting?: boolean;
   /** The device is offline: a surah that is not downloaded says so. */
   offline?: boolean;
   /** A finished download that needs a connection to verify. */
@@ -89,6 +92,7 @@ export function ReciterSurahRow({
       onOpen={onPlay}
       progress={progress}
       showDivider={showDivider}
+      starting={starting}
       state={model.state}
       subtitle={subtitleText(model.subtitle, t, locale)}
       testID={testID}

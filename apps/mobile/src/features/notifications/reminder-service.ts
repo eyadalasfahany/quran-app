@@ -74,6 +74,8 @@ export async function syncDailyReminder(): Promise<void> {
       title: i18n.t('notifications.reminder.title'),
       body: reminderBody(),
       data: { route: reminderRoute() },
+      // The system sound, set explicitly so it does not depend on the SDK's default (ADR 0047 §6).
+      sound: 'default',
     },
     trigger:
       Platform.OS === 'android'

@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { I18nManager, Platform } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
@@ -25,6 +25,7 @@ import { useReminderGoalsSync } from '@/features/reminders/hooks/useReminderGoal
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 import { WidgetSnapshotSync } from '@/features/widgets/components/WidgetSnapshotSync';
+import { AnimatedSplashOverlay } from '@/shared/ui/AnimatedSplashOverlay';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -47,6 +48,7 @@ export default function RootLayout() {
   const modalLikeOptions = modalLikeScreenOptions({ platform: Platform.OS, reduceMotion });
   const [loaded, error] = useFonts(bundledFonts);
   const [directionReady, setDirectionReady] = useState(directionCheck.ready);
+  const [splashFinished, setSplashFinished] = useState(false);
   const content = useContentDbBootstrap();
   const user = useUserDb();
   useContentSync();
@@ -92,23 +94,24 @@ export default function RootLayout() {
   }, [user.error]);
 
   useEffect(() => {
-    if (ready) {
+    if (ready && splashFinished) {
       void syncDailyReminder();
       void resyncAzkarReminders();
       registerReminderDeepLinks();
-      void SplashScreen.hideAsync();
     }
-  }, [ready]);
+  }, [ready, splashFinished]);
 
-  if (!ready) {
-    return null;
-  }
+  const finishSplash = useCallback(() => {
+    setSplashFinished(true);
+  }, []);
 
   return (
     <ThemeProvider name={themeName}>
-      <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />
       {/* Keeps the home-screen widgets' snapshot current (ADR 0035 §4). Renders nothing. */}
       <WidgetSnapshotSync enabled={ready} />
+      {!splashFinished && <AnimatedSplashOverlay appReady={ready} onFinished={finishSplash} />}
+      {ready && splashFinished && <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />}
+      {ready && splashFinished && (
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themes[themeName].colors.surface } }}
       >
@@ -137,6 +140,7 @@ export default function RootLayout() {
         <Stack.Screen name="hijri/index" options={pushOptions} />
         <Stack.Screen name="moon/index" options={pushOptions} />
       </Stack>
+      )}
     </ThemeProvider>
   );
 }

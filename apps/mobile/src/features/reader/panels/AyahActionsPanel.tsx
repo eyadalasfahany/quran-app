@@ -5,6 +5,7 @@ import { AccessibilityInfo, Share, View } from 'react-native';
 import { openContentDb } from '@/core/db/content/open';
 import { useTheme } from '@/core/theme';
 import { useAudioAvailable } from '@/features/audio/hooks/useAudioAvailable';
+import { useIsStarting, verseMatch } from '@/features/audio/hooks/useIsStarting';
 import { pause } from '@/features/audio/player';
 import { playVerse } from '@/features/audio/play-verse';
 import { usePlayerStore } from '@/features/audio/playerStore';
@@ -45,11 +46,16 @@ type Tile = {
   primary?: boolean;
   disabled?: boolean;
   selected?: boolean;
+  /** The tile's action is starting (audio loading). */
+  busy?: boolean;
   hint?: string;
 };
 
+const ignoreTap = () => undefined;
+
 export function AyahActionsPanel({
   verseId,
+  verseKey = null,
   verseNumber,
   page,
   textUthmani,
@@ -66,6 +72,8 @@ export function AyahActionsPanel({
   testID = 'ayah-actions-panel',
 }: {
   verseId: number;
+  /** The ayah's key, so its «تشغيل من هنا» shows the start while audio loads (ADR 0046). */
+  verseKey?: string | null;
   verseNumber: number;
   page: number;
   // Uthmani text exactly as stored; copied and shared byte for byte.
@@ -161,6 +169,7 @@ export function AyahActionsPanel({
   const playingThis = usePlayerStore(
     (s) => (s.status === 'playing' || s.status === 'loading') && s.activeVerseId === verseId,
   );
+  const starting = useIsStarting(verseMatch(verseKey));
   const onPlay = () => {
     const verseKey = idToVerseKey(openContentDb().executor, verseId);
     if (verseKey !== undefined) {
@@ -172,10 +181,12 @@ export function AyahActionsPanel({
       // A recited ayah has audio, so its pause stays enabled even when the audio check says otherwise.
       disabled: !audioAvailable && !playingThis,
       hint: audioHint,
-      icon: playingThis ? icons.pause : icons.play,
+      icon: playingThis || starting ? icons.pause : icons.play,
       key: 'play',
-      label: playingThis ? t('player.pause') : t('reader.ayahPanel.play'),
-      onPress: playingThis ? pause : onPlay,
+      label: playingThis || starting ? t('player.pause') : t('reader.ayahPanel.play'),
+      // While this ayah starts, a tap does nothing; a recited ayah still pauses (as ReadingAyahHeader does).
+      onPress: playingThis ? pause : starting ? ignoreTap : onPlay,
+      busy: starting,
       primary: true,
     },
     ...(onOpenTafsir
@@ -237,6 +248,7 @@ export function AyahActionsPanel({
                 key={tile.key}
                 label={tile.label}
                 onPress={tile.onPress}
+                busy={tile.busy}
                 selected={tile.selected}
                 testID={`${testID}-${tile.key}`}
                 variant={tile.primary ? 'primary' : 'default'}

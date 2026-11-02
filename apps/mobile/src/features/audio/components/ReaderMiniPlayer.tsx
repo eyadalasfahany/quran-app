@@ -13,6 +13,7 @@ export function ReaderMiniPlayer({
   reciterName,
   subtitle,
   playing,
+  starting = false,
   fraction,
   onOpen,
   onToggle,
@@ -21,6 +22,8 @@ export function ReaderMiniPlayer({
   reciterName: string;
   subtitle: string;
   playing: boolean;
+  /** Audio is starting: the button shows pause with the buffering ring. */
+  starting?: boolean;
   fraction: number;
   onOpen: () => void;
   onToggle: () => void;
@@ -41,6 +44,7 @@ export function ReaderMiniPlayer({
           onToggle={onToggle}
           playing={playing}
           reciterName={reciterName}
+          starting={starting}
           subtitle={subtitle}
         />
       )}

@@ -19,9 +19,11 @@ import { useDownloadProgress } from '../downloads/store';
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { useReciterSurahs } from '../hooks/useReciterSurahs';
 import { recitationStyleKey } from '../player-view';
+import { isStartingFor, surahMatch, useStartState } from '../hooks/useIsStarting';
 import { playSurahFromReciter } from '../reciter-playback';
 import { downloadReciterPack, useReciterDownloads as usePackDownloads } from '../reciter-downloads';
 import { reciterDisplayName } from '../reciter-list';
+import { chapterDisplayName } from '@/features/reader/data/chapters';
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
@@ -45,6 +47,7 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
   const { surahs, total } = useReciterSurahs(resourceId, ready, installed);
   const { data: rows = [] } = useReciterDownloadRows(resourceId);
   const progressById = useDownloadProgress((state) => state.byId);
+  const startState = useStartState();
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   // The surah list comes from the reciter's pack, so the pack installs first. The effect runs once per reciter;
@@ -157,10 +160,11 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
                 progress={row === undefined ? 0 : (progressById[row.audioFileId] ?? row.progress)}
                 showDivider={index < surahs.length - 1}
                 sizeBytes={row?.sizeBytes ?? null}
+                starting={isStartingFor(startState, surahMatch(resourceId, item.id))}
                 status={row?.status}
                 verifyNeeded={row !== undefined && needsVerification(row)}
                 testID={`surah-row-${item.id}`}
-                title={locale === 'ar' ? item.nameArabic : item.nameSimple}
+                title={chapterDisplayName(item, locale)}
               />
             );
           }}

@@ -219,3 +219,46 @@ describe('repeat', () => {
     expect(store().repeat).toBeNull();
   });
 });
+
+describe('startingTarget', () => {
+  const target = { kind: 'verse', verseKey: '2:255' } as const;
+
+  it('starts with no target and records one on beginStarting', () => {
+    expect(usePlayerStore.getState().startingTarget).toBeNull();
+
+    usePlayerStore.getState().beginStarting(target);
+
+    expect(usePlayerStore.getState().startingTarget).toEqual(target);
+  });
+
+  it('clears on clearStarting', () => {
+    usePlayerStore.getState().beginStarting(target);
+
+    usePlayerStore.getState().clearStarting();
+
+    expect(usePlayerStore.getState().startingTarget).toBeNull();
+  });
+
+  it('is kept while loading, and cleared when audio plays', () => {
+    const store = usePlayerStore.getState();
+    store.beginStarting(target);
+    store.beginLoad({ reciterId: 30, chapterId: 2, positionMs: 0, durationMs: 1000 });
+    expect(usePlayerStore.getState().startingTarget).toEqual(target);
+
+    store.markPlaying();
+
+    expect(usePlayerStore.getState().startingTarget).toBeNull();
+  });
+
+  it.each([
+    ['markPaused', (s: ReturnType<typeof usePlayerStore.getState>) => { s.beginLoad({ reciterId: 30, chapterId: 2, positionMs: 0, durationMs: 1000 }); s.markPlaying(); s.beginStarting(target); s.markPaused(); }],
+    ['markPaused while idle', (s: ReturnType<typeof usePlayerStore.getState>) => { s.beginStarting(target); s.markPaused(); }],
+    ['markStopped', (s: ReturnType<typeof usePlayerStore.getState>) => { s.beginStarting(target); s.markStopped(); }],
+    ['markFailed', (s: ReturnType<typeof usePlayerStore.getState>) => { s.beginStarting(target); s.markFailed('not-installed'); }],
+    ['reset', (s: ReturnType<typeof usePlayerStore.getState>) => { s.beginStarting(target); s.reset(); }],
+  ])('is cleared by %s', (_name, act) => {
+    act(usePlayerStore.getState());
+
+    expect(usePlayerStore.getState().startingTarget).toBeNull();
+  });
+});

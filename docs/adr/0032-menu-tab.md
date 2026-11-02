@@ -41,3 +41,9 @@ The developer asked (1 Nov 2026) for the الصلاة tab to become a menu tab t
 Amended by ADR 0042 (1 Nov 2026): the menu gains an الحديث card, shown only while at least one hadith collection pack is installed; the `Menu`, `MenuDark` and `MenuEnglish` frames are updated in Phase 7 step 8.
 
 Amended (developer, 2 Nov 2026): the search button lives in the header row beside the title, as on Home (`ScreenHeader` trailing `SearchButton`), not as a floating button above the tab bar. The floating-button wording in decisions 3 and 6 is superseded on this point.
+
+## Amendment — 2 Nov 2026: Prayer keeps the sidebar on expanded windows (superseded)
+
+On an expanded window, opening الصلاة from the sidebar showed the Salah screen full width, with no sidebar. The `/salah` route sits in the root stack, outside the tabs, and only the tab layout drew the sidebar. This amendment wrapped the Salah stack in `MainShell` with الصلاة selected (`app/salah/_layout.tsx`) on expanded windows, and opened `/salah` there with no push animation.
+
+**Superseded by ADR 0051 (developer, 2 Nov 2026).** The sidebar is gone, so there is nothing to keep on screen: `app/salah/_layout.tsx` and the expanded-only animation are removed, and `/salah` is a pushed screen with its back button on every window. Keeping the tab rail visible over `/salah` would be new work under ADR 0051, not part of this amendment.

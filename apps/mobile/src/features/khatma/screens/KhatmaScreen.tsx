@@ -10,7 +10,7 @@ import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
-import { getChapter } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey, idToVerseKey } from '@/features/reader/data/verses';
 import { goBackOr, MENU_TAB } from '@/core/navigation/go-back';
 import { BackButton, Button, ConfirmDialog, Screen, UiText } from '@/shared/ui';
@@ -147,7 +147,7 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
     }
     return t('khatma.lastReadPlace', {
       ayah: formatNumber(content.lastRead.verseNumber, locale),
-      surah: content.lastReadChapter.nameArabic,
+      surah: chapterDisplayName(content.lastReadChapter, locale),
     });
   }, [content, locale, t]);
 

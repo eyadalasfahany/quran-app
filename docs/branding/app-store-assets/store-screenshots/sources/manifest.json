@@ -1,0 +1,157 @@
+{
+  "slides": [
+    {
+      "id": "01-hero",
+      "headline": {
+        "ar": "مصحفك، بخشوع وهدوء",
+        "en": "Your Mushaf, in calm"
+      },
+      "sub": {
+        "ar": "مصحف المدينة صفحةً صفحة، بلا إعلانات",
+        "en": "The Madinah Mushaf, page by page. No ads."
+      }
+    },
+    {
+      "id": "02-recitation",
+      "headline": {
+        "ar": "اقرأ مع القارئ كلمةً كلمة",
+        "en": "Recite along, word by word"
+      },
+      "sub": {
+        "ar": "١٧ قارئًا من كبار القراء",
+        "en": "17 renowned reciters"
+      }
+    },
+    {
+      "id": "03-tafsir",
+      "headline": {
+        "ar": "تدبّر بتسعة تفاسير",
+        "en": "Reflect with 9 tafsirs"
+      },
+      "sub": {
+        "ar": "ابن كثير، السعدي، الطبري، القرطبي وغيرها",
+        "en": "Ibn Kathir, al-Sa'di, al-Tabari, al-Qurtubi and more"
+      }
+    },
+    {
+      "id": "04-salah",
+      "headline": {
+        "ar": "مواقيت صلاتك أينما كنت",
+        "en": "Prayer times, wherever you are"
+      },
+      "sub": {
+        "ar": "تُحسب على جهازك، دون مشاركة موقعك",
+        "en": "Calculated on your device"
+      }
+    },
+    {
+      "id": "05-qibla",
+      "headline": {
+        "ar": "القبلة بدقة",
+        "en": "Find the Qibla"
+      },
+      "sub": {
+        "ar": "بوصلة واضحة، أو اختر مدينتك",
+        "en": "A clear compass, or pick your city"
+      }
+    },
+    {
+      "id": "06-azkar",
+      "headline": {
+        "ar": "أذكارك من حصن المسلم",
+        "en": "Your daily Azkar"
+      },
+      "sub": {
+        "ar": "الصباح والمساء، مع العدّاد والتذكير",
+        "en": "From Hisn al-Muslim, with counter and reminders"
+      }
+    },
+    {
+      "id": "07-khatma",
+      "headline": {
+        "ar": "ختمتك ووِردك اليومي",
+        "en": "Complete your Khatma"
+      },
+      "sub": {
+        "ar": "خطة تقسّم القرآن على أيامك",
+        "en": "A plan that fits your days"
+      }
+    },
+    {
+      "id": "08-privacy",
+      "headline": {
+        "ar": "مجاني، بلا إعلانات ولا حساب",
+        "en": "Free. No ads. No account."
+      },
+      "sub": {
+        "ar": "يعمل دون إنترنت، وبياناتك على جهازك",
+        "en": "Works offline. Your data stays on your device."
+      }
+    }
+  ],
+  "sets": [
+    {
+      "outDir": "app-store/iphone-6.3",
+      "width": 1206,
+      "height": 2622,
+      "layout": "phone",
+      "capturePrefix": {
+        "ar": "iphone-ar",
+        "en": "iphone-en"
+      }
+    },
+    {
+      "outDir": "app-store/ipad-13",
+      "width": 2064,
+      "height": 2752,
+      "layout": "tablet",
+      "capturePrefix": {
+        "ar": "ipad-ar",
+        "en": "ipad-en"
+      }
+    },
+    {
+      "outDir": "app-store/iphone-duo",
+      "width": 2007,
+      "height": 2853,
+      "layout": "tablet",
+      "capturePrefix": {
+        "ar": "ipad-ar",
+        "en": "ipad-en"
+      }
+    },
+    {
+      "outDir": "google-play/phone",
+      "width": 1080,
+      "height": 1920,
+      "layout": "phone",
+      "capturePrefix": {
+        "ar": "iphone-ar",
+        "en": "iphone-en"
+      }
+    },
+    {
+      "outDir": "google-play/tablet-7",
+      "width": 1080,
+      "height": 1920,
+      "layout": "tablet",
+      "capturePrefix": {
+        "ar": "ipad-ar",
+        "en": "ipad-en"
+      }
+    },
+    {
+      "outDir": "google-play/tablet-10",
+      "width": 1440,
+      "height": 2560,
+      "layout": "tablet",
+      "capturePrefix": {
+        "ar": "ipad-ar",
+        "en": "ipad-en"
+      }
+    }
+  ],
+  "captureOverrides": {
+    "02-recitation": "02-recitation.png"
+  }
+}

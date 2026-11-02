@@ -7,6 +7,7 @@ import { EmptyState, Icon, IconButton } from '@/shared/ui';
 
 import type { SavedBookmarkItem } from '../data/saved-items';
 import { SavedVerseRow } from './SavedVerseRow';
+import { chapterDisplayName } from '@/features/reader/data/chapters';
 
 const BOOKMARK_ICON = { ios: 'bookmark', android: 'bookmark' } as const;
 const BOOKMARK_FILL_ICON = { ios: 'bookmark.fill', android: 'bookmark_added' } as const;
@@ -47,7 +48,7 @@ export function BookmarkListCard({
   }
 
   const { row, verse, chapter } = item;
-  const surah = chapter?.nameArabic ?? verse.verseKey;
+  const surah = chapter === undefined ? verse.verseKey : chapterDisplayName(chapter, locale);
   const title = t('myQuran.reference', { ayah: formatNumber(verse.verseNumber, locale), surah });
   const subtitle = t('myQuran.place', { juz: formatNumber(verse.juz, locale), page: formatNumber(verse.page, locale) });
 

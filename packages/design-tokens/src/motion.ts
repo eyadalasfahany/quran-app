@@ -11,6 +11,8 @@ export const duration = {
   slow: 300,
   // An ornament's gold outline drawing itself in, once, when it first scrolls into view.
   draw: 700,
+  // Launch splash: Taybah mark (minarets, dome, Arabic and Latin wordmark) drawn in sequence.
+  splash: 1800,
   // One pulse of a loading skeleton, each way: opacity 1 to 0.55 and back (quran-app-screens.html, #loading).
   pulse: 1000,
 } as const;

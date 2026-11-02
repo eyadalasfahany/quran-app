@@ -73,4 +73,38 @@ describe('playVerse', () => {
     expect(playFromVerse).not.toHaveBeenCalled();
     expect(usePlayerStore.getState().error).toBe('no-reciter');
   });
+
+  it('records the ayah as the starting target before the install begins', async () => {
+    (listReciters as jest.Mock).mockReturnValue([reciter(3, false, true)]);
+    let targetDuringInstall: unknown = undefined;
+    (downloadReciterPack as jest.Mock).mockImplementationOnce(() => {
+      targetDuringInstall = usePlayerStore.getState().startingTarget;
+      return Promise.resolve(true);
+    });
+
+    await playVerse('1:1');
+
+    expect(targetDuringInstall).toEqual({ kind: 'verse', verseKey: '1:1' });
+  });
+
+  it('clears the starting target when the install fails', async () => {
+    (listReciters as jest.Mock).mockReturnValue([reciter(3, false, true)]);
+    (downloadReciterPack as jest.Mock).mockResolvedValueOnce(false);
+
+    await playVerse('1:1');
+
+    expect(usePlayerStore.getState().startingTarget).toBeNull();
+  });
+
+  it('keeps the starting target until audio plays when the reciter is installed', async () => {
+    (listReciters as jest.Mock).mockReturnValue([reciter(2, true, true)]);
+    (playFromVerse as jest.Mock).mockImplementationOnce(() => {
+      expect(usePlayerStore.getState().startingTarget).toEqual({ kind: 'verse', verseKey: '2:1' });
+      return Promise.resolve();
+    });
+
+    await playVerse('2:1');
+
+    expect(playFromVerse).toHaveBeenCalledWith('2:1');
+  });
 });

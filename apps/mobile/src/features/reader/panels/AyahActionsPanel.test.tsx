@@ -4,6 +4,7 @@ import { Share } from 'react-native';
 
 import { themes } from '@/core/theme';
 import { pause } from '@/features/audio/player';
+import { playVerse } from '@/features/audio/play-verse';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { getHighlights, listBookmarks } from '@/features/library/data';
 
@@ -20,6 +21,10 @@ jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resol
 jest.mock('@/features/audio/player', () => ({
   ...jest.requireActual<typeof import('@/features/audio/player')>('@/features/audio/player'),
   pause: jest.fn(),
+}));
+jest.mock('@/features/audio/play-verse', () => ({
+  ...jest.requireActual<typeof import('@/features/audio/play-verse')>('@/features/audio/play-verse'),
+  playVerse: jest.fn(() => Promise.resolve()),
 }));
 
 const AYAH_1_2 = 'ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ';
@@ -236,6 +241,19 @@ describe('AyahActionsPanel play while recited', () => {
   afterEach(() => {
     usePlayerStore.getState().reset();
     jest.mocked(pause).mockClear();
+    jest.mocked(playVerse).mockClear();
+  });
+
+  it('shows pause on the play tile while this ayah starts, and only for this ayah', async () => {
+    usePlayerStore.setState({ startingTarget: { kind: 'verse', verseKey: '1:2' } });
+    const own = await renderUi(panel({ verseKey: '1:2' }));
+    expect(own.getByRole('button', { name: 'إيقاف مؤقت' })).toBeOnTheScreen();
+    usePlayerStore.getState().reset();
+
+    usePlayerStore.setState({ startingTarget: { kind: 'verse', verseKey: '1:3' } });
+    const other = await renderUi(panel({ verseKey: '1:2' }));
+    expect(other.getByRole('button', { name: 'تشغيل من هنا' })).toBeOnTheScreen();
+    usePlayerStore.getState().reset();
   });
 
   it('shows pause on the play tile while this ayah is recited, and pauses from it', async () => {
@@ -253,5 +271,43 @@ describe('AyahActionsPanel play while recited', () => {
     const view = await renderUi(panel());
 
     expect(view.queryByRole('button', { name: 'إيقاف مؤقت' })).toBeNull();
+  });
+
+  it('draws the buffering ring on the play tile while this ayah starts, busy, and ignores taps', async () => {
+    usePlayerStore.setState({ startingTarget: { kind: 'verse', verseKey: '1:2' } });
+    const view = await renderUi(panel({ testID: 'panel', verseKey: '1:2' }));
+    const tile = view.getByRole('button', { name: 'إيقاف مؤقت' });
+
+    expect(view.getByTestId('panel-play-buffering', { includeHiddenElements: true })).toBeTruthy();
+    expect(tile.props.accessibilityState).toMatchObject({ busy: true });
+    fireEvent.press(tile);
+    expect(pause).not.toHaveBeenCalled();
+    expect(playVerse).not.toHaveBeenCalled();
+  });
+
+  it('draws no ring and no busy state on the play tile for another ayah that starts', async () => {
+    usePlayerStore.setState({ startingTarget: { kind: 'verse', verseKey: '1:3' } });
+    const view = await renderUi(panel({ testID: 'panel', verseKey: '1:2' }));
+    const tile = view.getByRole('button', { name: 'تشغيل من هنا' });
+
+    expect(view.queryByTestId('panel-play-buffering', { includeHiddenElements: true })).toBeNull();
+    expect(tile.props.accessibilityState).not.toMatchObject({ busy: true });
+  });
+
+  it('shows the ring and pause in English while this ayah starts', async () => {
+    usePlayerStore.setState({ startingTarget: { kind: 'verse', verseKey: '1:2' } });
+    const view = await renderUi(panel({ testID: 'panel', verseKey: '1:2' }), { locale: 'en' });
+
+    expect(view.getByRole('button', { name: 'Pause' }).props.accessibilityState).toMatchObject({ busy: true });
+    expect(view.getByTestId('panel-play-buffering', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('still pauses from the play tile while this ayah is recited and loading', async () => {
+    usePlayerStore.setState({ activeVerseId: 2, status: 'loading', startingTarget: { kind: 'verse', verseKey: '1:2' } });
+    const view = await renderUi(panel({ verseKey: '1:2' }));
+
+    fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
+
+    expect(pause).toHaveBeenCalledTimes(1);
   });
 });

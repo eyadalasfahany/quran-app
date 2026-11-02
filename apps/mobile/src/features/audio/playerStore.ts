@@ -19,6 +19,16 @@ export type PlayerErrorCode =
   /** Downloaded, but not verified in the last 7 days, and the device is offline (the licence rule). */
   | 'verify-required';
 
+/**
+ * What a play entry point was asked to start, recorded on tap before any pack install. The buttons read it to show
+ * the buffering ring from tap to first audio (ADR 0046).
+ */
+export type PlayTarget =
+  | { kind: 'verse'; verseKey: string }
+  | { kind: 'reciter'; resourceId: number }
+  | { kind: 'surah'; resourceId: number; chapterId: number }
+  | { kind: 'listen'; resourceId: number; chapterId: number };
+
 export type PlayerState = {
   reciterId: number | null;
   queue: number[];
@@ -39,6 +49,11 @@ export type PlayerState = {
   repeat: RepeatRange | null;
   /** Monotonic counter bumped on each user play/resume command; the reader uses it to resume following (ADR 0037). */
   playCommand: number;
+  /**
+   * The play the user asked for, from the tap until audio plays. Set by the play entry points before any pack install;
+   * cleared when audio plays, pauses, fails or stops, and when an entry point returns without starting.
+   */
+  startingTarget: PlayTarget | null;
 };
 
 export type LoadRequest = {
@@ -81,6 +96,8 @@ export type PlayerActions = {
   restore: (request: RestoreRequest) => void;
   reset: () => void;
   bumpPlayCommand: () => void;
+  beginStarting: (target: PlayTarget) => void;
+  clearStarting: () => void;
 };
 
 export const initialPlayerState: PlayerState = {
@@ -97,6 +114,7 @@ export const initialPlayerState: PlayerState = {
   activeWord: null,
   repeat: null,
   playCommand: 0,
+  startingTarget: null,
 };
 
 export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
@@ -123,10 +141,17 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       activeWord: null,
       repeat: null,
     }),
-  markPlaying: () => set({ status: 'playing', error: null }),
-  markPaused: () => set((state) => (state.status === 'playing' || state.status === 'loading' ? { status: 'paused' } : {})),
-  markStopped: () => set({ status: 'idle', positionMs: 0, activeVerseId: null, activeWord: null, repeat: null }),
-  markFailed: (code) => set({ status: 'error', error: code, activeVerseId: null, activeWord: null }),
+  markPlaying: () => set({ status: 'playing', error: null, startingTarget: null }),
+  markPaused: () =>
+    set((state) =>
+      state.status === 'playing' || state.status === 'loading'
+        ? { status: 'paused', startingTarget: null }
+        : { startingTarget: null },
+    ),
+  markStopped: () =>
+    set({ status: 'idle', positionMs: 0, activeVerseId: null, activeWord: null, repeat: null, startingTarget: null }),
+  markFailed: (code) =>
+    set({ status: 'error', error: code, activeVerseId: null, activeWord: null, startingTarget: null }),
   setPosition: (positionMs) => set({ positionMs }),
   setDuration: (durationMs) => set({ durationMs }),
   setSpeed: (speed) => set({ speed }),
@@ -155,6 +180,8 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
     }),
   reset: () => set(initialPlayerState),
   bumpPlayCommand: () => set((state) => ({ playCommand: state.playCommand + 1 })),
+  beginStarting: (startingTarget) => set({ startingTarget }),
+  clearStarting: () => set({ startingTarget: null }),
 }));
 
 export function isChapterId(value: unknown): value is number {

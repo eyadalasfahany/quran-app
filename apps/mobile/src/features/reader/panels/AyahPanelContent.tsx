@@ -27,6 +27,7 @@ import { tafsirAuthorName, tafsirDisplayName, tafsirRowSubtitle } from './panel-
 import type { TafsirDownloadItem } from './TafsirDownloadList';
 import { useTafsirDownloads } from './tafsir-downloads';
 import { TafsirPanel, type TafsirPanelLayout } from './TafsirPanel';
+import { chapterDisplayName } from '@/features/reader/data/chapters';
 
 function openContentExecutor(): SqlExecutor | null {
   try {
@@ -162,7 +163,7 @@ export function AyahPanelContent({
   const ayahNumber = formatNumber(verse.verseNumber, locale);
   const reference = t('reader.ayahPanel.reference', {
     ayah: ayahNumber,
-    surah: chapter === undefined ? verseKey : locale === 'ar' ? chapter.nameArabic : chapter.nameEn,
+    surah: chapter === undefined ? verseKey : chapterDisplayName(chapter, locale),
   });
   const downloadItem = (tafsir: CatalogTafsirOption): TafsirDownloadItem => {
     const entry = downloads[tafsir.resourceId];
@@ -196,6 +197,7 @@ export function AyahPanelContent({
     testID: `${testID}-actions`,
     textUthmani: verse.textUthmani,
     verseId: verse.id,
+    verseKey: verse.verseKey,
     verseNumber: verse.verseNumber,
   };
 
@@ -205,7 +207,7 @@ export function AyahPanelContent({
         juz={verse.juz}
         onClose={onClose}
         page={verse.page}
-        surahName={chapter?.nameArabic ?? verseKey}
+        surahName={chapter === undefined ? verseKey : chapterDisplayName(chapter, locale)}
         tafsirSheet={layout === 'sheet' && tab === 'tafsir'}
         testID={`${testID}-header`}
         verseNumber={verse.verseNumber}

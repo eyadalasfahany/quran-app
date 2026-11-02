@@ -79,6 +79,47 @@ describe('ActionTile', () => {
     });
   });
 
+  it('draws a buffering ring around the icon and reads as busy while busy, with the label unchanged', async () => {
+    const view = await renderUi(
+      <ActionTile busy icon={play} label="Pause" onPress={() => undefined} testID="tile" variant="primary" />,
+      { locale: 'en' },
+    );
+
+    expect(view.getByTestId('tile-buffering', { includeHiddenElements: true })).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Pause' }).props.accessibilityState).toEqual({ disabled: false, busy: true });
+    expect(view.getByText('Pause')).toBeOnTheScreen();
+  });
+
+  it('keeps the icon box size while busy, so the tile does not move', async () => {
+    const idle = await renderUi(<ActionTile icon={copy} label="Copy" onPress={() => undefined} testID="tile" />, {
+      locale: 'en',
+    });
+    const busy = await renderUi(<ActionTile busy icon={copy} label="Copy" onPress={() => undefined} testID="tile" />, {
+      locale: 'en',
+    });
+
+    expect(flatStyle(busy.getByRole('button').props.style)).toEqual(flatStyle(idle.getByRole('button').props.style));
+  });
+
+  it('draws no ring and no busy state when not busy', async () => {
+    const view = await renderUi(<ActionTile icon={copy} label="Copy" onPress={() => undefined} testID="tile" />, {
+      locale: 'en',
+    });
+
+    expect(view.queryByTestId('tile-buffering', { includeHiddenElements: true })).toBeNull();
+    expect(view.getByRole('button', { name: 'Copy' }).props.accessibilityState).toEqual({ disabled: false });
+  });
+
+  it.each(locales)('draws the busy ring in %s', async (locale) => {
+    const view = await renderUi(
+      <ActionTile busy icon={play} label="label" onPress={() => undefined} testID="tile" />,
+      { locale },
+    );
+
+    expect(view.getByTestId('tile-buffering', { includeHiddenElements: true })).toBeTruthy();
+    expect(view.getByRole('button').props.accessibilityState).toMatchObject({ busy: true });
+  });
+
   it.each(locales)('centres the label under the icon in %s', async (locale) => {
     const view = await renderUi(<ActionTile icon={copy} label="label" onPress={() => undefined} />, { locale });
 

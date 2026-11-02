@@ -13,8 +13,16 @@ import { type AzkarReminder, listReminders, type RemindersStore, setNotification
 import { type ClockTrigger, clockTrigger, type Coordinates, prayerRelativeFireDates } from './schedule';
 import { currentSyncState, writeRemindersSyncState } from './resync-state';
 
-/** The notification body and title of an Azkar reminder. The body is neutral: the reminder never names a religious time. */
-export function reminderContent(reminder: AzkarReminder): { title: string; body: string; data: { route: string } } {
+/**
+ * The notification body and title of an Azkar reminder. The body is neutral: the reminder never names a religious time.
+ * The sound is the system default (ADR 0047 §6): Azkar reminders do not follow the prayer sound.
+ */
+export function reminderContent(reminder: AzkarReminder): {
+  title: string;
+  body: string;
+  data: { route: string };
+  sound: 'default';
+} {
   const body = i18n.t('azkar.reminders.notificationBody');
   if (reminder.targetType === 'category') {
     return {
@@ -23,6 +31,7 @@ export function reminderContent(reminder: AzkarReminder): { title: string; body:
       }),
       body,
       data: { route: String(azkarHref.category(reminder.targetKey)) },
+      sound: 'default',
     };
   }
   if (reminder.targetType === 'my_dua') {
@@ -32,12 +41,14 @@ export function reminderContent(reminder: AzkarReminder): { title: string; body:
       title: i18n.t('duas.reminders.notificationTitle', { name }),
       body: i18n.t('duas.reminders.notificationBody'),
       data: { route: String(duasHref.mineEdit(reminder.targetKey)) },
+      sound: 'default',
     };
   }
   return {
     title: i18n.t('azkar.reminders.notificationEntryTitle'),
     body,
     data: { route: String(azkarHref.entry(reminder.targetKey)) },
+    sound: 'default',
   };
 }
 

@@ -21,6 +21,7 @@ export function IconButton({
   variant = 'plain',
   tone = 'ink',
   disabled = false,
+  busy = false,
   hint,
   mirrorInRtl = false,
   iconSize,
@@ -34,6 +35,8 @@ export function IconButton({
   /** `muted` draws the glyph in ink-muted, for secondary actions. */
   tone?: IconButtonTone;
   disabled?: boolean;
+  /** The action is starting (audio loading): screen readers read the button as busy. */
+  busy?: boolean;
   /** Read after the label, for example why a disabled control is unavailable. */
   hint?: string;
   mirrorInRtl?: boolean;
@@ -59,7 +62,7 @@ export function IconButton({
       accessibilityHint={hint}
       accessibilityLabel={label}
       accessibilityRole="button"
-      accessibilityState={pressed === undefined && !disabled ? undefined : { disabled, selected: pressed }}
+      accessibilityState={pressed === undefined && !disabled && !busy ? undefined : { busy: busy || undefined, disabled, selected: pressed }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed: touching }) => ({

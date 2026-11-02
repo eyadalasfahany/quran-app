@@ -385,6 +385,27 @@ Personal reminders are scheduled on the device; push from the server is used for
 - **Timing:** daily pushes go out by each user's local time zone, with quiet hours from 11 pm to 7 am.
 - **Opt-out:** each category is its own switch in Settings; signing out unregisters the token.
 
+## Adhan audio
+
+Status: 3 clips in the app (ADR 0047, accepted); permission waived by the developer for these three (see below).
+
+**Rules (they win over the spec)**
+
+- Each clip is the opening takbīr «الله أكبر» only (developer, 2 Nov 2026), 30 seconds or less (iOS notification limit), trimmed from a longer recording only where the licence allows derivatives.
+- Accepted: written permission from the muezzin or rights holder (commissioned; preferred), CC0, CC BY, CC BY-SA, CC BY-NC or CC BY-NC-SA (credit on the Sources screen), or a Wikimedia Commons file whose own page states one of these.
+- Excluded: any ND licence, e.g. CC BY-NC-ND (trimming is a derivative; includes the Cambridge Cairo adhan set), famous Haram or Alafasy recordings, any file without a stated licence, and any text-to-speech or generated voice.
+- Non-commercial (NC) licences are accepted because the app earns no money: no price, ads or paid tier (developer, 2 Nov 2026). If that ever changes, every NC clip must be replaced or relicensed first.
+- Candidate places to look: Freesound (check each file's licence), Wikimedia Commons Category:Adhan (per-file licence), commissioned recordings.
+- Keep the permission email or licence page in `design-assets/adhan/` (not in the app) and link it from the row.
+
+| Voice id | Display name (ar / en) | Source URL | Licence | Credit text | Permission on file | Trimmed? | Reviewed by |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `allahu_akbar_short` (default) | الله أكبر / Allahu Akbar | **Unknown: developer to confirm** | **Pending** | — | **No** | Yes (5.2 s) | — |
+| `makkah` | المسجد الحرام / Masjid al-Haram | **Unknown: developer to confirm** | **Pending**: Haram recordings are excluded above unless written permission arrives (General Authority for the Affairs of the Grand Mosque and the Prophet's Mosque, or the broadcaster) | — | **No** | Yes (10.9 s) | — |
+| `madinah` | المسجد النبوي / The Prophet's Mosque | **Unknown: developer to confirm** | **Pending**: as `makkah` | — | **No** | Yes (5.6 s) | — |
+
+The three files are in `apps/mobile/assets/adhan/`. **The developer waived the permission requirement for these three clips (2 Nov 2026)** and accepts the risk: source and licence are unconfirmed, and the Makkah and Madinah recordings may belong to the General Authority for the Affairs of the Grand Mosque and the Prophet's Mosque or the Saudi broadcaster. If a rights holder objects, the clip is removed in the next native build. New voices still follow the rules above.
+
 ## Accessibility
 
 The app must be fully usable with VoiceOver and TalkBack, at large text sizes and with reduced motion or transparency.

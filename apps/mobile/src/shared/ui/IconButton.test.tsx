@@ -47,6 +47,12 @@ describe('IconButton', () => {
     expect(button.props.accessibilityState?.selected).toBeUndefined();
   });
 
+  it('marks the button busy while its action starts, and keeps its label', async () => {
+    const view = await renderUi(<IconButton busy icon={{ ios: 'play.fill', android: 'play_arrow' }} label="تشغيل" onPress={() => undefined} />);
+
+    expect(view.getByRole('button', { name: 'تشغيل' }).props.accessibilityState).toEqual({ busy: true, disabled: false });
+  });
+
   it('fills the filled variant with fillSecondary', async () => {
     const view = await renderUi(<IconButton icon={bookmark} label="Close" onPress={() => undefined} variant="filled" />);
 

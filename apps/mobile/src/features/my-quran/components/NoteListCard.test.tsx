@@ -41,7 +41,7 @@ const verse: VerseRecord = {
   verseNumber: 255,
 };
 
-function renderList(overrides: { onEditNote?: jest.Mock; onOpenVerse?: jest.Mock } = {}) {
+function renderList(overrides: { locale?: 'ar' | 'en'; onEditNote?: jest.Mock; onOpenVerse?: jest.Mock } = {}) {
   const { store } = openUserTestStore();
   saveNote(262, 'تدبر في معنى الاستعاذة', store);
   const row = getNotes(262, store)[0]!;
@@ -54,6 +54,7 @@ function renderList(overrides: { onEditNote?: jest.Mock; onOpenVerse?: jest.Mock
       onOpenMushaf={jest.fn()}
       onOpenVerse={onOpenVerse}
     />,
+    { locale: overrides.locale },
   ).then((view) => ({ onEditNote, onOpenVerse, view }));
 }
 
@@ -98,6 +99,13 @@ describe('NoteListCard', () => {
     );
 
     expect(view.getByText(formatDate(row.clientUpdatedAt, 'ar'))).toBeOnTheScreen();
+  });
+
+  it('names the surah by its transliteration in English', async () => {
+    const { view } = await renderList({ locale: 'en' });
+
+    expect(view.getByRole('button', { name: /^Al-Baqarah · Ayah 255,/ })).toBeOnTheScreen();
+    expect(view.queryByText(/البقرة/)).toBeNull();
   });
 
   it('hands the ayah to the edit affordance', async () => {

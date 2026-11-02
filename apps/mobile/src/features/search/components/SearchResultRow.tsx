@@ -3,7 +3,7 @@ import { Pressable } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import type { ChapterRecord } from '@/features/reader/data/chapters';
+import { chapterDisplayName, type ChapterRecord } from '@/features/reader/data/chapters';
 import type { VerseRecord } from '@/features/reader/data/verses';
 import type { WordRecord } from '@/features/reader/data/words';
 import { Card, UiText } from '@/shared/ui';
@@ -31,7 +31,7 @@ export function SearchResultRow({
   const theme = useTheme();
   const locale = useLocale();
   const ayah = formatNumber(verse.verseNumber, locale);
-  const reference = t('search.resultReference', { ayah, surah: locale === 'ar' ? chapter.nameArabic : chapter.nameSimple });
+  const reference = t('search.resultReference', { ayah, surah: chapterDisplayName(chapter, locale) });
   const line = `${verse.textImlaei ?? ''} ${t('ui.ayahNumber', { number: ayah })}`.trim();
   const accessibilityLabel = t('common.a11yPair', { label: line, title: reference });
 

@@ -84,13 +84,13 @@ describe('AyahPanelContent', () => {
     resetTafsirDownloads();
   });
 
-  it.each(locales)('shows the header with the Arabic surah name in %s', async (locale) => {
+  it.each(locales)('shows the header with the surah name for the locale in %s', async (locale) => {
     const view = await renderUi(
       <AyahPanelContent executor={withTafsir} onVerseChange={jest.fn()} store={openUserTestStore().store} tab="actions" verseKey="1:2" />,
       { locale },
     );
 
-    const title = locale === 'ar' ? 'الفاتحة · الآية ٢' : 'الفاتحة · Ayah 2';
+    const title = locale === 'ar' ? 'الفاتحة · الآية ٢' : 'Al-Faatiha · Ayah 2';
     expect(view.getByTestId('ayah-panel-content-header-title')).toHaveTextContent(title);
     expect(view.getByRole('header', { name: title })).toBeOnTheScreen();
     expect(view.getByTestId('ayah-panel-content-header-subtitle')).toHaveTextContent(

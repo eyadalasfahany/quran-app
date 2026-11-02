@@ -31,6 +31,25 @@ describe('ReadingAyahRow', () => {
     expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
   });
 
+  it('draws the buffering ring on its own ayah play only while that ayah starts', async () => {
+    const view = await renderUi(
+      <ReadingAyahRow
+        audioAvailable
+        fontScale={1}
+        onPress={() => undefined}
+        starting
+        testID="row"
+        textImlaei={null}
+        textUthmani="نص"
+        verseNumber={3}
+      />,
+      { locale: 'en' },
+    );
+
+    expect(view.getByTestId('row-header-play-ring', { includeHiddenElements: true })).toBeTruthy();
+    expect(view.getByRole('button', { name: 'Pause' }).props.accessibilityState).toMatchObject({ busy: true });
+  });
+
   it.each(locales)('uses the Imla\'i text in the accessibility label (%s)', async (locale) => {
     const view = await renderUi(
       <ReadingAyahRow

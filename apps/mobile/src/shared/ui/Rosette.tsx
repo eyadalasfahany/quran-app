@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { View, type HostInstance, type StyleProp, type ViewStyle } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 
 import { DrawnPath } from './DrawnPath';
@@ -30,6 +31,7 @@ export function Rosette({
   size,
   color,
   drawKey,
+  progress: externalProgress,
   style,
   testID,
 }: {
@@ -37,11 +39,14 @@ export function Rosette({
   color: string;
   /** Draws once per session for this key. */
   drawKey?: string;
+  /** When set, the caller drives the draw (for example on the launch splash). */
+  progress?: SharedValue<number>;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }) {
   const ref = useRef<HostInstance>(null);
-  const progress = useDrawOnView(ref, drawKey);
+  const inViewProgress = useDrawOnView(ref, drawKey, externalProgress === undefined);
+  const progress = externalProgress ?? inViewProgress;
 
   return (
     <View

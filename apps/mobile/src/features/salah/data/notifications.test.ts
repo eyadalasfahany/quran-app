@@ -13,6 +13,7 @@ import {
 } from '@/features/notifications/budget';
 import { writeSyncState, currentSyncState } from '@/features/notifications/sync-state';
 
+import { ADHAN_VOICES, DEFAULT_PRAYER_SOUND, PRAYER_SOUND_IDS, type PrayerSoundId } from './adhan-sounds';
 import { getCoordinates } from './location';
 import {
   enabledPrayers,
@@ -21,6 +22,7 @@ import {
   resyncPrayerNotifications,
   resyncPrayerNotificationsIfNeeded,
   setPrayerBell,
+  setPrayerSound,
   syncPrayerNotifications,
 } from './notifications';
 import { timesFor, type NextPrayerName } from './prayer-times';
@@ -49,7 +51,11 @@ function londonDay(date: Date): string {
 }
 
 /** A stand-in for the OS pending list: schedule adds, cancel removes, getAll reads back. */
-type Pending = { identifier: string; content: { data?: Record<string, unknown> }; trigger: unknown };
+type Pending = {
+  identifier: string;
+  content: { data?: Record<string, unknown>; sound?: unknown };
+  trigger: unknown;
+};
 let pending: Pending[] = [];
 let sequence = 0;
 
@@ -181,8 +187,22 @@ describe('prayer notifications', () => {
       const content = prayerNotificationContent('fajr');
 
       expect(content.title).toBe('حان وقت صلاة الفجر');
-      expect(content.body).toBe('اضغط لفتح مواقيت الصلاة');
+      expect(content.body).toBe('الصلاة خير من النوم');
       expect(content.data).toEqual({ route: '/salah' });
+      expect(content.sound).toBe('allahu_akbar_short.wav');
+    });
+
+    it('gives each prayer its own body, in Arabic and English', async () => {
+      const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const;
+      for (const locale of ['ar', 'en']) {
+        await i18n.changeLanguage(locale);
+        const bodies = prayers.map((prayer) => prayerNotificationContent(prayer).body);
+        expect(new Set(bodies).size).toBe(prayers.length);
+        for (const body of bodies) {
+          expect(body).not.toMatch(/^notifications\./);
+        }
+      }
+      await i18n.changeLanguage('ar');
     });
 
     it('titles it in English when the reader has chosen English', async () => {
@@ -196,28 +216,31 @@ describe('prayer notifications', () => {
   });
 
   describe('syncPrayerNotifications', () => {
-    it('schedules a date trigger per fire time, with the system sound and no adhan audio', async () => {
+    it('schedules a date trigger per fire time, each with the default takbir voice', async () => {
       setBells('fajr', 'isha');
       await syncPrayerNotifications({ now: NOW, coords: LONDON });
 
       expect(scheduledCalls()).toHaveLength(16);
       for (const [request] of scheduledCalls()) {
         expect(request.trigger).toMatchObject({ type: 'date' });
-        expect(request.content).not.toHaveProperty('sound', expect.stringContaining('adhan'));
+        expect(request.content).toHaveProperty('sound', 'allahu_akbar_short.wav');
       }
     });
 
-    it('creates the prayer channel and names it on Android, and sends through it', async () => {
+    it('creates only the default voice channel on Android, named for it, and sends through it', async () => {
       const restore = jest.replaceProperty(Platform, 'OS', 'android');
       try {
         setBells('dhuhr');
         await syncPrayerNotifications({ now: NOW, coords: LONDON });
 
+        expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledTimes(1);
         expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(
-          'prayer',
-          expect.objectContaining({ name: 'إشعارات الصلاة' }),
+          'prayer_adhan_allahu_akbar_short',
+          expect.objectContaining({ name: 'الصلاة: الله أكبر', sound: 'allahu_akbar_short.wav' }),
         );
-        expect(scheduledCalls()[0]?.[0].trigger).toMatchObject({ channelId: 'prayer' });
+        expect(scheduledCalls()[0]?.[0].trigger).toMatchObject({
+          channelId: 'prayer_adhan_allahu_akbar_short',
+        });
       } finally {
         restore.restore();
       }
@@ -432,6 +455,127 @@ describe('prayer notifications', () => {
       await setPrayerBell('maghrib', true, NOW);
 
       expect(scheduledCalls()).toHaveLength(8);
+    });
+  });
+
+  describe('prayer sound (ADR 0047)', () => {
+    /** The channel a sound must use on Android, by its id (the catalogue ids are the voice ids). */
+    const CHANNEL_FOR: Record<PrayerSoundId, string> = {
+      allahu_akbar_short: 'prayer_adhan_allahu_akbar_short',
+      makkah: 'prayer_adhan_makkah',
+      madinah: 'prayer_adhan_madinah',
+      system: 'prayer',
+      silent: 'prayer_silent',
+    };
+
+    /** The content sound each sound must produce: a voice's file, 'default', or false for silent. */
+    function soundFor(id: PrayerSoundId): string | false {
+      const voice = ADHAN_VOICES.find((item) => item.id === id);
+      if (voice !== undefined) {
+        return voice.file;
+      }
+      return id === 'silent' ? false : 'default';
+    }
+
+    it('gives each of the five sounds its content sound', () => {
+      expect(PRAYER_SOUND_IDS).toHaveLength(5);
+      for (const id of PRAYER_SOUND_IDS) {
+        expect(prayerNotificationContent('isha', id).sound).toBe(soundFor(id));
+      }
+      expect(prayerNotificationContent('isha', 'makkah').sound).toBe('adhan_makkah.wav');
+      expect(prayerNotificationContent('isha', 'system').sound).toBe('default');
+      expect(prayerNotificationContent('isha', 'silent').sound).toBe(false);
+    });
+
+    it('uses the stored sound when none is passed', () => {
+      storage.set(storageKeys.salah.prayerSound, 'madinah');
+
+      expect(prayerNotificationContent('asr').sound).toBe('adhan_madinah.wav');
+    });
+
+    it('gives the Android trigger the channel of each sound, and iOS no channel', async () => {
+      setBells('dhuhr');
+      for (const id of PRAYER_SOUND_IDS) {
+        storage.set(storageKeys.salah.prayerSound, id);
+        pending = [];
+        jest.clearAllMocks();
+
+        const restore = jest.replaceProperty(Platform, 'OS', 'android');
+        try {
+          await syncPrayerNotifications({ now: NOW, coords: LONDON });
+          expect(scheduledCalls()[0]?.[0].trigger).toMatchObject({ channelId: CHANNEL_FOR[id] });
+        } finally {
+          restore.restore();
+        }
+
+        const iosRestore = jest.replaceProperty(Platform, 'OS', 'ios');
+        try {
+          pending = [];
+          jest.clearAllMocks();
+          await syncPrayerNotifications({ now: NOW, coords: LONDON });
+          expect(scheduledCalls()[0]?.[0].trigger).not.toHaveProperty('channelId');
+        } finally {
+          iosRestore.restore();
+        }
+      }
+    });
+
+    it('keeps the schedule count the same for every sound', async () => {
+      setBells('fajr', 'dhuhr', 'asr', 'maghrib', 'isha');
+      for (const id of PRAYER_SOUND_IDS) {
+        storage.set(storageKeys.salah.prayerSound, id);
+        await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+        expect(prayerPending()).toHaveLength(40);
+      }
+    });
+
+    it('re-plans when the sound changes, through the if-needed check', async () => {
+      setBells('fajr');
+      await syncPrayerNotifications({ now: NOW, coords: LONDON });
+      await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(false);
+
+      storage.set(storageKeys.salah.prayerSound, 'makkah');
+      jest.clearAllMocks();
+
+      await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(true);
+      expect(prayerPending()).toHaveLength(8);
+      expect(prayerPending().every((request) => request.content.sound === 'adhan_makkah.wav')).toBe(true);
+    });
+
+    it('setPrayerSound stores the choice and re-plans once, with no old sound or channel left pending', async () => {
+      const restore = jest.replaceProperty(Platform, 'OS', 'android');
+      try {
+        setBells('fajr', 'isha');
+        await syncPrayerNotifications({ now: NOW, coords: LONDON });
+        jest.clearAllMocks();
+
+        await setPrayerSound('makkah', NOW);
+
+        expect(storage.getString(storageKeys.salah.prayerSound)).toBe('makkah');
+        expect(scheduledCalls()).toHaveLength(16);
+        expect(prayerPending()).toHaveLength(16);
+        for (const request of prayerPending()) {
+          expect(request.content.sound).toBe('adhan_makkah.wav');
+          expect(request.trigger).toMatchObject({ channelId: 'prayer_adhan_makkah' });
+        }
+
+        jest.clearAllMocks();
+        await setPrayerSound('silent', NOW);
+
+        expect(prayerPending()).toHaveLength(16);
+        for (const request of prayerPending()) {
+          expect(request.content.sound).toBe(false);
+          expect(request.trigger).toMatchObject({ channelId: 'prayer_silent' });
+        }
+      } finally {
+        restore.restore();
+      }
+    });
+
+    it('defaults to the takbir voice on a fresh install', () => {
+      expect(DEFAULT_PRAYER_SOUND).toBe('allahu_akbar_short');
+      expect(prayerNotificationContent('fajr').sound).toBe('allahu_akbar_short.wav');
     });
   });
 

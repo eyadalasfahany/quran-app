@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import type { ChapterRecord } from '@/features/reader/data/chapters';
+import { chapterDisplayName, type ChapterRecord } from '@/features/reader/data/chapters';
 import { Card, UiText } from '@/shared/ui';
 
 // A surah match in search, from the Search frame: the number on a brand tile, «سورة الرحمن» in Amiri,
@@ -20,7 +20,7 @@ export function SurahResultRow({
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const title = t('reader.surahTitle', { name: locale === 'ar' ? chapter.nameArabic : chapter.nameSimple });
+  const title = t('reader.surahTitle', { name: chapterDisplayName(chapter, locale) });
   const hint = t('search.surahResultHint', {
     count: chapter.versesCount,
     n: formatNumber(chapter.versesCount, locale),
