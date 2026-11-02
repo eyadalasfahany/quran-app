@@ -347,7 +347,7 @@
     },
     "juz": {
       "title": "الجزء {{number}}",
-      "startVerse": "يبدأ من {{verseKey}}"
+      "startVerse": "يبدأ من سورة {{surah}}، الآية {{ayah}}"
     }
   },
   "myQuran": {

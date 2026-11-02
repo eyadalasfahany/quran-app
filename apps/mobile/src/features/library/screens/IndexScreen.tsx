@@ -11,7 +11,7 @@ import { IndexSegment, type IndexSegmentKey } from '@/features/library/component
 import { JuzRow } from '@/features/library/components/JuzRow';
 import { SurahRow } from '@/features/library/components/SurahRow';
 import { SurahRowSkeleton } from '@/features/library/components/SurahRowSkeleton';
-import { listJuzStarts } from '@/features/library/data/juz';
+import { listJuzStarts, type JuzStart } from '@/features/library/data/juz';
 import { getChapter, listChapters, type ChapterRecord } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
@@ -24,7 +24,7 @@ type ContinueReading = {
   ayah: number;
 };
 
-type IndexItem = { kind: 'surah'; chapter: ChapterRecord } | { kind: 'juz'; juz: number; verseKey: string };
+type IndexItem = { kind: 'surah'; chapter: ChapterRecord } | { kind: 'juz'; start: JuzStart };
 
 // While the content database opens, the list holds ten surah rows, each with its own name length.
 const SKELETON_NAME_WIDTHS = ['34%', '28%', '40%', '30%', '24%', '36%', '32%', '26%', '38%', '30%'] as const;
@@ -65,7 +65,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
     const rows: IndexItem[] =
       segment === 'surahs'
         ? chapters.map((chapter) => ({ kind: 'surah' as const, chapter }))
-        : juzStarts.map((entry) => ({ kind: 'juz' as const, juz: entry.juz, verseKey: entry.verseKey }));
+        : juzStarts.map((start) => ({ kind: 'juz' as const, start }));
 
     return { continueReading, rows };
   }, [lastReadVerseKey, ready, segment]);
@@ -88,10 +88,10 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
       }
       return (
         <JuzRow
-          juz={{ juz: item.juz, verseKey: item.verseKey }}
-          onPress={() => openVerse(item.verseKey)}
+          juz={item.start}
+          onPress={() => openVerse(item.start.verseKey)}
           separator="line"
-          testID={`juz-row-${item.juz}`}
+          testID={`juz-row-${item.start.juz}`}
         />
       );
     },
@@ -99,7 +99,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
   );
 
   const keyExtractor = useCallback((item: IndexItem) => {
-    return item.kind === 'surah' ? `surah-${item.chapter.id}` : `juz-${item.juz}`;
+    return item.kind === 'surah' ? `surah-${item.chapter.id}` : `juz-${item.start.juz}`;
   }, []);
 
   const header = continueReading ? (

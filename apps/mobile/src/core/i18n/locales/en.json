@@ -347,7 +347,7 @@
     },
     "juz": {
       "title": "Juz {{number}}",
-      "startVerse": "Starts at {{verseKey}}"
+      "startVerse": "Starts at Surah {{surah}}, ayah {{ayah}}"
     }
   },
   "myQuran": {

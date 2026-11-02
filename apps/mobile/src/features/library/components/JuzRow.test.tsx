@@ -5,18 +5,26 @@ import { featureComponentLiterals } from '../../../../jest/ui-source';
 
 import { JuzRow } from './JuzRow';
 
-describe('JuzRow', () => {
-  it('renders the juz number and start verse', async () => {
-    const view = await renderUi(
-      <JuzRow juz={{ juz: 1, verseKey: '1:1' }} onPress={() => undefined} testID="juz-row" />,
-    );
+const JUZ_1 = { juz: 1, verseKey: '1:1', chapterNameArabic: 'الفاتحة', chapterNameSimple: 'Al-Faatiha', verseNumber: 1 };
+const JUZ_2 = { juz: 2, verseKey: '2:142', chapterNameArabic: 'البقرة', chapterNameSimple: 'Al-Baqara', verseNumber: 142 };
+const JUZ_30 = { juz: 30, verseKey: '78:1', chapterNameArabic: 'النبإ', chapterNameSimple: 'An-Naba', verseNumber: 1 };
 
-    expect(view.getByText('يبدأ من 1:1')).toBeOnTheScreen();
+describe('JuzRow', () => {
+  it('renders the juz number and the surah and ayah it starts at, in Arabic', async () => {
+    const view = await renderUi(<JuzRow juz={JUZ_2} onPress={() => undefined} testID="juz-row" />);
+
+    expect(view.getByText('يبدأ من سورة البقرة، الآية 142')).toBeOnTheScreen();
+  });
+
+  it('uses the transliterated surah name in English', async () => {
+    const view = await renderUi(<JuzRow juz={JUZ_1} onPress={() => undefined} />, { locale: 'en' });
+
+    expect(view.getByText('Starts at Surah Al-Faatiha, ayah 1')).toBeOnTheScreen();
   });
 
   it('calls onPress when the row is pressed', async () => {
     const onPress = jest.fn();
-    const view = await renderUi(<JuzRow juz={{ juz: 2, verseKey: '2:142' }} onPress={onPress} />);
+    const view = await renderUi(<JuzRow juz={JUZ_2} onPress={onPress} />);
 
     await fireEvent.press(view.getByRole('button'));
 
@@ -24,7 +32,7 @@ describe('JuzRow', () => {
   });
 
   it.each(locales)('renders under %s direction', async (locale) => {
-    const view = await renderUi(<JuzRow juz={{ juz: 30, verseKey: '78:1' }} onPress={() => undefined} />, {
+    const view = await renderUi(<JuzRow juz={JUZ_30} onPress={() => undefined} />, {
       locale,
     });
 
