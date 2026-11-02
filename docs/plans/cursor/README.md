@@ -61,10 +61,6 @@ Prompt 14 goes first because it is documentation only and every later prompt cit
 - **Contract** (any endpoint change): `npm run generate -w @quran/api-contract`.
 
 ## Logo rule (developer, 2 Nov 2026)
-- The app logo is `image (93).png`, identical to `docs/branding/taybah-nabawi-logo.png`. Never change it, redraw it or substitute another.
-- Every logo asset is generated from it by `apps/mobile/scripts/generate-brand-assets.mjs`: icon, adaptive foreground, splash logo and posters, splash icon. New surfaces must use those generated files or add an output to that script, from the same source:
-  - widgets (Android and iOS)
-  - Wear OS and Apple Watch icons and complications
-  - notification artwork
-  - the website
-- Don't hand-edit files under `apps/mobile/assets/images/`, `docs/branding/` or `website/assets/images/`.
+- The app logo is `image (93).png`, identical to `docs/branding/taybah-nabawi-logo.png` and root `logo.png`. Never change it, redraw it or substitute another (no Kaaba / concept marks in shipping surfaces).
+- Every logo asset is generated from it by `apps/mobile/scripts/generate-brand-assets.mjs` (`npm run assets:brand -w @quran/mobile`): icon, adaptive foreground/monochrome, splash logo and posters, splash icon, notification icon, widget/watch icons, Play feature graphic, website logo/favicons, and root `logo.png`. New surfaces must use those generated files or add an output to that script, from the same source.
+- Don't hand-edit files under `apps/mobile/assets/images/`, `docs/branding/` (generated PNGs), or `website/assets/images/`.

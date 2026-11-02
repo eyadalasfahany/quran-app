@@ -14,8 +14,8 @@ import { dialAnchor, dialPlacement } from '../data/dial-placement';
 import { QiblaLabelClearance } from './QiblaLabelClearance';
 
 // The instrument's fixed geometry (quran-app-screens.html, #Qibla): a 336 px dial. The face never turns (ADR 0049): the
-// ring, ticks, cardinals and numerals are a fixed reference ring, and only the Kaaba marker, the gold arc and the needle
-// move (QiblaKaabaMarker, QiblaArc, QiblaNeedle).
+// ring, ticks, cardinals and numerals are a fixed reference ring. The Kaaba marker is fixed at the top; only the needle
+// moves (QiblaKaabaMarker, QiblaNeedle).
 const DIAL = 336;
 const CENTER = DIAL / 2; // 168
 const TICK_RING = 148;
@@ -45,14 +45,14 @@ const NUMERALS = [
 
 /**
  * The static face of the qibla instrument: bezel, ornament, tick rings, cardinals and degree numerals. It takes no props
- * and never turns, so ش and the numerals are a fixed reference ring around the dial. The moving layers sit above it:
- * the gold arc (QiblaArc), the Kaaba marker (QiblaKaabaMarker) and the needle (QiblaNeedle).
+ * and never turns, so ش and the numerals are a fixed reference ring around the dial. The Kaaba marker sits fixed at the
+ * top above it (QiblaKaabaMarker); the needle turns above both (QiblaNeedle).
  *
  * Every absolute layer is placed with a translate (dialPlacement), never with `left` or `right`: React Native swaps those
  * in RTL, which mirrored the labels.
  *
- * The labels fade while the Kaaba marker passes over them (QiblaLabelClearance), from `angle` on the UI thread. It is a
- * stable SharedValue, so the memoised face still does not re-render with the compass. Theme and locale arrive through context, which
+ * The labels fade where the fixed Kaaba marker covers them (QiblaLabelClearance), from `angle` on the UI thread (0 at the
+ * top). It is a stable SharedValue, so the memoised face still does not re-render with the compass. Theme and locale arrive through context, which
  * re-renders it on their own.
  */
 function QiblaDialFace({ angle }: { angle?: SharedValue<number> }) {

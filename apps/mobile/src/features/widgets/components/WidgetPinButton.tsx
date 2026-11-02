@@ -24,8 +24,13 @@ export function WidgetPinButton({
     if (Platform.OS !== 'android') {
       return;
     }
-    const ok = await requestPinWidget({ widgetName });
-    if (!ok) {
+    try {
+      const ok = await requestPinWidget({ widgetName });
+      if (!ok) {
+        setPinSupported(false);
+      }
+    } catch {
+      // Native module missing (stale/Expo Go binary). Hide pin; manual steps above still work.
       setPinSupported(false);
     }
   }, [widgetName]);

@@ -20,8 +20,8 @@ export function labelOpacityFor(angle: number, degrees: number): number {
 }
 
 /**
- * A cardinal or numeral on the fixed qibla face that fades while the moving Kaaba marker passes over it (ADR 0049): the
- * marker orbits the same ring, so at the top it would cover ش. Opacity only, on the UI thread from the shared angle.
+ * A cardinal or numeral on the fixed qibla face that fades where the fixed Kaaba marker covers it (ADR 0049): the marker
+ * sits at the top, so ش fades when `angle` is 0. Opacity only, on the UI thread from the clearance angle.
  */
 export function QiblaLabelClearance({
   angle,

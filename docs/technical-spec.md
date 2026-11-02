@@ -690,7 +690,7 @@ For each change, in one transaction per request:
 - **Custom motion uses the tokens** from `src/core/theme/motion.ts`, never raw values:
   - `timing(duration)` with ease-out for opacity and color.
   - `spring()` (damping ratio 1, 350 ms, no bounce) for position and size, including the release after a drag.
-  - The qibla compass face stays fixed; the Kaaba marker, gold arc and needle spring to `bearing − heading` with a Reanimated spring, so the Kaaba reaches the top when the phone faces the qibla (ADR 0049). Under Reduce Motion it renders a static dial (marker at the bearing, fixed arrow).
+  - The qibla compass face and Kaaba marker stay fixed at the top; only the needle springs to `bearing − heading` with a Reanimated spring, so the needle meets the Kaaba when the phone faces the qibla (ADR 0049). Under Reduce Motion it renders a static dial (needle at the bearing, Kaaba at the top).
 
 | Interaction | Component | Motion | Reduce Motion |
 | --- | --- | --- | --- |

@@ -43,4 +43,15 @@ describe('WidgetPinButton', () => {
 
     expect(view.queryByTestId('pin')).toBeNull();
   });
+
+  it('hides when the native module is not linked', async () => {
+    mockRequestPinWidget().mockRejectedValueOnce(
+      new Error("The package 'react-native-android-widget' doesn't seem to be linked."),
+    );
+    const view = await renderUi(<WidgetPinButton testID="pin" widgetName="NextPrayer" />);
+
+    await fireEvent.press(view.getByTestId('pin'));
+
+    expect(view.queryByTestId('pin')).toBeNull();
+  });
 });

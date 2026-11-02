@@ -137,7 +137,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     // Layout follows window size; no orientation lock anywhere (spec §4).
     orientation: 'default',
-    // Home-screen mark from the Nabawi dome logo (square 1024 PNG).
+    // Home-screen mark: Nabawi dome logo (image (93).png → generate-brand-assets.mjs).
     // iOS uses this PNG; a Liquid Glass .icon would replace it.
     icon: './assets/images/icon.png',
     userInterfaceStyle: 'automatic',

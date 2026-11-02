@@ -65,11 +65,10 @@ describe('QiblaDial (the static face)', () => {
     }
   });
 
-  it('carries no Kaaba marker and no gold arc: those are separate layers above the face', async () => {
+  it('carries no Kaaba marker: that is a separate layer above the face', async () => {
     const view = await renderUi(<QiblaDial />);
 
     expect(view.queryByTestId('qibla-compass-marker', { includeHiddenElements: true })).toBeNull();
-    expect(view.queryByTestId('qibla-compass-arc', { includeHiddenElements: true })).toBeNull();
   });
 
   it('takes no props: the face is the same whatever the compass does', async () => {
