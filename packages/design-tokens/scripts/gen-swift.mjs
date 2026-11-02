@@ -60,8 +60,11 @@ ${paletteStruct('Dark', colors.dark)}
 
 extension TaybahTokens {
     static func palette(for colorScheme: ColorScheme) -> (surface: Color, surfaceRaised: Color, ink: Color, inkMuted: Color, line: Color, fillSecondary: Color, brand: Color, onBrand: Color, brandSurface: Color, onBrandSurface: Color, onBrandSurfaceMuted: Color, goldOnBrandSurface: Color, gold: Color, highlightActive: Color) {
-        let p = colorScheme == .dark ? Dark.self : Light.self
-        return (p.surface, p.surfaceRaised, p.ink, p.inkMuted, p.line, p.fillSecondary, p.brand, p.onBrand, p.brandSurface, p.onBrandSurface, p.onBrandSurfaceMuted, p.goldOnBrandSurface, p.gold, p.highlightActive)
+        // Light and Dark are distinct types, so a ternary over \`.self\` does not type-check.
+        if colorScheme == .dark {
+            return (${widgetKeys.map((key) => `Dark.${key}`).join(', ')})
+        }
+        return (${widgetKeys.map((key) => `Light.${key}`).join(', ')})
     }
 }
 `;

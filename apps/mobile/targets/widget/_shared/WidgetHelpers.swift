@@ -57,7 +57,7 @@ enum WidgetHelpers {
     }
   }
 
-  enum PrayerState {
+  enum PrayerState: Equatable {
     case noLocation
     case stale
     case next(key: String, at: Double)

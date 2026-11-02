@@ -67,7 +67,10 @@ enum TaybahTokens {
 
 extension TaybahTokens {
     static func palette(for colorScheme: ColorScheme) -> (surface: Color, surfaceRaised: Color, ink: Color, inkMuted: Color, line: Color, fillSecondary: Color, brand: Color, onBrand: Color, brandSurface: Color, onBrandSurface: Color, onBrandSurfaceMuted: Color, goldOnBrandSurface: Color, gold: Color, highlightActive: Color) {
-        let p = colorScheme == .dark ? Dark.self : Light.self
-        return (p.surface, p.surfaceRaised, p.ink, p.inkMuted, p.line, p.fillSecondary, p.brand, p.onBrand, p.brandSurface, p.onBrandSurface, p.onBrandSurfaceMuted, p.goldOnBrandSurface, p.gold, p.highlightActive)
+        // Light and Dark are distinct types, so a ternary over `.self` does not type-check.
+        if colorScheme == .dark {
+            return (Dark.surface, Dark.surfaceRaised, Dark.ink, Dark.inkMuted, Dark.line, Dark.fillSecondary, Dark.brand, Dark.onBrand, Dark.brandSurface, Dark.onBrandSurface, Dark.onBrandSurfaceMuted, Dark.goldOnBrandSurface, Dark.gold, Dark.highlightActive)
+        }
+        return (Light.surface, Light.surfaceRaised, Light.ink, Light.inkMuted, Light.line, Light.fillSecondary, Light.brand, Light.onBrand, Light.brandSurface, Light.onBrandSurface, Light.onBrandSurfaceMuted, Light.goldOnBrandSurface, Light.gold, Light.highlightActive)
     }
 }

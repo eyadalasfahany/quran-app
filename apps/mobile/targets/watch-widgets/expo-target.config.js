@@ -4,7 +4,7 @@ module.exports = (config) => ({
   name: 'TaybahWatchWidgets',
   displayName: 'طيبة',
   deploymentTarget: '10.0',
-  bundleIdentifier: '.watchwidgets',
+  bundleIdentifier: '.watchkitapp.watchwidgets',
   frameworks: ['SwiftUI', 'WidgetKit'],
   entitlements: {
     'com.apple.security.application-groups':
