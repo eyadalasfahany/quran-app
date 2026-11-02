@@ -1,13 +1,12 @@
 import { useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, View } from 'react-native';
+import { FlatList } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
 import { ContentColumn, useTabBarScrollHandlers, useTabContentBottom } from '@/core/layout';
-import { useTheme } from '@/core/theme';
 import { useCatalogVersion } from '@/core/sync';
 import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
 
@@ -44,7 +43,6 @@ export function ListenScreen() {
   const { t } = useTranslation();
   const locale = useLocale();
   const router = useRouter();
-  const theme = useTheme();
   const { ready } = useContentDb();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ReciterFilter>('all');

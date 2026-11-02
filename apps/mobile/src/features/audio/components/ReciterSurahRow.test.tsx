@@ -143,6 +143,26 @@ describe('ReciterSurahRow', () => {
     expect(h.onPlay).toHaveBeenCalled();
   });
 
+  describe('while its surah starts', () => {
+    it.each(locales)('shows pause in the buffering ring, busy, with the play label in %s', async (locale) => {
+      const h = handlers();
+      const view = await renderRow({ ...h, status: 'done', sizeBytes: 5_033_165, starting: true }, locale);
+      const play = view.getByRole('button', { name: new RegExp(`^${locale === 'en' ? 'Play' : 'تشغيل'} `) });
+
+      expect(view.getByTestId('surah-buffering', { includeHiddenElements: true })).toBeTruthy();
+      expect(view.getByTestId('surah-pause', { includeHiddenElements: true })).toBeTruthy();
+      expect(play.props.accessibilityState).toEqual({ busy: true });
+      await fireEvent.press(play);
+      expect(h.onPlay).not.toHaveBeenCalled();
+    });
+
+    it('draws no ring for a surah that is not starting', async () => {
+      const view = await renderRow({ status: 'done', sizeBytes: 5_033_165, starting: false });
+
+      expect(view.queryByTestId('surah-buffering', { includeHiddenElements: true })).toBeNull();
+    });
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/audio/components/ReciterSurahRow.tsx')).toEqual([]);
   });

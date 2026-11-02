@@ -1,8 +1,7 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-import { flatStyle } from '../../../../jest/render-ui';
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 import { getVerseByKey } from '../data/verses';
 

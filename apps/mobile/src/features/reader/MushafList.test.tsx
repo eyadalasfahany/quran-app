@@ -15,7 +15,9 @@ let viewableHandler:
   | undefined;
 
 jest.mock('@shopify/flash-list', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories can't use imports.
   const React = require('react');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories can't use imports.
   const { ScrollView } = require('react-native');
   const FlashList = React.forwardRef(function MockFlashList(props: Record<string, unknown>, ref: unknown) {
     const { data, renderItem, initialScrollIndex, onViewableItemsChanged, ...rest } = props as {

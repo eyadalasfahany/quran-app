@@ -222,6 +222,60 @@ describe('DownloadRow', () => {
 
       expect(view.queryByRole('button', { name: rowAction('حذف التنزيل') })).toBeNull();
     });
+
+    it('shows pause in a buffering ring, busy, while starting, and keeps the open label', async () => {
+      const view = await renderRow({ state: 'installed', starting: true, testID: 'row' });
+      const pill = view.getByRole('button', { name: /^عرض / });
+
+      expect(view.getByTestId('row-buffering', { includeHiddenElements: true })).toBeTruthy();
+      expect(view.getByTestId('row-pause', { includeHiddenElements: true })).toBeTruthy();
+      expect(pill.props.accessibilityState).toEqual({ busy: true });
+      expect(flatStyle(view.getByText('عرض').props.style).opacity).toBe(0);
+    });
+
+    it('keeps the pill size and colours while starting', async () => {
+      const idle = await renderRow({ state: 'installed', testID: 'row' });
+      const starting = await renderRow({ state: 'installed', starting: true, testID: 'row' });
+
+      expect(flatStyle(starting.getByRole('button', { name: /^عرض / }).props.style)).toEqual(
+        flatStyle(idle.getByRole('button', { name: /^عرض / }).props.style),
+      );
+    });
+
+    it('ignores taps on the open pill while starting', async () => {
+      const onOpen = jest.fn();
+      const view = await renderRow({ state: 'installed', starting: true, onOpen });
+
+      await fireEvent.press(view.getByRole('button', { name: /^عرض / }));
+
+      expect(onOpen).not.toHaveBeenCalled();
+    });
+
+    it('draws no ring and no busy state when not starting', async () => {
+      const view = await renderRow({ state: 'installed', testID: 'row' });
+
+      expect(view.queryByTestId('row-buffering', { includeHiddenElements: true })).toBeNull();
+      expect(view.getByRole('button', { name: /^عرض / }).props.accessibilityState).not.toMatchObject({ busy: true });
+      expect(flatStyle(view.getByText('عرض').props.style).opacity).toBeUndefined();
+    });
+
+    it('shows the start in English too, with the open label unchanged', async () => {
+      const onOpen = jest.fn();
+      const view = await renderRow({ state: 'installed', starting: true, onOpen, locale: 'en', testID: 'row' });
+      const pill = view.getByRole('button', { name: /^Open / });
+
+      expect(view.getByTestId('row-buffering', { includeHiddenElements: true })).toBeTruthy();
+      expect(pill.props.accessibilityState).toEqual({ busy: true });
+      await fireEvent.press(pill);
+      expect(onOpen).not.toHaveBeenCalled();
+    });
+  });
+
+  it('does not draw the start on the download pill, which starts no audio', async () => {
+    const view = await renderRow({ state: 'available', starting: true, testID: 'row' });
+
+    expect(view.queryByTestId('row-buffering', { includeHiddenElements: true })).toBeNull();
+    expect(view.getByRole('button', { name: /^تنزيل / }).props.accessibilityState).not.toMatchObject({ busy: true });
   });
 
   describe('divider', () => {

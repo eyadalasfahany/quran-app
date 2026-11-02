@@ -54,7 +54,7 @@ export function OfflineBanner({
         accessibilityLiveRegion="polite"
         accessible
         onLayout={(event) => {
-          motion.natural.value = event.nativeEvent.layout.height;
+          motion.natural.set(event.nativeEvent.layout.height);
         }}
         style={[
           {

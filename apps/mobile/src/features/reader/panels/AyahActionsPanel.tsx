@@ -46,8 +46,12 @@ type Tile = {
   primary?: boolean;
   disabled?: boolean;
   selected?: boolean;
+  /** The tile's action is starting (audio loading). */
+  busy?: boolean;
   hint?: string;
 };
+
+const ignoreTap = () => undefined;
 
 export function AyahActionsPanel({
   verseId,
@@ -180,7 +184,9 @@ export function AyahActionsPanel({
       icon: playingThis || starting ? icons.pause : icons.play,
       key: 'play',
       label: playingThis || starting ? t('player.pause') : t('reader.ayahPanel.play'),
-      onPress: playingThis ? pause : onPlay,
+      // While this ayah starts, a tap does nothing; a recited ayah still pauses (as ReadingAyahHeader does).
+      onPress: playingThis ? pause : starting ? ignoreTap : onPlay,
+      busy: starting,
       primary: true,
     },
     ...(onOpenTafsir
@@ -242,6 +248,7 @@ export function AyahActionsPanel({
                 key={tile.key}
                 label={tile.label}
                 onPress={tile.onPress}
+                busy={tile.busy}
                 selected={tile.selected}
                 testID={`${testID}-${tile.key}`}
                 variant={tile.primary ? 'primary' : 'default'}

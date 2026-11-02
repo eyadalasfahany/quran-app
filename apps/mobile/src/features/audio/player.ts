@@ -102,6 +102,14 @@ let repeatGuardMs: number | null = null;
 // The last save of a surah's listen, and the last position the status tick reported for one.
 let lastListenSave: { key: string; at: number } | null = null;
 let lastTick: { reciterId: number; chapterId: number; positionMs: number } | null = null;
+// The token of the seek now in flight (see seekPlaylist), or null. Until it lands the playlist reports the position
+// it had before the seek, so the status ticks must not move the highlight.
+let pendingSeek: number | null = null;
+let seekSerial = 0;
+// The ayah a play-from-ayah asked for, held until the highlight reaches that ayah. The first ticks after the seek
+// report about where it starts, and the highlight lag, or a first word that starts before the ayah, would put them in
+// the ayah before, so the floor holds the ayah until the timings reach it.
+let highlightFloor: { chapterId: number; verseId: number } | null = null;
 
 const store = () => usePlayerStore.getState();
 
@@ -214,6 +222,8 @@ function disposeQueue(): void {
   trackTimings = null;
   repeatGuardMs = null;
   lastTick = null;
+  pendingSeek = null;
+  highlightFloor = null;
 }
 
 /**
@@ -350,7 +360,7 @@ function applyRepeat(active: Queue, chapterId: number, positionMs: number): void
   repeatGuardMs = (last?.endMs ?? 0) - REPEAT_END_TOLERANCE_MS;
   store().advanceRepeat();
   store().setPosition(action.seekTo);
-  active.playlist.seekTo(action.seekTo / 1000).catch((error: unknown) => {
+  seekPlaylist(active.playlist, action.seekTo / 1000).catch((error: unknown) => {
     console.warn('Repeat seek failed.', error);
     store().markFailed('load-failed');
   });
@@ -362,6 +372,17 @@ function updateHighlight(chapterId: number, reportedMs: number): void {
   const timings = trackTimings?.chapterId === chapterId ? trackTimings.timings : [];
   const index = activeTimingIndex(timings, positionMs);
   const timing = index < 0 ? undefined : timings[index];
+  const floor = highlightFloor;
+  if (floor !== null && floor.chapterId === chapterId) {
+    // While the timings are before the floor's ayah (or in no ayah at all), keep the floor's ayah. Once they reach it or
+    // a later one, the floor is done. An ayah with no timing has nothing to reach, so the floor is dropped at once.
+    const floorIndex = timings.findIndex((row) => row.verseId === floor.verseId);
+    if (floorIndex >= 0 && (timing === undefined || index < floorIndex)) {
+      store().setActive(floor.verseId, null);
+      return;
+    }
+    highlightFloor = null;
+  }
   store().setActive(timing?.verseId ?? null, timing === undefined ? null : activeWordPosition(timing, positionMs));
 }
 
@@ -513,7 +534,10 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
     stopPlayback();
     return;
   }
-  if (status.isLoaded && chapterId !== undefined) {
+  // The position is not the new one while a seek is pending, and a load paused before it plays reports the old track's
+  // time too (a surah change with no seek), so neither moves the highlight. Once the load plays, its position is the new one.
+  const positionIsNew = pendingSeek === null && !(current.status === 'loading' && !status.playing);
+  if (status.isLoaded && chapterId !== undefined && positionIsNew) {
     updateHighlight(chapterId, Math.round(status.currentTime * 1000));
   }
   if (current.status === 'playing' || current.status === 'paused') {
@@ -578,6 +602,11 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   }
   const db = contentDb();
   store().moveTo({ chapterId, durationMs: rowDurationMs(db, active.reciterId, chapterId) });
+  // moveTo clears the highlight, so a track change that is ours keeps the ayah the load asked for.
+  const floor = highlightFloor;
+  if (fromUs && floor !== null && floor.chapterId === chapterId) {
+    store().setActive(floor.verseId, null);
+  }
   loadedChapterId = chapterId;
   setTrackTimings(db, active.reciterId, chapterId);
   active.playlist.updateLockScreenMetadata(lockScreenMetadata(db, active.reciterId, chapterId));
@@ -603,11 +632,30 @@ function stopPlayback(): void {
   releaseRepeat();
   queue?.playlist.pause();
   saveCurrentListen();
+  highlightFloor = null;
   store().markStopped();
 }
 
-async function loadChapter(chapterId: number, positionMs: number, reciterId: number | null): Promise<void> {
+/**
+ * Seeks the playlist and marks the seek pending until it lands, successfully or not. A newer seek or load replaces the
+ * mark, so the seek it replaced cannot clear it.
+ */
+function seekPlaylist(playlist: AudioPlaylist, seconds: number): Promise<void> {
+  seekSerial += 1;
+  const token = seekSerial;
+  pendingSeek = token;
+  return playlist.seekTo(seconds).finally(() => {
+    if (pendingSeek === token) {
+      pendingSeek = null;
+    }
+  });
+}
+
+async function loadChapter(chapterId: number, positionMs: number, reciterId: number | null, startVerseId?: number): Promise<void> {
   loadSequence += 1;
+  // A load that starts supersedes any seek still pending from an earlier one, and any ayah held for an earlier load.
+  pendingSeek = null;
+  highlightFloor = null;
   const sequence = loadSequence;
   if (!isChapterId(chapterId)) {
     store().markFailed('invalid-chapter');
@@ -643,14 +691,21 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
       return;
     }
     active.playlist.setActiveForLockScreen(true, lockScreenMetadata(db, reciterId, chapterId), LOCK_SCREEN_CONTROLS);
+    if (startVerseId !== undefined) {
+      highlightFloor = { chapterId, verseId: startVerseId };
+    }
     if (active.playlist.currentIndex !== index) {
       intendedIndex = index;
       active.playlist.skipTo(index);
     }
     loadedChapterId = chapterId;
     setTrackTimings(db, reciterId, chapterId);
+    // Set after the track change, which clears the highlight: the requested ayah is shown at once, not after the first tick.
+    if (startVerseId !== undefined) {
+      store().setActive(startVerseId, null);
+    }
     if (positionMs > 0) {
-      await active.playlist.seekTo(positionMs / 1000);
+      await seekPlaylist(active.playlist, positionMs / 1000);
       if (sequence !== loadSequence) {
         return;
       }
@@ -697,7 +752,7 @@ export function playFromVerse(verseKey: string): Promise<void> {
       return;
     }
     const timing = timingsForChapter(db, reciterId, verse.chapterId).find((row) => row.verseId === verse.id);
-    await loadChapter(verse.chapterId, timing === undefined ? 0 : ayahSeekStartMs(timing), reciterId);
+    await loadChapter(verse.chapterId, timing === undefined ? 0 : ayahSeekStartMs(timing), reciterId, verse.id);
   });
 }
 
@@ -836,12 +891,13 @@ export function seek(positionMs: number): void {
   if (state.chapterId === null) {
     return;
   }
+  highlightFloor = null;
   const target = clampSeek(positionMs);
   if (state.repeat !== null && trackTimings?.chapterId === state.chapterId && !repeatContainsPosition(state.repeat, trackTimings.timings, target)) {
     releaseRepeat();
   }
   if (queue !== null && loadedChapterId === state.chapterId) {
-    queue.playlist.seekTo(target / 1000).catch((error: unknown) => {
+    seekPlaylist(queue.playlist, target / 1000).catch((error: unknown) => {
       console.warn('Seek failed.', error);
       store().markFailed('load-failed');
     });

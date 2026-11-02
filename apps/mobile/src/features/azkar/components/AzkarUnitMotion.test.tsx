@@ -68,7 +68,9 @@ describe('AzkarUnitMotion', () => {
     await rerender(unit('fixture:unit-2', 1));
 
     // The fade-in runs on real timers, so on a busy run it may have advanced a frame or two past 0 by now.
-    expect(getAnimatedStyle(screen.getByTestId('azkar-unit-motion')).opacity).toBeLessThan(0.1);
+    // Typed through the native jest utils: the default typing is the web stub, which returns void.
+    const animatedStyleOf = getAnimatedStyle as unknown as (node: { props: Record<string, unknown> }) => { opacity?: number };
+    expect(animatedStyleOf(screen.getByTestId('azkar-unit-motion')).opacity).toBeLessThan(0.1);
   });
 
   it('keeps the same content when only the direction changes', async () => {

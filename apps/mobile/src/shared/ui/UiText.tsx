@@ -58,13 +58,13 @@ export function UiText({
   const fontFamily = ui ? uiFontFamilies[resolvedWeight] : displayFontFamilies[resolvedWeight >= 600 ? 700 : 400];
   const factor = useTextScale();
   // UiText is the one place the window text factor is applied (ADR 0043), to the final size, token or override alike.
-  const flat: TextStyle = StyleSheet.flatten([
+  const flat = (StyleSheet.flatten([
     // 'left' is the start edge: React Native flips it to the right under RTL. Natural alignment would instead follow
     // the language iOS picked at launch, which lags an in-app language switch until the next cold start.
     { color: textToneColor(colors, tone), fontFamily, fontSize: token.size, lineHeight: token.lineHeight, textAlign: 'left' },
     align ? { textAlign: align } : null,
     style,
-  ]) ?? {};
+  ]) ?? {}) as TextStyle;
   const textStyle: TextStyle = {
     ...flat,
     fontSize: factor !== 1 && typeof flat.fontSize === 'number' ? scaleFontSize(flat.fontSize, factor) : flat.fontSize,

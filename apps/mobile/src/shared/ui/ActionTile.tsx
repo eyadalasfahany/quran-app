@@ -1,7 +1,8 @@
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
+import { BufferingRing } from './BufferingRing';
 import { Icon, type IconName } from './Icon';
 import { UiText } from './UiText';
 import { useContrastColors } from './useContrastColors';
@@ -10,6 +11,10 @@ import { useContrastColors } from './useContrastColors';
 // matches these, so they stay local.
 const TILE_GAP = 6;
 const TILE_PADDING_HORIZONTAL = 2;
+// The icon box, and the buffering ring drawn 5 pt outside it on every side (icon size + 10).
+const ICON_SIZE = 22;
+const RING_INSET = 5;
+const RING_SIZE = ICON_SIZE + RING_INSET * 2;
 
 export function ActionTile({
   icon,
@@ -19,6 +24,7 @@ export function ActionTile({
   mirrorInRtl = false,
   disabled = false,
   selected,
+  busy = false,
   accessibilityHint,
   testID,
 }: {
@@ -29,13 +35,17 @@ export function ActionTile({
   mirrorInRtl?: boolean;
   disabled?: boolean;
   selected?: boolean;
+  /** The tile's action is starting: the icon gets the buffering ring, and screen readers read the tile as busy. */
+  busy?: boolean;
   accessibilityHint?: string;
   testID?: string;
 }) {
   const theme = useTheme();
   const colors = useContrastColors();
   const primary = variant === 'primary';
-  const state = selected === undefined ? { disabled } : { disabled, selected };
+  const base = selected === undefined ? { disabled } : { disabled, selected };
+  const state = busy ? { ...base, busy: true } : base;
+  const glyphColor = primary ? theme.colors.onBrandSurface : theme.colors.brand;
 
   return (
     <Pressable
@@ -64,7 +74,17 @@ export function ActionTile({
       })}
       testID={testID}
     >
-      <Icon color={primary ? theme.colors.onBrandSurface : theme.colors.brand} mirrorInRtl={mirrorInRtl} name={icon} />
+      <View style={{ height: ICON_SIZE, width: ICON_SIZE }}>
+        <Icon color={glyphColor} mirrorInRtl={mirrorInRtl} name={icon} size={ICON_SIZE} />
+        {busy ? (
+          // Absolute, so the icon box keeps its size and the tile does not move while the ring turns.
+          <View pointerEvents="none" style={{ left: -RING_INSET, position: 'absolute', top: -RING_INSET }}>
+            <BufferingRing active color={glyphColor} size={RING_SIZE} testID={testID ? `${testID}-buffering` : undefined}>
+              {null}
+            </BufferingRing>
+          </View>
+        ) : null}
+      </View>
       <UiText
         align="center"
         style={primary ? { color: theme.colors.onBrandSurface } : null}
