@@ -1,7 +1,6 @@
 import { View } from 'react-native';
-import Svg from 'react-native-svg';
 
-import { SPLASH_LOGO_VIEWBOX, splashRasterLayers } from './splash-logo-raster-layers';
+import { splashRasterLayers } from './splash-logo-raster-layers';
 import { SplashLogoRasterLayer } from './SplashLogoRasterLayer';
 import { useDrawOnMount } from './useDrawOnMount';
 
@@ -12,18 +11,15 @@ export function TaybahSplashLogo({ onDrawComplete }: { onDrawComplete?: () => vo
   const progress = useDrawOnMount(onDrawComplete, 'splash');
 
   return (
-    <View style={{ height: DISPLAY, width: DISPLAY }} testID="taybah-splash-logo">
-      <Svg
-        accessibilityElementsHidden
-        height={DISPLAY}
-        importantForAccessibility="no-hide-descendants"
-        viewBox={`0 0 ${SPLASH_LOGO_VIEWBOX} ${SPLASH_LOGO_VIEWBOX}`}
-        width={DISPLAY}
-      >
-        {splashRasterLayers.map((layer) => (
-          <SplashLogoRasterLayer key={layer.id} globalProgress={progress} layer={layer} />
-        ))}
-      </Svg>
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{ height: DISPLAY, width: DISPLAY }}
+      testID="taybah-splash-logo"
+    >
+      {splashRasterLayers.map((layer) => (
+        <SplashLogoRasterLayer key={layer.id} globalProgress={progress} layer={layer} size={DISPLAY} />
+      ))}
     </View>
   );
 }

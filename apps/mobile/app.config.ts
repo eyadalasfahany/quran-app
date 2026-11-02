@@ -282,6 +282,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       // Gallery names in Arabic (values) and English (values-en), per widget (plugins/with-widget-gallery-strings.js).
       ['./plugins/with-widget-gallery-strings.js', { widgets: ANDROID_WIDGETS.map(({ name, label }) => ({ label, name })) }],
+      // android/local.properties sdk.dir, rewritten on every prebuild (plugins/with-android-sdk-location.js).
+      './plugins/with-android-sdk-location.js',
       // iOS home-screen widgets, lock-screen accessories, watch app and complications (ADR 0035).
       '@bacons/apple-targets',
     ],
