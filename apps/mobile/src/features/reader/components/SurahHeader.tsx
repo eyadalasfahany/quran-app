@@ -23,7 +23,11 @@ export function SurahHeader({ chapter, testID }: { chapter: ChapterRecord; testI
       }}
       testID={testID}
     >
-      <SurahCartouche name={chapter.nameArabic} testID={testID ? `${testID}-cartouche` : undefined} />
+      <SurahCartouche
+        name={t('reader.surahTitle', { name: chapter.nameArabic })}
+        testID={testID ? `${testID}-cartouche` : undefined}
+        variant="full"
+      />
       <UiText align="center" tone="muted" variant="caption">
         {t('reader.surahMeta', {
           place: t(placeKey),

@@ -1,11 +1,11 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, within } from '@testing-library/react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { flatStyle, locales, renderUi, svgPaint } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 import { themes } from '@/core/theme';
 
-import { SurahCartouche } from './SurahCartouche';
+import { SurahCartouche, type CartoucheVariant } from './SurahCartouche';
 import { resetDrawnOrnamentsForTests } from './useDrawOnView';
 
 jest.mock('react-native-reanimated', () => ({
@@ -16,12 +16,15 @@ jest.mock('react-native-reanimated', () => ({
 const reducedMotion = jest.mocked(useReducedMotion);
 // The ornament is hidden from screen readers, so queries have to look past that.
 const HIDDEN = { includeHiddenElements: true };
-// Two frames, then each end's star: two squares and a ring.
-const STROKES = 8;
+// Compact: the outer and inner rules. Full: those, then the petals, the details and the leaves.
+const STROKES: Record<CartoucheVariant, number> = { compact: 2, full: 5 };
+const HEIGHT: Record<CartoucheVariant, number> = { compact: 52, full: 112 };
 
-async function laidOut(options: Parameters<typeof renderUi>[1] = {}) {
-  const view = await renderUi(<SurahCartouche name="سورة البقرة" testID="banner" />, options);
-  await fireEvent(view.getByTestId('banner'), 'layout', { nativeEvent: { layout: { height: 52, width: 300, x: 0, y: 0 } } });
+async function laidOut(variant: CartoucheVariant = 'compact', options: Parameters<typeof renderUi>[1] = {}) {
+  const view = await renderUi(<SurahCartouche name="سورة البقرة" testID="banner" variant={variant} />, options);
+  await fireEvent(view.getByTestId('banner'), 'layout', {
+    nativeEvent: { layout: { height: HEIGHT[variant], width: 300, x: 0, y: 0 } },
+  });
   return view;
 }
 
@@ -46,44 +49,85 @@ describe('SurahCartouche', () => {
     expect(view.queryByTestId('banner-frame', HIDDEN)).toBeNull();
   });
 
-  it('draws the design’s pointed double frame at the band’s width', async () => {
-    const view = await laidOut();
+  it('is compact by default: the band alone, 52 high', async () => {
+    const view = await renderUi(<SurahCartouche name="سورة البقرة" testID="banner" />);
+    await fireEvent(view.getByTestId('banner'), 'layout', { nativeEvent: { layout: { height: 52, width: 300, x: 0, y: 0 } } });
+
+    expect(view.getAllByTestId(/^banner-stroke-/, HIDDEN)).toHaveLength(STROKES.compact);
+    expect(flatStyle(view.getByTestId('banner').props.style)).toMatchObject({ minHeight: 52 });
+  });
+
+  it('draws the compact band at the band’s width, between its rules', async () => {
+    const view = await laidOut('compact');
     const { stroke } = themes.light;
 
     expect(view.getByTestId('banner-stroke-0', HIDDEN).props).toMatchObject({
-      d: 'M20 4 L280 4 L296 26 L280 48 L20 48 L4 26 Z',
-      strokeWidth: stroke.hairline,
+      d: expect.stringMatching(/^M40\.74 2\.75 L259\.26 2\.75 /),
+      strokeWidth: stroke.frame,
     });
     expect(view.getByTestId('banner-stroke-1', HIDDEN).props).toMatchObject({
-      d: 'M28 9 L272 9 L284 26 L272 43 L28 43 L16 26 Z',
-      strokeWidth: stroke.frameInner,
+      strokeWidth: stroke.frameRule,
     });
+    expect(view.queryByTestId('banner-stroke-2', HIDDEN)).toBeNull();
   });
 
-  it('sets an eight-pointed star with a ring inside each pointed end', async () => {
-    const view = await laidOut();
+  it('has the band ends symmetric about the middle', async () => {
+    const view = await laidOut('compact');
+    const { d } = view.getByTestId('banner-stroke-0', HIDDEN).props;
 
-    expect(view.getByTestId('banner-stroke-4', HIDDEN).props.d).toBe('M47.5 26 A3.5 3.5 0 1 1 40.5 26 A3.5 3.5 0 1 1 47.5 26 Z');
-    expect(view.getByTestId('banner-stroke-7', HIDDEN).props.d).toBe('M259.5 26 A3.5 3.5 0 1 1 252.5 26 A3.5 3.5 0 1 1 259.5 26 Z');
-    expect(view.getByTestId('banner-stroke-2', HIDDEN).props.d).toBe('M51.07 33.07 L36.93 33.07 L36.93 18.93 L51.07 18.93 Z');
-    expect(view.getByTestId('banner-stroke-3', HIDDEN).props.d).toBe('M44 36 L34 26 L44 16 L54 26 Z');
+    // The tip sits 2 in from each edge, on the middle line (26 for the compact band).
+    expect(d).toContain('298 26');
+    expect(d).toContain('2 26');
   });
 
-  it.each(['light', 'sepia', 'dark'] as const)('strokes every line in gold in %s', async (theme) => {
-    const view = await laidOut({ theme });
+  it('draws the full header at 112 high: the band and a rosette clipped above and below it', async () => {
+    const view = await laidOut('full');
+    const { stroke } = themes.light;
 
-    for (let index = 0; index < STROKES; index += 1) {
-      expect(view.getByTestId(`banner-stroke-${index}`, HIDDEN).props).toMatchObject({
-        fill: null,
-        stroke: svgPaint(themes[theme].colors.gold),
-      });
+    expect(view.getAllByTestId(/^banner-stroke-/, HIDDEN)).toHaveLength(STROKES.full);
+    expect(flatStyle(view.getByTestId('banner').props.style)).toMatchObject({ minHeight: 112 });
+    expect(view.getByTestId('banner-stroke-0', HIDDEN).props).toMatchObject({ strokeWidth: stroke.frame });
+    expect(view.getByTestId('banner-stroke-2', HIDDEN).props).toMatchObject({ strokeWidth: stroke.rosettePetal });
+    expect(view.getByTestId('banner-stroke-3', HIDDEN).props).toMatchObject({ strokeWidth: stroke.rosetteDetail });
+    expect(view.getByTestId('banner-stroke-4', HIDDEN).props).toMatchObject({ strokeWidth: stroke.frameRule });
+  });
+
+  it('clips the rosette with two rects above and below the band', async () => {
+    const view = await laidOut('full');
+    const top = view.getByTestId('banner-clip-0', HIDDEN);
+    const bottom = view.getByTestId('banner-clip-1', HIDDEN);
+
+    expect(top.props).toMatchObject({ height: 29, width: 300, x: 0, y: 0 });
+    expect(bottom.props).toMatchObject({ height: 29, width: 300, x: 0, y: 83 });
+  });
+
+  it('puts the rosette strokes inside the clipped group and leaves the band outside it', async () => {
+    const view = await laidOut('full');
+    const group = within(view.getByTestId('banner-rosette', HIDDEN));
+
+    expect(group.getByTestId('banner-stroke-2', HIDDEN)).toBeOnTheScreen();
+    expect(group.getByTestId('banner-stroke-3', HIDDEN)).toBeOnTheScreen();
+    expect(group.getByTestId('banner-stroke-4', HIDDEN)).toBeOnTheScreen();
+    expect(group.queryByTestId('banner-stroke-0', HIDDEN)).toBeNull();
+  });
+
+  it.each(['light', 'sepia', 'dark'] as const)('strokes every line in gold in %s, both variants', async (theme) => {
+    for (const variant of ['compact', 'full'] as const) {
+      const view = await laidOut(variant, { theme });
+
+      for (let index = 0; index < STROKES[variant]; index += 1) {
+        expect(view.getByTestId(`banner-stroke-${index}`, HIDDEN).props).toMatchObject({
+          fill: null,
+          stroke: svgPaint(themes[theme].colors.gold),
+        });
+      }
     }
   });
 
-  it('keeps the name clear of the stars', async () => {
+  it('keeps the name clear of the ends', async () => {
     const view = await renderUi(<SurahCartouche name="سورة البقرة" testID="banner" />);
 
-    expect(flatStyle(view.getByTestId('banner').props.style)).toMatchObject({ minHeight: 52, paddingHorizontal: 66 });
+    expect(flatStyle(view.getByTestId('banner').props.style)).toMatchObject({ minHeight: 52, paddingHorizontal: 58 });
   });
 
   it('starts undrawn, and fully drawn with Reduce Motion on', async () => {
@@ -97,7 +141,7 @@ describe('SurahCartouche', () => {
   });
 
   it('hides the frame from screen readers', async () => {
-    const view = await laidOut();
+    const view = await laidOut('full');
     const frame = view.getByTestId('banner-frame', HIDDEN);
 
     expect(frame.props.accessibilityElementsHidden).toBe(true);

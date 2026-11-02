@@ -71,6 +71,7 @@ export function MushafPage({
             <SurahCartouche
               key={`header-${slot.line}`}
               name={slot.nameArabic}
+              variant="compact"
               testID={testID ? `${testID}-header-${slot.line}` : undefined}
             />
           );

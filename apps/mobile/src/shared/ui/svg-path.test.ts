@@ -1,4 +1,4 @@
-import { circle, eightPointStar, polar, polygon, square } from './svg-path';
+import { circle, eightPointStar, joinOutlines, path, polar, polygon, square } from './svg-path';
 
 describe('svg-path', () => {
   it('closes a polygon and measures every side, the closing one included', () => {
@@ -37,5 +37,50 @@ describe('svg-path', () => {
 
     expect(x).toBeCloseTo(0);
     expect(y).toBeCloseTo(10);
+  });
+});
+
+describe('svg-path curves and joins', () => {
+  it('draws a path of lines with the length of the matching polygon', () => {
+    const square4 = [
+      [0, 0],
+      [4, 0],
+      [4, 3],
+      [0, 3],
+    ] as const;
+    const outline = path([['M', square4[0]], ['L', square4[1]], ['L', square4[2]], ['L', square4[3]], ['Z']]);
+
+    expect(outline.length).toBeCloseTo(polygon(square4).length);
+    expect(outline.d).toBe('M0 0 L4 0 L4 3 L0 3 Z');
+  });
+
+  it('measures a quadratic whose control point sits on the chord as the chord', () => {
+    const outline = path([['M', [0, 0]], ['Q', [5, 0], [10, 0]]]);
+
+    expect(outline.d).toBe('M0 0 Q5 0 10 0');
+    expect(outline.length).toBeCloseTo(10, 1);
+  });
+
+  it('measures a quarter-circle-ish cubic within 1% of πr/2', () => {
+    const r = 20;
+    // The standard cubic approximation of a quarter circle.
+    const k = 0.5523 * r;
+    const outline = path([['M', [r, 0]], ['C', [r, k], [k, r], [0, r]]]);
+
+    expect(outline.length).toBeCloseTo((Math.PI * r) / 2, 0);
+    expect(Math.abs(outline.length - (Math.PI * r) / 2) / ((Math.PI * r) / 2)).toBeLessThan(0.01);
+  });
+
+  it('joins outlines into one path and adds their lengths', () => {
+    const a = polygon([
+      [0, 0],
+      [3, 0],
+      [3, 4],
+    ]);
+    const b = circle(0, 0, 2);
+    const joined = joinOutlines([a, b]);
+
+    expect(joined.d).toBe(`${a.d} ${b.d}`);
+    expect(joined.length).toBeCloseTo(a.length + b.length);
   });
 });

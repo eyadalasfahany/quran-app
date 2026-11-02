@@ -127,6 +127,11 @@ export const stroke = {
   focus: 1.5,
   frame: 1.5,
   frameInner: 0.75,
+  // The surah cartouche's inner rule (ADR 0049).
+  frameRule: 0.9,
+  // The surah cartouche's rosette: petals, then the beads, dots and leaves (ADR 0049).
+  rosettePetal: 1.2,
+  rosetteDetail: 0.8,
   activeRule: 3,
   // The outline around a matched word in search results (ADR 0012: matches are outlined, not filled).
   match: 1.5,

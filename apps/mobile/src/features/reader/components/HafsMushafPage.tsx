@@ -93,6 +93,7 @@ export function HafsMushafPage({
               <SurahCartouche
                 name={t('reader.surahTitle', { name: chapter.nameArabic })}
                 testID={testID ? `${testID}-surah-${chapter.id}` : undefined}
+                variant="compact"
               />
             )}
             {showBismillah && chapter.bismillahText !== null ? (
