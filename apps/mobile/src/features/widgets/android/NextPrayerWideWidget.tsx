@@ -10,7 +10,13 @@ import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
 import { block, column, label, row } from './primitives';
 import { prayerName, prayerRemaining, prayerTime } from './prayer-text';
-import { fillChip, brandSurfaceBand, widgetFaceColumn } from './widget-chrome';
+import {
+  ON_BRAND_WASH_ALPHA,
+  ON_BRAND_WASH_ALPHA_LIGHT,
+  onBrandChip,
+  onBrandSoftBand,
+  widgetFaceColumn,
+} from './widget-chrome';
 import { widgetPaths } from '../snapshot/deep-links';
 import { prayerStateAt } from '../snapshot/select';
 import type { PrayerEntry } from '../snapshot/types';
@@ -23,7 +29,7 @@ function todaysEntries(entries: readonly PrayerEntry[], now: Date): PrayerEntry[
 
 /**
  * The 4×2 next-prayer widget (AndroidWidgets frame, the wide card): header, time chip, five prayer tiles with a strong
- * next highlight, and a brandSurface remaining band. Times come from the snapshot only.
+ * next highlight, and a soft onBrand remaining band. Times come from the snapshot only.
  */
 export function NextPrayerWideWidget(ctx: WidgetContext) {
   const { labels, palette, rtl } = ctx;
@@ -34,8 +40,8 @@ export function NextPrayerWideWidget(ctx: WidgetContext) {
   if (state.kind !== 'next') {
     const message = state.kind === 'noLocation' ? labels.noLocation : labels.stale;
     return card(ctx, [
-      label(labels.nextPrayer, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-      label(message, { color: palette.ink, font: WIDGET_FONTS.regular, maxLines: 2, size: 15 }, rtl),
+      label(labels.nextPrayer, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      label(message, { color: palette.onBrandSurface, font: WIDGET_FONTS.regular, maxLines: 2, size: 15 }, rtl),
     ], { accessibilityLabel: `${labels.nextPrayer}: ${message}`, click });
   }
 
@@ -45,13 +51,15 @@ export function NextPrayerWideWidget(ctx: WidgetContext) {
   const place = prayer.place === null ? '' : ` · ${prayer.place}`;
   const tiles = todaysEntries(prayer.entries, ctx.now).map((entry) => {
     const isNext = entry.key === state.key && entry.at === state.at;
-    const color = isNext ? palette.ink : palette.inkMuted;
+    const washStrong = withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA);
+    const washLight = withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA_LIGHT);
+    const color = isNext ? palette.onBrandSurface : palette.onBrandSurfaceMuted;
     return (
       <FlexWidget
         key={entry.key}
         style={{
-          backgroundColor: isNext ? palette.highlightActive : palette.fillSecondary,
-          borderColor: isNext ? palette.brand : withAlpha(palette.line, 0),
+          backgroundColor: isNext ? washStrong : washLight,
+          borderColor: isNext ? withAlpha(palette.gold, 0.85) : withAlpha(palette.onBrandSurface, 0),
           borderRadius: 12,
           borderWidth: isNext ? 1.5 : 0,
           flex: 1,
@@ -69,14 +77,14 @@ export function NextPrayerWideWidget(ctx: WidgetContext) {
   return card(ctx, [
     widgetFaceColumn([
       column([
-        label(`${labels.nextPrayer}${place}`, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+        label(`${labels.nextPrayer}${place}`, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
         block({ height: 4 }),
-        label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 32 }, rtl),
+        label(name, { color: palette.onBrandSurface, font: WIDGET_FONTS.display, size: 32 }, rtl),
         block({ height: 6 }),
-        fillChip(ctx, time),
+        onBrandChip(ctx, time),
       ]),
       row(tiles, rtl, { flexGap: 4 }),
-      brandSurfaceBand(ctx, labels.remaining, remaining),
+      onBrandSoftBand(ctx, labels.remaining, remaining),
     ]),
   ], { accessibilityLabel: `${labels.nextPrayer}: ${name} ${time}, ${labels.remaining} ${remaining}`, click });
 }

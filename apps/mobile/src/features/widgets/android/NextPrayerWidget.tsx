@@ -34,7 +34,7 @@ export function NextPrayerWidget(ctx: WidgetContext) {
 
   const message = state.kind === 'noLocation' ? labels.noLocation : labels.stale;
   return card(ctx, [
-    label(labels.nextPrayer, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-    label(message, { color: palette.ink, font: WIDGET_FONTS.regular, maxLines: 3, size: 14 }, rtl),
+    label(labels.nextPrayer, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+    label(message, { color: palette.onBrandSurface, font: WIDGET_FONTS.regular, maxLines: 3, size: 14 }, rtl),
   ], { accessibilityLabel: `${labels.nextPrayer}: ${message}`, click });
 }

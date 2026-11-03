@@ -3,12 +3,13 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { formatPlaybackClock, prayerClock } from '@/core/i18n/clock';
-import { formatPercent } from '@/core/i18n/numbers';
+import { formatNumber, formatPercent } from '@/core/i18n/numbers';
 import { getLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { UiText, displayText, useContrastColors } from '@/shared/ui';
+import { UiText, displayText } from '@/shared/ui';
 
 import type { WidgetPreviewVariant } from '../data/widget-add-catalog';
+import { withAlpha, type HexColor } from '../android/theme';
 import { readWidgetSnapshot } from '../snapshot/store';
 import { prayerStateAt } from '../snapshot/select';
 import type { PrayerKey, WidgetLabels } from '../snapshot/types';
@@ -17,6 +18,10 @@ import type { PrayerKey, WidgetLabels } from '../snapshot/types';
 const PREVIEW_ASPECT = 1;
 
 const PRAYER_DOT_ORDER: readonly PrayerKey[] = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+function onBrandWash(hex: string, alpha = 0.2): string {
+  return withAlpha(hex as HexColor, alpha);
+}
 
 /**
  * In-app mock of a widget face for the add confirm dialog (ADR 0054). Uses theme tokens and snapshot labels only — no
@@ -54,7 +59,7 @@ export function WidgetPreviewMock({
 }
 
 function PreviewCard({
-  brand = false,
+  brand = true,
   children,
   spaceBetween = false,
   testID,
@@ -65,14 +70,13 @@ function PreviewCard({
   testID?: string;
 }) {
   const theme = useTheme();
-  const colors = useContrastColors();
 
   return (
     <View
       style={{
         aspectRatio: PREVIEW_ASPECT,
-        backgroundColor: brand ? theme.colors.brandSurface : theme.colors.surfaceRaised,
-        borderColor: colors.line,
+        backgroundColor: brand ? theme.colors.brandSurface : theme.colors.surface,
+        borderColor: brand ? theme.colors.brandSurface : theme.colors.line,
         borderRadius: theme.radius.lg,
         borderWidth: brand ? 0 : theme.stroke.hairline,
         justifyContent: spaceBetween ? 'space-between' : 'flex-start',
@@ -86,16 +90,18 @@ function PreviewCard({
   );
 }
 
-function Chip({ children, onBrand = false }: { children: ReactNode; onBrand?: boolean }) {
+function Chip({ children, onBrand = true }: { children: ReactNode; onBrand?: boolean }) {
   const theme = useTheme();
   return (
     <View
       style={{
         alignSelf: 'flex-start',
-        backgroundColor: onBrand ? 'transparent' : theme.colors.fillSecondary,
-        borderColor: onBrand ? theme.colors.onBrandSurfaceMuted : undefined,
-        borderWidth: onBrand ? theme.stroke.hairline : 0,
+        backgroundColor: onBrand
+          ? onBrandWash(theme.colors.onBrandSurface)
+          : theme.colors.fillSecondary,
+        borderColor: onBrand ? onBrandWash(theme.colors.onBrandSurface, 0.12) : undefined,
         borderRadius: theme.radius.pill,
+        borderWidth: onBrand ? 1 : 0,
         paddingHorizontal: 10,
         paddingVertical: 4,
       }}
@@ -108,7 +114,7 @@ function Chip({ children, onBrand = false }: { children: ReactNode; onBrand?: bo
 function Band({
   caption,
   children,
-  onBrand = false,
+  onBrand = true,
 }: {
   caption: string;
   children: ReactNode;
@@ -119,16 +125,21 @@ function Band({
     <View
       style={{
         alignSelf: 'stretch',
-        backgroundColor: onBrand ? theme.colors.brandSurface : theme.colors.fillSecondary,
+        backgroundColor: onBrand
+          ? onBrandWash(theme.colors.onBrandSurface)
+          : theme.colors.fillSecondary,
+        borderColor: onBrand ? onBrandWash(theme.colors.onBrandSurface, 0.12) : undefined,
         borderRadius: theme.radius.tile,
+        borderWidth: onBrand ? 1 : 0,
         gap: theme.space[1],
-        paddingHorizontal: theme.space[3],
-        paddingVertical: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
       }}
     >
       <UiText
         style={{ color: onBrand ? theme.colors.onBrandSurfaceMuted : theme.colors.inkMuted }}
         variant="caption"
+        weight={600}
       >
         {caption}
       </UiText>
@@ -156,10 +167,10 @@ function NextPrayerPreview({
   if (state.kind !== 'next' || labels === undefined) {
     return (
       <PreviewCard testID={testID}>
-        <UiText tone="muted" variant="caption" weight={600}>
+        <UiText style={{ color: theme.colors.onBrandSurfaceMuted }} variant="caption" weight={600}>
           {labels?.nextPrayer ?? '…'}
         </UiText>
-        <UiText variant="body" weight={600}>
+        <UiText style={{ color: theme.colors.onBrandSurface }} variant="body" weight={600}>
           {state.kind === 'noLocation' ? labels?.noLocation : labels?.stale}
         </UiText>
       </PreviewCard>
@@ -174,20 +185,20 @@ function NextPrayerPreview({
     return (
       <PreviewCard spaceBetween testID={testID}>
         <View style={{ alignSelf: 'stretch', gap: theme.space[1] }}>
-          <UiText tone="muted" variant="caption" weight={600}>
+          <UiText style={{ color: theme.colors.onBrandSurfaceMuted }} variant="caption" weight={600}>
             {labels.nextPrayer}
           </UiText>
-          <UiText style={displayText('displaySm')} variant="title">
+          <UiText style={[displayText('displaySm'), { color: theme.colors.onBrandSurface }]} variant="title">
             {name}
           </UiText>
           <Chip>
-            <UiText variant="body" weight={600}>
+            <UiText style={{ color: theme.colors.onBrandSurface }} variant="body" weight={600}>
               {time}
             </UiText>
           </Chip>
         </View>
         <PrayerPreviewDots nextKey={state.key} nowMs={nowMs} prayer={prayer} />
-        <Band caption={labels.remaining} onBrand>
+        <Band caption={labels.remaining}>
           <UiText style={{ color: theme.colors.onBrandSurface }} variant="title" weight={700}>
             {remaining}
           </UiText>
@@ -199,20 +210,20 @@ function NextPrayerPreview({
   return (
     <PreviewCard spaceBetween testID={testID}>
       <View style={{ alignSelf: 'stretch', gap: theme.space[1] }}>
-        <UiText tone="muted" variant="caption" weight={600}>
+        <UiText style={{ color: theme.colors.onBrandSurfaceMuted }} variant="caption" weight={600}>
           {labels.nextPrayer}
         </UiText>
-        <UiText style={displayText('displaySm')} variant="title">
+        <UiText style={[displayText('displaySm'), { color: theme.colors.onBrandSurface }]} variant="title">
           {name}
         </UiText>
         <Chip>
-          <UiText variant="body" weight={600}>
+          <UiText style={{ color: theme.colors.onBrandSurface }} variant="body" weight={600}>
             {time}
           </UiText>
         </Chip>
       </View>
       <PrayerPreviewDots nextKey={state.key} nowMs={nowMs} prayer={prayer} />
-      <Band caption={labels.remaining} onBrand>
+      <Band caption={labels.remaining}>
         <UiText style={{ color: theme.colors.onBrandSurface }} variant="title" weight={700}>
           {remaining}
         </UiText>
@@ -238,7 +249,9 @@ function ProgressPreview({
   const summary =
     progress.rows.length === 0
       ? labels?.progressEmpty ?? '…'
-      : `${progress.rows.filter((row) => row.done).length} ${labels?.of ?? 'of'} ${progress.rows.length}`;
+      : `${formatNumber(progress.rows.filter((row) => row.done).length, locale)} ${labels?.of ?? 'of'} ${formatNumber(progress.rows.length, locale)}`;
+
+  const ringTrack = onBrandWash(theme.colors.onBrandSurface, 0.2);
 
   return (
     <PreviewCard spaceBetween testID={testID}>
@@ -246,7 +259,7 @@ function ProgressPreview({
         <View
           style={{
             alignItems: 'center',
-            borderColor: theme.colors.fillSecondary,
+            borderColor: ringTrack,
             borderRadius: 46,
             borderWidth: 9,
             height: 92,
@@ -254,16 +267,16 @@ function ProgressPreview({
             width: 92,
           }}
         >
-          <UiText variant="title" weight={700}>
+          <UiText style={{ color: theme.colors.onBrandSurface }} variant="title" weight={700}>
             {formatPercent(progress.percent, locale)}
           </UiText>
         </View>
         <View style={{ flex: 1, gap: theme.space[1], justifyContent: 'center' }}>
-          <UiText tone="muted" variant="caption" weight={600}>
+          <UiText style={{ color: theme.colors.onBrandSurfaceMuted }} variant="caption" weight={600}>
             {title}
           </UiText>
           {progress.rows.slice(0, 2).map((row) => (
-            <UiText key={row.key} variant="caption" weight={600}>
+            <UiText key={row.key} style={{ color: theme.colors.onBrandSurface }} variant="caption" weight={600}>
               {row.done ? '✓ ' : '○ '}
               {row.label}
             </UiText>
@@ -271,7 +284,7 @@ function ProgressPreview({
         </View>
       </View>
       <Band caption={title}>
-        <UiText variant="body" weight={700}>
+        <UiText style={{ color: theme.colors.onBrandSurface }} variant="body" weight={700}>
           {summary}
         </UiText>
       </Band>
@@ -360,22 +373,22 @@ function MisbahaPreview({
 
   return (
     <PreviewCard spaceBetween testID={testID}>
-      <UiText tone="muted" variant="caption" weight={600}>
+      <UiText style={{ color: theme.colors.onBrandSurfaceMuted }} variant="caption" weight={600}>
         {labels?.misbaha ?? t('widgetsHelp.items.misbaha.title')}
       </UiText>
-      <UiText style={displayText('displaySm')} variant="title">
+      <UiText style={[displayText('displaySm'), { color: theme.colors.onBrandSurface }]} variant="title">
         {misbaha.count}
       </UiText>
       <View style={{ alignSelf: 'stretch', gap: theme.space[2] }}>
         <Band caption={labels?.misbaha ?? '…'}>
-          <UiText variant="body" weight={700}>
+          <UiText style={{ color: theme.colors.onBrandSurface }} variant="body" weight={700}>
             {targetText}
           </UiText>
         </Band>
         <View
           style={{
             alignSelf: 'flex-end',
-            backgroundColor: theme.colors.brand,
+            backgroundColor: theme.colors.onBrandSurface,
             borderRadius: 18,
             height: 36,
             width: 36,
@@ -403,10 +416,10 @@ function AzkarPreview({
   if (azkar === null || azkar === undefined) {
     return (
       <PreviewCard testID={testID}>
-        <UiText tone="muted" variant="caption" weight={600}>
+        <UiText style={{ color: theme.colors.onBrandSurfaceMuted }} variant="caption" weight={600}>
           {labels?.azkarTitle ?? t('widgetsHelp.items.azkar.title')}
         </UiText>
-        <UiText tone="muted" variant="body">
+        <UiText style={{ color: theme.colors.onBrandSurface }} variant="body">
           {labels?.azkarEmpty ?? '…'}
         </UiText>
       </PreviewCard>
@@ -418,11 +431,11 @@ function AzkarPreview({
   return (
     <PreviewCard spaceBetween testID={testID}>
       <View style={{ gap: theme.space[2] }}>
-        <UiText tone="muted" variant="caption" weight={600}>
+        <UiText style={{ color: theme.colors.onBrandSurfaceMuted }} variant="caption" weight={600}>
           {labels?.azkarTitle}
         </UiText>
         <Chip>
-          <UiText variant="caption" weight={700}>
+          <UiText style={{ color: theme.colors.onBrandSurface }} variant="caption" weight={700}>
             {done} {labels?.of} {azkar.sessions.length}
           </UiText>
         </Chip>
@@ -433,7 +446,7 @@ function AzkarPreview({
             key={session.id}
             style={{
               alignItems: 'center',
-              backgroundColor: session.complete ? theme.colors.fillSecondary : theme.colors.surfaceRaised,
+              backgroundColor: onBrandWash(theme.colors.onBrandSurface, session.complete ? 0.1 : 0.2),
               borderRadius: theme.radius.sm,
               flex: 1,
               gap: 4,
@@ -442,14 +455,19 @@ function AzkarPreview({
           >
             <View
               style={{
-                borderColor: theme.colors.fillSecondary,
+                borderColor: onBrandWash(theme.colors.onBrandSurface, 0.2),
                 borderRadius: 22,
                 borderWidth: 4,
                 height: 44,
                 width: 44,
               }}
             />
-            <UiText numberOfLines={1} variant="caption" weight={600}>
+            <UiText
+              numberOfLines={1}
+              style={{ color: session.complete ? theme.colors.onBrandSurfaceMuted : theme.colors.onBrandSurface }}
+              variant="caption"
+              weight={600}
+            >
               {session.title.slice(0, 6)}
             </UiText>
           </View>
@@ -486,8 +504,8 @@ function PrayerPreviewDots({
           <View
             key={key}
             style={{
-              backgroundColor: filled ? theme.colors.brand : 'transparent',
-              borderColor: theme.colors.line,
+              backgroundColor: filled ? theme.colors.onBrandSurface : 'transparent',
+              borderColor: theme.colors.onBrandSurfaceMuted,
               borderRadius: dotSize / 2,
               borderWidth: filled ? 0 : theme.stroke.hairline,
               height: dotSize,

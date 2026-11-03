@@ -1,7 +1,7 @@
 import { ContinueReadingWidget } from './ContinueReadingWidget';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { cardFill, hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
+import { cardRootFill, hasArabicIndicNumerals, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (
@@ -39,11 +39,11 @@ describe('ContinueReadingWidget', () => {
     expect(startAlignedFullWidthLabels(ContinueReadingWidget(ctx('ar')), true)).toBe(true);
   });
 
-  it('uses the dark palette in dark mode for the open-app card', () => {
+  it('uses brandSurface for the open-app card in light and dark modes', () => {
+    const { palette } = ctx('en', 'light');
     const tree = (mode: 'light' | 'dark') =>
       ContinueReadingWidget(ctx('en', mode, fullSnapshot({ reading: null })));
-    const light = styleOf(ofKind(tree('light'), 'LinearLayoutWidget')[0]!);
-    const dark = styleOf(ofKind(tree('dark'), 'LinearLayoutWidget')[0]!);
-    expect(cardFill(light)).not.toBe(cardFill(dark));
+    expect(cardRootFill(tree('light'))).toBe(palette.brandSurface);
+    expect(cardRootFill(tree('dark'))).toBe(palette.brandSurface);
   });
 });

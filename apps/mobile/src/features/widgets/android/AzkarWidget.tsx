@@ -9,9 +9,10 @@ import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
 import { block, column, grow, label, ringWithCentre, row } from './primitives';
 import { clampPercent, ringSvg } from './ring';
-import { fillChip, widgetFaceColumn } from './widget-chrome';
+import { ON_BRAND_WASH_ALPHA, ON_BRAND_WASH_ALPHA_LIGHT, onBrandChip, widgetFaceColumn } from './widget-chrome';
 import { widgetPaths } from '../snapshot/deep-links';
 import type { WidgetAzkarSession } from '../snapshot/types';
+import { withAlpha } from './theme';
 
 /** The frame's mini session ring (WidgetContinueReading Azkar row): 44 dp, 5 dp stroke. */
 const RING_SIZE = 44;
@@ -24,28 +25,30 @@ function sessionPercent(session: WidgetAzkarSession): number {
   return session.total > 0 ? clampPercent((session.done / session.total) * 100) : 0;
 }
 
-/** One session: ring tile with clearer done vs in-progress contrast. */
+/** One session: ring tile with clearer done vs in-progress contrast on brandSurface. */
 function sessionTile(ctx: WidgetContext, session: WidgetAzkarSession) {
   const { palette, rtl } = ctx;
   const percent = sessionPercent(session);
+  const ringTrack = withAlpha(palette.onBrandSurface, 0.2);
   const centre = session.complete
-    ? label('✓', { align: 'center', color: palette.brand, font: WIDGET_FONTS.bold, size: 14 }, rtl)
+    ? label('✓', { align: 'center', color: palette.gold, font: WIDGET_FONTS.bold, size: 14 }, rtl)
     : null;
   const ring = ringWithCentre(
     ringSvg({
-      fill: palette.brand,
+      fill: palette.gold,
       percent,
       size: RING_SIZE,
       stroke: RING_STROKE,
-      track: palette.fillSecondary,
+      track: ringTrack,
     }),
     RING_SIZE,
     centre,
   );
+  const wash = withAlpha(palette.onBrandSurface, session.complete ? ON_BRAND_WASH_ALPHA_LIGHT : ON_BRAND_WASH_ALPHA);
   return grow(
-    column([ring, label(session.title, { align: 'center', color: session.complete ? palette.inkMuted : palette.ink, font: WIDGET_FONTS.medium, size: 11 }, rtl)], {
+    column([ring, label(session.title, { align: 'center', color: session.complete ? palette.onBrandSurfaceMuted : palette.onBrandSurface, font: WIDGET_FONTS.medium, size: 11 }, rtl)], {
       alignItems: 'center',
-      backgroundColor: session.complete ? palette.fillSecondary : palette.surfaceRaised,
+      backgroundColor: wash,
       borderRadius: 12,
       flexGap: 4,
       paddingBottom: 6,
@@ -64,8 +67,8 @@ export function AzkarWidget(ctx: WidgetContext) {
 
   if (snapshot.azkar === null) {
     return card(ctx, [
-      label(labels.azkarTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-      label(labels.azkarEmpty, { color: palette.ink, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
+      label(labels.azkarTitle, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      label(labels.azkarEmpty, { color: palette.onBrandSurface, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
     ], { accessibilityLabel: `${labels.azkarTitle}: ${labels.azkarEmpty}`, click });
   }
 
@@ -76,9 +79,9 @@ export function AzkarWidget(ctx: WidgetContext) {
   return card(ctx, [
     widgetFaceColumn([
       column([
-        label(labels.azkarTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+        label(labels.azkarTitle, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
         block({ height: 6 }),
-        fillChip(ctx, summaryText, { size: 13 }),
+        onBrandChip(ctx, summaryText, { size: 13 }),
       ]),
       row(
         sessions.map((session) => sessionTile(ctx, session)),

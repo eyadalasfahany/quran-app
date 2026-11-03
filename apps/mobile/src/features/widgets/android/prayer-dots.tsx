@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { block, column, label, row } from './primitives';
 import { WIDGET_FONTS } from './fonts';
 import { withAlpha, type WidgetPalette } from './theme';
-import { brandSurfaceBand, fillChip, widgetFaceColumn } from './widget-chrome';
+import { onBrandChip, onBrandSoftBand, widgetFaceColumn } from './widget-chrome';
 import type { WidgetContext } from './context';
 import type { PrayerEntry, PrayerKey } from '../snapshot/types';
 
@@ -43,7 +43,7 @@ function prayerDot(palette: WidgetPalette, state: PrayerDotState, key: PrayerKey
     return (
       <FlexWidget
         key={key}
-        style={{ backgroundColor: palette.brand, borderRadius: round, height: DOT_SIZE, width: DOT_SIZE }}
+        style={{ backgroundColor: palette.onBrandSurface, borderRadius: round, height: DOT_SIZE, width: DOT_SIZE }}
       />
     );
   }
@@ -52,7 +52,7 @@ function prayerDot(palette: WidgetPalette, state: PrayerDotState, key: PrayerKey
       <FlexWidget
         key={key}
         style={{
-          backgroundColor: withAlpha(palette.brand, 0.35),
+          backgroundColor: withAlpha(palette.onBrandSurface, 0.35),
           borderRadius: round,
           height: DOT_SIZE,
           width: DOT_SIZE,
@@ -64,8 +64,8 @@ function prayerDot(palette: WidgetPalette, state: PrayerDotState, key: PrayerKey
     <FlexWidget
       key={key}
       style={{
-        backgroundColor: withAlpha(palette.fillSecondary, 0),
-        borderColor: palette.line,
+        backgroundColor: withAlpha(palette.onBrandSurface, 0),
+        borderColor: palette.onBrandSurfaceMuted,
         borderRadius: round,
         borderWidth: 1,
         height: DOT_SIZE,
@@ -75,7 +75,7 @@ function prayerDot(palette: WidgetPalette, state: PrayerDotState, key: PrayerKey
   );
 }
 
-/** Five prayer dots for today's cycle; the next prayer is a filled brand circle. */
+/** Five prayer dots for today's cycle; the next prayer is a filled onBrand circle. */
 export function prayerDots(ctx: WidgetContext, nextKey: PrayerKey): ReactNode {
   const { palette, rtl, now } = ctx;
   const nowMs = now.getTime();
@@ -86,9 +86,9 @@ export function prayerDots(ctx: WidgetContext, nextKey: PrayerKey): ReactNode {
   return row(dots, rtl, { flexGap: 6, paddingVertical: 4, width: 'match_parent' });
 }
 
-/** Pill behind the prayer clock (semibold ink, not muted). */
+/** Pill behind the prayer clock on brandSurface. */
 export function prayerTimeChip(ctx: WidgetContext, time: string): ReactNode {
-  return fillChip(ctx, time);
+  return onBrandChip(ctx, time);
 }
 
 /** Header, display name and time chip with a tight gap under the header. */
@@ -96,9 +96,9 @@ export function prayerSmallTop(ctx: WidgetContext, header: string, name: string,
   const { palette, rtl } = ctx;
   return column(
     [
-      label(header, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      label(header, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
       block({ height: 6 }),
-      label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 35 }, rtl),
+      label(name, { color: palette.onBrandSurface, font: WIDGET_FONTS.display, size: 35 }, rtl),
       block({ height: 8 }),
       prayerTimeChip(ctx, time),
     ],
@@ -115,6 +115,6 @@ export function prayerSmallBody(
   return widgetFaceColumn([
     prayerSmallTop(ctx, options.header, options.name, options.time),
     prayerDots(ctx, options.nextKey),
-    brandSurfaceBand(ctx, labels.remaining, options.remaining),
+    onBrandSoftBand(ctx, labels.remaining, options.remaining),
   ]);
 }

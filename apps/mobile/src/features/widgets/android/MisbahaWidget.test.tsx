@@ -2,7 +2,7 @@ import { MisbahaWidget } from './MisbahaWidget';
 import { widgetContext } from './context';
 import { MISBAHA_TAP_ACTION } from './names';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { cardRootFill, hasArabicIndicNumerals, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
+import { hasArabicIndicNumerals, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (
@@ -40,13 +40,23 @@ describe('MisbahaWidget', () => {
     expect(startAlignedFullWidthLabels(MisbahaWidget(ctx('ar')), true)).toBe(true);
   });
 
-  it('uses the dark palette in dark mode', () => {
-    expect(cardRootFill(MisbahaWidget(ctx('en', 'light')))).not.toBe(cardRootFill(MisbahaWidget(ctx('en', 'dark'))));
+  it('uses the dark palette gold on the misbaha ring', () => {
+    const lightCtx = ctx('en', 'light');
+    const darkCtx = ctx('en', 'dark');
+    const ringSvg = (tree: ReturnType<typeof MisbahaWidget>) =>
+      walk(tree).find((node) => typeof node.props.svg === 'string' && styleOf(node).width === 76)?.props.svg as
+        | string
+        | undefined;
+    expect(ringSvg(MisbahaWidget(lightCtx))).toContain(lightCtx.palette.gold.slice(1));
+    expect(ringSvg(MisbahaWidget(darkCtx))).toContain(darkCtx.palette.gold.slice(1));
+    expect(lightCtx.palette.gold).not.toBe(darkCtx.palette.gold);
   });
 
-  it('draws the plus as a centred SVG inside the brand disc', () => {
+  it('draws the plus as a centred SVG on a cream disc with brandSurface stroke', () => {
+    const { palette } = ctx();
     const plus = walk(MisbahaWidget(ctx())).find((el) => el.props.clickAction === MISBAHA_TAP_ACTION);
     expect(plus).toBeDefined();
+    expect(styleOf(plus!).backgroundColor).toBe(palette.onBrandSurface);
     expect(walk(plus!).some((node) => typeof node.props.svg === 'string' && (node.props.svg as string).includes('path'))).toBe(
       true,
     );

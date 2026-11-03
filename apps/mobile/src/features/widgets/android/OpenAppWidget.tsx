@@ -14,6 +14,6 @@ import { WIDGET_FONTS } from './fonts';
 export function OpenAppWidget(ctx: WidgetContext) {
   const { labels, palette, rtl } = ctx;
   return card(ctx, [
-    label(labels.openApp, { color: palette.ink, font: WIDGET_FONTS.medium, maxLines: 3, size: 14 }, rtl),
+    label(labels.openApp, { color: palette.onBrandSurface, font: WIDGET_FONTS.medium, maxLines: 3, size: 14 }, rtl),
   ], { accessibilityLabel: labels.openApp, click: { clickAction: 'OPEN_APP' } });
 }

@@ -46,7 +46,7 @@ describe('NextPrayerWidget', () => {
     expect(root.props.accessibilityLabel).toBe(`LABEL nextPrayer: PRAYER asr ${time}, LABEL remaining ${remaining}`);
   });
 
-  it('uses semibold ink in the time chip and onBrandSurface for remaining numerals', () => {
+  it('uses onBrandSurface in the time chip and remaining numerals', () => {
     const context = ctx('en', 'light');
     const tree = NextPrayerWidget(context);
     const snapshot = fullSnapshot();
@@ -55,7 +55,7 @@ describe('NextPrayerWidget', () => {
     const remaining = formatPlaybackClock(stateAt.at - now.getTime(), 'en');
     const { palette } = context;
 
-    expect(textStyle(tree, time).color).toBe(palette.ink);
+    expect(textStyle(tree, time).color).toBe(palette.onBrandSurface);
     expect(textStyle(tree, remaining).color).toBe(palette.onBrandSurface);
   });
 
@@ -79,8 +79,20 @@ describe('NextPrayerWidget', () => {
     expect(textsOf(NextPrayerWidget(ctx('en', 'light', snapshot)))).toContain('LABEL noLocation');
   });
 
-  it('uses the dark palette in dark mode', () => {
-    expect(cardRootFill(NextPrayerWidget(ctx('en', 'light')))).not.toBe(cardRootFill(NextPrayerWidget(ctx('en', 'dark'))));
+  it('uses brandSurface in light and dark modes', () => {
+    const { palette } = ctx('en', 'light');
+    expect(cardRootFill(NextPrayerWidget(ctx('en', 'light')))).toBe(palette.brandSurface);
+    expect(cardRootFill(NextPrayerWidget(ctx('en', 'dark')))).toBe(palette.brandSurface);
+  });
+
+  it('fills home cards with brandSurface and an onBrand motif watermark', () => {
+    const context = ctx('en', 'light');
+    const tree = NextPrayerWidget(context);
+    const { palette } = context;
+    const root = walk(tree)[0]!;
+    expect(styleOf(root).backgroundColor).toBe(palette.brandSurface);
+    expect(cardRootFill(tree)).toBe(palette.brandSurface);
+    expect(walk(tree).some((node) => typeof node.props.svg === 'string')).toBe(true);
   });
 
   it('start-aligns the prayer chip column in Arabic', () => {

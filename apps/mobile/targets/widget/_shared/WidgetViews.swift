@@ -41,19 +41,19 @@ struct NextPrayerWidgetView: View {
         VStack(alignment: .leading, spacing: 2) {
           Text(snapshot.labels.nextPrayer)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(palette.inkMuted)
+            .foregroundStyle(palette.onBrandSurfaceMuted)
           Text(snapshot.labels.noLocation)
             .font(.system(size: 17, weight: .semibold))
-            .foregroundStyle(palette.ink)
+            .foregroundStyle(palette.onBrandSurface)
             .padding(.top, 6)
           Spacer(minLength: 0)
           HStack(spacing: 4) {
             Text(snapshot.labels.openApp)
               .font(.system(size: 13, weight: .semibold))
-              .foregroundStyle(palette.brand)
+              .foregroundStyle(palette.onBrandSurface)
             Image(systemName: "chevron.forward")
               .font(.system(size: 12, weight: .semibold))
-              .foregroundStyle(palette.brand)
+              .foregroundStyle(palette.onBrandSurface)
               .flipsForRightToLeftLayoutDirection(true)
           }
         }
@@ -61,10 +61,10 @@ struct NextPrayerWidgetView: View {
         VStack(alignment: .leading, spacing: 2) {
           Text(snapshot.labels.nextPrayer)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(palette.inkMuted)
+            .foregroundStyle(palette.onBrandSurfaceMuted)
           Text(snapshot.labels.stale)
             .font(.system(size: 15, weight: .medium))
-            .foregroundStyle(palette.inkMuted)
+            .foregroundStyle(palette.onBrandSurfaceMuted)
           Spacer(minLength: 0)
         }
       case .next(let key, let at):
@@ -72,20 +72,17 @@ struct NextPrayerWidgetView: View {
           VStack(alignment: .leading, spacing: 2) {
             Text(snapshot.labels.nextPrayer)
               .font(.system(size: 12, weight: .medium))
-              .foregroundStyle(palette.inkMuted)
+              .foregroundStyle(palette.onBrandSurfaceMuted)
             Text(WidgetHelpers.prayerName(key: key, labels: snapshot.labels))
               .font(.amiriBold(35))
-              .foregroundStyle(palette.ink)
+              .foregroundStyle(palette.onBrandSurface)
               .minimumScaleFactor(0.8)
               .lineLimit(1)
               .padding(.top, 2)
             Text(Date(timeIntervalSince1970: at / 1000), style: .time)
               .font(.system(size: 15, weight: .semibold))
-              .foregroundStyle(palette.ink)
-              .padding(.horizontal, 10)
-              .padding(.vertical, 4)
-              .background(palette.fillSecondary)
-              .clipShape(Capsule())
+              .foregroundStyle(palette.onBrandSurface)
+              .onBrandSoftChip(palette)
               .padding(.top, 4)
           }
           Spacer(minLength: 0)
@@ -108,10 +105,10 @@ struct NextPrayerWidgetView: View {
       ForEach(WidgetHelpers.prayerDotKeys, id: \.self) { key in
         let state = WidgetHelpers.prayerDotState(key: key, nextKey: nextKey, entryAt: byKey[key], nowMs: nowMs)
         Circle()
-          .fill(state == "next" ? palette.brand : state == "past" ? palette.brand.opacity(0.35) : Color.clear)
+          .fill(state == "next" ? palette.onBrandSurface : state == "past" ? palette.onBrandSurface.opacity(0.35) : Color.clear)
           .overlay {
             if state == "future" {
-              Circle().stroke(palette.line, lineWidth: 1)
+              Circle().stroke(palette.onBrandSurfaceMuted, lineWidth: 1)
             }
           }
           .frame(width: 8, height: 8)
@@ -121,23 +118,19 @@ struct NextPrayerWidgetView: View {
   }
 
   private func prayerRemainingBand(snapshot: TaybahSnapshot, palette: TaybahPalette, at: Double) -> some View {
-    VStack(alignment: .leading, spacing: 2) {
+    VStack(alignment: .leading, spacing: 4) {
       if let remaining = snapshot.labels.remaining {
         Text(remaining)
-          .font(.system(size: 11))
+          .font(.system(size: 12, weight: .medium))
           .foregroundStyle(palette.onBrandSurfaceMuted)
       }
       Text(Date(timeIntervalSince1970: at / 1000), style: .timer)
-        .font(.system(size: 22, weight: .bold))
+        .font(.system(size: 20, weight: .bold))
         .foregroundStyle(palette.onBrandSurface)
         .monospacedDigit()
         .widgetAccentable()
     }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .padding(.horizontal, 12)
-    .padding(.vertical, 10)
-    .background(palette.brandSurface)
-    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    .onBrandSoftCard(palette)
   }
 
   private func medium(snapshot: TaybahSnapshot, palette: TaybahPalette, state: WidgetHelpers.PrayerState, nowMs: Double) -> some View {
@@ -148,10 +141,10 @@ struct NextPrayerWidgetView: View {
         VStack(alignment: .leading, spacing: 8) {
           Text(snapshot.labels.nextPrayer)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(palette.inkMuted)
+            .foregroundStyle(palette.onBrandSurfaceMuted)
           Text(message)
             .font(.system(size: 15, weight: .medium))
-            .foregroundStyle(palette.ink)
+            .foregroundStyle(palette.onBrandSurface)
         }
       case .next(let key, let at):
         VStack(alignment: .leading, spacing: 0) {
@@ -159,18 +152,15 @@ struct NextPrayerWidgetView: View {
             let placeSuffix = snapshot.prayer.place.map { " · \($0)" } ?? ""
             Text("\(snapshot.labels.nextPrayer)\(placeSuffix)")
               .font(.system(size: 12, weight: .medium))
-              .foregroundStyle(palette.inkMuted)
+              .foregroundStyle(palette.onBrandSurfaceMuted)
             Text(WidgetHelpers.prayerName(key: key, labels: snapshot.labels))
               .font(.amiriBold(32))
-              .foregroundStyle(palette.ink)
+              .foregroundStyle(palette.onBrandSurface)
               .lineLimit(1)
             Text(Date(timeIntervalSince1970: at / 1000), style: .time)
               .font(.system(size: 15, weight: .semibold))
-              .foregroundStyle(palette.ink)
-              .padding(.horizontal, 10)
-              .padding(.vertical, 4)
-              .background(palette.fillSecondary)
-              .clipShape(Capsule())
+              .foregroundStyle(palette.onBrandSurface)
+              .onBrandSoftChip(palette)
           }
           Spacer(minLength: 0)
           prayerTiles(snapshot: snapshot, palette: palette, nextKey: key, nextAt: at)
@@ -193,19 +183,23 @@ struct NextPrayerWidgetView: View {
         VStack(spacing: 0) {
           Text(WidgetHelpers.prayerName(key: entry.key, labels: snapshot.labels))
             .font(.system(size: 12, weight: isNext ? .bold : .medium))
-            .foregroundStyle(isNext ? palette.ink : palette.inkMuted)
+            .foregroundStyle(isNext ? palette.onBrandSurface : palette.onBrandSurfaceMuted)
           Text(Date(timeIntervalSince1970: entry.at / 1000), style: .time)
             .font(.system(size: 13))
-            .foregroundStyle(isNext ? palette.ink : palette.inkMuted)
+            .foregroundStyle(isNext ? palette.onBrandSurface : palette.onBrandSurfaceMuted)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
         .padding(.horizontal, 2)
-        .background(isNext ? palette.highlightActive : palette.fillSecondary)
+        .background(
+          isNext
+            ? WidgetHelpers.onBrandWash(palette)
+            : WidgetHelpers.onBrandWash(palette, opacity: WidgetHelpers.onBrandWashLight)
+        )
         .overlay {
           if isNext {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-              .stroke(palette.brand, lineWidth: 1.5)
+              .stroke(palette.gold, lineWidth: 1.5)
           }
         }
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -215,7 +209,7 @@ struct NextPrayerWidgetView: View {
 
   private func placeholder(palette: TaybahPalette) -> some View {
     Text("…")
-      .foregroundStyle(palette.inkMuted)
+      .foregroundStyle(palette.onBrandSurfaceMuted)
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .padding(WidgetHelpers.cardPadding)
   }
@@ -235,7 +229,7 @@ struct ProgressWidgetView: View {
         content(snapshot: snapshot, palette: palette)
           .snapshotLocale(snapshot.locale)
       } else {
-        Text("…").foregroundStyle(palette.inkMuted)
+        Text("…").foregroundStyle(palette.onBrandSurfaceMuted)
       }
     }
     .widgetURL(WidgetDeepLink.url(path: "/daily-goals", hostBundleId: WidgetHelpers.hostBundleId()))
@@ -268,12 +262,12 @@ struct ProgressWidgetView: View {
       percent: Double(percent) / 100,
       size: size,
       stroke: stroke,
-      track: palette.fillSecondary,
-      fill: palette.brand,
+      track: palette.onBrandSurface.opacity(0.2),
+      fill: palette.gold,
       center: {
         Text(WidgetHelpers.formatPercent(percent, locale: snapshot.locale))
           .font(.system(size: fontSize, weight: .bold))
-          .foregroundStyle(palette.ink)
+          .foregroundStyle(palette.onBrandSurface)
           .minimumScaleFactor(0.7)
       }
     )
@@ -284,25 +278,25 @@ struct ProgressWidgetView: View {
       if empty {
         Text(snapshot.labels.progressTitle)
           .font(.system(size: 12, weight: .medium))
-          .foregroundStyle(palette.inkMuted)
+          .foregroundStyle(palette.onBrandSurfaceMuted)
           .frame(maxWidth: .infinity, alignment: .leading)
         Spacer(minLength: 0)
         ProgressRingView(
           percent: 0,
           size: 64,
           stroke: 7,
-          track: palette.fillSecondary,
-          fill: palette.brand,
+          track: palette.onBrandSurface.opacity(0.2),
+          fill: palette.gold,
           center: {
             Image(systemName: "plus")
               .font(.system(size: 22, weight: .medium))
-              .foregroundStyle(palette.brand)
+              .foregroundStyle(palette.onBrandSurface)
           }
         )
         Spacer(minLength: 0)
         Text(snapshot.labels.progressEmpty)
           .font(.system(size: 13, weight: .semibold))
-          .foregroundStyle(palette.ink)
+          .foregroundStyle(palette.onBrandSurface)
           .multilineTextAlignment(.center)
       } else {
         ring(snapshot: snapshot, palette: palette, size: 92, stroke: 9, fontSize: 22, percent: snapshot.progress.percent)
@@ -310,7 +304,7 @@ struct ProgressWidgetView: View {
         let summary = WidgetHelpers.progressGoalsSummary(rows: rows, locale: snapshot.locale, ofLabel: snapshot.labels.of)
         Text("\(snapshot.labels.progressTitle) · \(summary)")
           .font(.system(size: 13, weight: .semibold))
-          .foregroundStyle(palette.ink)
+          .foregroundStyle(palette.onBrandSurface)
           .multilineTextAlignment(.center)
       }
     }
@@ -329,11 +323,11 @@ struct ProgressWidgetView: View {
         VStack(alignment: .leading, spacing: 6) {
           Text(snapshot.labels.progressTitle)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(palette.inkMuted)
+            .foregroundStyle(palette.onBrandSurfaceMuted)
           if empty {
             Text(snapshot.labels.progressEmpty)
               .font(.system(size: 13))
-              .foregroundStyle(palette.inkMuted)
+              .foregroundStyle(palette.onBrandSurfaceMuted)
           } else {
             ForEach(rows.prefix(4), id: \.key) { row in
               progressRow(row: row, palette: palette, fontSize: 13)
@@ -343,20 +337,16 @@ struct ProgressWidgetView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
       }
       Spacer(minLength: 0)
-      VStack(alignment: .leading, spacing: 2) {
+      VStack(alignment: .leading, spacing: 4) {
         Text(snapshot.labels.progressTitle)
-          .font(.system(size: 11))
-          .foregroundStyle(palette.inkMuted)
+          .font(.system(size: 12, weight: .medium))
+          .foregroundStyle(palette.onBrandSurfaceMuted)
         Text(summary)
-          .font(.system(size: 15, weight: .bold))
-          .foregroundStyle(palette.ink)
+          .font(.system(size: 20, weight: .bold))
+          .foregroundStyle(palette.onBrandSurface)
           .lineLimit(2)
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.horizontal, 12)
-      .padding(.vertical, 8)
-      .background(palette.fillSecondary)
-      .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+      .onBrandSoftCard(palette)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .padding(WidgetHelpers.cardPadding)
@@ -370,23 +360,23 @@ struct ProgressWidgetView: View {
         VStack(alignment: .leading, spacing: 4) {
           Text(snapshot.labels.progressTitle)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(palette.inkMuted)
+            .foregroundStyle(palette.onBrandSurfaceMuted)
           if !empty {
             Text(WidgetHelpers.progressGoalsSummary(rows: rows, locale: snapshot.locale, ofLabel: snapshot.labels.of))
               .font(.amiriBold(26))
-              .foregroundStyle(palette.ink)
+              .foregroundStyle(palette.onBrandSurface)
               .minimumScaleFactor(0.8)
               .lineLimit(2)
           } else {
             Text(snapshot.labels.progressEmpty)
               .font(.system(size: 15, weight: .medium))
-              .foregroundStyle(palette.inkMuted)
+              .foregroundStyle(palette.onBrandSurfaceMuted)
           }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
       }
       if !empty {
-        Divider().overlay(palette.line)
+        Divider().overlay(palette.onBrandSurface.opacity(0.2))
         VStack(spacing: 2) {
           ForEach(rows, id: \.key) { row in
             progressRow(row: row, palette: palette, fontSize: 15)
@@ -404,12 +394,12 @@ struct ProgressWidgetView: View {
       GoalCheckmark(done: row.done, palette: palette)
       Text(row.label)
         .font(.system(size: fontSize, weight: .medium))
-        .foregroundStyle(palette.ink)
+        .foregroundStyle(palette.onBrandSurface)
         .lineLimit(1)
       Spacer(minLength: 4)
       Text(row.value)
         .font(.system(size: fontSize, weight: .medium))
-        .foregroundStyle(palette.inkMuted)
+        .foregroundStyle(palette.onBrandSurfaceMuted)
         .lineLimit(1)
     }
     .frame(minHeight: fontSize + 8)
@@ -578,7 +568,7 @@ struct MisbahaWidgetView: View {
         content(snapshot: snapshot, palette: palette)
           .snapshotLocale(snapshot.locale)
       } else {
-        Text("…").foregroundStyle(palette.inkMuted)
+        Text("…").foregroundStyle(palette.onBrandSurfaceMuted)
       }
     }
     .widgetURL(WidgetDeepLink.url(path: "/sibha", hostBundleId: WidgetHelpers.hostBundleId()))
@@ -597,41 +587,37 @@ struct MisbahaWidgetView: View {
       VStack(alignment: .leading, spacing: 0) {
         Text(snapshot.labels.misbaha)
           .font(.system(size: 12, weight: .medium))
-          .foregroundStyle(palette.inkMuted)
+          .foregroundStyle(palette.onBrandSurfaceMuted)
         Spacer(minLength: 0)
         ProgressRingView(
           percent: percent,
           size: 96,
           stroke: 6,
-          track: palette.fillSecondary,
-          fill: palette.brand,
+          track: palette.onBrandSurface.opacity(0.2),
+          fill: palette.gold,
           center: {
             VStack(spacing: 0) {
               Text(WidgetHelpers.formatNumber(snapshot.misbaha.count, locale: snapshot.locale))
                 .font(.amiriBold(40))
-                .foregroundStyle(palette.ink)
+                .foregroundStyle(palette.onBrandSurface)
               Text(targetText)
                 .font(.system(size: 11))
-                .foregroundStyle(palette.inkMuted)
+                .foregroundStyle(palette.onBrandSurfaceMuted)
             }
           }
         )
         .frame(maxWidth: .infinity)
         Spacer(minLength: 0)
         VStack(alignment: .leading, spacing: 8) {
-          VStack(alignment: .leading, spacing: 2) {
+          VStack(alignment: .leading, spacing: 4) {
             Text(snapshot.labels.misbaha)
-              .font(.system(size: 11))
-              .foregroundStyle(palette.inkMuted)
+              .font(.system(size: 12, weight: .medium))
+              .foregroundStyle(palette.onBrandSurfaceMuted)
             Text(targetText)
-              .font(.system(size: 15, weight: .bold))
-              .foregroundStyle(palette.ink)
+              .font(.system(size: 18, weight: .bold))
+              .foregroundStyle(palette.onBrandSurface)
           }
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.horizontal, 12)
-          .padding(.vertical, 8)
-          .background(palette.fillSecondary)
-          .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+          .onBrandSoftCard(palette)
         }
       }
       .padding(WidgetHelpers.cardPadding)
@@ -640,10 +626,9 @@ struct MisbahaWidgetView: View {
         Button(intent: MisbahaIncrementIntent()) {
           Image(systemName: "plus")
             .font(.system(size: 20, weight: .semibold))
-            .foregroundStyle(palette.onBrand)
+            .foregroundStyle(palette.brandSurface)
             .frame(width: 36, height: 36)
-            .background(palette.brand)
-            .overlay(Circle().stroke(palette.onBrand, lineWidth: 2))
+            .background(palette.onBrandSurface)
             .clipShape(Circle())
         }
         .buttonStyle(.plain)
@@ -667,7 +652,7 @@ struct AzkarWidgetView: View {
         content(snapshot: snapshot, palette: palette)
           .snapshotLocale(snapshot.locale)
       } else {
-        Text("…").foregroundStyle(palette.inkMuted)
+        Text("…").foregroundStyle(palette.onBrandSurfaceMuted)
       }
     }
     .widgetURL(WidgetDeepLink.url(path: "/azkar", hostBundleId: WidgetHelpers.hostBundleId()))
@@ -680,10 +665,10 @@ struct AzkarWidgetView: View {
       VStack(alignment: .leading, spacing: 6) {
         Text(snapshot.labels.azkarTitle)
           .font(.system(size: 12, weight: .medium))
-          .foregroundStyle(palette.inkMuted)
+          .foregroundStyle(palette.onBrandSurfaceMuted)
         Text(snapshot.labels.azkarEmpty)
           .font(.system(size: 14))
-          .foregroundStyle(palette.ink)
+          .foregroundStyle(palette.onBrandSurface)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .padding(WidgetHelpers.cardPadding)
@@ -694,14 +679,11 @@ struct AzkarWidgetView: View {
         VStack(alignment: .leading, spacing: 6) {
           Text(snapshot.labels.azkarTitle)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(palette.inkMuted)
+            .foregroundStyle(palette.onBrandSurfaceMuted)
           Text("\(WidgetHelpers.formatNumber(completeCount, locale: snapshot.locale)) \(snapshot.labels.of) \(WidgetHelpers.formatNumber(sessions.count, locale: snapshot.locale))")
             .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(palette.ink)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(palette.fillSecondary)
-            .clipShape(Capsule())
+            .foregroundStyle(palette.onBrandSurface)
+            .onBrandSoftChip(palette)
         }
         Spacer(minLength: 0)
         HStack(spacing: 4) {
@@ -723,25 +705,30 @@ struct AzkarWidgetView: View {
         percent: session.complete ? 1 : percent,
         size: 44,
         stroke: 5,
-        track: palette.fillSecondary,
-        fill: palette.brand,
+        track: palette.onBrandSurface.opacity(0.2),
+        fill: palette.gold,
         center: {
           if session.complete {
             Image(systemName: "checkmark")
               .font(.system(size: 14, weight: .bold))
-              .foregroundStyle(palette.brand)
+              .foregroundStyle(palette.gold)
           }
         }
       )
       Text(session.title)
         .font(.system(size: 11, weight: .medium))
-        .foregroundStyle(session.complete ? palette.inkMuted : palette.ink)
+        .foregroundStyle(session.complete ? palette.onBrandSurfaceMuted : palette.onBrandSurface)
         .lineLimit(1)
         .minimumScaleFactor(0.7)
     }
     .frame(maxWidth: .infinity)
     .padding(.vertical, 4)
-    .background(session.complete ? palette.fillSecondary : palette.surfaceRaised)
+    .background(
+      WidgetHelpers.onBrandWash(
+        palette,
+        opacity: session.complete ? WidgetHelpers.onBrandWashLight : 0.2
+      )
+    )
     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
   }
 }

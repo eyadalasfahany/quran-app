@@ -25,10 +25,10 @@ describe('prayerDots', () => {
     expect(dots).toHaveLength(PRAYER_DOT_ORDER.length);
   });
 
-  it('fills the next prayer dot with brand', () => {
+  it('fills the next prayer dot with onBrandSurface', () => {
     const tree = prayerDots(ctx, 'asr');
-    const brandDots = walk(tree).filter((node) => styleOf(node).backgroundColor === ctx.palette.brand);
-    expect(brandDots).toHaveLength(1);
+    const nextDots = walk(tree).filter((node) => styleOf(node).backgroundColor === ctx.palette.onBrandSurface);
+    expect(nextDots).toHaveLength(1);
   });
 
   it('wraps dots in a horizontal row', () => {

@@ -11,7 +11,7 @@ import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
 import { block, column, grow, label, row } from './primitives';
 import { withAlpha } from './theme';
-import { widgetFaceColumn } from './widget-chrome';
+import { ON_BRAND_WASH_ALPHA, widgetFaceColumn } from './widget-chrome';
 import { widgetPaths } from '../snapshot/deep-links';
 
 /** The wird bar's split: the filled part and the rest, both 0 to 100 and never negative. */
@@ -34,8 +34,8 @@ export function ContinueReadingWidget(ctx: WidgetContext) {
 
   if (reading === null) {
     return card(ctx, [
-      label(labels.continueReading, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-      label(labels.openApp, { color: palette.ink, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
+      label(labels.continueReading, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      label(labels.openApp, { color: palette.onBrandSurface, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
     ], { accessibilityLabel: `${labels.continueReading}: ${labels.openApp}`, click: { clickAction: 'OPEN_APP' } });
   }
 
@@ -64,8 +64,10 @@ export function ContinueReadingWidget(ctx: WidgetContext) {
     <FlexWidget
       style={{
         alignSelf: 'flex_start',
-        backgroundColor: withAlpha(palette.onBrandSurface, 0.14),
+        backgroundColor: withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA),
+        borderColor: withAlpha(palette.onBrandSurface, 0.12),
         borderRadius: 999,
+        borderWidth: 1,
         paddingHorizontal: 10,
         paddingVertical: 4,
       }}
@@ -118,8 +120,10 @@ function wirdBlock(ctx: WidgetContext, done: number, target: number) {
         key="wird-chip"
         style={{
           alignSelf: 'flex_start',
-          backgroundColor: withAlpha(palette.onBrandSurface, 0.14),
+          backgroundColor: withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA),
+          borderColor: withAlpha(palette.onBrandSurface, 0.12),
           borderRadius: 999,
+          borderWidth: 1,
           paddingHorizontal: 8,
           paddingVertical: 4,
         }}

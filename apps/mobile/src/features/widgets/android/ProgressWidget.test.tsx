@@ -1,7 +1,7 @@
 import { ProgressWidget } from './ProgressWidget';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { cardRootFill, hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
+import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (
@@ -47,7 +47,15 @@ describe('ProgressWidget', () => {
     expect(startAlignedFullWidthLabels(ProgressWidget(ctx('ar')), true)).toBe(true);
   });
 
-  it('uses the dark palette in dark mode', () => {
-    expect(cardRootFill(ProgressWidget(ctx('en', 'light')))).not.toBe(cardRootFill(ProgressWidget(ctx('en', 'dark'))));
+  it('uses the dark palette gold on the progress ring', () => {
+    const lightCtx = ctx('en', 'light');
+    const darkCtx = ctx('en', 'dark');
+    const ringSvg = (tree: ReturnType<typeof ProgressWidget>) =>
+      walk(tree).find((node) => typeof node.props.svg === 'string' && styleOf(node).width === 92)?.props.svg as
+        | string
+        | undefined;
+    expect(ringSvg(ProgressWidget(lightCtx))).toContain(lightCtx.palette.gold.slice(1));
+    expect(ringSvg(ProgressWidget(darkCtx))).toContain(darkCtx.palette.gold.slice(1));
+    expect(lightCtx.palette.gold).not.toBe(darkCtx.palette.gold);
   });
 });
