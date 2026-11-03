@@ -200,21 +200,29 @@ describe('MenuScreen', () => {
   });
 
   describe('Duas card', () => {
-    it('hides the Duas card when Duas is unavailable', async () => {
-      withDuas(false);
+    // Menu Duas card is temporarily commented out in MenuScreen (keep tests for restore).
+    it('hides the Duas card while the menu entry is commented out', async () => {
+      withDuas(true);
       await renderUi(<MenuScreen />);
 
       expect(screen.queryByTestId('menu-card-duas')).toBeNull();
     });
 
-    it('shows the Duas card and opens /duas when Duas is available', async () => {
-      withDuas(true);
-      await renderUi(<MenuScreen />);
-
-      expect(screen.getByTestId('menu-card-duas')).toBeOnTheScreen();
-      await fireEvent.press(screen.getByTestId('menu-card-duas'));
-      expect(router.push).toHaveBeenLastCalledWith('/duas');
-    });
+    // it('hides the Duas card when Duas is unavailable', async () => {
+    //   withDuas(false);
+    //   await renderUi(<MenuScreen />);
+    //
+    //   expect(screen.queryByTestId('menu-card-duas')).toBeNull();
+    // });
+    //
+    // it('shows the Duas card and opens /duas when Duas is available', async () => {
+    //   withDuas(true);
+    //   await renderUi(<MenuScreen />);
+    //
+    //   expect(screen.getByTestId('menu-card-duas')).toBeOnTheScreen();
+    //   await fireEvent.press(screen.getByTestId('menu-card-duas'));
+    //   expect(router.push).toHaveBeenLastCalledWith('/duas');
+    // });
   });
 
   describe('Azkar cards', () => {
