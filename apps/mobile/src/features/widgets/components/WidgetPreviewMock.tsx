@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from 'react';
+import type { TFunction } from 'i18next';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -239,7 +240,7 @@ function ProgressPreview({
 }: {
   snapshot: ReturnType<typeof readWidgetSnapshot>;
   testID: string;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const theme = useTheme();
   const locale = snapshot?.locale ?? getLocale();
@@ -299,7 +300,7 @@ function ContinueReadingPreview({
 }: {
   snapshot: ReturnType<typeof readWidgetSnapshot>;
   testID: string;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const theme = useTheme();
   const labels = snapshot?.labels;
@@ -361,7 +362,7 @@ function MisbahaPreview({
 }: {
   snapshot: ReturnType<typeof readWidgetSnapshot>;
   testID: string;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const theme = useTheme();
   const misbaha = snapshot?.misbaha ?? { count: 0, target: null, todayTotal: 0 };
@@ -407,7 +408,7 @@ function AzkarPreview({
 }: {
   snapshot: ReturnType<typeof readWidgetSnapshot>;
   testID: string;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const theme = useTheme();
   const azkar = snapshot?.azkar;

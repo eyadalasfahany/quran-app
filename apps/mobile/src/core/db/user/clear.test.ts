@@ -34,6 +34,7 @@ describe('clearLocalUserData', () => {
       'azkar_reminders',
       'my_duas',
       'dua_favorites',
+      'names_favorites',
     ]);
   });
 

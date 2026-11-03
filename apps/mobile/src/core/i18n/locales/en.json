@@ -580,6 +580,10 @@
     "sourceAuto": "Automatic",
     "sourceManual": "Manual",
     "notify": "{{name}} reminder",
+    "exactAlarm": {
+      "title": "Keep the adhan on time",
+      "body": "Allow Taybah to set alarms so prayer notifications arrive exactly on time."
+    },
     "qiblaRow": {
       "title": "Qibla direction",
       "subtitle": "{{degrees}}° from true north"
@@ -839,6 +843,7 @@
     "about": {
       "sources": "Sources and acknowledgments",
       "sourcesValue": "Quran Foundation · Tanzil · King Fahd Complex",
+      "privacy": "Privacy policy",
       "clearData": "Clear local data",
       "clearDataTitle": "Clear local data?",
       "clearDataMessage": "Are you sure you want to clear your local bookmarks, highlights, notes, and Khatma? This action cannot be undone.",

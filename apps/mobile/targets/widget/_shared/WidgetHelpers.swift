@@ -156,6 +156,8 @@ extension View {
       containerBackground(for: .widget) {
         AccessoryWidgetBackground()
       }
+    } else {
+      self
     }
   }
 

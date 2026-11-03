@@ -132,8 +132,26 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     // app's localization only from the bundled lproj folders, so without en.lproj an English reader still
     // gets Arabic natural text alignment and Arabic system labels.
     locales: {
-      ar: { ios: { CFBundleDisplayName: variant.nameAr }, android: { app_name: variant.nameAr } },
-      en: { ios: { CFBundleDisplayName: variant.name }, android: { app_name: variant.name } },
+      ar: {
+        ios: {
+          CFBundleDisplayName: variant.nameAr,
+          NSLocationWhenInUseUsageDescription: 'يحتاج طيبة إلى موقعك لعرض مواقيت الصلاة واتجاه القبلة.',
+          NSLocationAlwaysAndWhenInUseUsageDescription: 'يحتاج طيبة إلى موقعك لعرض مواقيت الصلاة واتجاه القبلة.',
+          NSLocationAlwaysUsageDescription: 'يحتاج طيبة إلى موقعك لعرض مواقيت الصلاة واتجاه القبلة.',
+          NSMotionUsageDescription: 'يستخدم طيبة مستشعرات الجهاز لتحديد اتجاه القبلة.',
+        },
+        android: { app_name: variant.nameAr },
+      },
+      en: {
+        ios: {
+          CFBundleDisplayName: variant.name,
+          NSLocationWhenInUseUsageDescription: 'Taybah needs your location to show prayer times and the qibla direction.',
+          NSLocationAlwaysAndWhenInUseUsageDescription: 'Taybah needs your location to show prayer times and the qibla direction.',
+          NSLocationAlwaysUsageDescription: 'Taybah needs your location to show prayer times and the qibla direction.',
+          NSMotionUsageDescription: "Taybah uses your device's sensors to point you to the qibla.",
+        },
+        android: { app_name: variant.name },
+      },
     },
     // Layout follows window size; no orientation lock anywhere (spec §4).
     orientation: 'default',
@@ -176,10 +194,18 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         // expo-dev-menu reads this key as its default; the dev menu still opens with a shake.
         ...(variantKey === 'development' && { EXDevMenuShowFloatingActionButton: false }),
       },
+      // The app writes the widget snapshot to the App Group (1C8F.1); merged with the libraries' aggregated manifest.
+      privacyManifests: {
+        NSPrivacyAccessedAPITypes: [
+          {
+            NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults',
+            NSPrivacyAccessedAPITypeReasons: ['CA92.1', '1C8F.1'],
+          },
+        ],
+      },
     },
     android: {
       package: variant.id,
-      ...(variantKey === 'production' && { googleServicesFile: './google-services.json' }),
       adaptiveIcon: {
         backgroundColor: '#F9F7F2',
         // 1024×1024, logo in ~66% safe zone for the circular mask (see generate-brand-assets.mjs).
@@ -190,8 +216,19 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       predictiveBackGestureEnabled: false,
       // Exact prayer and reminder alarms (ADR 0035 §5, prompt 12 builds the request flow). Not USE_EXACT_ALARM.
       permissions: ['android.permission.SCHEDULE_EXACT_ALARM'],
+      // Not used by the app; library and template defaults that would otherwise ship (ADR 0058). Dev keeps the overlay permission.
+      blockedPermissions: [
+        'android.permission.ACTIVITY_RECOGNITION',
+        'android.permission.READ_EXTERNAL_STORAGE',
+        'android.permission.WRITE_EXTERNAL_STORAGE',
+        ...(variantKey === 'production'
+          ? ['android.permission.SYSTEM_ALERT_WINDOW', 'com.google.android.c2dm.permission.RECEIVE']
+          : []),
+      ],
     },
     plugins: [
+      // Runs last among the mods (mods added first run last), so it overrides the library defaults for the purpose strings.
+      ['./plugins/with-ios-purpose-strings.js', { production: variantKey === 'production' }],
       'expo-router',
       // Android status-bar icon: the logo as a white silhouette (an opaque icon shows as a white square), tinted brand.
       // Prayer notification sounds (ADR 0047): each file is copied into the iOS bundle and Android res/raw. The list

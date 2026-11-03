@@ -1,11 +1,12 @@
 import SwiftUI
 import WatchConnectivity
+import WatchKit
 
 struct WatchSibhaView: View {
   @ObservedObject var store: WatchSnapshotStore
   @State private var count = 0
   @State private var target: Int? = 33
-  @State private var seq = 0
+  @State private var seq = UserDefaults.standard.integer(forKey: "taybah.watch.seq")
 
   var body: some View {
     VStack(spacing: 12) {
@@ -22,6 +23,12 @@ struct WatchSibhaView: View {
       count = store.snapshot?.misbaha.count ?? 0
       target = store.snapshot?.misbaha.target
     }
+    .onChange(of: store.snapshot?.misbaha.count) { _, newCount in
+      if let newCount { count = newCount }
+    }
+    .onChange(of: store.snapshot?.misbaha.target) { _, newTarget in
+      target = newTarget
+    }
   }
 
   private func tap() {
@@ -35,7 +42,9 @@ struct WatchSibhaView: View {
   }
 
   private func sendDelta(taps: Int) {
+    guard WCSession.isSupported(), WCSession.default.activationState == .activated else { return }
     seq += 1
+    UserDefaults.standard.set(seq, forKey: "taybah.watch.seq")
     let payload: [String: Any] = [
       "source": "watch",
       "installId": WKInterfaceDevice.current().identifierForVendor?.uuidString ?? "watch",

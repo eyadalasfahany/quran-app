@@ -11,7 +11,8 @@ import {
 } from '../data/location-cache';
 import { PrayerTimesOutput, NextPrayerName, nextPrayer, timesFor } from '../data/prayer-times';
 import { bellStorageKey, getBellEnabled } from '../data/bells';
-import { setPrayerBell } from '../data/notifications';
+import { resyncPrayerNotifications, setPrayerBell } from '../data/notifications';
+import { needsExactAlarmAccess, requestExactAlarmAccess } from '@/features/notifications/permission';
 import { dateForDayKey, dayKeyOf, nextClockBoundary } from '../data/clock';
 import { storage } from '../../../core/storage/mmkv';
 
@@ -183,10 +184,21 @@ export const useBell = (name: NextPrayerName) => {
   // Set when the system refused permission; cleared by the dialog's dismissal or by the next applied change.
   const [permissionDenied, setPermissionDenied] = useState(false);
 
+  // Set when a turn-on is applied but exact alarms are denied (Android 14+); the caller shows ExactAlarmDialog.
+  const [exactAlarmNeeded, setExactAlarmNeeded] = useState(false);
+
   const setEnabled = useCallback(
     async (on: boolean): Promise<boolean> => {
       const applied = await setPrayerBell(name, on);
       setPermissionDenied(!applied);
+      if (applied && on) {
+        // Not awaited: the bell is already on, so the tap never waits on the exact-alarm check.
+        void needsExactAlarmAccess().then((needed) => {
+          if (needed) {
+            setExactAlarmNeeded(true);
+          }
+        });
+      }
       return applied;
     },
     [name],
@@ -194,9 +206,29 @@ export const useBell = (name: NextPrayerName) => {
 
   const dismissPermissionDenied = useCallback(() => setPermissionDenied(false), []);
 
+  const dismissExactAlarm = useCallback(() => setExactAlarmNeeded(false), []);
+
+  // Opens the system exact-alarm screen; on grant, re-plans the prayer notifications so pending ones become exact.
+  // A refusal leaves the bell on, with inexact notifications.
+  const grantExactAlarm = useCallback(async (): Promise<void> => {
+    setExactAlarmNeeded(false);
+    if (await requestExactAlarmAccess()) {
+      await resyncPrayerNotifications();
+    }
+  }, []);
+
   const toggle = useCallback(() => {
     void setEnabled(!getBellEnabled(name));
   }, [name, setEnabled]);
 
-  return { enabled, setEnabled, toggle, permissionDenied, dismissPermissionDenied };
+  return {
+    enabled,
+    setEnabled,
+    toggle,
+    permissionDenied,
+    dismissPermissionDenied,
+    exactAlarmNeeded,
+    dismissExactAlarm,
+    grantExactAlarm,
+  };
 };

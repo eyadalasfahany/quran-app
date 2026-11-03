@@ -120,7 +120,8 @@ export function WidgetSnapshotSync({ enabled }: { enabled: boolean }) {
       return undefined;
     }
     return subscribeWatchUserInfo((payload) => {
-      intakeWatchMisbahaDeltas(new Date(), [payload]);
+      // react-native-watch-connectivity delivers an array of user-info objects.
+      intakeWatchMisbahaDeltas(new Date(), Array.isArray(payload) ? payload : [payload]);
     });
   }, [enabled]);
 

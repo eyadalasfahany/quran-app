@@ -13,8 +13,10 @@ describe('patch-expo-dev-launcher-widget-host', () => {
     );
     const source = readFileSync(appLoaderPath, 'utf8');
 
-    expect(source).toContain('wireDevLauncherLoader');
-    expect(source).toContain('DevLauncher stale widget context');
+    expect(source).toContain('val existingContext = appHost.currentReactContext');
+    expect(source).toContain('controller.onAppLoaded(existingContext)');
+    expect(source).not.toContain('wireDevLauncherLoader');
+    expect(source).not.toContain('DevLauncher stale widget context');
     expect(source).not.toMatch(/require\(appHost\.currentReactContext == null\)/);
   });
 

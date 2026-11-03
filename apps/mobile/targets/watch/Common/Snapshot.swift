@@ -54,20 +54,29 @@ struct TaybahSnapshot: Codable {
 enum SnapshotIO {
   static let userDefaultsKey = "taybah.snapshot"
 
+  /// The watch app's id is `<host>.watchkitapp`; the group is `group.<host>`.
   static func appGroupSuite() -> String? {
     guard let bundleId = Bundle.main.bundleIdentifier else { return nil }
-    let host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
-    guard !host.isEmpty else { return nil }
-    return "group.\(host)"
+    guard let range = bundleId.range(of: ".watchkitapp") else { return "group.\(bundleId)" }
+    return "group.\(bundleId[..<range.lowerBound])"
   }
 
-  static func load() -> TaybahSnapshot? {
-    guard let suite = appGroupSuite(), let defaults = UserDefaults(suiteName: suite) else { return nil }
-    guard let json = defaults.string(forKey: SnapshotIO.userDefaultsKey) else { return nil }
+  static func decode(_ json: String) -> TaybahSnapshot? {
     guard let data = json.data(using: .utf8) else { return nil }
     guard let snapshot = try? JSONDecoder().decode(TaybahSnapshot.self, from: data), snapshot.schemaVersion == 1 else {
       return nil
     }
     return snapshot
+  }
+
+  static func load() -> TaybahSnapshot? {
+    guard let suite = appGroupSuite(), let defaults = UserDefaults(suiteName: suite) else { return nil }
+    guard let json = defaults.string(forKey: userDefaultsKey) else { return nil }
+    return decode(json)
+  }
+
+  static func save(json: String) {
+    guard let suite = appGroupSuite(), let defaults = UserDefaults(suiteName: suite) else { return }
+    defaults.set(json, forKey: userDefaultsKey)
   }
 }

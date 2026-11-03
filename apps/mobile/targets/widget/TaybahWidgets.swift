@@ -1,3 +1,4 @@
+import CoreText
 import SwiftUI
 import WidgetKit
 
@@ -145,6 +146,12 @@ struct LockScreenPrayerCircular: Widget {
 
 @main
 struct TaybahWidgetBundle: WidgetBundle {
+  init() {
+    if let url = Bundle.main.url(forResource: "Amiri-Bold", withExtension: "ttf") {
+      CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+    }
+  }
+
   var body: some Widget {
     NextPrayerSmall()
     ProgressMedium()

@@ -11,12 +11,13 @@ import {
   IOS_PENDING_LIMIT,
   MISBAHA_REMINDER_SLOTS,
   PRAYER_NOTIFICATION_SLOTS,
+  PRAYER_ROLLING_DAYS_WITH_IQAMAH,
+  prayerRollingDays,
 } from '@/features/notifications/budget';
 import { writeSyncState, currentSyncState } from '@/features/notifications/sync-state';
 
 import { ADHAN_VOICES, DEFAULT_PRAYER_SOUND, PRAYER_SOUND_IDS, type PrayerSoundId } from './adhan-sounds';
 import { getCoordinates } from './location';
-import { prayerRollingDays, PRAYER_ROLLING_DAYS_WITH_IQAMAH } from '@/features/notifications/budget';
 
 import { setIqamahOffsetMinutes } from './iqamah-offset';
 import {

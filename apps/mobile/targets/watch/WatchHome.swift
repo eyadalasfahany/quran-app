@@ -11,7 +11,7 @@ struct WatchHomeView: View {
           if let next = snapshot.prayer.entries.first(where: { $0.at > Date().timeIntervalSince1970 * 1000 }) {
             Text(prayerName(key: next.key, labels: snapshot.labels)).font(.headline)
             Text(Date(timeIntervalSince1970: next.at / 1000), style: .time)
-            Text(Date(), style: .timer).font(.caption2)
+            Text(Date(timeIntervalSince1970: next.at / 1000), style: .timer).font(.caption2)
           } else if snapshot.prayer.entries.isEmpty {
             Text(snapshot.labels.noLocation)
           } else {
@@ -21,7 +21,7 @@ struct WatchHomeView: View {
         }
         .environment(\.layoutDirection, snapshot.locale == "ar" ? .rightToLeft : .leftToRight)
       } else {
-        Text("…")
+        Text("watch_open_iphone").multilineTextAlignment(.center)
       }
     }
   }

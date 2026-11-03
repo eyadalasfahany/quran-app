@@ -1,7 +1,7 @@
 import { ContinueReadingWidget } from './ContinueReadingWidget';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { cardRootFill, hasArabicIndicNumerals, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
+import { cardRootFill, hasArabicIndicNumerals, startAlignedFullWidthLabels, textsOf } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (

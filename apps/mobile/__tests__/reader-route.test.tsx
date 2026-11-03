@@ -1,9 +1,3 @@
-// The widget snapshot sync is native-facing and has its own tests. Mounting it here costs the cold start past Jest's
-// 5 s limit on the first route test, so the route test renders the root without it.
-jest.mock("@/features/widgets/components/WidgetSnapshotSync", () => ({
-  WidgetSnapshotSync: () => null,
-}));
-
 import {
   act,
   fireEvent,
@@ -15,6 +9,12 @@ import { I18nManager } from "react-native";
 
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
+
+// The widget snapshot sync is native-facing and has its own tests. Mounting it here costs the cold start past Jest's
+// 5 s limit on the first route test, so the route test renders the root without it.
+jest.mock("@/features/widgets/components/WidgetSnapshotSync", () => ({
+  WidgetSnapshotSync: () => null,
+}));
 
 // The user database is not open under Jest; Home's recent listens are empty.
 // The user database is not open under Jest; the Listen tab (rendered by the tabs) reads no download counts.

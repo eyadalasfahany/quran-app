@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { ExactAlarmDialog } from '@/features/salah/components/ExactAlarmDialog';
 import { PrayerPermissionDialog } from '@/features/salah/components/PrayerPermissionDialog';
 import { useBell } from '@/features/salah/hooks';
 import type { NextPrayerName } from '@/features/salah/data/prayer-times';
@@ -12,7 +13,8 @@ import { ToggleRow } from '@/shared/ui/ToggleRow';
  */
 export function PrayerReminderRow({ prayer }: { prayer: NextPrayerName }) {
   const { t } = useTranslation();
-  const { enabled, setEnabled, permissionDenied, dismissPermissionDenied } = useBell(prayer);
+  const { enabled, setEnabled, permissionDenied, dismissPermissionDenied, exactAlarmNeeded, dismissExactAlarm, grantExactAlarm } =
+    useBell(prayer);
 
   return (
     <>
@@ -25,6 +27,7 @@ export function PrayerReminderRow({ prayer }: { prayer: NextPrayerName }) {
         value={enabled}
       />
       <PrayerPermissionDialog onClose={dismissPermissionDenied} visible={permissionDenied} />
+      <ExactAlarmDialog onClose={dismissExactAlarm} onConfirm={() => void grantExactAlarm()} visible={exactAlarmNeeded} />
     </>
   );
 }

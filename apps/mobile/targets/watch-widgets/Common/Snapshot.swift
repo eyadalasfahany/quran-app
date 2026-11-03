@@ -54,11 +54,11 @@ struct TaybahSnapshot: Codable {
 enum SnapshotIO {
   static let userDefaultsKey = "taybah.snapshot"
 
+  /// The watch app's id is `<host>.watchkitapp`; the group is `group.<host>`.
   static func appGroupSuite() -> String? {
     guard let bundleId = Bundle.main.bundleIdentifier else { return nil }
-    let host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
-    guard !host.isEmpty else { return nil }
-    return "group.\(host)"
+    guard let range = bundleId.range(of: ".watchkitapp") else { return "group.\(bundleId)" }
+    return "group.\(bundleId[..<range.lowerBound])"
   }
 
   static func load() -> TaybahSnapshot? {

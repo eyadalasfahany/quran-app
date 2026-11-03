@@ -103,8 +103,8 @@ enum SnapshotIO {
 
   static func appGroupSuite() -> String? {
     guard let bundleId = Bundle.main.bundleIdentifier else { return nil }
-    let host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
-    guard !host.isEmpty else { return nil }
+    let suffix = ".widget"
+    let host = bundleId.hasSuffix(suffix) ? String(bundleId.dropLast(suffix.count)) : bundleId
     return "group.\(host)"
   }
 

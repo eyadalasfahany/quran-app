@@ -1,4 +1,5 @@
 import { fireEvent, waitFor } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
@@ -20,12 +21,23 @@ describe('AboutSection', () => {
     jest.clearAllMocks();
   });
 
-  it('renders section title and both rows in Arabic', async () => {
+  it('renders section title and the sources, privacy and clear-data rows in Arabic', async () => {
     const view = await renderUi(<AboutSection />);
 
     expect(view.getByRole('header', { name: 'عن التطبيق' })).toBeOnTheScreen();
     expect(view.getByText('المصادر والشكر')).toBeOnTheScreen();
+    expect(view.getByText('سياسة الخصوصية')).toBeOnTheScreen();
     expect(view.getByText('مسح البيانات المحلية')).toBeOnTheScreen();
+  });
+
+  it('opens the privacy policy URL when the privacy row is pressed', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    const view = await renderUi(<AboutSection />);
+
+    await fireEvent.press(view.getByTestId('about-privacy-row'));
+
+    expect(openURL).toHaveBeenCalledWith('https://www.taybah-app.com/privacy');
+    openURL.mockRestore();
   });
 
   it('calls onPressSources when the sources row is pressed', async () => {
@@ -87,8 +99,10 @@ describe('AboutSection', () => {
 
     const expectedHeader = locale === 'en' ? 'About' : 'عن التطبيق';
     const expectedClear = locale === 'en' ? 'Clear local data' : 'مسح البيانات المحلية';
+    const expectedPrivacy = locale === 'en' ? 'Privacy policy' : 'سياسة الخصوصية';
 
     expect(view.getByRole('header', { name: expectedHeader })).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: expectedPrivacy })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: expectedClear })).toBeOnTheScreen();
   });
 

@@ -1,4 +1,5 @@
 export { ActionTile } from './ActionTile';
+export { AnimatedSplashOverlay } from './AnimatedSplashOverlay';
 export { AyahEndMark, ORNATE_CLOSE, ORNATE_OPEN } from './AyahEndMark';
 export { AyahMarker, FOCUS_MARKER_SIZE } from './AyahMarker';
 export { Button, type ButtonSize, type ButtonVariant } from './Button';
@@ -12,6 +13,7 @@ export { ConfirmDialogButton, type ConfirmDialogButtonTone } from './ConfirmDial
 export { ConfirmDialogIcon, type ConfirmDialogIconTone } from './ConfirmDialogIcon';
 export { Divider } from './Divider';
 export { DownloadRow, type DownloadRowActionLabels, type DownloadRowState } from './DownloadRow';
+export { DrawnLogoLayer } from './DrawnLogoLayer';
 export { DrawnPath } from './DrawnPath';
 export { EmptyState, type EmptyStateAction } from './EmptyState';
 export { FloatingTabBar } from './FloatingTabBar';
@@ -40,6 +42,8 @@ export { SegmentedControl, type SegmentedOption } from './SegmentedControl';
 export { SheetHeader } from './SheetHeader';
 export { SkeletonBlock, type SkeletonTone } from './SkeletonBlock';
 export { SkeletonGroup } from './SkeletonGroup';
+export { SplashBrandMark } from './SplashBrandMark';
+export { SplashLogoRasterLayer } from './SplashLogoRasterLayer';
 export { StaleContentBanner } from './StaleContentBanner';
 export { SurahCartouche } from './SurahCartouche';
 export {
@@ -51,6 +55,7 @@ export {
   uiTextProps,
   type DisplayTypeToken,
 } from './textStyles';
+export { TaybahSplashLogo } from './TaybahSplashLogo';
 export { TitlePill } from './TitlePill';
 export { ToggleRow } from './ToggleRow';
 export { ToolbarPill } from './ToolbarPill';

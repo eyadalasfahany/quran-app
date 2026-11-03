@@ -36,9 +36,35 @@ describe('app.config', () => {
     expect(configFor(undefined).ios?.bundleIdentifier).toBe('com.taybahapp.taybah.dev');
   });
 
-  it('bundles google-services.json for production Android only', () => {
-    expect(configFor('production').android?.googleServicesFile).toBe('./google-services.json');
+  it('bundles no google-services.json in either variant (Firebase is removed, ADR 0058)', () => {
+    expect(configFor('production').android?.googleServicesFile).toBeUndefined();
     expect(configFor('development').android?.googleServicesFile).toBeUndefined();
+  });
+
+  it('blocks SYSTEM_ALERT_WINDOW and ACTIVITY_RECOGNITION in production', () => {
+    expect(configFor('production').android).toHaveProperty(
+      'blockedPermissions',
+      expect.arrayContaining(['android.permission.SYSTEM_ALERT_WINDOW', 'android.permission.ACTIVITY_RECOGNITION']),
+    );
+  });
+
+  it('keeps the dev overlay permission in development', () => {
+    expect(configFor('development').android).toHaveProperty(
+      'blockedPermissions',
+      expect.not.arrayContaining(['android.permission.SYSTEM_ALERT_WINDOW']),
+    );
+  });
+
+  it('declares the App Group UserDefaults reason 1C8F.1 in the iOS privacy manifest', () => {
+    expect(configFor('production').ios).toHaveProperty(
+      ['privacyManifests', 'NSPrivacyAccessedAPITypes', 0, 'NSPrivacyAccessedAPITypeReasons'],
+      expect.arrayContaining(['1C8F.1']),
+    );
+  });
+
+  it('declares the motion purpose string in both locales', () => {
+    expect(configFor('production').locales?.ar).toHaveProperty(['ios', 'NSMotionUsageDescription']);
+    expect(configFor('production').locales?.en).toHaveProperty(['ios', 'NSMotionUsageDescription']);
   });
 
   it('uses the Taybah mark for the icon and a cream launch poster for the splash', () => {
@@ -81,7 +107,7 @@ describe('app.config', () => {
     const config = configFor('production');
 
     expect(config.name).toBe('Taybah');
-    expect(config.locales?.ar).toEqual({
+    expect(config.locales?.ar).toMatchObject({
       ios: { CFBundleDisplayName: 'طيبة' },
       android: { app_name: 'طيبة' },
     });

@@ -233,3 +233,8 @@ The Madinah Mushaf, 9 tafsirs, 17 reciters, prayer times & Qibla. No ads.
 | Target audience | 13+ is simplest (avoids the Families policy); the content itself suits all ages. |
 | Feature graphic | Already generated (commit `b75ca00`, brand assets script). |
 | Screenshots | Phone, 7" and 10" tablet; same scenes as the App Store. |
+
+### Play Console declarations
+
+- **Foreground service (FOREGROUND_SERVICE_MEDIA_PLAYBACK).** Taybah plays Quran recitation and audio with the screen off, through a media-playback foreground service (expo-audio background playback). Play requires a short video showing the feature; record the playback-with-screen-off flow and paste its link into the Play Console foreground service declaration.
+- **Data safety.** No Firebase remains in the 1.0 build (ADR 0058), so the SDK list supports "No data collected". Location stays on the device.

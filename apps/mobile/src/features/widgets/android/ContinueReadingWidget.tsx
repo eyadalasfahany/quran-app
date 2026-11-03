@@ -63,7 +63,6 @@ export function ContinueReadingWidget(ctx: WidgetContext) {
   const placeChip = (
     <FlexWidget
       style={{
-        alignSelf: 'flex_start',
         backgroundColor: withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA),
         borderColor: withAlpha(palette.onBrandSurface, 0.12),
         borderRadius: 999,
@@ -119,7 +118,6 @@ function wirdBlock(ctx: WidgetContext, done: number, target: number) {
       <FlexWidget
         key="wird-chip"
         style={{
-          alignSelf: 'flex_start',
           backgroundColor: withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA),
           borderColor: withAlpha(palette.onBrandSurface, 0.12),
           borderRadius: 999,
