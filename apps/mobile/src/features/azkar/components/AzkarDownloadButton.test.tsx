@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react-native';
 
 import { makeDownloadEntry, makeFakeDownloadPort, makeRecording } from '../../../../jest/azkar-audio-fixtures';
+import { resetAzkarFileDownloadPortForTests } from '../audio/file-download-port';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { renderUi } from '../../../../jest/render-ui';
@@ -9,6 +10,10 @@ import { AzkarDownloadButton } from './AzkarDownloadButton';
 const DOWNLOADABLE = makeRecording({ downloadAllowed: true, recordingKey: 'fixture:recording-001' });
 
 describe('AzkarDownloadButton', () => {
+  beforeEach(() => {
+    resetAzkarFileDownloadPortForTests();
+  });
+
   it('renders nothing without a recording', async () => {
     await renderUi(<AzkarDownloadButton recording={null} />);
     expect(screen.queryByTestId('azkar-download-button')).toBeNull();

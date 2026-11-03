@@ -39,7 +39,7 @@ const categories = [
   { id: 'fasting', kind: 'browse', position: 3, occasion: null, progressPeriod: 'session', unitCount: 2 },
 ] as never;
 
-const HEADER_ACTION_IDS = ['azkar-home-search', 'azkar-home-favorites', 'azkar-home-reminders'];
+const HEADER_ACTION_IDS = ['azkar-home-search', 'azkar-home-favorites', 'azkar-home-reminders', 'azkar-home-downloads'];
 
 /** The header action test IDs in tree order (the order the row lays them out, mirrored in RTL). */
 function headerActionIds() {
@@ -137,6 +137,13 @@ describe('AzkarHomeScreen', () => {
 
     await press(screen.getByRole('button', { name: 'بحث' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/search');
+  });
+
+  it('opens saved audio from the header', async () => {
+    await renderUi(<AzkarHomeScreen />);
+
+    await press(screen.getByRole('button', { name: 'الصوتيات المحفوظة' }));
+    expect(router.push).toHaveBeenLastCalledWith('/azkar/downloads');
   });
 
   it('orders the header actions search, favourites, reminders so the row reads bell, bookmark, search from the start in RTL', async () => {

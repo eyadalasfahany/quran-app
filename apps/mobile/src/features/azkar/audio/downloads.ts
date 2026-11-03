@@ -1,9 +1,9 @@
 import type { AzkarRecording } from '../data/model';
 
 /**
- * The Azkar download seam (ADR 0031 §8). It is not a download manager: `features/audio/downloads/manager.ts` is keyed
- * by Quran `audio_file_id`, and generalising it waits until a licensed recording exists (phase-6.md follow-up).
- * Until then the app binds `NoAudioDownloadPort`, which reports nothing downloadable.
+ * The Azkar download seam (ADR 0031 §8, ADR 0040). Quran downloads stay in `features/audio/downloads/manager.ts`
+ * (`audio_file_id`). Azkar uses `file-download-port.ts` under `audio/azkar/`. The app binds `azkarDownloadPort` from
+ * `./port`; tests use `NoAudioDownloadPort` when they need an empty store.
  */
 
 export type AzkarDownloadState = 'idle' | 'downloading' | 'done' | 'failed';

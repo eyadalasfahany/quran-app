@@ -6,6 +6,7 @@ import type { DownloadPauseState, DownloadProgress, DownloadTaskOptions } from '
 type Part = string | FakeFile | FakeDirectory;
 
 const files = new Map<string, number>();
+const fileTexts = new Map<string, string>();
 const directories = new Set<string>();
 const tasks: FakeDownloadTask[] = [];
 
@@ -103,9 +104,20 @@ export class FakeFile {
   }
 
   delete(): void {
+    fileTexts.delete(this.uri);
     if (!files.delete(this.uri)) {
       throw new Error(`File does not exist: ${this.uri}`);
     }
+  }
+
+  textSync(): string {
+    return fileTexts.get(this.uri) ?? '';
+  }
+
+  writeSync(content: string): void {
+    fileTexts.set(this.uri, content);
+    files.set(this.uri, content.length);
+    this.parentDirectory.create({ idempotent: true, intermediates: true });
   }
 
   static createDownloadTask(url: string, destination: FakeFile | FakeDirectory, options?: DownloadTaskOptions) {
@@ -214,6 +226,7 @@ export function transfers(): FakeDownloadTask[] {
 
 export function resetFakeFileSystem(): void {
   files.clear();
+  fileTexts.clear();
   directories.clear();
   tasks.length = 0;
 }

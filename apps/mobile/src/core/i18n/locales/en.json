@@ -976,6 +976,9 @@
       "title": "Azkar are not available yet",
       "body": "The content arrives once publishing rights are complete"
     },
+    "home": {
+      "downloads": "Saved audio"
+    },
     "audio": {
       "play": "Play recording",
       "pause": "Pause recording",
@@ -1000,7 +1003,7 @@
       "megabytes": "{{value}} MB",
       "removeAll": "Delete all",
       "emptyTitle": "No recordings are available yet",
-      "emptyBody": "Recordings will appear here once their use is licensed.",
+      "emptyBody": "Download a recording from a dhikr to keep it here for offline play.",
       "removeAllTitle": "Delete all recordings?",
       "removeAllBody": "Saved recordings will be deleted from this device. You can download them again later.",
       "removeAllConfirm": "Delete all",

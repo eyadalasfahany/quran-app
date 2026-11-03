@@ -6,7 +6,8 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { Button, IconButton, type IconName } from '@/shared/ui';
 
 import { canDownload } from '../audio/availability';
-import { NoAudioDownloadPort, percentOf, type AzkarDownloadPort } from '../audio/downloads';
+import { percentOf, type AzkarDownloadPort } from '../audio/downloads';
+import { azkarDownloadPort } from '../audio/port';
 import { useDownloadEntry } from '../audio/hooks';
 import type { AzkarRecording } from '../data/model';
 
@@ -21,7 +22,7 @@ const REMOVE = { ios: 'trash', android: 'delete' } as const satisfies IconName;
  */
 export function AzkarDownloadButton({
   recording,
-  port = NoAudioDownloadPort,
+  port = azkarDownloadPort,
   testID = 'azkar-download-button',
 }: {
   recording: AzkarRecording | null;

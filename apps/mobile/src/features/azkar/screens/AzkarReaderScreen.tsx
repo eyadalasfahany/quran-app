@@ -16,7 +16,7 @@ import { Screen } from '@/shared/ui';
 
 import { useAzkarPlayerStore, currentAzkarItem } from '../audio/azkarPlayerStore';
 import { audioAvailability, isPlayableAvailability } from '../audio/availability';
-import { NoAudioDownloadPort } from '../audio/downloads';
+import { azkarDownloadPort } from '../audio/port';
 import { useIsDownloaded, useOnline } from '../audio/hooks';
 import { claimAzkarPlay, pauseAzkarPlayback, resumeAzkarPlayback, stopAzkarPlayback } from '../audio/playback';
 import { recordingForUnit } from '../audio/recording-for-unit';
@@ -73,8 +73,7 @@ const PANEL_WIDTH = 340;
  */
 export const AUTO_ADVANCE_DELAY_MS = 600;
 
-// The reader plays through the port the app binds: none yet, so every recording streams (ADR 0040).
-const AUDIO_PORT = NoAudioDownloadPort;
+const AUDIO_PORT = azkarDownloadPort;
 
 function safeCategory(db: SqlExecutor, categoryId: string): AzkarCategory | undefined {
   try {

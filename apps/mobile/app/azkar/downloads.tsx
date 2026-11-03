@@ -1,6 +1,7 @@
+import { azkarDownloadPort } from '@/features/azkar/audio/port';
 import { AzkarDownloadsScreen } from '@/features/azkar/screens/AzkarDownloadsScreen';
 
-/** Saved audio (`/azkar/downloads`). Pushed over the tabs; the port reports nothing until a licensed recording exists. */
+/** Saved audio (`/azkar/downloads`). Pushed over the tabs. */
 export default function AzkarDownloadsRoute() {
-  return <AzkarDownloadsScreen />;
+  return <AzkarDownloadsScreen port={azkarDownloadPort} />;
 }

@@ -61,7 +61,7 @@ describe('AzkarDownloadsScreen', () => {
 
     expect(screen.getByRole('header', { name: 'الصوتيات المحفوظة' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'لا تتوفر تسجيلات صوتية بعد' })).toBeOnTheScreen();
-    expect(screen.getByText('ستظهر التسجيلات هنا بعد الحصول على ترخيص لنشرها.')).toBeOnTheScreen();
+    expect(screen.getByText('نزّل تسجيلًا من شاشة الذكر ليظهر هنا ويعمل دون اتصال.')).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: 'حذف الكل' })).toBeNull();
     // Only the header's back button remains.
     expect(screen.getAllByRole('button')).toHaveLength(1);
