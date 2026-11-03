@@ -1,7 +1,7 @@
 import { renderProvider, isProviderName } from './render';
 import { WIDGET_PROVIDERS } from './names';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { textsOf } from './test-tree';
+import { cardRootFill, textsOf } from './test-tree';
 
 const NOW = new Date(2026, 10, 2, 12, 0);
 
@@ -20,11 +20,9 @@ describe('renderProvider', () => {
     expect(textsOf(rendered.dark)).toHaveLength(1);
   });
 
-  it('uses the same palette for light and dark trees from snapshot colorMode (ADR 0054)', () => {
+  it('uses different palettes for light and dark trees (system appearance)', () => {
     const rendered = renderProvider(WIDGET_PROVIDERS.misbaha, fullSnapshot({ colorMode: 'dark' }), NOW, 'taybah');
-    const lightBg = (rendered.light as { props: { style: { backgroundColor: string } } }).props.style.backgroundColor;
-    const darkBg = (rendered.dark as { props: { style: { backgroundColor: string } } }).props.style.backgroundColor;
-    expect(lightBg).toBe(darkBg);
+    expect(cardRootFill(rendered.light)).not.toBe(cardRootFill(rendered.dark));
   });
 
   it('recognises only the shipped provider names', () => {

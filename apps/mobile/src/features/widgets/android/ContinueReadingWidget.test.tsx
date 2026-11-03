@@ -1,7 +1,7 @@
 import { ContinueReadingWidget } from './ContinueReadingWidget';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
+import { cardFill, hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (
@@ -44,6 +44,6 @@ describe('ContinueReadingWidget', () => {
       ContinueReadingWidget(ctx('en', mode, fullSnapshot({ reading: null })));
     const light = styleOf(ofKind(tree('light'), 'LinearLayoutWidget')[0]!);
     const dark = styleOf(ofKind(tree('dark'), 'LinearLayoutWidget')[0]!);
-    expect(light.backgroundColor).not.toBe(dark.backgroundColor);
+    expect(cardFill(light)).not.toBe(cardFill(dark));
   });
 });

@@ -1,4 +1,4 @@
-import { prayerDotState, PRAYER_DOT_ORDER, prayerDots } from './prayer-dots';
+import { prayerDotState, PRAYER_DOT_ORDER, prayerDots, prayerSmallTop } from './prayer-dots';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
 import { ofKind, styleOf, walk } from './test-tree';
@@ -35,5 +35,13 @@ describe('prayerDots', () => {
     const tree = prayerDots(ctx, 'asr');
     // Library FlexWidget compiles to LinearLayoutWidget in the element tree.
     expect(ofKind(tree, 'LinearLayoutWidget').some((node) => styleOf(node).flexDirection === 'row')).toBe(true);
+  });
+});
+
+describe('prayerSmallTop', () => {
+  it('end-aligns the chip stack in Arabic', () => {
+    const arCtx = widgetContext({ mode: 'light', now, scheme: 'taybah', snapshot: fullSnapshot({ locale: 'ar' }) });
+    const tree = prayerSmallTop(arCtx, 'LABEL nextPrayer', 'PRAYER asr', '12:00');
+    expect(ofKind(tree, 'LinearLayoutWidget').some((node) => styleOf(node).alignItems === 'flex-end')).toBe(true);
   });
 });

@@ -43,7 +43,7 @@ After the first widgets ship (ADR 0035), the developer asked to:
 - **Sepia maps to `light`** on widgets only (no sepia palette in extensions). Documented here; no `sepia` value in `colorMode`.
 - Schema: keep `schemaVersion: 1`; widgets ignore unknown fields (0035 §4). Older snapshots without `colorMode` fall back to system appearance until the next sync.
 - iOS Swift reads `snapshot.colorMode` instead of `@Environment(\.colorScheme)` for Taybah card surfaces (system vibrant/tinted modes may still apply on lock accessories).
-- Android: render using `colorMode` from the snapshot (one resolved palette per update).
+- Android: **`renderProvider` draws two trees** — `light` and `dark` — each with the matching system palette (`paletteFor('light' | 'dark')`). The platform picks the tree that matches the device light/dark mode so home-screen wallpaper and card surfaces stay coherent. Snapshot `colorMode` is still written at sync time for **iOS** (and optional future Android use); it does **not** replace the dual-tree system appearance on Android RemoteViews.
 - Changing appearance in Settings triggers `syncWidgets()` so placed widgets update on next reload.
 
 ### 4. «Already added» UX (honest platform limits)

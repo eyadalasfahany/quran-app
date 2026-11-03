@@ -49,17 +49,6 @@ function openAppSnapshot(now: Date, colorMode: WidgetMode): WidgetSnapshot {
   });
 }
 
-function systemMode(scheme: string): WidgetMode {
-  return scheme === 'dark' ? 'dark' : 'light';
-}
-
-function resolvedMode(snapshot: WidgetSnapshot | null, scheme: string): WidgetMode {
-  if (snapshot?.colorMode !== undefined) {
-    return snapshot.colorMode;
-  }
-  return systemMode(scheme);
-}
-
 function draw(name: WidgetProviderName, snapshot: WidgetSnapshot, now: Date, scheme: string, mode: WidgetMode) {
   return LAYOUTS[name](widgetContext({ mode, now, scheme, snapshot }));
 }
@@ -74,14 +63,20 @@ export function renderProvider(
   now: Date,
   scheme: string,
 ): RenderedWidget {
-  const mode = resolvedMode(snapshot, scheme);
   if (snapshot === null) {
-    const empty = openAppSnapshot(now, mode);
-    const tree = OpenAppWidget(widgetContext({ mode, now, scheme, snapshot: empty }));
-    return { dark: tree, light: tree };
+    return {
+      dark: OpenAppWidget(
+        widgetContext({ mode: 'dark', now, scheme, snapshot: openAppSnapshot(now, 'dark') }),
+      ),
+      light: OpenAppWidget(
+        widgetContext({ mode: 'light', now, scheme, snapshot: openAppSnapshot(now, 'light') }),
+      ),
+    };
   }
-  const tree = draw(name, snapshot, now, scheme, mode);
-  return { dark: tree, light: tree };
+  return {
+    dark: draw(name, snapshot, now, scheme, 'dark'),
+    light: draw(name, snapshot, now, scheme, 'light'),
+  };
 }
 
 /** Whether `name` is one of the providers the app ships. */

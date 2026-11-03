@@ -2,7 +2,7 @@
 // Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
 // must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
 
-import { FlexWidget } from 'react-native-android-widget';
+import { FlexWidget, ListWidget } from 'react-native-android-widget';
 
 import { formatPercent } from '@/core/i18n/numbers';
 
@@ -15,8 +15,8 @@ import { fillSecondaryBand, widgetFaceColumn } from './widget-chrome';
 import { widgetPaths } from '../snapshot/deep-links';
 import type { WidgetProgressRow } from '../snapshot/types';
 
-/** The most rows the 4×2 card fits (the frame shows four). */
-export const PROGRESS_ROWS_SHOWN = 4;
+/** Scrollable goal list height under the title (4×2 card). */
+const GOAL_LIST_HEIGHT = 92;
 
 /** The frame's ring: 92 dp with a 9 dp stroke (AndroidWidgets frame, progress card). */
 const RING_SIZE = 92;
@@ -52,7 +52,7 @@ function progressRow(ctx: WidgetContext, item: WidgetProgressRow) {
 }
 
 function progressSummary(ctx: WidgetContext): string {
-  const { labels, locale, snapshot } = ctx;
+  const { labels, snapshot } = ctx;
   const rows = snapshot.progress.rows;
   if (rows.length === 0) {
     return labels.progressEmpty;
@@ -74,11 +74,13 @@ export function ProgressWidget(ctx: WidgetContext) {
     label(percentText, { align: 'center', color: palette.ink, font: WIDGET_FONTS.bold, size: 22 }, rtl),
   );
 
-  const rows = progress.rows.slice(0, PROGRESS_ROWS_SHOWN).map((item) => progressRow(ctx, item));
+  const goalRows = progress.rows.map((item) => progressRow(ctx, item));
   const body =
-    rows.length === 0
-      ? label(labels.progressEmpty, { color: palette.inkMuted, font: WIDGET_FONTS.regular, maxLines: 2, size: 13 }, rtl)
-      : column(rows, { flexGap: 4, width: 'match_parent' });
+    goalRows.length === 0 ? (
+      label(labels.progressEmpty, { color: palette.inkMuted, font: WIDGET_FONTS.regular, maxLines: 2, size: 13 }, rtl)
+    ) : (
+      <ListWidget style={{ height: GOAL_LIST_HEIGHT, width: 'match_parent' }}>{goalRows}</ListWidget>
+    );
 
   return card(
     ctx,
@@ -89,7 +91,11 @@ export function ProgressWidget(ctx: WidgetContext) {
             ring,
             grow(
               column(
-                [label(labels.progressTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl), block({ height: 6 }), body],
+                [
+                  label(labels.progressTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+                  block({ height: 8 }),
+                  body,
+                ],
                 { flex: 1, width: 'match_parent' },
               ),
               { paddingHorizontal: 12 },
@@ -98,7 +104,7 @@ export function ProgressWidget(ctx: WidgetContext) {
           rtl,
           { alignItems: 'center', flex: 1 },
         ),
-        fillSecondaryBand(ctx, labels.progressTitle, rows.length === 0 ? labels.progressEmpty : progressSummary(ctx)),
+        fillSecondaryBand(ctx, labels.progressTitle, goalRows.length === 0 ? labels.progressEmpty : progressSummary(ctx)),
       ]),
     ],
     {

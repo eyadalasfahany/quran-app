@@ -37,6 +37,35 @@ export function styleOf(element: AnyElement): Record<string, unknown> {
   return (element.props.style ?? {}) as Record<string, unknown>;
 }
 
+/** Card fill token: solid `backgroundColor` or gradient `from`. */
+export function cardFill(style: Record<string, unknown>): string | undefined {
+  const gradient = style.backgroundGradient as { from?: string } | undefined;
+  if (gradient?.from) {
+    return gradient.from;
+  }
+  return style.backgroundColor as string | undefined;
+}
+
+/** Fill colour of a widget card root (solid or the first nested gradient layer after OverlapWidget). */
+export function cardRootFill(tree: ReactNode): string | undefined {
+  const nodes = walk(tree);
+  for (const node of nodes) {
+    const fill = cardFill(styleOf(node));
+    if (fill !== undefined) {
+      return fill;
+    }
+  }
+  return undefined;
+}
+
+/** The content layer that carries OPEN_URI / OPEN_APP (nested under OverlapWidget for gradient cards). */
+export function cardClickProps(tree: ReactNode): Record<string, unknown> | undefined {
+  const hit = walk(tree).find(
+    (node) => typeof node.props.clickAction === 'string' && node.props.clickAction !== undefined,
+  );
+  return hit?.props;
+}
+
 const ARABIC_INDIC = /[\u0660-\u0669\u066a\u066b]/;
 
 /** True when at least one text node uses Arabic-Indic digits or the Arabic percent sign. */

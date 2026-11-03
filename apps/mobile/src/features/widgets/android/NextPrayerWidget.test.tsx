@@ -2,7 +2,7 @@ import { NextPrayerWidget } from './NextPrayerWidget';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
 import { formatPlaybackClock, prayerClock } from '@/core/i18n/clock';
-import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
+import { cardRootFill, hasArabicIndicNumerals, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (locale: 'ar' | 'en' = 'en', mode: 'light' | 'dark' = 'light', snapshot = fullSnapshot({ locale })) =>
@@ -80,9 +80,18 @@ describe('NextPrayerWidget', () => {
   });
 
   it('uses the dark palette in dark mode', () => {
-    const light = styleOf(ofKind(NextPrayerWidget(ctx('en', 'light')), 'LinearLayoutWidget')[0]!);
-    const dark = styleOf(ofKind(NextPrayerWidget(ctx('en', 'dark')), 'LinearLayoutWidget')[0]!);
-    expect(light.backgroundColor).not.toBe(dark.backgroundColor);
+    expect(cardRootFill(NextPrayerWidget(ctx('en', 'light')))).not.toBe(cardRootFill(NextPrayerWidget(ctx('en', 'dark'))));
+  });
+
+  it('start-aligns the prayer chip column in Arabic', () => {
+    const tree = NextPrayerWidget(ctx('ar'));
+    const chipColumn = walk(tree).find(
+      (node) =>
+        styleOf(node).flexDirection === 'column' &&
+        styleOf(node).alignItems === 'flex-end' &&
+        walk(node).some((child) => styleOf(child).borderRadius !== undefined && styleOf(child).backgroundColor),
+    );
+    expect(chipColumn).toBeDefined();
   });
 
   it('uses Arabic-Indic digits in the prayer time and remaining in Arabic', () => {

@@ -18,23 +18,26 @@ export function widgetFaceColumn(children: ReactNode[], style: Record<string, un
 /** Pill chip on fillSecondary (time, counts, meta). */
 export function fillChip(ctx: WidgetContext, text: string, options: { ink?: HexColor; size?: number } = {}) {
   const { palette, rtl } = ctx;
-  return (
-    <FlexWidget
-      style={{
-        alignSelf: 'flex_start',
-        backgroundColor: palette.fillSecondary,
-        borderRadius: radius.pill,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-      }}
-    >
-      {label(text, {
-        color: options.ink ?? palette.ink,
-        font: WIDGET_FONTS.semiBold,
-        inline: true,
-        size: options.size ?? 15,
-      }, rtl)}
-    </FlexWidget>
+  return column(
+    [
+      <FlexWidget
+        key="chip"
+        style={{
+          backgroundColor: palette.fillSecondary,
+          borderRadius: radius.pill,
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+        }}
+      >
+        {label(text, {
+          color: options.ink ?? palette.ink,
+          font: WIDGET_FONTS.semiBold,
+          inline: true,
+          size: options.size ?? 15,
+        }, rtl)}
+      </FlexWidget>,
+    ],
+    { alignItems: rtl ? 'flex-end' : 'flex-start', width: 'match_parent' },
   );
 }
 
@@ -52,6 +55,7 @@ export function brandSurfaceBand(
         backgroundColor: palette.brandSurface,
         borderRadius: radius.tile,
         flexDirection: 'column',
+        flexGap: 6,
         paddingHorizontal: 12,
         paddingVertical: 10,
         width: 'match_parent',

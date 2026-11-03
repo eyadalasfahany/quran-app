@@ -83,7 +83,7 @@ export function prayerDots(ctx: WidgetContext, nextKey: PrayerKey): ReactNode {
   const dots = PRAYER_DOT_ORDER.map((key) =>
     prayerDot(palette, prayerDotState(key, nextKey, byKey.get(key), nowMs), key),
   );
-  return row(dots, rtl, { flexGap: 6 });
+  return row(dots, rtl, { flexGap: 6, paddingVertical: 4, width: 'match_parent' });
 }
 
 /** Pill behind the prayer clock (semibold ink, not muted). */
@@ -94,13 +94,16 @@ export function prayerTimeChip(ctx: WidgetContext, time: string): ReactNode {
 /** Header, display name and time chip with a tight gap under the header. */
 export function prayerSmallTop(ctx: WidgetContext, header: string, name: string, time: string): ReactNode {
   const { palette, rtl } = ctx;
-  return column([
-    label(header, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-    block({ height: 4 }),
-    label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 35 }, rtl),
-    block({ height: 6 }),
-    prayerTimeChip(ctx, time),
-  ]);
+  return column(
+    [
+      label(header, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      block({ height: 6 }),
+      label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 35 }, rtl),
+      block({ height: 8 }),
+      prayerTimeChip(ctx, time),
+    ],
+    { alignItems: rtl ? 'flex-end' : 'flex-start', width: 'match_parent' },
+  );
 }
 
 /** Card body column: top stack, prayer dots and remaining band distributed with space-between. */
