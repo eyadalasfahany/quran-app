@@ -1080,6 +1080,8 @@
       "hisnDetail": "حسب الموضوع",
       "hadithTitle": "الأدعية النبوية",
       "hadithDetail": "من السنة",
+      "hadithPendingDetail": "تظهر بعد استيراد حزمة الأدعية على الخادم",
+      "hisnTopicsHeading": "مواضيع حصن المسلم",
       "topicsHeading": "المواضيع",
       "attribution": "محتوى حصن المسلم من OpenDua · الأدعية النبوية من HadeethEnc عند توفرها"
     },

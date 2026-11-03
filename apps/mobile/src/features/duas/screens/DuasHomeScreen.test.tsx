@@ -28,6 +28,28 @@ jest.mock('../data/hooks', () => ({
 
 const mocked = azkarData as jest.Mocked<typeof azkarData>;
 
+function sourceOrder(): string[] {
+  const ids: string[] = [];
+  const walk = (node: unknown): void => {
+    if (node === null || typeof node !== 'object') {
+      return;
+    }
+    const record = node as { props?: { testID?: string; children?: unknown }; children?: unknown };
+    const testID = record.props?.testID;
+    if (typeof testID === 'string' && testID.startsWith('duas-source-')) {
+      ids.push(testID);
+    }
+    const children = record.children ?? record.props?.children;
+    if (Array.isArray(children)) {
+      children.forEach(walk);
+    } else if (children !== undefined) {
+      walk(children);
+    }
+  };
+  walk(screen.getByTestId('screen-duas-home'));
+  return ids;
+}
+
 describe('DuasHomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -44,6 +66,7 @@ describe('DuasHomeScreen', () => {
     await renderUi(<DuasHomeScreen />);
     expect(screen.getByTestId('duas-mine-card')).toBeOnTheScreen();
     expect(screen.queryByTestId('duas-source-hisn')).toBeNull();
+    expect(screen.getByTestId('duas-source-hadith-pending')).toBeOnTheScreen();
   });
 
   it('shows the Quranic source row when Quranic duas exist', async () => {
@@ -53,9 +76,11 @@ describe('DuasHomeScreen', () => {
     expect(screen.getByTestId('duas-source-quran')).toBeOnTheScreen();
   });
 
-  it('shows Hisn and topics when Azkar is available', async () => {
+  it('shows Hisn and Hisn topic tiles when Azkar is available', async () => {
     await renderUi(<DuasHomeScreen />);
     expect(screen.getByTestId('duas-source-hisn')).toBeOnTheScreen();
+    expect(screen.getByTestId('duas-hisn-topics-heading')).toBeOnTheScreen();
+    expect(screen.queryByTestId('duas-topics-heading')).toBeNull();
     expect(screen.getByTestId('duas-topic-travel')).toBeOnTheScreen();
   });
 
@@ -64,5 +89,13 @@ describe('DuasHomeScreen', () => {
     mockedDuasHooks.usePropheticDuasAvailable.mockReturnValue(true);
     await renderUi(<DuasHomeScreen />);
     expect(screen.getByTestId('duas-source-hadith')).toBeOnTheScreen();
+    expect(screen.queryByTestId('duas-source-hadith-pending')).toBeNull();
+  });
+
+  it('lists prophetic before Hisn and Quranic sources', async () => {
+    mockedDuasHooks.useQuranicDuasAvailable.mockReturnValue(true);
+    mockedDuasHooks.usePropheticDuasAvailable.mockReturnValue(true);
+    await renderUi(<DuasHomeScreen />);
+    expect(sourceOrder()).toEqual(['duas-source-hadith', 'duas-source-hisn', 'duas-source-quran']);
   });
 });

@@ -19,6 +19,13 @@ describe('DuasSourceRow', () => {
     expect(screen.getByRole('button', { name: 'Hisn' })).toBeOnTheScreen();
   });
 
+  it('renders a non-interactive hint when onPress is omitted', async () => {
+    await renderUi(<DuasSourceRow detail="FIXTURE pending" title="FIXTURE title" testID="duas-source-hint" />);
+    expect(screen.getByTestId('duas-source-hint')).toBeOnTheScreen();
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByLabelText('FIXTURE title, FIXTURE pending')).toBeOnTheScreen();
+  });
+
   it('uses i18n only', () => {
     expect(featureComponentLiterals('features/duas/components/DuasSourceRow.tsx')).toEqual([]);
   });

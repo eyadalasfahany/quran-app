@@ -1080,6 +1080,8 @@
       "hisnDetail": "By topic",
       "hadithTitle": "Prophetic duas",
       "hadithDetail": "From the Sunnah",
+      "hadithPendingDetail": "Available after the Duas pack is imported on the server",
+      "hisnTopicsHeading": "Hisn al-Muslim topics",
       "topicsHeading": "Topics",
       "attribution": "Hisn al-Muslim content from OpenDua · Prophetic duas from HadeethEnc when available"
     },
