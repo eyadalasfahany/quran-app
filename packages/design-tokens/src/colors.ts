@@ -39,6 +39,19 @@ export type ColorTokens = {
   glassSelected: string;
   glassFallback: string;
   scrim: string;
+  /** Salah hero green veils (quran-app-screens.html, #Salah); same in every theme. */
+  salahHeroVeil: string;
+  salahHeroVeilLower: string;
+  /** Prayer-time row photo scrims over surfaceRaised (quran-app-screens.html, #Salah). */
+  salahRowScrimBase: string;
+  salahRowScrimTop: string;
+  salahRowScrimLastBase: string;
+  salahRowScrimLastTop: string;
+  salahRowScrimActiveBase: string;
+  salahRowScrimActiveTop: string;
+  salahRowScrimActiveTint: string;
+  salahRowScrimPastBase: string;
+  salahRowScrimPastTop: string;
   playerBg: string;
   playerInk: string;
   playerMuted: string;
@@ -103,6 +116,17 @@ export const colors: Record<ThemeName, ColorTokens> = {
     glassSelected: 'rgba(31, 77, 64, 0.10)',
     glassFallback: '#fffdf8',
     scrim: 'rgba(19, 35, 31, 0.40)',
+    salahHeroVeil: 'rgba(31, 77, 64, 0.56)',
+    salahHeroVeilLower: 'rgba(19, 44, 37, 0.55)',
+    salahRowScrimBase: 'rgba(255, 253, 248, 0.561)',
+    salahRowScrimTop: 'rgba(255, 253, 248, 0.412)',
+    salahRowScrimLastBase: 'rgba(255, 253, 248, 0.541)',
+    salahRowScrimLastTop: 'rgba(255, 253, 248, 0.392)',
+    salahRowScrimActiveBase: 'rgba(255, 253, 248, 0.459)',
+    salahRowScrimActiveTop: 'rgba(255, 253, 248, 0.302)',
+    salahRowScrimActiveTint: 'rgba(31, 77, 64, 0.051)',
+    salahRowScrimPastBase: 'rgba(255, 253, 248, 0.78)',
+    salahRowScrimPastTop: 'rgba(255, 253, 248, 0.62)',
     playerBg: '#0e1b18',
     playerInk: '#f3eee2',
     playerMuted: '#a7b3ad',
@@ -158,6 +182,17 @@ export const colors: Record<ThemeName, ColorTokens> = {
     glassSelected: 'rgba(31, 77, 64, 0.10)',
     glassFallback: '#f8efdc',
     scrim: 'rgba(43, 33, 22, 0.40)',
+    salahHeroVeil: 'rgba(31, 77, 64, 0.56)',
+    salahHeroVeilLower: 'rgba(19, 44, 37, 0.55)',
+    salahRowScrimBase: 'rgba(248, 239, 220, 0.561)',
+    salahRowScrimTop: 'rgba(248, 239, 220, 0.412)',
+    salahRowScrimLastBase: 'rgba(248, 239, 220, 0.541)',
+    salahRowScrimLastTop: 'rgba(248, 239, 220, 0.392)',
+    salahRowScrimActiveBase: 'rgba(248, 239, 220, 0.459)',
+    salahRowScrimActiveTop: 'rgba(248, 239, 220, 0.302)',
+    salahRowScrimActiveTint: 'rgba(31, 77, 64, 0.051)',
+    salahRowScrimPastBase: 'rgba(248, 239, 220, 0.78)',
+    salahRowScrimPastTop: 'rgba(248, 239, 220, 0.62)',
     playerBg: '#0e1b18',
     playerInk: '#f3eee2',
     playerMuted: '#a7b3ad',
@@ -213,6 +248,17 @@ export const colors: Record<ThemeName, ColorTokens> = {
     glassSelected: 'rgba(140, 197, 175, 0.16)',
     glassFallback: '#172421',
     scrim: 'rgba(0, 0, 0, 0.55)',
+    salahHeroVeil: 'rgba(31, 77, 64, 0.56)',
+    salahHeroVeilLower: 'rgba(19, 44, 37, 0.55)',
+    salahRowScrimBase: 'rgba(23, 36, 33, 0.439)',
+    salahRowScrimTop: 'rgba(23, 36, 33, 0.290)',
+    salahRowScrimLastBase: 'rgba(23, 36, 33, 0.400)',
+    salahRowScrimLastTop: 'rgba(23, 36, 33, 0.271)',
+    salahRowScrimActiveBase: 'rgba(23, 36, 33, 0.361)',
+    salahRowScrimActiveTop: 'rgba(23, 36, 33, 0.251)',
+    salahRowScrimActiveTint: 'rgba(140, 197, 175, 0.071)',
+    salahRowScrimPastBase: 'rgba(23, 36, 33, 0.82)',
+    salahRowScrimPastTop: 'rgba(23, 36, 33, 0.65)',
     playerBg: '#0e1b18',
     playerInk: '#f3eee2',
     playerMuted: '#a7b3ad',

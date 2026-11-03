@@ -64,6 +64,9 @@ export const storageKeys = {
   // Hijri calendar adjustment in days, −2 to +2 (ADR 0048). Personal, local only; cleared with the other personal data.
   hijriAdjustDays: 'hijri.adjustDays',
 
+  // Names list layout: grid or list (ADR 0043 A6).
+  namesViewMode: 'names.viewMode',
+
   // JSON: the widget snapshot (ADR 0035 §4), read by the home-screen widgets. Local data only; cleared with personal data.
   widgets: {
     snapshot: 'widgets.snapshot',
@@ -71,6 +74,10 @@ export const storageKeys = {
     lastMergedWidgetTaps: 'widgets.lastMergedWidgetTaps',
     /** JSON: last applied watch misbaha seq per install id (`features/watch/misbaha-delta.ts`). */
     watchMerge: 'widgets.watchMerge',
+    /** Default home vs lock destination for the add confirm flow (ADR 0054). */
+    addDestination: 'widgets.addDestination',
+    /** JSON map of Android provider name → true after a successful pin (soft hint only). */
+    pinCompleted: 'widgets.pinCompleted',
   },
 
   // Reminders hub (ADR 0034, 2 Nov 2026). Local only; cleared with the other personal data.
@@ -101,6 +108,8 @@ export const storageKeys = {
     notificationsSync: 'salah.notificationsSync',
     // The sound of prayer notifications: a catalogue voice id, 'system' or 'silent' (ADR 0047). One setting for all prayers.
     prayerSound: 'salah.prayerSound',
+    // Minutes before prayer time for the iqamah heads-up (ADR 0056). 0, 5, 10, 15, 20 or 30 only; absent means off (0).
+    iqamahOffsetMinutes: 'salah.iqamahOffsetMinutes',
   },
 } as const;
 

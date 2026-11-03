@@ -91,6 +91,12 @@ export const size = {
   progressHeight: 4,
   progressGap: 6,
   stopGlyph: 7,
+  // Storage screen (quran-app-screens.html, #Downloads).
+  storageBarHeight: 10,
+  storageBarRadius: 5,
+  storageDotSize: 10,
+  storageDotRadius: 3,
+  reciterStorageRowMinHeight: 60,
   // Home and the surah index (quran-app-screens.html, #Main and #SurahIndex).
   // The continue reading card's padding; the gap inside its text column.
   cardPadding: 22,

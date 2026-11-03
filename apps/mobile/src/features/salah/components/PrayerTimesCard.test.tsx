@@ -1,25 +1,20 @@
 import { Text } from 'react-native';
 
-import { flatStyle, renderUi } from '../../../../jest/render-ui';
-import { themes } from '@/core/theme';
+import { locales, renderUi } from '../../../../jest/render-ui';
 
 import { PrayerTimesCard } from './PrayerTimesCard';
 
 describe('PrayerTimesCard', () => {
-  it('renders its rows clipped inside the raised card', async () => {
+  it.each(locales)('shows the section title and wraps children (%s)', async (locale) => {
     const view = await renderUi(
       <PrayerTimesCard>
-        <Text>row one</Text>
-        <Text>row two</Text>
+        <Text>row</Text>
       </PrayerTimesCard>,
+      { locale },
     );
 
-    expect(view.getByText('row one')).toBeTruthy();
-    expect(view.getByText('row two')).toBeTruthy();
-
-    const style = flatStyle(view.getByTestId('salah-times').props.style);
-    expect(style.backgroundColor).toBe(themes.light.colors.surfaceRaised);
-    expect(style.borderRadius).toBe(themes.light.radius.lg);
-    expect(style.overflow).toBe('hidden');
+    expect(view.getByText(locale === 'ar' ? 'مواقيت اليوم' : "Today's times")).toBeTruthy();
+    expect(view.getByTestId('salah-times-card')).toBeTruthy();
+    expect(view.getByText('row')).toBeTruthy();
   });
 });

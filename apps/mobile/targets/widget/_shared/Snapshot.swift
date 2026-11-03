@@ -4,6 +4,8 @@ import Foundation
 struct TaybahSnapshot: Codable {
   let schemaVersion: Int
   let writtenAt: Double
+  /// App-resolved light or dark; absent on older snapshots until the next sync (ADR 0054).
+  let colorMode: String?
   let locale: String
   let labels: Labels
   let prayer: Prayer

@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { Appearance } from 'react-native';
 
 import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
@@ -25,6 +26,7 @@ import { buildWidgetSnapshot } from './build-snapshot';
 import { prayerTimelineFor } from './prayer-entries';
 import { readWidgetSnapshot } from './store';
 import type { WidgetAzkar, WidgetReading, WidgetSnapshot } from './types';
+import { isAfterMaghrib, resolveWidgetColorMode } from './widget-color-mode';
 
 /** One safe read: a failure (a database not yet migrated, a missing row) gives the fallback, never an exception. */
 function safely<T>(fallback: T, read: () => T): T {
@@ -126,8 +128,14 @@ export async function gatherWidgetSnapshot(now: Date = new Date()): Promise<Widg
       }
     : null;
 
+  const colorMode = resolveWidgetColorMode({
+    afterMaghrib: isAfterMaghrib(timeline.entries, now.getTime()),
+    colorScheme: Appearance.getColorScheme(),
+  });
+
   return buildWidgetSnapshot({
     azkar,
+    colorMode,
     labels: buildWidgetLabels(t),
     locale,
     misbaha: {

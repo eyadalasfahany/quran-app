@@ -5,8 +5,12 @@ import {
   FRIDAY_REMINDER_SLOTS,
   IOS_PENDING_LIMIT,
   MISBAHA_REMINDER_SLOTS,
+  maxPrayerPendingCount,
   PRAYER_NOTIFICATION_SLOTS,
   PRAYER_ROLLING_DAYS,
+  PRAYER_ROLLING_DAYS_ADHAN_ONLY,
+  PRAYER_ROLLING_DAYS_WITH_IQAMAH,
+  prayerRollingDays,
 } from './budget';
 
 describe('pending notification budget', () => {
@@ -35,7 +39,17 @@ describe('pending notification budget', () => {
 
   it('gives prayer notifications an 8-day rolling window per prayer, inside their 40 slots', () => {
     expect(PRAYER_ROLLING_DAYS).toBe(8);
+    expect(PRAYER_ROLLING_DAYS_ADHAN_ONLY).toBe(8);
     expect(5 * PRAYER_ROLLING_DAYS).toBe(PRAYER_NOTIFICATION_SLOTS);
+  });
+
+  it('shrinks the rolling window to 4 days per kind when iqamah offset is on (ADR 0056)', () => {
+    expect(prayerRollingDays(0)).toBe(8);
+    expect(prayerRollingDays(10)).toBe(4);
+    expect(PRAYER_ROLLING_DAYS_WITH_IQAMAH).toBe(4);
+    expect(5 * 4 * 2).toBe(PRAYER_NOTIFICATION_SLOTS);
+    expect(maxPrayerPendingCount(10, 5)).toBe(40);
+    expect(maxPrayerPendingCount(0, 5)).toBe(40);
   });
 
   it('never exceeds the iOS limit with every category at its reserved size', () => {

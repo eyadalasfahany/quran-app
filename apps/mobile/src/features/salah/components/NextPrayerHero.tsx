@@ -63,9 +63,16 @@ export function NextPrayerHero({
       testID={testID}
     >
       <ScenePhoto focusY={HERO_FOCUS_Y} source={HERO_PHOTO} testID={`${testID}-photo`} />
-      {/* The frames' 168° green gradient, as two stacked veils (no gradient dependency). */}
-      <View pointerEvents="none" style={{ backgroundColor: 'rgba(31, 77, 64, 0.56)', bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 }} />
-      <View pointerEvents="none" style={{ backgroundColor: 'rgba(19, 44, 37, 0.55)', bottom: 0, height: '45%', left: 0, position: 'absolute', right: 0 }} />
+      <View
+        pointerEvents="none"
+        style={{ backgroundColor: theme.colors.salahHeroVeil, bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 }}
+        testID="salah-hero-veil"
+      />
+      <View
+        pointerEvents="none"
+        style={{ backgroundColor: theme.colors.salahHeroVeilLower, bottom: 0, height: '45%', left: 0, position: 'absolute', right: 0 }}
+        testID="salah-hero-veil-lower"
+      />
       <Rosette
         color={theme.colors.goldOnBrandSurface}
         drawKey="salah-hero"
@@ -83,8 +90,13 @@ export function NextPrayerHero({
         {place}
       </UiText>
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[3], marginTop: theme.space[3] }}>
-        <View style={[track, { flex: 1, overflow: 'hidden' }]} testID={`${testID}-track`}>
-          <View style={[track, { backgroundColor: theme.colors.onBrandSurface, opacity: 0.2, bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 }]} />
+        <View style={[track, { flex: 1, flexDirection: 'row', overflow: 'hidden' }]} testID={`${testID}-track`}>
+          <View
+            style={[
+              track,
+              { backgroundColor: theme.colors.onBrandSurface, opacity: 0.2, bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 },
+            ]}
+          />
           <View
             style={[track, { backgroundColor: theme.colors.goldOnBrandSurface, width: `${fraction * 100}%` }]}
             testID={`${testID}-progress`}

@@ -9,7 +9,7 @@ struct NextPrayerWidgetView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
-    let palette = TaybahTokens.palette(for: colorScheme)
+    let palette = WidgetHelpers.widgetPalette(colorMode: entry.snapshot?.colorMode, environment: colorScheme)
     Group {
       if let snapshot = entry.snapshot {
         content(snapshot: snapshot, palette: palette)
@@ -172,7 +172,7 @@ struct ProgressWidgetView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
-    let palette = TaybahTokens.palette(for: colorScheme)
+    let palette = WidgetHelpers.widgetPalette(colorMode: entry.snapshot?.colorMode, environment: colorScheme)
     Group {
       if let snapshot = entry.snapshot {
         content(snapshot: snapshot, palette: palette)
@@ -347,7 +347,7 @@ struct ContinueReadingWidgetView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
-    let palette = TaybahTokens.palette(for: colorScheme)
+    let palette = WidgetHelpers.widgetPalette(colorMode: entry.snapshot?.colorMode, environment: colorScheme)
     Group {
       if let snapshot = entry.snapshot {
         content(snapshot: snapshot, palette: palette)
@@ -495,7 +495,7 @@ struct MisbahaWidgetView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
-    let palette = TaybahTokens.palette(for: colorScheme)
+    let palette = WidgetHelpers.widgetPalette(colorMode: entry.snapshot?.colorMode, environment: colorScheme)
     Group {
       if let snapshot = entry.snapshot {
         content(snapshot: snapshot, palette: palette)
@@ -568,7 +568,7 @@ struct AzkarWidgetView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
-    let palette = TaybahTokens.palette(for: colorScheme)
+    let palette = WidgetHelpers.widgetPalette(colorMode: entry.snapshot?.colorMode, environment: colorScheme)
     Group {
       if let snapshot = entry.snapshot {
         content(snapshot: snapshot, palette: palette)

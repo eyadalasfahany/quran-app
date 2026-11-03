@@ -2,7 +2,7 @@ import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Share, View } from 'react-native';
-import Animated, { useReducedMotion } from 'react-native-reanimated';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -11,19 +11,18 @@ import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
 import { ContentColumn, useIsShortWindow, useWindowClass } from '@/core/layout';
 import { useCatalogVersion } from '@/core/sync/catalog-version';
-import { useSlideUp, useTheme } from '@/core/theme';
+import { useTheme } from '@/core/theme';
 import { Screen } from '@/shared/ui';
 
 import { useAzkarPlayerStore, currentAzkarItem } from '../audio/azkarPlayerStore';
 import { audioAvailability, isPlayableAvailability } from '../audio/availability';
 import { NoAudioDownloadPort } from '../audio/downloads';
 import { useIsDownloaded, useOnline } from '../audio/hooks';
-import { claimAzkarPlay, pauseAzkarPlayback, resumeAzkarPlayback, skipAzkarPlayback, stopAzkarPlayback } from '../audio/playback';
+import { claimAzkarPlay, pauseAzkarPlayback, resumeAzkarPlayback, stopAzkarPlayback } from '../audio/playback';
 import { recordingForUnit } from '../audio/recording-for-unit';
-import { buildAzkarQueue, queueStartIndex, repetitionOf } from '../audio/queue';
+import { buildAzkarQueue, queueStartIndex } from '../audio/queue';
 import { startAzkarPlayback } from '../audio/start';
 import { AzkarOfflinePill } from '../components/AzkarOfflinePill';
-import { AzkarPlayerBar } from '../components/AzkarPlayerBar';
 import { AzkarCompletion } from '../components/AzkarCompletion';
 import { AzkarCounter } from '../components/AzkarCounter';
 import { AzkarDetailsPanel } from '../components/AzkarDetailsPanel';
@@ -109,8 +108,8 @@ function repeatCountFor(unit: ReaderUnit): number | null {
 
 /**
  * The Azkar reader (ADR 0031). It walks a category or one entry unit by unit, resumes at the first incomplete unit,
- * and records each accepted tap in user.db. The last unit leads to the completion screen. Its player bar plays the
- * scope's recordings in order; the reader follows the player to each dhikr (ADR 0031 §8).
+ * and records each accepted tap in user.db. The last unit leads to the completion screen. Play and pause sit in the
+ * actions row; the reader follows the player to each dhikr (ADR 0031 §8, ADR 0047).
  */
 export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderScope; startUnitKey?: string }) {
   const { t } = useTranslation();
@@ -122,7 +121,6 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   // A short window (a landscape phone) gets the smaller counter, so the dhikr keeps room to read.
   const shortWindow = useIsShortWindow();
   const insets = useSafeAreaInsets();
-  const slide = useSlideUp();
   const { executor } = openContentDb();
   const { choices, choose } = useVariationChoices();
   const [fontScale, setFontScale] = useAzkarFontScale();
@@ -190,10 +188,6 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   const playerQueue = useAzkarPlayerStore((state) => state.queue);
   const playerIndex = useAzkarPlayerStore((state) => state.index);
   const playerStatus = useAzkarPlayerStore((state) => state.status);
-  const playerPositionMs = useAzkarPlayerStore((state) => state.positionMs);
-  const playerDurationMs = useAzkarPlayerStore((state) => state.durationMs);
-  const playerPlaysDone = useAzkarPlayerStore((state) => state.playsDone);
-  const playerCountAtStart = useAzkarPlayerStore((state) => state.countAtStart);
   const engineOn = playerScope?.scopeKey === scopeKey && playerStatus !== 'idle';
   const playingItem = engineOn ? currentAzkarItem({ queue: playerQueue, index: playerIndex }) : null;
 
@@ -233,7 +227,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     [scopeKey],
   );
 
-  // The player moves the reader: when its dhikr changes (auto-advance, the bar's previous and next), the reader follows
+  // The player moves the reader: when its dhikr changes (auto-advance or full-player skip), the reader follows
   // with the same transition as an auto-advance. A move the person makes in the reader does not move the player.
   const playingUnitKey = playingItem?.unitKey ?? null;
   // Applied during render when the player moves on, so the reader follows once per change and never loops.
@@ -265,23 +259,12 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   const reference = unitEntry?.entry.sourceReference.trim() ?? '';
   const sourceLine = t('azkar.share.source', { number: referenceNumber(reference, locale) });
 
-  // The player bar (ADR 0031 §8). It shows for a playable recording, or whenever this scope's audio is on.
   const online = useOnline();
   const downloaded = useIsDownloaded(recording, AUDIO_PORT);
   const availability = audioAvailability(recording, { online, downloaded });
   const showOffline = !engineOn && availability === 'stream_offline';
-  const showBar = engineOn || (recording !== null && isPlayableAvailability(availability));
-  const previousRecorded = [...queue].reverse().find((item) => item.unitIndex < position.index) ?? null;
-  const nextRecorded = queue.find((item) => item.unitIndex > position.index) ?? null;
-  // Playing: the repetition of the dhikr in progress. Idle: the count the ring already shows, out of the sourced count.
-  const idleRepetition = unit === undefined || unit.requiredCount === null ? null : { current: Math.min(unit.requiredCount, currentCount), total: unit.requiredCount };
-  const barRepetition = engineOn
-    ? playingItem === null
-      ? null
-      : repetitionOf(playingItem.requiredCount, playerCountAtStart, playerPlaysDone)
-    : idleRepetition;
 
-  const onPlayerToggle = () => {
+  function onPlayerToggle() {
     if (engineOn) {
       if (playerStatus === 'playing' || playerStatus === 'loading') {
         pauseAzkarPlayback();
@@ -300,25 +283,16 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
       index,
       port: AUDIO_PORT,
     });
-  };
-  const onPlayerPrevious = () => {
-    if (engineOn) {
-      skipAzkarPlayback(-1);
-      return;
-    }
-    if (previousRecorded !== null) {
-      moveTo(previousRecorded.unitIndex);
-    }
-  };
-  const onPlayerNext = () => {
-    if (engineOn) {
-      skipAzkarPlayback(1);
-      return;
-    }
-    if (nextRecorded !== null) {
-      moveTo(nextRecorded.unitIndex);
-    }
-  };
+  }
+
+  const playControl =
+    recording !== null && (engineOn || isPlayableAvailability(availability))
+      ? {
+          playing: engineOn && playerStatus === 'playing',
+          loading: engineOn && playerStatus === 'loading',
+          onToggle: onPlayerToggle,
+        }
+      : null;
 
   // The unit's Quran, resolved from `verses` once per unit (and per locale and catalogue revision), never during render.
   // The share text and the dhikr blocks read these resolved verses, so a tap re-renders without SQL.
@@ -452,6 +426,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
               entryKey={unit.entryKey}
               onShare={onShare}
               onTextSize={() => setTextSizeOpen((open) => !open)}
+              playControl={playControl}
               recording={recording}
               textSizeOpen={textSizeOpen}
             />
@@ -460,27 +435,6 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
         </ScrollView>
       </AzkarUnitMotion>
     );
-
-  // The bar slides in when playback starts: it is keyed on whether audio is on, so starting it mounts it again.
-  const playerBar = showOffline ? (
-    <AzkarOfflinePill />
-  ) : showBar ? (
-    <Animated.View entering={engineOn ? slide.entering : undefined} key={engineOn ? 'playing' : 'idle'}>
-      <AzkarPlayerBar
-        canNext={engineOn ? playerIndex < playerQueue.length - 1 : nextRecorded !== null}
-        canPrevious={engineOn ? true : previousRecorded !== null}
-        durationMs={engineOn ? playerDurationMs : (recording?.durationMs ?? 0)}
-        onNext={onPlayerNext}
-        onOpen={() => router.push(azkarHref.player)}
-        onPrevious={onPlayerPrevious}
-        onToggle={onPlayerToggle}
-        playing={engineOn && playerStatus === 'playing'}
-        positionMs={engineOn ? playerPositionMs : 0}
-        repetition={barRepetition}
-        testID="azkar-player-bar"
-      />
-    </Animated.View>
-  ) : null;
 
   const reader = (
     // Every pixel of the reader that is not a button counts a tap: the top bar, the dhikr content (inside its ScrollView)
@@ -501,7 +455,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
           style={{ gap: theme.space[2], paddingBottom: insets.bottom + theme.space[4], paddingTop: theme.space[3] }}
           testID="azkar-tap-surface-controls"
         >
-          {playerBar}
+          {showOffline ? <AzkarOfflinePill /> : null}
           <AzkarReaderControls
             canNext={position.index < total - 1}
             canPrevious={position.finished || position.index > 0}

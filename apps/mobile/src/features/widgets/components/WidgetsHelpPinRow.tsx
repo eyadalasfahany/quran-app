@@ -3,17 +3,17 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
-import type { WidgetProviderName } from '../android/names';
-import { WidgetPinButton } from './WidgetPinButton';
+import type { WidgetAddCatalogId } from '../data/widget-add-catalog';
+import { WidgetAddTrigger } from './WidgetAddTrigger';
 
 /** Android row: widget title and the pin action (quran-app-screens.html, #WidgetsHelp). */
 export function WidgetsHelpPinRow({
   title,
-  widgetName,
+  catalogId,
   testID,
 }: {
   title: string;
-  widgetName: WidgetProviderName;
+  catalogId: WidgetAddCatalogId;
   testID?: string;
 }) {
   const theme = useTheme();
@@ -36,7 +36,7 @@ export function WidgetsHelpPinRow({
       <UiText style={{ flex: 1 }} variant="body" weight={600}>
         {title}
       </UiText>
-      <WidgetPinButton testID={testID ? `${testID}-pin` : undefined} widgetName={widgetName} />
+      <WidgetAddTrigger catalogId={catalogId} testID={testID ? `${testID}-add` : undefined} />
     </View>
   );
 }

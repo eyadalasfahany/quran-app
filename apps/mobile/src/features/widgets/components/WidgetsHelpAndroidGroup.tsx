@@ -26,12 +26,12 @@ export function WidgetsHelpAndroidGroup({ testID = 'widgets-help-android' }: { t
             borderTopWidth: theme.stroke.hairline,
           }}
         >
-          {WIDGETS_HELP_CATALOG.map(({ id, provider }) => (
+          {WIDGETS_HELP_CATALOG.map(({ id }) => (
             <WidgetsHelpPinRow
               key={id}
+              catalogId={id}
               testID={`widgets-help-pin-${id}`}
               title={t(`widgetsHelp.items.${id}.title`)}
-              widgetName={provider}
             />
           ))}
         </View>

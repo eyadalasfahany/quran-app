@@ -3,10 +3,11 @@ import { router, type Href } from 'expo-router';
 
 /**
  * The routes a reminder may open (spec §13, ADR 0031 §7, ADR 0030 §3). Anything else in a payload is ignored rather than
- * navigated to. A trailing slash marks a prefix: `/read/` is the daily Quran reminder and `/azkar/` an Azkar reminder.
- * `/salah` is the prayer-time notification, `/sibha` the misbaha target and `/reminders` the test notification. These match exactly, so `/salahx` is still ignored.
+ * navigated to. A trailing slash marks a prefix: `/read/` is the daily Quran reminder, `/azkar/` an Azkar reminder and
+ * `/duas/` a My Dua reminder. `/salah` is the prayer-time notification, `/sibha` the misbaha target and `/reminders`
+ * the test notification. These match exactly, so `/salahx` is still ignored.
  */
-export const REMINDER_ROUTE_PREFIXES = ['/read/', '/azkar/', '/salah', '/sibha', '/reminders'] as const;
+export const REMINDER_ROUTE_PREFIXES = ['/read/', '/azkar/', '/duas/', '/salah', '/sibha', '/reminders'] as const;
 
 export function isReminderRoute(route: unknown): route is string {
   return (

@@ -221,6 +221,108 @@ const README_CONTRACT = [
       { entity: 'azkar_recording', key: 'id' },
     ],
   },
+  {
+    group: 'duas',
+    tables: [
+      {
+        name: 'dua_items',
+        columns: ['resource_id', 'id', 'dua_key', 'kind', 'group_id', 'position'],
+      },
+      {
+        name: 'dua_quran_spans',
+        columns: ['resource_id', 'item_id', 'surah', 'verse_from', 'verse_to'],
+      },
+      {
+        name: 'dua_hadith',
+        columns: [
+          'resource_id',
+          'item_id',
+          'hadeeth_id',
+          'title',
+          'hadeeth',
+          'attribution',
+          'grade',
+          'explanation',
+          'reference',
+          'hints',
+          'text_search',
+          'source_url',
+        ],
+      },
+      {
+        name: 'dua_groups',
+        columns: ['resource_id', 'id', 'source_category_id', 'title', 'position'],
+      },
+      {
+        name: 'dua_links',
+        columns: ['resource_id', 'id', 'item_id', 'hadeeth_id', 'entry_key'],
+      },
+      {
+        name: 'dua_collection_refs',
+        columns: ['resource_id', 'id', 'item_id', 'collection_slug', 'hadith_number'],
+      },
+      {
+        name: 'dua_collection_books',
+        columns: ['resource_id', 'id', 'collection_slug', 'book_number', 'position'],
+      },
+    ],
+    entities: [
+      { entity: 'dua_item', key: 'id' },
+      { entity: 'dua_quran_span', key: 'item_id' },
+      { entity: 'dua_hadith', key: 'item_id' },
+      { entity: 'dua_group', key: 'id' },
+      { entity: 'dua_link', key: 'id' },
+      { entity: 'dua_collection_ref', key: 'id' },
+      { entity: 'dua_collection_book', key: 'id' },
+    ],
+  },
+  {
+    group: 'names',
+    tables: [
+      {
+        name: 'names_lists',
+        columns: [
+          'resource_id',
+          'list_slug',
+          'title_ar',
+          'source_label_ar',
+          'attribution_ar',
+          'attribution_en',
+          'edition_reference',
+          'source_version',
+        ],
+      },
+      {
+        name: 'names',
+        columns: ['resource_id', 'id', 'name_slug', 'position', 'name_ar', 'text_search'],
+      },
+      {
+        name: 'names_verses',
+        columns: ['resource_id', 'name_slug', 'verse_key', 'review_status', 'evidence'],
+      },
+      {
+        name: 'names_notes',
+        columns: [
+          'resource_id',
+          'id',
+          'name_slug',
+          'kind',
+          'text_ar',
+          'source_type',
+          'source_name',
+          'source_reference',
+          'source_url',
+          'review_status',
+        ],
+      },
+    ],
+    entities: [
+      { entity: 'names_list', key: 'list_slug' },
+      { entity: 'name', key: 'name_slug' },
+      { entity: 'names_verse', key: '{name_slug}:{verse_key}' },
+      { entity: 'names_note', key: 'id' },
+    ],
+  },
 ];
 
 type TafsirRow = { groupTafsirId: number; html: string };

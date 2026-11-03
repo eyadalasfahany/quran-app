@@ -1,8 +1,8 @@
 # أسماء الله الحسنى, Hijri calendar and moon sighting (proposed follow-up)
 
-Status: **proposed**. Nothing here starts until the developer answers the decisions below and approves the frames. Not a numbered phase; the current phase stays Phase 6 (spec §15 carries a pointer). Suggested branch: `ft/names-hijri-moon`.
+Status: **accepted (developer, 3 Nov 2026)**. All 12 decisions accepted (ADR 0043 «Decisions accepted, 3 Nov 2026»). Audio rules for Names are in ADR 0055. Branch: `ft/names-hijri-moon`.
 
-Rests on: `docs/adr/0043-names-hijri-moon.md` (the decision and the research), ADR 0010 (frames first), 0014, 0017, 0027, 0030 §6, 0031 (provenance and locks), 0032 (Menu), 0034, 0036, `docs/adr/0042-features-enabled-by-default.md`, `docs/adr/0042-hadith-collections-source.md` §5 (stable references); spec §1, §4, §6, §7, §12, §13, §14, §15; `docs/content-plan.md` (version table; proposed rows added); `.claude/agent-rules.md`; `apps/mobile/src/features/salah/data/location-cache.ts`, `prayer-times.ts`; `apps/mobile/src/features/notifications/budget.ts`, `reminder-deeplink.ts`; `apps/mobile/src/core/i18n/dates.ts`.
+Rests on: `docs/adr/0043-names-hijri-moon.md` (the decision and the research; accepted 3 Nov 2026), ADR 0008 (Quran audio), ADR 0010 (frames first), 0014, 0017, 0027, 0030 §6, 0031 (provenance and locks), 0032 (Menu), 0034, 0036, `docs/adr/0042-features-enabled-by-default.md`, `docs/adr/0042-hadith-collections-source.md` §5 (stable references), **ADR 0055** (audio rules for Names — no play button in v1); spec §1, §4, §6, §7, §12, §13, §14, §15; `docs/content-plan.md` (version table; rows updated); `.claude/agent-rules.md`; `apps/mobile/src/features/salah/data/location-cache.ts`, `prayer-times.ts`; `apps/mobile/src/features/notifications/budget.ts`, `reminder-deeplink.ts`; `apps/mobile/src/core/i18n/dates.ts`.
 
 **Exit criterion:**
 - **Hijri:** in airplane mode on iOS and Android the month view, today's date, the adjustment (−2 to +2) and the occasions work, in Arabic and English, light and dark, portrait and landscape; the device probe (H0) shows the platforms agree with each other and with the official table, or the differences are recorded.
@@ -13,28 +13,37 @@ Rests on: `docs/adr/0043-names-hijri-moon.md` (the decision and the research), A
 
 **Rules:** all rules in `apps/mobile/CLAUDE.md`, `apps/api/CLAUDE.md` and `.claude/agent-rules.md`; the `apple-design` skill; one component per file with a colocated `*.test.tsx`; screens only compose; layout by `useWindowClass()` / `useIsShortWindow()`, never the device; strings in `ar.json` and `en.json`; fixtures are placeholders («[الاسم]», `FIXTURE name 1 — not a name`). Agents do not add dependencies, commit or push.
 
-## Decisions that need the developer (before the step named)
+## Decisions (all accepted, 3 Nov 2026)
 
-Full text and reasons in ADR 0043. My recommendation in brackets.
+Full text in ADR 0043 «Decisions accepted, 3 Nov 2026». Summary:
 
-| # | Decision | Needed before |
+| # | Decision | Accepted answer |
 | :---: | :--- | :--- |
-| 1 | Which enumeration, and what the screen says about it [Tirmidhi narration list, source label always shown, no self-worded "scholars differ" sentence] | N1 |
-| 2 | Where the 99 strings come from [hand transcription from one named edition with reviewer sign-off; AlAdhan only as a diff] | N1 |
-| 3 | Meanings and English [none in v1; references and installed tafsir instead; optional HadeethEnc note, ids 10416 and 64673] | N1 |
-| 4 | Delivery [pack group `names`; fallback a bundled JSON] | N3 |
-| 5 | Learned marks [cut] | N5 |
-| 6 | Adjustment also changes the Salah header; Home date pill [approve both] | H1, H4 |
-| 7 | Occasions list [six annual + white days; exclusions listed in ADR 0043] | H2 |
-| 8 | Hijri reminders and budget [six slots, Azkar 21 to 15, or no reminders] | H5 |
-| 9 | Astronomy dependency [`suncalc` 2.1.1, gated by M1; fallback `astronomy-engine` with an exception] | M1 |
-| 10 | Criterion and Arabic copy [Odeh primary] | M2 |
-| 11 | Moon location read-only; visibility map cut | M3 |
-| 12 | Navigation (Menu cards, sidebar entries) and schedule [Hijri, then Moon, then Names] | X1 |
+| 1 | Which enumeration and screen text | Tirmidhī narration list; source label always shown; no Taybah-worded "scholars differ" |
+| 2 | Where the 99 strings come from | Hand transcription from one named edition; edition title / hadith number / reviewer filled at step N1 before import; AlAdhan diff-only |
+| 3 | Meanings and English | None in v1; Quran references + installed tafsir instead; optional HadeethEnc note (ids 10416, 64673) pending developer re-acceptance of ADR 0042-features-enabled-by-default §2 risk |
+| 4 | Delivery | Pack group `names` with provenance locks |
+| 5 | Learned marks | Cut (favourites and share only) |
+| 6 | Hijri adjustment scope | Applies everywhere incl. Salah header (explicit exception to ADR 0032 §2); Home date pill approved |
+| 7 | Occasions | 1 Muharram, 10 Muharram, 1 Ramadan, 1 Shawwal, 9+10 Dhul Hijjah, white days 13–15 |
+| 8 | Hijri reminders and budget | 6 slots; Azkar falls from 21 to 15 |
+| 9 | Astronomy dependency | `suncalc` 2.1.1, gated by M1; fallback `astronomy-engine` with exception |
+| 10 | Criterion | Odeh (2004) primary; Yallop q optional details |
+| 11 | Moon location | Read-only from Salah cache; visibility map cut |
+| 12 | Navigation | Three Menu cards; routes `/asmaa`, `/hijri`, `/moon`; sidebar entries cut |
+| Audio | Names audio | No play controls in v1 — see ADR 0055 |
 
 ## Release blockers
 
-As ADR 0043 "Release blockers" (1 to 8). Names also needs: the content reviewer's sign-off on the label and the Quran map; the Sources and thanks entries; the `names` source row `granted` by a reviewed migration.
+As ADR 0043 «Release blockers» (1 to 8). In accepted state, the human work that still blocks:
+1. **N1 (human):** the developer names the edition (title, publisher, year, hadith number) and the transcriber; recorded in `apps/api/database/data/names/SOURCE.md` before any import runs.
+2. The Quran reference map reviewed (every production row `reviewed`); content reviewer's sign-off on the source label.
+3. Written confirmation or developer's recorded decision on the rights of the chosen edition.
+4. Reviewed Arabic copy for the disclaimer (Moon), zone labels (Moon), calculated-calendar note (Hijri) and source label (Names).
+5. Frames `AsmaaListLandscape`, `HijriCalendarLandscape`, `MoonSightingLandscape` and the expanded-window panes drawn before their UI step starts.
+6. H0 device probe passed; Hermes platform differences recorded.
+7. M1 gate passed (`suncalc` refraction ≤ 0.05°) and M2 criterion constants transcribed from the primary papers and reviewed.
+8. Audio for Names: no blocker in v1 (no audio shipped). See ADR 0055 for the follow-up conditions.
 
 ## Mirror table: what each new screen copies from the existing app
 
@@ -106,10 +115,10 @@ IDs: N = Names, H = Hijri, M = Moon, X = shared. Build order: H0, H1, H2, X1 (fr
 | M5 | Moon exit check | all | |
 | M6 | Visibility map | cut line, not planned | |
 | N1 | Sourcing and rights (human) | developer and reviewer | |
-| N2 | Reviewed data file and Quran-map generator | Windows | |
-| N3 | API domain, source lock and pack | Windows | |
-| N4 | Mobile data layer | Windows | |
-| N5 | Names UI | Windows | |
+| N2 | Reviewed data file and import (`names:import`) | Windows | schema + import done; Quran-map generator **deferred** (no Tanzil matching); needs developer 99-name JSON after N1 |
+| N3 | API domain, source lock and pack | Windows | scaffolded (blocked on N1 grant + N2 data) |
+| N4 | Mobile data layer | Windows | scaffolded (blocked on N1 / pack) |
+| N5 | Names UI | Windows | scaffolded (blocked on N1 / pack; frames N6 polish) |
 | N6 | Credits, search, share, Menu card | Windows | |
 | N7 | Names exit check | all | |
 | X2 | Docs sync and combined exit check | all | |
@@ -206,11 +215,15 @@ Not planned. If chosen later it needs its own ADR addendum: Natural Earth basema
 - Optional: write to one publisher for permission; record the answer in `docs/content-plan.md` "Permissions to request".
 - Output: the reviewed data file (N2 reads it). Tests: a checklist, not code.
 
-### N2 — Reviewed data file and Quran-map generator
+### N2 — Reviewed data file and import
 
-- `apps/api/database/data/names/<list>.json` (99 rows: `position`, `name_slug`, `name_ar`, provenance) and `names-quran-map.json` (`name_slug`, `verse_key`, `status`, `evidence`).
-- `php artisan names:quran-map-candidates` proposes rows from the bundled Tanzil text (word-boundary matching of the normalised name, exclusion list); the reviewer marks `reviewed`. Production accepts only `reviewed` (ADR 0031 §11).
-- Tests (Pest): exactly 99 rows, positions 1 to 99, unique slugs; the file's Arabic bytes equal the recorded SHA-256; the generator on a placeholder fixture; an unreviewed row blocks production; a verse key that does not exist fails.
+**Status (3 Nov 2026):** JSON schema documented in `apps/api/database/data/names/SCHEMA.md`; shell `tirmidhi.json` (empty `names` until N1); `names:import` loads the file when `content_sources` is `granted`. Quran-map generator and `names-quran-map.json` are **deferred** (developer: no Quran-side work on this branch); `names_verses` stays empty until a later step.
+
+- `apps/api/database/data/names/<list>.json` — see `SCHEMA.md` (99 rows: `position`, `name_slug`, `name_ar`; list metadata in `list`).
+- `php artisan names:import {path?} {--dry-run}` — refused while source is `pending`; validates exactly 99 names; derives `text_search`; fingerprint skip when bytes unchanged.
+- Tests (Pest): pending refuses; granted fixture import; empty shell invalid; no divine Arabic in fixtures (placeholders only).
+
+**Still cut / later:** `names-quran-map.json`, `php artisan names:quran-map-candidates`, production `reviewed` verse rows (ADR 0043 A4).
 
 ### N3 — API domain, source lock and pack
 
@@ -227,8 +240,9 @@ Not planned. If chosen later it needs its own ADR addendum: Natural Earth basema
 ### N5 — Names UI
 
 - Components in `features/names/components`: `NameCard`, `NamesGrid`, `NamesList`, `NamesViewSwitch`, `NamesSearchField`, `NameSourceLine`, `NameHero`, `NameActions`, `NameReferenceRow`, `NameSourceBlock`, `NamePager`; screens `NamesListScreen`, `NameDetailScreen`; routes `app/asmaa/index.tsx` and `app/asmaa/[slug].tsx`; expanded windows render the detail in the side pane (`AdaptiveSplit`).
+- **No audio controls.** No play button, speaker icon or audio-related prop anywhere in Names components or screens (ADR 0055 §5). An architecture test asserts that `features/names` does not import `azkarPlayerStore` or any audio hook.
 - References open `/read/<verseKey>`; a section with no data (no notes, no references) is not drawn; no placeholder sentences.
-- Tests: each component; list and grid, search, empty and not-installed states; detail with and without references; share text equals the name plus the source line; RTL; accessibility labels; short-window and expanded layouts.
+- Tests: each component; list and grid, search, empty and not-installed states; detail with and without references; share text equals the name plus the source line; RTL; accessibility labels; short-window and expanded layouts; assert no audio-related element renders.
 - Frames: `AsmaaList*`, `AsmaaDetail*`, and the landscape and expanded frames once drawn.
 
 ### N6 — Credits, search, share, Menu card

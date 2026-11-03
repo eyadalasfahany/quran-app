@@ -88,6 +88,17 @@ enum WidgetHelpers {
     guard let target, target > 0 else { return 0 }
     return min(1, max(0, Double(count) / Double(target)))
   }
+
+  /// Taybah card palette from snapshot `colorMode`, else the system widget environment (ADR 0054).
+  static func widgetPalette(colorMode: String?, environment: ColorScheme) -> TaybahPalette {
+    if colorMode == "dark" {
+      return TaybahTokens.palette(for: .dark)
+    }
+    if colorMode == "light" {
+      return TaybahTokens.palette(for: .light)
+    }
+    return TaybahTokens.palette(for: environment)
+  }
 }
 
 struct SnapshotLocaleModifier: ViewModifier {

@@ -78,11 +78,44 @@ describe('AzkarReaderActions', () => {
     expect(screen.queryByRole('button', { name: 'تنزيل التسجيل' })).toBeNull();
   });
 
-  it('draws no playback control: the reader bar owns play and pause', async () => {
+  it('draws no playback control without playControl even when a recording exists', async () => {
     const { ui } = renderActions({ recording: makeRecording({ downloadAllowed: false }) });
     await renderUi(ui);
     expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
     expect(screen.getByRole('button', { name: 'حجم النص' })).toBeOnTheScreen();
+  });
+
+  it('shows play and calls onToggle when playControl is set', async () => {
+    const onToggle = jest.fn();
+    const { ui } = renderActions({
+      playControl: { playing: false, onToggle },
+      recording: makeRecording({ downloadAllowed: false }),
+    });
+    await renderUi(ui);
+    await press(screen.getByRole('button', { name: 'تشغيل التسجيل' }));
+    expect(onToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows busy and the buffering ring when playControl is loading', async () => {
+    const { ui } = renderActions({
+      playControl: { playing: false, loading: true, onToggle: jest.fn() },
+      recording: makeRecording({ downloadAllowed: false }),
+    });
+    await renderUi(ui);
+    const play = screen.getByTestId('azkar-actions-play');
+    expect(play.props.accessibilityState).toEqual({ busy: true, disabled: false });
+    expect(screen.getByTestId('azkar-actions-play-ring', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('orders actions bookmark, share, text size, then play and download', async () => {
+    const { ui } = renderActions({
+      playControl: { playing: false, onToggle: jest.fn() },
+      recording: makeRecording({ downloadAllowed: true }),
+    });
+    await renderUi(ui);
+    const row = screen.getByTestId('azkar-reader-actions');
+    const ids = row.children.map((child) => (typeof child === 'object' && child !== null && 'props' in child ? child.props.testID : null));
+    expect(ids).toEqual(['azkar-favourite', 'azkar-share', 'azkar-text-size-toggle', 'azkar-actions-play', 'azkar-download-button']);
   });
 
   it('draws the download control of a downloadable licensed recording', async () => {

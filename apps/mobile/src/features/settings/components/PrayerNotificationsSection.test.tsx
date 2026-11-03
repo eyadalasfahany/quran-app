@@ -37,6 +37,13 @@ describe('PrayerNotificationsSection', () => {
     expect(view.getByTestId('prayer-reminder-fajr').props.value).toBe(false);
   });
 
+  it('lists the iqamah offset row between the prayer toggles and the adhan sound row', async () => {
+    const view = await renderUi(<PrayerNotificationsSection />);
+
+    expect(view.getByTestId('iqamah-offset-row')).toBeOnTheScreen();
+    expect(view.getByText('تذكير الإقامة')).toBeOnTheScreen();
+  });
+
   it('lists the adhan sound row after the five prayers, showing the chosen sound', async () => {
     storage.set(storageKeys.salah.prayerSound, 'makkah');
 
@@ -58,6 +65,12 @@ describe('PrayerNotificationsSection', () => {
     fireEvent.press(view.getByTestId('prayer-adhan-sound-row'));
 
     expect(router.push).toHaveBeenCalledWith('/adhan-sound');
+  });
+
+  it('offers a test iqamah button below the prayer notification group', async () => {
+    const view = await renderUi(<PrayerNotificationsSection />);
+
+    expect(view.getByRole('button', { name: 'إرسال إشعار إقامة تجريبي' })).toBeOnTheScreen();
   });
 
   it.each(locales)('is headed in %s', async (locale) => {

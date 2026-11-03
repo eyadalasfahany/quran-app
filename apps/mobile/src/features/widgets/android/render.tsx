@@ -33,10 +33,11 @@ const LAYOUTS: Record<WidgetProviderName, (ctx: WidgetContext) => ReturnType<typ
 };
 
 /** A snapshot with the app's own labels and no data: only the labels matter to the open-the-app state. */
-function openAppSnapshot(now: Date): WidgetSnapshot {
+function openAppSnapshot(now: Date, colorMode: WidgetMode): WidgetSnapshot {
   const locale = getLocale();
   return buildWidgetSnapshot({
     azkar: null,
+    colorMode,
     labels: buildWidgetLabels(i18n.getFixedT(locale)),
     locale,
     misbaha: { count: 0, target: null, todayTotal: 0 },
@@ -46,6 +47,17 @@ function openAppSnapshot(now: Date): WidgetSnapshot {
     reading: null,
     wird: null,
   });
+}
+
+function systemMode(scheme: string): WidgetMode {
+  return scheme === 'dark' ? 'dark' : 'light';
+}
+
+function resolvedMode(snapshot: WidgetSnapshot | null, scheme: string): WidgetMode {
+  if (snapshot?.colorMode !== undefined) {
+    return snapshot.colorMode;
+  }
+  return systemMode(scheme);
 }
 
 function draw(name: WidgetProviderName, snapshot: WidgetSnapshot, now: Date, scheme: string, mode: WidgetMode) {
@@ -62,13 +74,14 @@ export function renderProvider(
   now: Date,
   scheme: string,
 ): RenderedWidget {
+  const mode = resolvedMode(snapshot, scheme);
   if (snapshot === null) {
-    const empty = openAppSnapshot(now);
-    const ctx = widgetContext({ mode: 'light', now, scheme, snapshot: empty });
-    const darkCtx = widgetContext({ mode: 'dark', now, scheme, snapshot: empty });
-    return { dark: OpenAppWidget(darkCtx), light: OpenAppWidget(ctx) };
+    const empty = openAppSnapshot(now, mode);
+    const tree = OpenAppWidget(widgetContext({ mode, now, scheme, snapshot: empty }));
+    return { dark: tree, light: tree };
   }
-  return { dark: draw(name, snapshot, now, scheme, 'dark'), light: draw(name, snapshot, now, scheme, 'light') };
+  const tree = draw(name, snapshot, now, scheme, mode);
+  return { dark: tree, light: tree };
 }
 
 /** Whether `name` is one of the providers the app ships. */

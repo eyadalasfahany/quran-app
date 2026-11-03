@@ -46,6 +46,33 @@ export class FakeDirectory {
       }
     }
   }
+
+  list(): (FakeFile | FakeDirectory)[] {
+    const prefix = `${this.uri}/`;
+    const childFiles = new Map<string, FakeFile>();
+    const childDirs = new Map<string, FakeDirectory>();
+    for (const uri of files.keys()) {
+      if (!uri.startsWith(prefix)) {
+        continue;
+      }
+      const rest = uri.slice(prefix.length);
+      if (!rest || rest.includes('/')) {
+        continue;
+      }
+      childFiles.set(uri, new FakeFile(uri));
+    }
+    for (const dir of directories) {
+      if (dir === this.uri || !dir.startsWith(prefix)) {
+        continue;
+      }
+      const rest = dir.slice(prefix.length);
+      if (!rest || rest.includes('/')) {
+        continue;
+      }
+      childDirs.set(dir, new FakeDirectory(dir));
+    }
+    return [...childDirs.values(), ...childFiles.values()];
+  }
 }
 
 export class FakeFile {
@@ -57,6 +84,14 @@ export class FakeFile {
 
   get exists(): boolean {
     return files.has(this.uri);
+  }
+
+  get name(): string {
+    return this.uri.slice(this.uri.lastIndexOf('/') + 1);
+  }
+
+  get size(): number {
+    return files.get(this.uri) ?? 0;
   }
 
   get parentDirectory(): FakeDirectory {

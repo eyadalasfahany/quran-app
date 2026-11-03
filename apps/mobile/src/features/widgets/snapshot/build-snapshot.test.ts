@@ -3,6 +3,7 @@ import { TEST_LABELS } from './test-fixtures';
 
 const input: WidgetSnapshotInput = {
   azkar: { sessions: [{ complete: false, done: 1, id: 'morning', title: 'SESSION one', total: 4 }] },
+  colorMode: 'dark',
   labels: TEST_LABELS,
   locale: 'en',
   misbaha: { count: 7, target: 33, todayTotal: 40 },
@@ -22,6 +23,7 @@ describe('buildWidgetSnapshot', () => {
     const snapshot = buildWidgetSnapshot(input);
     expect(snapshot.schemaVersion).toBe(1);
     expect(snapshot.writtenAt).toBe(input.now);
+    expect(snapshot.colorMode).toBe('dark');
   });
 
   it('holds only the reading place: surah, ayah and page, never ayah text', () => {

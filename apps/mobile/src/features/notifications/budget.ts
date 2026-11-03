@@ -14,8 +14,25 @@ export const DAILY_REMINDER_SLOTS = 1;
 /** Phase 5 prayer notifications: at most this many pending. */
 export const PRAYER_NOTIFICATION_SLOTS = 40;
 
-/** Prayer notifications keep a rolling window of this many days per enabled prayer (ADR 0030 §3): 5 prayers × 8 days. */
-export const PRAYER_ROLLING_DAYS = 8;
+/** Adhan-only rolling window per enabled prayer (ADR 0030 §3, ADR 0056): 5 prayers × 8 days = 40 slots. */
+export const PRAYER_ROLLING_DAYS_ADHAN_ONLY = 8;
+
+/** When iqamah offset is on, adhan and iqamah each keep this many future fires per enabled prayer (ADR 0056). */
+export const PRAYER_ROLLING_DAYS_WITH_IQAMAH = 4;
+
+/** @deprecated alias — use `prayerRollingDays(getIqamahOffsetMinutes())` in new code. */
+export const PRAYER_ROLLING_DAYS = PRAYER_ROLLING_DAYS_ADHAN_ONLY;
+
+export function prayerRollingDays(iqamahOffsetMinutes: number): number {
+  return iqamahOffsetMinutes > 0 ? PRAYER_ROLLING_DAYS_WITH_IQAMAH : PRAYER_ROLLING_DAYS_ADHAN_ONLY;
+}
+
+/** Max pending prayer notifications with the given offset and enabled prayer count (ADR 0056). */
+export function maxPrayerPendingCount(iqamahOffsetMinutes: number, enabledPrayerCount: number): number {
+  const days = prayerRollingDays(iqamahOffsetMinutes);
+  const kinds = iqamahOffsetMinutes > 0 ? 2 : 1;
+  return enabledPrayerCount * days * kinds;
+}
 
 /** The Friday Surat al-Kahf reminder: one weekly repeating trigger (`features/reminders`). */
 export const FRIDAY_REMINDER_SLOTS = 1;

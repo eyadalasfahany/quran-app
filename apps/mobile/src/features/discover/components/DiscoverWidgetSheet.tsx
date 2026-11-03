@@ -4,6 +4,7 @@ import Animated from 'react-native-reanimated';
 
 import { useTheme } from '@/core/theme';
 import { useSlideUp } from '@/core/theme/motion';
+import { WidgetAddTrigger } from '@/features/widgets/components/WidgetAddTrigger';
 import { Button, Card, UiText, useContrastColors } from '@/shared/ui';
 
 type WidgetStepKey =
@@ -69,6 +70,7 @@ export function DiscoverWidgetSheet({
             </UiText>
             <StepGroup steps={IOS_STEPS} title={t('widgetsHelp.sections.ios')} />
             <StepGroup steps={ANDROID_STEPS} title={t('widgetsHelp.sections.android')} />
+            <WidgetAddTrigger catalogId="nextPrayer" testID="discover-widget-add" />
             <Button label={t('discover.widget.action')} onPress={onRead} stretch testID="discover-widget-read" variant="primary" />
           </ScrollView>
         </Animated.View>

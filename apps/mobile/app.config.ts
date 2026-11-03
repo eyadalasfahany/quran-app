@@ -15,7 +15,7 @@ const ANDROID_WIDGETS = [
     targetCellHeight: 2,
     resizeMode: 'none',
     updatePeriodMillis: 30 * 60 * 1000,
-    widgetCategory: 'home_screen',
+    widgetCategory: 'home_screen|keyguard',
     previewImage: './assets/widget-previews/NextPrayer.png',
   },
   {
@@ -41,7 +41,7 @@ const ANDROID_WIDGETS = [
     targetCellHeight: 2,
     resizeMode: 'none',
     updatePeriodMillis: 30 * 60 * 1000,
-    widgetCategory: 'home_screen',
+    widgetCategory: 'home_screen|keyguard',
     previewImage: './assets/widget-previews/Progress.png',
   },
   {

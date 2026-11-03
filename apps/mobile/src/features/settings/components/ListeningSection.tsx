@@ -9,6 +9,7 @@ export function ListeningSection({
   reciterName,
   onPressReciter,
   onPressDownloads,
+  downloadsTrailing,
   wifiOnly: controlledWifi,
   onWifiOnlyChange,
   testID = 'listening-section',
@@ -16,6 +17,7 @@ export function ListeningSection({
   reciterName?: string;
   onPressReciter?: () => void;
   onPressDownloads?: () => void;
+  downloadsTrailing?: string;
   wifiOnly?: boolean;
   onWifiOnlyChange?: (value: boolean) => void;
   testID?: string;
@@ -60,7 +62,7 @@ export function ListeningSection({
         title={t('settings.listening.downloads')}
         trailing={
           <UiText tone="muted" variant="subhead">
-            {t('settings.listening.downloadsValue')}
+            {downloadsTrailing ?? t('settings.listening.downloadsValue')}
           </UiText>
         }
       />

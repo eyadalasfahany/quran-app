@@ -1,6 +1,8 @@
 import { fireEvent } from '@testing-library/react-native';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { themes } from '@/core/theme';
+
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 
 import { QiblaRow } from './QiblaRow';
 
@@ -15,6 +17,12 @@ describe('QiblaRow', () => {
     const view = await renderUi(<QiblaRow bearing={118.96} onPress={() => undefined} />, { locale: 'en' });
 
     expect(view.getByTestId('salah-qibla-subtitle')).toHaveTextContent('119° from true north');
+  });
+
+  it('pads horizontally with the card size token', async () => {
+    const view = await renderUi(<QiblaRow bearing={244} onPress={() => undefined} />);
+
+    expect(flatStyle(view.getByTestId('salah-qibla').props.style).paddingHorizontal).toBe(themes.light.space[4]);
   });
 
   it.each(locales)('navigates on press with an accessible name (%s)', async (locale) => {

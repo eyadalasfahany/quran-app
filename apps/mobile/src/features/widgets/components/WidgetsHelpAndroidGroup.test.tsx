@@ -12,7 +12,7 @@ describe('WidgetsHelpAndroidGroup', () => {
   it('shows pin rows on Android', async () => {
     Platform.OS = 'android';
     const view = await renderUi(<WidgetsHelpAndroidGroup />);
-    expect(view.getByTestId('widgets-help-pin-misbaha-pin')).toBeOnTheScreen();
+    expect(view.getByTestId('widgets-help-pin-misbaha-add')).toBeOnTheScreen();
   });
 
   it('omits pin rows on iOS', async () => {

@@ -20,11 +20,11 @@ describe('renderProvider', () => {
     expect(textsOf(rendered.dark)).toHaveLength(1);
   });
 
-  it('uses different colours for light and dark', () => {
-    const rendered = renderProvider(WIDGET_PROVIDERS.misbaha, fullSnapshot(), NOW, 'taybah');
+  it('uses the same palette for light and dark trees from snapshot colorMode (ADR 0054)', () => {
+    const rendered = renderProvider(WIDGET_PROVIDERS.misbaha, fullSnapshot({ colorMode: 'dark' }), NOW, 'taybah');
     const lightBg = (rendered.light as { props: { style: { backgroundColor: string } } }).props.style.backgroundColor;
     const darkBg = (rendered.dark as { props: { style: { backgroundColor: string } } }).props.style.backgroundColor;
-    expect(lightBg).not.toBe(darkBg);
+    expect(lightBg).toBe(darkBg);
   });
 
   it('recognises only the shipped provider names', () => {

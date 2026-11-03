@@ -35,6 +35,21 @@ final class PackSchema
                 self::azkarNotes(),
                 self::azkarRecordings(),
             ],
+            ResourceGroup::Duas => [
+                self::duaItems(),
+                self::duaQuranSpans(),
+                self::duaHadith(),
+                self::duaGroups(),
+                self::duaLinks(),
+                self::duaCollectionRefs(),
+                self::duaCollectionBooks(),
+            ],
+            ResourceGroup::Names => [
+                self::namesLists(),
+                self::names(),
+                self::namesVerses(),
+                self::namesNotes(),
+            ],
             default => throw new PackBuildException('Resource group ['.$group->value.'] has no pack schema.'),
         };
     }
@@ -307,6 +322,79 @@ final class PackSchema
         );
     }
 
+    public static function namesLists(): PackTable
+    {
+        return new PackTable(
+            name: 'names_lists',
+            columns: [
+                self::integer('resource_id'),
+                self::text('list_slug'),
+                self::text('title_ar'),
+                self::text('source_label_ar'),
+                self::text('attribution_ar', nullable: true),
+                self::text('attribution_en', nullable: true),
+                self::text('edition_reference', nullable: true),
+                self::text('source_version'),
+            ],
+            primaryKey: ['resource_id', 'list_slug'],
+            orderBy: ['resource_id', 'list_slug'],
+        );
+    }
+
+    public static function names(): PackTable
+    {
+        return new PackTable(
+            name: 'names',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('name_slug'),
+                self::integer('position'),
+                self::text('name_ar'),
+                self::text('text_search'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function namesVerses(): PackTable
+    {
+        return new PackTable(
+            name: 'names_verses',
+            columns: [
+                self::integer('resource_id'),
+                self::text('name_slug'),
+                self::text('verse_key'),
+                self::text('review_status'),
+                self::text('evidence', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'name_slug', 'verse_key'],
+            orderBy: ['resource_id', 'name_slug', 'verse_key'],
+        );
+    }
+
+    public static function namesNotes(): PackTable
+    {
+        return new PackTable(
+            name: 'names_notes',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('name_slug'),
+                self::text('kind'),
+                self::text('text_ar', nullable: true),
+                self::text('source_type'),
+                self::text('source_name'),
+                self::text('source_reference', nullable: true),
+                self::text('source_url', nullable: true),
+                self::text('review_status'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
     public static function azkarRecordings(): PackTable
     {
         return new PackTable(
@@ -330,6 +418,126 @@ final class PackSchema
                 self::text('licence'),
                 self::text('licence_url', nullable: true),
                 self::integer('rights_verified_at', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function duaItems(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_items',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('dua_key'),
+                self::text('kind'),
+                self::integer('group_id', nullable: true),
+                self::integer('position'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function duaQuranSpans(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_quran_spans',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('item_id'),
+                self::integer('surah'),
+                self::integer('verse_from'),
+                self::integer('verse_to', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'item_id'],
+            orderBy: ['resource_id', 'item_id'],
+        );
+    }
+
+    public static function duaHadith(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_hadith',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('item_id'),
+                self::integer('hadeeth_id'),
+                self::text('title'),
+                self::text('hadeeth'),
+                self::text('attribution'),
+                self::text('grade', nullable: true),
+                self::text('explanation', nullable: true),
+                self::text('reference', nullable: true),
+                self::text('hints', nullable: true),
+                self::text('text_search'),
+                self::text('source_url'),
+            ],
+            primaryKey: ['resource_id', 'item_id'],
+            orderBy: ['resource_id', 'item_id'],
+        );
+    }
+
+    public static function duaGroups(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_groups',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('source_category_id'),
+                self::text('title'),
+                self::integer('position'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function duaLinks(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_links',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('item_id'),
+                self::integer('hadeeth_id'),
+                self::text('entry_key'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function duaCollectionRefs(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_collection_refs',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('item_id'),
+                self::text('collection_slug'),
+                self::text('hadith_number'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function duaCollectionBooks(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_collection_books',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('collection_slug'),
+                self::text('book_number'),
+                self::integer('position'),
             ],
             primaryKey: ['resource_id', 'id'],
             orderBy: ['resource_id', 'id'],

@@ -1,6 +1,6 @@
 # 0043 — أسماء الله الحسنى, the Hijri calendar and moon sighting
 
-Date: 2026-11-02 · Status: **proposed** (needs the developer: see "Decisions that need the developer"; nothing here is built or approved) · Rests on ADR 0010 (frames first), 0014 (no Quran translations), 0017 (Home tiles follow shipped features), 0027 (local-only), 0030 (Salah on device; §6 Hijri date), 0031 (sourcing and provenance rules), 0032 (Menu), 0034 (Home, reminders), 0036 (short window), 0042-features-enabled-by-default (no env switches; rollback by reviewed change), spec §1, §4, §6, §7, §12, §13, §14, §15, `docs/content-plan.md` · Would amend spec §4, §6, §7, §12, §13, §15 and the content plan (edits listed at the end; only the content-plan rows and the §15 pointer are made now) · Plan: `docs/plans/names-hijri-moon.md`
+Date: 2026-11-02 · Status: **accepted (developer, 3 Nov 2026)** · All 12 decisions accepted; see «Decisions accepted, 3 Nov 2026» · Audio for Names deferred to ADR 0055 · Rests on ADR 0010 (frames first), 0014 (no Quran translations), 0017 (Home tiles follow shipped features), 0027 (local-only), 0030 (Salah on device; §6 Hijri date), 0031 (sourcing and provenance rules), 0032 (Menu), 0034 (Home, reminders), 0036 (short window), 0042-features-enabled-by-default (no env switches; rollback by reviewed change), spec §1, §4, §6, §7, §12, §13, §14, §15, `docs/content-plan.md` · Amends spec §4, §6, §7, §12, §13, §15 and the content plan · Plan: `docs/plans/names-hijri-moon.md`
 
 Numbering note: `docs/adr/` already holds two files numbered 0042 (`0042-features-enabled-by-default.md` accepted, `0042-hadith-collections-source.md` proposed). This ADR takes 0043 and cites them by full file name. The developer may want to renumber one of them.
 
@@ -77,7 +77,7 @@ Each item has my recommendation. Nothing is decided here.
 11. **Moon location and the map.** Recommend: the Moon screen reads Salah's location and never writes it; with no location it sends the user to Salah (frame `MoonSightingNoLocation`). The visibility map is a cut line.
 12. **Navigation and schedule.** Recommend: three Menu cards (frames `MenuNewCards*`), routes `/asmaa`, `/hijri`, `/moon`, no new tab. On expanded windows the sidebar has no Menu tab (ADR 0032 §4), so the three features are reachable there only through the Home pill and deep links unless you approve sidebar entries (needs its own frame; not drawn). Order: Hijri calendar first (no rights risk), then Moon, then Names (gated on decisions 1 to 4). It is a follow-up, not a phase; it does not change Phase 6.
 
-## Decision (proposed)
+## Decision
 
 ### A. أسماء الله الحسنى
 
@@ -162,9 +162,29 @@ Each item has my recommendation. Nothing is decided here.
 
 ## Developer decisions (2 Nov 2026)
 
-Every recommendation in the plan is accepted, with these answers:
+Partial acceptance on the day the ADR was written. Superseded in full by the 3 Nov 2026 section below; kept for the record.
+
 1. **99 Names source:** the al-Tirmidhi narration list, always shown with its source. The developer names the printed edition. An agent transcribes the 99 Arabic names from it, and the developer or a reviewer signs off on all 99 before release. Meanings stay null in v1. The Names are built last, after the edition is named.
 2. **Hijri adjustment applies everywhere,** including the Hijri date in the Salah screen header. Only the date text changes on Salah. This is an explicit exception to ADR 0032 §2.
 3. **Occasions: agreed dates only.** 1 Muharram, 10 Muharram, 1 Ramadan, 1 Shawwal, 9 and 10 Dhul Hijjah, and the white days (13–15). No 12 Rabiʿ I, 27 Rajab, 15 Shaʿban or fixed Laylat al-Qadr.
 4. **Hijri occasion reminders:** yes, with 6 slots in the shared budget. Azkar goes from 21 to 15 slots. They're part of the reminders hub, and the user turns them on (or accepts them in the recommended set).
 5. **Build order:** Hijri, then Moon, then Names. No feature switches (ADR 0042, features enabled by default).
+
+## Decisions accepted, 3 Nov 2026
+
+All 12 decisions accepted (developer, 3 Nov 2026). The recommendation from each item in «Decisions that need the developer» is the binding decision. The items below record the binding form; the 2 Nov answers above (1–5) are superseded by the fuller versions here.
+
+1. **Which enumeration and what the screen says.** The Jāmiʿ al-Tirmidhī narration list. Every screen that shows the list carries its source name («القائمة: …») and an info button opening the source row. No sentence worded by Taybah says scholars differ; if a reviewed, permitted sentence on that point is approved later, it is added with its source.
+2. **Where the 99 strings come from.** Hand transcription by the developer or a named reviewer from one printed edition of the narration. **No ISBN is invented now.** The edition title, publisher, year, hadith number and the transcriber's name are filled in at plan step N1 before any import; the field stays empty until then. AlAdhan (`https://api.aladhan.com/v1/asmaAlHusna`) is used as a diff-only cross-check and is never stored (ADR 0043 A2). This closes the conflict the content plan's "Primary for Asma al-Husna" row created.
+3. **Meanings and English.** None in v1. The meaning field stays null; its section is not drawn. In its place the detail offers Quran references, each opening the reader and, from there, installed tafsir. The optional HadeethEnc records 10416 and 64673 («about the names») may be added as a sourced note under the same accepted-risk decision as ADR 0042-features-enabled-by-default §2; the developer confirms that acceptance before any note is imported.
+4. **Delivery.** Pack group `names` through the existing manifest and pack builder, with the Azkar-style provenance rows and locks. The `content_sources` row starts `pending`; a second reviewed migration sets it `granted` only after the edition and reviewer are recorded (step N1).
+5. **Learned marks.** Cut. Favourites and share only. The progress strip is not built in v1 (spec §1 hifz-progress cut).
+6. **Hijri adjustment scope.** One stored adjustment (−2 to +2, MMKV `hijri.adjustDays`) applied by the shared `formatHijriDate`. The Salah date header changes when the adjustment is non-zero; this is the explicit exception to ADR 0032 §2 recorded in the 2 Nov decision above. The Home date pill (frames `HomeHijriDate`, `HomeHijriDateDark`) is approved.
+7. **Occasions.** Fixed, uncontested dates only: 1 Muharram, 10 Muharram, 1 Ramadan, 1 Shawwal (Eid al-Fitr), 9 Dhul Hijjah (Day of Arafah), 10 Dhul Hijjah (Eid al-Adha), and the white days (13–15 of each month). Excluded: 12 Rabiʿ I, 27 Rajab, mid-Shaʿban, Laylat al-Qadr. Names are calendar labels; no virtue wording.
+8. **Hijri reminders and the shared budget.** Yes: optional reminders for the six annual occasions (one pending notification per enabled occasion, off by default). `HIJRI_REMINDER_SLOTS = 6` in `budget.ts`; `AZKAR_SLOTS` falls from 21 to 15. Budget tests updated at plan step H5.
+9. **Astronomy dependency.** `suncalc` 2.1.1 (BSD-2-Clause, 5 Oct 2026), subject to the M1 gate (refraction removal must reach ≤ 0.05° agreement with `astronomy-engine`). If M1 fails: `astronomy-engine` 2.1.19 with a documented exception to the 12-month rule, as ADR 0011 accepted for Amiri.
+10. **Criterion and wording.** Odeh (2004, Experimental Astronomy 18) as the primary displayed criterion; Yallop (1997, NAO TN 69) q kept in an optional details line. Zone labels and the disclaimer sentence are reviewed Arabic copy; no wording is shipped until the reviewer approves them.
+11. **Moon location and map.** Location is read-only from the Salah cache (`peekPrayerLocation` / `loadPrayerLocation`); no write, no permission prompt, no map. With no location the screen shows `MoonSightingNoLocation` and links the user to Salah. Visibility map is a cut line.
+12. **Navigation and schedule.** Three Menu cards (frames `MenuNewCards*`), routes `/asmaa`, `/hijri`, `/moon`, no new tab. Sidebar entries on expanded windows are a cut line (not drawn). Build order: Hijri → Moon → Names (no feature switches, ADR 0042-features-enabled-by-default).
+
+**Audio for Names: no play controls in v1.** Licensing is the same wall as F1. No TTS, no YouTube scraping. A follow-up is warranted when a licensed or commissioned recitation exists; at that point, hosting mirrors ADR 0040. Rules are recorded in ADR 0055.

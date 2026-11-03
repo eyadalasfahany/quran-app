@@ -1,12 +1,14 @@
 # Duas — الأدعية (proposed follow-up)
 
-Status: **proposed**. Nothing here starts until the developer accepts ADR 0044-duas and the frames. Not a numbered phase (spec §15 carries a pointer); the current phases stay Phase 6 and Phase 7. Branch: `ft/duas`, created by the developer from `main` (these files are written on `main` and move there). Implementation is done in **Cursor** (developer decision, 2 Nov 2026): every task below is written so it can be pasted as a Cursor prompt (see «Cursor task format»).
+Status: **accepted (developer, 3 Nov 2026)**. ADR 0044-duas accepted in full (all 21 decisions). Audio rules in ADR 0055. Task 0 done (this update). Branch: `ft/duas`, created by the developer from `main`. Implementation in **Cursor**: every task below is a Cursor prompt (see «Cursor task format»).
 
 Rests on:
-- `docs/adr/0044-duas.md` (the decision, sources with quoted terms, the 21 open decisions, release blockers);
+- `docs/adr/0044-duas.md` (the decision, sources with quoted terms, 21 decisions accepted 3 Nov 2026, release blockers);
+- **ADR 0055** (`0055-names-and-duas-audio.md`): audio rules — Quranic duas via Quran player play-from-ayah; Hisn via Azkar player unchanged; Prophetic and My Duas silent in v1;
+- ADR 0008 (QF Quran audio and `playerStore`);
 - ADR 0042 (`0042-hadith-collections-source.md`: Phase 7 collections, pinned fawazahmed0, grades hidden, `<slug>:<number>` references, `hadith_ref_aliases`);
 - ADR 0044 (features on by default, no switches; file today `0042-features-enabled-by-default.md`) and the developer's rule of 2 Nov 2026: no switches, one design line, Duas looks like a sibling of Azkar;
-- ADR 0010 (frames before code), 0014 (no Quran translations), 0017 (Home tiles), 0027 (local only), 0031 (Azkar sources, Quran map `candidate` to `reviewed`, HadeethEnc §12), 0032 (Menu), 0038, 0040 (Azkar audio); ADR 0045 (Names; file today `0043-names-hijri-moon.md`) for the shared Menu and Home frames;
+- ADR 0010 (frames before code), 0014 (no Quran translations), 0017 (Home tiles), 0027 (local only), 0031 (Azkar sources, Quran map `candidate` to `reviewed`, HadeethEnc §12), 0032 (Menu), 0038, 0040 (Azkar audio), 0047 (Azkar player); ADR 0043 (Names; accepted 3 Nov 2026) for shared Menu and Home frames;
 - spec §5, §6, §7, §12 (Azkar, search), §14 (test matrix), §15 (pointer);
 - `docs/content-plan.md` («Duas (proposed, ADR 0044-duas)» rows; the version table wins);
 - `CLAUDE.md`, `apps/api/CLAUDE.md`, `apps/mobile/CLAUDE.md`, `.claude/agent-rules.md`, `docs/plans/phase-6/README.md` (environment notes).
@@ -25,6 +27,7 @@ Rests on:
 - **Every UI string** in `src/core/i18n/locales/{ar,en}.json`.
 - Agents do not add dependencies, commit, push or switch branches.
 - **No switches.** Visibility follows installed packs and existing rows only.
+- **Audio (ADR 0055):** Quranic dua detail → «فتح في المصحف» pill → reader at `verse_from` (Quran `playerStore`). Hisn entries via Azkar player (ADR 0040, 0047) unchanged. Prophetic duas: no audio. «أدعيتي»: no audio. `features/duas` never imports `azkarPlayerStore` directly; an architecture test asserts this.
 
 ## Frame mirror map (developer rule, 2 Nov 2026)
 
@@ -33,7 +36,7 @@ Each new screen mirrors an existing Azkar screen: the same gutters (16), card ra
 | New screen (frame ids; each has `…Dark` and `…English`) | Mirrors | Same | Differs |
 | --- | --- | --- | --- |
 | `DuasHome` → `/duas` | `AzkarHome` | Header (back, Amiri title 26, 44 round buttons), brand card with the gold ornament, section title + grouped list card with 52 px rows and end chevron, «عرض الكل» link, 2-column topic tiles | Header has search and favourites only (reminders are per «أدعيتي» item). The brand card is «أدعيتي» (`ContinueAzkarCard`'s layout; no progress bar). Rows have no progress ring. Four source rows: Quranic, Prophetic, «الدعاء في كتب الحديث» (opens the hadith-books list), Hisn. A caption carries the HadeethEnc and OpenDua attribution |
-| `DuaQuranDetail` → `/duas/quran/[key]` | `AzkarReader` | Top bar (✕, centred title, «٥ من ٧٤»), 3 px progress line, centred Quran text in the Quran face 22/2.1, source line, «المصدر والتفاصيل» link, Aa / share / save, previous and next circles | The 120 pt counter ring is replaced by one primary pill «فتح في المصحف» (the `AzkarCategory` bottom pill style). No counter |
+| `DuaQuranDetail` → `/duas/quran/[key]` | `AzkarReader` | Top bar (✕, centred title, «٥ من ٧٤»), 3 px progress line, centred Quran text in the Quran face 22/2.1, source line, «المصدر والتفاصيل» link, share / save, previous and next circles | The 120 pt counter ring is replaced by one primary pill «فتح في المصحف» (the `AzkarCategory` bottom pill style). Tapping it navigates to the reader at `verse_from`; the user taps «play from here» there (ADR 0055 §2, Quran `playerStore`). No audio inside this screen; no `azkarPlayerStore`. No counter |
 | `DuaHadithDetail` → `/duas/hadith/[key]` | `AzkarReader` + `AzkarDetailsFull` sections | Top bar and progress line, Amiri text, section pattern (13/600 label, 17/26 body, 13 source caption, divider), Aa / share / save | Sections inline in a scrolling page with a bottom fade (the `AzkarCategory` list fade), not a sheet. Narrator line under the text. A grouped link card («في حصن المسلم · …», «في <collection> · …»), each row only when a reviewed link exists. Sections: «المعنى», «المرجع», «الدرجة» (decision 7), «الفوائد» (decision 6). No counter |
 | `MyDuas` → `/duas/mine` (+ `MyDuasEmpty`, `MyDuasEmptyEnglish`) | `AzkarFavorites`, `AzkarFavoritesEmpty` | Header, 14-padding rows with the gold 36 px number badge, Amiri 19/34 two-line text, 12 px caption, 44 px trailing round button, empty state with the gold-lined glyph | The trailing button is the reminder bell (brand when a reminder is set). A «من كتابتك» caption on every row. A bottom primary pill «إضافة دعاء» |
 | `MyDuaEditor` → `/duas/mine/editor?id=` | `AzkarDetails` sheet | Scrim, 28 radius sheet, handle, 17/600 title with 44 close button | Two fields (the `AzkarSearch` field style: surface, line, radius 16), a reminder row (the `AzkarReminders` row pattern), «حفظ» pill, «حذف الدعاء» text button in `danger` |
@@ -63,23 +66,23 @@ All are one file with a colocated test, in `apps/mobile/src/features/duas/compon
 
 No new token, no new icon outside the existing set (`bookmark`, `share`, `info`, `bell`, `close`, `search`, `chevron`).
 
-## Decisions that need the developer
+## Decisions (all accepted, 3 Nov 2026)
 
-Full list with recommendations: ADR 0044-duas, «Decisions that need the developer» (21 items). Never decided by an agent. The ones that stop a task:
+All 21 decisions accepted. Audio rules are in ADR 0055 (Quranic = Quran player play-from-ayah; Hisn = Azkar player unchanged; Prophetic + My Duas = silent). No human decisions remain before coding; human review tasks are noted per-task below.
 
-| Needed before | Decisions |
+| Previously needed before | Status |
 | --- | --- |
-| Task 0 | 1 (scope), 19 (keep HadeethEnc or not), 21 (release order) |
-| Task 1a | 3 (provenance model for Quranic duas) |
-| Task 1b | 5 (Prophetic categories) |
-| Task 1d | 17 (links to the collections), Phase 7 step 4 merged |
-| Task 2a | 10 (separate `duas` pack), 8 (dedupe policy), 18 (which hadith books) |
-| Task 3b (release) | 11 (where the pinned snapshot lives), 6 (show every field), 7 (grade, ADR 0042 D4 conflict) |
-| Task 4 | 2 (who reviews and by what rule) |
-| Task 5c | 9 (`my_dua` reminder target) |
-| Task 6 | 12 and 14 (navigation, frames, Menu and Home changes) |
-| Task 7g | 20 (no Hadith switch, ADR 0045), in practice |
-| Later | 13 (English hadith), 15 (global search), 16 (licensing risk, accepted or not) |
+| Task 0 (1, 19, 21) | ✅ accepted |
+| Task 1a (3) | ✅ accepted |
+| Task 1b (5) | ✅ accepted |
+| Task 1d (17), Phase 7 step 4 | decisions ✅; Phase 7 merge still required |
+| Task 2a (10, 8, 18) | ✅ accepted |
+| Task 3b (11, 6, 7) | ✅ accepted |
+| Task 4 (2) | ✅ accepted |
+| Task 5c (9) | ✅ accepted |
+| Task 6 (12, 14) | ✅ accepted (17 frames approved; Menu/Home deltas to draw) |
+| Task 7g (20) | ✅ accepted (no Hadith switch) |
+| Later (13, 15, 16) | ✅ accepted (Arabic only v1; global search later; HadeethEnc risk accepted) |
 
 ## Cursor task format
 
@@ -99,28 +102,28 @@ The orchestrating agent (or the developer) reviews each diff against the spec an
 
 | # | Task | App | Depends on | Status |
 | :---: | :--- | :--- | :--- | :---: |
-| 0 | Accept ADR 0044-duas, spec and content-plan edits | developer | — | |
-| 1a | Quran candidate generator | API | 0 | |
-| 1b | HadeethEnc snapshot and pin for Duas | API | 0 | |
+| 0 | Accept ADR 0044-duas, spec and content-plan edits | developer | — | ✅ done (3 Nov 2026) |
+| 1a | Quran candidate generator | API | 0 | ✅ done |
+| 1b | HadeethEnc snapshot and pin for Duas | API | 0 | ✅ |
 | 1c | Hisn links (`duas:hadeethenc-links`) | API | 1b | |
 | 1d | Collection refs (`duas:collection-refs`) | API | 1b, Phase 7 step 6 | |
-| 2a | MySQL schema and models | API | 1a | |
-| 2b | Pack group and contract | API + contract | 2a | |
-| 2c | `content.db` tables and install | mobile | 2b | |
-| 3a | `duas:import` | API | 1a–1d, 2b | |
+| 2a | MySQL schema and models | API | 1a | ✅ |
+| 2b | Pack group and contract | API + contract | 2a | ✅ |
+| 2c | `content.db` tables and install | mobile | 2b | ✅ |
+| 3a | `duas:import` | API | 1a–1d, 2b | ✅ |
 | 3b | Release wiring and runbook | API | 3a, decision 11 | |
-| 4 | Quran review sheet | developer | 1a | |
-| 5a | Content repositories and availability | mobile | 2c | |
+| 4 | Quran review sheet | developer | 1a | sheet ready — awaiting developer |
+| 5a | Content repositories and availability | mobile | 2c | ✅ |
 | 5b | `user.db`: `my_duas`, `dua_favorites` | mobile | 0 | |
 | 5c | `my_dua` reminder target | mobile | 5b | |
 | 6 | Frames: approval; Menu and Home frames | developer | 0 | frames drawn |
 | 7a | Shared components | mobile | 5a, 6 | |
 | 7b | `DuasHome` | mobile | 7a | |
-| 7c | Quranic list and detail | mobile | 7a | |
-| 7d | Prophetic list and detail | mobile | 7a | |
+| 7c | Quranic list and detail | mobile | 7a | ✅ |
+| 7d | Prophetic list and detail | mobile | 7a | ✅ |
 | 7e | Hadith-books list | mobile | 7a, Phase 7 step 13 | |
 | 7f | `MyDuas` and editor | mobile | 5b, 5c, 7a | |
-| 7g | Menu card and Home tile | mobile | 7b, decision 12 | |
+| 7g | Menu card and Home tile | mobile | 7b, decision 12 | ✅ done |
 | 8a | Section search | mobile | 5a, 5b | |
 | 8b | Share text | mobile | 5a | |
 | 9 | Exit check | all | all | |
@@ -200,9 +203,9 @@ Build order: 0; then 1a, 1b, 5b in parallel; 1c, 1d; 2a → 2b → 2c; 3a (4 in 
 
 ### Task 4 — Quran candidate review sheet (developer)
 
-- `docs/plans/duas/quran-duas-review.md`: one row per candidate, **keys and the matching rule only**. Columns: `key`, `rule`, `decision` (`reviewed`, `rejected`, `added`), `span` (if joined), `reviewer's evidence`. The reviewer reads the verses in the app or a printed Mushaf.
-- A small `duas:quran-map-apply` (an agent may write it) copies the sheet's decisions into `config/duas_quran_map.php`. **An agent never marks a row.**
-- **Done when** no row is `candidate`.
+- **Sheet:** `docs/plans/duas/quran-duas-review.md` — 80 rows, keys and rules only (columns: key, surah, ayah, rule, status, notes). All rows start as `candidate`.
+- **Status:** sheet ready — awaiting developer. **Done when** no row is `candidate` (decisions copied into `config/duas_quran_map.php`; production import uses `reviewed` and `added` only).
+- A small `duas:quran-map-apply` (optional later) may copy table statuses into the config; until then, edit the config directly. **An agent never marks a row.**
 
 ### Task 5a — Content repositories and availability (mobile)
 
@@ -242,10 +245,10 @@ Every UI task:
 | --- | --- | --- |
 | 7a | `DuasSourceRow`, `DuasMineCard`, `DuasAttributionLine`, `DuaLinkRow`, `DuaLinkCard` (components only) | `DuasHome`, `DuaHadithDetail` |
 | 7b | `DuasHome` screen: sources rows (each only when its part has rows), Hisn topic tiles (only with the `azkar` pack) | `DuasHome*` |
-| 7c | `DuaQuranText`, `DuaOpenInMushafButton`, Quranic list (Mushaf order, surah label) and detail; «فتح في المصحف» opens the reader at `verse_from` | `DuaQuranDetail*` |
-| 7d | `DuaHadithBody`, Prophetic list (grouped by HadeethEnc category title as received) and detail with the link card | `DuaHadithDetail*` |
+| 7c | `DuaQuranText`, `DuaOpenInMushafButton`, Quranic list (Mushaf order, surah label) and detail; «فتح في المصحف» navigates to the reader at `verse_from` (Quran `playerStore`; no audio inside this screen; ADR 0055 §2) | `DuaQuranDetail*` |
+| 7d | `DuaHadithBody`, Prophetic list (grouped by HadeethEnc category title as received) and detail with the link card. **No audio controls** (ADR 0055 §3). | `DuaHadithDetail*` |
 | 7e | Hadith-books list: Phase 7's books-list component filtered to `dua_collection_books` and installed collections; a row opens Phase 7's book screen | Phase 7 books frame (decision 14) |
-| 7f | `MyDuaRow`, `MyDuaForm`, `MyDuas`, `MyDuasEmpty`, editor sheet, delete confirmation | `MyDuas*`, `MyDuaEditor*`, `MyDuasEmpty*` |
+| 7f | `MyDuaRow`, `MyDuaForm`, `MyDuas`, `MyDuasEmpty`, editor sheet, delete confirmation. **No audio** (ADR 0055 §4). | `MyDuas*`, `MyDuaEditor*`, `MyDuasEmpty*` |
 | 7g | Menu card and Home tile, each only when a `duas` pack is installed (update `HomeScreen.test.tsx` and the Menu test) | Menu and Home frames from task 6 |
 
 A wide window uses the centred column, like the other pushed Azkar screens; expanded-window frames are drawn only if the developer asks.

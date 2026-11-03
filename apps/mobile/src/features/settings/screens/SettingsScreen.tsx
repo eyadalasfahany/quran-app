@@ -3,9 +3,11 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 
+import { megabytes } from '@/core/format/megabytes';
 import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
+import { useStorageTotals } from '@/features/downloads/hooks/useStorageTotals';
 import { useActivePlan } from '@/features/khatma/data';
 import { useReaderSettings } from '@/features/reader/settings';
 import { goBackOr, MENU_TAB } from '@/core/navigation/go-back';
@@ -39,6 +41,13 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
     });
   }, [activePlan, locale, t]);
 
+  const { totalBytes, loading: storageLoading } = useStorageTotals();
+  const formattedTotal = storageLoading
+    ? undefined
+    : t('downloads.megabytes', {
+        value: formatNumber(megabytes(totalBytes), locale),
+      });
+
   return (
     <Screen testID={testID}>
       {/* The column caps the rows at 720 on wide windows (spec §4) and keeps the 16 gutter the rows had. */}
@@ -61,6 +70,8 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
             onPressQuranFont={() => router.push('/reader-settings' as Href)}
           />
           <ListeningSection
+            downloadsTrailing={formattedTotal}
+            onPressDownloads={() => router.push('/settings/downloads' as Href)}
             onPressReciter={() => router.navigate('/(main)/(listen)' as Href)}
           />
           <HabitsSection

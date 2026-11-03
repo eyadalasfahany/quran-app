@@ -8,7 +8,7 @@ import { AzkarProgressBar } from './AzkarProgressBar';
 
 const CLOSE = { ios: 'xmark', android: 'close' } as const;
 
-/** The reader's header: the close button, the category title, «٥ من ٢٤», and the progress bar under them. */
+/** The reader's header: close at inline-start (visual right in RTL), centred title, «٥ من ٢٤», and the progress bar. */
 export function AzkarReaderTopBar({
   title,
   progressText,
@@ -28,7 +28,9 @@ export function AzkarReaderTopBar({
   return (
     <View style={{ gap: theme.space[3], paddingHorizontal: theme.space[4], paddingTop: theme.space[2] }} testID={testID}>
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2] }}>
-        <View style={{ flex: 1, minWidth: theme.size.touchTarget }} />
+        <View style={{ alignItems: 'flex-start', flex: 1 }}>
+          <IconButton icon={CLOSE} label={t('azkar.reader.close')} onPress={onClose} testID="azkar-reader-close" variant="surface" />
+        </View>
         <View style={{ alignItems: 'center', flex: 3 }}>
           <UiText accessibilityRole="header" align="center" variant="headline">
             {title}
@@ -37,9 +39,7 @@ export function AzkarReaderTopBar({
             {progressText}
           </UiText>
         </View>
-        <View style={{ alignItems: 'flex-end', flex: 1 }}>
-          <IconButton icon={CLOSE} label={t('azkar.reader.close')} onPress={onClose} testID="azkar-reader-close" variant="surface" />
-        </View>
+        <View style={{ flex: 1, minWidth: theme.size.touchTarget }} />
       </View>
       <AzkarProgressBar fraction={fraction} />
     </View>

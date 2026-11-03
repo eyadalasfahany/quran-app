@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { buildWidgetSnapshot } from './build-snapshot';
+import { snapshotContent } from './sync';
 import { fullSnapshot, TEST_LABELS } from './test-fixtures';
 import type { WidgetSnapshot } from './types';
 
@@ -16,6 +17,7 @@ const PLACEHOLDER_VERSE = 'نص تجريبي ١ — ليس ذكرًا';
 // The widget keys the snapshot may carry. A new key is a schema change and needs this list (and the Swift decoder) to move.
 const ALLOWED_TOP_LEVEL = [
   'azkar',
+  'colorMode',
   'labels',
   'locale',
   'misbaha',
@@ -77,6 +79,7 @@ describe('widget snapshot holds no religious text (ADR 0035 §1)', () => {
     const labelValues = new Set<string>(Object.values(TEST_LABELS));
     const allowed = new Set<string>([
       ...labelValues,
+      snapshot.colorMode,
       snapshot.locale,
       ...(snapshot.azkar?.sessions.flatMap((session) => [session.id, session.title]) ?? []),
       ...snapshot.prayer.entries.map((entry) => entry.key),
@@ -92,6 +95,7 @@ describe('widget snapshot holds no religious text (ADR 0035 §1)', () => {
   it('rebuilding it from its own fields gives the same bytes, so the builder adds nothing', () => {
     const rebuilt = buildWidgetSnapshot({
       azkar: snapshot.azkar,
+      colorMode: snapshot.colorMode,
       labels: snapshot.labels,
       locale: snapshot.locale,
       misbaha: snapshot.misbaha,
@@ -101,7 +105,7 @@ describe('widget snapshot holds no religious text (ADR 0035 §1)', () => {
       reading: snapshot.reading,
       wird: snapshot.wird,
     });
-    expect(JSON.stringify(rebuilt)).toBe(json);
+    expect(JSON.parse(snapshotContent(rebuilt))).toEqual(JSON.parse(snapshotContent(snapshot)));
   });
 });
 

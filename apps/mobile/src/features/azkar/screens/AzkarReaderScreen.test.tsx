@@ -7,6 +7,7 @@ import { makeDetail, makeItem, press, quranSegment, textSegment } from '../../..
 import { openAzkarUserDb } from '../../../../jest/azkar-test-db';
 import { renderUi } from '../../../../jest/render-ui';
 import type { SqlExecutor } from '@/core/db/sql-executor';
+import { buildAzkarQueue } from '../audio/queue';
 import { initialAzkarPlayerState, useAzkarPlayerStore } from '../audio/azkarPlayerStore';
 import { azkarShareText } from '../data/share-text';
 import { buildReaderUnits } from '../data/reader-units';
@@ -791,7 +792,7 @@ describe('AzkarReaderScreen', () => {
   });
 });
 
-describe('the reader player bar', () => {
+describe('the reader audio controls', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useAzkarPlayerStore.setState(initialAzkarPlayerState);
@@ -807,18 +808,18 @@ describe('the reader player bar', () => {
     contentMock.listRecordingsForItems.mockReturnValue([]);
   });
 
-  it('draws no player and no audio control for a unit without a recording', async () => {
+  it('draws no mini bar and no play control for a unit without a recording', async () => {
     await renderReader();
     expect(screen.queryByTestId('azkar-player-bar')).toBeNull();
     expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
   });
 
-  it('draws the bar for a playable recording, showing the repetition of the count so far', async () => {
+  it('shows play in the actions row for a playable recording, not the mini bar', async () => {
     contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
     await renderReader();
-    expect(screen.getByTestId('azkar-player-bar')).toBeTruthy();
+    expect(screen.queryByTestId('azkar-player-bar')).toBeNull();
+    expect(screen.getByTestId('azkar-actions-play')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'تشغيل التسجيل' })).toBeTruthy();
-    expect(within(screen.getByTestId('azkar-player-bar-repetition')).getByText('٠ من ٣')).toBeTruthy();
   });
 
   it('shows the offline message, and no play control, when the recording needs the network while offline', async () => {
@@ -829,10 +830,27 @@ describe('the reader player bar', () => {
     expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
   });
 
-  it('starts the scope queue from the bar, at the unit that is read', async () => {
+  it('starts the scope queue from the actions play control, at the unit that is read', async () => {
     contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
     await renderReader();
     await press(screen.getByRole('button', { name: 'تشغيل التسجيل' }));
     expect(mockStartPlayback).toHaveBeenCalledWith(expect.objectContaining({ index: 0, scope: expect.objectContaining({ scopeKey: SCOPE }) }));
+  });
+
+  it('shows the buffering ring and busy play control while the store is loading', async () => {
+    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
+    const units = buildReaderUnits(ENTRY_KEY, [makeItem({ id: 1, requiredCount: 3 })], 'ar');
+    const queue = buildAzkarQueue(units, () => makeRecording({ itemId: 1 }));
+    useAzkarPlayerStore.setState({
+      ...initialAzkarPlayerState,
+      scope: { scopeKey: SCOPE, periodKey: 'session', title: 'FIXTURE' },
+      queue,
+      index: 0,
+      status: 'loading',
+    });
+    await renderReader();
+    const play = screen.getByTestId('azkar-actions-play');
+    expect(play.props.accessibilityState).toEqual({ busy: true, disabled: false });
+    expect(screen.getByTestId('azkar-actions-play-ring', { includeHiddenElements: true })).toBeTruthy();
   });
 });

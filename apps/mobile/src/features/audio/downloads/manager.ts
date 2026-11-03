@@ -16,6 +16,7 @@ import {
   patchDownload,
   upsertDownload,
   type DownloadRow,
+  type DownloadStatus,
   type DownloadsStore,
 } from '../data/downloads';
 import { recitationIdForResource } from '../data/reciters';
@@ -406,6 +407,19 @@ export function enqueueAll(reciterResourceId: number): number {
     [recitationId],
   );
   return chapters.filter((chapter) => enqueueSurah(reciterResourceId, chapter.chapterId)).length;
+}
+
+/**
+ * Cancels every queued, downloading, paused or wifi-waiting transfer for a reciter without
+ * deleting the already-done rows. The stop button on ReciterStorageRow calls this.
+ */
+export function cancelReciter(reciterResourceId: number): void {
+  const CANCELABLE: DownloadStatus[] = ['queued', 'downloading', 'paused', 'waiting_wifi'];
+  for (const row of listDownloadsForReciter(reciterResourceId, userStore())) {
+    if (CANCELABLE.includes(row.status)) {
+      cancel(row.audioFileId);
+    }
+  }
 }
 
 /** Deletes a row and its file. An in-flight transfer for it is stopped first. */

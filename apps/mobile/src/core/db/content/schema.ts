@@ -364,3 +364,180 @@ export const azkarRecordings = sqliteTable(
     index('azkar_recordings_resource_item_idx').on(table.resourceId, table.itemId),
   ],
 );
+
+export const duaItems = sqliteTable(
+  'dua_items',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    duaKey: text('dua_key').notNull().unique(),
+    kind: text('kind').notNull(),
+    groupId: integer('group_id'),
+    position: integer('position').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('dua_items_kind_position_idx').on(table.resourceId, table.kind, table.position),
+    index('dua_items_group_position_idx').on(table.resourceId, table.groupId, table.position),
+  ],
+);
+
+export const duaQuranSpans = sqliteTable(
+  'dua_quran_spans',
+  {
+    resourceId: integer('resource_id').notNull(),
+    itemId: integer('item_id').notNull(),
+    surah: integer('surah').notNull(),
+    verseFrom: integer('verse_from').notNull(),
+    verseTo: integer('verse_to'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.itemId] }),
+    index('dua_quran_spans_surah_idx').on(table.resourceId, table.surah, table.verseFrom),
+  ],
+);
+
+export const duaHadith = sqliteTable(
+  'dua_hadith',
+  {
+    resourceId: integer('resource_id').notNull(),
+    itemId: integer('item_id').notNull(),
+    hadeethId: integer('hadeeth_id').notNull(),
+    title: text('title').notNull(),
+    hadeeth: text('hadeeth').notNull(),
+    attribution: text('attribution').notNull(),
+    grade: text('grade'),
+    explanation: text('explanation'),
+    reference: text('reference'),
+    hints: text('hints'),
+    textSearch: text('text_search').notNull(),
+    sourceUrl: text('source_url').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.itemId] }),
+    index('dua_hadith_hadeeth_idx').on(table.resourceId, table.hadeethId),
+  ],
+);
+
+export const duaGroups = sqliteTable(
+  'dua_groups',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    sourceCategoryId: integer('source_category_id').notNull(),
+    title: text('title').notNull(),
+    position: integer('position').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('dua_groups_position_idx').on(table.resourceId, table.position),
+  ],
+);
+
+export const duaLinks = sqliteTable(
+  'dua_links',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    itemId: integer('item_id').notNull(),
+    hadeethId: integer('hadeeth_id').notNull(),
+    entryKey: text('entry_key').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('dua_links_item_idx').on(table.resourceId, table.itemId),
+  ],
+);
+
+export const duaCollectionRefs = sqliteTable(
+  'dua_collection_refs',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    itemId: integer('item_id').notNull(),
+    collectionSlug: text('collection_slug').notNull(),
+    hadithNumber: text('hadith_number').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('dua_collection_refs_item_idx').on(table.resourceId, table.itemId),
+  ],
+);
+
+export const duaCollectionBooks = sqliteTable(
+  'dua_collection_books',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    collectionSlug: text('collection_slug').notNull(),
+    bookNumber: text('book_number').notNull(),
+    position: integer('position').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('dua_collection_books_position_idx').on(table.resourceId, table.position),
+  ],
+);
+
+export const namesLists = sqliteTable(
+  'names_lists',
+  {
+    resourceId: integer('resource_id').notNull(),
+    listSlug: text('list_slug').notNull(),
+    titleAr: text('title_ar').notNull(),
+    sourceLabelAr: text('source_label_ar').notNull(),
+    attributionAr: text('attribution_ar'),
+    attributionEn: text('attribution_en'),
+    editionReference: text('edition_reference'),
+    sourceVersion: text('source_version').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.listSlug] })],
+);
+
+export const names = sqliteTable(
+  'names',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    nameSlug: text('name_slug').notNull().unique(),
+    position: integer('position').notNull(),
+    nameAr: text('name_ar').notNull(),
+    textSearch: text('text_search').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('names_resource_position_idx').on(table.resourceId, table.position),
+  ],
+);
+
+export const namesVerses = sqliteTable(
+  'names_verses',
+  {
+    resourceId: integer('resource_id').notNull(),
+    nameSlug: text('name_slug').notNull(),
+    verseKey: text('verse_key').notNull(),
+    reviewStatus: text('review_status').notNull(),
+    evidence: text('evidence'),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.nameSlug, table.verseKey] })],
+);
+
+export const namesNotes = sqliteTable(
+  'names_notes',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    nameSlug: text('name_slug').notNull(),
+    kind: text('kind').notNull(),
+    textAr: text('text_ar'),
+    sourceType: text('source_type').notNull(),
+    sourceName: text('source_name').notNull(),
+    sourceReference: text('source_reference'),
+    sourceUrl: text('source_url'),
+    reviewStatus: text('review_status').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('names_notes_name_idx').on(table.resourceId, table.nameSlug),
+  ],
+);

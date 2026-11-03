@@ -49,15 +49,7 @@ export const NoAudioDownloadPort: AzkarDownloadPort = {
   storageBytes: () => 0,
 };
 
-const BYTES_PER_MEGABYTE = 1024 * 1024;
-
-/** Megabytes with one decimal place, as the storage summary shows them. */
-export function megabytes(bytes: number): number {
-  if (!Number.isFinite(bytes) || bytes <= 0) {
-    return 0;
-  }
-  return Math.round((bytes / BYTES_PER_MEGABYTE) * 10) / 10;
-}
+export { megabytes } from '@/core/format/megabytes';
 
 /** Whole percent for a progress fraction, clamped to 0 to 100. */
 export function percentOf(progress: number): number {

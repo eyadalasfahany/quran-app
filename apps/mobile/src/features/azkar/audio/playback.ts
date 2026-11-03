@@ -237,7 +237,7 @@ function loadItem(index: number, item: AzkarQueueItem): void {
     watchdog: null,
   };
   session = next;
-  player.playbackRate = current.speed;
+  player.setPlaybackRate(current.speed);
   player.volume = current.volume;
   player.setActiveForLockScreen(true, lockScreenMetadata(item), LOCK_SCREEN_CONTROLS);
   next.watchdog = setTimeout(() => {
@@ -476,7 +476,7 @@ useAzkarPlayerStore.subscribe((next, previous) => {
     return;
   }
   if (next.speed !== previous.speed) {
-    session.player.playbackRate = next.speed;
+    session.player.setPlaybackRate(next.speed);
   }
   if (next.volume !== previous.volume) {
     session.player.volume = next.volume;

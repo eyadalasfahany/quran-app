@@ -174,3 +174,127 @@ Needs decision 7. Draw `WidgetsHelp` (ADR 0010), get it approved, then build: a 
 ## Release blockers
 
 As listed in ADR 0035 ("Release blockers"): approval of the ADR and frames; dependencies approved, rowed and audited; the Android spike result; iOS and watch compile and review on a Mac or approved EAS; prayer-time parity across DST and time-zone changes; the watch kill scenario; clear-data; Azkar surfaces excluded until ADR 0031 clears; font licences recorded; App Store watch screenshots and privacy-label check.
+
+---
+
+## Follow-up — widget audit, add preview, theme (ADR 0054 draft)
+
+Status: **proposed** until the developer approves `docs/adr/0054-widget-add-preview-and-theme.md` and the new frames.
+
+Rests on: ADR 0035, 0010, 0053; spec §4, §6, §13, §14; existing frames in `#widgets` (`WidgetNextPrayerSmall`, `WidgetNextPrayerSmallDark`, `WidgetProgressMedium`, `WidgetContinueReading`, `WidgetLockScreen`, `AndroidWidgets`, …); `ConfirmDialog` in `quran-app-design-system.html` / `SibhaResetDialog` frame pattern.
+
+**Exit criterion (this slice):**
+
+- Every shipped widget kind matches its HTML frame (content, typography, colours) in Arabic and English, light and dark, for the sizes in ADR 0035 §2.
+- Every tappable widget surface opens the allowlisted route (see `deep-link-routes.test.ts` and manual cold/warm checks on device).
+- Tapping «إضافة» / pin anywhere in app flows through **`WidgetAddConfirmDialog`** (preview + confirm) before Android `requestPinWidget` or iOS instructions.
+- Widget surfaces respect **app-resolved** `colorMode` from the snapshot when ADR 0054 is accepted (not only system appearance).
+- Copy never promises lock-screen detection on iOS or duplicate detection on all Android launchers.
+
+### Decisions (accepted 3 Nov 2026 with ADR 0054)
+
+1. Snapshot field `colorMode: 'light' | 'dark'` — yes; keep `schemaVersion: 1`; missing field falls back to system.
+2. Sepia on widgets: **map to light**.
+3. Android: «Add anyway» when `getWidgetInfo` returns ids — **yes**.
+4. `WidgetAddConfirm*` frames approved with ADR 0054; `WidgetsHelp` remains in HTML (prior approval path).
+5. Default destination preference in MMKV (`widgets.addDestination`) — **yes**.
+
+### Steps (append to delivery order after step 10, or in parallel once widgets compile)
+
+| # | Step | Where | Depends on |
+| :---: | --- | --- | --- |
+| 11 | **Full widget audit** (content, frames, deep links) | Mac/iOS + Windows/Android | Steps 4 and 6 done |
+| 12 | **Frames:** `WidgetAddConfirm*` (+ `WidgetsHelp` if still missing), EN variants | Windows | Decision 4 |
+| 13 | **Catalog metadata:** map each UI entry → provider/kind, destination (home/lock), preview variant, frame id | Windows | 12 |
+| 14 | **`WidgetAddConfirmDialog` + preview component** (`ConfirmDialog`, live snapshot preview) | Windows | 12, 13 |
+| 15 | **Wire add flow:** `WidgetPinButton`, `WidgetsHelpPinRow`, Discover widget tour step → confirm dialog; iOS path = steps only | Windows (RN) | 14 |
+| 16 | **Snapshot `colorMode`:** TS builder, tests, sync on appearance change | Windows | Decision 1 |
+| 17 | **Native theme:** Swift + Android render use `colorMode` | Mac (Swift), Windows (Android) | 16 |
+| 18 | **Android duplicate UX:** optional `getAppWidgetIds` gate + honest strings | Windows (emulator) | Decision 3, 15 |
+| 19 | **Exit check (0054):** visual + tap matrix, theme mismatch cases, Discover + Settings flows | All | 11–18 |
+
+### Step briefs (follow-up)
+
+#### Step 11 — Full widget audit
+
+Checklist derived from ADR 0035 §2 and `WIDGET_PROVIDERS` / `TaybahWidgets.swift`:
+
+| Surface | Frame ids | Tap target |
+| --- | --- | --- |
+| Next prayer (iOS small/medium, Android 2×2/4×2) | `WidgetNextPrayerSmall`, `…Dark`, `AndroidWidgets`, `…Dark` | `/salah` |
+| Progress | `WidgetProgressMedium`, `…Dark`, Android 4×2 | `/daily-goals` |
+| Continue reading | `WidgetContinueReading`, `…Dark`, Android 2×2/4×2 | `/read/<verseKey>` |
+| Misbaha | frames above + Android 2×2 | `/sibha`; «+» in-widget only |
+| Azkar status | medium / 4×2 when content installed | `/azkar` |
+| Lock (iOS) | `WidgetLockScreen`, `…Dark` | prayer → `/salah`; circular progress → `/daily-goals` |
+
+**Screenshot note (developer, Nov 2026):** iOS small next-prayer **dark** on device matches `WidgetNextPrayerSmallDark` intent (header, name, time, المتبقي, mint countdown).
+
+Tests: keep `deep-link-routes.test.ts` green; add audit checklist artifact in step brief only (no religious text in report). Manual: `adb shell am start …` per provider; iOS simulator tap each kind. **Gate:** `taybah-feature-reviewer` compares each frame to device screenshot.
+
+#### Step 12 — Frames for add confirm
+
+Draw centered-card dialogs (see `SibhaResetDialog`): scrim, icon optional, **embedded widget mock** at true widget aspect ratio, destination control (segmented: home / lock), primary «متابعة» and cancel. Light, dark, Arabic, English. Run `npm run check:html -w @quran/design-tokens`.
+
+Tests: none (design). Done when developer approves.
+
+#### Step 13 — Catalog metadata
+
+Extend `widgets-help-catalog.ts` (or sibling `widget-add-catalog.ts`) with: `frameId`, `previewFamily`, `destinations: ('home' \| 'lock')[]`, `iosKind` / `androidProvider`. Lock destination on iOS (WidgetKit kinds) and on Android for next prayer and progress only (`home_screen|keyguard`, gallery steps after confirm).
+
+Tests: unit test that every catalog row has a frame id present in HTML (grep or design-tokens check script).
+
+#### Step 14 — WidgetAddConfirmDialog
+
+Components (one file each + tests): `WidgetPreviewMock` (RN layout mirroring Android Jest primitives or static Image from frame — **spike in brief**), `WidgetDestinationPicker`, `WidgetAddConfirmDialog` composing `ConfirmDialog` actions.
+
+Tests: render preview for each catalog row; RTL; a11y; theme tokens; interaction confirm/cancel.
+
+#### Step 15 — Wire flows
+
+- Replace direct `WidgetPinButton` press with open confirm; on confirm Android → `requestPinWidget`.
+- `DiscoverWidgetSheet`: either open confirm for «widget» tour step or deep-link to Settings widgets with confirm — **match ADR 0054 §1**.
+- iOS: confirm → show steps `WidgetsHelpIosGroup` filtered by kind.
+
+Tests: update `WidgetPinButton.test.tsx`, `DiscoverWidgetSheet.test.tsx`, `WidgetsHelpPinRow.test.tsx`.
+
+#### Step 16 — Snapshot colorMode
+
+Add field to `types.ts`, `build-snapshot.ts` input from `resolveThemeName` (map sepia per decision). Bump `schemaVersion` if major. Widgets ignore unknown fields (0035 §4).
+
+Tests: builder emits `colorMode`; appearance automatic + dark system; dark after Maghrib; sync fires on `saveAppearance`.
+
+#### Step 17 — Native colorMode
+
+- Swift: `Snapshot.swift` decode; views use `TaybahTokens.palette(for: snapshot.colorMode)`.
+- Android: single palette in `context.ts` from snapshot.
+
+Tests: golden fixtures; Jest render tests; XCTest decode on Mac.
+
+#### Step 18 — Android duplicate UX
+
+If decision 3 yes: before pin, query app widget ids; branch dialog copy. Document launcher limitations in `widgetsHelp` strings.
+
+Tests: mock `AppWidgetManager`; manual checklist on Pixel emulator + one OEM if available.
+
+#### Step 19 — Exit check (0054)
+
+Re-run step 10 matrix subset for widgets only; plus add-flow screenshots vs `WidgetAddConfirm*` frames; verify app theme light while system dark (and reverse) after sync.
+
+### What ships where
+
+| Work | Windows / Android emulator | Mac / iOS device |
+| --- | --- | --- |
+| Steps 12–16, 18 (RN), Android 17 | Yes | — |
+| Step 11 lock/accessory visual audit | — | Yes |
+| Step 17 Swift | — | Yes |
+| iOS add flow (instructions) | RN only | Verify copy |
+| Discover + ConfirmDialog UI | Yes | Screenshot optional |
+
+### Must not promise (product copy and UX)
+
+- iOS: one-tap add to home or lock from inside Taybah.
+- Detecting or blocking duplicate **lock-screen** widgets.
+- Reliable «already pinned» on all Android launchers (Samsung, MIUI, etc.).
+- One-tap lock-widget add on Android from inside Taybah (`requestPinWidget` is home-only; lock uses the system lock-screen gallery on Android 16 QPR2+).
+- Widget sepia until ADR 0054 decision 2 is yes and implemented.

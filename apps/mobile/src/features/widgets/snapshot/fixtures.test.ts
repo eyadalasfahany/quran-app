@@ -20,6 +20,7 @@ describe('golden widget snapshots', () => {
     const fixture = load(name);
     const rebuilt = buildWidgetSnapshot({
       azkar: fixture.azkar,
+      colorMode: fixture.colorMode,
       labels: fixture.labels,
       locale: fixture.locale,
       misbaha: fixture.misbaha,

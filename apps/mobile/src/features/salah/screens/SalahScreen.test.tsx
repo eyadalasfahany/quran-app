@@ -93,6 +93,18 @@ describe('SalahScreen', () => {
     expect(view.queryByTestId('salah-row-fajr-active-bar')).toBeNull();
   });
 
+  it('keeps the scenic hero and a plain times list; past rows are muted', async () => {
+    const view = await renderUi(screen());
+
+    expect(view.getByTestId('salah-hero-photo')).toBeTruthy();
+    expect(view.queryByTestId('salah-hero-ring')).toBeNull();
+    expect(view.getByTestId('salah-row-asr-active-bar')).toBeTruthy();
+    expect(flatStyle(view.getByTestId('salah-row-asr').props.style).backgroundColor).toBe(
+      themes.light.colors.fillSecondary,
+    );
+    expect(flatStyle(view.getByText('الفجر').props.style).color).toBe(themes.light.colors.inkMuted);
+  });
+
   it('draws the six rows, five bells, and an empty slot for الشروق', async () => {
     const view = await renderUi(screen());
 

@@ -7,6 +7,11 @@ import { locales, renderUi } from '../../../../jest/render-ui';
 
 import { DiscoverWidgetSheet } from './DiscoverWidgetSheet';
 
+jest.mock('react-native-android-widget', () => ({
+  getWidgetInfo: jest.fn(async () => []),
+  requestPinWidget: jest.fn(async () => true),
+}));
+
 describe('DiscoverWidgetSheet', () => {
   it('shows the title, the iOS and Android steps from the widgets help, and «تم»', async () => {
     const view = await renderUi(<DiscoverWidgetSheet onClose={() => undefined} onRead={() => undefined} visible />, { locale: 'ar' });
@@ -15,6 +20,7 @@ describe('DiscoverWidgetSheet', () => {
     expect(view.getByText('أندرويد')).toBeOnTheScreen();
     expect(view.getByText('المس الشاشة الرئيسية، ثم «الودجات».')).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'تم' })).toBeOnTheScreen();
+    expect(view.getByTestId('discover-widget-add')).toBeOnTheScreen();
   });
 
   it('reads the sheet with «تم»', async () => {

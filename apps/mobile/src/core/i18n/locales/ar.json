@@ -465,6 +465,7 @@
       "saved": "المحفوظات",
       "reciters": "القرّاء",
       "azkar": "الأذكار",
+      "duas": "الأدعية",
       "misbaha": "المسبحة"
     },
     "recent": {
@@ -556,9 +557,26 @@
       "stopPreview": "إيقاف {{name}}",
       "a11y": "صوت الأذان"
     },
+    "iqamahOffset": {
+      "label": "تذكير الإقامة",
+      "off": "إيقاف",
+      "before_one": "{{number}} دقيقة قبل",
+      "before_two": "{{number}} دقيقتين قبل",
+      "before_few": "{{number}} دقائق قبل",
+      "before_many": "{{number}} دقيقة قبل",
+      "before_other": "{{number}} دقيقة قبل",
+      "sheetTitle": "تذكير الإقامة",
+      "optionOff": "إيقاف",
+      "testAction": "إرسال إشعار إقامة تجريبي",
+      "testSent": "إشعار إقامة {{name}} خلال {{seconds}} ثوانٍ",
+      "testSentPaired": "إقامة {{name}} بعد {{iqamahSeconds}} ث، ثم الأذان بعد {{adhanSeconds}} ث (الثواني تمثّل الدقائق للتجربة)"
+    },
     "title": "الصلاة",
     "next": "الصلاة القادمة",
     "remaining": "متبقٍ {{time}}",
+    "remainingLabel": "متبقٍ",
+    "timesTitle": "مواقيت اليوم",
+    "upcoming": "القادمة",
     "sourceAuto": "تلقائي",
     "sourceManual": "يدوي",
     "notify": "تنبيه {{name}}",
@@ -731,16 +749,37 @@
     "a11yTriple": "{{label}}، {{title}}، {{detail}}",
     "a11yAction": "{{action}} {{title}}"
   },
+  "downloads": {
+    "megabytes": "{{value}} م.ب",
+    "screen": {
+      "storage": "المساحة المستخدمة",
+      "legend": {
+        "audio": "التلاوات",
+        "fonts": "خطوط المصحف",
+        "tafsir": "التفاسير"
+      },
+      "reciters": "التلاوات",
+      "reciterSurahCount": "{{count}} سورة",
+      "downloadAll": "تنزيل الكل",
+      "stop": "إيقاف",
+      "downloadAllA11y": "تنزيل كل سور {{name}}",
+      "stopA11y": "إيقاف تنزيل {{name}}",
+      "downloading": "جارٍ التنزيل",
+      "texts": "النصوص",
+      "hafsLabel": "الرسم العثماني · حفص",
+      "hafsSubtitle": "أساسي · لا يمكن حذفه",
+      "footerNote": "النصوص المحمّلة تُحدَّث تلقائيًا كل أسبوع على الأقل عند الاتصال بالإنترنت."
+    }
+  },
   "notifications": {
     "prayer": {
       "title": "حان وقت صلاة {{name}}",
-      "body": {
-        "fajr": "الصلاة خير من النوم",
-        "dhuhr": "خذ دقائق من يومك لصلاة الظهر",
-        "asr": "توقّف قليلًا لصلاة العصر",
-        "maghrib": "حلّ المغرب، حان وقت الصلاة",
-        "isha": "اختم يومك بصلاة العشاء"
-      }
+      "body": "يحين الآن موعد أذان {{name}}",
+      "bodyWithPlace": "يحين الآن موعد أذان {{name}} حسب توقيت {{place}}"
+    },
+    "iqamah": {
+      "title": "الإقامة بعد قليل",
+      "body": "الإقامة لصلاة {{name}} بعد قليل"
     },
     "reminder": {
       "title": "وردك اليومي",
@@ -1021,14 +1060,23 @@
     }
   },
   "duas": {
+    "menu": {
+      "caption": "الدعاء",
+      "title": "الأدعية",
+      "subtitle": "من القرآن والسنة وأدعيتك"
+    },
     "home": {
       "title": "الأدعية",
       "favourites": "المفضلة",
       "mineEyebrow": "من كتابتك",
       "mineTitle": "أدعيتي",
       "sourcesHeading": "المصادر",
+      "quranTitle": "الأدعية القرآنية",
+      "quranDetail": "من القرآن",
       "hisnTitle": "حصن المسلم",
       "hisnDetail": "حسب الموضوع",
+      "hadithTitle": "الأدعية النبوية",
+      "hadithDetail": "من السنة",
       "topicsHeading": "المواضيع",
       "attribution": "محتوى حصن المسلم من OpenDua · الأدعية النبوية من HadeethEnc عند توفرها"
     },
@@ -1066,6 +1114,31 @@
     "reminders": {
       "notificationTitle": "{{name}}",
       "notificationBody": "تذكيرك الذي اخترته"
+    },
+    "quran": {
+      "listTitle": "الأدعية القرآنية",
+      "detailTitle": "دعاء قرآني",
+      "emptyTitle": "لا أدعية قرآنية بعد",
+      "emptyBody": "ثبّت حزمة الأدعية بعد الاستيراد على الخادم لتظهر هنا.",
+      "rowTitle": "{{surah}} · {{index}}",
+      "ayahSingle": "الآية {{ayah}}",
+      "ayahRange": "الآيات {{from}}–{{to}}",
+      "progress": "{{current}} من {{total}}",
+      "openInMushaf": "فتح في المصحف"
+    },
+    "hadith": {
+      "listTitle": "الأدعية النبوية",
+      "detailTitle": "دعاء نبوي",
+      "emptyTitle": "لا أدعية نبوية بعد",
+      "emptyBody": "شغّل `php artisan duas:snapshot hadeethenc` ثم `php artisan duas:import --build-packs` على الخادم، ثم ثبّت حزمة الأدعية.",
+      "rowDetail": "من HadeethEnc",
+      "progress": "{{current}} من {{total}}",
+      "grade": "الدرجة",
+      "explanation": "الشرح",
+      "reference": "المرجع",
+      "hints": "فوائد",
+      "linkHisn": "في حصن المسلم · {{number}}",
+      "openSource": "فتح على HadeethEnc.com"
     }
   },
   "sibha": {
@@ -1269,13 +1342,68 @@
       "pinAction": "إضافة إلى الشاشة الرئيسية",
       "pinA11y": "إضافة ودجة {{widget}} إلى الشاشة الرئيسية"
     },
+    "androidLock": {
+      "step1": "المس شاشة القفل، ثم «تخصيص».",
+      "step2": "افتح «الودجات» أو «إضافة ودجة» في معرض القفل.",
+      "step3": "ابحث عن «طيبة» واختر ودجة الصلاة أو التقدّم."
+    },
     "ios": {
       "step1": "المس الشاشة الرئيسية مطولًا حتى تتحرك الأيقونات، ثم «+».",
       "step2": "ابحث عن «طيبة» واختر الودجة.",
       "step3": "اضغط «إضافة ودجة» وضعها حيث تريد."
     },
+    "addConfirm": {
+      "title": "إضافة الودجة؟",
+      "message": "معاينة شكل الودجة قبل المتابعة. الموضع النهائي يحدده النظام.",
+      "continue": "متابعة",
+      "cancel": "إلغاء",
+      "alreadyTitle": "موجود بالفعل",
+      "alreadyMessage": "توجد ودجة من هذا النوع على الشاشة الرئيسية. يمكنك إضافة أخرى إن رغبت.",
+      "done": "تم",
+      "addAnyway": "إضافة على أي حال",
+      "destinationHome": "الرئيسية",
+      "destinationLock": "قفل الشاشة",
+      "destinationA11y": "موضع الودجة",
+      "androidLockGalleryNote": "يتطلب أندرويد حديثًا. أضِف ودجة القفل من معرض شاشة القفل، وليس من الزر أدناه.",
+      "androidLockHint": "أضِف الودجة من معرض شاشة القفل في النظام (Android 16 QPR2 أو أحدث).",
+      "iosHomeHint": "في معرض الودجات، اختر «{{kind}}» للشاشة الرئيسية.",
+      "iosLockHint": "في معرض الودجات، اختر «{{kind}}» لشاشة القفل."
+    },
     "watch": {
       "body": "تطبيق Wear OS وودجة الساعة وApple Watch تأتي مع تطبيقات الساعة (قريبًا)."
+    }
+  },
+  "names": {
+    "menu": {
+      "caption": "الأسماء",
+      "title": "أسماء الله الحسنى",
+      "subtitle": "تصفح وابحث وشارك"
+    },
+    "list": {
+      "title": "أسماء الله الحسنى",
+      "back": "رجوع",
+      "searchPlaceholder": "ابحث في الأسماء",
+      "viewGrid": "شبكة",
+      "viewList": "قائمة",
+      "sourceInfo": "معلومات المصدر",
+      "emptyTitle": "المحتوى غير متاح",
+      "emptyBody": "ثبّت حزمة الأسماء من المصادر والتحديثات.",
+      "unavailableTitle": "غير متاح",
+      "unavailableBody": "حزمة الأسماء غير مثبتة على هذا الجهاز."
+    },
+    "detail": {
+      "back": "رجوع",
+      "favourite": "مفضلة",
+      "favouriteRemove": "إزالة من المفضلة",
+      "share": "مشاركة",
+      "sourceHeading": "المصدر",
+      "referencesHeading": "المراجع",
+      "previous": "السابق",
+      "next": "التالي",
+      "openVerse": "فتح الآية {{verseKey}}"
+    },
+    "card": {
+      "a11y": "الاسم {{position}}"
     }
   },
   "hijri": {

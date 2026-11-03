@@ -145,6 +145,8 @@ export default function RootLayout() {
         <Stack.Screen name="hijri/adjust" options={sheetScreenOptions} />
         <Stack.Screen name="hijri/index" options={pushOptions} />
         <Stack.Screen name="moon/index" options={pushOptions} />
+        <Stack.Screen name="asmaa/index" options={pushOptions} />
+        <Stack.Screen name="asmaa/[slug]" options={pushOptions} />
       </Stack>
       )}
       </QuranFontProvider>
