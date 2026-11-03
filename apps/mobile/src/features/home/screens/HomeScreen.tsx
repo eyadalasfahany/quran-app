@@ -19,6 +19,7 @@ import { pause } from '@/features/audio/player';
 import { isStartingFor, listenMatch, useStartState } from '@/features/audio/hooks/useIsStarting';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { playRecentListen } from '@/features/audio/reciter-playback';
+import { DiscoverHomeCard } from '@/features/discover/components/DiscoverHomeCard';
 import { ContinueAzkarHomeCard } from '@/features/home/components/ContinueAzkarHomeCard';
 import { ContinueReadingCard } from '@/features/home/components/ContinueReadingCard';
 import { ContinueReadingSkeleton } from '@/features/home/components/ContinueReadingSkeleton';
@@ -140,6 +141,7 @@ export function HomeScreen() {
             text={hijriDate}
           />
         ) : null}
+        <DiscoverHomeCard />
         {!ready ? (
           <SkeletonGroup testID="home-continue-loading">
             <ContinueReadingSkeleton testID="home-continue-reading-skeleton" />

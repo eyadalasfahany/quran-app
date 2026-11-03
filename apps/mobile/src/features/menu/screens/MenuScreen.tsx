@@ -26,6 +26,7 @@ const ICON = {
   qibla: { ios: 'safari', android: 'explore' },
   khatma: { ios: 'checkmark.circle', android: 'check_circle' },
   mushaf: { ios: 'book', android: 'menu_book' },
+  discover: { ios: 'sparkles', android: 'auto_awesome' },
   listen: { ios: 'headphones', android: 'headphones' },
   myQuran: { ios: 'bookmark', android: 'bookmark' },
   search: { ios: 'magnifyingglass', android: 'search' },
@@ -113,6 +114,15 @@ export function MenuScreen() {
         title={t('menu.favorites.title')}
       />
     ) : null,
+    <MenuCard
+      caption={t('menu.discover.caption')}
+      icon={ICON.discover}
+      key="discover"
+      onPress={() => router.push('/discover' as Href)}
+      preview={t('menu.discover.subtitle')}
+      testID="menu-card-discover"
+      title={t('menu.discover.title')}
+    />,
     <MenuCard
       caption={t('menu.reminders.caption')}
       icon={ICON.reminders}

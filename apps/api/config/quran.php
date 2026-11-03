@@ -92,6 +92,14 @@ return [
         ],
     ],
 
+    // Chapter reciters whose QF timings do not match their audio, keyed by QF chapter reciter id (resources.source_key).
+    // Their timing rows are never stored, so the app plays them without highlight or repeat (ADR 0052). Checked on
+    // 3 Nov 2026 against the audio: 158's timings drift from its file (ayah starts miss the pauses by up to 9 s, and
+    // minutes of recitation follow the last timing); 168 lacks timings for most of surah 33 and one ayah of 36 and of
+    // 101; 174's ayah starts scatter by about 4 s and end 6–8 s after the audio; 5 drifts proportionally (~2 s by the
+    // end of a long surah).
+    'untrusted_timing_recitations' => [5, 158, 168, 174],
+
     // QF has no Arabic author field, so the served Arabic author is this override by QF source id
     // (resources.source_key). Credits are not Quran text. Other tafsirs serve no Arabic author.
     'display_authors' => [

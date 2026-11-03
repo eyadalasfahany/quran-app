@@ -61,7 +61,9 @@ final class ChapterRecitationsHandler implements GroupHandler
         $files = [];
         $skipped = [];
         $untimed = [];
+        $untrusted = 0;
         $timings = [];
+        $trustsTimings = $this->trustsTimings($resource);
 
         foreach ($snapshot->records as $record) {
             $type = $this->recordType($record);
@@ -70,6 +72,8 @@ final class ChapterRecitationsHandler implements GroupHandler
                 $skipped[] = $record;
             } elseif ($type === 'chapter_audio_file') {
                 $files[] = $record;
+            } elseif ($type === 'audio_segment' && ! $trustsTimings) {
+                $untrusted++;
             } elseif ($type === 'audio_segment' && $this->isUntimedSegment($record)) {
                 $untimed[] = $record;
             } elseif ($type === 'audio_segment') {
@@ -93,6 +97,13 @@ final class ChapterRecitationsHandler implements GroupHandler
                 'resource_id' => $resource->source_key,
                 'count' => count($untimed),
                 'verse_key' => $this->optionalString($untimed[0], 'verse_key'),
+            ]);
+        }
+
+        if ($untrusted > 0) {
+            Log::info('Quran Foundation chapter recitation timings are not trusted for this reciter; they are skipped.', [
+                'resource_id' => $resource->source_key,
+                'count' => $untrusted,
             ]);
         }
 
@@ -152,7 +163,7 @@ final class ChapterRecitationsHandler implements GroupHandler
 
         $recordType = $type ?? $this->recordType($mutation->data);
 
-        if ($this->isSkippedRow($recordType, $mutation->data)) {
+        if ($this->isSkippedRow($resource, $recordType, $mutation->data)) {
             return $this->skipRow($resource, $mutation, $recordType, $mutation->data);
         }
 
@@ -166,11 +177,11 @@ final class ChapterRecitationsHandler implements GroupHandler
     /**
      * @param  array<string, mixed>  $record
      */
-    private function isSkippedRow(string $recordType, array $record): bool
+    private function isSkippedRow(Resource $resource, string $recordType, array $record): bool
     {
         return match ($recordType) {
             'chapter_audio_file' => $this->isNonSurahFile($record),
-            'audio_segment' => $this->isUntimedSegment($record),
+            'audio_segment' => ! $this->trustsTimings($resource) || $this->isUntimedSegment($record),
             default => false,
         };
     }
@@ -212,6 +223,17 @@ final class ChapterRecitationsHandler implements GroupHandler
         }
 
         return false;
+    }
+
+    /**
+     * A reciter listed in quran.untrusted_timing_recitations has timings that do not match its audio (ADR 0052). Its
+     * timing rows are never stored, so the app plays it without highlight rather than with a wrong one.
+     */
+    private function trustsTimings(Resource $resource): bool
+    {
+        $untrusted = config('quran.untrusted_timing_recitations', []);
+
+        return ! (is_array($untrusted) && in_array((int) $resource->source_key, $untrusted, true));
     }
 
     /**

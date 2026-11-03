@@ -20,10 +20,13 @@ import { PrayerTimesCard } from '../components/PrayerTimesCard';
 import { QiblaRow } from '../components/QiblaRow';
 import { SalahDateHeader } from '../components/SalahDateHeader';
 import { SalahLocating } from '../components/SalahLocating';
+import { markDiscovered } from '@/features/discover/store';
+
 import { requestLocationPermissions, setAutoLocation, setManualLocation } from '../data/location';
 import { prevPrayer, qiblaBearing, type NextPrayerName, type PrayerTimesOutput } from '../data/prayer-times';
 import { formatPrayerTime } from '../data/time-format';
 import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 import { useNextPrayer, usePrayerClock, usePrayerLocation } from '../hooks';
 
 const EMPTY_LOCATION: IconName = { ios: 'location.slash', android: 'location_off' };
@@ -110,6 +113,8 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
             subtitle={subtitle}
             title={t('salah.title')}
           />
+          {/* The Discover tour's prayer-times step (ADR 0053). */}
+          <DiscoverTipCard id="worship.salah" />
           {locating ? (
             <View style={{ flex: 1, paddingBottom: miniShown ? MINI_PLAYER_TABS_FOOTPRINT : 0 }}>
               <SalahLocating />
@@ -145,11 +150,13 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
         onClose={() => setSheetOpen(false)}
         onSelectAuto={() => {
           setAutoLocation();
+          markDiscovered('worship.salah');
           setSheetOpen(false);
           void requestLocationPermissions().then(() => refresh());
         }}
         onSelectCity={(city) => {
           setManualLocation({ id: city.id, lat: city.lat, lng: city.lng });
+          markDiscovered('worship.salah');
           setSheetOpen(false);
           void refresh();
         }}

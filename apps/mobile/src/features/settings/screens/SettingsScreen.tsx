@@ -17,6 +17,7 @@ import { LanguageSection } from '../components/LanguageSection';
 import { ListeningSection } from '../components/ListeningSection';
 import { RemindersEntryRow } from '@/features/reminders/components/RemindersEntryRow';
 import { WidgetsEntryRow } from '@/features/widgets/components/WidgetsEntryRow';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 import { PrayerNotificationsSection } from '../components/PrayerNotificationsSection';
 import { ReadingSection } from '../components/ReadingSection';
 import { SettingsGroup } from '../components/SettingsGroup';
@@ -51,6 +52,8 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
           }}
           style={{ flex: 1 }}
         >
+          {/* The Discover tour's settings step (ADR 0053): «التالي» completes it. */}
+          <DiscoverTipCard id="app.settings" />
           <LanguageSection />
           <ReadingSection
             fontValue={t(`reader.settings.fonts.${quranFont}.name`)}

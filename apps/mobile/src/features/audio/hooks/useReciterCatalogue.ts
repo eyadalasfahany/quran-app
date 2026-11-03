@@ -17,6 +17,7 @@ function readCatalogue(): ReciterEntry[] {
     return [];
   }
   return listReciters(db).map((reciter) => ({
+    hasTimings: reciter.hasTimings,
     installed: reciter.installed,
     isDefault: reciter.isDefault,
     name: reciter.name,

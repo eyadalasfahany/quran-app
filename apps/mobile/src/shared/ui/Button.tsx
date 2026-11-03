@@ -28,6 +28,7 @@ export function Button({
   icon,
   mirrorIconInRtl = false,
   stretch = false,
+  accessibilityLabel,
   accessibilityHint,
   style,
   testID,
@@ -42,6 +43,8 @@ export function Button({
   mirrorIconInRtl?: boolean;
   // Fills the width of its container, as the full-width actions in empty states do.
   stretch?: boolean;
+  // What VoiceOver and TalkBack read when the visible label alone is ambiguous on its screen (two «عرض الكل» buttons).
+  accessibilityLabel?: string;
   accessibilityHint?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -60,7 +63,7 @@ export function Button({
   return (
     <Pressable
       accessibilityHint={accessibilityHint}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}

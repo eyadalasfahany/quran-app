@@ -8,6 +8,7 @@ import { useTheme } from '@/core/theme';
 import { AzkarTapSurface } from '@/features/azkar/components/AzkarTapSurface';
 import { azkarHref, goBackOr } from '@/features/azkar/routes';
 import { ConfirmDialog, Screen } from '@/shared/ui';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 
 import { isPresetTarget, toggleTarget } from '../data/model';
 import { sibhaRingSize } from '../data/ring-layout';
@@ -103,6 +104,8 @@ export function SibhaScreen() {
         testID="sibha-tap-surface"
       >
         {topBar}
+        {/* The Discover tour's sibha step (ADR 0053): a tap on the screen counts and completes it. */}
+        <DiscoverTipCard id="worship.sibha" />
         {labelField}
         {short ? (
           <View style={{ flex: 1, flexDirection: 'row', gap: theme.space[5] }} testID="sibha-row">

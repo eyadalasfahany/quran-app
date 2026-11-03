@@ -40,6 +40,10 @@ import type { ReaderMode } from '../anchor/reading-anchor';
 import { useReaderMiniFootprint } from '../useReaderMiniFootprint';
 import { useReaderSelection } from '../selection';
 import { useScrollHaptics } from '../scroll-haptics';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
+import { useDiscoverState } from '@/features/discover/hooks/useDiscover';
+import type { DiscoverId } from '@/features/discover/registry';
+
 import { useReaderSettings } from '../settings';
 import { useRecitation } from '../useRecitation';
 import { useRecitationFollow } from '../useRecitationFollow';
@@ -78,6 +82,9 @@ function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): Re
   const place = chapter === undefined ? null : { current: verse.verseNumber, surah: chapterDisplayName(chapter, locale), total: chapter.versesCount };
   return { juz: verse.juz, page: verse.page, place, title, verseId: verse.id };
 }
+
+// The Discover tour steps whose tip shows on the Quran screen (ADR 0053).
+const READER_TOUR_STEPS = ['reader.mushaf', 'reader.reading', 'reader.focus', 'reader.tafsir'] as const satisfies readonly DiscoverId[];
 
 export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const { t, i18n } = useTranslation();
@@ -281,6 +288,9 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const gutter = placement === 'docked' && selection.panelOpen ? panelStripWidth() : 0;
   const topInset = insets.top + READER_TOOLBAR_CLEARANCE;
 
+  const { tourStep } = useDiscoverState();
+  const readerTourStep = tourStep !== null && (READER_TOUR_STEPS as readonly DiscoverId[]).includes(tourStep);
+
   return (
     <Screen accessibilityLabel={viewKey} surface="surfacePage" testID="reader-screen" topInset={false}>
       <AdaptiveReaderLayout
@@ -315,8 +325,16 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
         panelOpen={selection.panelOpen}
         miniPlayer={showMiniBar ? <MiniPlayer variant="reader" /> : undefined}
         resume={
-          showMarkedPill || showResume ? (
-            <View style={{ alignItems: 'center', gap: theme.space[2] }}>
+          showMarkedPill || showResume || readerTourStep ? (
+            <View style={{ alignItems: 'center', alignSelf: 'stretch', gap: theme.space[2] }}>
+              {/* The Discover tour's reader steps (ADR 0053): each mode explained in the mode itself, and tafsir. */}
+              {readerTourStep ? (
+                <View style={{ alignSelf: 'stretch', paddingHorizontal: theme.space[4] }}>
+                  {READER_TOUR_STEPS.map((id) => (
+                    <DiscoverTipCard id={id} key={id} />
+                  ))}
+                </View>
+              ) : null}
               {showMarkedPill ? <KhatmaMarkedPill onDone={() => setShowMarkedPill(false)} /> : null}
               {showResume ? (
                 <ResumePill

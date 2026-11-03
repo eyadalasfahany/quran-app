@@ -6,6 +6,8 @@ export type ReciterEntry = {
   name: string | null;
   nameAr: string | null;
   installed: boolean;
+  /** Whether the installed pack has usable timings; false before install. Without them it plays with no highlight. */
+  hasTimings: boolean;
   /** The catalogue's default reciter flag (`is_default`). */
   isDefault: boolean;
   style: string | null;

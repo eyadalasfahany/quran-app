@@ -21,7 +21,7 @@ import { chapterAudio, type ChapterAudio } from './data/audio-files';
 import { isPlayableOffline, listDownloadsForReciter } from './data/downloads';
 import { upsertRecentListen } from './data/recent-listens';
 import { listReciters, recitationIdForResource } from './data/reciters';
-import { timingsFor, type AyahTiming } from './data/timings';
+import { timingsFitAudio, timingsFor, type AyahTiming } from './data/timings';
 import { clampSeek, isChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
 import {
   isRepeatRangeValid,
@@ -94,7 +94,7 @@ let audioModeReady: Promise<void> | null = null;
 let appStateSubscription: Subscription | null = null;
 // The surah now playing and its timings, sorted by start (empty when its file has none). The highlight and
 // the ayah navigation read them.
-let trackTimings: { chapterId: number; timings: AyahTiming[] } | null = null;
+let trackTimings: { chapterId: number; audioFileId: number | null; timings: AyahTiming[] } | null = null;
 // Timings per audio file id, read once for the session.
 const timingsCache = new Map<number, AyahTiming[]>();
 // While a repeat seek is being applied, the decoded position at or above this is stale: the seek has not landed.
@@ -315,7 +315,29 @@ function timingsForChapter(db: SqlExecutor, reciterId: number, chapterId: number
 
 /** Loads the timings of the surah that has just started playing. */
 function setTrackTimings(db: SqlExecutor, reciterId: number, chapterId: number): void {
-  trackTimings = { chapterId, timings: timingsForChapter(db, reciterId, chapterId) };
+  const lookup = lookupAudio(db, reciterId, chapterId);
+  trackTimings = {
+    chapterId,
+    audioFileId: 'audio' in lookup ? lookup.audio.id : null,
+    timings: timingsForChapter(db, reciterId, chapterId),
+  };
+}
+
+/**
+ * Drops the playing surah's timings when they do not match the audio the player loaded (ADR 0052): the surah then
+ * plays with no highlight and no repeat, as a reciter without timings does, never with a wrong highlight. The file is
+ * remembered for the session, so playing it again does not highlight either.
+ */
+function dropTimingsThatDoNotFit(chapterId: number, durationMs: number): void {
+  if (trackTimings === null || trackTimings.chapterId !== chapterId || timingsFitAudio(trackTimings.timings, durationMs)) {
+    return;
+  }
+  if (trackTimings.audioFileId !== null) {
+    timingsCache.set(trackTimings.audioFileId, []);
+  }
+  trackTimings = { ...trackTimings, timings: [] };
+  highlightFloor = null;
+  store().setActive(null, null);
 }
 
 /** Ends the repeat: the range is forgotten and a seek still in flight is no longer waited for. */
@@ -527,8 +549,9 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
     return;
   }
   // The loaded track's own duration replaces the content row's placeholder.
-  if (status.isLoaded && status.duration > 0) {
+  if (status.isLoaded && status.duration > 0 && chapterId !== undefined) {
     current.setDuration(Math.round(status.duration * 1000));
+    dropTimingsThatDoNotFit(chapterId, Math.round(status.duration * 1000));
   }
   if ((current.status === 'playing' || current.status === 'paused') && status.currentIndex === active.chapterIds.length - 1 && isFinishedLastTrack(status)) {
     stopPlayback();

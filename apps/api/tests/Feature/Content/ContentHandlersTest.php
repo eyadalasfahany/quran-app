@@ -412,6 +412,41 @@ it('skips untimed audio segments in a snapshot, keeps the valid timings and logs
         ->and($warnings[0]->context)->toMatchArray(['resource_id' => '6', 'count' => 2, 'verse_key' => '1:7']);
 });
 
+it('stores the files of an untrusted reciter but none of its timings, so the app plays it without highlight', function (): void {
+    config(['quran.untrusted_timing_recitations' => [6]]);
+    $segment = audioSegment(1, [[1, 0.0, 960.0]]);
+    $segment['audio_file_id'] = 10001;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 10, 'RESOURCE_CREATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ], extra: [
+        CONTENT_HOST.'/api/v4/resources/snapshots/chapter_recitations/6' => contentSnapshot('chapter_recitations', 6, [
+            audioFile(10001, 1, 10, 10000),
+            $segment,
+        ]),
+    ]);
+
+    expect(SyncRun::query()->sole()->status)->toBe(SyncRunStatus::Ok)
+        ->and(ChapterAudioFile::query()->pluck('id')->all())->toBe([10001])
+        ->and(RecitationTiming::query()->count())->toBe(0)
+        ->and(Recitation::query()->sole()->has_word_segments)->toBeFalse();
+});
+
+it('skips a row-created timing for an untrusted reciter and removes one already stored', function (): void {
+    bootstrapChapterRecitationResource();
+    $stored = RecitationTiming::query()->firstOrFail();
+    config(['quran.untrusted_timing_recitations' => [6]]);
+    $segment = audioSegment($stored->verse_id, [[1, 0.0, 960.0]]);
+    $segment['audio_file_id'] = $stored->audio_file_id;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_UPDATE', $stored->audio_file_id.':'.$stored->verse_id, 'audio_segment', $segment),
+    ], 'token-row');
+
+    expect(SyncRun::query()->latest('id')->firstOrFail()->status)->toBe(SyncRunStatus::Ok)
+        ->and(RecitationTiming::query()->where('audio_file_id', $stored->audio_file_id)->where('verse_id', $stored->verse_id)->exists())->toBeFalse();
+});
+
 it('still fails a chapter recitation snapshot when an audio segment timestamp is a string', function (): void {
     $segment = audioSegment(1, [[1, 0.0, 960.0]]);
     $segment['audio_file_id'] = 10734;

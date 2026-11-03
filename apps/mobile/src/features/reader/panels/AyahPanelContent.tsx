@@ -8,6 +8,7 @@ import { openUserDb } from '@/core/db/user/open';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { runDeviceContentSync } from '@/core/sync';
 import { useTheme } from '@/core/theme';
+import { markDiscovered } from '@/features/discover/store';
 import type { UserStore } from '@/features/library/data';
 import { type DownloadRowState, UiText } from '@/shared/ui';
 
@@ -134,6 +135,7 @@ export function AyahPanelContent({
     if (tafsir?.installed) {
       setOpened((current) => new Set(current).add(resourceId));
       setSavedTafsirId(resourceId);
+      markDiscovered('reader.tafsir');
     }
   };
 

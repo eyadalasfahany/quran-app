@@ -43,6 +43,14 @@ describe('Button', () => {
     expect(flatStyle(view.getByText('زر').props.style).color).toBe(ink);
   });
 
+  it('reads its own accessibility label when given one, and the visible label otherwise', async () => {
+    const view = await renderUi(<Button accessibilityLabel="عرض كل الخطوات" label="عرض الكل" onPress={jest.fn()} />);
+
+    expect(view.getByText('عرض الكل')).toBeOnTheScreen();
+    expect(view.getByRole('button', { name: 'عرض كل الخطوات' })).toBeOnTheScreen();
+    expect(view.queryByRole('button', { name: 'عرض الكل' })).toBeNull();
+  });
+
   it('draws the small size at 13 / 600', async () => {
     const view = await renderUi(<Button label="تنزيل" onPress={() => undefined} size="small" testID="button" />);
 

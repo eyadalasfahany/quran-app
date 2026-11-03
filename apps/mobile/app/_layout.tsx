@@ -25,6 +25,7 @@ import { useReminderGoalsSync } from '@/features/reminders/hooks/useReminderGoal
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 import { useReaderSettings } from '@/features/reader/settings';
+import { DiscoverTourNavigator } from '@/features/discover/components/DiscoverTourNavigator';
 import { WidgetSnapshotSync } from '@/features/widgets/components/WidgetSnapshotSync';
 import { AnimatedSplashOverlay } from '@/shared/ui/AnimatedSplashOverlay';
 
@@ -114,6 +115,8 @@ export default function RootLayout() {
       <WidgetSnapshotSync enabled={ready} />
       {!splashFinished && <AnimatedSplashOverlay appReady={ready} onFinished={finishSplash} />}
       {ready && splashFinished && <StatusBar style={themeName === 'dark' ? 'light' : 'dark'} />}
+      {/* Opens each Discover tour step's screen (ADR 0053). Renders nothing. */}
+      {ready && splashFinished && <DiscoverTourNavigator />}
       {ready && splashFinished && (
       <Stack
         screenOptions={{ headerShown: false, contentStyle: { backgroundColor: themes[themeName].colors.surface } }}

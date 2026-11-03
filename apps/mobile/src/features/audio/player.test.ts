@@ -79,11 +79,13 @@ function fakePlaylist(): FakeAudioPlaylist {
 const flush = () => new Promise<void>((resolve) => setImmediate(resolve));
 
 function seedContent(db: SqlExecutor): void {
+  // Each surah's verses_count matches the timings its fixtures seed, because timings that miss an ayah are dropped
+  // (ADR 0052): surah 1 has two ayahs here (verse ids 1 and 7, with the gap the gap tests use), surahs 2 and 114 one.
   db.run(
     `INSERT INTO chapters (id, name_arabic, name_simple, name_en, revelation_place, revelation_order, verses_count, bismillah_pre, page_start, page_end) VALUES
-     (1, 'الفاتحة', 'Al-Fatihah', 'The Opening', 'makkah', 5, 7, 0, 1, 1),
-     (2, 'البقرة', 'Al-Baqarah', 'The Cow', 'madinah', 87, 286, 1, 2, 49),
-     (114, 'الناس', 'An-Nas', 'Mankind', 'makkah', 21, 6, 0, 604, 604)`,
+     (1, 'الفاتحة', 'Al-Fatihah', 'The Opening', 'makkah', 5, 2, 0, 1, 1),
+     (2, 'البقرة', 'Al-Baqarah', 'The Cow', 'madinah', 87, 1, 1, 2, 49),
+     (114, 'الناس', 'An-Nas', 'Mankind', 'makkah', 21, 1, 0, 604, 604)`,
   );
   db.run(
     `INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search) VALUES
@@ -590,6 +592,7 @@ function seedAyahs(db: SqlExecutor): void {
      (4, '1:4', 1, 4, 1, 1, 1, 1, 'none', 'a', 'a')`,
   );
   db.run('DELETE FROM recitation_timings WHERE audio_file_id = 100');
+  db.run('UPDATE chapters SET verses_count = 4 WHERE id = 1');
   db.run(
     `INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms, segments) VALUES
      (100, 1, 0, 5000, '[[1,0,2000],[2,2000,4000],[3,4000,5000]]'),
@@ -637,6 +640,20 @@ describe('the active ayah and word', () => {
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4, activeWord: null });
     heardAt(25);
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4, activeWord: null });
+  });
+
+  it('plays with no highlight when the loaded audio runs far past its timings, and stays so on replay', async () => {
+    await playChapter(1);
+
+    // The timings end at 20 s, but the file is 120 s long: they were made for another recording (ADR 0052).
+    reportAt(1.5, { duration: 120 });
+    expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: null, activeWord: null });
+    reportAt(12, { duration: 120 });
+    expect(usePlayerStore.getState().activeVerseId).toBeNull();
+
+    await playChapter(1);
+    reportAt(1.5, { duration: 20 });
+    expect(usePlayerStore.getState().activeVerseId).toBeNull();
   });
 
   it('holds the highlight HIGHLIGHT_LAG_MS behind the decoded position, so it moves when the word is heard', async () => {

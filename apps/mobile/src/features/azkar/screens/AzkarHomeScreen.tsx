@@ -7,6 +7,7 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { EmptyState, IconButton, Screen } from '@/shared/ui';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 
 import { AzkarHomeSkeleton } from '../components/AzkarHomeSkeleton';
 import { AzkarListCard } from '../components/AzkarListCard';
@@ -167,6 +168,8 @@ export function AzkarHomeScreen() {
               ) : undefined
             }
           />
+          {/* The Discover tour's azkar step (ADR 0053): a count in any session completes it. */}
+          <DiscoverTipCard id="worship.azkar" />
           {!ready ? <AzkarHomeSkeleton /> : null}
           {ready && !available ? (
             <EmptyState body={t('azkar.unavailable.body')} icon={UNAVAILABLE_ICON} testID="azkar-unavailable" title={t('azkar.unavailable.title')} />

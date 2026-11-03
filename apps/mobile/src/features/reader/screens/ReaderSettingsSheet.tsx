@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { discoverIdForMode } from '@/features/discover/reader-modes';
+import { markDiscovered } from '@/features/discover/store';
 import { SheetHeader } from '@/shared/ui';
 
 import { SheetFrame } from '../components/SheetFrame';
@@ -59,7 +61,14 @@ export function ReaderSettingsSheet() {
         testID="reader-settings-scroll"
       >
         <SettingsSection label={t('reader.settings.modeLabel')}>
-          <ModePicker onChange={setMode} value={mode} />
+          <ModePicker
+            onChange={(next) => {
+              // The Discover row ticks on the person's pick, not in the store (ADR 0053 §2).
+              markDiscovered(discoverIdForMode(next));
+              setMode(next);
+            }}
+            value={mode}
+          />
         </SettingsSection>
         <SettingsSection label={t('reader.settings.themeLabel')}>
           <ThemePicker />

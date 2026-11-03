@@ -46,6 +46,18 @@ export const storageKeys = {
     today: 'sibha.today',
   },
 
+  // Discover Taybah (ADR 0053). Local only; cleared with the other personal data.
+  discover: {
+    // JSON array of the registry ids the person has completed.
+    done: 'discover.done',
+    // JSON array of the ids the person has seen as a set (written when the set is finished or the card hidden).
+    acknowledged: 'discover.acknowledged',
+    // Boolean: the card was hidden with «إخفاء».
+    hidden: 'discover.hidden',
+    // The registry id of the guided tour's current step, or absent when no tour runs.
+    tourStep: 'discover.tourStep',
+  },
+
   // JSON: the daily goals the user chose (ADR 0034 §5). Nothing is on by default.
   dailyGoals: 'dailyGoals',
 

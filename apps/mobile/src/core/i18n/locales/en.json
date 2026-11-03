@@ -82,6 +82,11 @@
       "caption": "Reminders",
       "title": "Reminders",
       "subtitle": "Prayer, Azkar and wird"
+    },
+    "discover": {
+      "caption": "Start here",
+      "title": "Discover Taybah",
+      "subtitle": "Learn the features step by step"
     }
   },
   "time": {
@@ -117,6 +122,7 @@
     },
     "play": "Play {{name}}",
     "teaching": "For teaching and repetition",
+    "noFollow": "No follow-along",
     "unnamed": "Reciter",
     "downloadedSurahs_one": "{{n}} surah downloaded",
     "downloadedSurahs_two": "{{n}} surahs downloaded",
@@ -1405,6 +1411,74 @@
     "phaseDiscA11y": "Moon phase, {{percent}} percent illuminated",
     "sources": {
       "suncalc": "Sun and moon positions: suncalc (BSD-2-Clause)"
+    }
+  },
+  "discover": {
+    "title": "Discover Taybah",
+    "menuTitle": "Discover Taybah",
+    "progress": "{{done}} of {{total}}",
+    "progressSummary": "{{done}} of {{total}} done",
+    "viewAll": "View all",
+    "viewAllLabel": "View all Discover Taybah steps",
+    "hide": "Hide",
+    "newBadge": "New",
+    "newSubtitle": "New features are waiting",
+    "done": {
+      "title": "Well done",
+      "body": "You finished the Discover Taybah tour.",
+      "action": "Done"
+    },
+    "a11y": {
+      "done": "Done",
+      "notDone": "Not done",
+      "new": "New",
+      "progressLabel": "Progress"
+    },
+    "groups": {
+      "reading": "Reading",
+      "mine": "My Mushaf",
+      "listen": "Listening",
+      "worship": "Worship",
+      "app": "App"
+    },
+    "rows": {
+      "readerMushaf": "Mushaf view",
+      "readerReading": "Reading view",
+      "readerFocus": "Focus view",
+      "tafsir": "Tafsir",
+      "myQuran": "My Mushaf",
+      "listenFollow": "Listen with live follow",
+      "salah": "Prayer times",
+      "azkar": "Azkar",
+      "sibha": "Misbaha",
+      "goals": "Daily wird or khatma",
+      "search": "Search",
+      "settings": "Settings",
+      "widget": "Add the widget (optional)"
+    },
+    "widget": {
+      "title": "Add the widget",
+      "action": "Done"
+    },
+    "close": "Close",
+    "tour": {
+      "stepOf": "Step {{current}} of {{total}}",
+      "end": "End the tour",
+      "skip": "Skip",
+      "next": "Next",
+      "readerMushaf": "Mushaf view: the pages as in the printed Mushaf. Swipe to turn them.",
+      "readerReading": "Reading view: the ayahs flow in clear text you can enlarge, with tafsir under them if you choose one.",
+      "readerFocus": "Focus view: one ayah at a time, without distractions. Swipe for the next ayah.",
+      "tafsir": "Tap any ayah, then choose Tafsir to read its tafsir.",
+      "myQuran": "My Mushaf: your bookmarks, highlights and notes in one place.",
+      "listenFollow": "Press play next to any reciter, and the highlight follows the recitation ayah by ayah.",
+      "salah": "Prayer times for your city, with the qibla direction. Tap the location at the top to set or change your city.",
+      "azkar": "Choose the morning or evening azkar, then tap the counter with each dhikr.",
+      "sibha": "Tap anywhere on the screen to say tasbih, and the app counts for you.",
+      "goals": "Choose your daily reading goal, and the app follows your progress.",
+      "search": "Type a word from an ayah or a surah name to search.",
+      "settings": "Set the language, appearance and more here.",
+      "widget": "Add the Taybah widget to your Home Screen: the next prayer, continue reading and the misbaha."
     }
   }
 }

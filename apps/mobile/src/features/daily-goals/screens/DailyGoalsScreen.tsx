@@ -17,6 +17,9 @@ import { GoalRowWithBell } from '../components/GoalRowWithBell';
 import { GoalsListCard } from '../components/GoalsListCard';
 import { MisbahaTargetStepper } from '../components/MisbahaTargetStepper';
 import { MISBAHA_GOAL_DEFAULT, setMisbahaGoalOn, setSessionGoal, setWirdGoal, stepMisbahaGoal } from '../data/goals';
+import { markDiscovered } from '@/features/discover/store';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
+
 import { useDailyGoals } from '../hooks/useDailyGoals';
 
 /**
@@ -41,6 +44,13 @@ function DailyGoalsCard() {
   const locale = useLocale();
   const sheet = useSheet();
   const { goals, update } = useDailyGoals();
+  // A goal that is set ticks «وردك اليومي أو الختمة» (ADR 0053). Turning every goal off does not tick it.
+  const commit = (next: Parameters<typeof update>[0]) => {
+    update(next);
+    if (next.wird || next.sessions.length > 0 || next.misbahaTarget !== null) {
+      markDiscovered('worship.goals');
+    }
+  };
   const plan = useActivePlan().data[0] ?? null;
   const azkarAvailable = useAzkarAvailable();
   const sessions = useSessionCategoryProgress(locale);
@@ -48,6 +58,8 @@ function DailyGoalsCard() {
 
   return (
     <DailyGoalsSheet note={t('dailyGoals.note')} onClose={close} title={t('dailyGoals.title')}>
+      {/* The Discover tour's goals step (ADR 0053): setting a goal completes it. */}
+      <DiscoverTipCard id="worship.goals" />
       <GoalsListCard>
         {plan === null ? (
           <GoalLinkRow
@@ -58,7 +70,7 @@ function DailyGoalsCard() {
           />
         ) : (
           <ToggleRow
-            onValueChange={(on) => update(setWirdGoal(goals, on))}
+            onValueChange={(on) => commit(setWirdGoal(goals, on))}
             testID="goal-wird"
             title={t('dailyGoals.wird')}
             value={goals.wird}
@@ -69,7 +81,7 @@ function DailyGoalsCard() {
               <GoalRowWithBell
                 key={session.id}
                 onBellPress={() => router.push(azkarHref.reminders({ category: session.id }))}
-                onValueChange={(on) => update(setSessionGoal(goals, session.id, on))}
+                onValueChange={(on) => commit(setSessionGoal(goals, session.id, on))}
                 testID={`goal-session-${session.id}`}
                 title={session.title}
                 value={goals.sessions.includes(session.id)}
@@ -77,7 +89,7 @@ function DailyGoalsCard() {
             ))
           : null}
         <ToggleRow
-          onValueChange={(on) => update(setMisbahaGoalOn(goals, on))}
+          onValueChange={(on) => commit(setMisbahaGoalOn(goals, on))}
           testID="goal-misbaha"
           title={t('dailyGoals.misbaha')}
           value={goals.misbahaTarget !== null}
@@ -85,8 +97,8 @@ function DailyGoalsCard() {
         {goals.misbahaTarget !== null ? (
           <MisbahaTargetStepper
             label={t('dailyGoals.misbahaCount')}
-            onDecrease={() => update(stepMisbahaGoal(goals, -1))}
-            onIncrease={() => update(stepMisbahaGoal(goals, 1))}
+            onDecrease={() => commit(stepMisbahaGoal(goals, -1))}
+            onIncrease={() => commit(stepMisbahaGoal(goals, 1))}
             value={goals.misbahaTarget ?? MISBAHA_GOAL_DEFAULT}
           />
         ) : null}

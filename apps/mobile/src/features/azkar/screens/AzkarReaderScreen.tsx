@@ -48,6 +48,8 @@ import { markSessionComplete, recordTap, resetScope, resetUnit } from '../data/p
 import { azkarShareText } from '../data/share-text';
 import { buildReaderUnits, type ReaderUnit } from '../data/reader-units';
 import type { AzkarCategory, AzkarEntryDetail, AzkarRecording, AzkarSegment } from '../data/model';
+import { markDiscovered } from '@/features/discover/store';
+
 import { completeHaptic, tapHaptic } from '../haptics';
 import { azkarHref, goBackOr } from '../routes';
 import {
@@ -345,6 +347,8 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
     // Pin the unit being read, so completing it does not move the reader on to the next incomplete one.
     setView(position.index);
     tapHaptic();
+    // The first counted repetition ticks «الأذكار» (ADR 0053).
+    markDiscovered('worship.azkar');
     if (result.completedNow) {
       completeHaptic();
       // Auto-advance to the next unit that is not done yet. When every unit is done, the reader moves to the last one,

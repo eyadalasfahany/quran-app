@@ -1,7 +1,7 @@
 import { useRouter, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { formatNumber } from '@/core/i18n';
@@ -9,6 +9,8 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { ContentColumn, useTabBarScrollHandlers, useTabContentBottom } from '@/core/layout';
 import { useCatalogVersion } from '@/core/sync';
 import { EmptyState, Screen, SkeletonGroup } from '@/shared/ui';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
+import { markDiscovered } from '@/features/discover/store';
 
 import { type ReciterFilterOption } from '../components/ReciterFilterChips';
 import { ReciterListHeader } from '../components/ReciterListHeader';
@@ -93,7 +95,9 @@ export function ListenScreen() {
         ? t('listen.downloadedSurahs', { count: downloaded, n: formatNumber(downloaded, locale) })
         : null;
     const verify = verifyNeeded > 0 ? t('network.verifyDownloads') : null;
-    const label = joinStatusLine([primary?.label ?? null, count, verify]);
+    // An installed reciter with no usable timings plays without highlight or repeat (ADR 0052), and says so.
+    const noFollow = reciter.installed && !reciter.hasTimings ? t('listen.noFollow') : null;
+    const label = joinStatusLine([primary?.label ?? null, noFollow, count, verify]);
     return label === null ? null : { label, tone: primary?.tone ?? 'muted' };
   };
 
@@ -108,16 +112,20 @@ export function ListenScreen() {
           // A React element, not an inline component: its type stays the same across renders, so the search
           // field is not remounted (and does not lose focus) when the query changes the list.
           ListHeaderComponent={
-            <ReciterListHeader<ReciterFilter>
-              filter={filter}
-              filterLabel={t('listen.filter.group')}
-              filterOptions={filterOptions}
-              onFilterChange={setFilter}
-              onQueryChange={setQuery}
-              query={query}
-              searchPlaceholder={t('listen.search.placeholder')}
-              title={t('tabs.listen')}
-            />
+            <View>
+              <ReciterListHeader<ReciterFilter>
+                filter={filter}
+                filterLabel={t('listen.filter.group')}
+                filterOptions={filterOptions}
+                onFilterChange={setFilter}
+                onQueryChange={setQuery}
+                query={query}
+                searchPlaceholder={t('listen.search.placeholder')}
+                title={t('tabs.listen')}
+              />
+              {/* The Discover tour's listening step (ADR 0053): its arrow points down at the reciters' play buttons. */}
+              <DiscoverTipCard id="listen.follow" pointer />
+            </View>
           }
           ListEmptyComponent={
             loading ? (
@@ -155,6 +163,8 @@ export function ListenScreen() {
                     pause();
                     return;
                   }
+                  // Pressing play is the Discover tour's listening step (ADR 0053).
+                  markDiscovered('listen.follow');
                   void playReciter(item.resourceId, item.installed);
                 }}
                 onSelect={() => {

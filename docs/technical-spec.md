@@ -257,6 +257,7 @@ Layout is driven by the window's size from `useWindowDimensions`, never by `Plat
 - **Orientation and multitasking config:** `orientation: "default"`, `ios.supportsTablet: true`, all four iPad orientations declared (required for Split View and Stage Manager), Android `resizeableActivity` left on. No orientation lock anywhere.
 - **Input:** pointer hover states on iPad and Android tablets come from Pressable's hover events. Hardware-keyboard shortcuts (space to play or pause, arrows for next ayah) are post-launch.
 - **Safe areas:** every screen uses safe-area insets; Liquid Glass bars float above content on iOS 26, and Android uses edge-to-edge with the same insets.
+- **Discover Taybah (ADR 0053):** a home card below the greeting, and a full screen also reached from the menu. It lists the registry entries in `features/discover/registry.ts` in five groups, ticks each row when the real action runs, and is local only (MMKV). The card and screen are the same on every window class, with the screen's content column capped as on other screens.
 
 **Cold start path (target under 1.5 s):** read last-read verse and page from MMKV → open `content.db` → query only that page → render. The chosen Quran font is bundled, so nothing is fetched on this path.
 
@@ -668,6 +669,7 @@ For each change, in one transaction per request:
 - **Repeat:** a range A–B with N repeats seeks back to A's `start_ms` whenever `t ≥ B.end_ms`, then continues. Speed (0.5×–2×) and sleep timer (end of ayah, end of surah, 15/30/60 min) live in `playerStore`.
 - **Downloads:** `expo-file-system` downloads to the app's document directory with progress, resume after interruption, Wi-Fi-only by default, and the same timing rows (offsets are relative to the file).
 - **Validation on ingest:** timings with `start_ms ≥ end_ms` or overlaps are rejected for that file, and the app falls back to no highlight for it.
+- **Timings must match the audio (ADR 0052):** reciters in `quran.untrusted_timing_recitations` ship no timings. On the device a file's timings are used only when they cover every ayah of its surah and fit the duration the player reports (the last ayah ends no more than 2 s after the audio, and no more than the larger of 15 s and 5% of the file follows it). Otherwise the surah plays without highlight or repeat. An installed reciter with no usable timings shows «بدون تتبع» on the Listen screen.
 
 **Azkar player (`features/azkar/audio`, ADR 0047)**
 
@@ -717,6 +719,13 @@ For each change, in one transaction per request:
   - Success when a khatma day is completed.
   - Scrolling (ADR 0018): in Reading mode, a selection tick each time the top ayah changes, and a light impact instead when that ayah starts a new surah; in Mushaf mode, a light impact when the top page holds the start of a surah. Programmatic moves (opening at the last-read ayah, resize restore, audio follow) tick too, except the first position after opening or switching mode. At most one scroll haptic per 80 ms; a surah tick wins over an ayah tick. None in Focus mode.
   - The system haptics setting turns them off.
+
+**Discover Taybah (`features/discover`, ADR 0053)**
+
+- **Ticks come from real actions.** Each registry row ticks where its feature action runs (a reader mode or tafsir choice, a search, a Salah location, a goal, an Azkar or Misbaha count, the widget sheet), never from a store setter that also runs during onboarding or background installs. Watch and widget merges do not tick rows.
+- **Follow-along tick:** a row ticks when the highlight has followed one full ayah with word timings. A reciter without timings opens the Listen tab instead.
+- **One-time tips** show the first time a row opens its feature, fade under Reduce Motion, and are read by VoiceOver and TalkBack.
+- **Tour (ADR 0053, amended):** «تخطي» marks the step done. Before the next step opens, the screens opened for earlier steps are closed (`dismissAll`), so the tour never stacks screens; the end of the tour leaves one Discover screen.
 
 **Azkar (`features/azkar`, ADR 0031)**
 

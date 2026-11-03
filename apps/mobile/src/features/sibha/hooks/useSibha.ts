@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { completeHaptic, tapHaptic } from '@/features/azkar/haptics';
+import { markDiscovered } from '@/features/discover/store';
 
 import { resetCount, SIBHA_LABEL_MAX, withTarget, type SibhaState } from '../data/model';
 import { readSibhaState, recordSibhaTap, saveSibhaState } from '../data/store';
@@ -51,6 +52,10 @@ export function useSibha(): Sibha {
 
     const result = recordSibhaTap(new Date(at));
     setState(result.state);
+    // The first count ticks «المسبحة» (ADR 0053). Only that tap writes, so the other taps stay as cheap as before.
+    if (result.state.count === 1) {
+      markDiscovered('worship.sibha');
+    }
     tapHaptic();
     if (result.reachedTarget) {
       completeHaptic();

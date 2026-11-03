@@ -7,6 +7,7 @@ import { tabContentClearance } from '@/core/layout/tab-bar-clearance';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { installResource } from '@/core/sync';
+import { readDiscoverState, startTour } from '@/features/discover/store';
 
 import { pause, playChapter, playFromVerse } from '../player';
 import { MINI_PLAYER_TABS_FOOTPRINT } from '../mini-player-metrics';
@@ -92,6 +93,13 @@ beforeEach(() => {
      (1, 30, 'Mishari', 'مشاري', 'Murattal', 1),
      (2, 31, 'Husary', 'الحصري', 'Muallim', 1)`,
   );
+  // Both installed reciters have timings, so neither row says it plays without the highlight.
+  db.run(
+    `INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
+     (100, 1, 1, 'https://example.test/30-1.mp3', 46000, 'mp3'),
+     (200, 2, 1, 'https://example.test/31-1.mp3', 46000, 'mp3')`,
+  );
+  db.run('INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (100, 1, 0, 5000), (200, 1, 0, 5000)');
   storage.remove(storageKeys.audioReciterId);
   resetAudioSettingsStore();
   resetReciterDownloads();
@@ -128,6 +136,22 @@ describe('ListenScreen', () => {
     expect(view.getByTestId('reciter-row-31-style')).toHaveTextContent('معلّم');
     expect(view.getByTestId('reciter-row-32-style')).toHaveTextContent('مرتّل');
     expect(view.getByText('للتعليم والتكرار')).toBeOnTheScreen();
+  });
+
+  it('says an installed reciter with no timings plays without the highlight, and only that one', async () => {
+    mockContent.executor?.run('DELETE FROM recitation_timings WHERE audio_file_id = 100');
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent('بدون تتبع');
+    expect(view.getByTestId('reciter-row-31-status')).not.toHaveTextContent('بدون تتبع');
+    expect(view.queryByTestId('reciter-row-32-status')).toBeNull();
+  });
+
+  it('says so in English too', async () => {
+    mockContent.executor?.run('DELETE FROM recitation_timings WHERE audio_file_id = 100');
+    const view = await renderUi(<ListenScreen />, { locale: 'en' });
+
+    expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent('No follow-along');
   });
 
   it('finds an uninstalled reciter through the مرتّل chip by its catalogue style', async () => {
@@ -270,6 +294,16 @@ describe('ListenScreen', () => {
     expect(getReciterId()).toBe(31);
     expect(view.getByRole('radio', { name: 'محمود خليل الحصري' }).props.accessibilityState).toEqual({ checked: true });
     expect(play).not.toHaveBeenCalled();
+  });
+
+  it('shows the Discover tour’s listening tip, and pressing play completes that step', async () => {
+    startTour('listen.follow');
+    const view = await renderUi(<ListenScreen />);
+
+    expect(view.getByTestId('discover-tip-listen.follow')).toBeTruthy();
+    await fireEvent.press(view.getByTestId('reciter-row-30-play'));
+
+    expect(readDiscoverState()).toMatchObject({ done: ['listen.follow'], tourStep: 'worship.salah' });
   });
 
   it('marks the reciter that is playing with «يُتلى الآن»', async () => {

@@ -16,6 +16,7 @@ import {
 } from '@/features/khatma/data';
 import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { IconButton } from '@/shared/ui';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 
 import { BookmarkListCard } from '../components/BookmarkListCard';
 import { HighlightListCard } from '../components/HighlightListCard';
@@ -114,6 +115,8 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
         />
       }
     >
+      {/* The Discover tour's My Mushaf step (ADR 0053): «التالي» completes it. */}
+      <DiscoverTipCard id="my-quran" />
       <MyQuranTabs onChange={setActiveTab} value={activeTab} />
       <ScrollView
         contentContainerStyle={{ gap: theme.space[3], paddingBottom: bottom + theme.space[4] }}

@@ -8,6 +8,7 @@ import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useAzkarAvailable } from '@/features/azkar/data';
+import { markDiscovered } from '@/features/discover/store';
 import { goBackOr, HOME_TAB } from '@/core/navigation/go-back';
 import { azkarHref } from '@/features/azkar/routes';
 import { getWords, type WordRecord } from '@/features/reader/data/words';
@@ -29,6 +30,7 @@ import {
 import { searchQuran, type SearchResult, SEARCH_PAGE_SIZE } from '@/features/search/searchQuran';
 import { readSessionSearchScope, rememberSessionSearchScope, type SearchScope } from '@/features/search/searchScope';
 import { Screen, SegmentedControl, UiText } from '@/shared/ui';
+import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 
 const SEARCH_DEBOUNCE_MS = 150;
 
@@ -98,6 +100,7 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
       return;
     }
     setRecent(addRecentSearch(trimmed));
+    markDiscovered('app.search');
   }, []);
 
   const onSelectRecent = useCallback(
@@ -181,6 +184,8 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
               placeholder={placeholder}
               value={query}
             />
+            {/* The Discover tour's search step (ADR 0053): a search completes it. */}
+            <DiscoverTipCard id="app.search" />
             <UiText tone="muted" variant="label">
               {hint}
             </UiText>
