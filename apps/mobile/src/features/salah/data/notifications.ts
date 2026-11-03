@@ -116,8 +116,8 @@ export function prayerFireDates(
 }
 
 /**
- * The next `window` iqamah fire times (prayer time minus offset) after `now`, per prayer. Empty when offset is 0, without
- * coordinates, or without prayers. Same skip-past and slice rules as `prayerFireDates` (ADR 0056).
+ * The next `window` iqamah fire times (prayer/adhan time plus offset) after `now`, per prayer. Empty when offset is 0,
+ * without coordinates, or without prayers. Adhan stays at the prayer time; iqamah follows it (ADR 0056).
  */
 export function iqamahFireDates(
   prayers: readonly NextPrayerName[],
@@ -142,7 +142,7 @@ export function iqamahFireDates(
   const fires: PrayerFire[] = [];
   for (const prayer of prayers) {
     const upcoming = dayTimes
-      .map((times) => times[prayer].getTime() - offsetMs)
+      .map((times) => times[prayer].getTime() + offsetMs)
       .filter((ms) => Number.isFinite(ms) && ms > nowMs)
       .sort((a, b) => a - b)
       .slice(0, days);

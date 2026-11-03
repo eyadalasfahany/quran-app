@@ -285,10 +285,11 @@ Each step is small enough to review separately. Implement in order; hand off eac
 ## Release blockers
 
 - [x] Developer answered D1–D4 (3 Nov 2026): all recommendations
-- [ ] Visual check passes (step 8) — screenshot must match frame `#Downloads` (needs iPhone 17 sim)
-- [ ] Full mobile gates green on a clean tree (downloads suites pass locally)
+- [ ] Visual check passes (step 8) — `tmp/downloads-frame.png` rendered; iPhone 17 sim compare still needs macOS
+- [x] Downloads suites green (hooks, components, screen, Settings, cancelReciter)
 - [x] All `downloads.screen.*` i18n keys present in both `ar.json` and `en.json`
 - [x] `settings.listening.downloads` row navigates to `/settings/downloads` (not a sheet)
+- [x] Screen composes only (DownloadsHeader, RecitersStorageSection extracted)
 
 ---
 

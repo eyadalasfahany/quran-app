@@ -2,7 +2,7 @@ import { MisbahaWidget } from './MisbahaWidget';
 import { widgetContext } from './context';
 import { MISBAHA_TAP_ACTION } from './names';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
+import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (
@@ -17,7 +17,7 @@ describe('MisbahaWidget', () => {
   });
 
   it('has a plus that sends the tap action, separate from the card tap', () => {
-    const plus = ofKind(MisbahaWidget(ctx()), 'LinearLayoutWidget').find((el) => el.props.clickAction === MISBAHA_TAP_ACTION);
+    const plus = walk(MisbahaWidget(ctx())).find((el) => el.props.clickAction === MISBAHA_TAP_ACTION);
     expect(plus).toBeDefined();
     expect(plus?.props.accessibilityLabel).toBe('LABEL countAction');
   });

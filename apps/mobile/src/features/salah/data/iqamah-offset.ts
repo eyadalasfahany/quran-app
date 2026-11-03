@@ -1,6 +1,6 @@
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
-/** Allowed iqamah offset values (minutes before prayer time). 0 is off (ADR 0056). */
+/** Allowed iqamah offset values (minutes after adhan / prayer time). 0 is off (ADR 0056). */
 export const IQAMAH_OFFSET_OPTIONS = [0, 5, 10, 15, 20, 30] as const;
 
 export type IqamahOffsetMinutes = (typeof IQAMAH_OFFSET_OPTIONS)[number];

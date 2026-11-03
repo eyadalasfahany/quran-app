@@ -69,6 +69,14 @@ enum WidgetHelpers {
     return .next(key: next.key, at: next.at)
   }
 
+  static let prayerDotKeys = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
+
+  static func prayerDotState(key: String, nextKey: String, entryAt: Double?, nowMs: Double) -> String {
+    if key == nextKey { return "next" }
+    if let entryAt, entryAt < nowMs { return "past" }
+    return "future"
+  }
+
   static func todaysPrayerEntries(_ entries: [TaybahSnapshot.PrayerEntry], now: Date) -> [TaybahSnapshot.PrayerEntry] {
     let today = Calendar.current.startOfDay(for: now)
     guard let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today) else { return entries }

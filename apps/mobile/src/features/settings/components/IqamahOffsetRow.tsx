@@ -20,7 +20,7 @@ export function IqamahOffsetRow({ testID = 'iqamah-offset-row' }: { testID?: str
   const trailing =
     offset === 0
       ? t('salah.iqamahOffset.off')
-      : t('salah.iqamahOffset.before', { count: offset, number: formatNumber(offset, locale) });
+      : t('salah.iqamahOffset.after', { count: offset, number: formatNumber(offset, locale) });
 
   return (
     <>

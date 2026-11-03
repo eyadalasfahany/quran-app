@@ -52,7 +52,7 @@ export function IqamahOffsetSheet({
             const label =
               minutes === 0
                 ? t('salah.iqamahOffset.optionOff')
-                : t('salah.iqamahOffset.before', { count: minutes, number: formatNumber(minutes, locale) });
+                : t('salah.iqamahOffset.after', { count: minutes, number: formatNumber(minutes, locale) });
             return (
               <Pressable
                 accessibilityLabel={label}

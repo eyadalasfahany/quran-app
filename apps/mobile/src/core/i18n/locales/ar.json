@@ -560,16 +560,16 @@
     "iqamahOffset": {
       "label": "تذكير الإقامة",
       "off": "إيقاف",
-      "before_one": "{{number}} دقيقة قبل",
-      "before_two": "{{number}} دقيقتين قبل",
-      "before_few": "{{number}} دقائق قبل",
-      "before_many": "{{number}} دقيقة قبل",
-      "before_other": "{{number}} دقيقة قبل",
+      "after_one": "{{number}} دقيقة بعد الأذان",
+      "after_two": "{{number}} دقيقتين بعد الأذان",
+      "after_few": "{{number}} دقائق بعد الأذان",
+      "after_many": "{{number}} دقيقة بعد الأذان",
+      "after_other": "{{number}} دقيقة بعد الأذان",
       "sheetTitle": "تذكير الإقامة",
       "optionOff": "إيقاف",
       "testAction": "إرسال إشعار إقامة تجريبي",
       "testSent": "إشعار إقامة {{name}} خلال {{seconds}} ثوانٍ",
-      "testSentPaired": "إقامة {{name}} بعد {{iqamahSeconds}} ث، ثم الأذان بعد {{adhanSeconds}} ث (الثواني تمثّل الدقائق للتجربة)"
+      "testSentPaired": "أذان {{name}} بعد {{adhanSeconds}} ث، ثم الإقامة بعد {{iqamahSeconds}} ث (الثواني تمثّل الدقائق للتجربة)"
     },
     "title": "الصلاة",
     "next": "الصلاة القادمة",

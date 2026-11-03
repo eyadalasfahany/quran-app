@@ -17,8 +17,8 @@ type SentResult = {
 };
 
 /**
- * «إرسال إشعار إقامة تجريبي»: fires iqamah (and optionally paired adhan) through production content and channels, a few
- * seconds out. Refused permission opens the shared reminder permission dialog.
+ * «إرسال إشعار إقامة تجريبي»: with offset on, fires adhan first then iqamah (demo seconds = offset minutes); with offset
+ * off, fires iqamah only. Production content and channels. Refused permission opens the shared dialog.
  */
 export function TestIqamahButton({ testID = 'iqamah-test' }: { testID?: string }) {
   const { t } = useTranslation();
@@ -59,8 +59,8 @@ export function TestIqamahButton({ testID = 'iqamah-test' }: { testID?: string }
           {result.paired
             ? t('salah.iqamahOffset.testSentPaired', {
                 name: prayerName,
-                iqamahSeconds: formatNumber(result.delaySeconds, locale),
-                adhanSeconds: formatNumber(result.delaySeconds + result.offsetMinutes, locale),
+                adhanSeconds: formatNumber(result.delaySeconds, locale),
+                iqamahSeconds: formatNumber(result.delaySeconds + result.offsetMinutes, locale),
               })
             : t('salah.iqamahOffset.testSent', {
                 name: prayerName,

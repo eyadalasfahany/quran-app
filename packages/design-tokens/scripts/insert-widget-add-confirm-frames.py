@@ -52,18 +52,30 @@ def palette(dark: bool) -> dict[str, str]:
 
 
 def widget_preview(c: dict[str, str]) -> str:
+    dots = (
+        '<div style="display: flex; gap: 6px; align-items: center;">'
+        '<span style="width: 8px; height: 8px; border-radius: 999px; background: rgba(31, 77, 64, 0.35);"></span>'
+        '<span style="width: 8px; height: 8px; border-radius: 999px; background: rgba(31, 77, 64, 0.35);"></span>'
+        f'<span style="width: 8px; height: 8px; border-radius: 999px; background: {c["brand"]};"></span>'
+        f'<span style="width: 8px; height: 8px; border-radius: 999px; box-sizing: border-box; border: 1px solid {c["line"]};"></span>'
+        f'<span style="width: 8px; height: 8px; border-radius: 999px; box-sizing: border-box; border: 1px solid {c["line"]};"></span>'
+        "</div>"
+    )
     return (
         f'<div style="align-self: stretch; display: flex; justify-content: center; margin: 4px 0 8px;">'
         f'<div style="width: 148px; height: 148px; box-sizing: border-box; padding: 14px 12px; border-radius: 22px; '
         f'background: {c["widgetBg"]}; border: 1px solid {c["line"]}; display: flex; flex-direction: column; '
-        f'align-items: center; justify-content: center; gap: 4px; text-align: center; '
-        f'box-shadow: rgba(19, 35, 31, 0.10) 0px 4px 16px;">'
+        f'justify-content: space-between; text-align: start; box-shadow: rgba(19, 35, 31, 0.10) 0px 4px 16px;">'
+        f'<div style="display: flex; flex-direction: column; gap: 4px;">'
         f'<span style="font-size: 11px; line-height: 14px; color: {c["widgetMuted"]};">الصلاة القادمة</span>'
         f'<span style="font-size: 22px; line-height: 28px; font-weight: 700; color: {c["widgetInk"]};">العشاء</span>'
-        f'<span style="font-size: 15px; line-height: 20px; color: {c["widgetInk"]};">٦:٣٥ م</span>'
-        f'<span style="font-size: 11px; line-height: 14px; color: {c["widgetMuted"]}; margin-top: 4px;">المتبقي</span>'
+        f'<span style="align-self: flex-start; font-size: 15px; line-height: 20px; font-weight: 600; color: {c["widgetInk"]}; '
+        f'background: {c["fill"]}; border-radius: 999px; padding: 4px 10px;">٦:٣٥ م</span></div>'
+        f"{dots}"
+        f'<div style="border-radius: 16px; background: {c["fill"]}; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px;">'
+        f'<span style="font-size: 11px; line-height: 14px; color: {c["widgetMuted"]};">المتبقي</span>'
         f'<span style="font-size: 20px; line-height: 26px; font-weight: 700; color: {c["timer"]};">١:٤٨:٣٩</span>'
-        f"</div></div>"
+        f"</div></div></div>"
     )
 
 

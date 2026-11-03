@@ -1,8 +1,9 @@
 import type { Href } from 'expo-router';
-import { inArray } from 'drizzle-orm';
+import { inArray, max } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { ScrollView } from 'react-native';
 
 import { useContentDb } from '@/core/db/content/open';
 import { openUserDb } from '@/core/db/user/open';
@@ -12,24 +13,25 @@ import { useLocale } from '@/core/i18n/useLocale';
 import { goBackOr } from '@/core/navigation/go-back';
 import { useTheme } from '@/core/theme';
 import { cancelReciter, enqueueAll } from '@/features/audio/downloads/manager';
-import { useDownloadProgress } from '@/features/audio/downloads/store';
 import { useReciterCatalogue } from '@/features/audio/hooks/useReciterCatalogue';
 import { reciterDisplayName } from '@/features/audio/reciter-list';
-import { BackButton, Screen, UiText, useContrastColors } from '@/shared/ui';
+import { Screen } from '@/shared/ui';
 
 import { DownloadsFooterNote } from '../components/DownloadsFooterNote';
+import { DownloadsHeader } from '../components/DownloadsHeader';
 import { MushafsTextSection } from '../components/MushafsTextSection';
-import { ReciterStorageRow } from '../components/ReciterStorageRow';
+import { RecitersStorageSection, type ReciterStorageItem } from '../components/RecitersStorageSection';
 import { StorageCard } from '../components/StorageCard';
 import { useAudioStorageSummary } from '../hooks/useAudioStorageSummary';
 import { useFontStorageBytes } from '../hooks/useFontStorageBytes';
 import { useTafsirStorageSummary } from '../hooks/useTafsirStorageSummary';
 
+const ACTIVE_STATUSES = ['queued', 'downloading', 'paused', 'waiting_wifi'] as const;
+
 export function DownloadsScreen({ testID = 'screen-downloads' }: { testID?: string }) {
   const { t } = useTranslation();
   const locale = useLocale();
   const theme = useTheme();
-  const colors = useContrastColors();
   const { ready } = useContentDb();
   const { reciters } = useReciterCatalogue(ready);
 
@@ -39,37 +41,66 @@ export function DownloadsScreen({ testID = 'screen-downloads' }: { testID?: stri
   const totalBytes = audio.totalBytes + fontBytes + tafsir.totalBytes;
 
   const { db } = openUserDb();
-  const { data: inProgressRows } = useLiveQuery(
+  const { data: activeRows } = useLiveQuery(
     db
-      .selectDistinct({ reciterResourceId: downloadsTable.reciterResourceId })
+      .select({
+        reciterResourceId: downloadsTable.reciterResourceId,
+        progress: max(downloadsTable.progress),
+      })
       .from(downloadsTable)
-      .where(inArray(downloadsTable.status, ['queued', 'downloading', 'paused', 'waiting_wifi'])),
+      .where(inArray(downloadsTable.status, [...ACTIVE_STATUSES]))
+      .groupBy(downloadsTable.reciterResourceId),
   );
-  const activeReciterIds = new Set((inProgressRows ?? []).map((r) => r.reciterResourceId));
 
-  const progressById = useDownloadProgress((s) => s.byId);
-  const downloadingProgress = Object.values(progressById)[0] ?? 0;
+  const activeByReciter = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const row of activeRows ?? []) {
+      map.set(row.reciterResourceId, Number(row.progress ?? 0));
+    }
+    return map;
+  }, [activeRows]);
 
-  const reciterRows = audio.perReciter.map((r) => {
-    const catalog = reciters.find((c) => c.resourceId === r.reciterResourceId);
-    return {
-      reciterResourceId: r.reciterResourceId,
-      name: reciterDisplayName(catalog ?? { name: null, nameAr: null }, locale, t('listen.unnamed')),
-      surahCount: r.surahCount,
-      bytes: r.bytes,
-    };
-  });
+  const reciterRows: ReciterStorageItem[] = useMemo(() => {
+    const byId = new Map<number, ReciterStorageItem>();
+
+    for (const row of audio.perReciter) {
+      const catalog = reciters.find((c) => c.resourceId === row.reciterResourceId);
+      byId.set(row.reciterResourceId, {
+        reciterResourceId: row.reciterResourceId,
+        name: reciterDisplayName(catalog ?? { name: null, nameAr: null }, locale, t('listen.unnamed')),
+        surahCount: row.surahCount,
+        bytes: row.bytes,
+        isDownloading: activeByReciter.has(row.reciterResourceId),
+        downloadProgress: activeByReciter.get(row.reciterResourceId) ?? 0,
+      });
+    }
+
+    for (const [reciterResourceId, progress] of activeByReciter) {
+      if (byId.has(reciterResourceId)) {
+        continue;
+      }
+      const catalog = reciters.find((c) => c.resourceId === reciterResourceId);
+      byId.set(reciterResourceId, {
+        reciterResourceId,
+        name: reciterDisplayName(catalog ?? { name: null, nameAr: null }, locale, t('listen.unnamed')),
+        surahCount: 0,
+        bytes: 0,
+        isDownloading: true,
+        downloadProgress: progress,
+      });
+    }
+
+    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, locale));
+  }, [activeByReciter, audio.perReciter, locale, reciters, t]);
 
   return (
     <Screen testID={testID}>
       <ContentColumn gutter={theme.space[4]}>
         <ScrollView contentContainerStyle={{ gap: theme.space[4], paddingBottom: theme.space[8] }}>
-          <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2] }}>
-            <BackButton onPress={() => goBackOr('/settings' as Href)} />
-            <UiText accessibilityRole="header" variant="displayMd">
-              {t('settings.listening.downloads')}
-            </UiText>
-          </View>
+          <DownloadsHeader
+            onBack={() => goBackOr('/settings' as Href)}
+            title={t('settings.listening.downloads')}
+          />
 
           <StorageCard
             audioBytes={audio.totalBytes}
@@ -80,43 +111,11 @@ export function DownloadsScreen({ testID = 'screen-downloads' }: { testID?: stri
             testID="downloads-storage-card"
           />
 
-          {reciterRows.length > 0 ? (
-            <View style={{ gap: theme.space[1] + 2 }}>
-              <UiText
-                accessibilityRole="header"
-                style={{ marginHorizontal: theme.space[1] + 2 }}
-                tone="muted"
-                variant="caption"
-                weight={600}
-              >
-                {t('downloads.screen.reciters')}
-              </UiText>
-              <View
-                style={{
-                  backgroundColor: theme.colors.surfaceRaised,
-                  borderColor: colors.line,
-                  borderRadius: theme.radius.lg,
-                  borderWidth: theme.stroke.hairline,
-                  overflow: 'hidden',
-                }}
-              >
-                {reciterRows.map((row, index) => (
-                  <ReciterStorageRow
-                    bytes={row.bytes}
-                    downloadProgress={activeReciterIds.has(row.reciterResourceId) ? downloadingProgress : 0}
-                    isDownloading={activeReciterIds.has(row.reciterResourceId)}
-                    key={row.reciterResourceId}
-                    name={row.name}
-                    onDownloadAll={() => enqueueAll(row.reciterResourceId)}
-                    onStop={() => cancelReciter(row.reciterResourceId)}
-                    showDivider={index < reciterRows.length - 1}
-                    surahCount={row.surahCount}
-                    testID={`reciter-storage-row-${row.reciterResourceId}`}
-                  />
-                ))}
-              </View>
-            </View>
-          ) : null}
+          <RecitersStorageSection
+            onDownloadAll={enqueueAll}
+            onStop={cancelReciter}
+            rows={reciterRows}
+          />
 
           <MushafsTextSection tafsirs={tafsir.perTafsir} testID="downloads-mushaf-section" />
 

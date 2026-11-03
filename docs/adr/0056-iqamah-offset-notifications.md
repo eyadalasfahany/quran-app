@@ -4,14 +4,14 @@ Date: 2026-11-03 · Status: **Accepted** (developer requested implementation on 
 
 ## Context
 
-Prayer notifications today fire at the calculated adhan time for each enabled prayer (ADR 0030 §3, ADR 0047). Users also want a short heads-up before iqamah — N minutes before that same prayer time — with copy along the lines of «الإقامة بعد قليل» / “Iqamah soon”. That reminder must not use the selectable adhan voice (ADR 0047); it uses the system default notification sound, like Azkar and the daily reminder.
+Prayer notifications today fire at the calculated adhan time for each enabled prayer (ADR 0030 §3, ADR 0047). Users also want an iqamah reminder **after** the adhan — N minutes after that same prayer time — with copy along the lines of «الإقامة بعد قليل» / “Iqamah soon”. That reminder must not use the selectable adhan voice (ADR 0047); it uses the system default notification sound, like Azkar and the daily reminder.
 
 iOS allows at most 64 pending local notifications (`apps/mobile/src/features/notifications/budget.ts`). Prayer already reserves 40 slots (5 prayers × 8 rolling days). Adding a second notification per prayer without shrinking the window would need 80 slots and break the budget.
 
 ## Decision
 
-1. **One global iqamah offset** (minutes before the prayer time), stored in MMKV. Default **off** (0 / unset): no iqamah notifications until the user chooses a positive offset. Allowed values: **0, 5, 10, 15, 20, 30** only.
-2. **Schedule:** For each enabled prayer, the **adhan** notification fires at the prayer time (unchanged). When offset &gt; 0, an **iqamah** notification fires at `prayerTime − offsetMinutes`. Skip any candidate whose fire time is ≤ `now` (same rule as adhan).
+1. **One global iqamah offset** (minutes **after** the adhan / prayer time), stored in MMKV. Default **off** (0 / unset): no iqamah notifications until the user chooses a positive offset. Allowed values: **0, 5, 10, 15, 20, 30** only.
+2. **Schedule:** For each enabled prayer, the **adhan** notification fires at the prayer time (unchanged). When offset &gt; 0, an **iqamah** notification fires at `prayerTime + offsetMinutes`. Skip any candidate whose fire time is ≤ `now` (same rule as adhan).
 3. **Rolling window (budget):**
    - Offset **0:** adhan only, **8** future fires per enabled prayer (`PRAYER_ROLLING_DAYS_ADHAN_ONLY = 8`) — current behaviour.
    - Offset **&gt; 0:** both adhan and iqamah, **4** future fires per kind per enabled prayer (`PRAYER_ROLLING_DAYS_WITH_IQAMAH = 4`). Worst case: 5 × 4 × 2 = **40** slots; `PRAYER_NOTIFICATION_SLOTS` stays 40.
@@ -32,6 +32,10 @@ iOS allows at most 64 pending local notifications (`apps/mobile/src/features/not
 - **8-day window for both kinds (80 slots).** Rejected: exceeds iOS limit without cutting Azkar or other categories.
 - **Per-prayer iqamah offset.** Rejected for v1: developer asked for one global offset unless frames require otherwise; none exist today.
 - **Separate Android channel `prayer_iqamah`.** Rejected: same system sound as `prayer`; extra channel adds settings noise with no sound benefit (plan allows revisiting if product wants separate importance).
+
+## Amendment (3 Nov 2026)
+
+Offset direction corrected to match mosque practice and the developer's clarification: **adhan at prayer time, then iqamah after the offset** (`prayerTime + offsetMinutes`). The earlier draft used minutes *before* the prayer time; that is superseded. UI copy uses «بعد الأذان» / “after adhan”. The QA test button schedules adhan first, then iqamah.
 
 ## Release blockers
 

@@ -15,7 +15,7 @@ function textStyle(tree: ReturnType<typeof NextPrayerWidget>, text: string) {
 }
 
 describe('NextPrayerWidget', () => {
-  it('shows the next prayer name, muted clock, remaining label and duration from the snapshot', () => {
+  it('shows the next prayer name, time chip, dots, remaining band and duration from the snapshot', () => {
     const context = ctx();
     const tree = NextPrayerWidget(context);
     const snapshot = fullSnapshot();
@@ -26,6 +26,12 @@ describe('NextPrayerWidget', () => {
       expect.arrayContaining(['PRAYER asr', 'LABEL nextPrayer', 'LABEL remaining', remaining]),
     );
     expect(textsOf(tree)).not.toContain('PLACE');
+
+    const dots = walk(tree).filter((node) => {
+      const style = styleOf(node);
+      return style.width === 8 && style.height === 8;
+    });
+    expect(dots).toHaveLength(5);
   });
 
   it('opens the prayer screen on tap and labels the card for TalkBack', () => {
@@ -40,7 +46,7 @@ describe('NextPrayerWidget', () => {
     expect(root.props.accessibilityLabel).toBe(`LABEL nextPrayer: PRAYER asr ${time}, LABEL remaining ${remaining}`);
   });
 
-  it('uses a muted clock and brand remaining numerals', () => {
+  it('uses semibold ink in the time chip and onBrandSurface for remaining numerals', () => {
     const context = ctx('en', 'light');
     const tree = NextPrayerWidget(context);
     const snapshot = fullSnapshot();
@@ -49,18 +55,16 @@ describe('NextPrayerWidget', () => {
     const remaining = formatPlaybackClock(stateAt.at - now.getTime(), 'en');
     const { palette } = context;
 
-    expect(textStyle(tree, time).color).toBe(palette.inkMuted);
-    expect(textStyle(tree, remaining).color).toBe(palette.brand);
+    expect(textStyle(tree, time).color).toBe(palette.ink);
+    expect(textStyle(tree, remaining).color).toBe(palette.onBrandSurface);
   });
 
-  it('centres full-width labels in Arabic and English', () => {
+  it('distributes the face with space-between and start-aligned labels in Arabic and English', () => {
     for (const locale of ['ar', 'en'] as const) {
       const tree = NextPrayerWidget(ctx(locale));
-      expect(
-        walk(tree)
-          .filter((node) => typeof node.props.text === 'string' && styleOf(node).width === 'match_parent')
-          .every((node) => styleOf(node).textAlign === 'center'),
-      ).toBe(true);
+      const body = walk(tree).find((node) => styleOf(node).justifyContent === 'space-between');
+      expect(body).toBeDefined();
+      expect(startAlignedFullWidthLabels(tree, locale === 'ar')).toBe(true);
     }
   });
 
@@ -83,9 +87,5 @@ describe('NextPrayerWidget', () => {
 
   it('uses Arabic-Indic digits in the prayer time and remaining in Arabic', () => {
     expect(hasArabicIndicNumerals(NextPrayerWidget(ctx('ar')))).toBe(true);
-  });
-
-  it('does not right-align start labels when every line is centred', () => {
-    expect(startAlignedFullWidthLabels(NextPrayerWidget(ctx('ar')), true)).toBe(true);
   });
 });

@@ -23,9 +23,11 @@ jest.mock('@/core/db/content/open', () => ({
 jest.mock('@/core/db/user/open', () => ({
   openUserDb: () => ({
     db: {
-      selectDistinct: () => ({
+      select: () => ({
         from: () => ({
-          where: () => ({}),
+          where: () => ({
+            groupBy: () => ({}),
+          }),
         }),
       }),
     },
@@ -49,12 +51,9 @@ jest.mock('@/features/downloads/hooks/useTafsirStorageSummary', () => ({
 }));
 
 jest.mock('@/features/audio/hooks/useReciterCatalogue', () => ({
-  useReciterCatalogue: () => ({ reciters: [] }),
-}));
-
-jest.mock('@/features/audio/downloads/store', () => ({
-  useDownloadProgress: (selector: (s: { byId: Record<number, number> }) => unknown) =>
-    selector({ byId: {} }),
+  useReciterCatalogue: () => ({
+    reciters: [{ resourceId: 5, name: 'Mishari', nameAr: 'مشاري' }],
+  }),
 }));
 
 jest.mock('@/features/audio/downloads/manager', () => ({
@@ -74,17 +73,23 @@ const { useTafsirStorageSummary } = jest.requireMock('@/features/downloads/hooks
   useTafsirStorageSummary: jest.Mock;
 };
 
+const { enqueueAll, cancelReciter } = jest.requireMock('@/features/audio/downloads/manager') as {
+  enqueueAll: jest.Mock;
+  cancelReciter: jest.Mock;
+};
+
 describe('DownloadsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useAudioStorageSummary.mockReturnValue({ perReciter: [], totalBytes: 0 });
     useLiveQuery.mockReturnValue({ data: [] });
+    useTafsirStorageSummary.mockReturnValue({ perTafsir: [], totalBytes: 0 });
   });
 
   it('renders with no downloads', async () => {
     const view = await renderUi(<DownloadsScreen />);
     expect(view.getByTestId('downloads-storage-card')).toBeOnTheScreen();
-    expect(view.queryByTestId('reciter-storage-row-1')).toBeNull();
+    expect(view.queryByTestId('downloads-reciters-section')).toBeNull();
     expect(view.getByTestId('downloads-mushaf-section')).toBeOnTheScreen();
   });
 
@@ -95,6 +100,34 @@ describe('DownloadsScreen', () => {
     });
     const view = await renderUi(<DownloadsScreen />);
     expect(view.getByTestId('reciter-storage-row-5')).toBeOnTheScreen();
+  });
+
+  it('shows an in-progress-only reciter with no done downloads', async () => {
+    useLiveQuery.mockReturnValue({
+      data: [{ reciterResourceId: 5, progress: 0.4 }],
+    });
+    const view = await renderUi(<DownloadsScreen />);
+    expect(view.getByTestId('reciter-storage-row-5')).toBeOnTheScreen();
+    expect(view.getByTestId('reciter-storage-row-5-stop')).toBeOnTheScreen();
+  });
+
+  it('calls enqueueAll from an idle reciter row', async () => {
+    useAudioStorageSummary.mockReturnValue({
+      perReciter: [{ reciterResourceId: 5, surahCount: 2, bytes: 1024 }],
+      totalBytes: 1024,
+    });
+    const view = await renderUi(<DownloadsScreen />);
+    fireEvent.press(view.getByTestId('reciter-storage-row-5-download-all'));
+    expect(enqueueAll).toHaveBeenCalledWith(5);
+  });
+
+  it('calls cancelReciter from a downloading reciter row', async () => {
+    useLiveQuery.mockReturnValue({
+      data: [{ reciterResourceId: 5, progress: 0.5 }],
+    });
+    const view = await renderUi(<DownloadsScreen />);
+    fireEvent.press(view.getByTestId('reciter-storage-row-5-stop'));
+    expect(cancelReciter).toHaveBeenCalledWith(5);
   });
 
   it('renders tafsir rows inside mushaf section', async () => {
@@ -113,7 +146,7 @@ describe('DownloadsScreen', () => {
 
   it('calls router.back from back button when history exists', async () => {
     const view = await renderUi(<DownloadsScreen />);
-    fireEvent.press(view.getByTestId('back-button'));
+    fireEvent.press(view.getByTestId('downloads-back'));
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 

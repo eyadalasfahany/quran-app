@@ -43,6 +43,7 @@ exports[`DownloadsScreen matches RTL render tree 1`] = `
               "gap": 8,
             }
           }
+          testID="downloads-header"
         >
           <View
             accessibilityLabel="رجوع"
@@ -89,7 +90,7 @@ exports[`DownloadsScreen matches RTL render tree 1`] = `
                 "width": 44,
               }
             }
-            testID="back-button"
+            testID="downloads-back"
           >
             <View
               accessibilityElementsHidden={true}
@@ -109,7 +110,7 @@ exports[`DownloadsScreen matches RTL render tree 1`] = `
                   },
                 ]
               }
-              testID="back-button-icon"
+              testID="downloads-back-icon"
             >
               <ViewManagerAdapter_SymbolModule
                 animated={false}
@@ -224,49 +225,15 @@ exports[`DownloadsScreen matches RTL render tree 1`] = `
               accessible={false}
               importantForAccessibility="no-hide-descendants"
               style={
-                [
-                  {
-                    "backgroundColor": "#efe8d8",
-                    "borderRadius": 5,
-                    "height": 10,
-                    "overflow": "hidden",
-                  },
-                  {
-                    "flexDirection": "row",
-                    "gap": 2,
-                  },
-                ]
+                {
+                  "backgroundColor": "#efe8d8",
+                  "borderRadius": 5,
+                  "height": 10,
+                  "overflow": "hidden",
+                }
               }
               testID="downloads-storage-card-bar"
-            >
-              <View
-                style={
-                  {
-                    "backgroundColor": "#1f4d40",
-                    "height": 10,
-                    "width": "0%",
-                  }
-                }
-              />
-              <View
-                style={
-                  {
-                    "backgroundColor": "#a07c33",
-                    "height": 10,
-                    "width": "0%",
-                  }
-                }
-              />
-              <View
-                style={
-                  {
-                    "backgroundColor": "#4f86a8",
-                    "height": 10,
-                    "width": "100%",
-                  }
-                }
-              />
-            </View>
+            />
             <View
               style={
                 {
@@ -475,61 +442,6 @@ exports[`DownloadsScreen matches RTL render tree 1`] = `
                   }
                 >
                   أساسي · لا يمكن حذفه
-                </Text>
-              </View>
-            </View>
-            <View
-              style={
-                [
-                  {
-                    "alignItems": "center",
-                    "flexDirection": "row",
-                    "gap": 12,
-                    "minHeight": 56,
-                    "paddingHorizontal": 14,
-                  },
-                  null,
-                ]
-              }
-              testID="downloads-mushaf-section-tafsir-3"
-            >
-              <View
-                style={
-                  {
-                    "flex": 1,
-                    "gap": 2,
-                  }
-                }
-              >
-                <Text
-                  dynamicTypeRamp="headline"
-                  maxFontSizeMultiplier={2}
-                  style={
-                    {
-                      "color": "#13231f",
-                      "fontFamily": "IBMPlexSansArabic-SemiBold",
-                      "fontSize": 17,
-                      "lineHeight": 24,
-                      "textAlign": "left",
-                    }
-                  }
-                >
-                  FIXTURE tafsir
-                </Text>
-                <Text
-                  dynamicTypeRamp="caption1"
-                  maxFontSizeMultiplier={2}
-                  style={
-                    {
-                      "color": "#5b6a64",
-                      "fontFamily": "IBMPlexSansArabic-Regular",
-                      "fontSize": 12,
-                      "lineHeight": 16,
-                      "textAlign": "left",
-                    }
-                  }
-                >
-                  ٠ م.ب
                 </Text>
               </View>
             </View>

@@ -212,7 +212,7 @@ describe('prayer notifications', () => {
       expect(iqamahFireDates(PRAYERS, NOW, LONDON, 0, 4)).toEqual([]);
     });
 
-    it('subtracts the offset from each prayer time and keeps 4 futures per prayer', () => {
+    it('adds the offset to each prayer time and keeps 4 futures per prayer', () => {
       const fires = iqamahFireDates(PRAYERS, NOW, LONDON, 10, 4);
       for (const prayer of PRAYERS) {
         const mine = fires.filter((fire) => fire.prayer === prayer);
@@ -222,10 +222,10 @@ describe('prayer notifications', () => {
       expect(fires).toHaveLength(20);
     });
 
-    it('fires 10 minutes before the adhan time for maghrib', () => {
+    it('fires 10 minutes after the adhan time for maghrib', () => {
       const fires = iqamahFireDates(['maghrib'], NOW, LONDON, 10, 4);
       const adhan = prayerFireDates(['maghrib'], NOW, LONDON, 4);
-      expect(fires[0]?.date.getTime()).toBe(adhan[0]!.date.getTime() - 10 * 60_000);
+      expect(fires[0]?.date.getTime()).toBe(adhan[0]!.date.getTime() + 10 * 60_000);
     });
 
     it('skips fire times at or before now', () => {

@@ -11,6 +11,7 @@ import { openUserTestStore } from '../../../../jest/user-test-db';
 import { fileExists, putFile, resetFakeFileSystem, transfers } from '../../../../jest/fake-file-system';
 import {
   cancel,
+  cancelReciter,
   configureDownloadManager,
   enqueueAll,
   enqueueSurah,
@@ -308,6 +309,22 @@ describe('the queue', () => {
     expect(enqueueAll(30)).toBe(0);
     expect(enqueueAll(31)).toBe(1);
     expect(listDownloads({ db: user }).map((row) => row.audioFileId)).toEqual([100, 200, 300]);
+  });
+
+  it('cancelReciter stops queued and downloading rows for that reciter only, keeps done', async () => {
+    await start();
+    doneRowInstall(100);
+    expect(enqueueAll(30)).toBe(1); // chapter 2 still missing → starts downloading
+    expect(enqueueAll(31)).toBe(1); // stays queued while 200 is active
+    expect(['queued', 'downloading']).toContain(dl(200)?.status);
+    expect(dl(300)?.status).toBe('queued');
+
+    cancelReciter(30);
+
+    expect(dl(100)?.status).toBe('done');
+    expect(dl(200)).toBeUndefined();
+    // pump may promote 300 to downloading after 200 is cancelled
+    expect(['queued', 'downloading']).toContain(dl(300)?.status);
   });
 
   it('starts the manager when a surah is queued before it was started (a hot reload resets it)', async () => {

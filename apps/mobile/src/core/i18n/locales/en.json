@@ -560,16 +560,16 @@
     "iqamahOffset": {
       "label": "Iqamah reminder",
       "off": "Off",
-      "before_one": "{{number}} minute before",
-      "before_two": "{{number}} minutes before",
-      "before_few": "{{number}} minutes before",
-      "before_many": "{{number}} minutes before",
-      "before_other": "{{number}} minutes before",
+      "after_one": "{{number}} minute after adhan",
+      "after_two": "{{number}} minutes after adhan",
+      "after_few": "{{number}} minutes after adhan",
+      "after_many": "{{number}} minutes after adhan",
+      "after_other": "{{number}} minutes after adhan",
       "sheetTitle": "Iqamah reminder",
       "optionOff": "Off",
       "testAction": "Send a test iqamah",
       "testSent": "Iqamah for {{name}} in {{seconds}} seconds",
-      "testSentPaired": "Iqamah for {{name}} in {{iqamahSeconds}}s, then adhan in {{adhanSeconds}}s (seconds stand in for minutes in this test)"
+      "testSentPaired": "Adhan for {{name}} in {{adhanSeconds}}s, then iqamah in {{iqamahSeconds}}s (seconds stand in for minutes in this test)"
     },
     "title": "Prayer",
     "next": "Next prayer",

@@ -8,8 +8,9 @@ import { card } from './card';
 import { withAlpha } from './theme';
 import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
-import { label, row, spacer } from './primitives';
-import { prayerName, prayerTime } from './prayer-text';
+import { block, column, label, row } from './primitives';
+import { prayerName, prayerRemaining, prayerTime } from './prayer-text';
+import { fillChip, brandSurfaceBand, widgetFaceColumn } from './widget-chrome';
 import { widgetPaths } from '../snapshot/deep-links';
 import { prayerStateAt } from '../snapshot/select';
 import type { PrayerEntry } from '../snapshot/types';
@@ -21,8 +22,8 @@ function todaysEntries(entries: readonly PrayerEntry[], now: Date): PrayerEntry[
 }
 
 /**
- * The 4×2 next-prayer widget (AndroidWidgets frame, the wide card): the next prayer and time, then the day's five times
- * with the next one shaded. The times come from the snapshot, never from a second calculation.
+ * The 4×2 next-prayer widget (AndroidWidgets frame, the wide card): header, time chip, five prayer tiles with a strong
+ * next highlight, and a brandSurface remaining band. Times come from the snapshot only.
  */
 export function NextPrayerWideWidget(ctx: WidgetContext) {
   const { labels, palette, rtl } = ctx;
@@ -40,40 +41,42 @@ export function NextPrayerWideWidget(ctx: WidgetContext) {
 
   const name = prayerName(ctx, state.key);
   const time = prayerTime(ctx, state.at);
+  const remaining = prayerRemaining(ctx, state.at);
   const place = prayer.place === null ? '' : ` · ${prayer.place}`;
   const tiles = todaysEntries(prayer.entries, ctx.now).map((entry) => {
     const isNext = entry.key === state.key && entry.at === state.at;
     const color = isNext ? palette.ink : palette.inkMuted;
     return (
       <FlexWidget
+        key={entry.key}
         style={{
-          backgroundColor: isNext ? palette.highlightActive : withAlpha(palette.surfaceRaised, 0),
+          backgroundColor: isNext ? palette.highlightActive : palette.fillSecondary,
+          borderColor: isNext ? palette.brand : withAlpha(palette.line, 0),
           borderRadius: 12,
+          borderWidth: isNext ? 1.5 : 0,
           flex: 1,
           flexDirection: 'column',
-          paddingVertical: 4,
+          paddingHorizontal: 2,
+          paddingVertical: 6,
         }}
-        key={entry.key}
       >
         {label(prayerName(ctx, entry.key), { align: 'center', color, font: isNext ? WIDGET_FONTS.bold : WIDGET_FONTS.medium, size: 12 }, rtl)}
-        {label(prayerTime(ctx, entry.at), { align: 'center', color, font: WIDGET_FONTS.regular, size: 13 }, rtl)}
+        {label(prayerTime(ctx, entry.at), { align: 'center', color, font: isNext ? WIDGET_FONTS.semiBold : WIDGET_FONTS.regular, size: 13 }, rtl)}
       </FlexWidget>
     );
   });
 
   return card(ctx, [
-    row(
-      [
-        <FlexWidget key="info" style={{ flex: 1, flexDirection: 'column' }}>
-          {label(`${labels.nextPrayer}${place}`, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl)}
-          {label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 30 }, rtl)}
-        </FlexWidget>,
-        spacer(),
-        label(time, { color: palette.brand, font: WIDGET_FONTS.bold, inline: true, size: 28 }, rtl),
-      ],
-      rtl,
-    ),
-    spacer(),
-    row(tiles, rtl, { flexGap: 2 }),
-  ], { accessibilityLabel: `${labels.nextPrayer}: ${name} ${time}`, click });
+    widgetFaceColumn([
+      column([
+        label(`${labels.nextPrayer}${place}`, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+        block({ height: 4 }),
+        label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 32 }, rtl),
+        block({ height: 6 }),
+        fillChip(ctx, time),
+      ]),
+      row(tiles, rtl, { flexGap: 4 }),
+      brandSurfaceBand(ctx, labels.remaining, remaining),
+    ]),
+  ], { accessibilityLabel: `${labels.nextPrayer}: ${name} ${time}, ${labels.remaining} ${remaining}`, click });
 }

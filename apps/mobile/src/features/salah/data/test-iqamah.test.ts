@@ -73,21 +73,24 @@ describe('sendTestIqamahNotification', () => {
     }
   });
 
-  it('schedules a paired adhan when iqamah offset is on', async () => {
+  it('schedules adhan first then iqamah when offset is on', async () => {
     setIqamahOffsetMinutes(10);
 
     const outcome = await sendTestIqamahNotification({ prayer: 'maghrib', delaySeconds: 5 });
 
     expect(outcome).toMatchObject({ sent: true, paired: true, offsetMinutes: 10 });
     expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(2);
-    const iqCall = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[0]?.[0];
-    const adhanCall = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[1]?.[0];
+    const adhanCall = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[0]?.[0];
+    const iqCall = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[1]?.[0];
     const expectedAdhan = prayerNotificationContent('maghrib');
+    const expectedIqamah = iqamahNotificationContent('maghrib');
     expect(adhanCall?.content.title).toBe(expectedAdhan.title);
     expect(adhanCall?.content.body).toBe(expectedAdhan.body);
     expect(adhanCall?.content.data).toEqual({ route: '/salah' });
-    expect(adhanCall?.trigger).toEqual(expect.objectContaining({ seconds: 15 }));
-    expect(iqCall?.trigger).toEqual(expect.objectContaining({ seconds: 5 }));
+    expect(adhanCall?.trigger).toEqual(expect.objectContaining({ seconds: 5 }));
+    expect(iqCall?.content.title).toBe(expectedIqamah.title);
+    expect(iqCall?.content.data).toEqual({ route: '/salah', kind: 'iqamah' });
+    expect(iqCall?.trigger).toEqual(expect.objectContaining({ seconds: 15 }));
   });
 
   it('schedules nothing and reports sent false when notifications are refused', async () => {

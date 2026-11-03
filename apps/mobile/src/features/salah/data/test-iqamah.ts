@@ -18,7 +18,7 @@ import {
 } from './notifications';
 import type { NextPrayerName } from './prayer-times';
 
-/** The test iqamah notification fires this many seconds after the tap (Settings «إرسال إشعار إقامة تجريبي»). */
+/** The test adhan (and unpaired iqamah) fires this many seconds after the tap. */
 export const TEST_IQAMAH_DELAY_SECONDS = 5;
 
 function intervalTrigger(seconds: number, androidChannelId: string): Notifications.NotificationTriggerInput {
@@ -39,9 +39,9 @@ export function testIqamahPrayer(): NextPrayerName {
 }
 
 /**
- * Schedules one iqamah test notification (and optionally a paired adhan test) through the same content and channels as
- * production. When iqamah offset is on, the adhan fires `offsetMinutes` seconds after iqamah (seconds stand in for
- * minutes in QA only). Resolves to `{ sent: false }` when notifications are off.
+ * Schedules a production-shaped preview. When iqamah offset is on: **adhan first** at `delaySeconds`, then **iqamah**
+ * at `delaySeconds + offsetMinutes` seconds (seconds stand in for minutes in QA). When offset is off: iqamah-only at
+ * `delaySeconds`. Resolves to `{ sent: false }` when notifications are off.
  */
 export async function sendTestIqamahNotification(options?: {
   prayer?: NextPrayerName;
@@ -61,8 +61,38 @@ export async function sendTestIqamahNotification(options?: {
   const offsetMinutes = getIqamahOffsetMinutes();
   const paired = options?.includeAdhanPair ?? offsetMinutes > 0;
 
-  await ensureNotificationChannel(NOTIFICATION_CHANNELS.prayer);
+  if (paired) {
+    const sound = getPrayerSound();
+    await ensurePrayerChannel(sound);
+    await ensureNotificationChannel(NOTIFICATION_CHANNELS.prayer);
 
+    const adhanContent = prayerNotificationContent(prayer, sound);
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: adhanContent.title,
+        body: adhanContent.body,
+        data: adhanContent.data,
+        sound: adhanContent.sound,
+      },
+      trigger: intervalTrigger(delaySeconds, prayerChannelId(sound)),
+    });
+
+    const iqamahSeconds = delaySeconds + offsetMinutes;
+    const iqContent = iqamahNotificationContent(prayer);
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: iqContent.title,
+        body: iqContent.body,
+        data: iqContent.data,
+        sound: iqContent.sound,
+      },
+      trigger: intervalTrigger(iqamahSeconds, NOTIFICATION_CHANNELS.prayer),
+    });
+
+    return { sent: true, prayer, offsetMinutes, paired: true, delaySeconds };
+  }
+
+  await ensureNotificationChannel(NOTIFICATION_CHANNELS.prayer);
   const iqContent = iqamahNotificationContent(prayer);
   await Notifications.scheduleNotificationAsync({
     content: {
@@ -74,21 +104,5 @@ export async function sendTestIqamahNotification(options?: {
     trigger: intervalTrigger(delaySeconds, NOTIFICATION_CHANNELS.prayer),
   });
 
-  if (paired) {
-    const sound = getPrayerSound();
-    await ensurePrayerChannel(sound);
-    const adhanSeconds = delaySeconds + offsetMinutes;
-    const adhanContent = prayerNotificationContent(prayer, sound);
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: adhanContent.title,
-        body: adhanContent.body,
-        data: adhanContent.data,
-        sound: adhanContent.sound,
-      },
-      trigger: intervalTrigger(adhanSeconds, prayerChannelId(sound)),
-    });
-  }
-
-  return { sent: true, prayer, offsetMinutes, paired, delaySeconds };
+  return { sent: true, prayer, offsetMinutes, paired: false, delaySeconds };
 }

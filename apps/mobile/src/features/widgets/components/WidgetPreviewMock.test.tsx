@@ -30,12 +30,13 @@ describe('WidgetPreviewMock', () => {
     jest.restoreAllMocks();
   });
 
-  it.each(locales)('renders next prayer preview in %s', async (locale) => {
+  it.each(locales)('renders elevated next prayer preview in %s', async (locale) => {
     const view = await renderUi(<WidgetPreviewMock testID="preview" variant="nextPrayerSmall" />, { locale });
     expect(view.getByTestId('preview')).toBeOnTheScreen();
+    expect(view.getByTestId('prayer-preview-dots')).toBeOnTheScreen();
   });
 
-  it('uses live now for prayer state, not writtenAt, and shows remaining', async () => {
+  it('uses live now for prayer state and shows remaining in the band', async () => {
     const locale = 'en';
     const at = new Date(2026, 10, 2, 13, 47).getTime();
     const view = await renderUi(<WidgetPreviewMock testID="preview" variant="nextPrayerSmall" />, { locale });
@@ -44,6 +45,18 @@ describe('WidgetPreviewMock', () => {
     expect(view.getByText(formatPlaybackClock(at - fixedNow, locale))).toBeOnTheScreen();
     expect(view.getByText('LABEL remaining')).toBeOnTheScreen();
     expect(view.queryByText('12:00')).toBeNull();
+  });
+
+  it('renders progress preview with a summary band', async () => {
+    const view = await renderUi(<WidgetPreviewMock testID="progress" variant="progressMedium" />);
+    // Title appears in the header and again as the band caption (matches Android ProgressWidget).
+    expect(view.getAllByText('LABEL progressTitle').length).toBeGreaterThanOrEqual(1);
+    expect(view.getByText('60%')).toBeOnTheScreen();
+  });
+
+  it('renders misbaha preview with plus affordance', async () => {
+    const view = await renderUi(<WidgetPreviewMock testID="misbaha" variant="misbaha" />);
+    expect(view.getByTestId('misbaha-preview-plus')).toBeOnTheScreen();
   });
 
   it('uses theme tokens only in the component source', () => {

@@ -24,7 +24,7 @@ After the first widgets ship (ADR 0035), the developer asked to:
 
 ### 1. Add flow UI
 
-- **Preview confirmation** uses the shared **`ConfirmDialog`** pattern (`src/shared/ui/ConfirmDialog.tsx`), with a **widget preview** region inside the card (not a second bottom sheet). Frames in `quran-app-screens.html`: `WidgetAddConfirm`, `WidgetAddConfirmDark`, `WidgetAddConfirmAlready`, `WidgetAddConfirmAlreadyDark` (Arabic; English variants as review items). **`WidgetPreviewMock`** for next prayer uses `Date.now()` and the same lines as the Android 2×2 / iOS small widget (name, muted clock, static remaining — ADR 0035 decision 5 amended 3 Nov 2026); it never hard-codes a clock time.
+- **Preview confirmation** uses the shared **`ConfirmDialog`** pattern (`src/shared/ui/ConfirmDialog.tsx`), with a **widget preview** region inside the card (not a second bottom sheet). Frames in `quran-app-screens.html`: `WidgetAddConfirm`, `WidgetAddConfirmDark`, `WidgetAddConfirmAlready`, `WidgetAddConfirmAlreadyDark` (Arabic; English variants as review items). **`WidgetPreviewMock`** mirrors each elevated Android widget face (ADR 0035 decision 6): chips, bands, dots where relevant, and live `Date.now()` for prayer — never hard-coded clock times.
 - **Primary confirm** means «متابعة» / continue to add:
   - **Android home:** call `requestPinWidget` for the selected provider after confirm (and optional duplicate check).
   - **Android lock:** confirm dismisses into **numbered steps** (`widgetsHelp.androidLock.*`); do **not** call `requestPinWidget` (home-screen pin only).

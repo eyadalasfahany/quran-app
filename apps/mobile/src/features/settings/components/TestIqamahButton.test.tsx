@@ -45,7 +45,7 @@ describe('TestIqamahButton', () => {
 
     await waitFor(() =>
       expect(
-        view.getByText('إقامة الفجر بعد ٥ ث، ثم الأذان بعد ١٥ ث (الثواني تمثّل الدقائق للتجربة)'),
+        view.getByText('أذان الفجر بعد ٥ ث، ثم الإقامة بعد ١٥ ث (الثواني تمثّل الدقائق للتجربة)'),
       ).toBeOnTheScreen(),
     );
   });
