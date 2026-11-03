@@ -4,7 +4,7 @@ import { useReducedMotion } from 'react-native-reanimated';
 import { renderUi } from '../../../../jest/render-ui';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { AzkarCounter, COUNTER_SIZE } from './AzkarCounter';
+import { AzkarCounter, COUNTER_SIZE, COUNTER_SIZE_COMPACT } from './AzkarCounter';
 
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
@@ -69,6 +69,36 @@ describe('AzkarCounter', () => {
       const { ui } = renderCounter({ value: 1 });
       await renderUi(ui, { locale: 'en' });
       expect(screen.getByRole('button', { name: 'Counter for dhikr 2' }).props.accessibilityValue).toEqual({ text: '1 of 3' });
+    });
+  });
+
+  describe('compact (a short window)', () => {
+    it('is an 88 pt button that keeps its label, value and hint, with no caption under it', async () => {
+      const { ui } = renderCounter({ compact: true });
+      await renderUi(ui);
+      const counter = screen.getByRole('button', { name: 'عداد الذكر ٢' });
+
+      expect(counter.props.style).toEqual(expect.objectContaining({ height: COUNTER_SIZE_COMPACT, width: COUNTER_SIZE_COMPACT }));
+      expect(COUNTER_SIZE_COMPACT).toBeGreaterThanOrEqual(44);
+      expect(counter.props.accessibilityValue).toEqual({ text: '٢ من ٣' });
+      expect(counter.props.accessibilityHint).toBeTruthy();
+      expect(screen.queryByText(counter.props.accessibilityHint as string)).toBeNull();
+    });
+
+    it('keeps the check and «تم» for the single variant', async () => {
+      const { ui } = renderCounter({ compact: true, requiredCount: null });
+      await renderUi(ui);
+
+      expect(screen.getByTestId('azkar-counter-check', { includeHiddenElements: true })).toBeOnTheScreen();
+      expect(screen.getByTestId('azkar-counter-done')).toBeOnTheScreen();
+    });
+
+    it('shows the caption at the full size', async () => {
+      const { ui } = renderCounter();
+      await renderUi(ui);
+      const counter = screen.getByRole('button', { name: 'عداد الذكر ٢' });
+
+      expect(screen.getByText(counter.props.accessibilityHint as string)).toBeOnTheScreen();
     });
   });
 

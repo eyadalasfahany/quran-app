@@ -22,6 +22,7 @@ jest.mock('../data/favorites-repository', () => ({
 
 jest.mock('../data/hooks', () => ({
   useFavoriteCards: jest.fn(),
+  useQuranReferenceLabel: jest.fn(() => (ref: { verseFrom: number } | null) => (ref === null ? null : `سورة الفاتحة · ${ref.verseFrom}`)),
 }));
 
 const mocked = hooks as jest.Mocked<typeof hooks>;
@@ -56,8 +57,8 @@ describe('AzkarFavoritesScreen', () => {
 
   it('lists the saved dhikr, numbered, and opens one on press', async () => {
     mocked.useFavoriteCards.mockReturnValue([
-      { entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW },
-      { entryKey: 'fixture:entry-003', occasion: 'evening', preview: null },
+      { entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW, quranRef: null },
+      { entryKey: 'fixture:entry-003', occasion: 'evening', preview: null, quranRef: null },
     ]);
     await renderUi(<AzkarFavoritesScreen />);
 
@@ -68,8 +69,17 @@ describe('AzkarFavoritesScreen', () => {
     expect(router.push).toHaveBeenLastCalledWith('/azkar/entry/fixture%3Aentry-001');
   });
 
+  it('shows surah and verses for a saved dhikr that opens with a Quran passage', async () => {
+    mocked.useFavoriteCards.mockReturnValue([
+      { entryKey: 'fixture:entry-002', occasion: null, preview: null, quranRef: { surah: 1, verseFrom: 2, verseTo: 2 } },
+    ]);
+    await renderUi(<AzkarFavoritesScreen />);
+
+    expect(screen.getByTestId('azkar-favorite-1-quran-reference')).toHaveTextContent('سورة الفاتحة · 2');
+  });
+
   it('removes a favourite from its bookmark without opening it', async () => {
-    mocked.useFavoriteCards.mockReturnValue([{ entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW }]);
+    mocked.useFavoriteCards.mockReturnValue([{ entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW, quranRef: null }]);
     await renderUi(<AzkarFavoritesScreen />);
 
     await press(screen.getByRole('button', { name: 'إزالة من المفضلة' }));

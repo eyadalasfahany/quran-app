@@ -1,4 +1,4 @@
-import { makeItem, makeUnit } from '../../../../jest/azkar-ui-fixtures';
+import { makeItem, makeUnit, quranSegment } from '../../../../jest/azkar-ui-fixtures';
 import { buildCategoryCards } from './category-cards';
 
 describe('buildCategoryCards', () => {
@@ -23,6 +23,13 @@ describe('buildCategoryCards', () => {
 
   it('takes the preview from the first unit body', () => {
     expect(buildCategoryCards(units, new Set())[0]?.preview).toBe('نص تجريبي 1 — ليس ذكرًا');
+    expect(buildCategoryCards(units, new Set())[0]?.quranRef).toBeNull();
+  });
+
+  it('gives an entry that opens with a Quran passage its surah and verses instead of a preview', () => {
+    const quran = [makeUnit({ unitKey: 'q:1', entryKey: 'entry-q', body: [makeItem({ id: 4, segments: [quranSegment(255)] })] })];
+
+    expect(buildCategoryCards(quran, new Set())[0]).toMatchObject({ preview: null, quranRef: { surah: 1, verseFrom: 255, verseTo: 255 } });
   });
 
   it('returns no cards for no units', () => {

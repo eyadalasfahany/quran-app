@@ -909,7 +909,8 @@
       "topicCount_many": "{{number}} dhikr",
       "sourceLine_two": "Hisn al-Muslim · {{number}} dhikr",
       "sourceLine_few": "Hisn al-Muslim · {{number}} dhikr",
-      "sourceLine_many": "Hisn al-Muslim · {{number}} dhikr"
+      "sourceLine_many": "Hisn al-Muslim · {{number}} dhikr",
+      "quranReference": "Surah {{name}} · {{verses}}"
     },
     "search": {
       "placeholder": "Search azkar",

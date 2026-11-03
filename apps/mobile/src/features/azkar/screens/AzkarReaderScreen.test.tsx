@@ -467,6 +467,15 @@ describe('AzkarReaderScreen', () => {
       expect(screen.getByRole('button', { name: 'عداد الذكر ١' }).props.accessibilityValue).toEqual({ text: '١ من ٣' });
     });
 
+    it('keeps every tap surface out of the ScrollView ancestry, so a long dhikr scrolls on a short screen', async () => {
+      await renderReader();
+
+      for (const id of ['azkar-tap-surface-top', 'azkar-tap-surface', 'azkar-tap-surface-controls']) {
+        expect(within(screen.getByTestId(id)).queryByTestId('azkar-reader-scroll')).toBeNull();
+      }
+      expect(within(screen.getByTestId('azkar-reader-scroll')).getByTestId('azkar-tap-surface')).toBeOnTheScreen();
+    });
+
     it('counts a press on the counter exactly once', async () => {
       await renderReader();
       await press(screen.getByRole('button', { name: 'عداد الذكر ١' }));
@@ -523,11 +532,11 @@ describe('AzkarReaderScreen', () => {
     it('ignores taps on the completion screen, whose surface is disabled', async () => {
       mockRows.mockReturnValue([row('fixture:item-1', 3, true), row(SESSION_UNIT_KEY, 0, true)]);
       await renderReader();
-      const surface = screen.getByTestId('azkar-tap-surface');
+      const surface = screen.getByTestId('azkar-tap-surface-top');
 
       expect(surface.props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
       await press(screen.getByTestId('azkar-completion'));
-      await press(screen.getByTestId('azkar-tap-surface'));
+      await press(screen.getByTestId('azkar-tap-surface-top'));
 
       expect(progress.recordTap).not.toHaveBeenCalled();
       expect(haptics.tapHaptic).not.toHaveBeenCalled();

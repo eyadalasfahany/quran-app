@@ -12,6 +12,7 @@ export {
   useFavoriteCards,
   useFavorites,
   useIsFavorite,
+  useQuranReferenceLabel,
   useRecentAzkarItems,
   useScopeProgress,
   useSessionCategoryProgress,

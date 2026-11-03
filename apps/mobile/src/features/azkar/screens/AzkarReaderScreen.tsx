@@ -9,7 +9,7 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
-import { ContentColumn, useWindowClass } from '@/core/layout';
+import { ContentColumn, useIsShortWindow, useWindowClass } from '@/core/layout';
 import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { useSlideUp, useTheme } from '@/core/theme';
 import { Screen } from '@/shared/ui';
@@ -117,6 +117,8 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   // The catalogue revision: a catalogue write or pack import re-resolves the unit's Quran (see `quranVerses`).
   const catalogRevision = useCatalogVersion((state) => state.version);
   const windowClass = useWindowClass();
+  // A short window (a landscape phone) gets the smaller counter, so the dhikr keeps room to read.
+  const shortWindow = useIsShortWindow();
   const insets = useSafeAreaInsets();
   const slide = useSlideUp();
   const { executor } = openContentDb();
@@ -408,39 +410,49 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   };
 
   const showPanel = windowClass === 'expanded' && panelOpen && unit !== undefined;
+  // The completion screen and a reader with no unit ignore taps.
+  const tapDisabled = unitDone || position.finished || unit === undefined;
 
   // The dhikr content slides in when the unit changes (AzkarUnitMotion). The key is the unit, so a move within it does not.
+  // The tap surface sits inside the ScrollView, never around it: a Pressable that wraps a ScrollView takes the touch, so
+  // a long dhikr on a short screen could not scroll. Inside it, a press that turns into a scroll is cancelled.
   const body =
     unit === undefined ? null : (
       <AzkarUnitMotion direction={direction} style={{ flex: 1 }} unitKey={unit.unitKey}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, gap: theme.space[5], justifyContent: 'center', paddingVertical: theme.space[5] }}>
-          <View style={{ gap: theme.space[5] }}>
-            <AzkarStepNote items={unit.preface} testID="azkar-preface" />
-            {unit.variations.length > 1 ? (
-              <AzkarVariationSwitch
-                activeVariation={unit.activeVariation}
-                onChange={(key) => choose(unit.entryKey, key)}
-                variations={unit.variations}
-              />
-            ) : null}
-            <AzkarStepNote items={[]} repeatCount={repeatCountFor(unit)} testID="azkar-repeat" />
-            {unit.body.map((item) => (
-              <View key={item.itemKey} style={{ gap: theme.space[2] }}>
-                <DhikrText fontScale={fontScale} quranVerses={quranVerses} segments={item.segments} />
-                <AzkarEnglishLine text={locale === 'en' ? item.textEn : null} />
-              </View>
-            ))}
-            <AzkarStepNote items={unit.afterword} testID="azkar-afterword" />
-            {reference.length > 0 ? <AzkarSourceLine onPressDetails={openDetails} reference={reference} /> : null}
-          </View>
-          <AzkarReaderActions
-            entryKey={unit.entryKey}
-            onShare={onShare}
-            onTextSize={() => setTextSizeOpen((open) => !open)}
-            recording={recording}
-            textSizeOpen={textSizeOpen}
-          />
-          {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} testID="azkar-reader-scroll">
+          <AzkarTapSurface
+            disabled={tapDisabled}
+            onTap={onTap}
+            style={{ flexGrow: 1, gap: theme.space[5], justifyContent: 'center', paddingVertical: theme.space[5] }}
+          >
+            <View style={{ gap: theme.space[5] }}>
+              <AzkarStepNote items={unit.preface} testID="azkar-preface" />
+              {unit.variations.length > 1 ? (
+                <AzkarVariationSwitch
+                  activeVariation={unit.activeVariation}
+                  onChange={(key) => choose(unit.entryKey, key)}
+                  variations={unit.variations}
+                />
+              ) : null}
+              <AzkarStepNote items={[]} repeatCount={repeatCountFor(unit)} testID="azkar-repeat" />
+              {unit.body.map((item) => (
+                <View key={item.itemKey} style={{ gap: theme.space[2] }}>
+                  <DhikrText fontScale={fontScale} quranVerses={quranVerses} segments={item.segments} />
+                  <AzkarEnglishLine text={locale === 'en' ? item.textEn : null} />
+                </View>
+              ))}
+              <AzkarStepNote items={unit.afterword} testID="azkar-afterword" />
+              {reference.length > 0 ? <AzkarSourceLine onPressDetails={openDetails} reference={reference} /> : null}
+            </View>
+            <AzkarReaderActions
+              entryKey={unit.entryKey}
+              onShare={onShare}
+              onTextSize={() => setTextSizeOpen((open) => !open)}
+              recording={recording}
+              textSizeOpen={textSizeOpen}
+            />
+            {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
+          </AzkarTapSurface>
         </ScrollView>
       </AzkarUnitMotion>
     );
@@ -467,17 +479,24 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
   ) : null;
 
   const reader = (
-    // Every pixel of the reader that is not a button counts a tap (the surface wraps the whole column). The completion
-    // screen and a reader with no unit are disabled.
-    <AzkarTapSurface disabled={unitDone || position.finished || unit === undefined} onTap={onTap} style={{ flex: 1 }}>
-      <AzkarReaderTopBar fraction={progress.fraction} onClose={() => goBackOr(azkarHref.home)} progressText={progressText} title={title} />
+    // Every pixel of the reader that is not a button counts a tap: the top bar, the dhikr content (inside its ScrollView)
+    // and the controls each have a tap surface.
+    <View style={{ flex: 1 }}>
+      <AzkarTapSurface disabled={tapDisabled} onTap={onTap} testID="azkar-tap-surface-top">
+        <AzkarReaderTopBar fraction={progress.fraction} onClose={() => goBackOr(azkarHref.home)} progressText={progressText} title={title} />
+      </AzkarTapSurface>
       {position.finished ? (
         <AzkarCompletion onBack={() => goBackOr(azkarHref.home)} onRestart={restart} progressText={progressText} title={title} />
       ) : (
         body
       )}
       {unit === undefined ? null : (
-        <View style={{ gap: theme.space[2], paddingBottom: insets.bottom + theme.space[4], paddingTop: theme.space[3] }}>
+        <AzkarTapSurface
+          disabled={tapDisabled}
+          onTap={onTap}
+          style={{ gap: theme.space[2], paddingBottom: insets.bottom + theme.space[4], paddingTop: theme.space[3] }}
+          testID="azkar-tap-surface-controls"
+        >
           {playerBar}
           <AzkarReaderControls
             canNext={position.index < total - 1}
@@ -491,6 +510,7 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
               // Every unit has the ring: a sourced count, a count of 1 (one tap completes it), or the single variant
               // for no sourced count (ADR 0031 §6).
               <AzkarCounter
+                compact={shortWindow}
                 completed={unitDone}
                 onReset={onReset}
                 onTap={onTap}
@@ -500,9 +520,9 @@ export function AzkarReaderScreen({ scope, startUnitKey }: { scope: AzkarReaderS
               />
             )}
           </AzkarReaderControls>
-        </View>
+        </AzkarTapSurface>
       )}
-    </AzkarTapSurface>
+    </View>
   );
 
   return (

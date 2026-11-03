@@ -13,11 +13,13 @@ const CHECK = { ios: 'checkmark', android: 'check' } as const;
 /**
  * One dhikr on a category or favourites list (quran-app-screens.html, #AzkarCategory): the number medallion, a
  * two-line preview of the Arabic text, and at the end the sourced count chip, the completed mark, or a custom action
- * (the favourites bookmark). A list preview may clamp to two lines; the reader never does.
+ * (the favourites bookmark). A list preview may clamp to two lines; the reader never does. An entry that opens with a
+ * Quran passage has no text preview: it shows `quranReference` (surah and verses) in the UI font, never the ayah.
  */
 export function AzkarItemCard({
   number,
   preview,
+  quranReference = null,
   requiredCount,
   done = false,
   action,
@@ -27,6 +29,8 @@ export function AzkarItemCard({
 }: {
   number: number;
   preview: string | null;
+  /** «سورة البقرة · ٢٥٥» for an entry that opens with a Quran passage, shown when there is no preview. */
+  quranReference?: string | null;
   /** The sourced count, or null. Never shown as 1 (ADR 0031 §6). */
   requiredCount: number | null;
   done?: boolean;
@@ -40,7 +44,8 @@ export function AzkarItemCard({
   const theme = useTheme();
   const colors = useContrastColors();
   const locale = useLocale();
-  const accessibleLabel = label ?? `${formatNumber(number, locale)}${preview ? `, ${preview}` : ''}${done ? `, ${t('azkar.browse.completed')}` : ''}`;
+  const shown = preview ?? quranReference;
+  const accessibleLabel = label ?? `${formatNumber(number, locale)}${shown ? `, ${shown}` : ''}${done ? `, ${t('azkar.browse.completed')}` : ''}`;
 
   return (
     <Pressable
@@ -66,6 +71,10 @@ export function AzkarItemCard({
         {preview ? (
           <UiText numberOfLines={2} style={[displayText('dhikrList'), arabicTextDirection]} variant="body">
             {preview}
+          </UiText>
+        ) : quranReference ? (
+          <UiText numberOfLines={2} style={{ color: colors.inkMuted }} testID={`${testID}-quran-reference`} variant="body">
+            {quranReference}
           </UiText>
         ) : null}
       </View>

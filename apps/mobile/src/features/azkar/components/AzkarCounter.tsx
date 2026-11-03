@@ -17,9 +17,9 @@ import { spring, timing, useTheme } from '@/core/theme';
 import { Icon, UiText } from '@/shared/ui';
 
 export const COUNTER_SIZE = 120;
+/** The ring in a short window (a landscape phone), so the dhikr keeps room to read. Still well above the 44 pt target. */
+export const COUNTER_SIZE_COMPACT = 88;
 const STROKE = 6;
-const RADIUS = (COUNTER_SIZE - STROKE) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 /** The bump on each count, and the larger one on completion. A spring settles it back to 1 (Reduce Motion: none). */
 const TAP_SCALE = 1.04;
 const PULSE_SCALE = 1.08;
@@ -34,6 +34,9 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
  * - No sourced count (`requiredCount` null): the single variant. An empty ring with a check and «تم» in the centre;
  *   one tap fills the ring and completes. No number is shown, because a missing count is never read as 1.
  *
+ * `compact` (a short window) draws an 88 pt ring with smaller centre text and no caption under it; the hint stays on
+ * the button for VoiceOver and TalkBack.
+ *
  * Each count bumps the ring with a spring; completion pulses it. Reduce Motion: the ring jumps to its state, and nothing
  * scales. A reset action clears this unit's progress.
  */
@@ -42,6 +45,7 @@ export function AzkarCounter({
   value,
   requiredCount,
   completed = false,
+  compact = false,
   onTap,
   onReset,
   testID = 'azkar-counter',
@@ -54,6 +58,8 @@ export function AzkarCounter({
   requiredCount: number | null;
   /** Whether the unit is done. Only the single variant reads it for its ring; the counter fills from `value`. */
   completed?: boolean;
+  /** A short window: the smaller ring, with no caption. */
+  compact?: boolean;
   onTap: () => void;
   onReset: () => void;
   testID?: string;
@@ -63,6 +69,9 @@ export function AzkarCounter({
   const locale = useLocale();
   const reduceMotion = useReducedMotion();
   const single = requiredCount === null;
+  const size = compact ? COUNTER_SIZE_COMPACT : COUNTER_SIZE;
+  const radius = (size - STROKE) / 2;
+  const circumference = 2 * Math.PI * radius;
   const clamped = single ? 0 : Math.min(Math.max(value, 0), requiredCount);
   const target = single ? (completed ? 1 : 0) : requiredCount === 0 ? 0 : clamped / requiredCount;
   const progress = useSharedValue(target);
@@ -95,7 +104,7 @@ export function AzkarCounter({
   }, [clamped, completed, reduceMotion, scale]);
 
   const animatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: CIRCUMFERENCE * (1 - progress.value),
+    strokeDashoffset: circumference * (1 - progress.value),
   }));
   const scaleStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
@@ -120,34 +129,34 @@ export function AzkarCounter({
           }
         }}
         onPress={onTap}
-        style={{ height: COUNTER_SIZE, width: COUNTER_SIZE }}
+        style={{ height: size, width: size }}
         testID={testID}
       >
         <View
           style={{
             alignItems: 'center',
-            height: COUNTER_SIZE,
+            height: size,
             justifyContent: 'center',
-            width: COUNTER_SIZE,
+            width: size,
           }}
         >
-          <Svg height={COUNTER_SIZE} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }} width={COUNTER_SIZE}>
+          <Svg height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }} width={size}>
             <Circle
-              cx={COUNTER_SIZE / 2}
-              cy={COUNTER_SIZE / 2}
+              cx={size / 2}
+              cy={size / 2}
               fill={theme.colors.surfaceRaised}
-              r={RADIUS}
+              r={radius}
               stroke={theme.colors.line}
               strokeWidth={STROKE}
             />
             <AnimatedCircle
               animatedProps={animatedProps}
-              cx={COUNTER_SIZE / 2}
-              cy={COUNTER_SIZE / 2}
+              cx={size / 2}
+              cy={size / 2}
               fill="none"
-              r={RADIUS}
+              r={radius}
               stroke={theme.colors.brand}
-              strokeDasharray={CIRCUMFERENCE}
+              strokeDasharray={circumference}
               strokeLinecap="round"
               strokeWidth={STROKE}
               testID={`${testID}-ring`}
@@ -156,22 +165,24 @@ export function AzkarCounter({
           <Animated.View style={scaleStyle}>
             {single ? (
               <View style={{ alignItems: 'center', gap: theme.space[1] }}>
-                <Icon color={theme.colors.brand} name={CHECK} size={32} testID={`${testID}-check`} />
+                <Icon color={theme.colors.brand} name={CHECK} size={compact ? 24 : 32} testID={`${testID}-check`} />
                 <UiText align="center" testID={`${testID}-done`} variant="subhead">
                   {t('azkar.reader.done')}
                 </UiText>
               </View>
             ) : (
-              <UiText align="center" testID={`${testID}-value`} variant="displaySm">
+              <UiText align="center" testID={`${testID}-value`} variant={compact ? 'headline' : 'displaySm'}>
                 {valueText}
               </UiText>
             )}
           </Animated.View>
         </View>
       </Pressable>
-      <UiText align="center" importantForAccessibility="no" tone="muted" variant="caption">
-        {single ? t('azkar.counter.doneHint') : t('azkar.counter.hint')}
-      </UiText>
+      {compact ? null : (
+        <UiText align="center" importantForAccessibility="no" tone="muted" variant="caption">
+          {single ? t('azkar.counter.doneHint') : t('azkar.counter.hint')}
+        </UiText>
+      )}
     </View>
   );
 }

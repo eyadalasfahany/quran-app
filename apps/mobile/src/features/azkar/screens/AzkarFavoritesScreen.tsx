@@ -2,13 +2,14 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
+import { useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { EmptyState, IconButton, Screen } from '@/shared/ui';
 
 import { AzkarItemCard } from '../components/AzkarItemCard';
 import { AzkarScreenHeader } from '../components/AzkarScreenHeader';
-import { useFavoriteCards } from '../data';
+import { useFavoriteCards, useQuranReferenceLabel } from '../data';
 import { toggleFavorite } from '../data/favorites-repository';
 import { azkarHref, goBackOr } from '../routes';
 
@@ -23,6 +24,7 @@ export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { te
   const { t } = useTranslation();
   const theme = useTheme();
   const cards = useFavoriteCards();
+  const quranReference = useQuranReferenceLabel(useLocale());
 
   return (
     <Screen testID={testID}>
@@ -55,6 +57,7 @@ export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { te
                   number={index + 1}
                   onPress={() => router.push(azkarHref.entry(card.entryKey))}
                   preview={card.preview}
+                  quranReference={quranReference(card.quranRef)}
                   requiredCount={null}
                   testID={`azkar-favorite-${index + 1}`}
                 />

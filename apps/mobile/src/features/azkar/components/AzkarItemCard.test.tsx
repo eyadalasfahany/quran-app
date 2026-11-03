@@ -16,6 +16,31 @@ describe('AzkarItemCard', () => {
     expect(screen.getByRole('button', { name: `٢, ${PREVIEW}` })).toBeOnTheScreen();
   });
 
+  it('shows the Quran reference in the UI font when there is no preview, and labels the card with it', async () => {
+    await renderUi(
+      <AzkarItemCard number={1} onPress={jest.fn()} preview={null} quranReference="سورة البقرة · ٢٥٥" requiredCount={null} />,
+    );
+
+    expect(screen.getByTestId('azkar-item-card-quran-reference')).toHaveTextContent('سورة البقرة · ٢٥٥');
+    expect(screen.getByRole('button', { name: '١, سورة البقرة · ٢٥٥' })).toBeOnTheScreen();
+  });
+
+  it('prefers the text preview over the Quran reference', async () => {
+    await renderUi(<AzkarItemCard number={1} onPress={jest.fn()} preview={PREVIEW} quranReference="سورة البقرة · ٢٥٥" requiredCount={null} />);
+
+    expect(screen.getByText(PREVIEW)).toBeOnTheScreen();
+    expect(screen.queryByTestId('azkar-item-card-quran-reference')).toBeNull();
+  });
+
+  it('shows the Quran reference in English too', async () => {
+    await renderUi(
+      <AzkarItemCard number={1} onPress={jest.fn()} preview={null} quranReference="Surah Al-Baqarah · 255" requiredCount={null} />,
+      { locale: 'en' },
+    );
+
+    expect(screen.getByRole('button', { name: '1, Surah Al-Baqarah · 255' })).toBeOnTheScreen();
+  });
+
   it('shows the count chip only when the count is sourced', async () => {
     const view = await renderUi(<AzkarItemCard number={1} onPress={jest.fn()} preview={PREVIEW} requiredCount={3} />);
     expect(view.getByTestId('azkar-count-chip')).toBeOnTheScreen();

@@ -22,6 +22,7 @@ jest.mock('@/core/db/content/open', () => ({
 jest.mock('../data/hooks', () => ({
   useAzkarCategory: jest.fn(),
   useCategoryUnits: jest.fn(),
+  useQuranReferenceLabel: jest.fn(() => () => null),
   useScopeProgress: jest.fn(),
 }));
 

@@ -139,12 +139,14 @@ describe("main tabs by platform (ADR 0033)", () => {
       const { colors, text } = themes.light;
       expect(mockNativeTabsProps.at(-1)).toEqual({
         backgroundColor: colors.glassFallback,
+        disableTransparentOnScrollEdge: true,
         hidden: false,
         iconColor: { default: colors.inkMuted, selected: colors.brand },
         labelStyle: {
           default: { color: colors.inkMuted, fontFamily: text.label.fontFamily, fontSize: text.label.fontSize },
           selected: { color: colors.brand, fontFamily: text.headline.fontFamily, fontSize: text.label.fontSize },
         },
+        shadowColor: colors.line,
         tintColor: colors.brand,
         unstable_nativeProps: { direction: "ltr" },
       });

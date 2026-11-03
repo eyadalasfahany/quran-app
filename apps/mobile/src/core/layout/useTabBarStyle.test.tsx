@@ -26,11 +26,13 @@ describe('useTabBarStyle', () => {
 
     expect(result.current).toEqual({
       backgroundColor: colors.glassFallback,
+      disableTransparentOnScrollEdge: true,
       iconColor: { default: colors.inkMuted, selected: colors.brand },
       labelStyle: {
         default: { color: colors.inkMuted, fontFamily: text.label.fontFamily, fontSize: text.label.fontSize },
         selected: { color: colors.brand, fontFamily: text.headline.fontFamily, fontSize: text.label.fontSize },
       },
+      shadowColor: colors.line,
       tintColor: colors.brand,
       unstable_nativeProps: { direction: 'ltr' },
     });

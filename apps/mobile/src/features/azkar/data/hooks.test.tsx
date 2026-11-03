@@ -6,7 +6,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import type { ScopeSummary } from './progress';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
-import { cachedCategorySummaries, useSessionCategoryProgress } from './hooks';
+import { cachedCategorySummaries, useQuranReferenceLabel, useSessionCategoryProgress } from './hooks';
 import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { periodKey } from './progress';
 
@@ -127,5 +127,47 @@ describe('useSessionCategoryProgress across midnight', () => {
     await rerender(undefined);
 
     expect(morning()).toMatchObject({ completed: 0, done: false });
+  });
+});
+
+describe('useQuranReferenceLabel', () => {
+  let database: DatabaseSync;
+
+  beforeEach(() => {
+    const opened = openAzkarContentDb();
+    database = opened.database;
+    mockExecutor = opened.executor;
+    opened.executor.run(
+      `INSERT INTO chapters (id, name_arabic, name_simple, name_en, revelation_place, revelation_order, verses_count, bismillah_pre, page_start, page_end)
+       VALUES (2, 'البقرة', 'Al-Baqarah', 'The Cow', 'madinah', 87, 286, 1, 2, 49)`,
+    );
+  });
+
+  afterEach(async () => {
+    database.close();
+    mockExecutor = null;
+    await i18n.changeLanguage('ar');
+  });
+
+  it('formats one verse and a range in Arabic, with Arabic digits', async () => {
+    await i18n.changeLanguage('ar');
+    const { result } = await renderHook(() => useQuranReferenceLabel('ar'));
+
+    expect(result.current({ surah: 2, verseFrom: 255, verseTo: 255 })).toBe('سورة البقرة · ٢٥٥');
+    expect(result.current({ surah: 2, verseFrom: 285, verseTo: 286 })).toBe('سورة البقرة · ٢٨٥–٢٨٦');
+  });
+
+  it('formats the English name in English', async () => {
+    await i18n.changeLanguage('en');
+    const { result } = await renderHook(() => useQuranReferenceLabel('en'));
+
+    expect(result.current({ surah: 2, verseFrom: 255, verseTo: 255 })).toBe('Surah Al-Baqarah · 255');
+  });
+
+  it('is null for no passage and for a surah that cannot be read', async () => {
+    const { result } = await renderHook(() => useQuranReferenceLabel('ar'));
+
+    expect(result.current(null)).toBeNull();
+    expect(result.current({ surah: 99, verseFrom: 1, verseTo: 1 })).toBeNull();
   });
 });

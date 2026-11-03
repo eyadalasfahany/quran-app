@@ -19,6 +19,7 @@ import {
   scopeKeyForCategory,
   useAzkarCategory,
   useCategoryUnits,
+  useQuranReferenceLabel,
   useScopeProgress,
 } from '../data';
 import { completedUnitKeys } from '../reader-model';
@@ -41,6 +42,7 @@ export function AzkarCategoryScreen({ categoryId, testID = 'screen-azkar-categor
 
   const completed = useMemo(() => completedUnitKeys(rows), [rows]);
   const cards = useMemo(() => buildCategoryCards(units, completed), [units, completed]);
+  const quranReference = useQuranReferenceLabel(locale);
   const progress = categoryProgress(units, rows);
   const progressText = t('azkar.reader.progress', {
     current: formatNumber(progress.done, locale),
@@ -73,6 +75,7 @@ export function AzkarCategoryScreen({ categoryId, testID = 'screen-azkar-categor
                   number={index + 1}
                   onPress={() => router.push(azkarHref.read(categoryId, card.unitKey))}
                   preview={card.preview}
+                  quranReference={quranReference(card.quranRef)}
                   requiredCount={card.requiredCount}
                   testID={`azkar-category-card-${index + 1}`}
                 />

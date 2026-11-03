@@ -10,6 +10,7 @@ import { openUserDb } from '@/core/db/user/open';
 import { formatNumber } from '@/core/i18n/numbers';
 import type { Locale } from '@/core/i18n/locale';
 import { useCatalogVersion } from '@/core/sync/catalog-version';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
 
 import { azkarHref } from '../routes';
 import { buildRecentAzkarEntries } from './recent-azkar';
@@ -30,6 +31,7 @@ import { readAzkarFontScale, saveAzkarFontScale } from './font-scale';
 import { liveFavoritesQuery, liveIsFavoriteQuery, liveProgressSummaryQuery, liveScopeProgressQuery } from './live-queries';
 import { listFavoriteCards, type FavoriteCard } from './favorite-cards';
 import type { AzkarCategory, AzkarCategoryListItem, AzkarEntryDetail } from './model';
+import type { QuranPreviewRef } from './preview';
 import { completedUnitsIn, periodKey, pickLastActiveScope, type ScopeResolution, type ScopeSummary } from './progress';
 import type { ReaderUnit } from './reader-units';
 import { resolveAzkarScope, type ResolvedAzkarScope } from './scope-resolver';
@@ -272,6 +274,32 @@ export function useFavoriteCards(): FavoriteCard[] {
     () => readOr<FavoriteCard[]>([], () => listFavoriteCards(executor, favorites)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [executor, favorites, revision],
+  );
+}
+
+/**
+ * Formats a card's opening Quran passage as «سورة البقرة · ٢٥٥» (or "Surah Al-Baqarah · 255"), in the UI font. The
+ * surah name comes from `content.db`; a surah that cannot be read gives null, so the card shows no preview.
+ */
+export function useQuranReferenceLabel(locale: Locale): (ref: QuranPreviewRef | null) => string | null {
+  const { t } = useTranslation();
+  const revision = useContentRevision();
+  const { executor } = openContentDb();
+  return useCallback(
+    (ref: QuranPreviewRef | null) => {
+      if (ref === null) {
+        return null;
+      }
+      const chapter = readOr<ReturnType<typeof getChapter>>(undefined, () => getChapter(executor, ref.surah));
+      if (chapter === undefined) {
+        return null;
+      }
+      const from = formatNumber(ref.verseFrom, locale);
+      const verses = ref.verseTo === ref.verseFrom ? from : `${from}–${formatNumber(ref.verseTo, locale)}`;
+      return t('azkar.browse.quranReference', { name: chapterDisplayName(chapter, locale), verses });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executor, locale, revision, t],
   );
 }
 

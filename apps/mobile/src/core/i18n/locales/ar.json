@@ -909,7 +909,8 @@
       "sourceLine_two": "حصن المسلم · ذكران",
       "sourceLine_few": "حصن المسلم · {{number}} أذكار",
       "sourceLine_many": "حصن المسلم · {{number}} ذكرًا",
-      "sourceLine_other": "حصن المسلم · {{number}} ذكرًا"
+      "sourceLine_other": "حصن المسلم · {{number}} ذكرًا",
+      "quranReference": "سورة {{name}} · {{verses}}"
     },
     "search": {
       "placeholder": "ابحث في الأذكار",
