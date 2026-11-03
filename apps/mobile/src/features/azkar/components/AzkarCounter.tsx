@@ -35,7 +35,8 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
  *   one tap fills the ring and completes. No number is shown, because a missing count is never read as 1.
  *
  * `compact` (a short window) draws an 88 pt ring with smaller centre text and no caption under it; the hint stays on
- * the button for VoiceOver and TalkBack.
+ * the button for VoiceOver and TalkBack. The single variant also draws no caption under the ring (`AzkarReaderDone`):
+ * the check and «تم» carry the action, and the hint stays on the button only.
  *
  * Each count bumps the ring with a spring; completion pulses it. Reduce Motion: the ring jumps to its state, and nothing
  * scales. A reset action clears this unit's progress.
@@ -178,9 +179,9 @@ export function AzkarCounter({
           </Animated.View>
         </View>
       </Pressable>
-      {compact ? null : (
+      {compact || single ? null : (
         <UiText align="center" importantForAccessibility="no" tone="muted" variant="caption">
-          {single ? t('azkar.counter.doneHint') : t('azkar.counter.hint')}
+          {t('azkar.counter.hint')}
         </UiText>
       )}
     </View>

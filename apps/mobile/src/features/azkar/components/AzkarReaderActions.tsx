@@ -7,17 +7,18 @@ import { IconButton, UiText } from '@/shared/ui';
 import type { AzkarRecording } from '../data/model';
 import { useIsFavorite } from '../data';
 import { toggleFavorite } from '../data/favorites-repository';
-import { AzkarDownloadButton } from './AzkarDownloadButton';
-import { AzkarPlayerControl } from './AzkarPlayerControl';
+// Play and download — kept for later; hidden for now (developer 4 Nov 2026).
+// import { AzkarDownloadButton } from './AzkarDownloadButton';
+// import { AzkarPlayerControl } from './AzkarPlayerControl';
 
 const SHARE = { ios: 'square.and.arrow.up', android: 'share' } as const;
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 const BOOKMARK_FILLED = { ios: 'bookmark.fill', android: 'bookmark_added' } as const;
 
 /**
- * The actions under the dhikr: favourite, share, text size (Aa), play or pause when licensed audio is playable, and
- * download when the unit has a licensed recording (ADR 0031 §8). Playback lives here; the reader has no mini player bar.
- * The favourite is saved per entry in user.db and follows the live query, so it stays in step on every screen.
+ * The actions under the dhikr: favourite, share, text size (Aa). Play/pause and download are commented out for now
+ * (developer 4 Nov 2026); the props and commented block stay so they can return without an API change. Playback lives
+ * here; the reader has no mini player bar. The favourite is saved per entry in user.db and follows the live query.
  */
 export function AzkarReaderActions({
   entryKey,
@@ -41,6 +42,9 @@ export function AzkarReaderActions({
   const { t } = useTranslation();
   const theme = useTheme();
   const favorite = useIsFavorite(entryKey);
+  // Props kept so callers and the commented play/download block stay typed.
+  void recording;
+  void playControl;
 
   return (
     <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[6], justifyContent: 'center' }} testID={testID}>
@@ -68,6 +72,7 @@ export function AzkarReaderActions({
           {t('azkar.reader.textSizeGlyph')}
         </UiText>
       </Pressable>
+      {/* Play and download — kept for later; hidden for now (developer 4 Nov 2026).
       {playControl == null ? null : (
         <AzkarPlayerControl
           loading={playControl.loading === true}
@@ -77,6 +82,7 @@ export function AzkarReaderActions({
         />
       )}
       {recording === null ? null : <AzkarDownloadButton recording={recording} />}
+      */}
     </View>
   );
 }

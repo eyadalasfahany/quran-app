@@ -175,12 +175,22 @@ describe('AzkarCounter', () => {
       expect(screen.getByTestId('azkar-counter-done')).toBeTruthy();
     });
 
-    it('renders in English with the English label and hint', async () => {
+    it('renders in English with the English label; hint stays on the button only (AzkarReaderDone has no caption)', async () => {
       const { ui } = renderCounter({ requiredCount: null, value: 0 });
       await renderUi(ui, { locale: 'en' });
-      expect(screen.getByRole('button', { name: 'Mark as done' })).toBeTruthy();
+      const button = screen.getByRole('button', { name: 'Mark as done' });
+      expect(button).toBeTruthy();
       expect(screen.getByText('Done')).toBeTruthy();
-      expect(screen.getByText('Tap to mark done')).toBeTruthy();
+      expect(button.props.accessibilityHint).toBe('Tap to mark done');
+      expect(screen.queryByText('Tap to mark done')).toBeNull();
+    });
+
+    it('draws no caption under the ring in Arabic either', async () => {
+      const { ui } = renderCounter({ requiredCount: null, value: 0 });
+      await renderUi(ui);
+      const button = screen.getByRole('button', { name: 'وضع علامة «تم»' });
+      expect(button.props.accessibilityHint).toBe('اضغط للإتمام');
+      expect(screen.queryByText('اضغط للإتمام')).toBeNull();
     });
   });
 

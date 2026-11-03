@@ -7,7 +7,6 @@ import { makeDetail, makeItem, press, quranSegment, textSegment } from '../../..
 import { openAzkarUserDb } from '../../../../jest/azkar-test-db';
 import { renderUi } from '../../../../jest/render-ui';
 import type { SqlExecutor } from '@/core/db/sql-executor';
-import { buildAzkarQueue } from '../audio/queue';
 import { initialAzkarPlayerState, useAzkarPlayerStore } from '../audio/azkarPlayerStore';
 import { azkarShareText } from '../data/share-text';
 import { buildReaderUnits } from '../data/reader-units';
@@ -814,12 +813,13 @@ describe('the reader audio controls', () => {
     expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
   });
 
-  it('shows play in the actions row for a playable recording, not the mini bar', async () => {
+  // Play/download in AzkarReaderActions are commented out (developer 4 Nov 2026). Restore when those controls return.
+  it('hides play in the actions row even for a playable recording, and keeps the mini bar gone', async () => {
     contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
     await renderReader();
     expect(screen.queryByTestId('azkar-player-bar')).toBeNull();
-    expect(screen.getByTestId('azkar-actions-play')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'تشغيل التسجيل' })).toBeTruthy();
+    expect(screen.queryByTestId('azkar-actions-play')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
   });
 
   it('shows the offline message, and no play control, when the recording needs the network while offline', async () => {
@@ -828,29 +828,5 @@ describe('the reader audio controls', () => {
     await renderReader();
     expect(screen.getByText('غير متاح دون اتصال')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
-  });
-
-  it('starts the scope queue from the actions play control, at the unit that is read', async () => {
-    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
-    await renderReader();
-    await press(screen.getByRole('button', { name: 'تشغيل التسجيل' }));
-    expect(mockStartPlayback).toHaveBeenCalledWith(expect.objectContaining({ index: 0, scope: expect.objectContaining({ scopeKey: SCOPE }) }));
-  });
-
-  it('shows the buffering ring and busy play control while the store is loading', async () => {
-    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
-    const units = buildReaderUnits(ENTRY_KEY, [makeItem({ id: 1, requiredCount: 3 })], 'ar');
-    const queue = buildAzkarQueue(units, () => makeRecording({ itemId: 1 }));
-    useAzkarPlayerStore.setState({
-      ...initialAzkarPlayerState,
-      scope: { scopeKey: SCOPE, periodKey: 'session', title: 'FIXTURE' },
-      queue,
-      index: 0,
-      status: 'loading',
-    });
-    await renderReader();
-    const play = screen.getByTestId('azkar-actions-play');
-    expect(play.props.accessibilityState).toEqual({ busy: true, disabled: false });
-    expect(screen.getByTestId('azkar-actions-play-ring', { includeHiddenElements: true })).toBeTruthy();
   });
 });
