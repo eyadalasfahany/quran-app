@@ -10,7 +10,12 @@ import { useActivePlan, usePlanLogs } from '@/features/khatma/data';
 import { useLastReadVerseKey } from '@/features/reader/anchor/useLastReadVerseKey';
 import { usePrayerLocation } from '@/features/salah/hooks';
 
-import { pushWatchApplicationContext, subscribeWatchUserInfo, intakeWatchMisbahaDeltas } from '@/features/watch/apple-watch';
+import {
+  intakeWatchMisbahaDeltas,
+  pushStoredSnapshotToWatch,
+  pushWatchApplicationContext,
+  subscribeWatchUserInfo,
+} from '@/features/watch/apple-watch';
 
 import { mergeIosWidgetTapsOnForeground } from '../ios/merge-on-foreground';
 import { gatherWidgetSnapshot } from '../snapshot/gather';
@@ -100,12 +105,27 @@ export function WidgetSnapshotSync({ enabled }: { enabled: boolean }) {
     };
   }, [sync]);
 
+  // A watch that was just paired or installed has no context yet, and a rebuild skips the push when the snapshot has not
+  // changed. So push the stored snapshot on enable and whenever the app becomes active.
   useEffect(() => {
     if (Platform.OS !== 'ios' || !enabled) {
       return undefined;
     }
-    return subscribeWatchUserInfo((payload) => {
-      intakeWatchMisbahaDeltas(new Date(), [payload]);
+    pushStoredSnapshotToWatch(readWidgetSnapshotJson);
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        pushStoredSnapshotToWatch(readWidgetSnapshotJson);
+      }
+    });
+    return () => subscription.remove();
+  }, [enabled]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios' || !enabled) {
+      return undefined;
+    }
+    return subscribeWatchUserInfo((payloads) => {
+      intakeWatchMisbahaDeltas(new Date(), payloads);
     });
   }, [enabled]);
 

@@ -56,7 +56,12 @@ enum SnapshotIO {
 
   static func appGroupSuite() -> String? {
     guard let bundleId = Bundle.main.bundleIdentifier else { return nil }
-    let host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
+    let host: String
+    if let range = bundleId.range(of: ".watchkitapp") {
+      host = String(bundleId[..<range.lowerBound])
+    } else {
+      host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
+    }
     guard !host.isEmpty else { return nil }
     return "group.\(host)"
   }
@@ -69,5 +74,17 @@ enum SnapshotIO {
       return nil
     }
     return snapshot
+  }
+
+  /// Stores the raw snapshot JSON received from the phone, only if it decodes (schemaVersion 1).
+  @discardableResult
+  static func save(json: String) -> Bool {
+    guard let suite = appGroupSuite(), let defaults = UserDefaults(suiteName: suite) else { return false }
+    guard let data = json.data(using: .utf8) else { return false }
+    guard let snapshot = try? JSONDecoder().decode(TaybahSnapshot.self, from: data), snapshot.schemaVersion == 1 else {
+      return false
+    }
+    defaults.set(json, forKey: SnapshotIO.userDefaultsKey)
+    return true
   }
 }

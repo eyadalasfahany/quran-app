@@ -64,6 +64,17 @@ export function pushWatchApplicationContext(snapshotJson: string): void {
 }
 
 /**
+ * Pushes the stored snapshot JSON, if there is one, so a watch that was just paired or installed gets the context
+ * without waiting for a rebuild. `updateApplicationContext` with an identical payload is cheap.
+ */
+export function pushStoredSnapshotToWatch(readJson: () => string | undefined): void {
+  const json = readJson();
+  if (json !== undefined) {
+    pushWatchApplicationContext(json);
+  }
+}
+
+/**
  * Applies queued watch misbaha deltas to today's total. Call on launch and when the app becomes active.
  */
 export function intakeWatchMisbahaDeltas(now: Date, deltas: readonly unknown[]): number {
@@ -79,11 +90,16 @@ export function intakeWatchMisbahaDeltas(now: Date, deltas: readonly unknown[]):
   return tapsToAdd;
 }
 
-/** Subscribes to live `user-info` events from the watch (iOS only). Returns an unsubscribe function. */
-export function subscribeWatchUserInfo(onDelta: (payload: unknown) => void): () => void {
+/**
+ * Subscribes to live `user-info` events from the watch (iOS only). The library delivers an array of payloads per event;
+ * a single object is wrapped. Returns an unsubscribe function.
+ */
+export function subscribeWatchUserInfo(onDeltas: (payloads: readonly unknown[]) => void): () => void {
   const wc = loadWatchConnectivity();
   if (wc === null) {
     return () => undefined;
   }
-  return wc.watchEvents.addListener('user-info', onDelta);
+  return wc.watchEvents.addListener('user-info', (payload: unknown) => {
+    onDeltas(Array.isArray(payload) ? payload : [payload]);
+  });
 }

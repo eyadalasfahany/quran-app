@@ -15,6 +15,7 @@ Needs Google Chrome and ImageMagick. Captions live in `sources/manifest.json`; t
 | --- | --- | --- |
 | `app-store/iphone-6.3/{ar,en}` | 1206 × 2622 | App Store Connect → iPhone 6.3" (Arabic page / English page) |
 | `app-store/ipad-13/{ar,en}` | 2064 × 2752 | App Store Connect → iPad 13" |
+| `app-store/watch-ultra/{ar,en}` | 422 × 514 | App Store Connect → Apple Watch (Ultra 4 size; the only size needed). Captured on the Apple Watch Ultra 3 simulator (watchOS 27.2) paired with the iPhone 17 simulator, with live data from the phone app. 4 slides (`watchSlides` in the manifest) |
 | `app-store/iphone-duo/{ar,en}` | 2007 × 2853 | App Store Connect → iPhone Duo (inner display, portrait). Composed from the iPad captures: the iOS 27.1 runtime the Duo simulator needs isn't installed |
 | `google-play/phone/{ar,en}` | 1080 × 1920 | Play Console → Main store listing → Phone screenshots (default ar, en-US translation) |
 | `google-play/tablet-7/{ar,en}` | 1080 × 1920 | Play Console → 7-inch tablet screenshots |
@@ -32,6 +33,17 @@ Needs Google Chrome and ImageMagick. Captions live in `sources/manifest.json`; t
 | 06 | Azkar | أذكارك من حصن المسلم | Your daily Azkar |
 | 07 | Khatma | ختمتك ووِردك اليومي | Complete your Khatma |
 | 08 | Home (closing, green) | مجاني، بلا إعلانات ولا حساب | Free. No ads. No account. |
+
+## Apple Watch journey
+
+| # | Watch page | Arabic headline | English headline |
+| --- | --- | --- | --- |
+| 01 | Next prayer (green) | صلاتك القادمة على معصمك | Your next prayer, on your wrist |
+| 02 | Today's prayer times | مواقيت اليوم بنظرة | Today's prayer times |
+| 03 | Misbaha | المسبحة في يدك | A misbaha on your wrist |
+| 04 | Azkar status (green) | تابع أذكار يومك | Follow your daily Azkar |
+
+Watch captures (`sources/raw/watch-{ar,en}-<slide>.png`) come from a Debug build: `simctl launch <watch> com.taybahapp.taybah.dev.watchkitapp -watchPage <0|1|10|3> -taybah.watch.sibha.count 20 -taybah.watch.sibha.round 2`. The phone app's language sets the watch language. watchOS ignores `simctl status_bar`, so the watch clock shows the capture time.
 
 ## Known limits
 
