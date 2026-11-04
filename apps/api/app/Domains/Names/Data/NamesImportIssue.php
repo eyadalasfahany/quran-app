@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domains\Names\Data;
 
-final class NamesImportIssue
+use Spatie\LaravelData\Data;
+
+final class NamesImportIssue extends Data
 {
     public const string ERROR = 'error';
 

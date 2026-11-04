@@ -32,7 +32,7 @@ final class QuranDuaReferencePolicy
     public const string DECISION_INVALID = 'invalid';
 
     /**
-     * @param  array{0: int, 1: int, 2: int|null, status?: string, rule?: string}  $row
+     * @param  array<array-key, mixed>  $row  One config/duas_quran_map.php row, unvalidated: every field is checked below.
      * @return array{surah: int, from: int, to: int|null, status: string, rule: string|null}|null
      */
     public function parse(array $row): ?array

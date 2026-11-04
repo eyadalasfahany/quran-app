@@ -10,6 +10,13 @@ import { Dimensions, I18nManager } from "react-native";
 import { i18n } from "@/core/i18n";
 import { storage, storageKeys } from "@/core/storage/mmkv";
 
+// Home's Duas block reads the user database through useMyDuas, which is not open under Jest; the Duas home block is hidden.
+jest.mock("@/features/duas/data/hooks", () => ({
+  ...jest.requireActual("@/features/duas/data/hooks"),
+  useDuasAvailable: () => false,
+  useMyDuas: () => [],
+}));
+
 // The user database is not open under Jest; Home's recent listens are empty.
 jest.mock("@/features/audio/data/downloads", () => ({
   ...jest.requireActual("@/features/audio/data/downloads"),

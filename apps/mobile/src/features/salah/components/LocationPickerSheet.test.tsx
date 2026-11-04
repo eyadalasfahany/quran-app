@@ -1,5 +1,5 @@
 import { fireEvent } from '@testing-library/react-native';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -7,6 +7,21 @@ import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { LocationPickerSheet, resultsMaxHeight } from './LocationPickerSheet';
+
+// Records the props the avoiding view is given: React Native strips `behavior` before the host view, so the tree can't show it.
+const mockKeyboardAvoiding = jest.fn();
+
+jest.mock('react-native/Libraries/Components/Keyboard/KeyboardAvoidingView', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    __esModule: true,
+    default: (props: { children?: ReactNode; testID?: string }) => {
+      mockKeyboardAvoiding(props);
+      return createElement(View, { testID: props.testID }, props.children);
+    },
+  };
+});
 
 const INSETS = { top: 0, right: 0, bottom: 0, left: 0 };
 
@@ -142,15 +157,15 @@ describe('LocationPickerSheet keyboard avoidance by platform', () => {
 
   it('pads the sheet above the keyboard on iOS', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'ios');
-    const view = await renderUi(sheet(), { locale: 'ar' });
+    await renderUi(sheet(), { locale: 'ar' });
 
-    expect(view.getByTestId('salah-location-sheet-keyboard').props.behavior).toBe('padding');
+    expect(mockKeyboardAvoiding).toHaveBeenLastCalledWith(expect.objectContaining({ testID: 'salah-location-sheet-keyboard', behavior: 'padding' }));
   });
 
   it('resizes the sheet for the keyboard on Android', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'android');
-    const view = await renderUi(sheet(), { locale: 'ar' });
+    await renderUi(sheet(), { locale: 'ar' });
 
-    expect(view.getByTestId('salah-location-sheet-keyboard').props.behavior).toBe('height');
+    expect(mockKeyboardAvoiding).toHaveBeenLastCalledWith(expect.objectContaining({ testID: 'salah-location-sheet-keyboard', behavior: 'height' }));
   });
 });

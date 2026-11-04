@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domains\Names\Data;
 
-final class ImportReport
+use Spatie\LaravelData\Data;
+
+final class ImportReport extends Data
 {
     public const string STATUS_REFUSED = 'refused';
 

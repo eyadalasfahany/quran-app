@@ -5,11 +5,18 @@ import { locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 
 import { SplashLogoRasterLayer } from './SplashLogoRasterLayer';
-import { SPLASH_LOGO_VIEWBOX, splashRasterLayers } from './splash-logo-raster-layers';
+import { SPLASH_LOGO_VIEWBOX, splashRasterLayers, type SplashRasterLayer } from './splash-logo-raster-layers';
 
 const HIDDEN = { includeHiddenElements: true } as const;
 const SIZE = 280;
-const layer = splashRasterLayers[0];
+
+function firstLayer(): SplashRasterLayer {
+  const [first] = splashRasterLayers;
+  if (!first) throw new Error('splash-logo-raster-layers must export at least one layer');
+  return first;
+}
+
+const layer = firstLayer();
 const scale = SIZE / SPLASH_LOGO_VIEWBOX;
 
 function band(progress: number, locale: (typeof locales)[number] = 'ar') {
@@ -44,6 +51,7 @@ describe('SplashLogoRasterLayer', () => {
     const view = await band(1);
     // The band's only child is the logo image, which carries the layer's source.
     const [image] = view.getByTestId(`splash-logo-${layer.id}`, HIDDEN).children as unknown as { props: Record<string, unknown> }[];
+    if (!image) throw new Error(`splash-logo-${layer.id} must render its logo image`);
     expect(image.props.source).toBe(layer.source);
     const imageStyle = StyleSheet.flatten(image.props.style as never) as Record<string, number>;
 

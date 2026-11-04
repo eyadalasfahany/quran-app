@@ -21,11 +21,11 @@ final class DuasImportPlanner
     ) {}
 
     /**
-     * @param  array<string, list<array<array-key, mixed>>>  $quranMap
-     * @param  array<string, list<array<string, mixed>>>  $hisnLinks
-     * @param  array<string, list<array<string, mixed>>>  $collectionRefs
-     * @param  array<string, string>  $collectionBooks
-     * @param  array<int, array<string, mixed>>  $hadithRecords
+     * @param  array<string, mixed>  $quranMap  Unvalidated config rows, keyed by dua key.
+     * @param  array<string, mixed>  $hisnLinks  Unvalidated config rows, keyed by dua key.
+     * @param  array<string, mixed>  $collectionRefs  Unvalidated config rows, keyed by dua key.
+     * @param  array<array-key, mixed>  $collectionBooks  Unvalidated config map, slug => book number.
+     * @param  array<array-key, mixed>  $hadithRecords  Unvalidated snapshot records, keyed by HadeethEnc id.
      * @param  list<array{id: int, source_category_id: int, title: string, position: int}>  $hadithGroups
      * @param  array<int, int>  $hadithPrimaryGroup
      * @return array{plan: DuasImportPlan, issues: list<ImportIssue>}
@@ -310,7 +310,7 @@ final class DuasImportPlanner
     }
 
     /**
-     * @param  array<string, list<array<array-key, mixed>>>  $quranMap
+     * @param  array<string, mixed>  $quranMap
      * @return list<string>
      */
     private function sortedQuranKeys(array $quranMap): array
@@ -328,7 +328,8 @@ final class DuasImportPlanner
     }
 
     /**
-     * @param  array<string, list<array<array-key, mixed>>>  $quranMap
+     * @param  array<string, mixed>  $quranMap
+     * @return array{int, int}
      */
     private function sortKey(array $quranMap, string $key): array
     {

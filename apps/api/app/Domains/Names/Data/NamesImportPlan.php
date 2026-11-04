@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domains\Names\Data;
 
+use Spatie\LaravelData\Data;
+
 /** Normalised rows ready for persistence after JSON validation. */
-final class NamesImportPlan
+final class NamesImportPlan extends Data
 {
     /**
      * @param  array{

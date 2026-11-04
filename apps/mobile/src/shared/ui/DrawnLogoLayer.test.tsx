@@ -42,8 +42,10 @@ function drawn(progress: number, locale: (typeof locales)[number] = 'ar') {
 }
 
 // The group's children are the fill path, then the stroke path (host elements; no test id on the fill).
-function paths(group: { children: unknown }) {
-  return group.children as { props: Record<string, unknown> }[];
+function firstPath(group: { children: unknown }) {
+  const [path] = group.children as { props: Record<string, unknown> }[];
+  if (!path) throw new Error('the logo layer must render its fill path');
+  return path;
 }
 
 describe('DrawnLogoLayer', () => {
@@ -64,16 +66,14 @@ describe('DrawnLogoLayer', () => {
   });
 
   it('fills the traced shape in the fill colour once fully drawn', async () => {
-    const group = (await drawn(1)).getByTestId('logo-layer');
-    const [fill] = paths(group);
+    const fill = firstPath((await drawn(1)).getByTestId('logo-layer'));
 
     expect(fill.props).toMatchObject({ d: layer.d, fill: svgPaint(gold), stroke: null });
     expect(fill.props.fillOpacity).toBe(1);
   });
 
   it('keeps the fill transparent before its window starts', async () => {
-    const group = (await drawn(0)).getByTestId('logo-layer');
-    const [fill] = paths(group);
+    const fill = firstPath((await drawn(0)).getByTestId('logo-layer'));
 
     expect(fill.props.fillOpacity).toBe(0);
   });

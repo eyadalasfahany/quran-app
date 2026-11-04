@@ -1,11 +1,9 @@
+import { launchBackground } from '@quran/design-tokens';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { SplashBrandMark } from './SplashBrandMark';
-
-// Cream launch backdrop; matches expo-splash-screen backgroundColor in app.config.ts.
-const LAUNCH_BACKGROUND = '#F9F7F2';
 
 type Props = {
   appReady: boolean;
@@ -35,7 +33,7 @@ export function AnimatedSplashOverlay({ appReady, onFinished }: Props) {
     <View
       onLayout={hideNativeSplash}
       pointerEvents="auto"
-      style={[StyleSheet.absoluteFill, styles.layer, { backgroundColor: LAUNCH_BACKGROUND }]}
+      style={[StyleSheet.absoluteFill, styles.layer, { backgroundColor: launchBackground }]}
       testID="animated-splash-overlay"
     >
       <View style={styles.center}>

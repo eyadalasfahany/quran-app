@@ -24,6 +24,13 @@ jest.mock("expo-router", () => {
   };
 });
 
+// Home's Duas block reads the user database through useMyDuas, which is not open under Jest; the Duas home block is hidden.
+jest.mock("@/features/duas/data/hooks", () => ({
+  ...jest.requireActual("@/features/duas/data/hooks"),
+  useDuasAvailable: () => false,
+  useMyDuas: () => [],
+}));
+
 // The user database is not open under Jest; Home's recent listens are empty.
 // The user database is not open under Jest; the Listen tab (rendered by the tabs) reads no download counts.
 jest.mock("@/features/audio/data/downloads", () => ({

@@ -490,7 +490,7 @@ it('the command refuses build-packs together with defer-pack and writes nothing'
     $reportPath = storage_path('framework/testing/azkar/both-flags-report.json');
 
     $this->artisan('azkar:import', ['path' => azkarFixturePath(), '--build-packs' => true, '--defer-pack' => true, '--report' => $reportPath])
-        ->expectsOutputToContain('Choose --build-packs or --defer-pack, not both.')
+        ->expectsOutputToContain('Choose --build-packs or --defer-pack (--no-pack), not both.')
         ->assertExitCode(1);
 
     expect(AzkarItem::query()->count())->toBe(0)

@@ -45,9 +45,10 @@ it('creates the content mirror tables and seeds two sources idempotently alongsi
     $this->seed(ContentSourceSeeder::class);
     $this->seed(ContentSourceSeeder::class);
 
-    // The azkar migration adds the pending opendua row (ADR 0031); the seeder adds qf and tanzil.
-    expect(ContentSource::query()->count())->toBe(5)
-        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['hadeethenc', 'hisnmuslim', 'opendua', 'qf', 'tanzil']);
+    // The azkar migration adds the pending opendua row (ADR 0031); the names migration adds the pending
+    // names-tirmidhi row (ADR 0043 A2); the seeder adds qf and tanzil.
+    expect(ContentSource::query()->count())->toBe(6)
+        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['hadeethenc', 'hisnmuslim', 'names-tirmidhi', 'opendua', 'qf', 'tanzil']);
 });
 
 it('stores quran text in the binary collation and no other text column', function (): void {
@@ -71,6 +72,8 @@ it('stores quran text in the binary collation and no other text column', functio
         'dua_hadith.hadeeth',
         'dua_hadith.reference',
         'dua_hadith.title',
+        // Names of Allah are source text stored byte-for-byte (ADR 0043 A2), like the dua source columns.
+        'names.name_ar',
         'tafsir_entries.html',
         'word_layouts.glyph',
     ]);

@@ -308,3 +308,7 @@ export const shadows: Record<ThemeName, ShadowTokens> = {
     raised: '0 1px 2px rgba(0, 0, 0, 0.4)',
   },
 };
+
+// Cream launch backdrop shown behind the native splash and the animated overlay. Not a theme colour: it stays cream
+// in every theme, and app.config.ts repeats the same value for expo-splash-screen.
+export const launchBackground = '#F9F7F2';

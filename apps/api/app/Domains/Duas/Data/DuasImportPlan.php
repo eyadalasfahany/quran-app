@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domains\Duas\Data;
 
+use Spatie\LaravelData\Data;
+
 /**
  * The rows one Duas import would write (ADR 0044-duas §6).
  *
  * @phpstan-type Row array<string, int|string|null>
  */
-final class DuasImportPlan
+final class DuasImportPlan extends Data
 {
     /**
      * @param  list<Row>  $items

@@ -1,9 +1,25 @@
 import { fireEvent } from '@testing-library/react-native';
+import type { ReactNode } from 'react';
 import { Platform } from 'react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { renderUi } from '../../../../jest/render-ui';
 import { SibhaCustomTargetSheet } from './SibhaCustomTargetSheet';
+
+// Records the props the avoiding view is given: React Native strips `behavior` before the host view, so the tree can't show it.
+const mockKeyboardAvoiding = jest.fn();
+
+jest.mock('react-native/Libraries/Components/Keyboard/KeyboardAvoidingView', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    __esModule: true,
+    default: (props: { children?: ReactNode; testID?: string }) => {
+      mockKeyboardAvoiding(props);
+      return createElement(View, { testID: props.testID }, props.children);
+    },
+  };
+});
 
 function renderSheet(props: Partial<Parameters<typeof SibhaCustomTargetSheet>[0]> = {}, locale: 'ar' | 'en' = 'ar') {
   const onSave = jest.fn();
@@ -108,19 +124,19 @@ describe('SibhaCustomTargetSheet keyboard avoidance by platform', () => {
 
   it('pads the card above the keyboard on iOS, so the number field stays in view', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'ios');
-    const view = await renderUi(
+    await renderUi(
       <SibhaCustomTargetSheet initialValue={null} onClose={jest.fn()} onSave={jest.fn()} visible />,
     );
 
-    expect(view.getByTestId('sibha-custom-sheet-keyboard').props.behavior).toBe('padding');
+    expect(mockKeyboardAvoiding).toHaveBeenLastCalledWith(expect.objectContaining({ testID: 'sibha-custom-sheet-keyboard', behavior: 'padding' }));
   });
 
   it('resizes the card for the keyboard on Android', async () => {
     platform = jest.replaceProperty(Platform, 'OS', 'android');
-    const view = await renderUi(
+    await renderUi(
       <SibhaCustomTargetSheet initialValue={null} onClose={jest.fn()} onSave={jest.fn()} visible />,
     );
 
-    expect(view.getByTestId('sibha-custom-sheet-keyboard').props.behavior).toBe('height');
+    expect(mockKeyboardAvoiding).toHaveBeenLastCalledWith(expect.objectContaining({ testID: 'sibha-custom-sheet-keyboard', behavior: 'height' }));
   });
 });

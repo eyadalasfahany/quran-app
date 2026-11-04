@@ -253,6 +253,7 @@ describe('user.db schema', () => {
       '0003_volatile_madrox',
       '0004_unknown_nitro',
       '0005_my_duas',
+      '0006_names_favorites',
     ]);
     expect(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8')).toMatch(/^CREATE TABLE `recent_listens`/);
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0001');

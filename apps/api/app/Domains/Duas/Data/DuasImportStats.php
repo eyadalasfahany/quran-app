@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domains\Duas\Data;
 
-final class DuasImportStats
+use Spatie\LaravelData\Data;
+
+final class DuasImportStats extends Data
 {
     public function __construct(
         public int $quranAccepted = 0,
