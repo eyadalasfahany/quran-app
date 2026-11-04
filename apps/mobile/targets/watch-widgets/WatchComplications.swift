@@ -34,7 +34,7 @@ struct WatchComplicationView: View {
       if let snapshot = entry.snapshot {
         content(snapshot: snapshot)
           .environment(\.layoutDirection, snapshot.locale == "ar" ? .rightToLeft : .leftToRight)
-          .environment(\.locale, Locale(identifier: snapshot.locale))
+          .environment(\.locale, WatchNumerals.locale(for: snapshot.locale))
       } else {
         Text("…")
       }

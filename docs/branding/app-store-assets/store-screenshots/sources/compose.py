@@ -34,6 +34,9 @@ LAYOUTS = {
               'bezel': 0.030, 'radius': 0.125, 'screenRadius': 0.100, 'pad': 0.06},
     'tablet': {'header': 0.205, 'brand': 0.036, 'headline': 0.054, 'sub': 0.026, 'maxW': 0.84,
                'bezel': 0.022, 'radius': 0.050, 'screenRadius': 0.034, 'pad': 0.05},
+    # Apple Watch: a rounded case around the black watch screen; the header keeps the same order as the phones.
+    'watch': {'header': 0.40, 'brand': 0.052, 'headline': 0.066, 'sub': 0.036, 'maxW': 0.56,
+              'bezel': 0.075, 'radius': 0.30, 'screenRadius': 0.24, 'pad': 0.05},
 }
 
 
@@ -63,6 +66,7 @@ def device_box(width: int, height: int, cap_w: int, cap_h: int, lay: dict) -> di
 
 
 def page(width: int, height: int, layout: str, lang: str, dark: bool, headline: str, sub: str, capture: Path) -> str:
+    screen_bg = '#000' if layout == 'watch' else '#F7F3EA'
     lay = LAYOUTS[layout]
     cap_w, cap_h = png_size(capture)
     box = device_box(width, height, cap_w, cap_h, lay)
@@ -93,7 +97,7 @@ p {{ text-wrap: balance; color: {muted}; font-size: {w * lay['sub']:.0f}px; line
 .device {{ position: absolute; left: {box['left']:.1f}px; top: {box['top']:.1f}px; width: {box['devW']:.1f}px; height: {box['devH']:.1f}px;
   padding: {box['bezel']:.1f}px; border-radius: {box['devW'] * lay['radius']:.1f}px; background: linear-gradient(145deg, #2B3A35, #0E1916 60%);
   box-shadow: {shadow}, inset 0 0 0 {max(2, w * 0.002):.0f}px rgba(201,169,97,.35); }}
-.screen {{ width: 100%; height: 100%; border-radius: {box['screenW'] * lay['screenRadius']:.1f}px; overflow: hidden; background: #F7F3EA; }}
+.screen {{ width: 100%; height: 100%; border-radius: {box['screenW'] * lay['screenRadius']:.1f}px; overflow: hidden; background: {screen_bg}; }}
 .screen img {{ display: block; width: 100%; height: 100%; object-fit: cover; }}
 </style></head><body><div class="canvas">
 <svg class="pattern" width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -108,7 +112,7 @@ p {{ text-wrap: balance; color: {muted}; font-size: {w * lay['sub']:.0f}px; line
 </div></body></html>"""
 
 
-def render(doc: str, width: int, height: int, out: Path) -> None:
+def render(doc: str, width: int, height: int, out: Path, final: tuple[int, int] | None = None) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         page_path = Path(tmp) / 'slide.html'
@@ -118,7 +122,8 @@ def render(doc: str, width: int, height: int, out: Path) -> None:
                         '--allow-file-access-from-files', f'--window-size={width},{height}', '--virtual-time-budget=3000',
                         f'--screenshot={shot}', page_path.as_uri()], check=True, capture_output=True)
         subprocess.run(['magick', str(shot), '-background', '#F7F3EA', '-alpha', 'remove', '-alpha', 'off',
-                        '-crop', f'{width}x{height}+0+0', '+repage', f'PNG24:{out}'], check=True)
+                        '-crop', f'{width}x{height}+0+0', '+repage',
+                        *(['-resize', f'{final[0]}x{final[1]}!'] if final else []), f'PNG24:{out}'], check=True)
 
 
 def main() -> None:
@@ -130,7 +135,8 @@ def main() -> None:
         if args.only and args.only not in st['outDir']:
             continue
         for lang in ('ar', 'en'):
-            for slide in data['slides']:
+            # A set may name its own slide list (the watch tells a shorter story than the phones).
+            for slide in data[st.get('slides', 'slides')]:
                 sid = slide['id']
                 capture = HERE / 'raw' / f"{st['capturePrefix'][lang]}-{CAPTURE_MAP.get(sid, sid)}.png"
                 if not capture.exists() and sid in CAPTURE_MAP:
@@ -138,9 +144,12 @@ def main() -> None:
                 if not capture.exists():
                     sys.exit(f'Missing capture {capture}')
                 out = BASE / st['outDir'] / lang / f'{sid}.png'
-                doc = page(st['width'], st['height'], st['layout'], lang, sid in DARK_SLIDES,
+                # Headless Chrome won't open a window narrower than ~500 px, so small canvases render at 2x and shrink.
+                scale = 2 if st['width'] < 600 else 1
+                w, h = st['width'] * scale, st['height'] * scale
+                doc = page(w, h, st['layout'], lang, slide.get('dark', sid in DARK_SLIDES),
                            slide['headline'][lang], slide['sub'][lang], capture)
-                render(doc, st['width'], st['height'], out)
+                render(doc, w, h, out, (st['width'], st['height']) if scale > 1 else None)
                 print(out.relative_to(ROOT))
 
 

@@ -29,6 +29,16 @@ const widgetKeys = [
   'highlightActive',
 ];
 
+/** Watch and player colours. They are emitted on Light and Dark but stay out of the widget `palette` tuple. */
+const watchKeys = [
+  'playerBg',
+  'playerInk',
+  'playerMuted',
+  'playerAccent',
+  'playerLine',
+  'danger',
+];
+
 function hexToComponents(hex) {
   const value = hex.replace('#', '');
   const r = parseInt(value.slice(0, 2), 16) / 255;
@@ -43,7 +53,7 @@ function swiftColor(name, hex, indent = '    ') {
 }
 
 function paletteStruct(mode, theme) {
-  const lines = widgetKeys.map((key) => swiftColor(key, theme[key], '        '));
+  const lines = [...widgetKeys, ...watchKeys].map((key) => swiftColor(key, theme[key], '        '));
   return `    struct ${mode} {\n${lines.join('\n')}\n    }`;
 }
 

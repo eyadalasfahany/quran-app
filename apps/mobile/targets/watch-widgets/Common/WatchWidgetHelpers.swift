@@ -3,7 +3,7 @@ import SwiftUI
 enum WatchWidgetHelpers {
   static func formatPercent(_ percent: Int, locale: String) -> String {
     let formatter = NumberFormatter()
-    formatter.locale = Locale(identifier: locale)
+    formatter.locale = WatchNumerals.locale(for: locale)
     formatter.numberStyle = .percent
     formatter.maximumFractionDigits = 0
     return formatter.string(from: NSNumber(value: Double(percent) / 100)) ?? "\(percent)%"

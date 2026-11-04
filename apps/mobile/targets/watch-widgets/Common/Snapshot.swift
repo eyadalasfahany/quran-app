@@ -56,7 +56,12 @@ enum SnapshotIO {
 
   static func appGroupSuite() -> String? {
     guard let bundleId = Bundle.main.bundleIdentifier else { return nil }
-    let host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
+    let host: String
+    if let range = bundleId.range(of: ".watchkitapp") {
+      host = String(bundleId[..<range.lowerBound])
+    } else {
+      host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
+    }
     guard !host.isEmpty else { return nil }
     return "group.\(host)"
   }

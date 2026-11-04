@@ -149,9 +149,68 @@
         "ar": "ipad-ar",
         "en": "ipad-en"
       }
+    },
+    {
+      "outDir": "app-store/watch-ultra",
+      "width": 422,
+      "height": 514,
+      "layout": "watch",
+      "slides": "watchSlides",
+      "capturePrefix": {
+        "ar": "watch-ar",
+        "en": "watch-en"
+      }
     }
   ],
   "captureOverrides": {
     "02-recitation": "02-recitation.png"
-  }
+  },
+  "watchSlides": [
+    {
+      "id": "01-next-prayer",
+      "dark": true,
+      "headline": {
+        "ar": "صلاتك القادمة على معصمك",
+        "en": "Your next prayer, on your wrist"
+      },
+      "sub": {
+        "ar": "الوقت والمتبقي بنظرة واحدة",
+        "en": "Time and countdown at a glance"
+      }
+    },
+    {
+      "id": "02-prayers",
+      "headline": {
+        "ar": "مواقيت اليوم بنظرة",
+        "en": "Today's prayer times"
+      },
+      "sub": {
+        "ar": "تُحسب على الآيفون وتصل إلى ساعتك",
+        "en": "Calculated on your iPhone, shown on your watch"
+      }
+    },
+    {
+      "id": "03-misbaha",
+      "headline": {
+        "ar": "المسبحة في يدك",
+        "en": "A misbaha on your wrist"
+      },
+      "sub": {
+        "ar": "اضغط للعدّ مع اهتزاز خفيف",
+        "en": "Tap to count, with a gentle tap"
+      }
+    },
+    {
+      "id": "04-azkar",
+      "dark": true,
+      "headline": {
+        "ar": "تابع أذكار يومك",
+        "en": "Follow your daily Azkar"
+      },
+      "sub": {
+        "ar": "الصباح والمساء بنظرة",
+        "en": "Morning and evening at a glance"
+      }
+    }
+  ]
 }

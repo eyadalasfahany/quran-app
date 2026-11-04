@@ -31,6 +31,18 @@ enum TaybahTokens {
         static let gold = Color(red: 0.6275, green: 0.4863, blue: 0.2000)
         /// design-tokens: highlightActive
         static let highlightActive = Color(red: 0.9255, green: 0.9255, blue: 0.8980)
+        /// design-tokens: playerBg
+        static let playerBg = Color(red: 0.0549, green: 0.1059, blue: 0.0941)
+        /// design-tokens: playerInk
+        static let playerInk = Color(red: 0.9529, green: 0.9333, blue: 0.8863)
+        /// design-tokens: playerMuted
+        static let playerMuted = Color(red: 0.6549, green: 0.7020, blue: 0.6784)
+        /// design-tokens: playerAccent
+        static let playerAccent = Color(red: 0.9020, green: 0.7804, blue: 0.4941)
+        /// design-tokens: playerLine
+        static let playerLine = Color(red: 0.1412, green: 0.2078, blue: 0.1843)
+        /// design-tokens: danger
+        static let danger = Color(red: 0.6392, green: 0.2235, blue: 0.1686)
     }
 
     struct Dark {
@@ -62,6 +74,18 @@ enum TaybahTokens {
         static let gold = Color(red: 0.7882, green: 0.6627, blue: 0.3804)
         /// design-tokens: highlightActive
         static let highlightActive = Color(red: 0.1686, green: 0.1843, blue: 0.1765)
+        /// design-tokens: playerBg
+        static let playerBg = Color(red: 0.0549, green: 0.1059, blue: 0.0941)
+        /// design-tokens: playerInk
+        static let playerInk = Color(red: 0.9529, green: 0.9333, blue: 0.8863)
+        /// design-tokens: playerMuted
+        static let playerMuted = Color(red: 0.6549, green: 0.7020, blue: 0.6784)
+        /// design-tokens: playerAccent
+        static let playerAccent = Color(red: 0.9020, green: 0.7804, blue: 0.4941)
+        /// design-tokens: playerLine
+        static let playerLine = Color(red: 0.1412, green: 0.2078, blue: 0.1843)
+        /// design-tokens: danger
+        static let danger = Color(red: 0.9412, green: 0.6431, blue: 0.5765)
     }
 }
 
