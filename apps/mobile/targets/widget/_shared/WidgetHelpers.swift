@@ -69,6 +69,14 @@ enum WidgetHelpers {
     return .next(key: next.key, at: next.at)
   }
 
+  static let prayerDotKeys = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
+
+  static func prayerDotState(key: String, nextKey: String, entryAt: Double?, nowMs: Double) -> String {
+    if key == nextKey { return "next" }
+    if let entryAt, entryAt < nowMs { return "past" }
+    return "future"
+  }
+
   static func todaysPrayerEntries(_ entries: [TaybahSnapshot.PrayerEntry], now: Date) -> [TaybahSnapshot.PrayerEntry] {
     let today = Calendar.current.startOfDay(for: now)
     guard let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today) else { return entries }
@@ -88,6 +96,25 @@ enum WidgetHelpers {
     guard let target, target > 0 else { return 0 }
     return min(1, max(0, Double(count) / Double(target)))
   }
+
+  /// Taybah card palette from snapshot `colorMode`, else the system widget environment (ADR 0054).
+  static func widgetPalette(colorMode: String?, environment: ColorScheme) -> TaybahPalette {
+    if colorMode == "dark" {
+      return TaybahTokens.palette(for: .dark)
+    }
+    if colorMode == "light" {
+      return TaybahTokens.palette(for: .light)
+    }
+    return TaybahTokens.palette(for: environment)
+  }
+
+  /// Frosted wash for chips and foot bands on brandSurface (ADR 0035; clear card vs green face).
+  static func onBrandWash(_ palette: TaybahPalette, opacity: Double = 0.2) -> Color {
+    palette.onBrandSurface.opacity(opacity)
+  }
+
+  static let onBrandWashLight: Double = 0.1
+  static let softBandCornerRadius: CGFloat = 16
 }
 
 struct SnapshotLocaleModifier: ViewModifier {
@@ -106,11 +133,11 @@ extension View {
   }
 
   @ViewBuilder
-  func widgetCardBackground(_ palette: TaybahPalette, raised: Bool = true) -> some View {
+  func widgetCardBackground(_ palette: TaybahPalette, raised: Bool = false) -> some View {
     if #available(iOS 17.0, *) {
       containerBackground(for: .widget) {
         RoundedRectangle(cornerRadius: WidgetHelpers.cornerRadius, style: .continuous)
-          .fill(raised ? palette.surfaceRaised : palette.brandSurface)
+          .fill(raised ? palette.surface : palette.brandSurface)
           .overlay {
             if raised {
               RoundedRectangle(cornerRadius: WidgetHelpers.cornerRadius, style: .continuous)
@@ -119,7 +146,7 @@ extension View {
           }
       }
     } else {
-      background(raised ? palette.surfaceRaised : palette.brandSurface)
+      background(raised ? palette.surface : palette.brandSurface)
     }
   }
 
@@ -129,7 +156,33 @@ extension View {
       containerBackground(for: .widget) {
         AccessoryWidgetBackground()
       }
+    } else {
+      self
     }
+  }
+
+  /// Frosted inner card on brandSurface (foot bands, chips). Matches Android `onBrandSoftBand`.
+  func onBrandSoftCard(_ palette: TaybahPalette, opacity: Double = 0.2) -> some View {
+    padding(.horizontal, 14)
+      .padding(.vertical, 12)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(WidgetHelpers.onBrandWash(palette, opacity: opacity))
+      .overlay {
+        RoundedRectangle(cornerRadius: WidgetHelpers.softBandCornerRadius, style: .continuous)
+          .strokeBorder(palette.onBrandSurface.opacity(0.12), lineWidth: 1)
+      }
+      .clipShape(RoundedRectangle(cornerRadius: WidgetHelpers.softBandCornerRadius, style: .continuous))
+  }
+
+  /// Compact frosted chip (time, place).
+  func onBrandSoftChip(_ palette: TaybahPalette) -> some View {
+    padding(.horizontal, 10)
+      .padding(.vertical, 4)
+      .background(WidgetHelpers.onBrandWash(palette))
+      .overlay {
+        Capsule().strokeBorder(palette.onBrandSurface.opacity(0.12), lineWidth: 1)
+      }
+      .clipShape(Capsule())
   }
 }
 
@@ -178,16 +231,16 @@ struct GoalCheckmark: View {
   var body: some View {
     ZStack {
       Circle()
-        .fill(done ? palette.brand : palette.surfaceRaised)
+        .fill(done ? palette.gold : WidgetHelpers.onBrandWash(palette, opacity: WidgetHelpers.onBrandWashLight))
         .overlay {
           if !done {
-            Circle().strokeBorder(palette.line, lineWidth: 1.5)
+            Circle().strokeBorder(palette.onBrandSurface.opacity(0.2), lineWidth: 1)
           }
         }
       if done {
         Image(systemName: "checkmark")
           .font(.system(size: 10, weight: .bold))
-          .foregroundStyle(palette.onBrand)
+          .foregroundStyle(palette.brandSurface)
       }
     }
     .frame(width: 18, height: 18)

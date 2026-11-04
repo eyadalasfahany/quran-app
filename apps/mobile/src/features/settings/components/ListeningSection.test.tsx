@@ -26,6 +26,13 @@ describe('ListeningSection', () => {
     expect(view.getByText('إدارة التنزيلات')).toBeOnTheScreen();
   });
 
+  it('shows downloadsTrailing when provided', async () => {
+    const view = await renderUi(<ListeningSection downloadsTrailing="١٢٫٣ م.ب" />);
+
+    expect(view.getByText('١٢٫٣ م.ب')).toBeOnTheScreen();
+    expect(view.queryByText('إدارة التنزيلات')).toBeNull();
+  });
+
   it('shows the provided reciterName in the reciter row', async () => {
     const view = await renderUi(<ListeningSection reciterName="مشاري العفاسي" />);
 

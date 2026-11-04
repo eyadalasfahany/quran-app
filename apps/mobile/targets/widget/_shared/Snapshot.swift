@@ -4,6 +4,8 @@ import Foundation
 struct TaybahSnapshot: Codable {
   let schemaVersion: Int
   let writtenAt: Double
+  /// App-resolved light or dark; absent on older snapshots until the next sync (ADR 0054).
+  let colorMode: String?
   let locale: String
   let labels: Labels
   let prayer: Prayer
@@ -101,8 +103,8 @@ enum SnapshotIO {
 
   static func appGroupSuite() -> String? {
     guard let bundleId = Bundle.main.bundleIdentifier else { return nil }
-    let host = bundleId.split(separator: ".").dropLast().joined(separator: ".")
-    guard !host.isEmpty else { return nil }
+    let suffix = ".widget"
+    let host = bundleId.hasSuffix(suffix) ? String(bundleId.dropLast(suffix.count)) : bundleId
     return "group.\(host)"
   }
 

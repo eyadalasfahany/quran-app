@@ -1,13 +1,17 @@
 import { router, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 
+import { useTheme } from '@/core/theme';
 import { BELL_PRAYERS } from '@/features/salah/data/bells';
 import { prayerSoundName } from '@/features/salah/data/adhan-sounds';
 import { usePrayerSound } from '@/features/salah/hooks/usePrayerSound';
 import { ListRow, UiText } from '@/shared/ui';
 
+import { IqamahOffsetRow } from './IqamahOffsetRow';
 import { PrayerReminderRow } from './PrayerReminderRow';
 import { SettingsGroup } from './SettingsGroup';
+import { TestIqamahButton } from './TestIqamahButton';
 
 /**
  * The «إشعارات الصلاة» group in Settings: one switch per obligatory prayer (ADR 0030 §3). It mirrors the five bells on
@@ -16,24 +20,29 @@ import { SettingsGroup } from './SettingsGroup';
  */
 export function PrayerNotificationsSection({ testID = 'prayer-notifications-section' }: { testID?: string }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const sound = usePrayerSound();
 
   return (
-    <SettingsGroup testID={testID} title={t('settings.sections.prayerNotifications')}>
-      {BELL_PRAYERS.map((prayer) => (
-        <PrayerReminderRow key={prayer} prayer={prayer} />
-      ))}
-      <ListRow
-        chevron
-        onPress={() => router.push('/adhan-sound' as Href)}
-        testID="prayer-adhan-sound-row"
-        title={t('salah.adhanSound.title')}
-        trailing={
-          <UiText tone="muted" variant="subhead">
-            {t(prayerSoundName(sound))}
-          </UiText>
-        }
-      />
-    </SettingsGroup>
+    <View style={{ gap: theme.space[2] }}>
+      <SettingsGroup testID={testID} title={t('settings.sections.prayerNotifications')}>
+        {BELL_PRAYERS.map((prayer) => (
+          <PrayerReminderRow key={prayer} prayer={prayer} />
+        ))}
+        <IqamahOffsetRow />
+        <ListRow
+          chevron
+          onPress={() => router.push('/adhan-sound' as Href)}
+          testID="prayer-adhan-sound-row"
+          title={t('salah.adhanSound.title')}
+          trailing={
+            <UiText tone="muted" variant="subhead">
+              {t(prayerSoundName(sound))}
+            </UiText>
+          }
+        />
+      </SettingsGroup>
+      <TestIqamahButton />
+    </View>
   );
 }

@@ -49,6 +49,7 @@ type FakePlayer = {
   seekTo: jest.Mock;
   setActiveForLockScreen: jest.Mock;
   clearLockScreenControls: jest.Mock;
+  setPlaybackRate: jest.Mock;
   playbackRate: number;
   volume: number;
   emit: (status: Partial<AudioStatus>) => void;
@@ -78,6 +79,9 @@ function makeFakePlayer(uri: string): FakePlayer {
     seekTo: jest.fn(() => Promise.resolve()),
     setActiveForLockScreen: jest.fn(),
     clearLockScreenControls: jest.fn(),
+    setPlaybackRate: jest.fn((rate: number) => {
+      player.playbackRate = rate;
+    }),
     playbackRate: 1,
     volume: 1,
     emit: (status) => {
@@ -183,6 +187,7 @@ describe('starting a queue', () => {
     await flush();
 
     expect(mockCreatePlayer).toHaveBeenCalledTimes(1);
+    expect(playerFor(1).setPlaybackRate).toHaveBeenCalledWith(1);
     expect(playerFor(1).uri).toBe(`${FIXTURE_RECORDING_URL}?n=1`);
     expect(playerFor(1).play).toHaveBeenCalled();
     expect(useAzkarPlayerStore.getState().status).toBe('playing');
@@ -440,6 +445,7 @@ describe('transport', () => {
     startWith(queueOf([3]));
     await flush();
     setAzkarSpeed(1.5);
+    expect(playerFor(1).setPlaybackRate).toHaveBeenLastCalledWith(1.5);
     expect(playerFor(1).playbackRate).toBe(1.5);
   });
 

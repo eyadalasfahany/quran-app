@@ -144,6 +144,14 @@ export function downloadAllPageFonts(onProgress?: (progress: PageFontProgress) =
   return { cancel: () => abort.abort(), done };
 }
 
+/**
+ * The sub-path inside `Paths.document` where QCF v2 font files are stored.
+ * Used by measurement hooks that scan the directory without loading fonts.
+ */
+export function fontDirectoryPath(): string {
+  return 'qcf-v2';
+}
+
 async function runDownloadAll(signal: AbortSignal, onProgress?: (progress: PageFontProgress) => void): Promise<void> {
   let completed = 0;
   onProgress?.({ completed, total: MUSHAF_PAGE_COUNT });

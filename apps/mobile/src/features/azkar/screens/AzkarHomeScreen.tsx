@@ -31,6 +31,7 @@ import { azkarHref, goBackOr } from '../routes';
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 const SEARCH = { ios: 'magnifyingglass', android: 'search' } as const;
 const BELL = { ios: 'bell', android: 'notifications' } as const;
+const DOWNLOADS = { ios: 'arrow.down.circle', android: 'download' } as const;
 const UNAVAILABLE_ICON = { ios: 'book.closed', android: 'book' } as const;
 
 /** Chunks the browse topics into rows of two, as the frame lays them out. */
@@ -162,6 +163,14 @@ export function AzkarHomeScreen() {
                     label={t('azkar.reminders.title')}
                     onPress={() => router.push(azkarHref.reminders())}
                     testID="azkar-home-reminders"
+                    variant="raised"
+                  />
+                  {/* Always shown when Azkar is available: checking downloadAllowed per recording would scan content.db on every home visit. */}
+                  <IconButton
+                    icon={DOWNLOADS}
+                    label={t('azkar.home.downloads')}
+                    onPress={() => router.push(azkarHref.downloads)}
+                    testID="azkar-home-downloads"
                     variant="raised"
                   />
                 </>

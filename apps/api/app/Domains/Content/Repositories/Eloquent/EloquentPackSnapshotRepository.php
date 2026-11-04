@@ -15,6 +15,10 @@ use App\Domains\Content\Models\AzkarSegment;
 use App\Domains\Content\Models\ChapterAudioFile;
 use App\Domains\Content\Models\Mushaf;
 use App\Domains\Content\Models\MushafPage;
+use App\Domains\Content\Models\Name;
+use App\Domains\Content\Models\NamesList;
+use App\Domains\Content\Models\NamesNote;
+use App\Domains\Content\Models\NamesVerse;
 use App\Domains\Content\Models\Recitation;
 use App\Domains\Content\Models\RecitationTiming;
 use App\Domains\Content\Models\TafsirEntry;
@@ -24,6 +28,13 @@ use App\Domains\Content\Packs\PackColumn;
 use App\Domains\Content\Packs\PackSchema;
 use App\Domains\Content\Packs\PackTable;
 use App\Domains\Content\Repositories\Contracts\PackSnapshotRepository;
+use App\Domains\Duas\Models\DuaCollectionBook;
+use App\Domains\Duas\Models\DuaCollectionRef;
+use App\Domains\Duas\Models\DuaGroup;
+use App\Domains\Duas\Models\DuaHadith;
+use App\Domains\Duas\Models\DuaItem;
+use App\Domains\Duas\Models\DuaLink;
+use App\Domains\Duas\Models\DuaQuranSpan;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use stdClass;
@@ -83,6 +94,30 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
                 ->where('azkar_notes.resource_id', $resourceId),
             'azkar_recordings' => AzkarRecording::query()->toBase()
                 ->where('azkar_recordings.resource_id', $resourceId),
+            'dua_items' => DuaItem::query()->toBase()
+                ->where('dua_items.resource_id', $resourceId),
+            'dua_quran_spans' => DuaQuranSpan::query()->toBase()
+                ->where('dua_quran_spans.resource_id', $resourceId),
+            'dua_hadith' => DuaHadith::query()->toBase()
+                ->where('dua_hadith.resource_id', $resourceId),
+            'dua_groups' => DuaGroup::query()->toBase()
+                ->where('dua_groups.resource_id', $resourceId),
+            'dua_links' => DuaLink::query()->toBase()
+                ->where('dua_links.resource_id', $resourceId)
+                ->where('dua_links.review_status', 'reviewed'),
+            'dua_collection_refs' => DuaCollectionRef::query()->toBase()
+                ->where('dua_collection_refs.resource_id', $resourceId)
+                ->where('dua_collection_refs.review_status', 'reviewed'),
+            'dua_collection_books' => DuaCollectionBook::query()->toBase()
+                ->where('dua_collection_books.resource_id', $resourceId),
+            'names_lists' => NamesList::query()->toBase()
+                ->where('names_lists.resource_id', $resourceId),
+            'names' => Name::query()->toBase()
+                ->where('names.resource_id', $resourceId),
+            'names_verses' => NamesVerse::query()->toBase()
+                ->where('names_verses.resource_id', $resourceId),
+            'names_notes' => NamesNote::query()->toBase()
+                ->where('names_notes.resource_id', $resourceId),
             default => throw new PackBuildException('Unknown pack table ['.$table->name.'].'),
         };
 

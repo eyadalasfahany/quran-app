@@ -18,6 +18,7 @@ function loadWatchConnectivity(): WatchConnectivityModule | null {
   }
   try {
     // Lazy require so Jest and non-iOS builds do not load the native module at import time.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require('react-native-watch-connectivity') as WatchConnectivityModule;
   } catch {
     return null;

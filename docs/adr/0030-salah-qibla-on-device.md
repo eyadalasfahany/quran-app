@@ -2,7 +2,7 @@
 adr: 0030
 title: Salah and Qibla on-device
 status: accepted
-amended_by: 0047
+amended_by: 0047, 0056
 date: 2026-10-31
 ---
 
@@ -73,3 +73,7 @@ The developer reported that the fixed north-up dial was confusing: facing the qi
 - The needle still points at bearing − heading, so it lines up with the marker. Facing the qibla, both sit at the lubber mark.
 
 With no live heading (no compass, no good sample yet) or with Reduce Motion, the dial stays static north-up with a note saying so.
+
+## Amendment: iqamah offset notifications (ADR 0056, proposed 3 Nov 2026)
+
+When the user enables a global iqamah offset (minutes **after** adhan / prayer time), the app schedules a second local notification per enabled prayer at `prayerTime + offset`, using the **system default** sound (not the ADR 0047 adhan voice). Adhan-at-prayer-time notifications are unchanged. To keep the iOS pending budget at 40 prayer slots: **8** rolling days per prayer when offset is off; **4** rolling days for **each** of adhan and iqamah when offset is on (5 × 4 × 2 = 40). Full rules: `docs/adr/0056-iqamah-offset-notifications.md`, plan `docs/plans/iqamah-offset.md`.

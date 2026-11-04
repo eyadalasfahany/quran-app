@@ -11,7 +11,11 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+// One-off script: install with `npm i --no-save potrace svg-path-properties` before running it.
+// eslint-disable-next-line import/no-unresolved
 import potrace from 'potrace';
+// One-off script: install with `npm i --no-save potrace svg-path-properties` before running it.
+// eslint-disable-next-line import/no-unresolved
 import { svgPathProperties } from 'svg-path-properties';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

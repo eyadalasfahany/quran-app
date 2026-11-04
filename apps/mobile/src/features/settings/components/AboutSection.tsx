@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Linking } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { ConfirmDialog, ListRow, UiText } from '@/shared/ui';
@@ -7,6 +8,7 @@ import { clearPersonalData } from '../data/clear-personal-data';
 import { SettingsGroup } from './SettingsGroup';
 
 const CLEAR_DATA_ICON = { ios: 'trash', android: 'delete_forever' } as const;
+const PRIVACY_POLICY_URL = 'https://www.taybah-app.com/privacy';
 
 export function AboutSection({
   onPressSources,
@@ -43,6 +45,12 @@ export function AboutSection({
               {t('settings.about.sourcesValue')}
             </UiText>
           }
+        />
+        <ListRow
+          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+          separator="line"
+          testID="about-privacy-row"
+          title={t('settings.about.privacy')}
         />
         <ListRow
           chevron={false}

@@ -1,6 +1,7 @@
 import type { ThemeName } from '@quran/design-tokens';
 
 import { storage, storageKeys } from '@/core/storage/mmkv';
+import { notifyAppearanceChanged } from './appearance-change';
 
 export const appearances = ['automatic', 'light', 'sepia', 'dark'] as const;
 
@@ -45,6 +46,7 @@ export function readAppearance(): Appearance {
 
 export function saveAppearance(appearance: Appearance): void {
   storage.set(storageKeys.appearance, appearance);
+  notifyAppearanceChanged();
 }
 
 export function readDarkAfterMaghrib(): boolean {
@@ -53,4 +55,5 @@ export function readDarkAfterMaghrib(): boolean {
 
 export function saveDarkAfterMaghrib(enabled: boolean): void {
   storage.set(storageKeys.darkAfterMaghrib, enabled);
+  notifyAppearanceChanged();
 }

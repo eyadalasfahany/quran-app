@@ -21,6 +21,9 @@ import { mergeIosWidgetTapsOnForeground } from '../ios/merge-on-foreground';
 import { gatherWidgetSnapshot } from '../snapshot/gather';
 import { publishWidgetSnapshot } from '../snapshot/publish';
 import { readWidgetSnapshotJson } from '../snapshot/store';
+import { setAppearanceChangeListener } from '@/core/theme/appearance-change';
+
+import { registerWidgetSyncSchedule, scheduleWidgetSync } from '../snapshot/appearance-sync';
 import { createWidgetSync } from '../snapshot/sync';
 import { activeWidgetWriters } from '../writers';
 
@@ -84,6 +87,18 @@ export function WidgetSnapshotSync({ enabled }: { enabled: boolean }) {
       sync.schedule();
     }
   }, [enabled, signature, sync]);
+
+  useEffect(() => {
+    if (!enabled) {
+      return undefined;
+    }
+    const unregisterSchedule = registerWidgetSyncSchedule(() => sync.schedule());
+    setAppearanceChangeListener(() => scheduleWidgetSync());
+    return () => {
+      unregisterSchedule();
+      setAppearanceChangeListener(null);
+    };
+  }, [enabled, sync]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {

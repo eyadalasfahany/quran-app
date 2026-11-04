@@ -1,0 +1,33 @@
+# Tanzil Quran Text
+# Placeholder only - fixture text, not real Quranic verses
+# Format: surah|ayah|text
+
+1|1|FIXTURE text 1 with ربنا at start
+1|2|FIXTURE text 2 الحمد لله وحده
+1|3|قال FIXTURE text 3 ربنا please
+1|4|FIXTURE text 4 اللهم help us
+1|5|FIXTURE text 5 يا رب اغفر
+
+2|1|FIXTURE start with و leading conjunction
+2|2|FIXTURE وربنا text
+2|3|FIXTURE normal text without match
+2|4|قالوا FIXTURE اللهم text here
+2|5|FIXTURE رب help within
+
+3|1|FIXTURE text يا رب اعني help
+3|2|قل FIXTURE ربنا response
+3|3|FIXTURE وحده الحمد
+3|4|FIXTURE اللهم please guide
+3|5|FIXTURE text without markers
+
+4|1|FIXTURE normal content
+4|2|رب اغفر لنا test
+4|3|FIXTURE يقولون اللهم text
+4|4|FIXTURE content here
+4|5|FIXTURE text ربنا اصرف
+
+5|1|FIXTURE placeholder
+5|2|FIXTURE اللهم بارك
+5|3|FIXTURE text
+5|4|قال رب test
+5|5|FIXTURE ending

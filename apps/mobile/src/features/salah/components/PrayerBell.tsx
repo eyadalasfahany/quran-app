@@ -5,6 +5,7 @@ import { IconButton, type IconName } from '@/shared/ui';
 import type { NextPrayerName } from '../data/prayer-times';
 import { useBell } from '../hooks';
 
+import { ExactAlarmDialog } from './ExactAlarmDialog';
 import { PrayerPermissionDialog } from './PrayerPermissionDialog';
 
 const BELL_OFF: IconName = { ios: 'bell', android: 'notifications' };
@@ -17,7 +18,8 @@ const BELL_ON: IconName = { ios: 'bell.fill', android: 'notifications_active' };
  */
 export function PrayerBell({ prayer, testID }: { prayer: NextPrayerName; testID?: string }) {
   const { t } = useTranslation();
-  const { enabled, toggle, permissionDenied, dismissPermissionDenied } = useBell(prayer);
+  const { enabled, toggle, permissionDenied, dismissPermissionDenied, exactAlarmNeeded, dismissExactAlarm, grantExactAlarm } =
+    useBell(prayer);
 
   return (
     <>
@@ -30,6 +32,7 @@ export function PrayerBell({ prayer, testID }: { prayer: NextPrayerName; testID?
         tone="muted"
       />
       <PrayerPermissionDialog onClose={dismissPermissionDenied} visible={permissionDenied} />
+      <ExactAlarmDialog onClose={dismissExactAlarm} onConfirm={() => void grantExactAlarm()} visible={exactAlarmNeeded} />
     </>
   );
 }

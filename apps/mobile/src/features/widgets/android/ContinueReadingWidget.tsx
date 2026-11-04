@@ -9,8 +9,9 @@ import { formatNumber } from '@/core/i18n/numbers';
 import { card } from './card';
 import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
-import { block, column, grow, label, row, spacer } from './primitives';
+import { block, column, grow, label, row } from './primitives';
 import { withAlpha } from './theme';
+import { ON_BRAND_WASH_ALPHA, widgetFaceColumn } from './widget-chrome';
 import { widgetPaths } from '../snapshot/deep-links';
 
 /** The wird bar's split: the filled part and the rest, both 0 to 100 and never negative. */
@@ -19,14 +20,13 @@ function barWeights(percent: number): { filled: number; rest: number } {
   return { filled: Math.max(clamped, 0), rest: Math.max(100 - clamped, 0) };
 }
 
-/** The gap between the reading, the divider and the wird (AndroidWidgets frame: 14 dp). */
+/** The gap between the reading and the wird column (AndroidWidgets frame: 14 dp). */
 const COLUMN_GAP = 14;
 /** The wird column's width (AndroidWidgets frame: 108 dp). */
 const WIRD_WIDTH = 108;
 
 /**
- * The 4×2 continue-reading widget (AndroidWidgets frame, the brand card): the surah, the ayah and page, and the wird line
- * when a Khatma plan is active. The only green card (ADR 0035 §2). No ayah text: the surah name, ayah and page only.
+ * The 4×2 continue-reading widget: brand card with tight type hierarchy, place chip, resume pill and optional wird.
  */
 export function ContinueReadingWidget(ctx: WidgetContext) {
   const { labels, palette, rtl, snapshot } = ctx;
@@ -34,15 +34,14 @@ export function ContinueReadingWidget(ctx: WidgetContext) {
 
   if (reading === null) {
     return card(ctx, [
-      label(labels.continueReading, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-      label(labels.openApp, { color: palette.ink, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
+      label(labels.continueReading, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      label(labels.openApp, { color: palette.onBrandSurface, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
     ], { accessibilityLabel: `${labels.continueReading}: ${labels.openApp}`, click: { clickAction: 'OPEN_APP' } });
   }
 
   const place = `${labels.ayahLabel} ${formatNumber(reading.ayah, ctx.locale)} · ${labels.pageLabel} ${formatNumber(reading.page, ctx.locale)}`;
   const onBrandMuted = palette.onBrandSurfaceMuted;
 
-  // The resume pill sits at the reading's start edge: after a spacer in reading order, so it is on the right in Arabic.
   const resume = (
     <FlexWidget
       key="resume"
@@ -61,17 +60,32 @@ export function ContinueReadingWidget(ctx: WidgetContext) {
     </FlexWidget>
   );
 
+  const placeChip = (
+    <FlexWidget
+      style={{
+        backgroundColor: withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA),
+        borderColor: withAlpha(palette.onBrandSurface, 0.12),
+        borderRadius: 999,
+        borderWidth: 1,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+      }}
+    >
+      {label(place, { color: onBrandMuted, font: WIDGET_FONTS.medium, inline: true, size: 12 }, rtl)}
+    </FlexWidget>
+  );
+
   const readingColumn = grow(
-    column(
-      [
+    widgetFaceColumn([
+      column([
         label(labels.continueReading, { color: onBrandMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+        block({ height: 4 }),
         label(reading.surah, { color: palette.onBrandSurface, font: WIDGET_FONTS.display, size: 34 }, rtl),
-        label(place, { color: onBrandMuted, font: WIDGET_FONTS.regular, size: 13 }, rtl),
-        spacer(),
-        row([resume, spacer()], rtl, { width: 'match_parent' }),
-      ],
-      { height: 'match_parent' },
-    ),
+        block({ height: 6 }),
+        placeChip,
+      ]),
+      row([resume], rtl, { width: 'match_parent' }),
+    ]),
     { height: 'match_parent' },
   );
 
@@ -79,7 +93,6 @@ export function ContinueReadingWidget(ctx: WidgetContext) {
   const divider =
     wird === null ? null : block({ backgroundColor: withAlpha(palette.onBrandSurface, 0.2), height: 'match_parent', width: 1 });
 
-  // The row fills the card, so the reading column runs the full height (the pill at its foot, as the frame draws it).
   return card(
     ctx,
     [row([readingColumn, divider, wirdColumn], rtl, { flex: 1, flexGap: COLUMN_GAP })],
@@ -91,7 +104,7 @@ export function ContinueReadingWidget(ctx: WidgetContext) {
   );
 }
 
-/** The wird: today's pages, the target, and a bar. Centred in its column, with no padding (the frame's 108 dp column). */
+/** Wird column: count chip and progress bar. */
 function wirdBlock(ctx: WidgetContext, done: number, target: number) {
   const { labels, palette, locale, rtl } = ctx;
   const fraction = target > 0 ? (done / target) * 100 : 0;
@@ -100,14 +113,28 @@ function wirdBlock(ctx: WidgetContext, done: number, target: number) {
   const track = withAlpha(palette.onBrandSurface, 0.2);
   return column(
     [
-      label(labels.wirdTitle, { color: onBrandMuted, font: WIDGET_FONTS.regular, size: 12 }, rtl),
-      label(`${formatNumber(done, locale)} ${labels.of} ${formatNumber(target, locale)}`, {
-        color: palette.onBrandSurface,
-        font: WIDGET_FONTS.bold,
-        size: 17,
-      }, rtl),
-      label(labels.wirdUnit, { color: onBrandMuted, font: WIDGET_FONTS.regular, size: 12 }, rtl),
+      label(labels.wirdTitle, { color: onBrandMuted, font: WIDGET_FONTS.regular, size: 11 }, rtl),
       block({ height: 4 }),
+      <FlexWidget
+        key="wird-chip"
+        style={{
+          backgroundColor: withAlpha(palette.onBrandSurface, ON_BRAND_WASH_ALPHA),
+          borderColor: withAlpha(palette.onBrandSurface, 0.12),
+          borderRadius: 999,
+          borderWidth: 1,
+          paddingHorizontal: 8,
+          paddingVertical: 4,
+        }}
+      >
+        {label(`${formatNumber(done, locale)} ${labels.of} ${formatNumber(target, locale)}`, {
+          color: palette.onBrandSurface,
+          font: WIDGET_FONTS.bold,
+          inline: true,
+          size: 15,
+        }, rtl)}
+      </FlexWidget>,
+      label(labels.wirdUnit, { color: onBrandMuted, font: WIDGET_FONTS.regular, size: 11 }, rtl),
+      block({ height: 6 }),
       row(
         [
           filled > 0 ? block({ backgroundColor: palette.gold, borderRadius: 2, flex: filled, height: 4 }) : null,
@@ -117,6 +144,6 @@ function wirdBlock(ctx: WidgetContext, done: number, target: number) {
         { width: 'match_parent' },
       ),
     ],
-    { width: WIRD_WIDTH },
+    { justifyContent: 'center', width: WIRD_WIDTH },
   );
 }

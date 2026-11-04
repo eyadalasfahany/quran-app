@@ -110,10 +110,15 @@ export type WidgetLabelKey = (typeof WIDGET_LABEL_KEYS)[number];
 
 export type WidgetLabels = Record<WidgetLabelKey, string>;
 
+/** Resolved app theme for widget surfaces: light or dark only; sepia maps to light (ADR 0054). */
+export type WidgetColorMode = 'light' | 'dark';
+
 export type WidgetSnapshot = {
   schemaVersion: typeof WIDGET_SCHEMA_VERSION;
   /** When the snapshot was built (ms since the epoch). */
   writtenAt: number;
+  /** App-resolved palette at sync time; native code falls back to system when absent on old snapshots. */
+  colorMode: WidgetColorMode;
   locale: WidgetLocale;
   labels: WidgetLabels;
   prayer: WidgetPrayer;

@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { useAzkarAvailable, useContinueAzkar } from '@/features/azkar/data';
+import { useDuasAvailable } from '@/features/duas/data/hooks';
 import { getChapter } from '@/features/reader/data/chapters';
 import { getVerseByKey } from '@/features/reader/data/verses';
 import { qiblaBearing } from '@/features/salah/data/prayer-times';
@@ -33,6 +34,12 @@ jest.mock('@/features/azkar/data', () => ({
   ...jest.requireActual('@/features/azkar/data'),
   useAzkarAvailable: jest.fn(() => false),
   useContinueAzkar: jest.fn(() => null),
+}));
+
+jest.mock('@/features/duas/data/hooks', () => ({
+  ...jest.requireActual('@/features/duas/data/hooks'),
+  useDuasAvailable: jest.fn(() => true),
+  useMyDuas: jest.fn(() => []),
 }));
 
 jest.mock('@/features/khatma/data/hooks', () => ({
@@ -74,6 +81,10 @@ function withAzkar(available: boolean, scope: object | null = null, completed = 
   jest.mocked(useContinueAzkar).mockReturnValue(scope ? ({ scope, completed } as never) : null);
 }
 
+function withDuas(available: boolean) {
+  jest.mocked(useDuasAvailable).mockReturnValue(available);
+}
+
 const categoryScope = {
   scopeKey: 'category:morning',
   periodKey: 'day:2026-11-01',
@@ -98,6 +109,7 @@ describe('MenuScreen', () => {
     jest.mocked(router.push).mockClear();
     withLocation(LONDON);
     withAzkar(false);
+    withDuas(true);
     jest.mocked(getVerseByKey).mockReturnValue(reading as never);
     jest.mocked(getChapter).mockReturnValue({ nameArabic: 'البقرة', nameSimple: 'Al-Baqarah' } as never);
     storage.set(storageKeys.readerLastVerseKey, '2:255');
@@ -185,6 +197,32 @@ describe('MenuScreen', () => {
       expect(screen.getByTestId('menu-grid-column-0')).toContainElement(screen.getByTestId('menu-card-continue-reading'));
       expect(screen.getByTestId('menu-grid-column-1')).toContainElement(screen.getByTestId('menu-card-continue-azkar'));
     });
+  });
+
+  describe('Duas card', () => {
+    // Menu Duas card is temporarily commented out in MenuScreen (keep tests for restore).
+    it('hides the Duas card while the menu entry is commented out', async () => {
+      withDuas(true);
+      await renderUi(<MenuScreen />);
+
+      expect(screen.queryByTestId('menu-card-duas')).toBeNull();
+    });
+
+    // it('hides the Duas card when Duas is unavailable', async () => {
+    //   withDuas(false);
+    //   await renderUi(<MenuScreen />);
+    //
+    //   expect(screen.queryByTestId('menu-card-duas')).toBeNull();
+    // });
+    //
+    // it('shows the Duas card and opens /duas when Duas is available', async () => {
+    //   withDuas(true);
+    //   await renderUi(<MenuScreen />);
+    //
+    //   expect(screen.getByTestId('menu-card-duas')).toBeOnTheScreen();
+    //   await fireEvent.press(screen.getByTestId('menu-card-duas'));
+    //   expect(router.push).toHaveBeenLastCalledWith('/duas');
+    // });
   });
 
   describe('Azkar cards', () => {

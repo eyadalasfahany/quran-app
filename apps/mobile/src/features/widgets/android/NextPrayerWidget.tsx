@@ -2,17 +2,19 @@
 // Widget trees are built by calling these functions directly, not rendered as React components, so the React Compiler
 // must not memoise them: its useMemoCache hook throws "Invalid hook call" outside a render (the wide widget never drew).
 
-import { label, spacer } from './primitives';
+import { label } from './primitives';
 import { card } from './card';
 import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
-import { prayerName, prayerTime } from './prayer-text';
+import { prayerName, prayerRemaining, prayerTime } from './prayer-text';
+import { prayerSmallBody } from './prayer-dots';
 import { prayerStateAt } from '../snapshot/select';
 import { widgetPaths } from '../snapshot/deep-links';
 
 /**
- * The 2×2 next-prayer widget (AndroidWidgets frame, top left). The time only, no countdown (ADR 0035 decision 4): a
- * countdown on Android would need a native chronometer. A missing or stale time is never drawn (ADR 0035 §1.8).
+ * The 2×2 next-prayer widget (AndroidWidgets frame, top left). Compact Taybah card: header, display name, time chip,
+ * five prayer dots and a brandSurface remaining band (ADR 0035 §4; amended 3 Nov 2026 — static remaining, no Chronometer).
+ * A missing or stale time is never drawn (ADR 0035 §1.8).
  */
 export function NextPrayerWidget(ctx: WidgetContext) {
   const { labels, palette, rtl } = ctx;
@@ -23,20 +25,16 @@ export function NextPrayerWidget(ctx: WidgetContext) {
   if (state.kind === 'next') {
     const name = prayerName(ctx, state.key);
     const time = prayerTime(ctx, state.at);
-    return card(ctx, [
-      label(labels.nextPrayer, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-      label(name, { color: palette.ink, font: WIDGET_FONTS.display, size: 32 }, rtl),
-      label(time, { color: palette.brand, font: WIDGET_FONTS.bold, size: 26 }, rtl),
-      spacer(),
-      prayer.place === null
-        ? null
-        : label(prayer.place, { color: palette.inkMuted, font: WIDGET_FONTS.regular, size: 12 }, rtl),
-    ], { accessibilityLabel: `${labels.nextPrayer}: ${name} ${time}`, click });
+    const remaining = prayerRemaining(ctx, state.at);
+    return card(ctx, [prayerSmallBody(ctx, { header: labels.nextPrayer, name, nextKey: state.key, remaining, time })], {
+      accessibilityLabel: `${labels.nextPrayer}: ${name} ${time}, ${labels.remaining} ${remaining}`,
+      click,
+    });
   }
 
   const message = state.kind === 'noLocation' ? labels.noLocation : labels.stale;
   return card(ctx, [
-    label(labels.nextPrayer, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-    label(message, { color: palette.ink, font: WIDGET_FONTS.regular, maxLines: 3, size: 14 }, rtl),
+    label(labels.nextPrayer, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+    label(message, { color: palette.onBrandSurface, font: WIDGET_FONTS.regular, maxLines: 3, size: 14 }, rtl),
   ], { accessibilityLabel: `${labels.nextPrayer}: ${message}`, click });
 }

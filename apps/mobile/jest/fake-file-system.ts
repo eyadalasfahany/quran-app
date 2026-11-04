@@ -6,6 +6,7 @@ import type { DownloadPauseState, DownloadProgress, DownloadTaskOptions } from '
 type Part = string | FakeFile | FakeDirectory;
 
 const files = new Map<string, number>();
+const fileTexts = new Map<string, string>();
 const directories = new Set<string>();
 const tasks: FakeDownloadTask[] = [];
 
@@ -46,6 +47,33 @@ export class FakeDirectory {
       }
     }
   }
+
+  list(): (FakeFile | FakeDirectory)[] {
+    const prefix = `${this.uri}/`;
+    const childFiles = new Map<string, FakeFile>();
+    const childDirs = new Map<string, FakeDirectory>();
+    for (const uri of files.keys()) {
+      if (!uri.startsWith(prefix)) {
+        continue;
+      }
+      const rest = uri.slice(prefix.length);
+      if (!rest || rest.includes('/')) {
+        continue;
+      }
+      childFiles.set(uri, new FakeFile(uri));
+    }
+    for (const dir of directories) {
+      if (dir === this.uri || !dir.startsWith(prefix)) {
+        continue;
+      }
+      const rest = dir.slice(prefix.length);
+      if (!rest || rest.includes('/')) {
+        continue;
+      }
+      childDirs.set(dir, new FakeDirectory(dir));
+    }
+    return [...childDirs.values(), ...childFiles.values()];
+  }
 }
 
 export class FakeFile {
@@ -59,6 +87,14 @@ export class FakeFile {
     return files.has(this.uri);
   }
 
+  get name(): string {
+    return this.uri.slice(this.uri.lastIndexOf('/') + 1);
+  }
+
+  get size(): number {
+    return files.get(this.uri) ?? 0;
+  }
+
   get parentDirectory(): FakeDirectory {
     return new FakeDirectory(this.uri.slice(0, this.uri.lastIndexOf('/')));
   }
@@ -68,9 +104,20 @@ export class FakeFile {
   }
 
   delete(): void {
+    fileTexts.delete(this.uri);
     if (!files.delete(this.uri)) {
       throw new Error(`File does not exist: ${this.uri}`);
     }
+  }
+
+  textSync(): string {
+    return fileTexts.get(this.uri) ?? '';
+  }
+
+  writeSync(content: string): void {
+    fileTexts.set(this.uri, content);
+    files.set(this.uri, content.length);
+    this.parentDirectory.create({ idempotent: true, intermediates: true });
   }
 
   static createDownloadTask(url: string, destination: FakeFile | FakeDirectory, options?: DownloadTaskOptions) {
@@ -179,6 +226,7 @@ export function transfers(): FakeDownloadTask[] {
 
 export function resetFakeFileSystem(): void {
   files.clear();
+  fileTexts.clear();
   directories.clear();
   tasks.length = 0;
 }

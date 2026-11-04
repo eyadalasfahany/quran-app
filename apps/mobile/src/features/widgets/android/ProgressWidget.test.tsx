@@ -1,7 +1,7 @@
 import { ProgressWidget } from './ProgressWidget';
 import { widgetContext } from './context';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
+import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (
@@ -22,7 +22,14 @@ describe('ProgressWidget', () => {
   });
 
   it('draws the ring as an SVG', () => {
-    expect(ofKind(ProgressWidget(ctx()), 'SvgWidget')).toHaveLength(1);
+    const svgs = ofKind(ProgressWidget(ctx()), 'SvgWidget');
+    // Card motif watermark + progress ring.
+    expect(svgs.length).toBeGreaterThanOrEqual(1);
+    expect(svgs.some((node) => styleOf(node).width === 92)).toBe(true);
+  });
+
+  it('uses a scrollable list when goal rows exist', () => {
+    expect(ofKind(ProgressWidget(ctx()), 'ListWidget')).toHaveLength(1);
   });
 
   it('opens the goals screen on tap', () => {
@@ -40,9 +47,15 @@ describe('ProgressWidget', () => {
     expect(startAlignedFullWidthLabels(ProgressWidget(ctx('ar')), true)).toBe(true);
   });
 
-  it('uses the dark palette in dark mode', () => {
-    const light = styleOf(ofKind(ProgressWidget(ctx('en', 'light')), 'LinearLayoutWidget')[0]!);
-    const dark = styleOf(ofKind(ProgressWidget(ctx('en', 'dark')), 'LinearLayoutWidget')[0]!);
-    expect(light.backgroundColor).not.toBe(dark.backgroundColor);
+  it('uses the dark palette gold on the progress ring', () => {
+    const lightCtx = ctx('en', 'light');
+    const darkCtx = ctx('en', 'dark');
+    const ringSvg = (tree: ReturnType<typeof ProgressWidget>) =>
+      walk(tree).find((node) => typeof node.props.svg === 'string' && styleOf(node).width === 92)?.props.svg as
+        | string
+        | undefined;
+    expect(ringSvg(ProgressWidget(lightCtx))).toContain(lightCtx.palette.gold.slice(1));
+    expect(ringSvg(ProgressWidget(darkCtx))).toContain(darkCtx.palette.gold.slice(1));
+    expect(lightCtx.palette.gold).not.toBe(darkCtx.palette.gold);
   });
 });

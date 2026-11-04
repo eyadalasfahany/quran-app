@@ -1,10 +1,16 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { i18n } from '@/core/i18n';
+import { getLocale, i18n } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
-import { PRAYER_ROLLING_DAYS } from '@/features/notifications/budget';
-import { ensurePrayerChannel, prayerChannelId, prunePrayerChannels } from '@/features/notifications/channels';
+import { prayerRollingDays, PRAYER_ROLLING_DAYS } from '@/features/notifications/budget';
+import {
+  ensureNotificationChannel,
+  ensurePrayerChannel,
+  NOTIFICATION_CHANNELS,
+  prayerChannelId,
+  prunePrayerChannels,
+} from '@/features/notifications/channels';
 import { ensureReminderPermission } from '@/features/notifications/permission';
 import {
   currentSyncState,
@@ -15,7 +21,9 @@ import {
 
 import { adhanVoiceFile, getPrayerSound, type PrayerSoundId, setPrayerSoundValue } from './adhan-sounds';
 import { BELL_PRAYERS, getBellEnabled, setBellEnabled } from './bells';
-import { getCoordinates, type CoordinatesOptions } from './location';
+import { getIqamahOffsetMinutes, setIqamahOffsetMinutes, type IqamahOffsetMinutes } from './iqamah-offset';
+import { getCityById } from './cities';
+import { getCoordinates, getStoredLocationSource, getStoredManualCityId, type CoordinatesOptions } from './location';
 import { type NextPrayerName, type PrayerTimesOutput, timesFor } from './prayer-times';
 
 /**
@@ -47,6 +55,13 @@ export interface PrayerNotificationContent {
   data: { route: string };
   /** The bundled file name (with extension), `'default'` for the system sound, or `false` for silent (ADR 0047). */
   sound: string | false;
+}
+
+export interface IqamahNotificationContent {
+  title: string;
+  body: string;
+  data: { route: string; kind: 'iqamah' };
+  sound: 'default';
 }
 
 /**
@@ -100,16 +115,86 @@ export function prayerFireDates(
   return fires;
 }
 
-/** Title «حان وقت صلاة الفجر» and a short body of its own per prayer; the route opens الصلاة on tap. */
+/**
+ * The next `window` iqamah fire times (prayer/adhan time plus offset) after `now`, per prayer. Empty when offset is 0,
+ * without coordinates, or without prayers. Adhan stays at the prayer time; iqamah follows it (ADR 0056).
+ */
+export function iqamahFireDates(
+  prayers: readonly NextPrayerName[],
+  now: Date,
+  coords: SyncCoordinates | null,
+  offsetMinutes: number,
+  days: number,
+): PrayerFire[] {
+  if (offsetMinutes <= 0 || coords === null || prayers.length === 0 || days <= 0) {
+    return [];
+  }
+
+  const offsetMs = offsetMinutes * 60_000;
+  const dayTimes: PrayerTimesOutput[] = [];
+  for (let index = 0; index <= days; index += 1) {
+    const day = new Date(now);
+    day.setDate(now.getDate() + index);
+    dayTimes.push(timesFor(day, coords));
+  }
+
+  const nowMs = now.getTime();
+  const fires: PrayerFire[] = [];
+  for (const prayer of prayers) {
+    const upcoming = dayTimes
+      .map((times) => times[prayer].getTime() + offsetMs)
+      .filter((ms) => Number.isFinite(ms) && ms > nowMs)
+      .sort((a, b) => a - b)
+      .slice(0, days);
+    for (const ms of upcoming) {
+      fires.push({ prayer, date: new Date(ms) });
+    }
+  }
+  return fires;
+}
+
+function manualCityPlaceName(): string | undefined {
+  if (getStoredLocationSource() !== 'manual') {
+    return undefined;
+  }
+  const manualCityId = getStoredManualCityId();
+  if (manualCityId === undefined) {
+    return undefined;
+  }
+  const city = getCityById(manualCityId);
+  if (city === undefined) {
+    return undefined;
+  }
+  return getLocale() === 'ar' ? city.ar : city.en;
+}
+
+/** Title «حان وقت صلاة الفجر» and a factual adhan body; optional manual city in the body; tap opens الصلاة. */
 export function prayerNotificationContent(
   prayer: NextPrayerName,
   sound: PrayerSoundId = getPrayerSound(),
 ): PrayerNotificationContent {
+  const name = i18n.t(PRAYER_NAME_KEYS[prayer]);
+  const place = manualCityPlaceName();
+  const body =
+    place === undefined
+      ? i18n.t('notifications.prayer.body', { name })
+      : i18n.t('notifications.prayer.bodyWithPlace', { name, place });
   return {
-    title: i18n.t('notifications.prayer.title', { name: i18n.t(PRAYER_NAME_KEYS[prayer]) }),
-    body: i18n.t(`notifications.prayer.body.${prayer}`),
+    title: i18n.t('notifications.prayer.title', { name }),
+    body,
     data: { route: PRAYER_ROUTE },
     sound: contentSound(sound),
+  };
+}
+
+/** System-sound iqamah heads-up; tap opens الصلاة (ADR 0056). */
+export function iqamahNotificationContent(prayer: NextPrayerName): IqamahNotificationContent {
+  const name = i18n.t(PRAYER_NAME_KEYS[prayer]);
+  return {
+    title: i18n.t('notifications.iqamah.title'),
+    body: i18n.t('notifications.iqamah.body', { name }),
+    data: { route: PRAYER_ROUTE, kind: 'iqamah' },
+    sound: 'default',
   };
 }
 
@@ -117,6 +202,17 @@ export function prayerNotificationContent(
 function prayerTrigger(date: Date, sound: PrayerSoundId): Notifications.NotificationTriggerInput {
   return Platform.OS === 'android'
     ? { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: prayerChannelId(sound) }
+    : { type: Notifications.SchedulableTriggerInputTypes.DATE, date };
+}
+
+/** Iqamah uses the system-sound `prayer` channel on Android, never an adhan voice channel (ADR 0056). */
+function iqamahTrigger(date: Date): Notifications.NotificationTriggerInput {
+  return Platform.OS === 'android'
+    ? {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date,
+        channelId: NOTIFICATION_CHANNELS.prayer,
+      }
     : { type: Notifications.SchedulableTriggerInputTypes.DATE, date };
 }
 
@@ -146,6 +242,7 @@ function scheduleSettings(): string {
   return JSON.stringify({
     prayers: enabledPrayers(),
     sound: getPrayerSound(),
+    iqamahOffset: getIqamahOffsetMinutes(),
     source: storage.getString(storageKeys.salah.locationSource) ?? null,
     manualCityId: storage.getString(storageKeys.salah.manualCityId) ?? null,
     manualLat: storage.getNumber(storageKeys.salah.manualLat) ?? null,
@@ -162,18 +259,31 @@ const settingsKey = `${storageKeys.salah.notificationsSync}.settings`;
  * can skip it while nothing moved. A failure part-way clears that record, so the next check plans again.
  */
 export async function syncPrayerNotifications({ now, coords }: { now: Date; coords: SyncCoordinates | null }): Promise<void> {
-  const fires = prayerFireDates(enabledPrayers(), now, coords);
+  const prayers = enabledPrayers();
+  const offset = getIqamahOffsetMinutes();
+  const days = prayerRollingDays(offset);
+  const adhanFires = prayerFireDates(prayers, now, coords, days);
+  const iqamahFires = iqamahFireDates(prayers, now, coords, offset, days);
   const sound = getPrayerSound();
   try {
     await cancelPrayerNotifications();
     await prunePrayerChannels();
-    if (fires.length > 0) {
+    if (adhanFires.length > 0) {
       await ensurePrayerChannel(sound);
     }
-    for (const fire of fires) {
+    if (iqamahFires.length > 0) {
+      await ensureNotificationChannel(NOTIFICATION_CHANNELS.prayer);
+    }
+    for (const fire of adhanFires) {
       await Notifications.scheduleNotificationAsync({
         content: prayerNotificationContent(fire.prayer, sound),
         trigger: prayerTrigger(fire.date, sound),
+      });
+    }
+    for (const fire of iqamahFires) {
+      await Notifications.scheduleNotificationAsync({
+        content: iqamahNotificationContent(fire.prayer),
+        trigger: iqamahTrigger(fire.date),
       });
     }
   } catch (error) {
@@ -253,6 +363,15 @@ export function resyncPrayerNotificationsIfNeeded(now: Date = new Date()): Promi
  */
 export async function setPrayerSound(id: PrayerSoundId, now: Date = new Date()): Promise<void> {
   setPrayerSoundValue(id);
+  await resyncPrayerNotifications(now);
+}
+
+/**
+ * Sets the global iqamah offset (ADR 0056). Invalid values are ignored. The setting is written first, then the schedule
+ * is re-planned once.
+ */
+export async function setIqamahOffset(minutes: IqamahOffsetMinutes, now: Date = new Date()): Promise<void> {
+  setIqamahOffsetMinutes(minutes);
   await resyncPrayerNotifications(now);
 }
 

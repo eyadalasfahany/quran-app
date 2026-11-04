@@ -11,7 +11,7 @@ export function WidgetsHelpSteps({
   namespace,
   testID,
 }: {
-  namespace: 'widgetsHelp.android' | 'widgetsHelp.ios';
+  namespace: 'widgetsHelp.android' | 'widgetsHelp.androidLock' | 'widgetsHelp.ios';
   testID?: string;
 }) {
   const { t } = useTranslation();

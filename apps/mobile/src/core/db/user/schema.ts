@@ -206,3 +206,8 @@ export const duaFavorites = sqliteTable('dua_favorites', {
   duaKey: text('dua_key').primaryKey(),
   createdAt: integer('created_at').notNull(),
 });
+
+export const namesFavorites = sqliteTable('names_favorites', {
+  nameSlug: text('name_slug').primaryKey(),
+  createdAt: integer('created_at').notNull(),
+});

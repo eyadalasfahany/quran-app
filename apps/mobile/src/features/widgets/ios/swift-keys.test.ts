@@ -16,6 +16,10 @@ describe('Snapshot.swift CodingKeys drift guard', () => {
   it('Swift TaybahSnapshot top-level fields match the golden fixture', () => {
     const swift = fs.readFileSync(SWIFT_PATH, 'utf8');
     for (const key of topLevelFixtureKeys()) {
+      if (key === 'colorMode') {
+        expect(swift).toMatch(/let colorMode: String\?/);
+        continue;
+      }
       expect(swift).toMatch(new RegExp(`let\\s+${key}:`));
     }
   });

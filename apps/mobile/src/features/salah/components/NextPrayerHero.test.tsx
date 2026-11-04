@@ -52,4 +52,19 @@ describe('NextPrayerHero', () => {
 
     expect(flatStyle(view.getByTestId('salah-hero').props.style).backgroundColor).toBe(themes.dark.colors.brandSurface);
   });
+
+  it('lays the progress track out in a row so RTL fills from the start edge', async () => {
+    const view = await renderUi(<NextPrayerHero {...PROPS} />);
+
+    expect(flatStyle(view.getByTestId('salah-hero-track').props.style).flexDirection).toBe('row');
+  });
+
+  it('veils the photo with design tokens, not hard-coded rgba', async () => {
+    const view = await renderUi(<NextPrayerHero {...PROPS} />);
+
+    expect(flatStyle(view.getByTestId('salah-hero-veil').props.style).backgroundColor).toBe(themes.light.colors.salahHeroVeil);
+    expect(flatStyle(view.getByTestId('salah-hero-veil-lower').props.style).backgroundColor).toBe(
+      themes.light.colors.salahHeroVeilLower,
+    );
+  });
 });

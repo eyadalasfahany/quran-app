@@ -63,6 +63,7 @@ export function fullSnapshot(overrides: Partial<WidgetSnapshot> = {}): WidgetSna
       ],
     },
     reading: { ayah: 255, page: 42, surah: 'SURAH placeholder', verseKey: '2:255' },
+    colorMode: 'light',
     schemaVersion: 1,
     wird: { done: 4, target: 10 },
     writtenAt: new Date(2026, 10, 2, 0, 0).getTime(),

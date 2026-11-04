@@ -8,6 +8,7 @@ import {
   type WidgetProgress,
   type WidgetReading,
   type WidgetSnapshot,
+  type WidgetColorMode,
   type WidgetWird,
 } from './types';
 
@@ -17,6 +18,7 @@ import {
  */
 export type WidgetSnapshotInput = {
   now: number;
+  colorMode: WidgetColorMode;
   locale: WidgetLocale;
   labels: WidgetLabels;
   prayer: WidgetPrayer;
@@ -31,6 +33,7 @@ export type WidgetSnapshotInput = {
 export function buildWidgetSnapshot(input: WidgetSnapshotInput): WidgetSnapshot {
   return {
     azkar: input.azkar,
+    colorMode: input.colorMode,
     labels: { ...input.labels },
     locale: input.locale,
     misbaha: { ...input.misbaha },

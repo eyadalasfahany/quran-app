@@ -7,16 +7,18 @@ import { IconButton, UiText } from '@/shared/ui';
 import type { AzkarRecording } from '../data/model';
 import { useIsFavorite } from '../data';
 import { toggleFavorite } from '../data/favorites-repository';
-import { AzkarDownloadButton } from './AzkarDownloadButton';
+// Play and download — kept for later; hidden for now (developer 4 Nov 2026).
+// import { AzkarDownloadButton } from './AzkarDownloadButton';
+// import { AzkarPlayerControl } from './AzkarPlayerControl';
 
 const SHARE = { ios: 'square.and.arrow.up', android: 'share' } as const;
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 const BOOKMARK_FILLED = { ios: 'bookmark.fill', android: 'bookmark_added' } as const;
 
 /**
- * The actions under the dhikr: text size (Aa), share, favourite and, when the unit has a licensed recording, its download
- * (ADR 0031 §8). Playback is not here: the reader's player bar owns play and pause. The favourite is saved per entry in
- * user.db and follows the live query, so it stays in step on every screen.
+ * The actions under the dhikr: favourite, share, text size (Aa). Play/pause and download are commented out for now
+ * (developer 4 Nov 2026); the props and commented block stay so they can return without an API change. Playback lives
+ * here; the reader has no mini player bar. The favourite is saved per entry in user.db and follows the live query.
  */
 export function AzkarReaderActions({
   entryKey,
@@ -24,6 +26,7 @@ export function AzkarReaderActions({
   onTextSize,
   textSizeOpen,
   recording = null,
+  playControl = null,
   testID = 'azkar-reader-actions',
 }: {
   entryKey: string;
@@ -32,14 +35,31 @@ export function AzkarReaderActions({
   textSizeOpen: boolean;
   /** The unit's licensed recording, or null. Null draws no download control. */
   recording?: AzkarRecording | null;
+  /** Play and pause when the caller shows licensed audio; null hides the control (offline or no recording). */
+  playControl?: { playing: boolean; loading?: boolean; onToggle: () => void } | null;
   testID?: string;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const favorite = useIsFavorite(entryKey);
+  // Props kept so callers and the commented play/download block stay typed.
+  void recording;
+  void playControl;
 
   return (
     <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[6], justifyContent: 'center' }} testID={testID}>
+      <IconButton
+        icon={favorite ? BOOKMARK_FILLED : BOOKMARK}
+        label={favorite ? t('azkar.reader.favouriteRemove') : t('azkar.reader.favouriteAdd')}
+        onPress={() => {
+          toggleFavorite(entryKey);
+        }}
+        pressed={favorite}
+        testID="azkar-favourite"
+        tone="muted"
+        variant="plain"
+      />
+      <IconButton icon={SHARE} label={t('azkar.reader.share')} onPress={onShare} testID="azkar-share" tone="muted" variant="plain" />
       <Pressable
         accessibilityLabel={t('azkar.reader.textSize')}
         accessibilityRole="button"
@@ -52,19 +72,17 @@ export function AzkarReaderActions({
           {t('azkar.reader.textSizeGlyph')}
         </UiText>
       </Pressable>
-      <IconButton icon={SHARE} label={t('azkar.reader.share')} onPress={onShare} testID="azkar-share" tone="muted" variant="plain" />
-      <IconButton
-        icon={favorite ? BOOKMARK_FILLED : BOOKMARK}
-        label={favorite ? t('azkar.reader.favouriteRemove') : t('azkar.reader.favouriteAdd')}
-        onPress={() => {
-          toggleFavorite(entryKey);
-        }}
-        pressed={favorite}
-        testID="azkar-favourite"
-        tone="muted"
-        variant="plain"
-      />
+      {/* Play and download — kept for later; hidden for now (developer 4 Nov 2026).
+      {playControl == null ? null : (
+        <AzkarPlayerControl
+          loading={playControl.loading === true}
+          onPress={playControl.onToggle}
+          playing={playControl.playing}
+          testID="azkar-actions-play"
+        />
+      )}
       {recording === null ? null : <AzkarDownloadButton recording={recording} />}
+      */}
     </View>
   );
 }

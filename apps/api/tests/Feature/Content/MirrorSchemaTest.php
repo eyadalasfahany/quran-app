@@ -64,6 +64,13 @@ it('stores quran text in the binary collation and no other text column', functio
         ->all();
 
     expect($binary)->toBe([
+        'dua_groups.title',
+        'dua_hadith.attribution',
+        'dua_hadith.explanation',
+        'dua_hadith.grade',
+        'dua_hadith.hadeeth',
+        'dua_hadith.reference',
+        'dua_hadith.title',
         'tafsir_entries.html',
         'word_layouts.glyph',
     ]);

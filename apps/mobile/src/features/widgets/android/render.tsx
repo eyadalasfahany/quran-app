@@ -33,10 +33,11 @@ const LAYOUTS: Record<WidgetProviderName, (ctx: WidgetContext) => ReturnType<typ
 };
 
 /** A snapshot with the app's own labels and no data: only the labels matter to the open-the-app state. */
-function openAppSnapshot(now: Date): WidgetSnapshot {
+function openAppSnapshot(now: Date, colorMode: WidgetMode): WidgetSnapshot {
   const locale = getLocale();
   return buildWidgetSnapshot({
     azkar: null,
+    colorMode,
     labels: buildWidgetLabels(i18n.getFixedT(locale)),
     locale,
     misbaha: { count: 0, target: null, todayTotal: 0 },
@@ -63,12 +64,19 @@ export function renderProvider(
   scheme: string,
 ): RenderedWidget {
   if (snapshot === null) {
-    const empty = openAppSnapshot(now);
-    const ctx = widgetContext({ mode: 'light', now, scheme, snapshot: empty });
-    const darkCtx = widgetContext({ mode: 'dark', now, scheme, snapshot: empty });
-    return { dark: OpenAppWidget(darkCtx), light: OpenAppWidget(ctx) };
+    return {
+      dark: OpenAppWidget(
+        widgetContext({ mode: 'dark', now, scheme, snapshot: openAppSnapshot(now, 'dark') }),
+      ),
+      light: OpenAppWidget(
+        widgetContext({ mode: 'light', now, scheme, snapshot: openAppSnapshot(now, 'light') }),
+      ),
+    };
   }
-  return { dark: draw(name, snapshot, now, scheme, 'dark'), light: draw(name, snapshot, now, scheme, 'light') };
+  return {
+    dark: draw(name, snapshot, now, scheme, 'dark'),
+    light: draw(name, snapshot, now, scheme, 'light'),
+  };
 }
 
 /** Whether `name` is one of the providers the app ships. */

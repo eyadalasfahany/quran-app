@@ -1,3 +1,4 @@
+import CoreText
 import SwiftUI
 import WidgetKit
 
@@ -40,6 +41,7 @@ struct WatchComplicationView: View {
       }
     }
     .widgetAccentable()
+    .containerBackground(for: .widget) { Color.clear }
   }
 
   @ViewBuilder
@@ -138,6 +140,12 @@ struct WatchInlineComplication: Widget {
 
 @main
 struct TaybahWatchWidgetBundle: WidgetBundle {
+  init() {
+    if let url = Bundle.main.url(forResource: "Amiri-Bold", withExtension: "ttf") {
+      CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+    }
+  }
+
   var body: some Widget {
     WatchInlineComplication()
   }

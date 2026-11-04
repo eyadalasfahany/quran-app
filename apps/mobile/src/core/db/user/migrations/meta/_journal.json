@@ -43,6 +43,13 @@
       "when": 1793533950000,
       "tag": "0005_my_duas",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793535000000,
+      "tag": "0006_names_favorites",
+      "breakpoints": true
     }
   ]
 }

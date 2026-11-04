@@ -2,7 +2,7 @@ import { MisbahaWidget } from './MisbahaWidget';
 import { widgetContext } from './context';
 import { MISBAHA_TAP_ACTION } from './names';
 import { fullSnapshot } from '../snapshot/test-fixtures';
-import { hasArabicIndicNumerals, ofKind, startAlignedFullWidthLabels, styleOf, textsOf } from './test-tree';
+import { hasArabicIndicNumerals, startAlignedFullWidthLabels, styleOf, textsOf, walk } from './test-tree';
 
 const now = new Date(2026, 10, 2, 12, 0);
 const ctx = (
@@ -17,7 +17,7 @@ describe('MisbahaWidget', () => {
   });
 
   it('has a plus that sends the tap action, separate from the card tap', () => {
-    const plus = ofKind(MisbahaWidget(ctx()), 'LinearLayoutWidget').find((el) => el.props.clickAction === MISBAHA_TAP_ACTION);
+    const plus = walk(MisbahaWidget(ctx())).find((el) => el.props.clickAction === MISBAHA_TAP_ACTION);
     expect(plus).toBeDefined();
     expect(plus?.props.accessibilityLabel).toBe('LABEL countAction');
   });
@@ -40,9 +40,37 @@ describe('MisbahaWidget', () => {
     expect(startAlignedFullWidthLabels(MisbahaWidget(ctx('ar')), true)).toBe(true);
   });
 
-  it('uses the dark palette in dark mode', () => {
-    const light = styleOf(ofKind(MisbahaWidget(ctx('en', 'light')), 'LinearLayoutWidget')[0]!);
-    const dark = styleOf(ofKind(MisbahaWidget(ctx('en', 'dark')), 'LinearLayoutWidget')[0]!);
-    expect(light.backgroundColor).not.toBe(dark.backgroundColor);
+  it('uses the dark palette gold on the misbaha ring', () => {
+    const lightCtx = ctx('en', 'light');
+    const darkCtx = ctx('en', 'dark');
+    const ringSvg = (tree: ReturnType<typeof MisbahaWidget>) =>
+      walk(tree).find((node) => typeof node.props.svg === 'string' && styleOf(node).width === 76)?.props.svg as
+        | string
+        | undefined;
+    expect(ringSvg(MisbahaWidget(lightCtx))).toContain(lightCtx.palette.gold.slice(1));
+    expect(ringSvg(MisbahaWidget(darkCtx))).toContain(darkCtx.palette.gold.slice(1));
+    expect(lightCtx.palette.gold).not.toBe(darkCtx.palette.gold);
+  });
+
+  it('draws the plus as a centred SVG on a cream disc with brandSurface stroke', () => {
+    const { palette } = ctx();
+    const plus = walk(MisbahaWidget(ctx())).find((el) => el.props.clickAction === MISBAHA_TAP_ACTION);
+    expect(plus).toBeDefined();
+    expect(styleOf(plus!).backgroundColor).toBe(palette.onBrandSurface);
+    expect(walk(plus!).some((node) => typeof node.props.svg === 'string' && (node.props.svg as string).includes('path'))).toBe(
+      true,
+    );
+  });
+
+  it('places the plus beside the target band in one footer row', () => {
+    const tree = MisbahaWidget(ctx());
+    const plus = walk(tree).find((el) => el.props.clickAction === MISBAHA_TAP_ACTION);
+    expect(plus).toBeDefined();
+    const footerRow = walk(tree).find(
+      (node) =>
+        styleOf(node).flexDirection === 'row' &&
+        walk(node).some((child) => child.props.clickAction === MISBAHA_TAP_ACTION),
+    );
+    expect(footerRow).toBeDefined();
   });
 });

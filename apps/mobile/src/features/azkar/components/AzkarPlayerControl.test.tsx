@@ -12,6 +12,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 const mockReduceMotion = useReducedMotion as unknown as jest.Mock;
+const hidden = { includeHiddenElements: true };
 
 describe('AzkarPlayerControl', () => {
   beforeEach(() => {
@@ -62,5 +63,24 @@ describe('AzkarPlayerControl', () => {
   it('is labelled in English', async () => {
     await renderUi(<AzkarPlayerControl onPress={jest.fn()} playing={false} />, { locale: 'en' });
     expect(screen.getByRole('button', { name: 'Play recording' })).toBeTruthy();
+  });
+
+  it('draws no buffering ring when not loading', async () => {
+    await renderUi(<AzkarPlayerControl onPress={jest.fn()} playing={false} testID="ctl" />);
+    expect(screen.queryByTestId('ctl-ring', hidden)).toBeNull();
+  });
+
+  it('shows pause label, busy state and the buffering ring while loading', async () => {
+    await renderUi(<AzkarPlayerControl loading onPress={jest.fn()} playing={false} testID="ctl" />);
+    const button = screen.getByRole('button', { name: 'إيقاف التسجيل مؤقتًا' });
+    expect(button.props.accessibilityState).toEqual({ busy: true, disabled: false });
+    expect(screen.getByTestId('ctl-ring', hidden)).toBeTruthy();
+    expect(screen.getByTestId('ctl-play', hidden)).toBeTruthy();
+  });
+
+  it('draws no ring while playing without loading', async () => {
+    await renderUi(<AzkarPlayerControl onPress={jest.fn()} playing testID="ctl" />);
+    expect(screen.queryByTestId('ctl-ring', hidden)).toBeNull();
+    expect(screen.getByRole('button', { name: 'إيقاف التسجيل مؤقتًا' }).props.accessibilityState).toEqual({ disabled: false });
   });
 });

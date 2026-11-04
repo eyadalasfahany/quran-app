@@ -13,9 +13,10 @@ use Illuminate\Support\Facades\File;
 final class PinnedSnapshotVerifier
 {
     /**
+     * @param  non-empty-string  $packNamespace  Storage and config namespace: `azkar` or `duas`.
      * @return array{directory: string, manifest_sha256: string}|null
      */
-    public function existing(string $source, string $date, string $pin): ?array
+    public function existing(string $source, string $date, string $pin, string $packNamespace = 'azkar'): ?array
     {
         if ($pin === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1) {
             return null;
@@ -25,7 +26,15 @@ final class PinnedSnapshotVerifier
             return null;
         }
 
-        $directory = storage_path('app/azkar/'.$source.'/'.$date);
+        if (! in_array($packNamespace, ['azkar', 'duas'], true)) {
+            return null;
+        }
+
+        if ($packNamespace === 'duas' && $source !== 'hadeethenc') {
+            return null;
+        }
+
+        $directory = storage_path('app/'.$packNamespace.'/'.$source.'/'.$date);
         $manifestPath = $directory.DIRECTORY_SEPARATOR.'manifest.json';
 
         if (! File::isFile($manifestPath)) {

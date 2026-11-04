@@ -46,6 +46,8 @@ Status: code and tests done; device delivery (the exit check) still open, becaus
 - Cancellation scans the OS pending list by route rather than keeping a list of ids in MMKV. The pending list is then the source of truth, and an orphaned id is also cancelled.
 - The location trigger is an MMKV value listener on the four Salah location keys. It is coalesced by the sync queue, so a manual city (four writes) causes one re-plan. This avoids editing the Salah location flow.
 
+**Follow-on (step 4b, ADR 0056):** Iqamah offset — global minutes-before-prayer reminder with system default sound; conditional 4-day rolling window when enabled. Brief: `step-04b-iqamah-offset-notifications.md`, plan `docs/plans/iqamah-offset.md`.
+
 **Open items for the developer:**
 - The Settings section «إشعارات الصلاة» has no frame in `quran-app-screens.html` (`#Settings` has only «الورد والتذكير»). It reuses the existing `SettingsGroup` and `ToggleRow` tokens. ADR 0010 needs a frame or approval before review.
 - A location permission granted while a bell is already on is picked up at the next foreground (no permission-change event is wired).

@@ -15,6 +15,8 @@ import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { useAzkarAvailable, useRecentAzkarItems } from '@/features/azkar/data';
 import { azkarHref } from '@/features/azkar/routes';
+import { useDuasAvailable } from '@/features/duas/data/hooks';
+import { duasHref } from '@/features/duas/routes';
 import { pause } from '@/features/audio/player';
 import { isStartingFor, listenMatch, useStartState } from '@/features/audio/hooks/useIsStarting';
 import { usePlayerStore } from '@/features/audio/playerStore';
@@ -58,6 +60,7 @@ const SURAHS_ICON: IconName = { ios: 'list.bullet', android: 'format_list_bullet
 const SAVED_ICON: IconName = { ios: 'bookmark', android: 'bookmark' };
 const RECITERS_ICON: IconName = { ios: 'headphones', android: 'headphones' };
 const AZKAR_ICON: IconName = { ios: 'circle.dotted', android: 'scatter_plot' };
+const DUAS_ICON: IconName = { ios: 'hands.sparkles', android: 'volunteer_activism' };
 const SIBHA_ICON: IconName = { ios: 'circle.circle', android: 'adjust' };
 
 /**
@@ -81,6 +84,7 @@ export function HomeScreen() {
   const startState = useStartState();
   // The Azkar blocks show only once Azkar content is installed (ADR 0017, ADR 0031 §10).
   const azkarAvailable = useAzkarAvailable();
+  const duasAvailable = useDuasAvailable();
   const homeWird = useHomeWird();
   const { goals } = useDailyGoals();
   const continueAzkar = useAzkarMenuPreview().resume;
@@ -113,6 +117,9 @@ export function HomeScreen() {
     { icon: SURAHS_ICON, key: 'surahs', label: t('home.tiles.surahs'), onPress: () => router.navigate(tabHref('(mushaf)')) },
     ...(azkarAvailable
       ? [{ icon: AZKAR_ICON, key: 'azkar', label: t('home.tiles.azkar'), onPress: () => router.push(azkarHref.home) }]
+      : []),
+    ...(duasAvailable
+      ? [{ icon: DUAS_ICON, key: 'duas', label: t('home.tiles.duas'), onPress: () => router.push(duasHref.home) }]
       : []),
     // Misbaha has no religious content, so its tile does not wait for Azkar content.
     { icon: SIBHA_ICON, key: 'sibha', label: t('home.tiles.misbaha'), onPress: () => router.push('/sibha' as Href) },

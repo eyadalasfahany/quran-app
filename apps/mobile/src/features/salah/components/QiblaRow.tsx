@@ -43,7 +43,8 @@ export function QiblaRow({
         flexDirection: 'row',
         gap: theme.space[4],
         opacity: pressed ? theme.opacity.pressed : 1,
-        paddingHorizontal: 18,
+        // Frame inset ~18; ADR 0057: tokenised spacing (space[4] = 16), not a magic number.
+        paddingHorizontal: theme.space[4],
         paddingVertical: theme.space[4],
       })}
       testID={testID}

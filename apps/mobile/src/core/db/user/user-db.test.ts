@@ -62,6 +62,7 @@ describe('user.db schema', () => {
       'khatma_logs',
       'khatma_plans',
       'my_duas',
+      'names_favorites',
       'notes',
       'outbox',
       'recent_listens',

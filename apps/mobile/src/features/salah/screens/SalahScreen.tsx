@@ -31,21 +31,19 @@ import { useNextPrayer, usePrayerClock, usePrayerLocation } from '../hooks';
 
 const EMPTY_LOCATION: IconName = { ios: 'location.slash', android: 'location_off' };
 
-// The six lines of the times card, with the frames' scene crop for each (quran-app-screens.html, #Salah).
+// Six lines of the times card (glyph + name + time + bell; ADR 0057 times-card redesign).
 const ROWS = [
-  { key: 'fajr', scene: require('../../../../assets/salah/fajr.jpg'), focusY: 0.8, prayer: 'fajr' },
-  { key: 'sunrise', scene: require('../../../../assets/salah/shurouq.jpg'), focusY: 0.53, prayer: null },
-  { key: 'dhuhr', scene: require('../../../../assets/salah/dhuhr.jpg'), focusY: 0.05, prayer: 'dhuhr' },
-  { key: 'asr', scene: require('../../../../assets/salah/asr.jpg'), focusY: 0.43, prayer: 'asr' },
-  { key: 'maghrib', scene: require('../../../../assets/salah/maghrib.jpg'), focusY: 0.57, prayer: 'maghrib' },
-  { key: 'isha', scene: require('../../../../assets/salah/isha.jpg'), focusY: 0.39, prayer: 'isha' },
-] as const satisfies readonly { key: keyof PrayerTimesOutput; scene: number; focusY: number; prayer: NextPrayerName | null }[];
+  { key: 'fajr', prayer: 'fajr' },
+  { key: 'sunrise', prayer: null },
+  { key: 'dhuhr', prayer: 'dhuhr' },
+  { key: 'asr', prayer: 'asr' },
+  { key: 'maghrib', prayer: 'maghrib' },
+  { key: 'isha', prayer: 'isha' },
+] as const satisfies readonly { key: keyof PrayerTimesOutput; prayer: NextPrayerName | null }[];
 
 /**
- * The الصلاة tab: the date header, the next-prayer hero, the six times over their scenes,
- * and the qibla row (quran-app-screens.html, #Salah). Composition only — every block is a
- * feature component. The screen re-renders when the prayer state changes (at a prayer time or at midnight, from
- * usePrayerClock); the hero's one-second countdown ticks in its own component.
+ * The الصلاة tab: scenic next-prayer hero, redesigned times card with bells, qibla.
+ * Composition only. Hero countdown ticks in NextPrayerCountdown.
  */
 export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   const { t } = useTranslation();
@@ -89,17 +87,17 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
             <PrayerTimeRow
               active={next?.name === row.key}
               bell={row.prayer === null ? undefined : <PrayerBell prayer={row.prayer} testID={`salah-bell-${row.prayer}`} />}
-              focusY={row.focusY}
               key={row.key}
               last={index === ROWS.length - 1}
               muted={row.key === 'sunrise'}
               name={t(`home.salah.${row.key}`)}
-              scene={row.scene}
+              past={times[row.key].getTime() <= now.getTime() && next?.name !== row.key}
+              prayerKey={row.key}
               testID={`salah-row-${row.key}`}
               time={formatPrayerTime(times[row.key], locale)}
             />
           )),
-    [locale, next?.name, t, times],
+    [locale, next?.name, now, t, times],
   );
 
   return (

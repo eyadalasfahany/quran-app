@@ -1,5 +1,5 @@
 import { GlassView } from 'expo-glass-effect';
-import { useEffect, useRef, useState, type ComponentRef } from 'react';
+import { useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import {
   AccessibilityInfo,
   findNodeHandle,
@@ -55,11 +55,14 @@ export function ConfirmDialog({
   destructive = false,
   onConfirm,
   onCancel,
+  children,
   testID = 'confirm-dialog',
 }: {
   visible: boolean;
   title: string;
   message?: string;
+  /** Extra body content after the message and before the actions (widget preview, pickers). */
+  children?: ReactNode;
   // The badge at the top of the card. Destructive dialogs draw it in the danger colour.
   icon?: IconName;
   confirmLabel: string;
@@ -201,6 +204,7 @@ export function ConfirmDialog({
               </UiText>
             ) : null}
           </View>
+          {children ? <View style={{ marginTop: theme.space[4] }}>{children}</View> : null}
           <View style={{ marginTop: theme.space[6] }}>
             <ConfirmDialogActions
               cancelLabel={cancelLabel}

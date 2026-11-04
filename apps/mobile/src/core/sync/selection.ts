@@ -1,12 +1,15 @@
 import type { ContentManifestResource } from '@quran/api-contract';
 
 import { storage, storageKeys } from '@/core/storage/mmkv';
+import type { PackGroup } from '@/core/sync/content-tables';
 import { readReaderResourceOverride } from '@/features/reader/settings-model';
+
+const AUTO_SELECTED_PACK_GROUPS: readonly PackGroup[] = ['azkar', 'duas'];
 
 // Saved selection, else the default. A tafsir installs only when the reader picks one (ADR 0019).
 export function selectedResourceIds(resources: readonly ContentManifestResource[]): number[] {
   const saved = readSavedSelection();
-  const base = withAzkar(saved ?? defaultSelectedResourceIds(resources), resources);
+  const base = withAutoSelectedPacks(saved ?? defaultSelectedResourceIds(resources), resources);
   return applyReaderResourceOverride(base, resources);
 }
 
@@ -25,15 +28,14 @@ export function defaultSelectedResourceIds(resources: readonly ContentManifestRe
   if (recitation !== undefined) {
     ids.push(recitation.id);
   }
-  return withAzkar(ids, resources);
+  return withAutoSelectedPacks(ids, resources);
 }
 
-// Azkar installs with no user choice (ADR 0031 §9): every azkar resource in the manifest is selected.
-// An absent one is never listed, so it is never requested.
-function withAzkar(base: readonly number[], resources: readonly ContentManifestResource[]): number[] {
+// Azkar and Duas install with no user choice (ADR 0031 §9, ADR 0044-duas): every listed resource is selected.
+function withAutoSelectedPacks(base: readonly number[], resources: readonly ContentManifestResource[]): number[] {
   const ids = [...base];
   for (const resource of resources) {
-    if (resource.group === 'azkar' && !ids.includes(resource.id)) {
+    if (AUTO_SELECTED_PACK_GROUPS.includes(resource.group as PackGroup) && !ids.includes(resource.id)) {
       ids.push(resource.id);
     }
   }

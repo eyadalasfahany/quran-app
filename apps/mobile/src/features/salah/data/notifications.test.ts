@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { i18n } from '@/core/i18n';
+import { saveLocale } from '@/core/i18n/locale';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import {
   AZKAR_SLOTS,
@@ -10,17 +11,24 @@ import {
   IOS_PENDING_LIMIT,
   MISBAHA_REMINDER_SLOTS,
   PRAYER_NOTIFICATION_SLOTS,
+  PRAYER_ROLLING_DAYS_WITH_IQAMAH,
+  prayerRollingDays,
 } from '@/features/notifications/budget';
 import { writeSyncState, currentSyncState } from '@/features/notifications/sync-state';
 
 import { ADHAN_VOICES, DEFAULT_PRAYER_SOUND, PRAYER_SOUND_IDS, type PrayerSoundId } from './adhan-sounds';
 import { getCoordinates } from './location';
+
+import { setIqamahOffsetMinutes } from './iqamah-offset';
 import {
   enabledPrayers,
+  iqamahFireDates,
+  iqamahNotificationContent,
   prayerFireDates,
   prayerNotificationContent,
   resyncPrayerNotifications,
   resyncPrayerNotificationsIfNeeded,
+  setIqamahOffset,
   setPrayerBell,
   setPrayerSound,
   syncPrayerNotifications,
@@ -28,6 +36,7 @@ import {
 import { timesFor, type NextPrayerName } from './prayer-times';
 
 jest.mock('./location', () => ({
+  ...jest.requireActual('./location'),
   getCoordinates: jest.fn(),
 }));
 
@@ -61,6 +70,14 @@ let sequence = 0;
 
 function prayerPending(): Pending[] {
   return pending.filter((request) => request.content.data?.route === '/salah');
+}
+
+function adhanPending(): Pending[] {
+  return prayerPending().filter((request) => request.content.data?.kind !== 'iqamah');
+}
+
+function iqamahPending(): Pending[] {
+  return prayerPending().filter((request) => request.content.data?.kind === 'iqamah');
 }
 
 function scheduledCalls() {
@@ -179,6 +196,71 @@ describe('prayer notifications', () => {
       expect(prayerFireDates(PRAYERS, NOW, null)).toEqual([]);
       expect(prayerFireDates([], NOW, LONDON)).toEqual([]);
     });
+
+    it('honours a custom day window (4 days when iqamah offset is on)', () => {
+      const days = prayerRollingDays(10);
+      expect(days).toBe(PRAYER_ROLLING_DAYS_WITH_IQAMAH);
+      const fires = prayerFireDates(PRAYERS, NOW, LONDON, days);
+      for (const prayer of PRAYERS) {
+        expect(fires.filter((fire) => fire.prayer === prayer)).toHaveLength(4);
+      }
+      expect(fires).toHaveLength(20);
+    });
+  });
+
+  describe('iqamahFireDates (schedule math)', () => {
+    it('returns nothing when offset is 0', () => {
+      expect(iqamahFireDates(PRAYERS, NOW, LONDON, 0, 4)).toEqual([]);
+    });
+
+    it('adds the offset to each prayer time and keeps 4 futures per prayer', () => {
+      const fires = iqamahFireDates(PRAYERS, NOW, LONDON, 10, 4);
+      for (const prayer of PRAYERS) {
+        const mine = fires.filter((fire) => fire.prayer === prayer);
+        expect(mine).toHaveLength(4);
+        expect(mine.every((fire) => fire.date.getTime() > NOW.getTime())).toBe(true);
+      }
+      expect(fires).toHaveLength(20);
+    });
+
+    it('fires 10 minutes after the adhan time for maghrib', () => {
+      const fires = iqamahFireDates(['maghrib'], NOW, LONDON, 10, 4);
+      const adhan = prayerFireDates(['maghrib'], NOW, LONDON, 4);
+      expect(fires[0]?.date.getTime()).toBe(adhan[0]!.date.getTime() + 10 * 60_000);
+    });
+
+    it('skips fire times at or before now', () => {
+      const late = local(2026, 10, 31, 18, 0);
+      const fires = iqamahFireDates(['maghrib'], late, LONDON, 5, 4);
+      expect(fires.every((fire) => fire.date.getTime() > late.getTime())).toBe(true);
+    });
+
+    it('returns nothing without coordinates', () => {
+      expect(iqamahFireDates(PRAYERS, NOW, null, 10, 4)).toEqual([]);
+    });
+  });
+
+  describe('iqamahNotificationContent', () => {
+    it('uses iqamah copy, default sound and kind in Arabic', async () => {
+      await i18n.changeLanguage('ar');
+      const content = iqamahNotificationContent('fajr');
+
+      expect(content.title).toBe('الإقامة بعد قليل');
+      expect(content.body).toContain(i18n.t('home.salah.fajr'));
+      expect(content.data).toEqual({ route: '/salah', kind: 'iqamah' });
+      expect(content.sound).toBe('default');
+    });
+
+    it('titles and bodies in English when the reader chose English', async () => {
+      await i18n.changeLanguage('en');
+      try {
+        const content = iqamahNotificationContent('maghrib');
+        expect(content.title).toBe('Iqamah soon');
+        expect(content.body).toContain('Maghrib');
+      } finally {
+        await i18n.changeLanguage('ar');
+      }
+    });
   });
 
   describe('prayerNotificationContent', () => {
@@ -187,22 +269,41 @@ describe('prayer notifications', () => {
       const content = prayerNotificationContent('fajr');
 
       expect(content.title).toBe('حان وقت صلاة الفجر');
-      expect(content.body).toBe('الصلاة خير من النوم');
+      expect(content.body).toBe('يحين الآن موعد أذان الفجر');
       expect(content.data).toEqual({ route: '/salah' });
       expect(content.sound).toBe('allahu_akbar_short.wav');
     });
 
-    it('gives each prayer its own body, in Arabic and English', async () => {
+    it('interpolates the prayer name into the shared body template, in Arabic and English', async () => {
       const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as const;
       for (const locale of ['ar', 'en']) {
         await i18n.changeLanguage(locale);
-        const bodies = prayers.map((prayer) => prayerNotificationContent(prayer).body);
-        expect(new Set(bodies).size).toBe(prayers.length);
-        for (const body of bodies) {
+        for (const prayer of prayers) {
+          const { body } = prayerNotificationContent(prayer);
+          expect(body).toContain(i18n.t(`home.salah.${prayer}`));
           expect(body).not.toMatch(/^notifications\./);
         }
       }
       await i18n.changeLanguage('ar');
+    });
+
+    it('includes the manual city in the body when set, otherwise omits the place clause', async () => {
+      await i18n.changeLanguage('ar');
+      expect(prayerNotificationContent('fajr').body).toBe('يحين الآن موعد أذان الفجر');
+
+      storage.set(storageKeys.salah.locationSource, 'manual');
+      storage.set(storageKeys.salah.manualCityId, 'dubai');
+      expect(prayerNotificationContent('fajr').body).toBe('يحين الآن موعد أذان الفجر حسب توقيت دبي');
+
+      await i18n.changeLanguage('en');
+      saveLocale('en');
+      expect(prayerNotificationContent('maghrib').body).toBe('It is now time for the Maghrib adhan according to Dubai time');
+
+      storage.set(storageKeys.salah.locationSource, 'automatic');
+      expect(prayerNotificationContent('maghrib').body).toBe('It is now time for the Maghrib adhan');
+
+      await i18n.changeLanguage('ar');
+      saveLocale('ar');
     });
 
     it('titles it in English when the reader has chosen English', async () => {
@@ -297,6 +398,70 @@ describe('prayer notifications', () => {
       await expect(syncPrayerNotifications({ now: NOW, coords: LONDON })).rejects.toThrow('os refused');
       expect(storage.getString(storageKeys.salah.notificationsSync)).toBeUndefined();
     });
+
+    it('with iqamah offset 10 schedules adhan and iqamah (4 each per prayer), at most 40 total', async () => {
+      setBells(...PRAYERS);
+      setIqamahOffsetMinutes(10);
+      await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+      expect(prayerPending()).toHaveLength(40);
+      expect(adhanPending()).toHaveLength(20);
+      expect(iqamahPending()).toHaveLength(20);
+      for (const request of iqamahPending()) {
+        expect(request.content.sound).toBe('default');
+        expect(request.content.data?.kind).toBe('iqamah');
+      }
+      for (const request of adhanPending()) {
+        expect(request.content.data?.kind).toBeUndefined();
+      }
+    });
+
+    it('creates the system prayer channel for iqamah on Android, not an adhan voice channel', async () => {
+      const restore = jest.replaceProperty(Platform, 'OS', 'android');
+      try {
+        setBells('dhuhr');
+        setIqamahOffsetMinutes(10);
+        await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+        expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(
+          'prayer',
+          expect.objectContaining({ name: expect.any(String) }),
+        );
+        const iqamahTrigger = scheduledCalls().find(([request]) => request.content.data?.kind === 'iqamah')?.[0].trigger;
+        expect(iqamahTrigger).toMatchObject({ channelId: 'prayer' });
+        const adhanTrigger = scheduledCalls().find(([request]) => request.content.data?.kind !== 'iqamah')?.[0].trigger;
+        expect(adhanTrigger).toMatchObject({ channelId: 'prayer_adhan_allahu_akbar_short' });
+      } finally {
+        restore.restore();
+      }
+    });
+
+    it('cancels both adhan and iqamah when re-syncing', async () => {
+      setBells('fajr');
+      setIqamahOffsetMinutes(10);
+      await syncPrayerNotifications({ now: NOW, coords: LONDON });
+      pending.push({
+        identifier: 'orphan-iqamah',
+        content: { data: { route: '/salah', kind: 'iqamah' } },
+        trigger: null,
+      });
+      setIqamahOffsetMinutes(0);
+      await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+      expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith('orphan-iqamah');
+      expect(iqamahPending()).toHaveLength(0);
+    });
+  });
+
+  describe('setIqamahOffset', () => {
+    it('persists the offset and re-plans once', async () => {
+      setBells('fajr');
+      await setIqamahOffset(15, NOW);
+
+      expect(storage.getNumber(storageKeys.salah.iqamahOffsetMinutes)).toBe(15);
+      expect(prayerPending()).toHaveLength(8);
+      expect(iqamahPending()).toHaveLength(4);
+    });
   });
 
   describe('refresh triggers', () => {
@@ -377,6 +542,15 @@ describe('prayer notifications', () => {
 
       await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(true);
       expect(getCoordinates).toHaveBeenCalledWith({ lastKnownOnly: false });
+    });
+
+    it('a changed iqamah offset re-plans on the foreground check', async () => {
+      await resyncPrayerNotifications(NOW);
+      jest.mocked(Notifications.scheduleNotificationAsync).mockClear();
+      setIqamahOffsetMinutes(10);
+
+      await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(true);
+      expect(iqamahPending().length).toBeGreaterThan(0);
     });
 
     it('concurrent triggers (launch, foreground, location) coalesce into one schedule', async () => {
@@ -589,6 +763,15 @@ describe('prayer notifications', () => {
 
     it('never schedules more than the prayer share, even with every bell on', async () => {
       setBells(...PRAYERS);
+      await resyncPrayerNotifications(NOW);
+
+      expect(prayerPending().length).toBeLessThanOrEqual(PRAYER_NOTIFICATION_SLOTS);
+      expect(prayerPending()).toHaveLength(40);
+    });
+
+    it('never exceeds 40 with every bell on and iqamah offset 10', async () => {
+      setBells(...PRAYERS);
+      setIqamahOffsetMinutes(10);
       await resyncPrayerNotifications(NOW);
 
       expect(prayerPending().length).toBeLessThanOrEqual(PRAYER_NOTIFICATION_SLOTS);

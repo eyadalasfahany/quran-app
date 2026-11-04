@@ -11,6 +11,7 @@ struct MisbahaIncrementIntent: AppIntent {
     snapshot = TaybahSnapshot(
       schemaVersion: snapshot.schemaVersion,
       writtenAt: Date().timeIntervalSince1970 * 1000,
+      colorMode: snapshot.colorMode,
       locale: snapshot.locale,
       labels: snapshot.labels,
       prayer: snapshot.prayer,

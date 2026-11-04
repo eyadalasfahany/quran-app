@@ -11,6 +11,8 @@ import { AzkarScreenHeader } from '@/features/azkar/components/AzkarScreenHeader
 import { AzkarSectionTitle } from '@/features/azkar/components/AzkarSectionTitle';
 import { AzkarTopicTile } from '@/features/azkar/components/AzkarTopicTile';
 import { useAzkarAvailable, useAzkarCategories } from '@/features/azkar/data';
+
+import { usePropheticDuasAvailable, useQuranicDuasAvailable } from '../data/hooks';
 import type { AzkarCategoryListItem } from '@/features/azkar/data/model';
 import { azkarHref } from '@/features/azkar/routes';
 
@@ -35,8 +37,15 @@ export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: strin
   const theme = useTheme();
   const locale = useLocale();
   const azkarAvailable = useAzkarAvailable();
+  const quranAvailable = useQuranicDuasAvailable();
+  const hadithAvailable = usePropheticDuasAvailable();
   const categories = useAzkarCategories(locale);
   const browse = categories.filter((category: AzkarCategoryListItem) => category.kind === 'browse');
+  const showHisnTopics = azkarAvailable && browse.length > 0;
+  const showHisnRow = azkarAvailable;
+  const showQuranRow = quranAvailable;
+  const propheticSeparator = showHisnRow || showQuranRow;
+  const hisnSeparator = showQuranRow;
 
   return (
     <Screen testID={testID}>
@@ -57,21 +66,50 @@ export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: strin
           />
           <ScrollView contentContainerStyle={{ gap: theme.space[5], paddingBottom: theme.space[8] }}>
             <DuasMineCard onPress={() => router.push(duasHref.mine)} />
-            {azkarAvailable ? (
-              <>
-                <AzkarSectionTitle title={t('duas.home.sourcesHeading')} testID="duas-sources-heading" />
-                <AzkarListCard>
+            <>
+              <AzkarSectionTitle title={t('duas.home.sourcesHeading')} testID="duas-sources-heading" />
+              <AzkarListCard>
+                {hadithAvailable ? (
+                  <DuasSourceRow
+                    detail={t('duas.home.hadithDetail')}
+                    onPress={() => router.push(duasHref.hadithList)}
+                    separator={propheticSeparator}
+                    testID="duas-source-hadith"
+                    title={t('duas.home.hadithTitle')}
+                  />
+                ) : (
+                  <DuasSourceRow
+                    detail={t('duas.home.hadithPendingDetail')}
+                    separator={propheticSeparator}
+                    testID="duas-source-hadith-pending"
+                    title={t('duas.home.hadithTitle')}
+                  />
+                )}
+                {showHisnRow ? (
                   <DuasSourceRow
                     detail={t('duas.home.hisnDetail')}
                     onPress={() => router.push(azkarHref.home)}
-                    separator={false}
+                    separator={hisnSeparator}
                     testID="duas-source-hisn"
                     title={t('duas.home.hisnTitle')}
                   />
-                </AzkarListCard>
-                <DuasAttributionLine />
-                <AzkarSectionTitle title={t('duas.home.topicsHeading')} testID="duas-topics-heading" />
-                <View style={{ gap: theme.space[3] }}>
+                ) : null}
+                {showQuranRow ? (
+                  <DuasSourceRow
+                    detail={t('duas.home.quranDetail')}
+                    onPress={() => router.push(duasHref.quranList)}
+                    separator={false}
+                    testID="duas-source-quran"
+                    title={t('duas.home.quranTitle')}
+                  />
+                ) : null}
+              </AzkarListCard>
+              <DuasAttributionLine />
+            </>
+            {showHisnTopics ? (
+              <>
+                <AzkarSectionTitle title={t('duas.home.hisnTopicsHeading')} testID="duas-hisn-topics-heading" />
+                <View style={{ gap: theme.space[2] }}>
                   {pairs(browse).map((row, rowIndex) => (
                     <View key={rowIndex} style={{ flexDirection: 'row', gap: theme.space[3] }}>
                       {row.map((category) => (

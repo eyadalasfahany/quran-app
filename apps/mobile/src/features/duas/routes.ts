@@ -3,6 +3,10 @@ import type { Href } from 'expo-router';
 /** Duas routes (app/duas/*). */
 export const duasHref = {
   home: '/duas' as Href,
+  quranList: '/duas/quran' as Href,
+  quranDetail: (duaKey: string): Href => `/duas/quran/${encodeURIComponent(duaKey)}` as Href,
+  hadithList: '/duas/hadith' as Href,
+  hadithDetail: (duaKey: string): Href => `/duas/hadith/${encodeURIComponent(duaKey)}` as Href,
   favorites: '/duas/favorites' as Href,
   mine: '/duas/mine' as Href,
   mineEdit: (id?: string): Href =>

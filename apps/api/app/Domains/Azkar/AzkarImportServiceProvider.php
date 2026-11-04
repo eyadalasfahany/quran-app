@@ -8,6 +8,7 @@ use App\Domains\Azkar\Console\CompareSourcesCommand;
 use App\Domains\Azkar\Console\HadeethEncLinksCommand;
 use App\Domains\Azkar\Console\ImportAzkarCommand;
 use App\Domains\Azkar\Console\QuranMapCandidatesCommand;
+use App\Domains\Azkar\Console\SetupAzkarCommand;
 use App\Domains\Azkar\Console\SnapshotCommand;
 use App\Domains\Azkar\Console\SyncAzkarAudioCommand;
 use App\Domains\Azkar\Console\VerifyAzkarAudioCommand;
@@ -37,6 +38,7 @@ final class AzkarImportServiceProvider extends ServiceProvider
             HadeethEncLinksCommand::class,
             SyncAzkarAudioCommand::class,
             VerifyAzkarAudioCommand::class,
+            SetupAzkarCommand::class,
         ]);
     }
 }

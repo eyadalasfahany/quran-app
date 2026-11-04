@@ -1,5 +1,5 @@
 import { act, fireEvent, waitFor, within } from '@testing-library/react-native';
-import { AccessibilityInfo, Dimensions, I18nManager } from 'react-native';
+import { AccessibilityInfo, Dimensions, I18nManager, Text, View } from 'react-native';
 import { useReducedMotion, withSpring, withTiming } from 'react-native-reanimated';
 
 // @ts-expect-error React Native's internal renderer proxy has no type declarations; the focus test stubs its node lookup.
@@ -91,6 +91,20 @@ describe('ConfirmDialog', () => {
     const view = await renderUi(dialog({ visible: false }), { locale: 'en' });
 
     expect(view.queryByText('Reset the counter?', SHOWN)).toBeNull();
+  });
+
+  it('renders optional children between the message and the actions', async () => {
+    const view = await renderUi(
+      dialog({
+        children: (
+          <View testID="confirm-dialog-body-slot">
+            <Text>Extra body</Text>
+          </View>
+        ),
+      }),
+      { locale: 'en' },
+    );
+    expect(view.getByTestId('confirm-dialog-body-slot', SHOWN)).toBeOnTheScreen();
   });
 
   it.each(locales)('renders the title, the message and both buttons in %s', async (locale) => {

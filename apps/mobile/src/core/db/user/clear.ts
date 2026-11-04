@@ -17,6 +17,7 @@ export const PERSONAL_TABLES = [
   'azkar_reminders',
   'my_duas',
   'dua_favorites',
+  'names_favorites',
 ] as const;
 
 /**

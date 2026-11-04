@@ -78,17 +78,39 @@ describe('AzkarReaderActions', () => {
     expect(screen.queryByRole('button', { name: 'تنزيل التسجيل' })).toBeNull();
   });
 
-  it('draws no playback control: the reader bar owns play and pause', async () => {
+  it('draws no playback control without playControl even when a recording exists', async () => {
     const { ui } = renderActions({ recording: makeRecording({ downloadAllowed: false }) });
     await renderUi(ui);
     expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
     expect(screen.getByRole('button', { name: 'حجم النص' })).toBeOnTheScreen();
   });
 
-  it('draws the download control of a downloadable licensed recording', async () => {
+  // Play and download are commented out in AzkarReaderActions (developer 4 Nov 2026). Restore these when the controls return.
+  it('hides play even when playControl is set', async () => {
+    const { ui } = renderActions({
+      playControl: { playing: false, onToggle: jest.fn() },
+      recording: makeRecording({ downloadAllowed: false }),
+    });
+    await renderUi(ui);
+    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
+    expect(screen.queryByTestId('azkar-actions-play')).toBeNull();
+  });
+
+  it('orders actions bookmark, share, text size only while play and download are commented out', async () => {
+    const { ui } = renderActions({
+      playControl: { playing: false, onToggle: jest.fn() },
+      recording: makeRecording({ downloadAllowed: true }),
+    });
+    await renderUi(ui);
+    const row = screen.getByTestId('azkar-reader-actions');
+    const ids = row.children.map((child) => (typeof child === 'object' && child !== null && 'props' in child ? child.props.testID : null));
+    expect(ids).toEqual(['azkar-favourite', 'azkar-share', 'azkar-text-size-toggle']);
+  });
+
+  it('hides download even for a downloadable licensed recording', async () => {
     const { ui } = renderActions({ recording: makeRecording({ downloadAllowed: true }) });
     await renderUi(ui);
-    expect(screen.getByRole('button', { name: 'تنزيل التسجيل' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'تنزيل التسجيل' })).toBeNull();
   });
 
   it('renders the English labels', async () => {

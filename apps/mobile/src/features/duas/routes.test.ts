@@ -11,6 +11,10 @@ describe('duasHref', () => {
     expect(duasHref.home).toBe('/duas');
     expect(duasHref.favorites).toBe('/duas/favorites');
     expect(duasHref.mine).toBe('/duas/mine');
+    expect(duasHref.quranList).toBe('/duas/quran');
+    expect(duasHref.quranDetail('quran:1:1')).toBe('/duas/quran/quran%3A1%3A1');
+    expect(duasHref.hadithList).toBe('/duas/hadith');
+    expect(duasHref.hadithDetail('hadeethenc:1')).toBe('/duas/hadith/hadeethenc%3A1');
   });
 
   it('opens the editor with an optional id', () => {

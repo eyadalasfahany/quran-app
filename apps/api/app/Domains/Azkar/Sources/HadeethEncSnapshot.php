@@ -13,11 +13,12 @@ use App\Domains\Azkar\Exceptions\SnapshotException;
 final class HadeethEncSnapshot
 {
     /**
+     * @param  non-empty-string  $configPrefix
      * @return array<int, array<string, mixed>> Hadith records keyed by id, as the API returned them.
      *
      * @throws SnapshotException
      */
-    public function load(string $directory): array
+    public function load(string $directory, string $configPrefix = 'azkar.hadeethenc'): array
     {
         $manifestPath = $directory.DIRECTORY_SEPARATOR.'manifest.json';
         $manifest = is_file($manifestPath) ? json_decode((string) file_get_contents($manifestPath), true) : null;
@@ -26,7 +27,7 @@ final class HadeethEncSnapshot
             throw new SnapshotException('The HadeethEnc snapshot has no readable manifest.');
         }
 
-        $pin = (string) config('azkar.hadeethenc.snapshot_sha256', '');
+        $pin = (string) config($configPrefix.'.snapshot_sha256', '');
 
         if ($pin === '' || ! hash_equals($pin, $manifest['sha256'])) {
             throw new SnapshotException('The HadeethEnc snapshot does not match the pinned SHA-256 in config.');

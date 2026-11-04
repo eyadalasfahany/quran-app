@@ -9,8 +9,10 @@ import { openPath, type WidgetContext } from './context';
 import { WIDGET_FONTS } from './fonts';
 import { block, column, grow, label, ringWithCentre, row } from './primitives';
 import { clampPercent, ringSvg } from './ring';
+import { ON_BRAND_WASH_ALPHA, ON_BRAND_WASH_ALPHA_LIGHT, onBrandChip, widgetFaceColumn } from './widget-chrome';
 import { widgetPaths } from '../snapshot/deep-links';
 import type { WidgetAzkarSession } from '../snapshot/types';
+import { withAlpha } from './theme';
 
 /** The frame's mini session ring (WidgetContinueReading Azkar row): 44 dp, 5 dp stroke. */
 const RING_SIZE = 44;
@@ -23,36 +25,41 @@ function sessionPercent(session: WidgetAzkarSession): number {
   return session.total > 0 ? clampPercent((session.done / session.total) * 100) : 0;
 }
 
-/** One session: a progress ring (and a check when complete), with its title under it. */
+/** One session: ring tile with clearer done vs in-progress contrast on brandSurface. */
 function sessionTile(ctx: WidgetContext, session: WidgetAzkarSession) {
   const { palette, rtl } = ctx;
   const percent = sessionPercent(session);
+  const ringTrack = withAlpha(palette.onBrandSurface, 0.2);
   const centre = session.complete
-    ? label('✓', { align: 'center', color: palette.brand, font: WIDGET_FONTS.bold, size: 14 }, rtl)
+    ? label('✓', { align: 'center', color: palette.gold, font: WIDGET_FONTS.bold, size: 14 }, rtl)
     : null;
   const ring = ringWithCentre(
     ringSvg({
-      fill: palette.brand,
+      fill: palette.gold,
       percent,
       size: RING_SIZE,
       stroke: RING_STROKE,
-      track: palette.surface,
+      track: ringTrack,
     }),
     RING_SIZE,
     centre,
   );
+  const wash = withAlpha(palette.onBrandSurface, session.complete ? ON_BRAND_WASH_ALPHA_LIGHT : ON_BRAND_WASH_ALPHA);
   return grow(
-    column([ring, label(session.title, { align: 'center', color: palette.ink, font: WIDGET_FONTS.medium, size: 11 }, rtl)], {
+    column([ring, label(session.title, { align: 'center', color: session.complete ? palette.onBrandSurfaceMuted : palette.onBrandSurface, font: WIDGET_FONTS.medium, size: 11 }, rtl)], {
       alignItems: 'center',
-      flexGap: 6,
+      backgroundColor: wash,
+      borderRadius: 12,
+      flexGap: 4,
+      paddingBottom: 6,
+      paddingTop: 4,
     }),
     { alignItems: 'center' },
   );
 }
 
 /**
- * The 4×2 Azkar status widget (ADR 0035 §2, ADR 0042): the five sessions, done or not. Without Azkar content in the
- * snapshot it shows the open-the-app state, and it never shows dhikr text (ADR 0035 §1.2).
+ * The 4×2 Azkar status widget: header, completion chip and five denser session tiles.
  */
 export function AzkarWidget(ctx: WidgetContext) {
   const { labels, palette, rtl, snapshot } = ctx;
@@ -60,22 +67,30 @@ export function AzkarWidget(ctx: WidgetContext) {
 
   if (snapshot.azkar === null) {
     return card(ctx, [
-      label(labels.azkarTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-      label(labels.azkarEmpty, { color: palette.ink, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
+      label(labels.azkarTitle, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+      label(labels.azkarEmpty, { color: palette.onBrandSurface, font: WIDGET_FONTS.regular, maxLines: 2, size: 14 }, rtl),
     ], { accessibilityLabel: `${labels.azkarTitle}: ${labels.azkarEmpty}`, click });
   }
 
   const sessions = snapshot.azkar.sessions;
   const summary = sessions.filter((session) => session.complete).length;
+  const summaryText = `${formatNumber(summary, ctx.locale)} ${labels.of} ${formatNumber(sessions.length, ctx.locale)}`;
+
   return card(ctx, [
-    label(labels.azkarTitle, { color: palette.inkMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
-    block({ height: 8 }),
-    row(
-      sessions.map((session) => sessionTile(ctx, session)),
-      rtl,
-    ),
+    widgetFaceColumn([
+      column([
+        label(labels.azkarTitle, { color: palette.onBrandSurfaceMuted, font: WIDGET_FONTS.medium, size: 12 }, rtl),
+        block({ height: 6 }),
+        onBrandChip(ctx, summaryText, { size: 13 }),
+      ]),
+      row(
+        sessions.map((session) => sessionTile(ctx, session)),
+        rtl,
+        { flexGap: 4 },
+      ),
+    ]),
   ], {
-    accessibilityLabel: `${labels.azkarTitle}: ${formatNumber(summary, ctx.locale)} / ${formatNumber(sessions.length, ctx.locale)}`,
+    accessibilityLabel: `${labels.azkarTitle}: ${summaryText}`,
     click,
   });
 }

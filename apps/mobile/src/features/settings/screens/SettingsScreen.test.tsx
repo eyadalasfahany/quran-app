@@ -31,6 +31,16 @@ jest.mock('@/features/audio/settings', () => ({
   setWifiOnlyDownloads: jest.fn(),
 }));
 
+jest.mock('@/features/downloads/hooks/useStorageTotals', () => ({
+  useStorageTotals: () => ({
+    audioBytes: 0,
+    fontBytes: 0,
+    tafsirBytes: 0,
+    totalBytes: 12_582_912, // 12 MB
+    loading: false,
+  }),
+}));
+
 describe('SettingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -87,6 +97,21 @@ describe('SettingsScreen', () => {
     fireEvent.press(view.getByTestId('listening-reciter-row'));
 
     expect(router.navigate).toHaveBeenCalledWith('/(main)/(listen)');
+  });
+
+  it('opens downloads screen from the downloads row', async () => {
+    const view = await renderUi(<SettingsScreen />);
+
+    fireEvent.press(view.getByTestId('listening-downloads-row'));
+
+    expect(router.push).toHaveBeenCalledWith('/settings/downloads');
+  });
+
+  it('shows the live storage total in the downloads row trailing', async () => {
+    const view = await renderUi(<SettingsScreen />);
+
+    // 12_582_912 bytes = 12 MB; formatted as Arabic-Indic in ar locale
+    expect(view.getByText('١٢ م.ب')).toBeOnTheScreen();
   });
 
   it('renders the daily reminder row', async () => {

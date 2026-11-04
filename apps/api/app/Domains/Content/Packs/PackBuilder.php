@@ -10,6 +10,8 @@ use App\Domains\Content\Models\ContentPack;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Repositories\Contracts\ContentPackRepository;
 use App\Domains\Content\Repositories\Contracts\PackSnapshotRepository;
+use App\Domains\Names\Exceptions\NamesSourceLockedException;
+use App\Domains\Names\Services\NamesSourceGate;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Storage;
@@ -21,6 +23,8 @@ final class PackBuilder
         private readonly PackSnapshotRepository $snapshots,
         private readonly ContentPackRepository $packs,
         private readonly AzkarAudioReadiness $audio,
+        private readonly DuasPackReadiness $duas,
+        private readonly NamesSourceGate $namesGate,
     ) {}
 
     public function build(Resource $resource): ContentPackData
@@ -39,6 +43,19 @@ final class PackBuilder
         if ($resource->group === ResourceGroup::Azkar) {
             // ADR 0040 step 14 §7: no Azkar pack is built while a recording it lists is missing from the audio disk.
             $this->audio->assertReady($resource->id);
+        }
+
+        if ($resource->group === ResourceGroup::Names) {
+            // ADR 0043 A2: no Names pack until the content source is granted.
+            try {
+                $this->namesGate->assertGrantedForResource($resource);
+            } catch (NamesSourceLockedException $exception) {
+                throw new PackBuildException($exception->getMessage(), previous: $exception);
+            }
+        }
+
+        if ($resource->group === ResourceGroup::Duas) {
+            $this->duas->assertReady($resource->id);
         }
 
         $temp = storage_path('app/tmp/pack-'.$resource->id.'-'.$resource->version.'-'.bin2hex(random_bytes(8)).'.sqlite');

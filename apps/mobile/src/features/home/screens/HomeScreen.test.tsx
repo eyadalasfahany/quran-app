@@ -93,6 +93,12 @@ jest.mock('@/features/azkar/data', () => ({
   useSessionCategoryProgress: () => mockAzkar.sessions,
 }));
 
+const mockDuas = { available: true };
+jest.mock('@/features/duas/data/hooks', () => ({
+  useDuasAvailable: () => mockDuas.available,
+  useMyDuas: () => [],
+}));
+
 // No prayer location by default, so the next-prayer card asks for one. Only the location is mocked; the rest is real.
 const mockLocation: { coords: { lat: number; lng: number } | null } = { coords: null };
 jest.mock('@/features/salah/hooks', () => ({
@@ -231,8 +237,9 @@ describe('HomeScreen', () => {
     expect(arabic.getByTestId('home-continue-reading')).not.toHaveTextContent(/Al-Baqarah/);
   });
 
-  it('renders the Surahs, Misbaha, Saved and Reciters tiles without Azkar content', async () => {
+  it('renders the Surahs, Duas, Misbaha, Saved and Reciters tiles without Azkar content', async () => {
     mockAzkar.available = false;
+    mockDuas.available = true;
     const view = await renderUi(<HomeScreen />);
 
     expect(view.getByTestId('home-tiles-surahs')).toBeOnTheScreen();
@@ -241,19 +248,35 @@ describe('HomeScreen', () => {
     expect(view.getByRole('button', { name: 'القرّاء' })).toBeOnTheScreen();
     expect(view.queryByRole('button', { name: 'الحديث' })).toBeNull();
     expect(view.queryByRole('button', { name: 'الأذكار' })).toBeNull();
+    expect(view.getByRole('button', { name: 'الأدعية' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'المسبحة' })).toBeOnTheScreen();
-    expect(view.getByTestId('home-tiles').children.length).toBe(4);
+    expect(view.getByTestId('home-tiles').children.length).toBe(5);
   });
 
-  it('adds the Azkar and Misbaha tiles in frame order once Azkar content is installed, and opens them', async () => {
-    mockAzkar.available = true;
+  it('hides the Duas tile when Duas is unavailable', async () => {
+    mockDuas.available = false;
     try {
       const view = await renderUi(<HomeScreen />);
 
-      expect(view.getByTestId('home-tiles').children.length).toBe(5);
+      expect(view.queryByTestId('home-tiles-duas')).toBeNull();
+      expect(view.queryByRole('button', { name: 'الأدعية' })).toBeNull();
+      expect(view.getByTestId('home-tiles').children.length).toBe(4);
+    } finally {
+      mockDuas.available = true;
+    }
+  });
+
+  it('adds the Azkar, Duas and Misbaha tiles in frame order once Azkar content is installed, and opens them', async () => {
+    mockAzkar.available = true;
+    mockDuas.available = true;
+    try {
+      const view = await renderUi(<HomeScreen />);
+
+      expect(view.getByTestId('home-tiles').children.length).toBe(6);
       expect(view.getByTestId('home-tiles').children.map((child) => (typeof child === 'string' ? child : child.props.testID))).toEqual([
         'home-tiles-surahs',
         'home-tiles-azkar',
+        'home-tiles-duas',
         'home-tiles-sibha',
         'home-tiles-saved',
         'home-tiles-reciters',
@@ -261,6 +284,9 @@ describe('HomeScreen', () => {
 
       await fireEvent.press(view.getByRole('button', { name: 'الأذكار' }));
       expect(router.push).toHaveBeenLastCalledWith('/azkar');
+
+      await fireEvent.press(view.getByRole('button', { name: 'الأدعية' }));
+      expect(router.push).toHaveBeenLastCalledWith('/duas');
 
       await fireEvent.press(view.getByRole('button', { name: 'المسبحة' }));
       expect(router.push).toHaveBeenLastCalledWith('/sibha');
@@ -387,6 +413,7 @@ describe('HomeScreen recent listens', () => {
 // Home's new sections (ADR 0034): the next prayer, the Azkar blocks, today's progress and the Khatma wird.
 function resetHomeMocks() {
   mockAzkar.available = false;
+  mockDuas.available = true;
   mockAzkar.continueAzkar = null;
   mockAzkar.recent = [];
   mockAzkar.sessions = [];

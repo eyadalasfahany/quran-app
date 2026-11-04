@@ -1,0 +1,471 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`DownloadsScreen matches RTL render tree 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#f7f3ea",
+      "flex": 1,
+      "paddingEnd": 0,
+      "paddingStart": 0,
+      "paddingTop": 0,
+    }
+  }
+  testID="screen-downloads"
+>
+  <View
+    style={
+      {
+        "alignSelf": "center",
+        "flex": 1,
+        "maxWidth": 720,
+        "paddingHorizontal": 16,
+        "width": "100%",
+      }
+    }
+  >
+    <RCTScrollView
+      contentContainerStyle={
+        {
+          "gap": 16,
+          "paddingBottom": 32,
+        }
+      }
+      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
+    >
+      <View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "gap": 8,
+            }
+          }
+          testID="downloads-header"
+        >
+          <View
+            accessibilityLabel="رجوع"
+            accessibilityRole="button"
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": false,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#fffdf8",
+                "borderColor": "#e7dfcc",
+                "borderRadius": 999,
+                "borderWidth": 1,
+                "height": 44,
+                "justifyContent": "center",
+                "opacity": 1,
+                "width": 44,
+              }
+            }
+            testID="downloads-back"
+          >
+            <View
+              accessibilityElementsHidden={true}
+              importantForAccessibility="no-hide-descendants"
+              style={
+                [
+                  {
+                    "height": 22,
+                    "width": 22,
+                  },
+                  {
+                    "transform": [
+                      {
+                        "scaleX": -1,
+                      },
+                    ],
+                  },
+                ]
+              }
+              testID="downloads-back-icon"
+            >
+              <ViewManagerAdapter_SymbolModule
+                animated={false}
+                colors={[]}
+                fallback={
+                  <View
+                    style={
+                      {
+                        "height": 22,
+                        "width": 22,
+                      }
+                    }
+                  />
+                }
+                name="chevron.left"
+                size={22}
+                style={
+                  {
+                    "height": 22,
+                    "width": 22,
+                  }
+                }
+                tint={4279444255}
+                tintColor="#13231f"
+                type="monochrome"
+              />
+            </View>
+          </View>
+          <Text
+            accessibilityRole="header"
+            maxFontSizeMultiplier={2}
+            style={
+              {
+                "color": "#13231f",
+                "fontFamily": "Amiri-Bold",
+                "fontSize": 28,
+                "lineHeight": 36,
+                "textAlign": "left",
+              }
+            }
+          >
+            التنزيلات والمساحة
+          </Text>
+        </View>
+        <View
+          accessibilityLabel="المساحة المستخدمة: ٠ م.ب. التلاوات: ٠ م.ب. خطوط المصحف: ٠ م.ب. التفاسير: ٠ م.ب."
+          accessible={true}
+          style={
+            [
+              {
+                "backgroundColor": "#fffdf8",
+                "borderRadius": 20,
+                "padding": 16,
+              },
+              {
+                "borderColor": "#e7dfcc",
+                "borderWidth": 1,
+              },
+              undefined,
+            ]
+          }
+          testID="downloads-storage-card"
+        >
+          <View
+            style={
+              {
+                "gap": 10,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "baseline",
+                  "flexDirection": "row",
+                  "justifyContent": "space-between",
+                }
+              }
+            >
+              <Text
+                dynamicTypeRamp="headline"
+                maxFontSizeMultiplier={2}
+                style={
+                  {
+                    "color": "#13231f",
+                    "fontFamily": "IBMPlexSansArabic-SemiBold",
+                    "fontSize": 17,
+                    "lineHeight": 24,
+                    "textAlign": "left",
+                  }
+                }
+              >
+                المساحة المستخدمة
+              </Text>
+              <Text
+                dynamicTypeRamp="footnote"
+                maxFontSizeMultiplier={2}
+                style={
+                  {
+                    "color": "#5b6a64",
+                    "fontFamily": "IBMPlexSansArabic-Regular",
+                    "fontSize": 13,
+                    "lineHeight": 18,
+                    "textAlign": "left",
+                  }
+                }
+              >
+                ٠ م.ب
+              </Text>
+            </View>
+            <View
+              accessible={false}
+              importantForAccessibility="no-hide-descendants"
+              style={
+                {
+                  "backgroundColor": "#efe8d8",
+                  "borderRadius": 5,
+                  "height": 10,
+                  "overflow": "hidden",
+                }
+              }
+              testID="downloads-storage-card-bar"
+            />
+            <View
+              style={
+                {
+                  "columnGap": 12,
+                  "flexDirection": "row",
+                  "flexWrap": "wrap",
+                  "rowGap": 6,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "flexDirection": "row",
+                    "gap": 6,
+                    "width": "45%",
+                  }
+                }
+              >
+                <View
+                  style={
+                    {
+                      "backgroundColor": "#1f4d40",
+                      "borderRadius": 3,
+                      "height": 10,
+                      "width": 10,
+                    }
+                  }
+                />
+                <Text
+                  dynamicTypeRamp="caption1"
+                  maxFontSizeMultiplier={2}
+                  style={
+                    {
+                      "color": "#13231f",
+                      "fontFamily": "IBMPlexSansArabic-Regular",
+                      "fontSize": 12,
+                      "lineHeight": 16,
+                      "textAlign": "left",
+                    }
+                  }
+                >
+                  التلاوات · ٠ م.ب
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "flexDirection": "row",
+                    "gap": 6,
+                    "width": "45%",
+                  }
+                }
+              >
+                <View
+                  style={
+                    {
+                      "backgroundColor": "#a07c33",
+                      "borderRadius": 3,
+                      "height": 10,
+                      "width": 10,
+                    }
+                  }
+                />
+                <Text
+                  dynamicTypeRamp="caption1"
+                  maxFontSizeMultiplier={2}
+                  style={
+                    {
+                      "color": "#13231f",
+                      "fontFamily": "IBMPlexSansArabic-Regular",
+                      "fontSize": 12,
+                      "lineHeight": 16,
+                      "textAlign": "left",
+                    }
+                  }
+                >
+                  خطوط المصحف · ٠ م.ب
+                </Text>
+              </View>
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "flexDirection": "row",
+                    "gap": 6,
+                    "width": "45%",
+                  }
+                }
+              >
+                <View
+                  style={
+                    {
+                      "backgroundColor": "#4f86a8",
+                      "borderRadius": 3,
+                      "height": 10,
+                      "width": 10,
+                    }
+                  }
+                />
+                <Text
+                  dynamicTypeRamp="caption1"
+                  maxFontSizeMultiplier={2}
+                  style={
+                    {
+                      "color": "#13231f",
+                      "fontFamily": "IBMPlexSansArabic-Regular",
+                      "fontSize": 12,
+                      "lineHeight": 16,
+                      "textAlign": "left",
+                    }
+                  }
+                >
+                  التفاسير · ٠ م.ب
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "gap": 6,
+            }
+          }
+          testID="downloads-mushaf-section"
+        >
+          <Text
+            accessibilityRole="header"
+            dynamicTypeRamp="footnote"
+            maxFontSizeMultiplier={2}
+            style={
+              {
+                "color": "#5b6a64",
+                "fontFamily": "IBMPlexSansArabic-SemiBold",
+                "fontSize": 13,
+                "lineHeight": 18,
+                "marginHorizontal": 6,
+                "textAlign": "left",
+              }
+            }
+          >
+            النصوص
+          </Text>
+          <View
+            style={
+              {
+                "backgroundColor": "#fffdf8",
+                "borderColor": "#e7dfcc",
+                "borderRadius": 20,
+                "borderWidth": 1,
+                "overflow": "hidden",
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "borderBottomColor": "#e7dfcc",
+                  "borderBottomWidth": 1,
+                  "flexDirection": "row",
+                  "gap": 12,
+                  "minHeight": 56,
+                  "paddingHorizontal": 14,
+                }
+              }
+              testID="downloads-mushaf-section-hafs"
+            >
+              <View
+                style={
+                  {
+                    "flex": 1,
+                    "gap": 2,
+                  }
+                }
+              >
+                <Text
+                  dynamicTypeRamp="headline"
+                  maxFontSizeMultiplier={2}
+                  style={
+                    {
+                      "color": "#13231f",
+                      "fontFamily": "IBMPlexSansArabic-SemiBold",
+                      "fontSize": 17,
+                      "lineHeight": 24,
+                      "textAlign": "left",
+                    }
+                  }
+                >
+                  الرسم العثماني · حفص
+                </Text>
+                <Text
+                  dynamicTypeRamp="caption1"
+                  maxFontSizeMultiplier={2}
+                  style={
+                    {
+                      "color": "#5b6a64",
+                      "fontFamily": "IBMPlexSansArabic-Regular",
+                      "fontSize": 12,
+                      "lineHeight": 16,
+                      "textAlign": "left",
+                    }
+                  }
+                >
+                  أساسي · لا يمكن حذفه
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+        <Text
+          dynamicTypeRamp="caption1"
+          maxFontSizeMultiplier={2}
+          style={
+            {
+              "color": "#5b6a64",
+              "fontFamily": "IBMPlexSansArabic-Regular",
+              "fontSize": 12,
+              "lineHeight": 18,
+              "marginHorizontal": 6,
+              "textAlign": "left",
+            }
+          }
+          testID="downloads-footer-note"
+        >
+          النصوص المحمّلة تُحدَّث تلقائيًا كل أسبوع على الأقل عند الاتصال بالإنترنت.
+        </Text>
+      </View>
+    </RCTScrollView>
+  </View>
+</View>
+`;

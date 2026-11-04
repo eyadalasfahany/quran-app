@@ -1,6 +1,8 @@
 import { render, waitFor } from '@testing-library/react-native';
 import { AppState, Platform } from 'react-native';
 
+import { intakeWatchMisbahaDeltas, subscribeWatchUserInfo } from '@/features/watch/apple-watch';
+
 import { readWidgetSnapshotJson } from '../snapshot/store';
 import { WidgetSnapshotSync } from './WidgetSnapshotSync';
 
@@ -101,5 +103,20 @@ describe('WidgetSnapshotSync', () => {
     expect(mockFlush).toHaveBeenCalledTimes(1);
     listeners.forEach((listener) => listener('active'));
     expect(mockSchedule).toHaveBeenCalledTimes(2);
+  });
+
+  it('passes an array of watch user-info deliveries to intake as separate deltas', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    const subscribeMock = subscribeWatchUserInfo as jest.Mock;
+    const intakeMock = intakeWatchMisbahaDeltas as jest.Mock;
+    render(<WidgetSnapshotSync enabled />);
+    await waitFor(() => expect(subscribeMock).toHaveBeenCalled());
+    const onDelta = subscribeMock.mock.calls[subscribeMock.mock.calls.length - 1][0] as (payload: unknown) => void;
+    const deltas = [
+      { date: '2026-11-02', installId: 'w1', seq: 1, source: 'watch', taps: 2 },
+      { date: '2026-11-02', installId: 'w1', seq: 2, source: 'watch', taps: 1 },
+    ];
+    onDelta(deltas);
+    expect(intakeMock).toHaveBeenCalledWith(expect.any(Date), deltas);
   });
 });

@@ -20,6 +20,10 @@ enum ResourceGroup: string
     case Hadith = 'hadith';
     // ADR 0031: Azkar content is delivered as a fourth content-pack group.
     case Azkar = 'azkar';
+    // ADR 0043: 99 Names of Allah as a names pack group.
+    case Names = 'names';
+    // ADR 0044-duas: Duas content is delivered as its own pack group.
+    case Duas = 'duas';
 
     public function isIgnored(): bool
     {

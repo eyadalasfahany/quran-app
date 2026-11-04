@@ -1,9 +1,9 @@
 import type { AzkarRecording } from '../data/model';
 
 /**
- * The Azkar download seam (ADR 0031 §8). It is not a download manager: `features/audio/downloads/manager.ts` is keyed
- * by Quran `audio_file_id`, and generalising it waits until a licensed recording exists (phase-6.md follow-up).
- * Until then the app binds `NoAudioDownloadPort`, which reports nothing downloadable.
+ * The Azkar download seam (ADR 0031 §8, ADR 0040). Quran downloads stay in `features/audio/downloads/manager.ts`
+ * (`audio_file_id`). Azkar uses `file-download-port.ts` under `audio/azkar/`. The app binds `azkarDownloadPort` from
+ * `./port`; tests use `NoAudioDownloadPort` when they need an empty store.
  */
 
 export type AzkarDownloadState = 'idle' | 'downloading' | 'done' | 'failed';
@@ -49,15 +49,7 @@ export const NoAudioDownloadPort: AzkarDownloadPort = {
   storageBytes: () => 0,
 };
 
-const BYTES_PER_MEGABYTE = 1024 * 1024;
-
-/** Megabytes with one decimal place, as the storage summary shows them. */
-export function megabytes(bytes: number): number {
-  if (!Number.isFinite(bytes) || bytes <= 0) {
-    return 0;
-  }
-  return Math.round((bytes / BYTES_PER_MEGABYTE) * 10) / 10;
-}
+export { megabytes } from '@/core/format/megabytes';
 
 /** Whole percent for a progress fraction, clamped to 0 to 100. */
 export function percentOf(progress: number): number {

@@ -465,6 +465,7 @@
       "saved": "Saved",
       "reciters": "Reciters",
       "azkar": "Azkar",
+      "duas": "Duas",
       "misbaha": "Misbaha"
     },
     "recent": {
@@ -556,12 +557,33 @@
       "stopPreview": "Stop {{name}}",
       "a11y": "Adhan sound"
     },
+    "iqamahOffset": {
+      "label": "Iqamah reminder",
+      "off": "Off",
+      "after_one": "{{number}} minute after adhan",
+      "after_two": "{{number}} minutes after adhan",
+      "after_few": "{{number}} minutes after adhan",
+      "after_many": "{{number}} minutes after adhan",
+      "after_other": "{{number}} minutes after adhan",
+      "sheetTitle": "Iqamah reminder",
+      "optionOff": "Off",
+      "testAction": "Send a test iqamah",
+      "testSent": "Iqamah for {{name}} in {{seconds}} seconds",
+      "testSentPaired": "Adhan for {{name}} in {{adhanSeconds}}s, then iqamah in {{iqamahSeconds}}s (seconds stand in for minutes in this test)"
+    },
     "title": "Prayer",
     "next": "Next prayer",
     "remaining": "{{time}} left",
+    "remainingLabel": "left",
+    "timesTitle": "Today's times",
+    "upcoming": "Next",
     "sourceAuto": "Automatic",
     "sourceManual": "Manual",
     "notify": "{{name}} reminder",
+    "exactAlarm": {
+      "title": "Keep the adhan on time",
+      "body": "Allow Taybah to set alarms so prayer notifications arrive exactly on time."
+    },
     "qiblaRow": {
       "title": "Qibla direction",
       "subtitle": "{{degrees}}° from true north"
@@ -731,16 +753,37 @@
     "a11yTriple": "{{label}}, {{title}}, {{detail}}",
     "a11yAction": "{{action}} {{title}}"
   },
+  "downloads": {
+    "megabytes": "{{value}} MB",
+    "screen": {
+      "storage": "Storage used",
+      "legend": {
+        "audio": "Recitations",
+        "fonts": "Mushaf fonts",
+        "tafsir": "Tafsirs"
+      },
+      "reciters": "Recitations",
+      "reciterSurahCount": "{{count}} surahs",
+      "downloadAll": "Download all",
+      "stop": "Stop",
+      "downloadAllA11y": "Download all of {{name}}",
+      "stopA11y": "Stop downloading {{name}}",
+      "downloading": "Downloading",
+      "texts": "Texts",
+      "hafsLabel": "Uthmani Hafs",
+      "hafsSubtitle": "Core · cannot be deleted",
+      "footerNote": "Installed texts update automatically at least once a week when connected to the internet."
+    }
+  },
   "notifications": {
     "prayer": {
       "title": "Time for {{name}} prayer",
-      "body": {
-        "fajr": "Prayer is better than sleep",
-        "dhuhr": "Take a few minutes for Dhuhr",
-        "asr": "Pause for Asr",
-        "maghrib": "Maghrib is in. Time to pray",
-        "isha": "End your day with Isha"
-      }
+      "body": "It is now time for the {{name}} adhan",
+      "bodyWithPlace": "It is now time for the {{name}} adhan according to {{place}} time"
+    },
+    "iqamah": {
+      "title": "Iqamah soon",
+      "body": "The Iqamah for {{name}} prayer will be soon"
     },
     "reminder": {
       "title": "Your daily wird",
@@ -800,6 +843,7 @@
     "about": {
       "sources": "Sources and acknowledgments",
       "sourcesValue": "Quran Foundation · Tanzil · King Fahd Complex",
+      "privacy": "Privacy policy",
       "clearData": "Clear local data",
       "clearDataTitle": "Clear local data?",
       "clearDataMessage": "Are you sure you want to clear your local bookmarks, highlights, notes, and Khatma? This action cannot be undone.",
@@ -937,6 +981,9 @@
       "title": "Azkar are not available yet",
       "body": "The content arrives once publishing rights are complete"
     },
+    "home": {
+      "downloads": "Saved audio"
+    },
     "audio": {
       "play": "Play recording",
       "pause": "Pause recording",
@@ -961,7 +1008,7 @@
       "megabytes": "{{value}} MB",
       "removeAll": "Delete all",
       "emptyTitle": "No recordings are available yet",
-      "emptyBody": "Recordings will appear here once their use is licensed.",
+      "emptyBody": "Download a recording from a dhikr to keep it here for offline play.",
       "removeAllTitle": "Delete all recordings?",
       "removeAllBody": "Saved recordings will be deleted from this device. You can download them again later.",
       "removeAllConfirm": "Delete all",
@@ -1021,14 +1068,25 @@
     }
   },
   "duas": {
+    "menu": {
+      "caption": "Supplication",
+      "title": "Duas",
+      "subtitle": "Quran, Sunnah and yours"
+    },
     "home": {
       "title": "Duas",
       "favourites": "Favourites",
       "mineEyebrow": "Your own",
       "mineTitle": "My duas",
       "sourcesHeading": "Sources",
+      "quranTitle": "Quranic duas",
+      "quranDetail": "From the Quran",
       "hisnTitle": "Hisn al-Muslim",
       "hisnDetail": "By topic",
+      "hadithTitle": "Prophetic duas",
+      "hadithDetail": "From the Sunnah",
+      "hadithPendingDetail": "Available after the Duas pack is imported on the server",
+      "hisnTopicsHeading": "Hisn al-Muslim topics",
       "topicsHeading": "Topics",
       "attribution": "Hisn al-Muslim content from OpenDua · Prophetic duas from HadeethEnc when available"
     },
@@ -1066,6 +1124,31 @@
     "reminders": {
       "notificationTitle": "{{name}}",
       "notificationBody": "Your chosen reminder"
+    },
+    "quran": {
+      "listTitle": "Quranic duas",
+      "detailTitle": "Quranic dua",
+      "emptyTitle": "No Quranic duas yet",
+      "emptyBody": "Install the duas pack after the server import to see them here.",
+      "rowTitle": "{{surah}} · {{index}}",
+      "ayahSingle": "Ayah {{ayah}}",
+      "ayahRange": "Ayahs {{from}}–{{to}}",
+      "progress": "{{current}} of {{total}}",
+      "openInMushaf": "Open in Mushaf"
+    },
+    "hadith": {
+      "listTitle": "Prophetic duas",
+      "detailTitle": "Prophetic dua",
+      "emptyTitle": "No prophetic duas yet",
+      "emptyBody": "Run `php artisan duas:snapshot hadeethenc` then `php artisan duas:import --build-packs` on the API, then install the duas pack.",
+      "rowDetail": "From HadeethEnc",
+      "progress": "{{current}} of {{total}}",
+      "grade": "Grade",
+      "explanation": "Explanation",
+      "reference": "Reference",
+      "hints": "Benefits",
+      "linkHisn": "In Hisn al-Muslim · {{number}}",
+      "openSource": "Open on HadeethEnc.com"
     }
   },
   "sibha": {
@@ -1269,13 +1352,68 @@
       "pinAction": "Add to Home screen",
       "pinA11y": "Add {{widget}} widget to the Home screen"
     },
+    "androidLock": {
+      "step1": "Touch the Lock screen, then Customize.",
+      "step2": "Open Widgets or Add widget in the lock gallery.",
+      "step3": "Find Taybah and choose the prayer or progress widget."
+    },
     "ios": {
       "step1": "Touch and hold the Home Screen until the icons jiggle, then tap +.",
       "step2": "Search for Taybah and choose a widget.",
       "step3": "Tap Add Widget and place it where you want."
     },
+    "addConfirm": {
+      "title": "Add this widget?",
+      "message": "Preview how it looks before you continue. The system chooses the final placement.",
+      "continue": "Continue",
+      "cancel": "Cancel",
+      "alreadyTitle": "Already on Home screen",
+      "alreadyMessage": "A widget of this type is already on your Home screen. You can add another if you want.",
+      "done": "Done",
+      "addAnyway": "Add anyway",
+      "destinationHome": "Home",
+      "destinationLock": "Lock screen",
+      "destinationA11y": "Widget placement",
+      "androidLockGalleryNote": "Needs a recent Android version. Add the lock widget from the lock-screen gallery, not the button below.",
+      "androidLockHint": "Add the widget from the system lock-screen gallery (Android 16 QPR2 or newer).",
+      "iosHomeHint": "In the widget gallery, choose \"{{kind}}\" for the Home Screen.",
+      "iosLockHint": "In the widget gallery, choose \"{{kind}}\" for the Lock Screen."
+    },
     "watch": {
       "body": "The Wear OS app and tile and the Apple Watch app arrive with the watch apps (coming soon)."
+    }
+  },
+  "names": {
+    "menu": {
+      "caption": "Names",
+      "title": "Names of Allah",
+      "subtitle": "Browse, search and share"
+    },
+    "list": {
+      "title": "Names of Allah",
+      "back": "Back",
+      "searchPlaceholder": "Search names",
+      "viewGrid": "Grid",
+      "viewList": "List",
+      "sourceInfo": "Source information",
+      "emptyTitle": "Content unavailable",
+      "emptyBody": "Install the names pack from Sources and updates.",
+      "unavailableTitle": "Unavailable",
+      "unavailableBody": "The names pack is not installed on this device."
+    },
+    "detail": {
+      "back": "Back",
+      "favourite": "Favourite",
+      "favouriteRemove": "Remove favourite",
+      "share": "Share",
+      "sourceHeading": "Source",
+      "referencesHeading": "References",
+      "previous": "Previous",
+      "next": "Next",
+      "openVerse": "Open verse {{verseKey}}"
+    },
+    "card": {
+      "a11y": "Name {{position}}"
     }
   },
   "hijri": {

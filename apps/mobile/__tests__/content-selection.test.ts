@@ -89,4 +89,11 @@ describe('content selection', () => {
     storage.set(storageKeys.selectedResourceIds, JSON.stringify([99]));
     expect(selectedResourceIds(resources)).toEqual([99]);
   });
+
+  it('installs a duas resource that the manifest lists, with no user choice', () => {
+    const listed = [...resources, resource({ id: 50, group: 'duas' })];
+
+    expect(defaultSelectedResourceIds(listed)).toEqual([1, 2, 30, 50]);
+    expect(selectedResourceIds(listed)).toEqual([1, 2, 30, 50]);
+  });
 });

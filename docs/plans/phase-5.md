@@ -42,7 +42,7 @@ Spec §15 (new phase row lands with step 1), ADR 0027 (local-only), ADR 0010 (fr
 | **1** | **Frames, ADR & spec** | Draw `#Salah`, `#SalahDark`, `#Qibla` and update the sidebar frames in `quran-app-screens.html` from existing tokens; developer approves; write ADR 0030 and the spec §15/§12 edits. Icons for الصلاة (suggestion: SF `moon.stars` / Material `mosque`) are finalized here. | Phase 4 step 6 |
 | **2** | **Salah data layer** | `src/features/salah/data/`: location service (permission flow, GPS, gazetteer search, persisted source in MMKV), `adhan` wrapper (times + qibla bearing, Umm al-Qura/Shafi'i), on-device Hijri (`formatHijriDate`). Unit tests with known city/date fixtures. `npx expo install expo-location`; `adhan` 4.4.6 per content plan. | Step 1 |
 | **3** | **الصلاة screen + five tabs** | `SalahScreen` per `#Salah`: date header (Hijri + Gregorian), next-prayer hero (name, time, countdown), times list (٥ + شروق) with per-prayer bell, qibla row → `/salah/qibla`. `destinations.ts` gains `(salah)`; مصحفي takes the tab-bar center; sidebar gains الصلاة. i18n ar/en. | Step 2 |
-| **4** | **Prayer notifications** | Scheduling engine (rolling 8 days, refresh on foreground/location/toggle), per-prayer toggles wired to the bell, Settings master row, deep link to الصلاة on tap. Tests: schedule math, refresh triggers, toggle persistence. | Step 3 |
+| **4** | **Prayer notifications** | Scheduling engine (rolling 8 days, refresh on foreground/location/toggle), per-prayer toggles wired to the bell, Settings master row, deep link to الصلاة on tap. Tests: schedule math, refresh triggers, toggle persistence. *Amended by ADR 0047 (adhan sound). **Step 4b** (ADR 0056): optional iqamah offset — system-sound reminder N minutes **after** adhan; 4-day window for both kinds when on (`docs/plans/phase-5/step-04b-iqamah-offset-notifications.md`).* | Step 3 |
 | **5** | **Qibla compass** | `/salah/qibla` per `#Qibla`: fixed dial with a live-moving Kaaba marker (ADR 0049), bearing degrees, distance caption, calibration prompt, Reduce-Motion static variant. Hook tests with mocked heading. | Step 2 |
 | **6** | **Phase 5 exit check** | iPhone 17 simulator + iPad: airplane-mode pass (times, qibla, notifications), ar/en both directions, visual review against all new/updated frames, notification delivery on a real device build. | Steps 3–5 |
 
@@ -53,5 +53,6 @@ Spec §15 (new phase row lands with step 1), ADR 0027 (local-only), ADR 0010 (fr
 - `step-02-salah-data-layer.md`
 - `step-03-salah-screen-and-tabs.md`
 - `step-04-prayer-notifications.md`
+- `step-04b-iqamah-offset-notifications.md` (ADR 0056)
 - `step-05-qibla-compass.md`
 - `step-06-exit-check.md`

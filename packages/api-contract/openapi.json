@@ -583,7 +583,9 @@
                     "recitations",
                     "chapter_recitations",
                     "hadith",
-                    "azkar"
+                    "azkar",
+                    "names",
+                    "duas"
                 ],
                 "title": "ServedResourceGroup"
             }
