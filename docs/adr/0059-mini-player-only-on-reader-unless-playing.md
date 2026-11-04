@@ -20,7 +20,7 @@ The reader keeps its own bar (ADR 0024), which holds the reading place and its p
 
 - **Positive:** the tab bar carries no bar while nothing is playing. Content reaches the bottom edge when the bar is hidden.
 - **Negative:** from a tab, a paused surah has no on-screen resume. It is one tap into the reader, or the lock screen. The current ayah still feeds the Home card, the Index row and Khatma (ADR 0046 decision 1); only the tabs bar stops showing it.
-- **Code:** `useHasCurrentAyah` is no longer read by the mini player. The `MiniPlayer` component keeps its idle caption branch, which the reader variant still uses.
+- **Code:** `useHasCurrentAyah` had no other caller and is removed. The `MiniPlayer` component keeps its idle caption branch, which the reader variant still uses.
 
 ## Alternatives considered
 
