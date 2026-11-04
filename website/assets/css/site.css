@@ -419,6 +419,163 @@ main {
   cursor: default;
 }
 
+/* QR / download pages */
+.qr-main {
+  max-width: 560px;
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+}
+
+.qr-card {
+  width: 100%;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(19, 35, 31, 0.08);
+}
+
+.qr-card__logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+}
+
+.qr-card__name {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1.1;
+  color: var(--brand);
+  margin: 8px 0 4px;
+}
+
+.qr-card__tagline {
+  margin: 0 0 24px;
+  color: var(--ink-muted);
+  font-size: 17px;
+}
+
+.qr-card__code {
+  width: min(320px, 100%);
+  margin: 0 auto;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.qr-card__code img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.qr-card__cta {
+  margin: 20px 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.qr-card__url {
+  margin: 0 0 20px;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.qr-card__pills {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.qr-card__stores {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+.qr-card__stores-row {
+  justify-content: center;
+}
+
+.qr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.qr-card:fullscreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  overflow: auto;
+}
+
+.qr-card:fullscreen .qr-card__code {
+  width: min(60vh, 80vw);
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .qr-page .site-header,
+  .qr-page .site-footer,
+  .qr-actions {
+    display: none !important;
+  }
+
+  .qr-main {
+    max-width: none;
+    padding: 0;
+  }
+
+  .qr-card {
+    border: 2px solid var(--brand);
+    box-shadow: none;
+    padding: 16mm 12mm;
+    break-inside: avoid;
+  }
+
+  .qr-card__name {
+    font-size: 64pt;
+  }
+
+  .qr-card__tagline {
+    font-size: 18pt;
+  }
+
+  .qr-card__code {
+    width: 110mm;
+  }
+
+  .qr-card__cta {
+    font-size: 22pt;
+  }
+
+  .qr-card__url {
+    font-size: 16pt;
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 2px;

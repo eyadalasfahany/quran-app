@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <script>
+    (function () {
+      var b = document.createElement('base');
+      var p = location.pathname;
+      if (location.protocol === 'file:') {
+        b.href = location.href.replace(/[^/]*$/, '');
+      } else if (/\.html$/i.test(p)) {
+        b.href = p.replace(/[^/]*$/, '') || '/';
+      } else {
+        b.href = '/';
+      }
+      document.head.prepend(b);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>رمز التنزيل — طيبة</title>
+  <meta name="description" content="امسح الرمز لتنزيل تطبيق طيبة: تطبيق قرآن مجاني، عربي أولاً، بلا إعلانات ولا تتبع.">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="icon" href="assets/images/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+</head>
+<body class="qr-page">
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-logo" href="index.html"><img class="site-logo__img" src="assets/images/taybah-logo.png" alt="" width="40" height="40" decoding="async"><span>طيبة</span></a>
+      <nav class="site-nav" aria-label="القائمة الرئيسية">
+        <a href="index.html">الرئيسية</a>
+        <a href="support.html">الدعم</a>
+        <a href="privacy.html">الخصوصية</a>
+        <a href="terms.html">الشروط</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="qr-main">
+    <section class="qr-card" id="qr-card" aria-labelledby="qr-title">
+      <img class="qr-card__logo" src="assets/images/taybah-logo.png" alt="" width="72" height="72" decoding="async">
+      <h1 class="qr-card__name" id="qr-title">طيبة</h1>
+      <p class="qr-card__tagline">قرآنك معك — قراءة، استماع، وعبادة يومية</p>
+
+      <div class="qr-card__code">
+        <img src="assets/images/taybah-qr.svg" alt="رمز QR لتنزيل تطبيق طيبة" width="320" height="320">
+      </div>
+
+      <p class="qr-card__cta">امسح الرمز بكاميرا جوالك لتنزيل التطبيق</p>
+      <p class="qr-card__url" dir="ltr">taybahapp.com/download</p>
+
+      <ul class="qr-card__pills" aria-label="مزايا التطبيق">
+        <li class="pill">مجاني بالكامل</li>
+        <li class="pill">بلا إعلانات ولا تتبع</li>
+        <li class="pill">يعمل دون اتصال</li>
+      </ul>
+      <p class="qr-card__stores">iPhone · iPad · Android</p>
+    </section>
+
+    <div class="qr-actions">
+      <button class="btn btn--primary" type="button" data-qr-action="print">طباعة</button>
+      <button class="btn btn--secondary" type="button" data-qr-action="fullscreen">ملء الشاشة</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__copy">© Taybah</p>
+      <nav aria-label="روابط التذييل">
+        <a href="privacy.html">الخصوصية</a>
+        <a href="terms.html">الشروط</a>
+        <a href="delete-account.html">حذف البيانات</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var card = document.getElementById('qr-card');
+      var fsBtn = document.querySelector('[data-qr-action="fullscreen"]');
+      document.querySelector('[data-qr-action="print"]').addEventListener('click', function () {
+        window.print();
+      });
+      if (!card.requestFullscreen) {
+        fsBtn.hidden = true;
+        return;
+      }
+      fsBtn.addEventListener('click', function () {
+        card.requestFullscreen().catch(function () {});
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <script>
+    (function () {
+      var b = document.createElement('base');
+      var p = location.pathname;
+      if (location.protocol === 'file:') {
+        b.href = location.href.replace(/[^/]*$/, '');
+      } else if (/\.html$/i.test(p)) {
+        b.href = p.replace(/[^/]*$/, '') || '/';
+      } else {
+        b.href = '/';
+      }
+      document.head.prepend(b);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تنزيل طيبة</title>
+  <meta name="description" content="نزّل تطبيق طيبة من App Store أو Google Play.">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="icon" href="assets/images/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+</head>
+<body>
+  <main class="qr-main">
+    <section class="qr-card" aria-labelledby="dl-title">
+      <img class="qr-card__logo" src="assets/images/taybah-logo.png" alt="" width="72" height="72" decoding="async">
+      <h1 class="qr-card__name" id="dl-title">طيبة</h1>
+      <p class="qr-card__tagline" id="dl-status">جارٍ فتح المتجر…</p>
+      <div class="hero__cta qr-card__stores-row">
+        <a class="btn btn--primary" id="dl-ios" href="#" hidden>App Store</a>
+        <a class="btn btn--primary" id="dl-android" href="#" hidden>Google Play</a>
+        <a class="btn btn--secondary" href="index.html">الصفحة الرئيسية</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      // Fill these in once the store listings exist. While APP_STORE_ID is empty the
+      // page shows "coming soon" instead of redirecting. The printed QR code never changes.
+      var APP_STORE_ID = '';      // numeric Apple ID, e.g. '6500000000'
+      var PROVIDER_TOKEN = '';    // App Store Connect provider token (pt)
+      var PLAY_LIVE = false;      // true once the Play listing is published
+      var PACKAGE = 'com.taybahapp.taybah';
+
+      var src = (new URLSearchParams(location.search).get('src') || 'web').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) || 'web';
+
+      var ios = '';
+      if (APP_STORE_ID) {
+        ios = 'https://apps.apple.com/app/apple-store/id' + APP_STORE_ID + '?mt=8&ct=' + encodeURIComponent(src) +
+          (PROVIDER_TOKEN ? '&pt=' + encodeURIComponent(PROVIDER_TOKEN) : '');
+      }
+      var android = PLAY_LIVE
+        ? 'https://play.google.com/store/apps/details?id=' + PACKAGE +
+          '&referrer=' + encodeURIComponent('utm_source=' + src + '&utm_medium=qr')
+        : '';
+
+      var ua = navigator.userAgent;
+      var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      var isAndroid = /Android/.test(ua);
+      var status = document.getElementById('dl-status');
+
+      if (ios) { var a = document.getElementById('dl-ios'); a.href = ios; a.hidden = false; }
+      if (android) { var g = document.getElementById('dl-android'); g.href = android; g.hidden = false; }
+
+      if (isIOS && ios) { location.replace(ios); return; }
+      if (isAndroid && android) { location.replace(android); return; }
+
+      status.textContent = (ios || android)
+        ? 'اختر متجر جهازك لتنزيل التطبيق.'
+        : 'التطبيق قريباً على App Store و Google Play — إن شاء الله.';
+    })();
+  </script>
+</body>
+</html>
