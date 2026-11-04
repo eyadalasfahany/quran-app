@@ -1,5 +1,7 @@
 # 0046 — One current ayah drives the mini player and the reciters list, and play shows loading
 
+> **Amended by [`0059-mini-player-only-on-reader-unless-playing.md`](0059-mini-player-only-on-reader-unless-playing.md)** (4 Nov 2026): the tabs bar shows only while audio plays or loads, so §2 and §3 no longer apply to it. The reader bar is unchanged.
+
 Date: 2026-11-02 · Status: accepted (developer, 2 Nov 2026) · Amends ADR 0028 §2 and the idle-bar rule in the mini player; the loading ring (decision 4) lands in a later step.
 
 ## Context

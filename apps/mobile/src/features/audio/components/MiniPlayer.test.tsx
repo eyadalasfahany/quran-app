@@ -166,7 +166,7 @@ describe('MiniPlayer', () => {
   });
 
   it('shows the tab variant at the frame numbers: 64 high, 20 radius, 10 start and 12 end padding', async () => {
-    loadSurah('paused');
+    loadSurah('playing');
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
     const bar = flatStyle(view.getByTestId('mini-player-tabs').props.style);
 
@@ -249,14 +249,14 @@ describe('MiniPlayer', () => {
 
   it.each(locales)('keeps the play triangle on the toggle unflipped in %s', async (locale) => {
     loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { locale });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale });
 
     expect(flatStyle(view.getByTestId('mini-player-toggle-icon', { includeHiddenElements: true }).props.style).transform).toBeUndefined();
   });
 
   it('starts the current ayah from its beginning when the button is pressed while paused', async () => {
     loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
     expect(playVerse).toHaveBeenCalledWith('1:1');
@@ -272,11 +272,18 @@ describe('MiniPlayer', () => {
     expect(pause).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the play button after an error, so the player can be retried', async () => {
+  it('shows the play button after an error on the reader bar, so the player can be retried', async () => {
     loadSurah('error');
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.getByRole('button', { name: 'تشغيل' })).toBeOnTheScreen();
+  });
+
+  it.each(['paused', 'error'] as const)('draws nothing on the tabs bar once the player is %s (ADR 0059)', async (status) => {
+    loadSurah(status);
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+
+    expect(view.queryByTestId('mini-player-tabs')).toBeNull();
   });
 
   it('fills the progress line to a quarter at 12 s of 48 s', async () => {
@@ -306,7 +313,7 @@ describe('MiniPlayer', () => {
 
   it('labels the toggle with its own state, separate from the bar, so the two are two buttons', async () => {
     loadSurah('paused');
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.getByRole('button', { name: 'تشغيل' }).props.accessibilityState).toEqual({ disabled: false });
     expect(view.getAllByRole('button')).toHaveLength(2);
@@ -419,8 +426,8 @@ describe('MiniPlayer current ayah', () => {
     store.markPaused();
   });
 
-  it.each(['tabs', 'reader'] as const)('shows the current ayah while paused on another, and starts it from its beginning (%s)', async (variant) => {
-    const view = await renderUi(<MiniPlayer variant={variant} />, { theme: 'light' });
+  it('shows the current ayah on the reader bar while paused on another, and starts it from its beginning', async () => {
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.getByText('البقرة · الآية ٢٦٠')).toBeOnTheScreen();
     expect(view.queryByText('البقرة · الآية ٢٥٥')).toBeNull();
@@ -429,31 +436,24 @@ describe('MiniPlayer current ayah', () => {
     expect(resume).not.toHaveBeenCalled();
   });
 
-  it('shows the current ayah on the tabs bar beside the rail on an expanded window, and starts it (ADR 0051)', async () => {
-    setWindowWidth(1000);
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
-
-    expect(view.getByText('البقرة · الآية ٢٦٠')).toBeOnTheScreen();
-    fireEvent.press(view.getByRole('button', { name: 'تشغيل' }));
-    expect(playVerse).toHaveBeenCalledWith('2:260');
-  });
-
-  it('shows the current ayah in English', async () => {
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { locale: 'en', theme: 'light' });
+  it('shows the current ayah on the reader bar in English', async () => {
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale: 'en', theme: 'light' });
 
     expect(view.getByText('Al-Baqarah · Ayah 260')).toBeOnTheScreen();
   });
 
-  it('shows the current ayah and the reciter in English on the tabs bar on an expanded window', async () => {
-    setWindowWidth(1000);
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { locale: 'en', theme: 'light' });
+  it('hides the tabs bar while paused, even with the current ayah saved, on phones and expanded windows (ADR 0059)', async () => {
+    const phone = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+    expect(phone.queryByTestId('mini-player-tabs')).toBeNull();
 
-    expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
-    expect(view.getByText('Al-Baqarah · Ayah 260')).toBeOnTheScreen();
+    setWindowWidth(1000);
+    const expanded = await renderUi(<MiniPlayer variant="tabs" />, { locale: 'en', theme: 'light' });
+    expect(expanded.queryByTestId('mini-player-tabs')).toBeNull();
+    expect(expanded.queryByText('Al-Baqarah · Ayah 260')).toBeNull();
   });
 
   it('hides the progress line while nothing plays, since it belongs to the audio that stopped', async () => {
-    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
 
     expect(view.queryByTestId('mini-player-progress', { includeHiddenElements: true })).toBeNull();
   });

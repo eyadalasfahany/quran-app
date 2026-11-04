@@ -1,6 +1,6 @@
 # 0051 — Tablets use the phone tab bar; the expanded sidebar is no longer navigation
 
-Date: 2026-11-02 · Status: accepted (developer, 2 Nov 2026) · Supersedes the navigation part of the expanded-window sidebar: ADR 0012 §8 ("the custom sidebar stays"), ADR 0005 and ADR 0010 for the sidebar drawing as a navigation bar, the sidebar lists in ADR 0030 §4 and ADR 0032 §4, and spec §4's "Sidebar" navigation for the expanded class. Amends ADR 0033 §3 (the bar is shown on expanded windows) and ADR 0036 §5 (the sidebar is not drawn).
+Date: 2026-11-02 · Status: accepted (developer, 2 Nov 2026) · Supersedes the navigation part of the expanded-window sidebar: ADR 0012 §8 ("the custom sidebar stays"), ADR 0005 and ADR 0010 for the sidebar drawing as a navigation bar, the sidebar lists in ADR 0030 §4 and ADR 0032 §4, and spec §4's "Sidebar" navigation for the expanded class. Amends ADR 0033 §3 (the bar is shown on expanded windows) and ADR 0036 §5 (the sidebar is not drawn). Amended by ADR 0059 (the tabs mini player shows only while audio loads or plays).
 
 ## Context
 

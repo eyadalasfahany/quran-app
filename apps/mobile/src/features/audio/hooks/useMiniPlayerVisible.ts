@@ -1,25 +1,26 @@
 import { useWindowClass } from '@/core/layout/useWindowClass';
 
-import { useHasCurrentAyah } from '@/features/reader/anchor/useHasCurrentAyah';
 import type { MiniPlayerVariant } from '../mini-player-metrics';
 import { usePlayerStore } from '../playerStore';
 import { useIdleReciter } from './useIdleReciter';
 
-// Whether a mini player bar shows. The bar and everything that makes room for it (list insets, the resume
-// pill) read this one rule, so they can't disagree. The bar shows once something has loaded. While idle, the reader
-// bar shows when a reciter resolves; the tabs bar shows the same way once a current ayah has been saved (ADR 0046),
-// so a fresh install shows no bar. `tabs` shows on every window, tablets included, as it does on a phone (ADR 0051).
-// `reader` is a phone and medium placement, hidden on expanded windows, where the reader's own panel takes over. The
-// reader adds its own mode check (Reading and Mushaf only).
+/**
+ * Whether the mini player is drawn for a variant (ADR 0059, amending ADR 0046 §2 and ADR 0051).
+ *
+ * - `reader`: the reader's own bar shows once a surah is loaded, or while idle when a reciter resolves (ADR 0024).
+ *   It stays off the expanded window, where the reader shows its docked panel instead.
+ * - `tabs`: the bar in the tab bar or rail slot shows only while audio plays or loads. Loading counts as playing, so
+ *   the buffering ring shows on every play (ADR 0046 decision 4). Paused, idle and error hide it, on every window
+ *   class. Outside the reader the lock screen and Control Center are the controls.
+ */
 export function useMiniPlayerVisible(variant: MiniPlayerVariant): boolean {
   const status = usePlayerStore((state) => state.status);
   const windowClass = useWindowClass();
   const loaded = status !== 'idle';
   const idleReciter = useIdleReciter(!loaded) !== null;
-  const hasCurrentAyah = useHasCurrentAyah();
 
   if (variant === 'reader') {
     return (loaded || idleReciter) && windowClass !== 'expanded';
   }
-  return loaded || (hasCurrentAyah && idleReciter);
+  return status === 'loading' || status === 'playing';
 }

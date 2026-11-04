@@ -62,13 +62,13 @@ describe('useMiniPlayerVisible', () => {
     }
   });
 
-  it.each([390, 1000])('shows the tabs bar while idle once an ayah is saved and a reciter resolves (%i wide, ADR 0051)', async (width) => {
+  it.each([390, 1000])('hides the tabs bar while idle even once an ayah is saved and a reciter resolves (%i wide, ADR 0059)', async (width) => {
     setWindowWidth(width);
     mockReciter = { resourceId: 30 };
     storage.set(storageKeys.readerLastVerseKey, '2:255');
     try {
       const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
-      expect(result.current).toBe(true);
+      expect(result.current).toBe(false);
     } finally {
       mockReciter = null;
     }
@@ -102,9 +102,35 @@ describe('useMiniPlayerVisible', () => {
     }
   });
 
-  it.each(['loading', 'playing', 'paused', 'error'] as const)('is shown once the player is %s', async (status) => {
+  it.each(['loading', 'playing'] as const)('shows the tabs bar while the player is %s', async (status) => {
     setStatus(status);
     const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
+
+    expect(result.current).toBe(true);
+  });
+
+  it.each(['paused', 'error'] as const)('hides the tabs bar while the player is %s (ADR 0059)', async (status) => {
+    setStatus(status);
+    const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
+
+    expect(result.current).toBe(false);
+  });
+
+  it.each(['paused', 'error'] as const)('hides the tabs bar while %s even with a saved ayah and a reciter (ADR 0059)', async (status) => {
+    mockReciter = { resourceId: 30 };
+    storage.set(storageKeys.readerLastVerseKey, '2:255');
+    setStatus(status);
+    try {
+      const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
+      expect(result.current).toBe(false);
+    } finally {
+      mockReciter = null;
+    }
+  });
+
+  it.each(['loading', 'playing', 'paused', 'error'] as const)('keeps the reader bar shown once the player is %s', async (status) => {
+    setStatus(status);
+    const { result } = await renderHook(() => useMiniPlayerVisible('reader'));
 
     expect(result.current).toBe(true);
   });
@@ -117,20 +143,20 @@ describe('useMiniPlayerVisible', () => {
     expect(result.current).toBe(true);
   });
 
-  it('is shown on an expanded window while playing, as on a phone (ADR 0051)', async () => {
+  it.each(['loading', 'playing'] as const)('is shown on an expanded window while %s, as on a phone (ADR 0051, ADR 0059)', async (status) => {
     setWindowWidth(1000);
-    setStatus('playing');
+    setStatus(status);
     const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
     expect(result.current).toBe(true);
   });
 
-  it('is shown on an expanded window once a surah is loaded and paused', async () => {
+  it('is hidden on an expanded window once a surah is loaded and paused (ADR 0059)', async () => {
     setWindowWidth(1000);
     setStatus('paused');
     const { result } = await renderHook(() => useMiniPlayerVisible('tabs'));
 
-    expect(result.current).toBe(true);
+    expect(result.current).toBe(false);
   });
 
   it('is hidden on an expanded window while idle', async () => {
@@ -148,5 +174,10 @@ describe('useMiniPlayerVisible', () => {
       setStatus('playing');
     });
     expect(result.current).toBe(true);
+
+    await act(() => {
+      setStatus('paused');
+    });
+    expect(result.current).toBe(false);
   });
 });
