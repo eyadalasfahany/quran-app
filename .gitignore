@@ -47,3 +47,11 @@ infra/data/
 
 # OpenDua recordings: contracted recitation, not licensed to us (ADR 0031 §8, ADR 0038 §3). Never commit.
 /opendua-audio-hisn-v0.0.2/
+
+# Local recitation audio (rights-restricted, never committed)
+/*.mp3
+/*.wav
+tools/recitation-align/.venv/
+tools/recitation-align/out/
+__pycache__/
+.pytest_cache/
