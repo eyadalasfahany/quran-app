@@ -302,6 +302,7 @@ def test_check_aligned_refuses_missing_and_extra(tmp_path):
 
 def test_quality_summary_counts_without_text(tmp_path):
     doc = {
+        "source": "aligner",
         "ayahs": [{"ayah": 1}, {"ayah": 2}],
         "words": [
             {"ayah": 1, "basmala": True, "confidence": 0.1},
@@ -312,7 +313,7 @@ def test_quality_summary_counts_without_text(tmp_path):
     }
     (tmp_path / "001.json").write_text(json.dumps(doc), encoding="utf-8")
     text = ci.quality_summary(tmp_path, [1])
-    assert "| 1 | 2 | 4 | 0.250 | 1 (2) |" in text
+    assert "| 1 | aligner | 2 | 4 | 0.250 | 1 (2) |" in text
     assert "Ayahs below 0.4: 1." in text
 
 

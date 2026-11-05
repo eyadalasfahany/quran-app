@@ -11,6 +11,10 @@ the previous ayah's last word is clipped to end there (as `apply_marks.realign_r
 export derives the published starts. Output: aligner-shaped `out/published/MOSHAF/aligned/NNN.json`
 with `source: "mp3quran_published"` on the ayah rows. Nothing committed; nothing under resources/.
 
+With --fallback-aligner, a surah whose published timings are refused (they do not fit the audio file)
+is aligned by the whole-surah aligner instead (as `run --no-repair`: windowed alignment, then ayah
+boundaries snapped to pauses) and written with `source: "aligner"`. The printed line says FALLBACK.
+
 Quality check (printed): share of published ayah starts (ayahs 2..N) within 1 s of an audio pause,
 and ayahs whose words have a mean confidence below 0.4 (basmala excluded). Keys and counts only.
 """
@@ -24,7 +28,7 @@ import torch
 
 from recitation_align import __version__
 from recitation_align.align import (LOOKAHEAD_TOKENS, MAX_TOKENS, MUQATTAAT, SLACK, STAR_PENALTY,
-                                    _expand_muqattaat, _words, align_emissions, basmala_word_count,
+                                    _expand_muqattaat, _words, align_emissions, align_full, basmala_word_count,
                                     compute_emissions, decide_basmala, emission_key, load_emissions,
                                     load_vocab, save_emissions, surah_tokens)
 from recitation_align.apply_marks import ms_per_frame
@@ -32,12 +36,14 @@ from recitation_align.audio import file_sha256, load_wav16k
 from recitation_align.models import ALIGN_MODEL, ALIGN_REVISION
 from recitation_align.pauses import DEFAULT_MIN_SILENCE_S, DEFAULT_NOISE_DB, cached_pauses
 from recitation_align.published import Normalised, PublishedError, normalise
+from recitation_align.snap import SNAP_WINDOW_MS, snap_to_pauses
 from recitation_align.text import load_tanzil
 
 TOOL_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_TANZIL = (TOOL_DIR / "../../packages/quran-text-check/data/tanzil-quran-simple-1.1.txt").resolve()
 INGEST_OUT = (TOOL_DIR / "../mp3quran-ingest/out").resolve()
 SOURCE = "mp3quran_published"
+FALLBACK_SOURCE = "aligner"
 LOW_CONFIDENCE = 0.4
 TOLERANCE_S = 1.0
 SETTINGS = dict(max_tokens=MAX_TOKENS, lookahead_tokens=LOOKAHEAD_TOKENS, slack=SLACK, star_penalty=STAR_PENALTY)
@@ -153,24 +159,49 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
     raw_path = args.raw_dir / f"raw-{surah}.json"
     raw = json.loads(raw_path.read_text(encoding="utf-8"))
     verse_count = sum(1 for s, _ in ayahs if s == surah)
+    refusal = None
     try:
         norm = normalise(raw, surah=surah, verse_count=verse_count, duration_ms=duration_ms)
+        if norm.missing:
+            refusal = f"published timings miss ayah(s) {norm.missing}"
     except PublishedError as err:
-        raise SurahRefused(f"published timings refused: {err}") from err
-    if norm.missing:
-        raise SurahRefused(f"published timings miss ayah(s) {norm.missing}")
+        refusal = f"published timings refused: {err}"
+    if refusal and not args.fallback_aligner:
+        raise SurahRefused(refusal)
 
     cache = args.emissions_dir / f"{args.moshaf}-{surah:03d}.npz"
     key = emission_key(sha)
     em = load_emissions(cache, key)
+    wav = None
     if em is None:
-        em = compute_emissions(load_wav16k(audio))
+        wav = load_wav16k(audio)
+        em = compute_emissions(wav)
         save_emissions(cache, key, em)
     mpf = ms_per_frame(duration_ms, em.shape[0])
+    pauses = cached_pauses(audio, sha, args.pauses_dir / f"{surah:03d}.pauses.json",
+                           DEFAULT_NOISE_DB, DEFAULT_MIN_SILENCE_S)
 
-    words, recited = align_in_spans(surah, norm, ayahs=ayahs, em=em, mpf=mpf, vocab=vocab, blank=blank)
-    squeezed = force_published_starts(words, norm)
-    words.sort(key=lambda w: (w["ayah"], w["position"]))
+    if refusal:
+        if wav is None:
+            wav = load_wav16k(audio)
+        words, recited, _decision = align_full(wav, surah, ayahs, em=em, pauses=pauses)
+        snap_to_pauses(words, pauses, window_ms=SNAP_WINDOW_MS)
+        words.sort(key=lambda w: (w["ayah"], w["position"]))
+        spans = ayah_spans(words, duration_ms)
+        doc_source, squeezed, published = FALLBACK_SOURCE, 0, {"refused": refusal}
+        ayah1_published, end_mismatch, dropped = None, None, None
+    else:
+        words, recited = align_in_spans(surah, norm, ayahs=ayahs, em=em, mpf=mpf, vocab=vocab, blank=blank)
+        squeezed = force_published_starts(words, norm)
+        words.sort(key=lambda w: (w["ayah"], w["position"]))
+        spans = {a: (norm.starts[a], norm.ends[a]) for a in sorted(norm.starts)}
+        doc_source = SOURCE
+        ayah1_published, end_mismatch, dropped = (norm.ayah1_published_start_ms, norm.end_mismatch,
+                                                  norm.dropped_ayah0)
+        published = {"ayah1_published_start_ms": ayah1_published,
+                      "published_last_end_ms": norm.published_last_end_ms,
+                      "end_mismatch": end_mismatch, "dropped_ayah0": dropped,
+                      "words_squeezed": squeezed}
 
     doc = {
         "surah": surah,
@@ -178,34 +209,41 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
         "align_model": {"id": ALIGN_MODEL, "revision": ALIGN_REVISION},
         "audio": {"file": audio.name, "bytes": entry["bytes"], "sha256": entry["sha256"],
                   "duration_ms": duration_ms},
-        "source": SOURCE,
+        "source": doc_source,
         "basmala_recited": recited,
-        "published": {"ayah1_published_start_ms": norm.ayah1_published_start_ms,
-                      "published_last_end_ms": norm.published_last_end_ms,
-                      "end_mismatch": norm.end_mismatch, "dropped_ayah0": norm.dropped_ayah0,
-                      "words_squeezed": squeezed},
-        "ayahs": [{"ayah": a, "start_ms": norm.starts[a], "end_ms": norm.ends[a], "source": SOURCE}
-                  for a in sorted(norm.starts)],
+        "published": published,
+        "ayahs": [{"ayah": a, "start_ms": spans[a][0], "end_ms": spans[a][1], "source": doc_source}
+                  for a in sorted(spans)],
         "words": words,
     }
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / f"{surah:03d}.json").write_text(
         json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
-    pauses = cached_pauses(audio, sha, args.pauses_dir / f"{surah:03d}.pauses.json",
-                           DEFAULT_NOISE_DB, DEFAULT_MIN_SILENCE_S)
-    starts_s = [norm.starts[a] / 1000 for a in sorted(norm.starts) if a >= 2]
+    starts_s = [spans[a][0] / 1000 for a in sorted(spans) if a >= 2]
     within = sum(distance_to_pauses(t, pauses) <= TOLERANCE_S for t in starts_s)
     conf = ayah_confidence(words)
     low = sorted(a for a, c in conf.items() if c < LOW_CONFIDENCE)
     first_spoken = min((w["start_ms"] for w in words if w["ayah"] == 1 and not w.get("basmala")), default=None)
     return {
-        "surah": surah, "ayahs": len(norm.starts), "words": len(words), "recited": recited,
+        "surah": surah, "ayahs": len(spans), "words": len(words), "recited": recited,
         "pauses": len(pauses), "starts_checked": len(starts_s), "within_1s": within,
-        "low_conf_ayahs": low, "words_squeezed": squeezed, "dropped_ayah0": norm.dropped_ayah0,
-        "end_mismatch": norm.end_mismatch, "ayah1_first_word_ms": first_spoken,
-        "ayah1_published_start_ms": norm.ayah1_published_start_ms, "duration_ms": duration_ms,
+        "low_conf_ayahs": low, "words_squeezed": squeezed, "dropped_ayah0": dropped,
+        "end_mismatch": end_mismatch, "ayah1_first_word_ms": first_spoken,
+        "ayah1_published_start_ms": ayah1_published, "duration_ms": duration_ms,
+        "fallback": refusal,
     }
+
+
+def ayah_spans(words: list[dict], duration_ms: int) -> dict[int, tuple[int, int]]:
+    """Ayah (start, end) from aligned words: each ayah ends where the next begins; the last at the file end."""
+    firsts: dict[int, int] = {}
+    for w in words:
+        if not w.get("basmala"):
+            firsts[w["ayah"]] = min(firsts.get(w["ayah"], w["start_ms"]), w["start_ms"])
+    order = sorted(firsts)
+    return {a: (firsts[a], firsts[order[i + 1]] if i + 1 < len(order) else duration_ms)
+            for i, a in enumerate(order)}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -219,6 +257,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--emissions-dir", type=Path, default=TOOL_DIR / "out" / "emissions")
     p.add_argument("--pauses-dir", type=Path, default=None)
     p.add_argument("--tanzil", type=Path, default=DEFAULT_TANZIL)
+    p.add_argument("--fallback-aligner", action="store_true",
+                   help="align a surah whose published timings are refused with the whole-surah aligner")
     args = p.parse_args(argv)
     base = TOOL_DIR / "out" / "published" / str(args.moshaf)
     args.audio_dir = args.audio_dir or INGEST_OUT / "audio" / f"mp3quran-{args.moshaf}"
@@ -237,6 +277,8 @@ def main(argv: list[str] | None = None) -> int:
             failures += 1
             print(f"{surah:03d}: REFUSED: {err}", file=sys.stderr)
             continue
+        if r["fallback"]:
+            print(f"{surah:03d}: FALLBACK to the aligner ({r['fallback']})", file=sys.stderr)
         share = 100 * r["within_1s"] / r["starts_checked"] if r["starts_checked"] else float("nan")
         print(f"{surah:03d}: ayahs {r['ayahs']}, words {r['words']}, basmala recited {r['recited']}, "
               f"ayah starts within 1 s of a pause {r['within_1s']}/{r['starts_checked']} ({share:.1f}%), "

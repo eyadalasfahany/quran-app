@@ -287,3 +287,24 @@ def test_source_is_written_through(tmp_path, tanzil):
                  "--tanzil", str(tanzil), "--urls", str(urls), "--source", "mp3quran_published"])
     assert code == 0
     assert json.loads((out / "001.json").read_text(encoding="utf-8"))["source"] == "mp3quran_published"
+
+
+def test_a_surah_keeps_its_own_source_over_the_batch_source(tmp_path, tanzil):
+    in_dir, out = tmp_path / "in", tmp_path / "out"
+    fallback = dict(make_doc(1, simple_words(1, [2, 2]), duration_ms=5000), source="aligner")
+    write_inputs(in_dir, {1: fallback})
+    urls = write_urls(tmp_path / "u.json", {"1": "https://x/1.mp3"})
+    code = main(["--kind", "qf", "--recitation-key", "174", "--in", str(in_dir), "--out", str(out),
+                 "--tanzil", str(tanzil), "--urls", str(urls), "--source", "mp3quran_published"])
+    assert code == 0
+    assert json.loads((out / "001.json").read_text(encoding="utf-8"))["source"] == "aligner"
+
+
+def test_an_unknown_surah_source_is_refused(tmp_path, tanzil):
+    in_dir, out = tmp_path / "in", tmp_path / "out"
+    write_inputs(in_dir, {1: dict(make_doc(1, simple_words(1, [2, 2]), duration_ms=5000), source="guess")})
+    urls = write_urls(tmp_path / "u.json", {"1": "https://x/1.mp3"})
+    code = main(["--kind", "qf", "--recitation-key", "174", "--in", str(in_dir), "--out", str(out),
+                 "--tanzil", str(tanzil), "--urls", str(urls)])
+    assert code != 0
+    assert not (out / "001.json").exists()

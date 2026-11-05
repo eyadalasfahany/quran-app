@@ -323,8 +323,8 @@ def check_aligned(aligned_dir: Path, surahs: list[int]) -> None:
 def quality_summary(aligned_dir: Path, surahs: list[int]) -> str:
     """Markdown table for the PR body: counts and confidences only, no text."""
     rows = [
-        "| Surah | Ayahs | Words | Lowest ayah confidence | Ayahs below 0.4 |",
-        "| ---: | ---: | ---: | ---: | --- |",
+        "| Surah | Source | Ayahs | Words | Lowest ayah confidence | Ayahs below 0.4 |",
+        "| ---: | --- | ---: | ---: | ---: | --- |",
     ]
     total_low = 0
     for surah in surahs:
@@ -339,7 +339,7 @@ def quality_summary(aligned_dir: Path, surahs: list[int]) -> str:
         total_low += len(low)
         lowest = f"{min(means.values()):.3f}" if means else "n/a"
         low_text = f"{len(low)} ({', '.join(str(a) for a in low)})" if low else "0"
-        rows.append(f"| {surah} | {len(ayahs)} | {len(doc.get('words', []))} | {lowest} | {low_text} |")
+        rows.append(f"| {surah} | {doc.get('source', 'n/a')} | {len(ayahs)} | {len(doc.get('words', []))} | {lowest} | {low_text} |")
     rows.append("")
     rows.append(f"Surahs: {len(surahs)}. Ayahs below {LOW_CONFIDENCE}: {total_low}.")
     return "\n".join(rows) + "\n"

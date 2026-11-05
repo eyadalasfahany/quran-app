@@ -141,7 +141,7 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
-          uv run python scripts/pilot_published.py --moshaf "$MOSHAF" \
+          uv run python scripts/pilot_published.py --moshaf "$MOSHAF" --fallback-aligner \
             --manifest "$GITHUB_WORKSPACE/tools/mp3quran-ingest/out/manifest-${MOSHAF}-${CHUNK}.json" \
             "${SURAH_ARGS[@]}"
 
