@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Jobs\PruneContentChangesJob;
 use App\Domains\Content\Jobs\SyncQuranFoundationJob;
+use App\Domains\Sync\Console\RefreshStoreVersionsCommand;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -36,3 +37,7 @@ if (is_array($groups)) {
 Schedule::job(new PruneContentChangesJob)
     ->daily()
     ->timezone('UTC');
+
+Schedule::command(RefreshStoreVersionsCommand::class)
+    ->everyFifteenMinutes()
+    ->withoutOverlapping();

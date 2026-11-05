@@ -26,6 +26,7 @@ import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackRea
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
 import { useReaderSettings } from '@/features/reader/settings';
 import { DiscoverTourNavigator } from '@/features/discover/components/DiscoverTourNavigator';
+import { ForceUpdateGate } from '@/features/app-update/components/ForceUpdateGate';
 import { WidgetSnapshotSync } from '@/features/widgets/components/WidgetSnapshotSync';
 import { AnimatedSplashOverlay } from '@/shared/ui/AnimatedSplashOverlay';
 
@@ -150,6 +151,8 @@ export default function RootLayout() {
         <Stack.Screen name="asmaa/[slug]" options={pushOptions} />
       </Stack>
       )}
+      {/* Blocks the app when this version is below the API's minimum (ADR 0060). */}
+      {ready && splashFinished && <ForceUpdateGate />}
       </QuranFontProvider>
     </ThemeProvider>
   );

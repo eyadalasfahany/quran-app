@@ -116,6 +116,27 @@
                 }
             }
         },
+        "/bootstrap": {
+            "get": {
+                "operationId": "v1.bootstrap",
+                "summary": "What the app needs at launch: the minimum app version per platform and the store links",
+                "tags": [
+                    "Bootstrap"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`BootstrapResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BootstrapResource"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/content/changes": {
             "get": {
                 "operationId": "v1.content.changes",
@@ -353,6 +374,52 @@
     },
     "components": {
         "schemas": {
+            "BootstrapResource": {
+                "type": "object",
+                "properties": {
+                    "min_app_version": {
+                        "type": "object",
+                        "properties": {
+                            "ios": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "android": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "ios",
+                            "android"
+                        ]
+                    },
+                    "store_url": {
+                        "type": "object",
+                        "properties": {
+                            "ios": {
+                                "type": "string"
+                            },
+                            "android": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "ios",
+                            "android"
+                        ]
+                    }
+                },
+                "required": [
+                    "min_app_version",
+                    "store_url"
+                ],
+                "title": "BootstrapResource"
+            },
             "ContentChangesResource": {
                 "type": "object",
                 "properties": {

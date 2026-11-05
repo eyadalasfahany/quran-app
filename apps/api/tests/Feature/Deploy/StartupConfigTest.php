@@ -29,12 +29,13 @@ it('the web service starts through start-web.sh, after entrypoint.sh', function 
         ->and(deployRailwayConfig()['deploy']['healthcheckTimeout'])->toBe(120);
 });
 
-it('the pre-deploy command is the release script, and it runs migrations only', function (): void {
+it('the pre-deploy command is the release script, and it runs migrations and the store version lookup only', function (): void {
     expect(deployRailwayConfig()['deploy']['preDeployCommand'])->toBe(['/usr/local/bin/entrypoint.sh', '/usr/local/bin/release.sh']);
 
     $release = deployFile('docker/release.sh');
 
     expect($release)->toContain('php artisan migrate --force')
+        ->and($release)->toContain('php artisan app-stores:refresh || true')
         ->and($release)->not->toContain('azkar')
         ->and($release)->not->toContain('--build-packs')
         ->and($release)->not->toContain('--if-unlocked');
