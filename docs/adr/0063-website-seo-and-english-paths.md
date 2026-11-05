@@ -1,6 +1,6 @@
 # 0063 — Website SEO: English pages at /en/, structured data and AI-crawler files
 
-Date: 2026-11-05 · Status: **accepted** (developer, 5 Nov 2026) · Scope: `website/` only (taybahapp.com)
+Date: 2026-11-05 · Status: **accepted** (developer, 5 Nov 2026) · Scope: `website/` only (taybah-app.com)
 
 ## Context
 

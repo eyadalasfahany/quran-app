@@ -1,4 +1,4 @@
-# taybahapp.com — everyone is welcome, including AI search and answer engines.
+# taybah-app.com — everyone is welcome, including AI search and answer engines.
 User-agent: *
 Allow: /
 
@@ -23,4 +23,4 @@ User-agent: cohere-ai
 User-agent: MistralAI-User
 Allow: /
 
-Sitemap: https://taybahapp.com/sitemap.xml
+Sitemap: https://taybah-app.com/sitemap.xml
