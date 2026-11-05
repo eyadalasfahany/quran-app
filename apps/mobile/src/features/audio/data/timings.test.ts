@@ -1,5 +1,6 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
+import { activeTimingIndex, activeWordPosition } from '../active-ayah';
 import { parseSegments, timingsFitAudio, timingsFor, validTimings, type AyahTiming } from './timings';
 import { openAudioTestDb } from './test-db';
 
@@ -155,5 +156,66 @@ describe('timingsFitAudio', () => {
   it('accepts no timings and an unknown duration', () => {
     expect(timingsFitAudio([], 60_000)).toBe(true);
     expect(timingsFitAudio(timings, 0)).toBe(true);
+  });
+});
+
+describe('generated Taybah timings', () => {
+  // Placeholder surah 300 (chapter 3 here) with four ayahs, shaped like the API's generated rows: ayah 2 has no
+  // segments (its verse does not match the QF word count), ayah 3 repeats positions 2 and 3.
+  beforeEach(() => {
+    insertFile(300, 3, 4);
+    insertTiming(300, 1, 0, 150_000, '[[1,0,50000],[2,50000,100000],[3,100000,150000]]');
+    insertTiming(300, 2, 150_000, 300_000, null);
+    insertTiming(300, 3, 300_000, 450_000, '[[1,300000,330000],[2,330000,360000],[3,360000,390000],[2,390000,420000],[3,420000,450000]]');
+    insertTiming(300, 4, 450_000, 600_000, '[[1,450000,500000],[2,500000,600000]]');
+  });
+
+  it('returns the four rows sorted by start with the segments parsed, nulls kept, repeats kept', () => {
+    const rows = timingsFor(executor, 300);
+
+    expect(rows).toEqual([
+      { endMs: 150_000, segments: [[1, 0, 50_000], [2, 50_000, 100_000], [3, 100_000, 150_000]], startMs: 0, verseId: 1 },
+      { endMs: 300_000, segments: null, startMs: 150_000, verseId: 2 },
+      {
+        endMs: 450_000,
+        segments: [[1, 300_000, 330_000], [2, 330_000, 360_000], [3, 360_000, 390_000], [2, 390_000, 420_000], [3, 420_000, 450_000]],
+        startMs: 300_000,
+        verseId: 3,
+      },
+      { endMs: 600_000, segments: [[1, 450_000, 500_000], [2, 500_000, 600_000]], startMs: 450_000, verseId: 4 },
+    ]);
+  });
+
+  it('fits a 600 s file and rejects a 700 s file with more than 5% of tail', () => {
+    const rows = timingsFor(executor, 300);
+
+    expect(timingsFitAudio(rows, 600_000)).toBe(true);
+    expect(timingsFitAudio(rows, 700_000)).toBe(false);
+  });
+
+  it('highlights the repeated word positions in ayah 3 and the ayah index', () => {
+    const rows = timingsFor(executor, 300);
+    const ayahThree = rows[2];
+
+    expect(ayahThree).toBeDefined();
+    if (ayahThree === undefined) {
+      return;
+    }
+    expect(activeWordPosition(ayahThree, 345_000)).toBe(2);
+    expect(activeWordPosition(ayahThree, 400_000)).toBe(2);
+    expect(activeWordPosition(ayahThree, 440_000)).toBe(3);
+    expect(activeTimingIndex(rows, 400_000)).toBe(2);
+  });
+
+  it('has no word highlight in ayah 2 at any time', () => {
+    const ayahTwo = timingsFor(executor, 300)[1];
+
+    expect(ayahTwo).toBeDefined();
+    if (ayahTwo === undefined) {
+      return;
+    }
+    expect(activeWordPosition(ayahTwo, 160_000)).toBeNull();
+    expect(activeWordPosition(ayahTwo, 250_000)).toBeNull();
+    expect(activeWordPosition(ayahTwo, 299_000)).toBeNull();
   });
 });

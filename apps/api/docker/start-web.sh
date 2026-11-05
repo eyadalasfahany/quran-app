@@ -4,7 +4,8 @@
 # file and the volume is mounted only on the web service.
 #
 # Order: create the storage folders, verify the Azkar audio, fetch the pinned secondary snapshots, import the Azkar rows
-# (DB rows only, --defer-pack), build any missing packs, then serve. The import runs here and not in release.sh, because
+# (DB rows only, --defer-pack), import the MP3Quran recitations and the Taybah timings (DB rows only, --defer-pack; ADR 0060,
+# ADR 0061), build any missing packs, then serve. The import runs here and not in release.sh, because
 # only this container mounts the volume that holds the audio: run before the audio is in place, it would drop the
 # recording rows. Every task logs and continues, so a failure never blocks serving; the current versions keep serving.
 set -u
@@ -33,6 +34,18 @@ if php artisan azkar:import --download --defer-pack; then
   echo "start: Azkar rows up to date"
 else
   echo "WARNING: the Azkar import did not finish (download, checksum, validation or pin); the current Azkar version keeps serving. The report lists the reason."
+fi
+
+if php artisan mp3quran:import --defer-pack; then
+  echo "start: MP3Quran recitations up to date"
+else
+  echo "WARNING: the MP3Quran import did not finish (manifest or a moshaf was refused; the lines above name it); the current MP3Quran versions keep serving."
+fi
+
+if php artisan recitation-timings:import --defer-pack; then
+  echo "start: Taybah recitation timings up to date"
+else
+  echo "WARNING: some Taybah timing files were skipped (the lines above name them and the reason); the current versions keep serving."
 fi
 
 if php artisan content:ensure-packs; then

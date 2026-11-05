@@ -20,7 +20,9 @@ use App\Domains\Content\Models\TafsirEntry;
 use App\Domains\Content\Models\TaybahRecitationTiming;
 use App\Domains\Content\Models\TaybahTimingSet;
 use App\Domains\Content\Models\WordLayout;
+use App\Domains\Content\Mp3Quran\Mp3QuranFileId;
 use App\Domains\Content\Services\ContentSyncService;
+use App\Domains\Content\Services\Mp3QuranImporter;
 use App\Domains\Content\Services\RecitationSegmentsFlagService;
 use App\Domains\Content\Sync\SyncException;
 use Database\Seeders\ContentSourceSeeder;
@@ -1146,6 +1148,45 @@ it('does not touch a recitation owned by another source during a QF sync', funct
         ->and(Resource::query()->findOrFail($resource->id)->version)->toBe(9)
         ->and(Recitation::query()->where('resource_id', $qfResource->id)->exists())->toBeTrue()
         ->and(ChapterAudioFile::query()->whereKey(10734)->where('recitation_id', '!=', $recitation->id)->exists())->toBeTrue();
+});
+
+it('leaves imported MP3Quran recitations untouched by a QF sync', function (): void {
+    require_once __DIR__.'/../../Support/Mp3QuranTestManifest.php';
+
+    mp3QuranTestManifest([mp3QuranTestMoshaf(6, [1, 2])]);
+    app(Mp3QuranImporter::class)->import(deferPack: true);
+
+    $mp3Resource = Resource::query()->where('source_key', '6')->where('group', ResourceGroup::ChapterRecitations)
+        ->whereHas('source', fn ($query) => $query->where('code', 'mp3quran'))
+        ->sole();
+    $mp3Recitation = Recitation::query()->where('resource_id', $mp3Resource->id)->sole();
+    $mp3File = ChapterAudioFile::query()->whereKey(Mp3QuranFileId::for(6, 1))->sole();
+    taybahSetFor($mp3File);
+    $mp3FileIds = fn (): array => ChapterAudioFile::query()->where('recitation_id', $mp3Recitation->id)->pluck('id')->all();
+
+    $before = [
+        'resource' => $mp3Resource->fresh()->getAttributes(),
+        'recitation' => $mp3Recitation->fresh()->getAttributes(),
+        'files' => ChapterAudioFile::query()->where('recitation_id', $mp3Recitation->id)->orderBy('id')->get()->toArray(),
+        'timings' => RecitationTiming::query()->whereIn('audio_file_id', $mp3FileIds())->orderBy('audio_file_id')->orderBy('verse_id')->get()->toArray(),
+        'sets' => TaybahTimingSet::query()->get()->toArray(),
+        'rows' => TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray(),
+    ];
+
+    bootstrapChapterRecitationResource();
+
+    $qfResource = Resource::query()->where('source_id', '!=', $mp3Resource->source_id)->where('source_key', '6')->sole();
+
+    expect([
+        'resource' => $mp3Resource->fresh()->getAttributes(),
+        'recitation' => $mp3Recitation->fresh()->getAttributes(),
+        'files' => ChapterAudioFile::query()->where('recitation_id', $mp3Recitation->id)->orderBy('id')->get()->toArray(),
+        'timings' => RecitationTiming::query()->whereIn('audio_file_id', $mp3FileIds())->orderBy('audio_file_id')->orderBy('verse_id')->get()->toArray(),
+        'sets' => TaybahTimingSet::query()->get()->toArray(),
+        'rows' => TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray(),
+    ])->toEqual($before)
+        ->and(Recitation::query()->where('resource_id', $qfResource->id)->exists())->toBeTrue()
+        ->and(ChapterAudioFile::query()->whereKey(10734)->where('recitation_id', '!=', $mp3Recitation->id)->exists())->toBeTrue();
 });
 
 /**
