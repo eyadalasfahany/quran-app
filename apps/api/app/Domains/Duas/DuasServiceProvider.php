@@ -6,6 +6,7 @@ namespace App\Domains\Duas;
 
 use App\Domains\Duas\Console\ImportDuasCommand;
 use App\Domains\Duas\Console\QuranCandidatesCommand;
+use App\Domains\Duas\Console\SetupDuasCommand;
 use App\Domains\Duas\Console\SnapshotCommand;
 use App\Domains\Duas\Repositories\Contracts\DuasImportRepository;
 use App\Domains\Duas\Repositories\Eloquent\EloquentDuasImportRepository;
@@ -24,6 +25,7 @@ final class DuasServiceProvider extends ServiceProvider
             QuranCandidatesCommand::class,
             SnapshotCommand::class,
             ImportDuasCommand::class,
+            SetupDuasCommand::class,
         ]);
     }
 }
