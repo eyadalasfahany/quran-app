@@ -94,6 +94,30 @@ describe('SheetHost', () => {
     expect(detentOf(view)).toBe('mid');
   });
 
+  it('opens at full when initialDetent is full, as a long editor asks', async () => {
+    const view = await renderUi(
+      <SheetHost initialDetent="full">
+        <DetentProbe />
+      </SheetHost>,
+    );
+    await settle();
+
+    expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: FULL });
+    expect(detentOf(view)).toBe('full');
+  });
+
+  it('opens at mid when initialDetent is mid, the same as omitting it', async () => {
+    const view = await renderUi(
+      <SheetHost initialDetent="mid">
+        <DetentProbe />
+      </SheetHost>,
+    );
+    await settle();
+
+    expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: MID });
+    expect(detentOf(view)).toBe('mid');
+  });
+
   it('slides the card down on close without fading it, then leaves the route once, even when pressed twice', async () => {
     const view = await renderUi(
       <SheetHost>
@@ -342,6 +366,19 @@ describe('SheetHost', () => {
       setWindow(900, 411);
       const view = await renderUi(
         <SheetHost>
+          <DetentProbe />
+        </SheetHost>,
+      );
+      await settle();
+
+      expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: FULL });
+      expect(detentOf(view)).toBe('full');
+    });
+
+    it('still opens at full in a short window when initialDetent asks for mid', async () => {
+      setWindow(900, 411);
+      const view = await renderUi(
+        <SheetHost initialDetent="mid">
           <DetentProbe />
         </SheetHost>,
       );

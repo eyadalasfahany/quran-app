@@ -92,7 +92,7 @@ final class DuasImportPlanner
 
                 if ($decision === QuranDuaReferencePolicy::DECISION_BLOCK) {
                     $stats->quranBlocked++;
-                    $issues[] = new ImportIssue(ImportIssue::ERROR, 'quran_span_unreviewed', $duaKey, null, $duaKey);
+                    $issues[] = new ImportIssue(ImportIssue::WARNING, 'quran_span_unreviewed', $duaKey, null, $duaKey);
 
                     continue;
                 }

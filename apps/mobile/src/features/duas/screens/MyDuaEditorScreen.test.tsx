@@ -3,7 +3,8 @@ import { router } from 'expo-router';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { renderUi } from '../../../../jest/render-ui';
-import { createMyDua, deleteMyDua, getMyDua, updateMyDua } from '../data/my-duas-repository';
+import { editMyDua, removeMyDua } from '../data/my-dua-actions';
+import { createMyDua, getMyDua } from '../data/my-duas-repository';
 import { MyDuaEditorScreen } from './MyDuaEditorScreen';
 
 jest.mock('expo-router', () => ({
@@ -33,11 +34,15 @@ jest.mock('../components/MyDuaReminderRow', () => {
   return { MyDuaReminderRow: () => createElement(Text, { testID: 'my-dua-reminder-row' }, 'تذكير') };
 });
 
+// Edits and deletes go through the actions that also manage the reminder's notifications.
+jest.mock('../data/my-dua-actions', () => ({
+  editMyDua: jest.fn(),
+  removeMyDua: jest.fn(),
+}));
+
 jest.mock('../data/my-duas-repository', () => ({
   createMyDua: jest.fn(() => ({ id: 'new-1', title: null, body: '' })),
-  deleteMyDua: jest.fn(),
   getMyDua: jest.fn(() => null),
-  updateMyDua: jest.fn(),
 }));
 
 /** Runs the card's close animation to its end, then lets the completion leave the route. */
@@ -64,8 +69,8 @@ describe('MyDuaEditorScreen', () => {
     jest.mocked(router.setParams).mockClear();
     jest.mocked(router.canGoBack).mockReturnValue(true);
     jest.mocked(createMyDua).mockClear();
-    jest.mocked(updateMyDua).mockClear();
-    jest.mocked(deleteMyDua).mockClear();
+    jest.mocked(editMyDua).mockClear();
+    jest.mocked(removeMyDua).mockClear();
     jest.mocked(getMyDua).mockReturnValue(null);
     jest.mocked(useReducedMotion).mockReturnValue(false);
   });
@@ -81,18 +86,18 @@ describe('MyDuaEditorScreen', () => {
     await settle();
 
     expect(router.back).toHaveBeenCalledTimes(1);
-    expect(updateMyDua).not.toHaveBeenCalled();
+    expect(editMyDua).not.toHaveBeenCalled();
     expect(createMyDua).not.toHaveBeenCalled();
   });
 
-  it('saves an existing dua and closes the sheet', async () => {
+  it('saves an existing dua through editMyDua and closes the sheet', async () => {
     jest.mocked(getMyDua).mockReturnValue(EXISTING);
     const view = await renderUi(<MyDuaEditorScreen duaId={EXISTING.id} />);
 
     await fireEvent.press(view.getByTestId('my-dua-form-save'));
     await settle();
 
-    expect(updateMyDua).toHaveBeenCalledWith(EXISTING.id, { title: EXISTING.title, body: EXISTING.body });
+    expect(editMyDua).toHaveBeenCalledWith(EXISTING.id, { title: EXISTING.title, body: EXISTING.body });
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 
@@ -105,11 +110,12 @@ describe('MyDuaEditorScreen', () => {
 
     expect(createMyDua).toHaveBeenCalledTimes(1);
     expect(createMyDua).toHaveBeenCalledWith({ title: null, body: 'نص تجريبي ٣ — ليس دعاءً' });
+    expect(editMyDua).not.toHaveBeenCalled();
     expect(router.setParams).not.toHaveBeenCalled();
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 
-  it('deletes the dua once confirmed, and closes the sheet', async () => {
+  it('removes the dua through removeMyDua once confirmed, and closes the sheet', async () => {
     jest.mocked(getMyDua).mockReturnValue(EXISTING);
     const view = await renderUi(<MyDuaEditorScreen duaId={EXISTING.id} />);
 
@@ -117,7 +123,7 @@ describe('MyDuaEditorScreen', () => {
     await fireEvent.press(view.getByRole('button', { name: 'حذف' }));
     await settle();
 
-    expect(deleteMyDua).toHaveBeenCalledWith(EXISTING.id);
+    expect(removeMyDua).toHaveBeenCalledWith(EXISTING.id);
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 });

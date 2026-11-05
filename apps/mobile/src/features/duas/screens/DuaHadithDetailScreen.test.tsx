@@ -37,7 +37,6 @@ const FIXTURE = {
   sourceUrl: 'https://hadeethenc.com/ar/browse/hadith/1',
   index: 1,
   total: 1,
-  links: [{ kind: 'hisn' as const, entryKey: 'fixture-entry' }],
 };
 
 const CREDIT_AR = 'المصدر: موسوعة الأحاديث النبوية (HadeethEnc.com) · ١';

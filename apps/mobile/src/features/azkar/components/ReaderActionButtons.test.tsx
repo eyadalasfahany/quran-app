@@ -3,6 +3,7 @@ import { screen } from '@testing-library/react-native';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
+import { IconButton } from '@/shared/ui';
 import { ReaderActionButtons } from './ReaderActionButtons';
 
 function renderButtons(props: Partial<Parameters<typeof ReaderActionButtons>[0]> = {}) {
@@ -56,6 +57,34 @@ describe('ReaderActionButtons', () => {
     await renderUi(ui, { locale: 'en' });
     expect(screen.getByRole('button', { name: 'Share' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Add to favourites' })).toBeOnTheScreen();
+  });
+
+  it('draws a leading action in the first slot in place of the bookmark', async () => {
+    const view = await renderUi(
+      <ReaderActionButtons
+        leadingAction={<IconButton icon={{ ios: 'bell', android: 'notifications' }} label="FIXTURE lead" onPress={jest.fn()} testID="fixture-lead" />}
+        onShare={jest.fn()}
+        onTextSize={jest.fn()}
+        textSizeOpen={false}
+        testID="fixture-actions"
+      />,
+    );
+    expect(view.getByRole('button', { name: 'FIXTURE lead' })).toBeOnTheScreen();
+    expect(view.queryByTestId('azkar-favourite')).toBeNull();
+    const ids = view.getByTestId('fixture-actions').children.map((child) =>
+      typeof child === 'object' && child !== null && 'props' in child ? child.props.testID : null,
+    );
+    expect(ids).toEqual(['fixture-lead', 'azkar-share', 'azkar-text-size-toggle']);
+  });
+
+  it('leaves the first slot out when there is no favourite and no leading action', async () => {
+    const view = await renderUi(
+      <ReaderActionButtons onShare={jest.fn()} onTextSize={jest.fn()} textSizeOpen={false} testID="fixture-actions" />,
+    );
+    const ids = view.getByTestId('fixture-actions').children.map((child) =>
+      typeof child === 'object' && child !== null && 'props' in child ? child.props.testID : null,
+    );
+    expect(ids).toEqual(['azkar-share', 'azkar-text-size-toggle']);
   });
 
   it('uses theme tokens rather than raw colours', () => {

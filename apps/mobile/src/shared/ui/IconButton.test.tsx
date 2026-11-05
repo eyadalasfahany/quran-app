@@ -202,6 +202,13 @@ describe('IconButton', () => {
     expect(JSON.stringify(ink.toJSON())).toContain(colors.ink);
   });
 
+  it('draws a brand tone glyph in the brand colour without a selected fill', async () => {
+    const brand = await renderUi(<IconButton icon={bookmark} label="Brand" onPress={() => undefined} testID="brand" tone="brand" />);
+
+    expect(JSON.stringify(brand.toJSON())).toContain(colors.brand);
+    expect(brand.getByRole('button', { name: 'Brand' }).props.accessibilityState?.selected).not.toBe(true);
+  });
+
   it('disables the press and fades the button when disabled', async () => {
     const onPress = jest.fn();
     const view = await renderUi(

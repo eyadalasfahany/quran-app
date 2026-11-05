@@ -22,6 +22,17 @@ describe('duasHref', () => {
     expect(duasHref.mineEdit()).toBe('/duas/mine/edit');
     expect(duasHref.mineEdit('abc')).toBe('/duas/mine/edit?id=abc');
   });
+
+  it('opens the reading view with the URL-encoded id', () => {
+    expect(duasHref.mineDetail('abc')).toBe('/duas/mine/abc');
+    expect(duasHref.mineDetail('a/b c')).toBe('/duas/mine/a%2Fb%20c');
+  });
+
+  it('opens the editor with its reminder row expanded when asked', () => {
+    expect(duasHref.mineEdit('abc', { reminder: true })).toBe('/duas/mine/edit?id=abc&reminder=1');
+    expect(duasHref.mineEdit(undefined, { reminder: true })).toBe('/duas/mine/edit?reminder=1');
+    expect(duasHref.mineEdit('abc', { reminder: false })).toBe('/duas/mine/edit?id=abc');
+  });
 });
 
 describe('goBackOr', () => {

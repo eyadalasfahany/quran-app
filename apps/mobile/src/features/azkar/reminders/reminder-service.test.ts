@@ -6,8 +6,6 @@ import { i18n } from '@/core/i18n';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 import { AZKAR_ROLLING_DAYS, AZKAR_SLOTS } from '@/features/notifications/budget';
 
-import * as myDuasRepository from '@/features/duas/data/my-duas-repository';
-
 import { openAzkarUserDb } from '../../../../jest/azkar-test-db';
 import { reminderContent, syncAzkarReminders } from './reminder-service';
 import {
@@ -343,16 +341,7 @@ describe('reminderContent', () => {
     expect(content.sound).toBe('default');
   });
 
-  it('routes a my_dua reminder to the editor', () => {
-    jest.spyOn(myDuasRepository, 'getMyDua').mockReturnValue({
-      id: 'dua-1',
-      title: 'FIXTURE title 1 — not a dua',
-      body: 'FIXTURE text 1 — not a dua',
-      textSearch: 'fixture',
-      createdAt: 1,
-      updatedAt: 1,
-    });
-
+  it('routes a my_dua reminder to its reading view with fixed text that names no dua', () => {
     const content = reminderContent({
       id: 'r',
       targetType: 'my_dua',
@@ -366,7 +355,9 @@ describe('reminderContent', () => {
       updatedAt: 1,
     });
 
-    expect(content.data.route).toBe('/duas/mine/edit?id=dua-1');
-    expect(content.title).toBe('FIXTURE title 1 — not a dua');
+    expect(content.data.route).toBe('/duas/mine/dua-1');
+    expect(content.title).toBe('تذكير من أدعيتك');
+    expect(content.body).toBe('افتح لتقرأ دعاءك');
+    expect(`${content.title} ${content.body}`).not.toContain('FIXTURE');
   });
 });

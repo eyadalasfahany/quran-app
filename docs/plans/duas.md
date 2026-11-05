@@ -253,8 +253,13 @@ Every UI task:
 
 **Amendments (developer, 5 Nov 2026):**
 - Duas home shows **categories** (Quranic row + prophetic HadeethEnc groups with counts); the sources section, Hisn row, Hisn topic tiles and home attribution line are removed (Settings → Sources unchanged). ADR 0044 decisions 1 and 12 still describe them; reconciling the two is open.
-- `DuaHadithDetail*` keeps «المعنى», «المرجع», «الدرجة» and «الفوائد», each with the HadeethEnc credit (decisions 6 and 7). It adds a «فتح على HadeethEnc.com» link, which awaits frame approval. The link card stays out of the frame while the Hisn question is open.
-- The Quranic list shows each verse in full in the Quran font, never truncated. This list has no frame yet (ADR 0010).
+- `DuaHadithDetail*` keeps «المعنى», «المرجع», «الدرجة» and «الفوائد», each with the HadeethEnc credit (decisions 6 and 7). It adds a «فتح على HadeethEnc.com» link (approved by the developer, 5 Nov 2026). The link card stays out of the frame while the Hisn question is open.
+- The Quranic list shows each verse in full in the Quran font, never truncated (approved by the developer, 5 Nov 2026, as the difference from ADR 0010's frame-first rule; no frame is drawn for this list).
+- Each part imports separately (ADR 0044 decision 21 amendment): in production a `candidate` Quranic row is skipped with a warning and does not stop the prophetic part.
+- `my_dua` notifications use fixed text with no user title or dua text (ADR 0044 §5 amended here: they can sit on a lock screen). Deleting a dua cancels its scheduled notifications; editing one re-plans them.
+- «أدعيتي» rows show the dua text, with the title in the caption. The editor opens at the full detent (`SheetHost` `initialDetent`).
+- `MyDuaDetail*`, the reading view for one entry at `/duas/mine/[id]` (frames approved by the developer, 5 Nov 2026). A row tap and a reminder tap open it; the bell and «تعديل» open the editor.
+- **Hisn and the hadith books are out of Duas** (ADR 0044 amendment, 5 Nov 2026): no Hisn row or topics, no «الدعاء في كتب الحديث» row, no link rows on prophetic duas. Tasks 1c, 1d and 7e are cut, and release blocker 6 no longer applies. The `dua_links`, `dua_collection_refs` and `dua_collection_books` tables stay in the schema and packs, empty; removing them is a separate reviewed change.
 - The save, share and text-size row and the favourites list are built; a new dua closes the editor on save.
 
 A wide window uses the centred column, like the other pushed Azkar screens; expanded-window frames are drawn only if the developer asks.

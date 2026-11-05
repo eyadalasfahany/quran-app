@@ -1091,8 +1091,6 @@
       "mineDeviceOnly": "على جهازك فقط",
       "mineOpen": "فتح",
       "mineAdd": "إضافة",
-      "sourcesHeading": "المصادر",
-      "categoriesHeading": "التصنيفات",
       "quranSectionHeading": "من القرآن",
       "quranSectionCaption": "أدعية وردت في كتاب الله",
       "sunnahSectionHeading": "من السنة",
@@ -1102,16 +1100,7 @@
       "categoryCount_few": "{{number}} أدعية",
       "categoryCount_many": "{{number}} دعاءً",
       "categoryCount_other": "{{number}} دعاء",
-      "quranTitle": "الأدعية القرآنية",
-      "quranDetail": "من القرآن",
-      "hisnTitle": "حصن المسلم",
-      "hisnDetail": "حسب الموضوع",
-      "hadithTitle": "الأدعية النبوية",
-      "hadithDetail": "من السنة",
-      "hadithPendingDetail": "تظهر بعد استيراد حزمة الأدعية على الخادم",
-      "hisnTopicsHeading": "مواضيع حصن المسلم",
-      "topicsHeading": "المواضيع",
-      "attribution": "محتوى حصن المسلم من OpenDua · الأدعية النبوية من HadeethEnc عند توفرها"
+      "quranTitle": "الأدعية القرآنية"
     },
     "favorites": {
       "title": "المفضلة",
@@ -1124,10 +1113,14 @@
       "writtenByYou": "من كتابتك",
       "open": "فتح",
       "reminder": "تذكير",
-      "untitled": "دعاء بدون عنوان",
       "emptyTitle": "لا توجد أدعية بعد",
-      "emptyBody": "اكتب دعاءك الخاص واحفظه على هذا الجهاز.",
-      "add": "إضافة دعاء"
+      "emptyBody": "اكتب دعاءً تحب أن ترجع إليه، ويبقى على جهازك فقط.",
+      "add": "إضافة دعاء",
+      "reminderAt": "تذكير {{time}}",
+      "intro": "هذه الأدعية من كتابتك، وتبقى على جهازك فقط.",
+      "reminderOnHint": "مفعّل",
+      "progress": "{{current}} من {{total}}",
+      "edit": "تعديل"
     },
     "editor": {
       "close": "إغلاق",
@@ -1143,18 +1136,19 @@
       "deleteBody": "سيُحذف الدعاء وتذكيره من هذا الجهاز.",
       "deleteConfirm": "حذف",
       "deleteCancel": "إلغاء",
-      "deviceOnly": "يُحفظ على جهازك فقط."
+      "deviceOnly": "يُحفظ على جهازك فقط.",
+      "reminderTitle": "التذكير",
+      "reminderOff": "غير مفعّل",
+      "reminderOn": "مفعّل"
     },
     "reminders": {
-      "notificationTitle": "{{name}}",
-      "notificationBody": "تذكيرك الذي اخترته"
+      "notificationTitle": "تذكير من أدعيتك",
+      "notificationBody": "افتح لتقرأ دعاءك"
     },
     "quran": {
       "listTitle": "الأدعية القرآنية",
-      "detailTitle": "دعاء قرآني",
       "emptyTitle": "لا أدعية قرآنية بعد",
       "emptyBody": "ثبّت حزمة الأدعية بعد الاستيراد على الخادم لتظهر هنا.",
-      "rowTitle": "{{surah}} · {{index}}",
       "ayahSingle": "الآية {{ayah}}",
       "ayahRange": "الآيات {{from}}–{{to}}",
       "progress": "{{current}} من {{total}}",
@@ -1165,16 +1159,13 @@
     },
     "hadith": {
       "listTitle": "الأدعية النبوية",
-      "detailTitle": "دعاء نبوي",
       "emptyTitle": "لا أدعية نبوية بعد",
       "emptyBody": "ثبّت حزمة الأدعية من المصادر والتحديثات لتظهر هنا.",
-      "rowDetail": "من HadeethEnc",
       "progress": "{{current}} من {{total}}",
       "grade": "الدرجة",
       "explanation": "المعنى",
       "reference": "المرجع",
       "hints": "الفوائد",
-      "linkHisn": "في حصن المسلم · {{number}}",
       "openSource": "فتح على HadeethEnc.com",
       "credit": "المصدر: موسوعة الأحاديث النبوية (HadeethEnc.com) · {{number}}"
     }

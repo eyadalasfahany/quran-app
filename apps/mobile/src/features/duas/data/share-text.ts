@@ -27,3 +27,11 @@ export function duaHadithShareText({
   const lines = attribution.trim().length > 0 ? [attribution, credit, url] : [credit, url];
   return `${hadeeth}\n\n${lines.join('\n')}`;
 }
+
+/**
+ * The text a user shares for their own dua: the body exactly as written, with nothing appended (no title, no app name,
+ * no link). The user's text is never trimmed or altered.
+ */
+export function duaMineShareText(body: string): string {
+  return body;
+}

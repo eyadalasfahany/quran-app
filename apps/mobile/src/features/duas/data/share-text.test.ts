@@ -1,4 +1,4 @@
-import { duaHadithShareText, duaQuranShareText } from './share-text';
+import { duaHadithShareText, duaMineShareText, duaQuranShareText } from './share-text';
 
 const VERSE_1 = 'FIXTURE VERSE 1 — not a dua';
 const VERSE_2 = 'FIXTURE VERSE 2 — not a dua';
@@ -35,5 +35,12 @@ describe('duaHadithShareText', () => {
   it('keeps the text byte-for-byte', () => {
     const text = `  ${HADITH.hadeeth}  `;
     expect(duaHadithShareText({ ...HADITH, hadeeth: text }).startsWith(`${text}\n\n`)).toBe(true);
+  });
+});
+
+describe('duaMineShareText', () => {
+  it('is the body exactly as written, with nothing appended', () => {
+    const body = `  FIXTURE text 1 — not a dua \n second line  `;
+    expect(duaMineShareText(body)).toBe(body);
   });
 });

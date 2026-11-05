@@ -36,7 +36,16 @@ import {
  * centred, 560 wide at most (spec §4). In a short window (under 500 pt) mid would hide the content, so the sheet opens at
  * full, its only detent, and scrolls there.
  */
-export function SheetHost({ children, testID = 'sheet-host' }: { children: ReactNode; testID?: string }) {
+export function SheetHost({
+  children,
+  testID = 'sheet-host',
+  initialDetent,
+}: {
+  children: ReactNode;
+  testID?: string;
+  /** The detent the sheet opens at, when its content needs the room (a long editor). Omitted, it opens at mid. A short window always opens at full. */
+  initialDetent?: 'mid' | 'full';
+}) {
   const theme = useTheme();
   const { height } = useWindowDimensions();
   // Width decides the card shape, not the layout class: a landscape phone is wide, so it gets the centred card (ADR 0036).
@@ -47,7 +56,8 @@ export function SheetHost({ children, testID = 'sheet-host' }: { children: React
   const reduceMotion = useReducedMotion();
   const detents = useMemo(() => sheetDetents(height, safeTop), [height, safeTop]);
   // Read once at mount: a resize that crosses the short-window line is handled by the effect below, not by a re-open.
-  const [opening] = useState<'full' | 'mid'>(() => openingDetent(height));
+  // A short window opens at full whatever is asked for (mid would hide the content); otherwise `initialDetent` wins, else mid.
+  const [opening] = useState<'full' | 'mid'>(() => (openingDetent(height) === 'full' ? 'full' : (initialDetent ?? 'mid')));
 
   // The shared values the card, scrim and gestures read on the UI thread.
   const positions = useSharedValue(detents);

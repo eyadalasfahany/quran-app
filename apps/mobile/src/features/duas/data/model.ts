@@ -23,10 +23,6 @@ export type PropheticDuaSummary = {
   title: string;
 };
 
-export type PropheticDuaLink =
-  | { kind: 'hisn'; entryKey: string }
-  | { kind: 'collection'; collectionSlug: string; hadithNumber: string };
-
 export type PropheticDuaDetail = PropheticDuaSummary & {
   hadeeth: string;
   attribution: string;
@@ -38,7 +34,6 @@ export type PropheticDuaDetail = PropheticDuaSummary & {
   sourceUrl: string;
   index: number;
   total: number;
-  links: PropheticDuaLink[];
 };
 
 export type PropheticDuaSection = {
