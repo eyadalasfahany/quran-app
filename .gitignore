@@ -53,5 +53,12 @@ infra/data/
 /*.wav
 tools/recitation-align/.venv/
 tools/recitation-align/out/
+
+# MP3Quran ingest (ADR 0061): local .env stays out via `.env`; downloads and dry-run output stay out
+tools/mp3quran-ingest/.venv/
+tools/mp3quran-ingest/out/
 __pycache__/
 .pytest_cache/
+
+# R2 copy Worker (ADR 0061, plan B4): local Wrangler state; node_modules is covered by the Node workspaces rule
+tools/r2-copy-worker/.wrangler/

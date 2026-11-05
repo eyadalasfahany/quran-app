@@ -99,7 +99,7 @@ When a reciter is in both catalogues, **QF's recitation stays and the MP3Quran c
 ## Still open
 
 - **A1 (blocks shipping track A only).** QuranicAudio's site says personal use only (`docs/content-plan.md:140`); the MP3Quran grant does not cover QF's files. May we publish timings derived from analysing them?
-- **A4.** The ingest tool's dev-only Python packages (boto3, httpx) are checked against the 12-month rule when step B4 starts.
+- **A4.** Checked for step B4 (4 Nov 2026), against the 12-month rule: **boto3** 1.43.123 ✓ (released 30 Oct 2026, Apache-2.0; runtime). **httpx** ✗ (last release 6 Dec 2024), so it is not used: the tool uses stdlib `urllib.request`. **Dev-only mock:** **moto** 5.2.5 ✓ (released 27 Oct 2026, Apache-2.0), used as the S3 mock (`moto[s3]`); `botocore.stub.Stubber` was the fallback and is not needed. pytest 9.2.0 ✓ (27 Oct 2026, dev-only).
 - **B5.** Wording of the MP3Quran credit on Sources.
 - **B6.** Cloudflare account, bucket, custom domain (for example `audio.taybah-app.com`), billing alert amount, who holds the keys.
 - **Repo size at scale (below):** commit timings for up to about 20 reciters, then bundles on R2; revisit after the pilot.
@@ -179,3 +179,93 @@ Track A: remove the Taybah rows and bump (the 0052 migration's pattern). Track B
 - Do MP3Quran's published timings agree with their own audio better than QF's did for QF's files? Unknown until A6(b).
 - The midpoint rule for generated ayah starts (cleaner) differs from QF's late-start quirk by up to about 125 ms (59:2).
 - Are MP3Quran file ETags and `last-modified` stable enough to detect a changed source on a re-ingest (the ingest stores both)?
+
+## ADR 0062 steps
+
+Briefs for [ADR 0062](../adr/0062-unavailable-surahs-and-player-reciters.md) (unavailable surahs, the reciters list in the player, speed removed). One brief per step in `recitation-timings/`; each is small and green on its own. Mobile only: no API or contract change (availability comes from the pack's `chapter_audio_files` rows already on the device). Do not commit; the developer does.
+
+| Step | Brief | Frame |
+| --- | --- | --- |
+| 1 | [0062-step-01-remove-speed.md](recitation-timings/0062-step-01-remove-speed.md) | `PlayerReciters` (utility row) |
+| 2 | [0062-step-02-availability-selector.md](recitation-timings/0062-step-02-availability-selector.md) | none |
+| 3 | [0062-step-03-unavailable-rows.md](recitation-timings/0062-step-03-unavailable-rows.md) | `ReciterSurahsUnavailable` |
+| 4 | [0062-step-04-mini-unavailable.md](recitation-timings/0062-step-04-mini-unavailable.md) | `ReadingMiniUnavailable` |
+| 5 | [0062-step-05-continuous-play-skip.md](recitation-timings/0062-step-05-continuous-play-skip.md) | `ReadingMiniSkipped` |
+| 6 | [0062-step-06-player-layout.md](recitation-timings/0062-step-06-player-layout.md) | `PlayerReciters` (upper part) |
+| 7 | [0062-step-07-player-reciter-list.md](recitation-timings/0062-step-07-player-reciter-list.md) | `PlayerReciters`, `PlayerReciterDownloading` |
+| 8 | [0062-step-08-reciter-switch.md](recitation-timings/0062-step-08-reciter-switch.md) (decisions 6 and 7: switch keeps the place; one selected reciter; one current ayah) | same |
+| 9 | [0062-step-09-review.md](recitation-timings/0062-step-09-review.md) | all five |
+
+Order: 1, 2, then 3, 4, 5 (each needs only 2), 6 after 1, 7 after 2 and 6, 8 after 7, 9 last.
+
+**Open questions for the developer (in the briefs; defaults given so work is not blocked):**
+
+- Q1. The Azkar player has its own speed and shares `SPEED_RATES`, `SPEED_ICON` and the keys `player.options.speed/speedTitle/rateValue`. ADR 0062 says speed is removed from the app entirely. Default: Quran player only; Azkar untouched (one import line moves).
+- Q2. For an uninstalled pack the app cannot know a surah is missing; the row flips to unavailable after the install.
+- Q3. Header count of a partial reciter: 109 (default) or 114.
+- Q4. Play from the Listen tab with a reciter that lacks the current ayah's surah: no message there (default).
+- Q5. Notice wording when several consecutive surahs are skipped (default: «تخطّي {n} سور …»).
+- Q6. Player list order with many reciters (default: current first, then catalogue order, the list scrolls).
+- Q7. Repeat count restarts at 0 on a reciter switch (default yes).
+- Q8. Download finish always auto-plays, even if the player was paused (decision 5 against decision 6; default: auto-play).
+- Q9–Q12 (step 8, decision 7), **decided by the developer, 4 Nov 2026:** Q9 reciter page surah ▶ starts at the current ayah when it is in that surah; Q10 recent listens keep their saved position and make their reciter the selection; Q11 name tap selects and `⋯` selects then opens the page; Q12 an uninstalled reciter selected while another plays downloads at once (progress on his row) and auto-switches when done, cancelled by another selection or by stopping, failure keeps playback.
+
+**Decided (developer, 4 Nov 2026):** Q1 Quran player only, Azkar keeps its speed (ADR 0047 unchanged; `SPEED_RATES` moves to Azkar). Step 1 (`0062-step-01-remove-speed.md`) removes the Quran player's speed. Q2 accepted: availability flips after the pack installs, no API change. Q8 a finished download always auto-plays; a plain tap keeps play/pause. Reciter surah list keeps today's `DownloadRow` look and only adds the dimmed «غير متوفرة» state (approved difference from frame `ReciterSurahsUnavailable`). Q3–Q7 take the defaults above.
+
+## API steps
+
+Briefs for plan steps A2, A3, A4, A5 and B5, one per file in `recitation-timings/`, numbered in the order they are built (each is green on its own). API and one Python module only: no endpoint, pack-schema or device-schema change, so no OpenAPI regeneration is expected; every brief carries a contract-diff gate (copy `openapi.json` and `schema.d.ts` to scratch, regenerate, diff against the copies, never against `HEAD` because the tree is dirty). The orchestrator reviews each diff; the developer commits.
+
+| Order | Plan step | Brief | Goal |
+| --- | --- | --- | --- |
+| 1 | A2 | [api-step-01-schema.md](recitation-timings/api-step-01-schema.md) | `taybah_timing_sets` and `taybah_recitation_timings` (no FK to `chapter_audio_files`), models, factories, `TaybahTimingSource`, `TaybahTimingRepository` |
+| 2a | A1 output, A3 (first half) | [api-step-02a-converter.md](recitation-timings/api-step-02a-converter.md) | `recitation_align/export.py`: aligner output to the committed per-surah timing file (QF word positions, ayah rows, provenance) |
+| 2b | A3 | [api-step-02b-timings-import.md](recitation-timings/api-step-02b-timings-import.md) | `recitation-timings:import` and `:verify`: validate against the current file and `word_layouts`, idempotent by digest, one version bump per recitation |
+| 3 | A4 | [api-step-03-handler-flag.md](recitation-timings/api-step-03-handler-flag.md) | QF handler keeps Taybah rows, keeps `has_word_segments` true while Taybah segments are served, emits no change for a file a Taybah set owns |
+| 4 | B5 | [api-step-04-mp3quran-import.md](recitation-timings/api-step-04-mp3quran-import.md) | `mp3quran` content source and `mp3quran:import` from the committed manifest; converges from the local pilot; fixes `isDefault()` for non-QF sources |
+| 5 | A5 | [api-step-05-pack-wiring.md](recitation-timings/api-step-05-pack-wiring.md) | Pack uses Taybah rows per file; `start-web.sh` runs both imports (`--defer-pack`) before `content:ensure-packs`; spec and runbook; one Jest fixture |
+
+Dependency order: 01 before everything; 02a is independent of the PHP steps (needs only the file format) and can run in parallel with 01; 02b needs 01; 03 needs 01 and 02b (it uses `RecitationSegmentsFlagService`); 04 needs 01 and 02b (`ResourceVersionService`, `RecitationSegmentsFlagService`, `ContentChangeRepository::deleteForResource`); 05 needs 01 to 04. All `start-web.sh` and `StartupConfigTest` edits are in 05. Start order after 05: `mp3quran:import` then `recitation-timings:import` then `content:ensure-packs`.
+
+### Committed timings format (version 1)
+
+One minified JSON file per recitation and surah at `apps/api/resources/recitation-timings/{kind}/{recitation_key}/{NNN}.json` (`kind` is `qf` or `mp3quran`; the key is the source's own key, so QF reciter 5 and MP3Quran moshaf 5 never collide). Written by `uv run python -m recitation_align.export` (02a), read by `recitation-timings:import` (02b). Ayah rows and segments are already mapped from Tanzil positions to QF positions with the three rules (waqf tokens dropped, basmala words dropped, a standalone vocative particle merged into the next token). The QF word-count check is **not** done in Python (it cannot reach MySQL in CI): the PHP importer checks every verse against `word_layouts` and nulls the segments of a verse whose distinct positions are not `1..N`. The file's digest is not stored in the file; the importer hashes the file bytes (plus the list of verses it nulled).
+
+```json
+{"format":1,"kind":"mp3quran","recitation_key":"253","chapter_id":59,
+ "audio":{"url":"https://audio.taybah-app.com/audio/mp3quran/253/059-f0b5d093352295a0.mp3","bytes":8680138,"sha256":"f0b5d093352295a06b1e1f756e4ec815939bc07aed4753a07f82ec15351e6176","measured_duration_ms":541936},
+ "source":"aligner","tool_version":"0.1.0",
+ "models":{"align":{"id":"jonatasgrosman/wav2vec2-large-xlsr-53-arabic","revision":"af46c2d8531b8dcbb5e23b952f739b372c2e5d2d"},"asr":null},
+ "original_first_start_ms":null,
+ "ayahs":[{"verse_key":"59:1","verse_id":5127,"start_ms":0,"end_ms":14655,"segments":[[1,6427,6967],[2,7107,7728]]}]}
+```
+
+(One line in the file, every ayah and word listed; shortened here.) Ayah rows follow ADR 0060 decision 8: ayah 1 starts at 0, each ayah ends where the next starts, the last ends at the measured duration. `verse_id` is written by the converter from Tanzil line order because the API database has no `verses` table and `packages/` is not in the Docker image; the importer checks it against the `ChapterVerseCounts` constant (02b).
+
+### Conflicts and findings for the developer
+
+1. **Folder name (resolved, orchestrator 5 Nov 2026).** The ADR 0060 path `apps/api/resources/recitation-timings/` stands (config key `quran.recitation_timings.path`).
+2. **ADR 0060 decision 5 was silent on QF row mutations (amended 5 Nov 2026).** A QF `audio_segment` mutation for a file a Taybah set owns would reach devices and overwrite the Taybah rows. Brief 03 stores the QF row (the fallback) but returns no change, so no version bump and no change feed entry. ADR 0060 now carries the amendment.
+3. **Latent bug, fixed in 04.** `ContentDeliveryService::isDefault()` compares only `source_key` with `quran.default_recitation` (a QF id). An MP3Quran moshaf with the same number would be flagged default in the manifest. The fix requires source `qf`; one existing test helper changes.
+4. **No `verses` or `chapters` table in the API database.** The importer maps `verse_key` to `verse_id` and checks ayah counts with a 114-entry constant (`ChapterVerseCounts`), tested against the Tanzil file; `TanzilReader`'s `../../packages` path does not exist on Railway.
+5. **`content_sources` attribution columns are NOT NULL.** The migration in 04 writes the neutral `MP3Quran (mp3quran.net)` in both languages until the developer's wording is approved (plan B2/B3); a later migration replaces it.
+6. **Local pilot rows are in `recitation_timings`,** not in the Taybah tables. Brief 04 deletes them (an MP3Quran recitation must own none) and converges resource 56 and recitation 22 in place (one bump, v4 to v5); the Taybah import then refills them. Fallback SQL is in the brief.
+7. **ADR 0044 health-check budget.** Bumping many recitations in one deploy builds all their packs before the 120 s health check; both imports run with `--defer-pack` so each pack is built once, at its final version.
+8. **Case-insensitive URL join** in the pack query (accepted residual, 01 and 05).
+9. **Spec §12 still says the player keeps a speed control;** ADR 0062 removed it. Not touched here.
+
+### Open questions carried in the briefs (defaults given)
+
+Skip (default) versus null-segments when `word_layouts` is empty; neutral attribution text; style from `moshaf_name` through `quran.mp3quran_styles`; duplicates imported inactive (default) versus not imported, with `quran.mp3quran_duplicates` starting empty; a committed file that disappears does not delete its stored set (default).
+
+## A9. Repeated words (developer, 4 Nov 2026)
+
+When a reciter goes back and repeats words, the highlight jumps back to the repeated word and continues, as QF's data already does (Mishary al-Afasy 2:14: positions 1–11 then 7–11 again). The device needs no change: `timingsFor` sorts segments by time and allows a position to appear twice. Only the aligner changes, because CTC forced alignment is strictly monotonic over the text.
+
+1. **Measure first.** On Islam Sobhi's 109 aligned surahs, flag suspect ayahs (audio span ≥ 1.5× the expected duration from the reciter's own words-per-second, or mean word confidence < 0.5) and report the count.
+2. **Recited order.** For each suspect ayah, run the Tarteel ASR on that ayah's audio span only; map the transcript to Tanzil word positions with a sequence alignment that allows backward jumps (normalised keys, `text.py`), giving e.g. 1…11, 7…11, 12….
+3. **Align that order** inside the ayah's time span with the existing forced aligner; output segments with repeated positions in the same shape as QF's.
+4. **Fall back** to the monotonic timings when the mapping is not confident (unmatched words above a threshold, or the expanded order does not cover every position).
+5. **Re-run only flagged ayahs**; no full re-alignment. Tests: synthetic repeat recovered; no-repeat ayah unchanged; low-confidence mapping falls back.
+
+Runs after the 109-surah alignment; does not block the B5 import.

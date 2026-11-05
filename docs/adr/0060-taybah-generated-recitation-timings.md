@@ -32,3 +32,7 @@ A local, offline tool (`tools/recitation-align/`, Python) now produces per-word 
 - Open for the developer (track A only; MP3Quran is covered by ADR 0061): QuranicAudio's site says personal use only (`docs/content-plan.md` line 140), and ADR 0008 lets the app play QF's links under QF's terms. Whether we may publish timings derived from analysing those files is not decided here; it blocks shipping track A, not building it.
 - Reciter 168: no highlight at all, unchanged (developer, 4 Nov 2026). Out of scope.
 - **Decisions of 4 Nov 2026.** Accuracy thresholds as proposed in the plan (step A6). A reciter ships only when complete; no surah-by-surah shipping. The 21 verses whose QF word count the position rules do not match get ayah-level highlight only (`segments` null); no hand-written merge table. Still open: whether QuranicAudio-derived timings may be published (blocks shipping track A).
+
+## Amendment, 5 Nov 2026
+
+A QF `audio_segment` row mutation for a surah file that a Taybah timing set owns (a `taybah_timing_sets` row matching the file's recitation, chapter and current `audio_url`) is stored as the QF fallback row but emits no content change: no change row and no version bump. Devices therefore keep the Taybah rows instead of receiving a QF row that would overwrite them. For a file with no matching set nothing changes. Brief: `docs/plans/recitation-timings/api-step-03-handler-flag.md`. The committed folder is `apps/api/resources/recitation-timings/` (decision 2 stands).
