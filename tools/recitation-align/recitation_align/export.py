@@ -297,8 +297,13 @@ def main(argv=None):
                 url = mp3quran_audio(manifest, args.recitation_key, surah, doc["audio"])
             else:
                 url = qf_audio(urls, surah)
+            # A surah carries its own source when it has one (a published-timings batch can hold a
+            # surah the aligner made because its published timings were refused).
+            source = doc.get("source", args.source)
+            if source not in SOURCES:
+                raise Refused(f"unknown source {source!r}")
             timing = build_surah(doc, file_surah=surah, kind=args.kind, key=args.recitation_key,
-                                 source=args.source, audio_url=url, verse_ids=verse_ids, counts=counts)
+                                 source=source, audio_url=url, verse_ids=verse_ids, counts=counts)
             data = encode(timing)
         except Refused as err:
             failures.append(f"{label}: {err}")
