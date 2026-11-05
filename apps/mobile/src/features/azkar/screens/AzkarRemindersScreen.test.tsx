@@ -11,6 +11,7 @@ import { AzkarRemindersScreen } from './AzkarRemindersScreen';
 jest.mock('expo-router', () => ({
   ...jest.requireActual('expo-router'),
   router: { push: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => false), replace: jest.fn() },
+  useIsFocused: () => true,
 }));
 
 jest.mock('react-native-safe-area-context', () => {

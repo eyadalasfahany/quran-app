@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { BackHandler, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
@@ -47,6 +47,7 @@ export function SheetHost({
   initialDetent?: 'mid' | 'full';
 }) {
   const theme = useTheme();
+  const focused = useIsFocused();
   const { height } = useWindowDimensions();
   // Width decides the card shape, not the layout class: a landscape phone is wide, so it gets the centred card (ADR 0036).
   const widthClass = useWidthClass();
@@ -138,8 +139,12 @@ export function SheetHost({
     }
   }, [detent, moveTo, short]);
 
-  // Android back slides the sheet down rather than leaving it to the stack.
+  // Android back slides the sheet down rather than leaving it to the stack. A screen pushed from the sheet leaves
+  // this sheet mounted underneath, and that screen's back belongs to the navigator, so the listener is only held while focused.
   useEffect(() => {
+    if (!focused) {
+      return;
+    }
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       close();
       return true;
@@ -147,7 +152,7 @@ export function SheetHost({
     return () => {
       subscription.remove();
     };
-  }, [close]);
+  }, [close, focused]);
 
   const panGesture = usePanGesture({
     // A vertical drag of 10 pt starts the sheet; a mostly horizontal one (a chip row, a stepper) does not.

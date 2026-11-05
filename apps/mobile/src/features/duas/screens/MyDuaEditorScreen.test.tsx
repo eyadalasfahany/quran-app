@@ -15,6 +15,7 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
     setParams: jest.fn(),
   },
+  useIsFocused: () => true,
 }));
 
 jest.mock('react-native-safe-area-context', () => {

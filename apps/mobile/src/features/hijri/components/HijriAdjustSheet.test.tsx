@@ -6,6 +6,12 @@ import { renderUi } from '../../../../jest/render-ui';
 
 import { HijriAdjustSheet } from './HijriAdjustSheet';
 
+// The sheet renders a real SheetHost, which reads focus from the navigator; the test has no navigator, so the focus is fixed.
+jest.mock('expo-router', () => ({
+  router: { back: jest.fn(), push: jest.fn() },
+  useIsFocused: () => true,
+}));
+
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
   return { ...actual, useSafeAreaInsets: () => ({ bottom: 0, left: 0, right: 0, top: 0 }) };
