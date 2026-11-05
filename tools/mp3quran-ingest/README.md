@@ -4,7 +4,7 @@ Local developer tool (ADR 0061, plan `docs/plans/recitation-timings.md`, step B4
 
 ## Where it runs
 
-- **On the developer's machine, or in the `add-reciter` GitHub workflow (ADR 0061, amended 5 Nov 2026).** Never on Railway. Locally, credentials come from the environment or a local `.env` file. In GitHub they come from the `production` environment's secrets, read only by the align job. See [Run in GitHub Actions](#run-in-github-actions).
+- **On the developer's machine, or in the `add-reciter` GitHub workflow (ADR 0061, amended 5 Nov 2026).** Never on Railway. Locally, credentials come from the environment or a local `.env` file. In GitHub they come from the `taybah-app / production` environment's secrets, read only by the align job. See [Run in GitHub Actions](#run-in-github-actions).
 - The tool is separate from `tools/recitation-align` (the aligner) and has its own virtualenv.
 - It needs `ffmpeg` on PATH for the duration measurement. Homebrew installs it in `/opt/homebrew/bin`.
 
@@ -119,7 +119,7 @@ gh workflow run add-reciter.yml --ref main -f moshaf_ids=253 -f chunks=6
 ### What the jobs do
 
 1. **plan** (no secrets). Refuses, with every reason in one message, a moshaf that is not Hafs, has no published timings (its folder is not in `ayat_timing/reads`), is in `mp3quran_held_moshafs` or `mp3quran_duplicates`, or is already in the committed manifest with all its surahs. Otherwise it splits the surah list into chunks.
-2. **align** (one job per chunk, `production` environment, 300-minute limit). Ingests the chunk's surahs with `--upload --via s3`, fetches the published timings for them, aligns the words inside each published span with `pilot_published.py`, and uploads one hand-off artifact.
+2. **align** (one job per chunk, `taybah-app / production` environment, 300-minute limit). Ingests the chunk's surahs with `--upload --via s3`, fetches the published timings for them, aligns the words inside each published span with `pilot_published.py`, and uploads one hand-off artifact.
 3. **finalize** (one job per moshaf, no secrets, `contents: write` only here). Merges the chunk parts into the committed manifest. It refuses a moshaf with any missing surah, so a partial reciter never ships. It exports `apps/api/resources/recitation-timings/mp3quran/<id>/`, runs `uv run pytest -q` here, writes the quality table, pushes `reciter/<id>-<run_id>` and opens the PR.
 
 ### Review and deploy
