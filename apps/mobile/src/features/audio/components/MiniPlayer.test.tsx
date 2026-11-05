@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { Dimensions, I18nManager } from 'react-native';
@@ -13,8 +13,10 @@ import { useReaderMiniCollapse } from '@/features/reader/mini-bar-collapse';
 import { playVerse } from '../play-verse';
 import { pause, resume } from '../player';
 import { usePlayerStore } from '../playerStore';
+import { resetSkipNoticeForTests, useSkipNoticeStore } from '../skip-notice';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
+import { setReciterId } from '../settings';
 import { MiniPlayer } from './MiniPlayer';
 
 const mockContent: { executor: SqlExecutor | null } = { executor: null };
@@ -35,7 +37,7 @@ jest.mock('../player', () => ({
   seek: jest.fn(),
 }));
 
-jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { navigate: jest.fn(), push: jest.fn() } }));
 
 jest.mock('../play-verse', () => ({
   ...jest.requireActual<typeof import('../play-verse')>('../play-verse'),
@@ -170,7 +172,7 @@ describe('MiniPlayer', () => {
     const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
     const bar = flatStyle(view.getByTestId('mini-player-tabs').props.style);
 
-    expect(bar).toMatchObject({ borderRadius: 20, height: 64, paddingEnd: 12, paddingStart: 10 });
+    expect(bar).toMatchObject({ borderRadius: 20, minHeight: 64, paddingEnd: 12, paddingStart: 10 });
   });
 
   it('shows the reader variant at the frame numbers: 68 high, 20 radius, 12 start and 10 end padding', async () => {
@@ -178,7 +180,7 @@ describe('MiniPlayer', () => {
     const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
     const bar = flatStyle(view.getByTestId('mini-player-reader').props.style);
 
-    expect(bar).toMatchObject({ borderRadius: 20, height: 68, paddingEnd: 10, paddingStart: 12 });
+    expect(bar).toMatchObject({ borderRadius: 20, minHeight: 68, paddingEnd: 10, paddingStart: 12 });
   });
 
   it('sizes the tab tile and sets the tab text sizes', async () => {
@@ -466,5 +468,215 @@ describe('MiniPlayer current ayah', () => {
     fireEvent.press(view.getByRole('button', { name: 'إيقاف مؤقت' }));
     expect(pause).toHaveBeenCalledTimes(1);
     expect(playVerse).not.toHaveBeenCalled();
+  });
+});
+
+describe('MiniPlayer when a surah is unavailable for the reciter (ADR 0062)', () => {
+  // Surah 2 has no file for the reciter, who has surah 1 only. The name is the surah's own; the reciter is the fixture's.
+  beforeEach(() => {
+    db.executor.run(`INSERT INTO chapters (id, name_arabic, name_simple, name_en, revelation_place, revelation_order,
+       verses_count, bismillah_pre, page_start, page_end) VALUES (2, 'البقرة', 'Al-Baqarah', 'The Cow', 'madinah', 87, 286, 1, 2, 49)`);
+    storage.set(storageKeys.readerLastVerseKey, '2:1');
+  });
+
+  function raiseUnavailable() {
+    usePlayerStore.getState().markUnavailable({ reciterId: 30, chapterId: 2 });
+  }
+
+  it('shows the unavailable bar when play hits a surah the reciter lacks', async () => {
+    raiseUnavailable();
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+    expect(view.getByTestId('mini-player-reader-unavailable')).toBeOnTheScreen();
+    expect(view.getByText('البقرة غير متوفرة بصوت مشاري راشد العفاسي')).toBeOnTheScreen();
+    expect(view.queryByTestId('mini-player-reader')).toBeNull();
+    expect(view.queryByTestId('mini-player-toggle', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('shows the English notice in English', async () => {
+    raiseUnavailable();
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText("Al-Baqarah isn't available in Mishari Rashid's voice")).toBeOnTheScreen();
+  });
+
+  it('«تغيير القارئ» navigates to the Listen tab', async () => {
+    raiseUnavailable();
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+    fireEvent.press(view.getByRole('button', { name: 'تغيير القارئ' }));
+
+    expect(router.navigate).toHaveBeenCalledWith('/(main)/(listen)');
+    expect(router.push).not.toHaveBeenCalled();
+    expect(playVerse).not.toHaveBeenCalled();
+  });
+
+  it('the tabs variant does not show the unavailable bar', async () => {
+    raiseUnavailable();
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+
+    expect(view.queryByTestId('mini-player-tabs')).toBeNull();
+    expect(view.queryByTestId('mini-player-reader-unavailable')).toBeNull();
+  });
+
+  it('a collapsed reader keeps its capsule while unavailable', async () => {
+    raiseUnavailable();
+    useReaderMiniCollapse.getState().setCollapsed(true);
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+    expect(view.getByTestId('mini-player-capsule')).toBeOnTheScreen();
+    expect(view.queryByTestId('mini-player-reader-unavailable')).toBeNull();
+  });
+
+  it('returns to the idle bar once the current ayah moves to another surah', async () => {
+    raiseUnavailable();
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+    expect(view.getByTestId('mini-player-reader-unavailable')).toBeOnTheScreen();
+
+    await act(async () => {
+      storage.set(storageKeys.readerLastVerseKey, '1:1');
+    });
+
+    expect(view.queryByTestId('mini-player-reader-unavailable')).toBeNull();
+    expect(view.getByTestId('mini-player-reader')).toBeOnTheScreen();
+  });
+
+  describe('the skip notice (ADR 0062)', () => {
+    // Surah 2 is البقرة in this file's fixture (the unavailable tests seed it).
+    const NOTICE = 'تخطّي البقرة · غير متوفرة بصوت مشاري راشد العفاسي';
+
+    beforeEach(() => {
+      resetSkipNoticeForTests();
+    });
+
+    afterEach(async () => {
+      await act(async () => {
+        resetSkipNoticeForTests();
+      });
+    });
+
+    async function showSkip() {
+      await act(async () => {
+        useSkipNoticeStore.getState().show({ reciterId: 30, chapterIds: [2] });
+      });
+    }
+
+    it('shows the notice under the subtitle in the tabs bar while playing', async () => {
+      loadSurah('playing');
+      const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+
+      await showSkip();
+
+      expect(view.getByTestId('mini-player-notice')).toBeOnTheScreen();
+      expect(view.getByRole('status').props.children).toBe(NOTICE);
+    });
+
+    it('shows the notice in the reader bar while playing, with the same line', async () => {
+      loadSurah('playing');
+      const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+      await showSkip();
+
+      expect(view.getByRole('status').props.children).toBe(NOTICE);
+      expect(flatStyle(view.getByTestId('mini-player-reader').props.style)).toMatchObject({ minHeight: 86 });
+    });
+
+    it('is hidden in the reader bar while paused, though the notice is still in the store', async () => {
+      loadSurah('paused');
+      const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+      await showSkip();
+
+      expect(view.queryByTestId('mini-player-notice')).toBeNull();
+      expect(flatStyle(view.getByTestId('mini-player-reader').props.style)).toMatchObject({ minHeight: 68 });
+    });
+
+    it('leaves the open button label unchanged', async () => {
+      loadSurah('playing');
+      const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+      const before = view.getByTestId('mini-player-open').props.accessibilityLabel;
+
+      await showSkip();
+
+      expect(view.getByTestId('mini-player-open').props.accessibilityLabel).toBe(before);
+    });
+
+    it('takes the notice away 4 000 ms after it shows', async () => {
+      loadSurah('playing');
+      const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+      jest.useFakeTimers();
+      try {
+        await showSkip();
+        expect(view.getByTestId('mini-player-notice')).toBeOnTheScreen();
+
+        await act(async () => {
+          jest.advanceTimersByTime(3_999);
+        });
+        expect(useSkipNoticeStore.getState().notice).not.toBeNull();
+
+        await act(async () => {
+          jest.advanceTimersByTime(1);
+        });
+        expect(useSkipNoticeStore.getState().notice).toBeNull();
+        expect(view.queryByTestId('mini-player-notice')).toBeNull();
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+  });
+});
+
+describe('MiniPlayer follows the selected reciter (ADR 0062 decision 7)', () => {
+  beforeEach(() => {
+    db.executor.run(`INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default) VALUES
+       (31, 'chapter_recitations', 'Mahmoud Khalil', 'محمود خليل الحصري', 1, 1000, 0)`);
+    db.executor.run(`INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, name, name_ar) VALUES
+       (31, 'chapter_recitations', 1, 'b', 0, 'Mahmoud Khalil', 'محمود خليل الحصري')`);
+    db.executor.run(`INSERT INTO recitations (id, resource_id, reciter_name, reciter_name_ar, style, has_word_segments) VALUES
+       (2, 31, 'Mahmoud Khalil', 'محمود خليل الحصري', 'Muallim', 0)`);
+    db.executor.run(`INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
+       (101, 2, 1, 'https://example.test/husary-1.mp3', 48000, 'mp3')`);
+    db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search)
+       VALUES (3, '1:3', 1, 3, 1, 1, 1, 1, 'none', 'a', 'a')`);
+    storage.set(storageKeys.readerLastVerseKey, '1:3');
+    setReciterId(30);
+  });
+
+  // The selection is set before the bar mounts. A change while mounted is covered by the hook's tests
+  // (usePlayerNames.test.tsx); it does not show through this harness's live tree.
+  it('the idle mini player names the selected reciter, and a new selection names the next one', async () => {
+    setReciterId(31);
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText('Mahmoud Khalil')).toBeOnTheScreen();
+    expect(view.queryByText('Mishari Rashid')).toBeNull();
+  });
+
+  it('the paused mini player shows the selected reciter, and its play calls playVerse with the current ayah', async () => {
+    loadSurah('paused');
+    setReciterId(31);
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText('Mahmoud Khalil')).toBeOnTheScreen();
+    fireEvent.press(view.getByRole('button', { name: 'Play' }));
+    expect(playVerse).toHaveBeenCalledWith('1:3');
+  });
+
+  it('while playing it shows the playing reciter, not the selected one', async () => {
+    loadSurah('playing');
+    setReciterId(31);
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
+    expect(view.queryByText('Mahmoud Khalil')).toBeNull();
+  });
+
+  it('once the playing reciter is the selected one, the bar names him (after a switch)', async () => {
+    loadSurah('playing');
+    usePlayerStore.setState({ reciterId: 31 });
+    setReciterId(31);
+    const view = await renderUi(<MiniPlayer variant="reader" />, { locale: 'en', theme: 'light' });
+
+    expect(view.getByText('Mahmoud Khalil')).toBeOnTheScreen();
   });
 });

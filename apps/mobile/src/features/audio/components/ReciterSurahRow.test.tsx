@@ -163,6 +163,22 @@ describe('ReciterSurahRow', () => {
     });
   });
 
+  describe('when the reciter has no audio for the surah', () => {
+    it('renders the unavailable row when available is false', async () => {
+      const view = await renderRow({ available: false, title: 'البقرة' });
+
+      expect(view.getByText('غير متوفرة')).toBeOnTheScreen();
+      expect(view.getByTestId('surah').props.accessibilityState).toEqual({ disabled: true });
+    });
+
+    it('the unavailable row has no download or play button', async () => {
+      const view = await renderRow({ available: false, status: 'done', sizeBytes: 5_033_165 });
+
+      expect(view.queryByRole('button')).toBeNull();
+      expect(view.queryByText('٤٫٨ م.ب')).toBeNull();
+    });
+  });
+
   it('has no raw colour literals', () => {
     expect(featureComponentLiterals('features/audio/components/ReciterSurahRow.tsx')).toEqual([]);
   });

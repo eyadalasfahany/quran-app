@@ -76,3 +76,14 @@ export function useSlideUp() {
     exiting: SlideOutDown.springify(springToken.duration).dampingRatio(springToken.dampingRatio),
   };
 }
+
+/**
+ * A notice that appears and dissolves (ADR 0062): an opacity fade both ways, `duration.standard`. It never moves, so
+ * Reduce Motion needs no other branch.
+ */
+export function useDissolve() {
+  return {
+    entering: FadeIn.duration(duration.standard).easing(easeOut),
+    exiting: FadeOut.duration(duration.standard).easing(easeOut),
+  };
+}

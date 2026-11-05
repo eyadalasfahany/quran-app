@@ -44,51 +44,45 @@ const dark = themes.dark.colors;
 describe('PlayerOptionsBar', () => {
   beforeEach(() => {
     resetSleepTimerForTests();
-    usePlayerStore.setState({ speed: 1, chapterId: null, activeVerseId: null, repeat: null });
+    usePlayerStore.setState({ chapterId: null, activeVerseId: null, repeat: null });
     jest.mocked(useSurahVerses).mockReturnValue([]);
     mockLiquidGlass.mockReturnValue(false);
     jest.mocked(AccessibilityInfo.isReduceTransparencyEnabled).mockResolvedValue(false);
   });
 
-  it.each(locales)('shows the four labels in %s: range disabled without an ayah, repeat, speed and sleep enabled', async (locale) => {
+  it.each(locales)('shows the three labels in %s: range disabled without an ayah, repeat and sleep enabled', async (locale) => {
     const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale, theme: 'dark' });
 
     if (locale === 'ar') {
       expect(view.getByText('تكرار')).toBeOnTheScreen();
       expect(view.getByText('الآيات ١–٧')).toBeOnTheScreen();
-      expect(view.getByText('السرعة ١×')).toBeOnTheScreen();
       expect(view.getByText('مؤقت النوم')).toBeOnTheScreen();
       expect(view.getByRole('button', { name: 'عدد مرات التكرار' })).toBeEnabled();
     } else {
       expect(view.getByText('Repeat')).toBeOnTheScreen();
       expect(view.getByText('Ayahs 1–7')).toBeOnTheScreen();
-      expect(view.getByText('Speed 1×')).toBeOnTheScreen();
       expect(view.getByText('Sleep timer')).toBeOnTheScreen();
     }
-    expect(view.getAllByRole('button')).toHaveLength(4);
+    expect(view.getAllByRole('button')).toHaveLength(3);
     expect(view.getByTestId('player-option-repeat').props.accessibilityState).toMatchObject({ disabled: false });
     expect(view.getByTestId('player-option-range').props.accessibilityState).toMatchObject({ disabled: true });
-    expect(view.getByTestId('player-option-speed').props.accessibilityState).toMatchObject({ disabled: false });
     expect(view.getByTestId('player-option-sleep').props.accessibilityState).toMatchObject({ disabled: false });
   });
 
-  it('shows the current speed from the store, not the prop', async () => {
-    usePlayerStore.setState({ speed: 1.25 });
+  it('shows exactly three options: repeat, range and sleep', async () => {
     const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'en' });
 
-    expect(view.getByText('Speed 1.25×')).toBeOnTheScreen();
+    expect(view.queryByTestId('player-option-speed')).toBeNull();
+    expect(view.getByTestId('player-option-repeat')).toBeOnTheScreen();
+    expect(view.getByTestId('player-option-range')).toBeOnTheScreen();
+    expect(view.getByTestId('player-option-sleep')).toBeOnTheScreen();
   });
 
-  it('opens the speed menu from its item and the menu sets the rate', async () => {
+  it('has no speed menu', async () => {
     const view = await renderUi(<PlayerOptionsBar versesCount={7} />, { locale: 'en' });
 
-    expect(view.queryByRole('radio', { name: '2×' })).toBeNull();
-    fireEvent.press(view.getByRole('button', { name: 'Speed 1×' }));
-    await waitFor(() => expect(view.getByRole('radio', { name: '2×' })).toBeOnTheScreen());
-    fireEvent.press(view.getByRole('radio', { name: '2×' }));
-
-    expect(usePlayerStore.getState().speed).toBe(2);
-    await waitFor(() => expect(view.queryByRole('radio', { name: '2×' })).toBeNull());
+    expect(view.queryByText('Speed')).toBeNull();
+    expect(view.queryByRole('button', { name: /Speed/ })).toBeNull();
   });
 
   it('opens the sleep menu from its item', async () => {
@@ -152,7 +146,7 @@ describe('PlayerOptionsBar', () => {
     expect(view.queryByText(/–/)).toBeNull();
   });
 
-  it('keeps the bar as a 4-column row with 4 pt gaps and 6 pt padding', async () => {
+  it('keeps the bar as a 3-column row with 4 pt gaps and 6 pt padding', async () => {
     const view = await renderUi(<PlayerOptionsBar versesCount={7} />);
     const bar = flatStyle(view.getByTestId('player-options').props.style);
 

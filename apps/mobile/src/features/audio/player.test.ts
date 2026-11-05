@@ -12,6 +12,7 @@ import { listRecentListens } from './data/recent-listens';
 import { openAudioTestDb } from './data/test-db';
 import {
   HIGHLIGHT_LAG_MS,
+  switchReciter,
   nextAyah,
   nextSurah,
   pause,
@@ -26,8 +27,11 @@ import {
   setRepeat,
 } from './player';
 import { usePlayerStore } from './playerStore';
+import { useSkipNoticeStore, type SkipNotice } from './skip-notice';
 import { readLastPosition } from './resume-model';
-import { setReciterId } from './settings';
+import { getReciterId, setReciterId } from './settings';
+import { playVerse } from './play-verse';
+import { playReciter, playSurahFromReciter } from './reciter-playback';
 import { openUserTestStore } from '../../../jest/user-test-db';
 import { putFile, resetFakeFileSystem } from '../../../jest/fake-file-system';
 
@@ -259,12 +263,12 @@ describe('error paths', () => {
     expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'no-reciter' });
   });
 
-  it('reports not-installed when the surah has no audio row', async () => {
+  it('reports surah-unavailable when the pack is installed but has no row for the surah', async () => {
     executor.run('DELETE FROM chapter_audio_files WHERE chapter_id = 2');
 
     await playChapter(2);
 
-    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'not-installed' });
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'surah-unavailable' });
     expect(audio.createAudioPlaylist).not.toHaveBeenCalled();
   });
 
@@ -438,13 +442,11 @@ describe('one playlist per reciter', () => {
     expect(usePlayerStore.getState().reciterId).toBe(31);
   });
 
-  it('plays at the store speed and follows speed changes', async () => {
-    usePlayerStore.getState().setSpeed(1.5);
+  it('creates the playlist at the default rate', async () => {
     await playChapter(1);
-    expect(fakePlaylist().playbackRate).toBe(1.5);
 
-    usePlayerStore.getState().setSpeed(2);
-    expect(fakePlaylist().playbackRate).toBe(2);
+    // The Quran player has no speed control, so the engine never assigns a rate: the fake keeps its initial 1.
+    expect(fakePlaylist().playbackRate).toBe(1);
   });
 });
 
@@ -1529,3 +1531,503 @@ describe('jumping to an ayah while another is playing (seek still pending)', () 
     expect(usePlayerStore.getState()).toMatchObject({ activeVerseId: 4 });
   });
 });
+
+describe('a surah the reciter has no file for (ADR 0062)', () => {
+  beforeEach(() => {
+    executor.run('DELETE FROM chapter_audio_files WHERE chapter_id = 2');
+  });
+
+  it('playFromVerse on a surah with no file marks it unavailable and starts nothing', async () => {
+    await playFromVerse('2:1');
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      status: 'error',
+      error: 'surah-unavailable',
+      unavailable: { reciterId: 30, chapterId: 2 },
+    });
+    expect(audio.createAudioPlaylist).not.toHaveBeenCalled();
+  });
+
+  it('loadChapter does the same', async () => {
+    await playChapter(2);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      status: 'error',
+      error: 'surah-unavailable',
+      unavailable: { reciterId: 30, chapterId: 2 },
+    });
+    expect(audio.createAudioPlaylist).not.toHaveBeenCalled();
+  });
+
+  it('a later play clears it', async () => {
+    await playChapter(2);
+    expect(usePlayerStore.getState().unavailable).not.toBeNull();
+
+    await playChapter(1);
+
+    expect(usePlayerStore.getState().unavailable).toBeNull();
+    expect(usePlayerStore.getState().status).not.toBe('error');
+  });
+
+  it('a surah that is missing from the pack does not change the one playing before', async () => {
+    await playChapter(1);
+    const playing = fakePlaylist();
+    expect(usePlayerStore.getState().chapterId).toBe(1);
+
+    await playFromVerse('2:1');
+
+    expect(usePlayerStore.getState().unavailable).toEqual({ reciterId: 30, chapterId: 2 });
+    expect(fakePlaylist()).toBe(playing);
+  });
+});
+
+/**
+ * Surahs 36, 37, 39, 42 and 43 are available for the reciter; the others (38, 40, 41) are not. The playlist is
+ * therefore 1, 2, 36, 37, 39, 42, 43, 114 (indices 0 to 7). Surah 37 has one timed ayah, for the next-ayah case.
+ */
+function seedSkipFixture(db: SqlExecutor): void {
+  db.run(
+    `INSERT INTO chapters (id, name_arabic, name_simple, name_en, revelation_place, revelation_order, verses_count, bismillah_pre, page_start, page_end) VALUES
+     (36, 'سورة نموذج ستة وثلاثون', 'Sample 36', 'Sample 36', 'makkah', 1, 1, 0, 1, 1),
+     (37, 'سورة نموذج سبعة وثلاثون', 'Sample 37', 'Sample 37', 'makkah', 1, 1, 0, 1, 1),
+     (39, 'سورة نموذج تسعة وثلاثون', 'Sample 39', 'Sample 39', 'makkah', 1, 1, 0, 1, 1),
+     (42, 'سورة نموذج اثنان وأربعون', 'Sample 42', 'Sample 42', 'makkah', 1, 1, 0, 1, 1),
+     (43, 'سورة نموذج ثلاثة وأربعون', 'Sample 43', 'Sample 43', 'makkah', 1, 1, 0, 1, 1)`,
+  );
+  db.run(
+    `INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search) VALUES
+     (3701, '37:1', 37, 1, 1, 1, 1, 1, 'none', 'a', 'a')`,
+  );
+  db.run(
+    `INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
+     (3600, 1, 36, 'https://example.test/36.mp3', 60000, 'mp3'),
+     (3700, 1, 37, 'https://example.test/37.mp3', 60000, 'mp3'),
+     (3900, 1, 39, 'https://example.test/39.mp3', 60000, 'mp3'),
+     (4200, 1, 42, 'https://example.test/42.mp3', 60000, 'mp3'),
+     (4300, 1, 43, 'https://example.test/43.mp3', 60000, 'mp3')`,
+  );
+  db.run(`INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (3700, 3701, 0, 6000)`);
+}
+
+/** Every notice the store shows, in order: a new notice object is one show. */
+function recordShows(): { shows: SkipNotice[]; stop: () => void } {
+  const shows: SkipNotice[] = [];
+  const stop = useSkipNoticeStore.subscribe((state, previous) => {
+    if (state.notice !== null && state.notice !== previous.notice) {
+      shows.push(state.notice);
+    }
+  });
+  return { shows, stop };
+}
+
+describe('continuous play over a surah the reciter lacks (ADR 0062)', () => {
+  let recorder: { shows: SkipNotice[]; stop: () => void };
+
+  beforeEach(() => {
+    seedSkipFixture(executor);
+    recorder = recordShows();
+  });
+
+  afterEach(() => {
+    recorder.stop();
+  });
+
+  it('raises a notice when the playlist advances over a missing surah (37 to 39)', async () => {
+    await playChapter(37);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, duration: 60 });
+
+    fakePlaylist().emitTrackChanged(4);
+
+    expect(useSkipNoticeStore.getState().notice).toMatchObject({ reciterId: 30, chapterIds: [38] });
+    expect(recorder.shows).toHaveLength(1);
+  });
+
+  it('raises no notice for an adjacent advance (36 to 37)', async () => {
+    await playChapter(36);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, duration: 60 });
+
+    fakePlaylist().emitTrackChanged(3);
+
+    expect(useSkipNoticeStore.getState().notice).toBeNull();
+    expect(recorder.shows).toHaveLength(0);
+  });
+
+  it('raises no notice when the user loads a chosen surah across a gap', async () => {
+    await playChapter(37);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, duration: 60 });
+
+    await playChapter(39);
+
+    expect(fakePlaylist().skipTo).toHaveBeenLastCalledWith(4);
+    expect(recorder.shows).toHaveLength(0);
+  });
+
+  it('nextSurah over a gap raises a notice', async () => {
+    await playChapter(37);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, duration: 60 });
+
+    await nextSurah();
+
+    expect(fakePlaylist().next).toHaveBeenCalled();
+    expect(useSkipNoticeStore.getState().notice).toMatchObject({ chapterIds: [38] });
+    expect(recorder.shows).toHaveLength(1);
+  });
+
+  it('nextAyah from the last ayah over a gap raises one notice, and moves by skipTo', async () => {
+    await playChapter(37);
+    reportAt(3);
+
+    await nextAyah();
+
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 39, status: 'loading' });
+    expect(fakePlaylist().skipTo).toHaveBeenLastCalledWith(4);
+    expect(fakePlaylist().next).not.toHaveBeenCalled();
+    expect(recorder.shows).toHaveLength(1);
+    expect(recorder.shows[0]).toMatchObject({ chapterIds: [38] });
+  });
+
+  it('two consecutive missing surahs raise one notice with both ids', async () => {
+    await playChapter(39);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, duration: 60 });
+
+    fakePlaylist().emitTrackChanged(5);
+
+    expect(recorder.shows).toHaveLength(1);
+    expect(recorder.shows[0]).toMatchObject({ chapterIds: [40, 41] });
+  });
+
+  it('the last available surah ending stops playback with no notice', async () => {
+    await playChapter(114);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true });
+
+    fakePlaylist().emitStatus({ didJustFinish: true });
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'idle' });
+    expect(useSkipNoticeStore.getState().notice).toBeNull();
+    expect(recorder.shows).toHaveLength(0);
+  });
+
+  it('a new load clears the notice', async () => {
+    await playChapter(37);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, duration: 60 });
+    await nextSurah();
+    expect(useSkipNoticeStore.getState().notice).not.toBeNull();
+
+    await playChapter(36);
+
+    expect(useSkipNoticeStore.getState().notice).toBeNull();
+  });
+
+  it('a failure clears the notice', async () => {
+    await playChapter(37);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, duration: 60 });
+    await nextSurah();
+
+    usePlayerStore.getState().markFailed('load-failed');
+
+    expect(useSkipNoticeStore.getState().notice).toBeNull();
+  });
+});
+
+/**
+ * Husary (31) as a second reciter for the switch tests: installed with surah 1. With `timings`, surah 1's ayahs start at
+ * 2 s (1:1) and 20 s (1:7), so a switch from 1:7 lands at 20 s with this reciter and at 40 s with Mishari (30).
+ */
+function seedSecondReciter(db: SqlExecutor, { timings }: { timings: boolean }): void {
+  seedHusary(db);
+  if (timings) {
+    db.run(
+      `INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES
+       (300, 1, 2000, 9000),
+       (300, 7, 20000, 46000)`,
+    );
+  }
+}
+
+/**
+ * Husary (32) with surahs 1 and 2, so a switch from Mishari's surah 2 lands on a playlist whose index for surah 2 is 1:
+ * the playlist moves there itself (skipTo), and the carried repeat must survive that track change.
+ */
+function seedReciterWithSurahTwo(db: SqlExecutor): void {
+  db.run(
+    `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default) VALUES
+     (32, 'chapter_recitations', 'Minshawi', 'المنشاوي', 1, 2000, 0)`,
+  );
+  db.run(
+    `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at, name, name_ar) VALUES
+     (32, 'chapter_recitations', 1, 'c', 0, 'Minshawi', 'المنشاوي')`,
+  );
+  db.run(`INSERT INTO recitations (id, resource_id, reciter_name, reciter_name_ar, has_word_segments) VALUES (3, 32, 'Minshawi', 'المنشاوي', 0)`);
+  db.run(
+    `INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, duration_ms, format) VALUES
+     (301, 3, 1, 'https://example.test/minshawi-1.mp3', 46000, 'mp3'),
+     (302, 3, 2, 'https://example.test/minshawi-2.mp3', 286000, 'mp3')`,
+  );
+  db.run(`INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (302, 8, 0, 286000)`);
+}
+
+/** Mishari's surah 2 timings: its one ayah (2:1, verse 8) across the whole file. */
+function seedMishariSurahTwoTimings(db: SqlExecutor): void {
+  db.run(`INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (200, 8, 0, 286000)`);
+}
+
+/** Plays `verseKey` with Mishari (30) and leaves it playing, as a load the user started would. */
+async function playingWithMishari(verseKey: string): Promise<void> {
+  await playFromVerse(verseKey);
+  fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 0.1, duration: 46.49 });
+}
+
+describe('switching reciter while a surah plays (ADR 0062 decision 6)', () => {
+  it('switchReciter while playing loads the new reciter at the start of the current ayah and keeps playing', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+    await playingWithMishari('1:7');
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(40);
+
+    const outcome = await switchReciter(31);
+
+    expect(outcome).toBe('switched');
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(20);
+    expect(fakePlaylist().play).toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 31, chapterId: 1, status: 'loading', activeVerseId: 7 });
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 20.1, duration: 46 });
+    expect(usePlayerStore.getState().status).toBe('playing');
+  });
+
+  it('switchReciter while paused loads nothing, stays paused at the new ayah start, and resume plays the new reciter', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+    await playingWithMishari('1:7');
+    pause();
+    const playlistsBefore = audio.createAudioPlaylist.mock.calls.length;
+
+    const outcome = await switchReciter(31);
+
+    expect(outcome).toBe('switched');
+    expect(audio.createAudioPlaylist.mock.calls.length).toBe(playlistsBefore);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'paused', reciterId: 31, chapterId: 1, positionMs: 20000, activeVerseId: 7 });
+
+    await resume();
+
+    expect(audio.createAudioPlaylist.mock.calls.length).toBe(playlistsBefore + 1);
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(20);
+    expect(fakePlaylist().play).toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 31, chapterId: 1 });
+  });
+
+  it('switchReciter carries the repeat range to the new reciter and restarts its count', async () => {
+    seedSecondReciter(executor, { timings: true });
+    await playingWithMishari('1:1');
+    expect(setRepeat({ fromVerseId: 1, toVerseId: 7, count: 3 })).toBe(true);
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 4, duration: 46 });
+
+    await switchReciter(31);
+
+    expect(usePlayerStore.getState().repeat).toEqual({ fromVerseId: 1, toVerseId: 7, count: 3, done: 0 });
+  });
+
+  it('switchReciter drops the repeat when the new reciter has no valid timings, and starts the surah from the beginning', async () => {
+    seedSecondReciter(executor, { timings: false });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+    await playingWithMishari('1:7');
+    expect(setRepeat({ fromVerseId: 1, toVerseId: 7, count: 3 })).toBe(true);
+
+    const outcome = await switchReciter(31);
+
+    expect(outcome).toBe('switched');
+    expect(usePlayerStore.getState().repeat).toBeNull();
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 31, positionMs: 0 });
+  });
+
+  it('switchReciter keeps the carried repeat when the playlist moves to that surah itself (a track change of ours)', async () => {
+    seedReciterWithSurahTwo(executor);
+    // Mishari's surah 2 has one ayah with timings, so the repeat can be set on it.
+    seedMishariSurahTwoTimings(executor);
+    storage.set(storageKeys.readerLastVerseKey, '2:1');
+    await playFromVerse('2:1');
+    // Surah 2 is 286 s long: a 46 s report would make its timings not fit the audio (ADR 0052) and drop them.
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 0.1, duration: 286 });
+    expect(setRepeat({ fromVerseId: 8, toVerseId: 8, count: 3 })).toBe(true);
+
+    const outcome = await switchReciter(32);
+
+    expect(outcome).toBe('switched');
+    expect(fakePlaylist().skipTo).toHaveBeenCalledWith(1);
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 32, chapterId: 2 });
+    expect(usePlayerStore.getState().repeat).toEqual({ fromVerseId: 8, toVerseId: 8, count: 3, done: 0 });
+  });
+
+  it('switchReciter with autoplay plays even when it was paused', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+    await playingWithMishari('1:7');
+    pause();
+
+    const outcome = await switchReciter(31, { autoplay: true });
+
+    expect(outcome).toBe('switched');
+    expect(fakePlaylist().play).toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 31, chapterId: 1 });
+  });
+
+  it('switchReciter while playing with a reciter that lacks the surah stops the audio and shows the unavailable state', async () => {
+    seedSecondReciter(executor, { timings: true });
+    await playingWithMishari('2:1');
+    const playlist = fakePlaylist();
+
+    const outcome = await switchReciter(31);
+
+    expect(outcome).toBe('unavailable');
+    expect(playlist.pause).toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({
+      status: 'error',
+      error: 'surah-unavailable',
+      unavailable: { reciterId: 31, chapterId: 2 },
+    });
+  });
+
+  it('switchReciter while paused with a reciter that lacks the surah changes nothing in the store but the saved choice', async () => {
+    seedSecondReciter(executor, { timings: true });
+    await playingWithMishari('2:1');
+    pause();
+    const before = usePlayerStore.getState();
+
+    const outcome = await switchReciter(31);
+
+    expect(outcome).toBe('none');
+    expect(getReciterId()).toBe(31);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'paused', reciterId: before.reciterId, unavailable: null });
+  });
+
+  it('switchReciter returns none and only saves the choice when nothing is loaded', async () => {
+    seedSecondReciter(executor, { timings: true });
+
+    expect(await switchReciter(31)).toBe('none');
+
+    expect(getReciterId()).toBe(31);
+    expect(audio.createAudioPlaylist).not.toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'idle', reciterId: null });
+  });
+
+  it('switchReciter after a stop saves the choice and starts nothing', async () => {
+    seedSecondReciter(executor, { timings: true });
+    await playingWithMishari('1:7');
+    usePlayerStore.getState().markStopped();
+    const playlistsBefore = audio.createAudioPlaylist.mock.calls.length;
+
+    expect(await switchReciter(31)).toBe('none');
+
+    expect(getReciterId()).toBe(31);
+    expect(audio.createAudioPlaylist.mock.calls.length).toBe(playlistsBefore);
+    expect(usePlayerStore.getState().status).toBe('idle');
+  });
+
+  it('a switch while playing does not restore a repeat that the new surah cannot hold', async () => {
+    seedSecondReciter(executor, { timings: false });
+    await playingWithMishari('1:1');
+    setRepeat({ fromVerseId: 1, toVerseId: 7, count: 3 });
+
+    await switchReciter(31);
+
+    expect(usePlayerStore.getState().repeat).toBeNull();
+  });
+});
+
+describe('resume follows the selected reciter (ADR 0062 decision 7)', () => {
+  it('resume of a paused track by a different reciter than the selected one switches to the selected reciter at the same ayah and plays', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+    await playingWithMishari('1:7');
+    pause();
+    setReciterId(31);
+
+    await resume();
+
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 31, chapterId: 1 });
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(20);
+    expect(fakePlaylist().play).toHaveBeenCalled();
+  });
+
+  it('resume with agreeing reciters is unchanged: the loaded playlist is reused', async () => {
+    seedSecondReciter(executor, { timings: true });
+    await playingWithMishari('1:7');
+    pause();
+    const playlistsBefore = audio.createAudioPlaylist.mock.calls.length;
+
+    await resume();
+
+    expect(audio.createAudioPlaylist.mock.calls.length).toBe(playlistsBefore);
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 30, status: 'playing' });
+  });
+
+  it('resume switch to a reciter that lacks the surah ends in the unavailable state', async () => {
+    seedSecondReciter(executor, { timings: true });
+    await playingWithMishari('2:1');
+    pause();
+    setReciterId(31);
+
+    await resume();
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'surah-unavailable', unavailable: { reciterId: 31, chapterId: 2 } });
+  });
+});
+
+describe('every play entry point starts at the current ayah (ADR 0062 decision 7b)', () => {
+  it('playReciter starts the current ayah with its timing, not the surah start', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+
+    await playReciter(31, true);
+
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(20);
+  });
+
+  it('playVerse (the reader and the mini player) starts the current ayah with its timing', async () => {
+    seedSecondReciter(executor, { timings: true });
+    setReciterId(31);
+
+    await playVerse('1:7');
+
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(20);
+  });
+
+  it('playSurahFromReciter starts the current ayah when it is in that surah', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+
+    await playSurahFromReciter(31, 1);
+
+    expect(fakePlaylist().seekTo).toHaveBeenCalledWith(20);
+  });
+
+  it('playSurahFromReciter plays the surah start when the current ayah is in another surah', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '2:1');
+
+    await playSurahFromReciter(30, 1);
+
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ reciterId: 30, chapterId: 1, positionMs: 0 });
+  });
+
+  it('a reciter with no usable timings starts the surah from the beginning', async () => {
+    seedSecondReciter(executor, { timings: false });
+    storage.set(storageKeys.readerLastVerseKey, '1:7');
+
+    await playReciter(31, true);
+
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'loading', reciterId: 31, positionMs: 0 });
+  });
+
+  it('a reciter that lacks the surah shows the unavailable state from the reciter entry point', async () => {
+    seedSecondReciter(executor, { timings: true });
+    storage.set(storageKeys.readerLastVerseKey, '2:1');
+
+    await playReciter(31, true);
+
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'surah-unavailable', unavailable: { reciterId: 31, chapterId: 2 } });
+  });
+});
+

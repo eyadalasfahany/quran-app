@@ -138,31 +138,38 @@ export function ReciterDownloadsScreen({ resourceId }: { resourceId: number }) {
           ListHeaderComponent={header}
           renderItem={({ item, index }) => {
             const row = rowByChapter.get(item.id);
+            // An unavailable surah has no actions: its handlers are never called and it gets no row state.
+            const actionable = item.available;
             return (
               <ReciterSurahRow
+                available={item.available}
                 onCancel={() => {
-                  if (row !== undefined) {
+                  if (actionable && row !== undefined) {
                     cancel(row.audioFileId);
                   }
                 }}
                 onDelete={() => {
-                  if (row !== undefined) {
+                  if (actionable && row !== undefined) {
                     remove(row.audioFileId);
                   }
                 }}
                 onDownload={() => {
-                  enqueueSurah(resourceId, item.id);
+                  if (actionable) {
+                    enqueueSurah(resourceId, item.id);
+                  }
                 }}
                 onPlay={() => {
-                  void playSurahFromReciter(resourceId, item.id);
+                  if (actionable) {
+                    void playSurahFromReciter(resourceId, item.id);
+                  }
                 }}
                 offline={!online}
-                progress={row === undefined ? 0 : (progressById[row.audioFileId] ?? row.progress)}
+                progress={actionable && row !== undefined ? (progressById[row.audioFileId] ?? row.progress) : 0}
                 showDivider={index < surahs.length - 1}
-                sizeBytes={row?.sizeBytes ?? null}
-                starting={isStartingFor(startState, surahMatch(resourceId, item.id))}
-                status={row?.status}
-                verifyNeeded={row !== undefined && needsVerification(row)}
+                sizeBytes={actionable ? (row?.sizeBytes ?? null) : null}
+                starting={actionable && isStartingFor(startState, surahMatch(resourceId, item.id))}
+                status={actionable ? row?.status : undefined}
+                verifyNeeded={actionable && row !== undefined && needsVerification(row)}
                 testID={`surah-row-${item.id}`}
                 title={chapterDisplayName(item, locale)}
               />

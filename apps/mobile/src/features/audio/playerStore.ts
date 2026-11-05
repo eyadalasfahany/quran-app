@@ -10,6 +10,8 @@ export type PlayerStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 export type PlayerErrorCode =
   | 'no-reciter'
   | 'not-installed'
+  /** The reciter's pack is installed but has no file for this surah (ADR 0062). */
+  | 'surah-unavailable'
   | 'load-failed'
   | 'not-found'
   | 'invalid-chapter'
@@ -38,7 +40,6 @@ export type PlayerState = {
   positionMs: number;
   /** Placeholder from the content row while loading; replaced by the player's own duration once loaded. */
   durationMs: number;
-  speed: number;
   /** 0 to 1. The engine applies it to the playlist; the sleep timer fades through it. */
   volume: number;
   /** The ayah being recited, from the loaded file's timings. Null when nothing is recited or the file has no timings. */
@@ -54,6 +55,11 @@ export type PlayerState = {
    * cleared when audio plays, pauses, fails or stops, and when an entry point returns without starting.
    */
   startingTarget: PlayTarget | null;
+  /**
+   * The surah the selected reciter has no audio for, from the last play that hit it (ADR 0062). Set with the
+   * `surah-unavailable` error; the reader bar reads it (useMiniUnavailable) and it clears with any new load or stop.
+   */
+  unavailable: { reciterId: number; chapterId: number } | null;
 };
 
 export type LoadRequest = {
@@ -82,9 +88,10 @@ export type PlayerActions = {
   markPaused: () => void;
   markStopped: () => void;
   markFailed: (code: PlayerErrorCode) => void;
+  /** A play asked for a surah the reciter has no file for: an error that starts nothing (ADR 0062). */
+  markUnavailable: (request: { reciterId: number; chapterId: number }) => void;
   setPosition: (positionMs: number) => void;
   setDuration: (durationMs: number) => void;
-  setSpeed: (speed: number) => void;
   setVolume: (volume: number) => void;
   /** Sets the highlighted ayah and word. Does nothing when both are unchanged. */
   setActive: (verseId: number | null, word: number | null) => void;
@@ -108,13 +115,13 @@ export const initialPlayerState: PlayerState = {
   error: null,
   positionMs: 0,
   durationMs: 0,
-  speed: 1,
   volume: 1,
   activeVerseId: null,
   activeWord: null,
   repeat: null,
   playCommand: 0,
   startingTarget: null,
+  unavailable: null,
 };
 
 export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
@@ -130,6 +137,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       durationMs,
       activeVerseId: null,
       activeWord: null,
+      unavailable: null,
     }),
   moveTo: ({ chapterId, durationMs }) =>
     set({
@@ -140,6 +148,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       activeVerseId: null,
       activeWord: null,
       repeat: null,
+      unavailable: null,
     }),
   markPlaying: () => set({ status: 'playing', error: null, startingTarget: null }),
   markPaused: () =>
@@ -149,12 +158,28 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
         : { startingTarget: null },
     ),
   markStopped: () =>
-    set({ status: 'idle', positionMs: 0, activeVerseId: null, activeWord: null, repeat: null, startingTarget: null }),
+    set({
+      status: 'idle',
+      positionMs: 0,
+      activeVerseId: null,
+      activeWord: null,
+      repeat: null,
+      startingTarget: null,
+      unavailable: null,
+    }),
   markFailed: (code) =>
-    set({ status: 'error', error: code, activeVerseId: null, activeWord: null, startingTarget: null }),
+    set({ status: 'error', error: code, activeVerseId: null, activeWord: null, startingTarget: null, unavailable: null }),
+  markUnavailable: (unavailable) =>
+    set({
+      status: 'error',
+      error: 'surah-unavailable',
+      unavailable,
+      activeVerseId: null,
+      activeWord: null,
+      startingTarget: null,
+    }),
   setPosition: (positionMs) => set({ positionMs }),
   setDuration: (durationMs) => set({ durationMs }),
-  setSpeed: (speed) => set({ speed }),
   setVolume: (volume) => set((state) => (Number.isFinite(volume) ? { volume: clampVolume(volume) } : state)),
   setActive: (activeVerseId, activeWord) =>
     set((state) => (state.activeVerseId === activeVerseId && state.activeWord === activeWord ? state : { activeVerseId, activeWord })),
@@ -177,6 +202,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       activeVerseId: null,
       activeWord: null,
       repeat: null,
+      unavailable: null,
     }),
   reset: () => set(initialPlayerState),
   bumpPlayCommand: () => set((state) => ({ playCommand: state.playCommand + 1 })),

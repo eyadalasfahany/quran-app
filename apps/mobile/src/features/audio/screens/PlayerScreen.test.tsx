@@ -1,4 +1,4 @@
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { fireEvent, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { I18nManager } from 'react-native';
@@ -9,7 +9,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { themes } from '@/core/theme';
 import { openAudioTestDb } from '../data/test-db';
 import { nextAyah, pause, previousAyah, resume, seek } from '../player';
-import { AYAH_CARD_MIN_HEIGHT } from '../player-fit';
+import { AYAH_CARD_ONE_LINE_HEIGHT, RECITERS_LIST_MIN_HEIGHT } from '../player-fit';
 import { usePlayerStore } from '../playerStore';
 
 import { PlayerScreen } from './PlayerScreen';
@@ -32,6 +32,11 @@ jest.mock('../player', () => ({
   previousAyah: jest.fn(() => Promise.resolve()),
   resume: jest.fn(() => Promise.resolve()),
   seek: jest.fn(),
+}));
+
+// The downloaded surahs per reciter come from the user database, which is not open under Jest.
+jest.mock('../data/downloads', () => ({
+  useDoneCountsByReciter: () => ({}),
 }));
 
 jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
@@ -99,18 +104,27 @@ describe('PlayerScreen', () => {
 
     expect(view.getByRole('header', { name: 'مشاري راشد العفاسي' })).toBeOnTheScreen();
     expect(view.getByText('سورة الفاتحة')).toBeOnTheScreen();
-    expect(view.getByText('مرتّل')).toBeOnTheScreen();
-    expect(view.getByTestId('reciter-artwork', { includeHiddenElements: true })).toBeOnTheScreen();
-    expect(view.getByText('ع', { includeHiddenElements: true })).toBeOnTheScreen();
+    // The reciter's style shows in the title and again on the reciter's row, so the title is searched on its own.
+    expect(within(view.getByTestId('player-part-title')).getByText('مرتّل')).toBeOnTheScreen();
+    expect(view.queryByTestId('reciter-artwork', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('shows the reciters list below the options', async () => {
+    loadSurah('paused');
+    const view = await renderUi(<PlayerScreen />, { theme: 'dark' });
+
+    const slot = view.getByTestId('player-reciters-slot');
+    expect(within(slot).getByRole('header', { name: 'القرّاء' })).toBeOnTheScreen();
+    expect(within(slot).getByRole('radio', { name: 'مشاري راشد العفاسي، القارئ الحالي' })).toBeOnTheScreen();
   });
 
   it('shows the English names and style when the app is in English', async () => {
     loadSurah('paused');
     const view = await renderUi(<PlayerScreen />, { locale: 'en', theme: 'dark' });
 
-    expect(view.getByText('Mishari Rashid')).toBeOnTheScreen();
+    expect(within(view.getByTestId('player-part-title')).getByText('Mishari Rashid')).toBeOnTheScreen();
     expect(view.getByText('Surah Al-Fatiha')).toBeOnTheScreen();
-    expect(view.getByText('Murattal')).toBeOnTheScreen();
+    expect(within(view.getByTestId('player-part-title')).getByText('Murattal')).toBeOnTheScreen();
   });
 
   it('shows elapsed and total in Arabic digits', async () => {
@@ -211,7 +225,7 @@ describe('PlayerScreen', () => {
     expect(view.getAllByRole('button').filter((button) => button.props.accessibilityState?.disabled).length).toBeGreaterThanOrEqual(4);
   });
 
-  it('matches the frame numbers in Arabic: artwork, play, transport, progress, options, ayah card and padding', async () => {
+  it('matches the frame numbers in Arabic: play, transport, progress, options, ayah card and padding', async () => {
     db.executor.run(`INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah,
        text_uthmani, text_imlaei, text_search) VALUES (5, '1:5', 1, 5, 1, 1, 1, 1, 'none', 'إِيَّاكَ نَعْبُدُ', 'iyyaka na3budu', 'x')`);
     db.executor.run(`INSERT INTO words (verse_id, position, char_type, text_uthmani, text_imlaei) VALUES
@@ -223,7 +237,6 @@ describe('PlayerScreen', () => {
     const style = (testID: string, options?: { includeHiddenElements: boolean }) =>
       flatStyle(view.getByTestId(testID, options).props.style);
 
-    expect(style('reciter-artwork', hidden)).toMatchObject({ height: 220, width: 220, borderRadius: 32 });
     expect(style('player-toggle')).toMatchObject({ height: 76, width: 76, borderRadius: 38 });
     expect(style('player-previous')).toMatchObject({ height: 52, width: 52 });
     expect(style('player-next')).toMatchObject({ height: 52, width: 52 });
@@ -231,9 +244,11 @@ describe('PlayerScreen', () => {
     expect(style('player-progress-track', hidden)).toMatchObject({ height: 4, borderRadius: 2 });
     expect(style('player-options')).toMatchObject({ borderRadius: 28, padding: 6 });
     expect(style('now-playing-ayah')).toMatchObject({ borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16 });
-    expect(flatStyle(view.getByTestId('player-scroll').props.contentContainerStyle)).toMatchObject({
+    expect(flatStyle(view.getByTestId('player-column').props.style)).toMatchObject({
       paddingEnd: 24,
       paddingStart: 24,
+      paddingTop: 52,
+      paddingBottom: 30,
     });
     expect(view.getByRole('button', { name: 'تصغير المشغّل' })).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'الآية السابقة' })).toBeOnTheScreen();
@@ -272,14 +287,13 @@ describe('PlayerScreen', () => {
       db.executor.run(`INSERT INTO words (verse_id, position, char_type, text_uthmani, text_imlaei) VALUES ${rows}`);
     }
 
-    // Measures the screen and each part as the layout reports them. The card reports its text and counter heights.
+    // Measures the screen and each part as the layout reports them. The card reports its text height.
     async function measure(view: Awaited<ReturnType<typeof renderUi>>, screen: number, parts: Partial<Record<keyof typeof frameParts, number>>, text: number) {
       await fireEvent(view.getByTestId('player-screen'), 'layout', layoutOf(screen));
       for (const [part, height] of Object.entries({ ...frameParts, ...parts })) {
         await fireEvent(view.getByTestId(`player-part-${part}`), 'layout', layoutOf(height));
       }
       await fireEvent(view.getByLabelText(/الآية ٥$/), 'layout', layoutOf(text));
-      await fireEvent(view.getByTestId('now-playing-counter'), 'layout', layoutOf(16));
     }
 
     async function renderLongVerse() {
@@ -289,46 +303,70 @@ describe('PlayerScreen', () => {
       return renderUi(<PlayerScreen />, { theme: 'dark' });
     }
 
-    it('gives an iPhone 17 a 168 pt card and a 199 pt artwork, with no page scroll', async () => {
+    it('shows no artwork, and the ayah card has no fixed height', async () => {
       const view = await renderLongVerse();
       await measure(view, 844, {}, 52.5);
 
-      // 762 pt available, less 275 pt of fixed parts and six 20 pt gaps: 367 pt shared by the artwork and the card.
-      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
-      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(168);
-      expect(flatStyle(view.getByTestId('reciter-artwork', hidden).props.style).height).toBeCloseTo(199, 5);
+      expect(view.queryByTestId('reciter-artwork', hidden)).toBeNull();
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBeUndefined();
     });
 
-    it('keeps the card at its fixed height for a long ayah, which scrolls its own text, with the transport and options rendered', async () => {
+    it('keeps an iPhone 17 with a one-line ayah on one page: the card at its text height, the list at least 136 pt', async () => {
+      const view = await renderLongVerse();
+      // 844 - 52 - 30 = 762 pt available, less 275 of fixed parts and six 20 pt gaps: 231 pt above the list's floor.
+      await measure(view, 844, {}, 52.5);
+
+      expect(view.queryByTestId('player-scroll')).toBeNull();
+      expect(view.getByTestId('player-column')).toBeOnTheScreen();
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).maxHeight).toBe(231);
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBeUndefined();
+      expect(flatStyle(view.getByTestId('player-reciters-slot').props.style)).toMatchObject({
+        flex: 1,
+        minHeight: RECITERS_LIST_MIN_HEIGHT,
+      });
+      expect(RECITERS_LIST_MIN_HEIGHT).toBe(136);
+    });
+
+    it('caps a long ayah on an iPhone 17 at the room, scrolls its own text, and still has no page scroll', async () => {
       const view = await renderLongVerse();
       await measure(view, 844, {}, 600);
 
-      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(168);
-      expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexBasis: 0, flexGrow: 1 });
-      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).maxHeight).toBe(231);
+      expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexGrow: 0, flexShrink: 1 });
+      expect(view.queryByTestId('player-scroll')).toBeNull();
       expect(view.getByTestId('player-transport')).toBeOnTheScreen();
       expect(view.getByTestId('player-options')).toBeOnTheScreen();
+      expect(view.getByTestId('player-reciters-slot')).toBeOnTheScreen();
       expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
     });
 
-    it('hides the artwork on an iPhone SE and gives the card the room it freed, with no page scroll', async () => {
+    it('allows a page scroll on a very short window (about 330 pt, a landscape phone)', async () => {
       const view = await renderLongVerse();
-      // 667 pt screen: 585 pt available, of which the artwork would get 44 pt, below its minimum.
-      await measure(view, 667, {}, 600);
+      await measure(view, 330, {}, 52.5);
 
-      expect(view.queryByTestId('reciter-artwork', hidden)).toBeNull();
-      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(210);
-      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(false);
+      expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(true);
+      expect(view.queryByTestId('player-column')).toBeNull();
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).maxHeight).toBe(AYAH_CARD_ONE_LINE_HEIGHT);
+      expect(view.getByTestId('player-options')).toBeOnTheScreen();
     });
 
-    it('scrolls the whole column, with the card at its minimum, only when even the fixed parts do not fit', async () => {
+    it('scrolls the whole column only when even a one-line card and the list floor do not fit', async () => {
       const view = await renderLongVerse();
       // A very large text size makes the header far taller than the frame's.
       await measure(view, 844, { header: 700 }, 600);
 
       expect(view.getByTestId('player-scroll').props.scrollEnabled).toBe(true);
-      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBe(AYAH_CARD_MIN_HEIGHT);
+      expect(view.queryByTestId('player-column')).toBeNull();
+      expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).maxHeight).toBe(AYAH_CARD_ONE_LINE_HEIGHT);
       expect(view.getByTestId('player-options')).toBeOnTheScreen();
+    });
+
+    it('renders the reciters slot below the utility bar, flexible and at least the list floor', async () => {
+      const view = await renderLongVerse();
+      await measure(view, 844, {}, 52.5);
+
+      expect(flatStyle(view.getByTestId('player-reciters-slot').props.style)).toMatchObject({ flex: 1, minHeight: 136 });
+      expect(within(view.getByTestId('player-reciters-slot')).getByTestId('player-reciters')).toBeOnTheScreen();
     });
   });
 });

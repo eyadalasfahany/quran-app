@@ -262,3 +262,38 @@ describe('startingTarget', () => {
     expect(usePlayerStore.getState().startingTarget).toBeNull();
   });
 });
+
+describe('the surah-unavailable notice (ADR 0062)', () => {
+  const missing = { reciterId: 30, chapterId: 37 };
+
+  it('starts with no notice', () => {
+    expect(usePlayerStore.getState().unavailable).toBeNull();
+  });
+
+  it('marks the surah unavailable as an error that starts nothing', () => {
+    usePlayerStore.getState().beginStarting({ kind: 'verse', verseKey: '37:1' });
+
+    usePlayerStore.getState().markUnavailable(missing);
+    const state = usePlayerStore.getState();
+
+    expect(state).toMatchObject({ status: 'error', error: 'surah-unavailable', unavailable: missing, startingTarget: null });
+    expect(state.activeVerseId).toBeNull();
+    expect(state.activeWord).toBeNull();
+    expect(state.chapterId).toBeNull();
+  });
+
+  it.each([
+    ['beginLoad', (s: ReturnType<typeof usePlayerStore.getState>) => s.beginLoad({ reciterId: 31, chapterId: 1, positionMs: 0, durationMs: 1000 })],
+    ['moveTo', (s: ReturnType<typeof usePlayerStore.getState>) => s.moveTo({ chapterId: 2, durationMs: 1000 })],
+    ['restore', (s: ReturnType<typeof usePlayerStore.getState>) => s.restore({ reciterId: 31, chapterId: 1, positionMs: 0 })],
+    ['markStopped', (s: ReturnType<typeof usePlayerStore.getState>) => s.markStopped()],
+    ['markFailed', (s: ReturnType<typeof usePlayerStore.getState>) => s.markFailed('load-failed')],
+    ['reset', (s: ReturnType<typeof usePlayerStore.getState>) => s.reset()],
+  ])('is cleared by %s', (_name, act) => {
+    usePlayerStore.getState().markUnavailable(missing);
+
+    act(usePlayerStore.getState());
+
+    expect(usePlayerStore.getState().unavailable).toBeNull();
+  });
+});

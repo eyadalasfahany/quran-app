@@ -32,6 +32,7 @@ export function recitationStyleKey(style: string | null | undefined): Recitation
 export const ERROR_KEYS = {
   'no-reciter': 'player.errors.noReciter',
   'not-installed': 'player.errors.notInstalled',
+  'surah-unavailable': 'player.errors.surahUnavailable',
   'load-failed': 'player.errors.loadFailed',
   'not-found': 'player.errors.notFound',
   'invalid-chapter': 'player.errors.invalidChapter',

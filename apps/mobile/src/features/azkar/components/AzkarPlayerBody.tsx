@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { formatNumber } from '@/core/i18n/numbers';
 import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
-import { SPEED_RATES } from '@/features/audio/components/PlayerSpeedMenu';
+import { SPEED_RATES } from '@/features/azkar/audio/speed-rates';
 import { useSheet } from '@/features/reader/components/sheet-context';
 import { SheetScrollView } from '@/features/reader/components/SheetScrollView';
 import { IconButton, UiText, type IconName } from '@/shared/ui';

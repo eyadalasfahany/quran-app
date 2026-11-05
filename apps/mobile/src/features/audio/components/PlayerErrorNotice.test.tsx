@@ -10,6 +10,7 @@ import { PlayerErrorNotice } from './PlayerErrorNotice';
 const messages: Record<PlayerErrorCode, string> = {
   'no-reciter': ar.player.errors.noReciter,
   'not-installed': ar.player.errors.notInstalled,
+  'surah-unavailable': ar.player.errors.surahUnavailable,
   'load-failed': ar.player.errors.loadFailed,
   'not-found': ar.player.errors.notFound,
   'invalid-chapter': ar.player.errors.invalidChapter,
@@ -32,6 +33,12 @@ describe('PlayerErrorNotice', () => {
     const view = await renderUi(<PlayerErrorNotice code="load-failed" />, { locale: 'en' });
 
     expect(view.getByText('The audio file could not be played. Try again.')).toBeOnTheScreen();
+  });
+
+  it('gives the surah-unavailable code its own message in English', async () => {
+    const view = await renderUi(<PlayerErrorNotice code="surah-unavailable" />, { locale: 'en' });
+
+    expect(view.getByText("This surah isn't available in this reciter's voice.")).toBeOnTheScreen();
   });
 
   it.each(locales)('uses a player-line border on a card in %s', async (locale) => {

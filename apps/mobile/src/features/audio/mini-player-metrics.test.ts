@@ -5,9 +5,12 @@ import {
   MINI_PLAYER_CHEVRON,
   MINI_PLAYER_GAP,
   MINI_PLAYER_METRICS,
+  MINI_PLAYER_NOTICE_HEIGHT,
   MINI_PLAYER_PROGRESS_HEIGHT,
   MINI_PLAYER_READER_BOTTOM,
   MINI_PLAYER_READER_FOOTPRINT,
+  MINI_PLAYER_READER_UNAVAILABLE_FOOTPRINT,
+  MINI_PLAYER_READER_UNAVAILABLE_HEIGHT,
   MINI_PLAYER_TABS_FOOTPRINT,
 } from './mini-player-metrics';
 
@@ -51,8 +54,18 @@ describe('clearance above the bar', () => {
     expect(MINI_PLAYER_READER_FOOTPRINT).toBe(108);
   });
 
+  it('sets the unavailable bar at 24 + 46 + 10 + 44 + 12 = 136 high, and its list inset at 28 + 136 + 12 = 176', () => {
+    expect(MINI_PLAYER_READER_UNAVAILABLE_HEIGHT).toBe(24 + 46 + 10 + 44 + 12);
+    expect(MINI_PLAYER_READER_UNAVAILABLE_FOOTPRINT).toBe(28 + 136 + 12);
+    expect(MINI_PLAYER_READER_UNAVAILABLE_FOOTPRINT).toBe(176);
+  });
+
   it('sets the tabs list inset at the bar height plus its gap: 64 + 12', () => {
     expect(MINI_PLAYER_TABS_FOOTPRINT).toBe(76);
+  });
+
+  it('adds the skip notice line of 18 pt, as in #ReadingMiniSkipped (ADR 0062)', () => {
+    expect(MINI_PLAYER_NOTICE_HEIGHT).toBe(18);
   });
 });
 

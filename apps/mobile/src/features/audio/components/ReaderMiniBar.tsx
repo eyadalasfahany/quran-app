@@ -9,9 +9,16 @@ import { GlassSurface, UiText } from '@/shared/ui';
 
 import { shouldCollapse } from '@/features/reader/mini-bar-release';
 import { useMiniEnter } from '../hooks/useMiniEnter';
-import { MINI_PLAYER_GAP, MINI_PLAYER_BUTTON_SIZE, MINI_PLAYER_GLYPH_SIZE, MINI_PLAYER_METRICS } from '../mini-player-metrics';
+import {
+  MINI_PLAYER_BUTTON_SIZE,
+  MINI_PLAYER_GAP,
+  MINI_PLAYER_GLYPH_SIZE,
+  MINI_PLAYER_METRICS,
+  MINI_PLAYER_NOTICE_HEIGHT,
+} from '../mini-player-metrics';
 import { reciterInitial } from '../player-view';
 import { MiniPlayerChevron } from './MiniPlayerChevron';
+import { MiniPlayerNotice } from './MiniPlayerNotice';
 import { MiniPlayerProgressLine } from './MiniPlayerProgressLine';
 import { MiniPlayerTile } from './MiniPlayerTile';
 import { PlayerIconButton } from './PlayerIconButton';
@@ -47,6 +54,7 @@ export function ReaderMiniBar({
   idle,
   reciterName,
   subtitle,
+  notice = null,
   playing,
   starting = false,
   fraction,
@@ -57,6 +65,8 @@ export function ReaderMiniBar({
   idle: boolean;
   reciterName: string;
   subtitle: string;
+  /** The skip notice line under the subtitle (ADR 0062). Null when none shows. */
+  notice?: string | null;
   playing: boolean;
   /** Audio is starting: the button shows pause with the buffering ring. */
   starting?: boolean;
@@ -102,7 +112,7 @@ export function ReaderMiniBar({
               alignItems: 'center',
               flexDirection: 'row',
               gap: MINI_PLAYER_GAP,
-              height: metrics.height,
+              minHeight: metrics.height + (notice === null ? 0 : MINI_PLAYER_NOTICE_HEIGHT),
               overflow: 'hidden',
               paddingEnd: metrics.paddingEnd,
               paddingStart: metrics.paddingStart,
@@ -139,6 +149,7 @@ export function ReaderMiniBar({
                   <UiText numberOfLines={1} scale="bar" tone="muted" variant={metrics.subtitle.variant} weight={metrics.subtitle.weight}>
                     {subtitle}
                   </UiText>
+                  {notice === null ? null : <MiniPlayerNotice message={notice} testID="mini-player-notice" />}
                 </View>
               </Pressable>
               <PlayerIconButton

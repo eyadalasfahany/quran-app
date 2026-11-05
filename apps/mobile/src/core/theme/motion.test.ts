@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { STAGGER_MAX_STEPS, STAGGER_STEP_MS, staggerFadeIn, useScaleIn } from './motion';
+import { STAGGER_MAX_STEPS, STAGGER_STEP_MS, staggerFadeIn, useDissolve, useScaleIn } from './motion';
 
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
@@ -35,5 +35,15 @@ describe('useScaleIn', () => {
     mockReduce.mockReturnValue(true);
     const hook = await renderHook(() => useScaleIn());
     expect(hook.result.current).toBeDefined();
+  });
+});
+
+describe('useDissolve', () => {
+  it('returns an opacity fade in and out with no movement, under Reduce Motion or not', () => {
+    mockReduce.mockReturnValue(true);
+    expect(useDissolve().entering).toBeDefined();
+    expect(useDissolve().exiting).toBeDefined();
+    mockReduce.mockReturnValue(false);
+    expect(useDissolve().entering).toBeDefined();
   });
 });

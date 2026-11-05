@@ -39,10 +39,25 @@ describe('ReaderMiniBar', () => {
     const view = await renderUi(element);
 
     expect(flatStyle(view.getByTestId('mini-player-reader').props.style)).toMatchObject({
-      height: 68,
+      minHeight: 68,
       paddingEnd: 10,
       paddingStart: 12,
     });
+  });
+
+  it('grows by the 18 pt notice line and draws the line under the subtitle (ADR 0062)', async () => {
+    const { element } = bar({ notice: 'تخطّي الصافات · غير متوفرة بصوت إسلام صبحي' });
+    const view = await renderUi(element);
+
+    expect(flatStyle(view.getByTestId('mini-player-reader').props.style)).toMatchObject({ minHeight: 86 });
+    expect(view.getByTestId('mini-player-notice')).toBeOnTheScreen();
+    expect(view.getByRole('status').props.children).toBe('تخطّي الصافات · غير متوفرة بصوت إسلام صبحي');
+  });
+
+  it('draws no notice line when none is given', async () => {
+    const view = await renderUi(bar().element);
+
+    expect(view.queryByTestId('mini-player-notice')).toBeNull();
   });
 
   it('shows the gold progress line while playing', async () => {

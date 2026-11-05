@@ -123,6 +123,24 @@ describe('NowPlayingAyah card', () => {
     expect(flatStyle(scroll.props.contentContainerStyle)).toMatchObject({ alignItems: 'center', flexGrow: 1, justifyContent: 'center' });
   });
 
+  it('caps its height with maxHeight and scrolls the text inside', async () => {
+    const view = await renderCard({ maxHeight: 200 }, 400);
+    await fireEvent(view.getByTestId('now-playing-scroll'), 'layout', layoutOf(150));
+
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ maxHeight: 200 });
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBeUndefined();
+    expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexGrow: 0, flexShrink: 1 });
+    expect(view.getByTestId('now-playing-counter')).toBeOnTheScreen();
+  });
+
+  it('is as tall as its text when shorter than maxHeight', async () => {
+    const view = await renderCard({ maxHeight: 200 }, 80);
+
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style)).toMatchObject({ maxHeight: 200 });
+    expect(flatStyle(view.getByTestId('now-playing-ayah').props.style).height).toBeUndefined();
+    expect(flatStyle(view.getByTestId('now-playing-scroll').props.style)).toMatchObject({ flexGrow: 0, flexShrink: 1 });
+  });
+
   it('keeps the card border and radius fixed around the scroll', async () => {
     const view = await renderCard({ height: 200 }, 400);
 

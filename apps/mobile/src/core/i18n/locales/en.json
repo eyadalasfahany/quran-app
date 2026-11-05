@@ -141,7 +141,9 @@
       "cancel": "Cancel",
       "installFailed": "The reciter's data could not be downloaded",
       "retry": "Try again",
-      "notFound": "This reciter was not found"
+      "notFound": "This reciter was not found",
+      "surahUnavailable": "Unavailable",
+      "surahUnavailableLabel": "{{surah}}, not available in this reciter's voice"
     },
     "download": {
       "queued": "Queued",
@@ -605,6 +607,13 @@
     }
   },
   "player": {
+    "reciters": {
+      "title": "Reciters",
+      "notDownloaded": "Not downloaded",
+      "unavailableForSurah": "Not available for this surah",
+      "a11yCurrent": "{{name}}, current reciter",
+      "a11ySwitch": "{{name}}, double-tap to listen in this voice"
+    },
     "minimize": "Minimize player",
     "nowPlaying": "Now playing",
     "more": "More",
@@ -619,7 +628,11 @@
       "label": "{{reciter}}, {{surah}}",
       "hint": "Opens the player",
       "show": "Show player",
-      "caption": "{{surah}} · {{ayah}}"
+      "caption": "{{surah}} · {{ayah}}",
+      "unavailable": "{{surah}} isn't available in {{reciter}}'s voice",
+      "skipped": "Skipped {{surah}} · not available in {{reciter}}'s voice",
+      "skippedMany": "Skipped {{count}} surahs · not available in {{reciter}}'s voice",
+      "changeReciter": "Change reciter"
     },
     "style": {
       "murattal": "Murattal",
@@ -669,6 +682,7 @@
     "errors": {
       "noReciter": "Choose a reciter to play this surah.",
       "notInstalled": "This recitation is not installed yet.",
+      "surahUnavailable": "This surah isn't available in this reciter's voice.",
       "loadFailed": "The audio file could not be played. Try again.",
       "notFound": "This audio file is not available right now.",
       "invalidChapter": "This surah is not available.",

@@ -23,6 +23,7 @@ import { upsertRecentListen } from './data/recent-listens';
 import { listReciters, recitationIdForResource } from './data/reciters';
 import { timingsFitAudio, timingsFor, type AyahTiming } from './data/timings';
 import { clampSeek, isChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
+import { resetSkipNoticeForTests, useSkipNoticeStore } from './skip-notice';
 import {
   isRepeatRangeValid,
   repeatAction,
@@ -33,7 +34,9 @@ import {
 } from './repeat';
 import { fileForDownloadPath } from './downloads/files';
 import { readLastPosition, writeLastPosition } from './resume-model';
-import { getReciterId } from './settings';
+import { resolveInitialAnchor } from '@/features/reader/anchor/reading-anchor';
+
+import { getReciterId, setReciterId } from './settings';
 import { defaultReciterId, resolveReciterId } from './settings-model';
 
 // One expo-audio AudioPlaylist per reciter: the reciter's surah files in surah order, so the lock screen
@@ -84,6 +87,8 @@ let loadedChapterId: number | null = null;
 let loadedIndex: number | null = null;
 // The index the engine asked for last. A trackChanged to this index came from us; any other came from the system.
 let intendedIndex: number | null = null;
+// The index a user load of a chosen surah asked for. Its track change is not a skip, so it raises no notice (ADR 0062).
+let loadTargetIndex: number | null = null;
 let watchdog: ReturnType<typeof setTimeout> | null = null;
 let watchedIndex: number | null = null;
 // When the watched track was asked to play, for telling the offline skip from a quick lock-screen skip.
@@ -110,6 +115,10 @@ let seekSerial = 0;
 // report about where it starts, and the highlight lag, or a first word that starts before the ayah, would put them in
 // the ayah before, so the floor holds the ayah until the timings reach it.
 let highlightFloor: { chapterId: number; verseId: number } | null = null;
+// The repeat a reciter switch carries into the surah it loads (switchReciter). Applied when that surah's track change
+// lands, or at the end of its load when the track was already in place, so a track change that arrives after the load
+// does not clear it. Any other load or a stop drops it.
+let pendingSwitchRepeat: RepeatRequest | null = null;
 
 const store = () => usePlayerStore.getState();
 
@@ -136,8 +145,24 @@ type AudioLookup = { audio: ChapterAudio } | { error: PlayerErrorCode };
 
 function lookupAudio(db: SqlExecutor, reciterId: number, chapterId: number): AudioLookup {
   const recitationId = recitationIdForResource(db, reciterId);
-  const audio = recitationId === undefined ? undefined : chapterAudio(db, recitationId, chapterId);
-  return audio === undefined ? { error: 'not-installed' } : { audio };
+  if (recitationId === undefined) {
+    return { error: 'not-installed' };
+  }
+  const audio = chapterAudio(db, recitationId, chapterId);
+  // The pack is installed but has no file for this surah (ADR 0062): unavailable, not a missing install.
+  return audio === undefined ? { error: 'surah-unavailable' } : { audio };
+}
+
+/**
+ * Records why a lookup found no file. A surah the reciter lacks is `surah-unavailable` (ADR 0062), which keeps the
+ * reciter and surah so the reader bar can say so; anything else is a plain failure.
+ */
+function failLookup(error: PlayerErrorCode, reciterId: number, chapterId: number): void {
+  if (error === 'surah-unavailable') {
+    store().markUnavailable({ reciterId, chapterId });
+    return;
+  }
+  store().markFailed(error);
 }
 
 /** Whether a surah can play without the network. */
@@ -219,6 +244,7 @@ function disposeQueue(): void {
   loadedChapterId = null;
   loadedIndex = null;
   intendedIndex = null;
+  loadTargetIndex = null;
   trackTimings = null;
   repeatGuardMs = null;
   lastTick = null;
@@ -283,7 +309,6 @@ function ensureQueue(db: SqlExecutor, reciterId: number): Queue | undefined {
   // A playlist for another reciter has no recited ayah until its first status update.
   store().setActive(null, null);
   const playlist = createAudioPlaylist({ sources, updateInterval: STATUS_INTERVAL_MS });
-  playlist.playbackRate = store().speed;
   playlist.volume = store().volume;
   queueSubscriptions = [
     playlist.addListener('playlistStatusUpdate', onPlaylistStatus),
@@ -344,6 +369,15 @@ function dropTimingsThatDoNotFit(chapterId: number, durationMs: number): void {
 function releaseRepeat(): void {
   repeatGuardMs = null;
   store().clearRepeat();
+}
+
+/** Sets the repeat a reciter switch carried over, when the surah now loaded has timings that hold its range. */
+function applySwitchRepeat(timings: readonly AyahTiming[]): void {
+  const request = pendingSwitchRepeat;
+  pendingSwitchRepeat = null;
+  if (request !== null && isRepeatRangeValid(request, timings)) {
+    store().setRepeat(request);
+  }
 }
 
 /** Ends the repeat when moving to `verseId` takes the person outside its range. */
@@ -417,6 +451,18 @@ function activeQueue(chapterId: number): Queue | null {
 }
 
 /** The surah before or after `chapterId` that this reciter has a file for, or null. */
+/**
+ * Says continuous play moved over surahs the reciter lacks (ADR 0062). Raised only when there is a gap; the skipped
+ * surahs are the ids strictly between the two.
+ */
+function raiseSkipNotice(reciterId: number, fromChapter: number, toChapter: number): void {
+  if (toChapter <= fromChapter + 1) {
+    return;
+  }
+  const chapterIds = Array.from({ length: toChapter - fromChapter - 1 }, (_, offset) => fromChapter + 1 + offset);
+  useSkipNoticeStore.getState().show({ reciterId, chapterIds });
+}
+
 function neighbourChapter(db: SqlExecutor, reciterId: number, chapterId: number, direction: 1 | -1): number | null {
   const chapterIds = ensureQueue(db, reciterId)?.chapterIds ?? [];
   if (direction === 1) {
@@ -600,6 +646,8 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   // A surah change ends the repeat, whoever made it.
   releaseRepeat();
   const fromUs = intendedIndex === currentIndex;
+  const loadTarget = loadTargetIndex;
+  loadTargetIndex = null;
   const previousLoaded = loadedIndex === previousIndex;
   const stuckLongEnough = watchedIndex === previousIndex && Date.now() - watchedSince >= OFFLINE_SKIP_MIN_MS;
   intendedIndex = null;
@@ -625,6 +673,11 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   }
   const db = contentDb();
   store().moveTo({ chapterId, durationMs: rowDurationMs(db, active.reciterId, chapterId) });
+  // The playlist moved one index forward on its own while audio plays: any gap was surahs the reciter lacks.
+  const playingNow = before.status === 'playing' || before.status === 'loading';
+  if (playingNow && currentIndex === previousIndex + 1 && currentIndex !== loadTarget && endedChapter !== undefined) {
+    raiseSkipNotice(active.reciterId, endedChapter, chapterId);
+  }
   // moveTo clears the highlight, so a track change that is ours keeps the ayah the load asked for.
   const floor = highlightFloor;
   if (fromUs && floor !== null && floor.chapterId === chapterId) {
@@ -632,6 +685,9 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   }
   loadedChapterId = chapterId;
   setTrackTimings(db, active.reciterId, chapterId);
+  if (fromUs && loadTarget === currentIndex) {
+    applySwitchRepeat(trackTimings?.timings ?? []);
+  }
   active.playlist.updateLockScreenMetadata(lockScreenMetadata(db, active.reciterId, chapterId));
   writeLastPosition({ reciterId: active.reciterId, chapterId, positionMs: 0 });
   const status = store().status;
@@ -652,10 +708,12 @@ async function guarded(action: () => Promise<void>): Promise<void> {
 function stopPlayback(): void {
   loadSequence += 1;
   clearWatchdog();
+  pendingSwitchRepeat = null;
   releaseRepeat();
   queue?.playlist.pause();
   saveCurrentListen();
   highlightFloor = null;
+  useSkipNoticeStore.getState().clear();
   store().markStopped();
 }
 
@@ -674,8 +732,16 @@ function seekPlaylist(playlist: AudioPlaylist, seconds: number): Promise<void> {
   });
 }
 
-async function loadChapter(chapterId: number, positionMs: number, reciterId: number | null, startVerseId?: number): Promise<void> {
+async function loadChapter(
+  chapterId: number,
+  positionMs: number,
+  reciterId: number | null,
+  startVerseId?: number,
+  options?: { skippedFrom?: number; repeat?: RepeatRequest },
+): Promise<void> {
   loadSequence += 1;
+  useSkipNoticeStore.getState().clear();
+  pendingSwitchRepeat = options?.repeat ?? null;
   // A load that starts supersedes any seek still pending from an earlier one, and any ayah held for an earlier load.
   pendingSeek = null;
   highlightFloor = null;
@@ -691,7 +757,7 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
   const db = contentDb();
   const lookup = lookupAudio(db, reciterId, chapterId);
   if ('error' in lookup) {
-    store().markFailed(lookup.error);
+    failLookup(lookup.error, reciterId, chapterId);
     return;
   }
   const offline = offlineFailure(reciterId, chapterId);
@@ -719,6 +785,7 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
     }
     if (active.playlist.currentIndex !== index) {
       intendedIndex = index;
+      loadTargetIndex = index;
       active.playlist.skipTo(index);
     }
     loadedChapterId = chapterId;
@@ -734,6 +801,15 @@ async function loadChapter(chapterId: number, positionMs: number, reciterId: num
       }
     }
     startPlayback(active, index);
+    // The track change of a load the playlist made synchronously has already applied the carried repeat. Otherwise the
+    // track is in place (no change is pending), so the carried repeat applies now.
+    if (loadTargetIndex === null) {
+      applySwitchRepeat(timingsForChapter(db, reciterId, chapterId));
+    }
+    // Continuous play (nextAyah, nextSurah's restore) crossed surahs the reciter lacks: say so once the load plays.
+    if (options?.skippedFrom !== undefined) {
+      raiseSkipNotice(reciterId, options.skippedFrom, chapterId);
+    }
   } catch (error) {
     console.warn('Audio file did not load.', error);
     if (sequence === loadSequence) {
@@ -771,7 +847,7 @@ export function playFromVerse(verseKey: string): Promise<void> {
     }
     const lookup = lookupAudio(db, reciterId, verse.chapterId);
     if ('error' in lookup) {
-      store().markFailed(lookup.error);
+      failLookup(lookup.error, reciterId, verse.chapterId);
       return;
     }
     const timing = timingsForChapter(db, reciterId, verse.chapterId).find((row) => row.verseId === verse.id);
@@ -854,7 +930,9 @@ export function nextAyah(): Promise<void> {
     }
     releaseRepeat();
     const firstOfFollowing = timingsForChapter(db, reciterId, following)[0];
-    await loadChapter(following, firstOfFollowing === undefined ? 0 : ayahSeekStartMs(firstOfFollowing), reciterId);
+    await loadChapter(following, firstOfFollowing === undefined ? 0 : ayahSeekStartMs(firstOfFollowing), reciterId, undefined, {
+      skippedFrom: state.chapterId,
+    });
   });
 }
 
@@ -865,6 +943,71 @@ async function jumpTo(chapterId: number, positionMs: number, reciterId: number):
     return;
   }
   await loadChapter(chapterId, positionMs, reciterId);
+}
+
+/** What a reciter switch did (ADR 0062 decision 6): moved, nothing to move, or the reciter lacks the surah. */
+export type SwitchOutcome = 'switched' | 'unavailable' | 'none';
+
+/** The ayah a switch keeps: the one being recited, else the last-read ayah when it is in this surah, else none. */
+function ayahToKeep(db: SqlExecutor, chapterId: number, activeVerseId: number | null): number | undefined {
+  if (activeVerseId !== null) {
+    return activeVerseId;
+  }
+  const verse = getVerseByKey(db, resolveInitialAnchor().verseKey);
+  return verse !== undefined && verse.chapterId === chapterId ? verse.id : undefined;
+}
+
+/**
+ * Moves the loaded surah to another reciter at the start of the current ayah (ADR 0062 decision 6). The new reciter's
+ * timings give the start; without usable timings for that ayah it starts the surah from 0. Keeps play or pause and
+ * the repeat range. The choice is always saved first. `autoplay: true` plays whatever the previous state was (a
+ * download that finished). Outcomes:
+ * - `switched`: moved. Playing or loading keeps playing; paused stays paused at the new place, and resume plays it.
+ * - `unavailable`: the reciter has no file for the surah and the audio was playing (or autoplay was asked for). The old
+ *   audio is stopped and the unavailable state (ADR 0062 decision 1) is shown.
+ * - `none`: nothing moved. Nothing is loaded, the player is idle or in error (and autoplay was not asked for), or the
+ *   reciter lacks the surah while paused without autoplay (the choice is kept, the store is not changed).
+ */
+export async function switchReciter(resourceId: number, options?: { autoplay?: boolean }): Promise<SwitchOutcome> {
+  setReciterId(resourceId);
+  const state = store();
+  const { chapterId, status, repeat } = state;
+  const playing = status === 'playing' || status === 'loading';
+  const autoplay = options?.autoplay === true;
+  if (chapterId === null || (!playing && status !== 'paused' && !autoplay)) {
+    return 'none';
+  }
+  const db = contentDb();
+  const lookup = lookupAudio(db, resourceId, chapterId);
+  if ('error' in lookup) {
+    if (lookup.error !== 'surah-unavailable' || !(playing || autoplay)) {
+      return 'none';
+    }
+    stopPlayback();
+    store().markUnavailable({ reciterId: resourceId, chapterId });
+    return 'unavailable';
+  }
+  const verseId = ayahToKeep(db, chapterId, state.activeVerseId);
+  const timing = verseId === undefined ? undefined : timingsForChapter(db, resourceId, chapterId).find((row) => row.verseId === verseId);
+  const positionMs = timing === undefined ? 0 : ayahSeekStartMs(timing);
+  const carried = repeat === null ? null : { fromVerseId: repeat.fromVerseId, toVerseId: repeat.toVerseId, count: repeat.count };
+
+  if (playing || autoplay) {
+    bumpPlayCommand();
+    releaseRepeat();
+    await loadChapter(chapterId, positionMs, resourceId, verseId, { repeat: carried ?? undefined });
+    return 'switched';
+  }
+  // Paused: the new file is not loaded here. resume() loads it at the new place.
+  disposeQueue();
+  pendingSwitchRepeat = null;
+  store().restore({ reciterId: resourceId, chapterId, positionMs });
+  setTrackTimings(db, resourceId, chapterId);
+  store().setActive(verseId ?? null, null);
+  if (carried !== null) {
+    setRepeat(carried);
+  }
+  return 'switched';
 }
 
 export function pause(): void {
@@ -897,6 +1040,14 @@ export function resume(): Promise<void> {
     }
     const state = store();
     if (state.chapterId === null) {
+      return;
+    }
+    // A paused track by another reciter than the selected one moves to the selected reciter at the same ayah (ADR 0062
+    // decision 7). Only the saved choice counts, and only when it resolves to itself (an installed reciter).
+    const saved = getReciterId();
+    const selected = currentReciterId(contentDb());
+    if (state.status === 'paused' && selected !== null && selected === saved && selected !== state.reciterId) {
+      await switchReciter(selected, { autoplay: true });
       return;
     }
     bumpPlayCommand();
@@ -958,7 +1109,7 @@ export function nextSurah(): Promise<void> {
       return;
     }
     releaseRepeat();
-    await loadChapter(next, 0, reciterId);
+    await loadChapter(next, 0, reciterId, undefined, { skippedFrom: state.chapterId });
   });
 }
 
@@ -1044,17 +1195,15 @@ export function setRepeat(request: RepeatRequest): boolean {
   return store().repeat !== null;
 }
 
-// The playlist plays at the store's speed, and follows speed changes.
-usePlayerStore.subscribe((state, previous) => {
-  if (state.speed !== previous.speed && queue !== null) {
-    queue.playlist.playbackRate = state.speed;
-  }
-});
-
 // The playlist plays at the store's volume, and follows volume changes (the sleep timer's fade).
+// The skip notice ends when playback fails or stops, or the reciter changes (ADR 0062).
 usePlayerStore.subscribe((state, previous) => {
   if (state.volume !== previous.volume && queue !== null) {
     queue.playlist.volume = state.volume;
+  }
+  const ended = (state.status === 'error' || state.status === 'idle') && state.status !== previous.status;
+  if (ended || state.reciterId !== previous.reciterId) {
+    useSkipNoticeStore.getState().clear();
   }
 });
 
@@ -1068,6 +1217,8 @@ export function resetPlayerForTests(): void {
   watchedIndex = null;
   repeatGuardMs = null;
   lastListenSave = null;
+  loadTargetIndex = null;
   timingsCache.clear();
+  resetSkipNoticeForTests();
   usePlayerStore.getState().reset();
 }
