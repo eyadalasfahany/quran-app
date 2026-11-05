@@ -46,11 +46,13 @@ final class Mp3QuranImporter
     ) {}
 
     /**
+     * @param  string|null  $manifestPath  absolute path to the manifest; null reads quran.mp3quran_manifest_path
+     *
      * @throws Mp3QuranManifestException when the manifest is refused or the source row is missing
      */
-    public function import(bool $deferPack = false, bool $dryRun = false): Mp3QuranImportReport
+    public function import(bool $deferPack = false, bool $dryRun = false, ?string $manifestPath = null): Mp3QuranImportReport
     {
-        $data = $this->manifest->load((string) config('quran.mp3quran_manifest_path'));
+        $data = $this->manifest->load($manifestPath ?? (string) config('quran.mp3quran_manifest_path'));
         $sourceId = $this->resources->sourceId(self::SOURCE);
 
         if ($sourceId === null) {

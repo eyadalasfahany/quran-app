@@ -55,9 +55,12 @@ final class TaybahTimingImporter
         private readonly ResourceVersionService $versions,
     ) {}
 
-    public function import(bool $deferPack = false, bool $dryRun = false, ?TaybahTimingKind $kind = null, ?string $recitationKey = null): TaybahImportReport
+    /**
+     * @param  string|null  $root  absolute folder of {kind}/{key}/NNN.json files; null reads quran.recitation_timings.path
+     */
+    public function import(bool $deferPack = false, bool $dryRun = false, ?TaybahTimingKind $kind = null, ?string $recitationKey = null, ?string $root = null): TaybahImportReport
     {
-        $discovered = $this->discover($kind, $recitationKey);
+        $discovered = $this->discover($kind, $recitationKey, $root);
         $skipped = [];
         $filesSeen = 0;
         $imported = 0;
@@ -426,9 +429,9 @@ final class TaybahTimingImporter
      *
      * @return array{files: list<Discovered>, skipped: list<array{path: string, reason: string}>}
      */
-    private function discover(?TaybahTimingKind $kind, ?string $recitationKey): array
+    private function discover(?TaybahTimingKind $kind, ?string $recitationKey, ?string $configuredRoot): array
     {
-        $root = rtrim((string) config('quran.recitation_timings.path'), '/');
+        $root = rtrim($configuredRoot ?? (string) config('quran.recitation_timings.path'), '/');
         $files = [];
         $skipped = [];
 

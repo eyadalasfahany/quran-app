@@ -16,16 +16,27 @@ final class ImportMp3QuranCommand extends Command
 {
     protected $signature = 'mp3quran:import
         {--defer-pack : Write rows and bump versions, but queue no pack build (start-web.sh builds it, ADR 0044)}
-        {--dry-run : Validate and report, write nothing}';
+        {--dry-run : Validate and report, write nothing}
+        {--manifest= : Manifest file to import, absolute or relative to the app root (default quran.mp3quran_manifest_path)}';
 
     protected $description = 'Import the committed MP3Quran manifest into the chapter recitation tables (ADR 0061).';
 
     public function handle(Mp3QuranImporter $importer): int
     {
+        $manifest = $this->option('manifest');
+        $manifestPath = is_string($manifest) && $manifest !== '' ? $this->absolutePath($manifest) : null;
+
+        if ($manifestPath !== null && ! is_file($manifestPath)) {
+            $this->error('The MP3Quran manifest is missing: '.$manifestPath);
+
+            return self::FAILURE;
+        }
+
         try {
             $report = $importer->import(
                 deferPack: (bool) $this->option('defer-pack'),
                 dryRun: (bool) $this->option('dry-run'),
+                manifestPath: $manifestPath,
             );
         } catch (Mp3QuranManifestException $exception) {
             $this->error($exception->getMessage());
@@ -53,5 +64,10 @@ final class ImportMp3QuranCommand extends Command
         }
 
         return $report->hasProblems() ? self::FAILURE : self::SUCCESS;
+    }
+
+    private function absolutePath(string $path): string
+    {
+        return str_starts_with($path, '/') ? $path : base_path($path);
     }
 }

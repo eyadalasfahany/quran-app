@@ -18,7 +18,8 @@ final class ImportRecitationTimingsCommand extends Command
         {--defer-pack : Write rows and bump versions, but queue no pack build (start-web.sh builds it, ADR 0044)}
         {--dry-run : Validate and report, write nothing}
         {--kind= : Only qf or mp3quran}
-        {--key= : Only one recitation key}';
+        {--key= : Only one recitation key}
+        {--path= : Timing folder of kind/key/NNN.json files, absolute or relative to the app root (default quran.recitation_timings.path)}';
 
     protected $description = 'Import the committed Taybah recitation timing files (ADR 0060).';
 
@@ -39,11 +40,21 @@ final class ImportRecitationTimingsCommand extends Command
 
         $key = $this->option('key');
 
+        $path = $this->option('path');
+        $root = is_string($path) && $path !== '' ? $this->absolutePath($path) : null;
+
+        if ($root !== null && ! is_dir($root)) {
+            $this->error('The timing folder is missing: '.$root);
+
+            return self::FAILURE;
+        }
+
         $report = $importer->import(
             deferPack: (bool) $this->option('defer-pack'),
             dryRun: (bool) $this->option('dry-run'),
             kind: $kind,
             recitationKey: is_string($key) && $key !== '' ? $key : null,
+            root: $root,
         );
 
         if ($report->filesSeen === 0) {
@@ -70,5 +81,10 @@ final class ImportRecitationTimingsCommand extends Command
         }
 
         return $report->hasProblems() ? self::FAILURE : self::SUCCESS;
+    }
+
+    private function absolutePath(string $path): string
+    {
+        return str_starts_with($path, '/') ? $path : base_path($path);
     }
 }
