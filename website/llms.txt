@@ -31,15 +31,15 @@ Key facts:
 
 ## Pages
 
-- [Home](https://taybahapp.com/en): overview and a tour of the app
-- [Features](https://taybahapp.com/en/features): every feature in detail
-- [Sources and licences](https://taybahapp.com/en/sources): where the religious content comes from
-- [Support and FAQ](https://taybahapp.com/en/support): contact and common questions
-- [Privacy Policy](https://taybahapp.com/en/privacy)
-- [Terms of Use](https://taybahapp.com/en/terms)
-- [Delete data](https://taybahapp.com/en/delete-account)
+- [Home](https://taybah-app.com/en): overview and a tour of the app
+- [Features](https://taybah-app.com/en/features): every feature in detail
+- [Sources and licences](https://taybah-app.com/en/sources): where the religious content comes from
+- [Support and FAQ](https://taybah-app.com/en/support): contact and common questions
+- [Privacy Policy](https://taybah-app.com/en/privacy)
+- [Terms of Use](https://taybah-app.com/en/terms)
+- [Delete data](https://taybah-app.com/en/delete-account)
 
-The Arabic version of each page is at the same path without `/en` (for example https://taybahapp.com/features).
+The Arabic version of each page is at the same path without `/en` (for example https://taybah-app.com/features).
 
 ## Contact
 

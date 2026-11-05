@@ -1,4 +1,4 @@
-# Website — taybahapp.com
+# Website — taybah-app.com
 
 Static HTML on Vercel (`cleanUrls`). No framework, no build step on Vercel: what is committed is what ships.
 SEO and URL decisions: ADR 0063.

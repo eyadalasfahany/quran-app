@@ -40,7 +40,7 @@ REPO = Path(__file__).resolve().parents[2]
 WEBSITE = REPO / "website"
 EN_DIR = WEBSITE / "en"
 
-SITE = "https://taybahapp.com"
+SITE = "https://taybah-app.com"
 PAGES = [  # slug, indexable
     ("index", True), ("features", True), ("sources", True), ("support", True),
     ("privacy", True), ("terms", True), ("delete-account", True),

@@ -895,7 +895,7 @@ One question blocks the build: whether QF accepts device copies served from our 
 - [x] QF: prelive returns only Al-Fatihah and Al-Baqarah. Production keys arrived on 1 Nov 2026, and local syncs the full dataset (ADR 0041).
 - [ ] Design: tablet and unfolded layouts for Home, reader with side panel, player and Settings. The 30 current screens are phone-only (390 pt).
 - [x] Design: the Mushaf page cap on large iPads is 600, as drawn in the tablet frames (ADR 0013).
-- [x] Product: app name and bundle ID: **Taybah** («طيبة»), `com.taybahapp.taybah` (27 Oct 2026). Register `taybahapp.com` before launch.
+- [x] Product: app name and bundle ID: **Taybah** («طيبة»), `com.taybahapp.taybah` (27 Oct 2026). Register `taybahapp.com` before launch. The site launched at `taybah-app.com` instead (ADR 0063).
 - [ ] HadeethEnc: written confirmation of app use (blocks Hadith launch only). Deferred with the HadeethEnc work (ADR 0042).
 - [ ] Sunnah.com: API key (GitHub issue on sunnah-com/api) and written terms for offline packs, redistribution, attribution and grader credit (blocks the switch only).
 - [ ] Developer: approve the drafted Arabic author names and the hadithapi.com section-title proposal in `config/hadith_titles.php` (collection names come from ummahapi.com), and the source-line wording; missing titles fall back to numbers and do not block release (ADR 0042 §4, §4a).

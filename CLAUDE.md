@@ -26,7 +26,7 @@ apps/mobile/           Expo SDK 58, TypeScript — see apps/mobile/CLAUDE.md
 packages/api-contract/ openapi.json generated from the API + generated TS types
 packages/design-tokens/ colors, spacing, radii, type scale
 packages/quran-text-check/ 6,236-ayah checksum tool (API CI and app CI)
-website/               taybahapp.com, static HTML on Vercel — see website/CLAUDE.md
+website/               taybah-app.com, static HTML on Vercel — see website/CLAUDE.md
 infra/                 docker-compose.yml, Caddyfile, deploy scripts
 docs/                  spec, content plan, ADRs, runbooks
 ```
