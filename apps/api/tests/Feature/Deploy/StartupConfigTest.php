@@ -116,3 +116,32 @@ it('the MP3Quran and Taybah imports warn and continue like the Azkar import, wit
         ->and($start)->toContain('WARNING: some Taybah timing files were skipped')
         ->and($start)->not->toContain('--build-packs');
 });
+
+it('the start script fetches the Duas snapshot and imports Duas rows after Azkar and before MP3Quran, then builds packs last', function (): void {
+    $start = deployFile('docker/start-web.sh');
+
+    $azkar = strpos($start, 'php artisan azkar:import --download --defer-pack');
+    $duasSnapshot = strpos($start, 'php artisan duas:snapshot hadeethenc --pinned');
+    $duasImport = strpos($start, 'php artisan duas:import --download --defer-pack');
+    $mp3quran = strpos($start, 'php artisan mp3quran:import --defer-pack');
+    $taybah = strpos($start, 'php artisan recitation-timings:import --defer-pack');
+    $packs = strpos($start, 'php artisan content:ensure-packs');
+
+    expect($duasSnapshot)->toBeInt()
+        ->and($duasSnapshot)->toBeGreaterThan($azkar)
+        ->and($duasImport)->toBeGreaterThan($duasSnapshot)
+        ->and($mp3quran)->toBeGreaterThan($duasImport)
+        ->and($taybah)->toBeGreaterThan($mp3quran)
+        ->and($packs)->toBeGreaterThan($taybah);
+});
+
+it('the Duas snapshot and import warn and continue without building packs', function (): void {
+    $start = deployFile('docker/start-web.sh');
+
+    expect($start)->toContain('if php artisan duas:snapshot hadeethenc --pinned; then')
+        ->and($start)->toContain('if php artisan duas:import --download --defer-pack; then')
+        ->and($start)->toContain('WARNING: the Duas HadeethEnc snapshot is not fetched')
+        ->and($start)->toContain('WARNING: the Duas import did not finish')
+        ->and($start)->not->toContain('duas:import --download --defer-pack --build-packs')
+        ->and($start)->not->toContain('duas:snapshot hadeethenc --pinned --build-packs');
+});
