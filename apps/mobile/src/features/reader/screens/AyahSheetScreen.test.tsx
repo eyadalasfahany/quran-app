@@ -5,7 +5,7 @@ import { setUpTests } from 'react-native-reanimated';
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { AyahSheetScreen } from './AyahSheetScreen';
 
-jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn() } }));
+jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn() }, useIsFocused: () => true }));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
 
 jest.mock('react-native-safe-area-context', () => {

@@ -17,6 +17,7 @@ jest.mock('react-native-safe-area-context', () => {
 
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), push: jest.fn() },
+  useIsFocused: () => true,
 }));
 
 describe('AzkarDetailsScreen', () => {

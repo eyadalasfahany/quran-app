@@ -1,9 +1,10 @@
 import { act, fireEvent, type RenderResult } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { BackHandler, Dimensions, Pressable, Text } from 'react-native';
 import { setUpTests, useReducedMotion } from 'react-native-reanimated';
+import type { ReactNode } from 'react';
 
-import { themes } from '@/core/theme';
+import { ThemeProvider, themes } from '@/core/theme';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -13,6 +14,7 @@ import { useSheet } from './sheet-context';
 
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), push: jest.fn() },
+  useIsFocused: jest.fn(() => true),
 }));
 
 jest.mock('react-native-safe-area-context', () => {
@@ -50,6 +52,18 @@ function DetentProbe() {
   );
 }
 
+type BackListener = () => boolean | null | undefined;
+
+/** The hardwareBackPress listeners a spy has seen added, in the order they were added. */
+function backListeners(calls: unknown[][]) {
+  return calls.filter(([name]) => name === 'hardwareBackPress').map(([, listener]) => listener as BackListener);
+}
+
+/** Re-renders a tree under the same theme provider renderUi uses, so only the focus mock changes. */
+function withTheme(ui: ReactNode) {
+  return <ThemeProvider name="light">{ui}</ThemeProvider>;
+}
+
 /** Runs the card and scrim animations to their end, then lets their completions run. */
 async function settle() {
   await act(async () => {
@@ -66,6 +80,7 @@ describe('SheetHost', () => {
     jest.useFakeTimers();
     jest.mocked(router.back).mockClear();
     jest.mocked(useReducedMotion).mockReturnValue(false);
+    jest.mocked(useIsFocused).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -202,6 +217,88 @@ describe('SheetHost', () => {
         view.unmount();
       });
       expect(remove).toHaveBeenCalled();
+    } finally {
+      add.mockRestore();
+    }
+  });
+
+  // A screen pushed from the sheet leaves the sheet mounted underneath. That screen's back belongs to the navigator,
+  // so the covered sheet must not hold a listener that would close it and swallow the press.
+  it('registers no Android back listener while its route is covered, so the screen pushed over it gets the back press', async () => {
+    jest.mocked(useIsFocused).mockReturnValue(false);
+    const remove = jest.fn();
+    const add = jest.spyOn(BackHandler, 'addEventListener').mockImplementation(() => ({ remove }));
+    try {
+      await renderUi(
+        <SheetHost>
+          <Text>إعدادات</Text>
+        </SheetHost>,
+      );
+      await settle();
+
+      expect(backListeners(add.mock.calls)).toHaveLength(0);
+      expect(router.back).not.toHaveBeenCalled();
+    } finally {
+      add.mockRestore();
+    }
+  });
+
+  it('closes on Android back once its route is focused again, rather than being left stuck in closing', async () => {
+    jest.mocked(useIsFocused).mockReturnValue(false);
+    const remove = jest.fn();
+    const add = jest.spyOn(BackHandler, 'addEventListener').mockImplementation(() => ({ remove }));
+    try {
+      const view = await renderUi(
+        <SheetHost>
+          <Text>إعدادات</Text>
+        </SheetHost>,
+      );
+      await settle();
+
+      jest.mocked(useIsFocused).mockReturnValue(true);
+      await act(async () => {
+        view.rerender(withTheme(<SheetHost><Text>إعدادات</Text></SheetHost>));
+      });
+      await settle();
+
+      const listeners = backListeners(add.mock.calls);
+      expect(listeners).toHaveLength(1);
+      let handled: boolean | null | undefined;
+      await act(async () => {
+        handled = listeners[0]?.();
+      });
+      expect(handled).toBe(true);
+      await settle();
+      expect(router.back).toHaveBeenCalledTimes(1);
+    } finally {
+      add.mockRestore();
+    }
+  });
+
+  it('removes its back listener when it is covered and adds a fresh one when it is focused again', async () => {
+    const remove = jest.fn();
+    const add = jest.spyOn(BackHandler, 'addEventListener').mockImplementation(() => ({ remove }));
+    try {
+      const view = await renderUi(
+        <SheetHost>
+          <Text>إعدادات</Text>
+        </SheetHost>,
+      );
+      await settle();
+      expect(backListeners(add.mock.calls)).toHaveLength(1);
+
+      jest.mocked(useIsFocused).mockReturnValue(false);
+      await act(async () => {
+        view.rerender(withTheme(<SheetHost><Text>إعدادات</Text></SheetHost>));
+      });
+      expect(remove).toHaveBeenCalledTimes(1);
+
+      jest.mocked(useIsFocused).mockReturnValue(true);
+      await act(async () => {
+        view.rerender(withTheme(<SheetHost><Text>إعدادات</Text></SheetHost>));
+      });
+      expect(remove).toHaveBeenCalledTimes(1);
+      expect(backListeners(add.mock.calls)).toHaveLength(2);
     } finally {
       add.mockRestore();
     }
