@@ -22,6 +22,7 @@ use App\Domains\Content\Models\NamesVerse;
 use App\Domains\Content\Models\Recitation;
 use App\Domains\Content\Models\RecitationTiming;
 use App\Domains\Content\Models\TafsirEntry;
+use App\Domains\Content\Models\TaybahRecitationTiming;
 use App\Domains\Content\Models\WordLayout;
 use App\Domains\Content\Packs\PackBuildException;
 use App\Domains\Content\Packs\PackColumn;
@@ -36,6 +37,7 @@ use App\Domains\Duas\Models\DuaItem;
 use App\Domains\Duas\Models\DuaLink;
 use App\Domains\Duas\Models\DuaQuranSpan;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use stdClass;
 
@@ -74,10 +76,7 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
             'chapter_audio_files' => ChapterAudioFile::query()->toBase()
                 ->join('recitations', 'recitations.id', '=', 'chapter_audio_files.recitation_id')
                 ->where('recitations.resource_id', $resourceId),
-            'recitation_timings' => RecitationTiming::query()->toBase()
-                ->join('chapter_audio_files', 'chapter_audio_files.id', '=', 'recitation_timings.audio_file_id')
-                ->join('recitations', 'recitations.id', '=', 'chapter_audio_files.recitation_id')
-                ->where('recitations.resource_id', $resourceId),
+            'recitation_timings' => $this->recitationTimingsSource($resourceId),
             'azkar_chapters' => AzkarChapter::query()->toBase()
                 ->where('azkar_chapters.resource_id', $resourceId),
             'azkar_entries' => AzkarEntry::query()->toBase()
@@ -126,6 +125,56 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
         }
 
         return $query->select($this->selectList($table));
+    }
+
+    /**
+     * The recitation_timings rows of one resource, as a derived table named recitation_timings (ADR 0060). A surah file
+     * takes its Taybah rows when a Taybah set matches its recitation, surah and current audio URL, and its own QF or
+     * MP3Quran rows otherwise, so a file appears from exactly one source.
+     */
+    private function recitationTimingsSource(int $resourceId): Builder
+    {
+        $own = RecitationTiming::query()->toBase()
+            ->join('chapter_audio_files', 'chapter_audio_files.id', '=', 'recitation_timings.audio_file_id')
+            ->join('recitations', 'recitations.id', '=', 'chapter_audio_files.recitation_id')
+            ->where('recitations.resource_id', $resourceId)
+            ->whereNotExists(function (Builder $set): void {
+                $set->selectRaw('1')
+                    ->from('taybah_timing_sets')
+                    ->whereColumn('taybah_timing_sets.recitation_id', 'chapter_audio_files.recitation_id')
+                    ->whereColumn('taybah_timing_sets.chapter_id', 'chapter_audio_files.chapter_id')
+                    ->whereColumn('taybah_timing_sets.audio_url', 'chapter_audio_files.audio_url');
+            })
+            ->select([
+                'recitation_timings.audio_file_id',
+                'recitation_timings.verse_id',
+                'recitation_timings.start_ms',
+                'recitation_timings.end_ms',
+                'recitation_timings.segments',
+            ]);
+
+        $taybah = TaybahRecitationTiming::query()->toBase()
+            ->join('taybah_timing_sets', function (JoinClause $join): void {
+                $join->on('taybah_timing_sets.recitation_id', '=', 'taybah_recitation_timings.recitation_id')
+                    ->on('taybah_timing_sets.chapter_id', '=', 'taybah_recitation_timings.chapter_id');
+            })
+            ->join('chapter_audio_files', function (JoinClause $join): void {
+                $join->on('chapter_audio_files.recitation_id', '=', 'taybah_timing_sets.recitation_id')
+                    ->on('chapter_audio_files.chapter_id', '=', 'taybah_timing_sets.chapter_id')
+                    ->on('chapter_audio_files.audio_url', '=', 'taybah_timing_sets.audio_url');
+            })
+            ->join('recitations', 'recitations.id', '=', 'chapter_audio_files.recitation_id')
+            ->where('recitations.resource_id', $resourceId)
+            ->select([
+                'chapter_audio_files.id as audio_file_id',
+                'taybah_recitation_timings.verse_id',
+                'taybah_recitation_timings.start_ms',
+                'taybah_recitation_timings.end_ms',
+                'taybah_recitation_timings.segments',
+            ]);
+
+        return RecitationTiming::query()->toBase()->newQuery()
+            ->fromSub($own->unionAll($taybah), 'recitation_timings');
     }
 
     /**

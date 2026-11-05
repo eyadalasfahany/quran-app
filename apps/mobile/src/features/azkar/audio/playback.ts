@@ -79,7 +79,9 @@ function ensureAudioMode(): Promise<void> {
 }
 
 function appIconUrl(): string | undefined {
-  return Image.resolveAssetSource(appIcon)?.uri;
+  // An Android release build resolves the icon to a drawable name, which expo-audio's artworkUrl rejects (see audio/player.ts).
+  const uri = Image.resolveAssetSource(appIcon)?.uri;
+  return uri?.includes('://') === true ? uri : undefined;
 }
 
 function lockScreenMetadata(item: AzkarQueueItem): AudioMetadata {

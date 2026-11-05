@@ -146,7 +146,9 @@
       "cancel": "إلغاء",
       "installFailed": "تعذّر تنزيل بيانات القارئ",
       "retry": "إعادة المحاولة",
-      "notFound": "لم نجد هذا القارئ"
+      "notFound": "لم نجد هذا القارئ",
+      "surahUnavailable": "غير متوفرة",
+      "surahUnavailableLabel": "{{surah}}، غير متوفرة بصوت هذا القارئ"
     },
     "download": {
       "queued": "في الانتظار",
@@ -614,6 +616,13 @@
     }
   },
   "player": {
+    "reciters": {
+      "title": "القرّاء",
+      "notDownloaded": "غير منزّل",
+      "unavailableForSurah": "غير متوفرة لهذه السورة",
+      "a11yCurrent": "{{name}}، القارئ الحالي",
+      "a11ySwitch": "{{name}}، اضغط للتشغيل بصوته"
+    },
     "minimize": "تصغير المشغّل",
     "nowPlaying": "يُتلى الآن",
     "more": "المزيد",
@@ -628,7 +637,11 @@
       "label": "{{reciter}}، {{surah}}",
       "hint": "يفتح المشغّل",
       "show": "إظهار المشغّل",
-      "caption": "{{surah}} · {{ayah}}"
+      "caption": "{{surah}} · {{ayah}}",
+      "unavailable": "{{surah}} غير متوفرة بصوت {{reciter}}",
+      "skipped": "تخطّي {{surah}} · غير متوفرة بصوت {{reciter}}",
+      "skippedMany": "تخطّي {{count}} سور · غير متوفرة بصوت {{reciter}}",
+      "changeReciter": "تغيير القارئ"
     },
     "style": {
       "murattal": "مرتّل",
@@ -678,6 +691,7 @@
     "errors": {
       "noReciter": "اختر قارئًا لتشغيل السورة.",
       "notInstalled": "هذه التلاوة غير مثبتة بعد.",
+      "surahUnavailable": "هذه السورة غير متوفرة بصوت هذا القارئ.",
       "loadFailed": "تعذّر تشغيل الملف الصوتي. حاول مرة أخرى.",
       "notFound": "الملف الصوتي غير متوفر الآن.",
       "invalidChapter": "هذه السورة غير متاحة.",

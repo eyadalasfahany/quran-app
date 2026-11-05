@@ -9,7 +9,8 @@ import { formatWeekdayDate } from '@/core/i18n/dates';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisible';
-import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
+import { MINI_PLAYER_NOTICE_HEIGHT, MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
+import { useSkipNoticeShown } from '@/features/audio/skip-notice';
 import { EmptyState, Screen, type IconName } from '@/shared/ui';
 
 import { LocationPickerSheet } from '../components/LocationPickerSheet';
@@ -53,6 +54,8 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   const { now, times } = usePrayerClock(coords);
   const [sheetOpen, setSheetOpen] = useState(false);
   const miniShown = useMiniPlayerVisible('tabs');
+  // The skip notice's line sits on the tabs mini bar while it shows (ADR 0062), so the list clears it too.
+  const noticeShown = useSkipNoticeShown();
 
   // The tab is the permission's context: ask on first visit rather than from a cold modal.
   useEffect(() => {
@@ -75,7 +78,8 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   // target plus its vertical padding; add that on top of the bar footprint so
   // the row can scroll fully above the player and stay tappable.
   const qiblaRowClearance = theme.size.touchTarget + theme.space[4] * 2;
-  const listBottomPad = theme.space[4] + (miniShown ? MINI_PLAYER_TABS_FOOTPRINT + qiblaRowClearance : 0);
+  const miniFootprint = MINI_PLAYER_TABS_FOOTPRINT + (noticeShown ? MINI_PLAYER_NOTICE_HEIGHT : 0);
+  const listBottomPad = theme.space[4] + (miniShown ? miniFootprint + qiblaRowClearance : 0);
 
   // The six rows are rebuilt only when the times, the next prayer or the locale change, so the memoised rows keep their
   // photos on every other re-render of this screen.

@@ -100,6 +100,28 @@ return [
     // end of a long surah).
     'untrusted_timing_recitations' => [5, 158, 168, 174],
 
+    // Committed Taybah timing files (ADR 0060), read by recitation-timings:import.
+    'recitation_timings' => [
+        // Committed timing files: {path}/{kind}/{recitation_key}/{NNN}.json (ADR 0060 decision 2).
+        'path' => base_path('resources/recitation-timings'),
+        // word_layouts.mushaf_id whose 'word' rows give the QF word count of each verse (the only mushaf QF syncs, mushafs:1).
+        'word_count_mushaf_id' => 1,
+        // QF chapter reciter ids that never get Taybah timings (ADR 0060 decision 10: 168 keeps no highlight). Scoped to kind qf.
+        'excluded_qf_recitations' => [168],
+    ],
+
+    // ADR 0061 decision 8: the committed manifest the import reads. Production never calls MP3Quran's API.
+    'mp3quran_manifest_path' => base_path('resources/mp3quran/manifest.json'),
+    // ADR 0061 decision 11: MP3Quran moshaf id => QF chapter reciter source_key (developer-owned; empty until the developer
+    // fills it). A listed moshaf is imported but hidden (resource inactive), because QF's copy stays in the list.
+    'mp3quran_duplicates' => [],
+    // Held moshaf ids: imported inactive until released (reason 'held'); remove an id to release it.
+    'mp3quran_held_moshafs' => [253],
+    // ADR 0061 decision 10: riwayat shipped in v1 (the manifest's `riwayah` text). Anything else is skipped.
+    'mp3quran_riwayat' => ['حفص عن عاصم'],
+    // recitations.style from the text after the last " - " in the manifest's `moshaf_name`. Unknown or missing: null.
+    'mp3quran_styles' => ['مرتل' => 'Murattal', 'مجود' => 'Mujawwad', 'معلم' => 'Muallim'],
+
     // QF has no Arabic author field, so the served Arabic author is this override by QF source id
     // (resources.source_key). Credits are not Quran text. Other tafsirs serve no Arabic author.
     'display_authors' => [

@@ -3,21 +3,28 @@
 declare(strict_types=1);
 
 use App\Domains\Content\Enums\ChangeOperation;
+use App\Domains\Content\Enums\PermissionStatus;
 use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Enums\TextDirection;
+use App\Domains\Content\Events\ResourceContentChanged;
 use App\Domains\Content\Jobs\PruneContentChangesJob;
 use App\Domains\Content\Models\ContentChange;
+use App\Domains\Content\Models\ContentSource;
 use App\Domains\Content\Models\Recitation;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\ChangeCursor;
 use App\Domains\Content\Packs\PackBuilder;
+use App\Domains\Content\Services\Mp3QuranImporter;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+require_once __DIR__.'/../../Support/Mp3QuranTestManifest.php';
 
 uses(RefreshDatabase::class);
 
@@ -378,10 +385,18 @@ it('returns 404 for the pack and the change feed of an ignored resource even whe
 
 function packedRecitation(string $sourceKey, ?string $reciterNameAr, ?string $nameAr = null, ?string $style = 'Murattal'): Resource
 {
+    $qf = ContentSource::query()->firstOrCreate(['code' => 'qf'], [
+        'name' => 'Quran Foundation',
+        'licence_url' => 'https://api-docs.quran.foundation/legal/developer-terms/',
+        'attribution_ar' => 'محتوى القرآن من مؤسسة القرآن (quran.foundation)',
+        'attribution_en' => 'Quran Foundation (quran.foundation)',
+        'permission_status' => PermissionStatus::Granted,
+    ]);
     $recitation = Recitation::factory()->create([
         'reciter_name_ar' => $reciterNameAr,
         'style' => $style,
         'resource_id' => Resource::factory()->state([
+            'source_id' => $qf->id,
             'group' => ResourceGroup::ChapterRecitations,
             'source_key' => $sourceKey,
             'name_ar' => $nameAr,
@@ -661,4 +676,21 @@ it('keeps the manifest query count flat as recitations are added', function (): 
     expect(recitationQueries($one))->toBe(1)
         ->and(recitationQueries($two))->toBe(1)
         ->and(count($two))->toBe(count($one));
+});
+
+it('never marks an MP3Quran recitation default, even when its moshaf id equals the default QF reciter', function (): void {
+    Event::fake([ResourceContentChanged::class]);
+    $default = (int) config('quran.default_recitation');
+    mp3QuranTestManifest([mp3QuranTestMoshaf($default, [1])]);
+    app(Mp3QuranImporter::class)->import();
+    $mp3 = Resource::query()->where('source_key', (string) $default)
+        ->whereHas('source', fn ($query) => $query->where('code', 'mp3quran'))
+        ->sole();
+    app(PackBuilder::class)->build($mp3);
+
+    $flags = collect($this->getJson('/api/v1/content/manifest')->json('resources'))
+        ->mapWithKeys(fn (array $entry): array => [$entry['id'] => $entry['is_default']])
+        ->all();
+
+    expect($flags)->toBe([$mp3->id => false]);
 });

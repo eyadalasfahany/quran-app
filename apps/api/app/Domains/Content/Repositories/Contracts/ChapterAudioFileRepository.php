@@ -28,4 +28,14 @@ interface ChapterAudioFileRepository
     public function idsFor(int $recitationId): array;
 
     public function delete(int $id): void;
+
+    public function findForRecitationChapter(int $recitationId, int $chapterId): ?ChapterAudioFile;
+
+    /**
+     * Deletes the recitation's files whose id is not in $keepIds.
+     *
+     * @param  list<int>  $keepIds
+     * @return int the number of rows deleted
+     */
+    public function deleteForRecitationExcept(int $recitationId, array $keepIds): int;
 }

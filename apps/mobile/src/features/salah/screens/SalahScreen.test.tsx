@@ -1,10 +1,11 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { Dimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { themes } from '@/core/theme';
-import { MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
+import { MINI_PLAYER_NOTICE_HEIGHT, MINI_PLAYER_TABS_FOOTPRINT } from '@/features/audio/mini-player-metrics';
+import { resetSkipNoticeForTests, useSkipNoticeStore } from '@/features/audio/skip-notice';
 import { usePlayerStore } from '@/features/audio/playerStore';
 
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
@@ -205,8 +206,11 @@ describe('SalahScreen', () => {
       usePlayerStore.getState().reset();
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       usePlayerStore.getState().reset();
+      await act(async () => {
+        resetSkipNoticeForTests();
+      });
     });
 
     it('pads the scroll content by the bar footprint while the bar shows, so the qibla row clears it', async () => {
@@ -217,6 +221,22 @@ describe('SalahScreen', () => {
 
       expect(flatStyle(view.getByTestId('screen-salah-scroll').props.contentContainerStyle).paddingBottom).toBe(
         themes.light.space[4] + MINI_PLAYER_TABS_FOOTPRINT + themes.light.size.touchTarget + themes.light.space[4] * 2,
+      );
+    });
+
+    it('grows the bottom inset by the skip notice line while the notice shows during playback', async () => {
+      const store = usePlayerStore.getState();
+      store.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+      store.markPlaying();
+      const view = await renderUi(screen());
+      const before = Number(flatStyle(view.getByTestId('screen-salah-scroll').props.contentContainerStyle).paddingBottom);
+
+      await act(async () => {
+        useSkipNoticeStore.getState().show({ reciterId: 30, chapterIds: [38] });
+      });
+
+      expect(flatStyle(view.getByTestId('screen-salah-scroll').props.contentContainerStyle).paddingBottom).toBe(
+        before + MINI_PLAYER_NOTICE_HEIGHT,
       );
     });
 

@@ -28,6 +28,7 @@ struct NextPrayerSmall: Widget {
     .configurationDisplayName(LocalizedStringKey("widget_next_prayer_name"))
     .description(LocalizedStringKey("widget_next_prayer_desc"))
     .supportedFamilies([.systemSmall, .systemMedium])
+    .contentMarginsDisabled()
   }
 }
 
@@ -41,6 +42,7 @@ struct ProgressMedium: Widget {
     .configurationDisplayName(LocalizedStringKey("widget_progress_name"))
     .description(LocalizedStringKey("widget_progress_desc"))
     .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+    .contentMarginsDisabled()
   }
 }
 
@@ -54,6 +56,7 @@ struct ContinueReading: Widget {
     .configurationDisplayName(LocalizedStringKey("widget_reading_name"))
     .description(LocalizedStringKey("widget_reading_desc"))
     .supportedFamilies([.systemSmall, .systemMedium])
+    .contentMarginsDisabled()
   }
 }
 
@@ -67,6 +70,7 @@ struct MisbahaWidget: Widget {
     .configurationDisplayName(LocalizedStringKey("widget_misbaha_name"))
     .description(LocalizedStringKey("widget_misbaha_desc"))
     .supportedFamilies([.systemSmall])
+    .contentMarginsDisabled()
   }
 }
 
@@ -80,6 +84,7 @@ struct AzkarStatusWidget: Widget {
     .configurationDisplayName(LocalizedStringKey("widget_azkar_name"))
     .description(LocalizedStringKey("widget_azkar_desc"))
     .supportedFamilies([.systemMedium])
+    .contentMarginsDisabled()
   }
 }
 

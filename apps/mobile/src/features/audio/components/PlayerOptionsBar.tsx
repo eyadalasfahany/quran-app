@@ -11,27 +11,23 @@ import { useSurahVerses, verseNumberOf, type SurahVerse } from '../hooks/useSura
 import type { RepeatRange } from '../repeat';
 import { usePlayerStore } from '../playerStore';
 import { selectRemainingMinutes, useSleepTimerStore, type SleepMode } from '../sleep-timer';
-import { RANGE_ICON, REPEAT_ICON, SLEEP_ICON, SPEED_ICON } from './player-icons';
+import { RANGE_ICON, REPEAT_ICON, SLEEP_ICON } from './player-icons';
 import { PlayerOptionButton } from './PlayerOptionButton';
 import { PlayerRangeMenu } from './PlayerRangeMenu';
 import { PlayerRepeatMenu } from './PlayerRepeatMenu';
 import { PlayerSleepMenu } from './PlayerSleepMenu';
-import { PlayerSpeedMenu } from './PlayerSpeedMenu';
 
-type OpenMenu = 'repeat' | 'range' | 'speed' | 'sleep' | null;
+type OpenMenu = 'repeat' | 'range' | 'sleep' | null;
 
-// The bottom glass group: repeat, the ayah range, speed and the sleep timer. Repeat opens its count menu; the range
-// stays disabled until a recited ayah exists, and opens the range picker. Speed and the sleep timer open their menus;
+// The bottom glass group: repeat, the ayah range and the sleep timer. Repeat opens its count menu; the range
+// stays disabled until a recited ayah exists, and opens the range picker. The sleep timer opens its menu;
 // a running sleep timer shows its remaining minutes and takes the accent. The repeat and range labels read playerStore. Glass is the native material when it is on; otherwise the bar takes the frame's player
 // glass tokens, not the theme's fallback, so it stays dark on the dark player screen.
-// The speed comes from playerStore, not from the `speed` prop. The prop is ignored and kept only so PlayerScreen
-// compiles until its owner drops it.
-export function PlayerOptionsBar({ versesCount }: { versesCount: number; speed?: number }) {
+export function PlayerOptionsBar({ versesCount }: { versesCount: number }) {
   const { t } = useTranslation();
   const locale = useLocale();
   const theme = useTheme();
   const nativeGlass = useGlass();
-  const speed = usePlayerStore((state) => state.speed);
   const sleepMode = useSleepTimerStore((state) => state.mode);
   const remainingMinutes = useSleepTimerStore(selectRemainingMinutes);
   const repeat = usePlayerStore((state) => state.repeat);
@@ -84,13 +80,6 @@ export function PlayerOptionsBar({ versesCount }: { versesCount: number; speed?:
           testID="player-option-range"
         />
         <PlayerOptionButton
-          accessibilityLabel={t('player.options.speed', { rate: formatNumber(speed, locale) })}
-          icon={SPEED_ICON}
-          label={t('player.options.speed', { rate: formatNumber(speed, locale) })}
-          onPress={() => setOpenMenu('speed')}
-          testID="player-option-speed"
-        />
-        <PlayerOptionButton
           accessibilityLabel={sleepAccessibilityLabel}
           active={sleep.armed}
           icon={SLEEP_ICON}
@@ -101,7 +90,6 @@ export function PlayerOptionsBar({ versesCount }: { versesCount: number; speed?:
       </GlassSurface>
       {openMenu === 'repeat' ? <PlayerRepeatMenu onClose={() => setOpenMenu(null)} visible /> : null}
       {openMenu === 'range' ? <PlayerRangeMenu onClose={() => setOpenMenu(null)} visible /> : null}
-      {openMenu === 'speed' ? <PlayerSpeedMenu onClose={() => setOpenMenu(null)} visible /> : null}
       {openMenu === 'sleep' ? <PlayerSleepMenu onClose={() => setOpenMenu(null)} visible /> : null}
     </>
   );

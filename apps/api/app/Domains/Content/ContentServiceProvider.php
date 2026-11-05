@@ -6,7 +6,10 @@ namespace App\Domains\Content;
 
 use App\Domains\Content\Console\BuildContentPackCommand;
 use App\Domains\Content\Console\EnsureContentPacksCommand;
+use App\Domains\Content\Console\ImportMp3QuranCommand;
+use App\Domains\Content\Console\ImportRecitationTimingsCommand;
 use App\Domains\Content\Console\SyncContentCommand;
+use App\Domains\Content\Console\VerifyRecitationTimingsCommand;
 use App\Domains\Content\Events\ResourceContentChanged;
 use App\Domains\Content\Listeners\QueuePackBuild;
 use App\Domains\Content\Repositories\Contracts\ChapterAudioFileRepository;
@@ -21,6 +24,7 @@ use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Domains\Content\Repositories\Contracts\SyncRunRepository;
 use App\Domains\Content\Repositories\Contracts\SyncStateRepository;
 use App\Domains\Content\Repositories\Contracts\TafsirEntryRepository;
+use App\Domains\Content\Repositories\Contracts\TaybahTimingRepository;
 use App\Domains\Content\Repositories\Contracts\WordLayoutRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentChapterAudioFileRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentContentChangeRepository;
@@ -34,6 +38,7 @@ use App\Domains\Content\Repositories\Eloquent\EloquentResourceRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentSyncRunRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentSyncStateRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentTafsirEntryRepository;
+use App\Domains\Content\Repositories\Eloquent\EloquentTaybahTimingRepository;
 use App\Domains\Content\Repositories\Eloquent\EloquentWordLayoutRepository;
 use App\Domains\Content\Sync\GroupHandlers;
 use App\Domains\Content\Sync\Handlers\ChapterRecitationsHandler;
@@ -66,6 +71,7 @@ final class ContentServiceProvider extends ServiceProvider
         RecitationRepository::class => EloquentRecitationRepository::class,
         ChapterAudioFileRepository::class => EloquentChapterAudioFileRepository::class,
         RecitationTimingRepository::class => EloquentRecitationTimingRepository::class,
+        TaybahTimingRepository::class => EloquentTaybahTimingRepository::class,
     ];
 
     public function register(): void
@@ -85,6 +91,9 @@ final class ContentServiceProvider extends ServiceProvider
             SyncContentCommand::class,
             BuildContentPackCommand::class,
             EnsureContentPacksCommand::class,
+            ImportRecitationTimingsCommand::class,
+            VerifyRecitationTimingsCommand::class,
+            ImportMp3QuranCommand::class,
         ]);
 
         Event::listen(ResourceContentChanged::class, QueuePackBuild::class);

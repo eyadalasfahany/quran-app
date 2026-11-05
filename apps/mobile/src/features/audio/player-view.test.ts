@@ -51,6 +51,7 @@ describe('ERROR_KEYS', () => {
       'not-found',
       'not-installed',
       'offline',
+      'surah-unavailable',
       'verify-required',
     ]);
   });

@@ -12,17 +12,29 @@ type WatchConnectivityModule = {
   watchEvents: { addListener: (event: string, cb: (payload: unknown) => void) => () => void };
 };
 
+// undefined = not tried yet, null = unavailable. Metro caches a module whose factory threw and returns
+// partial exports on a later require, so the package is required at most once per JS runtime.
+let watchConnectivityCache: WatchConnectivityModule | null | undefined;
+
 function loadWatchConnectivity(): WatchConnectivityModule | null {
+  if (watchConnectivityCache !== undefined) {
+    return watchConnectivityCache;
+  }
+  watchConnectivityCache = null;
   if (Platform.OS !== 'ios') {
     return null;
   }
   try {
     // Lazy require so Jest and non-iOS builds do not load the native module at import time.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require('react-native-watch-connectivity') as WatchConnectivityModule;
+    const mod = require('react-native-watch-connectivity') as Partial<WatchConnectivityModule> | undefined;
+    if (typeof mod?.updateApplicationContext === 'function' && typeof mod.watchEvents?.addListener === 'function') {
+      watchConnectivityCache = mod as WatchConnectivityModule;
+    }
   } catch {
-    return null;
+    // Native module missing from this binary: watch features stay off.
   }
+  return watchConnectivityCache;
 }
 
 function readWatchMergeState(): WatchMergeState {

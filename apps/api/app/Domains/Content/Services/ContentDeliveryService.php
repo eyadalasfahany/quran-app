@@ -168,13 +168,15 @@ final class ContentDeliveryService
     }
 
     /**
-     * True only for the configured chapter reciter. The value is a QF source id, not our resource id.
+     * True only for the configured chapter reciter of the QF source. The value is a QF source id, not our resource id,
+     * so an MP3Quran moshaf with the same number is never default (ADR 0061).
      */
     private function isDefault(Resource $resource): bool
     {
         $default = config('quran.default_recitation');
 
         return $resource->group === ResourceGroup::ChapterRecitations
+            && $resource->source?->code === 'qf'
             && is_int($default)
             && (int) $resource->source_key === $default;
     }

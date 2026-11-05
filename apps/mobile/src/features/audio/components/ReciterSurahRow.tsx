@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { formatNumber, useLocale, type Locale } from '@/core/i18n';
 import { DownloadRow } from '@/shared/ui/DownloadRow';
 
+import { UnavailableSurahRow } from './UnavailableSurahRow';
+
 import type { DownloadStatus } from '../data/downloads';
 import { surahRowModel, type SurahSubtitle } from '../surah-downloads';
 
@@ -42,6 +44,7 @@ function subtitleText(subtitle: SurahSubtitle, t: Translate, locale: Locale): st
 // Each action is passed in; the screen decides what it does.
 export function ReciterSurahRow({
   title,
+  available = true,
   status,
   progress,
   sizeBytes,
@@ -56,6 +59,8 @@ export function ReciterSurahRow({
   testID,
 }: {
   title: string;
+  /** False when the reciter has no audio for this surah: the row dims and offers no action (ADR 0062). */
+  available?: boolean;
   /** The surah's download row, or undefined when it has none. */
   status: DownloadStatus | undefined;
   /** 0 to 1, live while it downloads. */
@@ -77,6 +82,10 @@ export function ReciterSurahRow({
   const { t } = useTranslation();
   const locale = useLocale();
   const model = surahRowModel(status, sizeBytes, { offline, verifyNeeded });
+
+  if (!available) {
+    return <UnavailableSurahRow showDivider={showDivider} testID={testID} title={title} />;
+  }
 
   return (
     <DownloadRow

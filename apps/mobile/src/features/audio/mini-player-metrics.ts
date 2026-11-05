@@ -56,6 +56,19 @@ export const MINI_PLAYER_GLYPH_SIZE = 18;
 export const MINI_PLAYER_READER_BOTTOM = 28;
 /** Bottom content inset of the reader's lists while the reader bar shows: the bar's footprint plus the gap. */
 export const MINI_PLAYER_READER_FOOTPRINT = MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_METRICS.reader.height + MINI_PLAYER_BOTTOM_GAP;
+/**
+ * The reader bar while a surah is unavailable for the reciter (#ReadingMiniUnavailable, ADR 0062): 24 top padding
+ * for the chevron, the 46 pt info row, the 10 gap, the 44 pt change-reciter pill and 12 bottom padding.
+ */
+export const MINI_PLAYER_READER_UNAVAILABLE_HEIGHT = 136;
+/** Bottom content inset while the unavailable bar shows: its height, 28 above the safe area, plus the gap. */
+export const MINI_PLAYER_READER_UNAVAILABLE_FOOTPRINT =
+  MINI_PLAYER_READER_BOTTOM + MINI_PLAYER_READER_UNAVAILABLE_HEIGHT + MINI_PLAYER_BOTTOM_GAP;
+/**
+ * The line a continuous play adds under the playing bar's subtitle while a skip notice shows (ADR 0062): 18 pt, the
+ * frame's #ReadingMiniSkipped line. The bars grow by it; the content insets clear it.
+ */
+export const MINI_PLAYER_NOTICE_HEIGHT = 18;
 /** Bottom content inset of the tab screens while the tabs bar shows: the bar's height plus the gap. */
 export const MINI_PLAYER_TABS_FOOTPRINT = MINI_PLAYER_METRICS.tabs.height + MINI_PLAYER_BOTTOM_GAP;
 

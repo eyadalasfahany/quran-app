@@ -52,6 +52,7 @@ jest.mock('../data/downloads', () => ({
 }));
 
 const mockPush = jest.fn();
+const playFrom = jest.mocked(playFromVerse);
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 
 jest.mock('expo-symbols', () => {
@@ -101,6 +102,7 @@ beforeEach(() => {
   );
   db.run('INSERT INTO recitation_timings (audio_file_id, verse_id, start_ms, end_ms) VALUES (100, 1, 0, 5000), (200, 1, 0, 5000)');
   storage.remove(storageKeys.audioReciterId);
+  storage.remove(storageKeys.readerLastVerseKey);
   resetAudioSettingsStore();
   resetReciterDownloads();
   usePlayerStore.setState({ chapterId: null, reciterId: null, startingTarget: null, status: 'idle' });
@@ -270,14 +272,36 @@ describe('ListenScreen', () => {
     expect(view.getByTestId('reciter-row-30-status')).toHaveTextContent(text);
   });
 
-  it('opens the reciter page from «⋯», without selecting or playing the reciter', async () => {
+  it('the ⋯ button selects the reciter and then opens his page, without playing him', async () => {
     const view = await renderUi(<ListenScreen />);
 
     await fireEvent.press(view.getByTestId('reciter-row-30-options'));
 
+    expect(getReciterId()).toBe(30);
     expect(mockPush).toHaveBeenCalledWith('/(main)/(listen)/reciter/30');
     expect(play).not.toHaveBeenCalled();
-    expect(getReciterId()).not.toBe(31);
+    expect(playFrom).not.toHaveBeenCalled();
+  });
+
+  it('tapping a reciter’s name selects him and does not open his page or start playback', async () => {
+    const view = await renderUi(<ListenScreen />);
+
+    await fireEvent.press(view.getByRole('radio', { name: 'محمود خليل الحصري' }));
+
+    expect(getReciterId()).toBe(31);
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(play).not.toHaveBeenCalled();
+    expect(playFrom).not.toHaveBeenCalled();
+  });
+
+  it('pressing ▶ on a reciter plays him from the current ayah, and does not open his page', async () => {
+    storage.set(storageKeys.readerLastVerseKey, '2:255');
+    const view = await renderUi(<ListenScreen />);
+
+    await fireEvent.press(view.getByTestId('reciter-row-31-play'));
+
+    expect(playFrom).toHaveBeenCalledWith('2:255');
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('labels «⋯» in English', async () => {

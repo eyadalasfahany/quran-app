@@ -43,6 +43,25 @@ final class EloquentWordLayoutRepository extends EloquentRepository implements W
             ->delete();
     }
 
+    public function wordCountsForVerses(int $mushafId, int $firstVerseId, int $lastVerseId): array
+    {
+        $counts = [];
+
+        $rows = $this->query()
+            ->where('mushaf_id', $mushafId)
+            ->where('char_type', 'word')
+            ->whereBetween('verse_id', [$firstVerseId, $lastVerseId])
+            ->groupBy('verse_id')
+            ->selectRaw('verse_id, COUNT(*) AS words')
+            ->get();
+
+        foreach ($rows as $row) {
+            $counts[(int) $row->getAttribute('verse_id')] = (int) $row->getAttribute('words');
+        }
+
+        return $counts;
+    }
+
     protected function model(): string
     {
         return WordLayout::class;

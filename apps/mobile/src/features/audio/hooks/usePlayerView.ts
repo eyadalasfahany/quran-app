@@ -10,12 +10,11 @@ import { getWords } from '@/features/reader/data/words';
 
 import type { AyahWord } from '../components/NowPlayingAyah';
 import { recitationStyle } from '../data/reciters';
-import { reciterInitial, recitationStyleKey, wordStates } from '../player-view';
+import { recitationStyleKey, wordStates } from '../player-view';
 import { usePlayerStore, type PlayerErrorCode } from '../playerStore';
 import { usePlayerNames } from './usePlayerNames';
 
 export type PlayerView = {
-  artworkLetter: string;
   reciterName: string;
   surahName: string;
   styleLabel: string | null;
@@ -26,7 +25,6 @@ export type PlayerView = {
   error: PlayerErrorCode | null;
   ayah: { words: AyahWord[]; counter: string; label: string } | null;
   versesCount: number;
-  speed: number;
 };
 
 // Everything the full player shows, read once per change. Reads the content database only; the player's own
@@ -41,7 +39,6 @@ export function usePlayerView(): PlayerView {
   const error = usePlayerStore((state) => state.error);
   const activeVerseId = usePlayerStore((state) => state.activeVerseId);
   const activeWord = usePlayerStore((state) => state.activeWord);
-  const speed = usePlayerStore((state) => state.speed);
 
   const db = useMemo(() => openContentDb().executor, []);
   const { reciter, reciterName, chapterName } = usePlayerNames();
@@ -74,7 +71,6 @@ export function usePlayerView(): PlayerView {
   }, [activeVerseId, activeWord, chapter?.versesCount, db, locale, t, verse]);
 
   return {
-    artworkLetter: reciterInitial(reciterName),
     reciterName,
     surahName,
     styleLabel: styleKey === null ? null : t(styleKey),
@@ -85,6 +81,5 @@ export function usePlayerView(): PlayerView {
     error,
     ayah,
     versesCount: chapter?.versesCount ?? 0,
-    speed,
   };
 }

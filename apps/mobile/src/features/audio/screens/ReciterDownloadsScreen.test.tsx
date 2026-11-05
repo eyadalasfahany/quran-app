@@ -11,10 +11,10 @@ import type { DownloadRow } from '../data/downloads';
 import { cancel, enqueueAll, enqueueSurah, remove, removeReciter } from '../downloads/manager';
 import { useDownloadProgress } from '../downloads/store';
 import { usePlayerStore } from '../playerStore';
-import { playSurahFromReciter } from '../reciter-playback';
+import { playSurahFromReciter, selectReciter } from '../reciter-playback';
 import { downloadReciterPack, resetReciterDownloads, useReciterDownloads as usePackDownloads } from '../reciter-downloads';
 import { openAudioTestDb } from '../data/test-db';
-import { resetAudioSettingsStore } from '../settings';
+import { getReciterId, resetAudioSettingsStore } from '../settings';
 
 import { ReciterDownloadsScreen } from './ReciterDownloadsScreen';
 
@@ -51,7 +51,10 @@ jest.mock('../downloads/manager', () => ({
   removeReciter: jest.fn(),
 }));
 
-jest.mock('../reciter-playback', () => ({ playSurahFromReciter: jest.fn(() => Promise.resolve()) }));
+jest.mock('../reciter-playback', () => ({
+  playSurahFromReciter: jest.fn(() => Promise.resolve()),
+  selectReciter: jest.fn(() => Promise.resolve()),
+}));
 
 jest.mock('../reciter-downloads', () => {
   const actual = jest.requireActual<typeof import('../reciter-downloads')>('../reciter-downloads');
@@ -146,13 +149,23 @@ afterEach(() => {
 });
 
 describe('ReciterDownloadsScreen', () => {
+  it('mounting the page does not select or switch a reciter (selection happens on the Listen row)', async () => {
+    const before = getReciterId();
+
+    await renderUi(<ReciterDownloadsScreen resourceId={31} />);
+
+    expect(getReciterId()).toBe(before);
+    expect(selectReciter).not.toHaveBeenCalled();
+    expect(playSurah).not.toHaveBeenCalled();
+  });
+
   describe('header', () => {
     it('shows the reciter name as the large title, with the style and the count under it', async () => {
       mockRows.value = [row(100, 1, { status: 'done', sizeBytes: 5_033_165 })];
       const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
 
       expect(view.getByRole('header', { name: 'مشاري راشد العفاسي' })).toBeOnTheScreen();
-      expect(view.getByText('مرتّل · ١ من ٣ محمّلة')).toBeOnTheScreen();
+      expect(view.getByText('مرتّل · ١ من ٢ محمّلة')).toBeOnTheScreen();
     });
 
     it('goes back from the back button, and to the Listen tab when nothing is under it', async () => {
@@ -168,14 +181,26 @@ describe('ReciterDownloadsScreen', () => {
   });
 
   describe('surah list', () => {
-    it('draws one row per surah that has audio, in surah order, titled with its name', async () => {
+    it('draws one row per surah in surah order, titled with its name', async () => {
       const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
 
       expect(view.getByTestId('surah-row-1')).toBeOnTheScreen();
+      expect(view.getByTestId('surah-row-2')).toBeOnTheScreen();
       expect(view.getByTestId('surah-row-3')).toBeOnTheScreen();
-      expect(view.queryByTestId('surah-row-2')).toBeNull();
       expect(view.getByText('الفاتحة')).toBeOnTheScreen();
       expect(view.getByText('آل عمران')).toBeOnTheScreen();
+    });
+
+    it('shows an unavailable surah dimmed and not pressable, and the others keep their actions', async () => {
+      const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
+
+      // Surah 2 has no audio for this reciter (the fixture gives it to another reciter).
+      expect(view.getByText('غير متوفرة')).toBeOnTheScreen();
+      expect(view.getByTestId('surah-row-2').props.accessibilityState).toEqual({ disabled: true });
+      expect(view.queryByTestId('surah-row-2-action')).toBeNull();
+      expect(view.queryByTestId('surah-row-2-delete')).toBeNull();
+      expect(view.getByTestId('surah-row-1-action')).toBeOnTheScreen();
+      expect(view.getByTestId('surah-row-3-action')).toBeOnTheScreen();
     });
 
     it('offers the download for a surah with no row, and calls enqueueSurah', async () => {
@@ -263,6 +288,20 @@ describe('ReciterDownloadsScreen', () => {
       await fireEvent.press(view.getByRole('button', { name: 'تنزيل الكل' }));
 
       expect(enqueueEverything).toHaveBeenCalledWith(30);
+      expect(enqueueEverything).toHaveBeenCalledTimes(1);
+    });
+
+    it('Download all still queues only surahs with audio', async () => {
+      // enqueueAll is mocked here: its own filter is tested in downloads/manager.test.ts. The page offers an action
+      // only for the two surahs with audio, and the one it calls queues just those.
+      const view = await renderUi(<ReciterDownloadsScreen resourceId={30} />);
+      const actionable = ['surah-row-1-action', 'surah-row-3-action'].filter((id) => view.queryByTestId(id) !== null);
+
+      await fireEvent.press(view.getByRole('button', { name: 'تنزيل الكل' }));
+
+      expect(actionable).toHaveLength(2);
+      expect(enqueueEverything).toHaveBeenCalledTimes(1);
+      expect(enqueue).not.toHaveBeenCalled();
     });
 
     it('hides «حذف التنزيلات» when nothing is downloaded', async () => {

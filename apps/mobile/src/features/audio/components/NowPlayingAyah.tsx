@@ -21,9 +21,11 @@ const CARD_GAP = 6;
  * The ayah card while playing: words recited, the current word and the words still to come, each in its own
  * player token. The ayah text is the stored Uthmani text, unchanged. Hidden until audio-to-ayah timings exist.
  *
- * With `height` (the room the column gives the card) the card is that tall: its text scrolls inside it when the text
- * is taller, and a shorter text sits centred. The counter stays pinned below. Without `height` the card is as tall as
- * its text. While `playing` and the text scrolls, the text follows the recited word's line (useAyahCardFollow).
+ * The card is as tall as its text. With `maxHeight` (the largest the column gives the card) it is that tall at most:
+ * a longer text scrolls inside the card, and the counter stays pinned below. With `height` (the room the column gives
+ * the card) the card is that tall: a shorter text sits centred, and a taller one scrolls. Without either the card is
+ * as tall as its text, however tall that is. While `playing` and the text scrolls, the text follows the recited
+ * word's line (useAyahCardFollow).
  */
 export function NowPlayingAyah({
   words,
@@ -32,6 +34,7 @@ export function NowPlayingAyah({
   activeWord = null,
   playing = false,
   height,
+  maxHeight,
 }: {
   words: AyahWord[];
   counter: string;
@@ -41,6 +44,8 @@ export function NowPlayingAyah({
   playing?: boolean;
   /** The card's height in its column, when the column gives it one. Unset, the card is as tall as its text. */
   height?: number;
+  /** The card's largest height in its column. Its text scrolls inside when the text is taller. */
+  maxHeight?: number;
 }) {
   const theme = useTheme();
   const [textHeight, setTextHeight] = useState<number | null>(null);
@@ -67,6 +72,7 @@ export function NowPlayingAyah({
           paddingVertical: CARD_PADDING_VERTICAL,
         },
         height === undefined ? null : { height },
+        maxHeight === undefined ? null : { maxHeight },
       ]}
       testID="now-playing-ayah"
     >
@@ -84,6 +90,7 @@ export function NowPlayingAyah({
         style={[
           { alignSelf: 'stretch', flexGrow: 0, flexShrink: 0 },
           height === undefined ? null : { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
+          height === undefined && maxHeight !== undefined ? { flexShrink: 1 } : null,
         ]}
         testID="now-playing-scroll"
       >

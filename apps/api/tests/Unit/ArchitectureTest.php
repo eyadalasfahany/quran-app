@@ -65,3 +65,13 @@ arch('dorar never reaches azkar services, packs, models or contracts')
 arch('content models extend eloquent')
     ->expect('App\Domains\Content\Models')
     ->toExtend(Model::class);
+
+// ADR 0060 decision 8: the Taybah timing importer reads committed files only, never a storage SDK.
+arch('the Taybah importer reads no storage SDK')
+    ->expect('App\Domains\Content\Services\TaybahTimingImporter')
+    ->not->toUse(['Aws', 'League\Flysystem\AwsS3V3']);
+
+// ADR 0061 decision 8: the MP3Quran import reads the committed manifest only, never a storage SDK.
+arch('the app uses no storage SDK')
+    ->expect('App')
+    ->not->toUse(['Aws']);

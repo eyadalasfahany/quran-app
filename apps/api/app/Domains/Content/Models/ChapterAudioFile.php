@@ -12,6 +12,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $recitation_id
+ * @property int $chapter_id
+ * @property string $audio_url
+ * @property int|null $size_bytes
+ * @property int $duration_ms
+ * @property string $format
+ */
 #[Fillable([
     'id',
     'recitation_id',

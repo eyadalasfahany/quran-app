@@ -2,24 +2,35 @@
 
 declare(strict_types=1);
 
+require_once __DIR__.'/../../Support/Mp3QuranTestManifest.php';
+
+use App\Domains\Content\Enums\PermissionStatus;
 use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Events\ResourceContentChanged;
 use App\Domains\Content\Jobs\BuildContentPackJob;
 use App\Domains\Content\Models\ChapterAudioFile;
 use App\Domains\Content\Models\ContentPack;
+use App\Domains\Content\Models\ContentSource;
 use App\Domains\Content\Models\Mushaf;
 use App\Domains\Content\Models\MushafPage;
 use App\Domains\Content\Models\Recitation;
 use App\Domains\Content\Models\RecitationTiming;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Models\TafsirEntry;
+use App\Domains\Content\Models\TaybahRecitationTiming;
+use App\Domains\Content\Models\TaybahTimingSet;
 use App\Domains\Content\Models\WordLayout;
+use App\Domains\Content\Mp3Quran\Mp3QuranFileId;
 use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Content\Packs\PackBuildException;
+use App\Domains\Content\Services\Mp3QuranImporter;
+use App\Support\QuranText\ChapterVerseCounts;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -438,4 +449,325 @@ function expectPackTable(PDO $pdo, string $table, array $columns, array $primary
 
     ksort($pk);
     expect(array_values($pk))->toBe($primaryKey);
+}
+
+it('fills a listed reciter pack with Taybah rows for the files that have a set and nothing for the others', function (): void {
+    config(['quran.untrusted_timing_recitations' => [5]]);
+    $resource = packTimingResource(5);
+    $recitation = Recitation::factory()->create(['resource_id' => $resource->id]);
+    $first = packTimingFile($recitation, 1, 'https://audio.example.test/fixture/5/001.mp3');
+    packTimingFile($recitation, 2, 'https://audio.example.test/fixture/5/002.mp3');
+    packTaybahSet($recitation, 1, $first->audio_url);
+    packTaybahRow($recitation, 1, 1, 0, 500, [[1, 0, 500]]);
+    packTaybahRow($recitation, 1, 2, 500, 1000, null);
+
+    $rows = packTimingRows(packBuildGzip($resource));
+
+    expect($rows)->toHaveCount(2)
+        ->and(array_unique(array_column($rows, 'audio_file_id')))->toBe([(string) $first->id])
+        ->and(array_column($rows, 'verse_id'))->toBe(['1', '2']);
+});
+
+it('leaves a trusted reciter with no Taybah set byte-identical', function (): void {
+    $resource = packTimingResource(6);
+    $recitation = Recitation::factory()->create(['resource_id' => $resource->id]);
+    $first = packTimingFile($recitation, 1, 'https://audio.example.test/fixture/6/001.mp3');
+    $second = packTimingFile($recitation, 2, 'https://audio.example.test/fixture/6/002.mp3');
+    packOwnTiming($first, 1, 0, 500, [[1, 0, 500]]);
+    packOwnTiming($first, 2, 500, 1000, null);
+    packOwnTiming($second, 1, 0, 800, [[1, 0, 400], [2, 400, 800]]);
+
+    $rows = packTimingRows(packBuildGzip($resource));
+    $database = DB::table('recitation_timings')
+        ->orderBy('audio_file_id')
+        ->orderBy('verse_id')
+        ->get(['audio_file_id', 'verse_id', 'start_ms', 'end_ms', 'segments'])
+        ->map(fn (object $row): array => array_map(fn (mixed $value): ?string => $value === null ? null : (string) $value, (array) $row))
+        ->all();
+
+    expect($rows)->toHaveCount(3)
+        ->and($rows)->toBe($database);
+});
+
+it('uses Taybah rows for one file and QF rows for the others of a trusted reciter', function (): void {
+    $resource = packTimingResource(6);
+    $recitation = Recitation::factory()->create(['resource_id' => $resource->id]);
+    $taybahFile = packTimingFile($recitation, 1, 'https://audio.example.test/fixture/6/001.mp3');
+    $ownFile = packTimingFile($recitation, 2, 'https://audio.example.test/fixture/6/002.mp3');
+    packTaybahSet($recitation, 1, $taybahFile->audio_url);
+    packTaybahRow($recitation, 1, 1, 0, 300, [[1, 0, 300]]);
+    packOwnTiming($taybahFile, 1, 0, 9000, null);
+    packOwnTiming($ownFile, 1, 0, 700, [[1, 0, 700]]);
+
+    $rows = packTimingRows(packBuildGzip($resource));
+
+    $byFile = collect($rows)->keyBy('audio_file_id');
+
+    expect($rows)->toHaveCount(2)
+        ->and($byFile[(string) $taybahFile->id])->toBe(['audio_file_id' => (string) $taybahFile->id, 'verse_id' => '1', 'start_ms' => '0', 'end_ms' => '300', 'segments' => '[[1, 0, 300]]'])
+        ->and($byFile[(string) $ownFile->id])->toBe(['audio_file_id' => (string) $ownFile->id, 'verse_id' => '1', 'start_ms' => '0', 'end_ms' => '700', 'segments' => '[[1, 0, 700]]']);
+});
+
+it('leaves out a file whose Taybah set has a different audio url', function (): void {
+    $trusted = packTimingResource(6);
+    $trustedRecitation = Recitation::factory()->create(['resource_id' => $trusted->id]);
+    $trustedFile = packTimingFile($trustedRecitation, 1, 'https://audio.example.test/fixture/6/001.mp3');
+    packTaybahSet($trustedRecitation, 1, 'https://audio.example.test/fixture/6/old-001.mp3');
+    packTaybahRow($trustedRecitation, 1, 1, 0, 300, [[1, 0, 300]]);
+    packOwnTiming($trustedFile, 1, 0, 700, [[1, 0, 700]]);
+
+    $untrusted = packTimingResource(5);
+    config(['quran.untrusted_timing_recitations' => [5]]);
+    $untrustedRecitation = Recitation::factory()->create(['resource_id' => $untrusted->id]);
+    packTimingFile($untrustedRecitation, 1, 'https://audio.example.test/fixture/5/001.mp3');
+    packTaybahSet($untrustedRecitation, 1, 'https://audio.example.test/fixture/5/old-001.mp3');
+    packTaybahRow($untrustedRecitation, 1, 1, 0, 300, [[1, 0, 300]]);
+
+    expect(packTimingRows(packBuildGzip($trusted)))
+        ->toBe([['audio_file_id' => (string) $trustedFile->id, 'verse_id' => '1', 'start_ms' => '0', 'end_ms' => '700', 'segments' => '[[1, 0, 700]]']])
+        ->and(packTimingRows(packBuildGzip($untrusted)))->toBe([]);
+});
+
+it('never mixes the rows of two recitations', function (): void {
+    $resource = packTimingResource(6);
+    $recitation = Recitation::factory()->create(['resource_id' => $resource->id]);
+    $file = packTimingFile($recitation, 1, 'https://audio.example.test/fixture/6/001.mp3');
+    packOwnTiming($file, 1, 0, 700, [[1, 0, 700]]);
+
+    $other = Recitation::factory()->create();
+    packTaybahSet($other, 1, $file->audio_url);
+    packTaybahRow($other, 1, 1, 0, 300, [[1, 0, 300]]);
+
+    expect(packTimingRows(packBuildGzip($resource)))
+        ->toBe([['audio_file_id' => (string) $file->id, 'verse_id' => '1', 'start_ms' => '0', 'end_ms' => '700', 'segments' => '[[1, 0, 700]]']]);
+});
+
+it('writes segments and null segments as in the QF path', function (): void {
+    $resource = packTimingResource(5);
+    config(['quran.untrusted_timing_recitations' => [5]]);
+    $recitation = Recitation::factory()->create(['resource_id' => $resource->id]);
+    $file = packTimingFile($recitation, 1, 'https://audio.example.test/fixture/5/001.mp3');
+    packTaybahSet($recitation, 1, $file->audio_url);
+    packTaybahRow($recitation, 1, 1, 0, 500, [[1, 0, 250], [2, 250, 500]]);
+    packTaybahRow($recitation, 1, 2, 500, 900, null);
+
+    $expected = DB::table('taybah_recitation_timings')->where('verse_id', 1)->value('segments');
+    $rows = packTimingRows(packBuildGzip($resource));
+
+    expect($expected)->toBeString()
+        ->and($rows[0]['segments'])->toBe($expected)
+        ->and($rows[1]['segments'])->toBeNull();
+});
+
+it('builds a new pack version through content:ensure-packs after a Taybah import bumps the resource', function (): void {
+    $root = storage_path('framework/testing/pack-timings-'.bin2hex(random_bytes(4)));
+    config(['quran.recitation_timings.path' => $root]);
+    $recitation = packTimingsImportFixture($root);
+    $resource = Resource::query()->findOrFail($recitation->resource_id);
+
+    expect(Artisan::call('recitation-timings:import', ['--defer-pack' => true]))->toBe(0);
+
+    $resource->refresh();
+    $fileId = ChapterAudioFile::query()->where('recitation_id', $recitation->id)->where('chapter_id', 108)->value('id');
+
+    expect(Artisan::call('content:ensure-packs'))->toBe(0)
+        ->and(Artisan::output())->toContain('OK '.$resource->id.' v'.$resource->version);
+
+    $pack = ContentPack::query()->where('resource_id', $resource->id)->where('version', $resource->version)->sole();
+    $rows = packTimingRows(Storage::disk('local')->get($pack->path));
+
+    expect(array_unique(array_column($rows, 'audio_file_id')))->toBe([(string) $fileId])
+        ->and(count($rows))->toBe(3);
+
+    File::deleteDirectory($root);
+});
+
+it('builds the pack of an imported MP3Quran recitation with the reserved file ids', function (): void {
+    mp3QuranTestManifest([mp3QuranTestMoshaf(253, [1, 2])]);
+    app(Mp3QuranImporter::class)->import(deferPack: true);
+
+    $resource = Resource::query()
+        ->where('group', ResourceGroup::ChapterRecitations)
+        ->where('source_key', '253')
+        ->sole();
+    $ids = ChapterAudioFile::query()
+        ->whereIn('recitation_id', Recitation::query()->where('resource_id', $resource->id)->select('id'))
+        ->orderBy('id')
+        ->pluck('id')
+        ->all();
+
+    expect($ids)->toBe([Mp3QuranFileId::for(253, 1), Mp3QuranFileId::for(253, 2)])
+        ->and(packTimingRows(packBuildGzip($resource)))->toBe([]);
+
+    $fileId = Mp3QuranFileId::for(253, 1);
+    $url = ChapterAudioFile::query()->whereKey($fileId)->value('audio_url');
+    $recitation = Recitation::query()->where('resource_id', $resource->id)->sole();
+    packTaybahSet($recitation, 1, (string) $url);
+    packTaybahRow($recitation, 1, 1, 0, 300, [[1, 0, 300]]);
+    $resource->version = $resource->version + 1;
+    $resource->save();
+
+    expect(packTimingRows(packBuildGzip($resource)))
+        ->toBe([['audio_file_id' => (string) $fileId, 'verse_id' => '1', 'start_ms' => '0', 'end_ms' => '300', 'segments' => '[[1, 0, 300]]']]);
+});
+
+/**
+ * A chapter recitations resource with the given QF reciter id as its source key.
+ */
+function packTimingResource(int $sourceKey): Resource
+{
+    return Resource::factory()->create([
+        'group' => ResourceGroup::ChapterRecitations,
+        'source_key' => (string) $sourceKey,
+        'version' => 1,
+    ]);
+}
+
+function packTimingFile(Recitation $recitation, int $chapter, string $url): ChapterAudioFile
+{
+    return ChapterAudioFile::factory()->create([
+        'recitation_id' => $recitation->id,
+        'chapter_id' => $chapter,
+        'audio_url' => $url,
+    ]);
+}
+
+function packOwnTiming(ChapterAudioFile $file, int $verse, int $startMs, int $endMs, ?array $segments): void
+{
+    RecitationTiming::query()->create([
+        'audio_file_id' => $file->id,
+        'verse_id' => $verse,
+        'verse_key' => '1:'.$verse,
+        'start_ms' => $startMs,
+        'end_ms' => $endMs,
+        'segments' => $segments,
+    ]);
+}
+
+function packTaybahSet(Recitation $recitation, int $chapter, string $url): void
+{
+    TaybahTimingSet::factory()->create([
+        'recitation_id' => $recitation->id,
+        'chapter_id' => $chapter,
+        'audio_url' => $url,
+    ]);
+}
+
+/**
+ * @param  list<array{0: int, 1: int, 2: int}>|null  $segments
+ */
+function packTaybahRow(Recitation $recitation, int $chapter, int $verse, int $startMs, int $endMs, ?array $segments): void
+{
+    TaybahRecitationTiming::factory()->create([
+        'recitation_id' => $recitation->id,
+        'chapter_id' => $chapter,
+        'verse_id' => $verse,
+        'start_ms' => $startMs,
+        'end_ms' => $endMs,
+        'segments' => $segments,
+    ]);
+}
+
+/**
+ * Builds the resource's pack and returns its gzipped bytes.
+ */
+function packBuildGzip(Resource $resource): string
+{
+    $pack = app(PackBuilder::class)->build($resource);
+
+    return (string) Storage::disk('local')->get($pack->path);
+}
+
+/**
+ * The recitation_timings rows of a pack, as strings, in pack order.
+ *
+ * @return list<array<string, string|null>>
+ */
+function packTimingRows(string $gzipped): array
+{
+    $rows = [];
+
+    withContentPack($gzipped, function (PDO $pdo) use (&$rows): void {
+        foreach ($pdo->query('SELECT audio_file_id, verse_id, start_ms, end_ms, segments FROM recitation_timings ORDER BY audio_file_id, verse_id')->fetchAll() as $row) {
+            $rows[] = array_map(fn (mixed $value): ?string => $value === null ? null : (string) $value, $row);
+        }
+    });
+
+    return $rows;
+}
+
+/**
+ * A mp3quran recitation with one chapter 108 file, two word layouts per ayah, and its committed Taybah file on disk.
+ * Numbers and placeholder URLs only.
+ */
+function packTimingsImportFixture(string $root): Recitation
+{
+    $source = ContentSource::query()->firstOrCreate(['code' => 'mp3quran'], [
+        'name' => 'MP3Quran',
+        'licence_url' => 'https://example.test/licence',
+        'attribution_ar' => 'إسناد',
+        'attribution_en' => 'Attribution',
+        'permission_status' => PermissionStatus::Granted,
+    ]);
+    $resource = Resource::factory()->create([
+        'source_id' => $source->id,
+        'group' => ResourceGroup::ChapterRecitations,
+        'source_key' => '253',
+        'version' => 3,
+        'changes_floor_version' => 1,
+        'is_active' => true,
+    ]);
+    $recitation = Recitation::factory()->create(['resource_id' => $resource->id]);
+    $url = 'https://audio.example.test/fixture/mp3quran/253/108.mp3';
+    ChapterAudioFile::factory()->create([
+        'recitation_id' => $recitation->id,
+        'chapter_id' => 108,
+        'audio_url' => $url,
+        'size_bytes' => 1024,
+    ]);
+
+    if (! Mushaf::query()->whereKey(1)->exists()) {
+        Mushaf::factory()->create(['id' => 1]);
+    }
+
+    foreach ([0, 1, 2] as $index) {
+        foreach ([1, 2] as $position) {
+            WordLayout::factory()->create([
+                'mushaf_id' => 1,
+                'verse_id' => ChapterVerseCounts::firstVerseId(108) + $index,
+                'position_in_verse' => $position,
+                'char_type' => 'word',
+            ]);
+        }
+    }
+
+    $ayahs = [];
+
+    foreach ([0, 1, 2] as $index) {
+        $start = $index * 1000;
+        $ayahs[] = [
+            'verse_key' => '108:'.($index + 1),
+            'verse_id' => ChapterVerseCounts::firstVerseId(108) + $index,
+            'start_ms' => $start,
+            'end_ms' => $start + 1000,
+            'segments' => [[1, $start, $start + 500], [2, $start + 500, $start + 1000]],
+        ];
+    }
+
+    $folder = $root.'/mp3quran/253';
+    File::ensureDirectoryExists($folder);
+    file_put_contents($folder.'/108.json', json_encode([
+        'format' => 1,
+        'kind' => 'mp3quran',
+        'recitation_key' => '253',
+        'chapter_id' => 108,
+        'audio' => ['url' => $url, 'bytes' => 1024, 'sha256' => str_repeat('a', 64), 'measured_duration_ms' => 3000],
+        'source' => 'aligner',
+        'tool_version' => '0.0.0-fixture',
+        'models' => ['align' => ['id' => 'fixture-model', 'revision' => 'fixture'], 'asr' => null],
+        'original_first_start_ms' => null,
+        'ayahs' => $ayahs,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
+
+    return $recitation;
 }

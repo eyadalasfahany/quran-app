@@ -68,6 +68,11 @@ final class EloquentContentChangeRepository extends EloquentRepository implement
         $this->query()->where('created_at', '<', $before)->delete();
     }
 
+    public function deleteForResource(int $resourceId): void
+    {
+        $this->query()->where('resource_id', $resourceId)->delete();
+    }
+
     protected function model(): string
     {
         return ContentChange::class;

@@ -21,7 +21,7 @@ import { isStartingFor, reciterMatch, useStartState } from '../hooks/useIsStarti
 import { useReciterCatalogue } from '../hooks/useReciterCatalogue';
 import { recitationStyleKey, reciterInitial } from '../player-view';
 import { pause } from '../player';
-import { playReciter } from '../reciter-playback';
+import { playReciter, selectReciter } from '../reciter-playback';
 import { useReciterDownloads } from '../reciter-downloads';
 import {
   joinStatusLine,
@@ -32,7 +32,6 @@ import {
   type ReciterEntry,
   type ReciterFilter,
 } from '../reciter-list';
-import { setReciterId } from '../settings';
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
@@ -156,6 +155,8 @@ export function ListenScreen() {
                 letter={reciterInitial(name)}
                 name={name}
                 onOptions={() => {
+                  // The ⋯ button selects the reciter, then opens his page (ADR 0062 decision 7).
+                  void selectReciter(item.resourceId, item.installed);
                   router.push(`/(main)/(listen)/reciter/${item.resourceId}` as Href);
                 }}
                 onPlay={() => {
@@ -168,7 +169,7 @@ export function ListenScreen() {
                   void playReciter(item.resourceId, item.installed);
                 }}
                 onSelect={() => {
-                  setReciterId(item.resourceId);
+                  void selectReciter(item.resourceId, item.installed);
                 }}
                 optionsLabel={t('listen.options')}
                 playHint={download?.status === 'downloading' ? t('ui.download.downloading') : undefined}

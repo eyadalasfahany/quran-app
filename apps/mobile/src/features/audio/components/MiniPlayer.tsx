@@ -1,8 +1,9 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { formatNumber } from '@/core/i18n/numbers';
+import type { Locale } from '@/core/i18n/locale';
 import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { GlassSurface, UiText } from '@/shared/ui';
@@ -13,6 +14,8 @@ import { useActiveAyahNumber } from '../hooks/useActiveAyahNumber';
 import { useIdleReciter } from '../hooks/useIdleReciter';
 import { useIsStarting } from '../hooks/useIsStarting';
 import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
+import { useMiniUnavailable } from '../hooks/useMiniUnavailable';
+import { useSkipNoticeMessage } from '../hooks/useSkipNoticeMessage';
 import { usePlayerNames } from '../hooks/usePlayerNames';
 import { useVerseCaption } from '../hooks/useVerseCaption';
 import {
@@ -20,17 +23,31 @@ import {
   MINI_PLAYER_GAP,
   MINI_PLAYER_GLYPH_SIZE,
   MINI_PLAYER_METRICS,
+  MINI_PLAYER_NOTICE_HEIGHT,
   type MiniPlayerVariant,
 } from '../mini-player-metrics';
 import { pause } from '../player';
 import { playVerse } from '../play-verse';
 import { playbackFraction, reciterInitial } from '../player-view';
 import { usePlayerStore } from '../playerStore';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
+import { openContentDb } from '@/core/db/content/open';
 import { MiniPlayerProgressLine } from './MiniPlayerProgressLine';
 import { ReaderMiniPlayer } from './ReaderMiniPlayer';
 import { MiniPlayerTile } from './MiniPlayerTile';
+import { MiniPlayerNotice } from './MiniPlayerNotice';
 import { PlayerIconButton } from './PlayerIconButton';
 import { PAUSE_ICON, PLAY_ICON } from './player-icons';
+
+// A surah's bare name in the app's language, or '' when the content database has no such surah yet.
+function surahBareName(chapterId: number, locale: Locale): string {
+  try {
+    const chapter = getChapter(openContentDb().executor, chapterId);
+    return chapter === undefined ? '' : chapterDisplayName(chapter, locale);
+  } catch {
+    return '';
+  }
+}
 
 // The reciter's name in the app's language, or '' when no reciter resolves.
 function reciterDisplayName(reciter: CatalogReciter | null, locale: string): string {
@@ -63,6 +80,10 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
   const showPause = isPlaying || starting;
   const idleReciter = useIdleReciter(notPlaying);
   const idleCaption = useVerseCaption(notPlaying ? current : null);
+  const unavailable = useMiniUnavailable();
+  // The skip notice (ADR 0062) draws only while audio plays, with the rest of the playing bar.
+  const skipMessage = useSkipNoticeMessage();
+  const notice = isPlaying ? skipMessage : null;
 
   if (!visible) {
     return null;
@@ -91,6 +112,17 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
 
   if (variant === 'reader') {
     const readerSubtitle = captioned(shownSurah, shownAyah);
+    const unavailableNotice =
+      unavailable === null
+        ? undefined
+        : {
+            message: t('player.mini.unavailable', {
+              surah: surahBareName(unavailable.chapterId, locale),
+              reciter: shownReciter,
+            }),
+            // The reciter picker is the Listen tab (SettingsScreen does the same).
+            onChangeReciter: () => router.navigate('/(main)/(listen)' as Href),
+          };
 
     return (
       <ReaderMiniPlayer
@@ -98,10 +130,12 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
         idle={notPlaying}
         onOpen={() => router.push('/player')}
         onToggle={onToggle}
+        notice={notice}
         playing={isPlaying}
         reciterName={shownReciter}
         starting={starting}
         subtitle={readerSubtitle}
+        unavailable={unavailableNotice}
       />
     );
   }
@@ -116,7 +150,7 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
         alignItems: 'center',
         flexDirection: 'row',
         gap: MINI_PLAYER_GAP,
-        height: metrics.height,
+        minHeight: metrics.height + (notice === null ? 0 : MINI_PLAYER_NOTICE_HEIGHT),
         overflow: 'hidden',
         paddingEnd: metrics.paddingEnd,
         paddingStart: metrics.paddingStart,
@@ -145,6 +179,7 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
           <UiText numberOfLines={1} scale="bar" tone="muted" variant={metrics.subtitle.variant} weight={metrics.subtitle.weight}>
             {subtitle}
           </UiText>
+          {notice === null ? null : <MiniPlayerNotice message={notice} testID="mini-player-notice" />}
         </View>
       </Pressable>
       <PlayerIconButton

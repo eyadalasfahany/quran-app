@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null $author_name
  * @property string|null $language_code
  * @property bool $is_active
+ * @property string|null $import_fingerprint
+ * @property string|null $unavailable_reason
  * @property ResourceGroup $group
  * @property TextDirection|null $direction
  * @property int<0, max> $version
