@@ -68,15 +68,17 @@ it('accepts reviewed and added spans outside production and warns on candidates'
         ->and(duasImportCodes($report, 'error'))->toBe([]);
 });
 
-it('blocks candidate spans in production', function (): void {
+it('skips candidate spans in production with a warning', function (): void {
     duasImportEnvironment('production');
     duasImportMap();
 
     $report = app(DuasImporter::class)->run(dryRun: true);
 
-    expect($report->status)->toBe(ImportReport::STATUS_INVALID)
-        ->and(duasImportCodes($report, 'error'))->toContain('quran_span_unreviewed')
-        ->and($report->content['quran_accepted'])->toBe(2);
+    expect($report->status)->toBe(ImportReport::STATUS_VALID)
+        ->and(duasImportCodes($report, 'warning'))->toContain('quran_span_unreviewed')
+        ->and(duasImportCodes($report, 'error'))->not->toContain('quran_span_unreviewed')
+        ->and($report->content['quran_accepted'])->toBe(2)
+        ->and($report->content['quran_blocked'])->toBe(1);
 });
 
 it('imports reviewed rows in production when unlocked', function (): void {
@@ -222,6 +224,28 @@ it('imports prophetic rows when the duas snapshot pin is set', function (): void
         ->and(DuaHadith::query()->count())->toBe(1)
         ->and(DuaGroup::query()->count())->toBe(1)
         ->and(DuaItem::query()->where('kind', 'hadith')->value('group_id'))->toBe(1);
+
+    File::deleteDirectory(storage_path('app/duas/hadeethenc/'.$date));
+});
+
+it('writes no production item for a candidate quran span but keeps reviewed and prophetic rows', function (): void {
+    duasImportEnvironment('production');
+    duasImportMap();
+
+    $date = '2099-04-04';
+    duasImportPinnedSnapshot($date);
+
+    $report = app(DuasImporter::class)->run(dryRun: false, deferPack: true);
+
+    expect($report->status)->toBe(ImportReport::STATUS_IMPORTED)
+        ->and($report->content['quran_blocked'])->toBe(1)
+        ->and(DuaItem::query()->where('dua_key', 'quran:1:2')->count())->toBe(0)
+        ->and(DuaQuranSpan::query()->where('surah', 1)->where('verse_from', 2)->count())->toBe(0)
+        ->and(DuaItem::query()->where('dua_key', 'quran:1:1')->count())->toBe(1)
+        ->and(DuaItem::query()->where('dua_key', 'quran:1:4')->count())->toBe(1)
+        ->and(DuaQuranSpan::query()->count())->toBe(2)
+        ->and(DuaItem::query()->where('kind', 'hadith')->count())->toBe(1)
+        ->and(DuaHadith::query()->count())->toBe(1);
 
     File::deleteDirectory(storage_path('app/duas/hadeethenc/'.$date));
 });

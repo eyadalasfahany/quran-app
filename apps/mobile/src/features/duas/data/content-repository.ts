@@ -3,10 +3,10 @@ import { getVerseRange, verseKeyToId, type VerseRecord } from '@/features/reader
 
 import { activeDuasResourceId } from './active-resource';
 import { hasDuasContent } from './availability';
+import { parseDuaHints } from './hints';
 import type {
   PropheticDuaDetail,
   PropheticDuaGroup,
-  PropheticDuaLink,
   PropheticDuaSection,
   PropheticDuaSummary,
   QuranicDuaDetail,
@@ -192,40 +192,9 @@ export function getPropheticDua(db: SqlExecutor, duaKey: string): PropheticDuaDe
       `SELECT COUNT(*) AS count FROM dua_items WHERE resource_id = ? AND kind = 'hadith' AND position <= ?`,
       [resourceId, row.position],
     )?.count ?? 0;
-  const links = loadPropheticLinks(db, resourceId, row.duaKey);
+  const { hints, ...rest } = row;
 
-  return { ...row, index, total, links };
-}
-
-function loadPropheticLinks(db: SqlExecutor, resourceId: number, duaKey: string): PropheticDuaLink[] {
-  const item = db.get<{ id: number }>(
-    `SELECT id FROM dua_items WHERE resource_id = ? AND dua_key = ? LIMIT 1`,
-    [resourceId, duaKey],
-  );
-
-  if (item === undefined) {
-    return [];
-  }
-
-  const hisn = db.all<{ entryKey: string }>(
-    `SELECT entry_key AS entryKey FROM dua_links WHERE resource_id = ? AND item_id = ?`,
-    [resourceId, item.id],
-  );
-
-  const refs = db.all<{ collectionSlug: string; hadithNumber: string }>(
-    `SELECT collection_slug AS collectionSlug, hadith_number AS hadithNumber
-     FROM dua_collection_refs WHERE resource_id = ? AND item_id = ?`,
-    [resourceId, item.id],
-  );
-
-  return [
-    ...hisn.map((link) => ({ kind: 'hisn' as const, entryKey: link.entryKey })),
-    ...refs.map((ref) => ({
-      kind: 'collection' as const,
-      collectionSlug: ref.collectionSlug,
-      hadithNumber: ref.hadithNumber,
-    })),
-  ];
+  return { ...rest, hints: parseDuaHints(hints), index, total };
 }
 
 export function neighbourPropheticDuas(db: SqlExecutor, position: number): { previous: string | null; next: string | null } {

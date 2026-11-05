@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import { SheetHeader } from '@/shared/ui';
@@ -11,26 +11,30 @@ import { SheetScrollView } from '@/features/reader/components/SheetScrollView';
 import { useSheet } from '@/features/reader/components/sheet-context';
 
 import { MyDuaForm } from '../components/MyDuaForm';
-import { createMyDua, deleteMyDua, getMyDua, updateMyDua } from '../data/my-duas-repository';
+import { MyDuaFormActions } from '../components/MyDuaFormActions';
+import { editMyDua, removeMyDua } from '../data/my-dua-actions';
+import { createMyDua, getMyDua } from '../data/my-duas-repository';
 import { duasHref } from '../routes';
 
-/** «أدعيتي» editor sheet (`/duas/mine/edit?id=`). */
-export function MyDuaEditorScreen({ duaId }: { duaId: string | null }) {
+/** «أدعيتي» editor sheet (`/duas/mine/edit?id=`). `reminderOpen` opens the reminder row expanded (the list's bell). */
+export function MyDuaEditorScreen({ duaId, reminderOpen = false }: { duaId: string | null; reminderOpen?: boolean }) {
   return (
-    <SheetHost testID="my-dua-editor-sheet">
-      <EditorCard duaId={duaId} />
+    // A long dua needs the room the full detent offers, so the sheet opens there.
+    <SheetHost initialDetent="full" testID="my-dua-editor-sheet">
+      <EditorCard duaId={duaId} reminderOpen={reminderOpen} />
     </SheetHost>
   );
 }
 
-function EditorCard({ duaId }: { duaId: string | null }) {
+function EditorCard({ duaId, reminderOpen }: { duaId: string | null; reminderOpen: boolean }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const sheet = useSheet();
   const existing = duaId === null ? null : getMyDua(duaId);
   const [title, setTitle] = useState(existing?.title ?? '');
   const [body, setBody] = useState(existing?.body ?? '');
-  const [savedId, setSavedId] = useState<string | null>(existing?.id ?? null);
+  // The id is set once the dua exists: a new dua closes on save like an edit, so no id is kept for it here.
+  const savedId = existing?.id ?? null;
 
   useEffect(() => {
     if (existing === null && duaId !== null) {
@@ -46,15 +50,12 @@ function EditorCard({ duaId }: { duaId: string | null }) {
   };
 
   const onSave = () => {
-    const trimmedTitle = title.trim().length === 0 ? null : title;
-    const nextBody = body;
+    const input = { title: title.trim().length === 0 ? null : title, body };
     if (savedId === null) {
-      const created = createMyDua({ title: trimmedTitle, body: nextBody });
-      setSavedId(created.id);
-      router.setParams({ id: created.id });
-      return;
+      createMyDua(input);
+    } else {
+      editMyDua(savedId, input);
     }
-    updateMyDua(savedId, { title: trimmedTitle, body: nextBody });
     closeToMine();
   };
 
@@ -62,34 +63,41 @@ function EditorCard({ duaId }: { duaId: string | null }) {
     if (savedId === null) {
       return;
     }
-    deleteMyDua(savedId);
+    removeMyDua(savedId);
     closeToMine();
   };
 
   return (
     <SheetFrame testID="my-dua-editor-frame">
-      <View style={{ flex: 1, gap: theme.space[4], paddingHorizontal: theme.space[4] }}>
-        <SheetHeader
-          closeLabel={t('duas.editor.close')}
-          onClose={() => sheet?.close()}
-          size="large"
-          testID="my-dua-editor-header"
-          title={savedId === null ? t('duas.editor.newTitle') : t('duas.editor.editTitle')}
-        />
-        <SheetScrollView>
-          <MyDuaForm
-            body={body}
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <View style={{ flex: 1, gap: theme.space[4], paddingHorizontal: theme.space[4] }}>
+          <SheetHeader
+            closeLabel={t('duas.editor.close')}
+            onClose={() => sheet?.close()}
+            size="compact"
+            testID="my-dua-editor-header"
+            title={savedId === null ? t('duas.editor.newTitle') : t('duas.editor.editTitle')}
+          />
+          <SheetScrollView keyboardShouldPersistTaps="handled">
+            <MyDuaForm
+              body={body}
+              duaId={savedId}
+              onBodyChange={setBody}
+              onTitleChange={setTitle}
+              reminderOpen={reminderOpen}
+              testID="my-dua-form"
+              title={title}
+            />
+          </SheetScrollView>
+          <MyDuaFormActions
             canDelete={savedId !== null}
-            duaId={savedId}
-            onBodyChange={setBody}
             onDelete={onDelete}
             onSave={onSave}
-            onTitleChange={setTitle}
+            saveDisabled={body.trim().length === 0}
             testID="my-dua-form"
-            title={title}
           />
-        </SheetScrollView>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </SheetFrame>
   );
 }

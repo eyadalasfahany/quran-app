@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Frame viewer — Taybah</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="common/styles.css">
+<link rel="stylesheet" href="common/devices.css">
+<link rel="stylesheet" href="common/catalog.css">
+<style>
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:16px 24px;border-bottom:1px solid #e7dfcc;background:#fffdf8;position:sticky;top:0;z-index:10}
+.bar input,.bar select{min-height:40px;padding:0 12px;border-radius:10px;border:1px solid #e7dfcc;font:inherit}
+.bar button{min-height:40px;padding:0 16px;border-radius:10px;border:none;background:#1f4d40;color:#f7f3ea;font:inherit;font-weight:600;cursor:pointer}
+#meta{color:#5b6a64;font-size:13px}
+#stage{padding:24px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a href="index.html">← catalog</a>
+  <label>Frame <input id="fid" list="ids" placeholder="Main" style="width:220px"></label>
+  <datalist id="ids"></datalist>
+  <button type="button" id="go">Open</button>
+  <span id="meta"></span>
+</div>
+<section id="stage" class="gx-sec"><p class="gx-note">Loading…</p></section>
+<script>
+const params = new URLSearchParams(location.search);
+const stage = document.getElementById('stage');
+const meta = document.getElementById('meta');
+const fidInput = document.getElementById('fid');
+let catalog = null;
+
+async function loadCatalog(){
+  const res = await fetch('frames.json');
+  catalog = await res.json();
+  const dl = document.getElementById('ids');
+  for (const f of catalog.frames){
+    const o = document.createElement('option');
+    o.value = f.id;
+    dl.appendChild(o);
+  }
+}
+
+async function show(id){
+  if (!catalog) await loadCatalog();
+  const f = catalog.frames.find(x => x.id === id);
+  if (!f){ stage.innerHTML = '<p class="gx-note">Frame not found: '+id+'</p>'; return; }
+  fidInput.value = id;
+  meta.textContent = f.stack+' · '+f.size+' · '+f.theme+' · '+f.status+' — '+f.caption;
+  history.replaceState(null,'','?id='+encodeURIComponent(id));
+  const html = await fetch(f.path).then(r => r.text());
+  stage.innerHTML = '<div class="gx-row">'+html+'</div>';
+}
+
+document.getElementById('go').onclick = () => show(fidInput.value.trim());
+fidInput.addEventListener('keydown', e => { if (e.key==='Enter') show(fidInput.value.trim()); });
+loadCatalog().then(() => show(params.get('id') || 'Main'));
+</script>
+</body>
+</html>

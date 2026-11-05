@@ -14,6 +14,7 @@ const SOURCES = [
   { key: 'tanzil', url: 'https://tanzil.net' },
   { key: 'kfgqpc', url: 'https://qurancomplex.gov.sa' },
   { key: 'opendua', url: 'https://opendua.org/developers', ltr: true },
+  { key: 'hadeethenc', url: 'https://hadeethenc.com' },
   { key: 'adhan', url: 'https://github.com/batoulapps/adhan-js' },
   { key: 'fonts', url: 'https://openfontlicense.org' },
 ] as const;

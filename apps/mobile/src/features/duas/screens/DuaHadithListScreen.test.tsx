@@ -42,4 +42,24 @@ describe('DuaHadithListScreen', () => {
     expect(screen.getByText('FIXTURE group title')).toBeOnTheScreen();
     expect(screen.getByTestId('dua-hadith-row-hadeethenc:1')).toBeOnTheScreen();
   });
+
+  it('filters to one group and uses its title in the header', async () => {
+    mocked.usePropheticDuaSections.mockReturnValue([
+      {
+        groupId: 1,
+        title: 'FIXTURE group title',
+        items: [{ duaKey: 'hadeethenc:1', position: 1, groupId: 1, title: 'FIXTURE row title' }],
+      },
+      {
+        groupId: 2,
+        title: 'FIXTURE other group',
+        items: [{ duaKey: 'hadeethenc:2', position: 1, groupId: 2, title: 'FIXTURE other row' }],
+      },
+    ]);
+    await renderUi(<DuaHadithListScreen groupId={1} />);
+    expect(screen.getAllByText('FIXTURE group title').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId('dua-hadith-row-hadeethenc:1')).toBeOnTheScreen();
+    expect(screen.queryByTestId('dua-hadith-row-hadeethenc:2')).toBeNull();
+    expect(screen.queryByTestId('dua-hadith-group-1')).toBeNull();
+  });
 });

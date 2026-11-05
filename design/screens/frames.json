@@ -1,0 +1,1871 @@
+{
+  "source": "quran-app-screens.html",
+  "frameCount": 165,
+  "assetCount": 7,
+  "bytesSavedVsInline": 5921704,
+  "stacks": {
+    "core": [
+      "Main",
+      "MainLandscapeRail",
+      "Mushaf",
+      "AyahSheet",
+      "Player",
+      "ReaderSettings"
+    ],
+    "reading": [
+      "SurahIndex",
+      "Search",
+      "Reading",
+      "ReadingMiniIdle",
+      "ReadingMiniCollapsed",
+      "Focus",
+      "Tafsir",
+      "TafsirFull",
+      "TafsirDownload"
+    ],
+    "salah": [
+      "Salah",
+      "SalahAdhanSoundEntry",
+      "SalahDark",
+      "Qibla",
+      "QiblaLandscape"
+    ],
+    "my-quran": [
+      "MyQuran",
+      "EmptyMyQuran"
+    ],
+    "audio": [
+      "Reciters",
+      "LoadingReciters",
+      "PlayerBuffering"
+    ],
+    "settings": [
+      "Settings",
+      "AdhanSoundPicker",
+      "AdhanSoundPickerDark",
+      "SettingsAdhanSoundRow",
+      "Sources"
+    ],
+    "account": [
+      "SignIn",
+      "VerifyCode",
+      "Khatma",
+      "Downloads",
+      "Account",
+      "DeleteAccount"
+    ],
+    "azkar": [
+      "MainAzkar",
+      "SalahAzkar",
+      "AzkarHome",
+      "AzkarHomeDark",
+      "AzkarHomeEnglish",
+      "AzkarLoading",
+      "AzkarCategory",
+      "AzkarSearch",
+      "AzkarSearchEmpty",
+      "AzkarFavorites",
+      "AzkarFavoritesEmpty",
+      "AzkarUnavailable",
+      "AzkarReader",
+      "AzkarReaderDark",
+      "AzkarReaderDone",
+      "AzkarReaderComplete",
+      "AzkarReaderAudio",
+      "AzkarPlayer",
+      "AzkarPlayerDark",
+      "AzkarDetails",
+      "AzkarDetailsFull",
+      "AzkarReminders",
+      "AzkarRemindersDenied",
+      "AzkarDownloads",
+      "AzkarDownloadsEmpty",
+      "AzkarExpanded"
+    ],
+    "duas": [
+      "DuasHome",
+      "DuasHomeDark",
+      "DuasHomeEnglish",
+      "DuaQuranDetail",
+      "DuaQuranDetailDark",
+      "DuaQuranDetailEnglish",
+      "DuaHadithDetail",
+      "DuaHadithDetailDark",
+      "DuaHadithDetailEnglish",
+      "MyDuas",
+      "MyDuasDark",
+      "MyDuasEnglish",
+      "MyDuaEditor",
+      "MyDuaEditorDark",
+      "MyDuaEditorEnglish",
+      "MyDuasEmpty",
+      "MyDuasEmptyEnglish"
+    ],
+    "menu": [
+      "Menu",
+      "MenuDark",
+      "MenuEnglish",
+      "MainMenuTab"
+    ],
+    "menu-v2": [
+      "MenuV2",
+      "MenuV2Dark",
+      "MenuV2Accent"
+    ],
+    "home": [
+      "HomeAzkar",
+      "HomeAzkarLower",
+      "HomeAzkarRecent",
+      "HomeAzkarDark",
+      "HomeAzkarLowerDark",
+      "HomeAzkarEnglish",
+      "Sibha",
+      "SibhaLandscape",
+      "SibhaDark",
+      "SibhaResetDialog",
+      "SibhaResetDialogDark",
+      "DailyGoalsSheet",
+      "HomeDailyProgressEmpty",
+      "HomeNextPrayerNoLocation"
+    ],
+    "onboarding": [
+      "OnboardLanguage",
+      "OnboardScript",
+      "OnboardReciter"
+    ],
+    "states": [
+      "Offline",
+      "HomeDark",
+      "HomeEnglish",
+      "HomeAndroid",
+      "LoadingHome",
+      "LoadingIndex",
+      "LoadingTafsir",
+      "LoadingMushaf"
+    ],
+    "hadith": [
+      "Hadith",
+      "HadithDetail",
+      "HadithDetailEnglish"
+    ],
+    "widgets": [
+      "WidgetNextPrayerSmall",
+      "WidgetNextPrayerSmallDark",
+      "WidgetProgressMedium",
+      "WidgetProgressMediumDark",
+      "WidgetContinueReading",
+      "WidgetContinueReadingDark",
+      "WidgetLockScreen",
+      "WidgetLockScreenDark",
+      "AndroidWidgets",
+      "AndroidWidgetsDark",
+      "WidgetsHelp",
+      "WidgetsHelpDark",
+      "WidgetAddConfirm",
+      "WidgetAddConfirmDark",
+      "WidgetAddConfirmAlready",
+      "WidgetAddConfirmAlreadyDark"
+    ],
+    "watch": [
+      "WatchHome",
+      "WatchSibha",
+      "WatchComplications"
+    ],
+    "expanded": [
+      "ExpandedHome",
+      "ExpandedHomeDark",
+      "ReaderExpandedActions",
+      "ReaderExpandedTafsir",
+      "ReaderOverlayTafsir",
+      "ReaderExpandedDark",
+      "ReaderMedium"
+    ],
+    "asmaa": [
+      "AsmaaList",
+      "AsmaaListDark",
+      "AsmaaListEnglish",
+      "AsmaaDetail",
+      "AsmaaDetailDark"
+    ],
+    "hijri": [
+      "HijriCalendar",
+      "HijriCalendarDark",
+      "HijriCalendarEnglish",
+      "HijriAdjust",
+      "HijriAdjustDark"
+    ],
+    "moon": [
+      "MoonSighting",
+      "MoonSightingDark",
+      "MoonSightingEnglish",
+      "MoonSightingNoLocation"
+    ],
+    "entry-points": [
+      "MenuNewCards",
+      "MenuNewCardsDark",
+      "MenuNewCardsEnglish",
+      "HomeHijriDate",
+      "HomeHijriDateDark"
+    ],
+    "discover": [
+      "DiscoverCard",
+      "DiscoverCardNew",
+      "DiscoverCardDone",
+      "DiscoverScreen",
+      "DiscoverTip",
+      "DiscoverWidgetSheet"
+    ]
+  },
+  "frames": [
+    {
+      "id": "Main",
+      "stack": "core",
+      "caption": "Home",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/core/Main.html",
+      "bytes": 15419
+    },
+    {
+      "id": "MainLandscapeRail",
+      "stack": "core",
+      "caption": "الرئيسية · أفقي، الشريط الرأسي ٨٤٤ × ٣٩٠ (بانتظار الموافقة)",
+      "size": "compact-short",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/core/MainLandscapeRail.html",
+      "bytes": 4286
+    },
+    {
+      "id": "Mushaf",
+      "stack": "core",
+      "caption": "Mushaf page · Uthmani Hafs (the app draws the ﴿ ﴾ end-of-ayah marks inline, so the recited one turns brand)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/core/Mushaf.html",
+      "bytes": 14048
+    },
+    {
+      "id": "AyahSheet",
+      "stack": "core",
+      "caption": "Ayah actions · mid detent (50%)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/core/AyahSheet.html",
+      "bytes": 11476
+    },
+    {
+      "id": "Player",
+      "stack": "core",
+      "caption": "Player",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/core/Player.html",
+      "bytes": 10468
+    },
+    {
+      "id": "ReaderSettings",
+      "stack": "core",
+      "caption": "Reader settings · mid detent (50%)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/core/ReaderSettings.html",
+      "bytes": 13991
+    },
+    {
+      "id": "SurahIndex",
+      "stack": "reading",
+      "caption": "Surah index",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/SurahIndex.html",
+      "bytes": 22626
+    },
+    {
+      "id": "Search",
+      "stack": "reading",
+      "caption": "Search",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/Search.html",
+      "bytes": 8138
+    },
+    {
+      "id": "Reading",
+      "stack": "reading",
+      "caption": "Reading mode",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/Reading.html",
+      "bytes": 25283
+    },
+    {
+      "id": "ReadingMiniIdle",
+      "stack": "reading",
+      "caption": "Reading · mini player idle (plays from the top ayah on screen)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/ReadingMiniIdle.html",
+      "bytes": 17722
+    },
+    {
+      "id": "ReadingMiniCollapsed",
+      "stack": "reading",
+      "caption": "Reading · mini player collapsed (drag down to hide, drag up or tap to show)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/ReadingMiniCollapsed.html",
+      "bytes": 16637
+    },
+    {
+      "id": "Focus",
+      "stack": "reading",
+      "caption": "Focus mode",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/Focus.html",
+      "bytes": 7627
+    },
+    {
+      "id": "Tafsir",
+      "stack": "reading",
+      "caption": "Tafsir · mid detent (50%)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/Tafsir.html",
+      "bytes": 6710
+    },
+    {
+      "id": "TafsirFull",
+      "stack": "reading",
+      "caption": "Tafsir · full detent",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/TafsirFull.html",
+      "bytes": 6694
+    },
+    {
+      "id": "TafsirDownload",
+      "stack": "reading",
+      "caption": "Tafsir · not downloaded · mid detent (50%)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/TafsirDownload.html",
+      "bytes": 5781
+    },
+    {
+      "id": "Salah",
+      "stack": "salah",
+      "caption": "الصلاة",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/salah/Salah.html",
+      "bytes": 15138
+    },
+    {
+      "id": "SalahAdhanSoundEntry",
+      "stack": "salah",
+      "caption": "الصلاة · صوت الأذان (الرأس — انظر #Salah / #SalahDark؛ ADR 0057)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/salah/SalahAdhanSoundEntry.html",
+      "bytes": 15248
+    },
+    {
+      "id": "SalahDark",
+      "stack": "salah",
+      "caption": "الصلاة · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/salah/SalahDark.html",
+      "bytes": 15132
+    },
+    {
+      "id": "Qibla",
+      "stack": "salah",
+      "caption": "اتجاه القبلة · القرص ثابت والإبرة تتبع القبلة (ADR 0049)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/salah/Qibla.html",
+      "bytes": 12188
+    },
+    {
+      "id": "QiblaLandscape",
+      "stack": "salah",
+      "caption": "اتجاه القبلة · أفقي، ٨٤٤ × ٣٩٠ (بانتظار الموافقة)",
+      "size": "compact-short",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/salah/QiblaLandscape.html",
+      "bytes": 12725
+    },
+    {
+      "id": "MyQuran",
+      "stack": "my-quran",
+      "caption": "My Quran",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/my-quran/MyQuran.html",
+      "bytes": 9259
+    },
+    {
+      "id": "Reciters",
+      "stack": "audio",
+      "caption": "Reciters",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/audio/Reciters.html",
+      "bytes": 24531
+    },
+    {
+      "id": "Settings",
+      "stack": "settings",
+      "caption": "Settings",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/settings/Settings.html",
+      "bytes": 11472
+    },
+    {
+      "id": "AdhanSoundPicker",
+      "stack": "settings",
+      "caption": "صوت الأذان",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/settings/AdhanSoundPicker.html",
+      "bytes": 6629
+    },
+    {
+      "id": "AdhanSoundPickerDark",
+      "stack": "settings",
+      "caption": "صوت الأذان · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/settings/AdhanSoundPickerDark.html",
+      "bytes": 6627
+    },
+    {
+      "id": "SettingsAdhanSoundRow",
+      "stack": "settings",
+      "caption": "الإعدادات · صوت الأذان",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/settings/SettingsAdhanSoundRow.html",
+      "bytes": 16382
+    },
+    {
+      "id": "Sources",
+      "stack": "settings",
+      "caption": "Sources",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/settings/Sources.html",
+      "bytes": 6514
+    },
+    {
+      "id": "SignIn",
+      "stack": "account",
+      "caption": "Sign in",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/account/SignIn.html",
+      "bytes": 5473
+    },
+    {
+      "id": "VerifyCode",
+      "stack": "account",
+      "caption": "Verify code",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/account/VerifyCode.html",
+      "bytes": 5046
+    },
+    {
+      "id": "MainAzkar",
+      "stack": "azkar",
+      "caption": "Home · Azkar tile (ADR 0017)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/MainAzkar.html",
+      "bytes": 15628
+    },
+    {
+      "id": "SalahAzkar",
+      "stack": "azkar",
+      "caption": "الصلاة · أذكار بعد الصلاة",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/SalahAzkar.html",
+      "bytes": 16043
+    },
+    {
+      "id": "AzkarHome",
+      "stack": "azkar",
+      "caption": "Azkar home · proposed",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/azkar/AzkarHome.html",
+      "bytes": 14076
+    },
+    {
+      "id": "AzkarHomeDark",
+      "stack": "azkar",
+      "caption": "Azkar home · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/azkar/AzkarHomeDark.html",
+      "bytes": 14065
+    },
+    {
+      "id": "AzkarHomeEnglish",
+      "stack": "azkar",
+      "caption": "Azkar home · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/azkar/AzkarHomeEnglish.html",
+      "bytes": 13856
+    },
+    {
+      "id": "AzkarLoading",
+      "stack": "azkar",
+      "caption": "Azkar home · loading",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarLoading.html",
+      "bytes": 7048
+    },
+    {
+      "id": "AzkarCategory",
+      "stack": "azkar",
+      "caption": "Category · morning azkar",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarCategory.html",
+      "bytes": 9285
+    },
+    {
+      "id": "AzkarSearch",
+      "stack": "azkar",
+      "caption": "Search · results",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarSearch.html",
+      "bytes": 6322
+    },
+    {
+      "id": "AzkarSearchEmpty",
+      "stack": "azkar",
+      "caption": "Search · empty query, recent searches",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarSearchEmpty.html",
+      "bytes": 5790
+    },
+    {
+      "id": "AzkarFavorites",
+      "stack": "azkar",
+      "caption": "Favourites",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarFavorites.html",
+      "bytes": 7878
+    },
+    {
+      "id": "AzkarFavoritesEmpty",
+      "stack": "azkar",
+      "caption": "Empty · favourites",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarFavoritesEmpty.html",
+      "bytes": 2307
+    },
+    {
+      "id": "AzkarUnavailable",
+      "stack": "azkar",
+      "caption": "Azkar · unavailable (direct route)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarUnavailable.html",
+      "bytes": 2045
+    },
+    {
+      "id": "AzkarReader",
+      "stack": "azkar",
+      "caption": "Reader · counted item",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarReader.html",
+      "bytes": 6750
+    },
+    {
+      "id": "AzkarReaderDark",
+      "stack": "azkar",
+      "caption": "Reader · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/azkar/AzkarReaderDark.html",
+      "bytes": 6763
+    },
+    {
+      "id": "AzkarReaderDone",
+      "stack": "azkar",
+      "caption": "Reader · item without a sourced count (single ring)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarReaderDone.html",
+      "bytes": 6836
+    },
+    {
+      "id": "AzkarReaderComplete",
+      "stack": "azkar",
+      "caption": "Reader · session complete",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarReaderComplete.html",
+      "bytes": 3181
+    },
+    {
+      "id": "AzkarReaderAudio",
+      "stack": "azkar",
+      "caption": "Reader · licensed recording",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarReaderAudio.html",
+      "bytes": 8496
+    },
+    {
+      "id": "AzkarPlayer",
+      "stack": "azkar",
+      "caption": "Azkar player · full sheet · light · بانتظار الموافقة",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/azkar/AzkarPlayer.html",
+      "bytes": 5766
+    },
+    {
+      "id": "AzkarPlayerDark",
+      "stack": "azkar",
+      "caption": "Azkar player · full sheet · dark · بانتظار الموافقة",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/azkar/AzkarPlayerDark.html",
+      "bytes": 5778
+    },
+    {
+      "id": "AzkarDetails",
+      "stack": "azkar",
+      "caption": "Source and details · sheet (mid)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarDetails.html",
+      "bytes": 8979
+    },
+    {
+      "id": "AzkarDetailsFull",
+      "stack": "azkar",
+      "caption": "Source and details · full, every section",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarDetailsFull.html",
+      "bytes": 11542
+    },
+    {
+      "id": "AzkarReminders",
+      "stack": "azkar",
+      "caption": "Reminders · sheet",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarReminders.html",
+      "bytes": 24877
+    },
+    {
+      "id": "AzkarRemindersDenied",
+      "stack": "azkar",
+      "caption": "Reminders · notifications denied",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarRemindersDenied.html",
+      "bytes": 25790
+    },
+    {
+      "id": "AzkarDownloads",
+      "stack": "azkar",
+      "caption": "Downloads · licensed recording (future)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarDownloads.html",
+      "bytes": 6468
+    },
+    {
+      "id": "AzkarDownloadsEmpty",
+      "stack": "azkar",
+      "caption": "Empty · recordings (licensed recording, future)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarDownloadsEmpty.html",
+      "bytes": 2426
+    },
+    {
+      "id": "AzkarExpanded",
+      "stack": "azkar",
+      "caption": "Azkar reader · expanded · 1194 × 834",
+      "size": "expanded",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarExpanded.html",
+      "bytes": 13825
+    },
+    {
+      "id": "DuasHome",
+      "stack": "duas",
+      "caption": "الأدعية · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/DuasHome.html",
+      "bytes": 9777
+    },
+    {
+      "id": "DuasHomeDark",
+      "stack": "duas",
+      "caption": "الأدعية · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/duas/DuasHomeDark.html",
+      "bytes": 9773
+    },
+    {
+      "id": "DuasHomeEnglish",
+      "stack": "duas",
+      "caption": "Duas home · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/duas/DuasHomeEnglish.html",
+      "bytes": 9485
+    },
+    {
+      "id": "DuaQuranDetail",
+      "stack": "duas",
+      "caption": "دعاء قرآني · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/DuaQuranDetail.html",
+      "bytes": 5662
+    },
+    {
+      "id": "DuaQuranDetailDark",
+      "stack": "duas",
+      "caption": "دعاء قرآني · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/duas/DuaQuranDetailDark.html",
+      "bytes": 5676
+    },
+    {
+      "id": "DuaQuranDetailEnglish",
+      "stack": "duas",
+      "caption": "Quranic dua · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/duas/DuaQuranDetailEnglish.html",
+      "bytes": 5607
+    },
+    {
+      "id": "DuaHadithDetail",
+      "stack": "duas",
+      "caption": "دعاء نبوي · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/DuaHadithDetail.html",
+      "bytes": 8746
+    },
+    {
+      "id": "DuaHadithDetailDark",
+      "stack": "duas",
+      "caption": "دعاء نبوي · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/duas/DuaHadithDetailDark.html",
+      "bytes": 8750
+    },
+    {
+      "id": "DuaHadithDetailEnglish",
+      "stack": "duas",
+      "caption": "Prophetic dua · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/duas/DuaHadithDetailEnglish.html",
+      "bytes": 8424
+    },
+    {
+      "id": "MyDuas",
+      "stack": "duas",
+      "caption": "أدعيتي · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/MyDuas.html",
+      "bytes": 6594
+    },
+    {
+      "id": "MyDuasDark",
+      "stack": "duas",
+      "caption": "أدعيتي · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/duas/MyDuasDark.html",
+      "bytes": 6597
+    },
+    {
+      "id": "MyDuasEnglish",
+      "stack": "duas",
+      "caption": "My duas · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/duas/MyDuasEnglish.html",
+      "bytes": 6568
+    },
+    {
+      "id": "MyDuaEditor",
+      "stack": "duas",
+      "caption": "تحرير الدعاء · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/MyDuaEditor.html",
+      "bytes": 10413
+    },
+    {
+      "id": "MyDuaEditorDark",
+      "stack": "duas",
+      "caption": "تحرير الدعاء · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/duas/MyDuaEditorDark.html",
+      "bytes": 10395
+    },
+    {
+      "id": "MyDuaEditorEnglish",
+      "stack": "duas",
+      "caption": "My dua editor · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/duas/MyDuaEditorEnglish.html",
+      "bytes": 10284
+    },
+    {
+      "id": "MyDuasEmpty",
+      "stack": "duas",
+      "caption": "أدعيتي · فارغة",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/MyDuasEmpty.html",
+      "bytes": 2263
+    },
+    {
+      "id": "MyDuasEmptyEnglish",
+      "stack": "duas",
+      "caption": "My duas · empty · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/duas/MyDuasEmptyEnglish.html",
+      "bytes": 2564
+    },
+    {
+      "id": "Menu",
+      "stack": "menu",
+      "caption": "Menu tab · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/menu/Menu.html",
+      "bytes": 15864
+    },
+    {
+      "id": "MenuDark",
+      "stack": "menu",
+      "caption": "Menu tab · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/menu/MenuDark.html",
+      "bytes": 15889
+    },
+    {
+      "id": "MenuEnglish",
+      "stack": "menu",
+      "caption": "Menu tab · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/menu/MenuEnglish.html",
+      "bytes": 15478
+    },
+    {
+      "id": "MainMenuTab",
+      "stack": "menu",
+      "caption": "Home · tab bar with القائمة (ADR 0032)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/menu/MainMenuTab.html",
+      "bytes": 16813
+    },
+    {
+      "id": "MenuV2",
+      "stack": "menu-v2",
+      "caption": "Menu V2 · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/menu-v2/MenuV2.html",
+      "bytes": 20119
+    },
+    {
+      "id": "MenuV2Dark",
+      "stack": "menu-v2",
+      "caption": "Menu V2 · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/menu-v2/MenuV2Dark.html",
+      "bytes": 19289
+    },
+    {
+      "id": "MenuV2Accent",
+      "stack": "menu-v2",
+      "caption": "Menu V2 · option D2, green prayer card",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/menu-v2/MenuV2Accent.html",
+      "bytes": 20642
+    },
+    {
+      "id": "HomeAzkar",
+      "stack": "home",
+      "caption": "Home · top: reading, next prayer, azkar",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/HomeAzkar.html",
+      "bytes": 9293
+    },
+    {
+      "id": "HomeAzkarLower",
+      "stack": "home",
+      "caption": "Home · scrolled: progress, tiles, picks",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/HomeAzkarLower.html",
+      "bytes": 15225
+    },
+    {
+      "id": "HomeAzkarRecent",
+      "stack": "home",
+      "caption": "Home · scrolled: recent azkar and listens",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/HomeAzkarRecent.html",
+      "bytes": 10846
+    },
+    {
+      "id": "HomeAzkarDark",
+      "stack": "home",
+      "caption": "Home · top · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/home/HomeAzkarDark.html",
+      "bytes": 9281
+    },
+    {
+      "id": "HomeAzkarLowerDark",
+      "stack": "home",
+      "caption": "Home · scrolled · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/home/HomeAzkarLowerDark.html",
+      "bytes": 15224
+    },
+    {
+      "id": "HomeAzkarEnglish",
+      "stack": "home",
+      "caption": "Home · top · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/home/HomeAzkarEnglish.html",
+      "bytes": 9189
+    },
+    {
+      "id": "Sibha",
+      "stack": "home",
+      "caption": "Misbaha · counter",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/Sibha.html",
+      "bytes": 5015
+    },
+    {
+      "id": "SibhaLandscape",
+      "stack": "home",
+      "caption": "Misbaha · أفقي، ٨٤٤ × ٣٩٠ (بانتظار الموافقة)",
+      "size": "compact-short",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/home/SibhaLandscape.html",
+      "bytes": 5143
+    },
+    {
+      "id": "SibhaDark",
+      "stack": "home",
+      "caption": "Misbaha · counter · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/home/SibhaDark.html",
+      "bytes": 5010
+    },
+    {
+      "id": "SibhaResetDialog",
+      "stack": "home",
+      "caption": "Misbaha · reset confirmation",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/SibhaResetDialog.html",
+      "bytes": 6993
+    },
+    {
+      "id": "SibhaResetDialogDark",
+      "stack": "home",
+      "caption": "Misbaha · reset confirmation, dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/home/SibhaResetDialogDark.html",
+      "bytes": 7012
+    },
+    {
+      "id": "DailyGoalsSheet",
+      "stack": "home",
+      "caption": "Daily goals · sheet",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/DailyGoalsSheet.html",
+      "bytes": 17340
+    },
+    {
+      "id": "HomeDailyProgressEmpty",
+      "stack": "home",
+      "caption": "Home · daily progress · empty state",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/HomeDailyProgressEmpty.html",
+      "bytes": 7387
+    },
+    {
+      "id": "HomeNextPrayerNoLocation",
+      "stack": "home",
+      "caption": "Home · next prayer · no location",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/home/HomeNextPrayerNoLocation.html",
+      "bytes": 9117
+    },
+    {
+      "id": "OnboardLanguage",
+      "stack": "onboarding",
+      "caption": "Onboarding 1 · Language",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/onboarding/OnboardLanguage.html",
+      "bytes": 5117
+    },
+    {
+      "id": "OnboardScript",
+      "stack": "onboarding",
+      "caption": "Onboarding 2 · Script",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/onboarding/OnboardScript.html",
+      "bytes": 9188
+    },
+    {
+      "id": "OnboardReciter",
+      "stack": "onboarding",
+      "caption": "Onboarding 3 · Reciter",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/onboarding/OnboardReciter.html",
+      "bytes": 12408
+    },
+    {
+      "id": "Khatma",
+      "stack": "account",
+      "caption": "Khatma planner",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/account/Khatma.html",
+      "bytes": 12761
+    },
+    {
+      "id": "Downloads",
+      "stack": "account",
+      "caption": "Downloads &amp; storage",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/account/Downloads.html",
+      "bytes": 7703
+    },
+    {
+      "id": "Account",
+      "stack": "account",
+      "caption": "Account (signed in)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/account/Account.html",
+      "bytes": 5743
+    },
+    {
+      "id": "DeleteAccount",
+      "stack": "account",
+      "caption": "Delete account",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/account/DeleteAccount.html",
+      "bytes": 3896
+    },
+    {
+      "id": "Offline",
+      "stack": "states",
+      "caption": "Offline · tafsir missing",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/states/Offline.html",
+      "bytes": 4674
+    },
+    {
+      "id": "EmptyMyQuran",
+      "stack": "my-quran",
+      "caption": "Empty · My Quran",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/my-quran/EmptyMyQuran.html",
+      "bytes": 6283
+    },
+    {
+      "id": "HomeDark",
+      "stack": "states",
+      "caption": "Home · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/states/HomeDark.html",
+      "bytes": 15423
+    },
+    {
+      "id": "HomeEnglish",
+      "stack": "states",
+      "caption": "Home · English",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/states/HomeEnglish.html",
+      "bytes": 15155
+    },
+    {
+      "id": "HomeAndroid",
+      "stack": "states",
+      "caption": "Home · Android",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/states/HomeAndroid.html",
+      "bytes": 15367
+    },
+    {
+      "id": "Hadith",
+      "stack": "hadith",
+      "caption": "Hadith",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/hadith/Hadith.html",
+      "bytes": 7746
+    },
+    {
+      "id": "HadithDetail",
+      "stack": "hadith",
+      "caption": "Hadith detail",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/hadith/HadithDetail.html",
+      "bytes": 6171
+    },
+    {
+      "id": "HadithDetailEnglish",
+      "stack": "hadith",
+      "caption": "Hadith detail · English",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/hadith/HadithDetailEnglish.html",
+      "bytes": 8951
+    },
+    {
+      "id": "LoadingReciters",
+      "stack": "audio",
+      "caption": "Reciters · loading (first sync)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/audio/LoadingReciters.html",
+      "bytes": 13276
+    },
+    {
+      "id": "LoadingHome",
+      "stack": "states",
+      "caption": "Home · loading (first launch)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/states/LoadingHome.html",
+      "bytes": 12005
+    },
+    {
+      "id": "LoadingIndex",
+      "stack": "states",
+      "caption": "Surah index · loading (first launch)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/states/LoadingIndex.html",
+      "bytes": 17505
+    },
+    {
+      "id": "LoadingTafsir",
+      "stack": "states",
+      "caption": "Tafsir · loading",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/states/LoadingTafsir.html",
+      "bytes": 5177
+    },
+    {
+      "id": "LoadingMushaf",
+      "stack": "states",
+      "caption": "Mushaf page · page-exact font loading",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/states/LoadingMushaf.html",
+      "bytes": 14075
+    },
+    {
+      "id": "PlayerBuffering",
+      "stack": "audio",
+      "caption": "Player · buffering",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/audio/PlayerBuffering.html",
+      "bytes": 11758
+    },
+    {
+      "id": "WidgetNextPrayerSmall",
+      "stack": "widgets",
+      "caption": "iOS widget · next prayer · small, small (no location), medium · Light",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/widgets/WidgetNextPrayerSmall.html",
+      "bytes": 5834
+    },
+    {
+      "id": "WidgetNextPrayerSmallDark",
+      "stack": "widgets",
+      "caption": "iOS widget · next prayer · small, small (no location), medium · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/widgets/WidgetNextPrayerSmallDark.html",
+      "bytes": 5844
+    },
+    {
+      "id": "WidgetProgressMedium",
+      "stack": "widgets",
+      "caption": "iOS widget · daily progress · small, small (empty), medium, large · Light",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/widgets/WidgetProgressMedium.html",
+      "bytes": 10886
+    },
+    {
+      "id": "WidgetProgressMediumDark",
+      "stack": "widgets",
+      "caption": "iOS widget · daily progress · small, small (empty), medium, large · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/widgets/WidgetProgressMediumDark.html",
+      "bytes": 10853
+    },
+    {
+      "id": "WidgetContinueReading",
+      "stack": "widgets",
+      "caption": "iOS widget · continue reading + wird, misbaha, Azkar status (gated) · Light",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/widgets/WidgetContinueReading.html",
+      "bytes": 10407
+    },
+    {
+      "id": "WidgetContinueReadingDark",
+      "stack": "widgets",
+      "caption": "iOS widget · continue reading + wird, misbaha, Azkar status (gated) · Dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/widgets/WidgetContinueReadingDark.html",
+      "bytes": 10398
+    },
+    {
+      "id": "WidgetLockScreen",
+      "stack": "widgets",
+      "caption": "iOS lock screen · inline, rectangular, circular · Light wallpaper",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/widgets/WidgetLockScreen.html",
+      "bytes": 4049
+    },
+    {
+      "id": "WidgetLockScreenDark",
+      "stack": "widgets",
+      "caption": "iOS lock screen · inline, rectangular, circular · Dark wallpaper",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/widgets/WidgetLockScreenDark.html",
+      "bytes": 4074
+    },
+    {
+      "id": "AndroidWidgets",
+      "stack": "widgets",
+      "caption": "Android home screen widgets · 2×2 and 4×2 · Light",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/widgets/AndroidWidgets.html",
+      "bytes": 12724
+    },
+    {
+      "id": "AndroidWidgetsDark",
+      "stack": "widgets",
+      "caption": "Android home screen widgets · 2×2 and 4×2 · Dark",
+      "size": "watch",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/widgets/AndroidWidgetsDark.html",
+      "bytes": 12728
+    },
+    {
+      "id": "WatchHome",
+      "stack": "watch",
+      "caption": "Apple Watch · home (dark only, watchOS) · 41 mm",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/watch/WatchHome.html",
+      "bytes": 13509
+    },
+    {
+      "id": "WatchSibha",
+      "stack": "watch",
+      "caption": "Apple Watch · misbaha (dark only, watchOS) · 41 mm",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/watch/WatchSibha.html",
+      "bytes": 8173
+    },
+    {
+      "id": "WatchComplications",
+      "stack": "watch",
+      "caption": "Apple Watch · complications (dark only, watchOS) · 41 mm",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/watch/WatchComplications.html",
+      "bytes": 7620
+    },
+    {
+      "id": "ExpandedHome",
+      "stack": "expanded",
+      "caption": "Home · expanded · 1194 × 834",
+      "size": "expanded",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/expanded/ExpandedHome.html",
+      "bytes": 8780
+    },
+    {
+      "id": "ExpandedHomeDark",
+      "stack": "expanded",
+      "caption": "Home · expanded · dark",
+      "size": "expanded",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/expanded/ExpandedHomeDark.html",
+      "bytes": 11164
+    },
+    {
+      "id": "ReaderExpandedActions",
+      "stack": "expanded",
+      "caption": "Reader · expanded · ayah actions in the side panel · 1194 × 834",
+      "size": "expanded",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/expanded/ReaderExpandedActions.html",
+      "bytes": 8224
+    },
+    {
+      "id": "ReaderExpandedTafsir",
+      "stack": "expanded",
+      "caption": "Reader · expanded · reading mode with tafsir in the side panel",
+      "size": "expanded",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/expanded/ReaderExpandedTafsir.html",
+      "bytes": 5377
+    },
+    {
+      "id": "ReaderOverlayTafsir",
+      "stack": "expanded",
+      "caption": "Reader · expanded, 840–1,099 pt (iPad portrait) · tafsir panel over a dimmed page; tap the page to close (fix plan step 1)",
+      "size": "expanded",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/expanded/ReaderOverlayTafsir.html",
+      "bytes": 5712
+    },
+    {
+      "id": "ReaderExpandedDark",
+      "stack": "expanded",
+      "caption": "Reader · expanded · dark",
+      "size": "expanded",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/expanded/ReaderExpandedDark.html",
+      "bytes": 8179
+    },
+    {
+      "id": "ReaderMedium",
+      "stack": "expanded",
+      "caption": "Reader · medium · 744 × 1133 · ayah actions as a sheet",
+      "size": "medium",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/expanded/ReaderMedium.html",
+      "bytes": 8342
+    },
+    {
+      "id": "AsmaaList",
+      "stack": "asmaa",
+      "caption": "Names of Allah · list · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/asmaa/AsmaaList.html",
+      "bytes": 15087
+    },
+    {
+      "id": "AsmaaListDark",
+      "stack": "asmaa",
+      "caption": "Names of Allah · list · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/asmaa/AsmaaListDark.html",
+      "bytes": 15092
+    },
+    {
+      "id": "AsmaaListEnglish",
+      "stack": "asmaa",
+      "caption": "Names of Allah · list · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/asmaa/AsmaaListEnglish.html",
+      "bytes": 14958
+    },
+    {
+      "id": "AsmaaDetail",
+      "stack": "asmaa",
+      "caption": "Name detail · Arabic (no meaning: unlicensed, section hidden)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/asmaa/AsmaaDetail.html",
+      "bytes": 7029
+    },
+    {
+      "id": "AsmaaDetailDark",
+      "stack": "asmaa",
+      "caption": "Name detail · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/asmaa/AsmaaDetailDark.html",
+      "bytes": 7527
+    },
+    {
+      "id": "HijriCalendar",
+      "stack": "hijri",
+      "caption": "Hijri calendar · month view · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/hijri/HijriCalendar.html",
+      "bytes": 21124
+    },
+    {
+      "id": "HijriCalendarDark",
+      "stack": "hijri",
+      "caption": "Hijri calendar · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/hijri/HijriCalendarDark.html",
+      "bytes": 21116
+    },
+    {
+      "id": "HijriCalendarEnglish",
+      "stack": "hijri",
+      "caption": "Hijri calendar · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/hijri/HijriCalendarEnglish.html",
+      "bytes": 20732
+    },
+    {
+      "id": "HijriAdjust",
+      "stack": "hijri",
+      "caption": "Adjust the Hijri date · sheet (+1 selected)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/hijri/HijriAdjust.html",
+      "bytes": 22026
+    },
+    {
+      "id": "HijriAdjustDark",
+      "stack": "hijri",
+      "caption": "Adjust the Hijri date · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/hijri/HijriAdjustDark.html",
+      "bytes": 22496
+    },
+    {
+      "id": "MoonSighting",
+      "stack": "moon",
+      "caption": "Moon sighting · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/moon/MoonSighting.html",
+      "bytes": 6783
+    },
+    {
+      "id": "MoonSightingDark",
+      "stack": "moon",
+      "caption": "Moon sighting · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/moon/MoonSightingDark.html",
+      "bytes": 6792
+    },
+    {
+      "id": "MoonSightingEnglish",
+      "stack": "moon",
+      "caption": "Moon sighting · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/moon/MoonSightingEnglish.html",
+      "bytes": 6493
+    },
+    {
+      "id": "MoonSightingNoLocation",
+      "stack": "moon",
+      "caption": "Moon sighting · no location",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/moon/MoonSightingNoLocation.html",
+      "bytes": 2773
+    },
+    {
+      "id": "MenuNewCards",
+      "stack": "entry-points",
+      "caption": "Menu · new cards · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/entry-points/MenuNewCards.html",
+      "bytes": 10901
+    },
+    {
+      "id": "MenuNewCardsDark",
+      "stack": "entry-points",
+      "caption": "Menu · new cards · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/entry-points/MenuNewCardsDark.html",
+      "bytes": 10913
+    },
+    {
+      "id": "MenuNewCardsEnglish",
+      "stack": "entry-points",
+      "caption": "Menu · new cards · English (LTR)",
+      "size": "compact",
+      "theme": "en",
+      "status": "source",
+      "path": "frames/entry-points/MenuNewCardsEnglish.html",
+      "bytes": 10636
+    },
+    {
+      "id": "HomeHijriDate",
+      "stack": "entry-points",
+      "caption": "Home · Hijri date line · Arabic",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/entry-points/HomeHijriDate.html",
+      "bytes": 16847
+    },
+    {
+      "id": "HomeHijriDateDark",
+      "stack": "entry-points",
+      "caption": "Home · Hijri date line · dark",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/entry-points/HomeHijriDateDark.html",
+      "bytes": 17340
+    },
+    {
+      "id": "DiscoverCard",
+      "stack": "discover",
+      "caption": "Home · Discover card · in progress · Arabic · Light · awaiting approval",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/discover/DiscoverCard.html",
+      "bytes": 3997
+    },
+    {
+      "id": "DiscoverCardNew",
+      "stack": "discover",
+      "caption": "Home · Discover card · only new rows marked جديد · Arabic · Light · awaiting approval",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/discover/DiscoverCardNew.html",
+      "bytes": 3833
+    },
+    {
+      "id": "DiscoverCardDone",
+      "stack": "discover",
+      "caption": "Home · Discover card · all done (أحسنت) · Arabic · Light · awaiting approval",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/discover/DiscoverCardDone.html",
+      "bytes": 2223
+    },
+    {
+      "id": "DiscoverScreen",
+      "stack": "discover",
+      "caption": "Discover · full checklist · Arabic · Light · awaiting approval",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/discover/DiscoverScreen.html",
+      "bytes": 14624
+    },
+    {
+      "id": "DiscoverTip",
+      "stack": "discover",
+      "caption": "Reader settings · one-time tip · Arabic · Light · awaiting approval",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/discover/DiscoverTip.html",
+      "bytes": 3310
+    },
+    {
+      "id": "DiscoverWidgetSheet",
+      "stack": "discover",
+      "caption": "Discover · add widget sheet · Arabic · Light · awaiting approval",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/discover/DiscoverWidgetSheet.html",
+      "bytes": 2894
+    },
+    {
+      "id": "WidgetsHelp",
+      "stack": "widgets",
+      "caption": "Settings · widgets and watch help · Arabic · Light · awaiting approval",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/widgets/WidgetsHelp.html",
+      "bytes": 9224
+    },
+    {
+      "id": "WidgetsHelpDark",
+      "stack": "widgets",
+      "caption": "Settings · widgets and watch help · Arabic · Dark · awaiting approval",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/widgets/WidgetsHelpDark.html",
+      "bytes": 9257
+    },
+    {
+      "id": "WidgetAddConfirm",
+      "stack": "widgets",
+      "caption": "Widgets · add confirm · next prayer · Arabic · Light (ADR 0054)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/widgets/WidgetAddConfirm.html",
+      "bytes": 4725
+    },
+    {
+      "id": "WidgetAddConfirmDark",
+      "stack": "widgets",
+      "caption": "Widgets · add confirm · next prayer · Arabic · Dark (ADR 0054)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/widgets/WidgetAddConfirmDark.html",
+      "bytes": 3571
+    },
+    {
+      "id": "WidgetAddConfirmAlready",
+      "stack": "widgets",
+      "caption": "Widgets · already on home · Arabic · Light (ADR 0054)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/widgets/WidgetAddConfirmAlready.html",
+      "bytes": 2969
+    },
+    {
+      "id": "WidgetAddConfirmAlreadyDark",
+      "stack": "widgets",
+      "caption": "Widgets · already on home · Arabic · Dark (ADR 0054)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "source",
+      "path": "frames/widgets/WidgetAddConfirmAlreadyDark.html",
+      "bytes": 2976
+    }
+  ]
+}

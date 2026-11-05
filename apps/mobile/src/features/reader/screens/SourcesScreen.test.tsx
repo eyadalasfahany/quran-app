@@ -21,7 +21,7 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-const SOURCE_KEYS = ['qf', 'tanzil', 'kfgqpc', 'opendua', 'adhan', 'fonts'] as const;
+const SOURCE_KEYS = ['qf', 'tanzil', 'kfgqpc', 'opendua', 'hadeethenc', 'adhan', 'fonts'] as const;
 
 const OPENDUA_ATTRIBUTION =
   "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts.";
@@ -31,6 +31,7 @@ const SOURCE_PRESS_CASES = [
   { key: 'tanzil', url: 'https://tanzil.net' },
   { key: 'kfgqpc', url: 'https://qurancomplex.gov.sa' },
   { key: 'opendua', url: 'https://opendua.org/developers' },
+  { key: 'hadeethenc', url: 'https://hadeethenc.com' },
   { key: 'adhan', url: 'https://github.com/batoulapps/adhan-js' },
   { key: 'fonts', url: 'https://openfontlicense.org' },
 ] as const;
@@ -55,7 +56,7 @@ describe('SourcesScreen', () => {
     expect(view.getByRole('header')).toBeOnTheScreen();
   });
 
-  it.each(locales)('renders the five source rows and the QF font credit in %s', async (locale) => {
+  it.each(locales)('renders every source row and the QF font credit in %s', async (locale) => {
     const view = await renderUi(<SourcesScreen testID="sources" />, { locale });
 
     for (const key of SOURCE_KEYS) {

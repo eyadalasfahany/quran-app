@@ -23,21 +23,17 @@ export type PropheticDuaSummary = {
   title: string;
 };
 
-export type PropheticDuaLink =
-  | { kind: 'hisn'; entryKey: string }
-  | { kind: 'collection'; collectionSlug: string; hadithNumber: string };
-
 export type PropheticDuaDetail = PropheticDuaSummary & {
   hadeeth: string;
   attribution: string;
   grade: string | null;
   explanation: string | null;
   reference: string | null;
-  hints: string | null;
+  /** Parsed from `dua_hadith.hints` (see `parseDuaHints`). Empty when the dua has none. */
+  hints: readonly string[];
   sourceUrl: string;
   index: number;
   total: number;
-  links: PropheticDuaLink[];
 };
 
 export type PropheticDuaSection = {

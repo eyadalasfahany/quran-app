@@ -4,7 +4,6 @@ import { Platform } from 'react-native';
 import { i18n } from '@/core/i18n';
 import { ensureNotificationChannel, NOTIFICATION_CHANNELS } from '@/features/notifications/channels';
 
-import { getMyDua } from '@/features/duas/data/my-duas-repository';
 import { duasHref } from '@/features/duas/routes';
 
 import { azkarHref } from '../routes';
@@ -35,12 +34,11 @@ export function reminderContent(reminder: AzkarReminder): {
     };
   }
   if (reminder.targetType === 'my_dua') {
-    const dua = getMyDua(reminder.targetKey);
-    const name = dua?.title?.trim() ? dua.title.trim() : i18n.t('duas.mine.untitled');
+    // Fixed text only: a notification never shows the user's own dua (it can sit on a lock screen).
     return {
-      title: i18n.t('duas.reminders.notificationTitle', { name }),
+      title: i18n.t('duas.reminders.notificationTitle'),
       body: i18n.t('duas.reminders.notificationBody'),
-      data: { route: String(duasHref.mineEdit(reminder.targetKey)) },
+      data: { route: String(duasHref.mineDetail(reminder.targetKey)) },
       sound: 'default',
     };
   }

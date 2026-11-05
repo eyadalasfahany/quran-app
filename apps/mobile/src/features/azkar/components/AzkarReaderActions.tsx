@@ -1,24 +1,16 @@
-import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
-
-import { useTheme } from '@/core/theme';
-import { IconButton, UiText } from '@/shared/ui';
-
 import type { AzkarRecording } from '../data/model';
 import { useIsFavorite } from '../data';
 import { toggleFavorite } from '../data/favorites-repository';
+import { ReaderActionButtons } from './ReaderActionButtons';
 // Play and download — kept for later; hidden for now (developer 4 Nov 2026).
 // import { AzkarDownloadButton } from './AzkarDownloadButton';
 // import { AzkarPlayerControl } from './AzkarPlayerControl';
-
-const SHARE = { ios: 'square.and.arrow.up', android: 'share' } as const;
-const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
-const BOOKMARK_FILLED = { ios: 'bookmark.fill', android: 'bookmark_added' } as const;
 
 /**
  * The actions under the dhikr: favourite, share, text size (Aa). Play/pause and download are commented out for now
  * (developer 4 Nov 2026); the props and commented block stay so they can return without an API change. Playback lives
  * here; the reader has no mini player bar. The favourite is saved per entry in user.db and follows the live query.
+ * The row itself is `ReaderActionButtons`, shared with Duas.
  */
 export function AzkarReaderActions({
   entryKey,
@@ -39,39 +31,23 @@ export function AzkarReaderActions({
   playControl?: { playing: boolean; loading?: boolean; onToggle: () => void } | null;
   testID?: string;
 }) {
-  const { t } = useTranslation();
-  const theme = useTheme();
   const favorite = useIsFavorite(entryKey);
   // Props kept so callers and the commented play/download block stay typed.
   void recording;
   void playControl;
 
   return (
-    <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[6], justifyContent: 'center' }} testID={testID}>
-      <IconButton
-        icon={favorite ? BOOKMARK_FILLED : BOOKMARK}
-        label={favorite ? t('azkar.reader.favouriteRemove') : t('azkar.reader.favouriteAdd')}
-        onPress={() => {
+    <>
+      <ReaderActionButtons
+        favorite={favorite}
+        onShare={onShare}
+        onTextSize={onTextSize}
+        onToggleFavorite={() => {
           toggleFavorite(entryKey);
         }}
-        pressed={favorite}
-        testID="azkar-favourite"
-        tone="muted"
-        variant="plain"
+        testID={testID}
+        textSizeOpen={textSizeOpen}
       />
-      <IconButton icon={SHARE} label={t('azkar.reader.share')} onPress={onShare} testID="azkar-share" tone="muted" variant="plain" />
-      <Pressable
-        accessibilityLabel={t('azkar.reader.textSize')}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: textSizeOpen }}
-        onPress={onTextSize}
-        style={{ alignItems: 'center', justifyContent: 'center', minHeight: theme.size.touchTarget, minWidth: theme.size.touchTarget }}
-        testID="azkar-text-size-toggle"
-      >
-        <UiText tone={textSizeOpen ? 'brand' : 'muted'} variant="subhead" weight={600}>
-          {t('azkar.reader.textSizeGlyph')}
-        </UiText>
-      </Pressable>
       {/* Play and download — kept for later; hidden for now (developer 4 Nov 2026).
       {playControl == null ? null : (
         <AzkarPlayerControl
@@ -83,6 +59,6 @@ export function AzkarReaderActions({
       )}
       {recording === null ? null : <AzkarDownloadButton recording={recording} />}
       */}
-    </View>
+    </>
   );
 }

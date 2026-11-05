@@ -202,6 +202,10 @@
         "title": "OpenDua · Hisn al-Muslim",
         "subtitle": "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts."
       },
+      "hadeethenc": {
+        "title": "HadeethEnc · hadeethenc.com",
+        "subtitle": "Prophetic duas — content from HadeethEnc.com when the duas pack is installed, with publisher and source attribution"
+      },
       "adhan": {
         "title": "adhan",
         "subtitle": "Prayer time calculation · MIT"
@@ -1092,17 +1096,25 @@
       "favourites": "Favourites",
       "mineEyebrow": "Your own",
       "mineTitle": "My duas",
-      "sourcesHeading": "Sources",
-      "quranTitle": "Quranic duas",
-      "quranDetail": "From the Quran",
-      "hisnTitle": "Hisn al-Muslim",
-      "hisnDetail": "By topic",
-      "hadithTitle": "Prophetic duas",
-      "hadithDetail": "From the Sunnah",
-      "hadithPendingDetail": "Available after the Duas pack is imported on the server",
-      "hisnTopicsHeading": "Hisn al-Muslim topics",
-      "topicsHeading": "Topics",
-      "attribution": "Hisn al-Muslim content from OpenDua · Prophetic duas from HadeethEnc when available"
+      "mineCount_zero": "No duas",
+      "mineCount_one": "{{number}} dua",
+      "mineCount_two": "{{number}} duas",
+      "mineCount_few": "{{number}} duas",
+      "mineCount_many": "{{number}} duas",
+      "mineCount_other": "{{number}} duas",
+      "mineDeviceOnly": "On this device only",
+      "mineOpen": "Open",
+      "mineAdd": "Add",
+      "quranSectionHeading": "From the Quran",
+      "quranSectionCaption": "Supplications in the Book of Allah",
+      "sunnahSectionHeading": "From the Sunnah",
+      "sunnahSectionCaption": "Reported supplications",
+      "categoryCount_one": "{{number}} dua",
+      "categoryCount_two": "{{number}} duas",
+      "categoryCount_few": "{{number}} duas",
+      "categoryCount_many": "{{number}} duas",
+      "categoryCount_other": "{{number}} duas",
+      "quranTitle": "Quranic duas"
     },
     "favorites": {
       "title": "Favourites",
@@ -1115,10 +1127,14 @@
       "writtenByYou": "Written by you",
       "open": "Open",
       "reminder": "Reminder",
-      "untitled": "Untitled dua",
       "emptyTitle": "No duas yet",
-      "emptyBody": "Write your own dua and keep it on this device.",
-      "add": "Add a dua"
+      "emptyBody": "Write a dua you want to come back to. It stays on this device only.",
+      "add": "Add a dua",
+      "reminderAt": "Reminder {{time}}",
+      "intro": "These duas are your own writing. They stay on this device only.",
+      "reminderOnHint": "On",
+      "progress": "{{current}} of {{total}}",
+      "edit": "Edit"
     },
     "editor": {
       "close": "Close",
@@ -1133,36 +1149,39 @@
       "deleteTitle": "Delete this dua?",
       "deleteBody": "The dua and its reminder will be removed from this device.",
       "deleteConfirm": "Delete",
-      "deleteCancel": "Cancel"
+      "deleteCancel": "Cancel",
+      "deviceOnly": "Saved on this device only.",
+      "reminderTitle": "Reminder",
+      "reminderOff": "Off",
+      "reminderOn": "On"
     },
     "reminders": {
-      "notificationTitle": "{{name}}",
-      "notificationBody": "Your chosen reminder"
+      "notificationTitle": "A reminder from My duas",
+      "notificationBody": "Open to read your dua"
     },
     "quran": {
       "listTitle": "Quranic duas",
-      "detailTitle": "Quranic dua",
       "emptyTitle": "No Quranic duas yet",
       "emptyBody": "Install the duas pack after the server import to see them here.",
-      "rowTitle": "{{surah}} · {{index}}",
       "ayahSingle": "Ayah {{ayah}}",
       "ayahRange": "Ayahs {{from}}–{{to}}",
       "progress": "{{current}} of {{total}}",
-      "openInMushaf": "Open in Mushaf"
+      "openInMushaf": "Open in Mushaf",
+      "sourceLine": "{{surah}} · {{range}}",
+      "shareSource": "Surah {{surah}} · {{range}}",
+      "rowLabel": "{{surah}}, {{ayah}}"
     },
     "hadith": {
       "listTitle": "Prophetic duas",
-      "detailTitle": "Prophetic dua",
       "emptyTitle": "No prophetic duas yet",
-      "emptyBody": "Run `php artisan duas:snapshot hadeethenc` then `php artisan duas:import --build-packs` on the API, then install the duas pack.",
-      "rowDetail": "From HadeethEnc",
+      "emptyBody": "Install the duas pack from Sources and updates to see them here.",
       "progress": "{{current}} of {{total}}",
       "grade": "Grade",
-      "explanation": "Explanation",
+      "explanation": "Meaning",
       "reference": "Reference",
-      "hints": "Benefits",
-      "linkHisn": "In Hisn al-Muslim · {{number}}",
-      "openSource": "Open on HadeethEnc.com"
+      "hints": "Lessons",
+      "openSource": "Open on HadeethEnc.com",
+      "credit": "Source: HadeethEnc.com · {{number}}"
     }
   },
   "sibha": {

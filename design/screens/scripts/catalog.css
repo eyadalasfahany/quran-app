@@ -1,0 +1,14 @@
+/* Catalog chrome for design/screens indexes */
+.catalog-list{list-style:none;margin:0;padding:0;max-width:920px;display:flex;flex-direction:column;gap:8px}
+.catalog-list li{padding:12px 16px;border-radius:14px;background:#fffdf8;border:1px solid #e7dfcc}
+.catalog-list a{color:#1f4d40;font-weight:600;text-decoration:none}
+.catalog-list a:hover{text-decoration:underline}
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin:0;padding:0;list-style:none}
+.catalog-card{display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:16px;background:#fffdf8;border:1px solid #e7dfcc;min-height:96px;text-decoration:none;color:inherit}
+.catalog-card strong{font-size:16px;color:#1f4d40}
+.catalog-card span{font-size:13px;color:#5b6a64;line-height:1.4}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#efe8d8;color:#5b6a64;width:fit-content}
+.badge.warn{background:#f3e3b5;color:#7e5f1e}
+.badge.new{background:#c4dfcc;color:#1f4d40}
+.gx-head a{color:#1f4d40}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}

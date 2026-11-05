@@ -11,7 +11,8 @@ export const ICON_BUTTON_SIZE = size.touchTarget;
 
 // `raised`: a surfaceRaised disc with a hairline, the header search button (quran-app-screens.html, #Main).
 export type IconButtonVariant = 'plain' | 'filled' | 'track' | 'surface' | 'glass' | 'raised';
-export type IconButtonTone = 'ink' | 'muted';
+// `brand` draws the glyph in the brand colour, for an on state that is not a selected fill (the «أدعيتي» bell).
+export type IconButtonTone = 'ink' | 'muted' | 'brand';
 
 export function IconButton({
   icon,
@@ -46,7 +47,7 @@ export function IconButton({
 }) {
   const theme = useTheme();
   const colors = useContrastColors();
-  const glyph = pressed ? theme.colors.brand : tone === 'muted' ? colors.inkMuted : theme.colors.ink;
+  const glyph = pressed || tone === 'brand' ? theme.colors.brand : tone === 'muted' ? colors.inkMuted : theme.colors.ink;
   const resting = {
     filled: theme.colors.fillSecondary,
     track: theme.colors.fillTrack,

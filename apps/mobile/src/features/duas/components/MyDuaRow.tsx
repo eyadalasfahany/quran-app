@@ -7,18 +7,16 @@ import { arabicTextDirection, displayText, IconButton, NumberMedallion, UiText, 
 
 import { useAzkarReminder } from '@/features/azkar/reminders/hooks';
 
+import { useMyDuaCaption } from '../data/use-my-dua-caption';
 import type { MyDua } from '../data/my-duas-repository';
 import { duasHref } from '../routes';
 
 const BELL = { ios: 'bell', android: 'notifications' } as const;
-const BELL_FILL = { ios: 'bell.fill', android: 'notifications' } as const;
 
-function previewText(dua: MyDua): string {
-  const titled = dua.title?.trim();
-  return titled && titled.length > 0 ? titled : dua.body;
-}
-
-/** One row on «أدعيتي» (quran-app-screens.html, #MyDuas): gold badge, caption, reminder bell. */
+/**
+ * One row on «أدعيتي» (quran-app-screens.html, #MyDuas): the number medallion, the dua's text, a one-line caption (title,
+ * «من كتابتك», and the reminder time when one is set) and the reminder bell. The text is always the dua's body.
+ */
 export function MyDuaRow({
   dua,
   index,
@@ -34,16 +32,15 @@ export function MyDuaRow({
   const theme = useTheme();
   const colors = useContrastColors();
   const reminder = useAzkarReminder('my_dua', dua.id);
-  const preview = previewText(dua);
-  const caption = t('duas.mine.writtenByYou');
   const reminderSet = reminder?.enabled === true;
-  const label = t('common.a11yTriple', { label: preview, title: caption, detail: t('duas.mine.open') });
+  const caption = useMyDuaCaption(dua.id, dua.title);
+  const label = t('common.a11yTriple', { label: dua.body, title: caption, detail: t('duas.mine.open') });
 
   return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
-      onPress={() => router.push(duasHref.mineEdit(dua.id))}
+      onPress={() => router.push(duasHref.mineDetail(dua.id))}
       style={({ pressed }) => ({
         alignItems: 'center',
         backgroundColor: theme.colors.surfaceRaised,
@@ -61,18 +58,19 @@ export function MyDuaRow({
       <NumberMedallion number={index + 1} testID={`${testID}-medallion`} />
       <View style={{ flex: 1, gap: theme.space[1] }}>
         <UiText numberOfLines={2} style={[displayText('dhikrList'), arabicTextDirection]} variant="body">
-          {preview}
+          {dua.body}
         </UiText>
-        <UiText tone="muted" variant="caption">
+        <UiText numberOfLines={1} tone="muted" testID={`${testID}-caption`} variant="caption">
           {caption}
         </UiText>
       </View>
       <IconButton
-        icon={reminderSet ? BELL_FILL : BELL}
+        hint={reminderSet ? t('duas.mine.reminderOnHint') : undefined}
+        icon={BELL}
         label={t('duas.mine.reminder')}
         onPress={onBellPress}
-        pressed={reminderSet}
         testID={`${testID}-bell`}
+        tone={reminderSet ? 'brand' : 'muted'}
         variant="raised"
       />
     </Pressable>

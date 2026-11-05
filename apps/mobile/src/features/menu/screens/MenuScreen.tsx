@@ -5,10 +5,9 @@ import { ScrollView } from 'react-native';
 import { ContentColumn, useTabBarScrollHandlers, useTabContentBottom, useWidthClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { azkarHref } from '@/features/azkar/routes';
-// Duas menu card temporarily hidden (keep for restore).
-// import { MenuDuasCard } from '@/features/duas/components/MenuDuasCard';
-// import { useDuasAvailable } from '@/features/duas/data/hooks';
-// import { duasHref } from '@/features/duas/routes';
+import { MenuDuasCard } from '@/features/duas/components/MenuDuasCard';
+import { useDuasAvailable } from '@/features/duas/data/hooks';
+import { duasHref } from '@/features/duas/routes';
 // import { MenuNamesCard } from '@/features/names/components/MenuNamesCard';
 // import { useNamesAvailable } from '@/features/names/data/hooks';
 // import { namesHref } from '@/features/names/routes';
@@ -56,7 +55,7 @@ export function MenuScreen() {
   const bottom = useTabContentBottom();
   const previews = useMenuPreviews();
   const azkar = useAzkarMenuPreview();
-  // const duasAvailable = useDuasAvailable();
+  const duasAvailable = useDuasAvailable();
   // const namesAvailable = useNamesAvailable();
   const hijriDate = useHijriDate();
   const hijriAvailable = isHijriCalendarAvailable();
@@ -123,8 +122,7 @@ export function MenuScreen() {
         title={t('menu.favorites.title')}
       />
     ) : null,
-    // Duas menu card temporarily hidden (keep for restore).
-    // duasAvailable ? <MenuDuasCard key="duas" onPress={() => router.push(duasHref.home)} /> : null,
+    duasAvailable ? <MenuDuasCard key="duas" onPress={() => router.push(duasHref.home)} /> : null,
     // namesAvailable ? <MenuNamesCard key="names" onPress={() => router.push(namesHref.home)} /> : null,
     <MenuCard
       caption={t('menu.discover.caption')}

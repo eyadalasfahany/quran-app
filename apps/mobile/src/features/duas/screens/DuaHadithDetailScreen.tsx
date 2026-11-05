@@ -1,23 +1,26 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { openContentDb } from '@/core/db/content/open';
 import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { openContentDb } from '@/core/db/content/open';
-import { Screen, UiText } from '@/shared/ui';
+import { Screen } from '@/shared/ui';
 import { AzkarDetailsSection } from '@/features/azkar/components/AzkarDetailsSection';
 import { AzkarReaderControls } from '@/features/azkar/components/AzkarReaderControls';
 import { AzkarReaderTopBar } from '@/features/azkar/components/AzkarReaderTopBar';
+import { AzkarTextSizeControl } from '@/features/azkar/components/AzkarTextSizeControl';
+import { useAzkarFontScale } from '@/features/azkar/data/hooks';
 
 import { DuaHadithBody } from '../components/DuaHadithBody';
-import { DuaLinkCard } from '../components/DuaLinkCard';
-import { DuasAttributionLine } from '../components/DuasAttributionLine';
+import { DuaReaderActions } from '../components/DuaReaderActions';
+import { DuaSourceLink } from '../components/DuaSourceLink';
 import { neighbourPropheticDuas } from '../data/content-repository';
 import { usePropheticDua } from '../data/hooks';
+import { duaHadithShareText } from '../data/share-text';
 import { duasHref, goBackOr } from '../routes';
 
 /** Prophetic dua detail (quran-app-screens.html, #DuaHadithDetail). Text-only; no audio (ADR 0055 §3). */
@@ -27,6 +30,8 @@ export function DuaHadithDetailScreen({ duaKey, testID = 'screen-dua-hadith-deta
   const locale = useLocale();
   const insets = useSafeAreaInsets();
   const dua = usePropheticDua(duaKey);
+  const [fontScale, setFontScale] = useAzkarFontScale();
+  const [textSizeOpen, setTextSizeOpen] = useState(false);
 
   const neighbours = useMemo(() => {
     if (dua === undefined) {
@@ -46,7 +51,7 @@ export function DuaHadithDetailScreen({ duaKey, testID = 'screen-dua-hadith-deta
     return (
       <Screen testID={testID}>
         <ContentColumn gutter={theme.size.gutterHome}>
-          <AzkarReaderTopBar fraction={0} onClose={() => goBackOr(duasHref.hadithList)} progressText="" title={t('duas.hadith.detailTitle')} />
+          <AzkarReaderTopBar fraction={0} onClose={() => goBackOr(duasHref.hadithList)} progressText="" title={t('duas.hadith.listTitle')} />
         </ContentColumn>
       </Screen>
     );
@@ -57,35 +62,46 @@ export function DuaHadithDetailScreen({ duaKey, testID = 'screen-dua-hadith-deta
     total: formatNumber(dua.total, locale),
   });
   const fraction = dua.total === 0 ? 0 : dua.index / dua.total;
+  // The HadeethEnc number is the part of the key after `hadeethenc:`.
+  const credit = t('duas.hadith.credit', {
+    number: formatNumber(Number(dua.duaKey.replace(/^hadeethenc:/, '')), locale),
+  });
+  // Each benefit is its own paragraph; the elements themselves are shown unchanged.
+  const hints = dua.hints.length === 0 ? null : dua.hints.join('\n\n');
+
+  const onShare = () => {
+    void Share.share({
+      message: duaHadithShareText({ hadeeth: dua.hadeeth, attribution: dua.attribution, credit, url: dua.sourceUrl }),
+    });
+  };
 
   return (
     <Screen testID={testID}>
       <ContentColumn gutter={theme.size.gutterHome}>
         <View style={{ flex: 1, paddingBottom: insets.bottom }}>
-          <AzkarReaderTopBar fraction={fraction} onClose={() => goBackOr(duasHref.hadithList)} progressText={progressText} title={dua.title} />
-          <ScrollView contentContainerStyle={{ flexGrow: 1, gap: theme.space[5], paddingBottom: theme.space[6], paddingTop: theme.space[4] }}>
-            <DuaHadithBody attribution={dua.attribution} text={dua.hadeeth} />
+          <AzkarReaderTopBar
+            fraction={fraction}
+            onClose={() => goBackOr(duasHref.hadithList)}
+            progressText={progressText}
+            title={t('duas.hadith.listTitle')}
+          />
+          <ScrollView contentContainerStyle={{ flexGrow: 1, gap: theme.size.sectionGap, paddingBottom: theme.space[6], paddingTop: theme.space[4] }}>
+            <DuaHadithBody attribution={dua.attribution} fontScale={fontScale} text={dua.hadeeth} />
             <View style={{ paddingHorizontal: theme.space[2] }}>
-              <AzkarDetailsSection body={dua.grade} title={t('duas.hadith.grade')} />
-              <AzkarDetailsSection body={dua.explanation} title={t('duas.hadith.explanation')} />
-              <AzkarDetailsSection body={dua.reference} title={t('duas.hadith.reference')} />
-              <AzkarDetailsSection body={dua.hints} title={t('duas.hadith.hints')} />
-            </View>
-            <DuaLinkCard links={dua.links} />
-            <View style={{ gap: theme.space[2], paddingHorizontal: theme.space[2] }}>
-              <DuasAttributionLine />
-              <Pressable
-                accessibilityLabel={t('duas.hadith.openSource')}
-                accessibilityRole="link"
-                onPress={() => void Linking.openURL(dua.sourceUrl)}
-                testID="dua-hadith-open-source"
-              >
-                <UiText align="center" tone="brand" variant="caption" weight={600}>
-                  {t('duas.hadith.openSource')}
-                </UiText>
-              </Pressable>
+              <AzkarDetailsSection body={dua.explanation} caption={credit} title={t('duas.hadith.explanation')} />
+              <AzkarDetailsSection body={dua.reference} caption={credit} title={t('duas.hadith.reference')} />
+              <AzkarDetailsSection body={dua.grade} caption={credit} title={t('duas.hadith.grade')} />
+              <AzkarDetailsSection body={hints} caption={credit} title={t('duas.hadith.hints')} />
+              <DuaSourceLink url={dua.sourceUrl} />
             </View>
           </ScrollView>
+          <DuaReaderActions
+            duaKey={dua.duaKey}
+            onShare={onShare}
+            onTextSize={() => setTextSizeOpen((open) => !open)}
+            textSizeOpen={textSizeOpen}
+          />
+          {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
           <AzkarReaderControls
             canNext={neighbours.next !== null}
             canPrevious={neighbours.previous !== null}

@@ -1,0 +1,12 @@
+/* Taybah design reference: the document around one variant (an artboard). */
+html, body { margin: 0; padding: 0; }
+/* The frame root carries its own dir; the body stays LTR so the artboard pins to the top-left. */
+body.artboard { background: #fff; overflow: hidden; width: max-content; direction: ltr; }
+/* the device underlay a translucent frame root (a scrim over the page) sits on */
+html[data-theme="dark"] body.artboard { background: #0e1715; }
+body.artboard > [data-frame-root] { margin: 0; }
+/* drawn tablet windows: no catalog shadow or rounding around the window itself */
+body.artboard .xw-device, body.artboard .xr-device-md { box-shadow: none; border-radius: 0; margin: 0; }
+body.artboard a { color: inherit; }
+/* ?mark=1: UI text the LTR build left in Arabic */
+html.mark [data-untranslated] { outline: 2px dashed #d64545; outline-offset: 1px; }
