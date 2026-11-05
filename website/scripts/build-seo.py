@@ -628,6 +628,10 @@ def check() -> None:
 
 
 def main() -> None:
+    # A new page that isn't in PAGES would ship with no English copy, sitemap entry or SEO head.
+    missing = sorted({p.stem for p in WEBSITE.glob("*.html")} - {slug for slug, _ in PAGES})
+    if missing:
+        raise SystemExit(f"Add these pages to PAGES in scripts/build-seo.py: {', '.join(missing)}")
     if "--check" in sys.argv[1:]:
         check()
     else:
