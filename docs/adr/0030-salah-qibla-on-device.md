@@ -77,3 +77,7 @@ With no live heading (no compass, no good sample yet) or with Reduce Motion, the
 ## Amendment: iqamah offset notifications (ADR 0056, proposed 3 Nov 2026)
 
 When the user enables a global iqamah offset (minutes **after** adhan / prayer time), the app schedules a second local notification per enabled prayer at `prayerTime + offset`, using the **system default** sound (not the ADR 0047 adhan voice). Adhan-at-prayer-time notifications are unchanged. To keep the iOS pending budget at 40 prayer slots: **8** rolling days per prayer when offset is off; **4** rolling days for **each** of adhan and iqamah when offset is on (5 × 4 × 2 = 40). Full rules: `docs/adr/0056-iqamah-offset-notifications.md`, plan `docs/plans/iqamah-offset.md`.
+
+## Amendment: on by default once a location is set (ADR 0064, 5 Nov 2026)
+
+Prayer bells the user has never set turn on once location permission is granted or a manual city is chosen; a bell the user turned off stays off. Full rules: `docs/adr/0064-prayer-notifications-on-by-default.md`.

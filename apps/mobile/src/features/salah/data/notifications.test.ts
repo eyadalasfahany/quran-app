@@ -17,11 +17,19 @@ import {
 import { writeSyncState, currentSyncState } from '@/features/notifications/sync-state';
 
 import { ADHAN_VOICES, DEFAULT_PRAYER_SOUND, PRAYER_SOUND_IDS, type PrayerSoundId } from './adhan-sounds';
-import { getCoordinates } from './location';
+import {
+  getCoordinates,
+  getLocationPermissionStatus,
+  requestLocationPermissions,
+  setManualLocation,
+} from './location';
+import { dismissExactAlarmPrompt, isExactAlarmPromptVisible } from './exact-alarm-prompt';
 
 import { setIqamahOffsetMinutes } from './iqamah-offset';
 import {
+  armDefaultPrayerBells,
   enabledPrayers,
+  requestLocationAndArmBells,
   iqamahFireDates,
   iqamahNotificationContent,
   prayerFireDates,
@@ -38,6 +46,8 @@ import { timesFor, type NextPrayerName } from './prayer-times';
 jest.mock('./location', () => ({
   ...jest.requireActual('./location'),
   getCoordinates: jest.fn(),
+  getLocationPermissionStatus: jest.fn(() => Promise.resolve('granted')),
+  requestLocationPermissions: jest.fn(() => Promise.resolve('granted')),
 }));
 
 const LONDON = { lat: 51.5074, lng: -0.1278 };
@@ -629,6 +639,237 @@ describe('prayer notifications', () => {
       await setPrayerBell('maghrib', true, NOW);
 
       expect(scheduledCalls()).toHaveLength(8);
+    });
+  });
+
+  describe('armDefaultPrayerBells (ADR 0064)', () => {
+    /** The stored bell value: undefined when unset, so a test can tell "never set" from "set to false". */
+    function storedBell(name: NextPrayerName): boolean | undefined {
+      return storage.getBoolean(bellKey(name));
+    }
+
+    /** Lets the fire-and-forget arming run finish, for the call that is not awaited. */
+    async function settleArming(): Promise<void> {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+
+    beforeEach(() => {
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('granted' as never);
+      jest.mocked(requestLocationPermissions).mockResolvedValue('granted' as never);
+    });
+
+    it('does nothing while location is not granted: bells stay unset, no notification permission call, nothing scheduled', async () => {
+      jest.mocked(getLocationPermissionStatus).mockResolvedValueOnce('denied' as never);
+
+      await armDefaultPrayerBells(NOW);
+
+      for (const prayer of PRAYERS) {
+        expect(storedBell(prayer)).toBeUndefined();
+      }
+      expect(Notifications.getPermissionsAsync).not.toHaveBeenCalled();
+      expect(Notifications.requestPermissionsAsync).not.toHaveBeenCalled();
+      expect(scheduledCalls()).toHaveLength(0);
+    });
+
+    it('with location and notifications granted, turns on all five bells and schedules the prayers', async () => {
+      await armDefaultPrayerBells(NOW);
+
+      for (const prayer of PRAYERS) {
+        expect(storedBell(prayer)).toBe(true);
+      }
+      expect(enabledPrayers()).toEqual(PRAYERS);
+      expect(prayerPending()).toHaveLength(40);
+    });
+
+    it('keeps an explicit off on fajr and turns on the other four', async () => {
+      storage.set(storageKeys.salah.bellFajr, false);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(storedBell('fajr')).toBe(false);
+      for (const prayer of PRAYERS.filter((name) => name !== 'fajr')) {
+        expect(storedBell(prayer)).toBe(true);
+      }
+      expect(prayerPending()).toHaveLength(32);
+    });
+
+    it('when notification permission is refused, stores the untouched bells as off, schedules nothing, and never prompts again', async () => {
+      jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+      jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+
+      await armDefaultPrayerBells(NOW);
+
+      for (const prayer of PRAYERS) {
+        expect(storedBell(prayer)).toBe(false);
+      }
+      expect(scheduledCalls()).toHaveLength(0);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(Notifications.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+    });
+
+    it('when every bell is already set, reads no location and asks for no permission', async () => {
+      setBells(...PRAYERS);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(getLocationPermissionStatus).not.toHaveBeenCalled();
+      expect(Notifications.getPermissionsAsync).not.toHaveBeenCalled();
+      expect(Notifications.requestPermissionsAsync).not.toHaveBeenCalled();
+    });
+
+    it('when the permission call throws, leaves the bells unset and resolves', async () => {
+      jest.mocked(Notifications.getPermissionsAsync).mockRejectedValueOnce(new Error('os refused'));
+
+      await expect(armDefaultPrayerBells(NOW)).resolves.toBeUndefined();
+
+      for (const prayer of PRAYERS) {
+        expect(storedBell(prayer)).toBeUndefined();
+      }
+      expect(Notifications.requestPermissionsAsync).not.toHaveBeenCalled();
+    });
+
+    it('two concurrent calls share one run, so the system prompt is requested once', async () => {
+      jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+      jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: true } as never);
+
+      const first = armDefaultPrayerBells(NOW);
+      const second = armDefaultPrayerBells(NOW);
+      await Promise.all([first, second]);
+
+      expect(second).toBe(first);
+      expect(Notifications.requestPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(enabledPrayers()).toEqual(PRAYERS);
+    });
+
+    it('requestLocationAndArmBells returns the location status and arms the bells', async () => {
+      jest.mocked(requestLocationPermissions).mockResolvedValueOnce('granted' as never);
+
+      await expect(requestLocationAndArmBells()).resolves.toBe('granted');
+      await settleArming();
+
+      expect(requestLocationPermissions).toHaveBeenCalledTimes(1);
+      expect(enabledPrayers()).toEqual(PRAYERS);
+    });
+
+    it('requestLocationAndArmBells returns a refusal and leaves the bells unset', async () => {
+      jest.mocked(requestLocationPermissions).mockResolvedValueOnce('denied' as never);
+      jest.mocked(getLocationPermissionStatus).mockResolvedValueOnce('denied' as never);
+
+      await expect(requestLocationAndArmBells()).resolves.toBe('denied');
+      await settleArming();
+
+      for (const prayer of PRAYERS) {
+        expect(storedBell(prayer)).toBeUndefined();
+      }
+    });
+  });
+
+  describe('armDefaultPrayerBells: a chosen city and the exact-alarm prompt (ADR 0064)', () => {
+    const RIYADH = { lat: 24.7136, lng: 46.6753 };
+
+    let platform: typeof Platform.OS;
+
+    beforeEach(() => {
+      platform = Platform.OS;
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('denied' as never);
+      dismissExactAlarmPrompt();
+    });
+
+    afterEach(() => {
+      jest.replaceProperty(Platform, 'OS', platform);
+      jest.mocked(Notifications.getExactAlarmPermissionsAsync).mockResolvedValue({ granted: true } as never);
+      dismissExactAlarmPrompt();
+    });
+
+    it('a chosen city arms all five bells even with location denied, and schedules them', async () => {
+      setManualLocation({ id: 'riyadh', lat: RIYADH.lat, lng: RIYADH.lng });
+
+      await armDefaultPrayerBells(NOW);
+
+      for (const prayer of PRAYERS) {
+        expect(storage.getBoolean(bellKey(prayer))).toBe(true);
+      }
+      expect(prayerPending()).toHaveLength(40);
+    });
+
+    it('a manual source with no stored coordinates and location denied arms nothing', async () => {
+      storage.set(storageKeys.salah.locationSource, 'manual');
+
+      await armDefaultPrayerBells(NOW);
+
+      for (const prayer of PRAYERS) {
+        expect(storage.getBoolean(bellKey(prayer))).toBeUndefined();
+      }
+      expect(Notifications.getPermissionsAsync).not.toHaveBeenCalled();
+      expect(scheduledCalls()).toHaveLength(0);
+    });
+
+    it('on Android with exact alarms denied, shows the exact-alarm prompt once the bells are armed', async () => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('granted' as never);
+      jest.mocked(Notifications.getExactAlarmPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(isExactAlarmPromptVisible()).toBe(true);
+    });
+
+    it('on Android with exact alarms granted, does not show the prompt', async () => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('granted' as never);
+      jest.mocked(Notifications.getExactAlarmPermissionsAsync).mockResolvedValueOnce({ granted: true } as never);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(isExactAlarmPromptVisible()).toBe(false);
+    });
+
+    it('on iOS, does not check exact alarms and does not show the prompt', async () => {
+      jest.replaceProperty(Platform, 'OS', 'ios');
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('granted' as never);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(Notifications.getExactAlarmPermissionsAsync).not.toHaveBeenCalled();
+      expect(isExactAlarmPromptVisible()).toBe(false);
+    });
+
+    it('when notifications are refused, does not show the prompt', async () => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('granted' as never);
+      jest.mocked(Notifications.getPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+      jest.mocked(Notifications.requestPermissionsAsync).mockResolvedValueOnce({ granted: false } as never);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(isExactAlarmPromptVisible()).toBe(false);
+      expect(Notifications.getExactAlarmPermissionsAsync).not.toHaveBeenCalled();
+    });
+
+    it('when every bell is already set, does not show the prompt', async () => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('granted' as never);
+      setBells(...PRAYERS);
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(isExactAlarmPromptVisible()).toBe(false);
+    });
+
+    it('a second arm call after the prompt was dismissed does not show it again', async () => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+      jest.mocked(getLocationPermissionStatus).mockResolvedValue('granted' as never);
+      jest.mocked(Notifications.getExactAlarmPermissionsAsync).mockResolvedValue({ granted: false } as never);
+
+      await armDefaultPrayerBells(NOW);
+      expect(isExactAlarmPromptVisible()).toBe(true);
+      dismissExactAlarmPrompt();
+
+      await armDefaultPrayerBells(NOW);
+
+      expect(isExactAlarmPromptVisible()).toBe(false);
     });
   });
 

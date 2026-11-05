@@ -15,7 +15,7 @@ import { SettingsGroup } from './SettingsGroup';
 
 /**
  * The «إشعارات الصلاة» group in Settings: one switch per obligatory prayer (ADR 0030 §3). It mirrors the five bells on
- * the الصلاة tab and shares their state, so nothing is pre-enabled and the two never disagree. The last row opens the
+ * the الصلاة tab and shares their state, so the two never disagree; bells turn on by default once location is approved (ADR 0064). The last row opens the
  * adhan sound picker (ADR 0047) and shows the chosen sound.
  */
 export function PrayerNotificationsSection({ testID = 'prayer-notifications-section' }: { testID?: string }) {

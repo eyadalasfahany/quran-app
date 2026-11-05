@@ -39,6 +39,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 jest.mock('../data/location', () => ({
+  getLocationPermissionStatus: jest.fn(() => Promise.resolve('denied')),
   requestLocationPermissions: jest.fn(() => Promise.resolve('granted')),
 }));
 

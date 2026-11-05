@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 /**
- * Asks the system for notification permission, only when the user turns a reminder on (spec §13). Resolves to whether
+ * Asks the system for notification permission, only when the user turns a reminder on, or when location approval arms the default prayer bells (spec §13, ADR 0064). Resolves to whether
  * notifications are allowed. Lives apart from the daily reminder service so the Salah data layer can use it without
  * loading the khatma and reader modules.
  */

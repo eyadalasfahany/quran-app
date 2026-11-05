@@ -1,3 +1,4 @@
+import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
@@ -11,7 +12,7 @@ import {
   prayerChannelId,
   prunePrayerChannels,
 } from '@/features/notifications/channels';
-import { ensureReminderPermission } from '@/features/notifications/permission';
+import { ensureReminderPermission, needsExactAlarmAccess } from '@/features/notifications/permission';
 import {
   currentSyncState,
   readSyncState,
@@ -20,10 +21,18 @@ import {
 } from '@/features/notifications/sync-state';
 
 import { adhanVoiceFile, getPrayerSound, type PrayerSoundId, setPrayerSoundValue } from './adhan-sounds';
-import { BELL_PRAYERS, getBellEnabled, setBellEnabled } from './bells';
+import { showExactAlarmPrompt } from './exact-alarm-prompt';
+import { BELL_PRAYERS, getBellEnabled, isBellUnset, setBellEnabled } from './bells';
 import { getIqamahOffsetMinutes, setIqamahOffsetMinutes, type IqamahOffsetMinutes } from './iqamah-offset';
 import { getCityById } from './cities';
-import { getCoordinates, getStoredLocationSource, getStoredManualCityId, type CoordinatesOptions } from './location';
+import {
+  getCoordinates,
+  getLocationPermissionStatus,
+  getStoredLocationSource,
+  getStoredManualCityId,
+  requestLocationPermissions,
+  type CoordinatesOptions,
+} from './location';
 import { type NextPrayerName, type PrayerTimesOutput, timesFor } from './prayer-times';
 
 /**
@@ -389,4 +398,73 @@ export async function setPrayerBell(prayer: NextPrayerName, on: boolean, now: Da
   setBellEnabled(prayer, on);
   await resyncPrayerNotifications(now);
   return true;
+}
+
+let arming: Promise<void> | null = null;
+
+/** Whether a manual city's coordinates are stored (the four keys `setManualLocation` writes). */
+function hasManualCoordinates(): boolean {
+  return (
+    storage.getString(storageKeys.salah.locationSource) === 'manual' &&
+    storage.getNumber(storageKeys.salah.manualLat) !== undefined &&
+    storage.getNumber(storageKeys.salah.manualLng) !== undefined
+  );
+}
+
+async function armUnsetBells(now: Date): Promise<void> {
+  const unset = BELL_PRAYERS.filter((prayer) => isBellUnset(prayer));
+  if (unset.length === 0) {
+    return;
+  }
+  const status = await getLocationPermissionStatus();
+  // Read after the await: `setManualLocation` writes four keys in one tick and the first write starts this run, so
+  // reading after the await sees all four.
+  if (status !== Location.PermissionStatus.GRANTED && !hasManualCoordinates()) {
+    return;
+  }
+  const granted = await ensureReminderPermission();
+  let turnedOn = false;
+  // Re-read: the user may have set a bell while the system prompt was open.
+  for (const prayer of unset) {
+    if (isBellUnset(prayer)) {
+      setBellEnabled(prayer, granted);
+      turnedOn = turnedOn || granted;
+    }
+  }
+  if (granted) {
+    await resyncPrayerNotifications(now);
+  }
+  // Only when a bell actually turned on: a refusal, or nothing left to turn on, shows no prompt (ADR 0064).
+  if (turnedOn && (await needsExactAlarmAccess())) {
+    showExactAlarmPrompt();
+  }
+}
+
+/**
+ * On by default (ADR 0064): once location is approved or a city is chosen, turns on every bell the user has never set,
+ * asking for notification permission first. A refusal records those bells as off, so the prompt is never repeated. A bell the user
+ * set keeps its value. A failure leaves the bells unset, so the next launch or foreground tries again. Concurrent calls
+ * share one run, so the system prompt shows once. Never rejects.
+ */
+export function armDefaultPrayerBells(now: Date = new Date()): Promise<void> {
+  if (arming === null) {
+    arming = armUnsetBells(now)
+      .catch((error: unknown) => {
+        console.error(error);
+      })
+      .finally(() => {
+        arming = null;
+      });
+  }
+  return arming;
+}
+
+/**
+ * Shows the system location prompt, then arms the default bells without waiting: the caller's refresh never waits on the
+ * notification prompt. Resolves to the location permission status.
+ */
+export async function requestLocationAndArmBells(): Promise<Location.PermissionStatus> {
+  const status = await requestLocationPermissions();
+  void armDefaultPrayerBells();
+  return status;
 }

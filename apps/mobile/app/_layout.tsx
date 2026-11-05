@@ -20,6 +20,7 @@ import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadMan
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
 import { useAzkarRemindersForeground } from '@/features/azkar/reminders/use-azkar-reminders-foreground';
 import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
+import { DefaultBellsExactAlarmPrompt } from '@/features/salah/components/DefaultBellsExactAlarmPrompt';
 import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNotificationsSync';
 import { useReminderGoalsSync } from '@/features/reminders/hooks/useReminderGoalsSync';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
@@ -151,6 +152,8 @@ export default function RootLayout() {
         <Stack.Screen name="asmaa/[slug]" options={pushOptions} />
       </Stack>
       )}
+      {/* Asks for exact-alarm access once the default prayer bells turn on (ADR 0064). */}
+      {ready && splashFinished && <DefaultBellsExactAlarmPrompt />}
       {/* Blocks the app when this version is below the API's minimum (ADR 0060). */}
       {ready && splashFinished && <ForceUpdateGate />}
       </QuranFontProvider>

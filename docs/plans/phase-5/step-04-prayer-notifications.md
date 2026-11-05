@@ -12,7 +12,7 @@ A local notification fires at each enabled prayer time — offline, no account, 
    - Cancellation is total-before-reschedule (idempotent; no duplicates).
    - System default sound; title/body from i18n («حان وقت صلاة الفجر»). No bundled adhan audio (D4; amended by ADR 0047 (proposed), see `docs/plans/adhan-sound.md`).
 2. **Toggles:**
-   - Per-prayer bell on `PrayerTimeRow` (wired here) — persisted in MMKV (`storageKeys`), same pattern as the daily reminder; default **off**, nothing pre-enabled.
+   - Per-prayer bell on `PrayerTimeRow` (wired here) — persisted in MMKV (`storageKeys`), same pattern as the daily reminder; default **off**, nothing pre-enabled. *Amended by ADR 0064: unset bells turn on once location is approved or a city is chosen.*
    - Master section in Settings («إشعارات الصلاة») listing the five prayers, mirroring the same toggles.
    - OS permission: requested lazily on first toggle-on, with the Arabic rationale; denied → toggle snaps back with a guidance alert (same pattern as Phase 4 reminders).
 3. **Deep link:** tapping a notification opens the الصلاة tab.

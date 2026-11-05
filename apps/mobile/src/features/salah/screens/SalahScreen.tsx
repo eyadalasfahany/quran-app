@@ -23,7 +23,8 @@ import { SalahDateHeader } from '../components/SalahDateHeader';
 import { SalahLocating } from '../components/SalahLocating';
 import { markDiscovered } from '@/features/discover/store';
 
-import { requestLocationPermissions, setAutoLocation, setManualLocation } from '../data/location';
+import { setAutoLocation, setManualLocation } from '../data/location';
+import { requestLocationAndArmBells } from '../data/notifications';
 import { prevPrayer, qiblaBearing, type NextPrayerName, type PrayerTimesOutput } from '../data/prayer-times';
 import { formatPrayerTime } from '../data/time-format';
 import { useHijriDate } from '@/features/hijri/hooks/useHijriDate';
@@ -60,7 +61,7 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   // The tab is the permission's context: ask on first visit rather than from a cold modal.
   useEffect(() => {
     if (source === 'auto' && permissionStatus === Location.PermissionStatus.UNDETERMINED) {
-      void requestLocationPermissions().then(() => refresh());
+      void requestLocationAndArmBells().then(() => refresh());
     }
   }, [source, permissionStatus, refresh]);
 
@@ -154,7 +155,7 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
           setAutoLocation();
           markDiscovered('worship.salah');
           setSheetOpen(false);
-          void requestLocationPermissions().then(() => refresh());
+          void requestLocationAndArmBells().then(() => refresh());
         }}
         onSelectCity={(city) => {
           setManualLocation({ id: city.id, lat: city.lat, lng: city.lng });

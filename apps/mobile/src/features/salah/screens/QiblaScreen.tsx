@@ -21,7 +21,7 @@ import { QiblaMetaPanel } from '../components/QiblaMetaPanel';
 import { QiblaNoLocation } from '../components/QiblaNoLocation';
 import { dialPlacement } from '../data/dial-placement';
 import { distanceToMakkah } from '../data/distance';
-import { requestLocationPermissions } from '../data/location';
+import { requestLocationAndArmBells } from '../data/notifications';
 import { qiblaDialSize, qiblaGlowSize } from '../data/qibla-layout';
 import { qiblaBearing } from '../data/prayer-times';
 import { usePrayerLocation } from '../hooks';
@@ -99,7 +99,7 @@ export function QiblaScreen() {
   }, [aligned]);
 
   const onSetLocation = async () => {
-    await requestLocationPermissions();
+    await requestLocationAndArmBells();
     await location.refresh();
   };
 

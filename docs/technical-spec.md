@@ -743,7 +743,8 @@ Reminders are local; only the daily hadith (deferred, ADR 0042) and rare announc
 
 **Notifications**
 
-- **Local (`expo-notifications`):** daily reading reminder and khatma reminder are scheduled on the device at the user's time; they are rescheduled when the time zone, plan or setting changes. Permission is requested only when a switch is turned on.
+- **Local (`expo-notifications`):** daily reading reminder and khatma reminder are scheduled on the device at the user's time; they are rescheduled when the time zone, plan or setting changes. Permission is requested only when a switch is turned on, with one exception: a usable location arms the default prayer bells.
+- **Prayer notifications default (ADR 0064):** once location permission is granted or a manual city is chosen, every prayer bell the user has never set turns on and notification permission is requested. Existing installs are included. A bell the user turned off stays off. A refusal stores the untouched bells as off, so the prompt is not repeated. On Android 14+ with exact alarms denied, the exact-alarm dialog shows once after arming.
 - **Azkar reminders (ADR 0031 §7):** per category (and per entry where useful), either a daily clock time or a prayer-relative offset (e.g. الفجر + ١٠ دقائق). Prayer-relative reminders keep a rolling 8-day schedule computed with `features/salah/data/prayer-times.ts`, refreshed on launch, foreground, date, time zone, location or setting change. A reminder time is the user's preference, never the religious time of the dhikr. They share the notification layer and deep-link handler with the daily reminder; no second system.
   - Implementation:
     - shared `channels.ts` (Android channels `reminders`, `azkar` and `prayer`; ADR 0047 adds `prayer_adhan_<id>` and `prayer_silent`) and `budget.ts` (iOS limit 64: daily reminder 1, prayer notifications 40, Azkar 23)
