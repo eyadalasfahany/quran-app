@@ -1,0 +1,13 @@
+# Server-side MP3Quran copy into R2 (ADR 0061 section 4, plan B4).
+# The COPY_TOKEN secret is set with `wrangler secret put COPY_TOKEN`; it is never written here.
+name = "taybah-r2-copy"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+# No workers.dev subdomain on this account: the Worker answers on its own custom domain instead.
+# Remove it with `wrangler delete` when ingestion is finished.
+workers_dev = false
+routes = [{ pattern = "r2-copy.taybah-app.com", custom_domain = true }]
+
+[[r2_buckets]]
+binding = "AUDIO"
+bucket_name = "quran"
