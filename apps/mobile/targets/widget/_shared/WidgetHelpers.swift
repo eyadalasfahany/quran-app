@@ -162,9 +162,9 @@ extension View {
   }
 
   /// Frosted inner card on brandSurface (foot bands, chips). Matches Android `onBrandSoftBand`.
-  func onBrandSoftCard(_ palette: TaybahPalette, opacity: Double = 0.2) -> some View {
-    padding(.horizontal, 14)
-      .padding(.vertical, 12)
+  func onBrandSoftCard(_ palette: TaybahPalette, opacity: Double = 0.2, horizontal: CGFloat = 14, vertical: CGFloat = 12) -> some View {
+    padding(.horizontal, horizontal)
+      .padding(.vertical, vertical)
       .frame(maxWidth: .infinity, alignment: .leading)
       .background(WidgetHelpers.onBrandWash(palette, opacity: opacity))
       .overlay {
