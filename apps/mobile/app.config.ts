@@ -117,7 +117,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     name: variant.name,
     slug: 'taybah',
     owner: 'themayman',
-    version: '1.0.1',
+    version: '1.0.2',
     scheme: variant.scheme,
     // EAS Update (spec §14): JavaScript-only fixes reach installed builds on their channel (eas.json).
     // The fingerprint changes with any native change, so an update never lands on a build it doesn't match.
