@@ -24,7 +24,7 @@ import { MisbahaReminderBlock } from '../components/MisbahaReminderBlock';
 import { ReminderPermissionDialog } from '../components/ReminderPermissionDialog';
 import { ReminderRow } from '../components/ReminderRow';
 import { RemindersIntro } from '../components/RemindersIntro';
-import { TestReminderButton } from '../components/TestReminderButton';
+// import { TestReminderButton } from '../components/TestReminderButton';
 import { azkarDetail } from '../data/azkar-detail';
 import { setAzkarSessionReminder } from '../data/azkar-session';
 import { azkarStatus } from '../data/hub-status';
@@ -117,7 +117,7 @@ export function RemindersScreen({ testID = 'reminders-screen' }: { testID?: stri
             <MisbahaReminderBlock granted={granted} />
           </SettingsGroup>
 
-          <TestReminderButton />
+          {/* <TestReminderButton /> */}
         </ScrollView>
       </ContentColumn>
       <ReminderLimitDialog onClose={() => setLimited(false)} visible={limited} />

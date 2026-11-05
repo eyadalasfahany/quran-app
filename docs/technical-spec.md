@@ -451,7 +451,7 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 
 One JSON API under `/api/v1`, used only by our app. These rules apply to every endpoint in section 9.
 
-- **Versioning:** the major version is in the path. Additive changes (new fields, new endpoints) never bump it; the app ignores unknown fields. `GET /bootstrap` returns `min_app_version`, and older builds show an update prompt.
+- **Versioning:** the major version is in the path. Additive changes (new fields, new endpoints) never bump it; the app ignores unknown fields. `GET /bootstrap` returns per-platform `min_app_version`, which is the live store version the API looks up from Apple and the Play Store page every 15 minutes, and `store_url`; older builds show a blocking update pop-up (ADR 0060).
 - **Required headers:** `X-Device-Id` (the install UUID, generated on first launch and kept in secure storage), `X-App-Version`, `X-Platform` (`ios` / `android`), `Accept-Language` (`ar` or `en`). `Authorization: Bearer <token>` only on authenticated routes.
 - **Auth:** Sanctum personal access tokens, one per device, no expiry, revocable from the devices list. Guests call public endpoints with no token.
 - **Envelope:** success responses return the resource directly (`{...}`) or a list as `{ "data": [...], "next_cursor": "..." | null }`. No wrapping `success` flags.
@@ -472,7 +472,7 @@ Twenty-seven endpoints cover v1; Phase 7 adds five hadith collection endpoints (
 | Method | Path | Auth | Purpose | Main responses |
 | --- | --- | --- | --- | --- |
 | GET | `/health` | none | API, database and Redis reachability for the app and monitoring; `Cache-Control: no-store` (ADR 0001) | 200, 503 |
-| GET | `/bootstrap` | none | Min app version, feature flags, today's Hijri date, daily hadith id, source credits. The daily hadith id is deferred (ADR 0042) | 200 |
+| GET | `/bootstrap` | none | Min app version (the live store version, ADR 0060) and store link per platform, feature flags, today's Hijri date, daily hadith id, source credits. The daily hadith id is deferred (ADR 0042). Only the min app version and store links are built so far. `Cache-Control: no-store` | 200 |
 | GET | `/content/manifest` | none | Every available resource with latest version, pack URL, size, SHA-256 | 200, 304 |
 | GET | `/content/packs/{resource_id}/{version}` | none | Gzipped SQLite pack (redirect to the cached file) | 302, 404 |
 | GET | `/content/changes` | none | Row changes for one resource since a version (`resource_id`, `since_version`, `cursor`) | 200, 410 |

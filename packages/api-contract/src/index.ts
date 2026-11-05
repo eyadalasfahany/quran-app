@@ -8,6 +8,8 @@ export type HealthStatus = components['schemas']['HealthStatus'];
 // The 503 body has the same shape, so the app can show which check failed.
 export type HealthResponse = paths['/health']['get']['responses'][200]['content']['application/json'];
 
+export type BootstrapResponse = paths['/bootstrap']['get']['responses'][200]['content']['application/json'];
+
 export type ContentManifest = paths['/content/manifest']['get']['responses'][200]['content']['application/json'];
 
 export type ContentManifestResource = ContentManifest['resources'][number];

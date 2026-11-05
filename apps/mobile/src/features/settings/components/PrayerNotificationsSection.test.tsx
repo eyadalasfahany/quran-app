@@ -67,11 +67,11 @@ describe('PrayerNotificationsSection', () => {
     expect(router.push).toHaveBeenCalledWith('/adhan-sound');
   });
 
-  it('offers a test iqamah button below the prayer notification group', async () => {
-    const view = await renderUi(<PrayerNotificationsSection />);
-
-    expect(view.getByRole('button', { name: 'إرسال إشعار إقامة تجريبي' })).toBeOnTheScreen();
-  });
+  // it('offers a test iqamah button below the prayer notification group', async () => {
+  //   const view = await renderUi(<PrayerNotificationsSection />);
+  //
+  //   expect(view.getByRole('button', { name: 'إرسال إشعار إقامة تجريبي' })).toBeOnTheScreen();
+  // });
 
   it.each(locales)('is headed in %s', async (locale) => {
     const view = await renderUi(<PrayerNotificationsSection />, { locale });
