@@ -11,7 +11,7 @@ import { ListRow, UiText } from '@/shared/ui';
 import { IqamahOffsetRow } from './IqamahOffsetRow';
 import { PrayerReminderRow } from './PrayerReminderRow';
 import { SettingsGroup } from './SettingsGroup';
-import { TestIqamahButton } from './TestIqamahButton';
+// import { TestIqamahButton } from './TestIqamahButton';
 
 /**
  * The «إشعارات الصلاة» group in Settings: one switch per obligatory prayer (ADR 0030 §3). It mirrors the five bells on
@@ -42,7 +42,7 @@ export function PrayerNotificationsSection({ testID = 'prayer-notifications-sect
           }
         />
       </SettingsGroup>
-      <TestIqamahButton />
+      {/* <TestIqamahButton /> */}
     </View>
   );
 }
