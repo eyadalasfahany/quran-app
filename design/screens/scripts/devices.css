@@ -1,0 +1,98 @@
+/* Device chrome shells — window-class sizes from spec §4 / ADR 0036, 0043, 0051.
+   Never branch on device model in app code; these frames are design review aids only. */
+
+.dv-frame{display:flex;flex-direction:column;align-items:center;gap:10px}
+.dv-label{font-size:13px;font-weight:600;color:#5b6a64;text-align:center}
+.dv-meta{font-size:12px;color:#78877f;text-align:center}
+
+/* —— Phone (compact) 390 × 844 —— */
+.dv-phone{width:390px;height:844px;border-radius:44px;overflow:hidden;position:relative;
+  box-shadow:0 12px 40px rgba(19,35,31,.18);background:#111;padding:12px;box-sizing:border-box}
+.dv-phone.ios{background:linear-gradient(160deg,#1c1c1e,#2c2c2e)}
+.dv-phone.android{background:linear-gradient(160deg,#1a1a1a,#303030);border-radius:36px;padding:10px}
+.dv-phone-inner{width:100%;height:100%;border-radius:34px;overflow:hidden;background:#f7f3ea;position:relative}
+.dv-phone.android .dv-phone-inner{border-radius:26px}
+.dv-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:118px;height:28px;
+  background:#111;border-radius:18px;z-index:5}
+.dv-dynamic-island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:34px;
+  background:#0a0a0a;border-radius:20px;z-index:5}
+.dv-android-cam{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:12px;height:12px;
+  background:#0a0a0a;border-radius:50%;z-index:5;box-shadow:0 0 0 3px #1a1a1a}
+.dv-status{position:absolute;top:0;inset-inline:0;height:44px;display:flex;align-items:flex-end;
+  justify-content:space-between;padding:0 22px 6px;font-size:12px;font-weight:600;z-index:4;pointer-events:none}
+.dv-home-ind{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:120px;height:4px;
+  border-radius:2px;background:rgba(19,35,31,.35);z-index:5}
+.dv-nav-android{position:absolute;bottom:0;inset-inline:0;height:28px;display:flex;align-items:center;
+  justify-content:space-evenly;background:rgba(0,0,0,.04);z-index:5}
+.dv-nav-android span{width:18px;height:18px;border:1.5px solid rgba(19,35,31,.45);border-radius:4px}
+.dv-nav-android span:nth-child(2){border-radius:50%}
+.dv-nav-android span:nth-child(3){width:14px;border:none;border-left:1.5px solid rgba(19,35,31,.45);
+  border-bottom:1.5px solid rgba(19,35,31,.45);height:14px;transform:rotate(45deg);margin-bottom:2px}
+
+/* Landscape phone (short window) 844 × 390 */
+.dv-phone-land{width:844px;height:390px;border-radius:36px;overflow:hidden;position:relative;
+  box-shadow:0 12px 40px rgba(19,35,31,.18);background:#1c1c1e;padding:10px;box-sizing:border-box}
+.dv-phone-land-inner{width:100%;height:100%;border-radius:28px;overflow:hidden;background:#f7f3ea}
+
+/* Medium tablet / foldable 744 × 1133 */
+.dv-medium{width:744px;height:1133px;border-radius:28px;overflow:hidden;position:relative;
+  box-shadow:0 12px 40px rgba(19,35,31,.18);background:#1c1c1e;padding:12px;box-sizing:border-box}
+.dv-medium-inner{width:100%;height:100%;border-radius:18px;overflow:hidden;background:#f7f3ea}
+
+/* Expanded tablet 1194 × 834 */
+.dv-expanded{width:1194px;height:834px;border-radius:28px;overflow:hidden;position:relative;
+  box-shadow:0 12px 40px rgba(19,35,31,.18);background:#1c1c1e;padding:12px;box-sizing:border-box}
+.dv-expanded-inner{width:100%;height:100%;border-radius:18px;overflow:hidden;background:#f7f3ea}
+
+/* Foldable unfolded (approx expanded phone) */
+.dv-fold{width:884px;height:1104px;border-radius:24px;overflow:hidden;position:relative;
+  box-shadow:0 12px 40px rgba(19,35,31,.18);background:#222;padding:10px;box-sizing:border-box}
+.dv-fold-inner{width:100%;height:100%;border-radius:16px;overflow:hidden;background:#f7f3ea;position:relative}
+.dv-hinge{position:absolute;inset-inline-start:50%;top:0;bottom:0;width:2px;background:rgba(19,35,31,.12);z-index:3}
+
+/* Apple Watch 41 / 45 mm */
+.dv-watch{width:184px;height:224px;border-radius:48px;overflow:hidden;position:relative;
+  box-shadow:0 10px 28px rgba(0,0,0,.35);background:#111;padding:10px;box-sizing:border-box}
+.dv-watch.mm45{width:204px;height:248px;border-radius:52px}
+.dv-watch-inner{width:100%;height:100%;border-radius:38px;overflow:hidden;background:#0e1b18;color:#f3eee2}
+.dv-watch.mm45 .dv-watch-inner{border-radius:42px}
+.dv-crown{position:absolute;inset-inline-end:-6px;top:56px;width:8px;height:36px;border-radius:4px;background:#444}
+.dv-side-btn{position:absolute;inset-inline-end:-5px;top:108px;width:6px;height:22px;border-radius:3px;background:#444}
+
+/* Wear OS */
+.dv-wear{width:192px;height:192px;border-radius:50%;overflow:hidden;position:relative;
+  box-shadow:0 10px 28px rgba(0,0,0,.35);background:#111;padding:8px;box-sizing:border-box}
+.dv-wear.square{border-radius:36px}
+.dv-wear-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;background:#0e1b18;color:#f3eee2}
+.dv-wear.square .dv-wear-inner{border-radius:28px}
+
+/* Widget size guides (iOS) */
+.dv-w-sm{width:158px;height:158px;border-radius:22px;overflow:hidden;box-shadow:0 4px 16px rgba(19,35,31,.14)}
+.dv-w-md{width:338px;height:158px;border-radius:22px;overflow:hidden;box-shadow:0 4px 16px rgba(19,35,31,.14)}
+.dv-w-lg{width:338px;height:354px;border-radius:22px;overflow:hidden;box-shadow:0 4px 16px rgba(19,35,31,.14)}
+.dv-w-and-2x2{width:168px;height:168px;border-radius:28px;overflow:hidden;box-shadow:0 4px 16px rgba(19,35,31,.14)}
+.dv-w-and-4x2{width:352px;height:168px;border-radius:28px;overflow:hidden;box-shadow:0 4px 16px rgba(19,35,31,.14)}
+
+/* Notification banners */
+.dv-notif-lock{width:390px;min-height:844px;border-radius:44px;overflow:hidden;position:relative;
+  box-shadow:0 12px 40px rgba(19,35,31,.18);background:#1a2420}
+.dv-notif-banner{width:358px;border-radius:18px;padding:12px 14px;background:rgba(255,253,248,.92);
+  backdrop-filter:blur(24px) saturate(1.8);border:1px solid rgba(255,255,255,.75);
+  box-shadow:0 8px 24px rgba(19,35,31,.16);color:#13231f;display:flex;gap:12px;align-items:flex-start}
+.dv-notif-banner.dark{background:rgba(23,36,33,.88);color:#ece6d8;border-color:rgba(255,255,255,.14)}
+.dv-notif-icon{width:36px;height:36px;border-radius:9px;background:#1f4d40;color:#f7f3ea;
+  display:flex;align-items:center;justify-content:center;font-family:Amiri,serif;font-weight:700;flex-shrink:0}
+.dv-notif-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dv-notif-app{font-size:12px;font-weight:600;opacity:.7}
+.dv-notif-title{font-size:14px;font-weight:700;line-height:18px}
+.dv-notif-text{font-size:13px;line-height:18px;opacity:.85}
+.dv-notif-time{font-size:11px;opacity:.55;flex-shrink:0}
+
+.slot-fill{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:#efe8d8;color:#5b6a64;font-size:13px;text-align:center;padding:16px;box-sizing:border-box}
+.slot-fill.dark{background:#172421;color:#a7b3ad}
+.slot-fill.brand{background:#1f4d40;color:#f7f3ea}
+
+@media (max-width:480px){
+  .dv-phone,.dv-medium,.dv-expanded,.dv-fold,.dv-phone-land{transform:scale(.55);transform-origin:top left}
+}

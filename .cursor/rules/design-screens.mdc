@@ -1,0 +1,22 @@
+---
+description: How to read Taybah HTML design frames without burning tokens
+globs:
+  - design/**
+  - design/screens/**
+  - quran-app-screens.html
+  - quran-app-design-system.html
+alwaysApply: false
+---
+
+# Design screens — token rules
+
+When the task involves UI frames, screens, widgets, watch, or design HTML:
+
+0. For a screen's dark, LTR or tablet variants, read `design/AGENTS.md` and `design/CATALOG.md`
+   (one folder per screen: `design/<stack>/<Screen>/<variant>.html`). Derived variants are drafts.
+1. Read `design/screens/AGENTS.md` first (short).
+2. Find the frame in `design/screens/frames.tsv` or `design/screens/CATALOG.md`.
+3. Open **at most one** `design/screens/frames/<stack>/<FrameId>.html` partial if markup is required.
+4. Humans preview via `design/screens/viewer.html?id=<FrameId>`.
+5. Do **not** load `quran-app-screens.html` or `common/styles.css` unless regenerating or debugging the monolith.
+6. CI / `frame-shot.py` still use root `quran-app-screens.html` — leave it unchanged unless the developer asks to update the monolith.
