@@ -42,4 +42,5 @@ Commit the source page together with the regenerated `en/` page and `sitemap.xml
 - Copy comes from what the app actually does; no claims, numbers or features that aren't shipped (remove them when a feature is removed). No generated religious content (root non-negotiable 6), in `llms.txt` too.
 - No ratings or reviews in structured data unless real ones exist.
 - Share image: `assets/images/google-play-feature-graphic.png` (1024×500, keep it under 300 KB for WhatsApp). Changing it means updating the size in `build-seo.py`.
+- QR code (`assets/images/taybah-qr.svg`, used on `/qr` and `/download`) encodes `https://taybah-app.com/download?src=qr` (`src` becomes the store campaign). Once printed it must never change. Made with segno: `segno.make(url, error='q').save(path, kind='svg', border=0, dark='#13231f', xmldecl=False, omitsize=True)`.
 - Pages that redirect or are print/utility pages are `noindex` (`False` in `PAGES`).
