@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use App\Domains\Content\Enums\ChangeOperation;
+use App\Domains\Content\Enums\PermissionStatus;
 use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Enums\SyncRunStatus;
 use App\Domains\Content\Models\ChapterAudioFile;
 use App\Domains\Content\Models\ContentChange;
+use App\Domains\Content\Models\ContentSource;
 use App\Domains\Content\Models\Mushaf;
 use App\Domains\Content\Models\MushafPage;
 use App\Domains\Content\Models\Recitation;
@@ -15,8 +17,11 @@ use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Models\SyncRun;
 use App\Domains\Content\Models\SyncState;
 use App\Domains\Content\Models\TafsirEntry;
+use App\Domains\Content\Models\TaybahRecitationTiming;
+use App\Domains\Content\Models\TaybahTimingSet;
 use App\Domains\Content\Models\WordLayout;
 use App\Domains\Content\Services\ContentSyncService;
+use App\Domains\Content\Services\RecitationSegmentsFlagService;
 use App\Domains\Content\Sync\SyncException;
 use Database\Seeders\ContentSourceSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -976,4 +981,192 @@ function audioSegment(int $verseId, array $segments): array
         'duration_ms' => 6,
         'segments' => $segments,
     ];
+}
+
+it('keeps Taybah sets and rows when a QF snapshot replaces the files', function (): void {
+    bootstrapChapterRecitationResource();
+    taybahSetFor(ChapterAudioFile::query()->findOrFail(10734));
+    $setsBefore = TaybahTimingSet::query()->get()->toArray();
+    $rowsBefore = TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray();
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 11, 'RESOURCE_INVALIDATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ]);
+
+    expect(ChapterAudioFile::query()->pluck('id')->all())->toBe([10734])
+        ->and(TaybahTimingSet::query()->get()->toArray())->toEqual($setsBefore)
+        ->and(TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray())->toEqual($rowsBefore);
+});
+
+it('keeps has_word_segments true for an untrusted reciter that has served Taybah segments', function (): void {
+    config(['quran.untrusted_timing_recitations' => [6]]);
+    bootstrapChapterRecitationResource();
+    taybahSetFor(ChapterAudioFile::query()->findOrFail(10734));
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 11, 'RESOURCE_INVALIDATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ]);
+
+    expect(RecitationTiming::query()->count())->toBe(0)
+        ->and(Recitation::query()->sole()->has_word_segments)->toBeTrue();
+});
+
+it('sets has_word_segments false when the Taybah set has no segments and the reciter is untrusted', function (): void {
+    config(['quran.untrusted_timing_recitations' => [6]]);
+    bootstrapChapterRecitationResource();
+    taybahSetFor(ChapterAudioFile::query()->findOrFail(10734), withSegments: false);
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentResourceMutation('chapter_recitations', 6, 11, 'RESOURCE_INVALIDATE', '/api/v4/resources/snapshots/chapter_recitations/6'),
+    ]);
+
+    expect(Recitation::query()->sole()->has_word_segments)->toBeFalse();
+});
+
+it('drops the flag when a file url change makes the Taybah set stale', function (): void {
+    config(['quran.untrusted_timing_recitations' => [6]]);
+    bootstrapChapterRecitationResource();
+    taybahSetFor(ChapterAudioFile::query()->findOrFail(10734));
+    app(RecitationSegmentsFlagService::class)->refresh(Recitation::query()->sole()->id);
+    expect(Recitation::query()->sole()->has_word_segments)->toBeTrue();
+
+    $moved = audioFile(10734, 1, 78, 78000, null, 1595520.0);
+    $moved['audio_url'] = 'https://download.quranicaudio.com/qdc/abdul_baset/mujawwad/2.mp3';
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_UPDATE', '10734', 'chapter_audio_file', $moved),
+    ], 'token-row');
+
+    expect(Recitation::query()->sole()->has_word_segments)->toBeFalse()
+        ->and(TaybahTimingSet::query()->count())->toBe(1)
+        ->and(TaybahRecitationTiming::query()->count())->toBe(1);
+});
+
+it('leaves Taybah rows alone when a QF audio_segment is created, updated or deleted', function (): void {
+    bootstrapChapterRecitationResource();
+    taybahSetFor(ChapterAudioFile::query()->findOrFail(10734));
+    $setsBefore = TaybahTimingSet::query()->get()->toArray();
+    $rowsBefore = TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray();
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_CREATE', '10734:2', 'audio_segment', audioSegment(2, [[4, 1.2, 3.8]])),
+        contentRowMutation('chapter_recitations', 6, 12, 'ROW_UPDATE', '10734:1', 'audio_segment', audioSegment(1, [[1, 0.0, 900.0]])),
+        contentRowMutation('chapter_recitations', 6, 13, 'ROW_DELETE', '10734:2', 'audio_segment', null),
+    ], 'token-row');
+
+    expect(TaybahTimingSet::query()->get()->toArray())->toEqual($setsBefore)
+        ->and(TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray())->toEqual($rowsBefore);
+});
+
+it('stores the QF timing but writes no change row and no version bump when a served Taybah set covers the file', function (): void {
+    bootstrapChapterRecitationResource();
+    taybahSetFor(ChapterAudioFile::query()->findOrFail(10734));
+    $changesBefore = ContentChange::query()->count();
+    $versionBefore = Resource::query()->where('source_key', '6')->firstOrFail()->version;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_CREATE', '10734:2', 'audio_segment', audioSegment(2, [[4, 1.2, 3.8]])),
+    ], 'token-row');
+
+    expect(RecitationTiming::query()->where('audio_file_id', 10734)->where('verse_id', 2)->exists())->toBeTrue()
+        ->and(ContentChange::query()->count())->toBe($changesBefore)
+        ->and(Resource::query()->where('source_key', '6')->firstOrFail()->version)->toBe($versionBefore)
+        ->and(SyncRun::query()->latest('id')->firstOrFail()->status)->toBe(SyncRunStatus::Ok);
+});
+
+it('writes the change row and bumps the version when no Taybah set covers the file', function (): void {
+    bootstrapChapterRecitationResource();
+    $changesBefore = ContentChange::query()->count();
+    $versionBefore = Resource::query()->where('source_key', '6')->firstOrFail()->version;
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_CREATE', '10734:2', 'audio_segment', audioSegment(2, [[4, 1.2, 3.8]])),
+    ], 'token-row');
+
+    expect(ContentChange::query()->count())->toBe($changesBefore + 1)
+        ->and(Resource::query()->where('source_key', '6')->firstOrFail()->version)->toBe($versionBefore + 1);
+});
+
+it('leaves Taybah rows alone when a chapter_audio_file is deleted by a QF mutation', function (): void {
+    bootstrapChapterRecitationResource();
+    taybahSetFor(ChapterAudioFile::query()->findOrFail(10734));
+
+    runContent(ResourceGroup::ChapterRecitations, 'chapter_recitations:6', reciterRoutes(), [
+        contentRowMutation('chapter_recitations', 6, 11, 'ROW_DELETE', '10734', 'chapter_audio_file', null),
+    ], 'token-row');
+
+    expect(ChapterAudioFile::query()->whereKey(10734)->exists())->toBeFalse()
+        ->and(TaybahTimingSet::query()->count())->toBe(1)
+        ->and(TaybahRecitationTiming::query()->count())->toBe(1)
+        ->and(Recitation::query()->sole()->has_word_segments)->toBeFalse();
+});
+
+it('does not touch a recitation owned by another source during a QF sync', function (): void {
+    $source = ContentSource::query()->updateOrCreate(['code' => 'mp3quran'], [
+        'name' => 'MP3Quran',
+        'licence_url' => 'https://example.test/licence',
+        'attribution_ar' => 'إسناد',
+        'attribution_en' => 'Attribution',
+        'permission_status' => PermissionStatus::Granted,
+    ]);
+    $resource = Resource::factory()->create([
+        'source_id' => $source->id,
+        'group' => ResourceGroup::ChapterRecitations,
+        'source_key' => '6',
+        'version' => 9,
+    ]);
+    $recitation = Recitation::factory()->create(['resource_id' => $resource->id, 'has_word_segments' => true]);
+    $file = ChapterAudioFile::factory()->create([
+        'id' => 99001,
+        'recitation_id' => $recitation->id,
+        'chapter_id' => 1,
+        'audio_url' => 'https://mp3.example.test/6/001.mp3',
+    ]);
+    taybahSetFor($file);
+
+    $before = [
+        'resource' => $resource->fresh()->getAttributes(),
+        'recitation' => $recitation->fresh()->getAttributes(),
+        'file' => $file->fresh()->getAttributes(),
+        'sets' => TaybahTimingSet::query()->get()->toArray(),
+        'rows' => TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray(),
+    ];
+
+    bootstrapChapterRecitationResource();
+
+    $qfResource = Resource::query()->where('source_id', '!=', $source->id)->where('source_key', '6')->sole();
+
+    expect([
+        'resource' => $resource->fresh()->getAttributes(),
+        'recitation' => $recitation->fresh()->getAttributes(),
+        'file' => $file->fresh()->getAttributes(),
+        'sets' => TaybahTimingSet::query()->get()->toArray(),
+        'rows' => TaybahRecitationTiming::query()->orderBy('verse_id')->get()->toArray(),
+    ])->toEqual($before)
+        ->and(Resource::query()->findOrFail($resource->id)->version)->toBe(9)
+        ->and(Recitation::query()->where('resource_id', $qfResource->id)->exists())->toBeTrue()
+        ->and(ChapterAudioFile::query()->whereKey(10734)->where('recitation_id', '!=', $recitation->id)->exists())->toBeTrue();
+});
+
+/**
+ * A Taybah timing set for the file's recitation and chapter at the file's current URL, with one verse 1 row.
+ */
+function taybahSetFor(ChapterAudioFile $file, bool $withSegments = true): TaybahTimingSet
+{
+    $set = TaybahTimingSet::factory()->create([
+        'recitation_id' => $file->recitation_id,
+        'chapter_id' => $file->chapter_id,
+        'audio_url' => $file->audio_url,
+    ]);
+
+    TaybahRecitationTiming::factory()->create([
+        'recitation_id' => $file->recitation_id,
+        'chapter_id' => $file->chapter_id,
+        'verse_id' => 1,
+        'start_ms' => 0,
+        'end_ms' => 500,
+        'segments' => $withSegments ? [[1, 0, 500]] : null,
+    ]);
+
+    return $set;
 }

@@ -24,4 +24,10 @@ interface RecitationTimingRepository
     public function exists(int $audioFileId, int $verseId): bool;
 
     public function delete(int $audioFileId, int $verseId): void;
+
+    /**
+     * @param  list<int>  $audioFileIds
+     * @return int the number of rows deleted; an empty list deletes nothing and returns 0
+     */
+    public function deleteForFiles(array $audioFileIds): int;
 }

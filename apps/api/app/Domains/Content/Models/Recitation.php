@@ -53,4 +53,12 @@ final class Recitation extends Model
     {
         return $this->hasMany(ChapterAudioFile::class);
     }
+
+    /**
+     * @return HasMany<TaybahTimingSet, $this>
+     */
+    public function taybahTimingSets(): HasMany
+    {
+        return $this->hasMany(TaybahTimingSet::class);
+    }
 }

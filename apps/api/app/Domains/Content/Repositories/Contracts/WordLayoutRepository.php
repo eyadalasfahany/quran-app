@@ -19,4 +19,9 @@ interface WordLayoutRepository
     public function upsert(array $row): void;
 
     public function delete(int $mushafId, int $wordId): void;
+
+    /**
+     * @return array<int, int> verse_id => number of rows with char_type 'word', for verse ids in [$firstVerseId, $lastVerseId]; verses with none are absent.
+     */
+    public function wordCountsForVerses(int $mushafId, int $firstVerseId, int $lastVerseId): array;
 }

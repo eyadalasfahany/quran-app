@@ -50,6 +50,25 @@ final class EloquentChapterAudioFileRepository extends EloquentRepository implem
         return $ids;
     }
 
+    public function findForRecitationChapter(int $recitationId, int $chapterId): ?ChapterAudioFile
+    {
+        return $this->query()
+            ->where('recitation_id', $recitationId)
+            ->where('chapter_id', $chapterId)
+            ->first();
+    }
+
+    public function deleteForRecitationExcept(int $recitationId, array $keepIds): int
+    {
+        $query = $this->query()->where('recitation_id', $recitationId);
+
+        if ($keepIds !== []) {
+            $query->whereNotIn('id', $keepIds);
+        }
+
+        return $query->delete();
+    }
+
     public function delete(int $id): void
     {
         $this->query()->whereKey($id)->delete();

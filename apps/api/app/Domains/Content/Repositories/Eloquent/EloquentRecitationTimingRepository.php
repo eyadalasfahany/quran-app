@@ -60,6 +60,15 @@ final class EloquentRecitationTimingRepository extends EloquentRepository implem
             ->delete();
     }
 
+    public function deleteForFiles(array $audioFileIds): int
+    {
+        if ($audioFileIds === []) {
+            return 0;
+        }
+
+        return $this->query()->whereIn('audio_file_id', $audioFileIds)->delete();
+    }
+
     protected function model(): string
     {
         return RecitationTiming::class;

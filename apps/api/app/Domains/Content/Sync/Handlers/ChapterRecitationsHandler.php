@@ -13,6 +13,8 @@ use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Repositories\Contracts\ChapterAudioFileRepository;
 use App\Domains\Content\Repositories\Contracts\RecitationRepository;
 use App\Domains\Content\Repositories\Contracts\RecitationTimingRepository;
+use App\Domains\Content\Repositories\Contracts\TaybahTimingRepository;
+use App\Domains\Content\Services\RecitationSegmentsFlagService;
 use App\Domains\Content\Sync\GroupHandler;
 use App\Domains\Content\Sync\ReadsSyncRecords;
 use App\Domains\Content\Sync\SyncException;
@@ -33,6 +35,8 @@ final class ChapterRecitationsHandler implements GroupHandler
         private readonly RecitationRepository $recitations,
         private readonly ChapterAudioFileRepository $files,
         private readonly RecitationTimingRepository $timings,
+        private readonly TaybahTimingRepository $taybah,
+        private readonly RecitationSegmentsFlagService $segmentsFlag,
     ) {}
 
     public function group(): ResourceGroup
@@ -137,6 +141,7 @@ final class ChapterRecitationsHandler implements GroupHandler
         $this->files->deleteForRecitation($recitation->id);
         $this->files->insert($fileRows);
         $this->timings->insert($timingRows);
+        $this->segmentsFlag->refresh($recitation->id);
 
         return count([...$fileRows, ...$timingRows, $recitation]);
     }
@@ -525,6 +530,7 @@ final class ChapterRecitationsHandler implements GroupHandler
         }
 
         $this->files->upsert($row);
+        $this->refreshSegmentsFlag($recitation);
 
         return new ContentChangeData(
             entity: 'chapter_audio_file',
@@ -543,15 +549,21 @@ final class ChapterRecitationsHandler implements GroupHandler
     }
 
     /**
+     * A QF row for a file that a served Taybah set owns is stored as the fallback but emits no change (ADR 0060 amendment, 5 Nov).
+     *
      * @param  array<string, mixed>  $record
      */
-    private function upsertTiming(Resource $resource, array $record): ContentChangeData
+    private function upsertTiming(Resource $resource, array $record): ?ContentChangeData
     {
         $recitation = $this->requireRecitation($resource);
         $row = $this->timingRow($record);
-        $this->requireFile($recitation, $row['audio_file_id']);
+        $file = $this->requireFile($recitation, $row['audio_file_id']);
         $this->timings->upsert($row);
         $this->refreshSegmentsFlag($recitation);
+
+        if ($this->taybah->hasServedSet($recitation->id, $file->chapter_id, $file->audio_url)) {
+            return null;
+        }
 
         return new ContentChangeData(
             entity: 'recitation_timing',
@@ -567,12 +579,18 @@ final class ChapterRecitationsHandler implements GroupHandler
         );
     }
 
-    private function delete(Resource $resource, Mutation $mutation): ContentChangeData
+    /**
+     * Null only for an audio_segment delete whose file a served Taybah set owns (ADR 0060 decision 5).
+     */
+    private function delete(Resource $resource, Mutation $mutation): ?ContentChangeData
     {
         return $this->removeRow($this->requireRecitation($resource), $mutation->recordType, $mutation->recordKey);
     }
 
-    private function removeRow(Recitation $recitation, ?string $recordType, ?string $recordKey): ContentChangeData
+    /**
+     * Null only for an audio_segment removal whose file a served Taybah set owns (ADR 0060 decision 5).
+     */
+    private function removeRow(Recitation $recitation, ?string $recordType, ?string $recordKey): ?ContentChangeData
     {
         return match ($recordType) {
             'recitation' => $this->deleteRecitation($recitation, $recordKey),
@@ -608,7 +626,10 @@ final class ChapterRecitationsHandler implements GroupHandler
         );
     }
 
-    private function deleteTiming(Recitation $recitation, ?string $recordKey): ContentChangeData
+    /**
+     * Returns null when a served Taybah set owns the file (ADR 0060 amendment, 5 Nov): the QF row is removed, no change.
+     */
+    private function deleteTiming(Recitation $recitation, ?string $recordKey): ?ContentChangeData
     {
         if ($recordKey === null || preg_match('/^([0-9]+):([0-9]+)$/', $recordKey, $matches) !== 1) {
             throw new SyncException('Recitation timing delete does not identify a row.');
@@ -616,9 +637,13 @@ final class ChapterRecitationsHandler implements GroupHandler
 
         $audioFileId = (int) $matches[1];
         $verseId = (int) $matches[2];
-        $this->requireFile($recitation, $audioFileId);
+        $file = $this->requireFile($recitation, $audioFileId);
         $this->timings->delete($audioFileId, $verseId);
         $this->refreshSegmentsFlag($recitation);
+
+        if ($this->taybah->hasServedSet($recitation->id, $file->chapter_id, $file->audio_url)) {
+            return null;
+        }
 
         return new ContentChangeData(
             entity: 'recitation_timing',
@@ -630,10 +655,7 @@ final class ChapterRecitationsHandler implements GroupHandler
 
     private function refreshSegmentsFlag(Recitation $recitation): void
     {
-        $this->recitations->setHasWordSegments(
-            $recitation->id,
-            $this->timings->anyHaveSegments($this->files->idsFor($recitation->id)),
-        );
+        $this->segmentsFlag->refresh($recitation->id);
     }
 
     private function requireRecitation(Resource $resource): Recitation

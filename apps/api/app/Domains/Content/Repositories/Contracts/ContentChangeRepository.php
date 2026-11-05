@@ -21,4 +21,6 @@ interface ContentChangeRepository
     public function after(int $resourceId, int $sinceVersion, ?int $afterId, int $limit): Collection;
 
     public function deleteCreatedBefore(CarbonImmutable $before): void;
+
+    public function deleteForResource(int $resourceId): void;
 }
