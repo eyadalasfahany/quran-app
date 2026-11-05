@@ -1,0 +1,46 @@
+# Taybah (طيبة)
+
+> Taybah is a free Quran app for iPhone, iPad, Apple Watch and Android, Arabic first with a complete English interface: the Madinah Mushaf, nine classical Arabic tafsirs, 17 renowned reciters, prayer times, Qibla and Azkar. Free, no ads, no tracking, no account, and it works offline.
+
+Key facts:
+
+- Price: completely free. No subscriptions, ads or in-app donations.
+- Platforms: iPhone, iPad and Apple Watch (App Store); Android phones, foldables and tablets (Google Play).
+- Account: none. Bookmarks, notes and Khatma stay on the device.
+- Languages: Arabic (default) and English interface.
+- Quran text: the Madinah Mushaf, as printed by the King Fahd Glorious Quran Printing Complex. All 6,236 ayahs are verified before every release; not a letter is changed.
+- No AI-generated religious content: no summaries, rewrites or translations. Every tafsir and recitation names its author or reciter.
+- Prayer times: calculated on the device with the Umm al-Qura method; the location is never sent to a server.
+
+## Download
+
+- [App Store (iPhone, iPad, Apple Watch)](https://apps.apple.com/us/app/taybah-quran-prayer-azkar/id6828097265)
+- [Google Play (Android)](https://play.google.com/store/apps/details?id=com.taybahapp.taybah)
+
+## Features
+
+- The Mushaf: page by page and line by line; Mushaf, Reading and Focus views; a surah and juz index; word search that ignores diacritics; a choice of Uthmani script font and text size; opens offline.
+- Tafsir: nine classical Arabic tafsirs (al-Muyassar, Ibn Kathir, al-Tabari, al-Qurtubi, al-Baghawi, al-Sa'di, al-Jalalayn, al-Wasit, and Ibn Ashur's al-Tahrir wa al-Tanwir), shown as their authors wrote them, downloadable for offline reading.
+- Listening: 17 reciters, including Mahmoud Khalil al-Husary, Muhammad Siddiq al-Minshawi, Abdul Basit Abdul Samad, Mishary Alafasy, Maher al-Muaiqly, Abdul Rahman al-Sudais, Saud al-Shuraim, Saad al-Ghamdi and Yasser al-Dosari. The recited word is highlighted on the page where timings are available. Ayah repeat for memorization, a sleep timer, background playback and offline downloads.
+- Prayer and Qibla: prayer times for your location, notifications with a choice of adhan and an iqamah alert, and a Qibla compass or manual city selection.
+- Azkar and Misbaha: morning, evening and occasion Azkar from Hisn al-Muslim, with counters, favourites, reminders and recited audio; a digital misbaha on the phone, the watch and a widget.
+- Hijri calendar and moon: the Umm al-Qura calendar with occasions, and on-device moon age and illumination (a calculation, not a replacement for the official announcement).
+- Your daily wird: a Khatma plan over the days you choose, daily goals, bookmarks, highlights, notes and reminders, including Surat al-Kahf on Friday.
+- Widgets and Apple Watch: next prayer, today's times, progress, continue reading, misbaha and Azkar status. Widgets never show Quran or dhikr text.
+- Design: light, sepia and dark appearance; supports VoiceOver, TalkBack, larger text and Reduce Motion.
+
+## Pages
+
+- [Home](https://taybahapp.com/en): overview and a tour of the app
+- [Features](https://taybahapp.com/en/features): every feature in detail
+- [Sources and licences](https://taybahapp.com/en/sources): where the religious content comes from
+- [Support and FAQ](https://taybahapp.com/en/support): contact and common questions
+- [Privacy Policy](https://taybahapp.com/en/privacy)
+- [Terms of Use](https://taybahapp.com/en/terms)
+- [Delete data](https://taybahapp.com/en/delete-account)
+
+The Arabic version of each page is at the same path without `/en` (for example https://taybahapp.com/features).
+
+## Contact
+
+- Email: eyadalasfahani@gmail.com
