@@ -35,3 +35,25 @@ def transcribe(wav: np.ndarray) -> dict:
         chunks.append({"start_s": i / SAMPLE_RATE, "text": text})
         print(f"[{i / SAMPLE_RATE:6.0f}s] {text[:70]}", flush=True)
     return {"text": " ".join(c["text"] for c in chunks), "chunks": chunks}
+
+
+def transcription_key(audio_sha256: str) -> str:
+    """Cache key: audio, ASR model revision, and the chunking that shapes the output."""
+    return f"{audio_sha256}|{ASR_MODEL}@{ASR_REVISION}|{CHUNK_SECONDS}|{MAX_NEW_TOKENS}"
+
+
+def cached_transcribe(wav: np.ndarray, audio_sha256: str, cache) -> dict:
+    """transcribe(), saved as JSON at `cache` and reused when the key matches. `cache` may be None."""
+    import json
+    from pathlib import Path
+
+    key = transcription_key(audio_sha256)
+    if cache is not None and Path(cache).is_file():
+        data = json.loads(Path(cache).read_text(encoding="utf-8"))
+        if data.get("key") == key:
+            return data["asr"]
+    asr = transcribe(wav)
+    if cache is not None:
+        Path(cache).parent.mkdir(parents=True, exist_ok=True)
+        Path(cache).write_text(json.dumps({"key": key, "asr": asr}, ensure_ascii=False), encoding="utf-8")
+    return asr

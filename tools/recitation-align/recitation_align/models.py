@@ -6,5 +6,7 @@ ALIGN_MODEL = "jonatasgrosman/wav2vec2-large-xlsr-53-arabic"
 ALIGN_REVISION = "af46c2d8531b8dcbb5e23b952f739b372c2e5d2d"
 
 DEVICE = "cpu"  # MPS hung under the sandbox
-TORCH_THREADS = 8
+import os
+
+TORCH_THREADS = int(os.environ.get("RECITATION_TORCH_THREADS", "8"))  # set 4 to keep a laptop usable
 SAMPLE_RATE = 16000

@@ -70,3 +70,19 @@ Both models were last updated in December 2022. This is a dev-only tool that is 
 ## QF files
 
 Timings for QF files must come from the exact audio URL in `chapter_audio_files`. The plan for that step is still to be written. Do not reuse a timing file for a different URL or file.
+
+## Committed timing files
+
+`recitation_align.export` turns aligner output (`NNN.json`) into the committed timing file the API imports. It runs on the developer's machine, needs no torch, and never touches MySQL. The QF word-count check is done by the API importer, not here.
+
+```bash
+uv run python -m recitation_align.export --kind mp3quran --recitation-key 253 --in out/253-v7 \
+  --out ../../apps/api/resources/recitation-timings/mp3quran/253 [--surah 59 ...] [--source aligner]
+uv run python -m recitation_align.export --kind qf --recitation-key 174 --in out/174 \
+  --urls urls.json --out ../../apps/api/resources/recitation-timings/qf/174
+```
+
+- `--kind mp3quran` checks the aligner's `audio.sha256` and `audio.bytes` against `apps/api/resources/mp3quran/manifest.json` and writes that entry's URL. `--kind qf` needs `--urls`, a JSON object `{"<chapter>": "<audio URL>"}` from `chapter_audio_files`.
+- Output is `NNN.json` per surah: one minified UTF-8 object, format 1 (`format`, `kind`, `recitation_key`, `chapter_id`, `audio`, `source`, `tool_version`, `models`, `original_first_start_ms`, `ayahs`). Each ayah row has `verse_key`, `verse_id`, `start_ms`, `end_ms` and `segments` as `[qf_position, start_ms, end_ms]` triples.
+- A surah that fails a check is refused: one line `NNN: reason` on stderr, no file written, exit code 1. The other selected surahs are still written.
+- Tests: `uv run pytest -q tests/test_export.py`.
