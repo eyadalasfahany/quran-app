@@ -12,6 +12,7 @@ export derives the published starts. Output: aligner-shaped `out/published/MOSHA
 with `source: "mp3quran_published"` on the ayah rows. Nothing committed; nothing under resources/.
 
 With --fallback-aligner, a surah whose published timings are refused (they do not fit the audio file)
+or that end more than a minute before the audio does (the file holds recitation they do not cover)
 is aligned by the whole-surah aligner instead (as `run --no-repair`: windowed alignment, then ayah
 boundaries snapped to pauses) and written with `source: "aligner"`. The printed line says FALLBACK.
 
@@ -44,6 +45,10 @@ DEFAULT_TANZIL = (TOOL_DIR / "../../packages/quran-text-check/data/tanzil-quran-
 INGEST_OUT = (TOOL_DIR / "../mp3quran-ingest/out").resolve()
 SOURCE = "mp3quran_published"
 FALLBACK_SOURCE = "aligner"
+# Audio this far past the last published ayah end means the published timings miss part of the
+# recitation (moshaf 86 surah 89 repeats ayahs 21-26; the timings stop 151 s before the file ends).
+# Ordinary tails (closing silence) seen on moshaf 86 stay under 27 s.
+MAX_UNPUBLISHED_TAIL_MS = 60_000
 LOW_CONFIDENCE = 0.4
 TOLERANCE_S = 1.0
 SETTINGS = dict(max_tokens=MAX_TOKENS, lookahead_tokens=LOOKAHEAD_TOKENS, slack=SLACK, star_penalty=STAR_PENALTY)
@@ -162,8 +167,7 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
     refusal = None
     try:
         norm = normalise(raw, surah=surah, verse_count=verse_count, duration_ms=duration_ms)
-        if norm.missing:
-            refusal = f"published timings miss ayah(s) {norm.missing}"
+        refusal = published_refusal(norm, duration_ms)
     except PublishedError as err:
         refusal = f"published timings refused: {err}"
     if refusal and not args.fallback_aligner:
@@ -233,6 +237,16 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
         "ayah1_published_start_ms": ayah1_published, "duration_ms": duration_ms,
         "fallback": refusal,
     }
+
+
+def published_refusal(norm: Normalised, duration_ms: int) -> str | None:
+    """Why normalised published timings can't be used for this file, or None when they can."""
+    if norm.missing:
+        return f"published timings miss ayah(s) {norm.missing}"
+    last = norm.published_last_end_ms
+    if last is not None and duration_ms - last > MAX_UNPUBLISHED_TAIL_MS:
+        return f"published timings end at {last} ms, {duration_ms - last} ms before the audio ends"
+    return None
 
 
 def ayah_spans(words: list[dict], duration_ms: int) -> dict[int, tuple[int, int]]:
