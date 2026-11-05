@@ -251,6 +251,12 @@ Every UI task:
 | 7f | `MyDuaRow`, `MyDuaForm`, `MyDuas`, `MyDuasEmpty`, editor sheet, delete confirmation. **No audio** (ADR 0055 §4). | `MyDuas*`, `MyDuaEditor*`, `MyDuasEmpty*` |
 | 7g | Menu card and Home tile, each only when a `duas` pack is installed (update `HomeScreen.test.tsx` and the Menu test) | Menu and Home frames from task 6 |
 
+**Amendments (developer, 5 Nov 2026):**
+- Duas home shows **categories** (Quranic row + prophetic HadeethEnc groups with counts); the sources section, Hisn row, Hisn topic tiles and home attribution line are removed (Settings → Sources unchanged). ADR 0044 decisions 1 and 12 still describe them; reconciling the two is open.
+- `DuaHadithDetail*` keeps «المعنى», «المرجع», «الدرجة» and «الفوائد», each with the HadeethEnc credit (decisions 6 and 7). It adds a «فتح على HadeethEnc.com» link, which awaits frame approval. The link card stays out of the frame while the Hisn question is open.
+- The Quranic list shows each verse in full in the Quran font, never truncated. This list has no frame yet (ADR 0010).
+- The save, share and text-size row and the favourites list are built; a new dua closes the editor on save.
+
 A wide window uses the centred column, like the other pushed Azkar screens; expanded-window frames are drawn only if the developer asks.
 
 ### Task 8a — Section search (mobile)
@@ -296,6 +302,11 @@ A wide window uses the centred column, like the other pushed Azkar screens; expa
 5. Part 3: a sign-off of the Prophetic list (content reviewer, or the developer as in ADR 0042).
 6. Part 2: Phase 7 merged with packs built; decision 18; no Hadith switch exists (decision 20, removed 2 Nov 2026, ADR 0045).
 7. Non-blocking: a written HadeethEnc confirmation stays open (content plan).
+
+## Amendments (developer, Nov 2026)
+
+- **Curated catalogue growth** stays server-side: Quranic spans need map review; Prophetic rows need HadeethEnc import and review. The app does not invent religious text or mark map rows reviewed.
+- **Personal duas («أدعيتي»)** are unlimited in `user.db` on device; they are the way users keep more duas than the curated lists without new `dua_*` map rows.
 
 ## Risks
 

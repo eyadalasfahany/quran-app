@@ -6,18 +6,26 @@ import { renderUi } from '../../../../jest/render-ui';
 import { DuasMineCard } from './DuasMineCard';
 
 describe('DuasMineCard', () => {
-  it('renders the brand card and calls onPress', async () => {
+  it('renders the brand card with count caption and calls onPress', async () => {
     const onPress = jest.fn();
-    await renderUi(<DuasMineCard onPress={onPress} />);
+    await renderUi(<DuasMineCard count={3} onPress={onPress} />);
 
-    expect(screen.getByRole('button', { name: 'من كتابتك، أدعيتي' })).toBeOnTheScreen();
+    expect(screen.getByText(/٣ أدعية · على جهازك فقط/)).toBeOnTheScreen();
+    expect(screen.getByText('فتح')).toBeOnTheScreen();
     await press(screen.getByTestId('duas-mine-card'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('shows add action when count is zero', async () => {
+    await renderUi(<DuasMineCard count={0} onPress={jest.fn()} />);
+    expect(screen.getByText('لا أدعية · على جهازك فقط')).toBeOnTheScreen();
+    expect(screen.getByText('إضافة')).toBeOnTheScreen();
+  });
+
   it('renders in English', async () => {
-    await renderUi(<DuasMineCard onPress={jest.fn()} />, { locale: 'en' });
-    expect(screen.getByRole('button', { name: 'Your own, My duas' })).toBeOnTheScreen();
+    await renderUi(<DuasMineCard count={2} onPress={jest.fn()} />, { locale: 'en' });
+    expect(screen.getByText(/2 duas · On this device only/)).toBeOnTheScreen();
+    expect(screen.getByText('Open')).toBeOnTheScreen();
   });
 
   it('uses i18n only', () => {

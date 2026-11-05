@@ -130,4 +130,15 @@ describe('duas content repository', () => {
       next: null,
     });
   });
+
+  it('maps stored hints JSON to a list of hints', () => {
+    seedPropheticRows(executor);
+    executor.run(`UPDATE dua_hadith SET hints = ? WHERE item_id = 10`, [JSON.stringify(['FIXTURE hint 1 — not a dua', 'FIXTURE hint 2 — not a dua'])]);
+    expect(getPropheticDua(executor, 'hadeethenc:1')?.hints).toEqual(['FIXTURE hint 1 — not a dua', 'FIXTURE hint 2 — not a dua']);
+  });
+
+  it('maps missing hints to an empty list', () => {
+    seedPropheticRows(executor);
+    expect(getPropheticDua(executor, 'hadeethenc:1')?.hints).toEqual([]);
+  });
 });

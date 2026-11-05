@@ -200,6 +200,10 @@
         "title": "OpenDua · حصن المسلم",
         "subtitle": "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts."
       },
+      "hadeethenc": {
+        "title": "HadeethEnc · hadeethenc.com",
+        "subtitle": "الأدعية النبوية — محتوى من HadeethEnc.com عند تثبيت حزمة الأدعية، مع الإحالة إلى الناشر والمصدر"
+      },
       "adhan": {
         "title": "adhan",
         "subtitle": "حساب مواقيت الصلاة · MIT"
@@ -1078,7 +1082,26 @@
       "favourites": "المفضلة",
       "mineEyebrow": "من كتابتك",
       "mineTitle": "أدعيتي",
+      "mineCount_zero": "لا أدعية",
+      "mineCount_one": "دعاء واحد",
+      "mineCount_two": "دعاءان",
+      "mineCount_few": "{{number}} أدعية",
+      "mineCount_many": "{{number}} دعاءً",
+      "mineCount_other": "{{number}} دعاء",
+      "mineDeviceOnly": "على جهازك فقط",
+      "mineOpen": "فتح",
+      "mineAdd": "إضافة",
       "sourcesHeading": "المصادر",
+      "categoriesHeading": "التصنيفات",
+      "quranSectionHeading": "من القرآن",
+      "quranSectionCaption": "أدعية وردت في كتاب الله",
+      "sunnahSectionHeading": "من السنة",
+      "sunnahSectionCaption": "أدعية مأثورة",
+      "categoryCount_one": "دعاء واحد",
+      "categoryCount_two": "دعاءان",
+      "categoryCount_few": "{{number}} أدعية",
+      "categoryCount_many": "{{number}} دعاءً",
+      "categoryCount_other": "{{number}} دعاء",
       "quranTitle": "الأدعية القرآنية",
       "quranDetail": "من القرآن",
       "hisnTitle": "حصن المسلم",
@@ -1110,7 +1133,7 @@
       "close": "إغلاق",
       "newTitle": "دعاء جديد",
       "editTitle": "تعديل الدعاء",
-      "titleLabel": "عنوان (اختياري)",
+      "titleLabel": "العنوان (اختياري)",
       "titlePlaceholder": "عنوان قصير",
       "bodyLabel": "نص الدعاء",
       "bodyPlaceholder": "اكتب الدعاء هنا",
@@ -1119,7 +1142,8 @@
       "deleteTitle": "حذف هذا الدعاء؟",
       "deleteBody": "سيُحذف الدعاء وتذكيره من هذا الجهاز.",
       "deleteConfirm": "حذف",
-      "deleteCancel": "إلغاء"
+      "deleteCancel": "إلغاء",
+      "deviceOnly": "يُحفظ على جهازك فقط."
     },
     "reminders": {
       "notificationTitle": "{{name}}",
@@ -1134,21 +1158,25 @@
       "ayahSingle": "الآية {{ayah}}",
       "ayahRange": "الآيات {{from}}–{{to}}",
       "progress": "{{current}} من {{total}}",
-      "openInMushaf": "فتح في المصحف"
+      "openInMushaf": "فتح في المصحف",
+      "sourceLine": "{{surah}} · {{range}}",
+      "shareSource": "سورة {{surah}} · {{range}}",
+      "rowLabel": "{{surah}}، {{ayah}}"
     },
     "hadith": {
       "listTitle": "الأدعية النبوية",
       "detailTitle": "دعاء نبوي",
       "emptyTitle": "لا أدعية نبوية بعد",
-      "emptyBody": "شغّل `php artisan duas:snapshot hadeethenc` ثم `php artisan duas:import --build-packs` على الخادم، ثم ثبّت حزمة الأدعية.",
+      "emptyBody": "ثبّت حزمة الأدعية من المصادر والتحديثات لتظهر هنا.",
       "rowDetail": "من HadeethEnc",
       "progress": "{{current}} من {{total}}",
       "grade": "الدرجة",
-      "explanation": "الشرح",
+      "explanation": "المعنى",
       "reference": "المرجع",
-      "hints": "فوائد",
+      "hints": "الفوائد",
       "linkHisn": "في حصن المسلم · {{number}}",
-      "openSource": "فتح على HadeethEnc.com"
+      "openSource": "فتح على HadeethEnc.com",
+      "credit": "المصدر: موسوعة الأحاديث النبوية (HadeethEnc.com) · {{number}}"
     }
   },
   "sibha": {

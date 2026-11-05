@@ -96,7 +96,7 @@ describe('MyDuaEditorScreen', () => {
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 
-  it('creates a new dua and keeps the sheet open, so the reminder can be set', async () => {
+  it('creates a new dua and closes the sheet, as an edit does', async () => {
     const view = await renderUi(<MyDuaEditorScreen duaId={null} />);
 
     await fireEvent.changeText(view.getByTestId('my-dua-form-body-input'), 'نص تجريبي ٣ — ليس دعاءً');
@@ -104,8 +104,9 @@ describe('MyDuaEditorScreen', () => {
     await settle();
 
     expect(createMyDua).toHaveBeenCalledTimes(1);
-    expect(router.setParams).toHaveBeenCalledWith({ id: 'new-1' });
-    expect(router.back).not.toHaveBeenCalled();
+    expect(createMyDua).toHaveBeenCalledWith({ title: null, body: 'نص تجريبي ٣ — ليس دعاءً' });
+    expect(router.setParams).not.toHaveBeenCalled();
+    expect(router.back).toHaveBeenCalledTimes(1);
   });
 
   it('deletes the dua once confirmed, and closes the sheet', async () => {

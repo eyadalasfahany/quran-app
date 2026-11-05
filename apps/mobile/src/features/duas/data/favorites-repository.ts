@@ -18,6 +18,23 @@ function resolveStore(store?: DuaFavoritesStore): { db: SqlExecutor; now: () => 
   };
 }
 
+/** Adds the dua to favourites, or removes it. Returns whether it is a favourite afterwards (as `toggleFavorite` does for Azkar). */
+export function toggleDuaFavorite(duaKey: string, store?: DuaFavoritesStore): boolean {
+  const { db, now } = resolveStore(store);
+
+  return db.transaction(() => {
+    const existing = db.get<{ duaKey: string }>('SELECT dua_key AS duaKey FROM dua_favorites WHERE dua_key = ?', [duaKey]);
+
+    if (existing !== undefined) {
+      db.run('DELETE FROM dua_favorites WHERE dua_key = ?', [duaKey]);
+      return false;
+    }
+
+    db.run('INSERT INTO dua_favorites (dua_key, created_at) VALUES (?, ?)', [duaKey, now()]);
+    return true;
+  });
+}
+
 export function addDuaFavorite(duaKey: string, store?: DuaFavoritesStore): void {
   const { db, now } = resolveStore(store);
   db.run(`INSERT OR IGNORE INTO dua_favorites (dua_key, created_at) VALUES (?, ?)`, [duaKey, now()]);

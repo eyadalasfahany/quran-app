@@ -4,11 +4,12 @@ import { useMemo } from 'react';
 import { openContentDb } from '@/core/db/content/open';
 import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { openUserDb } from '@/core/db/user/open';
-import { useAzkarAvailable } from '@/features/azkar/data';
-
-import { hasDuasContent, hasPropheticDuas, hasQuranicDuas } from './availability';
+import { useLocale } from '@/core/i18n';
+import { useQuranReferenceLabel } from '@/features/azkar/data';
+import { hasPropheticDuas, hasQuranicDuas } from './availability';
 import { getPropheticDua, getQuranicDua, listPropheticDuaSections, listQuranicDuas } from './content-repository';
-import { liveMyDuasQuery } from './live-queries';
+import { listDuaFavoriteCards, type DuaFavoriteCard } from './favorite-cards';
+import { liveDuaFavoritesQuery, liveIsDuaFavoriteQuery, liveMyDuasQuery } from './live-queries';
 import type { MyDua } from './my-duas-repository';
 import type { PropheticDuaDetail, PropheticDuaSection, QuranicDuaDetail, QuranicDuaSummary } from './model';
 
@@ -31,24 +32,11 @@ export function useMyDuas(): MyDua[] {
 }
 
 /**
- * Whether Duas Menu and Home entry points show (ADR 0017). «أدعيتي» needs no content pack; the partial Duas shell stays
- * open. Also show when the `duas` pack, Azkar (Hisn) or any `my_duas` row is present.
+ * Whether Duas Menu and Home entry points show (ADR 0017, ADR 0044 part 5). «أدعيتي» needs no content pack, so Duas
+ * stays open even before any `duas` or Azkar pack is installed.
  */
 export function useDuasAvailable(): boolean {
-  const revision = useContentRevision();
-  const azkarAvailable = useAzkarAvailable();
-  const myDuasCount = useMyDuas().length;
-  const hasDuasPack = useMemo(
-    () =>
-      readOr(false, () => {
-        const { executor } = openContentDb();
-        return hasDuasContent(executor);
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [revision],
-  );
-
-  return hasDuasPack || azkarAvailable || myDuasCount > 0;
+  return true;
 }
 
 export function usePropheticDuasAvailable(): boolean {
@@ -132,5 +120,34 @@ export function useQuranicDua(duaKey: string): QuranicDuaDetail | undefined {
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [revision, duaKey],
+  );
+}
+
+/** Whether a dua is a favourite. Live: it follows user.db change events, as `useIsFavorite` does for Azkar. */
+export function useIsDuaFavorite(duaKey: string): boolean {
+  const { db } = openUserDb();
+  const { data } = useLiveQuery(liveIsDuaFavoriteQuery(db, duaKey), [duaKey]);
+  return data.length > 0;
+}
+
+/**
+ * Dua favourites, newest first, for the favourites screen. A Quranic card carries its surah and verses (never the
+ * verse text); a prophetic card carries its title. Re-reads when the content revision changes.
+ */
+export function useDuaFavoriteCards(): DuaFavoriteCard[] {
+  const revision = useContentRevision();
+  const locale = useLocale();
+  const quranReference = useQuranReferenceLabel(locale);
+  const { db } = openUserDb();
+  const { data: favorites } = useLiveQuery(liveDuaFavoritesQuery(db));
+
+  return useMemo(
+    () =>
+      readOr<DuaFavoriteCard[]>([], () => {
+        const { executor } = openContentDb();
+        return listDuaFavoriteCards(executor, favorites, quranReference);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [favorites, quranReference, revision],
   );
 }

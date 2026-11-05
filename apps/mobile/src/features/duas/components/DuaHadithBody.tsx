@@ -1,23 +1,29 @@
 import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { UiText, arabicTextDirection } from '@/shared/ui';
+import { displayText, UiText } from '@/shared/ui';
 
-/** Prophetic dua text and attribution (quran-app-screens.html, #DuaHadithDetail). No audio (ADR 0055 §3). */
+/**
+ * Prophetic dua text and attribution (quran-app-screens.html, #DuaHadithDetail). The text takes the reader's text size
+ * the way `DhikrText` does. No audio (ADR 0055 §3).
+ */
 export function DuaHadithBody({
   text,
   attribution,
+  fontScale = 1,
   testID = 'dua-hadith-body',
 }: {
   text: string;
   attribution: string;
+  fontScale?: number;
   testID?: string;
 }) {
   const theme = useTheme();
 
   return (
     <View style={{ gap: theme.space[4], paddingHorizontal: theme.space[2] }} testID={testID}>
-      <UiText align="center" style={arabicTextDirection} variant="dhikr">
+      {/* Arabic reads RTL in English too; the centre alignment stays (as in DhikrText). */}
+      <UiText align="center" style={[displayText('dhikr', fontScale), { writingDirection: 'rtl' }]} variant="dhikr" weight={400}>
         {text}
       </UiText>
       {attribution.trim().length > 0 ? (

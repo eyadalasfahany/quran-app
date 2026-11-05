@@ -1,5 +1,7 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
+import { themes } from '@/core/theme';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 import { renderUi } from '../../../../jest/render-ui';
 import { MyDuaForm } from './MyDuaForm';
@@ -49,6 +51,58 @@ describe('MyDuaForm', () => {
       fireEvent.press(screen.getByTestId('my-dua-form-save'));
     });
     expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws the delete button as a danger action', async () => {
+    await renderUi(
+      <MyDuaForm
+        body="FIXTURE text 1 — not a dua"
+        canDelete
+        duaId="dua-1"
+        onBodyChange={jest.fn()}
+        onDelete={jest.fn()}
+        onSave={jest.fn()}
+        onTitleChange={jest.fn()}
+        title=""
+      />,
+    );
+
+    const label = screen.getByText('حذف الدعاء');
+    expect(StyleSheet.flatten(label.props.style).color).toBe(themes.light.colors.danger);
+  });
+
+  it('shows the device-only caption under the body field', async () => {
+    await renderUi(
+      <MyDuaForm
+        body=""
+        canDelete={false}
+        duaId={null}
+        onBodyChange={jest.fn()}
+        onDelete={jest.fn()}
+        onSave={jest.fn()}
+        onTitleChange={jest.fn()}
+        title=""
+      />,
+    );
+
+    expect(screen.getByTestId('my-dua-form-device-only')).toHaveTextContent('يُحفظ على جهازك فقط.');
+  });
+
+  it('labels the title field as optional', async () => {
+    await renderUi(
+      <MyDuaForm
+        body=""
+        canDelete={false}
+        duaId={null}
+        onBodyChange={jest.fn()}
+        onDelete={jest.fn()}
+        onSave={jest.fn()}
+        onTitleChange={jest.fn()}
+        title=""
+      />,
+    );
+
+    expect(screen.getByLabelText('العنوان (اختياري)')).toBeOnTheScreen();
   });
 
   it('uses i18n only', () => {

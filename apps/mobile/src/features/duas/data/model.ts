@@ -33,7 +33,8 @@ export type PropheticDuaDetail = PropheticDuaSummary & {
   grade: string | null;
   explanation: string | null;
   reference: string | null;
-  hints: string | null;
+  /** Parsed from `dua_hadith.hints` (see `parseDuaHints`). Empty when the dua has none. */
+  hints: readonly string[];
   sourceUrl: string;
   index: number;
   total: number;

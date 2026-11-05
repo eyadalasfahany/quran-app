@@ -1,4 +1,5 @@
 import { fireEvent, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { renderUi } from '../../../../jest/render-ui';
 
@@ -19,5 +20,10 @@ describe('DuaOpenInMushafButton', () => {
     await renderUi(<DuaOpenInMushafButton label="Open in Mushaf" surah={2} verseFrom={255} />);
     fireEvent.press(screen.getByTestId('dua-open-in-mushaf'));
     expect(mockPush).toHaveBeenCalledWith('/read/2:255');
+  });
+
+  it('stretches to fill the middle of the reader controls, as the frame draws it', async () => {
+    await renderUi(<DuaOpenInMushafButton label="Open in Mushaf" surah={2} verseFrom={255} />);
+    expect(StyleSheet.flatten(screen.getByTestId('dua-open-in-mushaf').props.style).alignSelf).toBe('stretch');
   });
 });

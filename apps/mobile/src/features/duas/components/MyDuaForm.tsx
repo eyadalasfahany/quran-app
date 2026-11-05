@@ -107,6 +107,9 @@ export function MyDuaForm({
         testID={`${testID}-body`}
         value={body}
       />
+      <UiText tone="muted" variant="caption" testID={`${testID}-device-only`}>
+        {t('duas.editor.deviceOnly')}
+      </UiText>
       {duaId !== null ? <MyDuaReminderRow duaId={duaId} testID={`${testID}-reminder`} /> : null}
       <Button
         disabled={saveDisabled}
@@ -123,7 +126,7 @@ export function MyDuaForm({
             onPress={() => setConfirmOpen(true)}
             stretch
             testID={`${testID}-delete`}
-            variant="ghost"
+            variant="danger"
           />
           <ConfirmDialog
             cancelLabel={t('duas.editor.deleteCancel')}

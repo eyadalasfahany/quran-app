@@ -14,6 +14,7 @@ describe('duasHref', () => {
     expect(duasHref.quranList).toBe('/duas/quran');
     expect(duasHref.quranDetail('quran:1:1')).toBe('/duas/quran/quran%3A1%3A1');
     expect(duasHref.hadithList).toBe('/duas/hadith');
+    expect(duasHref.hadithGroup(42)).toBe('/duas/hadith?group=42');
     expect(duasHref.hadithDetail('hadeethenc:1')).toBe('/duas/hadith/hadeethenc%3A1');
   });
 

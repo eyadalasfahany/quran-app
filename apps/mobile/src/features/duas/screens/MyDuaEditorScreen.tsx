@@ -30,7 +30,8 @@ function EditorCard({ duaId }: { duaId: string | null }) {
   const existing = duaId === null ? null : getMyDua(duaId);
   const [title, setTitle] = useState(existing?.title ?? '');
   const [body, setBody] = useState(existing?.body ?? '');
-  const [savedId, setSavedId] = useState<string | null>(existing?.id ?? null);
+  // The id is set once the dua exists: a new dua closes on save like an edit, so no id is kept for it here.
+  const savedId = existing?.id ?? null;
 
   useEffect(() => {
     if (existing === null && duaId !== null) {
@@ -49,12 +50,10 @@ function EditorCard({ duaId }: { duaId: string | null }) {
     const trimmedTitle = title.trim().length === 0 ? null : title;
     const nextBody = body;
     if (savedId === null) {
-      const created = createMyDua({ title: trimmedTitle, body: nextBody });
-      setSavedId(created.id);
-      router.setParams({ id: created.id });
-      return;
+      createMyDua({ title: trimmedTitle, body: nextBody });
+    } else {
+      updateMyDua(savedId, { title: trimmedTitle, body: nextBody });
     }
-    updateMyDua(savedId, { title: trimmedTitle, body: nextBody });
     closeToMine();
   };
 

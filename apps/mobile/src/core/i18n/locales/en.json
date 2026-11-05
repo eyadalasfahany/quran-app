@@ -200,6 +200,10 @@
         "title": "OpenDua · Hisn al-Muslim",
         "subtitle": "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts."
       },
+      "hadeethenc": {
+        "title": "HadeethEnc · hadeethenc.com",
+        "subtitle": "Prophetic duas — content from HadeethEnc.com when the duas pack is installed, with publisher and source attribution"
+      },
       "adhan": {
         "title": "adhan",
         "subtitle": "Prayer time calculation · MIT"
@@ -1078,7 +1082,26 @@
       "favourites": "Favourites",
       "mineEyebrow": "Your own",
       "mineTitle": "My duas",
+      "mineCount_zero": "No duas",
+      "mineCount_one": "{{number}} dua",
+      "mineCount_two": "{{number}} duas",
+      "mineCount_few": "{{number}} duas",
+      "mineCount_many": "{{number}} duas",
+      "mineCount_other": "{{number}} duas",
+      "mineDeviceOnly": "On this device only",
+      "mineOpen": "Open",
+      "mineAdd": "Add",
       "sourcesHeading": "Sources",
+      "categoriesHeading": "Categories",
+      "quranSectionHeading": "From the Quran",
+      "quranSectionCaption": "Supplications in the Book of Allah",
+      "sunnahSectionHeading": "From the Sunnah",
+      "sunnahSectionCaption": "Reported supplications",
+      "categoryCount_one": "{{number}} dua",
+      "categoryCount_two": "{{number}} duas",
+      "categoryCount_few": "{{number}} duas",
+      "categoryCount_many": "{{number}} duas",
+      "categoryCount_other": "{{number}} duas",
       "quranTitle": "Quranic duas",
       "quranDetail": "From the Quran",
       "hisnTitle": "Hisn al-Muslim",
@@ -1119,7 +1142,8 @@
       "deleteTitle": "Delete this dua?",
       "deleteBody": "The dua and its reminder will be removed from this device.",
       "deleteConfirm": "Delete",
-      "deleteCancel": "Cancel"
+      "deleteCancel": "Cancel",
+      "deviceOnly": "Saved on this device only."
     },
     "reminders": {
       "notificationTitle": "{{name}}",
@@ -1134,21 +1158,25 @@
       "ayahSingle": "Ayah {{ayah}}",
       "ayahRange": "Ayahs {{from}}–{{to}}",
       "progress": "{{current}} of {{total}}",
-      "openInMushaf": "Open in Mushaf"
+      "openInMushaf": "Open in Mushaf",
+      "sourceLine": "{{surah}} · {{range}}",
+      "shareSource": "Surah {{surah}} · {{range}}",
+      "rowLabel": "{{surah}}, {{ayah}}"
     },
     "hadith": {
       "listTitle": "Prophetic duas",
       "detailTitle": "Prophetic dua",
       "emptyTitle": "No prophetic duas yet",
-      "emptyBody": "Run `php artisan duas:snapshot hadeethenc` then `php artisan duas:import --build-packs` on the API, then install the duas pack.",
+      "emptyBody": "Install the duas pack from Sources and updates to see them here.",
       "rowDetail": "From HadeethEnc",
       "progress": "{{current}} of {{total}}",
       "grade": "Grade",
-      "explanation": "Explanation",
+      "explanation": "Meaning",
       "reference": "Reference",
-      "hints": "Benefits",
+      "hints": "Lessons",
       "linkHisn": "In Hisn al-Muslim · {{number}}",
-      "openSource": "Open on HadeethEnc.com"
+      "openSource": "Open on HadeethEnc.com",
+      "credit": "Source: HadeethEnc.com · {{number}}"
     }
   },
   "sibha": {

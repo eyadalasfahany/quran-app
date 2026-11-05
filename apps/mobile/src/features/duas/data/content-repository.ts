@@ -3,6 +3,7 @@ import { getVerseRange, verseKeyToId, type VerseRecord } from '@/features/reader
 
 import { activeDuasResourceId } from './active-resource';
 import { hasDuasContent } from './availability';
+import { parseDuaHints } from './hints';
 import type {
   PropheticDuaDetail,
   PropheticDuaGroup,
@@ -193,8 +194,9 @@ export function getPropheticDua(db: SqlExecutor, duaKey: string): PropheticDuaDe
       [resourceId, row.position],
     )?.count ?? 0;
   const links = loadPropheticLinks(db, resourceId, row.duaKey);
+  const { hints, ...rest } = row;
 
-  return { ...row, index, total, links };
+  return { ...rest, hints: parseDuaHints(hints), index, total, links };
 }
 
 function loadPropheticLinks(db: SqlExecutor, resourceId: number, duaKey: string): PropheticDuaLink[] {
