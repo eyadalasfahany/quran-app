@@ -134,6 +134,10 @@ jobs:
           CHUNK: ${{ matrix.chunk }}
           SURAHS_JSON: ${{ toJSON(matrix.surahs) }}
           RECITATION_TORCH_THREADS: "4"
+          # Show each surah's line as it finishes (stdout is block-buffered in CI otherwise).
+          PYTHONUNBUFFERED: "1"
+          # Optional: authenticated Hugging Face downloads get higher rate limits (empty is fine).
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           set -euo pipefail
           mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
