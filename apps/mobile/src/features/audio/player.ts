@@ -207,7 +207,10 @@ function rowDurationMs(db: SqlExecutor, reciterId: number, chapterId: number): n
 }
 
 function appIconUrl(): string | undefined {
-  return Image.resolveAssetSource(appIcon)?.uri;
+  // An Android release build resolves the icon to a drawable name ("assets_images_icon"). expo-audio's artworkUrl
+  // must be a URL, or setActiveForLockScreen rejects and the load fails, so the lock screen goes without artwork.
+  const uri = Image.resolveAssetSource(appIcon)?.uri;
+  return uri?.includes('://') === true ? uri : undefined;
 }
 
 function lockScreenMetadata(db: SqlExecutor, reciterId: number, chapterId: number): AudioMetadata {

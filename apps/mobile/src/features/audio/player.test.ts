@@ -1,5 +1,5 @@
 import { getNetworkStateAsync } from 'expo-network';
-import { AppState } from 'react-native';
+import { AppState, Image } from 'react-native';
 
 import { resetNetworkStateForTests, startNetworkWatch, useNetworkStatus, ONLINE_DEBOUNCE_MS } from '@/core/network/network-state';
 import { storage, storageKeys } from '@/core/storage/mmkv';
@@ -185,6 +185,19 @@ describe('playing a surah', () => {
       expect.objectContaining({ title: 'الفاتحة', artist: 'مشاري' }),
       { showNextTrack: true, showPreviousTrack: true },
     );
+  });
+
+  it('leaves out artwork when the icon resolves to a drawable name, as in an Android release build', async () => {
+    const resolve = jest.spyOn(Image, 'resolveAssetSource').mockReturnValue({ uri: 'assets_images_icon', width: 1, height: 1, scale: 1 });
+
+    await playChapter(1);
+
+    expect(fakePlaylist().setActiveForLockScreen).toHaveBeenCalledWith(
+      true,
+      expect.objectContaining({ title: 'الفاتحة', artworkUrl: undefined }),
+      expect.anything(),
+    );
+    resolve.mockRestore();
   });
 
   it('seeks to the verse start from its timing, even when the row duration is shorter than that end', async () => {
