@@ -115,6 +115,8 @@ return [
     // ADR 0061 decision 11: MP3Quran moshaf id => QF chapter reciter source_key (developer-owned; empty until the developer
     // fills it). A listed moshaf is imported but hidden (resource inactive), because QF's copy stays in the list.
     'mp3quran_duplicates' => [],
+    // Held moshaf ids: imported inactive until released (reason 'held'); remove an id to release it.
+    'mp3quran_held_moshafs' => [253],
     // ADR 0061 decision 10: riwayat shipped in v1 (the manifest's `riwayah` text). Anything else is skipped.
     'mp3quran_riwayat' => ['حفص عن عاصم'],
     // recitations.style from the text after the last " - " in the manifest's `moshaf_name`. Unknown or missing: null.

@@ -27,6 +27,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
+    config(['quran.mp3quran_held_moshafs' => []]);
 });
 
 function mp3QuranResource(int $moshafId): ?Resource
@@ -199,6 +200,54 @@ it('hides a duplicate: imported inactive with the reason and no event, and not s
         ->and($hidden->recitation)->not->toBeNull()
         ->and($ids)->not->toContain($hidden->id)
         ->and($ids)->toContain(mp3QuranResource(254)->id);
+    Event::assertDispatchedTimes(ResourceContentChanged::class, 1);
+});
+
+it('holds a moshaf: imported inactive with reason held, its files kept, no event, and not served by the manifest endpoint', function (): void {
+    Event::fake([ResourceContentChanged::class]);
+    config(['quran.mp3quran_held_moshafs' => [253]]);
+    mp3QuranTestManifest([mp3QuranTestMoshaf(253, [1, 2]), mp3QuranTestMoshaf(254, [1, 2])]);
+
+    $report = mp3QuranImport();
+    $this->artisan('content:ensure-packs')->assertSuccessful();
+
+    $held = mp3QuranResource(253);
+    $ids = collect($this->getJson('/api/v1/content/manifest')->json('resources'))->pluck('id')->all();
+
+    expect($report->hidden)->toBe(1)
+        ->and($held->is_active)->toBeFalse()
+        ->and($held->unavailable_reason)->toBe('held')
+        ->and(ChapterAudioFile::query()->where('recitation_id', $held->recitation->id)->count())->toBe(2)
+        ->and($ids)->not->toContain($held->id)
+        ->and($ids)->toContain(mp3QuranResource(254)->id);
+    Event::assertDispatchedTimes(ResourceContentChanged::class, 1);
+});
+
+it('does not build a pack for a held moshaf', function (): void {
+    Event::fake([ResourceContentChanged::class]);
+    config(['quran.mp3quran_held_moshafs' => [253]]);
+    mp3QuranTestManifest([mp3QuranTestMoshaf(253, [1, 2])]);
+
+    mp3QuranImport();
+    $this->artisan('content:ensure-packs')->assertSuccessful();
+
+    expect(ContentPack::query()->where('resource_id', mp3QuranResource(253)->id)->exists())->toBeFalse();
+    Event::assertNotDispatched(ResourceContentChanged::class);
+});
+
+it('reactivates a held moshaf once its id leaves the held list, with a version bump and one event', function (): void {
+    Event::fake([ResourceContentChanged::class]);
+    config(['quran.mp3quran_held_moshafs' => [253]]);
+    mp3QuranTestManifest([mp3QuranTestMoshaf(253, [1, 2])]);
+    mp3QuranImport();
+    Event::assertNotDispatched(ResourceContentChanged::class);
+
+    config(['quran.mp3quran_held_moshafs' => []]);
+    mp3QuranImport();
+
+    expect(mp3QuranResource(253)->is_active)->toBeTrue()
+        ->and(mp3QuranResource(253)->unavailable_reason)->toBeNull()
+        ->and(mp3QuranResource(253)->version)->toBe(2);
     Event::assertDispatchedTimes(ResourceContentChanged::class, 1);
 });
 

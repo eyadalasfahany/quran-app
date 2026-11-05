@@ -75,6 +75,7 @@ final class Mp3QuranImporter
     private function run(Mp3QuranManifestData $data, int $sourceId, bool $deferPack, bool $dryRun): Mp3QuranImportReport
     {
         $duplicates = (array) config('quran.mp3quran_duplicates');
+        $held = array_values(array_map('intval', (array) config('quran.mp3quran_held_moshafs')));
         $counts = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'hidden' => 0, 'deactivated' => 0, 'files' => 0, 'surahsWithoutFile' => 0];
         $events = [];
         $listed = [];
@@ -87,17 +88,13 @@ final class Mp3QuranImporter
 
         foreach ($data->moshafs as $moshaf) {
             $listed[] = (string) $moshaf->moshafId;
-            $hidden = array_key_exists($moshaf->moshafId, $duplicates);
+            $reason = $this->hiddenReason($moshaf->moshafId, $duplicates, $held);
+            $hidden = $reason !== null;
             $counts['hidden'] += $hidden ? 1 : 0;
             $counts['files'] += count($moshaf->files);
             $counts['surahsWithoutFile'] += $this->surahsWithoutFile($moshaf);
 
-            $outcome = DB::transaction(fn (): array => $this->writeMoshaf(
-                $moshaf,
-                $sourceId,
-                $hidden,
-                $hidden ? 'duplicate_of_qf:'.(string) $duplicates[$moshaf->moshafId] : null,
-            ));
+            $outcome = DB::transaction(fn (): array => $this->writeMoshaf($moshaf, $sourceId, $hidden, $reason));
 
             $counts[$outcome['outcome']]++;
 
@@ -209,6 +206,21 @@ final class Mp3QuranImporter
         $this->flags->refresh($recitation->id);
 
         return ['outcome' => $isNew ? 'created' : 'updated', 'resourceId' => $resource->id, 'version' => $version, 'active' => $active];
+    }
+
+    /**
+     * Why a moshaf is hidden (resource inactive): a duplicate of a QF reciter wins over a held moshaf. Null when shown.
+     *
+     * @param  array<array-key, mixed>  $duplicates  moshaf id => QF chapter reciter source_key
+     * @param  list<int>  $held
+     */
+    private function hiddenReason(int $moshafId, array $duplicates, array $held): ?string
+    {
+        if (array_key_exists($moshafId, $duplicates)) {
+            return 'duplicate_of_qf:'.(string) $duplicates[$moshafId];
+        }
+
+        return in_array($moshafId, $held, true) ? 'held' : null;
     }
 
     /**

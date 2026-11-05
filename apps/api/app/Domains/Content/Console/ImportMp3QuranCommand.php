@@ -48,7 +48,7 @@ final class ImportMp3QuranCommand extends Command
             ['created', $report->created],
             ['updated', $report->updated],
             ['unchanged', $report->unchanged],
-            ['hidden duplicates', $report->hidden],
+            ['hidden (duplicates or held)', $report->hidden],
             ['deactivated', $report->deactivated],
             ['files', $report->files],
             ['surahs listed without a file', $report->surahsWithoutFile],
