@@ -1,0 +1,275 @@
+name: Add reciter (MP3Quran)
+
+# Manual only. Copies one MP3Quran recording to R2, aligns it on CPU runners and opens a PR with the
+# manifest and the published timings (ADR 0061, amended 5 Nov 2026). The workflow never pushes to the
+# default branch. Production never runs this; the Railway deploy imports the merged manifest.
+on:
+  workflow_dispatch:
+    inputs:
+      moshaf_ids:
+        description: "MP3Quran moshaf ids, comma-separated (Hafs only, with published timings)"
+        required: true
+        type: string
+      chunks:
+        description: "Align chunks per moshaf (1 to 20)"
+        required: false
+        default: "6"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: add-reciter-${{ inputs.moshaf_ids }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan (refuse or chunk)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      chunks: ${{ steps.plan.outputs.chunks }}
+      moshafs: ${{ steps.plan.outputs.moshafs }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Validate inputs and plan
+        id: plan
+        env:
+          MOSHAF_IDS: ${{ inputs.moshaf_ids }}
+          CHUNKS: ${{ inputs.chunks }}
+        run: python3 tools/recitation-align/scripts/ci_plan.py --moshafs "$MOSHAF_IDS" --chunks "$CHUNKS"
+
+  align:
+    name: Align ${{ matrix.moshaf }} chunk ${{ matrix.chunk }}
+    needs: plan
+    if: ${{ needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    # Only this job reads the R2 keys, from the `production` environment (branch-restricted to main).
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(format('{{"include":{0}}}', needs.plan.outputs.chunks)) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: |
+            tools/mp3quran-ingest/uv.lock
+            tools/recitation-align/uv.lock
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Model revision key
+        id: models
+        run: echo "key=$(grep '_REVISION' tools/recitation-align/recitation_align/models.py | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Hugging Face models
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/huggingface
+          key: hf-${{ runner.os }}-${{ steps.models.outputs.key }}
+
+      - name: Install dependencies (frozen)
+        run: |
+          (cd tools/mp3quran-ingest && uv sync --frozen --no-dev)
+          (cd tools/recitation-align && uv sync --frozen --no-dev)
+
+      - name: Ingest chunk to R2 (s3)
+        working-directory: tools/mp3quran-ingest
+        env:
+          MOSHAF: ${{ matrix.moshaf }}
+          CHUNK: ${{ matrix.chunk }}
+          SURAHS_JSON: ${{ toJSON(matrix.surahs) }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: quran
+          R2_PUBLIC_BASE: https://audio.taybah-app.com
+        run: |
+          set -euo pipefail
+          mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
+          uv run mp3quran-ingest ingest --moshaf "$MOSHAF" "${SURAH_ARGS[@]}" \
+            --upload --via s3 --manifest "out/manifest-${MOSHAF}-${CHUNK}.json"
+
+      - name: Fetch MP3Quran published timings
+        working-directory: tools/recitation-align
+        env:
+          MOSHAF: ${{ matrix.moshaf }}
+          SURAHS_JSON: ${{ toJSON(matrix.surahs) }}
+        run: |
+          set -euo pipefail
+          mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
+          python3 scripts/ci_fetch_published.py --moshaf "$MOSHAF" "${SURAH_ARGS[@]}"
+
+      - name: Align words inside published spans
+        working-directory: tools/recitation-align
+        env:
+          MOSHAF: ${{ matrix.moshaf }}
+          CHUNK: ${{ matrix.chunk }}
+          SURAHS_JSON: ${{ toJSON(matrix.surahs) }}
+          RECITATION_TORCH_THREADS: "4"
+        run: |
+          set -euo pipefail
+          mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
+          uv run python scripts/pilot_published.py --moshaf "$MOSHAF" \
+            --manifest "$GITHUB_WORKSPACE/tools/mp3quran-ingest/out/manifest-${MOSHAF}-${CHUNK}.json" \
+            "${SURAH_ARGS[@]}"
+
+      - name: Stage hand-off files
+        env:
+          MOSHAF: ${{ matrix.moshaf }}
+          CHUNK: ${{ matrix.chunk }}
+        run: |
+          set -euo pipefail
+          HANDOFF="$RUNNER_TEMP/handoff"
+          mkdir -p "$HANDOFF/aligned"
+          cp "tools/mp3quran-ingest/out/manifest-${MOSHAF}-${CHUNK}.json" "$HANDOFF/"
+          cp tools/recitation-align/out/published/"$MOSHAF"/aligned/*.json "$HANDOFF/aligned/"
+
+      - name: Upload hand-off
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: align-${{ matrix.moshaf }}-${{ matrix.chunk }}
+          path: ${{ runner.temp }}/handoff
+          if-no-files-found: error
+          retention-days: 7
+
+  finalize:
+    name: Finalize ${{ matrix.moshaf }} and open PR
+    needs: [plan, align]
+    # Runs even when one chunk failed: the merge refuses a partial reciter, so only complete ones ship.
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        moshaf: ${{ fromJSON(needs.plan.outputs.moshafs) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: tools/recitation-align/uv.lock
+
+      - name: Download hand-offs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: align-${{ matrix.moshaf }}-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/handoff
+
+      - name: Merge manifest (refuses a partial reciter)
+        working-directory: tools/recitation-align
+        env:
+          MOSHAF: ${{ matrix.moshaf }}
+        run: |
+          set -euo pipefail
+          ALIGNED="out/published/${MOSHAF}/aligned"
+          mkdir -p "$ALIGNED"
+          cp "$RUNNER_TEMP"/handoff/aligned/*.json "$ALIGNED/"
+          python3 scripts/ci_merge_manifest.py --moshaf "$MOSHAF" \
+            --parts "$RUNNER_TEMP/handoff" --aligned "$ALIGNED"
+
+      - name: Export committed timing files
+        working-directory: tools/recitation-align
+        env:
+          MOSHAF: ${{ matrix.moshaf }}
+        run: |
+          set -euo pipefail
+          uv sync --frozen --no-dev
+          uv run python -m recitation_align.export --kind mp3quran --recitation-key "$MOSHAF" \
+            --in "out/published/${MOSHAF}/aligned" \
+            --out "../../apps/api/resources/recitation-timings/mp3quran/${MOSHAF}" \
+            --source mp3quran_published
+
+      - name: Test recitation-align
+        working-directory: tools/recitation-align
+        run: |
+          uv sync --frozen
+          uv run pytest -q
+
+      - name: Quality summary
+        working-directory: tools/recitation-align
+        env:
+          MOSHAF: ${{ matrix.moshaf }}
+        run: |
+          set -euo pipefail
+          python3 scripts/ci_quality.py --moshaf "$MOSHAF" \
+            --aligned "out/published/${MOSHAF}/aligned" --out "$RUNNER_TEMP/quality.md"
+
+      - name: Commit, push branch and open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MOSHAF: ${{ matrix.moshaf }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          BRANCH="reciter/${MOSHAF}-${GITHUB_RUN_ID}"
+          if [ "$BRANCH" = "$DEFAULT_BRANCH" ]; then
+            echo "::error::refusing to push to the default branch"
+            exit 1
+          fi
+          MANIFEST_PATH="apps/api/resources/mp3quran/manifest.json"
+          TIMINGS_PATH="apps/api/resources/recitation-timings/mp3quran/${MOSHAF}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add "$MANIFEST_PATH" "$TIMINGS_PATH"
+          if git diff --cached --quiet; then
+            echo "::error::nothing changed for moshaf ${MOSHAF}"
+            exit 1
+          fi
+          git commit -m "Reciter: MP3Quran moshaf ${MOSHAF} (run ${GITHUB_RUN_ID})"
+          git push origin "$BRANCH"
+          {
+            echo "Automated run ${GITHUB_RUN_ID} for MP3Quran moshaf ${MOSHAF}."
+            echo
+            echo "Contains the manifest entry and the published-span timings for every surah. Review, then merge; the Railway deploy imports the manifest."
+            echo
+            echo "## Quality (counts and confidences only)"
+            echo
+            cat "$RUNNER_TEMP/quality.md"
+          } > "$RUNNER_TEMP/pr-body.md"
+          gh pr create --base "$DEFAULT_BRANCH" --head "$BRANCH" \
+            --title "Reciter: MP3Quran moshaf ${MOSHAF}" --body-file "$RUNNER_TEMP/pr-body.md"

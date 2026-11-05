@@ -2,7 +2,7 @@
 
 Local dev tool. It gives word-level timings for one recitation file, matched to Tanzil text.
 
-**Local only. It never runs on Railway or any server** (ADR 0052, decision 2: no audio analysis on the server). It writes JSON that a developer reviews before any timing goes into the content pipeline.
+**Never runs on Railway or any production server** (ADR 0052, decision 2: no audio analysis on the server). It runs locally, and in the `add-reciter` GitHub workflow on GitHub's CPU runners for MP3Quran reciters (ADR 0061, amended 5 Nov 2026; see `tools/mp3quran-ingest/README.md`). The workflow's helper scripts (`scripts/ci_*.py`) are standard library only. It writes JSON that a developer reviews before any timing goes into the content pipeline.
 
 ## What it does
 

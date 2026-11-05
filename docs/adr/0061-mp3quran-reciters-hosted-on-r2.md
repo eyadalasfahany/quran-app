@@ -37,3 +37,13 @@ Accepted with this ADR (developer, 4 Nov 2026):
 - QF's 7-day question does not apply to MP3Quran files; the existing Quran download manager treats an R2 URL like any audio URL (`apps/mobile/src/features/audio/downloads/manager.ts` compares the downloaded size with `chapter_audio_files.size_bytes`, which the ingest records exactly).
 - Partial recordings (Islam Sobhi lists 109 of 114 surahs): a surah the reciter lacks is shown as unavailable in the list and skipped in continuous play. A reciter ships only when its set is complete (all the surahs it lists); a missing timing would play «بدون تتبع», so no surah-by-surah shipping.
 - Open items: confirm the Sources wording; choose the custom domain; confirm the R2 account and billing alert.
+
+## Amendment, 5 Nov 2026: ingestion may run in GitHub Actions
+
+Developer decision, 5 Nov 2026. This amends decision 7 (credentials) and the "never in CI" rule in the ingest README (`tools/mp3quran-ingest/README.md`, §Where it runs). Decisions 4 to 6 and 8 to 13 stand.
+
+1. **Ingestion may run in GitHub Actions.** The manual workflow `.github/workflows/add-reciter.yml` copies a moshaf's surah files to R2 with the same tool, aligns them on CPU runners and opens a pull request with the manifest and the published-span timings. Production never calls MP3Quran; the Railway deploy imports the merged manifest.
+2. **R2 keys live in two places only:** the GitHub `production` environment's encrypted secrets (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`), read only by the align job, and the developer's local `.env`. The environment is restricted to the `main` branch; a required reviewer may be added. The keys are never repository secrets, never on Railway, and never in the app.
+3. **The workflow opens PRs only.** It pushes a `reciter/<id>-<run_id>` branch and opens a PR against the default branch. It never pushes to the default branch and never deploys. The developer reviews and merges.
+4. **Refusals stay.** The plan refuses a moshaf that is not Hafs, has no published timings, is held or duplicated, or is already complete; the merge refuses a moshaf with any missing surah.
+
