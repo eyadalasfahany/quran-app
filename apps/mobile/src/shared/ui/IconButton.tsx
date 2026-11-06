@@ -26,6 +26,8 @@ export function IconButton({
   hint,
   mirrorInRtl = false,
   iconSize,
+  /** Translucent glassFill on the solid fallback. Use over Quran text so the disc is not a wash lookalike. */
+  frosted = false,
   testID,
 }: {
   icon: IconName;
@@ -43,6 +45,7 @@ export function IconButton({
   mirrorInRtl?: boolean;
   /** Point size of the glyph; omitted, the Icon default (22 pt) applies. */
   iconSize?: number;
+  frosted?: boolean;
   testID?: string;
 }) {
   const theme = useTheme();
@@ -81,7 +84,20 @@ export function IconButton({
     >
       {variant === 'glass' ? (
         <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={testID ? `${testID}-glass` : undefined}>
-          <GlassSurface radius="pill" style={StyleSheet.absoluteFill} />
+          <GlassSurface
+            radius="pill"
+            style={[
+              StyleSheet.absoluteFill,
+              frosted
+                ? {
+                    backgroundColor: theme.colors.glassFill,
+                    borderColor: theme.colors.glassStroke,
+                    borderWidth: StyleSheet.hairlineWidth,
+                    boxShadow: theme.shadows.glass,
+                  }
+                : null,
+            ]}
+          />
         </View>
       ) : null}
       <Icon

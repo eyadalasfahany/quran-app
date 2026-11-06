@@ -122,6 +122,21 @@ describe('IconButton', () => {
     });
   });
 
+  it('frosted glass uses glassFill so a disc over text is not a solid wash lookalike', async () => {
+    const view = await renderUi(
+      <IconButton frosted icon={back} label="Exit" onPress={() => undefined} testID="exit" variant="glass" />,
+    );
+
+    const layer = view.getByTestId('exit-glass');
+    const [surface] = layer.children;
+
+    expect(flatStyle(typeof surface === 'object' ? surface.props.style : undefined)).toMatchObject({
+      backgroundColor: colors.glassFill,
+      borderColor: colors.glassStroke,
+      boxShadow: themes.light.shadows.glass,
+    });
+  });
+
   it('draws the glass inside the button, where it never takes the touch', async () => {
     const onPress = jest.fn();
     const view = await renderUi(

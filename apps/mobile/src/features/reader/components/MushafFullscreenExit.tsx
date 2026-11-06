@@ -8,9 +8,10 @@ import { useWindowClass } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { IconButton, TOOLBAR_PILL_INSET } from '@/shared/ui';
 
-// Full screen hides the status bar; this one glass button is the way out, in the exact place of the full screen button
-// (ADR 0071). The enter button is the last item in the toolbar pill, so the row is right-aligned and its end padding
-// matches the pill's: on an expanded window the panel toggle sits after the enter button and takes that space.
+// Full screen hides the status bar; this one frosted glass button is the way out, in the exact place of the full screen
+// button (ADR 0071). Frosted (glassFill) so the disc over the page is never mistaken for an ayah wash. The enter button
+// is the last item in the toolbar pill, so the row is right-aligned and its end padding matches the pill's: on an
+// expanded window the panel toggle sits after the enter button and takes that space.
 const EXIT_FULLSCREEN = { ios: 'arrow.down.right.and.arrow.up.left', android: 'fullscreen_exit' } as const;
 
 export function MushafFullscreenExit({
@@ -40,6 +41,7 @@ export function MushafFullscreenExit({
     >
       <StatusBar hidden />
       <IconButton
+        frosted
         icon={EXIT_FULLSCREEN}
         label={t('reader.toolbar.exitFullscreen')}
         onPress={onExit}

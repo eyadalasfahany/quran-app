@@ -1,5 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 
+import { themes } from '@/core/theme';
+
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
@@ -17,6 +19,20 @@ describe('MushafFullscreenExit', () => {
     expect(exit.props.accessibilityRole).toBe('button');
     expect(exit.props.accessibilityLabel).toBe('الخروج من ملء الشاشة');
     expect(view.getByTestId('mushaf-fullscreen-exit')).toBeOnTheScreen();
+  });
+
+  it('draws frosted glass so the disc is not mistaken for an ayah wash', async () => {
+    const view = await renderUi(<MushafFullscreenExit onExit={() => undefined} />);
+
+    const layer = view.getByTestId('mushaf-fullscreen-exit-button-glass');
+    const [surface] = layer.children;
+    const { colors, shadows } = themes.light;
+
+    expect(flatStyle(typeof surface === 'object' ? surface.props.style : undefined)).toMatchObject({
+      backgroundColor: colors.glassFill,
+      borderColor: colors.glassStroke,
+      boxShadow: shadows.glass,
+    });
   });
 
   it('takes a custom testID for the row', async () => {
