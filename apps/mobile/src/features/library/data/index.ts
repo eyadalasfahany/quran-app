@@ -12,6 +12,7 @@ export type { Bookmark, BookmarkKind, Highlight, HighlightColor, Note } from './
 export {
   deleteBookmark,
   deleteNote,
+  ensureHighlight,
   getHighlights,
   getNotes,
   listBookmarks,

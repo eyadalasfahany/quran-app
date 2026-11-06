@@ -30,6 +30,13 @@ jest.mock('@/features/library/data/hooks', () => ({
   useHighlightsByVerseId: () => mockHighlights,
 }));
 
+// A tap highlights the ayah through the repository; the user database is not open under Jest.
+const mockEnsureHighlight = jest.fn();
+jest.mock('@/features/library/data/repository', () => ({
+  ...jest.requireActual<typeof import('@/features/library/data/repository')>('@/features/library/data/repository'),
+  ensureHighlight: (...args: unknown[]) => mockEnsureHighlight(...args),
+}));
+
 jest.mock('@/features/khatma/data', () => ({
   ...jest.requireActual<typeof import('@/features/khatma/data')>('@/features/khatma/data'),
   useActivePlan: () => ({ data: [] }),
@@ -129,6 +136,7 @@ describe('ReaderScreen', () => {
     resetReaderSelection();
     jest.mocked(useSegments).mockReturnValue([] as unknown as ReturnType<typeof useSegments>);
     mockRouterPush.mockClear();
+    mockEnsureHighlight.mockClear();
     mockExecutor = undefined;
   });
 
@@ -567,7 +575,7 @@ describe('ReaderScreen', () => {
     );
 
     it.each(['mushaf', 'reading'] as const)(
-      'in %s, tapping an ayah opens selection without highlight, anchor write or player change',
+      'in %s, tapping an ayah opens selection and adds the default highlight, without an anchor write or player change',
       async (mode) => {
         mockExecutor = (await openReaderTestContent()).executor;
         useReaderSettings.getState().setMode(mode);
@@ -584,6 +592,7 @@ describe('ReaderScreen', () => {
         });
 
         expect(useReaderSelection.getState().verseKey).toBe('2:250');
+        expect(mockEnsureHighlight).toHaveBeenCalledWith(verseKeyToId(mockExecutor!, '2:250'), 'gold');
         expect(writeAnchor).not.toHaveBeenCalled();
         expect(usePlayerStore.getState()).toMatchObject({
           chapterId: playerBefore.chapterId,
@@ -594,6 +603,35 @@ describe('ReaderScreen', () => {
         expect(mockReadingProps).not.toHaveProperty('selectedVerseKey');
       },
     );
+
+    it('in reading, a tap still opens selection when the highlight write throws', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('reading');
+      await renderUi(reader('2:255'));
+      mockEnsureHighlight.mockImplementationOnce(() => {
+        throw new Error('write failed');
+      });
+
+      await act(async () => {
+        mockReadingProps?.onSelectVerseKey?.('2:250');
+      });
+
+      expect(mockEnsureHighlight).toHaveBeenCalledTimes(1);
+      expect(useReaderSelection.getState().verseKey).toBe('2:250');
+    });
+
+    it('in mushaf, the toolbar ayah actions button opens selection without adding a highlight', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      const view = await renderUi(reader('2:255'));
+
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'خيارات الآية' }));
+      });
+
+      expect(useReaderSelection.getState().verseKey).not.toBeNull();
+      expect(mockEnsureHighlight).not.toHaveBeenCalled();
+    });
 
     it.each(['mushaf', 'reading'] as const)(
       'in %s, no resume pill after tapping an ayah and scrolling away while idle',
@@ -636,6 +674,7 @@ describe('ReaderScreen', () => {
       await fireEvent.press(view.getByTestId('focus-stage-marker'));
 
       expect(useReaderSelection.getState().verseKey).toBe('1:1');
+      expect(mockEnsureHighlight).toHaveBeenCalledWith(verseKeyToId(mockExecutor!, '1:1'), 'gold');
       expect(writeAnchor).not.toHaveBeenCalled();
     });
   });

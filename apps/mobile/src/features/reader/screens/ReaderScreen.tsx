@@ -17,7 +17,7 @@ import { playVerse } from '@/features/audio/play-verse';
 import { KhatmaMarkedPill } from '@/features/khatma/components/KhatmaMarkedPill';
 import { useActivePlan, useKhatmaMarkerVerseId } from '@/features/khatma/data';
 import { subscribeKhatmaMarkedNotice } from '@/features/khatma/marked-notice';
-import { listBookmarks, toggleBookmark, useHighlightsByVerseId } from '@/features/library/data';
+import { ensureHighlight, listBookmarks, toggleBookmark, useHighlightsByVerseId, type HighlightColor } from '@/features/library/data';
 import { Screen } from '@/shared/ui';
 
 import { resolveInitialAnchor, writePlayedPlace, writeReadingAnchor } from '../anchor/reading-anchor';
@@ -31,7 +31,7 @@ import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToo
 import { ResumePill } from '../components/ResumePill';
 import { SidePanel } from '../components/SidePanel';
 import { chapterDisplayName, getChapter, listChapters } from '../data/chapters';
-import { getVerseByKey, idToVerseKey } from '../data/verses';
+import { getVerseByKey, idToVerseKey, verseKeyToId } from '../data/verses';
 import { HafsMushafList } from '../HafsMushafList';
 import { panelPlacementFor, panelStripWidth } from '../layout';
 import { AyahPanelContent } from '../panels/AyahPanelContent';
@@ -85,6 +85,9 @@ function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): Re
 
 // The Discover tour steps whose tip shows on the Quran screen (ADR 0053).
 const READER_TOUR_STEPS = ['reader.mushaf', 'reader.reading', 'reader.focus', 'reader.tafsir'] as const satisfies readonly DiscoverId[];
+
+// A tapped ayah gets this colour when it has none (ADR 0069).
+const TAP_HIGHLIGHT_COLOR: HighlightColor = 'gold';
 
 export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const { t, i18n } = useTranslation();
@@ -245,6 +248,19 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     }
   };
 
+  // A tap on an ayah highlights it when it has no colour, before its options open (ADR 0069).
+  const openTappedAyah = (key: string) => {
+    try {
+      const verseId = executor === null ? undefined : verseKeyToId(executor, key);
+      if (verseId !== undefined) {
+        ensureHighlight(verseId, TAP_HIGHLIGHT_COLOR);
+      }
+    } catch {
+      // A failed write never blocks the tap.
+    }
+    selectVerse(key);
+  };
+
   const onReadingTafsir = (key: string) => {
     useReaderSelection.getState().selectVerse(key, placement);
     useReaderSelection.getState().toggleInlineTafsir();
@@ -389,8 +405,8 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 followKey={followKey}
                 highlightsByVerseId={highlights}
                 khatmaMarkerVerseId={khatmaMarkerVerseId}
-                onOpenAyahActions={selectVerse}
-                onSelectVerseKey={selectVerse}
+                onOpenAyahActions={openTappedAyah}
+                onSelectVerseKey={openTappedAyah}
                 onUserScrollStart={follow.onUserScrollStart}
                 onVisiblePage={(page, key) => {
                   // The page holding the ayah the reader is at keeps that ayah, not the page's first one, so a
@@ -415,7 +431,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 following={followKey !== null}
                 fontScale={fontScale}
                 highlightsByVerseId={highlights}
-                onOpenActions={selectVerse}
+                onOpenActions={openTappedAyah}
                 onPlay={audioAvailable ? playFocused : undefined}
                 onStep={stepRecitation}
                 onUserMove={follow.onUserScrollStart}
@@ -444,13 +460,13 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 khatmaMarkerVerseId={khatmaMarkerVerseId}
                 horizontalGutter={gutter}
                 mode="reading"
-                onOpenAyahActions={selectVerse}
+                onOpenAyahActions={openTappedAyah}
                 onOpenTafsir={onReadingTafsir}
                 showInlineTafsir={inlineTafsirOpen}
                 tafsirId={tafsirId}
                 onPause={pause}
                 onPlayVerseKey={(key) => void playVerse(key)}
-                onSelectVerseKey={selectVerse}
+                onSelectVerseKey={openTappedAyah}
                 onUserScrollStart={follow.onUserScrollStart}
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);

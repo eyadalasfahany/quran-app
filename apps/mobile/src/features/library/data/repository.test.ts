@@ -10,6 +10,7 @@ import { HighlightValidationError, type HighlightColor, NoteValidationError } fr
 import {
   deleteBookmark,
   deleteNote,
+  ensureHighlight,
   getHighlights,
   getNotes,
   listBookmarks,
@@ -221,6 +222,40 @@ describe('local user data', () => {
     expect(() => setHighlight(1, 'purple' as HighlightColor, { db: executor })).toThrow(HighlightValidationError);
     expect(count(database, 'highlights')).toBe(0);
     expect(count(database, 'outbox')).toBe(0);
+  });
+
+  it('ensureHighlight writes the colour and one outbox upsert when the verse has no highlight', () => {
+    ensureHighlight(5, 'gold', { db: executor, now: () => 1, uuid: () => 'highlight-1' });
+
+    expect(getHighlights([5], { db: executor })).toEqual([
+      { id: 'highlight-1', verseId: 5, color: 'gold', clientUpdatedAt: 1 },
+    ]);
+    expect(outbox(database)).toHaveLength(1);
+    expect(outbox(database)[0]).toMatchObject({ entity: 'highlight', entity_id: 'highlight-1', op: 'upsert' });
+  });
+
+  it('ensureHighlight keeps an existing colour and adds no outbox row', () => {
+    setHighlight(5, 'blue', { db: executor, now: () => 1, uuid: () => 'highlight-1' });
+    const outboxBefore = outbox(database).length;
+
+    ensureHighlight(5, 'gold', { db: executor, now: () => 2, uuid: () => 'highlight-2' });
+
+    expect(getHighlights([5], { db: executor })).toEqual([
+      { id: 'highlight-1', verseId: 5, color: 'blue', clientUpdatedAt: 1 },
+    ]);
+    expect(outbox(database)).toHaveLength(outboxBefore);
+    expect(count(database, 'highlights')).toBe(1);
+  });
+
+  it('ensureHighlight writes again after the highlight was removed', () => {
+    setHighlight(5, 'rose', { db: executor, now: () => 1, uuid: () => 'highlight-1' });
+    setHighlight(5, null, { db: executor, now: () => 2 });
+
+    ensureHighlight(5, 'gold', { db: executor, now: () => 3, uuid: () => 'highlight-2' });
+
+    expect(getHighlights([5], { db: executor })).toEqual([
+      { id: 'highlight-1', verseId: 5, color: 'gold', clientUpdatedAt: 3 },
+    ]);
   });
 
   it('saves notes trimmed of surrounding whitespace and lists live notes for that verse', () => {
