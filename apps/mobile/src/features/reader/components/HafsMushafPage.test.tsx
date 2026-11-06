@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 
 import { formatNumber, i18n } from '@/core/i18n';
 import { QuranFontProvider, themes } from '@/core/theme';
@@ -10,6 +10,7 @@ import { listChapters } from '../data/chapters';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
 import type { ChapterRecord } from '../data/chapters';
 import type { VerseRecord } from '../data/verses';
+import type { WordFollow } from '../useWordFollow';
 import { HafsMushafPage } from './HafsMushafPage';
 
 const ayahText = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
@@ -291,6 +292,51 @@ describe('HafsMushafPage', () => {
 
   it('uses theme tokens only', () => {
     expect(featureComponentLiterals('features/reader/components/HafsMushafPage.tsx')).toEqual([]);
+  });
+});
+
+describe('HafsMushafPage line reports (ADR 0073)', () => {
+  const twoAyahs = [
+    verse({ id: 1, verseKey: '1:1', verseNumber: 1 }),
+    verse({ id: 2, textUthmani: 'ٱلْحَمْدُ لِلَّهِ', verseKey: '1:2', verseNumber: 2 }),
+  ];
+
+  it('reports its run, its host text and its laid-out lines once the paragraph lays out', async () => {
+    const onRunLines = jest.fn();
+    const view = await renderUi(fatihaPage({ onRunLines, verses: twoAyahs }));
+    const lines = [{ height: 50, text: 'ab', y: 0 }];
+
+    await act(async () => {
+      view.getByTestId('page-text-1:1').props.onTextLayout({ nativeEvent: { lines } });
+    });
+
+    expect(onRunLines).toHaveBeenCalledTimes(1);
+    const [run, node, reported] = onRunLines.mock.calls[0];
+    expect(run.map((verse: VerseRecord) => verse.verseKey)).toEqual(['1:1', '1:2']);
+    expect(node).toBeTruthy();
+    expect(reported).toBe(lines);
+  });
+
+  it('a followed paragraph still reports to the follow, and to onRunLines with the same node', async () => {
+    const lines = [{ height: 50, text: 'ab', y: 0 }];
+    const followRef = jest.fn();
+    const followLayout = jest.fn();
+    const follow = {
+      textProps: jest.fn(() => ({ onTextLayout: followLayout, ref: followRef })),
+    } as unknown as WordFollow;
+    const onRunLines = jest.fn();
+    const view = await renderUi(fatihaPage({ follow, followKey: '1:2', onRunLines, verses: twoAyahs }));
+
+    expect(follow.textProps).toHaveBeenCalledWith('1:1');
+    const node = followRef.mock.lastCall?.[0];
+    expect(node).toBeTruthy();
+
+    await act(async () => {
+      view.getByTestId('page-text-1:1').props.onTextLayout({ nativeEvent: { lines } });
+    });
+
+    expect(followLayout).toHaveBeenCalledWith({ nativeEvent: { lines } });
+    expect(onRunLines).toHaveBeenCalledWith(expect.any(Array), node, lines);
   });
 });
 

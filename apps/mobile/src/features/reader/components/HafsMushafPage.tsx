@@ -16,7 +16,8 @@ import {
 
 import type { ChapterRecord } from '../data/chapters';
 import type { VerseRecord } from '../data/verses';
-import { MUSHAF_WORD_SPACE, surahRuns } from '../mushaf-paragraph';
+import { MUSHAF_WORD_SPACE, surahRuns, type SurahRun } from '../mushaf-paragraph';
+import type { TextLine } from '../word-follow';
 import type { WordFollow } from '../useWordFollow';
 import { BismillahLine } from './BismillahLine';
 import { RecitedWords } from './RecitedWords';
@@ -49,6 +50,7 @@ export function HafsMushafPage({
   onFocusRunLayout,
   follow,
   followKey = null,
+  onRunLines,
   testID,
 }: {
   verses: readonly VerseRecord[];
@@ -71,11 +73,15 @@ export function HafsMushafPage({
   /** The word follow-scroll: the paragraph holding `followKey` reports its lines to it. */
   follow?: WordFollow;
   followKey?: string | null;
+  /** Each paragraph's host Text and its laid-out lines, once laid out (the Mushaf list measures the top ayah). */
+  onRunLines?: (run: SurahRun, text: HostInstance, lines: readonly TextLine[]) => void;
   testID?: string;
 }) {
   const { t, i18n } = useTranslation();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const focusRunRef = useRef<HostInstance>(null);
+  // The host Text of each paragraph, keyed by its first ayah, so its layout can be reported with its node.
+  const paragraphNodes = useRef(new Map<string, HostInstance>());
   const theme = useTheme();
   const font = useQuranFont();
   const colors = useContrastColors();
@@ -86,6 +92,7 @@ export function HafsMushafPage({
         const [first] = run;
         // The paragraph holding the followed ayah reports its lines to the word follow-scroll.
         const followed = follow !== undefined && followKey !== null && run.some((verse) => verse.verseKey === followKey);
+        const followProps = followed ? follow.textProps(first.verseKey) : undefined;
         const chapter = first.verseNumber === 1 ? chapters.get(first.chapterId) : undefined;
         const showBismillah = chapter !== undefined && chapter.bismillahPre === 1 && chapter.id !== 1;
         const holdsFocus = focusVerseKey !== null && run.some((verse) => verse.verseKey === focusVerseKey);
@@ -113,9 +120,23 @@ export function HafsMushafPage({
               />
             ) : null}
             <QuranText
-              {...(followed ? follow.textProps(first.verseKey) : undefined)}
               align={quranFonts[font].mushafAlign}
               fontScale={fontScale}
+              onTextLayout={(event) => {
+                followProps?.onTextLayout(event);
+                const node = paragraphNodes.current.get(first.verseKey);
+                if (node !== undefined) {
+                  onRunLines?.(run, node, event.nativeEvent.lines);
+                }
+              }}
+              ref={(node: HostInstance | null) => {
+                followProps?.ref(node);
+                if (node === null) {
+                  paragraphNodes.current.delete(first.verseKey);
+                } else {
+                  paragraphNodes.current.set(first.verseKey, node);
+                }
+              }}
               style={quranFonts[font].mushafAlign === 'justify' ? JUSTIFIED_PARAGRAPH : START_PARAGRAPH}
               testID={testID ? `${testID}-text-${first.verseKey}` : undefined}
               variant="quranMushaf"

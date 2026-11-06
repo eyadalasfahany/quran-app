@@ -419,15 +419,16 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
                   follow.onUserScrollStart();
                 }}
                 onVisiblePage={(page, key) => {
-                  // The page holding the ayah the reader is at keeps that ayah, not the page's first one, so a
-                  // surah opened halfway down a page stays the saved place and the title.
-                  const verseKey = pageForVerse(executor, viewKey) === page ? viewKey : key;
+                  // A page report never moves the place: only a hand scroll does, when it ends (ADR 0073).
+                  setVisibleVerseKey(pageForVerse(executor, viewKey) === page ? viewKey : key);
+                  haptics.onPage(page, surahStartPages.has(page));
+                }}
+                onTopAyah={(page, verseKey) => {
                   setVisibleVerseKey(verseKey);
-                  // While audio plays, listening keeps the continue-reading place. Scroll writes it only when idle.
+                  // While audio plays, listening keeps the continue-reading place.
                   if (followKey === null && !active) {
                     anchor.setVisible({ page, verseKey });
                   }
-                  haptics.onPage(page, surahStartPages.has(page));
                 }}
                 recitedVerseKey={recitedVerseKey}
                 recitedWord={activeWord}

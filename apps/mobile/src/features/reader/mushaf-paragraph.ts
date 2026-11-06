@@ -36,6 +36,24 @@ export function paragraphOf(db: SqlExecutor, verseKey: string): SurahRun | null 
   return surahRuns(getVersesByPage(db, page)).find((run) => run.some((verse) => verse.verseKey === verseKey)) ?? null;
 }
 
+/** Where each ayah's own text starts and ends in the paragraph, as the page draws it. */
+export function paragraphVerseRanges(
+  run: readonly VerseRecord[],
+): { verseKey: string; start: number; textEnd: number }[] {
+  const ranges: { verseKey: string; start: number; textEnd: number }[] = [];
+  let offset = 0;
+  for (const [index, verse] of run.entries()) {
+    if (index > 0) {
+      offset += MUSHAF_WORD_SPACE.length;
+    }
+    const start = offset;
+    const textEnd = start + verse.textUthmani.length;
+    ranges.push({ start, textEnd, verseKey: verse.verseKey });
+    offset = textEnd + MUSHAF_WORD_SPACE.length + ayahEndMarkText(verse.verseNumber).length;
+  }
+  return ranges;
+}
+
 /**
  * The character offset of the recited word in the paragraph's text, as the page draws it: each earlier ayah with
  * its space and end mark, then the recited ayah up to its word. Null when the ayah or word is not there.
@@ -45,16 +63,23 @@ export function paragraphWordOffset(
   recitedKey: string,
   activeWord: number,
 ): number | null {
-  let offset = 0;
-  for (const [index, verse] of run.entries()) {
-    if (index > 0) {
-      offset += MUSHAF_WORD_SPACE.length;
-    }
-    if (verse.verseKey === recitedKey) {
-      const within = recitedWordOffset(verse.textUthmani, activeWord);
-      return within === null ? null : offset + within;
-    }
-    offset += verse.textUthmani.length + MUSHAF_WORD_SPACE.length + ayahEndMarkText(verse.verseNumber).length;
+  const index = run.findIndex((verse) => verse.verseKey === recitedKey);
+  if (index < 0) {
+    return null;
   }
-  return null;
+  const within = recitedWordOffset(run[index]!.textUthmani, activeWord);
+  return within === null ? null : paragraphVerseRanges(run)[index]!.start + within;
+}
+
+/**
+ * The ayah at a character offset. An offset in an end mark or the spaces around it belongs to the next ayah, or the
+ * last one. Null for an empty run or a negative offset.
+ */
+export function verseKeyAtOffset(run: readonly VerseRecord[], offset: number): string | null {
+  if (run.length === 0 || offset < 0) {
+    return null;
+  }
+  const ranges = paragraphVerseRanges(run);
+  const owner = ranges.find((range) => offset < range.textEnd) ?? ranges.at(-1);
+  return owner?.verseKey ?? null;
 }

@@ -8,6 +8,9 @@ import { PageDivider, type HighlightColor } from '@/shared/ui';
 
 import type { ChapterRecord } from '../data/chapters';
 import { getVersesByPage } from '../data/verses';
+import { lineForOffset, type TextLine } from '../word-follow';
+import { measureWithin } from '../measure-within';
+import { paragraphVerseRanges, type SurahRun } from '../mushaf-paragraph';
 import type { WordFollow } from '../useWordFollow';
 import { HafsMushafPage } from './HafsMushafPage';
 
@@ -26,6 +29,7 @@ export function HafsPage({
   onOpenAyahActions,
   focusVerseKey = null,
   onFocusOffset,
+  onRunMeasured,
   follow,
   followKey = null,
   onRootNode,
@@ -48,6 +52,8 @@ export function HafsPage({
   focusVerseKey?: string | null;
   /** How far below the top of this page the surah paragraph holding that ayah starts. */
   onFocusOffset?: (page: number, offset: number) => void;
+  /** A paragraph's lines, once measured: its top on screen inside the page's root (ADR 0073). */
+  onRunMeasured?: (page: number, measured: { run: SurahRun; lines: readonly TextLine[]; textTop: number }) => void;
   /** The word follow-scroll, and the followed ayah: its paragraph's Text reports its lines to the follow. */
   follow?: WordFollow;
   followKey?: string | null;
@@ -56,16 +62,44 @@ export function HafsPage({
   testID?: string;
 }) {
   const rootRef = useRef<HostInstance>(null);
-  const measureFocus = (run: HostInstance | null) => {
-    if (run === null || rootRef.current === null || onFocusOffset === undefined) {
-      return;
-    }
-    run.measureLayout(rootRef.current, (_x, y) => onFocusOffset(page, y));
-  };
   const { t, i18n } = useTranslation();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const verses = useMemo(() => getVersesByPage(executor, page), [executor, page]);
   const juz = verses[0]?.juz ?? 1;
+  // A surah's first ayah keeps the run path: its surah title is drawn above the paragraph, so the list shows it.
+  const measureFocus = (run: HostInstance | null) => {
+    if (run === null || rootRef.current === null || onFocusOffset === undefined) {
+      return;
+    }
+    const focus = verses.find((verse) => verse.verseKey === focusVerseKey);
+    if (focus !== undefined && focus.verseNumber !== 1) {
+      return;
+    }
+    run.measureLayout(rootRef.current, (_x, y) => onFocusOffset(page, y));
+  };
+  // Each paragraph's lines are measured inside this page's root. A mid-page focus ayah then starts at its own line,
+  // so going to an ayah puts its line at the top of the screen (ADR 0073).
+  const onRunLines = (run: SurahRun, text: HostInstance, lines: readonly TextLine[]) => {
+    if (rootRef.current === null) {
+      return;
+    }
+    measureWithin(text, rootRef.current, (top) => {
+      if (top === null) {
+        return;
+      }
+      onRunMeasured?.(page, { lines, run, textTop: top });
+      const focus = run.find((verse) => verse.verseKey === focusVerseKey);
+      if (focus === undefined || focus.verseNumber === 1 || onFocusOffset === undefined) {
+        return;
+      }
+      const range = paragraphVerseRanges(run).find((item) => item.verseKey === focus.verseKey);
+      if (range === undefined) {
+        return;
+      }
+      const index = lineForOffset(lines, range.start);
+      onFocusOffset(page, top + (lines[index]?.y ?? 0));
+    });
+  };
 
   return (
     <View
@@ -91,6 +125,7 @@ export function HafsPage({
         onFocusRunLayout={measureFocus}
         onOpenActions={onOpenAyahActions}
         onPressVerse={onSelectVerseKey}
+        onRunLines={onRunLines}
         placeVerseKey={placeVerseKey}
         recitedVerseKey={recitedVerseKey}
         recitedWord={recitedWord}

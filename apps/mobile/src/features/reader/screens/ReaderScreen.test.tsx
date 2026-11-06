@@ -52,6 +52,7 @@ let mockMushafProps:
       placeVerseKey?: string | null;
       topInset?: number;
       onVisiblePage?: (page: number, verseKey: string) => void;
+      onTopAyah?: (page: number, verseKey: string) => void;
       onUserScrollStart?: () => void;
     }
   | undefined;
@@ -226,9 +227,10 @@ describe('ReaderScreen', () => {
     });
     expect(mockMushafProps?.anchorVerseKey).toBe('2:256');
 
+    // A hand scroll that ends on 3:1 is what moves the place (ADR 0073).
     const page = pageForVerse(executor, '3:1')!;
     await act(async () => {
-      mockMushafProps?.onVisiblePage?.(page, '3:1');
+      mockMushafProps?.onTopAyah?.(page, '3:1');
     });
 
     expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('3:1');
@@ -464,6 +466,114 @@ describe('ReaderScreen', () => {
         mockMushafProps?.onVisiblePage?.(pageForVerse(executor, '2:250')!, '2:250');
       });
       expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
+      expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
+    });
+  });
+
+  describe('ADR 0073 the place moves only with a hand scroll', () => {
+    let writeAnchor: jest.SpiedFunction<typeof readingAnchor.writeReadingAnchor>;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      usePlayerStore.getState().reset();
+      writeAnchor = jest.spyOn(readingAnchor, 'writeReadingAnchor');
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+      usePlayerStore.getState().reset();
+      writeAnchor.mockRestore();
+    });
+
+    // Plays surah 2 with the given ayah recited, in Mushaf.
+    async function playingAt(verseKey: string) {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode('mushaf');
+      usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 2, positionMs: 0, durationMs: 48_000 });
+      usePlayerStore.getState().markPlaying();
+      usePlayerStore.setState({ activeVerseId: verseKeyToId(executor, verseKey) ?? null });
+      return executor;
+    }
+
+    it('a page report writes no anchor while idle', async () => {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader('2:255'));
+      // Flush any write the opening scheduled, so only the page report is counted.
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+      writeAnchor.mockClear();
+
+      await act(async () => {
+        mockMushafProps?.onVisiblePage?.(pageForVerse(executor, '2:250')!, '2:250');
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(writeAnchor).not.toHaveBeenCalled();
+    });
+
+    it('paused on a recited ayah, a page report leaves the saved place on that ayah', async () => {
+      const executor = await playingAt('2:256');
+      const view = await renderUi(reader('2:256'));
+      expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
+
+      await act(async () => {
+        usePlayerStore.getState().markPaused();
+      });
+      await act(async () => {
+        mockMushafProps?.onVisiblePage?.(pageForVerse(executor, '2:250')!, '2:250');
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
+      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:256');
+    });
+
+    it('a hand scroll that ends while idle writes the top ayah as the place', async () => {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode('mushaf');
+      const view = await renderUi(reader('2:255'));
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+      writeAnchor.mockClear();
+
+      const page = pageForVerse(executor, '2:250')!;
+      await act(async () => {
+        mockMushafProps?.onTopAyah?.(page, '2:250');
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      expect(writeAnchor).toHaveBeenCalledWith(expect.objectContaining({ page, verseKey: '2:250' }));
+      expect(view.getByTestId('reader-screen').props.accessibilityLabel).toBe('2:250');
+    });
+
+    it('a hand scroll that ends while audio plays writes no place of its own', async () => {
+      const executor = await playingAt('2:256');
+      await renderUi(reader('2:256'));
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+      writeAnchor.mockClear();
+
+      await act(async () => {
+        mockMushafProps?.onTopAyah?.(pageForVerse(executor, '2:250')!, '2:250');
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(writeAnchor).not.toHaveBeenCalledWith(expect.objectContaining({ verseKey: '2:250' }));
       expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
     });
   });
@@ -720,7 +830,7 @@ describe('ReaderScreen', () => {
       expect(mockMushafProps?.highlightsByVerseId?.get(savedId)).toBe('green');
     });
 
-    it('in mushaf, a saved ayah with its own colour is drawn green', async () => {
+    it("in mushaf, a saved ayah with its own colour keeps that colour (ADR 0073, decision 5)", async () => {
       const { executor } = await openReaderTestContent();
       mockExecutor = executor;
       useReaderSettings.getState().setMode('mushaf');
@@ -730,7 +840,7 @@ describe('ReaderScreen', () => {
 
       await renderUi(reader('2:255'));
 
-      expect(mockMushafProps?.highlightsByVerseId?.get(savedId)).toBe('green');
+      expect(mockMushafProps?.highlightsByVerseId?.get(savedId)).toBe('rose');
     });
 
     it('in mushaf, a page bookmark adds no wash', async () => {

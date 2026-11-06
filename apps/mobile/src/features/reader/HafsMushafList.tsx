@@ -10,14 +10,19 @@ import type { HighlightColor } from '@/shared/ui';
 
 import { HafsPage } from './components/HafsPage';
 import { listChapters } from './data/chapters';
-import { paragraphOf, paragraphWordOffset } from './mushaf-paragraph';
+import { paragraphOf, paragraphWordOffset, type SurahRun } from './mushaf-paragraph';
+import { topVisibleVerseKey, type MeasuredRun } from './mushaf-top-ayah';
 import { followedTextScreenTop, rowContentTop } from './follow-position';
 import { measureWithin } from './measure-within';
 import { extendPageWindow, pageWindowFrom, pagesIn, type PageWindow } from './page-window';
+import type { TextLine } from './word-follow';
 import { useWordFollow } from './useWordFollow';
 
 // Longest the list waits for the opened page to measure before it settles anyway.
 const SETTLE_MS = 1500;
+
+// A surah paragraph as the page measured it: its ayahs, its laid-out lines, and the top of its text in the page.
+type MeasuredParagraph = { run: SurahRun; lines: readonly TextLine[]; textTop: number };
 
 export type HafsMushafListProps = {
   anchorVerseKey: string;
@@ -37,6 +42,8 @@ export type HafsMushafListProps = {
   /** The reader's place, washed in Mushaf until the first drag or a mode change (ADR 0070). */
   placeVerseKey?: string | null;
   onVisiblePage?: (page: number, verseKey: string) => void;
+  /** The ayah at the top of the screen, once a hand scroll ends (ADR 0073). The only report that moves the place. */
+  onTopAyah?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
   /** A drag began: the reader is scrolling by hand, so following pauses. */
@@ -57,6 +64,7 @@ export function HafsMushafList({
   khatmaMarkerVerseId = null,
   placeVerseKey = null,
   onVisiblePage,
+  onTopAyah,
   onSelectVerseKey,
   onOpenAyahActions,
   onUserScrollStart,
@@ -143,6 +151,17 @@ export function HafsMushafList({
   // Each page's root: the followed paragraph is measured inside its page cell, which shares the list's content (no
   // scroll view between them).
   const pageRoots = useRef(new Map<number, HostInstance>());
+  // Each page's measured paragraphs, by the first ayah of each: the top ayah is read from them when a scroll ends
+  // (ADR 0073). A page's entry is cleared when the font scale changes, since its lines move then.
+  const measuredRuns = useRef(new Map<number, Map<string, MeasuredParagraph>>());
+  useEffect(() => {
+    measuredRuns.current.clear();
+  }, [fontScale]);
+  const onRunMeasured = useCallback((page: number, measured: MeasuredParagraph) => {
+    const paragraphs = measuredRuns.current.get(page) ?? new Map<string, MeasuredParagraph>();
+    paragraphs.set(measured.run[0].verseKey, measured);
+    measuredRuns.current.set(page, paragraphs);
+  }, []);
   const followPage = followKey === null ? undefined : pageForVerse(executor, followKey);
   const followIndex = followPage === undefined ? -1 : pages.indexOf(followPage);
   const word = useWordFollow({
@@ -216,6 +235,45 @@ export function HafsMushafList({
     [executor, onVisiblePage],
   );
 
+  // A hand scroll has ended: the ayah at the top of the screen is the place (ADR 0073). The page is set before the
+  // report, so the anchor change it causes lands on the same page and the list does not jump.
+  const reportTopAyah = useCallback(() => {
+    const list = listRef.current;
+    if (settlingRef.current || list === null) {
+      return;
+    }
+    const runs: MeasuredRun[] = [];
+    for (const [page, paragraphs] of measuredRuns.current) {
+      const index = pages.indexOf(page);
+      const layout = index < 0 || typeof list.getLayout !== 'function' ? undefined : list.getLayout(index);
+      if (layout === undefined) {
+        continue;
+      }
+      const rowTop = rowContentTop(
+        layout.y,
+        typeof list.getFirstItemOffset === 'function' ? list.getFirstItemOffset() : 0,
+      );
+      const scrollOffset = typeof list.getAbsoluteLastScrollOffset === 'function' ? list.getAbsoluteLastScrollOffset() : 0;
+      for (const paragraph of paragraphs.values()) {
+        runs.push({
+          lines: paragraph.lines,
+          run: paragraph.run,
+          screenTop: followedTextScreenTop({ rowTop, scrollOffset, textTopInRow: paragraph.textTop }),
+        });
+      }
+    }
+    const verseKey = topVisibleVerseKey(runs) ?? firstVerseOfPage(executor, visiblePageRef.current);
+    if (verseKey === undefined) {
+      return;
+    }
+    const page = pageForVerse(executor, verseKey);
+    if (page === undefined) {
+      return;
+    }
+    visiblePageRef.current = page;
+    onTopAyah?.(page, verseKey);
+  }, [executor, onTopAyah, pages]);
+
   // FlashList repaints pages only when data or extraData changes; renderPage reads these from props.
   const pageExtraData = useMemo(
     () => ({
@@ -243,12 +301,15 @@ export function HafsMushafList({
         khatmaMarkerVerseId={khatmaMarkerVerseId}
         onFocusOffset={scrollToFocus}
         onRootNode={(node) => {
+          // The ref callback runs with null on every re-render of the page, so the page's measured lines stay here:
+          // they are valid while the font scale is the same (see the effect above).
           if (node === null) {
             pageRoots.current.delete(page);
           } else {
             pageRoots.current.set(page, node);
           }
         }}
+        onRunMeasured={onRunMeasured}
         onOpenAyahActions={onOpenAyahActions}
         onSelectVerseKey={onSelectVerseKey}
         page={page}
@@ -269,6 +330,7 @@ export function HafsMushafList({
       highlightsByVerseId,
       khatmaMarkerVerseId,
       onOpenAyahActions,
+      onRunMeasured,
       onSelectVerseKey,
       placeVerseKey,
       recitedVerseKey,
@@ -291,7 +353,9 @@ export function HafsMushafList({
           maintainVisibleContentPosition={{}}
           onEndReached={() => setPageWindow((current) => extendPageWindow(current, 'end'))}
           onEndReachedThreshold={0.6}
+          onMomentumScrollEnd={reportTopAyah}
           onScrollBeginDrag={onUserScrollStart}
+          onScrollEndDrag={reportTopAyah}
           onStartReached={() => {
             if (!settlingRef.current) {
               setPageWindow((current) => extendPageWindow(current, 'start'));

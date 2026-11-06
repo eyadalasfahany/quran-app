@@ -9,20 +9,27 @@ describe('withSavedWash', () => {
     expect(withSavedWash(highlights, null)).toBe(highlights);
   });
 
-  it('replaces the saved ayah own colour with green in the returned map', () => {
+  it('keeps the saved ayah own colour over the green wash (ADR 0073, decision 5)', () => {
     const highlights = new Map<number, HighlightColor>([[7, 'rose']]);
 
-    const drawn = withSavedWash(highlights, 7);
-
-    expect(drawn).not.toBe(highlights);
-    expect(drawn.get(7)).toBe('green');
-    expect(drawn.size).toBe(1);
+    expect(withSavedWash(highlights, 7)).toBe(highlights);
+    expect(withSavedWash(highlights, 7).get(7)).toBe('rose');
   });
 
   it('returns the same map object when the saved ayah is already green', () => {
     const highlights = new Map<number, HighlightColor>([[7, 'green']]);
 
     expect(withSavedWash(highlights, 7)).toBe(highlights);
+  });
+
+  it('keeps every other colour when the saved ayah has its own', () => {
+    const highlights = new Map<number, HighlightColor>([
+      [1, 'blue'],
+      [7, 'gold'],
+    ]);
+
+    expect(withSavedWash(highlights, 7).get(7)).toBe('gold');
+    expect(withSavedWash(highlights, 7).get(1)).toBe('blue');
   });
 
   it('adds green for the saved ayah when it has no colour', () => {

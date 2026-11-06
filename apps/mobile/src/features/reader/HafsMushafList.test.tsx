@@ -4,8 +4,9 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { openReaderTestContent } from '../../../jest/reader-test-db';
 import { renderUi } from '../../../jest/render-ui';
+import { ThemeProvider } from '@/core/theme';
 import { HafsMushafList } from './HafsMushafList';
-import { paragraphOf, paragraphWordOffset } from './mushaf-paragraph';
+import { paragraphOf, paragraphVerseRanges, paragraphWordOffset } from './mushaf-paragraph';
 import { measureWithin } from './measure-within';
 import { isWordToken } from './recited-text';
 import { FOLLOW_VIEW_POSITION } from './word-follow';
@@ -85,10 +86,10 @@ afterEach(() => {
   mockListState.firstItemOffset = 0;
 });
 
-// The host Text the followed paragraph draws: the only Text in the list that reports its lines.
-function followedTextNode(root: TestNode | null): TestNode | undefined {
+// The first node in the tree that matches, depth first.
+function findNode(root: TestNode | null, matches: (node: TestNode) => boolean): TestNode | undefined {
   const visit = (node: TestNode): TestNode | undefined => {
-    if ((node.type as unknown) === 'Text' && typeof node.props.onTextLayout === 'function') {
+    if (matches(node)) {
       return node;
     }
     for (const child of node.children) {
@@ -100,6 +101,25 @@ function followedTextNode(root: TestNode | null): TestNode | undefined {
     return undefined;
   };
   return root === null ? undefined : visit(root);
+}
+
+// The host Text of the paragraph that starts with `firstKey`. Every paragraph reports its lines (ADR 0073), so a test
+// names the one it lays out by its testID.
+function paragraphNode(root: TestNode | null, firstKey: string): TestNode | undefined {
+  return findNode(
+    root,
+    (node) =>
+      (node.type as unknown) === 'Text' &&
+      typeof node.props.testID === 'string' &&
+      node.props.testID.endsWith(`-text-${firstKey}`) &&
+      typeof node.props.onTextLayout === 'function',
+  );
+}
+
+// The host Text the followed paragraph draws: the paragraph holding the followed ayah.
+function followedTextNode(root: TestNode | null, followKey: string | null): TestNode | undefined {
+  const firstKey = followKey === null ? undefined : paragraphOf(mockExecutor, followKey)?.[0]?.verseKey;
+  return firstKey === undefined ? undefined : paragraphNode(root, firstKey);
 }
 
 describe('HafsMushafList word follow', () => {
@@ -140,7 +160,7 @@ describe('HafsMushafList word follow', () => {
         topInset={0}
       />,
     );
-    const textNode = followedTextNode(view.root);
+    const textNode = followedTextNode(view.root, followKey);
     expect(textNode).toBeDefined();
 
     // The paragraph is cut in two lines: the second starts at the recited word.
@@ -174,7 +194,7 @@ describe('HafsMushafList word follow', () => {
     const view = await renderUi(
       <HafsMushafList anchorVerseKey={followKey} followKey={followKey} recitedWord={4} recitedVerseKey={followKey} testID="mushaf" topInset={0} />,
     );
-    const textNode = followedTextNode(view.root)!;
+    const textNode = followedTextNode(view.root, followKey)!;
     const run = paragraphOf(mockExecutor, followKey)!;
     const paragraph = run.map((verse) => verse.textUthmani).join(' ');
     await act(async () => {
@@ -212,7 +232,7 @@ describe('HafsMushafList word follow', () => {
         <HafsMushafList anchorVerseKey={toKey} followKey={toKey} recitedWord={recitedWord} recitedVerseKey={toKey} testID="mushaf" topInset={0} />,
       );
     });
-    const textNode = followedTextNode(view.root)!;
+    const textNode = followedTextNode(view.root, toKey)!;
     await act(async () => {
       textNode.props.onTextLayout({
         nativeEvent: {
@@ -237,7 +257,176 @@ describe('HafsMushafList word follow', () => {
     const view = await renderUi(
       <HafsMushafList anchorVerseKey="2:255" followKey={null} testID="mushaf" topInset={0} />,
     );
-    expect(followedTextNode(view.root)).toBeUndefined();
+    expect(followedTextNode(view.root, null)).toBeUndefined();
     expect(mockListState.offsetCalls).toEqual([]);
+  });
+});
+
+describe('HafsMushafList top ayah (ADR 0073)', () => {
+  // The list settles after the opened page measures (SETTLE_MS, 1500 ms in the list); the test waits past it.
+  const settleWaitMs = 1600;
+
+  // Lays the list out at the opened ayah, and waits until it has settled.
+  async function settledList(props: Partial<Parameters<typeof HafsMushafList>[0]> = {}) {
+    const view = await renderUi(
+      <HafsMushafList anchorVerseKey="2:255" testID="mushaf" topInset={0} {...props} />,
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, settleWaitMs));
+    });
+    return view;
+  }
+
+  // The FlashList stand-in passes its scroll-end handlers to the scroll view it renders.
+  function scrollEndHandler(root: TestNode | null, name: 'onMomentumScrollEnd' | 'onScrollEndDrag') {
+    return findNode(root, (node) => typeof node.props[name] === 'function')?.props[name] as (() => void) | undefined;
+  }
+
+  beforeEach(() => {
+    mockListState.currentOffset = 0;
+    mockListState.layoutY = 0;
+    mockListState.firstItemOffset = 0;
+    // Every measured paragraph's text sits at the top of the viewport.
+    jest.mocked(measureWithin).mockImplementation((_node, _root, onMeasured) => onMeasured(0));
+  });
+
+  it('reports the ayah whose line starts at the top of the screen once a scroll ends', async () => {
+    const anchor = '2:255';
+    const run = paragraphOf(mockExecutor, anchor)!;
+    expect(run.length).toBeGreaterThan(1);
+    const ranges = paragraphVerseRanges(run);
+    // The first line sits above the top of the screen; the second starts in the second ayah and is fully visible.
+    const lines = [
+      { height: 50, text: 'x'.repeat(ranges[1]!.start), y: -100 },
+      { height: 50, text: 'y', y: 0 },
+    ];
+    const onTopAyah = jest.fn();
+    const view = await settledList({ onTopAyah });
+
+    await act(async () => {
+      paragraphNode(view.root, run[0]!.verseKey)!.props.onTextLayout({ nativeEvent: { lines } });
+    });
+    await act(async () => {
+      scrollEndHandler(view.root, 'onScrollEndDrag')!();
+    });
+
+    const second = run[1]!.verseKey;
+    expect(onTopAyah).toHaveBeenCalledTimes(1);
+    expect(onTopAyah).toHaveBeenCalledWith(pageForVerse(mockExecutor, second), second);
+  });
+
+  it('reports the ayah on the momentum scroll end too', async () => {
+    const anchor = '2:255';
+    const run = paragraphOf(mockExecutor, anchor)!;
+    const ranges = paragraphVerseRanges(run);
+    const onTopAyah = jest.fn();
+    const view = await settledList({ onTopAyah });
+
+    await act(async () => {
+      paragraphNode(view.root, run[0]!.verseKey)!.props.onTextLayout({
+        nativeEvent: {
+          lines: [
+            { height: 50, text: 'x'.repeat(ranges[1]!.start), y: -100 },
+            { height: 50, text: 'y', y: 0 },
+          ],
+        },
+      });
+    });
+    await act(async () => {
+      scrollEndHandler(view.root, 'onMomentumScrollEnd')!();
+    });
+
+    expect(onTopAyah).toHaveBeenCalledWith(pageForVerse(mockExecutor, run[1]!.verseKey), run[1]!.verseKey);
+  });
+
+  it('keeps the measured lines when the page re-renders before the scroll ends', async () => {
+    const anchor = '2:255';
+    const run = paragraphOf(mockExecutor, anchor)!;
+    const ranges = paragraphVerseRanges(run);
+    const onTopAyah = jest.fn();
+    const lines = [
+      { height: 50, text: 'x'.repeat(ranges[1]!.start), y: -100 },
+      { height: 50, text: 'y', y: 0 },
+    ];
+    const view = await settledList({ onTopAyah });
+    await act(async () => {
+      paragraphNode(view.root, run[0]!.verseKey)!.props.onTextLayout({ nativeEvent: { lines } });
+    });
+
+    // A new highlight map re-renders the page: its ref callback runs with null, then with the node again.
+    await act(async () => {
+      view.rerender(
+        <ThemeProvider name="light">
+          <HafsMushafList anchorVerseKey={anchor} highlightsByVerseId={new Map()} onTopAyah={onTopAyah} testID="mushaf" topInset={0} />
+        </ThemeProvider>,
+      );
+    });
+    await act(async () => {
+      scrollEndHandler(view.root, 'onScrollEndDrag')!();
+    });
+
+    expect(onTopAyah).toHaveBeenCalledWith(pageForVerse(mockExecutor, run[1]!.verseKey), run[1]!.verseKey);
+  });
+
+  it('clears the measured lines when the font scale changes, until the page measures again', async () => {
+    const anchor = '2:255';
+    const run = paragraphOf(mockExecutor, anchor)!;
+    const ranges = paragraphVerseRanges(run);
+    const page = pageForVerse(mockExecutor, anchor)!;
+    const lines = [
+      { height: 50, text: 'x'.repeat(ranges[1]!.start), y: -100 },
+      { height: 50, text: 'y', y: 0 },
+    ];
+    const onTopAyah = jest.fn();
+    const view = await settledList({ onTopAyah });
+    await act(async () => {
+      paragraphNode(view.root, run[0]!.verseKey)!.props.onTextLayout({ nativeEvent: { lines } });
+    });
+
+    await act(async () => {
+      view.rerender(
+        <ThemeProvider name="light">
+          <HafsMushafList anchorVerseKey={anchor} fontScale={1.25} onTopAyah={onTopAyah} testID="mushaf" topInset={0} />
+        </ThemeProvider>,
+      );
+    });
+    await act(async () => {
+      scrollEndHandler(view.root, 'onScrollEndDrag')!();
+    });
+    expect(onTopAyah).toHaveBeenLastCalledWith(page, firstVerseOfPage(mockExecutor, page));
+
+    // The page lays out again at the new size and reports its lines; the top ayah is read from them.
+    await act(async () => {
+      paragraphNode(view.root, run[0]!.verseKey)!.props.onTextLayout({ nativeEvent: { lines } });
+    });
+    await act(async () => {
+      scrollEndHandler(view.root, 'onScrollEndDrag')!();
+    });
+    expect(onTopAyah).toHaveBeenLastCalledWith(pageForVerse(mockExecutor, run[1]!.verseKey), run[1]!.verseKey);
+  });
+
+  it('falls back to the first ayah of the visible page when no line is measured', async () => {
+    const page = pageForVerse(mockExecutor, '2:255')!;
+    const onTopAyah = jest.fn();
+    const view = await settledList({ onTopAyah });
+
+    await act(async () => {
+      scrollEndHandler(view.root, 'onScrollEndDrag')!();
+    });
+
+    expect(onTopAyah).toHaveBeenCalledWith(page, firstVerseOfPage(mockExecutor, page));
+  });
+
+  it('reports nothing while the opened page is still settling', async () => {
+    const onTopAyah = jest.fn();
+    const view = await renderUi(
+      <HafsMushafList anchorVerseKey="2:255" onTopAyah={onTopAyah} testID="mushaf" topInset={0} />,
+    );
+
+    await act(async () => {
+      scrollEndHandler(view.root, 'onScrollEndDrag')!();
+    });
+
+    expect(onTopAyah).not.toHaveBeenCalled();
   });
 });

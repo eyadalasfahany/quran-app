@@ -4,15 +4,15 @@ import type { HighlightColor } from '@/shared/ui';
 const SAVED_WASH: HighlightColor = 'green';
 
 /**
- * The highlights the reader draws: the stored ones, with the saved ayah's wash over them. The wash always wins,
- * so the saved ayah shows green even when it has a colour of its own (ADR 0070, decision 3). The input map is
- * never changed; with no saved ayah it is returned as it is.
+ * The highlights the reader draws: the stored ones, with the saved ayah's wash over them when it has no colour of
+ * its own. An ayah's own colour wins over the saved green (ADR 0073, decision 5). The input map is never changed;
+ * with no saved ayah, or a saved ayah that already has a colour, it is returned as it is.
  */
 export function withSavedWash(
   highlights: ReadonlyMap<number, HighlightColor>,
   savedVerseId: number | null,
 ): ReadonlyMap<number, HighlightColor> {
-  if (savedVerseId === null || highlights.get(savedVerseId) === SAVED_WASH) {
+  if (savedVerseId === null || highlights.has(savedVerseId)) {
     return highlights;
   }
   return new Map(highlights).set(savedVerseId, SAVED_WASH);
