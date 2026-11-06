@@ -29,6 +29,11 @@ const FRAME_CONTENT = {
   paddingTop: 22,
 } as const;
 
+// A justified paragraph's short last line follows the layout direction, and the shared Quran style's 'ltr' would put it
+// on the left on Android. Right-aligned text keeps 'ltr', because iOS mirrors textAlign 'right' under 'rtl'.
+const JUSTIFIED_PARAGRAPH = { direction: 'rtl', width: '100%' } as const;
+const START_PARAGRAPH = { width: '100%' } as const;
+
 export function HafsMushafPage({
   verses,
   chapters,
@@ -108,7 +113,7 @@ export function HafsMushafPage({
               {...(followed ? follow.textProps(first.verseKey) : undefined)}
               align={quranFonts[font].mushafAlign}
               fontScale={fontScale}
-              style={{ width: '100%' }}
+              style={quranFonts[font].mushafAlign === 'justify' ? JUSTIFIED_PARAGRAPH : START_PARAGRAPH}
               testID={testID ? `${testID}-text-${first.verseKey}` : undefined}
               variant="quranMushaf"
             >

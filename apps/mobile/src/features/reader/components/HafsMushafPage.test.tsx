@@ -92,6 +92,7 @@ describe('HafsMushafPage', () => {
     expect(flatStyle(view.getByTestId('page-text-1:1').props.style)).toMatchObject({
       color: themes.light.colors.ink,
       fontSize: 25,
+      direction: 'rtl',
       lineHeight: 59,
       textAlign: 'justify',
     });
@@ -104,6 +105,7 @@ describe('HafsMushafPage', () => {
 
     expect(style.fontFamily).toBe('ScheherazadeNew-Regular');
     expect(style.textAlign).toBe('right');
+    expect(style.direction).toBe('ltr');
     expect(view.getByTestId('page-ayah-1:1').props.children).toBe(ayahText);
   });
 
