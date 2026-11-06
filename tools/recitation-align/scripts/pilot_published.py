@@ -14,7 +14,9 @@ with `source: "mp3quran_published"` on the ayah rows. Nothing committed; nothing
 With --fallback-aligner, a surah whose published timings are refused (they do not fit the audio file)
 or that end more than a minute before the audio does (the file holds recitation they do not cover)
 is aligned by the whole-surah aligner instead (as `run --no-repair`: windowed alignment, then ayah
-boundaries snapped to pauses) and written with `source: "aligner"`. The printed line says FALLBACK.
+boundaries snapped to pauses) and written with `source: "aligner"`. A surah whose published spans leave
+many ayahs at low confidence (at least 5 and 5%) is also aligned by the aligner, which is kept only when
+it leaves fewer. The printed line says FALLBACK.
 
 Quality check (printed): share of published ayah starts (ayahs 2..N) within 1 s of an audio pause,
 and ayahs whose words have a mean confidence below 0.4 (basmala excluded). Keys and counts only.
@@ -49,6 +51,9 @@ FALLBACK_SOURCE = "aligner"
 # recitation (moshaf 86 surah 89 repeats ayahs 21-26; the timings stop 151 s before the file ends).
 # Ordinary tails (closing silence) seen on moshaf 86 stay under 27 s.
 MAX_UNPUBLISHED_TAIL_MS = 60_000
+# Published spans that leave this many ayahs below LOW_CONFIDENCE are compared with the aligner.
+MIN_LOW_FOR_RETRY = 5
+RETRY_SHARE = 0.05
 LOW_CONFIDENCE = 0.4
 TOLERANCE_S = 1.0
 SETTINGS = dict(max_tokens=MAX_TOKENS, lookahead_tokens=LOOKAHEAD_TOKENS, slack=SLACK, star_penalty=STAR_PENALTY)
@@ -185,19 +190,35 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
     pauses = cached_pauses(audio, sha, args.pauses_dir / f"{surah:03d}.pauses.json",
                            DEFAULT_NOISE_DB, DEFAULT_MIN_SILENCE_S)
 
-    if refusal:
+    def run_aligner():
+        nonlocal wav
         if wav is None:
             wav = load_wav16k(audio)
-        words, recited, _decision = align_full(wav, surah, ayahs, em=em, pauses=pauses)
-        snap_to_pauses(words, pauses, window_ms=SNAP_WINDOW_MS)
+        found, rec, _decision = align_full(wav, surah, ayahs, em=em, pauses=pauses)
+        snap_to_pauses(found, pauses, window_ms=SNAP_WINDOW_MS)
+        found.sort(key=lambda w: (w["ayah"], w["position"]))
+        return found, rec
+
+    if not refusal:
+        words, recited = align_in_spans(surah, norm, ayahs=ayahs, em=em, mpf=mpf, vocab=vocab, blank=blank)
+        squeezed = force_published_starts(words, norm)
         words.sort(key=lambda w: (w["ayah"], w["position"]))
+        if args.fallback_aligner and too_many_low(words):
+            # Published spans that leave many ayahs at low confidence may have drifted from the file
+            # (moshaf 62 surah 2: from ayah 179 on). Keep the aligner only when it does strictly better.
+            alt, alt_recited = run_aligner()
+            low_pub, low_alt = low_count(words), low_count(alt)
+            if low_alt < low_pub:
+                refusal = (f"published spans leave {low_pub} ayahs below {LOW_CONFIDENCE}; "
+                           f"the aligner leaves {low_alt}")
+                words, recited = alt, alt_recited
+    if refusal:
+        if not words_from_aligner(refusal):
+            words, recited = run_aligner()
         spans = ayah_spans(words, duration_ms)
         doc_source, squeezed, published = FALLBACK_SOURCE, 0, {"refused": refusal}
         ayah1_published, end_mismatch, dropped = None, None, None
     else:
-        words, recited = align_in_spans(surah, norm, ayahs=ayahs, em=em, mpf=mpf, vocab=vocab, blank=blank)
-        squeezed = force_published_starts(words, norm)
-        words.sort(key=lambda w: (w["ayah"], w["position"]))
         spans = {a: (norm.starts[a], norm.ends[a]) for a in sorted(norm.starts)}
         doc_source = SOURCE
         ayah1_published, end_mismatch, dropped = (norm.ayah1_published_start_ms, norm.end_mismatch,
@@ -237,6 +258,23 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
         "ayah1_published_start_ms": ayah1_published, "duration_ms": duration_ms,
         "fallback": refusal,
     }
+
+
+def low_count(words: list[dict]) -> int:
+    """Ayahs whose mean word confidence is below LOW_CONFIDENCE (basmala excluded)."""
+    return sum(1 for c in ayah_confidence(words).values() if c < LOW_CONFIDENCE)
+
+
+def too_many_low(words: list[dict]) -> bool:
+    """Enough low-confidence ayahs to try the aligner: at least 5 and at least 5% of the ayahs."""
+    conf = ayah_confidence(words)
+    low = sum(1 for c in conf.values() if c < LOW_CONFIDENCE)
+    return low >= MIN_LOW_FOR_RETRY and low >= RETRY_SHARE * len(conf)
+
+
+def words_from_aligner(refusal: str) -> bool:
+    """True when the refusal came from comparing with the aligner (its words are already in hand)."""
+    return refusal.startswith("published spans leave ")
 
 
 def published_refusal(norm: Normalised, duration_ms: int) -> str | None:

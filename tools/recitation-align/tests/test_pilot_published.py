@@ -47,3 +47,22 @@ def test_ayah_spans_follow_the_first_spoken_word_and_end_at_the_file():
         {"ayah": 2, "start_ms": 7000},
     ]
     assert pp.ayah_spans(words, 12_000) == {1: (3000, 7000), 2: (7000, 12_000)}
+
+
+def words_with(confidences):
+    return [{"ayah": a, "confidence": c} for a, c in enumerate(confidences, start=1)]
+
+
+def test_a_few_low_ayahs_do_not_trigger_the_aligner_comparison():
+    assert not pp.too_many_low(words_with([0.1] * 4 + [0.9] * 96))  # under 5 ayahs
+    assert not pp.too_many_low(words_with([0.1] * 5 + [0.9] * 195))  # 5 is under 5% of 200
+
+
+def test_many_low_ayahs_trigger_the_aligner_comparison():
+    assert pp.too_many_low(words_with([0.1] * 5 + [0.9] * 95))
+    assert pp.low_count(words_with([0.1, 0.39, 0.4, 0.9])) == 2
+
+
+def test_basmala_words_do_not_count_toward_low_ayahs():
+    words = [{"ayah": 1, "confidence": 0.0, "basmala": True}, {"ayah": 1, "confidence": 0.8}]
+    assert pp.low_count(words) == 0
