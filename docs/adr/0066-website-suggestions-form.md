@@ -10,7 +10,8 @@ The developer wants visitors to taybah-app.com to send suggestions. The visitor 
 
 1. **Endpoint on our API.** `POST /api/v1/suggestions` lives in a new `Feedback` domain on the Laravel API (Railway, ADR 0022). We don't use a Vercel function or a third-party form service. The endpoint is public: no token.
 2. **Stored and emailed.** Each suggestion is saved in a `suggestions` table and then emailed. Rows are pruned after **12 months** (`Prunable` with a scheduled `model:prune`).
-3. **Mail through Resend's SMTP relay.** Laravel's built-in `smtp` mailer uses `smtp.resend.com`, so no new Composer package is needed. Mail is sent from `no-reply@taybah-app.com`, which needs Resend's SPF and DKIM records on taybah-app.com. Both mails are queued (Horizon, ADR 0065) and sent after commit. A mail failure is reported and never turns a saved suggestion into an error for the visitor.
+3. **Mail through Resend's HTTPS API.** Laravel's built-in `resend` mailer uses the `resend/resend-php` package. Mail is sent from `no-reply@taybah-app.com`, which needs Resend's SPF and DKIM records on taybah-app.com. Both mails are queued (Horizon, ADR 0065) and sent after commit. A mail failure is reported and never turns a saved suggestion into an error for the visitor.
+   - *Amended 6 Nov 2026:* the first version used Resend's SMTP relay. Railway blocks outbound SMTP below the Pro plan, so every send hung until PHP's 30 s limit and the request failed with a 500. HTTPS isn't blocked.
 4. **Two mails.**
    - **Admin notification:** goes to `FEEDBACK_ADMIN_EMAIL` (env, never in the repo). It contains the name, email, page language, time and message, and its `Reply-To` is the visitor.
    - **Auto-reply:** goes to the visitor, in Arabic (RTL) or English, depending on the `locale` the page sends. The page reads `locale` from `<html lang>`, not `Accept-Language`.

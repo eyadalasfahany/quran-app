@@ -85,7 +85,7 @@ Set on the API service unless noted.
 | `QF_ENV` | `production` | API. Selects `oauth2.quran.foundation` and `apis.quran.foundation` (`config/quran.php`). |
 | `QF_CLIENT_ID`, `QF_CLIENT_SECRET` | QF production values | API. Never in git (ADR 0041). |
 | `QF_CONTACT_EMAIL` | set | API. Used in the download User-Agent. |
-| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_SCHEME`, `MAIL_USERNAME`, `MAIL_PASSWORD` | `smtp`, `smtp.resend.com`, `465`, `smtps`, `resend`, the Resend API key | ADR 0066. The website suggestion mails go through Resend's SMTP relay. The key has sending access to `taybah-app.com` only and is never in git. |
+| `MAIL_MAILER`, `RESEND_API_KEY` | `resend`, the Resend API key | ADR 0066. The suggestion mails go through Resend's HTTPS API. Not SMTP: Railway blocks outbound SMTP below the Pro plan, and an SMTP send hangs until PHP's 30 s limit. The key has sending access to `taybah-app.com` only and is never in git. `MAIL_HOST`, `MAIL_PORT`, `MAIL_SCHEME`, `MAIL_USERNAME` and `MAIL_PASSWORD` are not used. |
 | `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | `no-reply@taybah-app.com`, `Taybah` | ADR 0066. Needs the domain verified in Resend (its SPF, DKIM and MX records on `send.taybah-app.com` and `resend._domainkey.taybah-app.com`). |
 | `FEEDBACK_ADMIN_EMAIL` | the developer's address | ADR 0066. Receives each suggestion. When it is empty, suggestions are stored and a warning is logged, but no admin mail is sent. |
 
