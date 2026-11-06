@@ -193,7 +193,7 @@ export interface components {
          * ServedResourceGroup
          * @enum {string}
          */
-        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar" | "names" | "duas";
+        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar" | "names" | "duas" | "hadith_collections";
         /** StoreSuggestionRequest */
         StoreSuggestionRequest: {
             name?: string | null;

@@ -36,6 +36,12 @@ use App\Domains\Duas\Models\DuaHadith;
 use App\Domains\Duas\Models\DuaItem;
 use App\Domains\Duas\Models\DuaLink;
 use App\Domains\Duas\Models\DuaQuranSpan;
+use App\Domains\Hadith\Models\HadithBook;
+use App\Domains\Hadith\Models\HadithChapter;
+use App\Domains\Hadith\Models\HadithCollection;
+use App\Domains\Hadith\Models\HadithEntry;
+use App\Domains\Hadith\Models\HadithGrade;
+use App\Domains\Hadith\Models\HadithRefAlias;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -117,6 +123,19 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
                 ->where('names_verses.resource_id', $resourceId),
             'names_notes' => NamesNote::query()->toBase()
                 ->where('names_notes.resource_id', $resourceId),
+            'hadith_collections' => HadithCollection::query()->toBase()
+                ->where('hadith_collections.resource_id', $resourceId),
+            'hadith_books' => HadithBook::query()->toBase()
+                ->where('hadith_books.resource_id', $resourceId),
+            'hadith_chapters' => HadithChapter::query()->toBase()
+                ->where('hadith_chapters.resource_id', $resourceId),
+            'hadith_entries' => HadithEntry::query()->toBase()
+                ->where('hadith_entries.resource_id', $resourceId),
+            'hadith_grades' => $this->visibleHadithGrades(
+                HadithGrade::query()->toBase()->where('hadith_grades.resource_id', $resourceId),
+            ),
+            'hadith_ref_aliases' => HadithRefAlias::query()->toBase()
+                ->where('hadith_ref_aliases.resource_id', $resourceId),
             default => throw new PackBuildException('Unknown pack table ['.$table->name.'].'),
         };
 
@@ -125,6 +144,19 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
         }
 
         return $query->select($this->selectList($table));
+    }
+
+    /**
+     * ADR 0042 §9 and D4: no grade is served while hadith.grades_visible is false. When it is true, only a grade with a
+     * named grader is served.
+     */
+    private function visibleHadithGrades(Builder $query): Builder
+    {
+        if (! config()->boolean('hadith.grades_visible')) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereNotNull('hadith_grades.graded_by');
     }
 
     /**

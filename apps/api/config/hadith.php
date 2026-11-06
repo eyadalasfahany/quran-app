@@ -57,18 +57,18 @@ return [
     | a download while any value is null outside tests.
     */
     'files' => [
-        'editions.json' => null,
-        'info.json' => null,
-        'editions/ara-bukhari.json' => null,
-        'editions/ara-muslim.json' => null,
-        'editions/ara-abudawud.json' => null,
-        'editions/ara-tirmidhi.json' => null,
-        'editions/ara-ibnmajah.json' => null,
-        'editions/ara-nasai.json' => null,
-        'editions/ara-malik.json' => null,
-        'editions/ara-nawawi.json' => null,
-        'editions/ara-qudsi.json' => null,
-        'editions/ara-dehlawi.json' => null,
+        'editions.json' => 'ef6eaefd10c348c500624091846d7bd7968056bea9bb15875a427d2cc2b2b3bf',
+        'info.json' => 'cf1ced267ada8f606f95eb84e2b6ddfa87bfa2a6a9dd4cb2a5d9a8c1734f10fb',
+        'editions/ara-bukhari.json' => 'e34a3402889ca378871da3c5984b7875c680920e93f1c8738ac7afe502179562',
+        'editions/ara-muslim.json' => '194073b24090c5368e4d14a3f55c9e0ef144c7437bd7e5aa83aa4d2bc54a8ea0',
+        'editions/ara-abudawud.json' => '216139c5f40a8147e700d62ffa3b5b2fe45d0e034f86941a193c598c10056189',
+        'editions/ara-tirmidhi.json' => '408028cd56329ed78edbe3ad443beb96b58e16c3e5bd49f9bc7b0eac77c8820f',
+        'editions/ara-ibnmajah.json' => 'b406e6be81588ab0ec1ddbed32f5fd95bbcdda242c460d88331e82eb5c2bc0aa',
+        'editions/ara-nasai.json' => 'c705983c19bb089c87cd6531aff609bd94d862183ed0859115b0ff991826a956',
+        'editions/ara-malik.json' => '088b1f354e110211da006d47e37dd8f8837368f318ed683271f0fdb0f09a3ab5',
+        'editions/ara-nawawi.json' => '91f559b90422005b768bb449426d87d2e6fabbb43ac3a31e5c24c50ca77465e6',
+        'editions/ara-qudsi.json' => '8645482e46b9ab145b3a8b740ffc7dc6902cc1cc0a1845da35b2057ec23bb55a',
+        'editions/ara-dehlawi.json' => '913fa23adf0a7b62bf8a3fd80f8c8a8efc2f66ac9b7ec950443a701285193d54',
     ],
 
     // Dev-only (ADR 0042 §3, §4a). Null in production, and otherwise the key only when it is a non-empty string.
@@ -76,5 +76,14 @@ return [
     'api_key' => env('APP_ENV') === 'production'
         ? null
         : (is_string(env('HADITH_API_KEY')) && env('HADITH_API_KEY') !== '' ? env('HADITH_API_KEY') : null),
+
+    // Transport settings for the pinned download (step 5). Not secrets, not switches.
+    'download' => [
+        'timeout_seconds' => 60,
+        'tries' => 3,
+        'retry_delay_ms' => 1000,   // base delay; attempt n waits retry_delay_ms * 2^(n-1)
+        'gap_ms' => 300,            // pause between two files in one snapshot
+        'max_bytes' => 30_000_000,  // per file; ara-bukhari.json is 9.8 MB
+    ],
 
 ];

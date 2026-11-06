@@ -1,0 +1,134 @@
+{
+  "cases": [
+    {
+      "name": "empty",
+      "input": "",
+      "expected": ""
+    },
+    {
+      "name": "plain letters unchanged",
+      "input": "\u0628\u062a\u062b",
+      "expected": "\u0628\u062a\u062b"
+    },
+    {
+      "name": "fathah damma kasra stripped",
+      "input": "\u0628\u064e\u062a\u064f\u062b\u0650",
+      "expected": "\u0628\u062a\u062b"
+    },
+    {
+      "name": "shadda sukun tanwin dagger alef stripped",
+      "input": "\u0628\u0651\u062a\u0652\u062b\u064b\u0670",
+      "expected": "\u0628\u062a\u062b"
+    },
+    {
+      "name": "harakat range ends stripped, neighbours kept",
+      "input": "\u064b\u0628\u065f\u0660\u064a",
+      "expected": "\u0628\u0660\u064a"
+    },
+    {
+      "name": "tatweel stripped",
+      "input": "\u0628\u0640\u0640\u062a",
+      "expected": "\u0628\u062a"
+    },
+    {
+      "name": "annotation marks range stripped, neighbours kept",
+      "input": "\u06d5\u0628\u06d6\u062a\u06ed\u06ee",
+      "expected": "\u06d5\u0628\u062a\u06ee"
+    },
+    {
+      "name": "U+0610 is not stripped",
+      "input": "\u0628\u0610",
+      "expected": "\u0628\u0610"
+    },
+    {
+      "name": "alef forms map to alef",
+      "input": "\u0622\u0623\u0625\u0671\u0627",
+      "expected": "\u0627\u0627\u0627\u0627\u0627"
+    },
+    {
+      "name": "ta marbuta and alef maksura",
+      "input": "\u0629\u0649",
+      "expected": "\u0647\u064a"
+    },
+    {
+      "name": "LRM RLM and ALM stripped",
+      "input": "\u0628\u200f\u062a\u200e\u062b\u061c",
+      "expected": "\u0628\u062a\u062b"
+    },
+    {
+      "name": "embeddings and overrides stripped",
+      "input": "\u202a\u0628\u202b\u062a\u202c\u202d\u062b\u202e",
+      "expected": "\u0628\u062a\u062b"
+    },
+    {
+      "name": "isolates stripped",
+      "input": "\u2066\u0628\u2067\u062a\u2068\u062b\u2069",
+      "expected": "\u0628\u062a\u062b"
+    },
+    {
+      "name": "zero width marks and BOM stripped",
+      "input": "\u0628\u200b\u062a\u200c\u062b\u200d\ufeff",
+      "expected": "\u0628\u062a\u062b"
+    },
+    {
+      "name": "zwnj between words",
+      "input": "\u0628\u200c \u200c\u062a",
+      "expected": "\u0628 \u062a"
+    },
+    {
+      "name": "word joiner is kept",
+      "input": "\u0628\u2060\u062a",
+      "expected": "\u0628\u2060\u062a"
+    },
+    {
+      "name": "ascii whitespace collapsed and trimmed",
+      "input": " \u0628  \u062a\t\n\u062b ",
+      "expected": "\u0628 \u062a \u062b"
+    },
+    {
+      "name": "unicode whitespace collapsed and trimmed",
+      "input": " \u0628  \u062a\u3000\u000b\f\r\u062b ",
+      "expected": "\u0628 \u062a \u062b"
+    },
+    {
+      "name": "next line U+0085 is not whitespace",
+      "input": "\u0628\u0085\u062a",
+      "expected": "\u0628\u0085\u062a"
+    },
+    {
+      "name": "marks between spaces collapse after stripping",
+      "input": "\u0628 \u200f \u062a",
+      "expected": "\u0628 \u062a"
+    },
+    {
+      "name": "marks at the edges then trim",
+      "input": "\u200f \u0628 \u200f",
+      "expected": "\u0628"
+    },
+    {
+      "name": "only invisible marks",
+      "input": "\u200f\u202a\ufeff",
+      "expected": ""
+    },
+    {
+      "name": "digits unchanged",
+      "input": "\u0661\u0662\u06f3",
+      "expected": "\u0661\u0662\u06f3"
+    },
+    {
+      "name": "latin is not case folded",
+      "input": "FIXTURE 12 ab",
+      "expected": "FIXTURE 12 ab"
+    },
+    {
+      "name": "strip and map together",
+      "input": "\u0623\u064e\u0629\u200f",
+      "expected": "\u0627\u0647"
+    },
+    {
+      "name": "placeholder sentence",
+      "input": "\u0646\u0635 \u062a\u062c\u0631\u064a\u0628\u064a \u0661 \u2014 \u0644\u064a\u0633 \u062d\u062f\u064a\u062b\u064b\u0627",
+      "expected": "\u0646\u0635 \u062a\u062c\u0631\u064a\u0628\u064a \u0661 \u2014 \u0644\u064a\u0633 \u062d\u062f\u064a\u062b\u0627"
+    }
+  ]
+}

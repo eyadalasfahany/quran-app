@@ -50,6 +50,14 @@ final class PackSchema
                 self::namesVerses(),
                 self::namesNotes(),
             ],
+            ResourceGroup::HadithCollections => [
+                self::hadithCollections(),
+                self::hadithBooks(),
+                self::hadithChapters(),
+                self::hadithEntries(),
+                self::hadithGrades(),
+                self::hadithRefAliases(),
+            ],
             default => throw new PackBuildException('Resource group ['.$group->value.'] has no pack schema.'),
         };
     }
@@ -541,6 +549,123 @@ final class PackSchema
             ],
             primaryKey: ['resource_id', 'id'],
             orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function hadithCollections(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_collections',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('slug'),
+                self::text('source_code'),
+                self::text('title_ar', nullable: true),
+                self::text('title_en', nullable: true),
+                self::text('author_ar', nullable: true),
+                self::text('author_en', nullable: true),
+                self::text('attribution_ar'),
+                self::text('attribution_en'),
+                self::text('source_url', nullable: true),
+                self::integer('total_hadith'),
+                self::integer('books_count'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function hadithBooks(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_books',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('book_number'),
+                self::text('title_ar', nullable: true),
+                self::text('title_en', nullable: true),
+                self::integer('position'),
+                self::integer('hadith_count'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function hadithChapters(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_chapters',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('book_id'),
+                self::integer('chapter_number'),
+                self::text('source_chapter_key', nullable: true),
+                self::text('title_ar', nullable: true),
+                self::text('title_en', nullable: true),
+                self::integer('position'),
+                self::integer('hadith_count'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function hadithEntries(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_entries',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('book_id'),
+                self::integer('chapter_id', nullable: true),
+                self::text('hadith_number'),
+                self::text('arabic_number', nullable: true),
+                self::integer('position'),
+                self::text('text_ar'),
+                self::text('text_en', nullable: true),
+                self::text('narrator_en', nullable: true),
+                self::text('text_search'),
+                self::text('source_url', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function hadithGrades(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_grades',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('entry_id'),
+                self::text('grade'),
+                self::text('graded_by', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function hadithRefAliases(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_ref_aliases',
+            columns: [
+                self::integer('resource_id'),
+                self::text('old_number'),
+                self::text('new_number', nullable: true),
+                self::text('match'),
+                self::integer('since_version'),
+            ],
+            primaryKey: ['resource_id', 'old_number', 'since_version'],
+            orderBy: ['resource_id', 'old_number', 'since_version'],
         );
     }
 

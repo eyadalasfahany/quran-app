@@ -44,4 +44,4 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 - If the code, the spec and an ADR disagree, stop and report.
 
 ## Environment
-Same as [`../phase-6/README.md`](../phase-6/README.md) (Node 26 PATH prefix, PHP 8.5 path, MySQL, Android emulator, known Windows-only failures). Local: PHP 8.5 from Homebrew and Node 26 through nvm per `CLAUDE.md`. Hadith snapshots live in `apps/api/storage/app/hadith` (git-ignored; confirm in step 5). The first snapshot downloads about 47 MB of `ara-*` JSON from jsDelivr.
+Same as [`../phase-6/README.md`](../phase-6/README.md) (Node 26 PATH prefix, PHP 8.5 path, MySQL, Android emulator, known Windows-only failures). Local: PHP 8.5 from Homebrew and Node 26 through nvm per `CLAUDE.md`. Hadith snapshots live in `apps/api/storage/app/private/sources/hadith/{commit}` (`SourceCache`, git-ignored, ADR 0068). The first snapshot downloads about 47 MB of `ara-*` JSON from jsDelivr.

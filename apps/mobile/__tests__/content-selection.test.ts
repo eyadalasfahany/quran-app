@@ -96,4 +96,12 @@ describe('content selection', () => {
     expect(defaultSelectedResourceIds(listed)).toEqual([1, 2, 30, 50]);
     expect(selectedResourceIds(listed)).toEqual([1, 2, 30, 50]);
   });
+
+  it('does not auto-select a hadith collection, even when the manifest lists it', () => {
+    const listed = [...resources, resource({ id: 40, group: 'hadith_collections' })];
+
+    expect(defaultSelectedResourceIds(listed)).not.toContain(40);
+    expect(selectedResourceIds(listed)).not.toContain(40);
+    expect(defaultSelectedResourceIds(listed)).toEqual([1, 2, 30]);
+  });
 });

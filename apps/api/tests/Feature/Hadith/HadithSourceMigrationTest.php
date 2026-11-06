@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-// No RefreshDatabase: the create migrations run DDL, which commits any open transaction on MySQL.
-// Each test restores the row it changes, so later tests see the seeded sources.
-
-beforeEach(function (): void {
-    $this->artisan('migrate')->assertSuccessful();
-});
+// RefreshDatabase is safe here: these migrations only insert and delete rows (no DDL), and it gives each parallel
+// process its own database instead of racing other tests' `migrate` on the shared one.
+uses(RefreshDatabase::class);
 
 function hadithMigration(string $name): object
 {

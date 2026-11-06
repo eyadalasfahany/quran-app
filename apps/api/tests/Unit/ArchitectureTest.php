@@ -75,3 +75,12 @@ arch('the Taybah importer reads no storage SDK')
 arch('the app uses no storage SDK')
     ->expect('App')
     ->not->toUse(['Aws']);
+
+arch('hadith models extend eloquent')
+    ->expect('App\Domains\Hadith\Models')
+    ->toExtend(Model::class)
+    ->not->toUse(['Illuminate\Http', 'Symfony\Component\HttpFoundation']);
+
+arch('hadith enums are string backed')
+    ->expect('App\Domains\Hadith\Enums')
+    ->toBeStringBackedEnums();

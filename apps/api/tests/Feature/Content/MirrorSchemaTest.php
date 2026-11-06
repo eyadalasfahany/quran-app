@@ -73,6 +73,13 @@ it('stores quran text in the binary collation and no other text column', functio
         'dua_hadith.hadeeth',
         'dua_hadith.reference',
         'dua_hadith.title',
+        // Hadith Arabic is source text stored byte-for-byte (ADR 0042), like the dua and names source columns.
+        'hadith_books.title_ar',
+        'hadith_chapters.title_ar',
+        'hadith_collections.attribution_ar',
+        'hadith_collections.author_ar',
+        'hadith_collections.title_ar',
+        'hadith_entries.text_ar',
         // Names of Allah are source text stored byte-for-byte (ADR 0043 A2), like the dua source columns.
         'names.name_ar',
         'tafsir_entries.html',

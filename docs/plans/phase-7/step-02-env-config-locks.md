@@ -210,7 +210,7 @@ All under `apps/api/tests/Feature/Hadith/` (they extend `TestCase` through `Pest
 - `it('seeds fawazahmed0 as not_required with the Unlicense and the provenance note', …)`: after `down()` the row is gone; after `up()` twice there is exactly one row with `permission_status` `not_required`, `name` `fawazahmed0/hadith-api`, `licence_url` containing `df57907be35291c91ad6a6691180e22ca9920784` and ending in `/LICENSE`, `attribution_en` `Source: fawazahmed0/hadith-api (Unlicense)`, and `notes` containing `Unlicense` and `ADR 0042`. Restore the row at the end (`up()`).
 - `it('seeds sunnahcom as pending with an empty Arabic attribution', …)`: same pattern; `permission_status` `pending`, `attribution_ar` is `''`, `attribution_en` `Sunnah.com`.
 - `it('its down removes only its own row', …)`: run `down()` of the fawazahmed0 migration; the `sunnahcom` and `opendua` rows still exist; restore with `up()`.
-- (Removed 7 Nov 2026: `PermissionStatus` has no `allowsDelivery()`; today's gates compare with `Granted` only, e.g. `DuasPackReadiness`, `NamesSourceGate`. **Step 4's hadith pack gate treats `not_required` as deliverable, like `granted` (developer, 7 Nov 2026, plan D12)**; do not touch the enum in this step.)
+- (Removed 7 Nov 2026: `PermissionStatus` has no `allowsDelivery()`; today's gates compare with `Granted` only, e.g. `DuasPackReadiness`, `NamesSourceGate`. **Hadith packs have no permission gate: `permission_status` is provenance only (plan D12)**; do not touch the enum in this step.)
 
 ## Reuse (paths checked)
 - `apps/api/config/azkar.php` (config style)

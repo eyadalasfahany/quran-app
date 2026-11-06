@@ -323,6 +323,61 @@ const README_CONTRACT = [
       { entity: 'names_note', key: 'id' },
     ],
   },
+  {
+    group: 'hadith_collections',
+    tables: [
+      {
+        name: 'hadith_collections',
+        columns: [
+          'resource_id',
+          'id',
+          'slug',
+          'source_code',
+          'title_ar',
+          'title_en',
+          'author_ar',
+          'author_en',
+          'attribution_ar',
+          'attribution_en',
+          'source_url',
+          'total_hadith',
+          'books_count',
+        ],
+      },
+      { name: 'hadith_books', columns: ['resource_id', 'id', 'book_number', 'title_ar', 'title_en', 'position', 'hadith_count'] },
+      {
+        name: 'hadith_chapters',
+        columns: ['resource_id', 'id', 'book_id', 'chapter_number', 'source_chapter_key', 'title_ar', 'title_en', 'position', 'hadith_count'],
+      },
+      {
+        name: 'hadith_entries',
+        columns: [
+          'resource_id',
+          'id',
+          'book_id',
+          'chapter_id',
+          'hadith_number',
+          'arabic_number',
+          'position',
+          'text_ar',
+          'text_en',
+          'narrator_en',
+          'text_search',
+          'source_url',
+        ],
+      },
+      { name: 'hadith_grades', columns: ['resource_id', 'id', 'entry_id', 'grade', 'graded_by'] },
+      { name: 'hadith_ref_aliases', columns: ['resource_id', 'old_number', 'new_number', 'match', 'since_version'] },
+    ],
+    entities: [
+      { entity: 'hadith_collection', key: 'id' },
+      { entity: 'hadith_book', key: 'id' },
+      { entity: 'hadith_chapter', key: 'id' },
+      { entity: 'hadith_entry', key: 'id' },
+      { entity: 'hadith_grade', key: 'id' },
+      { entity: 'hadith_ref_alias', key: '{old_number}:{since_version}' },
+    ],
+  },
 ];
 
 type TafsirRow = { groupTafsirId: number; html: string };

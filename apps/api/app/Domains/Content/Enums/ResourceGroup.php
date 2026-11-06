@@ -24,6 +24,8 @@ enum ResourceGroup: string
     case Names = 'names';
     // ADR 0044-duas: Duas content is delivered as its own pack group.
     case Duas = 'duas';
+    // ADR 0042: one pack per hadith collection. `hadith` above stays reserved for the deferred HadeethEnc pack.
+    case HadithCollections = 'hadith_collections';
 
     public function isIgnored(): bool
     {

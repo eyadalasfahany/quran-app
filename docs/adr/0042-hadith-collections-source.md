@@ -145,3 +145,8 @@ When the key and its written terms exist:
 The developer decided, on 2 Nov 2026, that Hadith collections have no switch. This follows ADR 0045 (features enabled by default: no enable or disable flags in code or environment). `HADITH_COLLECTIONS_IMPORT_ENABLED` is **not built**: it is in no `.env.example`, no `config/hadith.php` and no code, and no `HadithKillSwitch` exists. The import runs on every deploy, like Azkar (`hadith:import --download --defer-pack`, from Phase 7 step 17). All ten collections are packed and served once their packs are installed. Rollback is a code revert or a data migration.
 
 The protections that remain are the pinned commit SHA and per-file SHA-256 checks, validation (a failure writes nothing), the Unlicense provenance note and the hidden grades (`hadith.grades_visible`). The kill-switch lines in the list above, and the `.env.example` and release lines that name the flag are superseded by this amendment. They are kept as written, not edited.
+
+## Amendment, 7 Nov 2026: three canonical slugs follow Sunnah.com (developer, open question 2)
+
+Sunnah.com's public pages name three collections differently from fawazahmed0, so, as open question 2 decided, the canonical slugs are Sunnah.com's: `nawawi` → **`nawawi40`**, `qudsi` → **`qudsi40`**, `dehlawi` → **`shahwaliullah40`**. The other seven are unchanged. `config/hadith.php` lists the canonical slugs and maps fawazahmed0's own slugs through `slug_map.fawazahmed0`; fawazahmed0 edition file names (`ara-nawawi`, `ara-qudsi`, `ara-dehlawi`) keep the source's slug. Where this ADR lists `nawawi`, `qudsi` or `dehlawi` as a canonical slug, read the new name. Slugs are now frozen (plan D13).
+
