@@ -3,7 +3,7 @@
 # entrypoint.sh (config:cache first). It is never called from entrypoint.sh, because Horizon and the scheduler share that
 # file and the volume is mounted only on the web service.
 #
-# Order: create the storage folders, verify the Azkar audio, fetch the pinned secondary snapshots, import the Azkar rows
+# Order: run migrations, create the storage folders, verify the Azkar audio, fetch the pinned secondary snapshots, import the Azkar rows
 # (DB rows only, --defer-pack), fetch the pinned Duas HadeethEnc snapshot and import the Duas rows (DB rows only,
 # --defer-pack), import the MP3Quran recitations and the Taybah timings (DB rows only, --defer-pack; ADR 0060,
 # ADR 0061), build any missing packs, then serve. The import runs here and not in release.sh, because
@@ -12,6 +12,12 @@
 set -u
 
 cd /app || exit 1
+
+# Migrations run here too (6 Nov 2026): Railway's deployments showed no pre-deploy command, so release.sh never ran
+# and production fell 18 migrations behind. `migrate --force` is a no-op when nothing is pending. Unlike the import
+# steps below, a failure stops the start: serving new code on an old schema is worse than a failed deploy (the
+# previous deployment keeps serving).
+php artisan migrate --force || { echo "ERROR: migrations failed; not starting"; exit 1; }
 
 mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/azkar-audio \
   || echo "WARNING: could not create the storage folders under /app/storage/app"

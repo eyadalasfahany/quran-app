@@ -18,6 +18,8 @@ A failed pre-deploy (a migration error) stops the deploy; the previous version k
 
 1. `php artisan migrate --force`. Schema changes are additive in production (CLAUDE.md). This is the only pre-deploy step: the Azkar import moved to web start on 2 Nov 2026, because the import reads the audio files on the volume that only the web container mounts (ADR 0044, amended).
 
+   **6 Nov 2026:** Railway's deployments showed no pre-deploy command (`serviceManifest.deploy.preDeployCommand` was empty although `railway.json` sets it), so this step had not run since 1 Nov and production was 18 migrations behind; every import on web start failed. The migrations were run by hand over `railway ssh`, and `docker/start-web.sh` now runs `migrate --force` first and stops the start if it fails. Check after a deploy with `railway ssh -- sh -c 'cd /app && php artisan migrate:status --pending'`.
+
 ### The Azkar import at web start (`docker/start-web.sh`, before `content:ensure-packs`)
 
 1. `php artisan azkar:snapshot hisnmuslim --pinned` and `php artisan azkar:snapshot hadeethenc --pinned`. Each fetches the configured snapshot date and keeps it only if its manifest SHA-256 is the pin in `config/azkar.php`. A failure prints a warning and the start continues. The import then runs without that secondary: the import report says so (`sourced.required_count_secondary.used = false`, with the reason), and HadeethEnc notes are left out with a reason.
