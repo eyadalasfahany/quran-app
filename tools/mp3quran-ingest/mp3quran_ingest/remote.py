@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import http.client
 import os
+import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -13,6 +15,9 @@ from .api import USER_AGENT
 from .errors import DownloadError, TruncatedDownload
 
 CHUNK = 1 << 20
+# Seconds to wait before each retry of a HEAD. Three entries = three retries after the first attempt.
+HEAD_BACKOFF_SECONDS: tuple[float, ...] = (2.0, 4.0, 8.0)
+RETRY_STATUSES = frozenset(range(500, 600))  # 5xx only; 404 and other 4xx are never retried
 
 
 @dataclass(frozen=True)
@@ -20,19 +25,60 @@ class RemoteFile:
     url: str
     content_length: int
     etag: str | None
+    last_modified: str | None = None  # the header as sent (an HTTP date), or None
 
 
-def head_file(url: str, timeout: float = 60.0) -> RemoteFile:
+class _Transient(Exception):
+    """A HEAD failure worth another attempt. Internal: never escapes head_file."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
+def head_file(
+    url: str,
+    timeout: float = 60.0,
+    *,
+    backoff: tuple[float, ...] = HEAD_BACKOFF_SECONDS,
+    sleep: Callable[[float], None] = time.sleep,
+) -> RemoteFile:
+    """HEAD the source file. Retries 5xx, timeouts and connection errors; never retries a 4xx."""
+    for attempt in range(len(backoff) + 1):
+        try:
+            return _head_once(url, timeout)
+        except _Transient as exc:
+            if attempt == len(backoff):
+                raise DownloadError(
+                    f"HEAD failed for {url} after {attempt + 1} attempts ({exc.reason})"
+                ) from None
+            sleep(backoff[attempt])
+    raise AssertionError("unreachable")  # pragma: no cover
+
+
+def _head_once(url: str, timeout: float) -> RemoteFile:
     request = urllib.request.Request(url, method="HEAD", headers={"User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             headers = response.headers
+    except urllib.error.HTTPError as exc:  # before URLError: HTTPError is a subclass of it
+        status = exc.code
+        exc.close()
+        if status in RETRY_STATUSES:
+            raise _Transient(f"HTTP {status}") from None
+        raise DownloadError(f"HEAD failed for {url}: HTTP {status}") from None
     except (urllib.error.URLError, OSError, http.client.HTTPException) as exc:
-        raise DownloadError(f"HEAD failed for {url}: {exc}") from exc
+        # Covers timeouts (TimeoutError is an OSError) and connection failures; names the class only.
+        raise _Transient(f"network error {type(exc).__name__}") from None
     length = headers.get("Content-Length")
     if length is None or not length.isdigit():
         raise DownloadError(f"no Content-Length from {url}")
-    return RemoteFile(url=url, content_length=int(length), etag=headers.get("ETag"))
+    return RemoteFile(
+        url=url,
+        content_length=int(length),
+        etag=headers.get("ETag"),
+        last_modified=headers.get("Last-Modified"),
+    )
 
 
 def download_file(url: str, final: Path, expected_bytes: int, timeout: float = 60.0) -> None:

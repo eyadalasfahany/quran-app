@@ -10,14 +10,20 @@ CONTENT_TYPE = "audio/mpeg"
 _HEX = frozenset(string.hexdigits.lower())
 
 
-def object_key(moshaf_id: int, surah: int, sha256_hex: str) -> str:
-    """`audio/mp3quran/{moshaf_id}/{surah:03}-{sha256[:16]}.mp3`: a key never names two byte streams."""
+def object_key(moshaf_id: int, surah: int, sha256_hex: str, prefix: str = KEY_PREFIX) -> str:
+    """`{prefix}/{moshaf_id}/{surah:03}-{sha256[:16]}.mp3`: a key never names two byte streams.
+
+    The default prefix is the MP3Quran one (`audio/mp3quran`). A trailing slash is ignored.
+    """
     if not 1 <= surah <= 114:
         raise ValueError(f"surah out of range: {surah}")
     digest = sha256_hex.lower()
     if len(digest) != 64 or not set(digest) <= _HEX:
         raise ValueError("sha256 must be 64 hex characters")
-    return f"{KEY_PREFIX}/{moshaf_id}/{surah:03}-{digest[:16]}.mp3"
+    clean = prefix.rstrip("/")
+    if not clean:
+        raise ValueError("key prefix must not be empty")
+    return f"{clean}/{moshaf_id}/{surah:03}-{digest[:16]}.mp3"
 
 
 def public_url(public_base: str, key: str) -> str:

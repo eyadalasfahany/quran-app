@@ -15,14 +15,19 @@ from typing import Any, Literal
 from .api import Mp3QuranApi
 from .audio import measure_duration_ms, sha256_file
 from .errors import IngestError
-from .keys import object_key, public_url
-from .manifest import finalize, load_manifest, upsert_file, write_json_atomic
+from .keys import object_key
+from .manifest import file_entry, finalize, load_manifest, upsert_file, write_json_atomic
 from .remote import download_file, head_file
+from .sources import (  # noqa: F401 - find_moshaf and parse_surah_list stay importable from here
+    HAFS_REWAYA_ID,
+    SURAH_COUNT,
+    ReciterSource,
+    find_moshaf,
+    parse_surah_list,
+    resolve_mp3quran,
+)
 from .store import ObjectStore
 from .worker import WorkerClient
-
-HAFS_REWAYA_ID = 1
-SURAH_COUNT = 114
 
 
 @dataclass(frozen=True)
@@ -46,43 +51,6 @@ class IngestResult:
     bytes_total: int
     duration_ms_total: int
     manifest_path: Path
-
-
-def parse_surah_list(text: str) -> list[int]:
-    return sorted(int(part) for part in text.split(",") if part.strip())
-
-
-def find_moshaf(api: Mp3QuranApi, moshaf_id: int) -> dict[str, Any]:
-    """Return the moshaf metadata that goes into the manifest (names in both languages)."""
-    reciters_ar = api.reciters("ar")
-    reciters_en = {str(r["id"]): r for r in api.reciters("eng")}
-    riwayat_ar = {int(r["id"]): r["name"] for r in api.riwayat("ar")}
-    for reciter in reciters_ar:
-        for moshaf in reciter.get("moshaf", []):
-            if int(moshaf["id"]) != moshaf_id:
-                continue
-            if int(moshaf["rewaya_id"]) != HAFS_REWAYA_ID:
-                raise IngestError(
-                    f"moshaf {moshaf_id} is not Hafs (rewaya_id {moshaf['rewaya_id']}); "
-                    "only Hafs is ingested in v1 (ADR 0061 §10)"
-                )
-            english = reciters_en.get(str(reciter["id"]))
-            if english is None:
-                raise IngestError(f"reciter {reciter['id']} is missing from the English list")
-            server = str(moshaf["server"])
-            if not server.endswith("/"):
-                raise IngestError(f"moshaf {moshaf_id} server does not end with '/'")
-            return {
-                "moshaf_id": moshaf_id,
-                "reciter_id": int(reciter["id"]),
-                "name_ar": reciter["name"],
-                "name_en": english["name"],
-                "riwayah": riwayat_ar.get(HAFS_REWAYA_ID, ""),
-                "moshaf_name": moshaf["name"],
-                "server": server,
-                "surah_list": parse_surah_list(str(moshaf["surah_list"])),
-            }
-    raise IngestError(f"moshaf {moshaf_id} is not in the MP3Quran reciters list")
 
 
 def select_surahs(meta: dict[str, Any], requested: tuple[int, ...] | None) -> list[int]:
@@ -129,21 +97,27 @@ def run_ingest(
     measure: Callable[[Path], int] = measure_duration_ms,
     log: Callable[[str], None] = print,
     worker: WorkerClient | None = None,
+    source: ReciterSource | None = None,
 ) -> IngestResult:
+    """Ingest one reciter. `source` defaults to the MP3Quran moshaf named by the request."""
     if not request.dry_run:
         if store is None:
             raise IngestError("an object store is required unless the run is a dry run")
         if request.via == "worker" and worker is None:
             raise IngestError("a worker client is required for --via worker")
-    meta = find_moshaf(api, request.moshaf_id)
+    if source is None:
+        source = resolve_mp3quran(api, request.moshaf_id)
+    if not request.dry_run and request.via not in source.copy_modes:
+        raise IngestError(f"{source.source} files cannot be copied with --via {request.via}")
+    meta = source.meta
     surahs = select_surahs(meta, request.surahs)
-    manifest = load_manifest(request.manifest_path, request.public_base)
+    manifest = load_manifest(request.manifest_path, request.public_base, source.source)
     uploaded = existing = dry_files = 0
     bytes_total = duration_total = 0
 
     for surah in surahs:
         name = f"{surah:03}.mp3"
-        url = f"{meta['server']}{name}"
+        url = source.source_url(surah)
         remote = head_file(url)
         local = request.source_dir / name if request.source_dir is not None else None
         if local is not None and local.is_file():
@@ -162,7 +136,7 @@ def run_ingest(
         duration_ms = measure(path)
         digest = sha256_file(path)
         size = path.stat().st_size
-        key = object_key(meta["moshaf_id"], surah, digest)
+        key = object_key(meta["moshaf_id"], surah, digest, prefix=source.key_prefix)
         if request.dry_run:
             state = "dry-run"
             dry_files += 1
@@ -180,16 +154,17 @@ def run_ingest(
             else:
                 existing += 1
 
-        entry = {
-            "surah": surah,
-            "key": key,
-            "url": public_url(request.public_base, key),
-            "bytes": size,
-            "sha256": digest,
-            "duration_ms": duration_ms,
-            "source_url": url,
-            "source_etag": remote.etag,
-        }
+        entry = file_entry(
+            surah=surah,
+            key=key,
+            public_base=request.public_base,
+            size=size,
+            sha256=digest,
+            duration_ms=duration_ms,
+            source_url=url,
+            source_etag=remote.etag,
+            source_last_modified=remote.last_modified if source.record_last_modified else None,
+        )
         before = copy.deepcopy(manifest)
         upsert_file(manifest, meta, entry)
         finalize(manifest, now, request.public_base, before=before)

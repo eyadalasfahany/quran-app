@@ -10,9 +10,10 @@ from pathlib import Path
 from typing import Any
 
 from .errors import IngestError
+from .keys import public_url
 
 MANIFEST_SCHEMA = 1
-SOURCE = "mp3quran"
+SOURCE = "mp3quran"  # default; the pipeline passes the source's own string
 
 
 def write_json_atomic(path: Path, data: Any) -> None:
@@ -32,23 +33,52 @@ def write_json_atomic(path: Path, data: Any) -> None:
         raise
 
 
-def empty_manifest(public_base: str) -> dict[str, Any]:
+def empty_manifest(public_base: str, source: str = SOURCE) -> dict[str, Any]:
     return {
         "schema": MANIFEST_SCHEMA,
-        "source": SOURCE,
+        "source": source,
         "generated_at": None,
         "public_base": public_base,
         "moshafs": [],
     }
 
 
-def load_manifest(path: Path, public_base: str) -> dict[str, Any]:
+def load_manifest(path: Path, public_base: str, source: str = SOURCE) -> dict[str, Any]:
     if not path.is_file():
-        return empty_manifest(public_base)
+        return empty_manifest(public_base, source)
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schema") != MANIFEST_SCHEMA or data.get("source") != SOURCE:
-        raise IngestError(f"{path} is not an mp3quran manifest, schema 1")
+    if data.get("schema") != MANIFEST_SCHEMA or data.get("source") != source:
+        raise IngestError(f"{path} is not a {source} manifest, schema 1")
     return data
+
+
+def file_entry(
+    *,
+    surah: int,
+    key: str,
+    public_base: str,
+    size: int,
+    sha256: str,
+    duration_ms: int,
+    source_url: str,
+    source_etag: str | None,
+    source_last_modified: str | None = None,
+) -> dict[str, Any]:
+    """One surah file as the manifest stores it. `source_last_modified` is written only when given,
+    so a source that does not record it leaves the entry (and the file) unchanged."""
+    entry: dict[str, Any] = {
+        "surah": surah,
+        "key": key,
+        "url": public_url(public_base, key),
+        "bytes": size,
+        "sha256": sha256,
+        "duration_ms": duration_ms,
+        "source_url": source_url,
+        "source_etag": source_etag,
+    }
+    if source_last_modified is not None:
+        entry["source_last_modified"] = source_last_modified
+    return entry
 
 
 def upsert_file(manifest: dict[str, Any], moshaf: dict[str, Any], entry: dict[str, Any]) -> None:

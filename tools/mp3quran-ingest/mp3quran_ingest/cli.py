@@ -26,6 +26,7 @@ from .config import (
 from .errors import IngestError
 from .manifest import write_json_atomic
 from .pipeline import IngestRequest, run_ingest
+from .sources import resolve_mp3quran
 from .store import R2Store
 from .worker import WorkerClient
 
@@ -126,7 +127,9 @@ def cmd_ingest(args: argparse.Namespace) -> int:
         source_dir=args.source_dir,
         via=via,
     )
-    result = run_ingest(request, Mp3QuranApi(args.api_base), store, now=utc_now(), worker=worker)
+    api = Mp3QuranApi(args.api_base)
+    source = resolve_mp3quran(api, args.moshaf)
+    result = run_ingest(request, api, store, now=utc_now(), worker=worker, source=source)
     if upload:
         summary = f"uploaded {result.uploaded}, already in R2 {result.existing}"
     else:

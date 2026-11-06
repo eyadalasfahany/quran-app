@@ -58,9 +58,12 @@ Options: `--surah N` (repeatable; default every surah in `surah_list`), `--sourc
 
 ## What one surah does
 
-1. HEAD the source file: Content-Length and ETag. Reject any byte count that differs.
+1. HEAD the source file: Content-Length, ETag and Last-Modified. Reject any byte count that differs. A HEAD that
+   fails with a 5xx, a timeout or a connection error is retried three times (waits 2, 4 and 8 seconds); a 4xx is
+   never retried. A missing ETag is recorded as `null`.
 2. Download (or reuse `--source-dir`) and verify the bytes against Content-Length. A short download stays as `.part`; the next run resumes it.
-3. Measure the duration by decoding the whole file with ffmpeg (`out_time_us` after `-f null`).
+3. Measure the duration by decoding the first audio stream with ffmpeg (`-map 0:a:0`, `out_time_us` after `-f null`).
+   Files with an embedded cover image (a PNG stream) are measured on their audio only. The bytes are never altered.
 4. sha256 of the file. The key is `audio/mp3quran/{moshaf_id}/{surah:03}-{sha256[:16]}.mp3`, so changed bytes get a new key.
 5. Unless this is a dry run: copy (`--via worker` asks the Worker; `--via s3` uploads with `Cache-Control: public, max-age=31536000, immutable` and `Content-Type: audio/mpeg`), then HEAD the object and compare its size.
 6. Record the file in the manifest.
@@ -83,7 +86,11 @@ Copy `.env.example` to `.env` in this folder and fill it in. `.env` is gitignore
 
 ## Manifest
 
-`schema: 1`, `source: "mp3quran"`, `generated_at`, `public_base`, and `moshafs[]`. Each moshaf has its ids and names (Arabic and English, as UTF-8), `riwayah`, `moshaf_name`, `server`, `surah_list` (as integers) and `files[]`. Each file has `surah`, `key`, `url`, `bytes`, `sha256`, `duration_ms`, `source_url` and `source_etag`. The output is sorted and deterministic. `generated_at` changes only when the content does, so a no-op rerun leaves the file byte-identical.
+`schema: 1`, `source: "mp3quran"`, `generated_at`, `public_base`, and `moshafs[]`. Each moshaf has its ids and names (Arabic and English, as UTF-8), `riwayah`, `moshaf_name`, `server`, `surah_list` (as integers) and `files[]`. Each file has `surah`, `key`, `url`, `bytes`, `sha256`, `duration_ms`, `source_url` and `source_etag` (`null` when the source sends no ETag). A file also has `source_last_modified` (the header as sent) only when its source records it; the MP3Quran source does not, so MP3Quran manifests have no such field. The output is sorted and deterministic. `generated_at` changes only when the content does, so a no-op rerun leaves the file byte-identical.
+
+## Sources
+
+`mp3quran_ingest/sources.py` defines `ReciterSource`: the manifest record of one reciter (`meta`), `source_url(surah)`, the R2 key prefix (`audio/mp3quran`), the manifest `source` string, the allowed copy modes (`worker`, `s3`) and whether `Last-Modified` is recorded. `Mp3QuranSource` is the MP3Quran adapter. `pipeline.run_ingest` and `cli` work through it. A source that does not allow a copy mode refuses that `--via` value on upload (dry runs are not checked). Local file names stay `{NNN}.mp3` whatever the source URL is.
 
 ## Tests
 
