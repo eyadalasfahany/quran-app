@@ -206,8 +206,16 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
         if args.fallback_aligner and too_many_low(words):
             # Published spans that leave many ayahs at low confidence may have drifted from the file
             # (moshaf 62 surah 2: from ayah 179 on). Keep the aligner only when it does strictly better.
-            alt, alt_recited = run_aligner()
-            low_pub, low_alt = low_count(words), low_count(alt)
+            try:
+                alt, alt_recited = run_aligner()
+            except RuntimeError as err:
+                # The comparison is optional: when the aligner cannot fit the file (moshaf 12
+                # surah 2: CTC targets longer than the frames), keep the published words.
+                print(f"{surah:03d}: aligner comparison failed, keeping published spans ({err})",
+                      file=sys.stderr)
+                alt = None
+            low_pub = low_count(words)
+            low_alt = low_count(alt) if alt is not None else low_pub
             if low_alt < low_pub:
                 refusal = (f"published spans leave {low_pub} ayahs below {LOW_CONFIDENCE}; "
                            f"the aligner leaves {low_alt}")
