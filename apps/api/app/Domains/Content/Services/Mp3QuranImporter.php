@@ -14,6 +14,7 @@ use App\Domains\Content\Mp3Quran\Mp3QuranManifest;
 use App\Domains\Content\Mp3Quran\Mp3QuranManifestData;
 use App\Domains\Content\Mp3Quran\Mp3QuranManifestException;
 use App\Domains\Content\Mp3Quran\Mp3QuranMoshaf;
+use App\Domains\Content\Mp3Quran\ReciterSource;
 use App\Domains\Content\Repositories\Contracts\ChapterAudioFileRepository;
 use App\Domains\Content\Repositories\Contracts\RecitationRepository;
 use App\Domains\Content\Repositories\Contracts\RecitationTimingRepository;
@@ -29,11 +30,11 @@ use Illuminate\Support\Facades\DB;
  */
 final class Mp3QuranImporter
 {
-    private const string SOURCE = 'mp3quran';
-
     private const string QIRAT = 'Hafs';
 
     private const string FORMAT = 'mp3';
+
+    private readonly ReciterSource $source;
 
     public function __construct(
         private readonly Mp3QuranManifest $manifest,
@@ -43,7 +44,10 @@ final class Mp3QuranImporter
         private readonly RecitationTimingRepository $timings,
         private readonly ResourceVersionService $versions,
         private readonly RecitationSegmentsFlagService $flags,
-    ) {}
+        ?ReciterSource $source = null,
+    ) {
+        $this->source = $source ?? ReciterSource::mp3quran();
+    }
 
     /**
      * @param  string|null  $manifestPath  absolute path to the manifest; null reads quran.mp3quran_manifest_path
@@ -52,11 +56,11 @@ final class Mp3QuranImporter
      */
     public function import(bool $deferPack = false, bool $dryRun = false, ?string $manifestPath = null): Mp3QuranImportReport
     {
-        $data = $this->manifest->load($manifestPath ?? (string) config('quran.mp3quran_manifest_path'));
-        $sourceId = $this->resources->sourceId(self::SOURCE);
+        $data = $this->manifest->load($manifestPath ?? (string) config($this->source->manifestPathConfig));
+        $sourceId = $this->resources->sourceId($this->source->contentSource);
 
         if ($sourceId === null) {
-            throw new Mp3QuranManifestException('content source mp3quran is not seeded');
+            throw new Mp3QuranManifestException('content source '.$this->source->contentSource.' is not seeded');
         }
 
         if ($dryRun) {
@@ -74,8 +78,8 @@ final class Mp3QuranImporter
 
     private function run(Mp3QuranManifestData $data, int $sourceId, bool $deferPack, bool $dryRun): Mp3QuranImportReport
     {
-        $duplicates = (array) config('quran.mp3quran_duplicates');
-        $held = array_values(array_map('intval', (array) config('quran.mp3quran_held_moshafs')));
+        $duplicates = (array) config($this->source->duplicatesConfig);
+        $held = array_values(array_map('intval', (array) config($this->source->heldMoshafsConfig)));
         $counts = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'hidden' => 0, 'deactivated' => 0, 'files' => 0, 'surahsWithoutFile' => 0];
         $events = [];
         $listed = [];
@@ -159,7 +163,7 @@ final class Mp3QuranImporter
         $desiredIds = [];
 
         foreach ($moshaf->files as $file) {
-            $id = Mp3QuranFileId::for($moshaf->moshafId, $file->surah);
+            $id = Mp3QuranFileId::for($moshaf->moshafId, $file->surah, $this->source);
             $desiredIds[] = $id;
             $fileRows[] = [
                 'id' => $id,
@@ -279,7 +283,7 @@ final class Mp3QuranImporter
         $files = [];
 
         foreach ($moshaf->files as $file) {
-            $files[] = [Mp3QuranFileId::for($moshaf->moshafId, $file->surah), $file->surah, $file->url, $file->bytes, $file->durationMs, self::FORMAT];
+            $files[] = [Mp3QuranFileId::for($moshaf->moshafId, $file->surah, $this->source), $file->surah, $file->url, $file->bytes, $file->durationMs, self::FORMAT];
         }
 
         return hash('sha256', json_encode([

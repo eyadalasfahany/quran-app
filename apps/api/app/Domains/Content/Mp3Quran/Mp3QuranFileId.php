@@ -11,10 +11,12 @@ use InvalidArgumentException;
  */
 final class Mp3QuranFileId
 {
-    public const int BASE = 1_000_000_000;
+    public const int BASE = ReciterSource::MP3QURAN_FILE_ID_BASE;
 
-    public static function for(int $moshafId, int $surah): int
+    public static function for(int $moshafId, int $surah, ?ReciterSource $source = null): int
     {
+        $base = ($source ?? ReciterSource::mp3quran())->fileIdBase;
+
         if ($moshafId < 1) {
             throw new InvalidArgumentException('The MP3Quran moshaf id must be 1 or more.');
         }
@@ -23,6 +25,6 @@ final class Mp3QuranFileId
             throw new InvalidArgumentException('The surah must be between 1 and 114.');
         }
 
-        return self::BASE + $moshafId * 1000 + $surah;
+        return $base + $moshafId * 1000 + $surah;
     }
 }

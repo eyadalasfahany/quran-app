@@ -14,7 +14,12 @@ final class Mp3QuranManifest
 {
     private const int SCHEMA = 1;
 
-    private const string SOURCE = 'mp3quran';
+    private readonly ReciterSource $source;
+
+    public function __construct(?ReciterSource $source = null)
+    {
+        $this->source = $source ?? ReciterSource::mp3quran();
+    }
 
     /**
      * @throws Mp3QuranManifestException when the whole manifest is refused
@@ -33,7 +38,7 @@ final class Mp3QuranManifest
             throw new Mp3QuranManifestException('The MP3Quran manifest is not valid JSON.');
         }
 
-        if (! is_array($data) || ($data['schema'] ?? null) !== self::SCHEMA || ($data['source'] ?? null) !== self::SOURCE) {
+        if (! is_array($data) || ($data['schema'] ?? null) !== self::SCHEMA || ($data['source'] ?? null) !== $this->source->manifestSource) {
             throw new Mp3QuranManifestException('The MP3Quran manifest has the wrong schema or source.');
         }
 
@@ -98,7 +103,7 @@ final class Mp3QuranManifest
             return ['moshaf_id' => $id, 'reason' => 'name_ar, name_en, riwayah or moshaf_name is missing'];
         }
 
-        if (! in_array($riwayah, (array) config('quran.mp3quran_riwayat'), true)) {
+        if (! in_array($riwayah, (array) config($this->source->riwayahConfig), true)) {
             return ['moshaf_id' => $id, 'reason' => 'riwayah is not a shipped riwayah'];
         }
 
@@ -169,7 +174,7 @@ final class Mp3QuranManifest
             return 'surah '.$surah.' sha256 is not 64 lowercase hex characters';
         }
 
-        $expectedKey = 'audio/mp3quran/'.$moshafId.'/'.sprintf('%03d', $surah).'-'.substr($sha256, 0, 16).'.mp3';
+        $expectedKey = $this->source->keyPrefix.$moshafId.'/'.sprintf('%03d', $surah).'-'.substr($sha256, 0, 16).'.mp3';
 
         if ($key !== $expectedKey) {
             return 'surah '.$surah.' key does not match its sha256';
