@@ -211,6 +211,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The latest default branch, not the dispatch commit: the PR branch then carries only the reciter.
+          # From an older commit it would also revert anything merged since, and GitHub refuses a bot push
+          # that touches a workflow file (run 42213906432).
+          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: true
 
       - name: Set up Python 3.12
