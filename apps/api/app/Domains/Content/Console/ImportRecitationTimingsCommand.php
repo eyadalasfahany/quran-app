@@ -17,7 +17,7 @@ final class ImportRecitationTimingsCommand extends Command
     protected $signature = 'recitation-timings:import
         {--defer-pack : Write rows and bump versions, but queue no pack build (start-web.sh builds it, ADR 0044)}
         {--dry-run : Validate and report, write nothing}
-        {--kind= : Only qf or mp3quran}
+        {--kind= : Only qf, mp3quran or way2quran}
         {--key= : Only one recitation key}
         {--path= : Timing folder of kind/key/NNN.json files, absolute or relative to the app root (default quran.recitation_timings.path)}';
 
@@ -32,7 +32,7 @@ final class ImportRecitationTimingsCommand extends Command
             $kind = TaybahTimingKind::tryFrom($option);
 
             if (! $kind instanceof TaybahTimingKind) {
-                $this->error('Unknown --kind. Use qf or mp3quran.');
+                $this->error('Unknown --kind. Use qf, mp3quran or way2quran.');
 
                 return self::FAILURE;
             }

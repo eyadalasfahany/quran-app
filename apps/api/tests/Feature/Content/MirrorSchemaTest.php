@@ -46,10 +46,10 @@ it('creates the content mirror tables and seeds two sources idempotently alongsi
     $this->seed(ContentSourceSeeder::class);
 
     // The azkar migration adds the pending opendua row (ADR 0031); the names migration adds the pending
-    // names-tirmidhi row (ADR 0043 A2); the MP3Quran migration adds the mp3quran row (ADR 0061); the hadith migrations add fawazahmed0
+    // names-tirmidhi row (ADR 0043 A2); the MP3Quran migration adds the mp3quran row (ADR 0061); the Way2Quran migration adds the way2quran row (ADR 0074); the hadith migrations add fawazahmed0
     // and the pending sunnahcom row (ADR 0042); the seeder adds qf and tanzil.
-    expect(ContentSource::query()->count())->toBe(9)
-        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['fawazahmed0', 'hadeethenc', 'hisnmuslim', 'mp3quran', 'names-tirmidhi', 'opendua', 'qf', 'sunnahcom', 'tanzil']);
+    expect(ContentSource::query()->count())->toBe(10)
+        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['fawazahmed0', 'hadeethenc', 'hisnmuslim', 'mp3quran', 'names-tirmidhi', 'opendua', 'qf', 'sunnahcom', 'tanzil', 'way2quran']);
 });
 
 it('stores quran text in the binary collation and no other text column', function (): void {

@@ -169,7 +169,8 @@ final class TaybahTimingImporter
             throw new TaybahTimingFileException('audio url differs');
         }
 
-        if ($file->kind === TaybahTimingKind::Mp3Quran && $audio->size_bytes !== $file->audioBytes) {
+        // ADR 0074 decision 6: the audio bytes must be the ones the file was measured on, for every kind but QF.
+        if ($file->kind !== TaybahTimingKind::Qf && $audio->size_bytes !== $file->audioBytes) {
             throw new TaybahTimingFileException('size differs');
         }
 

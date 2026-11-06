@@ -587,3 +587,57 @@ it('rejects an unknown --kind', function (): void {
     expect(Artisan::call('recitation-timings:import', ['--kind' => 'bogus']))->toBe(1)
         ->and(TaybahTimingKind::tryFrom('bogus'))->toBeNull();
 });
+
+it('imports a way2quran file from its own folder and kind (ADR 0074 decision 6)', function (): void {
+    $recitation = timingFixture('way2quran', '1');
+
+    $report = timingImporter()->import();
+
+    expect(timingSkipReason($report, 'way2quran/1/108.json'))->toBeNull()
+        ->and($report->imported)->toBe(1)
+        ->and(TaybahTimingSet::query()->where('recitation_id', $recitation->id)->sole()->source->value)->toBe('aligner')
+        ->and(TaybahRecitationTiming::query()->where('recitation_id', $recitation->id)->count())->toBe(3);
+});
+
+it('skips a way2quran file whose size differs', function (): void {
+    $recitation = timingRecitation('way2quran', '1');
+    timingAudio($recitation, 108, timingUrl('way2quran', '1', 108));
+    timingWordLayouts(108, [2, 2, 2]);
+    $document = timingDocument('way2quran', '1', 108, [2, 2, 2]);
+    $document['audio']['bytes'] = 999;
+    timingWrite('way2quran', '1', 108, $document);
+
+    $report = timingImporter()->import();
+
+    expect(timingSkipReason($report, 'way2quran/1/108.json'))->toBe('size differs')
+        ->and(TaybahTimingSet::query()->where('recitation_id', $recitation->id)->count())->toBe(0);
+});
+
+it('does not check the audio size of a qf file', function (): void {
+    $recitation = timingRecitation('qf', '5');
+    timingAudio($recitation, 108, timingUrl('qf', '5', 108));
+    timingWordLayouts(108, [2, 2, 2]);
+    $document = timingDocument('qf', '5', 108, [2, 2, 2]);
+    $document['audio']['bytes'] = 999;
+    timingWrite('qf', '5', 108, $document);
+
+    $report = timingImporter()->import();
+
+    expect(timingSkipReason($report, 'qf/5/108.json'))->toBeNull()
+        ->and(TaybahTimingSet::query()->where('recitation_id', $recitation->id)->count())->toBe(1);
+});
+
+it('--kind=way2quran imports only the way2quran folder', function (): void {
+    $mp3 = timingFixture('mp3quran', '253');
+    $way = timingFixture('way2quran', '1');
+
+    expect(Artisan::call('recitation-timings:import', ['--kind' => 'way2quran']))->toBe(0)
+        ->and(TaybahTimingSet::query()->where('recitation_id', $way->id)->count())->toBe(1)
+        ->and(TaybahTimingSet::query()->where('recitation_id', $mp3->id)->count())->toBe(0);
+});
+
+it('names way2quran among the kinds an unknown --kind is refused with', function (): void {
+    $this->artisan('recitation-timings:import --kind=bogus')
+        ->expectsOutputToContain('Use qf, mp3quran or way2quran.')
+        ->assertFailed();
+});

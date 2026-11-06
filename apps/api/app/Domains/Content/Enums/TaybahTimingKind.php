@@ -11,4 +11,5 @@ enum TaybahTimingKind: string
 {
     case Qf = 'qf';
     case Mp3Quran = 'mp3quran';
+    case Way2Quran = 'way2quran';
 }

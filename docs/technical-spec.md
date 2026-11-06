@@ -308,6 +308,8 @@ Hadith sources in `content_sources`: `fawazahmed0` (Unlicense, `not_required`; `
 | `taybah_timing_sets` | `id`, `recitation_id` FK, `chapter_id`, `audio_url` varchar(500), `size_bytes`, `sha256` char(64), `measured_duration_ms`, `source` varchar(32) (`aligner` or `mp3quran_published`), `tool_version` null, `models` json null, `original_first_start_ms` null, `digest` char(64), `imported_at` datetime(6) | key unique (`recitation_id`,`chapter_id`); one provenance row per recitation and surah file; no FK to `chapter_audio_files`, so a QF snapshot never removes it (ADR 0060) |
 | `taybah_recitation_timings` | `recitation_id` FK, `chapter_id`, `verse_id`, `start_ms` int unsigned, `end_ms` int unsigned, `segments` json null | PK (`recitation_id`,`chapter_id`,`verse_id`); check `start_ms < end_ms` |
 
+Recitation sources besides QF (ADR 0061, ADR 0074): `content_sources` codes `mp3quran` and `way2quran`. `chapter_audio_files.id` ranges: QF's own ids (below 30,000 today), MP3Quran `1_000_000_000 + moshaf_id × 1000 + surah`, Way2Quran `2_000_000_000 + reciter_id × 1000 + surah`. Timing kinds (`qf`, `mp3quran`, `way2quran`) equal the source codes; the audio size is checked for every kind except `qf`.
+
 **Hadith: full collections (ADR 0042)**
 
 **Hadith: full collections (ADR 0042).** Every table carries `resource_id` first (one resource per collection) and every row carries `source_id` → `content_sources`. Arabic columns are `utf8mb4_0900_bin` and hold the source bytes; only `text_search` is normalised. Nothing here changes when the source changes from fawazahmed0/hadith-api to Sunnah.com. fawazahmed0 has no chapter level, so `hadith_chapters` stays empty for it.
@@ -452,6 +454,8 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 4. All writes for one resource happen in one transaction; the reader never sees a half-applied update.
 5. After `quran_core` updates, the app recomputes the ayah checksum on device and compares it with the manifest's `sha256_text`; a mismatch discards the update and reports to Sentry.
 6. **7-day rule:** `installed_resources.last_checked_at` older than 7 days shows a quiet banner asking the reader to connect. What happens to QF content after a longer offline period is an open question for QF (section 16); the code path to purge QF rows and fall back to Tanzil exists behind a remote flag.
+
+**Way2Quran reciters (ADR 0074).** `way2quran:import` reads the committed manifest `resources/way2quran/manifest.json` (the MP3Quran manifest schema, `source` `way2quran`) and writes the same rows as MP3Quran. A reciter is imported hidden (reason `held`) until its id is listed in `quran.way2quran_released_reciters`. A new reciter is data: a lister writes the reciter's exact file names into a committed list, and the ingest tool builds the manifest from it (plan steps 5 and 6).
 
 ## 8. API conventions
 
@@ -671,6 +675,7 @@ For each change, in one transaction per request:
 
 **Audio (`features/audio`)**
 
+- **Hosts:** audio comes from QF's URLs and from `audio.taybah-app.com` (Cloudflare R2), which serves MP3Quran (ADR 0061) and Way2Quran reciters (ADR 0074). A Way2Quran reciter is hidden until the developer lists its id in `quran.way2quran_released_reciters`; the app never streams from Way2Quran's servers.
 - **Playback:** `expo-audio` with background mode and lock-screen metadata (reciter, surah, artwork). The queue is one file per surah; reaching the end starts the next surah.
 - **Audio → ayah:** the player reports position about every 100 ms. The timing rows for the current file are loaded into memory (at most 286 rows), and a binary search finds the row with `start_ms ≤ t < end_ms`. The resulting verse id goes to `playerStore`; the reader highlights it and scrolls to it if it is off-screen, unless the reader has scrolled by hand since following last started (ADR 0037).
 - **Word highlight:** when `segments` exist, the same search inside the active ayah gives the word position, animated with Reanimated. Reciters without segments get ayah-level highlight only; reciters without timings play without highlight or repeat. In Reading and Focus the recited word is a rounded pill (`brandSurface`, radius `sm`) drawn behind the text from measured word positions, so it can slide between words on a line (ADR 0039).

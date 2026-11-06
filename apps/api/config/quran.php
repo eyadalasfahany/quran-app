@@ -122,6 +122,13 @@ return [
     // recitations.style from the text after the last " - " in the manifest's `moshaf_name`. Unknown or missing: null.
     'mp3quran_styles' => ['مرتل' => 'Murattal', 'مجود' => 'Mujawwad', 'معلم' => 'Muallim'],
 
+    // ADR 0074 decision 5: the committed Way2Quran manifest the way2quran:import command reads. Its riwayat and styles
+    // are the mp3quran_riwayat and mp3quran_styles above.
+    'way2quran_manifest_path' => base_path('resources/way2quran/manifest.json'),
+    // ADR 0074 decision 8: Way2Quran reciter ids (source_key) that are shown. Every other imported reciter is hidden
+    // (reason held). Empty until the developer releases a reciter after the accuracy review.
+    'way2quran_released_reciters' => [],
+
     // QF has no Arabic author field, so the served Arabic author is this override by QF source id
     // (resources.source_key). Credits are not Quran text. Other tafsirs serve no Arabic author.
     'display_authors' => [

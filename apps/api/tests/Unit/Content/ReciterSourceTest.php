@@ -51,3 +51,33 @@ it('takes the id base from the profile it is given', function (): void {
 
     expect(Mp3QuranFileId::for(253, 59, $other))->toBe(2_000_253_059);
 });
+
+it('holds the way2quran values of ADR 0074 decision 5', function (): void {
+    $source = ReciterSource::way2quran();
+
+    expect($source->contentSource)->toBe('way2quran')
+        ->and($source->manifestSource)->toBe('way2quran')
+        ->and($source->keyPrefix)->toBe('audio/way2quran/')
+        ->and($source->fileIdBase)->toBe(2_000_000_000)
+        ->and($source->manifestPathConfig)->toBe('quran.way2quran_manifest_path')
+        ->and($source->duplicatesConfig)->toBeNull()
+        ->and($source->heldMoshafsConfig)->toBeNull()
+        ->and($source->riwayahConfig)->toBe('quran.mp3quran_riwayat')
+        ->and($source->releasedConfig)->toBe('quran.way2quran_released_reciters');
+});
+
+it('keeps the mp3quran hide rule: duplicates and held lists, and no released list', function (): void {
+    $source = ReciterSource::mp3quran();
+
+    expect($source->duplicatesConfig)->toBe('quran.mp3quran_duplicates')
+        ->and($source->heldMoshafsConfig)->toBe('quran.mp3quran_held_moshafs')
+        ->and($source->releasedConfig)->toBeNull();
+});
+
+it('gives way2quran file ids in its own 2e9 range that never equal an mp3quran id', function (): void {
+    $way2quran = ReciterSource::way2quran();
+
+    expect(Mp3QuranFileId::for(1, 1, $way2quran))->toBe(2_000_001_001)
+        ->and(Mp3QuranFileId::for(2, 114, $way2quran))->toBe(2_000_002_114)
+        ->and(Mp3QuranFileId::for(1, 1, $way2quran))->not->toBe(Mp3QuranFileId::for(1, 1));
+});

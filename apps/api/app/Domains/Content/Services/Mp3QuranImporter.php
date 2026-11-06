@@ -78,8 +78,8 @@ final class Mp3QuranImporter
 
     private function run(Mp3QuranManifestData $data, int $sourceId, bool $deferPack, bool $dryRun): Mp3QuranImportReport
     {
-        $duplicates = (array) config($this->source->duplicatesConfig);
-        $held = array_values(array_map('intval', (array) config($this->source->heldMoshafsConfig)));
+        $duplicates = $this->source->duplicatesConfig === null ? [] : (array) config($this->source->duplicatesConfig);
+        $held = $this->configIds($this->source->heldMoshafsConfig);
         $counts = ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'hidden' => 0, 'deactivated' => 0, 'files' => 0, 'surahsWithoutFile' => 0];
         $events = [];
         $listed = [];
@@ -213,18 +213,39 @@ final class Mp3QuranImporter
     }
 
     /**
-     * Why a moshaf is hidden (resource inactive): a duplicate of a QF reciter wins over a held moshaf. Null when shown.
+     * Why a moshaf is hidden (resource inactive). Null when shown.
+     *
+     * MP3Quran: a duplicate of a QF reciter wins over a held moshaf. Way2Quran (ADR 0074 decision 8): hidden as held
+     * unless its id is in the released list.
      *
      * @param  array<array-key, mixed>  $duplicates  moshaf id => QF chapter reciter source_key
      * @param  list<int>  $held
      */
     private function hiddenReason(int $moshafId, array $duplicates, array $held): ?string
     {
+        if ($this->source->releasedConfig !== null) {
+            return in_array($moshafId, $this->configIds($this->source->releasedConfig), true) ? null : 'held';
+        }
+
         if (array_key_exists($moshafId, $duplicates)) {
             return 'duplicate_of_qf:'.(string) $duplicates[$moshafId];
         }
 
         return in_array($moshafId, $held, true) ? 'held' : null;
+    }
+
+    /**
+     * The ids listed under a config key, as ints. A null key (the source has no such list) gives none.
+     *
+     * @return list<int>
+     */
+    private function configIds(?string $key): array
+    {
+        if ($key === null) {
+            return [];
+        }
+
+        return array_values(array_map('intval', (array) config($key)));
     }
 
     /**
