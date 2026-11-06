@@ -9,7 +9,7 @@ Three phases run in three containers. They do different work because only one of
 | Phase | Config | Container | Volume | Does |
 | --- | --- | --- | --- | --- |
 | Pre-deploy (release) | `deploy.preDeployCommand` → `docker/release.sh` | a fresh container, discarded afterwards | **no** | `migrate --force` only (B1, 2 Nov 2026) |
-| Container start (web) | `deploy.startCommand` → `entrypoint.sh start-web.sh` | the serving container | **yes**, at `/app/storage/app` | `config:cache` (entrypoint); `azkar:audio-verify`; the two pinned snapshots; `azkar:import --download --defer-pack` (DB rows); `duas:snapshot hadeethenc --pinned` and `duas:import --download --defer-pack` (DB rows); `mp3quran:import --defer-pack` and `recitation-timings:import --defer-pack` (committed manifest and timing files, ADR 0060/0061); `content:ensure-packs` (builds any missing pack); then `exec frankenphp` |
+| Container start (web) | `deploy.startCommand` → `entrypoint.sh start-web.sh` | the serving container | **yes**, at `/app/storage/app/private` | `config:cache` (entrypoint); `azkar:audio-verify`; the two pinned snapshots; `azkar:import --download --defer-pack` (DB rows); `duas:snapshot hadeethenc --pinned` and `duas:import --download --defer-pack` (DB rows); `mp3quran:import --defer-pack` and `recitation-timings:import --defer-pack` (committed manifest and timing files, ADR 0060/0061); `content:ensure-packs` (builds any missing pack); then `exec frankenphp` |
 | Worker services | `railway-horizon.json`, `railway-scheduler.json` | not deployed (see below) | would need it | nothing today |
 
 A failed pre-deploy (a migration error) stops the deploy; the previous version keeps serving. A failed container start (for example a healthcheck timeout) fails the new deployment and the previous one keeps serving. Start-time tasks log and continue, so a missing file never blocks Quran reading, and a failed snapshot or Azkar download warns and keeps the current Azkar version (ADR 0044, amended 2 Nov 2026). An Azkar pack that lists a missing recording is never built (ADR 0040, fail closed).
@@ -27,7 +27,7 @@ A failed pre-deploy (a migration error) stops the deploy; the previous version k
 
 ### The web container start (`docker/start-web.sh`)
 
-1. Creates `storage/app/private/packs`, `storage/app/tmp`, `storage/app/azkar/reports` and `storage/app/azkar-audio` on the volume.
+1. Creates `storage/app/private/packs` and `storage/app/private/azkar-audio` on the volume, and `storage/app/tmp` and `storage/app/azkar/reports` in the container.
 2. `php artisan azkar:audio-verify`: presence and size of the 238 shipped recordings (fast). A failure logs which files are missing. Use `--full` by hand to hash them too.
 3. `php artisan azkar:snapshot hisnmuslim --pinned` and `php artisan azkar:snapshot hadeethenc --pinned`. When the folder on the volume already matches every pinned file SHA-256, the command logs `already pinned` and skips the download (same pin check as above).
 4. `php artisan azkar:import --download --defer-pack` (see «The Azkar import at web start»).
@@ -44,7 +44,7 @@ A failed pre-deploy (a migration error) stops the deploy; the previous version k
 
 | Railway service | Config | Status |
 | --- | --- | --- |
-| API | `apps/api/railway.json` | Web (FrankenPHP). One replica. Volume at `/app/storage/app`. Pre-deploy: the release above. Start: `start-web.sh`. Health check `GET /up`, timeout 120 s. |
+| API | `apps/api/railway.json` | Web (FrankenPHP). One replica. Volume at `/app/storage/app/private`. Pre-deploy: the release above. Start: `start-web.sh`. Health check `GET /up`, timeout 120 s. |
 | Horizon | `apps/api/railway-horizon.json` | **Not deployed** while the API has a volume. A worker service cannot share it, so a pack built there would never be served. `QUEUE_CONNECTION=sync` builds packs inline. |
 | Scheduler | `apps/api/railway-scheduler.json` | **Not deployed** for the same reason. Its work (the QF sync) runs by hand through `railway ssh` until object storage replaces the volume (a new ADR). |
 
@@ -71,7 +71,7 @@ There are **no** Azkar, HadeethEnc, hisnmuslim, audio or Dorar enable switches. 
 
 The volume holds the packs and the 238 Azkar recordings (about 55 MiB). Choose a size that also holds the Quran packs; check the manifest sizes after the first sync.
 
-1. **Attach the volume** to the API service: mount path **`/app/storage/app`**, one replica.
+1. **Attach the volume** to the API service: mount path **`/app/storage/app/private`**, one replica. (Production has used this path since setup; the packs and the Azkar audio live under it. Anything else under `storage/app` is rebuilt or re-fetched on start.)
 2. **Set the variables** above (`APP_URL`, `QUEUE_CONNECTION=sync`, `APP_ENV=production`). Confirm replicas = 1. Do not create the Horizon or Scheduler services.
 3. **Deploy.** Expect a short outage. Verify persistence: `railway ssh`, then `echo ok > storage/app/private/.volume-check`, redeploy, `cat storage/app/private/.volume-check`, then delete the file.
 4. **Copy the recordings** (one-time; resumable; each file is checked against the manifest's size and SHA-256):
@@ -114,7 +114,7 @@ Command-line PHP in the image has a 1 GB memory limit (`$PHP_INI_DIR/php-cli.ini
 
 Each run prints `mutations_applied`, `resources_touched` and `rows`. Horizon builds the packs; `GET /api/v1/content/manifest` then lists each resource with its version, size and SHA-256.
 
-**Pack files live on the `local` disk** (`storage/app/private/packs/`). Railway’s container filesystem is ephemeral: a redeploy without a mounted volume drops every `.sqlite.gz` while MySQL still has `content_packs` rows. The manifest then advertises packs that return 404 and the app cannot install reciters or tafsirs. The API service volume is mounted at `/app/storage/app` (ADR 0040), so the packs under `storage/app/private/packs` survive deploys. After any deploy that lost files, rebuild from a shell in the API container:
+**Pack files live on the `local` disk** (`storage/app/private/packs/`). Railway’s container filesystem is ephemeral: a redeploy without a mounted volume drops every `.sqlite.gz` while MySQL still has `content_packs` rows. The manifest then advertises packs that return 404 and the app cannot install reciters or tafsirs. The API service volume is mounted at `/app/storage/app/private` (ADR 0040), so the packs under `storage/app/private/packs` survive deploys. After any deploy that lost files, rebuild from a shell in the API container:
 
 ```bash
 php artisan content:ensure-packs --prune-orphans
@@ -134,7 +134,7 @@ php artisan tinker --execute 'echo storage_path("app/private/packs");'
 ls -la storage/app/private/packs 2>/dev/null | head
 ```
 
-The mount path is **`/app/storage/app`** (ADR 0040); the packs are under `storage/app/private/packs` inside it. Spot-check: `curl -I "https://<api>/api/v1/content/packs/<resource_id>/<version>"` should be `200` with `Content-Type: application/gzip`.
+The mount path is **`/app/storage/app/private`** (ADR 0040); the packs are under `storage/app/private/packs` inside it. Spot-check: `curl -I "https://<api>/api/v1/content/packs/<resource_id>/<version>"` should be `200` with `Content-Type: application/gzip`.
 
 ## Azkar in production (ADR 0031, 0040, 0045)
 
@@ -162,7 +162,7 @@ There is no flag (ADR 0045, 2 Nov 2026). Each option is a reviewed change:
 
 - **A bad release:** revert the commit and deploy. The next start's import writes the reverted content and its version (the fingerprint notices the change).
 - **Stop serving Azkar content:** a reviewed migration deletes the `azkar` resource's rows (`azkar_items`, `azkar_recordings` and the rest, scoped by `resource_id`) and the resource's pack row. The manifest then stops listing the resource. Keep the `content_sources` row; its `permission_status` is provenance only.
-- **Stop serving one recording:** remove its file from the volume (`railway ssh`, `rm storage/app/azkar-audio/0.0.2/OD-NNN.mp3`) and run `php artisan azkar:import --download --defer-pack` and `php artisan content:ensure-packs`. The endpoint answers 404 for a missing file, and the next pack carries no row for it.
+- **Stop serving one recording:** remove its file from the volume (`railway ssh`, `rm storage/app/private/azkar-audio/0.0.2/OD-NNN.mp3`) and run `php artisan azkar:import --download --defer-pack` and `php artisan content:ensure-packs`. The endpoint answers 404 for a missing file, and the next pack carries no row for it.
 - The files stay on the volume until removed by hand.
 
 ## Recovering a lost volume
@@ -183,7 +183,7 @@ php artisan content:ensure-packs
 
 Tick each box when it is done. The code is in place (2 Nov 2026); these steps are the developer's.
 
-- [ ] API service: volume attached at `/app/storage/app`, replicas = 1.
+- [ ] API service: volume attached at `/app/storage/app/private`, replicas = 1.
 - [ ] API service variables: `APP_URL=https://quranmobile-production.up.railway.app`, `APP_ENV=production`, `QUEUE_CONNECTION=sync`. `FILESYSTEM_DISK` left as `local`. No Azkar switch variable exists to set.
 - [ ] No Horizon or Scheduler service created.
 - [ ] Deploy. Expect a short outage. Volume marker: `echo ok > storage/app/private/.volume-check`, redeploy, `cat` it, delete it.

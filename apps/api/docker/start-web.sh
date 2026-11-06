@@ -19,7 +19,7 @@ cd /app || exit 1
 # previous deployment keeps serving).
 php artisan migrate --force || { echo "ERROR: migrations failed; not starting"; exit 1; }
 
-mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/azkar-audio \
+mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/private/azkar-audio \
   || echo "WARNING: could not create the storage folders under /app/storage/app"
 
 if php artisan azkar:audio-verify; then

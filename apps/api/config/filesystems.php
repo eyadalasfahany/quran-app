@@ -45,11 +45,12 @@ return [
         /*
          * ADR 0040 §2, step 14: the Taybah-hosted Azkar recordings, one folder per archive version
          * (azkar-audio/{version}/OD-001.mp3). Only the Azkar audio controller and the audio commands read it; it is
-         * never served as a static folder. Lives on the Railway volume with the packs (/app/storage/app).
+         * never served as a static folder. Lives on the Railway volume with the packs: the volume is mounted at
+         * /app/storage/app/private, so anything outside app/private is lost on every deploy (6 Nov 2026).
          */
         'azkar_audio' => [
             'driver' => 'local',
-            'root' => storage_path('app/azkar-audio'),
+            'root' => storage_path('app/private/azkar-audio'),
             'serve' => false,
             'throw' => false,
             'report' => false,

@@ -57,7 +57,7 @@ it('the start script fetches the snapshots, imports DB rows after the audio chec
         ->and($serve)->toBeGreaterThan($packs)
         ->and($start)->not->toContain('--if-unlocked')
         ->and($start)->not->toContain('--build-packs')
-        ->and($start)->toContain('storage/app/azkar-audio');
+        ->and($start)->toContain('storage/app/private/azkar-audio');
 });
 
 it('every start task warns and continues, so a failed download keeps the current version serving (M3)', function (): void {
@@ -87,9 +87,13 @@ it('the image copies and marks executable the start script', function (): void {
         ->and($dockerfile)->toContain('chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/release.sh /usr/local/bin/start-web.sh');
 });
 
-it('the storage folders the start script writes to are the ones the volume covers under /app/storage/app', function (): void {
+it('the storage folders the start script writes to include the ones the volume covers under /app/storage/app/private', function (): void {
     expect(deployFile('docker/start-web.sh'))
-        ->toContain('mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/azkar-audio');
+        ->toContain('mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/private/azkar-audio');
+});
+
+it('keeps the Azkar audio on the volume, which is mounted at /app/storage/app/private', function (): void {
+    expect(config('filesystems.disks.azkar_audio.root'))->toBe(storage_path('app/private/azkar-audio'));
 });
 
 it('the start script imports MP3Quran rows, then Taybah timings, after the Azkar import and before the pack build', function (): void {
