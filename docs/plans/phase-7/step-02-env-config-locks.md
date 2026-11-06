@@ -6,7 +6,7 @@ ADR 0042 §3, §4, §4a, §10 (Proposed until the developer's acceptance is reco
 Put the Phase 7 pins in place with no behaviour yet: the env lines, `config/hadith.php`, `config/hadith_titles.php` and the two `content_sources` rows. There is no switch and no gate class (ADR 0045). No table, endpoint, pack, importer or HTTP client is added here.
 
 ## Rules for this step
-- Branch: `ft/hadith`. Check with `git branch --show-current`. Do not commit, push, switch branches or add dependencies.
+- Branch: `main` (the developer now works on `main`, CLAUDE.md, 6 Nov 2026). Check with `git branch --show-current`. Do not commit, push, switch branches or add dependencies.
 - **Never open, print or edit `apps/api/.env`.** Only `.env.example` is touched.
 - Shared files are edited additively and at the end (`.env.example`).
 - Follow the patterns of `config/azkar.php`, the Azkar `content_sources` migrations and `tests/Feature/Content/AzkarMigrationTest.php`. Laravel code follows `apps/api/CLAUDE.md` (strict types, full typing, domain exceptions, `.ai/rules/*`).
@@ -35,7 +35,7 @@ Change:
 
 The migration timestamps (`2026_11_01_11xxxx`) are deliberately outside Azkar's `1000xx` series so the two branches do not collide on merge. Do not renumber.
 
-The `app/Domains/Hadith/` directory exists and holds only `.gitkeep`. Leave `.gitkeep` in place. No service provider is needed in this step (the gate is a plain class that reads config).
+The `app/Domains/Hadith/` directory exists and holds only `.gitkeep`. Leave `.gitkeep` in place. No service provider is needed in this step.
 
 ## `.env.example`
 
@@ -210,7 +210,7 @@ All under `apps/api/tests/Feature/Hadith/` (they extend `TestCase` through `Pest
 - `it('seeds fawazahmed0 as not_required with the Unlicense and the provenance note', …)`: after `down()` the row is gone; after `up()` twice there is exactly one row with `permission_status` `not_required`, `name` `fawazahmed0/hadith-api`, `licence_url` containing `df57907be35291c91ad6a6691180e22ca9920784` and ending in `/LICENSE`, `attribution_en` `Source: fawazahmed0/hadith-api (Unlicense)`, and `notes` containing `Unlicense` and `ADR 0042`. Restore the row at the end (`up()`).
 - `it('seeds sunnahcom as pending with an empty Arabic attribution', …)`: same pattern; `permission_status` `pending`, `attribution_ar` is `''`, `attribution_en` `Sunnah.com`.
 - `it('its down removes only its own row', …)`: run `down()` of the fawazahmed0 migration; the `sunnahcom` and `opendua` rows still exist; restore with `up()`.
-- `it('the PermissionStatus enum treats not_required as deliverable and pending as not', …)`: `PermissionStatus::NotRequired->allowsDelivery()` is true, `PermissionStatus::Pending->allowsDelivery()` is false (guards the gate the pack builder will use in step 4).
+- (Removed 7 Nov 2026: `PermissionStatus` has no `allowsDelivery()`; today's gates compare with `Granted` only, e.g. `DuasPackReadiness`, `NamesSourceGate`. **Step 4's hadith pack gate treats `not_required` as deliverable, like `granted` (developer, 7 Nov 2026, plan D12)**; do not touch the enum in this step.)
 
 ## Reuse (paths checked)
 - `apps/api/config/azkar.php` (config style)
