@@ -618,15 +618,19 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
   if (current.status === 'playing' && status.playing && status.isLoaded && chapterId !== undefined) {
     applyRepeat(active, chapterId, Math.round(status.currentTime * 1000));
   }
-  if (status.isLoaded && chapterId !== undefined) {
+  // While a seek is pending the position is the old one, so it must not be saved as a listen or kept as the last tick.
+  // Android allows a foreground service to start only from the foreground, so a load plays before its seek (muted, see
+  // loadChapter) while the app is still in front. That pre-play reports playing at the old position, so it must not mark
+  // the surah playing (the buffering ring stays until the seek lands and audio starts) or save a listen near 0.
+  if (status.isLoaded && chapterId !== undefined && pendingSeek === null) {
     lastTick = { reciterId: active.reciterId, chapterId, positionMs: Math.round(status.currentTime * 1000) };
   }
   // A loading surah that reports playing is about to be marked playing below, so it counts as playing here.
-  if ((current.status === 'playing' || current.status === 'loading') && status.playing && status.isLoaded && chapterId !== undefined) {
+  if ((current.status === 'playing' || current.status === 'loading') && status.playing && status.isLoaded && chapterId !== undefined && pendingSeek === null) {
     saveListenOnTick(active.reciterId, chapterId, Math.round(status.currentTime * 1000));
   }
   if (status.playing) {
-    if (current.status === 'loading' || current.status === 'paused') {
+    if ((current.status === 'loading' || current.status === 'paused') && pendingSeek === null) {
       current.markPlaying();
     }
     return;
@@ -713,7 +717,10 @@ function stopPlayback(): void {
   clearWatchdog();
   pendingSwitchRepeat = null;
   releaseRepeat();
-  queue?.playlist.pause();
+  if (queue !== null) {
+    queue.playlist.pause();
+    queue.playlist.muted = false;
+  }
   saveCurrentListen();
   highlightFloor = null;
   useSkipNoticeStore.getState().clear();
@@ -724,6 +731,17 @@ function stopPlayback(): void {
  * Seeks the playlist and marks the seek pending until it lands, successfully or not. A newer seek or load replaces the
  * mark, so the seek it replaced cannot clear it.
  */
+/**
+ * A load that fails before it plays must also stop an earlier load's muted pre-play (see loadChapter), or that surah
+ * keeps playing silently in the background. Only a pre-play is muted, so audio someone can hear is left alone.
+ */
+function stopMutedPrePlay(): void {
+  if (queue !== null && queue.playlist.muted) {
+    queue.playlist.pause();
+    queue.playlist.muted = false;
+  }
+}
+
 function seekPlaylist(playlist: AudioPlaylist, seconds: number): Promise<void> {
   seekSerial += 1;
   const token = seekSerial;
@@ -750,23 +768,29 @@ async function loadChapter(
   highlightFloor = null;
   const sequence = loadSequence;
   if (!isChapterId(chapterId)) {
+    stopMutedPrePlay();
     store().markFailed('invalid-chapter');
     return;
   }
   if (reciterId === null) {
+    stopMutedPrePlay();
     store().markFailed('no-reciter');
     return;
   }
   const db = contentDb();
   const lookup = lookupAudio(db, reciterId, chapterId);
   if ('error' in lookup) {
+    stopMutedPrePlay();
     failLookup(lookup.error, reciterId, chapterId);
     return;
   }
   const offline = offlineFailure(reciterId, chapterId);
   if (offline !== null) {
     clearWatchdog();
-    queue?.playlist.pause();
+    if (queue !== null) {
+      queue.playlist.pause();
+      queue.playlist.muted = false;
+    }
     store().markFailed(offline);
     return;
   }
@@ -779,6 +803,7 @@ async function loadChapter(
     const active = ensureQueue(db, reciterId);
     const index = active?.chapterIds.indexOf(chapterId) ?? -1;
     if (active === undefined || index < 0) {
+      stopMutedPrePlay();
       store().markFailed('not-installed');
       return;
     }
@@ -791,6 +816,7 @@ async function loadChapter(
       loadTargetIndex = index;
       active.playlist.skipTo(index);
     }
+    active.playlist.muted = positionMs > 0;
     loadedChapterId = chapterId;
     setTrackTimings(db, reciterId, chapterId);
     // Set after the track change, which clears the highlight: the requested ayah is shown at once, not after the first tick.
@@ -798,7 +824,16 @@ async function loadChapter(
       store().setActive(startVerseId, null);
     }
     if (positionMs > 0) {
-      await seekPlaylist(active.playlist, positionMs / 1000);
+      // Play muted before the seek. A seek to a streamed file waits for buffering, and Android refuses to start the
+      // playback service or take audio focus from the background, so the play must happen while the app is in front.
+      active.playlist.play();
+      try {
+        await seekPlaylist(active.playlist, positionMs / 1000);
+      } finally {
+        if (sequence === loadSequence) {
+          active.playlist.muted = false;
+        }
+      }
       if (sequence !== loadSequence) {
         return;
       }
@@ -818,6 +853,9 @@ async function loadChapter(
     if (sequence === loadSequence) {
       loadedChapterId = null;
       clearWatchdog();
+      if (queue !== null) {
+        queue.playlist.muted = false;
+      }
       store().markFailed('load-failed');
     }
   }
@@ -1019,8 +1057,12 @@ export function pause(): void {
     return;
   }
   if (state.status === 'loading') {
-    // Cancels a load that has not started playing yet, so it cannot start playback afterwards.
+    // Cancels a load that has not started playing yet, so it cannot start playback afterwards. Its seek no longer
+    // unmutes a pre-play, so unmute here: a later resume plays this playlist without another load.
     loadSequence += 1;
+    if (queue !== null) {
+      queue.playlist.muted = false;
+    }
   }
   clearWatchdog();
   queue?.playlist.pause();

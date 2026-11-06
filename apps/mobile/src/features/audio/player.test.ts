@@ -2044,3 +2044,171 @@ describe('every play entry point starts at the current ayah (ADR 0062 decision 7
   });
 });
 
+
+describe('a resume position plays muted before its seek (Android foreground-service rule)', () => {
+  // The playlist is built by the first load, so prime one (a paused load of surah 2 at 0) before holding any seek.
+  beforeEach(async () => {
+    await playChapter(2, 0);
+    pause();
+    fakePlaylist().play.mockClear();
+    fakePlaylist().seekTo.mockClear();
+  });
+
+  /** Holds the next seek open. `land` resolves it, `fail` rejects it. */
+  function holdNextSeek(): { land: () => void; fail: (error: Error) => void } {
+    let land: () => void = () => undefined;
+    let fail: (error: Error) => void = () => undefined;
+    fakePlaylist().seekTo.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          land = resolve;
+          fail = reject;
+        }),
+    );
+    return { land: () => land(), fail: (error) => fail(error) };
+  }
+
+  it('plays before the seek lands, muted, and unmutes once the seek resolves', async () => {
+    const seek = holdNextSeek();
+    const load = playChapter(1, 5000);
+    await flush();
+
+    expect(fakePlaylist().seekTo).toHaveBeenLastCalledWith(5);
+    expect(fakePlaylist().play).toHaveBeenCalledTimes(1);
+    expect(fakePlaylist().muted).toBe(true);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'loading', chapterId: 1 });
+
+    seek.land();
+    await load;
+    expect(fakePlaylist().muted).toBe(false);
+    // The play that starts the surah after the seek is as before, so play runs twice in all.
+    expect(fakePlaylist().play).toHaveBeenCalledTimes(2);
+    expect(fakePlaylist().play.mock.invocationCallOrder[0]).toBeLessThan(fakePlaylist().seekTo.mock.invocationCallOrder[0]!);
+  });
+
+  it('a load at position 0 is not muted and does not pre-play', async () => {
+    await playChapter(1, 0);
+
+    expect(fakePlaylist().muted).toBe(false);
+    expect(fakePlaylist().play).toHaveBeenCalledTimes(1);
+    expect(fakePlaylist().seekTo).not.toHaveBeenCalled();
+  });
+
+  it('a load superseded during its seek does not unmute or override the newer load', async () => {
+    const seek = holdNextSeek();
+    const first = playChapter(1, 5000);
+    await flush();
+    expect(fakePlaylist().muted).toBe(true);
+
+    // A newer load at position 0 starts from the start: it sets muted itself, and the superseded seek must not touch it.
+    await playChapter(2, 0);
+    expect(fakePlaylist().muted).toBe(false);
+
+    seek.land();
+    await first;
+    expect(fakePlaylist().muted).toBe(false);
+    expect(usePlayerStore.getState()).toMatchObject({ chapterId: 2 });
+  });
+
+  it('a newer load at a resume position keeps itself muted when an older seek lands', async () => {
+    const older = holdNextSeek();
+    const first = playChapter(1, 5000);
+    await flush();
+
+    const newer = holdNextSeek();
+    const second = playChapter(2, 7000);
+    await flush();
+    expect(fakePlaylist().muted).toBe(true);
+
+    older.land();
+    await first;
+    expect(fakePlaylist().muted).toBe(true);
+
+    newer.land();
+    await second;
+    expect(fakePlaylist().muted).toBe(false);
+  });
+
+  it('a load that fails before it plays stops an older muted pre-play', async () => {
+    const seek = holdNextSeek();
+    const first = playChapter(1, 5000);
+    await flush();
+    expect(fakePlaylist().muted).toBe(true);
+    fakePlaylist().pause.mockClear();
+
+    // Surah 115 does not exist, so this load fails at once. The older pre-play must not keep playing silently.
+    await playChapter(115, 0);
+    expect(fakePlaylist().pause).toHaveBeenCalled();
+    expect(fakePlaylist().muted).toBe(false);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error' });
+
+    seek.land();
+    await first;
+    expect(fakePlaylist().muted).toBe(false);
+  });
+
+  it('a seek that rejects unmutes and reports the load as failed', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const seek = holdNextSeek();
+    const load = playChapter(1, 5000);
+    await flush();
+    expect(fakePlaylist().muted).toBe(true);
+
+    seek.fail(new Error('seek refused'));
+    await load;
+
+    expect(fakePlaylist().muted).toBe(false);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'error', error: 'load-failed' });
+    warn.mockRestore();
+  });
+
+  it('pausing during the pre-play unmutes, so a later resume is heard', async () => {
+    const seek = holdNextSeek();
+    const load = playChapter(1, 5000);
+    await flush();
+    expect(fakePlaylist().muted).toBe(true);
+
+    pause();
+    expect(fakePlaylist().muted).toBe(false);
+    expect(usePlayerStore.getState().status).toBe('paused');
+
+    seek.land();
+    await load;
+    expect(fakePlaylist().muted).toBe(false);
+  });
+
+  it('stopping during the pre-play unmutes the playlist', async () => {
+    // Surah 114 is the last of the playlist, so next surah stops there.
+    const seek = holdNextSeek();
+    const load = playChapter(114, 5000);
+    await flush();
+    expect(fakePlaylist().muted).toBe(true);
+
+    nextSurah();
+    expect(usePlayerStore.getState().status).toBe('idle');
+    expect(fakePlaylist().muted).toBe(false);
+
+    seek.land();
+    await load;
+    expect(fakePlaylist().muted).toBe(false);
+  });
+
+  it('while the seek is pending, a playing tick at the old position does not mark playing or save a listen', async () => {
+    const seek = holdNextSeek();
+    const load = playChapter(1, 5000);
+    await flush();
+
+    fakePlaylist().emitStatus({ playing: true, isLoaded: true, currentTime: 0 });
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'loading' });
+    expect(listRecentListens(20, { db: mockUser.executor ?? undefined }).filter((row) => row.chapterId === 1)).toEqual([]);
+
+    seek.land();
+    await load;
+    // The seek has landed: the next playing tick at the new position marks the surah playing and saves its listen.
+    reportAt(5);
+    expect(usePlayerStore.getState()).toMatchObject({ status: 'playing' });
+    expect(listRecentListens(20, { db: mockUser.executor ?? undefined }).filter((row) => row.chapterId === 1)).toMatchObject([
+      { chapterId: 1, lastPositionMs: 5000 },
+    ]);
+  });
+});
