@@ -5,7 +5,7 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 | Step | Brief | Status |
 | --- | --- | --- |
 | 1 | Docs, ADR 0042, spec patch ([`spec-changes.md`](spec-changes.md)) | Done (1 Nov 2026): ADR 0042 accepted, patch applied |
-| 2 | Env, config (dev-only `HADITH_API_KEY`, pin, titles map with ummahapi.com names and authors) | |
+| 2 | Env, config (dev-only `HADITH_API_KEY`, pin, titles map with ummahapi.com names and authors) | Implemented 7 Nov 2026, awaiting commit |
 | 3 | MySQL schema | |
 | 4 | Pack contract and hadith search normaliser | |
 | 5 | Source interface and fawazahmed0 client, snapshot | |

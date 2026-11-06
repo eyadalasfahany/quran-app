@@ -84,3 +84,15 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - Budgets: cold start to last-read ayah < 1.5 s on a mid-range Android, audio start < 1 s, 60 fps scrolling, search < 150 ms.
 - Run: `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`.
 - Every user-facing flow is checked in Arabic and English, and on compact and expanded windows.
+
+## Releasing (developer, 6 Nov 2026)
+
+- **OTA by default.** Ship JavaScript, asset and copy changes with `eas update --channel production` (EAS Update, `expo-updates`). Don't make a new store build for them.
+- **A store build is needed only when the native layer changes:**
+  - a package installed or upgraded with `npx expo install` or npm
+  - a config plugin added or changed
+  - a native field in `app.config.ts`: permissions, entitlements, `ios` or `android` keys, `plugins`
+  - an Expo SDK upgrade
+- **Why:** `runtimeVersion` uses the `fingerprint` policy. An update reaches only the store builds with the same fingerprint, and the rest never see it. Check before publishing: `npx eas-cli fingerprint:compare` against the latest production build. If it differs, make a build instead.
+- **Version:** an OTA update keeps the store version (`version` in `app.config.ts`). Bump it only with a store build.
+- **Before publishing**, run the mobile checks (`npm run lint && npx tsc --noEmit && npm test`).
