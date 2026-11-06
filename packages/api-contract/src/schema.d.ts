@@ -102,6 +102,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["v1.suggestions.store"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -178,6 +194,24 @@ export interface components {
          * @enum {string}
          */
         ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar" | "names" | "duas";
+        /** StoreSuggestionRequest */
+        StoreSuggestionRequest: {
+            name?: string | null;
+            /** Format: email */
+            email: string;
+            message: string;
+            /** @enum {string} */
+            locale: "ar" | "en";
+            source?: components["schemas"]["SuggestionSource"];
+            /** @description Honeypot: a filled value is not a validation error. The service stores and sends nothing (ADR 0066). */
+            website?: string | null;
+        };
+        /**
+         * SuggestionSource
+         * @description Where a suggestion was sent from (ADR 0066): the website form or the app's Settings card.
+         * @enum {string}
+         */
+        SuggestionSource: "website" | "app";
     };
     responses: {
         /** @description Validation error */
@@ -405,6 +439,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResource"];
+                };
+            };
+        };
+    };
+    "v1.suggestions.store": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreSuggestionRequest"];
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        status: "received";
+                    };
+                };
+            };
+            /** @description Some fields are not valid. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Errors overview. */
+                        message: string;
+                        /** @description A detailed description of each field that failed validation. */
+                        errors: {
+                            [key: string]: string[];
+                        };
+                    };
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+            /** @description Too many suggestions from this address. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
                 };
             };
         };

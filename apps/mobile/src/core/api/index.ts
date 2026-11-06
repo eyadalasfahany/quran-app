@@ -1,5 +1,5 @@
 export { apiBaseUrl } from './base-url';
-export { ApiError, apiGet } from './client';
+export { ApiError, apiGet, apiPost } from './client';
 export { getBootstrap } from './bootstrap';
 export { getChanges, getManifest, packUrl } from './content';
 export { fetchHealth } from './health';

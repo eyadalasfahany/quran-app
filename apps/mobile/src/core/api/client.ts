@@ -28,30 +28,13 @@ type ApiGetOptions = {
 };
 
 export async function apiGet(path: keyof paths, options: ApiGetOptions = {}): Promise<Response> {
-  const url = new URL(`${apiBaseUrl()}/api/v1${path}`);
-  const search = new URLSearchParams();
-
-  for (const [key, value] of Object.entries(options.query ?? {})) {
-    if (value === undefined || value === null) {
-      continue;
-    }
-    search.set(key, String(value));
-  }
-
-  const query = search.toString();
-  const href = query.length === 0 ? url.href : `${url.href}?${query}`;
+  const href = requestHref(path, options.query);
 
   // The timeout covers the wait for the response headers. A timeout or an unreachable server throws a NetworkError.
   const request = requestSignal(options.timeoutMs ?? REQUEST_TIMEOUT_MS, options.signal);
   try {
     return await fetch(href, {
-      headers: {
-        Accept: 'application/json',
-        'Accept-Language': getLocale(),
-        'X-Platform': appPlatform(),
-        'X-App-Version': appVersion(),
-        ...options.headers,
-      },
+      headers: requestHeaders(options.headers),
       signal: request.signal,
     });
   } catch (error) {
@@ -59,6 +42,57 @@ export async function apiGet(path: keyof paths, options: ApiGetOptions = {}): Pr
   } finally {
     request.done();
   }
+}
+
+type ApiPostOptions = {
+  headers?: Record<string, string>;
+  /** The caller's cancel. It combines with the request timeout: either one aborts the request. */
+  signal?: AbortSignal;
+  timeoutMs?: number;
+};
+
+/** A JSON POST to our API. It has the same headers, timeout and NetworkError handling as apiGet. */
+export async function apiPost(path: keyof paths, body: unknown, options: ApiPostOptions = {}): Promise<Response> {
+  const href = requestHref(path);
+
+  const request = requestSignal(options.timeoutMs ?? REQUEST_TIMEOUT_MS, options.signal);
+  try {
+    return await fetch(href, {
+      body: JSON.stringify(body),
+      headers: requestHeaders({ 'Content-Type': 'application/json', ...options.headers }),
+      method: 'POST',
+      signal: request.signal,
+    });
+  } catch (error) {
+    throw request.fail(error);
+  } finally {
+    request.done();
+  }
+}
+
+function requestHref(path: keyof paths, query?: ApiGetOptions['query']): string {
+  const url = new URL(`${apiBaseUrl()}/api/v1${path}`);
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    search.set(key, String(value));
+  }
+
+  const encoded = search.toString();
+  return encoded.length === 0 ? url.href : `${url.href}?${encoded}`;
+}
+
+function requestHeaders(extra?: Record<string, string>): Record<string, string> {
+  return {
+    Accept: 'application/json',
+    'Accept-Language': getLocale(),
+    'X-Platform': appPlatform(),
+    'X-App-Version': appVersion(),
+    ...extra,
+  };
 }
 
 export async function apiError(response: Response): Promise<ApiError> {

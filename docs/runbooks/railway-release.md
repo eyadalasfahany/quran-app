@@ -1,20 +1,20 @@
 # Railway release (API)
 
-ADR 0022 (Railway), ADR 0040 (volume, audio and packs on the API service), ADR 0045 (features enabled by default: no environment switches). The API service deploys from `apps/api/railway.json`, built from `apps/api/docker/Dockerfile`.
+ADR 0022 (Railway), ADR 0040 (volume, audio and packs on the API service), ADR 0065 (Horizon and the scheduler in the API container), ADR 0067 (no Railway config file), ADR 0045 (features enabled by default: no environment switches). The API service builds `apps/api/Dockerfile` and starts with the image's own `CMD`. There is no `railway.json`: the service settings live in the dashboard (see «Service settings»).
 
 ## Where each piece of work runs
 
-Three phases run in three containers. They do different work because only one of them has the volume.
+One container runs per deploy, and it has the volume. There is no pre-deploy step (ADR 0067).
 
 | Phase | Config | Container | Volume | Does |
 | --- | --- | --- | --- | --- |
-| Pre-deploy (release) | `deploy.preDeployCommand` → `docker/release.sh` | a fresh container, discarded afterwards | **no** | `migrate --force` only (B1, 2 Nov 2026) |
-| Container start (web) | `deploy.startCommand` → `entrypoint.sh start-web.sh` | the serving container | **yes**, at `/app/storage/app/private` | `config:cache` (entrypoint); `azkar:audio-verify`; the two pinned snapshots; `azkar:import --download --defer-pack` (DB rows); `duas:snapshot hadeethenc --pinned` and `duas:import --download --defer-pack` (DB rows); `mp3quran:import --defer-pack` and `recitation-timings:import --defer-pack` (committed manifest and timing files, ADR 0060/0061); `content:ensure-packs` (builds any missing pack); then `exec frankenphp` |
-| Worker services | `railway-horizon.json`, `railway-scheduler.json` | not deployed (see below) | would need it | nothing today |
+| Container start | image `CMD` → `entrypoint.sh start-web.sh` | the serving container | **yes**, at `/app/storage/app/private` | `config:cache` (entrypoint); `migrate --force` (stops the start on failure); `azkar:audio-verify`; the two pinned snapshots; `azkar:import --download --defer-pack` (DB rows); `duas:snapshot hadeethenc --pinned` and `duas:import --download --defer-pack` (DB rows); `mp3quran:import --defer-pack` and `recitation-timings:import --defer-pack` (committed manifest and timing files, ADR 0060/0061); `content:ensure-packs` (builds any missing pack); then `exec supervisord`, which runs FrankenPHP, Horizon and the scheduler (ADR 0065) |
 
-A failed pre-deploy (a migration error) stops the deploy; the previous version keeps serving. A failed container start (for example a healthcheck timeout) fails the new deployment and the previous one keeps serving. Start-time tasks log and continue, so a missing file never blocks Quran reading, and a failed snapshot or Azkar download warns and keeps the current Azkar version (ADR 0044, amended 2 Nov 2026). An Azkar pack that lists a missing recording is never built (ADR 0040, fail closed).
+A failed migration stops the start. A failed container start (for example a healthcheck timeout) fails the new deployment and the previous one keeps serving. Start-time tasks log and continue, so a missing file never blocks Quran reading, and a failed snapshot or Azkar download warns and keeps the current Azkar version (ADR 0044, amended 2 Nov 2026). An Azkar pack that lists a missing recording is never built (ADR 0040, fail closed).
 
-### The pre-deploy step (`docker/release.sh`)
+### Migrations (formerly the pre-deploy step)
+
+Retired by ADR 0067: `docker/release.sh` stays in the image for a manual run, but nothing calls it. The history below explains why migrations run at start.
 
 1. `php artisan migrate --force`. Schema changes are additive in production (CLAUDE.md). This is the only pre-deploy step: the Azkar import moved to web start on 2 Nov 2026, because the import reads the audio files on the volume that only the web container mounts (ADR 0044, amended).
 
@@ -36,19 +36,40 @@ A failed pre-deploy (a migration error) stops the deploy; the previous version k
 7. `php artisan mp3quran:import --defer-pack`. It reads `resources/mp3quran/manifest.json` and writes the MP3Quran recitation rows (one resource per moshaf, one file per surah). No network and no storage credential. A refused moshaf prints a warning and the current MP3Quran version keeps serving.
 8. `php artisan recitation-timings:import --defer-pack`. It reads `resources/recitation-timings/**` and writes the Taybah timing rows (ADR 0060). It skips and names any file whose audio URL, ayah rows or word layouts do not match, and the current versions keep serving. A rerun with unchanged files bumps nothing.
 9. `php artisan content:ensure-packs`: builds every active resource pack whose row is missing or whose file is gone, Quran packs included. When nothing changed it only checks files, so it is quick. The first start after a volume is attached builds every pack in the foreground, which can take minutes (see «Volume and audio, first time»). Bumping many recitations in one deploy (for example the first import of many reciters) builds all their packs here, before the health check passes (ADR 0044's consequence); a larger batch can time out the 120 s check, and then `php artisan content:ensure-packs` from a shell finishes it.
-10. `exec frankenphp run --config /etc/caddy/Caddyfile`.
+10. `exec supervisord -c /etc/supervisor/taybah.conf` (`docker/supervisord.conf`, ADR 0065). It runs three programs and restarts any that exits: `web` (FrankenPHP), `horizon` and `scheduler` (`schedule:work`). If `web` reaches FATAL, `docker/supervisor-web-fatal.sh` stops the container and Railway restarts it (`restartPolicyType: ALWAYS`). A failing Horizon or scheduler never stops the web server. All three log to the deploy logs.
 
-`entrypoint.sh` never runs the Azkar work and is never edited for it: Horizon and the scheduler share it.
+`entrypoint.sh` never runs the Azkar work and is never edited for it.
 
 ## Railway services
 
 | Railway service | Config | Status |
 | --- | --- | --- |
-| API | `apps/api/railway.json` | Web (FrankenPHP). One replica. Volume at `/app/storage/app/private`. Pre-deploy: the release above. Start: `start-web.sh`. Health check `GET /up`, timeout 120 s. |
-| Horizon | `apps/api/railway-horizon.json` | **Not deployed** while the API has a volume. A worker service cannot share it, so a pack built there would never be served. `QUEUE_CONNECTION=sync` builds packs inline. |
-| Scheduler | `apps/api/railway-scheduler.json` | **Not deployed** for the same reason. Its work (the QF sync) runs by hand through `railway ssh` until object storage replaces the volume (a new ADR). |
+| API | dashboard (see «Service settings») | FrankenPHP, Horizon and the scheduler under supervisord. One replica. Volume at `/app/storage/app/private`. Start: the image's `CMD` (`start-web.sh`). |
 
-ADR 0022 is amended by ADR 0040. Volumes and replicas exclude each other, so the API has one replica and each deploy has a short outage.
+Horizon and the scheduler are not services. They run inside the API container (ADR 0065), so they share the volume. Do not create Horizon or Scheduler services: the schedule would run twice.
+
+### Service settings (dashboard, ADR 0067)
+
+Railway stops reading `railway.json` on 1 Dec 2026, so the repo has none. These dashboard values are the source of truth. Check them after any change to the service, and snapshot them with `railway config pull`, which writes a local file and changes nothing on Railway. Never run `railway config apply` (ADR 0067).
+
+| Setting (API service → Settings) | Value | Why |
+| --- | --- | --- |
+| Root directory | `apps/api` | Railway builds the `Dockerfile` at the service root (`apps/api/Dockerfile`, the production image). |
+| Build: Dockerfile Path | `/apps/api/Dockerfile` | Absolute path in the repo. Variable `RAILWAY_DOCKERFILE_PATH` stays unset; a stale value (for example `docker/Dockerfile`, which no longer exists) fails the build. |
+| Build: Watch Paths | `/apps/api/**` only | The image builds from `apps/api` alone, so nothing outside it needs a deploy. |
+| Deploy: custom start command | **empty** | A value here overrides the image's `CMD` and skips `start-web.sh`. |
+| Deploy: pre-deploy command | **empty** | Migrations run at start (ADR 0067). |
+| Deploy: health check path / timeout | `/up` / 120 s | A start that never serves fails the deploy. |
+| Deploy: restart policy | Always | supervisord exits 0 when the web server goes FATAL (ADR 0065); On Failure would not restart it. |
+| Deploy: draining seconds | 130 | Longer than Horizon's 120 s `stopwaitsecs`, so a running job finishes before SIGKILL. |
+| Config-as-code file path | **empty** | No config file (ADR 0067). |
+| Replicas | 1 | The volume (ADR 0040) and the scheduler (ADR 0065). |
+
+**Cutover order (once, for ADR 0067):** set every row above in the dashboard **before** the commit that deletes `railway.json` deploys. If the file goes first, the deploy runs with no health check and a broken start goes live.
+
+**Rollbacks:** deployments built before ADR 0067 took their start command from `railway.json`. From 1 Dec 2026 Railway no longer reads it, so rolling back to one of those runs bare `frankenphp`: no migrations, no imports, no Horizon or scheduler. Roll back only to deployments built after ADR 0067.
+
+ADR 0022 is amended by ADR 0040, ADR 0065 and ADR 0067. Volumes and replicas exclude each other, so the API has one replica and each deploy has a short outage.
 
 ## Environment (Railway variables)
 
@@ -58,12 +79,15 @@ Set on the API service unless noted.
 | --- | --- | --- |
 | `APP_ENV` | `production` | Enables the production guards (reviewed Quran map rows only; no seeders). |
 | `APP_URL` | `https://quranmobile-production.up.railway.app` | ADR 0022. Nothing in the API builds absolute URLs for audio or packs: `remote_url` is a relative path (`/api/v1/azkar/audio/0.0.2/OD-001.mp3`), so the value only affects the `public` disk and links. Set it anyway. |
-| `QUEUE_CONNECTION` | `sync` | With no worker, `database` or `redis` would queue jobs that never run (ADR 0040). |
+| `QUEUE_CONNECTION` | `sync`, then `redis` | ADR 0065 rollout: deploy with `sync` first (the scheduler runs its jobs inline); once the deploy logs show Horizon running, set `redis`. Never `redis` without Horizon running, or jobs queue and never run. |
 | `FILESYSTEM_DISK` | `local` (leave the default) | Packs use the `local` disk; audio uses the `azkar_audio` disk, which is always on. |
 | `DORAR_API_BASE_URL`, `DORAR_API_TOKEN` | set when Dorar is granted; empty until then | ADR 0045: Dorar is used whenever both are set, and is the null source otherwise. A credential, not a switch. |
 | `QF_ENV` | `production` | API. Selects `oauth2.quran.foundation` and `apis.quran.foundation` (`config/quran.php`). |
 | `QF_CLIENT_ID`, `QF_CLIENT_SECRET` | QF production values | API. Never in git (ADR 0041). |
 | `QF_CONTACT_EMAIL` | set | API. Used in the download User-Agent. |
+| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_SCHEME`, `MAIL_USERNAME`, `MAIL_PASSWORD` | `smtp`, `smtp.resend.com`, `465`, `smtps`, `resend`, the Resend API key | ADR 0066. The website suggestion mails go through Resend's SMTP relay. The key has sending access to `taybah-app.com` only and is never in git. |
+| `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | `no-reply@taybah-app.com`, `Taybah` | ADR 0066. Needs the domain verified in Resend (its SPF, DKIM and MX records on `send.taybah-app.com` and `resend._domainkey.taybah-app.com`). |
+| `FEEDBACK_ADMIN_EMAIL` | the developer's address | ADR 0066. Receives each suggestion. When it is empty, suggestions are stored and a warning is logged, but no admin mail is sent. |
 
 There are **no** Azkar, HadeethEnc, hisnmuslim, audio or Dorar enable switches. Nothing turns Azkar on or off with a variable (ADR 0045, 2 Nov 2026). The `content_sources` rows keep their `permission_status` as provenance; it does not gate anything.
 
@@ -72,7 +96,7 @@ There are **no** Azkar, HadeethEnc, hisnmuslim, audio or Dorar enable switches. 
 The volume holds the packs and the 238 Azkar recordings (about 55 MiB). Choose a size that also holds the Quran packs; check the manifest sizes after the first sync.
 
 1. **Attach the volume** to the API service: mount path **`/app/storage/app/private`**, one replica. (Production has used this path since setup; the packs and the Azkar audio live under it. Anything else under `storage/app` is rebuilt or re-fetched on start.)
-2. **Set the variables** above (`APP_URL`, `QUEUE_CONNECTION=sync`, `APP_ENV=production`). Confirm replicas = 1. Do not create the Horizon or Scheduler services.
+2. **Set the variables** above (`APP_URL`, `QUEUE_CONNECTION=sync`, `APP_ENV=production`). Confirm replicas = 1. Do not create Horizon or Scheduler services (they run in the API container, ADR 0065).
 3. **Deploy.** Expect a short outage. Verify persistence: `railway ssh`, then `echo ok > storage/app/private/.volume-check`, redeploy, `cat storage/app/private/.volume-check`, then delete the file.
 4. **Copy the recordings** (one-time; resumable; each file is checked against the manifest's size and SHA-256):
    ```bash
@@ -110,7 +134,7 @@ php artisan content:sync mushafs
 php artisan content:sync chapter_recitations
 ```
 
-Command-line PHP in the image has a 1 GB memory limit (`$PHP_INI_DIR/php-cli.ini`, set in `docker/Dockerfile`). On an image built before that, add `-d memory_limit=1G` after `php`, or the tafsir and reciter snapshots fail with "Allowed memory size of 134217728 bytes exhausted". There is no Horizon service yet, so after a manual sync build the packs with `php artisan queue:work redis --queue=packs,default --stop-when-empty --tries=1`.
+Command-line PHP in the image has a 1 GB memory limit (`$PHP_INI_DIR/php-cli.ini`, set in `apps/api/Dockerfile`). On an image built before that, add `-d memory_limit=1G` after `php`, or the tafsir and reciter snapshots fail with "Allowed memory size of 134217728 bytes exhausted". Horizon runs in the API container (ADR 0065). With `QUEUE_CONNECTION=redis` it builds the packs a manual sync queues; with `sync` they build inline in the command.
 
 Each run prints `mutations_applied`, `resources_touched` and `rows`. Horizon builds the packs; `GET /api/v1/content/manifest` then lists each resource with its version, size and SHA-256.
 
@@ -185,7 +209,9 @@ Tick each box when it is done. The code is in place (2 Nov 2026); these steps ar
 
 - [ ] API service: volume attached at `/app/storage/app/private`, replicas = 1.
 - [ ] API service variables: `APP_URL=https://quranmobile-production.up.railway.app`, `APP_ENV=production`, `QUEUE_CONNECTION=sync`. `FILESYSTEM_DISK` left as `local`. No Azkar switch variable exists to set.
-- [ ] No Horizon or Scheduler service created.
+- [ ] No Horizon or Scheduler service created (they run in the API container, ADR 0065).
+- [ ] API service settings match «Service settings» (ADR 0067), set before the commit that removes `railway.json` deploys.
+- [ ] After the ADR 0065 deploy: the deploy logs show `horizon` and `scheduler` RUNNING, and `railway ssh -- sh -c 'cd /app && php artisan horizon:status'` prints running. Then set `QUEUE_CONNECTION=redis` and redeploy.
 - [ ] Deploy. Expect a short outage. Volume marker: `echo ok > storage/app/private/.volume-check`, redeploy, `cat` it, delete it.
 - [ ] `railway ssh`: `php artisan azkar:audio-sync`, then `php artisan azkar:audio-verify --full` (expect `verified 238`, `missing 0`).
 - [ ] `railway ssh` or the next deploy (the start runs the import): `php artisan azkar:import --download --defer-pack`, then `php artisan content:ensure-packs`. The import prints `imported` with 238 recordings.

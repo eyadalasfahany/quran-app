@@ -504,7 +504,7 @@ Builds, store submission and over-the-air fixes all run through EAS, with two ch
 The backend runs on Railway (ADR 0022). Audio is served from Quran Foundation's CDN, so the host only carries the API, content packs and user data. One hosted environment: production.
 
 - **Host:** one Railway project. Services: the API (FrankenPHP, PHP 8.5), Horizon, the scheduler, MySQL, and Redis. Railway terminates TLS. The service root is `apps/api`.
-- **Deploys:** a push to `main`. Railway builds `apps/api/docker/Dockerfile`. The container runs migrations before it serves.
+- **Deploys:** a push to `main`. Railway builds `apps/api/Dockerfile`. The container runs migrations before it serves.
 - **In front:** Railway's hostname. Cloudflare (free plan) can sit in front later for DNS and caching of content-pack downloads.
 - **Backups:** nightly database backups (`spatie/laravel-backup`) to off-site object storage, kept 30 days. Not set up yet.
 - **Security:** secrets in Railway variables, never in the repository.

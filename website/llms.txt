@@ -35,6 +35,7 @@ Key facts:
 - [Features](https://taybah-app.com/en/features): every feature in detail
 - [Sources and licences](https://taybah-app.com/en/sources): where the religious content comes from
 - [Support and FAQ](https://taybah-app.com/en/support): contact and common questions
+- [Suggest an idea](https://taybah-app.com/en/suggest): send a suggestion to improve Taybah
 - [Privacy Policy](https://taybah-app.com/en/privacy)
 - [Terms of Use](https://taybah-app.com/en/terms)
 - [Delete data](https://taybah-app.com/en/delete-account)

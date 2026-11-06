@@ -13,7 +13,7 @@ A Railway service with a volume also stops its old deployment before the new one
 ## Decision
 
 1. **Pre-deploy writes rows only.** `release.sh` runs `azkar:import --download --if-unlocked --defer-pack`. `--defer-pack` writes the rows and bumps the version but neither builds nor queues the pack. It cannot be combined with `--build-packs`.
-2. **The web service builds missing packs at start.** `railway.json` starts `docker/start-web.sh`, which runs `content:ensure-packs` and then FrankenPHP. Normally that only checks that each file exists. It builds a new azkar version, and rebuilds everything after a volume loss.
+2. **The web service builds missing packs at start.** `railway.json` starts `docker/start-web.sh` (since ADR 0067, the image's `CMD` does), which runs `content:ensure-packs` and then FrankenPHP. Normally that only checks that each file exists. It builds a new azkar version, and rebuilds everything after a volume loss.
 3. **A failed build does not block start.** It is logged and the API serves anyway. The manifest already leaves out any pack whose file is missing, so the app does not offer that resource until the next build succeeds. This replaces ADR 0031 §11's "a pack failure fails the deploy" for Railway.
 
 ## Consequences

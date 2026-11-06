@@ -1,14 +1,14 @@
 #!/bin/sh
 # Web service start (ADR 0040, ADR 0044, plan step 14). Railway's startCommand for the API service runs this through
-# entrypoint.sh (config:cache first). It is never called from entrypoint.sh, because Horizon and the scheduler share that
-# file and the volume is mounted only on the web service.
+# entrypoint.sh (config:cache first). It is never called from entrypoint.sh. Horizon and the scheduler run in this same
+# container under supervisord (ADR 0065), started only after the steps below.
 #
 # Order: run migrations, create the storage folders, verify the Azkar audio, fetch the pinned secondary snapshots, import the Azkar rows
 # (DB rows only, --defer-pack), fetch the pinned Duas HadeethEnc snapshot and import the Duas rows (DB rows only,
 # --defer-pack), import the MP3Quran recitations and the Taybah timings (DB rows only, --defer-pack; ADR 0060,
-# ADR 0061), build any missing packs, then serve. The import runs here and not in release.sh, because
-# only this container mounts the volume that holds the audio: run before the audio is in place, it would drop the
-# recording rows. Every task logs and continues, so a failure never blocks serving; the current versions keep serving.
+# ADR 0061), build any missing packs, then hand over to supervisord, which runs the web server, Horizon and the
+# scheduler (ADR 0065). The import runs here and not in release.sh, because only this container mounts the volume
+# that holds the audio: run before the audio is in place, it would drop the recording rows. Every task logs and continues, so a failure never blocks serving; the current versions keep serving.
 set -u
 
 cd /app || exit 1
@@ -75,4 +75,4 @@ else
   echo "WARNING: some content packs could not be built; the lines above name them. Serving continues."
 fi
 
-exec frankenphp run --config /etc/caddy/Caddyfile
+exec supervisord -c /etc/supervisor/taybah.conf

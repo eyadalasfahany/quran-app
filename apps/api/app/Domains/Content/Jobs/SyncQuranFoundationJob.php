@@ -16,6 +16,12 @@ final class SyncQuranFoundationJob implements ShouldBeUnique, ShouldQueue
 
     public int $tries = 1;
 
+    /** A full QF sync can run for minutes; the worker's 60 s default would kill it (ADR 0065). */
+    public int $timeout = 1800;
+
+    /** Releases the unique lock if a run is killed (a deploy's SIGKILL), so the next day's run is not skipped. */
+    public int $uniqueFor = 7200;
+
     public function __construct(
         public readonly ResourceGroup $group,
         public readonly string $filter,

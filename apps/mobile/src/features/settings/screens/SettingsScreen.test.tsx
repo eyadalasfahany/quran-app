@@ -75,6 +75,15 @@ describe('SettingsScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/reader-settings');
   });
 
+  it('shows the suggest-an-idea row and opens the sheet from it', async () => {
+    const view = await renderUi(<SettingsScreen />);
+
+    expect(view.getByTestId('settings-suggest-entry')).toBeOnTheScreen();
+    fireEvent.press(view.getByRole('button', { name: 'اقترح فكرة, شاركنا فكرة لتحسين طيبة' }));
+
+    expect(router.push).toHaveBeenCalledWith('/settings/suggest');
+  });
+
   it('opens sources from the about section', async () => {
     const view = await renderUi(<SettingsScreen />);
 

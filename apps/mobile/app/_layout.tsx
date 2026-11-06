@@ -142,6 +142,7 @@ export default function RootLayout() {
         <Stack.Screen name="duas/mine/index" options={pushOptions} />
         <Stack.Screen name="duas/mine/[id]" options={pushOptions} />
         <Stack.Screen name="duas/mine/edit" options={sheetScreenOptions} />
+        <Stack.Screen name="settings/suggest" options={sheetScreenOptions} />
         <Stack.Screen name="sibha" options={pushOptions} />
         <Stack.Screen name="reminders" options={pushOptions} />
         <Stack.Screen name="reminders/recommended" options={sheetScreenOptions} />

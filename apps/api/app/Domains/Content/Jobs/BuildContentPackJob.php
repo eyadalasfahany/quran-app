@@ -15,6 +15,9 @@ final class BuildContentPackJob implements ShouldQueue
 
     public int $tries = 1;
 
+    /** Tafsir and reciter packs take longer than the worker's 60 s default (ADR 0065). */
+    public int $timeout = 600;
+
     public function __construct(public readonly int $resourceId)
     {
         $this->onQueue('packs');

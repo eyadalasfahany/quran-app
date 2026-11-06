@@ -30,14 +30,17 @@ if (is_array($groups)) {
 
         Schedule::job(new SyncQuranFoundationJob($resourceGroup, $filter))
             ->dailyAt('02:00')
-            ->timezone('UTC');
+            ->timezone('UTC')
+            ->onOneServer();
     }
 }
 
 Schedule::job(new PruneContentChangesJob)
     ->daily()
-    ->timezone('UTC');
+    ->timezone('UTC')
+    ->onOneServer();
 
 Schedule::command(RefreshStoreVersionsCommand::class)
     ->everyFifteenMinutes()
-    ->withoutOverlapping();
+    ->withoutOverlapping()
+    ->onOneServer();

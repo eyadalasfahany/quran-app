@@ -15,7 +15,7 @@ For now, local development uses the Homebrew services:
 - No Mailpit: `MAIL_MAILER=log` writes mail to `storage/logs/laravel.log`.
 - `php artisan serve`, `php artisan horizon` and `php artisan schedule:work` run on local PHP 8.5 when needed.
 
-`infra/docker-compose.yml` and `apps/api/Dockerfile` stay in the repo, unused, for when Docker comes back.
+`infra/docker-compose.yml` and `apps/api/Dockerfile` stay in the repo, unused, for when Docker comes back. **Amended 6 Nov 2026 (ADR 0067):** `apps/api/Dockerfile` is now the production image; the local development image is removed.
 
 ## Consequences
 

@@ -42,7 +42,7 @@
 <header class="site-header"><div class="container site-header__inner"><a class="site-logo" href="index.html"><img class="site-logo__img" src="assets/images/apple-touch-icon.png" width="36" height="36" alt="" decoding="async"><span class="site-logo__name"><span data-l="ar">طيبة</span><span data-l="en">Taybah</span></span></a><nav class="site-nav" aria-label="القائمة الرئيسية" data-aria-ar="القائمة الرئيسية" data-aria-en="Main menu"><a href="index.html"><span data-l="ar">الرئيسية</span><span data-l="en">Home</span></a><a href="features.html"><span data-l="ar">الميزات</span><span data-l="en">Features</span></a><a href="sources.html"><span data-l="ar">المصادر</span><span data-l="en">Sources</span></a><a href="support.html"><span data-l="ar">الدعم</span><span data-l="en">Support</span></a></nav><a class="btn btn-ghost btn-sm" href="/en/privacy" hreflang="en" lang="en" data-l="ar">English</a><a class="btn btn-ghost btn-sm" href="/privacy" hreflang="ar" lang="ar" data-l="en">العربية</a><a class="btn btn-secondary btn-sm site-header__download" href="download.html"><span data-l="ar">تنزيل</span><span data-l="en">Download</span></a><button class="menu-btn" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-panel" aria-label="القائمة" data-aria-ar="القائمة" data-aria-en="Menu"><svg class="icon icon-menu" aria-hidden="true" focusable="false"><use href="#menu"/></svg><svg class="icon icon-close" aria-hidden="true" focusable="false"><use href="#close"/></svg></button></div><div class="nav-panel" id="nav-panel" hidden><nav aria-label="القائمة الرئيسية" data-aria-ar="القائمة الرئيسية" data-aria-en="Main menu"><ul class="nav-panel__list"><li><a href="index.html"><span data-l="ar">الرئيسية</span><span data-l="en">Home</span></a></li><li><a href="features.html"><span data-l="ar">الميزات</span><span data-l="en">Features</span></a></li><li><a href="sources.html"><span data-l="ar">المصادر</span><span data-l="en">Sources</span></a></li><li><a href="support.html"><span data-l="ar">الدعم</span><span data-l="en">Support</span></a></li><li><a href="download.html"><span data-l="ar">تنزيل</span><span data-l="en">Download</span></a></li></ul></nav></div></header>
 <main id="main" class="legal-main"><div class="container legal"><article data-l="ar">
       <h1>سياسة الخصوصية</h1>
-      <p class="meta">آخر تحديث: 5 نوفمبر 2026 · التطبيق: Taybah (<span dir="ltr">com.taybahapp.taybah</span>)</p>
+      <p class="meta">آخر تحديث: 6 نوفمبر 2026 · التطبيق: Taybah (<span dir="ltr">com.taybahapp.taybah</span>)</p>
       <p>توضّح هذه السياسة كيف يتعامل تطبيق <strong>طيبة</strong> مع المعلومات عند استخدامك للتطبيق والموقع taybah-app.com. طيبة <strong>مجاني، بلا إعلانات، ولا يستخدم تتبعاً إعلانياً</strong> (لا نبيع بياناتك ولا نشاركها لأغراض إعلانية).</p>
 
       <h2>1. ملخص سريع (v1)</h2>
@@ -50,6 +50,7 @@
         <li><strong>بياناتك الشخصية للقراءة</strong> (إشارات مرجعية، تمييز، ملاحظات، ختمة، إعدادات): تُخزَّن على <strong>جهازك</strong> في v1؛ لا حسابات سحابية ولا مزامنة حساب في هذا الإصدار.</li>
         <li><strong>الموقع</strong>: يُستخدم لمواقيت الصلاة والقبلة؛ يُحسب على الجهاز ويُخزَّن محلياً عند اختيارك موقعاً تلقائياً أو يدوياً.</li>
         <li><strong>الشبكة</strong>: التطبيق يتصل بخادم Taybah API لتنزيل حزم المحتوى (قرآن، تفسير، أذكار…) ويشغّل الصوت من CDN Quran Foundation عند الاستماع.</li>
+        <li><strong>الاقتراحات</strong>: إذا أرسلت اقتراحاً من الموقع أو التطبيق، نحفظ اسمك (اختياري) وبريدك ونص الاقتراح لنرد عليك، ونحذفها بعد 12 شهراً.</li>
         <li><strong>لا تتبع</strong>: لا نستخدم SDKs إعلانية ولا نربط نشاطك بملفات تعريف لأطراف ثالثة لأغراض تسويق.</li>
       </ul>
 
@@ -68,9 +69,17 @@
 
       <h3>3.2 عند الاتصال بالخادم</h3>
       <p>طلبات HTTPS إلى API قد تسجّل معلومات تقنية قياسية على الخادم (عنوان IP، وقت الطلب، User-Agent، رؤوس ETag للتخزين المؤقت). هذه السجلات تُستخدم للتشغيل والأمان وليس للتتبع الإعلاني.</p>
-      <p>في v1 <strong>لا</strong> نجمع بريداً إلكترونياً أو معرّف حساب من التطبيق لأن تسجيل الدخول غير متاح.</p>
+      <p>في v1 <strong>لا</strong> نجمع معرّف حساب لأن تسجيل الدخول غير متاح، ولا نجمع بريدك الإلكتروني إلا إذا أرسلت اقتراحاً (انظر 3.3).</p>
 
-      <h3>3.3 مستقبلاً (حسابات ومزامنة)</h3>
+      <h3>3.3 نموذج الاقتراحات</h3>
+      <p>عندما ترسل اقتراحاً من صفحة <a href="suggest.html">اقترح فكرة</a> أو من الإعدادات في التطبيق، نستلم: اسمك (اختياري)، وبريدك الإلكتروني، ونص اقتراحك، ولغة الصفحة أو التطبيق، ومصدر الإرسال (الموقع أو التطبيق).</p>
+      <ul>
+        <li><strong>الغرض</strong>: قراءة اقتراحك والرد عليك، وإرسال رسالة تأكيد واحدة إلى بريدك.</li>
+        <li><strong>ما لا نحفظه</strong>: لا نحفظ عنوان IP ولا معلومات المتصفح أو الجهاز مع الاقتراح.</li>
+        <li><strong>لا تسويق</strong>: لا نضيف بريدك إلى قوائم بريدية ولا نشاركه مع أحد.</li>
+      </ul>
+
+      <h3>3.4 مستقبلاً (حسابات ومزامنة)</h3>
       <p>إذا أُضيفت لاحقاً حسابات ومزامنة سحابية، قد يشمل ذلك البريد الإلكتروني ومعرّف الحساب ومزامنة الإشارات والملاحظات بين أجهزتك. سنحدّث هذه السياسة قبل تفعيل ذلك ونطلب موافقتك حيث يقتضي القانون.</p>
 
       <h2>4. أذونات الجهاز</h2>
@@ -85,6 +94,7 @@
         <li><strong>Quran Foundation</strong>: محتوى قرآن وتفسير وصوت؛ الصوت قد يُشغَّل مباشرة من CDN الخاص بهم.</li>
         <li><strong>خطوط mushaf</strong>: من CDN عام Quran Foundation وفق شروطهم.</li>
         <li><strong>مصادر الأذكار</strong>: كما هو موضّح في «المصادر» داخل التطبيق؛ قد تتضمن تنزيلات من خادمنا.</li>
+        <li><strong>Resend</strong>: خدمة إرسال البريد التي نرسل عبرها رسالة تأكيد الاقتراح والإشعار إلينا. تعالج بريدك ونص الرسالة فقط لإيصالها.</li>
       </ul>
       <p>كل مزوّد له سياسة خصوصية مستقلة عند زيارة روابطه خارج التطبيق.</p>
 
@@ -94,6 +104,7 @@
       <h2>7. الاحتفاظ والحذف</h2>
       <p>البيانات على جهازك تبقى حتى تحذف التطبيق أو تستخدم <strong>مسح كل البيانات المحلية</strong> من الإعدادات. راجع <a href="delete-account.html">حذف البيانات</a>.</p>
       <p>سجلات الخادم تُحتفظ لفترة تشغيلية محدودة ثم تُدور.</p>
+      <p>الاقتراحات تُحذف تلقائياً من خادمنا بعد <strong>12 شهراً</strong>. لحذف اقتراحك قبل ذلك، راسلنا من البريد نفسه على العنوان أعلاه.</p>
 
       <h2>8. الأطفال</h2>
       <p>التطبيق مناسب للعائلة ولا يجمع عن قصد بيانات شخصية من الأطفال عبر الإنترنت في v1.</p>
@@ -107,7 +118,7 @@
       <div class="callout">هذه السياسة معلوماتية وليست استشارة قانونية. للمتاجر (Apple/Google) استخدم أيضاً الإفصاحات داخل لوحات التطوير.</div>
     </article><article data-l="en" dir="ltr">
       <h1>Privacy Policy</h1>
-      <p class="meta">Last updated: 5 November 2026 · App: Taybah (com.taybahapp.taybah)</p>
+      <p class="meta">Last updated: 6 November 2026 · App: Taybah (com.taybahapp.taybah)</p>
       <p>This policy explains how the <strong>Taybah</strong> app and taybah-app.com handle information. Taybah is <strong>free, ad-free, and does not use advertising tracking</strong> (we do not sell your data or share it for ads).</p>
 
       <h2>1. Quick summary (v1)</h2>
@@ -115,6 +126,7 @@
         <li><strong>Reading data</strong> (bookmarks, highlights, notes, khatma, settings) is stored on <strong>your device</strong> in v1; no cloud accounts or account sync in this release.</li>
         <li><strong>Location</strong> is used for prayer times and qibla; computed on device and cached locally when you choose automatic or manual location.</li>
         <li><strong>Network</strong>: the app calls the Taybah API for content packs (Quran, tafsir, adhkar, etc.) and streams audio from Quran Foundation’s CDN when you listen.</li>
+        <li><strong>Suggestions</strong>: if you send a suggestion from the website or the app, we keep your name (optional), email and suggestion so we can reply, and delete them after 12 months.</li>
         <li><strong>No tracking</strong>: no ad SDKs and no cross-app profiling for marketing.</li>
       </ul>
 
@@ -133,9 +145,17 @@
 
       <h3>3.2 When contacting our server</h3>
       <p>HTTPS requests to our API may produce standard server logs (IP address, time, User-Agent, cache headers). These are used for operations and security, not advertising.</p>
-      <p>In v1 we do <strong>not</strong> collect email or account identifiers from the app because sign-in is not offered.</p>
+      <p>In v1 we do <strong>not</strong> collect account identifiers because sign-in is not offered, and we collect your email only if you send a suggestion (see 3.3).</p>
 
-      <h3>3.3 Future (accounts and sync)</h3>
+      <h3>3.3 Suggestion form</h3>
+      <p>When you send a suggestion from the <a href="suggest.html">Suggest an idea</a> page or from Settings in the app, we receive your name (optional), email, suggestion, the language of the page or app, and where it was sent from (website or app).</p>
+      <ul>
+        <li><strong>Purpose</strong>: to read your suggestion, reply to you, and send one confirmation email to your address.</li>
+        <li><strong>Not stored</strong>: we do not store your IP address or browser or device details with the suggestion.</li>
+        <li><strong>No marketing</strong>: we never add your email to a mailing list or share it with anyone.</li>
+      </ul>
+
+      <h3>3.4 Future (accounts and sync)</h3>
       <p>If cloud accounts and sync are added later, that may include email, account id, and syncing bookmarks and notes across devices. We will update this policy before enabling that and ask for consent where required.</p>
 
       <h2>4. Device permissions</h2>
@@ -150,6 +170,7 @@
         <li><strong>Quran Foundation</strong>: Quran content, tafsir, and audio; audio may play directly from their CDN.</li>
         <li><strong>Mushaf fonts</strong>: from Quran Foundation’s public CDN under their terms.</li>
         <li><strong>Adhkar sources</strong>: as listed in in-app Sources; some files may be downloaded from our server.</li>
+        <li><strong>Resend</strong>: the email service that sends the suggestion confirmation and the notification to us. It processes your email address and the message only to deliver them.</li>
       </ul>
 
       <h2>6. Analytics and crashes</h2>
@@ -158,6 +179,7 @@
       <h2>7. Retention and deletion</h2>
       <p>On-device data remains until you delete the app or use <strong>Clear all local data</strong> in Settings. See <a href="delete-account.html">Delete data</a>.</p>
       <p>Server logs are kept for a limited operational period then rotated.</p>
+      <p>Suggestions are deleted from our server automatically after <strong>12 months</strong>. To have yours deleted sooner, email us from the same address at the contact above.</p>
 
       <h2>8. Children</h2>
       <p>The app is family-friendly and does not knowingly collect personal data from children online in v1.</p>
@@ -170,6 +192,6 @@
 
       <div class="callout">This policy is informational, not legal advice. For App Store and Google Play, complete their in-console privacy questionnaires as well.</div>
     </article><aside class="toc" aria-labelledby="toc-title"><p class="toc__title" id="toc-title"><span data-l="ar">في هذه الصفحة</span><span data-l="en">On this page</span></p><ol data-toc></ol></aside></div></main>
-<footer class="site-footer"><div class="container site-footer__inner"><div><a class="site-logo" href="index.html"><img class="site-logo__img" src="assets/images/apple-touch-icon.png" width="36" height="36" alt="" decoding="async"><span class="site-logo__name"><span data-l="ar">طيبة</span><span data-l="en">Taybah</span></span></a><p data-l="ar" class="site-footer__line">تطبيق مجاني، صدقةً جارية نسأل الله أن يتقبلها.</p><p data-l="en" class="site-footer__line">Taybah is free. We ask Allah to accept it as a sadaqah jariyah.</p><div class="site-footer__badges"><div class="store-badges"><a class="store-badge" data-store="ios" href="https://apps.apple.com/us/app/taybah-quran-prayer-azkar/id6828097265" rel="noopener" aria-label="حمّل طيبة من App Store" data-aria-ar="حمّل طيبة من App Store" data-aria-en="Download Taybah on the App Store"><img src="assets/images/badges/app-store.svg" alt="" width="120" height="40" decoding="async"></a><a class="store-badge" data-store="android" href="https://play.google.com/store/apps/details?id=com.taybahapp.taybah" rel="noopener" aria-label="احصل على طيبة من Google Play" data-aria-ar="احصل على طيبة من Google Play" data-aria-en="Get Taybah on Google Play"><img src="assets/images/badges/google-play.png" alt="" width="134" height="40" decoding="async"></a></div></div></div><nav class="site-footer__nav" aria-label="روابط التذييل" data-aria-ar="روابط التذييل" data-aria-en="Footer links"><ul><li><a href="index.html"><span data-l="ar">الرئيسية</span><span data-l="en">Home</span></a></li><li><a href="features.html"><span data-l="ar">الميزات</span><span data-l="en">Features</span></a></li><li><a href="sources.html"><span data-l="ar">المصادر</span><span data-l="en">Sources</span></a></li><li><a href="support.html"><span data-l="ar">الدعم</span><span data-l="en">Support</span></a></li></ul></nav><nav class="site-footer__nav" aria-label="قانوني" data-aria-ar="قانوني" data-aria-en="Legal"><ul><li><a href="privacy.html"><span data-l="ar">الخصوصية</span><span data-l="en">Privacy</span></a></li><li><a href="terms.html"><span data-l="ar">الشروط</span><span data-l="en">Terms</span></a></li><li><a href="delete-account.html"><span data-l="ar">حذف البيانات</span><span data-l="en">Delete data</span></a></li></ul></nav></div><div class="container"><div class="site-footer__bottom"><p class="site-footer__copy"><span data-l="ar">© طيبة</span><span data-l="en">© Taybah</span></p><p data-l="ar" class="site-footer__trademarks">App Store وشعار Apple علامتان تجاريتان لشركة <bdi>Apple Inc.</bdi>، وGoogle Play وشعار Google Play علامتان تجاريتان لشركة <bdi>Google LLC</bdi>.</p><p data-l="en" class="site-footer__trademarks">App Store and the Apple logo are trademarks of Apple Inc. Google Play and the Google Play logo are trademarks of Google LLC.</p></div></div></footer>
+<footer class="site-footer"><div class="container site-footer__inner"><div><a class="site-logo" href="index.html"><img class="site-logo__img" src="assets/images/apple-touch-icon.png" width="36" height="36" alt="" decoding="async"><span class="site-logo__name"><span data-l="ar">طيبة</span><span data-l="en">Taybah</span></span></a><p data-l="ar" class="site-footer__line">تطبيق مجاني، صدقةً جارية نسأل الله أن يتقبلها.</p><p data-l="en" class="site-footer__line">Taybah is free. We ask Allah to accept it as a sadaqah jariyah.</p><div class="site-footer__badges"><div class="store-badges"><a class="store-badge" data-store="ios" href="https://apps.apple.com/us/app/taybah-quran-prayer-azkar/id6828097265" rel="noopener" aria-label="حمّل طيبة من App Store" data-aria-ar="حمّل طيبة من App Store" data-aria-en="Download Taybah on the App Store"><img src="assets/images/badges/app-store.svg" alt="" width="120" height="40" decoding="async"></a><a class="store-badge" data-store="android" href="https://play.google.com/store/apps/details?id=com.taybahapp.taybah" rel="noopener" aria-label="احصل على طيبة من Google Play" data-aria-ar="احصل على طيبة من Google Play" data-aria-en="Get Taybah on Google Play"><img src="assets/images/badges/google-play.png" alt="" width="134" height="40" decoding="async"></a></div></div></div><nav class="site-footer__nav" aria-label="روابط التذييل" data-aria-ar="روابط التذييل" data-aria-en="Footer links"><ul><li><a href="index.html"><span data-l="ar">الرئيسية</span><span data-l="en">Home</span></a></li><li><a href="features.html"><span data-l="ar">الميزات</span><span data-l="en">Features</span></a></li><li><a href="sources.html"><span data-l="ar">المصادر</span><span data-l="en">Sources</span></a></li><li><a href="support.html"><span data-l="ar">الدعم</span><span data-l="en">Support</span></a></li><li><a href="suggest.html"><span data-l="ar">اقترح فكرة</span><span data-l="en">Suggest an idea</span></a></li></ul></nav><nav class="site-footer__nav" aria-label="قانوني" data-aria-ar="قانوني" data-aria-en="Legal"><ul><li><a href="privacy.html"><span data-l="ar">الخصوصية</span><span data-l="en">Privacy</span></a></li><li><a href="terms.html"><span data-l="ar">الشروط</span><span data-l="en">Terms</span></a></li><li><a href="delete-account.html"><span data-l="ar">حذف البيانات</span><span data-l="en">Delete data</span></a></li></ul></nav></div><div class="container"><div class="site-footer__bottom"><p class="site-footer__copy"><span data-l="ar">© طيبة</span><span data-l="en">© Taybah</span></p><p data-l="ar" class="site-footer__trademarks">App Store وشعار Apple علامتان تجاريتان لشركة <bdi>Apple Inc.</bdi>، وGoogle Play وشعار Google Play علامتان تجاريتان لشركة <bdi>Google LLC</bdi>.</p><p data-l="en" class="site-footer__trademarks">App Store and the Apple logo are trademarks of Apple Inc. Google Play and the Google Play logo are trademarks of Google LLC.</p></div></div></footer>
 </body>
 </html>

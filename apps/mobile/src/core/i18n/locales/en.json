@@ -1656,5 +1656,36 @@
       "settings": "Set the language, appearance and more here.",
       "widget": "Add the Taybah widget to your Home Screen: the next prayer, continue reading and the misbaha."
     }
+  },
+  "suggest": {
+    "entryTitle": "Suggest an idea",
+    "entryHint": "Share an idea to improve Taybah",
+    "title": "Suggest an idea",
+    "intro": "We read every suggestion. We'll send a confirmation to your email.",
+    "nameLabel": "Name (optional)",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "messageLabel": "Your suggestion",
+    "messagePlaceholder": "Write your idea or what you'd like improved",
+    "helper": "We use your email only to reply to your suggestion.",
+    "send": "Send suggestion",
+    "sending": "Sending…",
+    "retry": "Try again",
+    "done": "Done",
+    "close": "Close",
+    "sentTitle": "Thank you for your suggestion",
+    "sentBody": "Thank you for taking the time to share your suggestion. Jazakum Allahu khayran. Our team will look into it carefully and get back to you soon, in sha Allah. We have sent a confirmation to your email.",
+    "offline": "No internet connection. Your suggestion is kept here; try again when you're online.",
+    "limited": "Too many suggestions sent. Please try again later.",
+    "failed": "Couldn't send. Please try again shortly.",
+    "errors": {
+      "emailRequired": "Enter your email.",
+      "emailInvalid": "Enter a valid email address.",
+      "messageShort": "Write your suggestion (at least 10 characters).",
+      "messageLong": "Your suggestion is longer than 5,000 characters.",
+      "nameLong": "Your name is longer than 100 characters."
+    },
+    "counter": "{{count}} / {{max}}"
   }
 }

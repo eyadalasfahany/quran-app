@@ -2639,3 +2639,124 @@ html[dir="rtl"] details.faq[open] > summary .chevron {
     opacity: 1;
   }
 }
+
+/* ---------- Suggestion form (suggest.html) ---------- */
+
+.form {
+  position: relative;
+  margin-block-start: var(--s6);
+}
+
+.form__fields {
+  display: grid;
+  gap: var(--s5);
+}
+
+.form .form__field {
+  display: grid;
+  gap: var(--s2);
+}
+
+.form .form__label {
+  color: var(--ink);
+  font: 600 0.9375rem/1.375rem var(--font-ui);
+}
+
+/* 16px text: iOS does not zoom the page when a field is focused. */
+.form .form__input {
+  inline-size: 100%;
+  min-block-size: 44px;
+  margin: 0;
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: 400 1rem/1.5rem var(--font-ui);
+  transition: border-color var(--d-fast) var(--ease-out);
+}
+
+.form .form__textarea {
+  min-block-size: 9rem;
+  resize: vertical;
+}
+
+.form .form__input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-color: var(--brand);
+}
+
+.form .form__input[aria-invalid="true"] {
+  border-color: var(--danger);
+  box-shadow: inset 0 0 0 1px var(--danger);
+}
+
+.form .form__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.form .form__error:empty {
+  display: none;
+}
+
+/* Honeypot: visually hidden (clipped, not display:none), so bots still see the field. */
+.form .form__hp {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.form .form__note {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.form .form__actions {
+  display: flex;
+}
+
+.form .form__submit {
+  inline-size: 100%;
+}
+
+.form .form__submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (min-width: 640px) {
+  .form .form__submit {
+    inline-size: auto;
+    min-inline-size: 12rem;
+  }
+}
+
+/* Always rendered so screen readers announce what is written into it. */
+.form .form__status {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.form .form__status[data-tone="success"] {
+  color: var(--brand);
+}
+
+.form .form__status[data-tone="error"] {
+  color: var(--danger);
+}
+
+.form .form__status:focus {
+  outline: none;
+}

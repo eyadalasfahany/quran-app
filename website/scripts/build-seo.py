@@ -43,7 +43,7 @@ EN_DIR = WEBSITE / "en"
 SITE = "https://taybah-app.com"
 PAGES = [  # slug, indexable
     ("index", True), ("features", True), ("sources", True), ("support", True),
-    ("privacy", True), ("terms", True), ("delete-account", True),
+    ("privacy", True), ("terms", True), ("delete-account", True), ("suggest", True),
     ("download", False),   # JS redirects mobile UAs (incl. Googlebot smartphone) to the store
     ("qr", False),
     ("404", False),        # no English copy is generated for 404
@@ -534,8 +534,8 @@ def generate() -> None:
                 raise SystemExit(f"{slug}.html: English copy still contains data-l=\"ar\"")
             english[EN_DIR / f"{slug}.html"] = text
 
-    if len(english) != 9:
-        raise SystemExit(f"expected 9 English pages, built {len(english)}")
+    if len(english) != 10:
+        raise SystemExit(f"expected 10 English pages, built {len(english)}")
 
     sitemap = build_sitemap()
 
@@ -569,8 +569,8 @@ def check() -> None:
     errors: list[str] = []
     pages = [WEBSITE / f"{slug}.html" for slug, _ in PAGES]
     pages += [EN_DIR / f"{slug}.html" for slug, _ in PAGES if slug != "404"]
-    if len(pages) != 19:
-        errors.append(f"expected 19 pages, found {len(pages)}")
+    if len(pages) != 21:
+        errors.append(f"expected 21 pages, found {len(pages)}")
     for path in pages:
         if not path.exists():
             errors.append(f"missing {path.relative_to(WEBSITE)}")
@@ -609,8 +609,8 @@ def check() -> None:
     if root is not None:
         ns = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
         locs = [node.text for node in root.iter(ns + "loc")]
-        if len(locs) != 14:
-            errors.append(f"sitemap: expected 14 <loc> entries, found {len(locs)}")
+        if len(locs) != 16:
+            errors.append(f"sitemap: expected 16 <loc> entries, found {len(locs)}")
         for loc in locs:
             target = file_for_url(loc)
             if not target.exists():

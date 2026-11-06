@@ -18,6 +18,7 @@ import { HabitsSection } from '../components/HabitsSection';
 import { LanguageSection } from '../components/LanguageSection';
 import { ListeningSection } from '../components/ListeningSection';
 import { RemindersEntryRow } from '@/features/reminders/components/RemindersEntryRow';
+import { SuggestEntryRow } from '@/features/suggestions/components/SuggestEntryRow';
 import { WidgetsEntryRow } from '@/features/widgets/components/WidgetsEntryRow';
 import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 import { PrayerNotificationsSection } from '../components/PrayerNotificationsSection';
@@ -85,6 +86,9 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
             <WidgetsEntryRow />
           </SettingsGroup>
           <PrayerNotificationsSection />
+          <SettingsGroup testID="settings-suggest-entry">
+            <SuggestEntryRow />
+          </SettingsGroup>
           <AboutSection onPressSources={() => router.push('/settings/sources' as Href)} />
         </ScrollView>
       </ContentColumn>

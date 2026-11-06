@@ -202,7 +202,8 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default', 'packs'],
+            // SyncQuranFoundationJob runs on 'sync', BuildContentPackJob on 'packs' (ADR 0065).
+            'queue' => ['sync', 'packs', 'default'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -218,7 +219,8 @@ return [
     'environments' => [
         'production' => [
             'supervisor-1' => [
-                'maxProcesses' => 10,
+                // Shares the container's memory with FrankenPHP (ADR 0065).
+                'maxProcesses' => 2,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
