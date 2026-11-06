@@ -219,7 +219,7 @@ describe('HomeScreen', () => {
     const view = await renderUi(<HomeScreen />);
     await fireEvent.press(view.getByTestId('home-continue-reading'));
 
-    expect(router.push).toHaveBeenCalledWith('/read/2:255');
+    expect(router.push).toHaveBeenCalledWith('/read/2:255?place=1');
   });
 
   it("names the continue row's surah by its transliteration in English, and in Arabic in Arabic", async () => {

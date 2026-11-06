@@ -99,6 +99,45 @@ describe('ReaderToolbar', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
+  it('shows the full screen button in Mushaf, after the ayah actions, and calls back on press', async () => {
+    const onEnterFullscreen = jest.fn();
+    const view = await renderUi(<ReaderToolbar {...props} onEnterFullscreen={onEnterFullscreen} />);
+
+    const button = view.getByTestId('reader-fullscreen');
+    expect(button.props.accessibilityLabel).toBe('ملء الشاشة');
+    expect(button.props.accessibilityRole).toBe('button');
+    await fireEvent.press(button);
+    expect(onEnterFullscreen).toHaveBeenCalledTimes(1);
+
+    const labels = view.getAllByLabelText(/^(خيارات الآية|ملء الشاشة|اللوحة الجانبية|إعدادات القراءة)$/);
+    expect(labels.map((node) => node.props.accessibilityLabel)).toEqual(['إعدادات القراءة', 'خيارات الآية', 'ملء الشاشة']);
+  });
+
+  it('draws the full screen button before the side panel toggle on expanded Mushaf', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} onEnterFullscreen={() => undefined} windowClass="expanded" />);
+
+    const labels = view.getAllByLabelText(/^(خيارات الآية|ملء الشاشة|اللوحة الجانبية)$/).map((node) => node.props.accessibilityLabel);
+    expect(labels).toEqual(['خيارات الآية', 'ملء الشاشة', 'اللوحة الجانبية']);
+  });
+
+  it('draws no full screen button in Reading mode', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} mode="reading" windowClass="medium" onEnterFullscreen={() => undefined} />);
+
+    expect(view.queryByTestId('reader-fullscreen')).toBeNull();
+  });
+
+  it('draws no full screen button without the prop', async () => {
+    const view = await renderUi(<ReaderToolbar {...props} />);
+
+    expect(view.queryByTestId('reader-fullscreen')).toBeNull();
+  });
+
+  it.each(locales)('labels the full screen button in %s', async (locale) => {
+    const view = await renderUi(<ReaderToolbar {...props} onEnterFullscreen={() => undefined} />, { locale });
+
+    expect(view.getByLabelText(locale === 'ar' ? 'ملء الشاشة' : 'Full screen')).toBeOnTheScreen();
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/reader/components/ReaderToolbar.tsx')).toEqual([]);
   });

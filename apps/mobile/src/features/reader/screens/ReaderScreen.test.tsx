@@ -10,6 +10,8 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 import { themes } from '@/core/theme';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { pageForVerse } from '@/features/reader/anchor/page';
+import type { Bookmark } from '@/features/library/data';
+import * as repository from '@/features/library/data/repository';
 import { verseKeyToId } from '../data/verses';
 import * as readingAnchor from '../anchor/reading-anchor';
 import { resetReaderSelection, useReaderSelection } from '../selection';
@@ -23,18 +25,13 @@ import { ReaderScreen } from './ReaderScreen';
 // Only the tests that need content open it, so the others keep rendering the reader shell alone.
 let mockExecutor: SqlExecutor | undefined;
 
-// The user database is not open under Jest, so the screen's highlight hook is stubbed here.
+// The user database is not open under Jest, so the screen's highlight and bookmark hooks are stubbed here.
+let mockBookmarks: Bookmark[] = [];
 let mockHighlights: ReadonlyMap<number, 'gold' | 'green' | 'blue' | 'rose'> = new Map();
 jest.mock('@/features/library/data/hooks', () => ({
   ...jest.requireActual<typeof import('@/features/library/data/hooks')>('@/features/library/data/hooks'),
   useHighlightsByVerseId: () => mockHighlights,
-}));
-
-// A tap highlights the ayah through the repository; the user database is not open under Jest.
-const mockEnsureHighlight = jest.fn();
-jest.mock('@/features/library/data/repository', () => ({
-  ...jest.requireActual<typeof import('@/features/library/data/repository')>('@/features/library/data/repository'),
-  ensureHighlight: (...args: unknown[]) => mockEnsureHighlight(...args),
+  useBookmarks: () => ({ data: mockBookmarks }),
 }));
 
 jest.mock('@/features/khatma/data', () => ({
@@ -50,7 +47,10 @@ let mockMushafProps:
       anchorVerseKey: string;
       contentBottomInset?: number;
       highlightsByVerseId?: ReadonlyMap<number, string>;
+      onOpenAyahActions?: (verseKey: string) => void;
       onSelectVerseKey?: (verseKey: string) => void;
+      placeVerseKey?: string | null;
+      topInset?: number;
       onVisiblePage?: (page: number, verseKey: string) => void;
       onUserScrollStart?: () => void;
     }
@@ -70,6 +70,7 @@ let mockReadingProps:
   | {
       anchorVerseKey?: string;
       contentBottomInset?: number;
+      onOpenAyahActions?: (verseKey: string) => void;
       onOpenTafsir?: (verseKey: string) => void;
       onSelectVerseKey?: (verseKey: string) => void;
       onUserScrollStart?: () => void;
@@ -136,7 +137,8 @@ describe('ReaderScreen', () => {
     resetReaderSelection();
     jest.mocked(useSegments).mockReturnValue([] as unknown as ReturnType<typeof useSegments>);
     mockRouterPush.mockClear();
-    mockEnsureHighlight.mockClear();
+    mockBookmarks = [];
+    mockHighlights = new Map();
     mockExecutor = undefined;
   });
 
@@ -575,7 +577,7 @@ describe('ReaderScreen', () => {
     );
 
     it.each(['mushaf', 'reading'] as const)(
-      'in %s, tapping an ayah opens selection and adds the default highlight, without an anchor write or player change',
+      'in %s, tapping an ayah opens selection without a highlight write, anchor write or player change',
       async (mode) => {
         mockExecutor = (await openReaderTestContent()).executor;
         useReaderSettings.getState().setMode(mode);
@@ -592,7 +594,6 @@ describe('ReaderScreen', () => {
         });
 
         expect(useReaderSelection.getState().verseKey).toBe('2:250');
-        expect(mockEnsureHighlight).toHaveBeenCalledWith(verseKeyToId(mockExecutor!, '2:250'), 'gold');
         expect(writeAnchor).not.toHaveBeenCalled();
         expect(usePlayerStore.getState()).toMatchObject({
           chapterId: playerBefore.chapterId,
@@ -604,22 +605,6 @@ describe('ReaderScreen', () => {
       },
     );
 
-    it('in reading, a tap still opens selection when the highlight write throws', async () => {
-      mockExecutor = (await openReaderTestContent()).executor;
-      useReaderSettings.getState().setMode('reading');
-      await renderUi(reader('2:255'));
-      mockEnsureHighlight.mockImplementationOnce(() => {
-        throw new Error('write failed');
-      });
-
-      await act(async () => {
-        mockReadingProps?.onSelectVerseKey?.('2:250');
-      });
-
-      expect(mockEnsureHighlight).toHaveBeenCalledTimes(1);
-      expect(useReaderSelection.getState().verseKey).toBe('2:250');
-    });
-
     it('in mushaf, the toolbar ayah actions button opens selection without adding a highlight', async () => {
       mockExecutor = (await openReaderTestContent()).executor;
       useReaderSettings.getState().setMode('mushaf');
@@ -630,7 +615,6 @@ describe('ReaderScreen', () => {
       });
 
       expect(useReaderSelection.getState().verseKey).not.toBeNull();
-      expect(mockEnsureHighlight).not.toHaveBeenCalled();
     });
 
     it.each(['mushaf', 'reading'] as const)(
@@ -674,8 +658,226 @@ describe('ReaderScreen', () => {
       await fireEvent.press(view.getByTestId('focus-stage-marker'));
 
       expect(useReaderSelection.getState().verseKey).toBe('1:1');
-      expect(mockEnsureHighlight).toHaveBeenCalledWith(verseKeyToId(mockExecutor!, '1:1'), 'gold');
       expect(writeAnchor).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ADR 0072 a tap only opens options', () => {
+    let setHighlight: jest.SpiedFunction<typeof repository.setHighlight>;
+
+    beforeEach(() => {
+      setHighlight = jest.spyOn(repository, 'setHighlight').mockImplementation(() => null);
+    });
+
+    afterEach(() => {
+      setHighlight.mockRestore();
+    });
+
+    it.each([
+      ['mushaf', 'onSelectVerseKey'],
+      ['mushaf', 'onOpenAyahActions'],
+      ['reading', 'onSelectVerseKey'],
+      ['reading', 'onOpenAyahActions'],
+    ] as const)('in %s, %s sets the selection and never writes a highlight', async (mode, handler) => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode(mode);
+      await renderUi(reader('2:255'));
+
+      await act(async () => {
+        if (mode === 'mushaf') {
+          mockMushafProps?.[handler]?.('2:250');
+        } else {
+          mockReadingProps?.[handler]?.('2:250');
+        }
+      });
+
+      expect(useReaderSelection.getState().verseKey).toBe('2:250');
+      expect(setHighlight).not.toHaveBeenCalled();
+    });
+
+    it('in focus, pressing the ayah marker sets the selection and never writes a highlight', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('focus');
+      const view = await renderUi(reader('1:1'));
+
+      await fireEvent.press(view.getByTestId('focus-stage-marker'));
+
+      expect(useReaderSelection.getState().verseKey).toBe('1:1');
+      expect(setHighlight).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ADR 0070 saved wash and place wash', () => {
+    it('in mushaf, a verse bookmark is washed green in the highlights the list draws', async () => {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode('mushaf');
+      const savedId = verseKeyToId(executor, '2:250')!;
+      mockBookmarks = [{ id: 'bookmark-1', verseId: savedId, kind: 'verse', page: null, clientUpdatedAt: 1 }];
+
+      await renderUi(reader('2:255'));
+
+      expect(mockMushafProps?.highlightsByVerseId?.get(savedId)).toBe('green');
+    });
+
+    it('in mushaf, a saved ayah with its own colour is drawn green', async () => {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode('mushaf');
+      const savedId = verseKeyToId(executor, '2:250')!;
+      mockBookmarks = [{ id: 'bookmark-1', verseId: savedId, kind: 'verse', page: null, clientUpdatedAt: 1 }];
+      mockHighlights = new Map([[savedId, 'rose']]);
+
+      await renderUi(reader('2:255'));
+
+      expect(mockMushafProps?.highlightsByVerseId?.get(savedId)).toBe('green');
+    });
+
+    it('in mushaf, a page bookmark adds no wash', async () => {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      useReaderSettings.getState().setMode('mushaf');
+      const verseId = verseKeyToId(executor, '2:250')!;
+      mockBookmarks = [{ id: 'bookmark-1', verseId, kind: 'page', page: 50, clientUpdatedAt: 1 }];
+
+      await renderUi(reader('2:255'));
+
+      expect(mockMushafProps?.highlightsByVerseId?.has(verseId)).toBe(false);
+    });
+
+    it('in mushaf, a continue-reading open washes the opened ayah as the place', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+
+      await renderUi(
+        <SafeAreaProvider initialMetrics={metrics}>
+          <ReaderScreen markPlace verseKey="2:255" />
+        </SafeAreaProvider>,
+      );
+
+      expect(mockMushafProps?.placeVerseKey).toBe('2:255');
+    });
+
+    it('in mushaf, the place wash ends at the first drag', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(
+        <SafeAreaProvider initialMetrics={metrics}>
+          <ReaderScreen markPlace verseKey="2:255" />
+        </SafeAreaProvider>,
+      );
+
+      await act(async () => {
+        mockMushafProps?.onUserScrollStart?.();
+      });
+
+      expect(mockMushafProps?.placeVerseKey).toBeNull();
+    });
+
+    it('in mushaf, the place wash ends at a mode change', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(
+        <SafeAreaProvider initialMetrics={metrics}>
+          <ReaderScreen markPlace verseKey="2:255" />
+        </SafeAreaProvider>,
+      );
+
+      await act(async () => {
+        useReaderSettings.getState().setMode('reading');
+      });
+      await act(async () => {
+        useReaderSettings.getState().setMode('mushaf');
+      });
+
+      expect(mockMushafProps?.placeVerseKey).toBeNull();
+    });
+
+    it('without markPlace, the Mushaf list gets no place wash', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+
+      await renderUi(reader('2:255'));
+
+      expect(mockMushafProps?.placeVerseKey ?? null).toBeNull();
+    });
+  });
+
+  describe('ADR 0071 Mushaf full screen', () => {
+    beforeEach(() => {
+      Dimensions.set({
+        screen: { fontScale: 1, height: 844, scale: 1, width: 390 },
+        window: { fontScale: 1, height: 844, scale: 1, width: 390 },
+      });
+      usePlayerStore.getState().reset();
+    });
+
+    afterEach(() => {
+      usePlayerStore.getState().reset();
+    });
+
+    async function playingMushaf() {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      const store = usePlayerStore.getState();
+      store.beginLoad({ reciterId: 30, chapterId: 2, positionMs: 0, durationMs: 48_000 });
+      store.markPlaying();
+    }
+
+    it('hides the toolbar and the player bar, shows the exit, and lifts the Mushaf list to the top and bottom', async () => {
+      await playingMushaf();
+      const view = await renderUi(reader('2:255'));
+      expect(mockMushafProps?.contentBottomInset).toBe(108);
+      const statusBefore = usePlayerStore.getState().status;
+
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'ملء الشاشة' }));
+      });
+
+      expect(view.queryByTestId('reader-toolbar')).toBeNull();
+      expect(view.queryByTestId('mini-player-reader')).toBeNull();
+      expect(view.getByRole('button', { name: 'الخروج من ملء الشاشة' })).toBeOnTheScreen();
+      expect(mockMushafProps?.topInset).toBe(0);
+      expect(mockMushafProps?.contentBottomInset).toBe(0);
+      expect(usePlayerStore.getState().status).toBe(statusBefore);
+    });
+
+    it('exit restores the toolbar, the player bar and the list insets', async () => {
+      await playingMushaf();
+      const view = await renderUi(reader('2:255'));
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'ملء الشاشة' }));
+      });
+
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'الخروج من ملء الشاشة' }));
+      });
+
+      expect(view.getByTestId('reader-toolbar')).toBeOnTheScreen();
+      expect(view.getByTestId('mini-player-reader')).toBeOnTheScreen();
+      expect(mockMushafProps?.topInset).toBeGreaterThan(0);
+      expect(mockMushafProps?.contentBottomInset).toBe(108);
+    });
+
+    it('closes an open side panel when full screen starts', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      useReaderSelection.getState().setPanelOpen(true);
+      const view = await renderUi(reader('2:255'));
+
+      await act(async () => {
+        fireEvent.press(view.getByRole('button', { name: 'ملء الشاشة' }));
+      });
+
+      expect(useReaderSelection.getState().panelOpen).toBe(false);
+    });
+
+    it('draws no full screen button in Reading mode', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('reading');
+      const view = await renderUi(reader('2:255'));
+
+      expect(view.queryByRole('button', { name: 'ملء الشاشة' })).toBeNull();
     });
   });
 

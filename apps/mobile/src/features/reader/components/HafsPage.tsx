@@ -21,6 +21,7 @@ export function HafsPage({
   recitedWord = null,
   highlightsByVerseId,
   khatmaMarkerVerseId = null,
+  placeVerseKey = null,
   onSelectVerseKey,
   onOpenAyahActions,
   focusVerseKey = null,
@@ -39,6 +40,8 @@ export function HafsPage({
   recitedWord?: number | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   khatmaMarkerVerseId?: number | null;
+  /** The reader's place, washed in Mushaf until the first drag (ADR 0070). */
+  placeVerseKey?: string | null;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
   /** The ayah the reader opened at, when it is on this page. */
@@ -88,6 +91,7 @@ export function HafsPage({
         onFocusRunLayout={measureFocus}
         onOpenActions={onOpenAyahActions}
         onPressVerse={onSelectVerseKey}
+        placeVerseKey={placeVerseKey}
         recitedVerseKey={recitedVerseKey}
         recitedWord={recitedWord}
         testID={testID ? `${testID}-page-${page}` : undefined}

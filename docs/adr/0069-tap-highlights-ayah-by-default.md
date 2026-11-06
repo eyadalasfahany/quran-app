@@ -1,6 +1,6 @@
 # 0069 — Tapping an ayah highlights it by default
 
-Date: 2026-11-06 · Status: accepted (developer, 6 Nov 2026) · Amends spec §12 (Tapping an ayah) and ADR 0037 (answer 3 and the "no highlight" part of decision 4). The rest of ADR 0037 is unchanged.
+Date: 2026-11-06 · Status: superseded by ADR 0072 (developer, 6 Nov 2026) · Amends spec §12 (Tapping an ayah) and ADR 0037 (answer 3 and the "no highlight" part of decision 4). The rest of ADR 0037 is unchanged.
 
 ## Context
 

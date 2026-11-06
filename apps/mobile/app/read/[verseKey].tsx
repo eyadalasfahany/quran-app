@@ -10,6 +10,6 @@ function routeVerseKey(value: string | string[] | undefined): string {
 }
 
 export default function ReadRoute() {
-  const params = useLocalSearchParams<{ verseKey: string }>();
-  return <ReaderScreen verseKey={routeVerseKey(params.verseKey)} />;
+  const params = useLocalSearchParams<{ verseKey: string; place?: string }>();
+  return <ReaderScreen markPlace={params.place === '1'} verseKey={routeVerseKey(params.verseKey)} />;
 }

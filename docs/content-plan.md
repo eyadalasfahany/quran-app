@@ -57,6 +57,7 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Tafsir rendering | `@native-html/render` | 1.0.4 | Renders sanitized tafsir HTML. Replaces `react-native-render-html`, which has had no release since January 2022 |
 | Vector ornaments | `react-native-svg` | 15.16.0 | The surah cartouche's pointed frame and the Continue reading rosette, drawn in with Reanimated animated props; the version SDK 58 pins |
 | Clipboard | `expo-clipboard` | \~58.0.4 | Copies an ayah, exactly as stored, with its marker and reference from the ayah actions |
+| Navigation bar | `expo-navigation-bar` | \~58.0.4 | Hides Android's navigation bar in Mushaf full screen (ADR 0071) |
 | Fonts | `expo-font` | \~58.0.10 | Bundles Amiri, Scheherazade New and IBM Plex Sans Arabic |
 | Errors | `@sentry/react-native` | \~8.28.0 | Crash and error reporting, at the version SDK 58 pins |
 | Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0 | Over-the-air JavaScript fixes and store builds |

@@ -34,6 +34,8 @@ export type HafsMushafListProps = {
   followKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   khatmaMarkerVerseId?: number | null;
+  /** The reader's place, washed in Mushaf until the first drag or a mode change (ADR 0070). */
+  placeVerseKey?: string | null;
   onVisiblePage?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
   onOpenAyahActions?: (verseKey: string) => void;
@@ -53,6 +55,7 @@ export function HafsMushafList({
   followKey = null,
   highlightsByVerseId,
   khatmaMarkerVerseId = null,
+  placeVerseKey = null,
   onVisiblePage,
   onSelectVerseKey,
   onOpenAyahActions,
@@ -220,10 +223,11 @@ export function HafsMushafList({
       followKey,
       highlightsByVerseId,
       khatmaMarkerVerseId,
+      placeVerseKey,
       recitedVerseKey,
       recitedWord,
     }),
-    [focusVerseKey, followKey, highlightsByVerseId, khatmaMarkerVerseId, recitedVerseKey, recitedWord],
+    [focusVerseKey, followKey, highlightsByVerseId, khatmaMarkerVerseId, placeVerseKey, recitedVerseKey, recitedWord],
   );
 
   const renderPage = useCallback(
@@ -248,6 +252,7 @@ export function HafsMushafList({
         onOpenAyahActions={onOpenAyahActions}
         onSelectVerseKey={onSelectVerseKey}
         page={page}
+        placeVerseKey={placeVerseKey}
         recitedVerseKey={recitedVerseKey}
         recitedWord={recitedWord}
         testID={testID}
@@ -265,6 +270,7 @@ export function HafsMushafList({
       khatmaMarkerVerseId,
       onOpenAyahActions,
       onSelectVerseKey,
+      placeVerseKey,
       recitedVerseKey,
       recitedWord,
       scrollToFocus,

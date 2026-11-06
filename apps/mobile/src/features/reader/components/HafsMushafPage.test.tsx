@@ -250,6 +250,45 @@ describe('HafsMushafPage', () => {
     );
   });
 
+  it('washes the place ayah with the active colour and no other ayah (ADR 0070)', async () => {
+    const view = await renderUi(
+      fatihaPage({
+        placeVerseKey: '1:2',
+        verses: [
+          verse({ id: 1, verseKey: '1:1', verseNumber: 1 }),
+          verse({ id: 2, textUthmani: 'ٱلْحَمْدُ لِلَّهِ', verseKey: '1:2', verseNumber: 2 }),
+        ],
+      }),
+    );
+
+    expect(flatStyle(view.getByTestId('page-ayah-1:2').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightActive,
+    );
+    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBeUndefined();
+  });
+
+  it('an ayah with its own highlight colour keeps that colour over the place wash', async () => {
+    const view = await renderUi(
+      fatihaPage({ highlightsByVerseId: new Map([[1, 'rose']]), placeVerseKey: '1:1' }),
+    );
+
+    expect(flatStyle(view.getByTestId('page-ayah-1:1').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightRose,
+    );
+  });
+
+  it('the place wash leaves the ayah accessibility state and its marker unchanged', async () => {
+    const verses = [verse({ id: 1, verseKey: '1:1', verseNumber: 1 })];
+    const without = await renderUi(fatihaPage({ verses }));
+    const withoutText = without.getByTestId('page-ayah-1:1').props.accessibilityState;
+    const withoutMarker = without.getByTestId('page-marker-1:1').props.accessibilityState;
+
+    const view = await renderUi(fatihaPage({ placeVerseKey: '1:1', verses }));
+
+    expect(view.getByTestId('page-ayah-1:1').props.accessibilityState).toEqual(withoutText);
+    expect(view.getByTestId('page-marker-1:1').props.accessibilityState).toEqual(withoutMarker);
+  });
+
   it('uses theme tokens only', () => {
     expect(featureComponentLiterals('features/reader/components/HafsMushafPage.tsx')).toEqual([]);
   });

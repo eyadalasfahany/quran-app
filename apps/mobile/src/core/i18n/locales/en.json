@@ -228,7 +228,9 @@
       "togglePanel": "Side panel",
       "tools": "Reading tools",
       "place": "Page {{page}} · Juz {{juz}}",
-      "readingSubtitle": "Reading mode"
+      "readingSubtitle": "Reading mode",
+      "enterFullscreen": "Full screen",
+      "exitFullscreen": "Exit full screen"
     },
     "panel": {
       "label": "Side panel",

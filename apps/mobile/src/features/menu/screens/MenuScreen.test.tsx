@@ -155,7 +155,7 @@ describe('MenuScreen', () => {
 
       expect(screen.getByTestId('menu-card-continue-reading-preview')).toHaveTextContent('الآية ٢٥٥ · صفحة ٤٢');
       await fireEvent.press(screen.getByTestId('menu-card-continue-reading'));
-      expect(router.push).toHaveBeenLastCalledWith('/read/2:255');
+      expect(router.push).toHaveBeenLastCalledWith('/read/2:255?place=1');
     });
 
     it('hides «تابع القراءة» on a fresh install, with nothing saved', async () => {

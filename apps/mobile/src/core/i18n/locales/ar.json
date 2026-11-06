@@ -228,7 +228,9 @@
       "togglePanel": "اللوحة الجانبية",
       "tools": "أدوات القراءة",
       "place": "صفحة {{page}} · الجزء {{juz}}",
-      "readingSubtitle": "وضع القراءة"
+      "readingSubtitle": "وضع القراءة",
+      "enterFullscreen": "ملء الشاشة",
+      "exitFullscreen": "الخروج من ملء الشاشة"
     },
     "panel": {
       "label": "اللوحة الجانبية",

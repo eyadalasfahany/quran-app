@@ -171,7 +171,7 @@ describe('useForceUpdate', () => {
 
       mockSegments.value = TABS;
       await act(async () => {
-        rerender();
+        rerender(undefined);
       });
       await act(async () => {
         onChange?.('active');

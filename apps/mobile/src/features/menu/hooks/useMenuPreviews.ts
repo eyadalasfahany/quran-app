@@ -78,7 +78,7 @@ export function useMenuPreviews(): MenuPreviews {
           ayah: formatNumber(verse.verseNumber, locale),
           page: formatNumber(verse.page, locale),
         }),
-        href: `/read/${verse.verseKey}` as Href,
+        href: `/read/${verse.verseKey}?place=1` as Href,
       };
     } catch {
       return null;

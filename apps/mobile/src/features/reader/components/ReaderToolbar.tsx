@@ -15,6 +15,7 @@ const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 const SETTINGS = { ios: 'slider.horizontal.3', android: 'tune' } as const;
 const ACTIONS = { ios: 'ellipsis.circle', android: 'more_horiz' } as const;
 const PANEL = { ios: 'sidebar.right', android: 'view_sidebar' } as const;
+const ENTER_FULLSCREEN = { ios: 'arrow.up.left.and.arrow.down.right', android: 'fullscreen' } as const;
 
 // Focus has its own chrome (FocusChrome), so this bar draws only Reading and Mushaf.
 // Reading on a phone draws Back, the title with «وضع القراءة» and one settings circle (its frame in
@@ -34,6 +35,7 @@ export function ReaderToolbar({
   onBookmarkPage,
   onOpenSettings,
   onTogglePanel,
+  onEnterFullscreen,
   testID = 'reader-toolbar',
 }: {
   mode: ReaderToolbarMode;
@@ -47,6 +49,8 @@ export function ReaderToolbar({
   onBookmarkPage: () => void;
   onOpenSettings: () => void;
   onTogglePanel: () => void;
+  /** Mushaf only: the full screen button (ADR 0071). Omitted, no button is drawn. */
+  onEnterFullscreen?: () => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -77,6 +81,17 @@ export function ReaderToolbar({
       testID="reader-panel-toggle"
     />
   ) : null;
+
+  // Mushaf only: the full screen button sits in the tools pill, before the side panel toggle (ADR 0071).
+  const fullscreenButton =
+    mode === 'mushaf' && onEnterFullscreen !== undefined ? (
+      <IconButton
+        icon={ENTER_FULLSCREEN}
+        label={t('reader.toolbar.enterFullscreen')}
+        onPress={onEnterFullscreen}
+        testID="reader-fullscreen"
+      />
+    ) : null;
 
   return (
     <View
@@ -112,6 +127,7 @@ export function ReaderToolbar({
           <IconButton icon={BOOKMARK} label={t('reader.toolbar.bookmarkPage')} onPress={onBookmarkPage} pressed={bookmarked} />
           {settings}
           <IconButton icon={ACTIONS} label={t('reader.toolbar.ayahActions')} onPress={onAyahActions} />
+          {fullscreenButton}
           {panelToggle}
         </ToolbarPill>
       )}

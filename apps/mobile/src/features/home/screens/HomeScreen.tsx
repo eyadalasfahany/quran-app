@@ -158,7 +158,7 @@ export function HomeScreen() {
           <ContinueReadingCard
             ayah={continueReading.verse.verseNumber}
             juz={continueReading.verse.juz}
-            onPress={() => router.push(`/read/${continueReading.verse.verseKey}` as Href)}
+            onPress={() => router.push(`/read/${continueReading.verse.verseKey}?place=1` as Href)}
             page={continueReading.verse.page}
             surahName={chapterDisplayName(continueReading.chapter, locale)}
           />

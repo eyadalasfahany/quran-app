@@ -1,4 +1,5 @@
 import { act, fireEvent } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
 import type { KhatmaPlan } from '@/features/khatma/data';
 
@@ -118,6 +119,15 @@ describe('KhatmaScreen saveMode', () => {
     expect(view.getByTestId('khatma-progress-grid')).toBeOnTheScreen();
     expect(view.getByTestId('khatma-end-plan')).toBeOnTheScreen();
     expect(view.getByTestId('khatma-primary-cta')).toHaveTextContent('تابع القراءة');
+  });
+
+  it('opens the continue ayah marked as the place (ADR 0070)', async () => {
+    mockUseActivePlan.mockReturnValue({ data: [activePlan] });
+    const view = await renderUi(<KhatmaScreen />);
+
+    await fireEvent.press(view.getByTestId('khatma-primary-cta'));
+
+    expect(router.push).toHaveBeenCalledWith('/read/2:50?place=1');
   });
 
   it('names the last-read surah by its transliteration in English', async () => {

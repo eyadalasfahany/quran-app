@@ -174,7 +174,7 @@ export function KhatmaScreen({ testID = 'screen-khatma' }: { testID?: string }) 
       return;
     }
     if (continueVerseKey !== null) {
-      router.push(`/read/${continueVerseKey}` as Href);
+      router.push(`/read/${continueVerseKey}?place=1` as Href);
     }
   };
 

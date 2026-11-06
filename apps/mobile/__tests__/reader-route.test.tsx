@@ -105,6 +105,18 @@ describe("reader route", () => {
     expect(view.getSegments()).toEqual(["(main)", "(home)"]);
   });
 
+  it("opens read/2:255?place=1 at that ayah, the continue-reading form", async () => {
+    await renderRouter("./app");
+
+    await act(async () => {
+      router.push("/read/2:255?place=1");
+    });
+
+    expect(screen.getByTestId("reader-screen").props.accessibilityLabel).toBe(
+      "2:255",
+    );
+  });
+
   it("opens the settings sheet and the ayah sheet from the reader", async () => {
     await renderRouter("./app");
 

@@ -106,7 +106,7 @@ export function IndexScreen({ testID = 'screen-index' }: { testID?: string }) {
     <ContinueReadingRow
       ayah={continueReading.ayah}
       chapter={continueReading.chapter}
-      onPress={() => openVerse(continueReading.verseKey)}
+      onPress={() => router.push(`/read/${continueReading.verseKey}?place=1` as Href)}
     />
   ) : null;
 

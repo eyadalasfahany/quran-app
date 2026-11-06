@@ -42,6 +42,7 @@ export function HafsMushafPage({
   recitedWord = null,
   highlightsByVerseId,
   khatmaMarkerVerseId = null,
+  placeVerseKey = null,
   onPressVerse,
   onOpenActions,
   focusVerseKey = null,
@@ -60,6 +61,8 @@ export function HafsMushafPage({
   /** The reader's saved highlight colour per verse id. */
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   khatmaMarkerVerseId?: number | null;
+  /** The reader's place, washed until the first drag or a mode change (ADR 0070). Not stored. */
+  placeVerseKey?: string | null;
   onPressVerse?: (verseKey: string) => void;
   onOpenActions?: (verseKey: string) => void;
   /** The ayah the reader opened at. The surah paragraph holding it reports its view once laid out. */
@@ -123,7 +126,9 @@ export function HafsMushafPage({
                 const khatmaMarked = khatmaMarkerVerseId === verse.id && !marked;
                 // The reader's highlight colour fills the ayah; the selection wash shows only without one (ADR 0012).
                 const highlight = highlightsByVerseId?.get(verse.id) ?? null;
-                const background = highlightFill(colors, highlight) ?? (marked ? colors.highlightActive : undefined);
+                const background =
+                  highlightFill(colors, highlight) ??
+                  (marked || verse.verseKey === placeVerseKey ? colors.highlightActive : undefined);
                 const ayahLabel = t('ui.ayahNumber', { number: formatNumber(verse.verseNumber, locale) });
                 const accessibilityLabel =
                   highlight === null

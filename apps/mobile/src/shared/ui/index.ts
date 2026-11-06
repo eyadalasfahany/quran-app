@@ -58,6 +58,6 @@ export {
 export { TaybahSplashLogo } from './TaybahSplashLogo';
 export { TitlePill } from './TitlePill';
 export { ToggleRow } from './ToggleRow';
-export { ToolbarPill } from './ToolbarPill';
+export { TOOLBAR_PILL_INSET, ToolbarPill } from './ToolbarPill';
 export { textToneColor, UiText, type TextTone } from './UiText';
 export { useContrastColors, useIncreaseContrast } from './useContrastColors';

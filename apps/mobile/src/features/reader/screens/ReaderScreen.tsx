@@ -17,7 +17,7 @@ import { playVerse } from '@/features/audio/play-verse';
 import { KhatmaMarkedPill } from '@/features/khatma/components/KhatmaMarkedPill';
 import { useActivePlan, useKhatmaMarkerVerseId } from '@/features/khatma/data';
 import { subscribeKhatmaMarkedNotice } from '@/features/khatma/marked-notice';
-import { ensureHighlight, listBookmarks, toggleBookmark, useHighlightsByVerseId, type HighlightColor } from '@/features/library/data';
+import { listBookmarks, toggleBookmark, useBookmarks, useHighlightsByVerseId } from '@/features/library/data';
 import { Screen } from '@/shared/ui';
 
 import { resolveInitialAnchor, writePlayedPlace, writeReadingAnchor } from '../anchor/reading-anchor';
@@ -26,20 +26,23 @@ import { useReadingAnchor } from '../anchor/useReadingAnchor';
 import { AdaptiveReaderLayout } from '../components/AdaptiveReaderLayout';
 import { FocusChrome } from '../components/FocusChrome';
 import { FocusReader } from '../components/FocusReader';
+import { MushafFullscreenExit } from '../components/MushafFullscreenExit';
 import { ReaderModeFade } from '../components/ReaderModeFade';
 import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToolbar';
 import { ResumePill } from '../components/ResumePill';
 import { SidePanel } from '../components/SidePanel';
 import { chapterDisplayName, getChapter, listChapters } from '../data/chapters';
-import { getVerseByKey, idToVerseKey, verseKeyToId } from '../data/verses';
+import { getVerseByKey, idToVerseKey } from '../data/verses';
 import { HafsMushafList } from '../HafsMushafList';
 import { panelPlacementFor, panelStripWidth } from '../layout';
 import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
 import type { ReaderMode } from '../anchor/reading-anchor';
+import { useMushafFullscreen } from '../useMushafFullscreen';
 import { useReaderMiniFootprint } from '../useReaderMiniFootprint';
 import { useReaderSelection } from '../selection';
 import { useScrollHaptics } from '../scroll-haptics';
+import { withSavedWash } from '../saved-wash';
 import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 import { useDiscoverState } from '@/features/discover/hooks/useDiscover';
 import type { DiscoverId } from '@/features/discover/registry';
@@ -86,10 +89,7 @@ function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): Re
 // The Discover tour steps whose tip shows on the Quran screen (ADR 0053).
 const READER_TOUR_STEPS = ['reader.mushaf', 'reader.reading', 'reader.focus', 'reader.tafsir'] as const satisfies readonly DiscoverId[];
 
-// A tapped ayah gets this colour when it has none (ADR 0069).
-const TAP_HIGHLIGHT_COLOR: HighlightColor = 'gold';
-
-export function ReaderScreen({ verseKey }: { verseKey: string }) {
+export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string; markPlace?: boolean }) {
   const { t, i18n } = useTranslation();
   const insets = useContext(SafeAreaInsetsContext) ?? { bottom: 0, left: 0, right: 0, top: 0 };
   const segments = useSegments();
@@ -110,11 +110,16 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   });
   const anchor = useReadingAnchor();
   const mode = useReaderSettings((state) => state.mode);
+  // Mushaf full screen hides the toolbar, the player bar and the status bar; audio keeps playing (ADR 0071).
+  const { fullscreen, enter, exit } = useMushafFullscreen(mode);
   const fontScale = useReaderSettings((state) => state.fontScale);
   const tafsirId = useReaderSettings((state) => state.tafsirId);
   const selection = useReaderSelection();
   const inlineTafsirOpen = useReaderSelection((state) => state.inlineTafsirOpen);
   const highlights = useHighlightsByVerseId();
+  const bookmarks = useBookmarks();
+  const savedVerseId = bookmarks.data.find((bookmark) => bookmark.kind === 'verse')?.verseId ?? null;
+  const drawnHighlights = useMemo(() => withSavedWash(highlights, savedVerseId), [highlights, savedVerseId]);
   const activeKhatmaPlan = useActivePlan().data[0] ?? null;
   const khatmaMarkerVerseId = useKhatmaMarkerVerseId(activeKhatmaPlan?.id);
   const [showMarkedPill, setShowMarkedPill] = useState(false);
@@ -129,6 +134,10 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   const showMiniBar = mini.shown;
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
+  // Opened from a continue-reading control, Mushaf marks the saved ayah until the first drag or a mode change (ADR 0070).
+  const [placeVerseKey, setPlaceVerseKey] = useState<string | null>(() =>
+    markPlace ? resolveInitialAnchor({ verseKey }).verseKey : null,
+  );
   const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
   // A pin (Focus's current ayah, or the resume pill's target) belongs to the mode that set it. Another
   // mode opens at the saved place, which already holds that ayah.
@@ -136,6 +145,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
   if (pinMode !== mode) {
     setPinMode(mode);
     setPinnedVerseKey(null);
+    setPlaceVerseKey(null);
   }
 
   const executor = useMemo(() => {
@@ -241,24 +251,17 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
     router.replace('/(main)/(home)' as Href);
   };
 
+  // Full screen closes an open side panel, so the page has the whole window.
+  const enterFullscreen = () => {
+    useReaderSelection.getState().setPanelOpen(false);
+    enter();
+  };
+
   const selectVerse = (key: string) => {
     useReaderSelection.getState().selectVerse(key, placement);
     if (placement === 'sheet') {
       router.push(`/ayah/${key}` as Href);
     }
-  };
-
-  // A tap on an ayah highlights it when it has no colour, before its options open (ADR 0069).
-  const openTappedAyah = (key: string) => {
-    try {
-      const verseId = executor === null ? undefined : verseKeyToId(executor, key);
-      if (verseId !== undefined) {
-        ensureHighlight(verseId, TAP_HIGHLIGHT_COLOR);
-      }
-    } catch {
-      // A failed write never blocks the tap.
-    }
-    selectVerse(key);
   };
 
   const onReadingTafsir = (key: string) => {
@@ -339,7 +342,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           </SidePanel>
         }
         panelOpen={selection.panelOpen}
-        miniPlayer={showMiniBar ? <MiniPlayer variant="reader" /> : undefined}
+        miniPlayer={showMiniBar && !fullscreen ? <MiniPlayer variant="reader" /> : undefined}
         resume={
           showMarkedPill || showResume || readerTourStep ? (
             <View style={{ alignItems: 'center', alignSelf: 'stretch', gap: theme.space[2] }}>
@@ -364,12 +367,15 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
           ) : null
         }
         toolbar={
-          focus ? (
+          fullscreen ? (
+            <MushafFullscreenExit onExit={exit} />
+          ) : focus ? (
             <FocusChrome onExit={() => setMode(focusReturn.current)} position={focusPosition} />
           ) : (
           <ReaderToolbar
               bookmarked={bookmarked}
               mode={mode}
+              onEnterFullscreen={enterFullscreen}
               windowClass={windowClass}
               onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? viewKey)}
               onBack={leaveReader}
@@ -400,14 +406,18 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
               <HafsMushafList
                 anchorVerseKey={viewKey}
                 bottomInset={0}
-                contentBottomInset={mini.footprint}
+                contentBottomInset={fullscreen ? 0 : mini.footprint}
                 fontScale={fontScale}
                 followKey={followKey}
-                highlightsByVerseId={highlights}
+                highlightsByVerseId={drawnHighlights}
                 khatmaMarkerVerseId={khatmaMarkerVerseId}
-                onOpenAyahActions={openTappedAyah}
-                onSelectVerseKey={openTappedAyah}
-                onUserScrollStart={follow.onUserScrollStart}
+                onOpenAyahActions={selectVerse}
+                onSelectVerseKey={selectVerse}
+                placeVerseKey={placeVerseKey}
+                onUserScrollStart={() => {
+                  setPlaceVerseKey(null);
+                  follow.onUserScrollStart();
+                }}
                 onVisiblePage={(page, key) => {
                   // The page holding the ayah the reader is at keeps that ayah, not the page's first one, so a
                   // surah opened halfway down a page stays the saved place and the title.
@@ -422,7 +432,7 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 recitedVerseKey={recitedVerseKey}
                 recitedWord={activeWord}
                 testID="reader-mushaf"
-                topInset={topInset}
+                topInset={fullscreen ? 0 : topInset}
               />
             ) : null}
             {executor !== null && mode === 'focus' ? (
@@ -430,8 +440,8 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 activeWord={activeWord}
                 following={followKey !== null}
                 fontScale={fontScale}
-                highlightsByVerseId={highlights}
-                onOpenActions={openTappedAyah}
+                highlightsByVerseId={drawnHighlights}
+                onOpenActions={selectVerse}
                 onPlay={audioAvailable ? playFocused : undefined}
                 onStep={stepRecitation}
                 onUserMove={follow.onUserScrollStart}
@@ -456,17 +466,17 @@ export function ReaderScreen({ verseKey }: { verseKey: string }) {
                 contentBottomInset={mini.footprint}
                 fontScale={fontScale}
                 followKey={followKey}
-                highlightsByVerseId={highlights}
+                highlightsByVerseId={drawnHighlights}
                 khatmaMarkerVerseId={khatmaMarkerVerseId}
                 horizontalGutter={gutter}
                 mode="reading"
-                onOpenAyahActions={openTappedAyah}
+                onOpenAyahActions={selectVerse}
                 onOpenTafsir={onReadingTafsir}
                 showInlineTafsir={inlineTafsirOpen}
                 tafsirId={tafsirId}
                 onPause={pause}
                 onPlayVerseKey={(key) => void playVerse(key)}
-                onSelectVerseKey={openTappedAyah}
+                onSelectVerseKey={selectVerse}
                 onUserScrollStart={follow.onUserScrollStart}
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);

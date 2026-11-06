@@ -187,13 +187,6 @@ export function setHighlight(verseId: number, color: HighlightColor | null, stor
   });
 }
 
-/** Saves `color` only when the ayah has no live highlight, so an existing colour is kept (ADR 0069). */
-export function ensureHighlight(verseId: number, color: HighlightColor, store?: UserStore): void {
-  if (getHighlights([verseId], store).length === 0) {
-    setHighlight(verseId, color, store);
-  }
-}
-
 export function saveNote(verseId: number, body: string, store?: UserStore): Note {
   const trimmed = prepareNoteBody(body);
   const { db, now, uuid } = resolveStore(store);

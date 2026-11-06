@@ -79,6 +79,15 @@ describe('HafsPage', () => {
     expect(view.getByRole('button', { name: 'الآية ١' }).props.accessibilityState).toMatchObject({ selected: false });
   });
 
+  it('passes the place wash through to its ayahs (ADR 0070)', async () => {
+    const view = await renderUi(hafsPage(1, { placeVerseKey: '1:2' }));
+
+    expect(flatStyle(view.getByTestId('hafs-page-1-ayah-1:2').props.style).backgroundColor).toBe(
+      themes.light.colors.highlightActive,
+    );
+    expect(flatStyle(view.getByTestId('hafs-page-1-ayah-1:1').props.style).backgroundColor).toBeUndefined();
+  });
+
   it.each(locales)('formats the page break in %s', async (locale) => {
     const view = await renderUi(hafsPage(2), { locale });
 

@@ -87,6 +87,14 @@ describe('IndexScreen', () => {
     expect(router.push).toHaveBeenCalledWith('/read/1:1');
   });
 
+  it('opens the saved place from the continue row, marked as the place (ADR 0070)', async () => {
+    const view = await renderUi(<IndexScreen />);
+
+    await fireEvent.press(view.getByTestId('index-continue-reading'));
+
+    expect(router.push).toHaveBeenCalledWith(expect.stringMatching(/^\/read\/\d+:\d+\?place=1$/));
+  });
+
   it('offers to continue from the reading anchor', async () => {
     const view = await renderUi(<IndexScreen />);
 
