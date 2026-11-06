@@ -351,3 +351,17 @@ def test_ci_plan_script_refusal_exits_non_zero(tmp_path, tanzil, monkeypatch, ca
                         "--manifest", str(tmp_path / "none.json")])
     assert code == 1
     assert "held" in capsys.readouterr().err
+
+
+def test_parse_done_artifacts_ignores_blanks_and_refuses_other_names():
+    assert ci.parse_done_artifacts("align-12-2, align-12-3,,") == {"align-12-2", "align-12-3"}
+    assert ci.parse_done_artifacts("") == set()
+    with pytest.raises(CiError, match="unexpected artifact"):
+        ci.parse_done_artifacts("align-12-2,secrets")
+
+
+def test_drop_done_chunks_keeps_only_the_missing_ones():
+    entries = [{"moshaf": 12, "chunk": c, "surahs": [c]} for c in (1, 2, 3)]
+    entries.append({"moshaf": 62, "chunk": 1, "surahs": [1]})
+    kept = ci.drop_done_chunks(entries, {"align-12-2", "align-12-3", "align-62-1"})
+    assert kept == [{"moshaf": 12, "chunk": 1, "surahs": [1]}]

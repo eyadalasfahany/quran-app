@@ -26,6 +26,8 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--moshafs", required=True)
     p.add_argument("--chunks", default="6")
+    p.add_argument("--done", default="",
+                   help="resume: comma-separated align-MOSHAF-CHUNK artifacts an earlier run uploaded")
     p.add_argument("--manifest", type=Path, default=MANIFEST)
     p.add_argument("--php", type=Path, default=PHP)
     p.add_argument("--tanzil", type=Path, default=TANZIL)
@@ -36,6 +38,12 @@ def main(argv=None):
         manifest = ci.load_json_or_none(args.manifest)
         result = ci.plan(ci.Api(), moshafs, chunks, manifest=manifest,
                          php_source=args.php.read_text(encoding="utf-8"), tanzil_path=args.tanzil)
+        done = ci.parse_done_artifacts(args.done)
+        if done:
+            kept = ci.drop_done_chunks(result["chunks"], done)
+            print(f"resume: {len(result['chunks']) - len(kept)} chunk(s) reused, {len(kept)} to align",
+                  file=sys.stderr)
+            result["chunks"] = kept
     except ci.CiError as err:
         print(f"::error::{err}", file=sys.stderr)
         return 1

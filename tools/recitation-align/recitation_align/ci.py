@@ -204,6 +204,24 @@ def plan(api: Api, moshaf_ids: list[int], chunks: int, *, manifest: dict[str, An
     return {"chunks": entries, "moshafs": moshaf_ids}
 
 
+def parse_done_artifacts(text: str) -> set[str]:
+    """Names of hand-off artifacts an earlier run already uploaded (comma-separated, blanks ignored)."""
+    names = {part.strip() for part in text.split(",") if part.strip()}
+    bad = sorted(n for n in names if not re.fullmatch(r"align-[0-9]+-[0-9]+", n))
+    if bad:
+        raise CiError(f"unexpected artifact names from the resumed run: {', '.join(bad)}")
+    return names
+
+
+def drop_done_chunks(entries: list[dict[str, Any]], done: set[str]) -> list[dict[str, Any]]:
+    """Resume: keep only the chunks whose hand-off the earlier run never uploaded.
+
+    The chunk numbers match only when the earlier run used the same chunk count; a mismatch makes a
+    surah appear twice or not at all, and the manifest merge refuses both.
+    """
+    return [e for e in entries if f"align-{e['moshaf']}-{e['chunk']}" not in done]
+
+
 def fetch_published(api: Api, moshaf_id: int, surahs: list[int], out_dir: Path) -> list[Path]:
     """Save `ayat_timing?surah=N&read=R` as `raw-N.json` (the name pilot_published reads, not padded)."""
     meta = resolve_moshaf(api, moshaf_id)

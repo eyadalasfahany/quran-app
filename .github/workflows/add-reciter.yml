@@ -15,6 +15,11 @@ on:
         required: false
         default: "6"
         type: string
+      resume_run_id:
+        description: "Resume: an earlier run's id. Only the chunks it never uploaded are aligned (same moshaf ids and chunks; its artifacts last 7 days)"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -28,6 +33,9 @@ jobs:
     name: Plan (refuse or chunk)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
     outputs:
       chunks: ${{ steps.plan.outputs.chunks }}
       moshafs: ${{ steps.plan.outputs.moshafs }}
@@ -47,12 +55,32 @@ jobs:
         env:
           MOSHAF_IDS: ${{ inputs.moshaf_ids }}
           CHUNKS: ${{ inputs.chunks }}
-        run: python3 tools/recitation-align/scripts/ci_plan.py --moshafs "$MOSHAF_IDS" --chunks "$CHUNKS"
+          RESUME_RUN_ID: ${{ inputs.resume_run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          DONE=""
+          if [ -n "$RESUME_RUN_ID" ]; then
+            if ! [[ "$RESUME_RUN_ID" =~ ^[0-9]+$ ]]; then
+              echo "::error::resume_run_id must be a run id"
+              exit 1
+            fi
+            WORKFLOW=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RESUME_RUN_ID" --jq '.path')
+            if [[ "$WORKFLOW" != .github/workflows/add-reciter.yml* ]]; then
+              echo "::error::run $RESUME_RUN_ID is not an add-reciter run"
+              exit 1
+            fi
+            DONE=$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$RESUME_RUN_ID/artifacts" \
+              --jq '.artifacts[] | select(.expired | not) | .name' | paste -sd, -)
+            echo "resuming run $RESUME_RUN_ID; reusing: ${DONE:-nothing}"
+          fi
+          python3 tools/recitation-align/scripts/ci_plan.py --moshafs "$MOSHAF_IDS" --chunks "$CHUNKS" --done "$DONE"
 
   align:
     name: Align ${{ matrix.moshaf }} chunk ${{ matrix.chunk }}
     needs: plan
-    if: ${{ needs.plan.result == 'success' }}
+    # A resume whose earlier run already uploaded every chunk aligns nothing and goes straight to finalize.
+    if: ${{ needs.plan.result == 'success' && needs.plan.outputs.chunks != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 300
     # Only this job reads the R2 keys, from the `production` environment (branch-restricted to main).
@@ -174,6 +202,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -195,6 +224,16 @@ jobs:
           version: "0.13.7"
           enable-cache: true
           cache-dependency-glob: tools/recitation-align/uv.lock
+
+      - name: Download hand-offs reused from the resumed run
+        if: ${{ inputs.resume_run_id != '' }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: align-${{ matrix.moshaf }}-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/handoff
+          run-id: ${{ inputs.resume_run_id }}
+          github-token: ${{ github.token }}
 
       - name: Download hand-offs
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
