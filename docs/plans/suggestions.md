@@ -1,5 +1,7 @@
 # Plan: website suggestions form (ADR 0066)
 
+Status: **done.** Built, deployed and live on the website and the API (developer, 6 Nov 2026). The app card ships in the next store build.
+
 Work on `main`. Three steps. Each one gets its own Haiku brief and review.
 
 ## Step 1: API (`apps/api`)

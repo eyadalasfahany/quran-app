@@ -45,6 +45,8 @@ Spec §15 & ADR 0027. **Exit criterion:**
 | **5** | **Phase 4 exit check** | iPhone 17 simulator verification: language switch, offline persistence, Khatma tracking, notifications, visual review against frames. | Steps 1–4 |
 | **6** | **My Mushaf profile icon & sidebar order** | مصحفي gets a person-circle symbol (SF `person.crop.circle` / Material `account_circle`) and moves to first in the expanded sidebar; tab order unchanged (center arrives with the 5th tab in Phase 5). Sidebar frames updated in the same change. | Steps 1–2 |
 
+**Exit check: passed** (developer, 6 Nov 2026). Phase 4 is done.
+
 Step 6 lands before the phase exit is signed off; step 5's visual review is re-run against the updated `#ExpandedHome` / `#ExpandedHomeDark` frames.
 
 ---

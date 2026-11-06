@@ -46,6 +46,8 @@ Spec §15 (new phase row lands with step 1), ADR 0027 (local-only), ADR 0010 (fr
 | **5** | **Qibla compass** | `/salah/qibla` per `#Qibla`: fixed dial with a live-moving Kaaba marker (ADR 0049), bearing degrees, distance caption, calibration prompt, Reduce-Motion static variant. Hook tests with mocked heading. | Step 2 |
 | **6** | **Phase 5 exit check** | iPhone 17 simulator + iPad: airplane-mode pass (times, qibla, notifications), ar/en both directions, visual review against all new/updated frames, notification delivery on a real device build. | Steps 3–5 |
 
+**Exit check: passed** (developer, 6 Nov 2026), including prayer-notification delivery on a device. Phase 5 is done.
+
 ---
 
 ## Step briefs in `docs/plans/phase-5/`

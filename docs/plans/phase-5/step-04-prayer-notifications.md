@@ -29,7 +29,7 @@ A local notification fires at each enabled prayer time — offline, no account, 
 
 ## Implementation notes (Phase 5, step 4)
 
-Status: code and tests done; device delivery (the exit check) still open, because it needs a real build and the developer's device.
+Status: done. Delivery was confirmed on a device in the Phase 5 exit check (developer, 6 Nov 2026).
 
 **Shape of the change**
 - `salah/data/notifications.ts`: `prayerFireDates` (pure; 8 future times per enabled prayer, from `timesFor`), `syncPrayerNotifications` (cancel every pending notification whose route is `/salah`, then schedule), the serialised `resyncPrayerNotifications` and `resyncPrayerNotificationsIfNeeded`, and `setPrayerBell` (permission on turn-on, then one re-plan).
