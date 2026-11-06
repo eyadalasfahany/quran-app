@@ -10,6 +10,7 @@ use App\Domains\Duas\Models\DuaHadith;
 use App\Domains\Duas\Models\DuaItem;
 use App\Domains\Duas\Models\DuaQuranSpan;
 use App\Domains\Duas\Services\DuasImporter;
+use App\Support\Storage\SourceCache;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -114,7 +115,7 @@ it('fails when the snapshot pin does not match', function (): void {
     duasImportMap();
 
     $date = '2099-01-01';
-    $directory = storage_path('app/duas/hadeethenc/'.$date);
+    $directory = SourceCache::path('duas/hadeethenc/'.$date);
     File::ensureDirectoryExists($directory);
     File::put($directory.'/manifest.json', json_encode(['sha256' => str_repeat('a', 64), 'files' => []], JSON_THROW_ON_ERROR));
 
@@ -167,7 +168,7 @@ it('blocks a second concurrent import', function (): void {
 
 function duasImportPinnedSnapshot(string $date): string
 {
-    $directory = storage_path('app/duas/hadeethenc/'.$date);
+    $directory = SourceCache::path('duas/hadeethenc/'.$date);
     File::ensureDirectoryExists($directory);
 
     $hadithJson = json_encode([
@@ -225,7 +226,7 @@ it('imports prophetic rows when the duas snapshot pin is set', function (): void
         ->and(DuaGroup::query()->count())->toBe(1)
         ->and(DuaItem::query()->where('kind', 'hadith')->value('group_id'))->toBe(1);
 
-    File::deleteDirectory(storage_path('app/duas/hadeethenc/'.$date));
+    File::deleteDirectory(SourceCache::path('duas/hadeethenc/'.$date));
 });
 
 it('writes no production item for a candidate quran span but keeps reviewed and prophetic rows', function (): void {
@@ -247,5 +248,5 @@ it('writes no production item for a candidate quran span but keeps reviewed and 
         ->and(DuaItem::query()->where('kind', 'hadith')->count())->toBe(1)
         ->and(DuaHadith::query()->count())->toBe(1);
 
-    File::deleteDirectory(storage_path('app/duas/hadeethenc/'.$date));
+    File::deleteDirectory(SourceCache::path('duas/hadeethenc/'.$date));
 });

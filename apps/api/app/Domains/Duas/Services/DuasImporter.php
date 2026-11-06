@@ -16,6 +16,7 @@ use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Domains\Duas\Data\DuasImportPlan;
 use App\Domains\Duas\Repositories\Contracts\DuasImportRepository;
+use App\Support\Storage\SourceCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -255,7 +256,7 @@ final class DuasImporter
             return null;
         }
 
-        $directory = storage_path('app/duas/hadeethenc/'.$date);
+        $directory = SourceCache::path('duas/hadeethenc/'.$date);
 
         return is_dir($directory) ? $directory : null;
     }

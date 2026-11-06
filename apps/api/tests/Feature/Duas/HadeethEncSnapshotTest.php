@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domains\Azkar\Exceptions\SnapshotException;
 use App\Domains\Azkar\Sources\HadeethEncSnapshot;
 use App\Domains\Azkar\Sources\HadeethEncSnapshotter;
+use App\Support\Storage\SourceCache;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\File;
@@ -25,8 +26,8 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    File::deleteDirectory(storage_path('app/duas/hadeethenc/'.DUAS_HES_DATE));
-    File::deleteDirectory(storage_path('app/azkar/hadeethenc/2001-02-03'));
+    File::deleteDirectory(SourceCache::path('duas/hadeethenc/'.DUAS_HES_DATE));
+    File::deleteDirectory(SourceCache::path('azkar/hadeethenc/2001-02-03'));
 });
 
 /**
@@ -72,7 +73,7 @@ function duasHesFakeSource(): void
     });
 }
 
-it('writes the Duas snapshot under storage/app/duas with a manifest that lists every file hash', function (): void {
+it('writes the Duas snapshot under the source cache at duas/ with a manifest that lists every file hash', function (): void {
     duasHesFakeSource();
 
     $result = app(HadeethEncSnapshotter::class)->take(DUAS_HES_DATE, 'duas.hadeethenc', 'duas/hadeethenc');

@@ -7,6 +7,7 @@ namespace App\Domains\Azkar\Console;
 use App\Domains\Azkar\Exceptions\CatalogueUnreadableException;
 use App\Domains\Azkar\Services\SourceComparer;
 use App\Domains\Azkar\Sources\AzkarSourceRegistry;
+use App\Support\Storage\SourceCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -27,9 +28,9 @@ final class CompareSourcesCommand extends Command
     public function handle(AzkarSourceRegistry $sources, SourceComparer $comparer): int
     {
         $openDuaPath = $this->option('opendua');
-        $openDuaPath = is_string($openDuaPath) && $openDuaPath !== '' ? $openDuaPath : storage_path('app/azkar/catalogue-'.config('azkar.opendua.version').'.json');
+        $openDuaPath = is_string($openDuaPath) && $openDuaPath !== '' ? $openDuaPath : SourceCache::path('azkar/catalogue-'.config('azkar.opendua.version').'.json');
         $hisnPath = $this->option('hisnmuslim');
-        $hisnPath = is_string($hisnPath) && $hisnPath !== '' ? $hisnPath : storage_path('app/azkar/hisnmuslim/'.(string) config('azkar.hisnmuslim.snapshot_date'));
+        $hisnPath = is_string($hisnPath) && $hisnPath !== '' ? $hisnPath : SourceCache::path('azkar/hisnmuslim/'.(string) config('azkar.hisnmuslim.snapshot_date'));
 
         try {
             $openDua = $sources->for('opendua')->parse($openDuaPath);

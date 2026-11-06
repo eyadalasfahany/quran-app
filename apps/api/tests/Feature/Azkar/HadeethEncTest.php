@@ -9,6 +9,7 @@ use App\Domains\Azkar\Services\HadeethEncNotes;
 use App\Domains\Azkar\Sources\HadeethEncSnapshot;
 use App\Domains\Azkar\Sources\HadeethEncSnapshotter;
 use App\Support\QuranText\SearchTextNormalizer;
+use App\Support\Storage\SourceCache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\File;
@@ -31,7 +32,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    File::deleteDirectory(storage_path('app/azkar/hadeethenc/'.HES_DATE));
+    File::deleteDirectory(SourceCache::path('azkar/hadeethenc/'.HES_DATE));
     app()->detectEnvironment(fn (): string => 'testing');
 });
 
@@ -182,10 +183,10 @@ it('leaves the notes out with a reason, and the import still runs, when the snap
 });
 
 it('the snapshot the importer reads must match its pin', function (): void {
-    File::ensureDirectoryExists(storage_path('app/azkar/hadeethenc/'.HES_DATE));
-    File::put(storage_path('app/azkar/hadeethenc/'.HES_DATE.'/manifest.json'), hesJson(['files' => [], 'sha256' => str_repeat('1', 64)]));
+    File::ensureDirectoryExists(SourceCache::path('azkar/hadeethenc/'.HES_DATE));
+    File::put(SourceCache::path('azkar/hadeethenc/'.HES_DATE.'/manifest.json'), hesJson(['files' => [], 'sha256' => str_repeat('1', 64)]));
     config(['azkar.hadeethenc.snapshot_sha256' => str_repeat('0', 64)]);
 
-    expect(fn () => app(HadeethEncSnapshot::class)->load(storage_path('app/azkar/hadeethenc/'.HES_DATE)))
+    expect(fn () => app(HadeethEncSnapshot::class)->load(SourceCache::path('azkar/hadeethenc/'.HES_DATE)))
         ->toThrow(SnapshotException::class, 'pinned SHA-256');
 });

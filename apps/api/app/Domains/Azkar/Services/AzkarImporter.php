@@ -22,6 +22,7 @@ use App\Domains\Content\Jobs\BuildContentPackJob;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Content\Repositories\Contracts\ResourceRepository;
+use App\Support\Storage\SourceCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
@@ -290,8 +291,8 @@ final class AzkarImporter
     private function defaultPath(string $code): string
     {
         return $code === 'hisnmuslim'
-            ? storage_path('app/azkar/hisnmuslim/'.(string) config('azkar.hisnmuslim.snapshot_date'))
-            : storage_path('app/azkar/catalogue-'.(string) config('azkar.opendua.version').'.json');
+            ? SourceCache::path('azkar/hisnmuslim/'.(string) config('azkar.hisnmuslim.snapshot_date'))
+            : SourceCache::path('azkar/catalogue-'.(string) config('azkar.opendua.version').'.json');
     }
 
     private function failedToParse(CarbonImmutable $now, string $path, CatalogueUnreadableException $exception, bool $dryRun, SourceProfile $profile): ImportReport
@@ -420,7 +421,7 @@ final class AzkarImporter
             return $skip('Not the primary source; HadeethEnc notes attach to primary entries only.');
         }
 
-        $directory = storage_path('app/azkar/hadeethenc/'.(string) config('azkar.hadeethenc.snapshot_date'));
+        $directory = SourceCache::path('azkar/hadeethenc/'.(string) config('azkar.hadeethenc.snapshot_date'));
 
         // ADR 0042: snapshots are git-ignored, so a server built from git has none. No snapshot means no notes, not a failed import.
         if (! is_file($directory.DIRECTORY_SEPARATOR.'manifest.json')) {

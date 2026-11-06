@@ -13,6 +13,7 @@ use App\Domains\Azkar\Services\QuranSpanMatcher;
 use App\Domains\Azkar\Sources\AzkarSourceRegistry;
 use App\Domains\Azkar\Validation\CatalogueValidator;
 use App\Support\QuranText\SearchTextNormalizer;
+use App\Support\Storage\SourceCache;
 use Illuminate\Console\Command;
 use InvalidArgumentException;
 
@@ -68,7 +69,7 @@ final class QuranMapCandidatesCommand extends Command
             $argument = $this->argument('path');
             $location = is_string($argument) && $argument !== ''
                 ? $argument
-                : storage_path('app/azkar/'.$profile->code.'/'.(string) config('azkar.hisnmuslim.snapshot_date'));
+                : SourceCache::path('azkar/'.$profile->code.'/'.(string) config('azkar.hisnmuslim.snapshot_date'));
         }
 
         if ($location === null) {

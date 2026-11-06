@@ -3,35 +3,38 @@
 declare(strict_types=1);
 
 /*
-| Plan step 14 §1-§2 and the 2 Nov 2026 review (B1, M1, M3): what runs where. The pre-deploy container has no volume and
-| runs migrations only; the web container start mounts the volume and runs the audio check, the pinned snapshots, the
-| Azkar import (DB rows, --defer-pack), the pack build, then serves. entrypoint.sh never runs the Azkar work or migrates.
+| Plan step 14 §1-§2, the 2 Nov 2026 review (B1, M1, M3) and ADR 0067: what runs where. There is no Railway config file
+| and no pre-deploy step: the image starts itself (ENTRYPOINT entrypoint.sh, CMD start-web.sh). The start mounts the
+| volume, migrates, then runs the audio check, the pinned snapshots, the imports (DB rows, --defer-pack) and the pack
+| build, then hands over to supervisord (ADR 0065). entrypoint.sh never runs the Azkar work or migrates.
 | These tests read the deployment files; they do not test Railway itself.
 */
-
-/**
- * @return array<string, mixed>
- */
-function deployRailwayConfig(): array
-{
-    return json_decode((string) file_get_contents(base_path('railway.json')), true, 512, JSON_THROW_ON_ERROR);
-}
 
 function deployFile(string $relative): string
 {
     return (string) file_get_contents(base_path($relative));
 }
 
-it('the web service starts through start-web.sh, after entrypoint.sh', function (): void {
-    $start = deployRailwayConfig()['deploy']['startCommand'];
+it('the image starts itself through entrypoint.sh and start-web.sh, with no Railway config file (ADR 0067)', function (): void {
+    $dockerfile = deployFile('Dockerfile');
 
-    expect($start)->toBe('/usr/local/bin/entrypoint.sh /usr/local/bin/start-web.sh')
-        ->and(deployRailwayConfig()['deploy']['healthcheckTimeout'])->toBe(120);
+    expect($dockerfile)->toContain('ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]')
+        ->and($dockerfile)->toContain('CMD ["/usr/local/bin/start-web.sh"]')
+        ->and(file_exists(base_path('railway.json')))->toBeFalse()
+        ->and(file_exists(base_path('docker/Dockerfile')))->toBeFalse();
 });
 
-it('the pre-deploy command is the release script, and it runs migrations and the store version lookup only', function (): void {
-    expect(deployRailwayConfig()['deploy']['preDeployCommand'])->toBe(['/usr/local/bin/entrypoint.sh', '/usr/local/bin/release.sh']);
+it('the start script migrates first and stops on a failed migration (ADR 0067)', function (): void {
+    $start = deployFile('docker/start-web.sh');
 
+    $migrate = strpos($start, 'php artisan migrate --force');
+
+    expect($migrate)->toBeInt()
+        ->and($migrate)->toBeLessThan((int) strpos($start, 'php artisan azkar:audio-verify'))
+        ->and($start)->toContain('ERROR: migrations failed; not starting');
+});
+
+it('the release script, kept for a manual run, runs migrations and the store version lookup only', function (): void {
     $release = deployFile('docker/release.sh');
 
     expect($release)->toContain('php artisan migrate --force')
@@ -41,14 +44,14 @@ it('the pre-deploy command is the release script, and it runs migrations and the
         ->and($release)->not->toContain('--if-unlocked');
 });
 
-it('the start script fetches the snapshots, imports DB rows after the audio check and before the pack build, then serves', function (): void {
+it('the start script fetches the snapshots, imports DB rows after the audio check and before the pack build, then hands over to supervisord', function (): void {
     $start = deployFile('docker/start-web.sh');
 
     $audio = strpos($start, 'php artisan azkar:audio-verify');
     $snapshot = strpos($start, 'snapshot_pinned hisnmuslim');
     $import = strpos($start, 'php artisan azkar:import --download --defer-pack');
     $packs = strpos($start, 'php artisan content:ensure-packs');
-    $serve = strpos($start, 'exec frankenphp run --config /etc/caddy/Caddyfile');
+    $serve = strpos($start, 'exec supervisord -c /etc/supervisor/taybah.conf');
 
     expect($audio)->toBeInt()
         ->and($snapshot)->toBeGreaterThan($audio)
@@ -81,7 +84,7 @@ it('entrypoint.sh never runs the Azkar work or migrations, so Horizon and the sc
 });
 
 it('the image copies and marks executable the start script', function (): void {
-    $dockerfile = deployFile('docker/Dockerfile');
+    $dockerfile = deployFile('Dockerfile');
 
     expect($dockerfile)->toContain('COPY docker/start-web.sh /usr/local/bin/start-web.sh')
         ->and($dockerfile)->toContain('chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/release.sh /usr/local/bin/start-web.sh');
@@ -89,7 +92,7 @@ it('the image copies and marks executable the start script', function (): void {
 
 it('the storage folders the start script writes to include the ones the volume covers under /app/storage/app/private', function (): void {
     expect(deployFile('docker/start-web.sh'))
-        ->toContain('mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/private/azkar-audio');
+        ->toContain('mkdir -p storage/app/private/packs storage/app/tmp storage/app/azkar/reports storage/app/private/azkar-audio storage/app/private/sources');
 });
 
 it('keeps the Azkar audio on the volume, which is mounted at /app/storage/app/private', function (): void {

@@ -9,6 +9,7 @@ use App\Domains\Azkar\OpenDua\CatalogueDownloader;
 use App\Domains\Azkar\Services\AzkarImporter;
 use App\Domains\Azkar\Sources\AzkarSourceRegistry;
 use App\Domains\Content\Packs\PackBuildException;
+use App\Support\Storage\SourceCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -66,7 +67,7 @@ final class ImportAzkarCommand extends Command
 
         if ($profile->code === 'hisnmuslim' && $this->argument('path') === null && ! $this->option('download')) {
             // The pinned snapshot directory for the configured date (ADR 0031 §12).
-            $path = storage_path('app/azkar/hisnmuslim/'.(string) config('azkar.hisnmuslim.snapshot_date'));
+            $path = SourceCache::path('azkar/hisnmuslim/'.(string) config('azkar.hisnmuslim.snapshot_date'));
         } elseif ($profile->code === 'hisnmuslim' && $this->option('download')) {
             $this->error('--download is for the OpenDua catalogue only. Take a hisnmuslim snapshot with azkar:snapshot.');
 

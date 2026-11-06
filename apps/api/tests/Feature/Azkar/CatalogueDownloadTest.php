@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domains\Azkar\Exceptions\CatalogueDownloadException;
 use App\Domains\Azkar\OpenDua\CatalogueDownloader;
+use App\Support\Storage\SourceCache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -16,8 +17,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     // A real verified download must survive these tests: move it aside and restore it afterwards.
-    if (File::exists(storage_path('app/azkar/catalogue-0.0.4.json'))) {
-        File::move(storage_path('app/azkar/catalogue-0.0.4.json'), storage_path('app/azkar/catalogue-0.0.4.json.test-backup'));
+    if (File::exists(SourceCache::path('azkar/catalogue-0.0.4.json'))) {
+        File::move(SourceCache::path('azkar/catalogue-0.0.4.json'), SourceCache::path('azkar/catalogue-0.0.4.json.test-backup'));
     }
 
     config(['azkar.opendua.retry_delay_ms' => 0]);
@@ -26,10 +27,10 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    File::delete(storage_path('app/azkar/catalogue-0.0.4.json'));
+    File::delete(SourceCache::path('azkar/catalogue-0.0.4.json'));
 
-    if (File::exists(storage_path('app/azkar/catalogue-0.0.4.json.test-backup'))) {
-        File::move(storage_path('app/azkar/catalogue-0.0.4.json.test-backup'), storage_path('app/azkar/catalogue-0.0.4.json'));
+    if (File::exists(SourceCache::path('azkar/catalogue-0.0.4.json.test-backup'))) {
+        File::move(SourceCache::path('azkar/catalogue-0.0.4.json.test-backup'), SourceCache::path('azkar/catalogue-0.0.4.json'));
     }
 });
 
@@ -57,7 +58,7 @@ it('refuses bytes that do not match the pin and writes nothing', function (): vo
     expect(fn () => app(CatalogueDownloader::class)->download())
         ->toThrow(CatalogueDownloadException::class, 'does not match the pinned SHA-256');
 
-    expect(File::exists(storage_path('app/azkar/catalogue-0.0.4.json')))->toBeFalse();
+    expect(File::exists(SourceCache::path('azkar/catalogue-0.0.4.json')))->toBeFalse();
 });
 
 it('fails with the status when the server does not answer successfully', function (): void {

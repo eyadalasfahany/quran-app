@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Azkar\Sources\HisnMuslimSnapshotter;
+use App\Support\Storage\SourceCache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
@@ -28,7 +29,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    File::deleteDirectory(storage_path('app/azkar/hisnmuslim/'.PINNED_DATE));
+    File::deleteDirectory(SourceCache::path('azkar/hisnmuslim/'.PINNED_DATE));
 });
 
 it('keeps the snapshot when its manifest SHA-256 is the configured pin', function (): void {
@@ -39,13 +40,13 @@ it('keeps the snapshot when its manifest SHA-256 is the configured pin', functio
         ->expectsOutputToContain('Snapshot already pinned')
         ->assertExitCode(0);
 
-    expect(File::exists(storage_path('app/azkar/hisnmuslim/'.PINNED_DATE.'/manifest.json')))->toBeTrue();
+    expect(File::exists(SourceCache::path('azkar/hisnmuslim/'.PINNED_DATE.'/manifest.json')))->toBeTrue();
 });
 
 it('fetches and verifies when the pinned folder is missing on disk', function (): void {
     $sha = app(HisnMuslimSnapshotter::class)->take(PINNED_DATE)['manifest_sha256'];
     config(['azkar.hisnmuslim.snapshot_sha256' => $sha]);
-    File::deleteDirectory(storage_path('app/azkar/hisnmuslim/'.PINNED_DATE));
+    File::deleteDirectory(SourceCache::path('azkar/hisnmuslim/'.PINNED_DATE));
 
     $this->artisan('azkar:snapshot', ['source' => 'hisnmuslim', '--pinned' => true])
         ->expectsOutputToContain('Snapshot verified against the pin')
@@ -72,7 +73,7 @@ it('deletes a snapshot that does not match its pin, and fails', function (): voi
         ->expectsOutputToContain('does not match its pin')
         ->assertExitCode(1);
 
-    expect(File::exists(storage_path('app/azkar/hisnmuslim/'.PINNED_DATE)))->toBeFalse();
+    expect(File::exists(SourceCache::path('azkar/hisnmuslim/'.PINNED_DATE)))->toBeFalse();
 });
 
 it('writes nothing and fails when the source does not answer', function (): void {
@@ -80,7 +81,7 @@ it('writes nothing and fails when the source does not answer', function (): void
 
     $this->artisan('azkar:snapshot', ['source' => 'hisnmuslim', '--pinned' => true])->assertExitCode(1);
 
-    expect(File::exists(storage_path('app/azkar/hisnmuslim/'.PINNED_DATE)))->toBeFalse();
+    expect(File::exists(SourceCache::path('azkar/hisnmuslim/'.PINNED_DATE)))->toBeFalse();
 });
 
 it('refuses --pinned together with --date', function (): void {

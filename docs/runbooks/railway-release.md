@@ -1,6 +1,6 @@
 # Railway release (API)
 
-ADR 0022 (Railway), ADR 0040 (volume, audio and packs on the API service), ADR 0065 (Horizon and the scheduler in the API container), ADR 0067 (no Railway config file), ADR 0045 (features enabled by default: no environment switches). The API service builds `apps/api/Dockerfile` and starts with the image's own `CMD`. There is no `railway.json`: the service settings live in the dashboard (see «Service settings»).
+ADR 0022 (Railway), ADR 0040 (volume, audio and packs on the API service), ADR 0065 (Horizon and the scheduler in the API container), ADR 0067 (no Railway config file), ADR 0068 (pinned source cache on the volume), ADR 0045 (features enabled by default: no environment switches). The API service builds `apps/api/Dockerfile` and starts with the image's own `CMD`. There is no `railway.json`: the service settings live in the dashboard (see «Service settings»).
 
 ## Where each piece of work runs
 
@@ -59,7 +59,7 @@ Railway stops reading `railway.json` on 1 Dec 2026, so the repo has none. These 
 | Build: Watch Paths | `/apps/api/**` only | The image builds from `apps/api` alone, so nothing outside it needs a deploy. |
 | Deploy: custom start command | **empty** | A value here overrides the image's `CMD` and skips `start-web.sh`. |
 | Deploy: pre-deploy command | **empty** | Migrations run at start (ADR 0067). |
-| Deploy: health check path / timeout | `/up` / 600 s | A start that never serves fails the deploy. The start-time tasks run before the web server (about 3 min 20 s on 6 Nov 2026: the two pinned snapshots alone take about 2.5 min), so 120 s killed the 6 Nov deploy mid-start. |
+| Deploy: health check path / timeout | `/up` / 600 s | A start that never serves fails the deploy. The start-time tasks run before the web server (about 3 min 20 s on 6 Nov 2026: the two pinned snapshots alone take about 2.5 min), so 120 s killed the 6 Nov deploy mid-start. Since ADR 0068 the snapshots stay on the volume, so later starts take seconds; 600 s still covers the first start after a pin change or a large pack rebuild. |
 | Deploy: restart policy | Always | supervisord exits 0 when the web server goes FATAL (ADR 0065); On Failure would not restart it. |
 | Deploy: draining seconds | 130 | Longer than Horizon's 120 s `stopwaitsecs`, so a running job finishes before SIGKILL. |
 | Config-as-code file path | **empty** | No config file (ADR 0067). |
@@ -95,7 +95,7 @@ There are **no** Azkar, HadeethEnc, hisnmuslim, audio or Dorar enable switches. 
 
 The volume holds the packs and the 238 Azkar recordings (about 55 MiB). Choose a size that also holds the Quran packs; check the manifest sizes after the first sync.
 
-1. **Attach the volume** to the API service: mount path **`/app/storage/app/private`**, one replica. (Production has used this path since setup; the packs and the Azkar audio live under it. Anything else under `storage/app` is rebuilt or re-fetched on start.)
+1. **Attach the volume** to the API service: mount path **`/app/storage/app/private`**, one replica. (Production has used this path since setup; the packs, the Azkar audio and the pinned source cache (`sources/`, ADR 0068) live under it. Anything else under `storage/app`, such as the import reports, is rebuilt or re-fetched on start.)
 2. **Set the variables** above (`APP_URL`, `QUEUE_CONNECTION=sync`, `APP_ENV=production`). Confirm replicas = 1. Do not create Horizon or Scheduler services (they run in the API container, ADR 0065).
 3. **Deploy.** Expect a short outage. Verify persistence: `railway ssh`, then `echo ok > storage/app/private/.volume-check`, redeploy, `cat storage/app/private/.volume-check`, then delete the file.
 4. **Copy the recordings** (one-time; resumable; each file is checked against the manifest's size and SHA-256):

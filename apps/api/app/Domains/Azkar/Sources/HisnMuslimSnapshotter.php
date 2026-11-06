@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Azkar\Sources;
 
 use App\Domains\Azkar\Exceptions\SnapshotException;
+use App\Support\Storage\SourceCache;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\File;
@@ -57,7 +58,7 @@ final class HisnMuslimSnapshotter
             $files[$id.'.json'] = $bytes;
         }
 
-        $directory = storage_path('app/azkar/hisnmuslim/'.$date);
+        $directory = SourceCache::path('azkar/hisnmuslim/'.$date);
         File::ensureDirectoryExists($directory);
 
         $hashes = [];

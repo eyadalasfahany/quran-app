@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Azkar\Sources;
 
+use App\Support\Storage\SourceCache;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -34,7 +35,7 @@ final class PinnedSnapshotVerifier
             return null;
         }
 
-        $directory = storage_path('app/'.$packNamespace.'/'.$source.'/'.$date);
+        $directory = SourceCache::path($packNamespace.'/'.$source.'/'.$date);
         $manifestPath = $directory.DIRECTORY_SEPARATOR.'manifest.json';
 
         if (! File::isFile($manifestPath)) {

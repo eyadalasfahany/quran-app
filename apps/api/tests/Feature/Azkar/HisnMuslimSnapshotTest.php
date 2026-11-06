@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domains\Azkar\Exceptions\SnapshotException;
 use App\Domains\Azkar\Sources\HisnMuslimSnapshotter;
+use App\Support\Storage\SourceCache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
@@ -20,7 +21,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    File::deleteDirectory(storage_path('app/azkar/hisnmuslim/'.HMS_DATE));
+    File::deleteDirectory(SourceCache::path('azkar/hisnmuslim/'.HMS_DATE));
 });
 
 /**
@@ -83,7 +84,7 @@ it('refuses a chapter file that does not hold exactly one title, and writes no m
     expect(fn () => app(HisnMuslimSnapshotter::class)->take(HMS_DATE))
         ->toThrow(SnapshotException::class, 'does not hold one title');
 
-    expect(File::exists(storage_path('app/azkar/hisnmuslim/'.HMS_DATE.'/manifest.json')))->toBeFalse();
+    expect(File::exists(SourceCache::path('azkar/hisnmuslim/'.HMS_DATE.'/manifest.json')))->toBeFalse();
 });
 
 it('fails with nothing written when a file keeps answering with a server error', function (): void {
@@ -94,7 +95,7 @@ it('fails with nothing written when a file keeps answering with a server error',
     expect(fn () => app(HisnMuslimSnapshotter::class)->take(HMS_DATE))
         ->toThrow(SnapshotException::class, 'did not answer');
 
-    expect(File::exists(storage_path('app/azkar/hisnmuslim/'.HMS_DATE)))->toBeFalse();
+    expect(File::exists(SourceCache::path('azkar/hisnmuslim/'.HMS_DATE)))->toBeFalse();
 });
 
 it('the command prints the pin for config/azkar.php', function (): void {

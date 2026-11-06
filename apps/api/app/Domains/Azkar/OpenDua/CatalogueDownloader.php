@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Domains\Azkar\OpenDua;
 
 use App\Domains\Azkar\Exceptions\CatalogueDownloadException;
+use App\Support\Storage\SourceCache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Downloads the pinned OpenDua catalogue into storage/app/azkar (ADR 0031 §1). The bytes are checked against the pinned
+ * Downloads the pinned OpenDua catalogue into the source cache (ADR 0031 §1, ADR 0068). The bytes are checked against the pinned
  * SHA-256 before they touch the disk, so an unverified file is never imported. Storage is git-ignored: nothing is committed.
  */
 final class CatalogueDownloader
@@ -39,7 +40,7 @@ final class CatalogueDownloader
             throw new CatalogueDownloadException('The downloaded catalogue does not match the pinned SHA-256; nothing was written.');
         }
 
-        $directory = storage_path('app/azkar');
+        $directory = SourceCache::path('azkar');
         $path = $directory.DIRECTORY_SEPARATOR.'catalogue-'.config('azkar.opendua.version').'.json';
         $partial = $path.'.'.bin2hex(random_bytes(4)).'.part';
 

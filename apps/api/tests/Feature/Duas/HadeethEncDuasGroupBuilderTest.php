@@ -3,16 +3,17 @@
 declare(strict_types=1);
 
 use App\Domains\Duas\Services\HadeethEncDuasGroupBuilder;
+use App\Support\Storage\SourceCache;
 use Illuminate\Support\Facades\File;
 
 const DUAS_GROUP_DATE = '2099-02-02';
 
 afterEach(function (): void {
-    File::deleteDirectory(storage_path('app/duas/hadeethenc/'.DUAS_GROUP_DATE));
+    File::deleteDirectory(SourceCache::path('duas/hadeethenc/'.DUAS_GROUP_DATE));
 });
 
 it('maps hadith ids to the first category list that mentions them', function (): void {
-    $directory = storage_path('app/duas/hadeethenc/'.DUAS_GROUP_DATE);
+    $directory = SourceCache::path('duas/hadeethenc/'.DUAS_GROUP_DATE);
     File::ensureDirectoryExists($directory);
 
     File::put($directory.'/categories.json', json_encode([

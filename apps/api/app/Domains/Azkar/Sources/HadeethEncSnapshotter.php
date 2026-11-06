@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Azkar\Sources;
 
 use App\Domains\Azkar\Exceptions\SnapshotException;
+use App\Support\Storage\SourceCache;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\File;
@@ -19,7 +20,7 @@ final class HadeethEncSnapshotter
 {
     /**
      * @param  non-empty-string  $configPrefix  Config path prefix, e.g. `azkar.hadeethenc` or `duas.hadeethenc`.
-     * @param  non-empty-string  $storageRelative  Directory under `storage/app`, e.g. `azkar/hadeethenc`.
+     * @param  non-empty-string  $storageRelative  Directory under the source cache (SourceCache), e.g. `azkar/hadeethenc`.
      * @return array{directory: string, categories: int, list_pages: int, hadiths: int, files: int, manifest_sha256: string}
      *
      * @throws SnapshotException
@@ -76,7 +77,7 @@ final class HadeethEncSnapshotter
             $files['hadith-'.$id.'.json'] = $bytes;
         }
 
-        $directory = storage_path('app/'.$storageRelative.'/'.$date);
+        $directory = SourceCache::path($storageRelative.'/'.$date);
         File::ensureDirectoryExists($directory);
 
         $hashes = [];

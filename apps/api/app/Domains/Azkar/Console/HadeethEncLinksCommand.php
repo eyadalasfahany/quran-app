@@ -10,6 +10,7 @@ use App\Domains\Azkar\OpenDua\CatalogueDownloader;
 use App\Domains\Azkar\Services\HadeethEncLinker;
 use App\Domains\Azkar\Sources\AzkarSourceRegistry;
 use App\Domains\Azkar\Sources\HadeethEncSnapshot;
+use App\Support\Storage\SourceCache;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -37,7 +38,7 @@ final class HadeethEncLinksCommand extends Command
 
         try {
             $catalogue = $sources->for('opendua')->parse($path);
-            $records = $snapshot->load(storage_path('app/azkar/hadeethenc/'.(string) config('azkar.hadeethenc.snapshot_date')));
+            $records = $snapshot->load(SourceCache::path('azkar/hadeethenc/'.(string) config('azkar.hadeethenc.snapshot_date')));
         } catch (CatalogueUnreadableException|SnapshotException $exception) {
             $this->error($exception->getMessage());
 
