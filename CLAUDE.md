@@ -70,6 +70,12 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
   - **Done (developer, 6 Nov 2026):** Phases 0–6, including the Phase 4 and Phase 5 exit checks and Azkar in production (ADR 0031, 0045).
   - **Shipped:** the follow-ups (widgets and watch ADR 0035, Names, Hijri and Moon ADR 0043, Duas ADR 0044), the store release (v1.0.2), and the suggestions form on the website, the API and the app (ADR 0066).
   - **Rules:** v1 is local-only (ADR 0027). Work one step at a time and keep each change small enough to review. Check the branch with `git branch --show-current`. The developer now works on `main` unless they name a branch.
+- **Releasing the app: OTA by default (developer, 6 Nov 2026).** Ship app changes as an EAS Update (`eas update --channel production`), not a new store build.
+  - **When a store build is needed instead:**
+    - A package was installed or upgraded in `apps/mobile`.
+    - The native fingerprint changed for another reason: a config plugin, a native field in `app.config.ts`, or an Expo SDK upgrade.
+  - **Why:** `runtimeVersion` uses the `fingerprint` policy, so an update only reaches builds with the same fingerprint. Check before publishing with `npx eas-cli fingerprint:compare`, or compare `npx expo-updates fingerprint:generate` against the store build.
+  - Details: `apps/mobile/CLAUDE.md`, «Releasing».
 - Laravel code follows the `laravel-standards` skill, except where the spec wins (ADR 0002). Design tokens and UI components come from the HTML design files above (ADR 0010).
 - The developer commits and pushes. Don't commit unless asked.
 - Plan before coding anything that touches the schema, sync, the API contract or the reader.
