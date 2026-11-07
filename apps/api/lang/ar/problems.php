@@ -26,4 +26,8 @@ return [
     'http_408' => 'انتهت مهلة الطلب',
     'http_415' => 'نوع المحتوى غير مدعوم',
     'http_503' => 'الخدمة غير متاحة',
+    'hadith_collection_unavailable_detail' => 'هذه المجموعة غير متاحة',
+    'hadith_book_not_found' => 'الكتاب غير موجود.',
+    'hadith_chapter_not_found' => 'الباب غير موجود.',
+    'hadith_not_found' => 'الحديث غير موجود.',
 ];

@@ -8,6 +8,7 @@ use App\Integrations\HadithApiCom\HadithApiComConfigException;
 use App\Integrations\HadithApiCom\HadithApiComException;
 use App\Integrations\HadithApiCom\HadithApiComRequestException;
 use App\Integrations\HadithApiCom\HadithApiComShapeException;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\File;
@@ -27,6 +28,7 @@ beforeEach(function (): void {
     config([
         'hadith.api_key' => HADITH_MATCH_KEY,
         'hadith.title_match.retry_delay_ms' => 0,
+        'hadith.title_match.request_gap_ms' => 0,
         'hadith.title_match.max_pages' => 2000,
     ]);
     hadithMatchReload();
@@ -34,6 +36,7 @@ beforeEach(function (): void {
 
 afterEach(function (): void {
     app()['env'] = 'testing';
+    CarbonImmutable::setTestNow();
 });
 
 function hadithMatchReload(): void
@@ -149,7 +152,7 @@ it('retries on 503, then fails with the status', function (): void {
             ->and($exception->getMessage())->toBe('The title source answered HTTP 503 for [chapters].');
     }
 
-    Http::assertSentCount(3);
+    Http::assertSentCount(5);
 });
 
 it('retries on a connection error, then fails without the URL', function (): void {
@@ -224,4 +227,109 @@ it('refuses to build its config without a key, and names HADITH_API_KEY only', f
     } catch (HadithApiComConfigException $exception) {
         expect($exception->getMessage())->toBe('HADITH_API_KEY is not set. Put it in your local apps/api/.env (dev-only).');
     }
+});
+
+/**
+ * A client whose pauses are recorded, not slept. Each pause is appended to $sleeps in milliseconds.
+ *
+ * @param  list<int>  $sleeps
+ */
+function hadithMatchClientWithSleeps(array &$sleeps): HadithApiComClient
+{
+    return new HadithApiComClient(app(HadithApiComConfig::class), function (int $milliseconds) use (&$sleeps): void {
+        $sleeps[] = $milliseconds;
+    });
+}
+
+it('waits Retry-After seconds on a 429, then succeeds', function (): void {
+    Http::fake(['hadithapi.com/api/*' => Http::sequence()
+        ->push('', 429, ['Retry-After' => '7'])
+        ->push(['chapters' => []]),
+    ]);
+
+    $sleeps = [];
+    $chapters = hadithMatchClientWithSleeps($sleeps)->chapters('sahih-bukhari');
+
+    expect($chapters)->toBe([])
+        ->and($sleeps)->toBe([7000]);
+    Http::assertSentCount(2);
+});
+
+it('caps a Retry-After above max_retry_after_seconds', function (): void {
+    Http::fake(['hadithapi.com/api/*' => Http::sequence()
+        ->push('', 429, ['Retry-After' => '999999'])
+        ->push(['chapters' => []]),
+    ]);
+
+    $sleeps = [];
+    hadithMatchClientWithSleeps($sleeps)->chapters('sahih-bukhari');
+
+    expect($sleeps)->toBe([120000]);
+});
+
+it('reads a Retry-After HTTP date as the seconds until that date', function (): void {
+    CarbonImmutable::setTestNow('2026-11-07 10:00:00');
+    Http::fake(['hadithapi.com/api/*' => Http::sequence()
+        ->push('', 429, ['Retry-After' => 'Sat, 07 Nov 2026 10:00:30 GMT'])
+        ->push(['chapters' => []]),
+    ]);
+
+    $sleeps = [];
+    hadithMatchClientWithSleeps($sleeps)->chapters('sahih-bukhari');
+
+    expect($sleeps)->toBe([30000]);
+});
+
+it('uses the exponential backoff on a 429 without Retry-After, for at most tries attempts', function (): void {
+    config([
+        'hadith.title_match.retry_delay_ms' => 1000,
+        'hadith.title_match.request_gap_ms' => 0,
+        'hadith.title_match.tries' => 5,
+    ]);
+    hadithMatchReload();
+    Http::fake(['hadithapi.com/api/*' => Http::response('', 429)]);
+
+    $sleeps = [];
+
+    expect(function () use (&$sleeps): void {
+        hadithMatchClientWithSleeps($sleeps)->chapters('sahih-bukhari');
+    })
+        ->toThrow(HadithApiComRequestException::class, 'The title source answered HTTP 429 for [chapters].');
+
+    expect($sleeps)->toBe([1000, 2000, 4000, 8000]);
+    Http::assertSentCount(5);
+});
+
+it('spaces two consecutive requests by request_gap_ms', function (): void {
+    config(['hadith.title_match.request_gap_ms' => 2500]);
+    hadithMatchReload();
+    Http::fake([
+        'hadithapi.com/api/sahih-bukhari/chapters*' => Http::response(['chapters' => []]),
+        'hadithapi.com/api/hadiths*' => Http::response(['hadiths' => ['data' => [], 'last_page' => 1]]),
+    ]);
+
+    $sleeps = [];
+    $client = hadithMatchClientWithSleeps($sleeps);
+    $client->chapters('sahih-bukhari');
+    $client->hadithRefs('sahih-bukhari');
+
+    expect($sleeps)->toBe([2500]);
+    Http::assertSentCount(2);
+});
+
+it('never lets the key reach the message after five failed 429s', function (): void {
+    Http::fake(['hadithapi.com/api/*' => Http::response('denied '.HADITH_MATCH_KEY, 429, ['Retry-After' => '1'])]);
+
+    $sleeps = [];
+
+    try {
+        hadithMatchClientWithSleeps($sleeps)->chapters('sahih-bukhari');
+        $this->fail('expected a request error');
+    } catch (HadithApiComRequestException $exception) {
+        expect($exception->status)->toBe(429)
+            ->and($exception->getMessage())->toBe('The title source answered HTTP 429 for [chapters].');
+        hadithMatchAssertNoKey($exception);
+    }
+
+    Http::assertSentCount(5);
 });

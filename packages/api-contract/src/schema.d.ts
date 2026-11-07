@@ -85,6 +85,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/hadith/collections/{slug}/books": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.hadith.books.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hadith/collections/{slug}/books/{book}/chapters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.hadith.chapters.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hadith/collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.hadith.collections.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hadith/collections/{slug}/books/{book}/hadiths": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.hadith.entries.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/hadith/collections/{slug}/hadiths/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.hadith.entries.show"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -156,6 +236,7 @@ export interface components {
             resources: {
                 id: number;
                 group: components["schemas"]["ServedResourceGroup"];
+                key: string;
                 name: string | null;
                 name_ar: string | null;
                 style: string | null;
@@ -173,6 +254,99 @@ export interface components {
                 changes_since_min_version: number;
                 is_default: boolean;
             }[];
+        };
+        /** HadithBooksResource */
+        HadithBooksResource: {
+            data: {
+                book_number: string;
+                title_ar: string | null;
+                title_en: string | null;
+                position: number;
+                hadith_count: number;
+            }[];
+            next_cursor: string | null;
+        };
+        /** HadithChaptersResource */
+        HadithChaptersResource: {
+            data: {
+                chapter_number: number;
+                title_ar: string | null;
+                title_en: string | null;
+                position: number;
+                hadith_count: number;
+            }[];
+            next_cursor: string | null;
+        };
+        /** HadithCollectionsResource */
+        HadithCollectionsResource: {
+            data: {
+                resource_id: number;
+                slug: string;
+                title_ar: string | null;
+                title_en: string | null;
+                author_ar: string | null;
+                author_en: string | null;
+                attribution_ar: string;
+                attribution_en: string;
+                source_url: string | null;
+                total_hadith: number;
+                books_count: number;
+            }[];
+            next_cursor: null;
+        };
+        /** HadithEntriesResource */
+        HadithEntriesResource: {
+            data: ({
+                hadith_number: string | unknown;
+                arabic_number: (string | null) | unknown;
+                position: number | unknown;
+                text_ar: string | unknown;
+                source_url: (string | null) | unknown;
+                book_number: string | unknown;
+                chapter_number: (number | null) | unknown;
+            } & {
+                [key: string]: unknown;
+            })[];
+            next_cursor: string | null;
+        };
+        /** HadithEntryDetailResource */
+        HadithEntryDetailResource: {
+            hadith_number: string | unknown;
+            arabic_number: (string | null) | unknown;
+            position: number | unknown;
+            text_ar: string | unknown;
+            source_url: (string | null) | unknown;
+            book_number: string | unknown;
+            chapter_number: (number | null) | unknown;
+            collection: {
+                resource_id: number;
+                slug: string;
+                title_ar: string | null;
+                title_en: string | null;
+                author_ar: string | null;
+                author_en: string | null;
+                attribution_ar: string;
+                attribution_en: string;
+                source_url: string | null;
+                total_hadith: number;
+                books_count: number;
+            };
+            book: {
+                book_number: string;
+                title_ar: string | null;
+                title_en: string | null;
+                position: number;
+                hadith_count: number;
+            };
+            chapter: {
+                chapter_number: number;
+                title_ar: string | null;
+                title_en: string | null;
+                position: number;
+                hadith_count: number;
+            } | null;
+        } & {
+            [key: string]: unknown;
         };
         /** HealthResource */
         HealthResource: {
@@ -398,6 +572,235 @@ export interface operations {
                 };
             };
             /** @description The resource or pack version was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+        };
+    };
+    "v1.hadith.books.index": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HadithBooksResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HadithBooksResource"];
+                };
+            };
+            /** @description Not modified. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null;
+                };
+            };
+            /** @description The collection is unavailable, or the book, chapter or hadith was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hadith.chapters.index": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path: {
+                slug: string;
+                book: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HadithChaptersResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HadithChaptersResource"];
+                };
+            };
+            /** @description Not modified. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null;
+                };
+            };
+            /** @description The collection is unavailable, or the book, chapter or hadith was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hadith.collections.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HadithCollectionsResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HadithCollectionsResource"];
+                };
+            };
+            /** @description Not modified. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null;
+                };
+            };
+        };
+    };
+    "v1.hadith.entries.index": {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+                chapter?: number;
+            };
+            header?: never;
+            path: {
+                slug: string;
+                book: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HadithEntriesResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HadithEntriesResource"];
+                };
+            };
+            /** @description Not modified. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null;
+                };
+            };
+            /** @description The collection is unavailable, or the book, chapter or hadith was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": {
+                        type: string;
+                        title: string;
+                        status: number;
+                        code: string;
+                        detail?: string | null;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationException"];
+        };
+    };
+    "v1.hadith.entries.show": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                number: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `HadithEntryDetailResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HadithEntryDetailResource"];
+                };
+            };
+            /** @description Not modified. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null;
+                };
+            };
+            /** @description The collection is unavailable, or the book, chapter or hadith was not found. */
             404: {
                 headers: {
                     [name: string]: unknown;

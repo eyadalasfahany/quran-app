@@ -398,6 +398,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     version: 1,
     pack: { url: `/api/v1/content/packs/${overrides.id}/1`, size_bytes: 1, sha256: 'abc' },
     changes_since_min_version: 1,
+    key: 'fixture-key',
     is_default: false,
     style: null,
     ...overrides,

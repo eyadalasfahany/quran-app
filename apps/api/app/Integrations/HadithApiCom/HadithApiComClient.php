@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Integrations\HadithApiCom;
 
+use Carbon\CarbonImmutable;
+use Closure;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Throwable;
 
 /**
  * Titles-only client for hadithapi.com (dev-only, ADR 0042 §4a). The key travels only in the apiKey query parameter and never
  * reaches an exception message, a previous exception, a return value or a log. Only ids, titles, numbers and chapter ids are
  * kept; every decoded body is dropped at once.
+ *
+ * Requests are paced by request_gap_ms. Waits go through an injectable sleeper (milliseconds), so tests never sleep.
  */
 final class HadithApiComClient
 {
@@ -21,7 +23,23 @@ final class HadithApiComClient
 
     private const string REDACTED = '[redacted]';
 
-    public function __construct(private readonly HadithApiComConfig $config) {}
+    /** @var Closure(int): void */
+    private readonly Closure $sleep;
+
+    private bool $requested = false;
+
+    /** Milliseconds slept since the last request was sent. */
+    private int $sleptSinceLastRequestMs = 0;
+
+    /**
+     * @param  (Closure(int): void)|null  $sleep  Receives milliseconds; defaults to usleep.
+     */
+    public function __construct(private readonly HadithApiComConfig $config, ?Closure $sleep = null)
+    {
+        $this->sleep = $sleep ?? static function (int $milliseconds): void {
+            usleep($milliseconds * 1000);
+        };
+    }
 
     /**
      * @return list<HadithApiComChapter>
@@ -128,54 +146,126 @@ final class HadithApiComClient
     {
         $url = $this->config->baseUrl.'/'.$path;
 
-        try {
-            $response = Http::withUserAgent($this->config->userAgent)
-                ->timeout($this->config->timeoutSeconds)
-                ->connectTimeout(min(self::CONNECT_TIMEOUT_SECONDS, $this->config->timeoutSeconds))
-                ->retry(
-                    $this->config->tries,
-                    fn (int $attempt): int => $this->config->retryDelayMs * 2 ** ($attempt - 1),
-                    fn (Throwable $exception): bool => $this->shouldRetry($exception),
-                    throw: false,
-                )
-                ->get($url, $query + ['apiKey' => $this->config->apiKey]);
-        } catch (ConnectionException) {
-            throw new HadithApiComRequestException('The title source could not be reached for ['.$label.'].');
-        } catch (RequestException $exception) {
-            throw new HadithApiComRequestException('The title source answered HTTP '.$exception->response->status().' for ['.$label.'].', $exception->response->status());
+        for ($attempt = 1; ; $attempt++) {
+            $this->paceRequest();
+
+            try {
+                $response = Http::withUserAgent($this->config->userAgent)
+                    ->timeout($this->config->timeoutSeconds)
+                    ->connectTimeout(min(self::CONNECT_TIMEOUT_SECONDS, $this->config->timeoutSeconds))
+                    ->get($url, $query + ['apiKey' => $this->config->apiKey]);
+            } catch (ConnectionException) {
+                if ($attempt >= $this->config->tries) {
+                    throw new HadithApiComRequestException('The title source could not be reached for ['.$label.'].');
+                }
+
+                $this->pause($this->backoffMilliseconds($attempt));
+
+                continue;
+            }
+
+            if ($this->shouldRetryStatus($response->status()) && $attempt < $this->config->tries) {
+                $this->pause($this->waitMilliseconds($response, $attempt));
+
+                continue;
+            }
+
+            if ($response->failed()) {
+                throw $this->httpFailure($label, $response);
+            }
+
+            $json = $response->json();
+
+            if (! is_array($json)) {
+                throw $this->shape($label, $page);
+            }
+
+            return $json;
+        }
+    }
+
+    /**
+     * Waits until request_gap_ms has passed since the previous request started, counting the sleeps already done.
+     */
+    private function paceRequest(): void
+    {
+        if ($this->requested) {
+            $this->pause(max(0, $this->config->requestGapMs - $this->sleptSinceLastRequestMs));
         }
 
-        if ($response->failed()) {
-            throw $this->httpFailure($label, $response);
+        $this->requested = true;
+        $this->sleptSinceLastRequestMs = 0;
+    }
+
+    private function pause(int $milliseconds): void
+    {
+        if ($milliseconds <= 0) {
+            return;
         }
 
-        $json = $response->json();
+        ($this->sleep)($milliseconds);
+        $this->sleptSinceLastRequestMs += $milliseconds;
+    }
 
-        if (! is_array($json)) {
-            throw $this->shape($label, $page);
+    /**
+     * 429 and 5xx are retried; anything else fails at once.
+     */
+    private function shouldRetryStatus(int $status): bool
+    {
+        return $status === 429 || $status >= 500;
+    }
+
+    /**
+     * A 429 with Retry-After waits that long, capped; everything else uses the exponential backoff.
+     */
+    private function waitMilliseconds(Response $response, int $attempt): int
+    {
+        if ($response->status() === 429) {
+            $retryAfter = $this->retryAfterSeconds($response);
+
+            if ($retryAfter !== null) {
+                return min($retryAfter, $this->config->maxRetryAfterSeconds) * 1000;
+            }
         }
 
-        return $json;
+        return $this->backoffMilliseconds($attempt);
+    }
+
+    /**
+     * Attempt n waits retry_delay_ms * 2^(n-1).
+     */
+    private function backoffMilliseconds(int $attempt): int
+    {
+        return $this->config->retryDelayMs * 2 ** ($attempt - 1);
+    }
+
+    /**
+     * Retry-After as delay seconds or as an HTTP date. Null when absent or unreadable.
+     */
+    private function retryAfterSeconds(Response $response): ?int
+    {
+        $value = trim($response->header('Retry-After'));
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (ctype_digit($value)) {
+            return (int) $value;
+        }
+
+        $timestamp = strtotime($value);
+
+        if ($timestamp === false) {
+            return null;
+        }
+
+        return max(0, $timestamp - CarbonImmutable::now()->getTimestamp());
     }
 
     private function httpFailure(string $label, Response $response): HadithApiComRequestException
     {
         return new HadithApiComRequestException('The title source answered HTTP '.$response->status().' for ['.$label.'].', $response->status());
-    }
-
-    private function shouldRetry(Throwable $exception): bool
-    {
-        if ($exception instanceof ConnectionException) {
-            return true;
-        }
-
-        if ($exception instanceof RequestException) {
-            $status = $exception->response->status();
-
-            return $status === 429 || $status >= 500;
-        }
-
-        return false;
     }
 
     /**

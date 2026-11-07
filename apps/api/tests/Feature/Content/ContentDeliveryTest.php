@@ -694,3 +694,22 @@ it('never marks an MP3Quran recitation default, even when its moshaf id equals t
 
     expect($flags)->toBe([$mp3->id => false]);
 });
+
+it('lists each manifest entry with its source key as a string', function (): void {
+    $tafsir = Resource::factory()->create([
+        'group' => ResourceGroup::Tafsirs,
+        'source_key' => 'key-fixture-1',
+        'version' => 1,
+        'is_active' => true,
+    ]);
+
+    app(PackBuilder::class)->build($tafsir);
+
+    $entry = collect($this->getJson('/api/v1/content/manifest')->assertOk()->json('resources'))
+        ->firstWhere('id', $tafsir->id);
+
+    expect($entry)->not->toBeNull()
+        ->and($entry)->toHaveKey('key')
+        ->and($entry['key'])->toBe($tafsir->source_key)
+        ->and($entry['key'])->toBe('key-fixture-1');
+});

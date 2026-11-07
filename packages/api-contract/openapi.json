@@ -340,6 +340,438 @@
                 }
             }
         },
+        "/hadith/collections/{slug}/books": {
+            "get": {
+                "operationId": "v1.hadith.books.index",
+                "tags": [
+                    "HadithBook"
+                ],
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 500
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`HadithBooksResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HadithBooksResource"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "304": {
+                        "description": "Not modified.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The collection is unavailable, or the book, chapter or hadith was not found.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "title",
+                                        "status",
+                                        "code"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/hadith/collections/{slug}/books/{book}/chapters": {
+            "get": {
+                "operationId": "v1.hadith.chapters.index",
+                "tags": [
+                    "HadithChapter"
+                ],
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "book",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 500
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`HadithChaptersResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HadithChaptersResource"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "304": {
+                        "description": "Not modified.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The collection is unavailable, or the book, chapter or hadith was not found.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "title",
+                                        "status",
+                                        "code"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/hadith/collections": {
+            "get": {
+                "operationId": "v1.hadith.collections.index",
+                "tags": [
+                    "HadithCollection"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`HadithCollectionsResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HadithCollectionsResource"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Not modified.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/hadith/collections/{slug}/books/{book}/hadiths": {
+            "get": {
+                "operationId": "v1.hadith.entries.index",
+                "tags": [
+                    "HadithEntry"
+                ],
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "book",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 500
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "chapter",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`HadithEntriesResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HadithEntriesResource"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "304": {
+                        "description": "Not modified.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The collection is unavailable, or the book, chapter or hadith was not found.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "title",
+                                        "status",
+                                        "code"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/hadith/collections/{slug}/hadiths/{number}": {
+            "get": {
+                "operationId": "v1.hadith.entries.show",
+                "tags": [
+                    "HadithEntry"
+                ],
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "number",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`HadithEntryDetailResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HadithEntryDetailResource"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Not modified.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The collection is unavailable, or the book, chapter or hadith was not found.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "detail": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "title",
+                                        "status",
+                                        "code"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "operationId": "v1.health",
@@ -635,6 +1067,9 @@
                                 "group": {
                                     "$ref": "#/components/schemas/ServedResourceGroup"
                                 },
+                                "key": {
+                                    "type": "string"
+                                },
                                 "name": {
                                     "type": [
                                         "string",
@@ -714,6 +1149,7 @@
                             "required": [
                                 "id",
                                 "group",
+                                "key",
                                 "name",
                                 "name_ar",
                                 "style",
@@ -735,6 +1171,510 @@
                     "resources"
                 ],
                 "title": "ContentManifestResource"
+            },
+            "HadithBooksResource": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "book_number": {
+                                    "type": "string"
+                                },
+                                "title_ar": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "title_en": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "position": {
+                                    "type": "integer"
+                                },
+                                "hadith_count": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "book_number",
+                                "title_ar",
+                                "title_en",
+                                "position",
+                                "hadith_count"
+                            ]
+                        }
+                    },
+                    "next_cursor": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "data",
+                    "next_cursor"
+                ],
+                "title": "HadithBooksResource"
+            },
+            "HadithChaptersResource": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "chapter_number": {
+                                    "type": "integer"
+                                },
+                                "title_ar": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "title_en": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "position": {
+                                    "type": "integer"
+                                },
+                                "hadith_count": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "chapter_number",
+                                "title_ar",
+                                "title_en",
+                                "position",
+                                "hadith_count"
+                            ]
+                        }
+                    },
+                    "next_cursor": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "data",
+                    "next_cursor"
+                ],
+                "title": "HadithChaptersResource"
+            },
+            "HadithCollectionsResource": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "resource_id": {
+                                    "type": "integer"
+                                },
+                                "slug": {
+                                    "type": "string"
+                                },
+                                "title_ar": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "title_en": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "author_ar": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "author_en": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "attribution_ar": {
+                                    "type": "string"
+                                },
+                                "attribution_en": {
+                                    "type": "string"
+                                },
+                                "source_url": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "total_hadith": {
+                                    "type": "integer"
+                                },
+                                "books_count": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "resource_id",
+                                "slug",
+                                "title_ar",
+                                "title_en",
+                                "author_ar",
+                                "author_en",
+                                "attribution_ar",
+                                "attribution_en",
+                                "source_url",
+                                "total_hadith",
+                                "books_count"
+                            ]
+                        }
+                    },
+                    "next_cursor": {
+                        "type": "null"
+                    }
+                },
+                "required": [
+                    "data",
+                    "next_cursor"
+                ],
+                "title": "HadithCollectionsResource"
+            },
+            "HadithEntriesResource": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "hadith_number": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "arabic_number": {
+                                    "anyOf": [
+                                        {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "position": {
+                                    "anyOf": [
+                                        {
+                                            "type": "integer"
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "text_ar": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "source_url": {
+                                    "anyOf": [
+                                        {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "book_number": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "chapter_number": {
+                                    "anyOf": [
+                                        {
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ]
+                                        },
+                                        {}
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "hadith_number",
+                                "arabic_number",
+                                "position",
+                                "text_ar",
+                                "source_url",
+                                "book_number",
+                                "chapter_number"
+                            ],
+                            "additionalProperties": {}
+                        }
+                    },
+                    "next_cursor": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "data",
+                    "next_cursor"
+                ],
+                "title": "HadithEntriesResource"
+            },
+            "HadithEntryDetailResource": {
+                "type": "object",
+                "properties": {
+                    "hadith_number": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {}
+                        ]
+                    },
+                    "arabic_number": {
+                        "anyOf": [
+                            {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            {}
+                        ]
+                    },
+                    "position": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {}
+                        ]
+                    },
+                    "text_ar": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {}
+                        ]
+                    },
+                    "source_url": {
+                        "anyOf": [
+                            {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            {}
+                        ]
+                    },
+                    "book_number": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {}
+                        ]
+                    },
+                    "chapter_number": {
+                        "anyOf": [
+                            {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            {}
+                        ]
+                    },
+                    "collection": {
+                        "type": "object",
+                        "properties": {
+                            "resource_id": {
+                                "type": "integer"
+                            },
+                            "slug": {
+                                "type": "string"
+                            },
+                            "title_ar": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title_en": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "author_ar": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "author_en": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "attribution_ar": {
+                                "type": "string"
+                            },
+                            "attribution_en": {
+                                "type": "string"
+                            },
+                            "source_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "total_hadith": {
+                                "type": "integer"
+                            },
+                            "books_count": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "resource_id",
+                            "slug",
+                            "title_ar",
+                            "title_en",
+                            "author_ar",
+                            "author_en",
+                            "attribution_ar",
+                            "attribution_en",
+                            "source_url",
+                            "total_hadith",
+                            "books_count"
+                        ]
+                    },
+                    "book": {
+                        "type": "object",
+                        "properties": {
+                            "book_number": {
+                                "type": "string"
+                            },
+                            "title_ar": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title_en": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "position": {
+                                "type": "integer"
+                            },
+                            "hadith_count": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "book_number",
+                            "title_ar",
+                            "title_en",
+                            "position",
+                            "hadith_count"
+                        ]
+                    },
+                    "chapter": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "chapter_number": {
+                                "type": "integer"
+                            },
+                            "title_ar": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "title_en": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "position": {
+                                "type": "integer"
+                            },
+                            "hadith_count": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "chapter_number",
+                            "title_ar",
+                            "title_en",
+                            "position",
+                            "hadith_count"
+                        ]
+                    }
+                },
+                "required": [
+                    "hadith_number",
+                    "arabic_number",
+                    "position",
+                    "text_ar",
+                    "source_url",
+                    "book_number",
+                    "chapter_number",
+                    "collection",
+                    "book",
+                    "chapter"
+                ],
+                "additionalProperties": {},
+                "title": "HadithEntryDetailResource"
             },
             "HealthResource": {
                 "type": "object",

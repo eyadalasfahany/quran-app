@@ -8,6 +8,7 @@ use App\Domains\Content\ContentServiceProvider;
 use App\Domains\Duas\DuasServiceProvider;
 use App\Domains\Feedback\FeedbackServiceProvider;
 use App\Domains\Hadith\HadithImportServiceProvider;
+use App\Domains\Hadith\HadithServiceProvider;
 use App\Domains\Hadith\HadithSourceServiceProvider;
 use App\Domains\Names\NamesServiceProvider;
 use App\Domains\Sync\SyncServiceProvider;
@@ -34,4 +35,5 @@ return [
     HadithSourceServiceProvider::class,
     HadithApiComServiceProvider::class,
     HadithImportServiceProvider::class,
+    HadithServiceProvider::class,
 ];

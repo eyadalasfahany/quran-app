@@ -20,6 +20,7 @@ final class ContentManifestEntryResource extends JsonResource
      * @return array{
      *     id: int,
      *     group: ServedResourceGroup,
+     *     key: string,
      *     name: string|null,
      *     name_ar: string|null,
      *     style: string|null,
@@ -38,6 +39,7 @@ final class ContentManifestEntryResource extends JsonResource
         return [
             'id' => $this->resource->id,
             'group' => ServedResourceGroup::fromResourceGroup($this->resource->group),
+            'key' => $this->resource->sourceKey,
             'name' => $this->resource->name,
             'name_ar' => $this->resource->nameAr,
             'style' => $this->resource->style,

@@ -39,17 +39,9 @@ final class ContentDeliveryService
         $newest = null;
 
         foreach ($this->resources->activeWithPacks() as $resource) {
-            if (! $this->isServed($resource)) {
-                continue;
-            }
-
-            $pack = $resource->contentPacks->sortByDesc(fn (ContentPack $pack): int => $pack->version)->first();
+            $pack = $this->servedPack($resource);
 
             if (! $pack instanceof ContentPack) {
-                continue;
-            }
-
-            if (! Storage::disk('local')->exists($pack->path)) {
                 continue;
             }
 
@@ -60,6 +52,7 @@ final class ContentDeliveryService
             $entries[] = new ContentManifestEntryData(
                 id: $resource->id,
                 group: $resource->group,
+                sourceKey: $resource->source_key,
                 name: $resource->name,
                 nameAr: $this->servedArabicName($resource),
                 style: $this->servedStyle($resource),
@@ -152,6 +145,50 @@ final class ContentDeliveryService
             items: $items,
             nextCursor: $hasMore && $last instanceof ContentChange ? ChangeCursor::encode($last->id) : null,
         );
+    }
+
+    /**
+     * Ids of the active, packed resources of one group whose pack is served, ascending. The hadith catalogue uses
+     * this to decide which collections exist for a reader (ADR 0076 "Rule, 7 Nov 2026").
+     *
+     * @return list<int>
+     */
+    public function servedResourceIds(ResourceGroup $group): array
+    {
+        $ids = [];
+
+        foreach ($this->resources->activeWithPacks() as $resource) {
+            if ($resource->group === $group && $this->servedPack($resource) instanceof ContentPack) {
+                $ids[] = $resource->id;
+            }
+        }
+
+        sort($ids);
+
+        return $ids;
+    }
+
+    /**
+     * The newest pack of a resource when the resource is served: not null when it is served by its group rules, has a
+     * pack, and the pack file exists on disk. The manifest and servedResourceIds() share this predicate.
+     */
+    private function servedPack(Resource $resource): ?ContentPack
+    {
+        if (! $this->isServed($resource)) {
+            return null;
+        }
+
+        $pack = $resource->contentPacks->sortByDesc(fn (ContentPack $pack): int => $pack->version)->first();
+
+        if (! $pack instanceof ContentPack) {
+            return null;
+        }
+
+        if (! Storage::disk('local')->exists($pack->path)) {
+            return null;
+        }
+
+        return $pack;
     }
 
     /**

@@ -16,6 +16,7 @@ function resource(
     is_default: false,
     style: null,
     changes_since_min_version: 1,
+    key: 'fixture-key',
     direction: null,
     language_code: null,
     name: null,

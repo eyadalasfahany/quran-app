@@ -18,6 +18,7 @@ function resource(
     version: 1,
     pack: { url: '/api/v1/content/packs/1/1', size_bytes: 1, sha256: 'abc' },
     changes_since_min_version: 1,
+    key: 'fixture-key',
     ...overrides,
   };
 }

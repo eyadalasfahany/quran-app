@@ -13,6 +13,7 @@ final class ContentManifestEntryData extends Data
     public function __construct(
         public readonly int $id,
         public readonly ResourceGroup $group,
+        public readonly string $sourceKey,
         public readonly ?string $name,
         public readonly ?string $nameAr,
         public readonly ?string $style,

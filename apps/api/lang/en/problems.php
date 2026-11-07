@@ -26,4 +26,8 @@ return [
     'http_408' => 'Request timed out',
     'http_415' => 'Unsupported content type',
     'http_503' => 'Service unavailable',
+    'hadith_collection_unavailable_detail' => "This collection isn't available.",
+    'hadith_book_not_found' => 'The book was not found.',
+    'hadith_chapter_not_found' => 'The chapter was not found.',
+    'hadith_not_found' => 'The hadith was not found.',
 ];

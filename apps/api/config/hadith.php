@@ -90,7 +90,7 @@ return [
     'title_match' => [
         'base_url' => 'https://hadithapi.com/api',
         'timeout_seconds' => 30,
-        'tries' => 3,
+        'tries' => 5,
         'retry_delay_ms' => 1000,   // attempt n waits retry_delay_ms * 2^(n-1)
         'page_size' => 100,         // see open question 6
         'max_pages' => 2000,        // safety cap per collection
@@ -104,6 +104,8 @@ return [
             'ibnmajah' => 'ibn-e-majah',
             'nasai' => 'sunan-nasai',
         ],
+        'request_gap_ms' => 1500,           // minimum time between two requests
+        'max_retry_after_seconds' => 120,   // a 429 Retry-After is honoured up to this cap
     ],
 
     // Developer-approved section range corrections (7 Nov 2026), keyed by canonical slug and section number. The source's
