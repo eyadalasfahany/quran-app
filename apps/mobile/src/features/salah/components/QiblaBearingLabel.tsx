@@ -8,7 +8,7 @@ import { UiText } from '@/shared/ui/UiText';
 
 /**
  * The readout under the dial: the qibla bearing in degrees from true north
- * (quran-app-screens.html, #Qibla). Arabic-Indic digits in Arabic.
+ * (screens/, #Qibla). Arabic-Indic digits in Arabic.
  */
 export function QiblaBearingLabel({ bearing, testID }: { bearing: number; testID?: string }) {
   const { t } = useTranslation();

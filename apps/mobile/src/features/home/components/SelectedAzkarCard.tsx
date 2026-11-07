@@ -5,13 +5,13 @@ import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
 const TRACK_HEIGHT = 4;
-// The card is 148 pt wide with 16 pt padding and 10 pt between its parts (quran-app-screens.html, #Main).
+// The card is 148 pt wide with 16 pt padding and 10 pt between its parts (screens/, #Main).
 const CARD_WIDTH = 148;
 const CARD_PADDING = 16;
 const CARD_GAP = 10;
 
 /**
- * One Azkar session in Home's «أذكار مختارة» row (quran-app-screens.html, #Main): the session's name, a thin bar for
+ * One Azkar session in Home's «أذكار مختارة» row (screens/, #Main): the session's name, a thin bar for
  * today's progress and its count, which sits at the end of the card. It opens the session's category.
  */
 export function SelectedAzkarCard({

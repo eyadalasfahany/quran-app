@@ -30,7 +30,7 @@ const CALENDAR = { ios: 'calendar', android: 'calendar_month' } as const;
 const OCCASION_COUNT = 6;
 
 /**
- * The Hijri calendar (quran-app-screens.html, #HijriCalendar; route `/hijri`). A pushed screen that mirrors the Azkar
+ * The Hijri calendar (screens/, #HijriCalendar; route `/hijri`). A pushed screen that mirrors the Azkar
  * header. Month navigation, a «اليوم» return, the adjustment row and the upcoming occasions. In a short or expanded
  * window the grid and the occasions sit side by side. Without the platform calendar the screen says so and offers
  * nothing else (a capability check, not a switch).

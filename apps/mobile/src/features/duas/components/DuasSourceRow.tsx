@@ -5,7 +5,7 @@ import { Icon, UiText, useContrastColors } from '@/shared/ui';
 
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
 
-/** A 52 px grouped-list row on Duas home without a progress ring (quran-app-screens.html, #DuasHome). */
+/** A 52 px grouped-list row on Duas home without a progress ring (screens/, #DuasHome). */
 export function DuasSourceRow({
   title,
   detail,

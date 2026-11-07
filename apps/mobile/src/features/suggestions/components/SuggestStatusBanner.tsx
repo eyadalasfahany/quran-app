@@ -16,7 +16,7 @@ const ICONS: Record<SuggestStatusKind, IconName> = {
 const ICON_SIZE = 20;
 
 /**
- * The note above the submit button when a send did not go through (quran-app-screens.html, #SuggestSheetOffline). It is
+ * The note above the submit button when a send did not go through (screens/, #SuggestSheetOffline). It is
  * a rounded card on the page colour, with a hairline, and it sits in the flow so it never covers a field.
  */
 export function SuggestStatusBanner({ kind, testID = 'suggest-status' }: { kind: SuggestStatusKind; testID?: string }) {

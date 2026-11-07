@@ -7,7 +7,7 @@ import { Icon, type IconName } from './Icon';
 import { UiText } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
-// Ayah actions frame (quran-app-screens.html): tile gap and horizontal padding. No space token
+// Ayah actions frame (screens/): tile gap and horizontal padding. No space token
 // matches these, so they stay local.
 const TILE_GAP = 6;
 const TILE_PADDING_HORIZONTAL = 2;

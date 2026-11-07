@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
-// The My Quran saved rows (quran-app-screens.html, #MyQuran): 14 pt padding inside an 18 pt card.
+// The My Quran saved rows (screens/, #MyQuran): 14 pt padding inside an 18 pt card.
 // No space token matches the padding, so it stays local.
 const ROW_PADDING = 14;
 

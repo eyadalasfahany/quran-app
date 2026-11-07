@@ -4,8 +4,9 @@ The design reference: one folder per stack, one folder per screen, four variant 
 
 ## Source of truth
 
-- `quran-app-screens.html` (repo root) is the design source, and what CI and `frame-shot.py` use.
-  A UI review still compares against its frame there (root `CLAUDE.md`, frontend rule).
+- `screens/` (repo root, ADR 0075) is the design source, one file per frame, and what CI and
+  `frame-shot.py` use. A UI review still compares against its frame there (root `CLAUDE.md`,
+  frontend rule). Edit frames in `screens/frames/<section>/<FrameId>.html`, never here.
 - Only **drawn** variants are designs. **Derived** variants (built by `scripts/build_reference.py`)
   are drafts: a mismatch with a derived variant is a question for the developer, not a review fail.
 - Never edit generated files by hand: `<stack>/**`, `index.html`, `CATALOG.md`, `catalog.json`,

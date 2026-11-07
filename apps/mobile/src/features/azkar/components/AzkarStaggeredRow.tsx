@@ -4,7 +4,7 @@ import Animated, { useReducedMotion } from 'react-native-reanimated';
 import { staggerFadeIn } from '@/core/theme';
 
 /**
- * A list row that fades in with a stagger when it mounts (quran-app-screens.html, #AzkarCategory). The entrance runs
+ * A list row that fades in with a stagger when it mounts (screens/, #AzkarCategory). The entrance runs
  * once, on mount: a row keeps its key, so a later re-render does not fade it again, and the list only mounts its rows
  * once when it opens. Reduce Motion: a plain fade with no delay.
  */

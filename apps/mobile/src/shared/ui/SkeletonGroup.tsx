@@ -8,7 +8,7 @@ import { pulseTiming } from '@/core/theme';
 
 import { SkeletonPulseContext } from './skeleton-context';
 
-// The pulse dips to this opacity and back (quran-app-screens.html, #loading).
+// The pulse dips to this opacity and back (screens/, #loading).
 const PULSE_OPACITY = 0.55;
 
 // A loading region: its SkeletonBlocks pulse together, and it is one accessibility element labelled

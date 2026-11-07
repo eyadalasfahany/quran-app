@@ -8,7 +8,7 @@ import { arabicTextDirection, displayText, highlightFill, NumberMedallion, UiTex
 export type MatchRange = { start: number; end: number };
 
 /**
- * One matching dhikr in Azkar search (quran-app-screens.html, #AzkarSearch). The match is highlighted in place: the
+ * One matching dhikr in Azkar search (screens/, #AzkarSearch). The match is highlighted in place: the
  * preview is split at the data layer's range and never rewritten. `highlight` null shows the preview plain.
  */
 export function AzkarSearchResultRow({

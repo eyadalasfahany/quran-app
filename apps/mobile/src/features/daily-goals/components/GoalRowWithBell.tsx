@@ -5,7 +5,7 @@ import { IconButton, type IconName, ToggleRow } from '@/shared/ui';
 const BELL: IconName = { ios: 'bell', android: 'notifications' };
 
 /**
- * An Azkar session goal (quran-app-screens.html, #DailyGoalsSheet): the switch that tracks the session for the day, and
+ * An Azkar session goal (screens/, #DailyGoalsSheet): the switch that tracks the session for the day, and
  * a bell that opens that session's reminder sheet. The bell is labelled «تذكير» with the session's name.
  */
 export function GoalRowWithBell({

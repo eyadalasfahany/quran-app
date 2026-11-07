@@ -5,9 +5,9 @@ import { SkeletonGroup, UiText } from '@/shared/ui';
 import { RecentListenRow } from './RecentListenRow';
 import { RecentListenRowSkeleton } from './RecentListenRowSkeleton';
 
-// The frame's section gap (quran-app-screens.html, #Main): the heading and each row are 10 apart.
+// The frame's section gap (screens/, #Main): the heading and each row are 10 apart.
 const SECTION_GAP = 10;
-// The loading skeleton's two rows, each with its own name length (quran-app-screens.html, #loading).
+// The loading skeleton's two rows, each with its own name length (screens/, #loading).
 const SKELETON_NAME_WIDTHS = ['56%', '64%'] as const;
 
 export type RecentListensItem = {

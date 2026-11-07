@@ -2,7 +2,7 @@
 
 Team-share design catalog. **Humans browse HTML**; **models read catalogs** (not megabytes of markup).
 
-Monolith `quran-app-screens.html` stays untouched for CI / `frame-shot.py`.
+Generated from `screens/` (the design source, ADR 0075); edit frames there.
 
 ## Share with the team
 
@@ -19,13 +19,13 @@ Monolith `quran-app-screens.html` stays untouched for CI / `frame-shot.py`.
 | [`frames.tsv`](frames.tsv) | 14 KB | find an id |
 | [`CATALOG.md`](CATALOG.md) | 17 KB | markdown table |
 | one `frames/.../<Id>.html` | usually &lt;25 KB | visual review only |
-| `quran-app-screens.html` | **avoid** | CI monolith only |
+| `screens/frames/<section>/<Id>.html` | one frame | the design source (ADR 0075) |
 
 Never open `common/styles.css` or many frames unless asked.
 
 ## Stats
 
-- **165** frames · **23** stacks · **7** deduped image assets
+- **230** frames · **23** stacks · **7** deduped image assets
 - Base64 stripped from markup (~**5782 KB** not repeated per Salah frame)
 
 ## Layout

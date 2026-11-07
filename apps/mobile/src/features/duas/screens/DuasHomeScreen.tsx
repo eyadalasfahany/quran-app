@@ -29,7 +29,7 @@ function pairs<T>(items: readonly T[]): T[][] {
   return rows;
 }
 
-/** Duas home (quran-app-screens.html, #DuasHome): «أدعيتي», Quranic list row, prophetic topic tiles. */
+/** Duas home (screens/, #DuasHome): «أدعيتي», Quranic list row, prophetic topic tiles. */
 export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();

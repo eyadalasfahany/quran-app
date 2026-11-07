@@ -13,7 +13,7 @@ export type RecentAzkarListItem = {
   href: Href;
 };
 
-// The section's heading and each row are 10 pt apart (quran-app-screens.html, #Main «آخر الأذكار»).
+// The section's heading and each row are 10 pt apart (screens/, #Main «آخر الأذكار»).
 const SECTION_GAP = 10;
 
 /**

@@ -6,7 +6,7 @@ import { highlightColors, type HighlightColor } from './highlight';
 import { HighlightSwatch } from './HighlightSwatch';
 import { UiText } from './UiText';
 
-// Ayah actions frame (quran-app-screens.html): the highlight row's padding and swatch gap.
+// Ayah actions frame (screens/): the highlight row's padding and swatch gap.
 // No space token matches these, so they stay local.
 const ROW_PADDING_VERTICAL = 6;
 const ROW_PADDING_HORIZONTAL = 14;

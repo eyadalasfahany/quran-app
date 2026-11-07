@@ -8,7 +8,7 @@ import { useTheme } from '@/core/theme';
 import { Button, UiText } from '@/shared/ui';
 
 /**
- * The content of the daily goals sheet (quran-app-screens.html, #DailyGoalsSheet). It sits in a SheetHost, which
+ * The content of the daily goals sheet (screens/, #DailyGoalsSheet). It sits in a SheetHost, which
  * supplies the card's slide, scrim and drag. This component draws the frame, the title with «تم», the note, the
  * goals and the save button. Each change is saved as it is made, so save and done both close the sheet.
  */

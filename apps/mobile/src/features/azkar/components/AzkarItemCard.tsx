@@ -11,7 +11,7 @@ import { AzkarCountChip } from './AzkarCountChip';
 const CHECK = { ios: 'checkmark', android: 'check' } as const;
 
 /**
- * One dhikr on a category or favourites list (quran-app-screens.html, #AzkarCategory): the number medallion, a
+ * One dhikr on a category or favourites list (screens/, #AzkarCategory): the number medallion, a
  * two-line preview of the Arabic text, and at the end the sourced count chip, the completed mark, or a custom action
  * (the favourites bookmark). A list preview may clamp to two lines; the reader never does. An entry that opens with a
  * Quran passage has no text preview: it shows `quranReference` (surah and verses) in the UI font, never the ayah.

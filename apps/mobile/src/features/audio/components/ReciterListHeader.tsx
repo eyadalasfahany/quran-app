@@ -9,7 +9,7 @@ import { ReciterSearchField } from './ReciterSearchField';
 // first row. The header sits inside the list, so its bottom padding keeps that gap.
 const FRAME_GAP = 12;
 
-// The Listen tab's list header (quran-app-screens.html, #Reciters): the large title, the search field and the
+// The Listen tab's list header (screens/, #Reciters): the large title, the search field and the
 // filter chips. It is the FlatList's ListHeaderComponent, so it scrolls with the rows.
 export function ReciterListHeader<T extends string>({
   title,

@@ -1,6 +1,6 @@
 # 0010 — HTML design files are the design source; Tanzil supplies verse text and words for v1
 
-Date: 2026-10-27 · Status: accepted · Supersedes the Figma part of ADR 0005; supersedes Phase 1 step 9 (ADR 0008)
+Date: 2026-10-27 · Status: accepted; decision 1 amended by ADR 0075 (the screens moved from `quran-app-screens.html` to `screens/`, one file per frame) · Supersedes the Figma part of ADR 0005; supersedes Phase 1 step 9 (ADR 0008)
 
 ## Context
 

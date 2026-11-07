@@ -10,7 +10,7 @@ const CHEVRON: IconName = { ios: 'chevron.right', android: 'chevron_right' };
 
 /**
  * The «اتجاه القبلة» row under the times card: the compass chip, the bearing from true north,
- * and the chevron into the Qibla screen (quran-app-screens.html, #Salah → #Qibla).
+ * and the chevron into the Qibla screen (screens/, #Salah → #Qibla).
  */
 export function QiblaRow({
   bearing,

@@ -5,7 +5,7 @@ import { Card, Icon, ListRow, UiText } from '@/shared/ui';
 
 const ICON = { ios: 'slider.horizontal.3', android: 'tune' } as const;
 
-/** The adjustment entry under the calendar (quran-app-screens.html, #HijriCalendar): a raised card with the current value. */
+/** The adjustment entry under the calendar (screens/, #HijriCalendar): a raised card with the current value. */
 export function HijriAdjustRow({
   valueLabel,
   onPress,

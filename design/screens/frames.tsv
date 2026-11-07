@@ -2,14 +2,20 @@ id	stack	size	theme	status	caption
 Main	core	compact	ar-light	source	Home
 MainLandscapeRail	core	compact-short	ar-light	awaiting-approval	الرئيسية · أفقي، الشريط الرأسي ٨٤٤ × ٣٩٠ (بانتظار الموافقة)
 Mushaf	core	compact	ar-light	source	Mushaf page · Uthmani Hafs (the app draws the ﴿ ﴾ end-of-ayah marks inline, so the recited one turns brand)
+MushafFullscreenEnter	core	compact	ar-light	source	Mushaf · full screen button in the tools pill (ADR 0071)
+MushafFullscreen	core	compact	ar-light	source	Mushaf · full screen: no toolbar, player, status bar or Android navigation bar; the exit button sits where the full screen button was; audio keeps playing (ADR 0071)
 AyahSheet	core	compact	ar-light	source	Ayah actions · mid detent (50%)
 Player	core	compact	ar-light	source	Player
+PlayerReciters	core	compact	ar-light	source	Player, no artwork (ADR 0062 option b). Reciter name, surah, ayah card, progress, transport and the utility bar (repeat, ayah range, sleep timer; speed removed). Reciters list always visible under the controls: current reciter selected (checkmark); installed row is a button that switches reciter; not-downloaded row has a 44 pt download button; a reciter without the current surah (37) is disabled with «غير متوفرة لهذه السورة». Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062)
+PlayerReciterDownloading	core	compact	ar-light	source	Player, no artwork. After tapping download on «محمود خليل الحصري»: that row shows the progress bar (player colours) and a 44 pt stop button. Caption annotation: «يبدأ التشغيل تلقائيًا عند انتهاء التنزيل» (when the download finishes, the player switches to that reciter and auto-plays from the current ayah). Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062)
 ReaderSettings	core	compact	ar-light	source	Reader settings · mid detent (50%)
 SurahIndex	reading	compact	ar-light	source	Surah index
 Search	reading	compact	ar-light	source	Search
 Reading	reading	compact	ar-light	source	Reading mode
 ReadingMiniIdle	reading	compact	ar-light	source	Reading · mini player idle (plays from the top ayah on screen)
 ReadingMiniCollapsed	reading	compact	ar-light	source	Reading · mini player collapsed (drag down to hide, drag up or tap to show)
+ReadingMiniUnavailable	reading	compact	ar-light	source	Reading · mini player, surah unavailable for the reciter (surah 37 الصافات with إسلام صبحي; play was pressed, nothing plays, no progress state). Info glyph and message; «تغيير القارئ» opens the reciter picker (44 pt target). Idle reader rule (ADR 0059) so the bar stays on the reader. Approved 4 Nov 2026 (ADR 0062)
+ReadingMiniSkipped	reading	compact	ar-light	source	Mini player, playing · continuous play skipped surah 37 (moved 36 → 38). Shows surah ص playing normally, plus a secondary line «تخطّي الصافات · غير متوفرة بصوت إسلام صبحي». The notice is transient: it shows for about 4 s, then the line disappears. VoiceOver announces it (role=status, polite). Approved 4 Nov 2026 (ADR 0062)
 Focus	reading	compact	ar-light	source	Focus mode
 Tafsir	reading	compact	ar-light	source	Tafsir · mid detent (50%)
 TafsirFull	reading	compact	ar-light	source	Tafsir · full detent
@@ -21,10 +27,19 @@ Qibla	salah	compact	ar-light	source	اتجاه القبلة · القرص ثاب
 QiblaLandscape	salah	compact-short	ar-light	awaiting-approval	اتجاه القبلة · أفقي، ٨٤٤ × ٣٩٠ (بانتظار الموافقة)
 MyQuran	my-quran	compact	ar-light	source	My Quran
 Reciters	audio	compact	ar-light	source	Reciters
+ReciterSurahsUnavailable	salah	compact	ar-light	source	Listen › إسلام صبحي · surah list, rows 35–41 (same row styling as SurahIndex; header as Reciters). Surahs 37 الصافات, 39 الزمر and 40 غافر are missing from this reciter: dimmed (ink-muted), trailing label «غير متوفرة» instead of the play or download control, not tappable (no link, aria-disabled). Others are normal. Approved 4 Nov 2026 (ADR 0062)
 Settings	settings	compact	ar-light	source	Settings
 AdhanSoundPicker	settings	compact	ar-light	source	صوت الأذان
 AdhanSoundPickerDark	settings	compact	dark	source	صوت الأذان · Dark
 SettingsAdhanSoundRow	settings	compact	ar-light	source	الإعدادات · صوت الأذان
+SettingsSuggestCard	salah	compact	ar-light	source	الإعدادات · اقترح فكرة (ADR 0066)
+SuggestSheet	salah	compact	ar-light	source	اقترح فكرة · sheet
+SuggestSheetError	salah	compact	ar-light	source	اقترح فكرة · خطأ في البريد
+SuggestSheetSending	salah	compact	ar-light	source	اقترح فكرة · جارٍ الإرسال
+SuggestSheetSent	salah	compact	ar-light	source	اقترح فكرة · تم الإرسال
+SuggestSheetOffline	salah	compact	ar-light	source	اقترح فكرة · بدون اتصال
+SuggestSheetDark	salah	compact	dark	source	اقترح فكرة · Dark
+SuggestSheetEnglish	salah	compact	en	source	Suggest an idea · English (LTR)
 Sources	settings	compact	ar-light	source	Sources
 SignIn	account	compact	ar-light	source	Sign in
 VerifyCode	account	compact	ar-light	source	Verify code
@@ -104,9 +119,9 @@ EmptyMyQuran	my-quran	compact	ar-light	source	Empty · My Quran
 HomeDark	states	compact	dark	source	Home · dark
 HomeEnglish	states	compact	en	source	Home · English
 HomeAndroid	states	compact	ar-light	source	Home · Android
-Hadith	hadith	compact	ar-light	source	Hadith
-HadithDetail	hadith	compact	ar-light	source	Hadith detail
-HadithDetailEnglish	hadith	compact	en	source	Hadith detail · English
+Hadith	hadith	compact	ar-light	source	Hadith · deferred: HadeethEnc, ADR 0042
+HadithDetail	hadith	compact	ar-light	source	Hadith detail · deferred: HadeethEnc, ADR 0042
+HadithDetailEnglish	hadith	compact	en	source	Hadith detail · English · deferred: HadeethEnc, ADR 0042
 LoadingReciters	audio	compact	ar-light	source	Reciters · loading (first sync)
 LoadingHome	states	compact	ar-light	source	Home · loading (first launch)
 LoadingIndex	states	compact	ar-light	source	Surah index · loading (first launch)
@@ -122,7 +137,7 @@ WidgetContinueReadingDark	widgets	compact	dark	source	iOS widget · continue rea
 WidgetLockScreen	widgets	compact	ar-light	source	iOS lock screen · inline, rectangular, circular · Light wallpaper
 WidgetLockScreenDark	widgets	compact	dark	source	iOS lock screen · inline, rectangular, circular · Dark wallpaper
 AndroidWidgets	widgets	compact	ar-light	source	Android home screen widgets · 2×2 and 4×2 · Light
-AndroidWidgetsDark	widgets	watch	dark	source	Android home screen widgets · 2×2 and 4×2 · Dark
+AndroidWidgetsDark	widgets	compact	dark	source	Android home screen widgets · 2×2 and 4×2 · Dark
 WatchHome	watch	compact	dark	source	Apple Watch · home (dark only, watchOS) · 41 mm
 WatchSibha	watch	compact	dark	source	Apple Watch · misbaha (dark only, watchOS) · 41 mm
 WatchComplications	watch	compact	dark	source	Apple Watch · complications (dark only, watchOS) · 41 mm
@@ -164,3 +179,53 @@ WidgetAddConfirm	widgets	compact	ar-light	source	Widgets · add confirm · next 
 WidgetAddConfirmDark	widgets	compact	dark	source	Widgets · add confirm · next prayer · Arabic · Dark (ADR 0054)
 WidgetAddConfirmAlready	widgets	compact	ar-light	source	Widgets · already on home · Arabic · Light (ADR 0054)
 WidgetAddConfirmAlreadyDark	widgets	compact	dark	source	Widgets · already on home · Arabic · Dark (ADR 0054)
+HadithCollCovers	hadith	compact	ar-light	source	Hadith collection covers · light · Arabic
+HadithCollCoversSepia	hadith	compact	ar-light	source	Hadith collection covers · sepia · Arabic
+HadithCollCoversDark	hadith	compact	dark	source	Hadith collection covers · dark · Arabic
+HadithCollList	hadith	compact	ar-light	source	Hadith collections · list · Arabic
+HadithCollListDark	hadith	compact	dark	source	Hadith collections · list · dark · Arabic
+HadithCollListEnglish	hadith	compact	en	source	Hadith collections · list · English
+HadithCollUntitled	hadith	compact	ar-light	source	Hadith collections · untitled fallback · Arabic
+HadithCollUntitledDark	hadith	compact	dark	source	Hadith collections · untitled fallback · dark · Arabic
+HadithCollUntitledEnglish	hadith	compact	en	source	Hadith collections · untitled fallback · English
+HadithCollUntitledBooks	hadith	compact	ar-light	source	Hadith books · untitled collection · Arabic
+HadithCollUntitledBooksDark	hadith	compact	dark	source	Hadith books · untitled collection · dark · Arabic
+HadithCollUntitledBooksEnglish	hadith	compact	en	source	Hadith books · untitled collection · English
+HadithCollBooks	hadith	compact	ar-light	source	Hadith collection · books · Arabic
+HadithCollBooksDark	hadith	compact	dark	source	Hadith collection · books · dark
+HadithCollBooksEnglish	hadith	compact	en	source	Hadith collection · books · English
+HadithCollBook	hadith	compact	ar-light	source	Hadith book · hadith list · Arabic
+HadithCollBookDark	hadith	compact	dark	source	Hadith book · hadith list · dark
+HadithCollBookEnglish	hadith	compact	en	source	Hadith book · hadith list · English
+HadithCollSingle	hadith	compact	ar-light	source	Hadith single-book collection · Arabic
+HadithCollSingleDark	hadith	compact	dark	source	Hadith single-book collection · dark
+HadithCollSingleEnglish	hadith	compact	en	source	Hadith single-book collection · English
+HadithCollChapters	hadith	compact	ar-light	source	Hadith chapters · list · Arabic
+HadithCollChaptersDark	hadith	compact	dark	source	Hadith chapters · list · dark
+HadithCollChaptersEnglish	hadith	compact	en	source	Hadith chapters · list · English
+HadithCollChapterHadith	hadith	compact	ar-light	source	Hadith chapter · hadith list · Arabic
+HadithCollChapterHadithDark	hadith	compact	dark	source	Hadith chapter · hadith list · dark
+HadithCollChapterHadithEnglish	hadith	compact	en	source	Hadith chapter · hadith list · English
+HadithCollReader	hadith	compact	ar-light	source	Hadith reader · Arabic
+HadithCollReaderDark	hadith	compact	dark	source	Hadith reader · dark
+HadithCollReaderEnglish	hadith	compact	en	source	Hadith reader · English
+HadithCollReaderPlain	hadith	compact	ar-light	source	Hadith reader · single-colour fallback (source does not mark the chain) · Arabic
+HadithCollReaderGrade	hadith	compact	ar-light	source	Hadith reader · future state: grade (not built, labelled) · Arabic
+HadithCollSearch	hadith	compact	ar-light	source	Hadith search · empty query · Arabic
+HadithCollSearchResults	hadith	compact	ar-light	source	Hadith search · results · Arabic
+HadithCollSearchEmpty	hadith	compact	ar-light	source	Hadith search · no results · Arabic
+HadithCollDownload	hadith	compact	ar-light	source	Hadith collection download · downloading · sheet (50%)
+HadithCollLoading	hadith	compact	ar-light	source	Hadith collections · loading · Arabic
+HadithCollOffline	hadith	compact	ar-light	source	Hadith collections · offline, nothing downloaded · Arabic
+HadithCollOfflineDownloaded	hadith	compact	ar-light	source	Hadith collections · offline, some downloaded · Arabic
+HadithCollDownloadFailed	hadith	compact	ar-light	source	Hadith collections · download failed · Arabic
+HadithCollError	hadith	compact	ar-light	source	Hadith collections · error · Arabic
+HadithCollSaved	hadith	compact	ar-light	source	Saved hadith · list · Arabic
+HadithCollSavedUnverified	hadith	compact	ar-light	source	Saved hadith · unverified notice · Arabic
+HadithCollSavedEmpty	hadith	compact	ar-light	source	Empty · saved hadith · Arabic
+HadithCollExpanded	hadith	expanded	ar-light	source	Hadith · expanded window · 1194 × 834 · tab rail, books pane, book list
+HadithCollExpandedReader	hadith	expanded	ar-light	source	Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel
+HadithCollMenu	hadith	compact	ar-light	source	Menu · new cards · Hadith entry · Arabic
+HadithCollMenuDark	hadith	compact	dark	source	Menu · new cards · Hadith entry · dark
+HadithCollMenuEnglish	hadith	compact	en	source	Menu · new cards · Hadith entry · English
+HadithCollSources	hadith	compact	ar-light	source	Settings · المصادر والشكر · Hadith row added

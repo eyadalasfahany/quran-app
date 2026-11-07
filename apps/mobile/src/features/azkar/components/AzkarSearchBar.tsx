@@ -6,7 +6,7 @@ import { IconButton, SearchField } from '@/shared/ui';
 
 const BACK = { ios: 'chevron.left', android: 'chevron_left' } as const;
 
-/** The Azkar search row (quran-app-screens.html, #AzkarSearch): a raised back button and the search field. */
+/** The Azkar search row (screens/, #AzkarSearch): a raised back button and the search field. */
 export function AzkarSearchBar({
   value,
   onChangeText,

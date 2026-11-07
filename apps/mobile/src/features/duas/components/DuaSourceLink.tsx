@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
-/** The link to the dua's source page, in the brand tone under a prophetic dua (quran-app-screens.html, #DuaHadithDetail). */
+/** The link to the dua's source page, in the brand tone under a prophetic dua (screens/, #DuaHadithDetail). */
 export function DuaSourceLink({ url, testID = 'dua-source-link' }: { url: string; testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();

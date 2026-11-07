@@ -1,4 +1,4 @@
-/** The dial's face in its frame geometry (quran-app-screens.html, #Qibla): 336 px. */
+/** The dial's face in its frame geometry (screens/, #Qibla): 336 px. */
 const FACE = 336;
 
 /**

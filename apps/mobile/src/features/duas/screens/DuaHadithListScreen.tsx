@@ -14,7 +14,7 @@ import { DuasSourceRow } from '../components/DuasSourceRow';
 import { usePropheticDuaSections } from '../data/hooks';
 import { duasHref, goBackOr } from '../routes';
 
-/** Prophetic duas grouped by HadeethEnc category (quran-app-screens.html, list companion to #DuaHadithDetail). */
+/** Prophetic duas grouped by HadeethEnc category (screens/, list companion to #DuaHadithDetail). */
 export function DuaHadithListScreen({
   groupId,
   testID = 'screen-dua-hadith-list',

@@ -9,7 +9,7 @@ import { AzkarProgressRing } from './AzkarProgressRing';
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
 
 /**
- * One session category on Azkar home (quran-app-screens.html, #AzkarHome): its name, «١٢ من ٢٤», and a progress ring.
+ * One session category on Azkar home (screens/, #AzkarHome): its name, «١٢ من ٢٤», and a progress ring.
  * A completed session says so in its label.
  */
 export function AzkarSessionRow({

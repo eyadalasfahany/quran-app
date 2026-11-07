@@ -4,7 +4,7 @@ import { TextInput, View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { arabicTextDirection, displayText, uiTextProps, UiText, useContrastColors } from '@/shared/ui';
 
-// The body field grows from 150 to 240 and scrolls inside itself past that (quran-app-screens.html, #MyDuaEditor).
+// The body field grows from 150 to 240 and scrolls inside itself past that (screens/, #MyDuaEditor).
 const BODY_MIN_HEIGHT = 150;
 const BODY_MAX_HEIGHT = 240;
 

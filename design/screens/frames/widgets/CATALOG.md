@@ -15,7 +15,7 @@ iOS + Android widgets + help
 | `WidgetLockScreen` | compact | ar-light | source | iOS lock screen · inline, rectangular, circular · Light wallpaper |
 | `WidgetLockScreenDark` | compact | dark | source | iOS lock screen · inline, rectangular, circular · Dark wallpaper |
 | `AndroidWidgets` | compact | ar-light | source | Android home screen widgets · 2×2 and 4×2 · Light |
-| `AndroidWidgetsDark` | watch | dark | source | Android home screen widgets · 2×2 and 4×2 · Dark |
+| `AndroidWidgetsDark` | compact | dark | source | Android home screen widgets · 2×2 and 4×2 · Dark |
 | `WidgetsHelp` | compact | ar-light | awaiting-approval | Settings · widgets and watch help · Arabic · Light · awaiting approval |
 | `WidgetsHelpDark` | compact | dark | awaiting-approval | Settings · widgets and watch help · Arabic · Dark · awaiting approval |
 | `WidgetAddConfirm` | compact | ar-light | source | Widgets · add confirm · next prayer · Arabic · Light (ADR 0054) |

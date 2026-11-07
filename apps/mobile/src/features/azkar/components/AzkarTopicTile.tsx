@@ -4,7 +4,7 @@ import { Pressable } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
-/** A browse topic (quran-app-screens.html, #AzkarHome «المواضيع»): the name over its dhikr count, on a raised card. */
+/** A browse topic (screens/, #AzkarHome «المواضيع»): the name over its dhikr count, on a raised card. */
 export function AzkarTopicTile({
   title,
   countText,

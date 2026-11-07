@@ -4,7 +4,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
-// The Home frame's progress ring: 64 pt, stroke 5 (quran-app-screens.html, #Main «تقدّم اليوم»).
+// The Home frame's progress ring: 64 pt, stroke 5 (screens/, #Main «تقدّم اليوم»).
 const RING_SIZE = 64;
 const STROKE = 5;
 const RADIUS = (RING_SIZE - STROKE) / 2;

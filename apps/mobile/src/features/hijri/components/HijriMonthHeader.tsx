@@ -8,7 +8,7 @@ const PREVIOUS = { ios: 'chevron.left', android: 'chevron_left' } as const;
 const NEXT = { ios: 'chevron.right', android: 'chevron_right' } as const;
 
 /**
- * The month title with previous and next (quran-app-screens.html, #HijriCalendar): the Amiri month and year, the
+ * The month title with previous and next (screens/, #HijriCalendar): the Amiri month and year, the
  * Gregorian range under it, and a «اليوم» return when the calendar is away from today.
  */
 export function HijriMonthHeader({

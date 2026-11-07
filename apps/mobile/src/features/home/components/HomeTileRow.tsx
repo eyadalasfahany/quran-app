@@ -6,10 +6,10 @@ import type { IconName } from '@/shared/ui';
 
 import { HomeTile } from './HomeTile';
 
-// A tile's width when the row scrolls (quran-app-screens.html, #Main: 84 pt tiles in a row that runs past the edge).
+// A tile's width when the row scrolls (screens/, #Main: 84 pt tiles in a row that runs past the edge).
 const SCROLL_TILE_WIDTH = 84;
 
-// Home's quick-access row (quran-app-screens.html, #Main). Tiles share the row equally while they fit (ADR 0017). Once
+// Home's quick-access row (screens/, #Main). Tiles share the row equally while they fit (ADR 0017). Once
 // they don't, as with five tiles on a phone, the row scrolls sideways at the frame's 84 pt tile width.
 export function HomeTileRow({
   tiles,

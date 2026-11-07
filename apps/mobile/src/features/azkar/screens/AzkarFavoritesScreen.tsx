@@ -17,7 +17,7 @@ const BOOKMARK = { ios: 'bookmark.fill', android: 'bookmark' } as const;
 const EMPTY_ICON = { ios: 'bookmark', android: 'bookmark' } as const;
 
 /**
- * Saved dhikr (quran-app-screens.html, #AzkarFavorites and #AzkarFavoritesEmpty). Each card opens its entry; the
+ * Saved dhikr (screens/, #AzkarFavorites and #AzkarFavoritesEmpty). Each card opens its entry; the
  * bookmark removes it. An empty list says how to add one and offers the browse screen.
  */
 export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { testID?: string }) {

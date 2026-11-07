@@ -6,7 +6,7 @@ import { AzkarRecentSearches } from '@/features/azkar/components/AzkarRecentSear
 import { UiText } from '@/shared/ui';
 
 /**
- * The empty-query state of the Azkar scope (quran-app-screens.html, #AzkarSearchEmpty): the recent queries, each
+ * The empty-query state of the Azkar scope (screens/, #AzkarSearchEmpty): the recent queries, each
  * tappable and removable, with «مسح السجل» to clear them, then the line that says what a search finds.
  */
 export function AzkarSearchIdle({

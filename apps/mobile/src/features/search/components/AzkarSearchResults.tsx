@@ -12,7 +12,7 @@ import { EmptyState } from '@/shared/ui';
 const SEARCH_ICON = { ios: 'magnifyingglass', android: 'search' } as const;
 
 /**
- * The «الأذكار» scope of search (ADR 0031, quran-app-screens.html #AzkarSearch): the chapters whose title matches,
+ * The «الأذكار» scope of search (ADR 0031, screens/ #AzkarSearch): the chapters whose title matches,
  * then the dhikr whose text matches, each opened in the Azkar reader. Only text segments are searched, so no Quran
  * text appears here. Mount it only when Azkar content is installed; the search screen decides that.
  *

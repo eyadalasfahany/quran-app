@@ -24,7 +24,7 @@ const PADDING_X = 14;
 const GAP = 10;
 
 /**
- * The app-wide offline notice. The frame (quran-app-screens.html, Offline) floats a glass pill over the content. The app
+ * The app-wide offline notice. The frame (screens/, Offline) floats a glass pill over the content. The app
  * draws a slim strip in flow instead, directly under the top safe area, so it never covers a screen title (ADR 0037).
  * MainShell positions it and pushes the content down by its height; `motion` carries that height and the fade.
  *

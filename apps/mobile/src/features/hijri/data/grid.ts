@@ -4,7 +4,7 @@ import { shiftLocalDay, toHijri, type HijriDate } from './hijri-date';
 import type { HijriMonth } from './month';
 import { occasionsOnDay, type OccasionId, type OccasionOccurrence } from './occasions';
 
-/** Week starts on Saturday in Arabic and Sunday in English (quran-app-screens.html, #HijriCalendar; ADR 0048). */
+/** Week starts on Saturday in Arabic and Sunday in English (screens/, #HijriCalendar; ADR 0048). */
 export function weekStartFor(locale: Locale): number {
   return locale === 'ar' ? 6 : 0;
 }

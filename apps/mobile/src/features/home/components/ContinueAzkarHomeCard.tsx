@@ -6,7 +6,7 @@ import { Icon, type IconName, UiText, useContrastColors } from '@/shared/ui';
 
 const CHEVRON: IconName = { ios: 'chevron.right', android: 'chevron_right' };
 const TRACK_HEIGHT = 4;
-// The title is Amiri 22 (quran-app-screens.html, #Main «تابع الأذكار»). No display token has that size.
+// The title is Amiri 22 (screens/, #Main «تابع الأذكار»). No display token has that size.
 const TITLE_SIZE = 22;
 const TITLE_LINE_HEIGHT = 29;
 // The card's padding and the gap inside it (14 and 6 pt in the frame).
@@ -23,7 +23,7 @@ export type ContinueAzkarHomeResume = {
 };
 
 /**
- * Home's «تابع الأذكار» card (quran-app-screens.html, #Main): a lighter surface card, not the brand card, so only «تابع
+ * Home's «تابع الأذكار» card (screens/, #Main): a lighter surface card, not the brand card, so only «تابع
  * القراءة» is green (ADR 0034 §1). It resumes the reader at the first incomplete unit. Nothing is drawn with no resume.
  */
 export function ContinueAzkarHomeCard({

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { ORNATE_CLOSE, ORNATE_OPEN, QuranText } from '@/shared/ui';
 
-/** Centred Quran text for a Quranic dua detail (quran-app-screens.html, #DuaQuranDetail). */
+/** Centred Quran text for a Quranic dua detail (screens/, #DuaQuranDetail). */
 export function DuaQuranText({
   verses,
   fontScale = 1,

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rebuild design/screens for team sharing + low token cost for models.
 
-- Does NOT modify quran-app-screens.html
+- Reads screens/ (ADR 0075) through packages/design-tokens/scripts/screens_lib.py; never writes there
 - Externalizes base64 images → assets/
 - Writes lean frame partials (no per-frame document chrome)
 - Writes AGENTS.md + CATALOG.md (what models should read)
@@ -14,10 +14,13 @@ import hashlib
 import json
 import re
 import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-SRC = ROOT / "quran-app-screens.html"
+sys.path.insert(0, str(ROOT / "packages" / "design-tokens" / "scripts"))
+from screens_lib import combined  # noqa: E402
+
 OUT = ROOT / "design" / "screens"
 ASSETS = OUT / "assets"
 FRAMES = OUT / "frames"  # frames/<stack>/<id>.html partials
@@ -197,6 +200,16 @@ def externalize_images(fig: str, rel_prefix: str, digest_map: dict[str, str]) ->
         repl,
         fig,
     )
+
+    # Frames reference repo-root images (design-assets/...) instead of inlining them.
+    # Treat them like inline images so the asset names stay the same.
+    def repl_file(m: re.Match[str]) -> str:
+        path = ROOT / m.group(0)
+        mime = "jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else path.suffix.lower().lstrip(".")
+        b64 = base64.b64encode(path.read_bytes()).decode("ascii")
+        return repl(re.match(r"(.+)\|(.+)", f"{mime}|{b64}", re.S))
+
+    out = re.sub(r'design-assets/[^)"\'\s]+', repl_file, out)
     return out, saved
 
 
@@ -232,7 +245,7 @@ def detect_theme(fid: str, cap: str) -> str:
 
 
 def main() -> None:
-    html = SRC.read_text(encoding="utf-8")
+    html = combined()  # screens/ as one document, in the old single-file form
     style_m = re.search(r"<style>(.*?)</style>", html, re.S)
     if not style_m:
         raise SystemExit("no style block")
@@ -252,7 +265,7 @@ def main() -> None:
     common = OUT / "common"
     common.mkdir()
     (common / "styles.css").write_text(
-        "/* From quran-app-screens.html — do not edit monolith from here */\n" + style_m.group(1),
+        "/* From screens/screens.css — edit it there, not here */\n" + style_m.group(1),
         encoding="utf-8",
     )
 
@@ -332,7 +345,7 @@ def main() -> None:
     write_extras(OUT, by_stack)
 
     manifest = {
-        "source": "quran-app-screens.html",
+        "source": "screens/",
         "frameCount": len(frames),
         "assetCount": len(digest_map),
         "bytesSavedVsInline": total_saved,
@@ -416,9 +429,9 @@ Taybah HTML design frames, split for humans and for low token use.
 
 ## Source of truth
 
-- **CI / `frame-shot.py`:** still `quran-app-screens.html` at repo root (do not delete; do not edit from here).
+- **Design source, CI and `frame-shot.py`:** `screens/` at repo root, one file per frame (ADR 0075). Edit frames there, never here.
 - **Tokens / components:** `quran-app-design-system.html`.
-- **This tree:** team-facing catalog + lean copies. New work lands here first, then merges to the monolith when approved.
+- **This tree:** generated catalog + lean copies of `screens/`. Never edit it by hand; rebuild it.
 
 ## Read order (save tokens)
 
@@ -436,7 +449,7 @@ Taybah HTML design frames, split for humans and for low token use.
 2. Widgets / watch / wear / notifications: no Quran ayah text, no dhikr text.
 3. Layout follows window class (`compact` / `medium` / `expanded` / short), never device model.
 4. Frames marked `awaiting-approval` need developer sign-off before app code (ADR 0010).
-5. Do not modify `quran-app-screens.html` when editing this tree.
+5. This tree is generated from `screens/`; change frames in `screens/frames/<section>/<FrameId>.html`.
 
 ## Stacks (quick map)
 
@@ -467,7 +480,7 @@ def write_readme(frames: list[dict], by_stack: dict, assets: int, saved: int) ->
 
 Team-share design catalog. **Humans browse HTML**; **models read catalogs** (not megabytes of markup).
 
-Monolith `quran-app-screens.html` stays untouched for CI / `frame-shot.py`.
+Generated from `screens/` (the design source, ADR 0075); edit frames there.
 
 ## Share with the team
 
@@ -484,7 +497,7 @@ Monolith `quran-app-screens.html` stays untouched for CI / `frame-shot.py`.
 | [`frames.tsv`](frames.tsv) | 14 KB | find an id |
 | [`CATALOG.md`](CATALOG.md) | 17 KB | markdown table |
 | one `frames/.../<Id>.html` | usually &lt;25 KB | visual review only |
-| `quran-app-screens.html` | **avoid** | CI monolith only |
+| `screens/frames/<section>/<Id>.html` | one frame | the design source (ADR 0075) |
 
 Never open `common/styles.css` or many frames unless asked.
 
@@ -614,7 +627,7 @@ def write_index(frames: list[dict], by_stack: dict[str, list[dict]]) -> None:
 </head>
 <body>
 <header class="gx-head">
-  <p><a href="../../quran-app-screens.html">monolith (CI)</a> · <a href="../../quran-app-design-system.html">design system</a> · <a href="AGENTS.md">AGENTS.md</a> · <a href="CATALOG.md">CATALOG.md</a></p>
+  <p><a href="../../screens/index.html">screens (source)</a> · <a href="../../quran-app-design-system.html">design system</a> · <a href="AGENTS.md">AGENTS.md</a> · <a href="CATALOG.md">CATALOG.md</a></p>
   <h1>Taybah design screens</h1>
   <p>{len(frames)} frames · {len(by_stack)} stacks · lean partials + shared viewer. Open any frame: <a href="viewer.html?id=Main">viewer.html?id=Main</a></p>
 </header>

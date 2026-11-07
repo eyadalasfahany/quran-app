@@ -35,10 +35,10 @@ import {
 
 // The frame's 16 pt gutter.
 const FRAME_GUTTER = 16;
-// The loading skeleton's seven rows, each with its own name length (quran-app-screens.html, #loading).
+// The loading skeleton's seven rows, each with its own name length (screens/, #loading).
 const SKELETON_NAME_WIDTHS = ['62%', '48%', '70%', '55%', '66%', '44%', '58%'] as const;
 
-// The Listen tab (quran-app-screens.html, #Reciters). It composes the reciter components and wires them to
+// The Listen tab (screens/, #Reciters). It composes the reciter components and wires them to
 // the catalogue, the download store and the player. It draws no UI of its own.
 export function ListenScreen() {
   const { t } = useTranslation();

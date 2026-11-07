@@ -231,7 +231,7 @@
     pages.appendChild(el('div', { class: 'tree-label', text: 'Elsewhere' }));
     pages.appendChild(el('ul', { class: 'tree' }, [
       ['../quran-app-design-system.html', 'Design system (tokens)'],
-      ['../quran-app-screens.html', 'Screens monolith (CI)'],
+      ['../screens/index.html', 'Screens (design source)'],
       ['screens/extras/devices/index.html', 'Devices'],
       ['screens/extras/sizes/index.html', 'Widget and watch sizes'],
       ['screens/extras/notifications/index.html', 'Notifications'],
@@ -492,7 +492,7 @@
     var total = DATA.screens.length, drawn = 0, derived = 0;
     DATA.screens.forEach(function (s) { Object.keys(s.variants).forEach(function (k) { if (s.variants[k].how === 'drawn') drawn++; else derived++; }); });
     main.appendChild(el('h1', { text: 'Taybah design reference' }));
-    main.appendChild(el('p', { class: 'lead', text: 'Every screen of the app, one page each, in light and dark, Arabic (RTL) and English (LTR), at the compact, medium, expanded and short window sizes. Drawn frames come from quran-app-screens.html; the rest are derived from them and marked so.' }));
+    main.appendChild(el('p', { class: 'lead', text: 'Every screen of the app, one page each, in light and dark, Arabic (RTL) and English (LTR), at the compact, medium, expanded and short window sizes. Drawn frames come from screens/ (one file per frame); the rest are derived from them and marked so.' }));
     main.appendChild(el('div', { class: 'stats' }, [
       [DATA.stacks.length, 'stacks'], [total, 'screens'], [drawn, 'drawn variants'], [derived, 'derived variants']
     ].map(function (x) { return el('div', { class: 'stat' }, [el('b', { text: String(x[0]) }), el('span', { text: x[1] })]); })));

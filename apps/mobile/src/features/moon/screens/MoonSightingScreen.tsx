@@ -30,7 +30,7 @@ import {
 import { useMoonLocation } from '../hooks/useMoonLocation';
 
 /**
- * Moon sighting (quran-app-screens.html, #MoonSighting). Read-only Salah location in the header; the estimate always
+ * Moon sighting (screens/, #MoonSighting). Read-only Salah location in the header; the estimate always
  * carries the disclaimer. Times are shown in the device time zone, as the frame shows them.
  */
 export function MoonSightingScreen({ now, testID = 'screen-moon-sighting' }: { now?: Date; testID?: string }) {

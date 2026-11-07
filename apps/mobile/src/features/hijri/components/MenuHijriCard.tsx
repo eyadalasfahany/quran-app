@@ -5,7 +5,7 @@ import { MenuCard } from '@/features/menu/components/MenuCard';
 const CALENDAR = { ios: 'calendar', android: 'calendar_month' } as const;
 
 /**
- * The Hijri calendar card in the Menu grid (quran-app-screens.html, #MenuNewCards): the shared menu card with today's
+ * The Hijri calendar card in the Menu grid (screens/, #MenuNewCards): the shared menu card with today's
  * Hijri date as its line. It reuses MenuCard, so the radius, hairline and type match the other cards.
  */
 export function MenuHijriCard({

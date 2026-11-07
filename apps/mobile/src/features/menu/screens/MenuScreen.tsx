@@ -42,7 +42,7 @@ const ICON = {
 } as const satisfies Record<string, IconName>;
 
 /**
- * The القائمة tab (quran-app-screens.html, #Menu; ADR 0032 §3 and decision 6): a two-column staggered grid of cards,
+ * The القائمة tab (screens/, #Menu; ADR 0032 §3 and decision 6): a two-column staggered grid of cards,
  * each opening a section, and the search button in the header row beside the title (as Home). The continue cards come
  * first and show only when there is something to continue. Azkar cards show only once Azkar content is installed (ADR 0031 §10). Composition only: the
  * cards and their previews come from hooks.

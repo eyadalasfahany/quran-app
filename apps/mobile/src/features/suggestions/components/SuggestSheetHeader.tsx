@@ -5,7 +5,7 @@ import { IconButton, UiText } from '@/shared/ui';
 
 const CLOSE = { ios: 'xmark', android: 'close' } as const;
 
-/** The sheet's title row: the title at the start edge and a round close button at the end (quran-app-screens.html, #SuggestSheet). */
+/** The sheet's title row: the title at the start edge and a round close button at the end (screens/, #SuggestSheet). */
 export function SuggestSheetHeader({
   title,
   closeLabel,

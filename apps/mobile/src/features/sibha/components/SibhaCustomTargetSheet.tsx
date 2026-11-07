@@ -14,7 +14,7 @@ function digitsOnly(text: string): string {
 }
 
 /**
- * The custom target sheet (quran-app-screens.html, #Sibha «مخصص»): a number field with save and cancel, over a dimmed
+ * The custom target sheet (screens/, #Sibha «مخصص»): a number field with save and cancel, over a dimmed
  * screen. A plain RN Modal, like the Salah location sheet. Save stays off until the number is valid.
  */
 export function SibhaCustomTargetSheet({

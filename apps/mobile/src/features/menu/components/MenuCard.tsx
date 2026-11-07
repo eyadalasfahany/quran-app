@@ -5,13 +5,13 @@ import { useTheme } from '@/core/theme';
 import { Icon, UiText, useContrastColors, type IconName } from '@/shared/ui';
 
 const TRACK_HEIGHT = 4;
-// The card's title is Amiri 22 (quran-app-screens.html, #Menu). No display token has that size, so the size is set here
+// The card's title is Amiri 22 (screens/, #Menu). No display token has that size, so the size is set here
 // as the Khatma header does; the family and weight still come from the display scale.
 const TITLE_SIZE = 22;
 const TITLE_LINE_HEIGHT = 29;
 
 /**
- * One card of the menu (quran-app-screens.html, #Menu): the icon and a small caption, the Amiri title, an optional
+ * One card of the menu (screens/, #Menu): the icon and a small caption, the Amiri title, an optional
  * preview line and an optional thin progress bar. The whole card is one button.
  */
 export function MenuCard({

@@ -11,11 +11,11 @@ import { DailyProgressEmpty } from './DailyProgressEmpty';
 import { DailyProgressRing } from './DailyProgressRing';
 import { DailyProgressRow } from './DailyProgressRow';
 
-// The card pads 18 pt (quran-app-screens.html, #Main «تقدّم اليوم»).
+// The card pads 18 pt (screens/, #Main «تقدّم اليوم»).
 const CARD_PADDING = 18;
 
 /**
- * Home's «تقدّم اليوم» card (quran-app-screens.html, #Main, ADR 0034 §5): one ring for today's total and a row per goal
+ * Home's «تقدّم اليوم» card (screens/, #Main, ADR 0034 §5): one ring for today's total and a row per goal
  * the user chose. «تعديل» opens the goals sheet. With nothing chosen it shows the prompt instead.
  */
 export function DailyProgressCard({

@@ -32,7 +32,7 @@ const SEARCH_DEBOUNCE_MS = 150;
 type HitRow = { kind: 'heading' } | { kind: 'hit'; hit: AzkarSearchHit; number: number };
 
 /**
- * Azkar search (quran-app-screens.html, #AzkarSearch and #AzkarSearchEmpty). With no query it shows the recent
+ * Azkar search (screens/, #AzkarSearch and #AzkarSearchEmpty). With no query it shows the recent
  * searches; with a query it lists the matching topics and dhikr. Matches are highlighted, never rewritten.
  *
  * The matching dhikr are a virtual list (FlashList, as in the search tab), so a long result set is not all mounted at

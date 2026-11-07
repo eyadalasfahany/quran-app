@@ -13,7 +13,7 @@ import { dialAnchor, dialPlacement } from '../data/dial-placement';
 
 import { QiblaLabelClearance } from './QiblaLabelClearance';
 
-// The instrument's fixed geometry (quran-app-screens.html, #Qibla): a 336 px dial. The face never turns (ADR 0049): the
+// The instrument's fixed geometry (screens/, #Qibla): a 336 px dial. The face never turns (ADR 0049): the
 // ring, ticks, cardinals and numerals are a fixed reference ring. The Kaaba marker is fixed at the top; only the needle
 // moves (QiblaKaabaMarker, QiblaNeedle).
 const DIAL = 336;

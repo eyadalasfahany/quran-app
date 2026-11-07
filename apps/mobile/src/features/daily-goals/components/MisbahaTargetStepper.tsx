@@ -11,7 +11,7 @@ const MINUS: IconName = { ios: 'minus', android: 'remove' };
 const PLUS: IconName = { ios: 'plus', android: 'add' };
 
 /**
- * The misbaha goal's stepper (quran-app-screens.html, #DailyGoalsSheet «عدد التسبيحات»): the label at the reading start,
+ * The misbaha goal's stepper (screens/, #DailyGoalsSheet «عدد التسبيحات»): the label at the reading start,
  * then «−», the value and «+». Each end stops at the range's limit, and the button there is disabled.
  */
 export function MisbahaTargetStepper({

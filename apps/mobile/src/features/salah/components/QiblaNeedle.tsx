@@ -5,7 +5,7 @@ import { useTheme } from '@/core/theme';
 
 import { dialAnchor } from '../data/dial-placement';
 
-// The frame's needle geometry, on the 336 dial (quran-app-screens.html, #Qibla). Only this rotates.
+// The frame's needle geometry, on the 336 dial (screens/, #Qibla). Only this rotates.
 const DIAL = 336;
 
 // The tapered gold dart and its quiet counterweight, from the frame.

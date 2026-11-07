@@ -3,10 +3,10 @@ import { join } from 'node:path';
 
 import { WIDGET_ADD_CATALOG } from './widget-add-catalog';
 
-const SCREENS_HTML = join(process.cwd(), '..', '..', 'quran-app-screens.html');
+const SCREENS_HTML = join(process.cwd(), '..', '..', 'screens', 'index.html');
 
 describe('widget add catalog', () => {
-  it('every row has a frame id present in quran-app-screens.html', () => {
+  it('every row has a frame id present in screens/index.html', () => {
     const html = readFileSync(SCREENS_HTML, 'utf8');
     for (const row of WIDGET_ADD_CATALOG) {
       expect(html).toContain(`id="${row.frameId}"`);

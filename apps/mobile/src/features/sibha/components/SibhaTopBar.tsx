@@ -8,7 +8,7 @@ const CLOSE: IconName = { ios: 'xmark', android: 'close' };
 const RESET: IconName = { ios: 'arrow.counterclockwise', android: 'restart_alt' };
 
 /**
- * The misbaha's top row (quran-app-screens.html, #Sibha): close at the reading start, reset at the end. Both are 44 pt
+ * The misbaha's top row (screens/, #Sibha): close at the reading start, reset at the end. Both are 44 pt
  * raised discs. Reset asks the screen to confirm before it clears the count.
  */
 export function SibhaTopBar({

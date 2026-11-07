@@ -56,7 +56,7 @@ function readVerseText(item: QuranicDuaSummary): string {
 }
 
 /**
- * Quranic duas grouped by surah (quran-app-screens.html, list companion to #DuaQuranDetail). Each row shows its full verse
+ * Quranic duas grouped by surah (screens/, list companion to #DuaQuranDetail). Each row shows its full verse
  * text. A dua whose verses are missing is left out, so no row is ever blank.
  */
 export function DuaQuranListScreen({ testID = 'screen-dua-quran-list' }: { testID?: string }) {

@@ -41,7 +41,7 @@ type Area = { width: number; height: number };
 const NO_AREA: Area = { width: 0, height: 0 };
 
 /**
- * «اتجاه القبلة» (quran-app-screens.html, #Qibla): a live compass to Makkah on the
+ * «اتجاه القبلة» (screens/, #Qibla): a live compass to Makkah on the
  * player-dark canvas. The dial is the only animation; Reduce Motion or no magnetometer
  * renders the static dial (D6), and an unset location renders the empty state.
  *

@@ -7,7 +7,7 @@ const CALENDAR = { ios: 'calendar', android: 'calendar_month' } as const;
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
 
 /**
- * The Hijri date pill under the Home header (quran-app-screens.html, #HomeHijriDate): a 36 pt fillSecondary pill with a
+ * The Hijri date pill under the Home header (screens/, #HomeHijriDate): a 36 pt fillSecondary pill with a
  * calendar glyph, the date and a chevron. It opens the Hijri calendar. The chevron is mirrored with the layout.
  */
 export function HomeDatePill({

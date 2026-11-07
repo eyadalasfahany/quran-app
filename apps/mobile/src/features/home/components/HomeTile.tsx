@@ -3,7 +3,7 @@ import { Pressable } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { Icon, type IconName, UiText, useContrastColors } from '@/shared/ui';
 
-// Home's quick-access tile (quran-app-screens.html, #Main): a centred icon over a caption, on a
+// Home's quick-access tile (screens/, #Main): a centred icon over a caption, on a
 // raised surface with a hairline border. The row sets each tile to an equal share of the width.
 export function HomeTile({
   icon,

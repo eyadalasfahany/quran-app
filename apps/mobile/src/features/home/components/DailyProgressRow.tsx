@@ -6,7 +6,7 @@ import { Icon, type IconName, UiText } from '@/shared/ui';
 
 const DONE: IconName = { ios: 'checkmark.circle', android: 'check_circle' };
 const OPEN: IconName = { ios: 'circle', android: 'radio_button_unchecked' };
-// The row is at least 36 pt tall (quran-app-screens.html, #Main «تقدّم اليوم»).
+// The row is at least 36 pt tall (screens/, #Main «تقدّم اليوم»).
 const ROW_MIN_HEIGHT = 36;
 
 /**

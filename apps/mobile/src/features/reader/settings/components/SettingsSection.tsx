@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
-/** Label-to-control gap in a stacked block (quran-app-screens.html: gap 6px). */
+/** Label-to-control gap in a stacked block (screens/: gap 6px). */
 export const SECTION_STACK_GAP = 6;
 
 /**

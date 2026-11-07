@@ -18,7 +18,7 @@ const EMPTY_ICON = { ios: 'speaker.wave.2', android: 'volume_up' } as const;
 const REMOVE_ALL_ICON = { ios: 'trash', android: 'delete_sweep' } as const;
 
 /**
- * Saved audio (quran-app-screens.html, #AzkarDownloads and #AzkarDownloadsEmpty). It lists the downloaded, downloading
+ * Saved audio (screens/, #AzkarDownloads and #AzkarDownloadsEmpty). It lists the downloaded, downloading
  * and failed recordings of the port, with the storage they use. With nothing downloaded it shows the empty state and
  * no buttons.
  */

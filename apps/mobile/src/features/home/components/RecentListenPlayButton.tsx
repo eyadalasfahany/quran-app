@@ -11,7 +11,7 @@ const ignoreTap = () => undefined;
 const PLAY_GLYPH = 'M8 5v14l11-7z';
 const PAUSE_GLYPH = 'M6 5h4v14H6zM14 5h4v14h-4z';
 
-// The 44 pt play button on a recent listen (quran-app-screens.html, #Main). The most recent row is filled
+// The 44 pt play button on a recent listen (screens/, #Main). The most recent row is filled
 // brand with an onBrand glyph; the others are surfaceRaised with a line border and a brand glyph.
 // The play triangle never flips: playback glyphs map to the timeline, not the reading direction.
 export function RecentListenPlayButton({

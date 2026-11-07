@@ -1,6 +1,6 @@
 ---
 name: taybah-feature-reviewer
-description: Reviews a built Taybah feature as a user would. Runs it on the Android emulator, screenshots each state, and compares it with its frame in quran-app-screens.html (rendered by frame-shot.py), the apple-design skill and the ADRs. Reports mismatches.
+description: Reviews a built Taybah feature as a user would. Runs it on the Android emulator, screenshots each state, and compares it with its frame in screens/ (screens/frames/<section>/<FrameId>.html, rendered by frame-shot.py), the apple-design skill and the ADRs. Reports mismatches.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

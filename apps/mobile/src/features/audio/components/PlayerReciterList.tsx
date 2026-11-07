@@ -30,7 +30,7 @@ import { PlayerScrollView } from './PlayerScrollView';
 const LIST_GAP = 6;
 const TITLE_INSET = 6;
 
-// The «القرّاء» list under the player's options (quran-app-screens.html, #PlayerReciters). It composes the rows and
+// The «القرّاء» list under the player's options (screens/, #PlayerReciters). It composes the rows and
 // wires them to the catalogue, the surah's availability and the pack downloads. Tapping an installed row selects him
 // and moves playback to him at the current ayah; a download moves playback when it finishes (ADR 0062 decision 7).
 // `scrollable` is true when the player fits the window: the list then scrolls inside

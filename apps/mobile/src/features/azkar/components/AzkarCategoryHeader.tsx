@@ -10,7 +10,7 @@ import { AzkarScreenHeader } from './AzkarScreenHeader';
 const BELL = { ios: 'bell', android: 'notifications' } as const;
 
 /**
- * The category screen's header (quran-app-screens.html, #AzkarCategory): back, the category name, the sourced line
+ * The category screen's header (screens/, #AzkarCategory): back, the category name, the sourced line
  * («حصن المسلم · ٢٤ ذكرًا»), and the progress «١٢ من ٢٤» with its bar. A chapter has no Arabic title in production,
  * so the name is always the localised category label.
  */

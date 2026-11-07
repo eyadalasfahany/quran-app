@@ -9,7 +9,7 @@ import { formatOccasionRange } from '../data/labels';
 import { useHijriText } from '../hooks/useHijriText';
 
 /**
- * One upcoming occasion (quran-app-screens.html, #HijriCalendar): a raised card with the name, the Hijri and Gregorian
+ * One upcoming occasion (screens/, #HijriCalendar): a raised card with the name, the Hijri and Gregorian
  * dates, a days-away chip and a gold dot. The row order is the reading order, so it mirrors in Arabic by itself.
  */
 export function OccasionRow({

@@ -16,7 +16,7 @@ const BOOKMARK = { ios: 'bookmark.fill', android: 'bookmark' } as const;
 const EMPTY_ICON = { ios: 'bookmark', android: 'bookmark' } as const;
 
 /**
- * Saved duas (quran-app-screens.html, favourites). Each card opens its dua; the bookmark removes it. A Quranic card shows
+ * Saved duas (screens/, favourites). Each card opens its dua; the bookmark removes it. A Quranic card shows
  * its surah and verses, never the verse text. An empty list says how to add one and offers the browse screen.
  */
 export function DuasFavoritesScreen({ testID = 'screen-duas-favorites' }: { testID?: string }) {

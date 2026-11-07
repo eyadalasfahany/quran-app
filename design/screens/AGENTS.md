@@ -4,9 +4,9 @@ Taybah HTML design frames, split for humans and for low token use.
 
 ## Source of truth
 
-- **CI / `frame-shot.py`:** still `quran-app-screens.html` at repo root (do not delete; do not edit from here).
+- **Design source, CI and `frame-shot.py`:** `screens/` at repo root, one file per frame (ADR 0075). Edit frames there, never here.
 - **Tokens / components:** `quran-app-design-system.html`.
-- **This tree:** team-facing catalog + lean copies. New work lands here first, then merges to the monolith when approved.
+- **This tree:** generated catalog + lean copies of `screens/`. Never edit it by hand; rebuild it.
 
 ## Read order (save tokens)
 
@@ -24,7 +24,7 @@ Taybah HTML design frames, split for humans and for low token use.
 2. Widgets / watch / wear / notifications: no Quran ayah text, no dhikr text.
 3. Layout follows window class (`compact` / `medium` / `expanded` / short), never device model.
 4. Frames marked `awaiting-approval` need developer sign-off before app code (ADR 0010).
-5. Do not modify `quran-app-screens.html` when editing this tree.
+5. This tree is generated from `screens/`; change frames in `screens/frames/<section>/<FrameId>.html`.
 
 ## Stacks (quick map)
 

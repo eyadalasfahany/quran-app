@@ -1,0 +1,2 @@
+// Tablet reader frames: a brand rule beside each selected line (ADR 0075 moved it here).
+addEventListener("load",()=>document.querySelectorAll(".xr-page .xr-sel").forEach(sel=>{const page=sel.closest(".xr-page"),pr=page.getBoundingClientRect(),rtl=getComputedStyle(page).direction==="rtl";[...sel.getClientRects()].forEach(r=>{const d=document.createElement("span");d.className="xr-rule";d.setAttribute("aria-hidden","true");d.style.top=(r.top-pr.top+6)+"px";d.style.height=(r.height-12)+"px";page.appendChild(d);});}));

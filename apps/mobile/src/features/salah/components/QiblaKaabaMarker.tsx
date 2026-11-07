@@ -7,7 +7,7 @@ import { dialAnchor, dialPlacement } from '../data/dial-placement';
 
 import { KaabaGlyph } from './KaabaGlyph';
 
-// The instrument's fixed geometry (quran-app-screens.html, #Qibla): a 336 px dial, the marker on the r=130 orbit at the top.
+// The instrument's fixed geometry (screens/, #Qibla): a 336 px dial, the marker on the r=130 orbit at the top.
 const DIAL = 336;
 const CENTER = DIAL / 2; // 168
 const MARKER_ORBIT = 130;

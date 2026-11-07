@@ -13,7 +13,7 @@ const BOOKMARK_FILLED = { ios: 'bookmark.fill', android: 'bookmark_added' } as c
  * The reader's action row under the text: the first slot, share, text size (Aa). The first slot is the favourite bookmark
  * when the caller gives `onToggleFavorite`; a caller with another first action (the «أدعيتي» bell) passes `leadingAction`
  * instead; with neither, the slot is left out. Presentational only. Azkar, Quranic and hadith readers draw it
- * (quran-app-screens.html, #AzkarReader and #DuaHadithDetail).
+ * (screens/, #AzkarReader and #DuaHadithDetail).
  */
 export function ReaderActionButtons({
   favorite = false,

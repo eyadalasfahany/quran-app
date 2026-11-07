@@ -9,7 +9,7 @@ import { useContrastColors } from './useContrastColors';
 
 export const ICON_BUTTON_SIZE = size.touchTarget;
 
-// `raised`: a surfaceRaised disc with a hairline, the header search button (quran-app-screens.html, #Main).
+// `raised`: a surfaceRaised disc with a hairline, the header search button (screens/, #Main).
 export type IconButtonVariant = 'plain' | 'filled' | 'track' | 'surface' | 'glass' | 'raised';
 // `brand` draws the glyph in the brand colour, for an on state that is not a selected fill (the «أدعيتي» bell).
 export type IconButtonTone = 'ink' | 'muted' | 'brand';

@@ -4,7 +4,7 @@ import { useTheme } from '@/core/theme';
 import { UiText } from '@/shared/ui';
 
 /**
- * One day of the month grid (quran-app-screens.html, #HijriCalendar): the Hijri day large, the Gregorian day small,
+ * One day of the month grid (screens/, #HijriCalendar): the Hijri day large, the Gregorian day small,
  * a gold dot for an occasion, the brand fill for today, and a muted face for the neighbour days at the edges.
  */
 export function HijriDayCell({

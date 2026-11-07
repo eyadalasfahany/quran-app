@@ -4,7 +4,7 @@ import { useTheme } from '@/core/theme';
 import { displayText, UiText } from '@/shared/ui';
 
 /**
- * The user's own dua on the reading view (quran-app-screens.html, #MyDuaDetail). The body is shown exactly as written:
+ * The user's own dua on the reading view (screens/, #MyDuaDetail). The body is shown exactly as written:
  * not trimmed, not wrapped in ornate brackets, and not set in the Quran face. It takes the reader's text size as the
  * dhikr token does, and the one-line caption sits under it.
  */

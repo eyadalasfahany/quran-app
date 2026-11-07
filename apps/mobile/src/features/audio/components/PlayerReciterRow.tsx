@@ -18,7 +18,7 @@ const NAME_GAP = 2;
 const DOWNLOAD_ICON = { ios: 'arrow.down.to.line', android: 'download' } as const satisfies IconName;
 const ACTION_ICON_SIZE = 22;
 
-// One reciter in the player's list (quran-app-screens.html, #PlayerReciters and #PlayerReciterDownloading). The
+// One reciter in the player's list (screens/, #PlayerReciters and #PlayerReciterDownloading). The
 // player is always dark, so every colour is a player token. The row composes the tile, the name, the style tag and
 // the status line the list passes in. Only `current` and `installed` are pressable; `notDownloaded` and `downloading`
 // act through their button; `unavailable` is inert.

@@ -9,7 +9,7 @@ const SOUND_ICON = { ios: 'speaker.wave.2', android: 'volume_up' } as const;
 
 /**
  * The الصلاة tab's header: the Amiri title with the Hijri · Gregorian date line under it, and the raised buttons at the
- * end: the adhan sound (when `onSoundPress` is given, ADR 0047) next to the location button (quran-app-screens.html,
+ * end: the adhan sound (when `onSoundPress` is given, ADR 0047) next to the location button (screens/,
  * #Salah — canonical layout, ADR 0057). The speaker comes first, so in Arabic it sits between the title and the location.
  * `onBack` adds a back button at the leading edge; the pushed route (/salah) passes it, the tab does not.
  */

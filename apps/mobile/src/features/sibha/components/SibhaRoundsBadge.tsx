@@ -6,7 +6,7 @@ import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
 /**
- * The rounds pill above the misbaha's count (quran-app-screens.html, #Sibha): «الدورة ٢» once a target has been
+ * The rounds pill above the misbaha's count (screens/, #Sibha): «الدورة ٢» once a target has been
  * completed, and nothing while there are no rounds. It is a read-out, so screen readers hear it through the counter's
  * value and it is not a control of its own.
  */

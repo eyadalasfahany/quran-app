@@ -6,7 +6,7 @@ import { UiText } from '@/shared/ui';
 
 import { SelectedAzkarCard } from './SelectedAzkarCard';
 
-// Cards in the row are 10 pt apart (quran-app-screens.html, #Main).
+// Cards in the row are 10 pt apart (screens/, #Main).
 const ROW_GAP = 10;
 
 export type SelectedAzkarItem = {
@@ -18,7 +18,7 @@ export type SelectedAzkarItem = {
 };
 
 /**
- * «أذكار مختارة» on Home (quran-app-screens.html, #Main, ADR 0034 §2): the session categories with today's progress, in a
+ * «أذكار مختارة» on Home (screens/, #Main, ADR 0034 §2): the session categories with today's progress, in a
  * row that scrolls sideways, and «عرض الكل» to the Azkar home. Nothing is drawn without a session.
  */
 export function SelectedAzkarSection({

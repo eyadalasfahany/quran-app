@@ -36,7 +36,7 @@ export function ListRow({
   /** Rows whose trailing content already reads as the destination (the index's page) drop the chevron. */
   chevron?: boolean;
   /**
-   * `index`: the Surah index rows (quran-app-screens.html, #SurahIndex). At least 60 pt tall with no inset,
+   * `index`: the Surah index rows (screens/, #SurahIndex). At least 60 pt tall with no inset,
    * a 14 pt gap, the name in Amiri 19 and the meta line at 12 pt. `default` is every other list.
    */
   density?: 'default' | 'index';

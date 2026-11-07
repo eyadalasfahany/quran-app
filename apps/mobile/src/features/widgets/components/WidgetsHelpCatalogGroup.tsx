@@ -5,7 +5,7 @@ import { SettingsGroup } from '@/features/settings/components/SettingsGroup';
 import { WIDGETS_HELP_CATALOG } from '../data/widgets-help-catalog';
 import { WidgetsHelpWidgetRow } from './WidgetsHelpWidgetRow';
 
-/** Lists every home-screen widget and what it shows (quran-app-screens.html, #WidgetsHelp). */
+/** Lists every home-screen widget and what it shows (screens/, #WidgetsHelp). */
 export function WidgetsHelpCatalogGroup({ testID = 'widgets-help-catalog' }: { testID?: string }) {
   const { t } = useTranslation();
 

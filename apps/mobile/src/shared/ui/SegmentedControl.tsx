@@ -6,7 +6,7 @@ import { useTheme } from '@/core/theme';
 
 import { UiText } from './UiText';
 
-/** Segment min-height on the frames (quran-app-screens.html: min-height 40px). */
+/** Segment min-height on the frames (screens/: min-height 40px). */
 export const SEGMENT_MIN_HEIGHT = 40;
 /** Top and bottom hit slop, so the hit area is 40 + 2 × 2 = 44 pt. */
 export const SEGMENT_HIT_SLOP = 2;

@@ -17,7 +17,7 @@ import { QiblaKaabaMarker } from './QiblaKaabaMarker';
 import { QiblaLubber } from './QiblaLubber';
 import { QiblaNeedle } from './QiblaNeedle';
 
-// The instrument's fixed geometry (quran-app-screens.html, #Qibla): a 336 px dial. The whole instrument keeps this
+// The instrument's fixed geometry (screens/, #Qibla): a 336 px dial. The whole instrument keeps this
 // geometry and is scaled about its centre to the size it is given (ADR 0036).
 const DIAL = 336;
 

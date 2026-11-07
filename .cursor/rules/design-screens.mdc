@@ -1,22 +1,25 @@
 ---
-description: How to read Taybah HTML design frames without burning tokens
+description: How to read and edit Taybah's HTML screen designs without burning tokens
 globs:
+  - screens/**
   - design/**
-  - design/screens/**
-  - quran-app-screens.html
   - quran-app-design-system.html
 alwaysApply: false
 ---
 
-# Design screens — token rules
+# Screen designs — token rules (ADR 0075)
 
-When the task involves UI frames, screens, widgets, watch, or design HTML:
+The design source is `screens/`: one frame per file, `screens/frames/<section>/<FrameId>.html`,
+combined by `screens/index.html`. Shared styles, script and images live once in
+`screens/screens.css`, `screens/screens.js` and `design-assets/`.
 
-0. For a screen's dark, LTR or tablet variants, read `design/AGENTS.md` and `design/CATALOG.md`
-   (one folder per screen: `design/<stack>/<Screen>/<variant>.html`). Derived variants are drafts.
-1. Read `design/screens/AGENTS.md` first (short).
-2. Find the frame in `design/screens/frames.tsv` or `design/screens/CATALOG.md`.
-3. Open **at most one** `design/screens/frames/<stack>/<FrameId>.html` partial if markup is required.
-4. Humans preview via `design/screens/viewer.html?id=<FrameId>`.
-5. Do **not** load `quran-app-screens.html` or `common/styles.css` unless regenerating or debugging the monolith.
-6. CI / `frame-shot.py` still use root `quran-app-screens.html` — leave it unchanged unless the developer asks to update the monolith.
+1. Find a frame: search `screens/index.html` for `id="<FrameId>"`, or use `design/CATALOG.md`.
+2. Open **only** that frame's file. Never load every frame or `screens.css` unless the task is shared styling.
+3. Edit a frame in its own file. Shared style or script goes in `screens.css` or `screens.js`, never
+   copied into a frame. Images go in `design-assets/`, never inlined as base64.
+4. Add a frame: copy a sibling file in the same section, rename it to the new id, and add its
+   `gx-fig` block (caption, device chrome, iframe) to that section in `screens/index.html`.
+5. Check: `npm run check:html -w @quran/design-tokens`. Render one frame:
+   `python3 packages/design-tokens/scripts/frame-shot.py <FrameId> <out.png>`.
+6. Dark, LTR and tablet variants that nobody drew: `design/AGENTS.md` and `design/CATALOG.md`
+   (generated from `screens/`; derived variants are drafts). Never edit `design/` by hand.

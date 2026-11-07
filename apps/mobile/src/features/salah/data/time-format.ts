@@ -15,7 +15,7 @@ function prayerTimeFormatter(locale: Locale): Intl.DateTimeFormat {
 
 /**
  * «٥:٤٧» / "5:47" — 12-hour clock without the ص/م marker, the convention on prayer-time displays
- * (quran-app-screens.html, #Salah): الفجر is read as morning and المغرب as evening from context.
+ * (screens/, #Salah): الفجر is read as morning and المغرب as evening from context.
  */
 export function formatPrayerTime(date: Date, locale: Locale = getLocale()): string {
   const text = prayerTimeFormatter(locale)

@@ -15,7 +15,7 @@ import { WidgetsHelpIosGroup } from '../components/WidgetsHelpIosGroup';
 import { WidgetsHelpWatchGroup } from '../components/WidgetsHelpWatchGroup';
 
 /**
- * Widgets and watch usage help (`quran-app-screens.html`, #WidgetsHelp; route `/settings/widgets`).
+ * Widgets and watch usage help (`screens/`, #WidgetsHelp; route `/settings/widgets`).
  * Mirrors Settings sub-screens such as `/settings/sources` and the reminders hub layout.
  */
 export function WidgetsHelpScreen({ testID = 'widgets-help-screen' }: { testID?: string }) {

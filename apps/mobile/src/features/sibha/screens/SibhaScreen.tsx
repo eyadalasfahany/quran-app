@@ -26,7 +26,7 @@ const NO_AREA: Area = { width: 0, height: 0 };
 const RESET_ICON = { ios: 'arrow.counterclockwise', android: 'restart_alt' } as const;
 
 /**
- * The misbaha (quran-app-screens.html, #Sibha): a full-screen counter. A tap anywhere that is not a button counts; the
+ * The misbaha (screens/, #Sibha): a full-screen counter. A tap anywhere that is not a button counts; the
  * top row closes and resets; the chips set the target (or «بلا حد», no limit); the label is the user's own. Reset asks
  * first, in the shared ConfirmDialog. No phrase is supplied (ADR 0034 §4). Composition only: the counter, its state and
  * the sheets are in their own files.

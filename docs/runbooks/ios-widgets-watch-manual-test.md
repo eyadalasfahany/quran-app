@@ -1,6 +1,6 @@
 # iOS widgets and Apple Watch — manual test (Mac only)
 
-Windows cannot compile these targets. After `npx expo prebuild -p ios` on a Mac, open the generated `.xcworkspace` and follow this checklist against the frames in `quran-app-screens.html`.
+Windows cannot compile these targets. After `npx expo prebuild -p ios` on a Mac, open the generated `.xcworkspace` and follow this checklist against the frames in `screens/` (section `widgets`).
 
 ## Prerequisites
 

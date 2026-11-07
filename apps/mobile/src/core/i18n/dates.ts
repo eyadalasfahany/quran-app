@@ -68,7 +68,7 @@ function weekdayFormatter(locale: Locale): Intl.DateTimeFormat {
 /** «السبت ٣١ أكتوبر» / "Saturday, October 31" — the Gregorian line under the Salah header's Hijri date. */
 export function formatWeekdayDate(date: Date, locale: Locale = getLocale()): string {
   const text = weekdayFormatter(locale).format(date);
-  // ICU punctuates the Arabic weekday with «،»; the Salah header drops it (quran-app-screens.html, #Salah).
+  // ICU punctuates the Arabic weekday with «،»; the Salah header drops it (screens/, #Salah).
   return locale === 'ar' ? arabizeDigits(text).replace(/،/g, '') : text;
 }
 

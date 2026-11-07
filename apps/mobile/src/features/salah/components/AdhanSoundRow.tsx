@@ -18,7 +18,7 @@ export interface AdhanPreviewProps {
 }
 
 /**
- * One radio row of the adhan sound picker (quran-app-screens.html, #AdhanSoundPicker): the name, the «الافتراضي» pill
+ * One radio row of the adhan sound picker (screens/, #AdhanSoundPicker): the name, the «الافتراضي» pill
  * on the default voice, a play button on the voices, a check when selected, and a progress line while it previews.
  *
  * The selectable area is one Pressable behind the content. The name, check and progress ignore touches, so a tap on them

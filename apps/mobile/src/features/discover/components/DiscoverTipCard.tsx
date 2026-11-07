@@ -19,7 +19,7 @@ import { DiscoverTipTextButton } from './DiscoverTipTextButton';
 const TIP_POINTER = 12;
 
 /**
- * The guided tour's tip for one step (ADR 0053, amended 3 Nov 2026; quran-app-screens.html, #DiscoverTip). It shows
+ * The guided tour's tip for one step (ADR 0053, amended 3 Nov 2026; screens/, #DiscoverTip). It shows
  * only while the tour is on `id`: the step's line, «الخطوة ٣ من ١٣», and ✕ to end the tour. A show step offers
  * «التالي» (done, next step) and «تخطي» (done as seen, next step); an action step offers «تخطي» only, because doing the
  * action is what completes it. `pointer` draws the arrow under the card, for a tip placed right above its control. It

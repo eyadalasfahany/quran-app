@@ -7,7 +7,7 @@ import { uiTextProps, useContrastColors } from '@/shared/ui';
 import { SIBHA_LABEL_MAX } from '../data/model';
 
 /**
- * The optional label (quran-app-screens.html, #Sibha): one centred line the user types for this counter. The app
+ * The optional label (screens/, #Sibha): one centred line the user types for this counter. The app
  * suggests no words; the placeholder only says the field is optional.
  */
 export function SibhaLabelField({

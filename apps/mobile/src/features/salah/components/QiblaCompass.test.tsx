@@ -88,7 +88,7 @@ function captured<T>(list: T[], index: number): T {
   return item;
 }
 
-/** The instrument's frame size (quran-app-screens.html, #Qibla). */
+/** The instrument's frame size (screens/, #Qibla). */
 const DIAL = 336;
 
 /** A host node of the rendered JSON tree, as toJSON() returns it. */

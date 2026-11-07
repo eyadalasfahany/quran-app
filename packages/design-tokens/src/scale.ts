@@ -21,7 +21,7 @@ export const radius = {
   progress: 2,
   glyph: 1,
   card: 18,
-  // Home's continue reading card (quran-app-screens.html, #Main).
+  // Home's continue reading card (screens/, #Main).
   hero: 24,
   // Tafsir chips: the phone sheet's chip and the side panel's chip differ in radius.
   chipSheet: 19,
@@ -59,7 +59,7 @@ export const size = {
   pillInset: 28,
   controlHeight: 48,
   stepDivider: 22,
-  // The gap between blocks in a sheet or panel (quran-app-screens.html).
+  // The gap between blocks in a sheet or panel (screens/).
   sheetGap: 14,
   // Tafsir chips: side and inner padding, and the gap between the name and the caption.
   chipPaddingX: 14,
@@ -74,7 +74,7 @@ export const size = {
   bandInset: 3,
   bandRadius: 4,
   bandInnerRadius: 2,
-  // Focus (quran-app-screens.html, #Focus): the progress marks sit 10 from the trailing edge, 6 wide,
+  // Focus (screens/, #Focus): the progress marks sit 10 from the trailing edge, 6 wide,
   // 18 tall when active, with radius 3 and an 8 gap (space[2]).
   focusDot: 6,
   focusDotActive: 18,
@@ -91,13 +91,13 @@ export const size = {
   progressHeight: 4,
   progressGap: 6,
   stopGlyph: 7,
-  // Storage screen (quran-app-screens.html, #Downloads).
+  // Storage screen (screens/, #Downloads).
   storageBarHeight: 10,
   storageBarRadius: 5,
   storageDotSize: 10,
   storageDotRadius: 3,
   reciterStorageRowMinHeight: 60,
-  // Home and the surah index (quran-app-screens.html, #Main and #SurahIndex).
+  // Home and the surah index (screens/, #Main and #SurahIndex).
   // The continue reading card's padding; the gap inside its text column.
   cardPadding: 22,
   stackGap: 6,
@@ -151,7 +151,7 @@ export const opacity = {
   focusAside: 0.22,
   // The gold rosette behind the Continue reading card's text.
   ornament: 0.35,
-  // A chip's caption is its label colour at this opacity (quran-app-screens.html, .xr-chip small).
+  // A chip's caption is its label colour at this opacity (screens/, .xr-chip small).
   chipCaption: 0.8,
 } as const;
 

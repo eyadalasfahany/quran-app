@@ -6,7 +6,7 @@ import { UiText, useContrastColors } from '@/shared/ui';
 import type { WidgetAddCatalogId } from '../data/widget-add-catalog';
 import { WidgetAddTrigger } from './WidgetAddTrigger';
 
-/** Android row: widget title and the pin action (quran-app-screens.html, #WidgetsHelp). */
+/** Android row: widget title and the pin action (screens/, #WidgetsHelp). */
 export function WidgetsHelpPinRow({
   title,
   catalogId,

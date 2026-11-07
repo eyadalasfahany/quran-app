@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { themes, useTheme, type Appearance } from '@/core/theme';
 import { useContrastColors } from '@/shared/ui';
 
-/** The 12 pt appearance dot on quran-app-screens.html (Reader settings, theme segments). */
+/** The 12 pt appearance dot on screens/ (Reader settings, theme segments). */
 export const THEME_DOT_SIZE = 12;
 
 /**

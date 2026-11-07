@@ -22,7 +22,7 @@ function isVoice(id: PrayerSoundId): id is AdhanVoiceId {
 
 /**
  * The grouped card of the adhan sound picker, in the order of `PRAYER_SOUND_IDS` (voices, system, silent), with the footer
- * note under it (quran-app-screens.html, #AdhanSoundPicker). The preview state comes from the screen; this component only
+ * note under it (screens/, #AdhanSoundPicker). The preview state comes from the screen; this component only
  * draws it.
  */
 export function AdhanSoundList({

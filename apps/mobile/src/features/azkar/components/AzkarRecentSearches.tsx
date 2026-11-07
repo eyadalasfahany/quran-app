@@ -9,7 +9,7 @@ const CLOCK = { ios: 'clock', android: 'schedule' } as const;
 const REMOVE = { ios: 'xmark', android: 'close' } as const;
 
 /**
- * The empty-query state of Azkar search (quran-app-screens.html, #AzkarSearchEmpty): the recent queries, each one
+ * The empty-query state of Azkar search (screens/, #AzkarSearchEmpty): the recent queries, each one
  * tappable and removable, with «مسح السجل» to clear them all. Renders nothing when there are none.
  */
 export function AzkarRecentSearches({

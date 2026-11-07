@@ -7,7 +7,7 @@ import { Rosette, UiText } from '@/shared/ui';
 import { ScenePhoto } from './ScenePhoto';
 
 const HERO_PHOTO = require('../../../../assets/salah/hero-sunset.jpg');
-// The frames' hero crop (quran-app-screens.html, #Salah): the sunset sits just above centre.
+// The frames' hero crop (screens/, #Salah): the sunset sits just above centre.
 const HERO_FOCUS_Y = 0.45;
 const ORNAMENT = { offset: -40, size: 180 } as const;
 const TRACK_HEIGHT = 4;

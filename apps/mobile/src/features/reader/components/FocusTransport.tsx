@@ -17,7 +17,7 @@ const REPEAT = { ios: 'repeat', android: 'repeat' } as const;
 const PAUSE = { ios: 'pause.fill', android: 'pause' } as const;
 const MEMORIZE = { ios: 'eye.slash', android: 'visibility_off' } as const;
 
-// The Focus frame (quran-app-screens.html, #Focus): every control is 52 tall. Labelled controls pad 14 and
+// The Focus frame (screens/, #Focus): every control is 52 tall. Labelled controls pad 14 and
 // space their icon and label 6. The bar pads and spaces its controls 4 (space[1]). Step controls are 44 wide.
 const CONTROL = 52;
 const LABELLED_PADDING = 14;

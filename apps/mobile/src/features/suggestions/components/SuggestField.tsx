@@ -19,7 +19,7 @@ const TEXT_SIZE = 17;
 const CAPTION_LINE_HEIGHT = 19;
 
 /**
- * One labelled field of the suggestion sheet (quran-app-screens.html, #SuggestSheet): a caption, the box, an error line
+ * One labelled field of the suggestion sheet (screens/, #SuggestSheet): a caption, the box, an error line
  * under it, and a footer with a hint at the start edge and a counter at the end. An invalid field draws a danger border.
  * An email field is Latin text: it reads left to right and is never capitalised or auto-corrected.
  */

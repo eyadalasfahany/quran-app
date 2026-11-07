@@ -8,7 +8,7 @@ import { Card, Icon, UiText } from '@/shared/ui';
 
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 
-// The Surah index's last-read card (quran-app-screens.html, #SurahIndex): a bookmark, «آخر قراءة: البقرة · الآية ٢٥٥»,
+// The Surah index's last-read card (screens/, #SurahIndex): a bookmark, «آخر قراءة: البقرة · الآية ٢٥٥»,
 // and «متابعة» on the trailing side.
 export function ContinueReadingRow({
   chapter,

@@ -1,4 +1,4 @@
-/** The dial's frame size (quran-app-screens.html, #Qibla). It is never drawn larger. */
+/** The dial's frame size (screens/, #Qibla). It is never drawn larger. */
 export const QIBLA_DIAL_MAX = 336;
 /** The smallest dial a short or cramped window draws (ADR 0036). */
 export const QIBLA_DIAL_MIN = 160;

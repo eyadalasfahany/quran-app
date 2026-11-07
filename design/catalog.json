@@ -9,7 +9,11 @@
     "Main",
     "MainLandscapeRail",
     "Mushaf",
+    "MushafFullscreen",
+    "MushafFullscreenEnter",
     "Player",
+    "PlayerReciterDownloading",
+    "PlayerReciters",
     "ReaderSettings"
    ]
   },
@@ -22,6 +26,8 @@
     "Reading",
     "ReadingMiniCollapsed",
     "ReadingMiniIdle",
+    "ReadingMiniSkipped",
+    "ReadingMiniUnavailable",
     "Search",
     "SurahIndex",
     "Tafsir",
@@ -36,8 +42,15 @@
    "screens": [
     "Qibla",
     "QiblaLandscape",
+    "ReciterSurahsUnavailable",
     "Salah",
-    "SalahAdhanSoundEntry"
+    "SalahAdhanSoundEntry",
+    "SettingsSuggestCard",
+    "SuggestSheet",
+    "SuggestSheetError",
+    "SuggestSheetOffline",
+    "SuggestSheetSending",
+    "SuggestSheetSent"
    ]
   },
   {
@@ -158,6 +171,35 @@
    "blurb": "Collections, books, hadith detail",
    "screens": [
     "Hadith",
+    "HadithCollBook",
+    "HadithCollBooks",
+    "HadithCollChapterHadith",
+    "HadithCollChapters",
+    "HadithCollCovers",
+    "HadithCollCoversSepia",
+    "HadithCollDownload",
+    "HadithCollDownloadFailed",
+    "HadithCollError",
+    "HadithCollExpanded",
+    "HadithCollExpandedReader",
+    "HadithCollList",
+    "HadithCollLoading",
+    "HadithCollMenu",
+    "HadithCollOffline",
+    "HadithCollOfflineDownloaded",
+    "HadithCollReader",
+    "HadithCollReaderGrade",
+    "HadithCollReaderPlain",
+    "HadithCollSaved",
+    "HadithCollSavedEmpty",
+    "HadithCollSavedUnverified",
+    "HadithCollSearch",
+    "HadithCollSearchEmpty",
+    "HadithCollSearchResults",
+    "HadithCollSingle",
+    "HadithCollSources",
+    "HadithCollUntitled",
+    "HadithCollUntitledBooks",
     "HadithDetail"
    ]
   },
@@ -445,6 +487,78 @@
    ]
   },
   {
+   "id": "MushafFullscreen",
+   "stack": "core",
+   "caption": "Mushaf · full screen: no toolbar, player, status bar or Android navigation bar; the exit button sits where the full screen button was; audio keeps playing (ADR 0071)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "MushafFullscreen",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "MushafFullscreen",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "MushafFullscreen",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "MushafFullscreen",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "MushafFullscreen"
+   ]
+  },
+  {
+   "id": "MushafFullscreenEnter",
+   "stack": "core",
+   "caption": "Mushaf · full screen button in the tools pill (ADR 0071)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "MushafFullscreenEnter",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "MushafFullscreenEnter",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "MushafFullscreenEnter",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "MushafFullscreenEnter",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "MushafFullscreenEnter"
+   ]
+  },
+  {
    "id": "Player",
    "stack": "core",
    "caption": "Player",
@@ -478,6 +592,78 @@
    },
    "frames": [
     "Player"
+   ]
+  },
+  {
+   "id": "PlayerReciterDownloading",
+   "stack": "core",
+   "caption": "Player, no artwork. After tapping download on «محمود خليل الحصري»: that row shows the progress bar (player colours) and a 44 pt stop button. Caption annotation: «يبدأ التشغيل تلقائيًا عند انتهاء التنزيل» (when the download finishes, the player switches to that reciter and auto-plays from the current ayah). Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "PlayerReciterDownloading",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "PlayerReciterDownloading",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "PlayerReciterDownloading",
+     "untranslated": 4
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "PlayerReciterDownloading",
+     "untranslated": 4
+    }
+   },
+   "frames": [
+    "PlayerReciterDownloading"
+   ]
+  },
+  {
+   "id": "PlayerReciters",
+   "stack": "core",
+   "caption": "Player, no artwork (ADR 0062 option b). Reciter name, surah, ayah card, progress, transport and the utility bar (repeat, ayah range, sleep timer; speed removed). Reciters list always visible under the controls: current reciter selected (checkmark); installed row is a button that switches reciter; not-downloaded row has a 44 pt download button; a reciter without the current surah (37) is disabled with «غير متوفرة لهذه السورة». Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "PlayerReciters",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "PlayerReciters",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "PlayerReciters",
+     "untranslated": 4
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "PlayerReciters",
+     "untranslated": 4
+    }
+   },
+   "frames": [
+    "PlayerReciters"
    ]
   },
   {
@@ -658,6 +844,78 @@
    },
    "frames": [
     "ReadingMiniIdle"
+   ]
+  },
+  {
+   "id": "ReadingMiniSkipped",
+   "stack": "reading",
+   "caption": "Mini player, playing · continuous play skipped surah 37 (moved 36 → 38). Shows surah ص playing normally, plus a secondary line «تخطّي الصافات · غير متوفرة بصوت إسلام صبحي». The notice is transient: it shows for about 4 s, then the line disappears. VoiceOver announces it (role=status, polite). Approved 4 Nov 2026 (ADR 0062)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "ReadingMiniSkipped",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "ReadingMiniSkipped",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "ReadingMiniSkipped",
+     "untranslated": 3
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "ReadingMiniSkipped",
+     "untranslated": 3
+    }
+   },
+   "frames": [
+    "ReadingMiniSkipped"
+   ]
+  },
+  {
+   "id": "ReadingMiniUnavailable",
+   "stack": "reading",
+   "caption": "Reading · mini player, surah unavailable for the reciter (surah 37 الصافات with إسلام صبحي; play was pressed, nothing plays, no progress state). Info glyph and message; «تغيير القارئ» opens the reciter picker (44 pt target). Idle reader rule (ADR 0059) so the bar stays on the reader. Approved 4 Nov 2026 (ADR 0062)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "ReadingMiniUnavailable",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "ReadingMiniUnavailable",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "ReadingMiniUnavailable",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "ReadingMiniUnavailable",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "ReadingMiniUnavailable"
    ]
   },
   {
@@ -923,6 +1181,42 @@
    ]
   },
   {
+   "id": "ReciterSurahsUnavailable",
+   "stack": "salah",
+   "caption": "Listen › إسلام صبحي · surah list, rows 35–41 (same row styling as SurahIndex; header as Reciters). Surahs 37 الصافات, 39 الزمر and 40 غافر are missing from this reciter: dimmed (ink-muted), trailing label «غير متوفرة» instead of the play or download control, not tappable (no link, aria-disabled). Others are normal. Approved 4 Nov 2026 (ADR 0062)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "ReciterSurahsUnavailable",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "ReciterSurahsUnavailable",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "ReciterSurahsUnavailable",
+     "untranslated": 6
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "ReciterSurahsUnavailable",
+     "untranslated": 6
+    }
+   },
+   "frames": [
+    "ReciterSurahsUnavailable"
+   ]
+  },
+  {
    "id": "Salah",
    "stack": "salah",
    "caption": "الصلاة",
@@ -993,6 +1287,224 @@
    },
    "frames": [
     "SalahAdhanSoundEntry"
+   ]
+  },
+  {
+   "id": "SettingsSuggestCard",
+   "stack": "salah",
+   "caption": "الإعدادات · اقترح فكرة (ADR 0066)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SettingsSuggestCard",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SettingsSuggestCard",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SettingsSuggestCard",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SettingsSuggestCard",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "SettingsSuggestCard"
+   ]
+  },
+  {
+   "id": "SuggestSheet",
+   "stack": "salah",
+   "caption": "اقترح فكرة · sheet",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SuggestSheet",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "SuggestSheetDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "SuggestSheetEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SuggestSheet",
+    "SuggestSheetDark",
+    "SuggestSheetEnglish"
+   ]
+  },
+  {
+   "id": "SuggestSheetError",
+   "stack": "salah",
+   "caption": "اقترح فكرة · خطأ في البريد",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SuggestSheetError",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SuggestSheetError",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetError",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetError",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "SuggestSheetError"
+   ]
+  },
+  {
+   "id": "SuggestSheetOffline",
+   "stack": "salah",
+   "caption": "اقترح فكرة · بدون اتصال",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SuggestSheetOffline",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SuggestSheetOffline",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetOffline",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetOffline",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "SuggestSheetOffline"
+   ]
+  },
+  {
+   "id": "SuggestSheetSending",
+   "stack": "salah",
+   "caption": "اقترح فكرة · جارٍ الإرسال",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SuggestSheetSending",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SuggestSheetSending",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetSending",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetSending",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "SuggestSheetSending"
+   ]
+  },
+  {
+   "id": "SuggestSheetSent",
+   "stack": "salah",
+   "caption": "اقترح فكرة · تم الإرسال",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SuggestSheetSent",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SuggestSheetSent",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetSent",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SuggestSheetSent",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SuggestSheetSent"
    ]
   },
   {
@@ -3049,7 +3561,7 @@
   {
    "id": "Hadith",
    "stack": "hadith",
-   "caption": "Hadith",
+   "caption": "Hadith · deferred: HadeethEnc, ADR 0042",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -3083,9 +3595,1080 @@
    ]
   },
   {
+   "id": "HadithCollBook",
+   "stack": "hadith",
+   "caption": "Hadith book · hadith list · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollBook",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollBookDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollBookEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollBookEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollBook",
+    "HadithCollBookDark",
+    "HadithCollBookEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollBooks",
+   "stack": "hadith",
+   "caption": "Hadith collection · books · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollBooks",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollBooksDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollBooksEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollBooksEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollBooks",
+    "HadithCollBooksDark",
+    "HadithCollBooksEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollChapterHadith",
+   "stack": "hadith",
+   "caption": "Hadith chapter · hadith list · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollChapterHadith",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollChapterHadithDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollChapterHadithEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollChapterHadithEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollChapterHadith",
+    "HadithCollChapterHadithDark",
+    "HadithCollChapterHadithEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollChapters",
+   "stack": "hadith",
+   "caption": "Hadith chapters · list · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollChapters",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollChaptersDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollChaptersEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollChaptersEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollChapters",
+    "HadithCollChaptersDark",
+    "HadithCollChaptersEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollCovers",
+   "stack": "hadith",
+   "caption": "Hadith collection covers · light · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollCovers",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollCoversDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollCovers",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollCoversDark",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "HadithCollCovers",
+    "HadithCollCoversDark"
+   ]
+  },
+  {
+   "id": "HadithCollCoversSepia",
+   "stack": "hadith",
+   "caption": "Hadith collection covers · sepia · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollCoversSepia",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollCoversSepia",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollCoversSepia",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollCoversSepia",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "HadithCollCoversSepia"
+   ]
+  },
+  {
+   "id": "HadithCollDownload",
+   "stack": "hadith",
+   "caption": "Hadith collection download · downloading · sheet (50%)",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollDownload",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollDownload",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollDownload",
+     "untranslated": 4
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollDownload",
+     "untranslated": 4
+    }
+   },
+   "frames": [
+    "HadithCollDownload"
+   ]
+  },
+  {
+   "id": "HadithCollDownloadFailed",
+   "stack": "hadith",
+   "caption": "Hadith collections · download failed · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollDownloadFailed",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollDownloadFailed",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollDownloadFailed",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollDownloadFailed",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollDownloadFailed"
+   ]
+  },
+  {
+   "id": "HadithCollError",
+   "stack": "hadith",
+   "caption": "Hadith collections · error · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollError",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollError",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollError",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollError",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "HadithCollError"
+   ]
+  },
+  {
+   "id": "HadithCollExpanded",
+   "stack": "hadith",
+   "caption": "Hadith · expanded window · 1194 × 834 · tab rail, books pane, book list",
+   "status": "source",
+   "kind": "window",
+   "fixed": true,
+   "drawnSize": "expanded",
+   "window": [
+    1194,
+    834
+   ],
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollExpanded",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollExpanded",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollExpanded",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollExpanded",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "HadithCollExpanded"
+   ]
+  },
+  {
+   "id": "HadithCollExpandedReader",
+   "stack": "hadith",
+   "caption": "Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel",
+   "status": "source",
+   "kind": "window",
+   "fixed": true,
+   "drawnSize": "expanded",
+   "window": [
+    1194,
+    834
+   ],
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollExpandedReader",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollExpandedReader",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollExpandedReader",
+     "untranslated": 6
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollExpandedReader",
+     "untranslated": 6
+    }
+   },
+   "frames": [
+    "HadithCollExpandedReader"
+   ]
+  },
+  {
+   "id": "HadithCollList",
+   "stack": "hadith",
+   "caption": "Hadith collections · list · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollList",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollListDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollListEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollListEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollList",
+    "HadithCollListDark",
+    "HadithCollListEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollLoading",
+   "stack": "hadith",
+   "caption": "Hadith collections · loading · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollLoading",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollLoading",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollLoading",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollLoading",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollLoading"
+   ]
+  },
+  {
+   "id": "HadithCollMenu",
+   "stack": "hadith",
+   "caption": "Menu · new cards · Hadith entry · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollMenu",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollMenuDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollMenuEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollMenuEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollMenu",
+    "HadithCollMenuDark",
+    "HadithCollMenuEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollOffline",
+   "stack": "hadith",
+   "caption": "Hadith collections · offline, nothing downloaded · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollOffline",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollOffline",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollOffline",
+     "untranslated": 3
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollOffline",
+     "untranslated": 3
+    }
+   },
+   "frames": [
+    "HadithCollOffline"
+   ]
+  },
+  {
+   "id": "HadithCollOfflineDownloaded",
+   "stack": "hadith",
+   "caption": "Hadith collections · offline, some downloaded · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollOfflineDownloaded",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollOfflineDownloaded",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollOfflineDownloaded",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollOfflineDownloaded",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "HadithCollOfflineDownloaded"
+   ]
+  },
+  {
+   "id": "HadithCollReader",
+   "stack": "hadith",
+   "caption": "Hadith reader · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollReader",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollReaderDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollReaderEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollReader",
+    "HadithCollReaderDark",
+    "HadithCollReaderEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollReaderGrade",
+   "stack": "hadith",
+   "caption": "Hadith reader · future state: grade (not built, labelled) · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollReaderGrade",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollReaderGrade",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderGrade",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderGrade",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "HadithCollReaderGrade"
+   ]
+  },
+  {
+   "id": "HadithCollReaderPlain",
+   "stack": "hadith",
+   "caption": "Hadith reader · single-colour fallback (source does not mark the chain) · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollReaderPlain",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollReaderPlain",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderPlain",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderPlain",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "HadithCollReaderPlain"
+   ]
+  },
+  {
+   "id": "HadithCollSaved",
+   "stack": "hadith",
+   "caption": "Saved hadith · list · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSaved",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollSaved",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollSaved",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSaved",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollSaved"
+   ]
+  },
+  {
+   "id": "HadithCollSavedEmpty",
+   "stack": "hadith",
+   "caption": "Empty · saved hadith · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSavedEmpty",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollSavedEmpty",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollSavedEmpty",
+     "untranslated": 3
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSavedEmpty",
+     "untranslated": 3
+    }
+   },
+   "frames": [
+    "HadithCollSavedEmpty"
+   ]
+  },
+  {
+   "id": "HadithCollSavedUnverified",
+   "stack": "hadith",
+   "caption": "Saved hadith · unverified notice · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSavedUnverified",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollSavedUnverified",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollSavedUnverified",
+     "untranslated": 6
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSavedUnverified",
+     "untranslated": 6
+    }
+   },
+   "frames": [
+    "HadithCollSavedUnverified"
+   ]
+  },
+  {
+   "id": "HadithCollSearch",
+   "stack": "hadith",
+   "caption": "Hadith search · empty query · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSearch",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollSearch",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollSearch",
+     "untranslated": 5
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSearch",
+     "untranslated": 5
+    }
+   },
+   "frames": [
+    "HadithCollSearch"
+   ]
+  },
+  {
+   "id": "HadithCollSearchEmpty",
+   "stack": "hadith",
+   "caption": "Hadith search · no results · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSearchEmpty",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollSearchEmpty",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollSearchEmpty",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSearchEmpty",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "HadithCollSearchEmpty"
+   ]
+  },
+  {
+   "id": "HadithCollSearchResults",
+   "stack": "hadith",
+   "caption": "Hadith search · results · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSearchResults",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollSearchResults",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollSearchResults",
+     "untranslated": 6
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSearchResults",
+     "untranslated": 6
+    }
+   },
+   "frames": [
+    "HadithCollSearchResults"
+   ]
+  },
+  {
+   "id": "HadithCollSingle",
+   "stack": "hadith",
+   "caption": "Hadith single-book collection · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSingle",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSingleDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollSingleEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSingleEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollSingle",
+    "HadithCollSingleDark",
+    "HadithCollSingleEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollSources",
+   "stack": "hadith",
+   "caption": "Settings · المصادر والشكر · Hadith row added",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollSources",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollSources",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollSources",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollSources",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "HadithCollSources"
+   ]
+  },
+  {
+   "id": "HadithCollUntitled",
+   "stack": "hadith",
+   "caption": "Hadith collections · untitled fallback · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollUntitled",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollUntitledDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollUntitledEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollUntitledEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollUntitled",
+    "HadithCollUntitledDark",
+    "HadithCollUntitledEnglish"
+   ]
+  },
+  {
+   "id": "HadithCollUntitledBooks",
+   "stack": "hadith",
+   "caption": "Hadith books · untitled collection · Arabic",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollUntitledBooks",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollUntitledBooksDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollUntitledBooksEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollUntitledBooksEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollUntitledBooks",
+    "HadithCollUntitledBooksDark",
+    "HadithCollUntitledBooksEnglish"
+   ]
+  },
+  {
    "id": "HadithDetail",
    "stack": "hadith",
-   "caption": "Hadith detail",
+   "caption": "Hadith detail · deferred: HadeethEnc, ADR 0042",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -3435,8 +5018,8 @@
      "untranslated": 0
     },
     "dark-rtl": {
-     "how": "derived",
-     "from": "AndroidWidgets",
+     "how": "drawn",
+     "from": "AndroidWidgetsDark",
      "untranslated": 0
     },
     "light-ltr": {
@@ -3446,12 +5029,13 @@
     },
     "dark-ltr": {
      "how": "derived",
-     "from": "AndroidWidgets",
+     "from": "AndroidWidgetsDark",
      "untranslated": 1
     }
    },
    "frames": [
-    "AndroidWidgets"
+    "AndroidWidgets",
+    "AndroidWidgetsDark"
    ]
   },
   {

@@ -23,7 +23,7 @@ const BLOCK_GAP = 14;
 const SIDE_PADDING = 20;
 const BOTTOM_PADDING = 24;
 
-/** «اقترح فكرة» as a full-height sheet (`/settings/suggest`, quran-app-screens.html, #SuggestSheet). */
+/** «اقترح فكرة» as a full-height sheet (`/settings/suggest`, screens/, #SuggestSheet). */
 export function SuggestScreen() {
   return (
     <SheetHost initialDetent="full" testID="suggest-sheet">

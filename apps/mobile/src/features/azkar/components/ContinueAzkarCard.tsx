@@ -14,7 +14,7 @@ const ROSETTE = { offset: -40, size: 180 } as const;
 export type ContinueAzkarResume = { title: string; completed: number; total: number };
 
 /**
- * Azkar home's «تابع» card (quran-app-screens.html, #AzkarHome): the scope in progress, on the brand surface, with its
+ * Azkar home's «تابع» card (screens/, #AzkarHome): the scope in progress, on the brand surface, with its
  * count and bar. Renders nothing when there is nothing to continue.
  */
 export function ContinueAzkarCard({

@@ -4,7 +4,7 @@ import { useTheme } from '@/core/theme';
 import { displayText, UiText } from '@/shared/ui';
 
 /**
- * Prophetic dua text and attribution (quran-app-screens.html, #DuaHadithDetail). The text takes the reader's text size
+ * Prophetic dua text and attribution (screens/, #DuaHadithDetail). The text takes the reader's text size
  * the way `DhikrText` does. No audio (ADR 0055 §3).
  */
 export function DuaHadithBody({

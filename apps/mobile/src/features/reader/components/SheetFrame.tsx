@@ -8,7 +8,7 @@ import { useContrastColors } from '@/shared/ui';
 import { FULL_SHEET_RADIUS, SHEET_MARGIN, SHEET_RADIUS, type SheetShape } from '../form-sheet';
 import { useSheet } from './sheet-context';
 
-/** Grabber top padding on the ayah and settings frames (quran-app-screens.html: padding-top 10px). */
+/** Grabber top padding on the ayah and settings frames (screens/: padding-top 10px). */
 export const GRABBER_TOP = 10;
 
 export type GrabberTone = 'strong' | 'compact' | 'muted';

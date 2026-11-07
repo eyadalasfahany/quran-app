@@ -6,13 +6,13 @@ import { Icon, type IconName, UiText, useContrastColors } from '@/shared/ui';
 
 const AZKAR_ICON: IconName = { ios: 'circle.dotted', android: 'scatter_plot' };
 const CHEVRON: IconName = { ios: 'chevron.right', android: 'chevron_right' };
-// The glyph tile is 48 pt with 14 pt corners, and 12 pt between its parts (quran-app-screens.html, #Main).
+// The glyph tile is 48 pt with 14 pt corners, and 12 pt between its parts (screens/, #Main).
 const TILE_SIZE = 48;
 const TILE_RADIUS = 14;
 const ROW_GAP = 12;
 
 /**
- * One «آخر الأذكار» row (quran-app-screens.html, #Main): the Azkar glyph on a soft tile, the scope's name, its count
+ * One «آخر الأذكار» row (screens/, #Main): the Azkar glyph on a soft tile, the scope's name, its count
  * («١٢ من ٢٤») and a chevron. It opens the reader where the user left off.
  */
 export function RecentAzkarRow({

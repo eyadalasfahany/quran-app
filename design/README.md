@@ -4,7 +4,7 @@ Every screen of the app on its own page, laid out like a Figma file: light and d
 and English (LTR), at every window size. Open [`index.html`](index.html) in a browser. It works
 from disk; no server needed.
 
-`quran-app-screens.html` (repo root) is still the design source and what CI and `frame-shot.py`
+`screens/` (repo root, one file per frame, ADR 0075) is the design source and what CI and `frame-shot.py`
 read (ADR 0010). This folder is built from it and adds the variants nobody drew yet.
 
 ## Layout
@@ -46,7 +46,7 @@ design/
 
 | Badge | Meaning |
 |---|---|
-| Drawn | The designer drew it: a frame in `quran-app-screens.html` (`X`, `XDark`, `XEnglish`). |
+| Drawn | The designer drew it: a frame in `screens/` (`X`, `XDark`, `XEnglish`). |
 | Derived | Built from a drawn frame. Treat it as a strong draft, not an approved design. |
 
 How a variant is derived:
@@ -77,7 +77,7 @@ Widgets and the watch are boards, shown at their drawn size only. The watch is d
 
 ## Rebuild
 
-After `quran-app-screens.html` changes, refresh the split, then this reference:
+After a frame in `screens/` changes, refresh the split, then this reference:
 
 ```bash
 python design/screens/scripts/build.py
@@ -88,5 +88,3 @@ The build prints how many variants were drawn and derived, warns about damaged d
 writes the UI strings it could not translate to `scripts/untranslated.txt`. Add English for those
 to `scripts/ltr-strings.json` (UI text only) and rebuild.
 
-Known issue: `#AndroidWidgetsDark` in `quran-app-screens.html` is truncated mid-attribute, so its
-dark variant here is derived from the light frame until the monolith is fixed.

@@ -14,7 +14,7 @@ import { MenuCard } from './MenuCard';
 export const MENU_SALAH_TICK_MS = 60_000;
 
 /**
- * The menu's prayer card (quran-app-screens.html, #Menu). It owns the minute clock, so the tick re-renders this card and
+ * The menu's prayer card (screens/, #Menu). It owns the minute clock, so the tick re-renders this card and
  * not the menu. The title is the next prayer's name and the preview its time and the time left; without a location it
  * shows a neutral line instead. Opens the Salah screen through `onPress`.
  */

@@ -23,7 +23,7 @@ import { ayahShareText } from './panel-text';
 // Play starts the recitation from this ayah. Repeat waits for step 5 and stays visible but disabled.
 const GRID_COLUMNS = 4;
 
-// Ayah actions frame (quran-app-screens.html): 14 px between the sheet's blocks.
+// Ayah actions frame (screens/): 14 px between the sheet's blocks.
 const SHEET_GAP = 14;
 
 const icons = {

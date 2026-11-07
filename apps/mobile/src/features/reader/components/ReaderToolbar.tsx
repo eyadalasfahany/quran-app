@@ -19,7 +19,7 @@ const ENTER_FULLSCREEN = { ios: 'arrow.up.left.and.arrow.down.right', android: '
 
 // Focus has its own chrome (FocusChrome), so this bar draws only Reading and Mushaf.
 // Reading on a phone draws Back, the title with «وضع القراءة» and one settings circle (its frame in
-// quran-app-screens.html). Medium and expanded windows draw Back, the title with the page place, and one glass
+// screens/). Medium and expanded windows draw Back, the title with the page place, and one glass
 // group: bookmark, reader settings, ayah actions, and on expanded the side panel toggle (#tablet-reader).
 export type ReaderToolbarMode = 'reading' | 'mushaf';
 

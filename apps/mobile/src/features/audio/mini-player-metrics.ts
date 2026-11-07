@@ -1,6 +1,6 @@
 import { MINI_PLAYER_BOTTOM_GAP } from '@/core/layout/tab-bar-clearance';
 
-// The mini player's numbers, read from the two phone frames (quran-app-screens.html: #Main for tabs,
+// The mini player's numbers, read from the two phone frames (screens/: #Main for tabs,
 // #Mushaf and #Reading for reader). Padding is logical: the start edge is the right in Arabic, and the
 // English frames mirror it. The tabs bar is the same on tablets as on phones (ADR 0051).
 export type MiniPlayerVariant = 'tabs' | 'reader';

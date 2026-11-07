@@ -9,7 +9,7 @@ const BUTTON_HEIGHT = 52;
 const BUSY_OPACITY = 0.7;
 
 /**
- * The sheet's primary button (quran-app-screens.html, #SuggestSheetSending). While the request is in flight it is
+ * The sheet's primary button (screens/, #SuggestSheetSending). While the request is in flight it is
  * dimmed, reads as busy to screen readers, and shows a spinner after its label. It takes no presses while busy.
  */
 export function SuggestSubmitButton({

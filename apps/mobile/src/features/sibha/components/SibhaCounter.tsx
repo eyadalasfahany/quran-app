@@ -15,7 +15,7 @@ import { SibhaRoundsBadge } from './SibhaRoundsBadge';
 const COUNT_SIZE = 120;
 
 /**
- * The misbaha's counter (quran-app-screens.html, #Sibha): a 280 pt ring toward the target, with the count in Amiri and
+ * The misbaha's counter (screens/, #Sibha): a 280 pt ring toward the target, with the count in Amiri and
  * «من ١٠٠» under it. A completed round shows as a pill above the count. Without a target the ring stays empty, only the
  * count shows, and there are no rounds. The whole counter is one button with its value, so a screen reader hears the
  * count and can reset it. `size` is the ring's side; the count scales with it (ADR 0036).

@@ -8,7 +8,7 @@ import { useTheme } from '@/core/theme';
 import { Icon, UiText, useContrastColors } from '@/shared/ui';
 
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
-// #Main khatma ring (quran-app-screens.html): 60×60, r=25, stroke 5.
+// #Main khatma ring (screens/): 60×60, r=25, stroke 5.
 const RING_SIZE = 60;
 const RING_RADIUS = 25;
 const RING_STROKE = 5;

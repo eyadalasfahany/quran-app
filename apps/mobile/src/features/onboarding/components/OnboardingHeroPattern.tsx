@@ -3,7 +3,7 @@ import Svg, { Circle, G, Rect } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
 
-/** Decorative header pattern (quran-app-screens.html, #OnboardLanguage). */
+/** Decorative header pattern (screens/, #OnboardLanguage). */
 export function OnboardingHeroPattern({ testID = 'onboarding-hero-pattern' }: { testID?: string }) {
   const theme = useTheme();
   const stroke = theme.colors.gold;

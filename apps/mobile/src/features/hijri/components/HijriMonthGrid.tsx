@@ -15,7 +15,7 @@ export function dayKey(date: Date): string {
 }
 
 /**
- * The 7-column month grid (quran-app-screens.html, #HijriCalendar). Rows are whole weeks and the neighbour days are
+ * The 7-column month grid (screens/, #HijriCalendar). Rows are whole weeks and the neighbour days are
  * dimmed. With `largeText` it becomes a day list, one day per row, since seven narrow columns cannot hold large text.
  */
 export function HijriMonthGrid({

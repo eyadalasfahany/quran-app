@@ -14,7 +14,7 @@ import { duasHref } from '../routes';
 const BELL = { ios: 'bell', android: 'notifications' } as const;
 
 /**
- * One row on «أدعيتي» (quran-app-screens.html, #MyDuas): the number medallion, the dua's text, a one-line caption (title,
+ * One row on «أدعيتي» (screens/, #MyDuas): the number medallion, the dua's text, a one-line caption (title,
  * «من كتابتك», and the reminder time when one is set) and the reminder bell. The text is always the dua's body.
  */
 export function MyDuaRow({

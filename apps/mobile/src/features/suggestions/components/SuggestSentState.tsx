@@ -13,7 +13,7 @@ const BODY_SIZE = 16;
 const BODY_LINE_HEIGHT = 26;
 
 /**
- * The confirmation that replaces the form once a suggestion is sent (quran-app-screens.html, #SuggestSheetSent): a check
+ * The confirmation that replaces the form once a suggestion is sent (screens/, #SuggestSheetSent): a check
  * in a round disc, a title and a short thank-you, centred in the space the fields left.
  */
 export function SuggestSentState({ testID = 'suggest-sent' }: { testID?: string }) {

@@ -5,7 +5,7 @@ import { useTheme } from '@/core/theme';
 import { UiText, type TextTone } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
-/** The dialog's buttons are 48 pt tall, above the 44 pt touch target (quran-app-screens.html, ConfirmDialog). */
+/** The dialog's buttons are 48 pt tall, above the 44 pt touch target (screens/, ConfirmDialog). */
 export const CONFIRM_BUTTON_HEIGHT = 48;
 
 // neutral is the cancel action: a tonal fill with ink text. brand and destructive are the filled confirm actions.

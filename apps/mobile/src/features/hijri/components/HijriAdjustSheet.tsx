@@ -17,7 +17,7 @@ import { useHijriAdjustment } from '../data/adjustment';
 const OPTIONS = Array.from({ length: ADJUST_MAX - ADJUST_MIN + 1 }, (_, index) => ADJUST_MIN + index);
 
 /**
- * The Hijri adjustment sheet (quran-app-screens.html, #HijriAdjust; route `/hijri/adjust`). A −2…+2 segment, the
+ * The Hijri adjustment sheet (screens/, #HijriAdjust; route `/hijri/adjust`). A −2…+2 segment, the
  * before and after dates, and save or reset. Saving writes MMKV, so every Hijri surface updates (ADR 0048, decision 2).
  */
 export function HijriAdjustSheet({ onClose, testID = 'hijri-adjust-sheet' }: { onClose: () => void; testID?: string }) {

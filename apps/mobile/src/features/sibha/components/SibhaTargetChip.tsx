@@ -4,7 +4,7 @@ import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
 /**
- * One target chip (quran-app-screens.html, #Sibha): a 44 pt pill with the target in 15 pt semibold. The selected chip is
+ * One target chip (screens/, #Sibha): a 44 pt pill with the target in 15 pt semibold. The selected chip is
  * filled with the brand surface.
  */
 export function SibhaTargetChip({

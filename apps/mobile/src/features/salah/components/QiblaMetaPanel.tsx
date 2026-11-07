@@ -16,7 +16,7 @@ const LOCATION_ICON: IconName = { ios: 'location.fill', android: 'place' };
 
 /**
  * The glass panel under the dial: distance to al-Masjid al-Haram, compass accuracy and
- * the location source (quran-app-screens.html, #Qibla). The screen owns placement; the
+ * the location source (screens/, #Qibla). The screen owns placement; the
  * panel renders only with a known location, so the distance is always a number.
  */
 export function QiblaMetaPanel({

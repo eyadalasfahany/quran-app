@@ -26,7 +26,7 @@ import { completedUnitKeys } from '../reader-model';
 import { azkarHref, goBackOr } from '../routes';
 
 /**
- * One browse category (quran-app-screens.html, #AzkarCategory): its header with «١٢ من ٢٤», one card per dhikr, and the
+ * One browse category (screens/, #AzkarCategory): its header with «١٢ من ٢٤», one card per dhikr, and the
  * pinned «ابدأ» / «تابع» button that opens the reader. A card opens the reader at its unit.
  */
 export function AzkarCategoryScreen({ categoryId, testID = 'screen-azkar-category' }: { categoryId: string; testID?: string }) {

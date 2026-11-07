@@ -9,7 +9,7 @@ const PLAY_GLYPH = 'M8 5v14l11-7z';
 const GLYPH_SIZE = 16;
 
 /**
- * The 44 pt play button on one adhan voice row (quran-app-screens.html, #AdhanSoundPicker). It plays the clip, or stops it
+ * The 44 pt play button on one adhan voice row (screens/, #AdhanSoundPicker). It plays the clip, or stops it
  * while it plays. The label names the voice (ADR 0047): «تشغيل» / «إيقاف» with the voice name.
  */
 export function AdhanPreviewButton({

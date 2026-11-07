@@ -2,7 +2,7 @@
 
 Duas + my duas
 
-20 frames · open in viewer: `viewer.html?id=<FrameId>`
+17 frames · open in viewer: `viewer.html?id=<FrameId>`
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
@@ -23,9 +23,6 @@ Duas + my duas
 | `MyDuaEditorEnglish` | compact | en | source | My dua editor · English (LTR) |
 | `MyDuasEmpty` | compact | ar-light | source | أدعيتي · فارغة |
 | `MyDuasEmptyEnglish` | compact | en | source | My duas · empty · English (LTR) |
-| `MyDuaDetail` | compact | ar-light | source | دعائي · قراءة · Arabic |
-| `MyDuaDetailDark` | compact | dark | source | دعائي · قراءة · Dark |
-| `MyDuaDetailEnglish` | compact | en | source | My dua · reading · English (LTR) |
 
 ## Model rule
 Read this file only. Open `frames/duas/<id>.html` only for visual/HTML review of one frame.

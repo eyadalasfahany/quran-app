@@ -1,6 +1,6 @@
 import type { PanelTab } from './selection';
 
-/** Phone frames in quran-app-screens.html are 390×844. */
+/** Phone frames in screens/ are 390×844. */
 const PHONE_FRAME_HEIGHT = 844;
 
 /** Side and bottom inset of the sheet card on those frames. */

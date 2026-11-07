@@ -9,7 +9,7 @@ const ALIGNED_ICON: IconName = { ios: 'checkmark', android: 'check' };
 
 /**
  * «أنت باتجاه القبلة» — the gold status pill shown while the needle sits on the
- * Kaaba marker (quran-app-screens.html, #Qibla; role=status there).
+ * Kaaba marker (screens/, #Qibla; role=status there).
  */
 export function QiblaAlignedPill({ testID }: { testID?: string }) {
   const { t } = useTranslation();

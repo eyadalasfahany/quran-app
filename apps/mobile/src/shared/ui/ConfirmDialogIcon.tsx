@@ -5,7 +5,7 @@ import { useTheme } from '@/core/theme';
 import { Icon, type IconName } from './Icon';
 import { useContrastColors } from './useContrastColors';
 
-/** The badge is a 52 pt circle at the top of the dialog card (quran-app-screens.html, SibhaResetDialog). */
+/** The badge is a 52 pt circle at the top of the dialog card (screens/, SibhaResetDialog). */
 export const CONFIRM_ICON_SIZE = 52;
 
 // The badge's tint is its colour at 12% over the card. The design system has no tint token, so the opacity is set here.

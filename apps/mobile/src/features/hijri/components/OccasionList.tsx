@@ -10,7 +10,7 @@ import { type OccasionItem } from '../data/grid';
 import { OccasionRow } from './OccasionRow';
 
 /**
- * The upcoming occasions under the calendar (quran-app-screens.html, #HijriCalendar): a section title over one row per
+ * The upcoming occasions under the calendar (screens/, #HijriCalendar): a section title over one row per
  * occasion, or a muted line when none is near. In the expanded window the parent places it in the side panel.
  */
 export function OccasionList({

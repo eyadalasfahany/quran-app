@@ -16,7 +16,7 @@ import { QuranFontPicker } from '../settings/components/QuranFontPicker';
 import { SettingsSection } from '../settings/components/SettingsSection';
 import { ThemePicker } from '../settings/components/ThemePicker';
 
-/** Sheet card padding and gaps on the settings frame (quran-app-screens.html: padding 10px 18px 20px; gap 14px). */
+/** Sheet card padding and gaps on the settings frame (screens/: padding 10px 18px 20px; gap 14px). */
 const SHEET_PADDING_H = 18;
 const SHEET_PADDING_TOP = 14;
 const SHEET_PADDING_BOTTOM = 20;

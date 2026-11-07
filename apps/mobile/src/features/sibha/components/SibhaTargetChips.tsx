@@ -12,7 +12,7 @@ import { SibhaTargetChip } from './SibhaTargetChip';
 export type SibhaChoice = number | 'custom' | 'none';
 
 /**
- * The target row (quran-app-screens.html, #Sibha): 33, 99, 100, «مخصص» and «بلا حد». The chips sit in content order, so
+ * The target row (screens/, #Sibha): 33, 99, 100, «مخصص» and «بلا حد». The chips sit in content order, so
  * the first preset is at the reading start. No target (null) selects «بلا حد», and a custom target selects «مخصص».
  */
 export function SibhaTargetChips({

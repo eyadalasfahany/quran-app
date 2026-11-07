@@ -22,7 +22,7 @@ import { useMyDuaCaption } from '../data/use-my-dua-caption';
 import { duasHref, goBackOr } from '../routes';
 
 /**
- * One «أدعيتي» entry, read on its own (quran-app-screens.html, #MyDuaDetail). The text is the user's own, shown as written.
+ * One «أدعيتي» entry, read on its own (screens/, #MyDuaDetail). The text is the user's own, shown as written.
  * Previous and next follow the list's order. A dua that is gone (deleted, or a stale notification) leaves for the list and
  * draws nothing, so no broken screen shows.
  */

@@ -4,12 +4,12 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { Button, UiText } from '@/shared/ui';
 
-// The prompt is Amiri 22 (quran-app-screens.html, #Main), as the other Home titles are.
+// The prompt is Amiri 22 (screens/, #Main), as the other Home titles are.
 const TITLE_SIZE = 22;
 const TITLE_LINE_HEIGHT = 29;
 
 /**
- * The progress card with nothing chosen (quran-app-screens.html, #Home «حدّد أهدافك اليومية»): a short prompt over a
+ * The progress card with nothing chosen (screens/, #Home «حدّد أهدافك اليومية»): a short prompt over a
  * button that opens the goals sheet. Nothing is tracked until the user chooses.
  */
 export function DailyProgressEmpty({

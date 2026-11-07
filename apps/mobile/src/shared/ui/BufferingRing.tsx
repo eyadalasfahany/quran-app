@@ -15,13 +15,13 @@ import Svg, { Circle, Path } from 'react-native-svg';
 
 import { pulseTiming, useTheme } from '@/core/theme';
 
-// The buffering pulse's low opacity under Reduce Motion (quran-app-screens.html, «Loading states»).
+// The buffering pulse's low opacity under Reduce Motion (screens/, «Loading states»).
 const REDUCED_PULSE_OPACITY = 0.55;
 // From this outer size the ring uses the frame's 3 pt stroke (the 76 pt full-player button); smaller rings use 2 pt.
 const WIDE_RING_MIN_SIZE = 60;
 
 /**
- * The buffering ring (quran-app-screens.html, «Loading states»): a thin track with a quarter arc that turns once per
+ * The buffering ring (screens/, «Loading states»): a thin track with a quarter arc that turns once per
  * `duration.pulse` around a play button while audio starts. Under Reduce Motion the ring stays still and pulses instead.
  * It is drawn inside the child's bounds, in `color` (the child's glyph colour), and is hidden from screen readers. The
  * busy state belongs on the child's own control. Inactive, it renders the child alone.

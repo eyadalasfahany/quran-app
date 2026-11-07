@@ -6,7 +6,7 @@ import { useTheme } from '@/core/theme';
 export type MenuGridColumns = 2 | 3;
 
 /**
- * The menu's staggered grid of cards (quran-app-screens.html, #Menu): two columns on a phone, three where the window is
+ * The menu's staggered grid of cards (screens/, #Menu): two columns on a phone, three where the window is
  * wide (ADR 0036). Children are dealt across the columns in turn, the first in the first column. The row lays the columns
  * out in the writing direction, so Arabic starts on the right and English on the left.
  */

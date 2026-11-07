@@ -7,7 +7,7 @@ import { UiText } from '@/shared/ui';
 import { MyDuaField } from './MyDuaField';
 import { MyDuaReminderRow } from './MyDuaReminderRow';
 
-/** Editor fields for «أدعيتي» (quran-app-screens.html, #MyDuaEditor): title, text, the device-only note and the reminder.
+/** Editor fields for «أدعيتي» (screens/, #MyDuaEditor): title, text, the device-only note and the reminder.
  *  Save and delete are `MyDuaFormActions`, pinned below the scroll area. */
 export function MyDuaForm({
   title,

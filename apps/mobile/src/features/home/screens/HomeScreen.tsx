@@ -64,7 +64,7 @@ const DUAS_ICON: IconName = { ios: 'hands.sparkles', android: 'volunteer_activis
 const SIBHA_ICON: IconName = { ios: 'circle.circle', android: 'adjust' };
 
 /**
- * Home (quran-app-screens.html, #Main; ADR 0034 §7). Top to bottom: continue reading, the next prayer, continue Azkar,
+ * Home (screens/, #Main; ADR 0034 §7). Top to bottom: continue reading, the next prayer, continue Azkar,
  * today's progress, the tiles, selected Azkar, recent Azkar, and recent listens. Every Azkar block hides without Azkar
  * content. The list scrolls under the tab bar and the mini player, and its end clears both (`useTabContentBottom`).
  */

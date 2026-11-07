@@ -71,6 +71,6 @@ function destinationNamed(name: DestinationName): Destination {
 }
 
 // The five tabs, in the order the tab bar draws them (first is rightmost in RTL). مصحفي sits in the middle
-// (quran-app-screens.html). The الصلاة tab gave its place to القائمة (ADR 0032); its route stays registered.
+// (screens/). The الصلاة tab gave its place to القائمة (ADR 0032); its route stays registered.
 const tabOrder: readonly DestinationName[] = ['(home)', '(mushaf)', '(my-quran)', '(listen)', '(menu)'];
 export const tabDestinations: Destination[] = tabOrder.map(destinationNamed);

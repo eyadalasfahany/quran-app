@@ -23,7 +23,7 @@ import { usePropheticDua } from '../data/hooks';
 import { duaHadithShareText } from '../data/share-text';
 import { duasHref, goBackOr } from '../routes';
 
-/** Prophetic dua detail (quran-app-screens.html, #DuaHadithDetail). Text-only; no audio (ADR 0055 §3). */
+/** Prophetic dua detail (screens/, #DuaHadithDetail). Text-only; no audio (ADR 0055 §3). */
 export function DuaHadithDetailScreen({ duaKey, testID = 'screen-dua-hadith-detail' }: { duaKey: string; testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();

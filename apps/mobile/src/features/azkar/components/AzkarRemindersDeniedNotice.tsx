@@ -5,7 +5,7 @@ import { useTheme } from '@/core/theme';
 import { Button, Card, UiText } from '@/shared/ui';
 
 /**
- * The notice when the system has turned notifications off for Taybah (quran-app-screens.html, #AzkarRemindersDenied):
+ * The notice when the system has turned notifications off for Taybah (screens/, #AzkarRemindersDenied):
  * the reminders cannot arrive until the device allows them, so the sheet says so and offers the device settings.
  */
 export function AzkarRemindersDeniedNotice({

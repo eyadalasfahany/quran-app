@@ -5,7 +5,7 @@ import { MenuCard } from '@/features/menu/components/MenuCard';
 export const MENU_DUAS_ICON = { ios: 'hands.sparkles', android: 'volunteer_activism' } as const;
 
 /**
- * The Duas card in the Menu grid (quran-app-screens.html, #MenuNewCards / DuasHome): the shared menu card opening
+ * The Duas card in the Menu grid (screens/, #MenuNewCards / DuasHome): the shared menu card opening
  * `/duas`, sibling to the Azkar card.
  */
 export function MenuDuasCard({

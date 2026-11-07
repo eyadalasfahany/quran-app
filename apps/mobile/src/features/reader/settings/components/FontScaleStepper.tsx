@@ -8,7 +8,7 @@ import { UiText } from '@/shared/ui';
 
 import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP } from '../../settings-model';
 
-/** The "أ−" and "أ+" glyph sizes on quran-app-screens.html (Reader settings). The glyphs themselves come from i18n. */
+/** The "أ−" and "أ+" glyph sizes on screens/ (Reader settings). The glyphs themselves come from i18n. */
 export const STEP_GLYPH_SMALL = 16;
 export const STEP_GLYPH_LARGE = 20;
 /** Minimum width of the percent label (frame: min-width 52px). */

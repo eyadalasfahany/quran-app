@@ -1,5 +1,5 @@
-/* From quran-app-screens.html — do not edit monolith from here */
-
+/* From screens/screens.css — edit it there, not here */
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
 :root{--bg:#EDE8DC;--ink:#13231F;--muted:#5B6A64}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',system-ui,sans-serif}
@@ -124,3 +124,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
 .xr-grab{align-self:center;width:40px;height:5px;border-radius:3px;background:var(--line)}
 /* Mid-detent sheets (step 14): content keeps its size and scrolls under the card edge, as in the app. */
 [style*="inset: 422px"] > * { flex-shrink: 0; }
+@keyframes sk-pulse { from { opacity: 1; } to { opacity: 0.55; } }
+@keyframes sk-spin { to { transform: rotate(360deg); } }
+.gx-sec-loading .sk { animation: sk-pulse 1000ms ease-in-out infinite alternate; }
+.gx-sec-loading .sk-spin { animation: sk-spin 1000ms linear infinite; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) { .gx-sec-loading .sk { animation: none; } .gx-sec-loading .sk-spin { animation: sk-pulse 1000ms ease-in-out infinite alternate; } }
+
+/* Frame pages (screens/frames/**) and the iframes that load them into index.html (ADR 0075). */
+.gx-frame{display:block;border:0}
+.gx-frame-tablet{border-radius:28px;box-shadow:0 12px 40px rgba(19,35,31,.18)}
+html.gx-frame-page,.gx-frame-page body{overflow:hidden;background:transparent}

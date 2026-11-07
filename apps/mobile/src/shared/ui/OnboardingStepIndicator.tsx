@@ -2,7 +2,7 @@ import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
-/** Three-step onboarding progress (quran-app-screens.html, OnboardLanguage–OnboardReciter). */
+/** Three-step onboarding progress (screens/, OnboardLanguage–OnboardReciter). */
 export function OnboardingStepIndicator({
   step,
   accessibilityLabel,

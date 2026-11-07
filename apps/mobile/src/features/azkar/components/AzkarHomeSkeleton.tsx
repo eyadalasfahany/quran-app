@@ -6,7 +6,7 @@ import { SkeletonBlock, SkeletonGroup, useContrastColors } from '@/shared/ui';
 const SESSION_ROWS = 5;
 const TOPIC_TILES = 4;
 
-/** Azkar home while the content database opens (quran-app-screens.html, #AzkarLoading). One pulsing group. */
+/** Azkar home while the content database opens (screens/, #AzkarLoading). One pulsing group. */
 export function AzkarHomeSkeleton({ testID = 'azkar-home-skeleton' }: { testID?: string }) {
   const theme = useTheme();
   const colors = useContrastColors();

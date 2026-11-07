@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the Taybah design reference: one folder per stack, one folder per screen.
 
-Input: design/screens/ (the lean extraction of quran-app-screens.html, see design/screens/AGENTS.md),
+Input: design/screens/ (the lean extraction of screens/, ADR 0075, see design/screens/AGENTS.md),
 packages/design-tokens/src/colors.ts and the app's i18n files. Neither the monolith nor
 design/screens is changed.
 
@@ -754,7 +754,7 @@ def main():
         k, r = screen_root(t)
         if k == 'phone' and not re.search(r'height:\s*\d+px', r.attrs.get('style') or ''):
             broken.add(fid)
-            print(f'  warning: #{fid} is damaged in quran-app-screens.html (its screen root has no '
+            print(f'  warning: #{fid} is damaged in screens/ (its screen root has no '
                   f'size); its variant is derived instead')
     for s in screens.values():
         s['drawn'] = {k: v for k, v in s['drawn'].items() if v not in broken}

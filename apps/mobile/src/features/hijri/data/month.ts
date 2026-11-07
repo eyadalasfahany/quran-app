@@ -45,7 +45,7 @@ function findMonthStart(year: number, month: number, adjustDays: number): Date |
 }
 
 /**
- * One Hijri month as a grid of days (quran-app-screens.html, #HijriCalendar). `adjustDays` shifts the Gregorian day
+ * One Hijri month as a grid of days (screens/, #HijriCalendar). `adjustDays` shifts the Gregorian day
  * before the conversion, so the month shown matches the adjusted date everywhere. Null when the calendar is unavailable.
  */
 export function hijriMonth(year: number, month: number, adjustDays: number): HijriMonth | null {

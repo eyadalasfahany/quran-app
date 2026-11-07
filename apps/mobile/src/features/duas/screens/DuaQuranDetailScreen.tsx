@@ -36,7 +36,7 @@ function chapterName(surah: number, locale: 'ar' | 'en'): string {
   }
 }
 
-/** Quranic dua detail (quran-app-screens.html, #DuaQuranDetail). */
+/** Quranic dua detail (screens/, #DuaQuranDetail). */
 export function DuaQuranDetailScreen({ duaKey, testID = 'screen-dua-quran-detail' }: { duaKey: string; testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();

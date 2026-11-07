@@ -14,7 +14,7 @@ import { duasHref, goBackOr } from '../routes';
 
 const EMPTY_ICON = { ios: 'square.and.pencil', android: 'edit' } as const;
 
-/** «أدعيتي» list (quran-app-screens.html, #MyDuas and #MyDuasEmpty). */
+/** «أدعيتي» list (screens/, #MyDuas and #MyDuasEmpty). */
 export function MyDuasScreen({ testID = 'screen-my-duas' }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();

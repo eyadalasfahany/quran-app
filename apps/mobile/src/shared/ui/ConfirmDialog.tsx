@@ -26,7 +26,7 @@ import type { IconName } from './Icon';
 import { UiText } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
-/** The card's largest width (quran-app-screens.html, SibhaResetDialog); on a phone it is the window less 24 pt on each side. */
+/** The card's largest width (screens/, SibhaResetDialog); on a phone it is the window less 24 pt on each side. */
 const CARD_MAX_WIDTH = 340;
 const CARD_SCREEN_MARGIN = 24;
 /** The card springs up from 92% when it opens and shrinks to 96% when it closes, which is quicker. */

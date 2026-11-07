@@ -8,14 +8,14 @@ import type { NextPrayerCard as NextPrayerCardModel } from '../data/next-prayer'
 
 const PRAYER_ICON: IconName = { ios: 'moon.stars', android: 'mosque' };
 const CHEVRON: IconName = { ios: 'chevron.right', android: 'chevron_right' };
-// The prayer's name is Amiri 22 (quran-app-screens.html, #Main). No display token has that size, so it is set here.
+// The prayer's name is Amiri 22 (screens/, #Main). No display token has that size, so it is set here.
 const NAME_SIZE = 22;
 const NAME_LINE_HEIGHT = 29;
-// The card pads 14 pt vertically and sets 14 pt between its parts (quran-app-screens.html, #Main).
+// The card pads 14 pt vertically and sets 14 pt between its parts (screens/, #Main).
 const CARD_PADDING_Y = 14;
 
 /**
- * Home's next-prayer card (quran-app-screens.html, #Main): a surface card, not a brand card, under «تابع القراءة». It
+ * Home's next-prayer card (screens/, #Main): a surface card, not a brand card, under «تابع القراءة». It
  * shows the prayer, its time and the time left, and opens the Salah screen. Without a location it asks for one.
  */
 export function NextPrayerCard({

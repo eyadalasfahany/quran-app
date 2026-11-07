@@ -1,4 +1,4 @@
-/** The ring's frame size (quran-app-screens.html, #Sibha). The counter is never drawn larger. */
+/** The ring's frame size (screens/, #Sibha). The counter is never drawn larger. */
 export const SIBHA_RING_SIZE = 280;
 /** Progress ring stroke width on #Sibha. */
 export const SIBHA_RING_STROKE = 10;

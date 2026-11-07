@@ -7,7 +7,7 @@ import { IconButton, UiText } from '@/shared/ui';
 const BACK_ICON = { ios: 'chevron.left', android: 'chevron_left' } as const;
 
 /**
- * The picker's header (quran-app-screens.html, #AdhanSoundPicker): the raised back button on its own line, and the large
+ * The picker's header (screens/, #AdhanSoundPicker): the raised back button on its own line, and the large
  * title «صوت الأذان» under it, both at the start edge.
  */
 export function AdhanSoundHeader({

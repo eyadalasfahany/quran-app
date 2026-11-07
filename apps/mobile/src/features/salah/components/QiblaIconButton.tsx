@@ -5,7 +5,7 @@ import { Icon, type IconName } from '@/shared/ui/Icon';
 
 /**
  * The Qibla screen's round glass header buttons (back, location). 44 pt, the player
- * glass tokens on the player-dark canvas (quran-app-screens.html, #Qibla).
+ * glass tokens on the player-dark canvas (screens/, #Qibla).
  */
 export function QiblaIconButton({
   icon,

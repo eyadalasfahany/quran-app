@@ -3,7 +3,7 @@ import { ReaderActionButtons } from '@/features/azkar/components/ReaderActionBut
 import { toggleDuaFavorite } from '../data/favorites-repository';
 import { useIsDuaFavorite } from '../data/hooks';
 
-/** The dua's action row: favourite (live from user.db), share, text size (quran-app-screens.html, #DuaHadithDetail). */
+/** The dua's action row: favourite (live from user.db), share, text size (screens/, #DuaHadithDetail). */
 export function DuaReaderActions({
   duaKey,
   onShare,

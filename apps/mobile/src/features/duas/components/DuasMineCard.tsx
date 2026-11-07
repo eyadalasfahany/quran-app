@@ -8,7 +8,7 @@ import { Rosette, UiText } from '@/shared/ui';
 
 const ROSETTE = { offset: -40, size: 180 } as const;
 
-/** Duas home «أدعيتي» brand card (quran-app-screens.html, #DuasHome): no progress bar. */
+/** Duas home «أدعيتي» brand card (screens/, #DuasHome): no progress bar. */
 export function DuasMineCard({
   count,
   onPress,

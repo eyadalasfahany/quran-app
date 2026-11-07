@@ -22,7 +22,7 @@ export function moonLitPath(illumination: number, waxing: boolean, r: number): s
   return `M ${r} 0 A ${r} ${r} 0 0 ${limbSweep} ${r} ${d} A ${rx} ${r} 0 0 ${terminatorSweep} ${r} 0 Z`;
 }
 
-/** Moon disc drawn with SVG (quran-app-screens.html, #MoonSighting): the dark disc with the lit part on top. */
+/** Moon disc drawn with SVG (screens/, #MoonSighting): the dark disc with the lit part on top. */
 export function MoonPhaseDisc({
   illumination,
   waxing,

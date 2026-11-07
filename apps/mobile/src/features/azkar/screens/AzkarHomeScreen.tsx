@@ -44,7 +44,7 @@ function pairs<T>(items: readonly T[]): T[][] {
 }
 
 /**
- * Azkar home (quran-app-screens.html, #AzkarHome): the continue card, the session categories with their progress, and
+ * Azkar home (screens/, #AzkarHome): the continue card, the session categories with their progress, and
  * the browse topics. Without Azkar content it shows the unavailable state (ADR 0017: no dead ends).
  */
 export function AzkarHomeScreen() {

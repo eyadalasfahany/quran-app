@@ -7,7 +7,7 @@ import { screenInsetsFor } from '@/core/layout/useScreenInsets';
 import { useTheme } from '@/core/theme';
 import { IconButton, UiText } from '@/shared/ui';
 
-// Focus draws no reader toolbar: only the exit and the position (its frame in quran-app-screens.html, #Focus).
+// Focus draws no reader toolbar: only the exit and the position (its frame in screens/, #Focus).
 const CLOSE = { ios: 'xmark', android: 'close' } as const;
 const NO_INSETS = { bottom: 0, left: 0, right: 0, top: 0 };
 

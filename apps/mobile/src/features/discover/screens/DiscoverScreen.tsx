@@ -19,7 +19,7 @@ import { DISCOVER_GROUPS } from '../registry';
 import { markDiscovered, skipTourStep } from '../store';
 
 /**
- * The full checklist (quran-app-screens.html, #DiscoverScreen; ADR 0053). Five groups of rows; a row starts the guided
+ * The full checklist (screens/, #DiscoverScreen; ADR 0053). Five groups of rows; a row starts the guided
  * tour at that step, and a row ticks when its step is done. The tour's widget step opens the widget sheet here: reading
  * it completes the step, closing it skips. `openSheet` opens the sheet on arrival.
  */

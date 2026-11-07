@@ -10,7 +10,7 @@ import { ReciterTile } from './ReciterTile';
 
 export type ReciterRowStatus = { label: string; tone: 'muted' | 'danger' };
 
-// One reciter in the Listen list (quran-app-screens.html, #Reciters). Tapping the info selects the reciter;
+// One reciter in the Listen list (screens/, #Reciters). Tapping the info selects the reciter;
 // the play button is a separate control beside it, and the «⋯» button opens the reciter's page.
 export function ReciterRow({
   name,

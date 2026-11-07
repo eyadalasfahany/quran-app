@@ -5,7 +5,7 @@ import { useTheme } from '@/core/theme';
 import { useContrastColors } from '@/shared/ui';
 
 /**
- * The bordered card that holds the goal rows (quran-app-screens.html, #DailyGoalsSheet): a raised 20 pt card with a
+ * The bordered card that holds the goal rows (screens/, #DailyGoalsSheet): a raised 20 pt card with a
  * hairline, the rows divided by a hairline. The card draws the dividers, so a row that does not take a separator
  * (the Settings reminder row) still sits in the list.
  */

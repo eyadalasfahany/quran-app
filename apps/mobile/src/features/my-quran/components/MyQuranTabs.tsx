@@ -4,7 +4,7 @@ import { SegmentedControl } from '@/shared/ui';
 
 export type MyQuranTab = 'bookmarks' | 'highlights' | 'notes' | 'khatma';
 
-// The My Quran sections (quran-app-screens.html, #MyQuran): bookmarks, highlights, notes and khatma.
+// The My Quran sections (screens/, #MyQuran): bookmarks, highlights, notes and khatma.
 export function MyQuranTabs({
   value,
   onChange,

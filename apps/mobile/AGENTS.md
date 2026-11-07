@@ -7,7 +7,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - `app/` holds Expo Router routes only. Routes stay thin: read params, render a feature screen.
 - `src/core/` holds api, db, sync, layout, theme, i18n, storage, telemetry.
 - `src/features/<feature>/` holds `components/`, `hooks/`, `data/` (repositories) and `store.ts` only when needed.
-- `src/shared/ui/` holds design-system components, built from `quran-app-design-system.html` and `quran-app-screens.html` (ADR 0010) when a phase first needs them.
+- `src/shared/ui/` holds design-system components, built from `quran-app-design-system.html` and `screens/` (ADR 0010, 0075) when a phase first needs them.
 - Colors, spacing, radii and type come from `@quran/design-tokens`, which is transcribed from the HTML design system. No raw hex values in components. Read them through `useTheme()` from `src/core/theme`.
 - Text styles set the per-weight family (`IBMPlexSansArabic-Bold`) and never `fontWeight`; on Android a weight on top of a bold face can fake-bold it.
 - Motion follows spec §12 ("Motion").
@@ -39,7 +39,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - **Design:** all UI follows the `apple-design` skill (`.agents/skills/apple-design/SKILL.md`, Apple HIG), as interpreted by spec §12.
   - Read it before building UI, and check against it before done.
   - That means 44 pt touch targets, Dynamic Type, contrast, RTL mirroring, Reduce Motion and Reduce Transparency, and VoiceOver and TalkBack labels.
-- **Review against the HTML:** every review compares the built UI with its frame in `quran-app-screens.html` and the tokens in `quran-app-design-system.html`. It must be identical unless the developer has approved a difference (an ADR or the step brief). A mismatch fails the review.
+- **Review against the HTML:** every review compares the built UI with its frame in `screens/frames/<section>/<FrameId>.html` and the tokens in `quran-app-design-system.html`. It must be identical unless the developer has approved a difference (an ADR or the step brief). A mismatch fails the review.
 - **Visual check:** the review also screenshots the running app on the **iPhone 17 simulator** (`xcrun simctl io booted screenshot`) and compares it with the frame rendered at 390 × 844 by `packages/design-tokens/scripts/frame-shot.py <frame-id> <out.png>`. Tests and style values alone don't pass a UI review.
 - **Delegation:** implementation goes to a subagent on the cheapest available model (Haiku); the orchestrating agent briefs it and reviews the diff.
 - **Existing gap:** `Sidebar` and `SidebarItem` (Phase 0) are tested through `__tests__/sidebar-glass.test.tsx` and the router test, not by colocated per-component tests. Add those the next time either component changes.

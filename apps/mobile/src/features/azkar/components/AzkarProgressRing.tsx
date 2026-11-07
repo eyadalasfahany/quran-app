@@ -8,7 +8,7 @@ const CHECK = { ios: 'checkmark', android: 'check' } as const;
 const STROKE = 3;
 
 /**
- * A session's progress ring (quran-app-screens.html, #AzkarHome). A track with a brand arc for the share done; a
+ * A session's progress ring (screens/, #AzkarHome). A track with a brand arc for the share done; a
  * completed session draws a full ring with a check. Decorative: the row around it carries the progress text.
  */
 export function AzkarProgressRing({

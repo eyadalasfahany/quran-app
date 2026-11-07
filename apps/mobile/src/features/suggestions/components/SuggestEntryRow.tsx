@@ -8,7 +8,7 @@ import { Icon, UiText, useContrastColors } from '@/shared/ui';
 const BULB = { ios: 'lightbulb', android: 'lightbulb' } as const;
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
 
-// The frame's icon tile is 36 pt with a 10 pt radius; the row is at least 64 pt tall (quran-app-screens.html, #SettingsSuggestCard).
+// The frame's icon tile is 36 pt with a 10 pt radius; the row is at least 64 pt tall (screens/, #SettingsSuggestCard).
 const TILE_SIZE = 36;
 const TILE_RADIUS = 10;
 const ROW_MIN_HEIGHT = 64;

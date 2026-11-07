@@ -6,7 +6,7 @@ const PHOTO_ASPECT = 787 / 1400;
 
 /**
  * A cover photo cropped at a chosen vertical focus, like the frames' `center <focusY>%`
- * (quran-app-screens.html, #Salah). RN's Image only centre-crops, so the photo is drawn
+ * (screens/, #Salah). RN's Image only centre-crops, so the photo is drawn
  * taller than its box and shifted up or down inside it.
  */
 export function ScenePhoto({

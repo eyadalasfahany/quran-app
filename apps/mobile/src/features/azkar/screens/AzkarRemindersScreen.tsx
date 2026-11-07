@@ -18,7 +18,7 @@ import { useAzkarCategories } from '../data';
 import { useNotificationsGranted } from '../reminders/hooks';
 
 /**
- * The reminder sheet (quran-app-screens.html, #AzkarReminders; the `/azkar/reminders` route). With a `categoryId` it
+ * The reminder sheet (screens/, #AzkarReminders; the `/azkar/reminders` route). With a `categoryId` it
  * shows that category's reminder (the category screen's bell); with an `entryKey` it shows the single entry's reminder
  * (the details sheet). Otherwise it lists the session categories. The disclaimer always shows.
  */
