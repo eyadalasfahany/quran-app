@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,7 +33,15 @@ from .manifest import write_json_atomic
 from .pipeline import IngestRequest, run_ingest
 from .sources import resolve_mp3quran
 from .store import R2Store
-from .way2quran import Way2QuranSource, find_reciter, list_reciter, write_reciter
+from .way2quran import (
+    Way2QuranSource,
+    carry_exclusions,
+    exclude_unavailable,
+    find_reciter,
+    list_reciter,
+    stored_reciter,
+    write_reciter,
+)
 from .worker import WorkerClient
 
 
@@ -119,6 +128,17 @@ def build_parser() -> argparse.ArgumentParser:
     lister.add_argument("--name-en", required=True, help="English name, as the developer approves it")
     lister.add_argument("--write", action="store_true", help="update the reciter data file")
     lister.add_argument("--data", type=Path, default=DEFAULT_WAY2QURAN_DATA)
+
+    exclude = sub.add_parser(
+        "way2quran-exclude",
+        help="move the surahs a quality report calls unavailable from files to excluded",
+        description="Dry run by default: prints the change and writes nothing. --write updates the reciter data "
+        "file. Safe to repeat: a surah already excluded is left alone. Needs no network.",
+    )
+    exclude.add_argument("--reciter", type=_positive_int, required=True, help="Taybah reciter id")
+    exclude.add_argument("--report", type=Path, required=True, help="the reciter report (checks/way2quran-ID.json)")
+    exclude.add_argument("--write", action="store_true", help="update the reciter data file")
+    exclude.add_argument("--data", type=Path, default=DEFAULT_WAY2QURAN_DATA)
     return parser
 
 
@@ -215,8 +235,35 @@ def cmd_way2quran_list(args: argparse.Namespace) -> int:
           f"{result.ignored} other-riwayah file(s) ignored")
     print(f"surah_list: {','.join(str(s) for s in surahs)}")
     print(f"total bytes: {result.total_bytes}")
+    kept, changed = carry_exclusions(stored_reciter(args.data, reciter.reciter_id), reciter, result.remotes)
+    for surah in changed:
+        print(f"surah {surah} changed on the source; the next run checks it again")
+    if kept.excluded:
+        print(f"excluded (unchanged on the source, not listed): {','.join(str(s) for s in sorted(kept.excluded))}")
     if args.write:
-        write_reciter(args.data, reciter)
+        write_reciter(args.data, reciter, result.remotes)
+        print(f"written: {args.data}")
+    else:
+        print("dry: nothing written (add --write to update the reciter data file)")
+    return 0
+
+
+def cmd_way2quran_exclude(args: argparse.Namespace) -> int:
+    reciter = find_reciter(args.reciter, args.data)
+    try:
+        report = json.loads(args.report.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise IngestError(f"cannot read the report {args.report}") from exc
+    new, moved = exclude_unavailable(reciter, report)
+    if not moved:
+        print(f"reciter {reciter.reciter_id}: nothing to exclude")
+        return 0
+    for surah in moved:
+        rec = new.excluded[surah]
+        print(f"surah {surah}: files -> excluded ({rec.reason}, heard {rec.first_heard_ayah}-{rec.last_heard_ayah} "
+              f"of {rec.ayah_count})")
+    if args.write:
+        write_reciter(args.data, new)
         print(f"written: {args.data}")
     else:
         print("dry: nothing written (add --write to update the reciter data file)")
@@ -230,6 +277,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_catalogue(args)
         if args.command == "way2quran-list":
             return cmd_way2quran_list(args)
+        if args.command == "way2quran-exclude":
+            return cmd_way2quran_exclude(args)
         return cmd_ingest(args)
     except IngestError as exc:
         print(f"mp3quran-ingest: {exc}", file=sys.stderr)
