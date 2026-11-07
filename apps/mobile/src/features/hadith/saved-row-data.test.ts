@@ -83,4 +83,19 @@ describe('savedItemHref', () => {
   it('opens the list when the collection is not installed', () => {
     expect(savedItemHref(item({ collection: null, book: null, openNumber: null, hadith: null }))).toBe('/hadith');
   });
+
+  it('shows the span of a merged hadith in the saved row number', () => {
+    const base = item();
+    const merged = item({
+      hadith: { ...base.hadith!, hadithNumber: '5720', numberFirst: '5719', numberLast: '5722' },
+      openNumber: '5720',
+    });
+    expect(toSavedRowData(merged).hadithNumber).toBe('5719–5722');
+  });
+
+  it('flags a saved placeholder so its row shows the note', () => {
+    const base = item();
+    expect(toSavedRowData(item({ hadith: { ...base.hadith!, sourceCode: 'unavailable', textAr: '' } })).placeholder).toBe(true);
+    expect(toSavedRowData(base).placeholder).toBe(false);
+  });
 });

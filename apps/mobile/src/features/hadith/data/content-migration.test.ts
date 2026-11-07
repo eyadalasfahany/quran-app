@@ -103,6 +103,14 @@ describe('content.db hadith migration', () => {
     }
   });
 
+  it('adds the nullable number range and source code to hadith_entries (migration 0014)', () => {
+    const added = columnsOf(executor, 'hadith_entries').filter((column) =>
+      ['number_first', 'number_last', 'source_code'].includes(column.name),
+    );
+    expect(added.map((column) => column.name)).toEqual(['number_first', 'number_last', 'source_code']);
+    expect(added.every((column) => column.notnullFlag === 0)).toBe(true);
+  });
+
   it('keeps hadith_number text and not unique', () => {
     executor.run(
       `INSERT INTO hadith_entries (resource_id, id, book_id, chapter_id, hadith_number, arabic_number, position, text_ar, text_en, narrator_en, text_search, source_url)

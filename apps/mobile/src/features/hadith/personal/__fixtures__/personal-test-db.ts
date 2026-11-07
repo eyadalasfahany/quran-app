@@ -30,12 +30,32 @@ export function openPersonalDbs(): PersonalDbs {
 
 export function addEntry(
   content: SqlExecutor,
-  input: { resourceId: number; id: number; bookId: number; hadithNumber: string; position: number },
+  input: {
+    resourceId: number;
+    id: number;
+    bookId: number;
+    hadithNumber: string;
+    position: number;
+    numberFirst?: string | null;
+    numberLast?: string | null;
+    sourceCode?: string | null;
+  },
 ): void {
   content.run(
-    `INSERT INTO hadith_entries (resource_id, id, book_id, chapter_id, hadith_number, arabic_number, position, text_ar, text_en, narrator_en, text_search, source_url)
-     VALUES (?, ?, ?, NULL, ?, NULL, ?, ?, NULL, NULL, ?, NULL)`,
-    [input.resourceId, input.id, input.bookId, input.hadithNumber, input.position, PLACEHOLDER_TEXT_AR, PLACEHOLDER_TEXT_SEARCH],
+    `INSERT INTO hadith_entries (resource_id, id, book_id, chapter_id, hadith_number, arabic_number, position, text_ar, text_en, narrator_en, text_search, source_url, number_first, number_last, source_code)
+     VALUES (?, ?, ?, NULL, ?, NULL, ?, ?, NULL, NULL, ?, NULL, ?, ?, ?)`,
+    [
+      input.resourceId,
+      input.id,
+      input.bookId,
+      input.hadithNumber,
+      input.position,
+      PLACEHOLDER_TEXT_AR,
+      PLACEHOLDER_TEXT_SEARCH,
+      input.numberFirst ?? null,
+      input.numberLast ?? null,
+      input.sourceCode ?? null,
+    ],
   );
 }
 

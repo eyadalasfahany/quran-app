@@ -1,10 +1,16 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-import { hadithResourceId } from '../data';
+import { findCoveringHadithNumber, hadithResourceId } from '../data';
 import type { HadithNumberResolver } from './model';
 
-/** TODO-free seam: the real lookup arrives with the merge data (plan step 6b, Open question 1). Until then no number is merged. */
-export const resolveCoveringNumber: HadithNumberResolver = () => null;
+/** The `hadith_number` of the merged row whose span covers `hadithNumber` in the installed pack; null when none does. */
+export const resolveCoveringNumber: HadithNumberResolver = (content, slug, hadithNumber) => {
+  const resourceId = hadithResourceId(content, slug);
+  if (resourceId === undefined) {
+    return null;
+  }
+  return findCoveringHadithNumber(content, resourceId, hadithNumber);
+};
 
 function hasExactHadith(content: SqlExecutor, resourceId: number, hadithNumber: string): boolean {
   return (

@@ -4,6 +4,8 @@ import { Linking, Pressable, View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { arabicTextDirection, UiText } from '@/shared/ui';
 
+import { hadithCreditKey } from '../source-credit';
+
 // The gap between the credit and the attribution line (theme.space[1] is 4; the frames use 2).
 const LINE_GAP = 2;
 
@@ -15,10 +17,13 @@ export function HadithSourceLine({
   attribution,
   sourceUrl,
   align = 'start',
+  sourceCode = null,
   testID = 'hadith-source-line',
 }: {
   attribution: string | null;
   sourceUrl: string | null;
+  /** The row's own `source_code`; picks the credit line (ADR 0076). */
+  sourceCode?: string | null;
   align?: 'start' | 'center';
   testID?: string;
 }) {
@@ -26,7 +31,7 @@ export function HadithSourceLine({
   const theme = useTheme();
   const centred = align === 'center';
   const hasAttribution = attribution !== null && attribution !== '';
-  const credit = t('hadith.source.credit');
+  const credit = t(hadithCreditKey(sourceCode));
 
   const creditNode =
     sourceUrl === null ? (

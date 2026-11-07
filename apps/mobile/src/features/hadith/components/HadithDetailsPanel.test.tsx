@@ -82,4 +82,21 @@ describe('HadithDetailsPanel', () => {
     expect(screen.getByTestId(`${TEST_ID}-title`).props.maxFontSizeMultiplier).toBe(maxFontScale.content);
     expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).not.toHaveProperty('height');
   });
+
+
+  it('shows the OpenITI credit for a row filled from OpenITI', async () => {
+    await renderUi(
+      <HadithDetailsPanel
+        attribution={ATTRIBUTION}
+        bookTitle={BOOK}
+        collectionTitle={COLLECTION}
+        hadithNumber="2787.2"
+        sourceCode="openiti"
+        sourceUrl={null}
+      />,
+      { locale: 'en' },
+    );
+    expect(screen.getByText('Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0')).toBeOnTheScreen();
+    expect(screen.queryByText('Source: fawazahmed0/hadith-api')).toBeNull();
+  });
 });

@@ -6,6 +6,7 @@ import { useTheme } from '@/core/theme';
 
 import { bookTitle, collectionTitle } from '../titles';
 import { hadithNumberText } from '../number-text';
+import { isUnavailableHadith } from '../source-credit';
 import type { HadithReaderData } from '../types';
 
 import { HadithPager } from './HadithPager';
@@ -47,7 +48,8 @@ export function HadithReaderContent({
   const locale = useLocale();
   const theme = useTheme();
   const { hadith, previous, next } = data;
-  const numberText = hadithNumberText({ hadithNumber: hadith.hadithNumber });
+  const numberText = hadithNumberText(hadith);
+  const unavailable = isUnavailableHadith(hadith.sourceCode);
 
   return (
     <View style={{ flex: 1, gap: theme.space[4] }} testID={testID}>
@@ -60,6 +62,7 @@ export function HadithReaderContent({
           onShare={onShare}
           onToggleSave={onToggleSave}
           saved={saved}
+          shareable={!unavailable}
         />
       ) : null}
       <ScrollView contentContainerStyle={{ gap: theme.space[4], paddingBottom: theme.space[4] }}>
@@ -68,8 +71,10 @@ export function HadithReaderContent({
           chainEnd={null}
           fontScale={fontScale}
           hadithNumber={numberText}
+          sourceCode={hadith.sourceCode ?? null}
           sourceUrl={hadith.sourceUrl}
           text={hadith.textAr}
+          unavailable={unavailable}
           testID={`${testID}-card`}
         />
       </ScrollView>

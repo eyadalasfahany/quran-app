@@ -1748,7 +1748,12 @@
     },
     "source": {
       "credit": "Source: fawazahmed0/hadith-api",
-      "open": "Open source"
+      "open": "Open source",
+      "creditOpeniti": "Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0",
+      "creditHadithapicom": "Some hadith texts: hadithapi.com"
+    },
+    "unavailable": {
+      "title": "Hadith {{n}} isn't available in the source yet"
     },
     "saved": {
       "title": "Saved",
@@ -1760,7 +1765,15 @@
     },
     "search": {
       "placeholder": "Search hadith",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "scopeLabel": "Search in",
+      "scopeAll": "All",
+      "recentTitle": "Recent searches",
+      "clearRecent": "Clear history",
+      "removeRecent": "Remove {{query}}",
+      "hint": "Search ignores diacritics and hamza forms.",
+      "resultCount_one": "1 result",
+      "resultCount_other": "{{n}} results"
     },
     "states": {
       "loading": "Loading hadith",

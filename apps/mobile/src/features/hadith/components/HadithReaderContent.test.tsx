@@ -108,4 +108,14 @@ describe('HadithReaderContent', () => {
   it('has no raw colour literal', () => {
     expect(rawColorLiteralsInFeature('src/features/hadith/components/HadithReaderContent.tsx')).toEqual([]);
   });
+
+
+  it('hides copy and share for a placeholder, keeps save, and keeps previous and next', async () => {
+    await renderContent(readerData({ hadith: { ...readerData().hadith, hadithNumber: '1234', textAr: '', sourceCode: 'unavailable' } }));
+    expect(screen.getByTestId('hadith-reader-content-card-unavailable')).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'نسخ' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'مشاركة' })).toBeNull();
+    expect(screen.getByTestId('hadith-reader-header-toolbar-save')).toBeOnTheScreen();
+    expect(screen.getByTestId('hadith-reader-content-pager-next')).toBeOnTheScreen();
+  });
 });

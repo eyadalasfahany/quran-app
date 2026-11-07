@@ -94,4 +94,17 @@ describe('HadithReaderCard', () => {
     expect(screen.getByTestId(`${TEST_ID}-number`).props.maxFontSizeMultiplier).toBe(maxFontScale.content);
     expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).not.toHaveProperty('height');
   });
+
+
+  it('shows the placeholder note in place of the text and no text node', async () => {
+    await renderCard({ unavailable: true, hadithNumber: '1234', text: '' });
+    expect(screen.getByTestId(`${TEST_ID}-unavailable`)).toHaveTextContent('الحديث ١٢٣٤ غير متوفر حاليًا في المصدر');
+    expect(screen.queryByTestId(`${TEST_ID}-text`)).toBeNull();
+  });
+
+  it('shows the text when the row is not a placeholder', async () => {
+    await renderCard({ unavailable: false });
+    expect(screen.getByTestId(`${TEST_ID}-text`)).toBeOnTheScreen();
+    expect(screen.queryByTestId(`${TEST_ID}-unavailable`)).toBeNull();
+  });
 });

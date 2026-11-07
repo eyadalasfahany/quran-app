@@ -86,4 +86,19 @@ describe('HadithSourceLine', () => {
     expect(screen.getByTestId(`${TEST_ID}-credit`).props.maxFontSizeMultiplier).toBe(maxFontScale.content);
     expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).not.toHaveProperty('height');
   });
+
+
+  it.each([
+    ['openiti', 'Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0'],
+    ['hadithapicom', 'Some hadith texts: hadithapi.com'],
+  ])('shows the credit of the row source %s in English', async (sourceCode, credit) => {
+    await renderUi(<HadithSourceLine attribution={null} sourceCode={sourceCode} sourceUrl={null} />, { locale: 'en' });
+    expect(screen.getByText(credit)).toBeOnTheScreen();
+    expect(screen.queryByText('Source: fawazahmed0/hadith-api')).toBeNull();
+  });
+
+  it.each([null, 'fawazahmed0'])('keeps the collection credit for source code %p', async (sourceCode) => {
+    await renderUi(<HadithSourceLine attribution={null} sourceCode={sourceCode} sourceUrl={null} />, { locale: 'en' });
+    expect(screen.getByText('Source: fawazahmed0/hadith-api')).toBeOnTheScreen();
+  });
 });

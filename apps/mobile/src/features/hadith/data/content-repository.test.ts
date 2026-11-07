@@ -29,10 +29,22 @@ const DETAIL_KEYS = [
   'hadithNumber',
   'id',
   'position',
+  'numberFirst',
+  'numberLast',
   'resourceId',
+  'sourceCode',
   'sourceUrl',
   'textAr',
 ].sort();
+
+/** A merged row, placeholder text (ADR 0076): hadith 5720 covers 5719 to 5722. */
+function insertMergedRow(executor: SqlExecutor, bookId: number): void {
+  executor.run(
+    `INSERT INTO hadith_entries (resource_id, id, book_id, chapter_id, hadith_number, arabic_number, position, text_ar, text_en, narrator_en, text_search, source_url, number_first, number_last, source_code)
+     VALUES (?, 90, ?, NULL, '5720', NULL, 90, 'FIXTURE text merged — not a hadith', NULL, NULL, 'fixture text merged', NULL, '5719', '5722', 'openiti')`,
+    [FIXTURE_MULTI.resourceId, bookId],
+  );
+}
 
 function installCollection(executor: SqlExecutor, resourceId: number, slug: string, title: string | null): void {
   executor.run(
@@ -205,6 +217,47 @@ describe('content repository', () => {
     );
     const after = Object.keys(getHadith(executor, FIXTURE_MULTI.slug, '1') ?? {}).sort();
     expect(after).toEqual(DETAIL_KEYS);
+  });
+
+  it('finds a number inside a merged span through the covering row', () => {
+    loadHadithDevFixtures(executor);
+    const bookId = getHadith(executor, FIXTURE_MULTI.slug, '1')?.book.id ?? 0;
+    insertMergedRow(executor, bookId);
+
+    const covered = getHadith(executor, FIXTURE_MULTI.slug, '5721');
+    expect(covered?.hadithNumber).toBe('5720');
+    expect(covered?.numberFirst).toBe('5719');
+    expect(covered?.numberLast).toBe('5722');
+    expect(covered?.sourceCode).toBe('openiti');
+  });
+
+  it('prefers an exact number over a span and keeps a number outside every span missing', () => {
+    loadHadithDevFixtures(executor);
+    const bookId = getHadith(executor, FIXTURE_MULTI.slug, '1')?.book.id ?? 0;
+    insertMergedRow(executor, bookId);
+
+    expect(getHadith(executor, FIXTURE_MULTI.slug, '5720')?.id).toBe(90);
+    expect(getHadith(executor, FIXTURE_MULTI.slug, '5723')).toBeUndefined();
+    expect(getHadith(executor, FIXTURE_MULTI.slug, '5x')).toBeUndefined();
+  });
+
+  it('returns null bounds and source code for a normal row', () => {
+    loadHadithDevFixtures(executor);
+    const normal = getHadith(executor, FIXTURE_MULTI.slug, '1');
+    expect(normal?.numberFirst).toBeNull();
+    expect(normal?.numberLast).toBeNull();
+    expect(normal?.sourceCode).toBeNull();
+  });
+
+  it('passes the bounds and source code through the list rows', () => {
+    loadHadithDevFixtures(executor);
+    const bookId = getHadith(executor, FIXTURE_MULTI.slug, '1')?.book.id ?? 0;
+    insertMergedRow(executor, bookId);
+
+    const merged = listBookHadith(executor, FIXTURE_MULTI.slug, bookId).find((item) => item.id === 90);
+    expect(merged?.numberFirst).toBe('5719');
+    expect(merged?.numberLast).toBe('5722');
+    expect(merged?.sourceCode).toBe('openiti');
   });
 
   it('gives previous and next within a book', () => {

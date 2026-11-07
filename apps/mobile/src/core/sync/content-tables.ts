@@ -487,6 +487,9 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
         text('narrator_en', true),
         text('text_search'),
         text('source_url', true),
+        text('number_first', true),
+        text('number_last', true),
+        text('source_code', true),
       ]),
       table('hadith_grades', [
         integer('resource_id'),

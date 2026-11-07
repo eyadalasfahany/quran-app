@@ -13,12 +13,15 @@ export function HadithToolbar({
   onToggleSave,
   onCopy,
   onShare,
+  shareable = true,
   testID = 'hadith-toolbar',
 }: {
   saved: boolean;
   onToggleSave: () => void;
   onCopy: () => void;
   onShare: () => void;
+  /** False for a placeholder: copy and share are hidden, save stays (ADR 0076). */
+  shareable?: boolean;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -26,8 +29,12 @@ export function HadithToolbar({
   return (
     <ToolbarPill label={t('hadith.reader.toolbar')} testID={testID}>
       <HadithBookmarkButton onToggle={onToggleSave} saved={saved} testID={`${testID}-save`} variant="glass" />
-      <IconButton icon={COPY} label={t('hadith.reader.copy')} onPress={onCopy} testID={`${testID}-copy`} variant="glass" />
-      <IconButton icon={SHARE} label={t('hadith.reader.share')} onPress={onShare} testID={`${testID}-share`} variant="glass" />
+      {shareable ? (
+        <IconButton icon={COPY} label={t('hadith.reader.copy')} onPress={onCopy} testID={`${testID}-copy`} variant="glass" />
+      ) : null}
+      {shareable ? (
+        <IconButton icon={SHARE} label={t('hadith.reader.share')} onPress={onShare} testID={`${testID}-share`} variant="glass" />
+      ) : null}
     </ToolbarPill>
   );
 }

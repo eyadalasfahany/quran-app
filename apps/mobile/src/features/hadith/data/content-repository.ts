@@ -41,7 +41,8 @@ const BOOK_SELECT = `
 
 const ITEM_SELECT = `
   SELECT e.resource_id AS resourceId, e.id, e.book_id AS bookId, e.chapter_id AS chapterId,
-         e.hadith_number AS hadithNumber, e.arabic_number AS arabicNumber, e.position, e.text_ar AS textAr
+         e.hadith_number AS hadithNumber, e.arabic_number AS arabicNumber, e.position, e.text_ar AS textAr,
+         e.number_first AS numberFirst, e.number_last AS numberLast, e.source_code AS sourceCode
   FROM hadith_entries e
 `;
 
@@ -184,18 +185,33 @@ type DetailRow = HadithListItem & {
   sourceUrl: string | null;
 };
 
+const NUMERIC_NUMBER = /^\d+(\.\d+)?$/;
+
 /**
- * One hadith by slug and number. When two rows share the number, the lower id wins (Open question 5). The result has
- * exactly the keys of `HadithDetail`: no grade, no English text, no search column.
+ * The `hadith_number` of the row whose merged span (`number_first`..`number_last`) covers `hadithNumber`, or null. Only a
+ * numeric input is looked up; the bounds are compared as numbers (`CAST ... AS REAL`), never as text. The lowest id
+ * wins when two spans cover the number.
  */
-export function getHadith(db: SqlExecutor, slug: string, hadithNumber: string): HadithDetail | undefined {
-  const resourceId = hadithResourceId(db, slug);
-  if (resourceId === undefined) {
-    return undefined;
+export function findCoveringHadithNumber(db: SqlExecutor, resourceId: number, hadithNumber: string): string | null {
+  if (!NUMERIC_NUMBER.test(hadithNumber)) {
+    return null;
   }
-  const row = db.get<DetailRow>(
-    `SELECT e.resource_id AS resourceId, e.id, e.book_id AS bookId, e.chapter_id AS chapterId,
+  const value = Number(hadithNumber);
+  const row = db.get<{ hadithNumber: string }>(
+    `SELECT hadith_number AS hadithNumber
+     FROM hadith_entries
+     WHERE resource_id = ? AND number_first IS NOT NULL AND number_last IS NOT NULL
+       AND CAST(number_first AS REAL) <= ? AND CAST(number_last AS REAL) >= ?
+     ORDER BY id
+     LIMIT 1`,
+    [resourceId, value, value],
+  );
+  return row?.hadithNumber ?? null;
+}
+
+const DETAIL_SELECT = `SELECT e.resource_id AS resourceId, e.id, e.book_id AS bookId, e.chapter_id AS chapterId,
             e.hadith_number AS hadithNumber, e.arabic_number AS arabicNumber, e.position, e.text_ar AS textAr,
+            e.number_first AS numberFirst, e.number_last AS numberLast, e.source_code AS sourceCode,
             c.slug AS collectionSlug,
             b.book_number AS bookNumber, b.title_ar AS bookTitleAr, b.title_en AS bookTitleEn, b.position AS bookPosition,
             ch.chapter_number AS chapterNumber, ch.title_ar AS chapterTitleAr, ch.title_en AS chapterTitleEn,
@@ -203,12 +219,30 @@ export function getHadith(db: SqlExecutor, slug: string, hadithNumber: string): 
      FROM hadith_entries e
      JOIN hadith_collections c ON c.resource_id = e.resource_id
      JOIN hadith_books b ON b.resource_id = e.resource_id AND b.id = e.book_id
-     LEFT JOIN hadith_chapters ch ON ch.resource_id = e.resource_id AND ch.id = e.chapter_id
-     WHERE e.resource_id = ? AND e.hadith_number = ?
-     ORDER BY e.id
-     LIMIT 1`,
-    [resourceId, hadithNumber],
-  );
+     LEFT JOIN hadith_chapters ch ON ch.resource_id = e.resource_id AND ch.id = e.chapter_id`;
+
+function detailByNumber(db: SqlExecutor, resourceId: number, hadithNumber: string): DetailRow | undefined {
+  return db.get<DetailRow>(`${DETAIL_SELECT} WHERE e.resource_id = ? AND e.hadith_number = ? ORDER BY e.id LIMIT 1`, [
+    resourceId,
+    hadithNumber,
+  ]);
+}
+
+/**
+ * One hadith by slug and number. An exact `hadith_number` match wins (when two rows share it, the lower id; Open question
+ * 5). Otherwise a merged row whose span covers the number. The result has exactly the keys of `HadithDetail`: no grade,
+ * no English text, no search column.
+ */
+export function getHadith(db: SqlExecutor, slug: string, hadithNumber: string): HadithDetail | undefined {
+  const resourceId = hadithResourceId(db, slug);
+  if (resourceId === undefined) {
+    return undefined;
+  }
+  let row = detailByNumber(db, resourceId, hadithNumber);
+  if (row === undefined) {
+    const covering = findCoveringHadithNumber(db, resourceId, hadithNumber);
+    row = covering === null ? undefined : detailByNumber(db, resourceId, covering);
+  }
   if (row === undefined) {
     return undefined;
   }
@@ -247,6 +281,9 @@ function toDetail(db: SqlExecutor, row: DetailRow): HadithDetail {
       position: row.bookPosition,
     },
     chapter,
+    numberFirst: row.numberFirst,
+    numberLast: row.numberLast,
+    sourceCode: row.sourceCode,
     sourceUrl: row.sourceUrl,
   };
 }

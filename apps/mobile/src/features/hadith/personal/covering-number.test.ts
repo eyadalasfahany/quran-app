@@ -60,7 +60,43 @@ describe('canonicalHadithNumber', () => {
     expect(canonicalHadithNumber(dbs.content, slug, '5710', throwing)).toBe('5710');
   });
 
-  it('the default resolver merges nothing', () => {
+  it('the default resolver returns null when no merged row covers the number', () => {
     expect(resolveCoveringNumber(dbs.content, slug, '5710')).toBeNull();
+  });
+
+  describe('with a merged row in the pack', () => {
+    beforeEach(() => {
+      const book = at(
+        listBooks(dbs.content, slug).filter((item) => item.bookNumber === '2'),
+        0,
+      );
+      // Placeholder numbers: one row 5720 that spans 5719 to 5722.
+      addEntry(dbs.content, {
+        resourceId: FIXTURE_MULTI.resourceId,
+        id: 9003,
+        bookId: book.id,
+        hadithNumber: '5720',
+        position: 92,
+        numberFirst: '5719',
+        numberLast: '5722',
+        sourceCode: 'openiti',
+      });
+    });
+
+    it('resolves a number inside the span to the covering row', () => {
+      expect(resolveCoveringNumber(dbs.content, slug, '5721')).toBe('5720');
+      expect(resolveCoveringNumber(dbs.content, slug, '5719')).toBe('5720');
+      expect(canonicalHadithNumber(dbs.content, slug, '5721')).toBe('5720');
+    });
+
+    it('returns null for a number outside every span', () => {
+      expect(resolveCoveringNumber(dbs.content, slug, '5723')).toBeNull();
+      expect(canonicalHadithNumber(dbs.content, slug, '5723')).toBe('5723');
+    });
+
+    it('returns null for a non-numeric number', () => {
+      expect(resolveCoveringNumber(dbs.content, slug, '5720.x')).toBeNull();
+      expect(resolveCoveringNumber(dbs.content, slug, 'x')).toBeNull();
+    });
   });
 });

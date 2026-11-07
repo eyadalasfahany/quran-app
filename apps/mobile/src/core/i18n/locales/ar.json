@@ -1777,7 +1777,12 @@
     },
     "source": {
       "credit": "المصدر: fawazahmed0/hadith-api",
-      "open": "فتح المصدر"
+      "open": "فتح المصدر",
+      "creditOpeniti": "عناوين الأبواب وبعض نصوص الأحاديث: مشروع OpenITI (الإصدار 2023.1.8)، بترخيص CC BY-NC-SA 4.0",
+      "creditHadithapicom": "بعض نصوص الأحاديث: hadithapi.com"
+    },
+    "unavailable": {
+      "title": "الحديث {{n}} غير متوفر حاليًا في المصدر"
     },
     "saved": {
       "title": "المحفوظات",
@@ -1789,7 +1794,19 @@
     },
     "search": {
       "placeholder": "ابحث في الحديث",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "scopeLabel": "نوع النتائج",
+      "scopeAll": "الكل",
+      "recentTitle": "عمليات البحث الأخيرة",
+      "clearRecent": "مسح السجل",
+      "removeRecent": "إزالة {{query}}",
+      "hint": "البحث يتجاهل التشكيل والهمزات.",
+      "resultCount_zero": "لا نتائج",
+      "resultCount_one": "نتيجة واحدة",
+      "resultCount_two": "نتيجتان",
+      "resultCount_few": "{{n}} نتائج",
+      "resultCount_many": "{{n}} نتيجة",
+      "resultCount_other": "{{n}} نتيجة"
     },
     "states": {
       "loading": "جارٍ تحميل الأحاديث",

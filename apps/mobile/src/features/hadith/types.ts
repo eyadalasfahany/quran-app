@@ -64,6 +64,11 @@ export type HadithListItem = {
   arabicNumber: string | null;
   position: number;
   textAr: string;
+  /** Merged rows only (ADR 0076): the span of hadith numbers this row covers. Null for a normal row. */
+  numberFirst?: string | null;
+  numberLast?: string | null;
+  /** Per-row origin: null or `fawazahmed0` for the collection's source; `openiti` and `hadithapicom` for filled text. */
+  sourceCode?: string | null;
 };
 
 /** Where previous / next points. The route needs only the slug and `hadithNumber`. */

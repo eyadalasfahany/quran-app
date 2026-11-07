@@ -20,6 +20,8 @@ export function HadithReaderCard({
   chainEnd = null,
   attribution,
   sourceUrl,
+  sourceCode = null,
+  unavailable = false,
   fontScale = 1,
   testID = 'hadith-reader-card',
 }: {
@@ -28,6 +30,9 @@ export function HadithReaderCard({
   chainEnd?: number | null;
   attribution: string | null;
   sourceUrl: string | null;
+  sourceCode?: string | null;
+  /** A placeholder: no source has the text. The note replaces the text (ADR 0076). */
+  unavailable?: boolean;
   fontScale?: number;
   testID?: string;
 }) {
@@ -49,9 +54,20 @@ export function HadithReaderCard({
       <UiText tone="muted" testID={`${testID}-number`} variant="label" weight={400}>
         {t('hadith.reader.numberLabel', { number: formatHadithNumber(hadithNumber, locale) })}
       </UiText>
-      <HadithText chainEnd={chainEnd} fontScale={fontScale} testID={`${testID}-text`} text={text} variant="reader" />
+      {unavailable ? (
+        <UiText tone="muted" testID={`${testID}-unavailable`} variant="body">
+          {t('hadith.unavailable.title', { n: formatHadithNumber(hadithNumber, locale) })}
+        </UiText>
+      ) : (
+        <HadithText chainEnd={chainEnd} fontScale={fontScale} testID={`${testID}-text`} text={text} variant="reader" />
+      )}
       <View style={{ paddingTop: SOURCE_PADDING_TOP }}>
-        <HadithSourceLine attribution={attribution} sourceUrl={sourceUrl} testID={`${testID}-source`} />
+        <HadithSourceLine
+          attribution={attribution}
+          sourceCode={sourceCode}
+          sourceUrl={sourceUrl}
+          testID={`${testID}-source`}
+        />
       </View>
     </View>
   );

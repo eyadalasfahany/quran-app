@@ -5,6 +5,7 @@ import { AccessibilityInfo, Share } from 'react-native';
 import { useLocale } from '@/core/i18n/useLocale';
 
 import { hadithNumberText } from './number-text';
+import { hadithCreditKey, isUnavailableHadith } from './source-credit';
 import { saveHadithReadingPlace, toggleHadithBookmark, useIsHadithBookmarked } from './personal';
 import { buildHadithShareText } from './share-text';
 import { bookTitle, collectionTitle } from './titles';
@@ -58,15 +59,16 @@ export function useHadithReaderActions(
   };
 
   const shareMessage = (): string | null => {
-    if (current === undefined) {
+    // A placeholder has no text to copy or share (ADR 0076).
+    if (current === undefined || isUnavailableHadith(current.sourceCode)) {
       return null;
     }
     return buildHadithShareText({
       textAr: current.textAr,
       collectionTitle: collectionTitle(current.collection, locale, t),
       bookTitle: bookTitle(current.book, locale, t),
-      numberText: hadithNumberText({ hadithNumber: current.hadithNumber }),
-      creditLine: t('hadith.source.credit'),
+      numberText: hadithNumberText(current),
+      creditLine: t(hadithCreditKey(current.sourceCode)),
       attribution: current.collection.attributionAr || null,
     });
   };

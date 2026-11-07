@@ -128,7 +128,8 @@ export function HadithExpandedBrowser({
         attribution={collection.attributionAr || null}
         bookTitle={bookTitle(reader.hadith.book, locale, t)}
         collectionTitle={collectionTitle(collection, locale, t)}
-        hadithNumber={hadithNumberText({ hadithNumber: reader.hadith.hadithNumber })}
+        hadithNumber={hadithNumberText(reader.hadith)}
+        sourceCode={reader.hadith.sourceCode ?? null}
         sourceUrl={reader.hadith.sourceUrl}
         testID={`${testID}-details`}
       />

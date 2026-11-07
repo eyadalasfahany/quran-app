@@ -81,4 +81,12 @@ describe('HadithToolbar', () => {
     expect(flatStyle(screen.getByRole('button', { name: 'نسخ' }).props.style).height).toBe(44);
     expect(screen.queryByRole('text')).toBeNull();
   });
+
+
+  it('hides copy and share for a placeholder and keeps save', async () => {
+    await renderToolbar({ shareable: false });
+    expect(screen.queryByRole('button', { name: 'نسخ' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'مشاركة' })).toBeNull();
+    expect(screen.getByTestId(`${TEST_ID}-save`)).toBeOnTheScreen();
+  });
 });

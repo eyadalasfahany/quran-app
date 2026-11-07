@@ -9,7 +9,7 @@ import { HadithReaderHeader } from './HadithReaderHeader';
 
 const TEST_ID = 'hadith-reader-header';
 
-function renderHeader(over: { saved?: boolean; locale?: 'ar' | 'en' } = {}) {
+function renderHeader(over: { saved?: boolean; locale?: 'ar' | 'en'; shareable?: boolean } = {}) {
   const callbacks = { onBack: jest.fn(), onToggleSave: jest.fn(), onCopy: jest.fn(), onShare: jest.fn() };
   return renderUi(
     <HadithReaderHeader
@@ -20,6 +20,7 @@ function renderHeader(over: { saved?: boolean; locale?: 'ar' | 'en' } = {}) {
       onShare={callbacks.onShare}
       onToggleSave={callbacks.onToggleSave}
       saved={over.saved ?? false}
+      shareable={over.shareable ?? true}
     />,
     { locale: over.locale ?? 'ar' },
   ).then(() => callbacks);
@@ -65,5 +66,13 @@ describe('HadithReaderHeader', () => {
   it('has no raw colour literal and no physical side keys', () => {
     expect(rawColorLiteralsInFeature('src/features/hadith/components/HadithReaderHeader.tsx')).toEqual([]);
     expect(physicalSides({})).toEqual([]);
+  });
+
+
+  it('hides copy and share for a placeholder and keeps save', async () => {
+    await renderHeader({ locale: 'en', shareable: false });
+    expect(screen.queryByRole('button', { name: 'Copy' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Share' })).toBeNull();
+    expect(screen.getByTestId(`${TEST_ID}-toolbar-save`)).toBeOnTheScreen();
   });
 });

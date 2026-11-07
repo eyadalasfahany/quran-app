@@ -4,6 +4,8 @@ import type { SavedHadithItem } from './personal/model';
 import type { SavedHadithRowData } from './components/SavedHadithRow';
 import { hadithCollectionNumber } from './data';
 import { hadithHref } from './routes';
+import { hadithNumberText } from './number-text';
+import { isUnavailableHadith } from './source-credit';
 
 /**
  * Maps a saved item to its row. An item is unverified when the saved flag is set or the hadith can no longer be found;
@@ -23,9 +25,11 @@ export function toSavedRowData(item: SavedHadithItem): SavedHadithRowData {
   return {
     collection,
     book,
-    hadithNumber: unverified || item.hadith === null ? null : item.hadith.hadithNumber,
+    hadithNumber: unverified || item.hadith === null ? null : hadithNumberText(item.hadith),
     textAr: unverified || item.hadith === null ? null : item.hadith.textAr,
     unverified,
+    // A placeholder (no source has the text) shows the note, never an empty preview (ADR 0076).
+    placeholder: !unverified && item.hadith !== null && isUnavailableHadith(item.hadith.sourceCode),
   };
 }
 

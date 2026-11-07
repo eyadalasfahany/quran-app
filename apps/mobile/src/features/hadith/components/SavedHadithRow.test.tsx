@@ -96,4 +96,17 @@ describe('SavedHadithRow', () => {
     expect(screen.getByTestId(`${TEST_ID}-meta`).props.maxFontSizeMultiplier).toBe(maxFontScale.content);
     expect(flatStyle(screen.getByRole('button').props.style)).not.toHaveProperty('height');
   });
+
+
+  it('shows the placeholder note instead of an empty preview', async () => {
+    await renderUi(
+      <SavedHadithRow
+        onPress={jest.fn()}
+        saved={{ collection: { number: 1, titleAr: null, titleEn: null }, book: { bookNumber: '2', titleAr: null, titleEn: null }, hadithNumber: '5730', textAr: '', unverified: false, placeholder: true }}
+      />,
+      { locale: 'ar' },
+    );
+    expect(screen.getByTestId('saved-hadith-row-note')).toHaveTextContent('الحديث ٥٧٣٠ غير متوفر حاليًا في المصدر');
+    expect(screen.queryByTestId('saved-hadith-row-text')).toBeNull();
+  });
 });

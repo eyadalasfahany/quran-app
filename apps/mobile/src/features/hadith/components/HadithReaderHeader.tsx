@@ -18,6 +18,7 @@ export function HadithReaderHeader({
   onToggleSave,
   onCopy,
   onShare,
+  shareable = true,
   testID = 'hadith-reader-header',
 }: {
   collectionTitle: string;
@@ -27,6 +28,7 @@ export function HadithReaderHeader({
   onToggleSave: () => void;
   onCopy: () => void;
   onShare: () => void;
+  shareable?: boolean;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -38,7 +40,14 @@ export function HadithReaderHeader({
       <View style={{ flex: 1, minWidth: 0 }}>
         <HadithBreadcrumb bookTitle={bookTitle} collectionTitle={collectionTitle} testID={`${testID}-breadcrumb`} />
       </View>
-      <HadithToolbar onCopy={onCopy} onShare={onShare} onToggleSave={onToggleSave} saved={saved} testID={`${testID}-toolbar`} />
+      <HadithToolbar
+        onCopy={onCopy}
+        onShare={onShare}
+        onToggleSave={onToggleSave}
+        saved={saved}
+        shareable={shareable}
+        testID={`${testID}-toolbar`}
+      />
     </View>
   );
 }

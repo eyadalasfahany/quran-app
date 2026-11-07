@@ -614,6 +614,9 @@ export const hadithEntries = sqliteTable(
     narratorEn: text('narrator_en'),
     textSearch: text('text_search').notNull(),
     sourceUrl: text('source_url'),
+    numberFirst: text('number_first'),
+    numberLast: text('number_last'),
+    sourceCode: text('source_code'),
   },
   (table) => [
     primaryKey({ columns: [table.resourceId, table.id] }),

@@ -17,6 +17,7 @@ export function HadithDetailsPanel({
   bookTitle,
   hadithNumber,
   attribution,
+  sourceCode = null,
   sourceUrl,
   testID = 'hadith-details-panel',
 }: {
@@ -25,6 +26,7 @@ export function HadithDetailsPanel({
   hadithNumber: string;
   attribution: string | null;
   sourceUrl: string | null;
+  sourceCode?: string | null;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -76,7 +78,12 @@ export function HadithDetailsPanel({
         <UiText testID={`${testID}-label-source`} tone="muted" variant="label" weight={400}>
           {t('hadith.details.source')}
         </UiText>
-        <HadithSourceLine attribution={attribution} sourceUrl={sourceUrl} testID={`${testID}-value-source`} />
+        <HadithSourceLine
+          attribution={attribution}
+          sourceCode={sourceCode}
+          sourceUrl={sourceUrl}
+          testID={`${testID}-value-source`}
+        />
       </View>
     </View>
   );

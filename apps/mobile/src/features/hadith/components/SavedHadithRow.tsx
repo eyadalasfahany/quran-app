@@ -20,6 +20,8 @@ export type SavedHadithRowData = {
   hadithNumber: string | null; // null when unverified
   textAr: string | null; // null when unverified: no preview
   unverified: boolean;
+  /** A placeholder: the note replaces the preview (ADR 0076). */
+  placeholder?: boolean;
 };
 
 /**
@@ -97,9 +99,11 @@ export function SavedHadithRow({
 
   const number = formatHadithNumber(saved.hadithNumber, locale);
   const meta = [collection, book, number].filter((part): part is string => part !== null && part !== '').join(', ');
+  const placeholder = saved.placeholder === true;
+  const note = placeholder ? t('hadith.unavailable.title', { n: number }) : '';
   return (
     <Pressable
-      accessibilityLabel={`${meta}, ${saved.textAr ?? ''}`}
+      accessibilityLabel={`${meta}, ${placeholder ? note : (saved.textAr ?? '')}`}
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({ ...rowStyle, opacity: pressed ? theme.opacity.pressed : 1 })}
@@ -107,7 +111,13 @@ export function SavedHadithRow({
     >
       <View style={{ flex: 1, gap: 4, minWidth: 0 }}>
         <HadithMeta bookTitle={book} collectionTitle={collection} hadithNumber={saved.hadithNumber} testID={`${testID}-meta`} />
-        <HadithText numberOfLines={2} testID={`${testID}-text`} text={saved.textAr ?? ''} variant="preview" />
+        {placeholder ? (
+          <UiText testID={`${testID}-note`} tone="muted" variant="label" weight={400}>
+            {note}
+          </UiText>
+        ) : (
+          <HadithText numberOfLines={2} testID={`${testID}-text`} text={saved.textAr ?? ''} variant="preview" />
+        )}
       </View>
       {trailing}
     </Pressable>

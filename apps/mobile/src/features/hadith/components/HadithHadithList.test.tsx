@@ -59,6 +59,22 @@ describe('HadithHadithList', () => {
     expect(screen.getByTestId(`${CARD_1}-text`, { includeHiddenElements: true })).toHaveTextContent(text);
   });
 
+  it('shows a merged row with its span in the number label', async () => {
+    const items = [listItemFixture({ id: 1, hadithNumber: '5709', numberFirst: '5709', numberLast: '5712' })];
+    await renderUi(<HadithHadithList hasMore={false} items={items} onLoadMore={jest.fn()} onOpen={jest.fn()} />, { locale: 'ar' });
+    expect(screen.getByTestId(`${TEST_ID}-item-1`).props.accessibilityLabel).toBe(`حديث رقم ٥٧٠٩–٥٧١٢, ${PLACEHOLDER_TEXT}`);
+  });
+
+  it('shows a placeholder as a note, opens it on press, and never shows its empty text', async () => {
+    const onOpen = jest.fn();
+    const items = [listItemFixture({ id: 2, hadithNumber: '5730', textAr: '', sourceCode: 'unavailable' })];
+    await renderUi(<HadithHadithList hasMore={false} items={items} onLoadMore={jest.fn()} onOpen={onOpen} />, { locale: 'ar' });
+    expect(screen.getByTestId(`${TEST_ID}-item-2`).props.accessibilityLabel).toBe('الحديث ٥٧٣٠ غير متوفر حاليًا في المصدر');
+    expect(screen.queryByTestId(`${TEST_ID}-item-2-text`)).toBeNull();
+    fireEvent.press(screen.getByTestId(`${TEST_ID}-item-2`));
+    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ id: 2 }));
+  });
+
   it('calls onLoadMore near the end only when hasMore', async () => {
     const onLoadMore = jest.fn();
     const items = [listItemFixture({ id: 1, hadithNumber: '1' })];
