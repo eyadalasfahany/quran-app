@@ -23,6 +23,8 @@ final class HadithCollectionValidator
 
     private const int SOURCE_KEY_MAX = 96;
 
+    private const int CHAPTER_NUMBER_MAX = 32;
+
     private const int COLLECTION_TITLE_MAX = 200;
 
     private const int BOOK_TITLE_MAX = 500;
@@ -100,6 +102,22 @@ final class HadithCollectionValidator
                 if ($entry['hadith_number'] !== $covering['hadith_number'] && $value >= $first && $value <= $last) {
                     $issues[] = new HadithIssue($error, 'merge_range_overlaps_row', (string) $covering['hadith_number']);
                 }
+            }
+        }
+
+        foreach ($plan->chapters as $chapter) {
+            $key = (string) $chapter['source_key'];
+
+            if ($chapter['title_ar'] === null || $chapter['title_ar'] === '') {
+                $issues[] = new HadithIssue($error, 'chapter_title_empty', $key);
+            }
+
+            if (strlen($key) > self::SOURCE_KEY_MAX) {
+                $issues[] = new HadithIssue($error, 'source_key_too_long', $key);
+            }
+
+            if (strlen((string) $chapter['chapter_number']) > self::CHAPTER_NUMBER_MAX) {
+                $issues[] = new HadithIssue($error, 'chapter_number_too_long', $key);
             }
         }
 

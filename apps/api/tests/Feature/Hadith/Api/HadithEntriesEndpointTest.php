@@ -31,7 +31,7 @@ it('lists a book hadith in position order with the exact key set', function (): 
 
     expect(array_column($response->json('data'), 'hadith_number'))->toBe(['1', '2'])
         ->and(array_keys($response->json('data.0')))->toEqualCanonicalizing([
-            'hadith_number', 'arabic_number', 'position', 'text_ar', 'source_url', 'book_number', 'chapter_number',
+            'hadith_number', 'arabic_number', 'position', 'text_ar', 'source_url', 'book_number', 'chapter_number', 'number_first', 'number_last', 'source_code',
         ])
         ->and($response->json('data.0.chapter_number'))->toBeNull()
         ->and($response->json('data.0.source_url'))->toBeNull()
@@ -217,7 +217,7 @@ it('shows one hadith with its breadcrumb and credit', function (): void {
     $unchaptered = $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/2')->assertOk();
 
     expect(array_keys($chaptered->json()))->toEqualCanonicalizing([
-        'hadith_number', 'arabic_number', 'position', 'text_ar', 'source_url', 'book_number', 'chapter_number',
+        'hadith_number', 'arabic_number', 'position', 'text_ar', 'source_url', 'book_number', 'chapter_number', 'number_first', 'number_last', 'source_code',
         'collection', 'book', 'chapter',
     ])
         ->and(array_keys($chaptered->json('collection')))->toEqualCanonicalizing([
@@ -298,4 +298,38 @@ it('sends an ETag and answers 304 on the detail route', function (): void {
     $this->withHeaders(['If-None-Match' => $etag])
         ->getJson('/api/v1/hadith/collections/bukhari/hadiths/1')
         ->assertStatus(304);
+});
+
+it('resolves a merged number to the covering row with its span', function (): void {
+    $collection = hadithApiServe(hadithApiCollection('bukhari'));
+    $book = hadithApiBook($collection, 1, '1');
+    hadithApiEntry($collection, $book, 1, '199', ['number_first' => '199', 'number_last' => '200']);
+
+    $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/200')
+        ->assertOk()
+        ->assertJsonPath('hadith_number', '199')
+        ->assertJsonPath('number_first', '199')
+        ->assertJsonPath('number_last', '200')
+        ->assertJsonPath('source_code', null);
+});
+
+it('prefers an exact hadith number to a span that contains it', function (): void {
+    $collection = hadithApiServe(hadithApiCollection('bukhari'));
+    $book = hadithApiBook($collection, 1, '1');
+    hadithApiEntry($collection, $book, 1, '199', ['number_first' => '199', 'number_last' => '200']);
+    hadithApiEntry($collection, $book, 2, '200');
+
+    $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/200')
+        ->assertOk()
+        ->assertJsonPath('hadith_number', '200')
+        ->assertJsonPath('number_first', null);
+});
+
+it('still returns 404 for a number that no span covers, and refuses a non-numeric span lookup', function (): void {
+    $collection = hadithApiServe(hadithApiCollection('bukhari'));
+    $book = hadithApiBook($collection, 1, '1');
+    hadithApiEntry($collection, $book, 1, '199', ['number_first' => '199', 'number_last' => '200']);
+
+    $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/201')->assertNotFound();
+    $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/abc')->assertNotFound();
 });

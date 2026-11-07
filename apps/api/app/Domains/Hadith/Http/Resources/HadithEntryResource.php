@@ -28,6 +28,9 @@ final class HadithEntryResource extends JsonResource
      *     source_url: string|null,
      *     book_number: string,
      *     chapter_number: int|null,
+     *     number_first: string|null,
+     *     number_last: string|null,
+     *     source_code: string|null,
      *     grades?: list<array{grade: string, graded_by: string}>
      * }
      */
@@ -41,6 +44,9 @@ final class HadithEntryResource extends JsonResource
             'source_url' => $this->resource->sourceUrl,
             'book_number' => $this->resource->bookNumber,
             'chapter_number' => $this->resource->chapterNumber,
+            'number_first' => $this->resource->numberFirst,
+            'number_last' => $this->resource->numberLast,
+            'source_code' => $this->resource->sourceCode,
             ...$this->gradesPart(),
         ];
     }

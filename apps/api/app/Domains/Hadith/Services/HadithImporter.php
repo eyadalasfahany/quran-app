@@ -26,6 +26,8 @@ use App\Domains\Hadith\Import\Records\HadithImportReport;
 use App\Domains\Hadith\Import\Records\HadithIssue;
 use App\Domains\Hadith\Import\Records\IntegrityResult;
 use App\Domains\Hadith\Import\Records\MappingResult;
+use App\Domains\Hadith\Overlay\ChapterFile;
+use App\Domains\Hadith\Overlay\HadithDataFiles;
 use App\Domains\Hadith\Overlay\HadithOverlayBuilder;
 use App\Domains\Hadith\Repositories\Contracts\HadithImportRepository;
 use App\Domains\Hadith\Sources\FawazHadithSource;
@@ -69,6 +71,8 @@ final class HadithImporter
         private readonly HadithPlacements $placements,
         private readonly HadithOverlayBuilder $overlays,
         private readonly HadithExtraBooks $extraBooks,
+        private readonly HadithDataFiles $dataFiles,
+        private readonly HadithChapterAssigner $chapters,
     ) {}
 
     /**
@@ -197,6 +201,7 @@ final class HadithImporter
         try {
             $overlay = $this->overlays->build($slug, $collection, $this->originSourceIds());
             $mapping = $this->mapper->map($collection, $info, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'), $overlay);
+            $mapping = $this->withChapters($mapping, $slug);
         } catch (HadithRangeCorrectionException|HadithDataFileException $exception) {
             return $this->result($slug, CollectionImportResult::STATUS_FAILED, $exception->getMessage(), null, [], $unchangedFingerprint, $fingerprint, $resource?->id, $resource?->version, $resource?->version, [], null);
         }
@@ -350,6 +355,7 @@ final class HadithImporter
         try {
             $overlay = $this->overlays->build($slug, $collection, $this->originSourceIds());
             $mapping = $this->mapper->map($collection, null, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'), $overlay);
+            $mapping = $this->withChapters($mapping, $slug);
         } catch (HadithRangeCorrectionException|HadithDataFileException $exception) {
             return $this->result($slug, CollectionImportResult::STATUS_FAILED, $exception->getMessage(), null, [], false, null, $resource->id, $resource->version, $resource->version, [], null);
         }
@@ -390,6 +396,34 @@ final class HadithImporter
                 throw new \InvalidArgumentException('Unknown Hadith collection ['.$slug.'].');
             }
         }
+    }
+
+    /**
+     * Assigns the committed chapters of the collection, when it has a chapter file (ADR 0076 §7.3, step 6b.5). A collection with
+     * no chapter file is returned unchanged.
+     *
+     * @throws HadithDataFileException
+     */
+    private function withChapters(MappingResult $mapping, string $slug): MappingResult
+    {
+        $file = $this->dataFiles->chapters($slug);
+
+        if (! $file instanceof ChapterFile) {
+            return $mapping;
+        }
+
+        return $this->chapters->assign($mapping, $file, $this->sourceId('openiti'), $slug);
+    }
+
+    private function sourceId(string $code): int
+    {
+        $source = $this->repository->source($code);
+
+        if ($source === null) {
+            throw new \LogicException('The source ['.$code.'] must be seeded before an import.');
+        }
+
+        return (int) $source->getKey();
     }
 
     /**

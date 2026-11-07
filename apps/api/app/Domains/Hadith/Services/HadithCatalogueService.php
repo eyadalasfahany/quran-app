@@ -313,6 +313,9 @@ final class HadithCatalogueService
             bookNumber: $bookNumber,
             chapterNumber: $chapterNumber,
             grades: $grades,
+            numberFirst: $entry->number_first,
+            numberLast: $entry->number_last,
+            sourceCode: $entry->source_code,
         );
     }
 

@@ -149,6 +149,10 @@ final class EloquentHadithCatalogueRepository extends EloquentRepository impleme
         return $entries;
     }
 
+    /**
+     * The exact hadith number first. On a miss, the covering row whose span (ADR 0076 decision 2, step 6b.3) contains the number,
+     * compared as decimals. A non-numeric lookup is refused before the cast.
+     */
     public function findEntryByNumber(int $resourceId, string $hadithNumber): ?HadithEntry
     {
         $entry = HadithEntry::query()
@@ -157,7 +161,24 @@ final class EloquentHadithCatalogueRepository extends EloquentRepository impleme
             ->orderBy('id')
             ->first();
 
-        return $entry instanceof HadithEntry ? $entry : null;
+        if ($entry instanceof HadithEntry) {
+            return $entry;
+        }
+
+        if (! is_numeric($hadithNumber)) {
+            return null;
+        }
+
+        $covering = HadithEntry::query()
+            ->where('resource_id', $resourceId)
+            ->whereNotNull('number_first')
+            ->whereNotNull('number_last')
+            ->whereRaw('CAST(number_first AS DECIMAL(20,4)) <= ?', [$hadithNumber])
+            ->whereRaw('CAST(number_last AS DECIMAL(20,4)) >= ?', [$hadithNumber])
+            ->orderBy('id')
+            ->first();
+
+        return $covering instanceof HadithEntry ? $covering : null;
     }
 
     public function chapterNumbers(int $resourceId, array $chapterIds): array

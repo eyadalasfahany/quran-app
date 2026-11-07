@@ -304,6 +304,9 @@ export interface components {
                 source_url: (string | null) | unknown;
                 book_number: string | unknown;
                 chapter_number: (number | null) | unknown;
+                number_first: (string | null) | unknown;
+                number_last: (string | null) | unknown;
+                source_code: (string | null) | unknown;
             } & {
                 [key: string]: unknown;
             })[];
@@ -318,6 +321,9 @@ export interface components {
             source_url: (string | null) | unknown;
             book_number: string | unknown;
             chapter_number: (number | null) | unknown;
+            number_first: (string | null) | unknown;
+            number_last: (string | null) | unknown;
+            source_code: (string | null) | unknown;
             collection: {
                 resource_id: number;
                 slug: string;

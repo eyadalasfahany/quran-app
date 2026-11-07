@@ -48,6 +48,8 @@ final class HadithImportFingerprint
             'range_corrections' => $this->corrections->forSlug($slug),
             // The gaps file changes merges (and, in 6b.4, fills): its bytes change the version even when the code does not.
             'gaps_sha256' => $this->dataFiles->actualSha256('gaps/'.$slug.'.json'),
+            // Chapter titles and number ranges (step 6b.5): a changed chapters file bumps the version.
+            'chapters_sha256' => $this->dataFiles->actualSha256('chapters/'.$slug.'.json'),
         ];
 
         return hash('sha256', json_encode($inputs, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));

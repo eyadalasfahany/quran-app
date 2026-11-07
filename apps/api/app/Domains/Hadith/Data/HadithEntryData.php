@@ -21,5 +21,8 @@ final class HadithEntryData extends Data
         public readonly ?int $chapterNumber,
         /** @var list<HadithGradeData>|null */
         public readonly ?array $grades,
+        public readonly ?string $numberFirst = null,
+        public readonly ?string $numberLast = null,
+        public readonly ?string $sourceCode = null,
     ) {}
 }

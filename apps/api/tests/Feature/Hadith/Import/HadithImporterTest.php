@@ -441,7 +441,7 @@ it('never puts text, titles or section names in the report', function (): void {
         ->and($json)->not->toContain('نص تجريبي');
 });
 
-it('leaves hadith_chapters empty', function (): void {
+it('leaves hadith_chapters empty when there is no chapter file', function (): void {
     hadithImportRun((array) config('hadith.collections'));
 
     expect(HadithChapter::query()->count())->toBe(0)

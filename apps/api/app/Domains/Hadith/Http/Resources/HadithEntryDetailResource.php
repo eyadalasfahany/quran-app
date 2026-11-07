@@ -26,6 +26,9 @@ final class HadithEntryDetailResource extends JsonResource
      *     source_url: string|null,
      *     book_number: string,
      *     chapter_number: int|null,
+     *     number_first: string|null,
+     *     number_last: string|null,
+     *     source_code: string|null,
      *     grades?: list<array{grade: string, graded_by: string}>,
      *     collection: array{
      *         resource_id: int,

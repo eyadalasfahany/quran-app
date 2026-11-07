@@ -121,6 +121,55 @@ final class HadithDataFiles
     }
 
     /**
+     * The validated chapters file of a collection, or null when there is neither a file nor a pin (ADR 0076 §2.3, step 6b.5).
+     * A key whitelist at header and chapter level: a text or statistics field is refused (unknown_key).
+     *
+     * @throws HadithDataFileException with a code: bad_json, unknown_key, missing_key, schema_version, collection_mismatch,
+     *                                 source_invalid, partial_books_invalid, chapter_invalid, chapter_order
+     */
+    public function chapters(string $slug): ?ChapterFile
+    {
+        $relativePath = 'chapters/'.$slug.'.json';
+        $bytes = $this->readVerified($relativePath);
+
+        if ($bytes === null) {
+            return null;
+        }
+
+        $data = $this->decode($bytes, $relativePath);
+        $this->assertKeys($data, ['schema_version', 'collection', 'source', 'release', 'doi', 'version_id', 'source_file_sha256', 'matcher_version', 'partial_books', 'licence', 'chapters'], $relativePath);
+
+        if (($data['schema_version'] ?? null) !== 1) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] has an unsupported schema_version (schema_version).');
+        }
+
+        if (($data['collection'] ?? null) !== $slug) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] names another collection (collection_mismatch).');
+        }
+
+        if (($data['source'] ?? null) !== 'openiti') {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] names a source other than openiti (source_invalid).');
+        }
+
+        $release = $data['release'] ?? null;
+
+        if (! is_string($release) || $release === '') {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] has no release (source_invalid).');
+        }
+
+        if (! in_array($data['partial_books'] ?? null, ['drop', 'keep'], true)) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] has a partial_books value other than drop or keep (partial_books_invalid).');
+        }
+
+        return new ChapterFile(
+            collection: $slug,
+            release: $release,
+            partialBooks: (string) $data['partial_books'],
+            chapters: $this->chapterRecords($data['chapters'] ?? null, $relativePath),
+        );
+    }
+
+    /**
      * The pinned SHA-256 of a data file, or null when it has no pin.
      */
     public function pin(string $relativePath): ?string
@@ -188,6 +237,48 @@ final class HadithDataFiles
                 throw new HadithDataFileException('Data file ['.$relativePath.'] lacks the key ['.$key.'] (missing_key).');
             }
         }
+    }
+
+    /**
+     * @return list<ChapterRecord>
+     *
+     * @throws HadithDataFileException
+     */
+    private function chapterRecords(mixed $value, string $relativePath): array
+    {
+        $chapters = [];
+        $lastOrdinalByBook = [];
+
+        foreach ($this->list($value, 'chapters', $relativePath) as $entry) {
+            if (! is_array($entry)) {
+                throw new HadithDataFileException('Data file ['.$relativePath.'] holds a chapter that is not an object (chapter_invalid).');
+            }
+
+            $this->assertKeys($entry, ['ordinal', 'book_number', 'first', 'last', 'title_ar'], $relativePath);
+
+            $ordinal = $entry['ordinal'];
+            $bookNumber = $entry['book_number'];
+            $first = $entry['first'];
+            $last = $entry['last'];
+            $titleAr = $entry['title_ar'];
+
+            if (! is_int($ordinal) || $ordinal < 1 || ! $this->isNumberText($bookNumber) || strlen((string) $bookNumber) > 16 || ! $this->isNumberText($first) || ! $this->isNumberText($last)) {
+                throw new HadithDataFileException('Data file ['.$relativePath.'] holds a chapter with an invalid ordinal, book or range (chapter_invalid).');
+            }
+
+            if (! is_string($titleAr) || $titleAr === '') {
+                throw new HadithDataFileException('Data file ['.$relativePath.'] holds a chapter with an empty title (chapter_invalid).');
+            }
+
+            if (isset($lastOrdinalByBook[$bookNumber]) && $ordinal <= $lastOrdinalByBook[$bookNumber]) {
+                throw new HadithDataFileException('Data file ['.$relativePath.'] holds ordinals of book ['.$bookNumber.'] that are not strictly increasing (chapter_order).');
+            }
+
+            $lastOrdinalByBook[$bookNumber] = $ordinal;
+            $chapters[] = new ChapterRecord(ordinal: $ordinal, bookNumber: $bookNumber, first: $first, last: $last, titleAr: $titleAr);
+        }
+
+        return $chapters;
     }
 
     /**

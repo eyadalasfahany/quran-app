@@ -1430,6 +1430,39 @@
                                         },
                                         {}
                                     ]
+                                },
+                                "number_first": {
+                                    "anyOf": [
+                                        {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "number_last": {
+                                    "anyOf": [
+                                        {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        {}
+                                    ]
+                                },
+                                "source_code": {
+                                    "anyOf": [
+                                        {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        {}
+                                    ]
                                 }
                             },
                             "required": [
@@ -1439,7 +1472,10 @@
                                 "text_ar",
                                 "source_url",
                                 "book_number",
-                                "chapter_number"
+                                "chapter_number",
+                                "number_first",
+                                "number_last",
+                                "source_code"
                             ],
                             "additionalProperties": {}
                         }
@@ -1519,6 +1555,39 @@
                             {
                                 "type": [
                                     "integer",
+                                    "null"
+                                ]
+                            },
+                            {}
+                        ]
+                    },
+                    "number_first": {
+                        "anyOf": [
+                            {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            {}
+                        ]
+                    },
+                    "number_last": {
+                        "anyOf": [
+                            {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            {}
+                        ]
+                    },
+                    "source_code": {
+                        "anyOf": [
+                            {
+                                "type": [
+                                    "string",
                                     "null"
                                 ]
                             },
@@ -1669,6 +1738,9 @@
                     "source_url",
                     "book_number",
                     "chapter_number",
+                    "number_first",
+                    "number_last",
+                    "source_code",
                     "collection",
                     "book",
                     "chapter"

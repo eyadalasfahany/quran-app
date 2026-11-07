@@ -32,9 +32,10 @@ final class HadithMapper
      * not a mismatch, and a hadith outside every range is listed instead of failing the collection. 3: completeness per
      * collection (ADR 0076 «Rule, 7 Nov 2026»), completeness exceptions. 4: placements of out-of-range hadith (ADR 0076 decision 6).
      * 5: merges, with number_first and number_last on the covering row (ADR 0076 decision 2, step 6b.3). 6: fills, extra books
-     * and per-row origin (ADR 0076 decision 4 and the gap decisions, step 6b.4).
+     * and per-row origin (ADR 0076 decision 4 and the gap decisions, step 6b.4). 7: chapters (step 6b.5); the mapper itself
+     * does not read them, the assigner does.
      */
-    public const int VERSION = 6;
+    public const int VERSION = 7;
 
     private const int GRADE_MAX_BYTES = 120;
 

@@ -354,3 +354,37 @@ function hadithImportMapWithOverlay(SourceCollection $collection, ?HadithOverlay
         $overlay,
     );
 }
+
+/**
+ * Writes a pinned chapters file for one collection into the same per-process temporary folder as hadithGapsFixtureFile()
+ * (step 6b.5) and merges its pin into config('hadith.data_files'), so a test can use both files. Placeholder titles only.
+ *
+ * @param  list<array<string, mixed>>  $chapters
+ * @param  array<string, mixed>  $overrides  header keys replaced in the document (for example partial_books)
+ */
+function hadithChaptersFixtureFile(string $slug, array $chapters, array $overrides = []): string
+{
+    $directory = storage_path('framework/testing/hadith-gaps-'.getmypid());
+    File::ensureDirectoryExists($directory.'/chapters');
+
+    $document = array_merge([
+        'schema_version' => 1,
+        'collection' => $slug,
+        'source' => 'openiti',
+        'release' => '2023.1.8',
+        'doi' => 'FIXTURE doi',
+        'version_id' => 'FIXTURE version id',
+        'source_file_sha256' => str_repeat('2', 64),
+        'matcher_version' => '1',
+        'partial_books' => 'drop',
+        'licence' => 'FIXTURE licence',
+        'chapters' => $chapters,
+    ], $overrides);
+
+    $bytes = json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";
+    File::put($directory.'/chapters/'.$slug.'.json', $bytes);
+    config(['hadith.data_files' => array_merge((array) config('hadith.data_files', []), ['chapters/'.$slug.'.json' => hash('sha256', $bytes)])]);
+    app()->instance(HadithDataFiles::class, new HadithDataFiles($directory));
+
+    return $directory;
+}
