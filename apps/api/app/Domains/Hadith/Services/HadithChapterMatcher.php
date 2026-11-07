@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Hadith\Services;
 
 use App\Domains\Hadith\Import\Records\MappingResult;
+use App\Domains\Hadith\Overlay\ChapterAlignment;
 use App\Domains\Hadith\Overlay\HadithWordSet;
 use App\Domains\Hadith\Overlay\OpenItiChapter;
 use App\Domains\Hadith\Overlay\OpenItiTextCleaner;
@@ -31,27 +32,28 @@ final class HadithChapterMatcher
      * @param  list<OpenItiChapter>  $chapters  the scanned chapters with units, in OpenITI order
      * @param  array<string, int>  $census  the line-shape census of the scan
      * @param  array{release: string, doi: string, version_id: string, source_file_sha256: string, licence: string}  $meta
+     * @param  ?ChapterAlignment  $alignment  the pinned unit => number alignment; null keeps each unit's own number (no alignment file)
      */
-    public function match(string $slug, MappingResult $mapping, array $chapters, int $headingsWithoutUnits, array $census, string $partialBooks, array $meta): ChapterMatchResult
+    public function match(string $slug, MappingResult $mapping, array $chapters, int $headingsWithoutUnits, array $census, string $partialBooks, array $meta, ?ChapterAlignment $alignment = null): ChapterMatchResult
     {
         $context = $this->context($mapping);
         $decisions = [];
         $ordinalByBook = [];
 
         foreach ($chapters as $chapter) {
-            $numbers = $this->listedNumbers($chapter);
+            $numbers = $this->listedNumbers($chapter, $alignment);
             $present = array_values(array_filter($numbers, static fn (string $number): bool => isset($context['entryByNumber'][$number])));
             $book = $present === [] ? null : $context['bookOfNumber'][$present[0]];
             $key = $book ?? '';
             $ordinal = ($ordinalByBook[$key] ?? 0) + 1;
             $ordinalByBook[$key] = $ordinal;
-            $decisions[] = $this->judge($chapter, $book, $ordinal, $numbers, $present, $context);
+            $decisions[] = $this->judge($chapter, $book, $ordinal, $numbers, $present, $context, $alignment);
         }
 
         $coverage = $this->coverage($context, $decisions);
         $proposal = $this->proposal($slug, $mapping, $decisions, $coverage, $partialBooks, $meta);
 
-        return new ChapterMatchResult($proposal['json'], $this->report($slug, $decisions, $coverage, $partialBooks, $census, $headingsWithoutUnits, $proposal['sha256'], $meta));
+        return new ChapterMatchResult($proposal['json'], $this->report($slug, $decisions, $coverage, $partialBooks, $census, $headingsWithoutUnits, $proposal['sha256'], $meta, $alignment?->count()));
     }
 
     /**
@@ -91,21 +93,37 @@ final class HadithChapterMatcher
     }
 
     /**
-     * The distinct unit numbers of a chapter in file order.
+     * The distinct hadith numbers of a chapter in file order. A unit with no number (no alignment entry, or no own number when
+     * there is no alignment) is not listed.
      *
      * @return list<string>
      */
-    private function listedNumbers(OpenItiChapter $chapter): array
+    private function listedNumbers(OpenItiChapter $chapter, ?ChapterAlignment $alignment): array
     {
         $numbers = [];
 
         foreach ($chapter->units as $unit) {
-            if ($unit->number !== null && ! in_array((string) $unit->number, $numbers, true)) {
-                $numbers[] = (string) $unit->number;
+            $number = $this->numberOf($unit, $alignment);
+
+            if ($number !== null && ! in_array($number, $numbers, true)) {
+                $numbers[] = $number;
             }
         }
 
         return $numbers;
+    }
+
+    /**
+     * The fawazahmed0 number of a unit: through the alignment when there is one (unaligned units have none), else the unit's own
+     * number as printed in the file.
+     */
+    private function numberOf(OpenItiUnit $unit, ?ChapterAlignment $alignment): ?string
+    {
+        if ($alignment !== null) {
+            return $alignment->numberOf($unit->index);
+        }
+
+        return $unit->number === null ? null : (string) $unit->number;
     }
 
     /**
@@ -116,7 +134,7 @@ final class HadithChapterMatcher
      * @param  array{entries: list<array<string, int|string|null>>, entryByNumber: array<string, int>, bookOfNumber: array<string, string>, bookEntries: array<string, list<int>>, bookOrder: list<string>}  $context
      * @return array<string, mixed>
      */
-    private function judge(OpenItiChapter $chapter, ?string $book, int $ordinal, array $numbers, array $present, array $context): array
+    private function judge(OpenItiChapter $chapter, ?string $book, int $ordinal, array $numbers, array $present, array $context, ?ChapterAlignment $alignment): array
     {
         $row = [
             'book_number' => $book,
@@ -135,6 +153,7 @@ final class HadithChapterMatcher
             'hi' => null,
             'title' => $chapter->title,
             'had_continuation' => $chapter->hadContinuation,
+            'numbering_stripped' => $chapter->numberingStripped,
             'result' => 'accepted',
         ];
 
@@ -158,7 +177,7 @@ final class HadithChapterMatcher
 
         $book = (string) array_key_first($books);
         $row['book_number'] = $book;
-        $row['forward_passed'] = $this->forwardPassed($chapter, $present, $context['entries'], $context['entryByNumber']);
+        $row['forward_passed'] = $this->forwardPassed($chapter, $present, $context['entries'], $context['entryByNumber'], $alignment);
 
         if ($row['forward_passed'] < $row['forward_required']) {
             return ['result' => 'forward_below_threshold'] + $row;
@@ -198,9 +217,9 @@ final class HadithChapterMatcher
      * @param  list<array<string, int|string|null>>  $entries
      * @param  array<string, int>  $entryByNumber
      */
-    private function forwardPassed(OpenItiChapter $chapter, array $present, array $entries, array $entryByNumber): int
+    private function forwardPassed(OpenItiChapter $chapter, array $present, array $entries, array $entryByNumber, ?ChapterAlignment $alignment): int
     {
-        $unitByNumber = $this->firstUnitByNumber($chapter->units);
+        $unitByNumber = $this->firstUnitByNumber($chapter->units, $alignment);
         $passed = 0;
 
         foreach ($present as $number) {
@@ -220,13 +239,15 @@ final class HadithChapterMatcher
      * @param  list<OpenItiUnit>  $units
      * @return array<array-key, OpenItiUnit> the first unit of each number
      */
-    private function firstUnitByNumber(array $units): array
+    private function firstUnitByNumber(array $units, ?ChapterAlignment $alignment): array
     {
         $byNumber = [];
 
         foreach ($units as $unit) {
-            if ($unit->number !== null && ! isset($byNumber[(string) $unit->number])) {
-                $byNumber[(string) $unit->number] = $unit;
+            $number = $this->numberOf($unit, $alignment);
+
+            if ($number !== null && ! isset($byNumber[$number])) {
+                $byNumber[$number] = $unit;
             }
         }
 
@@ -341,7 +362,7 @@ final class HadithChapterMatcher
      * @param  array{release: string, doi: string, version_id: string, source_file_sha256: string, licence: string}  $meta
      * @return array<string, mixed>
      */
-    private function report(string $slug, array $decisions, array $coverage, string $partialBooks, array $census, int $headingsWithoutUnits, string $proposalSha, array $meta): array
+    private function report(string $slug, array $decisions, array $coverage, string $partialBooks, array $census, int $headingsWithoutUnits, string $proposalSha, array $meta, ?int $alignedUnits): array
     {
         $byResult = [];
         $small = ['accepted' => 0, 'rejected' => 0];
@@ -350,6 +371,7 @@ final class HadithChapterMatcher
         $continuation = 0;
         $residual = 0;
         $empty = 0;
+        $numbered = 0;
 
         foreach ($decisions as $decision) {
             $byResult[$decision['result']] = ($byResult[$decision['result']] ?? 0) + 1;
@@ -358,6 +380,7 @@ final class HadithChapterMatcher
             $continuation += $decision['had_continuation'] ? 1 : 0;
             $residual += preg_match(self::RESIDUAL_PATTERN, (string) $decision['title']) === 1 ? 1 : 0;
             $empty += $decision['title'] === '' ? 1 : 0;
+            $numbered += $decision['numbering_stripped'] ? 1 : 0;
 
             if ($decision['n'] <= self::SMALL_CHAPTER_MAX) {
                 $small[$decision['result'] === 'accepted' ? 'accepted' : 'rejected']++;
@@ -401,6 +424,8 @@ final class HadithChapterMatcher
             'titles_with_continuation' => $continuation,
             'titles_with_residual_markers' => $residual,
             'titles_empty' => $empty,
+            'titles_numbering_stripped' => $numbered,
+            'alignment_units' => $alignedUnits,
         ];
     }
 }

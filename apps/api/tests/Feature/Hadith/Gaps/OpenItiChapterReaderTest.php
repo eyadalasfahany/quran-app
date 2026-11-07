@@ -98,3 +98,20 @@ it('counts the line shapes of the census', function (): void {
         ->and($scan->census['page_marker'])->toBe(1)
         ->and($scan->census['heading'])->toBe(6);
 });
+
+it('a single-hash pipe heading is a chapter and a pipe heading with a book word ends the chapter', function (): void {
+    $bytes = implode("\n", [
+        '# | FIXTURE chapter title 1',
+        '# 1 FIXTURE text 1 — not a hadith',
+        '# | 2 ( 2 ) كتاب FIXTURE book word',
+        '# 2 FIXTURE text 2 — not a hadith',
+        '# | FIXTURE chapter title 2',
+        '# 3 FIXTURE text 3 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, '/^# ([0-9]+) /u', '/^(###|# \|)/u', '/^# \| (.+)$/u', '/^# \| [^\p{Arabic}]*(كتاب|أبواب)(\s|$)/u');
+
+    expect(array_map(static fn ($chapter): string => $chapter->title, $scan->chapters))->toBe(['FIXTURE chapter title 1', 'FIXTURE chapter title 2'])
+        ->and(array_map(static fn ($chapter): array => array_map(static fn ($unit): ?int => $unit->number, $chapter->units), $scan->chapters))->toBe([[1], [3]])
+        ->and($scan->census['heading'])->toBe(3);
+});

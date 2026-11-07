@@ -36,7 +36,7 @@ final class OpenItiChapterReader
                 continue;
             }
 
-            if (str_starts_with($line, '###')) {
+            if ($this->isHeading($line)) {
                 $census['heading']++;
                 $title = $this->headings->clean($this->headingLines($lines, $index))->title;
                 $title = (string) preg_replace('~^[0-9]+\s*-\s*~u', '', $title);
@@ -85,10 +85,34 @@ final class OpenItiChapterReader
             }
 
             $heading = $this->headings->clean($this->headingLines($lines, $boundary['index']));
-            $chapters[] = new OpenItiChapter(count($chapters) + 1, $heading->title, $heading->hadContinuation, $under);
+            [$title, $numberingStripped] = $this->stripNumbering($heading->title);
+            $chapters[] = new OpenItiChapter(count($chapters) + 1, $title, $heading->hadContinuation, $under, $numberingStripped);
         }
 
         return new OpenItiChapterScan($chapters, $headingsWithoutUnits, $census);
+    }
+
+    /**
+     * Removes the numbering markup that some chapter titles start with (approved G2, step 6b.7): «(N) » (Tirmidhi style) and
+     * «N ( N ) », «N ( N » or «N (» (Muslim and Malik style), where N is ASCII or Arabic-Indic digits. Only the chapter title path calls this.
+     *
+     * @return array{string, bool} the title and whether a prefix was removed
+     */
+    private function stripNumbering(string $title): array
+    {
+        $digits = '[0-9\x{0660}-\x{0669}]+';
+        $stripped = preg_replace('~^(?:\(\s*'.$digits.'\s*\)|'.$digits.'\s*\(\s*(?:'.$digits.'\s*\)?)?)\s+~u', '', $title, 1, $count);
+
+        return [(string) $stripped, $count === 1];
+    }
+
+    /**
+     * A heading starts with ### (Bukhari, Tirmidhi and the rest) or with a single # and a pipe (Muslim, Malik). A numbered unit
+     * starts with # and a digit, so it is never a heading.
+     */
+    private function isHeading(string $line): bool
+    {
+        return str_starts_with($line, '###') || str_starts_with($line, '# |');
     }
 
     /**

@@ -12,11 +12,13 @@ final readonly class OpenItiChapter
 {
     /**
      * @param  list<OpenItiUnit>  $units
+     * @param  bool  $numberingStripped  the title had leading numbering markup removed (step 6b.7, approved G2)
      */
     public function __construct(
         public int $index,
         public string $title,
         public bool $hadContinuation,
         public array $units,
+        public bool $numberingStripped = false,
     ) {}
 }

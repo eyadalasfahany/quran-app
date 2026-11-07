@@ -18,7 +18,7 @@ final class OpenItiHeadingCleaner
     public function clean(array $lines): CleanedHeading
     {
         $first = array_shift($lines) ?? '';
-        $title = (string) preg_replace('~^###[ ]*[|$]+[ ]?~', '', $first);
+        $title = (string) preg_replace('~^#{1,3}[ ]*[|$]+[ ]?~', '', $first);
         $continuation = [];
 
         foreach ($lines as $line) {

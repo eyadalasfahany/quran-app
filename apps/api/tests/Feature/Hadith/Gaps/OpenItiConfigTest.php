@@ -19,11 +19,11 @@ it('pins every OpenITI file with a lowercase SHA-256 and a golden unit count', f
     }
 });
 
-it('holds the four chapter markup patterns of step 6b.7', function (): void {
+it('holds the chapter markup patterns of the seven collections with OpenITI files', function (): void {
     $files = config('hadith.openiti.files');
 
     expect(array_keys(array_filter($files, static fn (array $file): bool => isset($file['markup']))))
-        ->toEqualCanonicalizing(['bukhari', 'nasai', 'abudawud', 'ibnmajah']);
+        ->toEqualCanonicalizing(['bukhari', 'nasai', 'abudawud', 'ibnmajah', 'muslim', 'malik', 'tirmidhi']);
 });
 
 it('keeps the release and the Tirmidhi commit as pinned', function (): void {

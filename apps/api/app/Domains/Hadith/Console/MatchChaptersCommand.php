@@ -6,6 +6,7 @@ namespace App\Domains\Hadith\Console;
 
 use App\Domains\Hadith\Exceptions\HadithDataFileException;
 use App\Domains\Hadith\Exceptions\HadithGapBuildException;
+use App\Domains\Hadith\Overlay\HadithDataFiles;
 use App\Domains\Hadith\Overlay\HadithOverlayBuilder;
 use App\Domains\Hadith\Overlay\OpenItiChapterReader;
 use App\Domains\Hadith\Repositories\Contracts\HadithImportRepository;
@@ -20,7 +21,8 @@ use Illuminate\Support\Facades\File;
 /**
  * Dev only (ADR 0076 §5, step 6b.7): proposes the OpenITI chapters of the first four collections (Bukhari, Abu Dawud, Nasa'i,
  * Ibn Majah) against the importer's own mapping, and writes a chapters-file proposal and a report under storage/app. Refused in
- * production before any file is read. The developer commits the proposal in step 6b.8.
+ * production before any file is read. Muslim and Malik map their units through the pinned alignment file when one exists. The
+ * developer commits the proposal in step 6b.8.
  */
 final class MatchChaptersCommand extends Command
 {
@@ -34,7 +36,7 @@ final class MatchChaptersCommand extends Command
 
     protected $description = 'Dev only: propose the OpenITI chapters of the first four collections against the importer mapping. Writes under storage/app, never config/ or database/.';
 
-    public function handle(HadithSourceRegistry $sources, HadithOverlayBuilder $overlays, HadithMapper $mapper, OpenItiChapterReader $reader, HadithChapterMatcher $matcher, HadithImportRepository $repository): int
+    public function handle(HadithSourceRegistry $sources, HadithOverlayBuilder $overlays, HadithMapper $mapper, OpenItiChapterReader $reader, HadithChapterMatcher $matcher, HadithImportRepository $repository, HadithDataFiles $dataFiles): int
     {
         if (app()->isProduction()) {
             $this->error('hadith:match-chapters is a developer tool and is disabled in production.');
@@ -60,7 +62,7 @@ final class MatchChaptersCommand extends Command
 
         foreach ($slugs as $slug) {
             try {
-                $result = $this->matchOne($slug, $openitiDir, $partialBooks, $sources, $overlays, $mapper, $reader, $matcher, $repository);
+                $result = $this->matchOne($slug, $openitiDir, $partialBooks, $sources, $overlays, $mapper, $reader, $matcher, $repository, $dataFiles);
             } catch (HadithGapBuildException|HadithDataFileException|\LogicException $exception) {
                 $this->error('['.$slug.'] '.$exception->getMessage());
 
@@ -81,7 +83,7 @@ final class MatchChaptersCommand extends Command
      * @throws HadithDataFileException
      * @throws \LogicException
      */
-    private function matchOne(string $slug, string $openitiDir, string $partialBooks, HadithSourceRegistry $sources, HadithOverlayBuilder $overlays, HadithMapper $mapper, OpenItiChapterReader $reader, HadithChapterMatcher $matcher, HadithImportRepository $repository): ChapterMatchResult
+    private function matchOne(string $slug, string $openitiDir, string $partialBooks, HadithSourceRegistry $sources, HadithOverlayBuilder $overlays, HadithMapper $mapper, OpenItiChapterReader $reader, HadithChapterMatcher $matcher, HadithImportRepository $repository, HadithDataFiles $dataFiles): ChapterMatchResult
     {
         $file = config('hadith.openiti.files.'.$slug);
 
@@ -136,6 +138,7 @@ final class MatchChaptersCommand extends Command
                 'source_file_sha256' => hash('sha256', $bytes),
                 'licence' => 'CC BY-NC-SA 4.0, see LICENSE-NOTICE.md',
             ],
+            $dataFiles->alignment($slug),
         );
     }
 }

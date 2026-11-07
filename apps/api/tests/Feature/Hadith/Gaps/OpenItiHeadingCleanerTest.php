@@ -39,3 +39,7 @@ it('trims only ASCII whitespace: a no-break space at the end stays', function ()
 it('applies every removal together', function (): void {
     expect(headingTitle(['### | FIXTURE PageV01P004 title', '~~ FIXTURE part ms3']))->toBe('FIXTURE  title FIXTURE part');
 });
+
+it('removes a single-hash pipe marker too', function (): void {
+    expect(headingTitle(['# | FIXTURE chapter title 1']))->toBe('FIXTURE chapter title 1');
+});

@@ -12,7 +12,7 @@ use App\Domains\Hadith\Exceptions\HadithDataFileException;
  */
 final class HadithDataFiles
 {
-    private const string PATH_PATTERN = '~^(chapters|gaps|gaps/decisions)/[a-z0-9]+\.json$~';
+    private const string PATH_PATTERN = '~^(chapters|chapters/alignment|gaps|gaps/decisions)/[a-z0-9]+\.json$~';
 
     private const string PIN_PATTERN = '~^[0-9a-f]{64}$~';
 
@@ -171,6 +171,67 @@ final class HadithDataFiles
             partialBooks: (string) $data['partial_books'],
             chapters: $this->chapterRecords($data['chapters'] ?? null, $relativePath),
         );
+    }
+
+    /**
+     * The validated alignment of a collection's OpenITI units to fawazahmed0 numbers (ADR 0076 §5, step 6b.7), or null when the
+     * file is not pinned (the matcher then keeps the unit's own number). A pinned file must verify: its hash, its collection,
+     * the configured OpenITI SHA-256 and the pinned fawazahmed0 commit.
+     *
+     * @throws HadithDataFileException with a code: bad_json, unknown_key, missing_key, collection_mismatch, openiti_sha_mismatch,
+     *                                 commit_mismatch, alignment_invalid
+     */
+    public function alignment(string $slug): ?ChapterAlignment
+    {
+        $relativePath = 'chapters/alignment/'.$slug.'.json';
+
+        if ($this->pin($relativePath) === null) {
+            return null;
+        }
+
+        $bytes = $this->readVerified($relativePath);
+
+        if ($bytes === null) {
+            return null;
+        }
+
+        $data = $this->decode($bytes, $relativePath);
+        $this->assertKeys($data, ['collection', 'openiti_file', 'openiti_sha256', 'fawazahmed0_commit', 'method', 'unit_count', 'units'], $relativePath);
+
+        if (($data['collection'] ?? null) !== $slug) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] names another collection (collection_mismatch).');
+        }
+
+        $openitiSha = config('hadith.openiti.files.'.$slug.'.sha256');
+
+        if (! is_string($openitiSha) || ($data['openiti_sha256'] ?? null) !== $openitiSha) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] is not aligned to the configured OpenITI file (openiti_sha_mismatch).');
+        }
+
+        if (($data['fawazahmed0_commit'] ?? null) !== config('hadith.commit')) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] is not pinned to the fawazahmed0 commit (commit_mismatch).');
+        }
+
+        $unitCount = $data['unit_count'] ?? null;
+
+        if (! is_int($unitCount) || $unitCount < 1) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] has no unit_count (alignment_invalid).');
+        }
+
+        $numberByUnit = [];
+
+        foreach ($this->list($data['units'] ?? null, 'units', $relativePath) as $unit) {
+            $index = is_array($unit) ? ($unit['unit'] ?? null) : null;
+            $number = is_array($unit) ? ($unit['hadith'] ?? null) : null;
+
+            if (! is_int($index) || $index < 0 || $index >= $unitCount || isset($numberByUnit[$index]) || ! $this->isNumberText($number)) {
+                throw new HadithDataFileException('Data file ['.$relativePath.'] holds a unit that is out of range, repeated or without a number (alignment_invalid).');
+            }
+
+            $numberByUnit[$index] = (string) $number;
+        }
+
+        return new ChapterAlignment($slug, $numberByUnit);
     }
 
     /**

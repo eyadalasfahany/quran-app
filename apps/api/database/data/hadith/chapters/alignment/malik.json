@@ -1,0 +1,8590 @@
+{
+ "collection": "malik",
+ "openiti_file": "0179MalikIbnAnas.Muwatta.JK000466-ara1",
+ "openiti_sha256": "c104e5604d96af249ad631d0c8e92e41e7fd65b53f29d5ae443cb0142637db46",
+ "fawazahmed0_commit": "df57907be35291c91ad6a6691180e22ca9920784",
+ "method": "monotonic text alignment: for each fawazahmed0 hadith with text, best Jaccard over normalised Arabic word sets (diacritics/tatweel stripped, alif/ya/ta-marbuta folded, page/ms markers removed, words >= 3 letters) within +-700 units of its proportional position, kept if >= 0.5; then longest strictly increasing subsequence of unit indices. Units read with unit_start /^# ([0-9]+) /u and unit_stop /^(###|# \\|)/u after #META#Header#End#, index = file order from 0.",
+ "unit_count": 1822,
+ "units": [
+  {
+   "unit": 1,
+   "hadith": "1",
+   "score": 0.981
+  },
+  {
+   "unit": 2,
+   "hadith": "2",
+   "score": 1.0
+  },
+  {
+   "unit": 3,
+   "hadith": "3",
+   "score": 0.95
+  },
+  {
+   "unit": 4,
+   "hadith": "4",
+   "score": 1.0
+  },
+  {
+   "unit": 5,
+   "hadith": "5",
+   "score": 1.0
+  },
+  {
+   "unit": 6,
+   "hadith": "6",
+   "score": 1.0
+  },
+  {
+   "unit": 7,
+   "hadith": "7",
+   "score": 1.0
+  },
+  {
+   "unit": 8,
+   "hadith": "8",
+   "score": 1.0
+  },
+  {
+   "unit": 9,
+   "hadith": "9",
+   "score": 1.0
+  },
+  {
+   "unit": 10,
+   "hadith": "10",
+   "score": 1.0
+  },
+  {
+   "unit": 11,
+   "hadith": "11",
+   "score": 0.941
+  },
+  {
+   "unit": 12,
+   "hadith": "12",
+   "score": 1.0
+  },
+  {
+   "unit": 13,
+   "hadith": "13",
+   "score": 1.0
+  },
+  {
+   "unit": 14,
+   "hadith": "14",
+   "score": 0.952
+  },
+  {
+   "unit": 15,
+   "hadith": "15",
+   "score": 0.95
+  },
+  {
+   "unit": 16,
+   "hadith": "16",
+   "score": 1.0
+  },
+  {
+   "unit": 17,
+   "hadith": "17",
+   "score": 1.0
+  },
+  {
+   "unit": 18,
+   "hadith": "18",
+   "score": 1.0
+  },
+  {
+   "unit": 19,
+   "hadith": "19",
+   "score": 1.0
+  },
+  {
+   "unit": 20,
+   "hadith": "20",
+   "score": 1.0
+  },
+  {
+   "unit": 21,
+   "hadith": "21",
+   "score": 1.0
+  },
+  {
+   "unit": 22,
+   "hadith": "22",
+   "score": 1.0
+  },
+  {
+   "unit": 23,
+   "hadith": "23",
+   "score": 1.0
+  },
+  {
+   "unit": 24,
+   "hadith": "24",
+   "score": 1.0
+  },
+  {
+   "unit": 25,
+   "hadith": "25",
+   "score": 0.923
+  },
+  {
+   "unit": 26,
+   "hadith": "26",
+   "score": 1.0
+  },
+  {
+   "unit": 27,
+   "hadith": "27",
+   "score": 1.0
+  },
+  {
+   "unit": 28,
+   "hadith": "28",
+   "score": 1.0
+  },
+  {
+   "unit": 29,
+   "hadith": "29",
+   "score": 1.0
+  },
+  {
+   "unit": 30,
+   "hadith": "30",
+   "score": 0.955
+  },
+  {
+   "unit": 31,
+   "hadith": "31",
+   "score": 1.0
+  },
+  {
+   "unit": 32,
+   "hadith": "32",
+   "score": 1.0
+  },
+  {
+   "unit": 33,
+   "hadith": "33",
+   "score": 1.0
+  },
+  {
+   "unit": 34,
+   "hadith": "34",
+   "score": 0.581
+  },
+  {
+   "unit": 35,
+   "hadith": "35",
+   "score": 1.0
+  },
+  {
+   "unit": 36,
+   "hadith": "36",
+   "score": 1.0
+  },
+  {
+   "unit": 37,
+   "hadith": "37",
+   "score": 1.0
+  },
+  {
+   "unit": 38,
+   "hadith": "38",
+   "score": 1.0
+  },
+  {
+   "unit": 39,
+   "hadith": "39",
+   "score": 0.955
+  },
+  {
+   "unit": 40,
+   "hadith": "40",
+   "score": 0.909
+  },
+  {
+   "unit": 41,
+   "hadith": "41",
+   "score": 1.0
+  },
+  {
+   "unit": 42,
+   "hadith": "42",
+   "score": 0.873
+  },
+  {
+   "unit": 43,
+   "hadith": "43",
+   "score": 1.0
+  },
+  {
+   "unit": 44,
+   "hadith": "44",
+   "score": 0.889
+  },
+  {
+   "unit": 45,
+   "hadith": "45",
+   "score": 1.0
+  },
+  {
+   "unit": 46,
+   "hadith": "46",
+   "score": 0.969
+  },
+  {
+   "unit": 47,
+   "hadith": "47",
+   "score": 1.0
+  },
+  {
+   "unit": 48,
+   "hadith": "48",
+   "score": 1.0
+  },
+  {
+   "unit": 49,
+   "hadith": "49",
+   "score": 1.0
+  },
+  {
+   "unit": 50,
+   "hadith": "50",
+   "score": 1.0
+  },
+  {
+   "unit": 51,
+   "hadith": "51",
+   "score": 1.0
+  },
+  {
+   "unit": 52,
+   "hadith": "52",
+   "score": 1.0
+  },
+  {
+   "unit": 53,
+   "hadith": "53",
+   "score": 1.0
+  },
+  {
+   "unit": 54,
+   "hadith": "54",
+   "score": 1.0
+  },
+  {
+   "unit": 55,
+   "hadith": "55",
+   "score": 1.0
+  },
+  {
+   "unit": 56,
+   "hadith": "56",
+   "score": 0.944
+  },
+  {
+   "unit": 57,
+   "hadith": "57",
+   "score": 1.0
+  },
+  {
+   "unit": 58,
+   "hadith": "58",
+   "score": 1.0
+  },
+  {
+   "unit": 59,
+   "hadith": "59",
+   "score": 0.75
+  },
+  {
+   "unit": 60,
+   "hadith": "60",
+   "score": 1.0
+  },
+  {
+   "unit": 61,
+   "hadith": "61",
+   "score": 1.0
+  },
+  {
+   "unit": 62,
+   "hadith": "62",
+   "score": 0.955
+  },
+  {
+   "unit": 63,
+   "hadith": "63",
+   "score": 0.958
+  },
+  {
+   "unit": 64,
+   "hadith": "64",
+   "score": 1.0
+  },
+  {
+   "unit": 65,
+   "hadith": "65",
+   "score": 1.0
+  },
+  {
+   "unit": 66,
+   "hadith": "66",
+   "score": 1.0
+  },
+  {
+   "unit": 67,
+   "hadith": "67",
+   "score": 1.0
+  },
+  {
+   "unit": 68,
+   "hadith": "68",
+   "score": 1.0
+  },
+  {
+   "unit": 69,
+   "hadith": "69",
+   "score": 0.846
+  },
+  {
+   "unit": 70,
+   "hadith": "70",
+   "score": 0.961
+  },
+  {
+   "unit": 71,
+   "hadith": "71",
+   "score": 0.983
+  },
+  {
+   "unit": 72,
+   "hadith": "72",
+   "score": 1.0
+  },
+  {
+   "unit": 73,
+   "hadith": "73",
+   "score": 1.0
+  },
+  {
+   "unit": 74,
+   "hadith": "74",
+   "score": 1.0
+  },
+  {
+   "unit": 75,
+   "hadith": "75",
+   "score": 1.0
+  },
+  {
+   "unit": 76,
+   "hadith": "76",
+   "score": 0.96
+  },
+  {
+   "unit": 77,
+   "hadith": "77",
+   "score": 1.0
+  },
+  {
+   "unit": 78,
+   "hadith": "78",
+   "score": 1.0
+  },
+  {
+   "unit": 79,
+   "hadith": "79",
+   "score": 1.0
+  },
+  {
+   "unit": 81,
+   "hadith": "81",
+   "score": 1.0
+  },
+  {
+   "unit": 82,
+   "hadith": "82",
+   "score": 1.0
+  },
+  {
+   "unit": 83,
+   "hadith": "83",
+   "score": 1.0
+  },
+  {
+   "unit": 84,
+   "hadith": "84",
+   "score": 1.0
+  },
+  {
+   "unit": 85,
+   "hadith": "85",
+   "score": 1.0
+  },
+  {
+   "unit": 86,
+   "hadith": "86",
+   "score": 1.0
+  },
+  {
+   "unit": 87,
+   "hadith": "87",
+   "score": 1.0
+  },
+  {
+   "unit": 88,
+   "hadith": "88",
+   "score": 1.0
+  },
+  {
+   "unit": 89,
+   "hadith": "89",
+   "score": 1.0
+  },
+  {
+   "unit": 90,
+   "hadith": "90",
+   "score": 1.0
+  },
+  {
+   "unit": 91,
+   "hadith": "91",
+   "score": 1.0
+  },
+  {
+   "unit": 92,
+   "hadith": "92",
+   "score": 1.0
+  },
+  {
+   "unit": 93,
+   "hadith": "93",
+   "score": 0.962
+  },
+  {
+   "unit": 94,
+   "hadith": "94",
+   "score": 1.0
+  },
+  {
+   "unit": 95,
+   "hadith": "95",
+   "score": 0.958
+  },
+  {
+   "unit": 96,
+   "hadith": "96",
+   "score": 1.0
+  },
+  {
+   "unit": 97,
+   "hadith": "97",
+   "score": 0.588
+  },
+  {
+   "unit": 98,
+   "hadith": "98",
+   "score": 1.0
+  },
+  {
+   "unit": 99,
+   "hadith": "99",
+   "score": 0.944
+  },
+  {
+   "unit": 100,
+   "hadith": "100",
+   "score": 1.0
+  },
+  {
+   "unit": 101,
+   "hadith": "101",
+   "score": 1.0
+  },
+  {
+   "unit": 102,
+   "hadith": "102",
+   "score": 0.96
+  },
+  {
+   "unit": 103,
+   "hadith": "103",
+   "score": 1.0
+  },
+  {
+   "unit": 104,
+   "hadith": "104",
+   "score": 1.0
+  },
+  {
+   "unit": 105,
+   "hadith": "105",
+   "score": 1.0
+  },
+  {
+   "unit": 106,
+   "hadith": "106",
+   "score": 1.0
+  },
+  {
+   "unit": 107,
+   "hadith": "107",
+   "score": 1.0
+  },
+  {
+   "unit": 108,
+   "hadith": "108",
+   "score": 1.0
+  },
+  {
+   "unit": 109,
+   "hadith": "109",
+   "score": 1.0
+  },
+  {
+   "unit": 110,
+   "hadith": "110",
+   "score": 1.0
+  },
+  {
+   "unit": 111,
+   "hadith": "111",
+   "score": 1.0
+  },
+  {
+   "unit": 112,
+   "hadith": "112",
+   "score": 1.0
+  },
+  {
+   "unit": 113,
+   "hadith": "113",
+   "score": 1.0
+  },
+  {
+   "unit": 114,
+   "hadith": "114",
+   "score": 1.0
+  },
+  {
+   "unit": 115,
+   "hadith": "115",
+   "score": 0.971
+  },
+  {
+   "unit": 116,
+   "hadith": "116",
+   "score": 1.0
+  },
+  {
+   "unit": 117,
+   "hadith": "117",
+   "score": 1.0
+  },
+  {
+   "unit": 118,
+   "hadith": "118",
+   "score": 1.0
+  },
+  {
+   "unit": 119,
+   "hadith": "119",
+   "score": 1.0
+  },
+  {
+   "unit": 120,
+   "hadith": "120",
+   "score": 0.514
+  },
+  {
+   "unit": 121,
+   "hadith": "121",
+   "score": 1.0
+  },
+  {
+   "unit": 122,
+   "hadith": "122",
+   "score": 1.0
+  },
+  {
+   "unit": 123,
+   "hadith": "123",
+   "score": 1.0
+  },
+  {
+   "unit": 124,
+   "hadith": "124",
+   "score": 1.0
+  },
+  {
+   "unit": 125,
+   "hadith": "125",
+   "score": 1.0
+  },
+  {
+   "unit": 126,
+   "hadith": "126",
+   "score": 1.0
+  },
+  {
+   "unit": 127,
+   "hadith": "127",
+   "score": 1.0
+  },
+  {
+   "unit": 128,
+   "hadith": "128",
+   "score": 1.0
+  },
+  {
+   "unit": 129,
+   "hadith": "129",
+   "score": 0.63
+  },
+  {
+   "unit": 131,
+   "hadith": "130",
+   "score": 1.0
+  },
+  {
+   "unit": 132,
+   "hadith": "131",
+   "score": 0.941
+  },
+  {
+   "unit": 133,
+   "hadith": "132",
+   "score": 1.0
+  },
+  {
+   "unit": 134,
+   "hadith": "133",
+   "score": 0.951
+  },
+  {
+   "unit": 135,
+   "hadith": "134",
+   "score": 1.0
+  },
+  {
+   "unit": 136,
+   "hadith": "135",
+   "score": 1.0
+  },
+  {
+   "unit": 137,
+   "hadith": "136",
+   "score": 1.0
+  },
+  {
+   "unit": 138,
+   "hadith": "137",
+   "score": 1.0
+  },
+  {
+   "unit": 139,
+   "hadith": "138",
+   "score": 1.0
+  },
+  {
+   "unit": 140,
+   "hadith": "139",
+   "score": 1.0
+  },
+  {
+   "unit": 141,
+   "hadith": "140",
+   "score": 0.971
+  },
+  {
+   "unit": 142,
+   "hadith": "141",
+   "score": 1.0
+  },
+  {
+   "unit": 143,
+   "hadith": "142",
+   "score": 0.935
+  },
+  {
+   "unit": 144,
+   "hadith": "143",
+   "score": 0.968
+  },
+  {
+   "unit": 145,
+   "hadith": "144",
+   "score": 1.0
+  },
+  {
+   "unit": 146,
+   "hadith": "145",
+   "score": 0.947
+  },
+  {
+   "unit": 147,
+   "hadith": "146",
+   "score": 1.0
+  },
+  {
+   "unit": 148,
+   "hadith": "147",
+   "score": 0.957
+  },
+  {
+   "unit": 149,
+   "hadith": "148",
+   "score": 1.0
+  },
+  {
+   "unit": 150,
+   "hadith": "149",
+   "score": 1.0
+  },
+  {
+   "unit": 151,
+   "hadith": "150",
+   "score": 1.0
+  },
+  {
+   "unit": 152,
+   "hadith": "151",
+   "score": 1.0
+  },
+  {
+   "unit": 154,
+   "hadith": "153",
+   "score": 1.0
+  },
+  {
+   "unit": 155,
+   "hadith": "154",
+   "score": 1.0
+  },
+  {
+   "unit": 156,
+   "hadith": "155",
+   "score": 1.0
+  },
+  {
+   "unit": 157,
+   "hadith": "156",
+   "score": 1.0
+  },
+  {
+   "unit": 158,
+   "hadith": "157",
+   "score": 1.0
+  },
+  {
+   "unit": 159,
+   "hadith": "158",
+   "score": 1.0
+  },
+  {
+   "unit": 160,
+   "hadith": "159",
+   "score": 1.0
+  },
+  {
+   "unit": 161,
+   "hadith": "160",
+   "score": 0.95
+  },
+  {
+   "unit": 162,
+   "hadith": "161",
+   "score": 0.958
+  },
+  {
+   "unit": 163,
+   "hadith": "162",
+   "score": 0.974
+  },
+  {
+   "unit": 164,
+   "hadith": "163",
+   "score": 0.963
+  },
+  {
+   "unit": 165,
+   "hadith": "164",
+   "score": 1.0
+  },
+  {
+   "unit": 166,
+   "hadith": "165",
+   "score": 0.967
+  },
+  {
+   "unit": 168,
+   "hadith": "166",
+   "score": 0.75
+  },
+  {
+   "unit": 169,
+   "hadith": "168",
+   "score": 1.0
+  },
+  {
+   "unit": 170,
+   "hadith": "169",
+   "score": 0.986
+  },
+  {
+   "unit": 171,
+   "hadith": "170",
+   "score": 0.95
+  },
+  {
+   "unit": 172,
+   "hadith": "171",
+   "score": 0.971
+  },
+  {
+   "unit": 173,
+   "hadith": "172",
+   "score": 1.0
+  },
+  {
+   "unit": 174,
+   "hadith": "173",
+   "score": 1.0
+  },
+  {
+   "unit": 175,
+   "hadith": "174",
+   "score": 1.0
+  },
+  {
+   "unit": 176,
+   "hadith": "175",
+   "score": 1.0
+  },
+  {
+   "unit": 177,
+   "hadith": "176",
+   "score": 1.0
+  },
+  {
+   "unit": 178,
+   "hadith": "177",
+   "score": 1.0
+  },
+  {
+   "unit": 179,
+   "hadith": "178",
+   "score": 1.0
+  },
+  {
+   "unit": 180,
+   "hadith": "179",
+   "score": 1.0
+  },
+  {
+   "unit": 181,
+   "hadith": "180",
+   "score": 1.0
+  },
+  {
+   "unit": 182,
+   "hadith": "181",
+   "score": 1.0
+  },
+  {
+   "unit": 183,
+   "hadith": "182",
+   "score": 1.0
+  },
+  {
+   "unit": 184,
+   "hadith": "183",
+   "score": 1.0
+  },
+  {
+   "unit": 185,
+   "hadith": "184",
+   "score": 1.0
+  },
+  {
+   "unit": 186,
+   "hadith": "185",
+   "score": 0.974
+  },
+  {
+   "unit": 187,
+   "hadith": "186",
+   "score": 1.0
+  },
+  {
+   "unit": 188,
+   "hadith": "187",
+   "score": 0.978
+  },
+  {
+   "unit": 189,
+   "hadith": "188",
+   "score": 1.0
+  },
+  {
+   "unit": 190,
+   "hadith": "189",
+   "score": 1.0
+  },
+  {
+   "unit": 191,
+   "hadith": "190",
+   "score": 1.0
+  },
+  {
+   "unit": 192,
+   "hadith": "191",
+   "score": 1.0
+  },
+  {
+   "unit": 193,
+   "hadith": "192",
+   "score": 0.976
+  },
+  {
+   "unit": 194,
+   "hadith": "193",
+   "score": 0.972
+  },
+  {
+   "unit": 195,
+   "hadith": "194",
+   "score": 1.0
+  },
+  {
+   "unit": 196,
+   "hadith": "195",
+   "score": 1.0
+  },
+  {
+   "unit": 197,
+   "hadith": "196",
+   "score": 1.0
+  },
+  {
+   "unit": 198,
+   "hadith": "197",
+   "score": 1.0
+  },
+  {
+   "unit": 199,
+   "hadith": "198",
+   "score": 1.0
+  },
+  {
+   "unit": 200,
+   "hadith": "199",
+   "score": 1.0
+  },
+  {
+   "unit": 201,
+   "hadith": "200",
+   "score": 1.0
+  },
+  {
+   "unit": 202,
+   "hadith": "201",
+   "score": 1.0
+  },
+  {
+   "unit": 203,
+   "hadith": "202",
+   "score": 0.935
+  },
+  {
+   "unit": 204,
+   "hadith": "203",
+   "score": 0.968
+  },
+  {
+   "unit": 205,
+   "hadith": "204",
+   "score": 1.0
+  },
+  {
+   "unit": 206,
+   "hadith": "205",
+   "score": 1.0
+  },
+  {
+   "unit": 207,
+   "hadith": "206",
+   "score": 0.967
+  },
+  {
+   "unit": 208,
+   "hadith": "207",
+   "score": 1.0
+  },
+  {
+   "unit": 210,
+   "hadith": "208",
+   "score": 1.0
+  },
+  {
+   "unit": 211,
+   "hadith": "209",
+   "score": 0.979
+  },
+  {
+   "unit": 212,
+   "hadith": "210",
+   "score": 0.977
+  },
+  {
+   "unit": 213,
+   "hadith": "211",
+   "score": 0.96
+  },
+  {
+   "unit": 214,
+   "hadith": "212",
+   "score": 1.0
+  },
+  {
+   "unit": 215,
+   "hadith": "213",
+   "score": 1.0
+  },
+  {
+   "unit": 216,
+   "hadith": "214",
+   "score": 0.938
+  },
+  {
+   "unit": 217,
+   "hadith": "215",
+   "score": 1.0
+  },
+  {
+   "unit": 218,
+   "hadith": "216",
+   "score": 0.972
+  },
+  {
+   "unit": 219,
+   "hadith": "217",
+   "score": 0.536
+  },
+  {
+   "unit": 220,
+   "hadith": "218",
+   "score": 1.0
+  },
+  {
+   "unit": 221,
+   "hadith": "219",
+   "score": 0.964
+  },
+  {
+   "unit": 222,
+   "hadith": "220",
+   "score": 1.0
+  },
+  {
+   "unit": 223,
+   "hadith": "221",
+   "score": 1.0
+  },
+  {
+   "unit": 224,
+   "hadith": "222",
+   "score": 0.97
+  },
+  {
+   "unit": 225,
+   "hadith": "223",
+   "score": 1.0
+  },
+  {
+   "unit": 226,
+   "hadith": "224",
+   "score": 1.0
+  },
+  {
+   "unit": 227,
+   "hadith": "225",
+   "score": 1.0
+  },
+  {
+   "unit": 228,
+   "hadith": "226",
+   "score": 1.0
+  },
+  {
+   "unit": 229,
+   "hadith": "227",
+   "score": 0.977
+  },
+  {
+   "unit": 230,
+   "hadith": "228",
+   "score": 1.0
+  },
+  {
+   "unit": 232,
+   "hadith": "230",
+   "score": 1.0
+  },
+  {
+   "unit": 233,
+   "hadith": "231",
+   "score": 0.977
+  },
+  {
+   "unit": 234,
+   "hadith": "232",
+   "score": 0.98
+  },
+  {
+   "unit": 235,
+   "hadith": "233",
+   "score": 1.0
+  },
+  {
+   "unit": 236,
+   "hadith": "234",
+   "score": 1.0
+  },
+  {
+   "unit": 237,
+   "hadith": "235",
+   "score": 0.944
+  },
+  {
+   "unit": 238,
+   "hadith": "236",
+   "score": 0.983
+  },
+  {
+   "unit": 239,
+   "hadith": "237",
+   "score": 0.983
+  },
+  {
+   "unit": 240,
+   "hadith": "238",
+   "score": 1.0
+  },
+  {
+   "unit": 241,
+   "hadith": "239",
+   "score": 1.0
+  },
+  {
+   "unit": 242,
+   "hadith": "240",
+   "score": 0.85
+  },
+  {
+   "unit": 243,
+   "hadith": "241",
+   "score": 1.0
+  },
+  {
+   "unit": 244,
+   "hadith": "242",
+   "score": 1.0
+  },
+  {
+   "unit": 245,
+   "hadith": "243",
+   "score": 1.0
+  },
+  {
+   "unit": 246,
+   "hadith": "244",
+   "score": 1.0
+  },
+  {
+   "unit": 247,
+   "hadith": "245",
+   "score": 1.0
+  },
+  {
+   "unit": 248,
+   "hadith": "246",
+   "score": 0.979
+  },
+  {
+   "unit": 249,
+   "hadith": "247",
+   "score": 0.975
+  },
+  {
+   "unit": 250,
+   "hadith": "248",
+   "score": 0.954
+  },
+  {
+   "unit": 251,
+   "hadith": "249",
+   "score": 1.0
+  },
+  {
+   "unit": 252,
+   "hadith": "250",
+   "score": 1.0
+  },
+  {
+   "unit": 253,
+   "hadith": "251",
+   "score": 1.0
+  },
+  {
+   "unit": 254,
+   "hadith": "253",
+   "score": 0.658
+  },
+  {
+   "unit": 255,
+   "hadith": "254",
+   "score": 1.0
+  },
+  {
+   "unit": 256,
+   "hadith": "255",
+   "score": 1.0
+  },
+  {
+   "unit": 257,
+   "hadith": "256",
+   "score": 1.0
+  },
+  {
+   "unit": 258,
+   "hadith": "257",
+   "score": 0.949
+  },
+  {
+   "unit": 259,
+   "hadith": "258",
+   "score": 1.0
+  },
+  {
+   "unit": 260,
+   "hadith": "259",
+   "score": 1.0
+  },
+  {
+   "unit": 261,
+   "hadith": "260",
+   "score": 0.789
+  },
+  {
+   "unit": 262,
+   "hadith": "261",
+   "score": 0.967
+  },
+  {
+   "unit": 263,
+   "hadith": "262",
+   "score": 1.0
+  },
+  {
+   "unit": 264,
+   "hadith": "263",
+   "score": 1.0
+  },
+  {
+   "unit": 265,
+   "hadith": "264",
+   "score": 0.988
+  },
+  {
+   "unit": 266,
+   "hadith": "265",
+   "score": 1.0
+  },
+  {
+   "unit": 267,
+   "hadith": "266",
+   "score": 1.0
+  },
+  {
+   "unit": 268,
+   "hadith": "267",
+   "score": 0.985
+  },
+  {
+   "unit": 269,
+   "hadith": "268",
+   "score": 1.0
+  },
+  {
+   "unit": 270,
+   "hadith": "269",
+   "score": 1.0
+  },
+  {
+   "unit": 271,
+   "hadith": "270",
+   "score": 1.0
+  },
+  {
+   "unit": 272,
+   "hadith": "271",
+   "score": 1.0
+  },
+  {
+   "unit": 273,
+   "hadith": "272",
+   "score": 1.0
+  },
+  {
+   "unit": 274,
+   "hadith": "273",
+   "score": 1.0
+  },
+  {
+   "unit": 275,
+   "hadith": "274",
+   "score": 0.955
+  },
+  {
+   "unit": 276,
+   "hadith": "275",
+   "score": 0.857
+  },
+  {
+   "unit": 277,
+   "hadith": "276",
+   "score": 1.0
+  },
+  {
+   "unit": 278,
+   "hadith": "277",
+   "score": 1.0
+  },
+  {
+   "unit": 279,
+   "hadith": "278",
+   "score": 1.0
+  },
+  {
+   "unit": 280,
+   "hadith": "279",
+   "score": 1.0
+  },
+  {
+   "unit": 281,
+   "hadith": "280",
+   "score": 1.0
+  },
+  {
+   "unit": 282,
+   "hadith": "281",
+   "score": 1.0
+  },
+  {
+   "unit": 283,
+   "hadith": "282",
+   "score": 1.0
+  },
+  {
+   "unit": 284,
+   "hadith": "283",
+   "score": 1.0
+  },
+  {
+   "unit": 285,
+   "hadith": "284",
+   "score": 1.0
+  },
+  {
+   "unit": 286,
+   "hadith": "285",
+   "score": 1.0
+  },
+  {
+   "unit": 287,
+   "hadith": "286",
+   "score": 0.917
+  },
+  {
+   "unit": 288,
+   "hadith": "287",
+   "score": 1.0
+  },
+  {
+   "unit": 289,
+   "hadith": "288",
+   "score": 0.955
+  },
+  {
+   "unit": 290,
+   "hadith": "289",
+   "score": 0.762
+  },
+  {
+   "unit": 291,
+   "hadith": "290",
+   "score": 1.0
+  },
+  {
+   "unit": 292,
+   "hadith": "291",
+   "score": 1.0
+  },
+  {
+   "unit": 293,
+   "hadith": "292",
+   "score": 1.0
+  },
+  {
+   "unit": 294,
+   "hadith": "293",
+   "score": 0.974
+  },
+  {
+   "unit": 295,
+   "hadith": "294",
+   "score": 0.977
+  },
+  {
+   "unit": 296,
+   "hadith": "295",
+   "score": 1.0
+  },
+  {
+   "unit": 297,
+   "hadith": "296",
+   "score": 0.933
+  },
+  {
+   "unit": 298,
+   "hadith": "297",
+   "score": 0.931
+  },
+  {
+   "unit": 299,
+   "hadith": "298",
+   "score": 1.0
+  },
+  {
+   "unit": 300,
+   "hadith": "299",
+   "score": 0.9
+  },
+  {
+   "unit": 301,
+   "hadith": "300",
+   "score": 1.0
+  },
+  {
+   "unit": 302,
+   "hadith": "301",
+   "score": 1.0
+  },
+  {
+   "unit": 303,
+   "hadith": "302",
+   "score": 1.0
+  },
+  {
+   "unit": 304,
+   "hadith": "303",
+   "score": 0.98
+  },
+  {
+   "unit": 305,
+   "hadith": "304",
+   "score": 1.0
+  },
+  {
+   "unit": 306,
+   "hadith": "305",
+   "score": 1.0
+  },
+  {
+   "unit": 307,
+   "hadith": "306",
+   "score": 1.0
+  },
+  {
+   "unit": 308,
+   "hadith": "307",
+   "score": 0.971
+  },
+  {
+   "unit": 309,
+   "hadith": "308",
+   "score": 0.973
+  },
+  {
+   "unit": 310,
+   "hadith": "309",
+   "score": 1.0
+  },
+  {
+   "unit": 311,
+   "hadith": "310",
+   "score": 1.0
+  },
+  {
+   "unit": 312,
+   "hadith": "311",
+   "score": 1.0
+  },
+  {
+   "unit": 313,
+   "hadith": "312",
+   "score": 1.0
+  },
+  {
+   "unit": 314,
+   "hadith": "313",
+   "score": 1.0
+  },
+  {
+   "unit": 315,
+   "hadith": "314",
+   "score": 0.941
+  },
+  {
+   "unit": 316,
+   "hadith": "315",
+   "score": 0.917
+  },
+  {
+   "unit": 317,
+   "hadith": "316",
+   "score": 1.0
+  },
+  {
+   "unit": 318,
+   "hadith": "317",
+   "score": 0.864
+  },
+  {
+   "unit": 319,
+   "hadith": "318",
+   "score": 0.963
+  },
+  {
+   "unit": 320,
+   "hadith": "319",
+   "score": 1.0
+  },
+  {
+   "unit": 321,
+   "hadith": "320",
+   "score": 1.0
+  },
+  {
+   "unit": 322,
+   "hadith": "321",
+   "score": 0.676
+  },
+  {
+   "unit": 323,
+   "hadith": "322",
+   "score": 1.0
+  },
+  {
+   "unit": 324,
+   "hadith": "323",
+   "score": 1.0
+  },
+  {
+   "unit": 325,
+   "hadith": "324",
+   "score": 1.0
+  },
+  {
+   "unit": 326,
+   "hadith": "325",
+   "score": 1.0
+  },
+  {
+   "unit": 327,
+   "hadith": "326",
+   "score": 1.0
+  },
+  {
+   "unit": 328,
+   "hadith": "327",
+   "score": 1.0
+  },
+  {
+   "unit": 329,
+   "hadith": "328",
+   "score": 1.0
+  },
+  {
+   "unit": 330,
+   "hadith": "329",
+   "score": 0.862
+  },
+  {
+   "unit": 331,
+   "hadith": "330",
+   "score": 1.0
+  },
+  {
+   "unit": 332,
+   "hadith": "331",
+   "score": 0.957
+  },
+  {
+   "unit": 333,
+   "hadith": "332",
+   "score": 1.0
+  },
+  {
+   "unit": 334,
+   "hadith": "333",
+   "score": 0.975
+  },
+  {
+   "unit": 335,
+   "hadith": "334",
+   "score": 1.0
+  },
+  {
+   "unit": 336,
+   "hadith": "335",
+   "score": 1.0
+  },
+  {
+   "unit": 337,
+   "hadith": "336",
+   "score": 1.0
+  },
+  {
+   "unit": 338,
+   "hadith": "337",
+   "score": 0.952
+  },
+  {
+   "unit": 339,
+   "hadith": "338",
+   "score": 1.0
+  },
+  {
+   "unit": 340,
+   "hadith": "340",
+   "score": 0.65
+  },
+  {
+   "unit": 341,
+   "hadith": "341",
+   "score": 0.917
+  },
+  {
+   "unit": 342,
+   "hadith": "342",
+   "score": 1.0
+  },
+  {
+   "unit": 343,
+   "hadith": "343",
+   "score": 0.955
+  },
+  {
+   "unit": 344,
+   "hadith": "344",
+   "score": 0.938
+  },
+  {
+   "unit": 345,
+   "hadith": "345",
+   "score": 0.938
+  },
+  {
+   "unit": 346,
+   "hadith": "346",
+   "score": 0.96
+  },
+  {
+   "unit": 347,
+   "hadith": "347",
+   "score": 1.0
+  },
+  {
+   "unit": 348,
+   "hadith": "348",
+   "score": 1.0
+  },
+  {
+   "unit": 349,
+   "hadith": "349",
+   "score": 0.944
+  },
+  {
+   "unit": 350,
+   "hadith": "350",
+   "score": 1.0
+  },
+  {
+   "unit": 351,
+   "hadith": "351",
+   "score": 1.0
+  },
+  {
+   "unit": 352,
+   "hadith": "352",
+   "score": 1.0
+  },
+  {
+   "unit": 353,
+   "hadith": "353",
+   "score": 1.0
+  },
+  {
+   "unit": 354,
+   "hadith": "355",
+   "score": 0.595
+  },
+  {
+   "unit": 355,
+   "hadith": "356",
+   "score": 1.0
+  },
+  {
+   "unit": 356,
+   "hadith": "357",
+   "score": 0.984
+  },
+  {
+   "unit": 357,
+   "hadith": "358",
+   "score": 0.971
+  },
+  {
+   "unit": 358,
+   "hadith": "359",
+   "score": 1.0
+  },
+  {
+   "unit": 359,
+   "hadith": "360",
+   "score": 1.0
+  },
+  {
+   "unit": 360,
+   "hadith": "361",
+   "score": 0.966
+  },
+  {
+   "unit": 361,
+   "hadith": "362",
+   "score": 1.0
+  },
+  {
+   "unit": 362,
+   "hadith": "363",
+   "score": 1.0
+  },
+  {
+   "unit": 363,
+   "hadith": "364",
+   "score": 1.0
+  },
+  {
+   "unit": 364,
+   "hadith": "365",
+   "score": 1.0
+  },
+  {
+   "unit": 365,
+   "hadith": "366",
+   "score": 1.0
+  },
+  {
+   "unit": 366,
+   "hadith": "367",
+   "score": 0.976
+  },
+  {
+   "unit": 367,
+   "hadith": "368",
+   "score": 1.0
+  },
+  {
+   "unit": 368,
+   "hadith": "369",
+   "score": 1.0
+  },
+  {
+   "unit": 369,
+   "hadith": "370",
+   "score": 0.944
+  },
+  {
+   "unit": 370,
+   "hadith": "372",
+   "score": 0.5
+  },
+  {
+   "unit": 371,
+   "hadith": "373",
+   "score": 1.0
+  },
+  {
+   "unit": 372,
+   "hadith": "374",
+   "score": 1.0
+  },
+  {
+   "unit": 373,
+   "hadith": "375",
+   "score": 0.875
+  },
+  {
+   "unit": 374,
+   "hadith": "376",
+   "score": 1.0
+  },
+  {
+   "unit": 375,
+   "hadith": "377",
+   "score": 1.0
+  },
+  {
+   "unit": 376,
+   "hadith": "378",
+   "score": 1.0
+  },
+  {
+   "unit": 377,
+   "hadith": "379",
+   "score": 1.0
+  },
+  {
+   "unit": 378,
+   "hadith": "380",
+   "score": 1.0
+  },
+  {
+   "unit": 379,
+   "hadith": "381",
+   "score": 1.0
+  },
+  {
+   "unit": 380,
+   "hadith": "382",
+   "score": 0.806
+  },
+  {
+   "unit": 381,
+   "hadith": "383",
+   "score": 1.0
+  },
+  {
+   "unit": 382,
+   "hadith": "384",
+   "score": 1.0
+  },
+  {
+   "unit": 383,
+   "hadith": "385",
+   "score": 1.0
+  },
+  {
+   "unit": 384,
+   "hadith": "386",
+   "score": 1.0
+  },
+  {
+   "unit": 385,
+   "hadith": "387",
+   "score": 1.0
+  },
+  {
+   "unit": 386,
+   "hadith": "388",
+   "score": 1.0
+  },
+  {
+   "unit": 387,
+   "hadith": "389",
+   "score": 1.0
+  },
+  {
+   "unit": 388,
+   "hadith": "390",
+   "score": 1.0
+  },
+  {
+   "unit": 389,
+   "hadith": "391",
+   "score": 1.0
+  },
+  {
+   "unit": 390,
+   "hadith": "392",
+   "score": 0.989
+  },
+  {
+   "unit": 391,
+   "hadith": "393",
+   "score": 0.875
+  },
+  {
+   "unit": 392,
+   "hadith": "394",
+   "score": 1.0
+  },
+  {
+   "unit": 393,
+   "hadith": "395",
+   "score": 0.955
+  },
+  {
+   "unit": 394,
+   "hadith": "396",
+   "score": 1.0
+  },
+  {
+   "unit": 395,
+   "hadith": "397",
+   "score": 1.0
+  },
+  {
+   "unit": 396,
+   "hadith": "398",
+   "score": 1.0
+  },
+  {
+   "unit": 397,
+   "hadith": "399",
+   "score": 1.0
+  },
+  {
+   "unit": 398,
+   "hadith": "400",
+   "score": 0.964
+  },
+  {
+   "unit": 399,
+   "hadith": "401",
+   "score": 0.923
+  },
+  {
+   "unit": 400,
+   "hadith": "402",
+   "score": 1.0
+  },
+  {
+   "unit": 401,
+   "hadith": "403",
+   "score": 1.0
+  },
+  {
+   "unit": 402,
+   "hadith": "404",
+   "score": 1.0
+  },
+  {
+   "unit": 403,
+   "hadith": "405",
+   "score": 1.0
+  },
+  {
+   "unit": 404,
+   "hadith": "406",
+   "score": 1.0
+  },
+  {
+   "unit": 405,
+   "hadith": "407",
+   "score": 1.0
+  },
+  {
+   "unit": 406,
+   "hadith": "408",
+   "score": 1.0
+  },
+  {
+   "unit": 407,
+   "hadith": "409",
+   "score": 1.0
+  },
+  {
+   "unit": 408,
+   "hadith": "410",
+   "score": 1.0
+  },
+  {
+   "unit": 409,
+   "hadith": "411",
+   "score": 0.947
+  },
+  {
+   "unit": 410,
+   "hadith": "412",
+   "score": 1.0
+  },
+  {
+   "unit": 411,
+   "hadith": "413",
+   "score": 1.0
+  },
+  {
+   "unit": 412,
+   "hadith": "414",
+   "score": 0.978
+  },
+  {
+   "unit": 413,
+   "hadith": "415",
+   "score": 0.981
+  },
+  {
+   "unit": 414,
+   "hadith": "416",
+   "score": 1.0
+  },
+  {
+   "unit": 415,
+   "hadith": "417",
+   "score": 0.978
+  },
+  {
+   "unit": 416,
+   "hadith": "418",
+   "score": 0.625
+  },
+  {
+   "unit": 417,
+   "hadith": "420",
+   "score": 1.0
+  },
+  {
+   "unit": 418,
+   "hadith": "421",
+   "score": 1.0
+  },
+  {
+   "unit": 419,
+   "hadith": "422",
+   "score": 1.0
+  },
+  {
+   "unit": 420,
+   "hadith": "423",
+   "score": 1.0
+  },
+  {
+   "unit": 421,
+   "hadith": "424",
+   "score": 1.0
+  },
+  {
+   "unit": 422,
+   "hadith": "425",
+   "score": 1.0
+  },
+  {
+   "unit": 423,
+   "hadith": "426",
+   "score": 1.0
+  },
+  {
+   "unit": 424,
+   "hadith": "427",
+   "score": 1.0
+  },
+  {
+   "unit": 425,
+   "hadith": "428",
+   "score": 1.0
+  },
+  {
+   "unit": 426,
+   "hadith": "429",
+   "score": 1.0
+  },
+  {
+   "unit": 427,
+   "hadith": "430",
+   "score": 0.944
+  },
+  {
+   "unit": 428,
+   "hadith": "431",
+   "score": 1.0
+  },
+  {
+   "unit": 429,
+   "hadith": "432",
+   "score": 0.917
+  },
+  {
+   "unit": 431,
+   "hadith": "433",
+   "score": 1.0
+  },
+  {
+   "unit": 432,
+   "hadith": "434",
+   "score": 0.955
+  },
+  {
+   "unit": 433,
+   "hadith": "435",
+   "score": 0.939
+  },
+  {
+   "unit": 434,
+   "hadith": "436",
+   "score": 1.0
+  },
+  {
+   "unit": 435,
+   "hadith": "437",
+   "score": 1.0
+  },
+  {
+   "unit": 436,
+   "hadith": "438",
+   "score": 1.0
+  },
+  {
+   "unit": 437,
+   "hadith": "439",
+   "score": 1.0
+  },
+  {
+   "unit": 438,
+   "hadith": "440",
+   "score": 1.0
+  },
+  {
+   "unit": 440,
+   "hadith": "441",
+   "score": 1.0
+  },
+  {
+   "unit": 441,
+   "hadith": "442",
+   "score": 1.0
+  },
+  {
+   "unit": 442,
+   "hadith": "443",
+   "score": 0.908
+  },
+  {
+   "unit": 443,
+   "hadith": "444",
+   "score": 1.0
+  },
+  {
+   "unit": 444,
+   "hadith": "445",
+   "score": 1.0
+  },
+  {
+   "unit": 445,
+   "hadith": "446",
+   "score": 1.0
+  },
+  {
+   "unit": 446,
+   "hadith": "447",
+   "score": 1.0
+  },
+  {
+   "unit": 447,
+   "hadith": "448",
+   "score": 1.0
+  },
+  {
+   "unit": 449,
+   "hadith": "450",
+   "score": 1.0
+  },
+  {
+   "unit": 450,
+   "hadith": "451",
+   "score": 0.729
+  },
+  {
+   "unit": 451,
+   "hadith": "452",
+   "score": 1.0
+  },
+  {
+   "unit": 452,
+   "hadith": "453",
+   "score": 1.0
+  },
+  {
+   "unit": 453,
+   "hadith": "454",
+   "score": 1.0
+  },
+  {
+   "unit": 454,
+   "hadith": "455",
+   "score": 0.957
+  },
+  {
+   "unit": 455,
+   "hadith": "456",
+   "score": 1.0
+  },
+  {
+   "unit": 456,
+   "hadith": "457",
+   "score": 0.852
+  },
+  {
+   "unit": 457,
+   "hadith": "458",
+   "score": 1.0
+  },
+  {
+   "unit": 459,
+   "hadith": "460",
+   "score": 1.0
+  },
+  {
+   "unit": 460,
+   "hadith": "461",
+   "score": 1.0
+  },
+  {
+   "unit": 461,
+   "hadith": "462",
+   "score": 1.0
+  },
+  {
+   "unit": 462,
+   "hadith": "463",
+   "score": 1.0
+  },
+  {
+   "unit": 463,
+   "hadith": "464",
+   "score": 1.0
+  },
+  {
+   "unit": 464,
+   "hadith": "465",
+   "score": 1.0
+  },
+  {
+   "unit": 465,
+   "hadith": "466",
+   "score": 1.0
+  },
+  {
+   "unit": 466,
+   "hadith": "467",
+   "score": 1.0
+  },
+  {
+   "unit": 467,
+   "hadith": "468",
+   "score": 1.0
+  },
+  {
+   "unit": 468,
+   "hadith": "469",
+   "score": 0.941
+  },
+  {
+   "unit": 470,
+   "hadith": "471",
+   "score": 0.939
+  },
+  {
+   "unit": 471,
+   "hadith": "472",
+   "score": 0.926
+  },
+  {
+   "unit": 472,
+   "hadith": "473",
+   "score": 1.0
+  },
+  {
+   "unit": 473,
+   "hadith": "474",
+   "score": 0.921
+  },
+  {
+   "unit": 474,
+   "hadith": "475",
+   "score": 1.0
+  },
+  {
+   "unit": 475,
+   "hadith": "476",
+   "score": 1.0
+  },
+  {
+   "unit": 476,
+   "hadith": "477",
+   "score": 1.0
+  },
+  {
+   "unit": 477,
+   "hadith": "478",
+   "score": 1.0
+  },
+  {
+   "unit": 478,
+   "hadith": "479",
+   "score": 0.961
+  },
+  {
+   "unit": 479,
+   "hadith": "480",
+   "score": 1.0
+  },
+  {
+   "unit": 480,
+   "hadith": "481",
+   "score": 1.0
+  },
+  {
+   "unit": 481,
+   "hadith": "482",
+   "score": 0.955
+  },
+  {
+   "unit": 482,
+   "hadith": "483",
+   "score": 1.0
+  },
+  {
+   "unit": 483,
+   "hadith": "484",
+   "score": 0.941
+  },
+  {
+   "unit": 485,
+   "hadith": "486",
+   "score": 1.0
+  },
+  {
+   "unit": 486,
+   "hadith": "487",
+   "score": 1.0
+  },
+  {
+   "unit": 487,
+   "hadith": "488",
+   "score": 0.955
+  },
+  {
+   "unit": 488,
+   "hadith": "489",
+   "score": 1.0
+  },
+  {
+   "unit": 489,
+   "hadith": "490",
+   "score": 1.0
+  },
+  {
+   "unit": 490,
+   "hadith": "491",
+   "score": 0.976
+  },
+  {
+   "unit": 491,
+   "hadith": "492",
+   "score": 1.0
+  },
+  {
+   "unit": 492,
+   "hadith": "493",
+   "score": 0.977
+  },
+  {
+   "unit": 493,
+   "hadith": "494",
+   "score": 0.982
+  },
+  {
+   "unit": 494,
+   "hadith": "495",
+   "score": 1.0
+  },
+  {
+   "unit": 495,
+   "hadith": "496",
+   "score": 1.0
+  },
+  {
+   "unit": 496,
+   "hadith": "497",
+   "score": 1.0
+  },
+  {
+   "unit": 497,
+   "hadith": "498",
+   "score": 1.0
+  },
+  {
+   "unit": 498,
+   "hadith": "499",
+   "score": 0.972
+  },
+  {
+   "unit": 499,
+   "hadith": "500",
+   "score": 1.0
+  },
+  {
+   "unit": 500,
+   "hadith": "501",
+   "score": 1.0
+  },
+  {
+   "unit": 501,
+   "hadith": "502",
+   "score": 1.0
+  },
+  {
+   "unit": 502,
+   "hadith": "503",
+   "score": 0.965
+  },
+  {
+   "unit": 503,
+   "hadith": "504",
+   "score": 0.983
+  },
+  {
+   "unit": 504,
+   "hadith": "505",
+   "score": 1.0
+  },
+  {
+   "unit": 505,
+   "hadith": "506",
+   "score": 1.0
+  },
+  {
+   "unit": 506,
+   "hadith": "507",
+   "score": 1.0
+  },
+  {
+   "unit": 507,
+   "hadith": "508",
+   "score": 1.0
+  },
+  {
+   "unit": 508,
+   "hadith": "509",
+   "score": 0.967
+  },
+  {
+   "unit": 509,
+   "hadith": "510",
+   "score": 1.0
+  },
+  {
+   "unit": 510,
+   "hadith": "511",
+   "score": 1.0
+  },
+  {
+   "unit": 511,
+   "hadith": "512",
+   "score": 1.0
+  },
+  {
+   "unit": 512,
+   "hadith": "513",
+   "score": 1.0
+  },
+  {
+   "unit": 513,
+   "hadith": "514",
+   "score": 1.0
+  },
+  {
+   "unit": 514,
+   "hadith": "515",
+   "score": 0.961
+  },
+  {
+   "unit": 515,
+   "hadith": "516",
+   "score": 1.0
+  },
+  {
+   "unit": 516,
+   "hadith": "517",
+   "score": 1.0
+  },
+  {
+   "unit": 517,
+   "hadith": "518",
+   "score": 1.0
+  },
+  {
+   "unit": 518,
+   "hadith": "519",
+   "score": 0.933
+  },
+  {
+   "unit": 519,
+   "hadith": "520",
+   "score": 1.0
+  },
+  {
+   "unit": 520,
+   "hadith": "521",
+   "score": 1.0
+  },
+  {
+   "unit": 523,
+   "hadith": "523",
+   "score": 1.0
+  },
+  {
+   "unit": 524,
+   "hadith": "525",
+   "score": 1.0
+  },
+  {
+   "unit": 525,
+   "hadith": "526",
+   "score": 0.962
+  },
+  {
+   "unit": 526,
+   "hadith": "527",
+   "score": 0.955
+  },
+  {
+   "unit": 527,
+   "hadith": "528",
+   "score": 1.0
+  },
+  {
+   "unit": 528,
+   "hadith": "529",
+   "score": 1.0
+  },
+  {
+   "unit": 529,
+   "hadith": "530",
+   "score": 0.909
+  },
+  {
+   "unit": 530,
+   "hadith": "531",
+   "score": 1.0
+  },
+  {
+   "unit": 531,
+   "hadith": "532",
+   "score": 1.0
+  },
+  {
+   "unit": 532,
+   "hadith": "533",
+   "score": 0.966
+  },
+  {
+   "unit": 533,
+   "hadith": "534",
+   "score": 0.981
+  },
+  {
+   "unit": 534,
+   "hadith": "535",
+   "score": 0.944
+  },
+  {
+   "unit": 535,
+   "hadith": "536",
+   "score": 0.964
+  },
+  {
+   "unit": 536,
+   "hadith": "537",
+   "score": 1.0
+  },
+  {
+   "unit": 537,
+   "hadith": "538",
+   "score": 1.0
+  },
+  {
+   "unit": 538,
+   "hadith": "539",
+   "score": 0.978
+  },
+  {
+   "unit": 539,
+   "hadith": "540",
+   "score": 1.0
+  },
+  {
+   "unit": 540,
+   "hadith": "541",
+   "score": 0.972
+  },
+  {
+   "unit": 541,
+   "hadith": "542",
+   "score": 1.0
+  },
+  {
+   "unit": 542,
+   "hadith": "543",
+   "score": 1.0
+  },
+  {
+   "unit": 543,
+   "hadith": "544",
+   "score": 1.0
+  },
+  {
+   "unit": 544,
+   "hadith": "545",
+   "score": 0.926
+  },
+  {
+   "unit": 545,
+   "hadith": "546",
+   "score": 1.0
+  },
+  {
+   "unit": 546,
+   "hadith": "547",
+   "score": 1.0
+  },
+  {
+   "unit": 547,
+   "hadith": "548",
+   "score": 1.0
+  },
+  {
+   "unit": 548,
+   "hadith": "549",
+   "score": 0.973
+  },
+  {
+   "unit": 549,
+   "hadith": "550",
+   "score": 1.0
+  },
+  {
+   "unit": 550,
+   "hadith": "551",
+   "score": 1.0
+  },
+  {
+   "unit": 551,
+   "hadith": "552",
+   "score": 1.0
+  },
+  {
+   "unit": 552,
+   "hadith": "553",
+   "score": 1.0
+  },
+  {
+   "unit": 553,
+   "hadith": "554",
+   "score": 1.0
+  },
+  {
+   "unit": 554,
+   "hadith": "555",
+   "score": 1.0
+  },
+  {
+   "unit": 555,
+   "hadith": "556",
+   "score": 1.0
+  },
+  {
+   "unit": 556,
+   "hadith": "557",
+   "score": 0.96
+  },
+  {
+   "unit": 557,
+   "hadith": "558",
+   "score": 1.0
+  },
+  {
+   "unit": 558,
+   "hadith": "559",
+   "score": 1.0
+  },
+  {
+   "unit": 559,
+   "hadith": "560",
+   "score": 1.0
+  },
+  {
+   "unit": 560,
+   "hadith": "561",
+   "score": 1.0
+  },
+  {
+   "unit": 561,
+   "hadith": "562",
+   "score": 1.0
+  },
+  {
+   "unit": 562,
+   "hadith": "563",
+   "score": 1.0
+  },
+  {
+   "unit": 563,
+   "hadith": "564",
+   "score": 1.0
+  },
+  {
+   "unit": 564,
+   "hadith": "565",
+   "score": 1.0
+  },
+  {
+   "unit": 565,
+   "hadith": "566",
+   "score": 1.0
+  },
+  {
+   "unit": 566,
+   "hadith": "567",
+   "score": 1.0
+  },
+  {
+   "unit": 567,
+   "hadith": "568",
+   "score": 0.957
+  },
+  {
+   "unit": 568,
+   "hadith": "569",
+   "score": 0.969
+  },
+  {
+   "unit": 569,
+   "hadith": "570",
+   "score": 1.0
+  },
+  {
+   "unit": 570,
+   "hadith": "571",
+   "score": 1.0
+  },
+  {
+   "unit": 571,
+   "hadith": "572",
+   "score": 1.0
+  },
+  {
+   "unit": 572,
+   "hadith": "573",
+   "score": 1.0
+  },
+  {
+   "unit": 573,
+   "hadith": "574",
+   "score": 1.0
+  },
+  {
+   "unit": 574,
+   "hadith": "575",
+   "score": 1.0
+  },
+  {
+   "unit": 575,
+   "hadith": "576",
+   "score": 1.0
+  },
+  {
+   "unit": 576,
+   "hadith": "577",
+   "score": 0.778
+  },
+  {
+   "unit": 577,
+   "hadith": "578",
+   "score": 1.0
+  },
+  {
+   "unit": 578,
+   "hadith": "579",
+   "score": 1.0
+  },
+  {
+   "unit": 579,
+   "hadith": "580",
+   "score": 1.0
+  },
+  {
+   "unit": 580,
+   "hadith": "581",
+   "score": 1.0
+  },
+  {
+   "unit": 581,
+   "hadith": "582",
+   "score": 1.0
+  },
+  {
+   "unit": 582,
+   "hadith": "583",
+   "score": 1.0
+  },
+  {
+   "unit": 583,
+   "hadith": "584",
+   "score": 0.994
+  },
+  {
+   "unit": 586,
+   "hadith": "587",
+   "score": 1.0
+  },
+  {
+   "unit": 587,
+   "hadith": "588",
+   "score": 1.0
+  },
+  {
+   "unit": 588,
+   "hadith": "589",
+   "score": 1.0
+  },
+  {
+   "unit": 589,
+   "hadith": "590",
+   "score": 1.0
+  },
+  {
+   "unit": 590,
+   "hadith": "591",
+   "score": 1.0
+  },
+  {
+   "unit": 591,
+   "hadith": "592",
+   "score": 1.0
+  },
+  {
+   "unit": 593,
+   "hadith": "593",
+   "score": 0.96
+  },
+  {
+   "unit": 594,
+   "hadith": "594",
+   "score": 1.0
+  },
+  {
+   "unit": 595,
+   "hadith": "595",
+   "score": 1.0
+  },
+  {
+   "unit": 596,
+   "hadith": "596",
+   "score": 1.0
+  },
+  {
+   "unit": 597,
+   "hadith": "597",
+   "score": 1.0
+  },
+  {
+   "unit": 598,
+   "hadith": "598",
+   "score": 1.0
+  },
+  {
+   "unit": 600,
+   "hadith": "600",
+   "score": 0.996
+  },
+  {
+   "unit": 601,
+   "hadith": "601",
+   "score": 0.994
+  },
+  {
+   "unit": 602,
+   "hadith": "602",
+   "score": 1.0
+  },
+  {
+   "unit": 603,
+   "hadith": "603",
+   "score": 1.0
+  },
+  {
+   "unit": 604,
+   "hadith": "604",
+   "score": 0.974
+  },
+  {
+   "unit": 605,
+   "hadith": "605",
+   "score": 1.0
+  },
+  {
+   "unit": 606,
+   "hadith": "606",
+   "score": 1.0
+  },
+  {
+   "unit": 607,
+   "hadith": "607",
+   "score": 1.0
+  },
+  {
+   "unit": 608,
+   "hadith": "608",
+   "score": 1.0
+  },
+  {
+   "unit": 609,
+   "hadith": "609",
+   "score": 0.97
+  },
+  {
+   "unit": 610,
+   "hadith": "610",
+   "score": 0.994
+  },
+  {
+   "unit": 611,
+   "hadith": "611",
+   "score": 1.0
+  },
+  {
+   "unit": 612,
+   "hadith": "612",
+   "score": 0.974
+  },
+  {
+   "unit": 613,
+   "hadith": "613",
+   "score": 1.0
+  },
+  {
+   "unit": 614,
+   "hadith": "614",
+   "score": 1.0
+  },
+  {
+   "unit": 615,
+   "hadith": "615",
+   "score": 0.958
+  },
+  {
+   "unit": 616,
+   "hadith": "616",
+   "score": 1.0
+  },
+  {
+   "unit": 617,
+   "hadith": "617",
+   "score": 1.0
+  },
+  {
+   "unit": 618,
+   "hadith": "618",
+   "score": 1.0
+  },
+  {
+   "unit": 619,
+   "hadith": "619",
+   "score": 0.983
+  },
+  {
+   "unit": 620,
+   "hadith": "620",
+   "score": 0.962
+  },
+  {
+   "unit": 621,
+   "hadith": "621",
+   "score": 0.96
+  },
+  {
+   "unit": 622,
+   "hadith": "622",
+   "score": 0.95
+  },
+  {
+   "unit": 623,
+   "hadith": "623",
+   "score": 1.0
+  },
+  {
+   "unit": 624,
+   "hadith": "624",
+   "score": 0.615
+  },
+  {
+   "unit": 625,
+   "hadith": "625",
+   "score": 0.976
+  },
+  {
+   "unit": 626,
+   "hadith": "626",
+   "score": 1.0
+  },
+  {
+   "unit": 627,
+   "hadith": "627",
+   "score": 1.0
+  },
+  {
+   "unit": 630,
+   "hadith": "630",
+   "score": 1.0
+  },
+  {
+   "unit": 631,
+   "hadith": "631",
+   "score": 1.0
+  },
+  {
+   "unit": 632,
+   "hadith": "633",
+   "score": 0.775
+  },
+  {
+   "unit": 633,
+   "hadith": "634",
+   "score": 0.593
+  },
+  {
+   "unit": 634,
+   "hadith": "636",
+   "score": 1.0
+  },
+  {
+   "unit": 635,
+   "hadith": "637",
+   "score": 1.0
+  },
+  {
+   "unit": 636,
+   "hadith": "638",
+   "score": 0.962
+  },
+  {
+   "unit": 637,
+   "hadith": "639",
+   "score": 1.0
+  },
+  {
+   "unit": 638,
+   "hadith": "640",
+   "score": 1.0
+  },
+  {
+   "unit": 639,
+   "hadith": "641",
+   "score": 0.98
+  },
+  {
+   "unit": 640,
+   "hadith": "642",
+   "score": 1.0
+  },
+  {
+   "unit": 641,
+   "hadith": "643",
+   "score": 1.0
+  },
+  {
+   "unit": 642,
+   "hadith": "644",
+   "score": 1.0
+  },
+  {
+   "unit": 643,
+   "hadith": "645",
+   "score": 1.0
+  },
+  {
+   "unit": 644,
+   "hadith": "646",
+   "score": 1.0
+  },
+  {
+   "unit": 645,
+   "hadith": "647",
+   "score": 1.0
+  },
+  {
+   "unit": 646,
+   "hadith": "648",
+   "score": 1.0
+  },
+  {
+   "unit": 647,
+   "hadith": "649",
+   "score": 1.0
+  },
+  {
+   "unit": 648,
+   "hadith": "650",
+   "score": 1.0
+  },
+  {
+   "unit": 649,
+   "hadith": "651",
+   "score": 1.0
+  },
+  {
+   "unit": 650,
+   "hadith": "652",
+   "score": 0.97
+  },
+  {
+   "unit": 651,
+   "hadith": "653",
+   "score": 1.0
+  },
+  {
+   "unit": 652,
+   "hadith": "654",
+   "score": 1.0
+  },
+  {
+   "unit": 653,
+   "hadith": "655",
+   "score": 1.0
+  },
+  {
+   "unit": 654,
+   "hadith": "656",
+   "score": 1.0
+  },
+  {
+   "unit": 655,
+   "hadith": "657",
+   "score": 1.0
+  },
+  {
+   "unit": 656,
+   "hadith": "658",
+   "score": 1.0
+  },
+  {
+   "unit": 657,
+   "hadith": "659",
+   "score": 0.978
+  },
+  {
+   "unit": 658,
+   "hadith": "660",
+   "score": 0.707
+  },
+  {
+   "unit": 659,
+   "hadith": "661",
+   "score": 1.0
+  },
+  {
+   "unit": 660,
+   "hadith": "662",
+   "score": 0.929
+  },
+  {
+   "unit": 661,
+   "hadith": "663",
+   "score": 1.0
+  },
+  {
+   "unit": 662,
+   "hadith": "664",
+   "score": 1.0
+  },
+  {
+   "unit": 663,
+   "hadith": "665",
+   "score": 0.977
+  },
+  {
+   "unit": 664,
+   "hadith": "666",
+   "score": 1.0
+  },
+  {
+   "unit": 665,
+   "hadith": "667",
+   "score": 1.0
+  },
+  {
+   "unit": 666,
+   "hadith": "668",
+   "score": 1.0
+  },
+  {
+   "unit": 667,
+   "hadith": "669",
+   "score": 1.0
+  },
+  {
+   "unit": 668,
+   "hadith": "670",
+   "score": 1.0
+  },
+  {
+   "unit": 669,
+   "hadith": "673",
+   "score": 1.0
+  },
+  {
+   "unit": 670,
+   "hadith": "674",
+   "score": 1.0
+  },
+  {
+   "unit": 671,
+   "hadith": "675",
+   "score": 1.0
+  },
+  {
+   "unit": 672,
+   "hadith": "676",
+   "score": 0.952
+  },
+  {
+   "unit": 673,
+   "hadith": "677",
+   "score": 1.0
+  },
+  {
+   "unit": 674,
+   "hadith": "678",
+   "score": 1.0
+  },
+  {
+   "unit": 675,
+   "hadith": "679",
+   "score": 1.0
+  },
+  {
+   "unit": 677,
+   "hadith": "681",
+   "score": 1.0
+  },
+  {
+   "unit": 678,
+   "hadith": "682",
+   "score": 1.0
+  },
+  {
+   "unit": 679,
+   "hadith": "683",
+   "score": 1.0
+  },
+  {
+   "unit": 680,
+   "hadith": "685",
+   "score": 1.0
+  },
+  {
+   "unit": 681,
+   "hadith": "686",
+   "score": 1.0
+  },
+  {
+   "unit": 682,
+   "hadith": "687",
+   "score": 1.0
+  },
+  {
+   "unit": 683,
+   "hadith": "688",
+   "score": 1.0
+  },
+  {
+   "unit": 685,
+   "hadith": "690",
+   "score": 0.971
+  },
+  {
+   "unit": 687,
+   "hadith": "692",
+   "score": 0.994
+  },
+  {
+   "unit": 688,
+   "hadith": "693",
+   "score": 0.957
+  },
+  {
+   "unit": 691,
+   "hadith": "696",
+   "score": 0.955
+  },
+  {
+   "unit": 692,
+   "hadith": "697",
+   "score": 1.0
+  },
+  {
+   "unit": 693,
+   "hadith": "698",
+   "score": 1.0
+  },
+  {
+   "unit": 694,
+   "hadith": "699",
+   "score": 1.0
+  },
+  {
+   "unit": 695,
+   "hadith": "700",
+   "score": 1.0
+  },
+  {
+   "unit": 696,
+   "hadith": "701",
+   "score": 1.0
+  },
+  {
+   "unit": 697,
+   "hadith": "702",
+   "score": 0.964
+  },
+  {
+   "unit": 698,
+   "hadith": "703",
+   "score": 1.0
+  },
+  {
+   "unit": 699,
+   "hadith": "704",
+   "score": 0.81
+  },
+  {
+   "unit": 700,
+   "hadith": "705",
+   "score": 1.0
+  },
+  {
+   "unit": 701,
+   "hadith": "706",
+   "score": 1.0
+  },
+  {
+   "unit": 702,
+   "hadith": "707",
+   "score": 1.0
+  },
+  {
+   "unit": 703,
+   "hadith": "708",
+   "score": 1.0
+  },
+  {
+   "unit": 704,
+   "hadith": "709",
+   "score": 0.968
+  },
+  {
+   "unit": 705,
+   "hadith": "710",
+   "score": 1.0
+  },
+  {
+   "unit": 706,
+   "hadith": "711",
+   "score": 1.0
+  },
+  {
+   "unit": 707,
+   "hadith": "712",
+   "score": 1.0
+  },
+  {
+   "unit": 709,
+   "hadith": "713",
+   "score": 1.0
+  },
+  {
+   "unit": 710,
+   "hadith": "714",
+   "score": 1.0
+  },
+  {
+   "unit": 711,
+   "hadith": "715",
+   "score": 1.0
+  },
+  {
+   "unit": 712,
+   "hadith": "716",
+   "score": 1.0
+  },
+  {
+   "unit": 713,
+   "hadith": "717",
+   "score": 1.0
+  },
+  {
+   "unit": 714,
+   "hadith": "718",
+   "score": 1.0
+  },
+  {
+   "unit": 715,
+   "hadith": "719",
+   "score": 1.0
+  },
+  {
+   "unit": 716,
+   "hadith": "720",
+   "score": 1.0
+  },
+  {
+   "unit": 717,
+   "hadith": "721",
+   "score": 1.0
+  },
+  {
+   "unit": 718,
+   "hadith": "722",
+   "score": 1.0
+  },
+  {
+   "unit": 719,
+   "hadith": "723",
+   "score": 1.0
+  },
+  {
+   "unit": 720,
+   "hadith": "724",
+   "score": 1.0
+  },
+  {
+   "unit": 721,
+   "hadith": "725",
+   "score": 1.0
+  },
+  {
+   "unit": 722,
+   "hadith": "726",
+   "score": 1.0
+  },
+  {
+   "unit": 723,
+   "hadith": "727",
+   "score": 1.0
+  },
+  {
+   "unit": 724,
+   "hadith": "728",
+   "score": 0.92
+  },
+  {
+   "unit": 725,
+   "hadith": "729",
+   "score": 0.733
+  },
+  {
+   "unit": 727,
+   "hadith": "730",
+   "score": 1.0
+  },
+  {
+   "unit": 728,
+   "hadith": "731",
+   "score": 1.0
+  },
+  {
+   "unit": 729,
+   "hadith": "732",
+   "score": 1.0
+  },
+  {
+   "unit": 730,
+   "hadith": "733",
+   "score": 1.0
+  },
+  {
+   "unit": 731,
+   "hadith": "734",
+   "score": 1.0
+  },
+  {
+   "unit": 732,
+   "hadith": "735",
+   "score": 1.0
+  },
+  {
+   "unit": 733,
+   "hadith": "736",
+   "score": 0.986
+  },
+  {
+   "unit": 734,
+   "hadith": "737",
+   "score": 0.625
+  },
+  {
+   "unit": 735,
+   "hadith": "738",
+   "score": 1.0
+  },
+  {
+   "unit": 736,
+   "hadith": "739",
+   "score": 1.0
+  },
+  {
+   "unit": 738,
+   "hadith": "740",
+   "score": 1.0
+  },
+  {
+   "unit": 739,
+   "hadith": "741",
+   "score": 1.0
+  },
+  {
+   "unit": 740,
+   "hadith": "742",
+   "score": 0.818
+  },
+  {
+   "unit": 742,
+   "hadith": "743",
+   "score": 1.0
+  },
+  {
+   "unit": 744,
+   "hadith": "744",
+   "score": 0.792
+  },
+  {
+   "unit": 745,
+   "hadith": "745",
+   "score": 1.0
+  },
+  {
+   "unit": 746,
+   "hadith": "746",
+   "score": 1.0
+  },
+  {
+   "unit": 747,
+   "hadith": "747",
+   "score": 1.0
+  },
+  {
+   "unit": 748,
+   "hadith": "748",
+   "score": 1.0
+  },
+  {
+   "unit": 749,
+   "hadith": "749",
+   "score": 0.929
+  },
+  {
+   "unit": 750,
+   "hadith": "750",
+   "score": 1.0
+  },
+  {
+   "unit": 751,
+   "hadith": "751",
+   "score": 1.0
+  },
+  {
+   "unit": 752,
+   "hadith": "752",
+   "score": 1.0
+  },
+  {
+   "unit": 753,
+   "hadith": "753",
+   "score": 1.0
+  },
+  {
+   "unit": 754,
+   "hadith": "754",
+   "score": 0.983
+  },
+  {
+   "unit": 755,
+   "hadith": "755",
+   "score": 1.0
+  },
+  {
+   "unit": 756,
+   "hadith": "756",
+   "score": 1.0
+  },
+  {
+   "unit": 757,
+   "hadith": "757",
+   "score": 1.0
+  },
+  {
+   "unit": 758,
+   "hadith": "758",
+   "score": 1.0
+  },
+  {
+   "unit": 759,
+   "hadith": "759",
+   "score": 1.0
+  },
+  {
+   "unit": 760,
+   "hadith": "760",
+   "score": 1.0
+  },
+  {
+   "unit": 761,
+   "hadith": "761",
+   "score": 0.95
+  },
+  {
+   "unit": 762,
+   "hadith": "762",
+   "score": 1.0
+  },
+  {
+   "unit": 763,
+   "hadith": "763",
+   "score": 0.98
+  },
+  {
+   "unit": 764,
+   "hadith": "764",
+   "score": 1.0
+  },
+  {
+   "unit": 765,
+   "hadith": "765",
+   "score": 1.0
+  },
+  {
+   "unit": 766,
+   "hadith": "766",
+   "score": 1.0
+  },
+  {
+   "unit": 767,
+   "hadith": "767",
+   "score": 1.0
+  },
+  {
+   "unit": 768,
+   "hadith": "768",
+   "score": 1.0
+  },
+  {
+   "unit": 769,
+   "hadith": "769",
+   "score": 1.0
+  },
+  {
+   "unit": 770,
+   "hadith": "770",
+   "score": 0.981
+  },
+  {
+   "unit": 771,
+   "hadith": "771",
+   "score": 1.0
+  },
+  {
+   "unit": 772,
+   "hadith": "772",
+   "score": 1.0
+  },
+  {
+   "unit": 773,
+   "hadith": "773",
+   "score": 1.0
+  },
+  {
+   "unit": 774,
+   "hadith": "774",
+   "score": 0.733
+  },
+  {
+   "unit": 775,
+   "hadith": "775",
+   "score": 1.0
+  },
+  {
+   "unit": 776,
+   "hadith": "776",
+   "score": 1.0
+  },
+  {
+   "unit": 777,
+   "hadith": "777",
+   "score": 1.0
+  },
+  {
+   "unit": 778,
+   "hadith": "778",
+   "score": 1.0
+  },
+  {
+   "unit": 779,
+   "hadith": "779",
+   "score": 1.0
+  },
+  {
+   "unit": 780,
+   "hadith": "780",
+   "score": 1.0
+  },
+  {
+   "unit": 781,
+   "hadith": "781",
+   "score": 0.973
+  },
+  {
+   "unit": 782,
+   "hadith": "782",
+   "score": 1.0
+  },
+  {
+   "unit": 783,
+   "hadith": "783",
+   "score": 0.921
+  },
+  {
+   "unit": 784,
+   "hadith": "784",
+   "score": 0.583
+  },
+  {
+   "unit": 785,
+   "hadith": "785",
+   "score": 0.972
+  },
+  {
+   "unit": 786,
+   "hadith": "786",
+   "score": 0.946
+  },
+  {
+   "unit": 787,
+   "hadith": "787",
+   "score": 0.989
+  },
+  {
+   "unit": 789,
+   "hadith": "788",
+   "score": 1.0
+  },
+  {
+   "unit": 790,
+   "hadith": "789",
+   "score": 1.0
+  },
+  {
+   "unit": 791,
+   "hadith": "790",
+   "score": 1.0
+  },
+  {
+   "unit": 792,
+   "hadith": "791",
+   "score": 0.982
+  },
+  {
+   "unit": 793,
+   "hadith": "792",
+   "score": 0.962
+  },
+  {
+   "unit": 794,
+   "hadith": "793",
+   "score": 1.0
+  },
+  {
+   "unit": 795,
+   "hadith": "794",
+   "score": 1.0
+  },
+  {
+   "unit": 796,
+   "hadith": "795",
+   "score": 1.0
+  },
+  {
+   "unit": 797,
+   "hadith": "796",
+   "score": 1.0
+  },
+  {
+   "unit": 798,
+   "hadith": "797",
+   "score": 0.98
+  },
+  {
+   "unit": 800,
+   "hadith": "798",
+   "score": 0.944
+  },
+  {
+   "unit": 801,
+   "hadith": "799",
+   "score": 0.788
+  },
+  {
+   "unit": 802,
+   "hadith": "800",
+   "score": 0.939
+  },
+  {
+   "unit": 803,
+   "hadith": "801",
+   "score": 1.0
+  },
+  {
+   "unit": 804,
+   "hadith": "802",
+   "score": 1.0
+  },
+  {
+   "unit": 805,
+   "hadith": "803",
+   "score": 0.955
+  },
+  {
+   "unit": 806,
+   "hadith": "804",
+   "score": 0.994
+  },
+  {
+   "unit": 807,
+   "hadith": "805",
+   "score": 0.981
+  },
+  {
+   "unit": 808,
+   "hadith": "806",
+   "score": 1.0
+  },
+  {
+   "unit": 809,
+   "hadith": "807",
+   "score": 0.952
+  },
+  {
+   "unit": 810,
+   "hadith": "808",
+   "score": 0.774
+  },
+  {
+   "unit": 811,
+   "hadith": "809",
+   "score": 1.0
+  },
+  {
+   "unit": 812,
+   "hadith": "810",
+   "score": 0.92
+  },
+  {
+   "unit": 813,
+   "hadith": "811",
+   "score": 1.0
+  },
+  {
+   "unit": 814,
+   "hadith": "812",
+   "score": 1.0
+  },
+  {
+   "unit": 815,
+   "hadith": "813",
+   "score": 1.0
+  },
+  {
+   "unit": 816,
+   "hadith": "814",
+   "score": 1.0
+  },
+  {
+   "unit": 817,
+   "hadith": "815",
+   "score": 1.0
+  },
+  {
+   "unit": 818,
+   "hadith": "816",
+   "score": 0.667
+  },
+  {
+   "unit": 819,
+   "hadith": "817",
+   "score": 0.99
+  },
+  {
+   "unit": 820,
+   "hadith": "818",
+   "score": 0.912
+  },
+  {
+   "unit": 821,
+   "hadith": "819",
+   "score": 0.952
+  },
+  {
+   "unit": 822,
+   "hadith": "820",
+   "score": 1.0
+  },
+  {
+   "unit": 823,
+   "hadith": "821",
+   "score": 1.0
+  },
+  {
+   "unit": 824,
+   "hadith": "822",
+   "score": 1.0
+  },
+  {
+   "unit": 825,
+   "hadith": "823",
+   "score": 1.0
+  },
+  {
+   "unit": 826,
+   "hadith": "824",
+   "score": 0.957
+  },
+  {
+   "unit": 827,
+   "hadith": "825",
+   "score": 1.0
+  },
+  {
+   "unit": 828,
+   "hadith": "826",
+   "score": 1.0
+  },
+  {
+   "unit": 829,
+   "hadith": "827",
+   "score": 1.0
+  },
+  {
+   "unit": 830,
+   "hadith": "828",
+   "score": 1.0
+  },
+  {
+   "unit": 831,
+   "hadith": "829",
+   "score": 1.0
+  },
+  {
+   "unit": 832,
+   "hadith": "830",
+   "score": 1.0
+  },
+  {
+   "unit": 833,
+   "hadith": "831",
+   "score": 1.0
+  },
+  {
+   "unit": 835,
+   "hadith": "833",
+   "score": 1.0
+  },
+  {
+   "unit": 836,
+   "hadith": "834",
+   "score": 1.0
+  },
+  {
+   "unit": 837,
+   "hadith": "835",
+   "score": 1.0
+  },
+  {
+   "unit": 838,
+   "hadith": "836",
+   "score": 0.95
+  },
+  {
+   "unit": 839,
+   "hadith": "837",
+   "score": 1.0
+  },
+  {
+   "unit": 840,
+   "hadith": "838",
+   "score": 0.951
+  },
+  {
+   "unit": 841,
+   "hadith": "839",
+   "score": 1.0
+  },
+  {
+   "unit": 842,
+   "hadith": "840",
+   "score": 1.0
+  },
+  {
+   "unit": 843,
+   "hadith": "841",
+   "score": 1.0
+  },
+  {
+   "unit": 844,
+   "hadith": "842",
+   "score": 1.0
+  },
+  {
+   "unit": 845,
+   "hadith": "843",
+   "score": 1.0
+  },
+  {
+   "unit": 846,
+   "hadith": "844",
+   "score": 1.0
+  },
+  {
+   "unit": 847,
+   "hadith": "845",
+   "score": 1.0
+  },
+  {
+   "unit": 848,
+   "hadith": "846",
+   "score": 1.0
+  },
+  {
+   "unit": 850,
+   "hadith": "853",
+   "score": 0.524
+  },
+  {
+   "unit": 851,
+   "hadith": "854",
+   "score": 1.0
+  },
+  {
+   "unit": 852,
+   "hadith": "855",
+   "score": 0.743
+  },
+  {
+   "unit": 853,
+   "hadith": "858",
+   "score": 0.789
+  },
+  {
+   "unit": 854,
+   "hadith": "859",
+   "score": 1.0
+  },
+  {
+   "unit": 855,
+   "hadith": "860",
+   "score": 1.0
+  },
+  {
+   "unit": 856,
+   "hadith": "861",
+   "score": 1.0
+  },
+  {
+   "unit": 857,
+   "hadith": "862",
+   "score": 1.0
+  },
+  {
+   "unit": 858,
+   "hadith": "863",
+   "score": 1.0
+  },
+  {
+   "unit": 859,
+   "hadith": "864",
+   "score": 0.955
+  },
+  {
+   "unit": 860,
+   "hadith": "865",
+   "score": 0.983
+  },
+  {
+   "unit": 861,
+   "hadith": "866",
+   "score": 1.0
+  },
+  {
+   "unit": 862,
+   "hadith": "867",
+   "score": 1.0
+  },
+  {
+   "unit": 863,
+   "hadith": "868",
+   "score": 1.0
+  },
+  {
+   "unit": 864,
+   "hadith": "869",
+   "score": 1.0
+  },
+  {
+   "unit": 865,
+   "hadith": "870",
+   "score": 1.0
+  },
+  {
+   "unit": 867,
+   "hadith": "871",
+   "score": 0.795
+  },
+  {
+   "unit": 868,
+   "hadith": "872",
+   "score": 1.0
+  },
+  {
+   "unit": 869,
+   "hadith": "873",
+   "score": 1.0
+  },
+  {
+   "unit": 870,
+   "hadith": "874",
+   "score": 1.0
+  },
+  {
+   "unit": 871,
+   "hadith": "875",
+   "score": 1.0
+  },
+  {
+   "unit": 872,
+   "hadith": "876",
+   "score": 0.962
+  },
+  {
+   "unit": 873,
+   "hadith": "877",
+   "score": 1.0
+  },
+  {
+   "unit": 874,
+   "hadith": "878",
+   "score": 1.0
+  },
+  {
+   "unit": 876,
+   "hadith": "879",
+   "score": 0.607
+  },
+  {
+   "unit": 877,
+   "hadith": "880",
+   "score": 1.0
+  },
+  {
+   "unit": 878,
+   "hadith": "881",
+   "score": 1.0
+  },
+  {
+   "unit": 879,
+   "hadith": "882",
+   "score": 1.0
+  },
+  {
+   "unit": 880,
+   "hadith": "883",
+   "score": 1.0
+  },
+  {
+   "unit": 881,
+   "hadith": "884",
+   "score": 1.0
+  },
+  {
+   "unit": 882,
+   "hadith": "885",
+   "score": 1.0
+  },
+  {
+   "unit": 883,
+   "hadith": "886",
+   "score": 1.0
+  },
+  {
+   "unit": 884,
+   "hadith": "887",
+   "score": 1.0
+  },
+  {
+   "unit": 885,
+   "hadith": "888",
+   "score": 1.0
+  },
+  {
+   "unit": 886,
+   "hadith": "889",
+   "score": 1.0
+  },
+  {
+   "unit": 887,
+   "hadith": "890",
+   "score": 0.975
+  },
+  {
+   "unit": 888,
+   "hadith": "891",
+   "score": 1.0
+  },
+  {
+   "unit": 889,
+   "hadith": "892",
+   "score": 1.0
+  },
+  {
+   "unit": 890,
+   "hadith": "893",
+   "score": 1.0
+  },
+  {
+   "unit": 891,
+   "hadith": "894",
+   "score": 1.0
+  },
+  {
+   "unit": 892,
+   "hadith": "895",
+   "score": 1.0
+  },
+  {
+   "unit": 893,
+   "hadith": "896",
+   "score": 1.0
+  },
+  {
+   "unit": 894,
+   "hadith": "897",
+   "score": 1.0
+  },
+  {
+   "unit": 895,
+   "hadith": "898",
+   "score": 1.0
+  },
+  {
+   "unit": 896,
+   "hadith": "899",
+   "score": 0.987
+  },
+  {
+   "unit": 897,
+   "hadith": "900",
+   "score": 1.0
+  },
+  {
+   "unit": 898,
+   "hadith": "901",
+   "score": 0.941
+  },
+  {
+   "unit": 899,
+   "hadith": "902",
+   "score": 0.981
+  },
+  {
+   "unit": 900,
+   "hadith": "903",
+   "score": 1.0
+  },
+  {
+   "unit": 901,
+   "hadith": "904",
+   "score": 1.0
+  },
+  {
+   "unit": 902,
+   "hadith": "905",
+   "score": 1.0
+  },
+  {
+   "unit": 903,
+   "hadith": "906",
+   "score": 0.966
+  },
+  {
+   "unit": 904,
+   "hadith": "907",
+   "score": 1.0
+  },
+  {
+   "unit": 906,
+   "hadith": "908",
+   "score": 1.0
+  },
+  {
+   "unit": 907,
+   "hadith": "909",
+   "score": 0.524
+  },
+  {
+   "unit": 908,
+   "hadith": "910",
+   "score": 1.0
+  },
+  {
+   "unit": 909,
+   "hadith": "911",
+   "score": 1.0
+  },
+  {
+   "unit": 910,
+   "hadith": "912",
+   "score": 1.0
+  },
+  {
+   "unit": 911,
+   "hadith": "913",
+   "score": 1.0
+  },
+  {
+   "unit": 912,
+   "hadith": "914",
+   "score": 1.0
+  },
+  {
+   "unit": 913,
+   "hadith": "915",
+   "score": 1.0
+  },
+  {
+   "unit": 915,
+   "hadith": "917",
+   "score": 0.553
+  },
+  {
+   "unit": 916,
+   "hadith": "918",
+   "score": 1.0
+  },
+  {
+   "unit": 917,
+   "hadith": "919",
+   "score": 0.961
+  },
+  {
+   "unit": 918,
+   "hadith": "920",
+   "score": 1.0
+  },
+  {
+   "unit": 919,
+   "hadith": "921",
+   "score": 1.0
+  },
+  {
+   "unit": 920,
+   "hadith": "922",
+   "score": 1.0
+  },
+  {
+   "unit": 921,
+   "hadith": "923",
+   "score": 1.0
+  },
+  {
+   "unit": 922,
+   "hadith": "924",
+   "score": 1.0
+  },
+  {
+   "unit": 923,
+   "hadith": "925",
+   "score": 1.0
+  },
+  {
+   "unit": 924,
+   "hadith": "926",
+   "score": 0.989
+  },
+  {
+   "unit": 926,
+   "hadith": "929",
+   "score": 1.0
+  },
+  {
+   "unit": 927,
+   "hadith": "930",
+   "score": 1.0
+  },
+  {
+   "unit": 928,
+   "hadith": "931",
+   "score": 1.0
+  },
+  {
+   "unit": 929,
+   "hadith": "932",
+   "score": 1.0
+  },
+  {
+   "unit": 931,
+   "hadith": "934",
+   "score": 1.0
+  },
+  {
+   "unit": 932,
+   "hadith": "935",
+   "score": 1.0
+  },
+  {
+   "unit": 933,
+   "hadith": "936",
+   "score": 1.0
+  },
+  {
+   "unit": 934,
+   "hadith": "937",
+   "score": 1.0
+  },
+  {
+   "unit": 935,
+   "hadith": "938",
+   "score": 1.0
+  },
+  {
+   "unit": 936,
+   "hadith": "939",
+   "score": 1.0
+  },
+  {
+   "unit": 937,
+   "hadith": "940",
+   "score": 1.0
+  },
+  {
+   "unit": 938,
+   "hadith": "941",
+   "score": 0.97
+  },
+  {
+   "unit": 940,
+   "hadith": "943",
+   "score": 1.0
+  },
+  {
+   "unit": 941,
+   "hadith": "944",
+   "score": 0.976
+  },
+  {
+   "unit": 942,
+   "hadith": "945",
+   "score": 1.0
+  },
+  {
+   "unit": 943,
+   "hadith": "946",
+   "score": 1.0
+  },
+  {
+   "unit": 944,
+   "hadith": "947",
+   "score": 0.956
+  },
+  {
+   "unit": 945,
+   "hadith": "948",
+   "score": 1.0
+  },
+  {
+   "unit": 946,
+   "hadith": "949",
+   "score": 0.765
+  },
+  {
+   "unit": 947,
+   "hadith": "950",
+   "score": 0.826
+  },
+  {
+   "unit": 949,
+   "hadith": "952",
+   "score": 1.0
+  },
+  {
+   "unit": 950,
+   "hadith": "953",
+   "score": 0.975
+  },
+  {
+   "unit": 951,
+   "hadith": "954",
+   "score": 1.0
+  },
+  {
+   "unit": 952,
+   "hadith": "955",
+   "score": 1.0
+  },
+  {
+   "unit": 953,
+   "hadith": "956",
+   "score": 0.842
+  },
+  {
+   "unit": 954,
+   "hadith": "957",
+   "score": 0.659
+  },
+  {
+   "unit": 956,
+   "hadith": "959",
+   "score": 1.0
+  },
+  {
+   "unit": 957,
+   "hadith": "960",
+   "score": 0.941
+  },
+  {
+   "unit": 958,
+   "hadith": "961",
+   "score": 1.0
+  },
+  {
+   "unit": 959,
+   "hadith": "962",
+   "score": 0.972
+  },
+  {
+   "unit": 960,
+   "hadith": "963",
+   "score": 0.946
+  },
+  {
+   "unit": 961,
+   "hadith": "964",
+   "score": 1.0
+  },
+  {
+   "unit": 962,
+   "hadith": "965",
+   "score": 0.826
+  },
+  {
+   "unit": 963,
+   "hadith": "966",
+   "score": 0.976
+  },
+  {
+   "unit": 964,
+   "hadith": "967",
+   "score": 0.952
+  },
+  {
+   "unit": 965,
+   "hadith": "968",
+   "score": 0.929
+  },
+  {
+   "unit": 966,
+   "hadith": "969",
+   "score": 1.0
+  },
+  {
+   "unit": 967,
+   "hadith": "970",
+   "score": 1.0
+  },
+  {
+   "unit": 968,
+   "hadith": "971",
+   "score": 1.0
+  },
+  {
+   "unit": 969,
+   "hadith": "972",
+   "score": 1.0
+  },
+  {
+   "unit": 970,
+   "hadith": "973",
+   "score": 1.0
+  },
+  {
+   "unit": 971,
+   "hadith": "974",
+   "score": 1.0
+  },
+  {
+   "unit": 973,
+   "hadith": "976",
+   "score": 1.0
+  },
+  {
+   "unit": 974,
+   "hadith": "977",
+   "score": 0.985
+  },
+  {
+   "unit": 975,
+   "hadith": "978",
+   "score": 0.963
+  },
+  {
+   "unit": 976,
+   "hadith": "979",
+   "score": 1.0
+  },
+  {
+   "unit": 977,
+   "hadith": "980",
+   "score": 0.962
+  },
+  {
+   "unit": 978,
+   "hadith": "981",
+   "score": 1.0
+  },
+  {
+   "unit": 979,
+   "hadith": "982",
+   "score": 1.0
+  },
+  {
+   "unit": 980,
+   "hadith": "983",
+   "score": 0.963
+  },
+  {
+   "unit": 981,
+   "hadith": "984",
+   "score": 0.949
+  },
+  {
+   "unit": 982,
+   "hadith": "985",
+   "score": 0.931
+  },
+  {
+   "unit": 983,
+   "hadith": "986",
+   "score": 1.0
+  },
+  {
+   "unit": 984,
+   "hadith": "987",
+   "score": 1.0
+  },
+  {
+   "unit": 985,
+   "hadith": "988",
+   "score": 1.0
+  },
+  {
+   "unit": 986,
+   "hadith": "989",
+   "score": 1.0
+  },
+  {
+   "unit": 987,
+   "hadith": "990",
+   "score": 0.952
+  },
+  {
+   "unit": 988,
+   "hadith": "991",
+   "score": 1.0
+  },
+  {
+   "unit": 989,
+   "hadith": "992",
+   "score": 1.0
+  },
+  {
+   "unit": 990,
+   "hadith": "993",
+   "score": 1.0
+  },
+  {
+   "unit": 993,
+   "hadith": "995",
+   "score": 1.0
+  },
+  {
+   "unit": 995,
+   "hadith": "997",
+   "score": 0.902
+  },
+  {
+   "unit": 996,
+   "hadith": "998",
+   "score": 0.93
+  },
+  {
+   "unit": 997,
+   "hadith": "999",
+   "score": 1.0
+  },
+  {
+   "unit": 998,
+   "hadith": "1000",
+   "score": 1.0
+  },
+  {
+   "unit": 999,
+   "hadith": "1001",
+   "score": 1.0
+  },
+  {
+   "unit": 1000,
+   "hadith": "1002",
+   "score": 1.0
+  },
+  {
+   "unit": 1001,
+   "hadith": "1003",
+   "score": 1.0
+  },
+  {
+   "unit": 1002,
+   "hadith": "1004",
+   "score": 0.913
+  },
+  {
+   "unit": 1003,
+   "hadith": "1005",
+   "score": 1.0
+  },
+  {
+   "unit": 1004,
+   "hadith": "1006",
+   "score": 0.98
+  },
+  {
+   "unit": 1005,
+   "hadith": "1007",
+   "score": 0.97
+  },
+  {
+   "unit": 1006,
+   "hadith": "1008",
+   "score": 1.0
+  },
+  {
+   "unit": 1007,
+   "hadith": "1009",
+   "score": 0.963
+  },
+  {
+   "unit": 1008,
+   "hadith": "1010",
+   "score": 1.0
+  },
+  {
+   "unit": 1009,
+   "hadith": "1011",
+   "score": 1.0
+  },
+  {
+   "unit": 1010,
+   "hadith": "1012",
+   "score": 0.962
+  },
+  {
+   "unit": 1011,
+   "hadith": "1014",
+   "score": 0.984
+  },
+  {
+   "unit": 1012,
+   "hadith": "1015",
+   "score": 1.0
+  },
+  {
+   "unit": 1013,
+   "hadith": "1016",
+   "score": 0.976
+  },
+  {
+   "unit": 1015,
+   "hadith": "1018",
+   "score": 0.971
+  },
+  {
+   "unit": 1016,
+   "hadith": "1019",
+   "score": 1.0
+  },
+  {
+   "unit": 1018,
+   "hadith": "1021",
+   "score": 1.0
+  },
+  {
+   "unit": 1019,
+   "hadith": "1023",
+   "score": 0.729
+  },
+  {
+   "unit": 1020,
+   "hadith": "1024",
+   "score": 1.0
+  },
+  {
+   "unit": 1021,
+   "hadith": "1025",
+   "score": 1.0
+  },
+  {
+   "unit": 1022,
+   "hadith": "1026",
+   "score": 0.975
+  },
+  {
+   "unit": 1023,
+   "hadith": "1027",
+   "score": 0.955
+  },
+  {
+   "unit": 1024,
+   "hadith": "1028",
+   "score": 1.0
+  },
+  {
+   "unit": 1025,
+   "hadith": "1029",
+   "score": 1.0
+  },
+  {
+   "unit": 1026,
+   "hadith": "1030",
+   "score": 0.976
+  },
+  {
+   "unit": 1027,
+   "hadith": "1031",
+   "score": 1.0
+  },
+  {
+   "unit": 1028,
+   "hadith": "1032",
+   "score": 1.0
+  },
+  {
+   "unit": 1029,
+   "hadith": "1033",
+   "score": 1.0
+  },
+  {
+   "unit": 1030,
+   "hadith": "1034",
+   "score": 0.923
+  },
+  {
+   "unit": 1031,
+   "hadith": "1035",
+   "score": 1.0
+  },
+  {
+   "unit": 1032,
+   "hadith": "1036",
+   "score": 1.0
+  },
+  {
+   "unit": 1034,
+   "hadith": "1038",
+   "score": 0.955
+  },
+  {
+   "unit": 1035,
+   "hadith": "1039",
+   "score": 0.632
+  },
+  {
+   "unit": 1037,
+   "hadith": "1041",
+   "score": 0.889
+  },
+  {
+   "unit": 1038,
+   "hadith": "1042",
+   "score": 1.0
+  },
+  {
+   "unit": 1039,
+   "hadith": "1043",
+   "score": 1.0
+  },
+  {
+   "unit": 1040,
+   "hadith": "1044",
+   "score": 1.0
+  },
+  {
+   "unit": 1041,
+   "hadith": "1045",
+   "score": 1.0
+  },
+  {
+   "unit": 1042,
+   "hadith": "1046",
+   "score": 1.0
+  },
+  {
+   "unit": 1043,
+   "hadith": "1048",
+   "score": 0.682
+  },
+  {
+   "unit": 1044,
+   "hadith": "1049",
+   "score": 1.0
+  },
+  {
+   "unit": 1045,
+   "hadith": "1050",
+   "score": 1.0
+  },
+  {
+   "unit": 1046,
+   "hadith": "1051",
+   "score": 0.87
+  },
+  {
+   "unit": 1047,
+   "hadith": "1052",
+   "score": 1.0
+  },
+  {
+   "unit": 1048,
+   "hadith": "1053",
+   "score": 1.0
+  },
+  {
+   "unit": 1051,
+   "hadith": "1055",
+   "score": 0.889
+  },
+  {
+   "unit": 1052,
+   "hadith": "1056",
+   "score": 0.857
+  },
+  {
+   "unit": 1055,
+   "hadith": "1058",
+   "score": 1.0
+  },
+  {
+   "unit": 1056,
+   "hadith": "1059",
+   "score": 1.0
+  },
+  {
+   "unit": 1057,
+   "hadith": "1060",
+   "score": 1.0
+  },
+  {
+   "unit": 1058,
+   "hadith": "1061",
+   "score": 1.0
+  },
+  {
+   "unit": 1059,
+   "hadith": "1062",
+   "score": 0.95
+  },
+  {
+   "unit": 1060,
+   "hadith": "1063",
+   "score": 0.864
+  },
+  {
+   "unit": 1062,
+   "hadith": "1064",
+   "score": 0.971
+  },
+  {
+   "unit": 1063,
+   "hadith": "1065",
+   "score": 0.95
+  },
+  {
+   "unit": 1064,
+   "hadith": "1066",
+   "score": 1.0
+  },
+  {
+   "unit": 1066,
+   "hadith": "1067",
+   "score": 1.0
+  },
+  {
+   "unit": 1067,
+   "hadith": "1068",
+   "score": 1.0
+  },
+  {
+   "unit": 1068,
+   "hadith": "1069",
+   "score": 1.0
+  },
+  {
+   "unit": 1069,
+   "hadith": "1070",
+   "score": 1.0
+  },
+  {
+   "unit": 1070,
+   "hadith": "1071",
+   "score": 1.0
+  },
+  {
+   "unit": 1071,
+   "hadith": "1072",
+   "score": 1.0
+  },
+  {
+   "unit": 1072,
+   "hadith": "1073",
+   "score": 0.932
+  },
+  {
+   "unit": 1073,
+   "hadith": "1074",
+   "score": 1.0
+  },
+  {
+   "unit": 1074,
+   "hadith": "1075",
+   "score": 0.929
+  },
+  {
+   "unit": 1075,
+   "hadith": "1076",
+   "score": 0.984
+  },
+  {
+   "unit": 1076,
+   "hadith": "1077",
+   "score": 0.986
+  },
+  {
+   "unit": 1077,
+   "hadith": "1078",
+   "score": 1.0
+  },
+  {
+   "unit": 1078,
+   "hadith": "1079",
+   "score": 1.0
+  },
+  {
+   "unit": 1080,
+   "hadith": "1081",
+   "score": 0.981
+  },
+  {
+   "unit": 1081,
+   "hadith": "1082",
+   "score": 1.0
+  },
+  {
+   "unit": 1082,
+   "hadith": "1083",
+   "score": 0.952
+  },
+  {
+   "unit": 1083,
+   "hadith": "1084",
+   "score": 0.955
+  },
+  {
+   "unit": 1084,
+   "hadith": "1085",
+   "score": 1.0
+  },
+  {
+   "unit": 1085,
+   "hadith": "1086",
+   "score": 1.0
+  },
+  {
+   "unit": 1086,
+   "hadith": "1087",
+   "score": 1.0
+  },
+  {
+   "unit": 1087,
+   "hadith": "1088",
+   "score": 0.975
+  },
+  {
+   "unit": 1089,
+   "hadith": "1091",
+   "score": 1.0
+  },
+  {
+   "unit": 1091,
+   "hadith": "1093",
+   "score": 1.0
+  },
+  {
+   "unit": 1092,
+   "hadith": "1094",
+   "score": 1.0
+  },
+  {
+   "unit": 1093,
+   "hadith": "1095",
+   "score": 1.0
+  },
+  {
+   "unit": 1094,
+   "hadith": "1096",
+   "score": 1.0
+  },
+  {
+   "unit": 1095,
+   "hadith": "1097",
+   "score": 1.0
+  },
+  {
+   "unit": 1096,
+   "hadith": "1098",
+   "score": 1.0
+  },
+  {
+   "unit": 1097,
+   "hadith": "1099",
+   "score": 0.981
+  },
+  {
+   "unit": 1098,
+   "hadith": "1100",
+   "score": 0.976
+  },
+  {
+   "unit": 1099,
+   "hadith": "1101",
+   "score": 1.0
+  },
+  {
+   "unit": 1100,
+   "hadith": "1102",
+   "score": 1.0
+  },
+  {
+   "unit": 1101,
+   "hadith": "1104",
+   "score": 0.756
+  },
+  {
+   "unit": 1102,
+   "hadith": "1105",
+   "score": 1.0
+  },
+  {
+   "unit": 1104,
+   "hadith": "1107",
+   "score": 1.0
+  },
+  {
+   "unit": 1105,
+   "hadith": "1108",
+   "score": 1.0
+  },
+  {
+   "unit": 1106,
+   "hadith": "1109",
+   "score": 1.0
+  },
+  {
+   "unit": 1107,
+   "hadith": "1110",
+   "score": 1.0
+  },
+  {
+   "unit": 1108,
+   "hadith": "1111",
+   "score": 1.0
+  },
+  {
+   "unit": 1109,
+   "hadith": "1112",
+   "score": 1.0
+  },
+  {
+   "unit": 1110,
+   "hadith": "1113",
+   "score": 0.926
+  },
+  {
+   "unit": 1111,
+   "hadith": "1114",
+   "score": 0.971
+  },
+  {
+   "unit": 1112,
+   "hadith": "1115",
+   "score": 1.0
+  },
+  {
+   "unit": 1113,
+   "hadith": "1116",
+   "score": 1.0
+  },
+  {
+   "unit": 1114,
+   "hadith": "1117",
+   "score": 1.0
+  },
+  {
+   "unit": 1115,
+   "hadith": "1118",
+   "score": 0.613
+  },
+  {
+   "unit": 1116,
+   "hadith": "1119",
+   "score": 1.0
+  },
+  {
+   "unit": 1117,
+   "hadith": "1120",
+   "score": 0.927
+  },
+  {
+   "unit": 1118,
+   "hadith": "1121",
+   "score": 0.958
+  },
+  {
+   "unit": 1119,
+   "hadith": "1122",
+   "score": 1.0
+  },
+  {
+   "unit": 1120,
+   "hadith": "1123",
+   "score": 0.983
+  },
+  {
+   "unit": 1121,
+   "hadith": "1124",
+   "score": 0.964
+  },
+  {
+   "unit": 1122,
+   "hadith": "1125",
+   "score": 0.979
+  },
+  {
+   "unit": 1123,
+   "hadith": "1126",
+   "score": 1.0
+  },
+  {
+   "unit": 1124,
+   "hadith": "1128",
+   "score": 0.692
+  },
+  {
+   "unit": 1125,
+   "hadith": "1129",
+   "score": 1.0
+  },
+  {
+   "unit": 1126,
+   "hadith": "1130",
+   "score": 1.0
+  },
+  {
+   "unit": 1127,
+   "hadith": "1131",
+   "score": 0.762
+  },
+  {
+   "unit": 1128,
+   "hadith": "1132",
+   "score": 0.987
+  },
+  {
+   "unit": 1129,
+   "hadith": "1133",
+   "score": 0.967
+  },
+  {
+   "unit": 1130,
+   "hadith": "1134",
+   "score": 0.969
+  },
+  {
+   "unit": 1131,
+   "hadith": "1135",
+   "score": 1.0
+  },
+  {
+   "unit": 1132,
+   "hadith": "1136",
+   "score": 0.958
+  },
+  {
+   "unit": 1133,
+   "hadith": "1137",
+   "score": 0.972
+  },
+  {
+   "unit": 1134,
+   "hadith": "1138",
+   "score": 0.986
+  },
+  {
+   "unit": 1135,
+   "hadith": "1139",
+   "score": 1.0
+  },
+  {
+   "unit": 1136,
+   "hadith": "1140",
+   "score": 1.0
+  },
+  {
+   "unit": 1137,
+   "hadith": "1141",
+   "score": 1.0
+  },
+  {
+   "unit": 1138,
+   "hadith": "1142",
+   "score": 0.96
+  },
+  {
+   "unit": 1139,
+   "hadith": "1143",
+   "score": 1.0
+  },
+  {
+   "unit": 1140,
+   "hadith": "1144",
+   "score": 1.0
+  },
+  {
+   "unit": 1141,
+   "hadith": "1145",
+   "score": 1.0
+  },
+  {
+   "unit": 1142,
+   "hadith": "1146",
+   "score": 1.0
+  },
+  {
+   "unit": 1143,
+   "hadith": "1147",
+   "score": 1.0
+  },
+  {
+   "unit": 1144,
+   "hadith": "1148",
+   "score": 1.0
+  },
+  {
+   "unit": 1145,
+   "hadith": "1149",
+   "score": 0.911
+  },
+  {
+   "unit": 1146,
+   "hadith": "1150",
+   "score": 0.964
+  },
+  {
+   "unit": 1147,
+   "hadith": "1151",
+   "score": 0.976
+  },
+  {
+   "unit": 1148,
+   "hadith": "1152",
+   "score": 1.0
+  },
+  {
+   "unit": 1149,
+   "hadith": "1153",
+   "score": 0.952
+  },
+  {
+   "unit": 1150,
+   "hadith": "1154",
+   "score": 1.0
+  },
+  {
+   "unit": 1151,
+   "hadith": "1155",
+   "score": 1.0
+  },
+  {
+   "unit": 1152,
+   "hadith": "1156",
+   "score": 1.0
+  },
+  {
+   "unit": 1153,
+   "hadith": "1157",
+   "score": 1.0
+  },
+  {
+   "unit": 1154,
+   "hadith": "1158",
+   "score": 0.982
+  },
+  {
+   "unit": 1155,
+   "hadith": "1159",
+   "score": 0.97
+  },
+  {
+   "unit": 1156,
+   "hadith": "1160",
+   "score": 1.0
+  },
+  {
+   "unit": 1157,
+   "hadith": "1161",
+   "score": 0.974
+  },
+  {
+   "unit": 1158,
+   "hadith": "1162",
+   "score": 1.0
+  },
+  {
+   "unit": 1159,
+   "hadith": "1163",
+   "score": 1.0
+  },
+  {
+   "unit": 1160,
+   "hadith": "1164",
+   "score": 0.953
+  },
+  {
+   "unit": 1161,
+   "hadith": "1166",
+   "score": 0.681
+  },
+  {
+   "unit": 1162,
+   "hadith": "1167",
+   "score": 1.0
+  },
+  {
+   "unit": 1163,
+   "hadith": "1169",
+   "score": 0.565
+  },
+  {
+   "unit": 1164,
+   "hadith": "1170",
+   "score": 0.94
+  },
+  {
+   "unit": 1165,
+   "hadith": "1173",
+   "score": 1.0
+  },
+  {
+   "unit": 1166,
+   "hadith": "1174",
+   "score": 1.0
+  },
+  {
+   "unit": 1167,
+   "hadith": "1175",
+   "score": 0.947
+  },
+  {
+   "unit": 1168,
+   "hadith": "1177",
+   "score": 0.923
+  },
+  {
+   "unit": 1169,
+   "hadith": "1178",
+   "score": 0.974
+  },
+  {
+   "unit": 1170,
+   "hadith": "1179",
+   "score": 1.0
+  },
+  {
+   "unit": 1171,
+   "hadith": "1180",
+   "score": 1.0
+  },
+  {
+   "unit": 1172,
+   "hadith": "1181",
+   "score": 0.981
+  },
+  {
+   "unit": 1173,
+   "hadith": "1183",
+   "score": 0.605
+  },
+  {
+   "unit": 1174,
+   "hadith": "1184",
+   "score": 1.0
+  },
+  {
+   "unit": 1175,
+   "hadith": "1185",
+   "score": 1.0
+  },
+  {
+   "unit": 1176,
+   "hadith": "1187",
+   "score": 0.733
+  },
+  {
+   "unit": 1177,
+   "hadith": "1188",
+   "score": 0.977
+  },
+  {
+   "unit": 1179,
+   "hadith": "1190",
+   "score": 0.959
+  },
+  {
+   "unit": 1180,
+   "hadith": "1192",
+   "score": 0.98
+  },
+  {
+   "unit": 1181,
+   "hadith": "1193",
+   "score": 1.0
+  },
+  {
+   "unit": 1182,
+   "hadith": "1194",
+   "score": 0.966
+  },
+  {
+   "unit": 1183,
+   "hadith": "1195",
+   "score": 0.966
+  },
+  {
+   "unit": 1184,
+   "hadith": "1196",
+   "score": 0.941
+  },
+  {
+   "unit": 1185,
+   "hadith": "1197",
+   "score": 1.0
+  },
+  {
+   "unit": 1186,
+   "hadith": "1198",
+   "score": 0.98
+  },
+  {
+   "unit": 1187,
+   "hadith": "1199",
+   "score": 0.974
+  },
+  {
+   "unit": 1188,
+   "hadith": "1201",
+   "score": 0.719
+  },
+  {
+   "unit": 1189,
+   "hadith": "1202",
+   "score": 0.952
+  },
+  {
+   "unit": 1190,
+   "hadith": "1204",
+   "score": 1.0
+  },
+  {
+   "unit": 1191,
+   "hadith": "1205",
+   "score": 0.963
+  },
+  {
+   "unit": 1192,
+   "hadith": "1206",
+   "score": 1.0
+  },
+  {
+   "unit": 1193,
+   "hadith": "1207",
+   "score": 1.0
+  },
+  {
+   "unit": 1194,
+   "hadith": "1208",
+   "score": 1.0
+  },
+  {
+   "unit": 1195,
+   "hadith": "1209",
+   "score": 0.695
+  },
+  {
+   "unit": 1196,
+   "hadith": "1211",
+   "score": 1.0
+  },
+  {
+   "unit": 1197,
+   "hadith": "1212",
+   "score": 0.977
+  },
+  {
+   "unit": 1198,
+   "hadith": "1213",
+   "score": 0.952
+  },
+  {
+   "unit": 1199,
+   "hadith": "1214",
+   "score": 1.0
+  },
+  {
+   "unit": 1200,
+   "hadith": "1215",
+   "score": 0.941
+  },
+  {
+   "unit": 1201,
+   "hadith": "1216",
+   "score": 1.0
+  },
+  {
+   "unit": 1202,
+   "hadith": "1217",
+   "score": 1.0
+  },
+  {
+   "unit": 1203,
+   "hadith": "1218",
+   "score": 0.889
+  },
+  {
+   "unit": 1204,
+   "hadith": "1219",
+   "score": 0.917
+  },
+  {
+   "unit": 1205,
+   "hadith": "1220",
+   "score": 0.75
+  },
+  {
+   "unit": 1206,
+   "hadith": "1221",
+   "score": 0.943
+  },
+  {
+   "unit": 1207,
+   "hadith": "1222",
+   "score": 1.0
+  },
+  {
+   "unit": 1208,
+   "hadith": "1223",
+   "score": 1.0
+  },
+  {
+   "unit": 1209,
+   "hadith": "1224",
+   "score": 1.0
+  },
+  {
+   "unit": 1210,
+   "hadith": "1225",
+   "score": 0.989
+  },
+  {
+   "unit": 1211,
+   "hadith": "1226",
+   "score": 0.962
+  },
+  {
+   "unit": 1212,
+   "hadith": "1227",
+   "score": 0.848
+  },
+  {
+   "unit": 1213,
+   "hadith": "1229",
+   "score": 0.99
+  },
+  {
+   "unit": 1214,
+   "hadith": "1230",
+   "score": 1.0
+  },
+  {
+   "unit": 1215,
+   "hadith": "1232",
+   "score": 0.72
+  },
+  {
+   "unit": 1216,
+   "hadith": "1233",
+   "score": 0.958
+  },
+  {
+   "unit": 1217,
+   "hadith": "1234",
+   "score": 0.966
+  },
+  {
+   "unit": 1218,
+   "hadith": "1235",
+   "score": 0.962
+  },
+  {
+   "unit": 1219,
+   "hadith": "1236",
+   "score": 0.982
+  },
+  {
+   "unit": 1220,
+   "hadith": "1237",
+   "score": 1.0
+  },
+  {
+   "unit": 1221,
+   "hadith": "1238",
+   "score": 1.0
+  },
+  {
+   "unit": 1222,
+   "hadith": "1239",
+   "score": 1.0
+  },
+  {
+   "unit": 1223,
+   "hadith": "1240",
+   "score": 1.0
+  },
+  {
+   "unit": 1224,
+   "hadith": "1242",
+   "score": 0.639
+  },
+  {
+   "unit": 1225,
+   "hadith": "1243",
+   "score": 0.986
+  },
+  {
+   "unit": 1226,
+   "hadith": "1244",
+   "score": 1.0
+  },
+  {
+   "unit": 1227,
+   "hadith": "1245",
+   "score": 1.0
+  },
+  {
+   "unit": 1228,
+   "hadith": "1246",
+   "score": 0.868
+  },
+  {
+   "unit": 1229,
+   "hadith": "1247",
+   "score": 1.0
+  },
+  {
+   "unit": 1230,
+   "hadith": "1248",
+   "score": 1.0
+  },
+  {
+   "unit": 1231,
+   "hadith": "1249",
+   "score": 1.0
+  },
+  {
+   "unit": 1232,
+   "hadith": "1250",
+   "score": 0.955
+  },
+  {
+   "unit": 1233,
+   "hadith": "1251",
+   "score": 1.0
+  },
+  {
+   "unit": 1234,
+   "hadith": "1252",
+   "score": 0.955
+  },
+  {
+   "unit": 1235,
+   "hadith": "1253",
+   "score": 1.0
+  },
+  {
+   "unit": 1236,
+   "hadith": "1254",
+   "score": 1.0
+  },
+  {
+   "unit": 1237,
+   "hadith": "1255",
+   "score": 1.0
+  },
+  {
+   "unit": 1238,
+   "hadith": "1256",
+   "score": 0.98
+  },
+  {
+   "unit": 1239,
+   "hadith": "1257",
+   "score": 0.984
+  },
+  {
+   "unit": 1240,
+   "hadith": "1258",
+   "score": 1.0
+  },
+  {
+   "unit": 1241,
+   "hadith": "1259",
+   "score": 0.941
+  },
+  {
+   "unit": 1242,
+   "hadith": "1260",
+   "score": 1.0
+  },
+  {
+   "unit": 1243,
+   "hadith": "1261",
+   "score": 0.982
+  },
+  {
+   "unit": 1244,
+   "hadith": "1262",
+   "score": 0.977
+  },
+  {
+   "unit": 1245,
+   "hadith": "1263",
+   "score": 0.971
+  },
+  {
+   "unit": 1246,
+   "hadith": "1264",
+   "score": 1.0
+  },
+  {
+   "unit": 1247,
+   "hadith": "1265",
+   "score": 0.912
+  },
+  {
+   "unit": 1248,
+   "hadith": "1266",
+   "score": 0.667
+  },
+  {
+   "unit": 1249,
+   "hadith": "1267",
+   "score": 1.0
+  },
+  {
+   "unit": 1250,
+   "hadith": "1268",
+   "score": 1.0
+  },
+  {
+   "unit": 1251,
+   "hadith": "1269",
+   "score": 1.0
+  },
+  {
+   "unit": 1253,
+   "hadith": "1271",
+   "score": 0.857
+  },
+  {
+   "unit": 1254,
+   "hadith": "1272",
+   "score": 1.0
+  },
+  {
+   "unit": 1255,
+   "hadith": "1273",
+   "score": 1.0
+  },
+  {
+   "unit": 1256,
+   "hadith": "1274",
+   "score": 0.972
+  },
+  {
+   "unit": 1257,
+   "hadith": "1275",
+   "score": 1.0
+  },
+  {
+   "unit": 1258,
+   "hadith": "1276",
+   "score": 0.962
+  },
+  {
+   "unit": 1259,
+   "hadith": "1277",
+   "score": 1.0
+  },
+  {
+   "unit": 1260,
+   "hadith": "1278",
+   "score": 1.0
+  },
+  {
+   "unit": 1261,
+   "hadith": "1279",
+   "score": 1.0
+  },
+  {
+   "unit": 1262,
+   "hadith": "1280",
+   "score": 1.0
+  },
+  {
+   "unit": 1263,
+   "hadith": "1281",
+   "score": 1.0
+  },
+  {
+   "unit": 1264,
+   "hadith": "1283",
+   "score": 0.725
+  },
+  {
+   "unit": 1265,
+   "hadith": "1284",
+   "score": 0.993
+  },
+  {
+   "unit": 1266,
+   "hadith": "1285",
+   "score": 1.0
+  },
+  {
+   "unit": 1267,
+   "hadith": "1286",
+   "score": 1.0
+  },
+  {
+   "unit": 1268,
+   "hadith": "1287",
+   "score": 0.952
+  },
+  {
+   "unit": 1269,
+   "hadith": "1288",
+   "score": 0.826
+  },
+  {
+   "unit": 1270,
+   "hadith": "1289",
+   "score": 0.8
+  },
+  {
+   "unit": 1271,
+   "hadith": "1290",
+   "score": 0.973
+  },
+  {
+   "unit": 1273,
+   "hadith": "1292",
+   "score": 1.0
+  },
+  {
+   "unit": 1274,
+   "hadith": "1293",
+   "score": 1.0
+  },
+  {
+   "unit": 1275,
+   "hadith": "1294",
+   "score": 0.97
+  },
+  {
+   "unit": 1276,
+   "hadith": "1295",
+   "score": 1.0
+  },
+  {
+   "unit": 1277,
+   "hadith": "1296",
+   "score": 0.958
+  },
+  {
+   "unit": 1278,
+   "hadith": "1297",
+   "score": 0.933
+  },
+  {
+   "unit": 1279,
+   "hadith": "1298",
+   "score": 1.0
+  },
+  {
+   "unit": 1280,
+   "hadith": "1299",
+   "score": 0.947
+  },
+  {
+   "unit": 1281,
+   "hadith": "1300",
+   "score": 1.0
+  },
+  {
+   "unit": 1282,
+   "hadith": "1301",
+   "score": 1.0
+  },
+  {
+   "unit": 1284,
+   "hadith": "1303",
+   "score": 1.0
+  },
+  {
+   "unit": 1286,
+   "hadith": "1305",
+   "score": 1.0
+  },
+  {
+   "unit": 1287,
+   "hadith": "1306",
+   "score": 1.0
+  },
+  {
+   "unit": 1288,
+   "hadith": "1307",
+   "score": 0.933
+  },
+  {
+   "unit": 1289,
+   "hadith": "1308",
+   "score": 0.913
+  },
+  {
+   "unit": 1290,
+   "hadith": "1309",
+   "score": 0.969
+  },
+  {
+   "unit": 1291,
+   "hadith": "1310",
+   "score": 0.974
+  },
+  {
+   "unit": 1292,
+   "hadith": "1311",
+   "score": 1.0
+  },
+  {
+   "unit": 1293,
+   "hadith": "1312",
+   "score": 1.0
+  },
+  {
+   "unit": 1294,
+   "hadith": "1313",
+   "score": 1.0
+  },
+  {
+   "unit": 1295,
+   "hadith": "1314",
+   "score": 0.897
+  },
+  {
+   "unit": 1296,
+   "hadith": "1315",
+   "score": 0.995
+  },
+  {
+   "unit": 1297,
+   "hadith": "1316",
+   "score": 1.0
+  },
+  {
+   "unit": 1298,
+   "hadith": "1317",
+   "score": 1.0
+  },
+  {
+   "unit": 1299,
+   "hadith": "1318",
+   "score": 0.967
+  },
+  {
+   "unit": 1300,
+   "hadith": "1319",
+   "score": 1.0
+  },
+  {
+   "unit": 1301,
+   "hadith": "1320",
+   "score": 1.0
+  },
+  {
+   "unit": 1302,
+   "hadith": "1321",
+   "score": 1.0
+  },
+  {
+   "unit": 1303,
+   "hadith": "1322",
+   "score": 1.0
+  },
+  {
+   "unit": 1304,
+   "hadith": "1323",
+   "score": 1.0
+  },
+  {
+   "unit": 1305,
+   "hadith": "1324",
+   "score": 1.0
+  },
+  {
+   "unit": 1306,
+   "hadith": "1325",
+   "score": 1.0
+  },
+  {
+   "unit": 1307,
+   "hadith": "1326",
+   "score": 0.99
+  },
+  {
+   "unit": 1309,
+   "hadith": "1328",
+   "score": 1.0
+  },
+  {
+   "unit": 1310,
+   "hadith": "1329",
+   "score": 1.0
+  },
+  {
+   "unit": 1311,
+   "hadith": "1330",
+   "score": 1.0
+  },
+  {
+   "unit": 1312,
+   "hadith": "1331",
+   "score": 1.0
+  },
+  {
+   "unit": 1313,
+   "hadith": "1332",
+   "score": 1.0
+  },
+  {
+   "unit": 1314,
+   "hadith": "1333",
+   "score": 0.961
+  },
+  {
+   "unit": 1315,
+   "hadith": "1334",
+   "score": 1.0
+  },
+  {
+   "unit": 1316,
+   "hadith": "1335",
+   "score": 0.987
+  },
+  {
+   "unit": 1317,
+   "hadith": "1336",
+   "score": 1.0
+  },
+  {
+   "unit": 1319,
+   "hadith": "1337",
+   "score": 0.8
+  },
+  {
+   "unit": 1320,
+   "hadith": "1339",
+   "score": 1.0
+  },
+  {
+   "unit": 1321,
+   "hadith": "1340",
+   "score": 1.0
+  },
+  {
+   "unit": 1322,
+   "hadith": "1341",
+   "score": 1.0
+  },
+  {
+   "unit": 1323,
+   "hadith": "1342",
+   "score": 0.995
+  },
+  {
+   "unit": 1324,
+   "hadith": "1343",
+   "score": 1.0
+  },
+  {
+   "unit": 1325,
+   "hadith": "1344",
+   "score": 0.619
+  },
+  {
+   "unit": 1327,
+   "hadith": "1345",
+   "score": 1.0
+  },
+  {
+   "unit": 1328,
+   "hadith": "1346",
+   "score": 1.0
+  },
+  {
+   "unit": 1329,
+   "hadith": "1347",
+   "score": 1.0
+  },
+  {
+   "unit": 1330,
+   "hadith": "1348",
+   "score": 1.0
+  },
+  {
+   "unit": 1331,
+   "hadith": "1349",
+   "score": 1.0
+  },
+  {
+   "unit": 1332,
+   "hadith": "1350",
+   "score": 0.991
+  },
+  {
+   "unit": 1333,
+   "hadith": "1351",
+   "score": 1.0
+  },
+  {
+   "unit": 1334,
+   "hadith": "1352",
+   "score": 0.983
+  },
+  {
+   "unit": 1335,
+   "hadith": "1353",
+   "score": 0.562
+  },
+  {
+   "unit": 1336,
+   "hadith": "1354",
+   "score": 1.0
+  },
+  {
+   "unit": 1337,
+   "hadith": "1355",
+   "score": 1.0
+  },
+  {
+   "unit": 1338,
+   "hadith": "1356",
+   "score": 0.805
+  },
+  {
+   "unit": 1339,
+   "hadith": "1357",
+   "score": 0.991
+  },
+  {
+   "unit": 1340,
+   "hadith": "1358",
+   "score": 0.994
+  },
+  {
+   "unit": 1342,
+   "hadith": "1359",
+   "score": 1.0
+  },
+  {
+   "unit": 1343,
+   "hadith": "1360",
+   "score": 1.0
+  },
+  {
+   "unit": 1344,
+   "hadith": "1361",
+   "score": 0.989
+  },
+  {
+   "unit": 1345,
+   "hadith": "1362",
+   "score": 1.0
+  },
+  {
+   "unit": 1349,
+   "hadith": "1364",
+   "score": 0.733
+  },
+  {
+   "unit": 1351,
+   "hadith": "1366",
+   "score": 1.0
+  },
+  {
+   "unit": 1352,
+   "hadith": "1367",
+   "score": 0.964
+  },
+  {
+   "unit": 1353,
+   "hadith": "1368",
+   "score": 1.0
+  },
+  {
+   "unit": 1354,
+   "hadith": "1369",
+   "score": 0.913
+  },
+  {
+   "unit": 1355,
+   "hadith": "1370",
+   "score": 1.0
+  },
+  {
+   "unit": 1357,
+   "hadith": "1371",
+   "score": 0.976
+  },
+  {
+   "unit": 1359,
+   "hadith": "1373",
+   "score": 1.0
+  },
+  {
+   "unit": 1360,
+   "hadith": "1374",
+   "score": 1.0
+  },
+  {
+   "unit": 1361,
+   "hadith": "1375",
+   "score": 1.0
+  },
+  {
+   "unit": 1362,
+   "hadith": "1376",
+   "score": 1.0
+  },
+  {
+   "unit": 1363,
+   "hadith": "1377",
+   "score": 1.0
+  },
+  {
+   "unit": 1364,
+   "hadith": "1378",
+   "score": 1.0
+  },
+  {
+   "unit": 1365,
+   "hadith": "1379",
+   "score": 1.0
+  },
+  {
+   "unit": 1368,
+   "hadith": "1382",
+   "score": 1.0
+  },
+  {
+   "unit": 1369,
+   "hadith": "1383",
+   "score": 1.0
+  },
+  {
+   "unit": 1370,
+   "hadith": "1384",
+   "score": 1.0
+  },
+  {
+   "unit": 1371,
+   "hadith": "1385",
+   "score": 0.75
+  },
+  {
+   "unit": 1372,
+   "hadith": "1386",
+   "score": 1.0
+  },
+  {
+   "unit": 1373,
+   "hadith": "1387",
+   "score": 1.0
+  },
+  {
+   "unit": 1387,
+   "hadith": "1388",
+   "score": 0.974
+  },
+  {
+   "unit": 1390,
+   "hadith": "1390",
+   "score": 1.0
+  },
+  {
+   "unit": 1391,
+   "hadith": "1391",
+   "score": 0.933
+  },
+  {
+   "unit": 1392,
+   "hadith": "1392",
+   "score": 0.967
+  },
+  {
+   "unit": 1393,
+   "hadith": "1393",
+   "score": 1.0
+  },
+  {
+   "unit": 1394,
+   "hadith": "1394",
+   "score": 0.862
+  },
+  {
+   "unit": 1395,
+   "hadith": "1395",
+   "score": 0.769
+  },
+  {
+   "unit": 1396,
+   "hadith": "1396",
+   "score": 1.0
+  },
+  {
+   "unit": 1397,
+   "hadith": "1397",
+   "score": 0.988
+  },
+  {
+   "unit": 1398,
+   "hadith": "1398",
+   "score": 0.969
+  },
+  {
+   "unit": 1399,
+   "hadith": "1399",
+   "score": 1.0
+  },
+  {
+   "unit": 1400,
+   "hadith": "1400",
+   "score": 0.957
+  },
+  {
+   "unit": 1401,
+   "hadith": "1401",
+   "score": 1.0
+  },
+  {
+   "unit": 1402,
+   "hadith": "1402",
+   "score": 0.944
+  },
+  {
+   "unit": 1403,
+   "hadith": "1403",
+   "score": 1.0
+  },
+  {
+   "unit": 1404,
+   "hadith": "1407",
+   "score": 1.0
+  },
+  {
+   "unit": 1405,
+   "hadith": "1408",
+   "score": 1.0
+  },
+  {
+   "unit": 1406,
+   "hadith": "1409",
+   "score": 1.0
+  },
+  {
+   "unit": 1407,
+   "hadith": "1410",
+   "score": 1.0
+  },
+  {
+   "unit": 1408,
+   "hadith": "1411",
+   "score": 0.92
+  },
+  {
+   "unit": 1409,
+   "hadith": "1412",
+   "score": 1.0
+  },
+  {
+   "unit": 1410,
+   "hadith": "1413",
+   "score": 0.964
+  },
+  {
+   "unit": 1412,
+   "hadith": "1415",
+   "score": 0.98
+  },
+  {
+   "unit": 1413,
+   "hadith": "1416",
+   "score": 1.0
+  },
+  {
+   "unit": 1414,
+   "hadith": "1417",
+   "score": 0.963
+  },
+  {
+   "unit": 1415,
+   "hadith": "1418",
+   "score": 1.0
+  },
+  {
+   "unit": 1416,
+   "hadith": "1419",
+   "score": 0.979
+  },
+  {
+   "unit": 1417,
+   "hadith": "1420",
+   "score": 0.75
+  },
+  {
+   "unit": 1418,
+   "hadith": "1421",
+   "score": 0.953
+  },
+  {
+   "unit": 1419,
+   "hadith": "1422",
+   "score": 1.0
+  },
+  {
+   "unit": 1420,
+   "hadith": "1423",
+   "score": 1.0
+  },
+  {
+   "unit": 1421,
+   "hadith": "1424",
+   "score": 0.943
+  },
+  {
+   "unit": 1422,
+   "hadith": "1425",
+   "score": 0.897
+  },
+  {
+   "unit": 1423,
+   "hadith": "1426",
+   "score": 0.961
+  },
+  {
+   "unit": 1424,
+   "hadith": "1427",
+   "score": 0.76
+  },
+  {
+   "unit": 1425,
+   "hadith": "1428",
+   "score": 0.947
+  },
+  {
+   "unit": 1426,
+   "hadith": "1429",
+   "score": 1.0
+  },
+  {
+   "unit": 1427,
+   "hadith": "1430",
+   "score": 1.0
+  },
+  {
+   "unit": 1428,
+   "hadith": "1431",
+   "score": 1.0
+  },
+  {
+   "unit": 1429,
+   "hadith": "1432",
+   "score": 1.0
+  },
+  {
+   "unit": 1430,
+   "hadith": "1433",
+   "score": 0.933
+  },
+  {
+   "unit": 1431,
+   "hadith": "1434",
+   "score": 1.0
+  },
+  {
+   "unit": 1432,
+   "hadith": "1435",
+   "score": 1.0
+  },
+  {
+   "unit": 1434,
+   "hadith": "1436",
+   "score": 0.619
+  },
+  {
+   "unit": 1435,
+   "hadith": "1437",
+   "score": 0.97
+  },
+  {
+   "unit": 1436,
+   "hadith": "1438",
+   "score": 1.0
+  },
+  {
+   "unit": 1437,
+   "hadith": "1439",
+   "score": 0.974
+  },
+  {
+   "unit": 1438,
+   "hadith": "1440",
+   "score": 0.986
+  },
+  {
+   "unit": 1439,
+   "hadith": "1441",
+   "score": 0.929
+  },
+  {
+   "unit": 1440,
+   "hadith": "1442",
+   "score": 1.0
+  },
+  {
+   "unit": 1441,
+   "hadith": "1443",
+   "score": 0.972
+  },
+  {
+   "unit": 1442,
+   "hadith": "1444",
+   "score": 1.0
+  },
+  {
+   "unit": 1443,
+   "hadith": "1445",
+   "score": 1.0
+  },
+  {
+   "unit": 1444,
+   "hadith": "1446",
+   "score": 1.0
+  },
+  {
+   "unit": 1445,
+   "hadith": "1447",
+   "score": 1.0
+  },
+  {
+   "unit": 1446,
+   "hadith": "1448",
+   "score": 1.0
+  },
+  {
+   "unit": 1447,
+   "hadith": "1449",
+   "score": 0.966
+  },
+  {
+   "unit": 1448,
+   "hadith": "1450",
+   "score": 1.0
+  },
+  {
+   "unit": 1449,
+   "hadith": "1451",
+   "score": 0.968
+  },
+  {
+   "unit": 1450,
+   "hadith": "1452",
+   "score": 0.796
+  },
+  {
+   "unit": 1451,
+   "hadith": "1453",
+   "score": 1.0
+  },
+  {
+   "unit": 1452,
+   "hadith": "1454",
+   "score": 0.912
+  },
+  {
+   "unit": 1454,
+   "hadith": "1456",
+   "score": 1.0
+  },
+  {
+   "unit": 1455,
+   "hadith": "1457",
+   "score": 0.986
+  },
+  {
+   "unit": 1456,
+   "hadith": "1458",
+   "score": 0.537
+  },
+  {
+   "unit": 1457,
+   "hadith": "1459",
+   "score": 1.0
+  },
+  {
+   "unit": 1458,
+   "hadith": "1460",
+   "score": 1.0
+  },
+  {
+   "unit": 1459,
+   "hadith": "1461",
+   "score": 1.0
+  },
+  {
+   "unit": 1460,
+   "hadith": "1462",
+   "score": 1.0
+  },
+  {
+   "unit": 1461,
+   "hadith": "1463",
+   "score": 0.909
+  },
+  {
+   "unit": 1463,
+   "hadith": "1465",
+   "score": 1.0
+  },
+  {
+   "unit": 1464,
+   "hadith": "1466",
+   "score": 1.0
+  },
+  {
+   "unit": 1465,
+   "hadith": "1467",
+   "score": 0.968
+  },
+  {
+   "unit": 1466,
+   "hadith": "1468",
+   "score": 1.0
+  },
+  {
+   "unit": 1467,
+   "hadith": "1469",
+   "score": 1.0
+  },
+  {
+   "unit": 1468,
+   "hadith": "1470",
+   "score": 1.0
+  },
+  {
+   "unit": 1469,
+   "hadith": "1471",
+   "score": 0.974
+  },
+  {
+   "unit": 1470,
+   "hadith": "1472",
+   "score": 0.955
+  },
+  {
+   "unit": 1471,
+   "hadith": "1473",
+   "score": 1.0
+  },
+  {
+   "unit": 1472,
+   "hadith": "1474",
+   "score": 1.0
+  },
+  {
+   "unit": 1473,
+   "hadith": "1475",
+   "score": 1.0
+  },
+  {
+   "unit": 1474,
+   "hadith": "1476",
+   "score": 1.0
+  },
+  {
+   "unit": 1475,
+   "hadith": "1477",
+   "score": 1.0
+  },
+  {
+   "unit": 1476,
+   "hadith": "1478",
+   "score": 1.0
+  },
+  {
+   "unit": 1477,
+   "hadith": "1479",
+   "score": 1.0
+  },
+  {
+   "unit": 1478,
+   "hadith": "1480",
+   "score": 1.0
+  },
+  {
+   "unit": 1479,
+   "hadith": "1481",
+   "score": 1.0
+  },
+  {
+   "unit": 1481,
+   "hadith": "1484",
+   "score": 0.865
+  },
+  {
+   "unit": 1482,
+   "hadith": "1485",
+   "score": 1.0
+  },
+  {
+   "unit": 1483,
+   "hadith": "1486",
+   "score": 1.0
+  },
+  {
+   "unit": 1484,
+   "hadith": "1487",
+   "score": 1.0
+  },
+  {
+   "unit": 1485,
+   "hadith": "1488",
+   "score": 0.924
+  },
+  {
+   "unit": 1486,
+   "hadith": "1489",
+   "score": 1.0
+  },
+  {
+   "unit": 1487,
+   "hadith": "1490",
+   "score": 1.0
+  },
+  {
+   "unit": 1488,
+   "hadith": "1491",
+   "score": 0.993
+  },
+  {
+   "unit": 1489,
+   "hadith": "1493",
+   "score": 0.991
+  },
+  {
+   "unit": 1490,
+   "hadith": "1494",
+   "score": 1.0
+  },
+  {
+   "unit": 1491,
+   "hadith": "1495",
+   "score": 1.0
+  },
+  {
+   "unit": 1492,
+   "hadith": "1496",
+   "score": 1.0
+  },
+  {
+   "unit": 1493,
+   "hadith": "1497",
+   "score": 1.0
+  },
+  {
+   "unit": 1494,
+   "hadith": "1498",
+   "score": 1.0
+  },
+  {
+   "unit": 1495,
+   "hadith": "1499",
+   "score": 0.989
+  },
+  {
+   "unit": 1496,
+   "hadith": "1500",
+   "score": 0.922
+  },
+  {
+   "unit": 1497,
+   "hadith": "1501",
+   "score": 0.968
+  },
+  {
+   "unit": 1498,
+   "hadith": "1502",
+   "score": 1.0
+  },
+  {
+   "unit": 1499,
+   "hadith": "1503",
+   "score": 0.9
+  },
+  {
+   "unit": 1500,
+   "hadith": "1504",
+   "score": 1.0
+  },
+  {
+   "unit": 1501,
+   "hadith": "1505",
+   "score": 0.924
+  },
+  {
+   "unit": 1502,
+   "hadith": "1506",
+   "score": 1.0
+  },
+  {
+   "unit": 1503,
+   "hadith": "1507",
+   "score": 0.966
+  },
+  {
+   "unit": 1504,
+   "hadith": "1508",
+   "score": 1.0
+  },
+  {
+   "unit": 1505,
+   "hadith": "1509",
+   "score": 0.911
+  },
+  {
+   "unit": 1506,
+   "hadith": "1510",
+   "score": 0.8
+  },
+  {
+   "unit": 1507,
+   "hadith": "1511",
+   "score": 0.959
+  },
+  {
+   "unit": 1509,
+   "hadith": "1513",
+   "score": 0.825
+  },
+  {
+   "unit": 1510,
+   "hadith": "1514",
+   "score": 1.0
+  },
+  {
+   "unit": 1511,
+   "hadith": "1515",
+   "score": 0.92
+  },
+  {
+   "unit": 1512,
+   "hadith": "1516",
+   "score": 1.0
+  },
+  {
+   "unit": 1513,
+   "hadith": "1517",
+   "score": 0.951
+  },
+  {
+   "unit": 1514,
+   "hadith": "1518",
+   "score": 1.0
+  },
+  {
+   "unit": 1515,
+   "hadith": "1520",
+   "score": 1.0
+  },
+  {
+   "unit": 1516,
+   "hadith": "1521",
+   "score": 1.0
+  },
+  {
+   "unit": 1517,
+   "hadith": "1522",
+   "score": 1.0
+  },
+  {
+   "unit": 1518,
+   "hadith": "1523",
+   "score": 1.0
+  },
+  {
+   "unit": 1519,
+   "hadith": "1524",
+   "score": 1.0
+  },
+  {
+   "unit": 1520,
+   "hadith": "1525",
+   "score": 0.781
+  },
+  {
+   "unit": 1521,
+   "hadith": "1526",
+   "score": 1.0
+  },
+  {
+   "unit": 1522,
+   "hadith": "1527",
+   "score": 1.0
+  },
+  {
+   "unit": 1523,
+   "hadith": "1529",
+   "score": 0.976
+  },
+  {
+   "unit": 1524,
+   "hadith": "1530",
+   "score": 1.0
+  },
+  {
+   "unit": 1525,
+   "hadith": "1531",
+   "score": 1.0
+  },
+  {
+   "unit": 1526,
+   "hadith": "1532",
+   "score": 0.996
+  },
+  {
+   "unit": 1527,
+   "hadith": "1533",
+   "score": 1.0
+  },
+  {
+   "unit": 1528,
+   "hadith": "1534",
+   "score": 0.97
+  },
+  {
+   "unit": 1529,
+   "hadith": "1535",
+   "score": 0.955
+  },
+  {
+   "unit": 1530,
+   "hadith": "1536",
+   "score": 0.972
+  },
+  {
+   "unit": 1531,
+   "hadith": "1537",
+   "score": 0.968
+  },
+  {
+   "unit": 1532,
+   "hadith": "1538",
+   "score": 1.0
+  },
+  {
+   "unit": 1533,
+   "hadith": "1539",
+   "score": 0.955
+  },
+  {
+   "unit": 1534,
+   "hadith": "1540",
+   "score": 1.0
+  },
+  {
+   "unit": 1535,
+   "hadith": "1541",
+   "score": 0.966
+  },
+  {
+   "unit": 1536,
+   "hadith": "1542",
+   "score": 1.0
+  },
+  {
+   "unit": 1537,
+   "hadith": "1543",
+   "score": 1.0
+  },
+  {
+   "unit": 1538,
+   "hadith": "1544",
+   "score": 0.649
+  },
+  {
+   "unit": 1539,
+   "hadith": "1545",
+   "score": 0.962
+  },
+  {
+   "unit": 1540,
+   "hadith": "1546",
+   "score": 1.0
+  },
+  {
+   "unit": 1541,
+   "hadith": "1547",
+   "score": 1.0
+  },
+  {
+   "unit": 1542,
+   "hadith": "1548",
+   "score": 0.978
+  },
+  {
+   "unit": 1543,
+   "hadith": "1549",
+   "score": 1.0
+  },
+  {
+   "unit": 1544,
+   "hadith": "1550",
+   "score": 1.0
+  },
+  {
+   "unit": 1545,
+   "hadith": "1551",
+   "score": 0.952
+  },
+  {
+   "unit": 1546,
+   "hadith": "1552",
+   "score": 1.0
+  },
+  {
+   "unit": 1547,
+   "hadith": "1553",
+   "score": 0.979
+  },
+  {
+   "unit": 1548,
+   "hadith": "1555",
+   "score": 1.0
+  },
+  {
+   "unit": 1549,
+   "hadith": "1557",
+   "score": 0.678
+  },
+  {
+   "unit": 1550,
+   "hadith": "1561",
+   "score": 0.963
+  },
+  {
+   "unit": 1552,
+   "hadith": "1572",
+   "score": 1.0
+  },
+  {
+   "unit": 1553,
+   "hadith": "1573",
+   "score": 0.74
+  },
+  {
+   "unit": 1554,
+   "hadith": "1576",
+   "score": 0.581
+  },
+  {
+   "unit": 1555,
+   "hadith": "1585",
+   "score": 0.978
+  },
+  {
+   "unit": 1556,
+   "hadith": "1586",
+   "score": 0.969
+  },
+  {
+   "unit": 1557,
+   "hadith": "1587",
+   "score": 1.0
+  },
+  {
+   "unit": 1558,
+   "hadith": "1588",
+   "score": 1.0
+  },
+  {
+   "unit": 1560,
+   "hadith": "1590",
+   "score": 1.0
+  },
+  {
+   "unit": 1561,
+   "hadith": "1591",
+   "score": 1.0
+  },
+  {
+   "unit": 1562,
+   "hadith": "1592",
+   "score": 1.0
+  },
+  {
+   "unit": 1563,
+   "hadith": "1595",
+   "score": 0.884
+  },
+  {
+   "unit": 1564,
+   "hadith": "1596",
+   "score": 0.979
+  },
+  {
+   "unit": 1566,
+   "hadith": "1598",
+   "score": 1.0
+  },
+  {
+   "unit": 1567,
+   "hadith": "1599",
+   "score": 0.962
+  },
+  {
+   "unit": 1568,
+   "hadith": "1600",
+   "score": 1.0
+  },
+  {
+   "unit": 1569,
+   "hadith": "1601",
+   "score": 1.0
+  },
+  {
+   "unit": 1570,
+   "hadith": "1602",
+   "score": 1.0
+  },
+  {
+   "unit": 1571,
+   "hadith": "1603",
+   "score": 1.0
+  },
+  {
+   "unit": 1572,
+   "hadith": "1604",
+   "score": 1.0
+  },
+  {
+   "unit": 1573,
+   "hadith": "1605",
+   "score": 0.973
+  },
+  {
+   "unit": 1574,
+   "hadith": "1606",
+   "score": 1.0
+  },
+  {
+   "unit": 1575,
+   "hadith": "1607",
+   "score": 1.0
+  },
+  {
+   "unit": 1576,
+   "hadith": "1608",
+   "score": 0.96
+  },
+  {
+   "unit": 1577,
+   "hadith": "1609",
+   "score": 0.935
+  },
+  {
+   "unit": 1578,
+   "hadith": "1610",
+   "score": 1.0
+  },
+  {
+   "unit": 1579,
+   "hadith": "1611",
+   "score": 0.872
+  },
+  {
+   "unit": 1580,
+   "hadith": "1613",
+   "score": 1.0
+  },
+  {
+   "unit": 1581,
+   "hadith": "1614",
+   "score": 1.0
+  },
+  {
+   "unit": 1582,
+   "hadith": "1615",
+   "score": 0.982
+  },
+  {
+   "unit": 1583,
+   "hadith": "1616",
+   "score": 1.0
+  },
+  {
+   "unit": 1584,
+   "hadith": "1617",
+   "score": 1.0
+  },
+  {
+   "unit": 1585,
+   "hadith": "1618",
+   "score": 0.992
+  },
+  {
+   "unit": 1586,
+   "hadith": "1619",
+   "score": 0.981
+  },
+  {
+   "unit": 1587,
+   "hadith": "1620",
+   "score": 0.975
+  },
+  {
+   "unit": 1588,
+   "hadith": "1621",
+   "score": 0.938
+  },
+  {
+   "unit": 1589,
+   "hadith": "1622",
+   "score": 0.833
+  },
+  {
+   "unit": 1590,
+   "hadith": "1623",
+   "score": 1.0
+  },
+  {
+   "unit": 1591,
+   "hadith": "1624",
+   "score": 1.0
+  },
+  {
+   "unit": 1592,
+   "hadith": "1625",
+   "score": 1.0
+  },
+  {
+   "unit": 1593,
+   "hadith": "1626",
+   "score": 1.0
+  },
+  {
+   "unit": 1594,
+   "hadith": "1627",
+   "score": 1.0
+  },
+  {
+   "unit": 1595,
+   "hadith": "1628",
+   "score": 1.0
+  },
+  {
+   "unit": 1596,
+   "hadith": "1629",
+   "score": 1.0
+  },
+  {
+   "unit": 1597,
+   "hadith": "1630",
+   "score": 1.0
+  },
+  {
+   "unit": 1598,
+   "hadith": "1631",
+   "score": 1.0
+  },
+  {
+   "unit": 1599,
+   "hadith": "1632",
+   "score": 0.765
+  },
+  {
+   "unit": 1600,
+   "hadith": "1633",
+   "score": 1.0
+  },
+  {
+   "unit": 1601,
+   "hadith": "1634",
+   "score": 0.944
+  },
+  {
+   "unit": 1602,
+   "hadith": "1635",
+   "score": 0.947
+  },
+  {
+   "unit": 1603,
+   "hadith": "1636",
+   "score": 0.974
+  },
+  {
+   "unit": 1604,
+   "hadith": "1637",
+   "score": 1.0
+  },
+  {
+   "unit": 1605,
+   "hadith": "1638",
+   "score": 1.0
+  },
+  {
+   "unit": 1606,
+   "hadith": "1639",
+   "score": 1.0
+  },
+  {
+   "unit": 1607,
+   "hadith": "1640",
+   "score": 1.0
+  },
+  {
+   "unit": 1608,
+   "hadith": "1641",
+   "score": 1.0
+  },
+  {
+   "unit": 1609,
+   "hadith": "1642",
+   "score": 0.955
+  },
+  {
+   "unit": 1610,
+   "hadith": "1643",
+   "score": 0.962
+  },
+  {
+   "unit": 1611,
+   "hadith": "1644",
+   "score": 0.957
+  },
+  {
+   "unit": 1612,
+   "hadith": "1645",
+   "score": 0.968
+  },
+  {
+   "unit": 1613,
+   "hadith": "1646",
+   "score": 0.706
+  },
+  {
+   "unit": 1614,
+   "hadith": "1647",
+   "score": 1.0
+  },
+  {
+   "unit": 1615,
+   "hadith": "1648",
+   "score": 0.905
+  },
+  {
+   "unit": 1616,
+   "hadith": "1649",
+   "score": 1.0
+  },
+  {
+   "unit": 1617,
+   "hadith": "1650",
+   "score": 0.9
+  },
+  {
+   "unit": 1618,
+   "hadith": "1651",
+   "score": 0.976
+  },
+  {
+   "unit": 1619,
+   "hadith": "1652",
+   "score": 1.0
+  },
+  {
+   "unit": 1620,
+   "hadith": "1653",
+   "score": 0.952
+  },
+  {
+   "unit": 1621,
+   "hadith": "1655",
+   "score": 0.776
+  },
+  {
+   "unit": 1622,
+   "hadith": "1656",
+   "score": 1.0
+  },
+  {
+   "unit": 1623,
+   "hadith": "1657",
+   "score": 1.0
+  },
+  {
+   "unit": 1624,
+   "hadith": "1658",
+   "score": 1.0
+  },
+  {
+   "unit": 1625,
+   "hadith": "1659",
+   "score": 0.969
+  },
+  {
+   "unit": 1626,
+   "hadith": "1660",
+   "score": 1.0
+  },
+  {
+   "unit": 1627,
+   "hadith": "1661",
+   "score": 1.0
+  },
+  {
+   "unit": 1628,
+   "hadith": "1662",
+   "score": 1.0
+  },
+  {
+   "unit": 1629,
+   "hadith": "1663",
+   "score": 1.0
+  },
+  {
+   "unit": 1630,
+   "hadith": "1664",
+   "score": 0.971
+  },
+  {
+   "unit": 1631,
+   "hadith": "1665",
+   "score": 1.0
+  },
+  {
+   "unit": 1632,
+   "hadith": "1666",
+   "score": 1.0
+  },
+  {
+   "unit": 1633,
+   "hadith": "1667",
+   "score": 0.946
+  },
+  {
+   "unit": 1634,
+   "hadith": "1668",
+   "score": 1.0
+  },
+  {
+   "unit": 1635,
+   "hadith": "1669",
+   "score": 1.0
+  },
+  {
+   "unit": 1636,
+   "hadith": "1670",
+   "score": 0.9
+  },
+  {
+   "unit": 1637,
+   "hadith": "1671",
+   "score": 1.0
+  },
+  {
+   "unit": 1638,
+   "hadith": "1672",
+   "score": 0.981
+  },
+  {
+   "unit": 1639,
+   "hadith": "1673",
+   "score": 1.0
+  },
+  {
+   "unit": 1640,
+   "hadith": "1674",
+   "score": 1.0
+  },
+  {
+   "unit": 1641,
+   "hadith": "1675",
+   "score": 1.0
+  },
+  {
+   "unit": 1642,
+   "hadith": "1676",
+   "score": 0.962
+  },
+  {
+   "unit": 1643,
+   "hadith": "1677",
+   "score": 1.0
+  },
+  {
+   "unit": 1644,
+   "hadith": "1678",
+   "score": 0.95
+  },
+  {
+   "unit": 1645,
+   "hadith": "1679",
+   "score": 1.0
+  },
+  {
+   "unit": 1646,
+   "hadith": "1680",
+   "score": 1.0
+  },
+  {
+   "unit": 1647,
+   "hadith": "1681",
+   "score": 1.0
+  },
+  {
+   "unit": 1648,
+   "hadith": "1682",
+   "score": 1.0
+  },
+  {
+   "unit": 1649,
+   "hadith": "1683",
+   "score": 1.0
+  },
+  {
+   "unit": 1650,
+   "hadith": "1684",
+   "score": 0.938
+  },
+  {
+   "unit": 1651,
+   "hadith": "1685",
+   "score": 0.857
+  },
+  {
+   "unit": 1652,
+   "hadith": "1686",
+   "score": 1.0
+  },
+  {
+   "unit": 1653,
+   "hadith": "1687",
+   "score": 0.964
+  },
+  {
+   "unit": 1654,
+   "hadith": "1688",
+   "score": 0.919
+  },
+  {
+   "unit": 1655,
+   "hadith": "1689",
+   "score": 1.0
+  },
+  {
+   "unit": 1656,
+   "hadith": "1690",
+   "score": 1.0
+  },
+  {
+   "unit": 1657,
+   "hadith": "1691",
+   "score": 1.0
+  },
+  {
+   "unit": 1658,
+   "hadith": "1692",
+   "score": 1.0
+  },
+  {
+   "unit": 1659,
+   "hadith": "1693",
+   "score": 1.0
+  },
+  {
+   "unit": 1660,
+   "hadith": "1694",
+   "score": 0.988
+  },
+  {
+   "unit": 1661,
+   "hadith": "1695",
+   "score": 1.0
+  },
+  {
+   "unit": 1662,
+   "hadith": "1696",
+   "score": 1.0
+  },
+  {
+   "unit": 1663,
+   "hadith": "1697",
+   "score": 0.957
+  },
+  {
+   "unit": 1664,
+   "hadith": "1698",
+   "score": 0.967
+  },
+  {
+   "unit": 1665,
+   "hadith": "1699",
+   "score": 1.0
+  },
+  {
+   "unit": 1666,
+   "hadith": "1701",
+   "score": 0.515
+  },
+  {
+   "unit": 1667,
+   "hadith": "1702",
+   "score": 0.989
+  },
+  {
+   "unit": 1668,
+   "hadith": "1703",
+   "score": 1.0
+  },
+  {
+   "unit": 1669,
+   "hadith": "1704",
+   "score": 0.976
+  },
+  {
+   "unit": 1670,
+   "hadith": "1705",
+   "score": 0.966
+  },
+  {
+   "unit": 1671,
+   "hadith": "1706",
+   "score": 1.0
+  },
+  {
+   "unit": 1672,
+   "hadith": "1707",
+   "score": 0.976
+  },
+  {
+   "unit": 1673,
+   "hadith": "1708",
+   "score": 1.0
+  },
+  {
+   "unit": 1674,
+   "hadith": "1709",
+   "score": 1.0
+  },
+  {
+   "unit": 1675,
+   "hadith": "1710",
+   "score": 0.767
+  },
+  {
+   "unit": 1676,
+   "hadith": "1711",
+   "score": 1.0
+  },
+  {
+   "unit": 1677,
+   "hadith": "1712",
+   "score": 0.983
+  },
+  {
+   "unit": 1678,
+   "hadith": "1713",
+   "score": 0.977
+  },
+  {
+   "unit": 1679,
+   "hadith": "1714",
+   "score": 0.931
+  },
+  {
+   "unit": 1680,
+   "hadith": "1715",
+   "score": 0.981
+  },
+  {
+   "unit": 1681,
+   "hadith": "1716",
+   "score": 1.0
+  },
+  {
+   "unit": 1682,
+   "hadith": "1717",
+   "score": 1.0
+  },
+  {
+   "unit": 1683,
+   "hadith": "1718",
+   "score": 0.963
+  },
+  {
+   "unit": 1684,
+   "hadith": "1719",
+   "score": 1.0
+  },
+  {
+   "unit": 1685,
+   "hadith": "1720",
+   "score": 0.968
+  },
+  {
+   "unit": 1686,
+   "hadith": "1721",
+   "score": 1.0
+  },
+  {
+   "unit": 1687,
+   "hadith": "1722",
+   "score": 1.0
+  },
+  {
+   "unit": 1688,
+   "hadith": "1723",
+   "score": 1.0
+  },
+  {
+   "unit": 1689,
+   "hadith": "1724",
+   "score": 1.0
+  },
+  {
+   "unit": 1690,
+   "hadith": "1725",
+   "score": 1.0
+  },
+  {
+   "unit": 1691,
+   "hadith": "1727",
+   "score": 0.75
+  },
+  {
+   "unit": 1692,
+   "hadith": "1728",
+   "score": 1.0
+  },
+  {
+   "unit": 1693,
+   "hadith": "1729",
+   "score": 0.882
+  },
+  {
+   "unit": 1694,
+   "hadith": "1730",
+   "score": 1.0
+  },
+  {
+   "unit": 1695,
+   "hadith": "1731",
+   "score": 0.977
+  },
+  {
+   "unit": 1696,
+   "hadith": "1732",
+   "score": 0.968
+  },
+  {
+   "unit": 1697,
+   "hadith": "1733",
+   "score": 1.0
+  },
+  {
+   "unit": 1698,
+   "hadith": "1734",
+   "score": 1.0
+  },
+  {
+   "unit": 1699,
+   "hadith": "1735",
+   "score": 1.0
+  },
+  {
+   "unit": 1700,
+   "hadith": "1736",
+   "score": 0.951
+  },
+  {
+   "unit": 1701,
+   "hadith": "1737",
+   "score": 0.963
+  },
+  {
+   "unit": 1702,
+   "hadith": "1738",
+   "score": 1.0
+  },
+  {
+   "unit": 1703,
+   "hadith": "1739",
+   "score": 1.0
+  },
+  {
+   "unit": 1704,
+   "hadith": "1740",
+   "score": 1.0
+  },
+  {
+   "unit": 1705,
+   "hadith": "1741",
+   "score": 1.0
+  },
+  {
+   "unit": 1706,
+   "hadith": "1742",
+   "score": 1.0
+  },
+  {
+   "unit": 1708,
+   "hadith": "1744",
+   "score": 1.0
+  },
+  {
+   "unit": 1709,
+   "hadith": "1745",
+   "score": 1.0
+  },
+  {
+   "unit": 1710,
+   "hadith": "1746",
+   "score": 0.773
+  },
+  {
+   "unit": 1711,
+   "hadith": "1747",
+   "score": 0.933
+  },
+  {
+   "unit": 1712,
+   "hadith": "1749",
+   "score": 1.0
+  },
+  {
+   "unit": 1713,
+   "hadith": "1750",
+   "score": 0.933
+  },
+  {
+   "unit": 1714,
+   "hadith": "1751",
+   "score": 0.981
+  },
+  {
+   "unit": 1715,
+   "hadith": "1752",
+   "score": 1.0
+  },
+  {
+   "unit": 1716,
+   "hadith": "1753",
+   "score": 1.0
+  },
+  {
+   "unit": 1717,
+   "hadith": "1754",
+   "score": 1.0
+  },
+  {
+   "unit": 1718,
+   "hadith": "1755",
+   "score": 0.927
+  },
+  {
+   "unit": 1719,
+   "hadith": "1756",
+   "score": 1.0
+  },
+  {
+   "unit": 1720,
+   "hadith": "1757",
+   "score": 0.982
+  },
+  {
+   "unit": 1721,
+   "hadith": "1758",
+   "score": 0.71
+  },
+  {
+   "unit": 1722,
+   "hadith": "1759",
+   "score": 1.0
+  },
+  {
+   "unit": 1723,
+   "hadith": "1760",
+   "score": 1.0
+  },
+  {
+   "unit": 1724,
+   "hadith": "1761",
+   "score": 0.984
+  },
+  {
+   "unit": 1727,
+   "hadith": "1763",
+   "score": 1.0
+  },
+  {
+   "unit": 1728,
+   "hadith": "1764",
+   "score": 1.0
+  },
+  {
+   "unit": 1729,
+   "hadith": "1765",
+   "score": 1.0
+  },
+  {
+   "unit": 1730,
+   "hadith": "1766",
+   "score": 1.0
+  },
+  {
+   "unit": 1731,
+   "hadith": "1767",
+   "score": 1.0
+  },
+  {
+   "unit": 1732,
+   "hadith": "1768",
+   "score": 1.0
+  },
+  {
+   "unit": 1733,
+   "hadith": "1769",
+   "score": 1.0
+  },
+  {
+   "unit": 1734,
+   "hadith": "1770",
+   "score": 1.0
+  },
+  {
+   "unit": 1735,
+   "hadith": "1771",
+   "score": 1.0
+  },
+  {
+   "unit": 1736,
+   "hadith": "1772",
+   "score": 0.982
+  },
+  {
+   "unit": 1737,
+   "hadith": "1773",
+   "score": 1.0
+  },
+  {
+   "unit": 1738,
+   "hadith": "1774",
+   "score": 1.0
+  },
+  {
+   "unit": 1739,
+   "hadith": "1775",
+   "score": 1.0
+  },
+  {
+   "unit": 1740,
+   "hadith": "1776",
+   "score": 1.0
+  },
+  {
+   "unit": 1741,
+   "hadith": "1777",
+   "score": 1.0
+  },
+  {
+   "unit": 1742,
+   "hadith": "1778",
+   "score": 0.938
+  },
+  {
+   "unit": 1743,
+   "hadith": "1779",
+   "score": 0.97
+  },
+  {
+   "unit": 1744,
+   "hadith": "1780",
+   "score": 1.0
+  },
+  {
+   "unit": 1745,
+   "hadith": "1781",
+   "score": 0.952
+  },
+  {
+   "unit": 1746,
+   "hadith": "1782",
+   "score": 0.962
+  },
+  {
+   "unit": 1747,
+   "hadith": "1783",
+   "score": 1.0
+  },
+  {
+   "unit": 1748,
+   "hadith": "1784",
+   "score": 0.947
+  },
+  {
+   "unit": 1749,
+   "hadith": "1785",
+   "score": 1.0
+  },
+  {
+   "unit": 1750,
+   "hadith": "1786",
+   "score": 1.0
+  },
+  {
+   "unit": 1751,
+   "hadith": "1787",
+   "score": 0.968
+  },
+  {
+   "unit": 1752,
+   "hadith": "1788",
+   "score": 1.0
+  },
+  {
+   "unit": 1753,
+   "hadith": "1789",
+   "score": 1.0
+  },
+  {
+   "unit": 1754,
+   "hadith": "1790",
+   "score": 0.967
+  },
+  {
+   "unit": 1755,
+   "hadith": "1791",
+   "score": 1.0
+  },
+  {
+   "unit": 1756,
+   "hadith": "1792",
+   "score": 1.0
+  },
+  {
+   "unit": 1757,
+   "hadith": "1793",
+   "score": 1.0
+  },
+  {
+   "unit": 1758,
+   "hadith": "1794",
+   "score": 1.0
+  },
+  {
+   "unit": 1759,
+   "hadith": "1795",
+   "score": 0.993
+  },
+  {
+   "unit": 1760,
+   "hadith": "1796",
+   "score": 0.95
+  },
+  {
+   "unit": 1761,
+   "hadith": "1797",
+   "score": 1.0
+  },
+  {
+   "unit": 1762,
+   "hadith": "1798",
+   "score": 1.0
+  },
+  {
+   "unit": 1763,
+   "hadith": "1799",
+   "score": 1.0
+  },
+  {
+   "unit": 1764,
+   "hadith": "1800",
+   "score": 1.0
+  },
+  {
+   "unit": 1765,
+   "hadith": "1801",
+   "score": 1.0
+  },
+  {
+   "unit": 1766,
+   "hadith": "1802",
+   "score": 1.0
+  },
+  {
+   "unit": 1767,
+   "hadith": "1803",
+   "score": 1.0
+  },
+  {
+   "unit": 1768,
+   "hadith": "1804",
+   "score": 1.0
+  },
+  {
+   "unit": 1769,
+   "hadith": "1805",
+   "score": 1.0
+  },
+  {
+   "unit": 1770,
+   "hadith": "1806",
+   "score": 1.0
+  },
+  {
+   "unit": 1771,
+   "hadith": "1807",
+   "score": 0.9
+  },
+  {
+   "unit": 1772,
+   "hadith": "1808",
+   "score": 1.0
+  },
+  {
+   "unit": 1773,
+   "hadith": "1809",
+   "score": 1.0
+  },
+  {
+   "unit": 1774,
+   "hadith": "1810",
+   "score": 1.0
+  },
+  {
+   "unit": 1775,
+   "hadith": "1811",
+   "score": 1.0
+  },
+  {
+   "unit": 1776,
+   "hadith": "1812",
+   "score": 1.0
+  },
+  {
+   "unit": 1777,
+   "hadith": "1813",
+   "score": 1.0
+  },
+  {
+   "unit": 1778,
+   "hadith": "1814",
+   "score": 0.957
+  },
+  {
+   "unit": 1779,
+   "hadith": "1815",
+   "score": 1.0
+  },
+  {
+   "unit": 1780,
+   "hadith": "1816",
+   "score": 1.0
+  },
+  {
+   "unit": 1781,
+   "hadith": "1817",
+   "score": 1.0
+  },
+  {
+   "unit": 1782,
+   "hadith": "1818",
+   "score": 0.975
+  },
+  {
+   "unit": 1783,
+   "hadith": "1819",
+   "score": 1.0
+  },
+  {
+   "unit": 1784,
+   "hadith": "1820",
+   "score": 1.0
+  },
+  {
+   "unit": 1785,
+   "hadith": "1821",
+   "score": 1.0
+  },
+  {
+   "unit": 1786,
+   "hadith": "1822",
+   "score": 1.0
+  },
+  {
+   "unit": 1787,
+   "hadith": "1823",
+   "score": 0.959
+  },
+  {
+   "unit": 1788,
+   "hadith": "1824",
+   "score": 1.0
+  },
+  {
+   "unit": 1789,
+   "hadith": "1825",
+   "score": 1.0
+  },
+  {
+   "unit": 1790,
+   "hadith": "1826",
+   "score": 1.0
+  },
+  {
+   "unit": 1791,
+   "hadith": "1827",
+   "score": 1.0
+  },
+  {
+   "unit": 1792,
+   "hadith": "1828",
+   "score": 1.0
+  },
+  {
+   "unit": 1793,
+   "hadith": "1829",
+   "score": 1.0
+  },
+  {
+   "unit": 1794,
+   "hadith": "1830",
+   "score": 1.0
+  },
+  {
+   "unit": 1795,
+   "hadith": "1831",
+   "score": 1.0
+  },
+  {
+   "unit": 1796,
+   "hadith": "1832",
+   "score": 1.0
+  },
+  {
+   "unit": 1797,
+   "hadith": "1833",
+   "score": 1.0
+  },
+  {
+   "unit": 1798,
+   "hadith": "1834",
+   "score": 0.625
+  },
+  {
+   "unit": 1799,
+   "hadith": "1836",
+   "score": 0.5
+  },
+  {
+   "unit": 1800,
+   "hadith": "1837",
+   "score": 0.971
+  },
+  {
+   "unit": 1801,
+   "hadith": "1838",
+   "score": 0.815
+  },
+  {
+   "unit": 1802,
+   "hadith": "1839",
+   "score": 1.0
+  },
+  {
+   "unit": 1803,
+   "hadith": "1840",
+   "score": 0.818
+  },
+  {
+   "unit": 1804,
+   "hadith": "1841",
+   "score": 1.0
+  },
+  {
+   "unit": 1805,
+   "hadith": "1842",
+   "score": 1.0
+  },
+  {
+   "unit": 1806,
+   "hadith": "1843",
+   "score": 1.0
+  },
+  {
+   "unit": 1807,
+   "hadith": "1844",
+   "score": 1.0
+  },
+  {
+   "unit": 1808,
+   "hadith": "1845",
+   "score": 1.0
+  },
+  {
+   "unit": 1809,
+   "hadith": "1846",
+   "score": 1.0
+  },
+  {
+   "unit": 1810,
+   "hadith": "1847",
+   "score": 0.976
+  },
+  {
+   "unit": 1811,
+   "hadith": "1848",
+   "score": 1.0
+  },
+  {
+   "unit": 1812,
+   "hadith": "1849",
+   "score": 1.0
+  },
+  {
+   "unit": 1813,
+   "hadith": "1850",
+   "score": 1.0
+  },
+  {
+   "unit": 1814,
+   "hadith": "1851",
+   "score": 1.0
+  },
+  {
+   "unit": 1815,
+   "hadith": "1852",
+   "score": 1.0
+  },
+  {
+   "unit": 1816,
+   "hadith": "1853",
+   "score": 1.0
+  },
+  {
+   "unit": 1817,
+   "hadith": "1854",
+   "score": 1.0
+  },
+  {
+   "unit": 1818,
+   "hadith": "1855",
+   "score": 0.938
+  },
+  {
+   "unit": 1819,
+   "hadith": "1856",
+   "score": 0.781
+  },
+  {
+   "unit": 1820,
+   "hadith": "1857",
+   "score": 0.918
+  },
+  {
+   "unit": 1821,
+   "hadith": "1858",
+   "score": 0.964
+  }
+ ]
+}

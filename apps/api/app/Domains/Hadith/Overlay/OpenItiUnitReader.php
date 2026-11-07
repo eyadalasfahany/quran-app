@@ -86,7 +86,7 @@ final class OpenItiUnitReader
         $units = [];
 
         foreach ($starts as $position => $start) {
-            $units[] = new OpenItiUnit($start['number'], $linesByUnit[$position], $start['markerEnd'], $start['lineIndex']);
+            $units[] = new OpenItiUnit($start['number'], $linesByUnit[$position], $start['markerEnd'], $start['lineIndex'], $position);
         }
 
         return $units;
