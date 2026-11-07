@@ -48,8 +48,12 @@ return [
         ],
     ],
 
-    // Developer-decided exceptions to the section-range check in the importer. Empty means none.
-    'reference_exceptions' => [],
+    // Developer-decided exceptions to the reference.book check (ADR 0076 §5, step 6b.2). Ibn Majah: reference.book agrees for
+    // 2490 and 2497 after the range correction below; these five are strays whose reference.book disagrees with both the
+    // corrected ranges and OpenITI's books. Placed hadith (placements below) are exempt from this check (Q6), so they are not listed here.
+    'reference_exceptions' => [
+        'ibnmajah' => ['2435', '2464', '2476', '2477', '2528'],
+    ],
 
     /*
     | The pinned file map: a path relative to the repository root mapped to its lowercase hex SHA-256. null means "not
@@ -116,6 +120,33 @@ return [
             '16' => ['first' => '3398', 'last' => '3567'],
             '43' => ['first' => '5938', 'last' => '6168'],
         ],
+        // Ibn Majah 2490 and 2497 (gap report, 7 Nov 2026): the source's ranges overlap; corrected ranges verified against
+        // reference.book, which agrees for both boundary numbers (ADR 0076 decision 9).
+        'ibnmajah' => [
+            '10' => ['first' => '2016', 'last' => '2089'],
+            '15' => ['first' => '2390', 'last' => '2435'],
+        ],
     ],
+
+    // Developer-approved explicit placements of a hadith that falls in no section range (ADR 0076 decision 6). number => book_number (the source's section key).
+    // Hadith outside every section range, placed by OpenITI's book (ADR 0076 decision 6, 7 Nov 2026). The text stays
+    // fawazahmed0's. Placed hadith are exempt from the reference.book check (Q6). Bukhari 2711 is a weak match (score 0.463),
+    // flagged in the gap report.
+    'placements' => [
+        'bukhari' => ['521' => '9', '2384' => '42', '2516' => '48', '2711' => '54', '3156' => '58', '4978' => '66'], // 2711: weak match, flagged in the gap report
+        'muslim' => ['4968' => '33', '4969' => '33', '4970' => '33', '4971' => '33', '5885' => '41', '5886' => '41'],
+    ],
+
+    // Numbers the developer accepts as complete without text, merge or fill. Empty. NOT reference_exceptions (a different check).
+    'completeness_exceptions' => [],     // e.g. 'muslim' => ['123']; each entry needs a developer decision
+
+    // A book the source lacks, inserted between two source sections (ADR 0076 decision 4). book_number null = undecided (Open question Q3).
+    'extra_books' => [],                 // filled in 6b.4
+
+    // Committed data files under database/data/hadith, path relative to that folder => lowercase hex SHA-256. null = not committed yet.
+    'data_files' => [],                  // filled in 6b.8 by the developer
+
+    // OpenITI: used only by the dev commands (6b.6, 6b.7). Production never reads it.
+    'openiti' => [],                     // filled in 6b.6
 
 ];

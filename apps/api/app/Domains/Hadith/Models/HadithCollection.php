@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $source_url
  * @property int $total_hadith
  * @property int $books_count
+ * @property bool $is_complete
+ * @property int $incomplete_count
  * @property string $source_version
  * @property CarbonImmutable $imported_at
  */
@@ -54,6 +56,8 @@ final class HadithCollection extends Model
             'source_id' => 'integer',
             'total_hadith' => 'integer',
             'books_count' => 'integer',
+            'is_complete' => 'boolean',
+            'incomplete_count' => 'integer',
             'imported_at' => 'immutable_datetime',
         ];
     }

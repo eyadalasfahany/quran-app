@@ -25,6 +25,7 @@ final class PackBuilder
         private readonly AzkarAudioReadiness $audio,
         private readonly DuasPackReadiness $duas,
         private readonly NamesSourceGate $namesGate,
+        private readonly HadithPackReadiness $hadith,
     ) {}
 
     public function build(Resource $resource): ContentPackData
@@ -56,6 +57,11 @@ final class PackBuilder
 
         if ($resource->group === ResourceGroup::Duas) {
             $this->duas->assertReady($resource->id);
+        }
+
+        if ($resource->group === ResourceGroup::HadithCollections) {
+            // ADR 0076 «Rule, 7 Nov 2026»: an incomplete hadith collection is not packed.
+            $this->hadith->assertReady($resource->id);
         }
 
         $temp = storage_path('app/tmp/pack-'.$resource->id.'-'.$resource->version.'-'.bin2hex(random_bytes(8)).'.sqlite');

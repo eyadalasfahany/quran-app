@@ -13,6 +13,7 @@ use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Content\Packs\PackBuildException;
 use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Domains\Hadith\Contracts\HadithCollectionSource;
+use App\Domains\Hadith\Exceptions\HadithDataFileException;
 use App\Domains\Hadith\Exceptions\HadithImportLockedException;
 use App\Domains\Hadith\Exceptions\HadithPinException;
 use App\Domains\Hadith\Exceptions\HadithRangeCorrectionException;
@@ -63,6 +64,8 @@ final class HadithImporter
         private readonly PackBuilder $packs,
         private readonly FawazHadithSource $source,
         private readonly HadithRangeCorrections $corrections,
+        private readonly HadithCompletenessExceptions $completeness,
+        private readonly HadithPlacements $placements,
     ) {}
 
     /**
@@ -72,6 +75,7 @@ final class HadithImporter
      * @throws \InvalidArgumentException For a slug not in config('hadith.collections').
      * @throws HadithImportLockedException When a wet run cannot get the lock.
      * @throws HadithRangeCorrectionException When a configured range correction is malformed or names an unknown collection.
+     * @throws HadithDataFileException When a configured completeness exception is malformed or names an unknown collection.
      */
     public function run(array $slugs, bool $dryRun = false, bool $buildPacks = false, bool $deferPack = false): HadithImportReport
     {
@@ -81,6 +85,8 @@ final class HadithImporter
 
         $this->assertSlugs($slugs);
         $this->corrections->assertKnown();
+        $this->completeness->assertKnown();
+        $this->placements->assertKnown();
         $primary = $this->sources->primary();
         $content = $this->content($primary->code());
 
@@ -108,11 +114,14 @@ final class HadithImporter
      *
      * @throws \LogicException When the source row is not seeded.
      * @throws HadithRangeCorrectionException When a configured range correction is malformed or names an unknown collection.
+     * @throws HadithDataFileException When a configured completeness exception is malformed or names an unknown collection.
      */
     public function verify(array $slugs): HadithImportReport
     {
         $this->assertSlugs($slugs);
         $this->corrections->assertKnown();
+        $this->completeness->assertKnown();
+        $this->placements->assertKnown();
         $primary = $this->sources->primary();
         $content = $this->content($primary->code());
         $results = [];
@@ -163,7 +172,7 @@ final class HadithImporter
             $counts = $this->repository->storedCounts($resource->id);
 
             if ($counts !== null && $counts['total'] > 0 && $counts['entries'] === $counts['total']) {
-                return $this->result($slug, CollectionImportResult::STATUS_UNCHANGED, null, null, [], true, $fingerprint, $resource->id, $resource->version, $resource->version, ['built' => false, 'queued' => false, 'reason' => 'unchanged'], null);
+                return $this->result($slug, CollectionImportResult::STATUS_UNCHANGED, null, null, [], true, $fingerprint, $resource->id, $resource->version, $resource->version, ['built' => false, 'queued' => false, 'reason' => 'unchanged'], null, $counts['complete'], $counts['incomplete']);
             }
         }
 
@@ -182,7 +191,7 @@ final class HadithImporter
 
         try {
             $mapping = $this->mapper->map($collection, $info, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'));
-        } catch (HadithRangeCorrectionException $exception) {
+        } catch (HadithRangeCorrectionException|HadithDataFileException $exception) {
             return $this->result($slug, CollectionImportResult::STATUS_FAILED, $exception->getMessage(), null, [], $unchangedFingerprint, $fingerprint, $resource?->id, $resource?->version, $resource?->version, [], null);
         }
 
@@ -227,9 +236,10 @@ final class HadithImporter
         $title = $mapping->plan->collection['title_ar'] ?? null;
         $sourceSlug = $this->source->sourceSlug($slug);
         $checksum = $this->editionPin($sourceSlug);
+        $complete = $mapping->stats->complete;
 
         try {
-            [$resourceId, $versionBefore, $versionAfter, $check] = DB::transaction(function () use ($slug, $content, $mapping, $fingerprint, $title, $position, $checksum): array {
+            [$resourceId, $versionBefore, $versionAfter, $check] = DB::transaction(function () use ($slug, $content, $mapping, $fingerprint, $title, $position, $checksum, $complete): array {
                 $resource = $this->resources->findBySource($content->id, ResourceGroup::HadithCollections, $slug)
                     ?? $this->resources->create([
                         'source_id' => $content->id,
@@ -241,7 +251,7 @@ final class HadithImporter
                         'direction' => TextDirection::Rtl,
                         'version' => 0,
                         'changes_floor_version' => 0,
-                        'is_active' => true,
+                        'is_active' => $complete,
                     ]);
 
                 $before = $resource->version;
@@ -251,7 +261,7 @@ final class HadithImporter
                 $resource->import_fingerprint = $fingerprint;
                 $resource->name = is_string($title) ? $title : 'مجموعة '.$this->arabicDigits($position);
                 $resource->name_ar = is_string($title) ? $title : null;
-                $resource->is_active = true;
+                $resource->is_active = $complete;
                 $this->resources->save($resource);
 
                 $this->repository->replaceForResource($resource->id, $mapping->plan);
@@ -269,9 +279,16 @@ final class HadithImporter
             return $this->result($slug, CollectionImportResult::STATUS_FAILED, $exception::class, $mapping->stats, $issues, false, $fingerprint, null, null, null, [], null);
         }
 
+        $incompleteCount = count($mapping->stats->incompleteNumbers);
+
+        if (! $complete) {
+            // ADR 0076 «Rule, 7 Nov 2026»: the rows are written and the resource is inactive; no pack is built or queued.
+            return $this->result($slug, CollectionImportResult::STATUS_HELD_BACK, null, $mapping->stats, $issues, false, $fingerprint, $resourceId, $versionBefore, $versionAfter, ['built' => false, 'queued' => false, 'reason' => 'incomplete'], $check, false, $incompleteCount);
+        }
+
         $pack = $this->packAfterCommit($resourceId, $buildPacks, $deferPack);
 
-        return $this->result($slug, CollectionImportResult::STATUS_IMPORTED, null, $mapping->stats, $issues, false, $fingerprint, $resourceId, $versionBefore, $versionAfter, $pack, $check);
+        return $this->result($slug, CollectionImportResult::STATUS_IMPORTED, null, $mapping->stats, $issues, false, $fingerprint, $resourceId, $versionBefore, $versionAfter, $pack, $check, true, $incompleteCount);
     }
 
     /**
@@ -326,7 +343,7 @@ final class HadithImporter
 
         try {
             $mapping = $this->mapper->map($collection, null, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'));
-        } catch (HadithRangeCorrectionException $exception) {
+        } catch (HadithRangeCorrectionException|HadithDataFileException $exception) {
             return $this->result($slug, CollectionImportResult::STATUS_FAILED, $exception->getMessage(), null, [], false, null, $resource->id, $resource->version, $resource->version, [], null);
         }
 
@@ -388,7 +405,7 @@ final class HadithImporter
      * @param  list<HadithIssue>  $issues
      * @param  array<string, bool|int|string|null>  $pack
      */
-    private function result(string $slug, string $status, ?string $failure, ?CollectionStats $stats, array $issues, bool $unchanged, ?string $fingerprint, ?int $resourceId, ?int $versionBefore, ?int $versionAfter, array $pack, ?IntegrityResult $integrity): CollectionImportResult
+    private function result(string $slug, string $status, ?string $failure, ?CollectionStats $stats, array $issues, bool $unchanged, ?string $fingerprint, ?int $resourceId, ?int $versionBefore, ?int $versionAfter, array $pack, ?IntegrityResult $integrity, ?bool $complete = null, ?int $incompleteCount = null): CollectionImportResult
     {
         return new CollectionImportResult(
             slug: $slug,
@@ -403,6 +420,8 @@ final class HadithImporter
             versionAfter: $versionAfter,
             pack: $pack,
             integrity: $integrity,
+            complete: $complete,
+            incompleteCount: $incompleteCount,
         );
     }
 }

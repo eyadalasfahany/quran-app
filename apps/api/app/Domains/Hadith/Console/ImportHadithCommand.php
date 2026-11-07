@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Hadith\Console;
 
+use App\Domains\Hadith\Exceptions\HadithDataFileException;
 use App\Domains\Hadith\Exceptions\HadithImportLockedException;
 use App\Domains\Hadith\Exceptions\HadithPinException;
 use App\Domains\Hadith\Exceptions\HadithRangeCorrectionException;
@@ -78,7 +79,7 @@ final class ImportHadithCommand extends Command
             $report = $verify
                 ? $importer->verify($slugs)
                 : $importer->run($slugs, $dryRun, $buildPacks, $deferPack);
-        } catch (HadithImportLockedException|HadithRangeCorrectionException $exception) {
+        } catch (HadithImportLockedException|HadithRangeCorrectionException|HadithDataFileException $exception) {
             $this->error($exception->getMessage());
 
             return self::FAILURE;
@@ -151,6 +152,17 @@ final class ImportHadithCommand extends Command
 
         $this->line('Status'.($report->dryRun ? ' (dry run)' : ($report->verify ? ' (verify)' : '')).':');
         $this->table(['Collection', 'Status', 'In file', 'Imported', 'No text', 'Books', 'Grades', 'Mismatches', 'Duplicates', 'Est. raw MB'], $rows);
+
+        foreach ($report->collections as $result) {
+            if ($result->stats === null && $result->complete === null) {
+                continue;
+            }
+
+            $stats = $result->stats ?? new CollectionStats;
+            $complete = $result->complete ?? $stats->complete;
+            $incomplete = $result->incompleteCount ?? count($stats->incompleteNumbers);
+            $this->line($result->slug.': complete: '.($complete ? 'yes' : 'no ('.$incomplete.' incomplete)'));
+        }
 
         foreach ($report->collections as $result) {
             $this->printProblems($result);

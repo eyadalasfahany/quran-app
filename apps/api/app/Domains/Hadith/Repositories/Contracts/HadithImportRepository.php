@@ -15,7 +15,7 @@ interface HadithImportRepository
     public function source(string $code): ?ContentSource;
 
     /**
-     * @return array{total: int, entries: int}|null total_hadith of the collection row and the real entry count; null when there is no collection row
+     * @return array{total: int, entries: int, complete: bool, incomplete: int}|null total_hadith and the stored completeness of the collection row, and the real entry count; null when there is no collection row
      */
     public function storedCounts(int $resourceId): ?array;
 

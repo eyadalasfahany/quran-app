@@ -94,11 +94,21 @@ it('has no approved_collections', function (): void {
         ->and((string) file_get_contents(config_path('hadith.php')))->not->toContain('approved_collections');
 });
 
-it('names the source and keeps the shared lists empty', function (): void {
+it('names the source and lists the approved reference exceptions for Ibn Majah only', function (): void {
     expect(config('hadith.source_code'))->toBe('fawazahmed0')
         ->and(config('hadith.primary_source'))->toBe('fawazahmed0')
         ->and(config('hadith.slug_map'))->toBe(['fawazahmed0' => ['nawawi' => 'nawawi40', 'qudsi' => 'qudsi40', 'dehlawi' => 'shahwaliullah40']])
-        ->and(config('hadith.reference_exceptions'))->toBe([]);
+        ->and(config('hadith.reference_exceptions'))->toBe(['ibnmajah' => ['2435', '2464', '2476', '2477', '2528']]);
+});
+
+it('holds the approved Ibn Majah range corrections and the six Bukhari and six Muslim placements', function (): void {
+    expect(config('hadith.range_corrections.ibnmajah'))->toBe([
+        '10' => ['first' => '2016', 'last' => '2089'],
+        '15' => ['first' => '2390', 'last' => '2435'],
+    ])
+        ->and(count(config('hadith.placements.bukhari')))->toBe(6)
+        ->and(count(config('hadith.placements.muslim')))->toBe(6)
+        ->and(config('hadith.placements.bukhari.2711'))->toBe('54');
 });
 
 it('has the twelve file keys with null or sha256 values', function (): void {

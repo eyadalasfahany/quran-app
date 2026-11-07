@@ -23,6 +23,10 @@ final class HadithImportFingerprint
         $sourceSlug = $this->source->sourceSlug($slug);
         $pins = config('hadith.files', []);
         $exceptions = config('hadith.reference_exceptions', []);
+        $completenessExceptions = config('hadith.completeness_exceptions', []);
+        $completenessExceptions = is_array($completenessExceptions) ? $completenessExceptions : [];
+        $placements = config('hadith.placements', []);
+        $placements = is_array($placements) ? $placements : [];
         $position = array_search($slug, (array) config('hadith.collections'), true);
 
         $inputs = [
@@ -34,6 +38,8 @@ final class HadithImportFingerprint
             'attribution_en' => $attributionEn,
             'titles' => $this->titles->forSlug($slug),
             'reference_exceptions' => is_array($exceptions) ? ($exceptions[$slug] ?? []) : [],
+            'completeness_exceptions' => $completenessExceptions[$slug] ?? [],
+            'placements' => $placements[$slug] ?? [],
             'range_corrections' => $this->corrections->forSlug($slug),
         ];
 

@@ -42,6 +42,7 @@ beforeEach(function (): void {
     Http::preventStrayRequests();
     Storage::fake('local');
     config(['hadith.range_corrections' => []]);
+    hadithImportApproveFixtureGaps((array) config('hadith.collections'));
     hadithImportUse(hadithImportFiles());
     hadithImportWarm();
 });
@@ -464,8 +465,9 @@ it('skips a text-bearing hadith outside every range and lists it, without failin
 
     $result = hadithImportRun()->collections[0];
 
-    expect($result->status)->toBe(CollectionImportResult::STATUS_IMPORTED)
+    expect($result->status)->toBe(CollectionImportResult::STATUS_HELD_BACK)
         ->and($result->stats->outsideRanges)->toBe(['500'])
+        ->and($result->stats->incompleteReasons)->toBe(['500' => 'outside_range'])
         ->and(HadithEntry::query()->where('source_key', 'fawazahmed0:bukhari:500')->exists())->toBeFalse();
 });
 

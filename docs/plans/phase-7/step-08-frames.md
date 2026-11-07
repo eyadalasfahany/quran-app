@@ -361,3 +361,4 @@ The review set is therefore 49 frames (47 plus the two expanded frames).
 - list rows as separate cards with gaps.
 
 The frames now live in `screens/frames/hadith/HadithColl*.html` (ADR 0075). Known nit: the mark tips of a hidden fourth line can show under some list previews; fix it with the chapter frame changes.
+- 7 Nov 2026 (orchestrator, on the developer's behalf): collections list header gains a Saved (bookmark) icon button to reach `HadithCollSaved` (step 13 answer 3).

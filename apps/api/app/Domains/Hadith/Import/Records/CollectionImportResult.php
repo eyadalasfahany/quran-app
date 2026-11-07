@@ -25,6 +25,8 @@ final readonly class CollectionImportResult
 
     public const string STATUS_INTEGRITY_FAILED = 'integrity_failed';
 
+    public const string STATUS_HELD_BACK = 'held_back';
+
     /**
      * @param  list<HadithIssue>  $issues
      * @param  array<string, bool|int|string|null>  $pack
@@ -42,6 +44,8 @@ final readonly class CollectionImportResult
         public ?int $versionAfter,
         public array $pack,
         public ?IntegrityResult $integrity,
+        public ?bool $complete = null,
+        public ?int $incompleteCount = null,
     ) {}
 
     public function failed(): bool

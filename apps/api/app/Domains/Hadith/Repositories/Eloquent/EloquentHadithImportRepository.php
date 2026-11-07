@@ -36,6 +36,8 @@ final class EloquentHadithImportRepository implements HadithImportRepository
         return [
             'total' => (int) $collection->getAttribute('total_hadith'),
             'entries' => HadithEntry::query()->where('resource_id', $resourceId)->count(),
+            'complete' => (bool) $collection->getAttribute('is_complete'),
+            'incomplete' => (int) $collection->getAttribute('incomplete_count'),
         ];
     }
 

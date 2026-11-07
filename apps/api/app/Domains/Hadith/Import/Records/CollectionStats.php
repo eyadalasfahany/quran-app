@@ -18,6 +18,12 @@ final readonly class CollectionStats
      * @param  list<string>  $emptySectionKeys
      * @param  list<string>  $outsideRanges  Text-bearing hadith whose number falls in no section range (skipped).
      * @param  list<string>  $rangeCorrectionsApplied  Section keys whose range a developer-approved correction replaced.
+     * @param  list<string>  $mergedNumbers  Numbers resolved by a merge into a neighbour (step 6b.3).
+     * @param  list<string>  $filledNumbers  Numbers filled from OpenITI or hadithapi.com (step 6b.4).
+     * @param  list<string>  $placedNumbers  Out-of-range numbers placed by a developer decision (step 6b.2).
+     * @param  list<string>  $completenessExceptionNumbers  Numbers accepted by hadith.completeness_exceptions.
+     * @param  list<string>  $incompleteNumbers  Numbers with no resolution, in file order (ADR 0076 «Rule, 7 Nov 2026»).
+     * @param  array<string, string>  $incompleteReasons  Number => reason code for every incomplete number.
      */
     public function __construct(
         public int $hadithInFile = 0,
@@ -46,5 +52,12 @@ final readonly class CollectionStats
         public int $referenceMissing = 0,
         public array $outsideRanges = [],
         public array $rangeCorrectionsApplied = [],
+        public array $mergedNumbers = [],
+        public array $filledNumbers = [],
+        public array $placedNumbers = [],
+        public array $completenessExceptionNumbers = [],
+        public array $incompleteNumbers = [],
+        public array $incompleteReasons = [],
+        public bool $complete = false,
     ) {}
 }

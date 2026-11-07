@@ -43,6 +43,8 @@ class HadithCollectionFactory extends Factory
             'source_url' => null,
             'total_hadith' => 1,
             'books_count' => 1,
+            'is_complete' => true,
+            'incomplete_count' => 0,
             'source_version' => (string) config('hadith.commit'),
             'imported_at' => now(),
         ];
@@ -56,6 +58,11 @@ class HadithCollectionFactory extends Factory
             'author_ar' => null,
             'author_en' => null,
         ]);
+    }
+
+    public function incomplete(int $count = 1): static
+    {
+        return $this->state(fn (): array => ['is_complete' => false, 'incomplete_count' => $count]);
     }
 
     public function arabicTitled(): static

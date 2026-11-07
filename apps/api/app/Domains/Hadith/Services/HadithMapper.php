@@ -25,9 +25,10 @@ final class HadithMapper
 {
     /**
      * Bump whenever the mapping rules change: the import fingerprint includes it. 2: range corrections, reference.book 0 is
-     * not a mismatch, and a hadith outside every range is listed instead of failing the collection.
+     * not a mismatch, and a hadith outside every range is listed instead of failing the collection. 3: completeness per
+     * collection (ADR 0076 «Rule, 7 Nov 2026»), completeness exceptions. 4: placements of out-of-range hadith (ADR 0076 decision 6).
      */
-    public const int VERSION = 2;
+    public const int VERSION = 4;
 
     private const int GRADE_MAX_BYTES = 120;
 
@@ -44,6 +45,8 @@ final class HadithMapper
         private readonly HadithSearchTextNormalizer $normalizer,
         private readonly HadithTitles $titles,
         private readonly HadithRangeCorrections $corrections,
+        private readonly HadithCompletenessExceptions $completeness,
+        private readonly HadithPlacements $placements,
     ) {}
 
     /**
@@ -65,6 +68,15 @@ final class HadithMapper
         $sections = $corrected['sections'];
         $ranges = $this->ranges($sections);
         $exceptions = $this->referenceExceptions($slug);
+        $completenessExceptions = $this->completeness->forSlug($slug);
+        $placements = [];
+
+        foreach ($this->placements->forSlug($slug) as $placement) {
+            $placements[$placement['number']] = $placement['section'];
+        }
+
+        $sectionKeys = array_map(static fn (SourceSection $section): string => $section->key, $sections);
+        $placedNumbers = [];
         $seen = [];
         $accepted = [];
         $noTextNumbers = [];
@@ -124,6 +136,22 @@ final class HadithMapper
             foreach ($ranges as $range) {
                 if ($value >= $range['from'] && $value <= $range['to']) {
                     $candidates[] = $range['key'];
+                }
+            }
+
+            if (isset($placements[$number])) {
+                if ($candidates !== []) {
+                    $issues[] = new HadithIssue(HadithIssue::SEVERITY_ERROR, 'placement_in_range', $number);
+                } elseif (! in_array($placements[$number], $sectionKeys, true)) {
+                    $issues[] = new HadithIssue(HadithIssue::SEVERITY_ERROR, 'placement_unknown_section', $number);
+
+                    continue;
+                } else {
+                    // Q6 (7 Nov 2026): a placed hadith is exempt from the reference.book check; OpenITI decided its book.
+                    $placedNumbers[] = $number;
+                    $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $placements[$number]];
+
+                    continue;
                 }
             }
 
@@ -218,6 +246,8 @@ final class HadithMapper
             $issues,
         );
 
+        $completeness = $this->assessCompleteness($source, $accepted, $noTextNumbers, $outsideRanges, $completenessExceptions, $issues);
+
         $collection = [
             'id' => 1,
             'slug' => $slug,
@@ -232,6 +262,8 @@ final class HadithMapper
             'source_url' => null,
             'total_hadith' => count($entries),
             'books_count' => count($books),
+            'is_complete' => $completeness['complete'] ? 1 : 0,
+            'incomplete_count' => count($completeness['incomplete']),
             'source_version' => $sourceVersion,
             'imported_at' => $now->format('Y-m-d H:i:s.u'),
         ];
@@ -263,6 +295,11 @@ final class HadithMapper
             referenceMissing: $referenceMissing,
             outsideRanges: $outsideRanges,
             rangeCorrectionsApplied: $corrected['applied'],
+            placedNumbers: $placedNumbers,
+            completenessExceptionNumbers: $completeness['exceptionNumbers'],
+            incompleteNumbers: $completeness['incomplete'],
+            incompleteReasons: $completeness['reasons'],
+            complete: $completeness['complete'],
         );
 
         return new MappingResult(
@@ -270,6 +307,73 @@ final class HadithMapper
             stats: $stats,
             issues: $issues,
         );
+    }
+
+    /**
+     * Every number of the source's numbering is resolved or listed (ADR 0076 §2.2, step 6b.1). A number is resolved when it is
+     * accepted, or when it is a no-text or out-of-range number that a completeness exception accepts. Errors also make the
+     * collection incomplete. Lists hold numbers and reason codes only.
+     *
+     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string}>  $accepted
+     * @param  list<string>  $noTextNumbers
+     * @param  list<string>  $outsideRanges
+     * @param  list<string>  $exceptions
+     * @param  list<HadithIssue>  $issues
+     * @return array{complete: bool, incomplete: list<string>, reasons: array<string, string>, exceptionNumbers: list<string>}
+     */
+    private function assessCompleteness(SourceCollection $source, array $accepted, array $noTextNumbers, array $outsideRanges, array $exceptions, array $issues): array
+    {
+        $acceptedNumbers = [];
+
+        foreach ($accepted as $row) {
+            $acceptedNumbers[$row['hadith']->number] = true;
+        }
+
+        $incomplete = [];
+        $reasons = [];
+        $exceptionNumbers = [];
+
+        foreach ($source->hadiths as $hadith) {
+            $number = $hadith->number;
+
+            if (isset($acceptedNumbers[$number])) {
+                continue;
+            }
+
+            if (in_array($number, $noTextNumbers, true)) {
+                $reason = 'no_text';
+            } elseif (in_array($number, $outsideRanges, true)) {
+                $reason = 'outside_range';
+            } else {
+                continue;
+            }
+
+            if (in_array($number, $exceptions, true)) {
+                $exceptionNumbers[] = $number;
+
+                continue;
+            }
+
+            $incomplete[] = $number;
+            $reasons[$number] = $reason;
+        }
+
+        $hasError = false;
+
+        foreach ($issues as $issue) {
+            if ($issue->severity === HadithIssue::SEVERITY_ERROR) {
+                $hasError = true;
+
+                break;
+            }
+        }
+
+        return [
+            'complete' => $incomplete === [] && ! $hasError,
+            'incomplete' => $incomplete,
+            'reasons' => $reasons,
+            'exceptionNumbers' => $exceptionNumbers,
+        ];
     }
 
     /**

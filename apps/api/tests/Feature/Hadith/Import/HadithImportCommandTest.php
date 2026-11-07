@@ -28,6 +28,7 @@ beforeEach(function (): void {
     Http::preventStrayRequests();
     Storage::fake('local');
     config(['hadith.range_corrections' => []]);
+    hadithImportApproveFixtureGaps((array) config('hadith.collections'));
     hadithImportUse(hadithImportFiles());
     hadithImportWarm();
 });

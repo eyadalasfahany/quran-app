@@ -10,6 +10,9 @@ namespace App\Domains\Hadith\Import\Records;
  */
 final readonly class HadithImportReport
 {
+    /** Incomplete numbers and reasons printed in the report; the real count is in counts.incomplete. */
+    private const int NUMBERS_SHOWN = 100;
+
     /**
      * @param  list<CollectionImportResult>  $collections
      */
@@ -55,6 +58,8 @@ final readonly class HadithImportReport
         $stats = $result->stats ?? new CollectionStats;
         $rawBytes = $stats->estimatedRawBytes;
         $integrity = $result->integrity;
+        $complete = $result->complete ?? $stats->complete;
+        $incompleteCount = $result->incompleteCount ?? count($stats->incompleteNumbers);
 
         return [
             'slug' => $result->slug,
@@ -63,6 +68,11 @@ final readonly class HadithImportReport
             'fingerprint_unchanged' => $result->fingerprintUnchanged,
             'fingerprint' => $result->fingerprint,
             'counts' => [
+                'complete' => $complete,
+                'incomplete' => $incompleteCount,
+                'merged' => count($stats->mergedNumbers),
+                'filled' => count($stats->filledNumbers),
+                'placed' => count($stats->placedNumbers),
                 'hadith_in_file' => $stats->hadithInFile,
                 'imported' => $stats->imported,
                 'no_text' => $stats->noText,
@@ -96,6 +106,11 @@ final readonly class HadithImportReport
                 'empty_section_keys' => $stats->emptySectionKeys,
                 'outside_ranges' => $stats->outsideRanges,
                 'range_corrections_applied' => $stats->rangeCorrectionsApplied,
+                'incomplete_numbers' => array_slice($stats->incompleteNumbers, 0, self::NUMBERS_SHOWN),
+                'incomplete_reasons' => array_slice($stats->incompleteReasons, 0, self::NUMBERS_SHOWN, true),
+                'merged_numbers' => $stats->mergedNumbers,
+                'filled_numbers' => $stats->filledNumbers,
+                'placed_numbers' => $stats->placedNumbers,
             ],
             'graders' => $stats->graders === [] ? new \stdClass : $stats->graders,
             'issues' => $this->groupIssues($result->issues),

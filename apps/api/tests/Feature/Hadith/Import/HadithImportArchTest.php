@@ -66,3 +66,17 @@ it('writes nothing under config/, database/ or app/ from the matcher', function 
             ->and($source)->not->toContain('app_path(');
     }
 });
+
+arch('overlay value objects are plain PHP')
+    ->expect('App\Domains\Hadith\Overlay')
+    ->not->toUse(['Illuminate\Database', 'Spatie\LaravelData', 'Illuminate\Http']);
+
+it('reads database_path only in HadithDataFiles within the Hadith domain', function (): void {
+    foreach (File::allFiles(app_path('Domains/Hadith')) as $file) {
+        $path = str_replace('\\', '/', $file->getPathname());
+
+        if (str_contains(File::get($file->getPathname()), 'database_path(')) {
+            expect($path)->toEndWith('Domains/Hadith/Overlay/HadithDataFiles.php');
+        }
+    }
+});

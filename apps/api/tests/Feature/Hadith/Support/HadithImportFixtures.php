@@ -279,3 +279,20 @@ function hadithImportCodes(array $issues): array
 {
     return array_map(fn (HadithIssue $issue): string => $issue->code, $issues);
 }
+
+/**
+ * Approves the default fixture's no-text number 3 as a completeness exception for the given slugs (step 6b.1). Without it the
+ * default collection is incomplete and held back.
+ *
+ * @param  list<string>  $slugs
+ */
+function hadithImportApproveFixtureGaps(array $slugs = ['bukhari']): void
+{
+    $exceptions = [];
+
+    foreach ($slugs as $slug) {
+        $exceptions[$slug] = ['3'];
+    }
+
+    config(['hadith.completeness_exceptions' => $exceptions]);
+}
