@@ -543,3 +543,349 @@ def test_stage_hands_on_no_aligned_document_for_a_surah_the_gate_found_unavailab
     stage_mod.stage(3, 1, [1, 2, 3], ingest, align, handoff)
     assert sorted(p.name for p in (handoff / "aligned").iterdir()) == ["001.json", "003.json"]
     assert sorted(p.name for p in (handoff / "gate").iterdir()) == ["001.json", "002.json", "003.json"]
+
+
+# --- repair (plan way2quran-quality Q7b) ----------------------------------------------------------------------------
+#
+# A synthetic recitation: PLACEHOLDER words of distinct random Arabic letters, one CTC token per letter, certain on
+# its frames. The fake transcriber hears, for any clip, the recited words whose onset falls inside it, so G3, the
+# stepped probes and the dense ASR all read the same true timeline. The first-pass words are built from it with the
+# distortion of each case (an ayah start placed on a repeat, a late start, ...).
+
+import random as _random  # noqa: E402
+
+import torch  # noqa: E402
+
+from recitation_align import repeats as RP  # noqa: E402
+
+SPF = 0.02  # seconds per emission frame
+LETTERS_W = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي"  # PLACEHOLDER letters
+VOCAB = {ch: i + 1 for i, ch in enumerate(LETTERS_W)}
+
+
+def world_ayahs(n_ayahs=8, per=10, seed=11):
+    rng, seen, out = _random.Random(seed), set(), {}
+    for a in range(1, n_ayahs + 1):
+        ws = []
+        while len(ws) < per:
+            w = "".join(rng.choice(LETTERS_W) for _ in range(4))
+            if w not in seen:
+                seen.add(w)
+                ws.append(w)
+        out[(SURAH, a)] = " ".join(ws)
+    out[(1, 1)] = "صصصص"  # PLACEHOLDER first ayah of the text: the surah does not open with it (no basmala words)
+    return out
+
+
+class World:
+    """A recited order [(ayah, position)] laid out on frames: 5 frames per letter, 2 blank frames after a word,
+    25 blank frames (0.5 s) where `breaks` says a pause follows (ayah ends by default)."""
+
+    def __init__(self, ayahs, order, breaks=None):
+        self.ayahs = ayahs
+        frames = [0] * 50
+        self.occ = []  # (ayah, position, word, onset_ms, end_ms)
+        for k, (a, p) in enumerate(order):
+            word = ayahs[(SURAH, a)].split()[p - 1]
+            onset = len(frames)
+            for ch in word:
+                frames += [VOCAB[ch]] * 5
+            end = len(frames)
+            frames += [0] * 2
+            nxt = order[k + 1] if k + 1 < len(order) else None
+            pause = nxt is None or nxt[0] != a or (breaks is not None and k in breaks)
+            if pause:
+                frames += [0] * 25
+            self.occ.append((a, p, word, round(onset * SPF * 1000), round(end * SPF * 1000)))
+        frames += [0] * 150
+        self.em = torch.full((len(frames), len(VOCAB) + 1), -12.0)
+        for f, t in enumerate(frames):
+            self.em[f, t] = 0.0
+        self.wav = np.zeros(len(frames) * 320, dtype=np.float32)
+        self.duration_ms = round(len(frames) * SPF * 1000)
+        self.garble = set()
+
+    def first(self, a, p, k=0):
+        """The k-th occurrence of (a, p)."""
+        return [o for o in self.occ if o[0] == a and o[1] == p][k]
+
+    def __call__(self, wav, clips, batch=1):
+        out = []
+        for s, e in clips:
+            heard = [o for o in self.occ if s * 1000 - 50 <= o[3] < e * 1000 - 150]
+            text = " ".join(o[2] for o in heard)
+            if heard and (heard[0][0], heard[0][1]) in self.garble:
+                text = "غغغغ ظظظظ"  # PLACEHOLDER noise
+            out.append({"start_s": s, "end_s": e, "text": text})
+        return {"clips": out, "seconds": 0.0}
+
+    def dense(self, windows):
+        return [c["text"] for c in self(None, windows)["clips"]]
+
+    def tools(self, samples):
+        return {"em": self.em, "vocab": VOCAB, "blank": 0, "dense": self.dense}
+
+
+def plain_words(world, *, override=None):
+    """First-pass words: each (ayah, position) at its first occurrence, with `override` {(a, p): (start, end)}."""
+    out = []
+    for a, p, word, onset, end in world.occ:
+        if any(w["ayah"] == a and w["position"] == p for w in out):
+            continue
+        s, e = (override or {}).get((a, p), (onset, end))
+        out.append({"surah": SURAH, "ayah": a, "position": p, "word": word, "start_ms": s, "end_ms": e,
+                    "confidence": 0.9})
+    return sorted(out, key=lambda w: (w["ayah"], w["position"]))
+
+
+def order_of(ayahs, *spans):
+    """The recited order: every ayah in turn, with `spans` [(after (a, p), [(a, p), ...])] inserted."""
+    order = [(a, p) for (s, a) in sorted(ayahs) if s == SURAH for p in range(1, len(ayahs[(s, a)].split()) + 1)]
+    for after, extra in spans:
+        k = order.index(after) + 1
+        order[k:k] = extra
+    return order
+
+
+def gate_world(world, words, *, n_ayahs, doc_extra=None):
+    doc = {"audio": {"sha256": SHA, "duration_ms": world.duration_ms}, "words": words, "ayahs": [],
+           "anchors": {"cuts": [], "pace_breaks": [], "held_out": [], "held_out_refs": []}, **(doc_extra or {})}
+    c = comp(ayah_count=n_ayahs)
+    rec = w2q_gate.gate_surah(SURAH, c, doc=doc, refusal=None, ayahs=world.ayahs, wav=world.wav,
+                              transcribe_clips=world, repair=world.tools)
+    return valid(rec), doc
+
+
+@pytest.fixture
+def positions(monkeypatch):
+    """Repeats written as repeated positions (REPEAT_MODE "positions"), whatever the frozen default is."""
+    monkeypatch.setitem(PARAMS, "REPEAT_MODE", "positions")
+
+
+def repeat_of_tail_world(n_ayahs=8):
+    """The 5:85 pattern: the last four words of ayah 4 are recited again before ayah 5."""
+    ayahs = world_ayahs(n_ayahs)
+    world = World(ayahs, order_of(ayahs, ((4, 10), [(4, p) for p in range(7, 11)])))
+    rep = world.first(4, 7, 1)
+    true5 = world.first(5, 1)
+    words = plain_words(world, override={(5, 1): (rep[3], true5[4])})  # ayah 5 starts on the repeat
+    return world, words, true5
+
+
+def test_the_5_85_pattern_a_start_inside_a_repeat_of_the_previous_tail_is_repaired(positions):
+    world, words, true5 = repeat_of_tail_world()
+    rec, doc = gate_world(world, words, n_ayahs=8)
+    assert rec["verdict"] == "repaired" and rec["reasons"] == []
+    assert rec["checks"]["G3"]["failed"] == [] and "repair" in rec["seconds"]
+    (rep,) = rec["repairs"]
+    assert rep["accepted"] and rep["kind"] == "within-ayah" and rep["region"] == [f"{SURAH}:4", f"{SURAH}:6"]
+    assert rep["ctc_margin"] > PARAMS["CTC_MARGIN"] and [j[:2] for j in rep["jumps"]] == [["4:10", "4:7"]]
+    assert rep["jumps"][0][3] is True
+    assert abs(rep["after_start_ms"] - true5[3]) <= 20 and rep["before_start_ms"] < true5[3] - 1000
+    four = [w for w in doc["words"] if w["ayah"] == 4]
+    assert [(w["position"], w["occurrence"]) for w in four] == [(p, 1) for p in range(1, 11)] + [
+        (p, 2) for p in range(7, 11)]
+    assert doc["words"] == sorted(doc["words"], key=lambda w: (w["ayah"], w["start_ms"]))
+    assert doc["repairs"] == rec["repairs"] and doc["ayahs"][4]["start_ms"] == rep["after_start_ms"]
+    assert rec["segments_null"] == [] and rec["cross_ayah"] == []
+
+
+def test_the_5_31_pattern_a_whole_ayah_recited_twice_is_repaired(positions):
+    ayahs = world_ayahs()
+    world = World(ayahs, order_of(ayahs, ((4, 10), [(4, p) for p in range(1, 11)])))
+    true5 = world.first(5, 1)
+    words = plain_words(world, override={(5, 1): (world.first(4, 1, 1)[3], true5[4])})
+    rec, doc = gate_world(world, words, n_ayahs=8)
+    assert rec["verdict"] == "repaired"
+    (rep,) = rec["repairs"]
+    assert rep["kind"] == "within-ayah" and [j[:2] for j in rep["jumps"]] == [["4:10", "4:1"]]
+    assert abs(rep["after_start_ms"] - true5[3]) <= 20
+    assert sum(w["ayah"] == 4 for w in doc["words"]) == 20
+
+
+def test_gating_a_repaired_document_again_carries_its_repairs_and_does_not_repair_again(positions):
+    world, words, _ = repeat_of_tail_world()
+    rec, doc = gate_world(world, words, n_ayahs=8)
+    words_after = [dict(w) for w in doc["words"]]
+    again = valid(w2q_gate.gate_surah(SURAH, comp(ayah_count=8), doc=doc, refusal=None, ayahs=world.ayahs,
+                                      wav=world.wav, transcribe_clips=world,
+                                      repair=lambda s: pytest.fail("no second repair")))
+    assert again["verdict"] == "repaired" and again["repairs"] == rec["repairs"] and "repair" not in again["seconds"]
+    assert doc["words"] == words_after
+
+
+def test_a_late_start_that_is_not_a_repeat_is_fixed_by_the_stepped_probe(positions):
+    ayahs = world_ayahs()
+    world = World(ayahs, order_of(ayahs))
+    w51, w53 = world.first(5, 1), world.first(5, 3)
+    words = plain_words(world, override={(4, 10): (world.first(4, 10)[3], w53[3] - 200),  # 4:10 runs over 5:1-5:2
+                                         (5, 1): (w53[3] - 200, w53[3] - 100), (5, 2): (w53[3] - 100, w53[3])})
+    rec, doc = gate_world(world, words, n_ayahs=8)
+    assert rec["verdict"] == "repaired"
+    (rep,) = rec["repairs"]
+    assert rep["kind"] == "start" and rep["steps"] >= 1 and rep["ctc_margin"] is None
+    assert abs(rep["after_start_ms"] - w51[3]) <= 20
+    assert not any("occurrence" in w for w in doc["words"])
+
+
+def test_a_repair_whose_region_still_fails_gives_no_highlight(positions):
+    ayahs = world_ayahs()
+    world = World(ayahs, order_of(ayahs))
+    world.garble.add((5, 1))  # every clip that begins on 5:1 is heard as noise: nothing can confirm the start
+    rec, doc = gate_world(world, plain_words(world), n_ayahs=8)
+    assert rec["verdict"] == "no_highlight" and rec["reasons"] == ["repair-failed"]
+    (rep,) = rec["repairs"]
+    assert rep["accepted"] is False and rep["failed"]
+    assert "repairs" not in doc  # the document is rewritten only when repaired
+
+
+def test_a_cross_ayah_jump_gives_segments_null_with_the_continuing_pass_start(positions):
+    ayahs = world_ayahs()
+    order = order_of(ayahs, ((4, 10), [(5, 1), (5, 2), (5, 3), (4, 7), (4, 8), (4, 9), (4, 10)]))
+    back = order.index((5, 1)) + 6  # the second 4:10: a pause before 5 begins again
+    world = World(ayahs, order, breaks={back})
+    cont = world.first(5, 1, 1)
+    words = plain_words(world, override={(5, 1): (world.first(5, 1)[3], cont[4]), (5, 2): world.first(5, 2, 1)[3:],
+                                         (5, 3): world.first(5, 3, 1)[3:]})
+    ctx = gate.RepairContext(surah=SURAH, ayahs=ayahs, wav=world.wav, em=world.em, vocab=VOCAB, blank=0, spf=SPF,
+                             transcribe_clips=world, dense=world.dense, completeness=comp(ayah_count=8),
+                             duration_s=world.duration_ms / 1000, usable=set(range(1, 9)))
+    region = RP.Region(4, 6, ["G3"], [5], world.first(4, 1)[3], world.first(7, 1)[3])
+    raw = {5: {"verdict": BAD, "heard": "4:3", "score": 90.0}}
+    r = gate.repair_region(ctx, region, words, raw)
+    assert r["entry"]["accepted"] and r["entry"]["kind"] == "cross-ayah", r["entry"]
+    assert r["null"] == [4, 5] and r["cross"] == [{"from": f"{SURAH}:4", "to": f"{SURAH}:5", "represented": False}]
+    five = [w for w in r["words"] if w["ayah"] == 5]
+    assert abs(min(w["start_ms"] for w in five) - cont[3]) <= 20
+    rec = valid(verdict(make_words(), repairs=[r["entry"]], repair_null=r["null"], cross_ayah=r["cross"]))
+    assert rec["verdict"] == "repaired" and rec["segments_null"] == [4, 5] and rec["cross_ayah"] == r["cross"]
+    report = {"surahs": {"7": {"verdict": "repaired", "gate": rec}}}
+    assert sum(1 for e in report["surahs"].values() for c in e["gate"]["cross_ayah"] if not c["represented"]) == 1
+
+
+def test_repeat_mode_null_writes_the_repeated_ayahs_without_segments(monkeypatch):
+    monkeypatch.setitem(PARAMS, "REPEAT_MODE", "null")
+    world, words, true5 = repeat_of_tail_world(n_ayahs=40)
+    rec, doc = gate_world(world, words, n_ayahs=40)
+    assert rec["verdict"] == "repaired" and rec["segments_null"] == [4]  # the ayah that holds the repeat
+    assert abs(rec["repairs"][0]["after_start_ms"] - true5[3]) <= 20  # the ayah start is still repaired
+
+
+def test_after_repair_three_consecutive_g3_failures_are_unavailable_and_two_are_repair_failed():
+    attempt = [{"region": ["7:8", "7:12"], "accepted": False}]
+    rec = valid(verdict(g3_results=ok_results(bad={9, 10}, unsure={11}), repairs=attempt))
+    assert rec["verdict"] == "unavailable" and rec["reasons"] == ["incomplete-middle"]
+    rec = valid(verdict(g3_results=ok_results(bad={9, 11}), repairs=attempt))
+    assert rec["verdict"] == "no_highlight" and rec["reasons"] == ["repair-failed"]
+    assert rec["repairs"] == attempt
+    assert valid(verdict(repairs=[]))["verdict"] == "pass"  # nothing accepted, nothing failing
+
+
+def test_the_repair_stage_never_loads_emissions_for_a_surah_that_passes():
+    ayahs = world_ayahs()
+    world = World(ayahs, order_of(ayahs))
+    doc = {"audio": {"sha256": SHA, "duration_ms": world.duration_ms}, "words": plain_words(world),
+           "anchors": {"cuts": [], "pace_breaks": [], "held_out": [], "held_out_refs": []}}
+    rec = w2q_gate.gate_surah(SURAH, comp(ayah_count=8), doc=doc, refusal=None, ayahs=ayahs, wav=world.wav,
+                              transcribe_clips=world, repair=lambda s: pytest.fail("emissions must not load"))
+    assert valid(rec)["verdict"] == "pass" and set(rec["seconds"]) == {"g3", "g4", "g2"}
+    assert rec["repairs"] == [] and rec["cross_ayah"] == []
+
+
+def test_g5_compares_a_repeated_position_with_its_nearest_occurrence():
+    words = make_words()
+    w = next(x for x in words if x["ayah"] == 3 and x["position"] == 2)
+    again = dict(w, start_ms=w["start_ms"] + 5000, end_ms=w["end_ms"] + 5000, occurrence=2)
+    refs = [[3, 2, w["start_ms"] + 5000, w["start_ms"]]] + refs_for(words)
+    g5 = held_out_stats({"held_out_refs": refs}, words + [again])
+    assert g5["share_300ms"] == 1.0
+
+
+def test_dense_asr_is_cached_under_its_own_key_and_keeps_the_windows(tmp_path):
+    from recitation_align.transcribe import transcription_key_at
+
+    path = tmp_path / "asr" / "007.json"
+    path.parent.mkdir()
+    path.write_text(json.dumps({"key": transcription_key_at(SHA), "windows": {"0-30000": "x"}}), encoding="utf-8")
+    calls = []
+
+    def fake(wav, clips, batch=1):
+        calls.append(list(clips))
+        return {"clips": [{"start_s": s, "end_s": e, "text": f"t{s}"} for s, e in clips], "seconds": 0.0}
+
+    run = w2q_gate.dense_asr(None, SHA, path, fake)
+    assert run([(1.0, 11.0), (6.0, 16.0)]) == ["t1.0", "t6.0"]
+    assert run([(1.0, 11.0)]) == ["t1.0"] and len(calls) == 1
+    body = json.loads(path.read_text(encoding="utf-8"))
+    assert body["windows"] == {"0-30000": "x"} and body["dense"] == {"1000-11000": "t1.0", "6000-16000": "t6.0"}
+
+
+def test_start_direction_follows_what_the_failed_probe_heard():
+    d = gate.start_direction
+    assert d({"heard": "4:9"}, 5) == 1  # the previous ayah: the start is early
+    assert d({"heard": "5:2"}, 5) == -1 and d({"heard": "6:0"}, 5) == -1  # past the opening: late
+    assert d({"heard": "5:0"}, 5) == 0 and d({"heard": None}, 5) == 0 and d(None, 5) == 0
+    assert gate._steps(1)[:2] == [0.5, 1.0] and gate._steps(0)[:4] == [-0.5, 0.5, -1.0, 1.0]
+    assert max(abs(x) for x in gate._steps(0)) == gate.STEP_MAX_S
+
+
+def test_a_mistimed_last_word_is_fixed_by_the_end_repair(positions):
+    ayahs = world_ayahs()
+    world = World(ayahs, order_of(ayahs))
+    last = world.first(8, 10)
+    late = last[3] + 500  # the last word placed late: its clip hears nothing, the word before it runs on
+    words = plain_words(world, override={(8, 9): (world.first(8, 9)[3], late), (8, 10): (late, last[4] + 600)})
+    rec, doc = gate_world(world, words, n_ayahs=8)
+    assert rec["verdict"] == "repaired" and rec["checks"]["G2"]["status"] == "pass"
+    (rep,) = rec["repairs"]
+    assert rep["trigger"] == ["G2"] and rep["kind"] == "start" and rep["region"] == [f"{SURAH}:7", f"{SURAH}:8"]
+    fixed = next(w for w in doc["words"] if w["ayah"] == 8 and w["position"] == 10)
+    assert abs(fixed["start_ms"] - last[3]) <= 20
+
+
+def test_a_merged_region_that_fails_is_repaired_ayah_by_ayah(positions):
+    """Two neighbouring failures merge into one region; one cannot be fixed (its start is heard as noise). The
+    repeat before the other is still repaired on its own, and the surah stays no_highlight for the one left."""
+    world, words, true5 = repeat_of_tail_world()
+    world.garble.add((6, 1))
+    rec, doc = gate_world(world, words, n_ayahs=8)
+    assert rec["verdict"] == "no_highlight" and rec["reasons"] == ["repair-failed"]
+    merged, *subs = rec["repairs"]
+    assert merged["region"] == [f"{SURAH}:4", f"{SURAH}:7"] and merged["accepted"] is False
+    fixed = [r for r in subs if r["accepted"]]
+    assert [r["region"] for r in fixed] == [[f"{SURAH}:4", f"{SURAH}:6"]]
+    assert abs(fixed[0]["after_start_ms"] - true5[3]) <= 20
+    assert rec["checks"]["G3"]["failed"] == [6]
+    assert "repairs" not in doc
+
+
+def test_split_gives_one_region_per_focus_with_its_own_triggers():
+    r = RP.Region(3, 8, ["G3", "step-back", "stretch"], [4, 7], why={4: ["G3"], 7: ["step-back"]})
+    words = [{"surah": SURAH, "ayah": a, "position": 1, "word": "بتثج", "start_ms": a * 1000, "end_ms": a * 1000 + 500,
+              "confidence": 0.9} for a in range(1, 11)]
+    subs = RP.split(r, words)
+    assert [(s.lo, s.hi, s.focus, s.triggers) for s in subs] == [(3, 5, [4], ["G3"]), (6, 8, [7], ["step-back"])]
+    assert subs[0].failing and not subs[1].failing
+    assert (subs[0].start_ms, subs[0].end_ms) == (3000, 6000)
+
+
+def test_a_failing_neighbour_may_move_inside_the_next_ayahs_repair_and_must_then_pass(positions):
+    """Ayahs 4 and 5 both start late; 6 cannot be fixed, so the merged region 3-7 fails as a whole. Repairing 4 on
+    its own re-aligns 5 too: 5 failed before, so it may move, and it passes G3 at its new start. The sub-region of 5
+    is then skipped, because 5 no longer fails."""
+    ayahs = world_ayahs()
+    world = World(ayahs, order_of(ayahs))
+    world.garble.add((6, 1))
+    over = {}
+    for a in (4, 5):
+        w3 = world.first(a, 3)[3]
+        over[(a - 1, 10)] = (world.first(a - 1, 10)[3], w3 - 200)  # the last word before runs over the opening
+        over[(a, 1)], over[(a, 2)] = (w3 - 200, w3 - 100), (w3 - 100, w3)
+    rec, doc = gate_world(world, plain_words(world, override=over), n_ayahs=8)
+    assert rec["verdict"] == "no_highlight" and rec["checks"]["G3"]["failed"] == [6]
+    regions = [(r["region"], r["accepted"]) for r in rec["repairs"]]
+    assert regions[0] == ([f"{SURAH}:3", f"{SURAH}:7"], False)
+    assert ([f"{SURAH}:3", f"{SURAH}:5"], True) in regions
+    assert not any(r == [f"{SURAH}:4", f"{SURAH}:6"] for r, _ in regions)  # 5 was fixed already: not retried
+    fixed = next(r for r in rec["repairs"] if r["accepted"])
+    assert abs(fixed["starts"]["5"][1] - world.first(5, 1)[3]) <= 20 and abs(fixed["starts"]["4"][1] - world.first(4, 1)[3]) <= 20

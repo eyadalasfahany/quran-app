@@ -13,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q2"
+QUALITY_VERSION = "q3"
 
 PARAMS: dict = {
     # G0 completeness
@@ -66,15 +66,21 @@ PARAMS: dict = {
     # stretch
     "STRETCH_X": 4.0,
     "STRETCH_S": 2.5,
-    # repair. BACK_PENALTY is calibrated in Q7 and is None until then. REPEAT_MODE "null" is the safe
-    # default (P14): an uncalibrated repeat highlight does not ship.
+    # repair (Q7b, q3). BACK_PENALTY 6.0: in the recited-sequence DP (match +1, inserted ASR word -0.7, unheard
+    # word -0.5) a back-jump then needs about four re-recited words. Measured with dense ASR at 2/3/4/5/6/8: the
+    # known repeats (005: 5:30 twice, 5:84's tail three times; 62:017: 17:82) are found at every value from 2 to 6
+    # (8 loses one pass of 5:84's tail); on 40 untriggered regions of 005, 015, 018 and 62:017 the DP proposes 15,
+    # 9, 3, 2, 1 and 0 jumps, of which CTC confirms 1, 1, 0, 0, 0 and 0. Each jump is then confirmed by CTC on the
+    # frames of its two passes (CTC_MARGIN, unchanged). REPEAT_MODE "positions": a repeat inside an ayah is written
+    # as repeated positions (ADR 0077 decision 4, format 1); Q7c calibrates it on QF Afasy and sets "null" (P14)
+    # if the targets are missed. R5 holds every release until the A6(a) record exists.
     "DENSE_WIN_S": 10,
     "DENSE_HOP_S": 5,
-    "BACK_PENALTY": None,
+    "BACK_PENALTY": 6.0,
     "CTC_MARGIN": 0.02,
     "STEP_PROBE_S": 0.5,
     "STEP_SCORE": 85,
-    "REPEAT_MODE": "null",
+    "REPEAT_MODE": "positions",
     # release (R2, R3, R4)
     "CAP_NO_HIGHLIGHT": 0.01,
     "CAP_SEG_NULL": 0.02,

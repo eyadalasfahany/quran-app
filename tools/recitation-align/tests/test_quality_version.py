@@ -9,8 +9,8 @@ HEX16 = re.compile(r"^[0-9a-f]{16}$")
 
 
 def test_tool_version_is_package_version_plus_quality_version():
-    assert QUALITY_VERSION == "q2"
-    assert tool_version() == "0.1.0+q2"
+    assert QUALITY_VERSION == "q3"
+    assert tool_version() == "0.1.0+q3"
 
 
 def test_every_gate_name_is_in_params():
@@ -37,9 +37,9 @@ def test_params_digest_is_sixteen_hex_and_stable():
     assert digest == params_digest()
 
 
-def test_params_digest_is_pinned_for_q2():
+def test_params_digest_is_pinned_for_q3():
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
-    assert params_digest() == "79d775dc947f6dbb"
+    assert params_digest() == "016fa6628b0cc778"
 
 
 def test_params_digest_changes_when_a_parameter_changes(monkeypatch):
@@ -95,3 +95,8 @@ def test_code_files_are_sorted_and_cover_p17():
     assert "recitation_align/transcribe.py" in CODE_FILES
     assert "scripts/w2q_gate.py" in CODE_FILES
     assert quality.TOOL_ROOT.name == "recitation-align"
+
+
+def test_q3_sets_the_repeat_parameters():
+    # Q7b: the back-jump penalty is set (it was None until Q7) and repeats inside an ayah are repeated positions
+    assert PARAMS["BACK_PENALTY"] == 6.0 and PARAMS["REPEAT_MODE"] == "positions"

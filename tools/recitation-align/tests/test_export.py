@@ -387,3 +387,20 @@ def test_an_anchors_key_in_the_aligned_document_exports_byte_identically(tmp_pat
                      "--tanzil", str(tanzil), "--manifest", str(manifest)]) == 0
         outputs.append((out / "002.json").read_bytes())
     assert outputs[0] == outputs[1]
+
+
+def test_a_repaired_document_with_a_repeated_position_exports_format_1_in_recited_order(tmp_path, tanzil):
+    """Plan way2quran-quality Q7b (T5): a repaired document (words sorted by ayah and start, an `occurrence` per
+    word and a `repairs` key) exports as format 1, the repeated positions in recited order; the importer already
+    accepts repeated positions (TaybahTimingImportTest.php:335)."""
+    order = [1, 2, 3, 2, 3]
+    words = [W(2, 1, p, i * 500, i * 500 + 400, occurrence=1 + order[:i].count(p)) for i, p in enumerate(order)]
+    words += [W(2, 2, 1, 3000, 3400, occurrence=1), W(2, 3, 1, 5000, 5400, occurrence=1)]
+    doc = make_doc(2, sorted(words, key=lambda w: (w["ayah"], w["start_ms"])), duration_ms=6000)
+    doc["repairs"] = [{"region": ["2:1", "2:2"], "kind": "within-ayah", "accepted": True}]
+    out = convert(doc, 2, index=tanzil_index(tanzil), kind="way2quran", key="7")
+    assert out["format"] == 1
+    assert [s[0] for s in out["ayahs"][0]["segments"]] == [1, 2, 3, 2, 3]
+    assert [s[1] for s in out["ayahs"][0]["segments"]] == [0, 500, 1000, 1500, 2000]
+    plain = make_doc(2, sorted(words, key=lambda w: (w["ayah"], w["start_ms"])), duration_ms=6000)
+    assert convert(plain, 2, index=tanzil_index(tanzil), kind="way2quran", key="7") == out
