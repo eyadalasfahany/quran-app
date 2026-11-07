@@ -5,25 +5,25 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 | Step | Brief | Status |
 | --- | --- | --- |
 | 1 | Docs, ADR 0042, spec patch ([`spec-changes.md`](spec-changes.md)) | Done (1 Nov 2026): ADR 0042 accepted, patch applied |
-| 2 | Env, config (dev-only `HADITH_API_KEY`, pin, titles map with ummahapi.com names and authors) | Implemented 7 Nov 2026, awaiting commit |
-| 3 | MySQL schema | |
-| 4 | Pack contract and hadith search normaliser | |
-| 5 | Source interface and fawazahmed0 client, snapshot | |
-| 6 | Importer, `hadith:import` command, dev-only `hadith:match-section-titles` | |
+| 2 | Env, config (dev-only `HADITH_API_KEY`, pin, titles map with ummahapi.com names and authors) | Done |
+| 3 | MySQL schema | Done |
+| 4 | Pack contract and hadith search normaliser | Done |
+| 5 | Source interface and fawazahmed0 client, snapshot | Done |
+| 6 | Importer, `hadith:import` command, dev-only `hadith:match-section-titles` | Done (+6b chapters, gap fills, completeness: ADR 0076) |
 | 6b | Chapter matcher and import from OpenITI (D14, ADR 0076, proposed): 6b.0 spike and pins, 6b.1 matcher, 6b.2 import | Waiting for ADR 0076 acceptance |
 | 6c | More chapter collections (Muslim, Tirmidhi, Malik) | After 6b |
-| 7 | API endpoints and contract | |
+| 7 | API endpoints and contract | Done (+7b ranges) |
 | 8 | Design frames (developer approval gate) | Approved 7 Nov 2026 (frames in `screens/frames/hadith/`) |
 | 8b | Chapter frames (changes to approved frames, developer approval gate) | Waiting for ADR 0076 acceptance |
-| 9 | Cover tokens and `CollectionCover` | |
-| 10 | Mobile data layer: content | |
-| 11 | Mobile data layer: personal | |
-| 12 | Mobile UI: components | |
-| 13 | Mobile UI: screens, routes, entry points | |
-| 14 | Search | |
-| 15 | Hardening | |
-| 16 | Exit check | |
-| 17 | Release wiring (production flag on, `release.sh`, runbook) | |
+| 9 | Cover tokens and `CollectionCover` | Done |
+| 10 | Mobile data layer: content | Done |
+| 11 | Mobile data layer: personal | Done |
+| 12 | Mobile UI: components | Done |
+| 13 | Mobile UI: screens, routes, entry points | Done |
+| 14 | Search | Done |
+| 15 | Hardening | Done (simulator review fixes) |
+| 16 | Exit check | Done 7 Nov 2026: gates green, iPhone 17 simulator review (English UI not driven: no tap automation) |
+| 17 | Release wiring (production flag on, `release.sh`, runbook) | Done: hadith:import at web start; deployed |
 | 18 | Sunnah.com switch | Blocked: needs the API key and its written terms |
 
 ## Rules for every step
