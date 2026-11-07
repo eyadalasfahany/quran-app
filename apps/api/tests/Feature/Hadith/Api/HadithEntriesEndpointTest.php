@@ -333,3 +333,26 @@ it('still returns 404 for a number that no span covers, and refuses a non-numeri
     $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/201')->assertNotFound();
     $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/abc')->assertNotFound();
 });
+
+it('serves a placeholder with empty text and source_code unavailable, in the list and the detail', function (): void {
+    $collection = hadithApiServe(hadithApiCollection('bukhari'));
+    $book = hadithApiBook($collection, 1, '1');
+    hadithApiEntry($collection, $book, 1, '3', [
+        'text_ar' => '',
+        'text_search' => '',
+        'source_code' => 'unavailable',
+        'source_key' => 'unavailable:bukhari:3',
+        'source_text_sha256' => hash('sha256', ''),
+    ]);
+
+    $this->getJson('/api/v1/hadith/collections/bukhari/books/1/hadiths')
+        ->assertOk()
+        ->assertJsonPath('data.0.hadith_number', '3')
+        ->assertJsonPath('data.0.text_ar', '')
+        ->assertJsonPath('data.0.source_code', 'unavailable');
+
+    $this->getJson('/api/v1/hadith/collections/bukhari/hadiths/3')
+        ->assertOk()
+        ->assertJsonPath('text_ar', '')
+        ->assertJsonPath('source_code', 'unavailable');
+});

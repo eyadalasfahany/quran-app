@@ -33,9 +33,9 @@ final class HadithMapper
      * collection (ADR 0076 «Rule, 7 Nov 2026»), completeness exceptions. 4: placements of out-of-range hadith (ADR 0076 decision 6).
      * 5: merges, with number_first and number_last on the covering row (ADR 0076 decision 2, step 6b.3). 6: fills, extra books
      * and per-row origin (ADR 0076 decision 4 and the gap decisions, step 6b.4). 7: chapters (step 6b.5); the mapper itself
-     * does not read them, the assigner does.
+     * does not read them, the assigner does. 8: placeholder rows for numbers unrecoverable from every source (rule amended 7 Nov 2026).
      */
-    public const int VERSION = 7;
+    public const int VERSION = 8;
 
     private const int GRADE_MAX_BYTES = 120;
 
@@ -106,6 +106,8 @@ final class HadithMapper
 
         $sectionKeys = array_map(static fn (SourceSection $section): string => $section->key, $sections);
         $placedNumbers = [];
+        $unavailable = array_fill_keys(array_map('strval', $overlay instanceof HadithOverlay ? $overlay->unavailable : []), true);
+        $unavailableNumbers = [];
         $seen = [];
         $accepted = [];
         $noTextNumbers = [];
@@ -129,6 +131,43 @@ final class HadithMapper
                 $fill = $fills[$number];
                 $text = $fill->text;
                 $hadith = new SourceHadith($number, $hadith->arabicNumber, $text, [], null, null);
+            }
+
+            if (isset($unavailable[$number])) {
+                if ($text !== null && $text !== '') {
+                    $issues[] = new HadithIssue(HadithIssue::SEVERITY_ERROR, 'unavailable_has_text', $number);
+
+                    continue;
+                }
+
+                if (! is_numeric($number)) {
+                    $issues[] = new HadithIssue(HadithIssue::SEVERITY_ERROR, 'non_numeric_hadith_number', $number);
+
+                    continue;
+                }
+
+                $candidates = $this->sectionsHolding((float) $number, $ranges);
+
+                if (isset($placements[$number])) {
+                    $placeholderSection = in_array($placements[$number], $sectionKeys, true) ? $placements[$number] : null;
+                } elseif (count($candidates) > 1) {
+                    $issues[] = new HadithIssue(HadithIssue::SEVERITY_ERROR, 'ambiguous_range', $number);
+
+                    continue;
+                } else {
+                    $placeholderSection = $candidates[0] ?? null;
+                }
+
+                if ($placeholderSection === null) {
+                    $outsideRanges[] = $number;
+
+                    continue;
+                }
+
+                $unavailableNumbers[] = $number;
+                $accepted[] = ['hadith' => $hadith, 'text' => '', 'normalized' => '', 'section' => $placeholderSection, 'fill' => null, 'unavailable' => true];
+
+                continue;
             }
 
             if ($text === null || $text === '') {
@@ -189,7 +228,7 @@ final class HadithMapper
                 } else {
                     // Q6 (7 Nov 2026): a placed hadith is exempt from the reference.book check; OpenITI decided its book.
                     $placedNumbers[] = $number;
-                    $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $placements[$number], 'fill' => $fill];
+                    $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $placements[$number], 'fill' => $fill, 'unavailable' => false];
 
                     continue;
                 }
@@ -231,7 +270,7 @@ final class HadithMapper
                 }
             }
 
-            $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $sectionKey, 'fill' => $fill];
+            $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $sectionKey, 'fill' => $fill, 'unavailable' => false];
         }
 
         foreach ($refusedFills as $refusedNumber) {
@@ -338,6 +377,7 @@ final class HadithMapper
             'books_count' => count($books),
             'is_complete' => $completeness['complete'] ? 1 : 0,
             'incomplete_count' => count($completeness['incomplete']),
+            'unavailable_count' => count($unavailableNumbers),
             'source_version' => $sourceVersion,
             'imported_at' => $now->format('Y-m-d H:i:s.u'),
         ];
@@ -376,6 +416,7 @@ final class HadithMapper
             incompleteNumbers: $completeness['incomplete'],
             incompleteReasons: $completeness['reasons'],
             complete: $completeness['complete'],
+            unavailableNumbers: $unavailableNumbers,
         );
 
         return new MappingResult(
@@ -427,7 +468,7 @@ final class HadithMapper
      * accepted, or when it is a no-text or out-of-range number that a completeness exception accepts. Errors also make the
      * collection incomplete. Lists hold numbers and reason codes only.
      *
-     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string, fill: GapFill|null}>  $accepted
+     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string, fill: GapFill|null, unavailable: bool}>  $accepted
      * @param  list<string>  $noTextNumbers
      * @param  list<string>  $outsideRanges
      * @param  list<string>  $exceptions
@@ -596,7 +637,7 @@ final class HadithMapper
     }
 
     /**
-     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string, fill: GapFill|null}>  $accepted
+     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string, fill: GapFill|null, unavailable: bool}>  $accepted
      * @param  array<string, int>  $bookIds
      * @param  array<string, array{first: string, last: string}>  $spans
      * @param  array<string, int>  $originSourceIds
@@ -630,6 +671,7 @@ final class HadithMapper
             $hadith = $row['hadith'];
             $section = $row['section'];
             $fill = $row['fill'];
+            $unavailableRow = $row['unavailable'];
             $entryId = $index + 1;
             $positionInBook[$section] = ($positionInBook[$section] ?? 0) + 1;
             $sourceKey = $sourceCode.':'.$slug.':'.$hadith->number;
@@ -649,8 +691,8 @@ final class HadithMapper
                 'text_search' => $row['normalized'],
                 'source_url' => null,
                 'source_id' => $fill instanceof GapFill ? $originSourceIds[$fill->origin] : $sourceId,
-                'source_key' => $fill instanceof GapFill ? $fill->sourceKey : $sourceKey,
-                'source_code' => $fill instanceof GapFill ? $fill->origin : null,
+                'source_key' => $unavailableRow ? 'unavailable:'.$slug.':'.$hadith->number : ($fill instanceof GapFill ? $fill->sourceKey : $sourceKey),
+                'source_code' => $unavailableRow ? 'unavailable' : ($fill instanceof GapFill ? $fill->origin : null),
                 'source_text_sha256' => hash('sha256', $row['text']),
                 'source_version' => $fill instanceof GapFill ? $originVersions[$fill->origin] : $sourceVersion,
                 'imported_at' => $importedAt,

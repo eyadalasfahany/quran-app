@@ -154,16 +154,23 @@ it('resolves a collection to complete when fills close every gap', function (): 
         ->and($mapping->stats->imported)->toBe(2);
 });
 
-it('stays incomplete while an unresolved number remains', function (): void {
+it('turns an unresolved number into a placeholder row and no longer holds the collection back (rule amended 7 Nov 2026)', function (): void {
     $directory = hadithGapsFixtureFile('bukhari', unresolved: [['number' => '3', 'reason' => 'unknown_after_measurement']]);
     $overlay = hadithFillsBuilder($directory)->build('bukhari', hadithFillsSource([hadithImportHadith('3', null, '2'), hadithImportHadith('4', 'FIXTURE text 4 — not a hadith', '2')]), ['openiti' => 7, 'hadithapicom' => 9]);
 
     $mapping = hadithImportMapWithOverlay(hadithFillsSource([hadithImportHadith('3', null, '2'), hadithImportHadith('4', 'FIXTURE text 4 — not a hadith', '2')]), $overlay);
+    $placeholder = $mapping->plan->entries[0];
 
     expect($overlay->fills)->toBe([])
-        ->and($mapping->stats->complete)->toBeFalse()
-        ->and($mapping->stats->incompleteNumbers)->toBe(['3'])
-        ->and($mapping->stats->incompleteReasons['3'])->toBe('no_text');
+        ->and($overlay->unavailable)->toBe(['3'])
+        ->and($mapping->stats->complete)->toBeTrue()
+        ->and($mapping->stats->unavailableNumbers)->toBe(['3'])
+        ->and($placeholder['hadith_number'])->toBe('3')
+        ->and($placeholder['text_ar'])->toBe('')
+        ->and($placeholder['text_search'])->toBe('')
+        ->and($placeholder['source_code'])->toBe('unavailable')
+        ->and($placeholder['source_key'])->toBe('unavailable:bukhari:3')
+        ->and($placeholder['source_text_sha256'])->toBe(hash('sha256', ''));
 });
 
 it('refuses a fill whose text carries markup and leaves the gap unknown', function (): void {

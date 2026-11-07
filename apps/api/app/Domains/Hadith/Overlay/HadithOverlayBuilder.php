@@ -82,6 +82,21 @@ final class HadithOverlayBuilder
             $merges[$merge->number] = $merge->into;
         }
 
+        $unavailable = [];
+
+        foreach ($file->unresolved as $entry) {
+            // hadithapi_key_missing means the number was never tried: it holds the collection back, it is no placeholder.
+            if ($entry->reason === 'hadithapi_key_missing') {
+                continue;
+            }
+
+            if (! isset($hadiths[$entry->number])) {
+                throw new HadithDataFileException('Unresolved number of ['.$slug.'] is not in the edition (unavailable_number_unknown).');
+            }
+
+            $unavailable[] = $entry->number;
+        }
+
         return new HadithOverlay(
             merges: $merges,
             originSourceIds: array_intersect_key($originSourceIds, $file->origins),
@@ -89,6 +104,7 @@ final class HadithOverlayBuilder
             fills: $fills,
             books: $this->books($slug, $source, $file->books),
             refusedFills: $refusedFills,
+            unavailable: $unavailable,
         );
     }
 

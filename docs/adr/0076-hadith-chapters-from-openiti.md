@@ -153,3 +153,9 @@ The developer delegated these decisions (7 Nov 2026). Source: `docs/plans/phase-
 ## Note, 7 Nov 2026 (step 6b.3): additive schema change for merges (Q7)
 
 Section 2.3 «No schema change» is superseded for the pack by the merge columns. Step 6b.3 adds three nullable columns to `hadith_entries`: `number_first` and `number_last` (the span a covering row covers, lowest and highest number, including its own) and `source_code` (the origin of a filled row; null for the primary source). `hadith_collections` gains `is_complete` and `incomplete_count` in step 6b.1; these are not in the pack. The pack schema version stays 1 (no hadith pack has shipped). The API lookup by number and the mobile column lists follow in the handoffs of the step 6b document, section 11.
+
+## Rule amended, 7 Nov 2026 (developer): release with an honest note for unrecoverable hadith
+
+The developer chose **option 2**. A collection is released even if some hadith can't be recovered from any source (fawazahmed0, OpenITI, hadithapi.com), once every gap has been tried under the fill and merge rules. Each unrecoverable number gets a **placeholder row** in its book, at its position: `text_ar` = '', `text_search` = '', `source_code` = `unavailable`. It isn't searchable. The app shows «الحديث {n} غير متوفر حاليًا في المصدر» / "Hadith {n} isn't available in the source yet" in its place (list and reader), never a silent jump.
+
+A collection is **complete** (released) when every number in its numbering has text, a merge cover, a fill, or a placeholder. The importer reports `unavailable_count` per collection. A later source (Sunnah.com) replaces placeholders in a normal re-import. This replaces "an incomplete collection is held back" in the earlier Rule section, for numbers that are unrecoverable after all sources. Numbers not yet tried still hold the collection back.

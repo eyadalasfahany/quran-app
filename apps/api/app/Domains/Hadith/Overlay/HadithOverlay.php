@@ -18,6 +18,7 @@ final readonly class HadithOverlay
      * @param  array<string, GapFill>  $fills  number => fill
      * @param  list<GapBook>  $books  extra books, in file order
      * @param  list<string>  $refusedFills  numbers whose fill contains markup (ADR 0076 Q2); they stay unknown
+     * @param  list<string>  $unavailable  numbers unrecoverable from every source: a placeholder row each (ADR 0076, rule amended 7 Nov 2026)
      */
     public function __construct(
         public array $merges,
@@ -26,5 +27,6 @@ final readonly class HadithOverlay
         public array $fills = [],
         public array $books = [],
         public array $refusedFills = [],
+        public array $unavailable = [],
     ) {}
 }

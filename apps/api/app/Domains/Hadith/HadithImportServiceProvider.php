@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domains\Hadith;
 
+use App\Domains\Hadith\Console\BuildGapsCommand;
 use App\Domains\Hadith\Console\ImportHadithCommand;
+use App\Domains\Hadith\Console\MatchChaptersCommand;
 use App\Domains\Hadith\Console\MatchSectionTitlesCommand;
 use App\Domains\Hadith\Repositories\Contracts\HadithImportRepository;
 use App\Domains\Hadith\Repositories\Eloquent\EloquentHadithImportRepository;
@@ -28,6 +30,8 @@ final class HadithImportServiceProvider extends ServiceProvider
         $this->commands([
             ImportHadithCommand::class,
             MatchSectionTitlesCommand::class,
+            BuildGapsCommand::class,
+            MatchChaptersCommand::class,
         ]);
     }
 }

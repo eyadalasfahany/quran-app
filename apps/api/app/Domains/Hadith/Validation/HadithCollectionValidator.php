@@ -105,6 +105,12 @@ final class HadithCollectionValidator
             }
         }
 
+        foreach ($plan->entries as $entry) {
+            if ($entry['text_ar'] === '' && $entry['source_code'] !== 'unavailable') {
+                $issues[] = new HadithIssue($error, 'empty_text', (string) $entry['hadith_number']);
+            }
+        }
+
         foreach ($plan->chapters as $chapter) {
             $key = (string) $chapter['source_key'];
 

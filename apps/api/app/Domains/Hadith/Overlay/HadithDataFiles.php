@@ -27,6 +27,7 @@ final class HadithDataFiles
         'unit_number_mismatch',
         'neighbour_not_fetchable',
         'recheck_hapi_failed',
+        'hadithapi_key_missing',
     ];
 
     public function __construct(private readonly ?string $baseDirectory = null) {}
@@ -167,6 +168,123 @@ final class HadithDataFiles
             partialBooks: (string) $data['partial_books'],
             chapters: $this->chapterRecords($data['chapters'] ?? null, $relativePath),
         );
+    }
+
+    /**
+     * The validated decisions file of a collection, or null when there is neither a file nor a pin (ADR 0076 gap decisions,
+     * step 6b.6). It reads only the keys the builder needs; numbers are converted to exact strings.
+     *
+     * @throws HadithDataFileException with a code: bad_json, decision_number_not_exact, decision_class_unknown,
+     *                                 decision_source_unknown, decisions_invalid
+     */
+    public function decisions(string $slug): ?GapDecisions
+    {
+        $relativePath = 'gaps/decisions/'.$slug.'.json';
+        $bytes = $this->readVerified($relativePath);
+
+        if ($bytes === null) {
+            return null;
+        }
+
+        $data = $this->decode($bytes, $relativePath);
+        $openiti = $data['openiti'] ?? null;
+        $threshold = $data['containment_threshold'] ?? null;
+        $entries = $data['entries'] ?? null;
+
+        if (! is_array($openiti) || ! is_string($openiti['source'] ?? null) || ! is_string($openiti['path'] ?? null) || ! is_string($openiti['sha256'] ?? null) || ! is_float($threshold) && ! is_int($threshold) || ! is_array($entries) || ! array_is_list($entries) || ! is_string($data['fawazahmed0_commit'] ?? null)) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] lacks the header keys the builder reads (decisions_invalid).');
+        }
+
+        $decisions = [];
+
+        foreach ($entries as $entry) {
+            if (! is_array($entry)) {
+                throw new HadithDataFileException('Data file ['.$relativePath.'] holds an entry that is not an object (decisions_invalid).');
+            }
+
+            $decisions[] = $this->decision($entry, $relativePath);
+        }
+
+        return new GapDecisions(
+            collection: $slug,
+            openiti: ['source' => (string) $openiti['source'], 'path' => (string) $openiti['path'], 'sha256' => (string) $openiti['sha256']],
+            fawazahmed0Commit: (string) $data['fawazahmed0_commit'],
+            containmentThreshold: (float) $threshold,
+            entries: $decisions,
+        );
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $entry
+     *
+     * @throws HadithDataFileException
+     */
+    private function decision(array $entry, string $relativePath): GapDecision
+    {
+        $class = $entry['class'] ?? null;
+        $source = $entry['source'] ?? null;
+
+        if (! in_array($class, ['fill-safe', 'merge-prev', 'merge-next', 'unknown'], true)) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] holds an entry with an unknown class (decision_class_unknown).');
+        }
+
+        if (! in_array($source, ['openiti', 'hadithapi.com', 'none'], true)) {
+            throw new HadithDataFileException('Data file ['.$relativePath.'] holds an entry with an unknown source (decision_source_unknown).');
+        }
+
+        $unit = $entry['openiti_unit'] ?? null;
+        $hapi = $entry['hapi_numbers_in_record'] ?? null;
+
+        return new GapDecision(
+            hadith: $this->numberText($entry['hadith'] ?? null, $relativePath),
+            runFirst: $this->optionalNumber($entry['run_first'] ?? null, $relativePath),
+            runLast: $this->optionalNumber($entry['run_last'] ?? null, $relativePath),
+            reason: is_string($entry['reason'] ?? null) ? $entry['reason'] : null,
+            class: (string) $class,
+            source: (string) $source,
+            prev: $this->optionalNumber($entry['prev'] ?? null, $relativePath),
+            next: $this->optionalNumber($entry['next'] ?? null, $relativePath),
+            openitiUnit: is_int($unit) ? $unit : null,
+            openitiUnitNumber: $this->optionalNumber($entry['openiti_unit_number'] ?? null, $relativePath),
+            hapiNumbersInRecord: is_int($hapi) ? $hapi : null,
+        );
+    }
+
+    /**
+     * A JSON number as its exact text. A float that would print with an exponent, or that does not read back to the same
+     * value, is refused (decision_number_not_exact).
+     *
+     * @throws HadithDataFileException
+     */
+    private function numberText(mixed $value, string $relativePath): string
+    {
+        if (is_int($value)) {
+            return (string) $value;
+        }
+
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        if (is_float($value)) {
+            $text = (string) $value;
+
+            if (str_contains($text, 'E') || (float) $text !== $value) {
+                throw new HadithDataFileException('Data file ['.$relativePath.'] holds a number that is not exact (decision_number_not_exact).');
+            }
+
+            return $text;
+        }
+
+        throw new HadithDataFileException('Data file ['.$relativePath.'] holds a number that is not valid (decision_number_not_exact).');
+    }
+
+    /**
+     * @throws HadithDataFileException
+     */
+    private function optionalNumber(mixed $value, string $relativePath): ?string
+    {
+        return $value === null ? null : $this->numberText($value, $relativePath);
     }
 
     /**

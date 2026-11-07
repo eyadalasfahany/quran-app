@@ -23,6 +23,11 @@ final class HadithTextIntegrityChecker
         $expected = [];
 
         foreach ($plan->entries as $entry) {
+            // Placeholder rows (unavailable, ADR 0076 rule amended 7 Nov 2026) carry no text: they are skipped on both sides.
+            if ($entry['source_code'] === 'unavailable') {
+                continue;
+            }
+
             $expected[(string) $entry['source_key']] = (string) $entry['source_text_sha256'];
         }
 
@@ -34,8 +39,13 @@ final class HadithTextIntegrityChecker
         $firstKeys = [];
 
         foreach ($this->repository->entryTexts($resourceId) as $row) {
-            $stored++;
             $key = $row['source_key'];
+
+            if (str_starts_with($key, 'unavailable:')) {
+                continue;
+            }
+
+            $stored++;
 
             if (! array_key_exists($key, $expected)) {
                 $extra++;

@@ -19,6 +19,8 @@ arch('only the title matcher uses hadithapi.com')
     ->toOnlyBeUsedIn([
         'App\Domains\Hadith\Services\HadithSectionTitleProposer',
         'App\Domains\Hadith\Console\MatchSectionTitlesCommand',
+        'App\Domains\Hadith\Services\HadithGapBuilder',
+        'App\Domains\Hadith\Console\BuildGapsCommand',
         'App\Integrations\HadithApiCom',
     ]);
 
@@ -55,6 +57,12 @@ it('writes nothing under config/, database/ or app/ from the matcher', function 
         app_path('Domains/Hadith/Services/HadithSectionTitleProposer.php'),
         app_path('Domains/Hadith/Services/HadithSectionTitleMatcher.php'),
         app_path('Domains/Hadith/Console/MatchSectionTitlesCommand.php'),
+        app_path('Domains/Hadith/Services/HadithGapBuilder.php'),
+        app_path('Domains/Hadith/Console/BuildGapsCommand.php'),
+        app_path('Domains/Hadith/Overlay/OpenItiUnitReader.php'),
+        app_path('Domains/Hadith/Console/MatchChaptersCommand.php'),
+        app_path('Domains/Hadith/Services/HadithChapterMatcher.php'),
+        app_path('Domains/Hadith/Overlay/OpenItiChapterReader.php'),
     ];
 
     foreach ($files as $file) {

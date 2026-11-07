@@ -152,7 +152,60 @@ return [
     // Committed data files under database/data/hadith, path relative to that folder => lowercase hex SHA-256. null = not committed yet.
     'data_files' => [],                  // filled in 6b.8 by the developer
 
-    // OpenITI: used only by the dev commands (6b.6, 6b.7). Production never reads it.
-    'openiti' => [],                     // filled in 6b.6
+    // OpenITI: used only by the dev commands (hadith:build-gaps, hadith:match-chapters). Production never reads it. The
+    // SHA-256 values are the primary versions of the gap report (docs/plans/phase-7/gapfill-report.md). unit_count is the
+    // golden count of the unit reader (step 6b.6). markup holds the chapter and book heading patterns for step 6b.7 (9.2).
+    'openiti' => [
+        // The folder of the pinned files, relative to storage/. Git-ignored (storage/app/private/.gitignore). hadith:build-gaps and
+        // hadith:match-chapters read it unless --openiti-dir is given.
+        'dir' => 'app/private/sources/openiti',
+        'release' => '2023.1.8',
+        'doi' => '10.5281/zenodo.10007820',
+        'zenodo_file_id' => 'e1b4fd36-e7b8-4041-b893-3dc5db88c8de',
+        'zenodo_archive_md5' => '8563c35f71bb51d4509d839f8cf069e6',
+        'tirmidhi_repository' => 'OpenITI/0300AH',
+        'tirmidhi_commit' => '01a1544130e0236850ef2698923ad01575c5bd7c',
+        'files' => [
+            'bukhari' => [
+                'path' => '0256Bukhari/0256Bukhari.Sahih/0256Bukhari.Sahih.Shamela0001681-ara1',
+                'sha256' => 'b19b17cb5da39e06fde6b099dc8674994ca59980f090a12ca86a55adcd163375',
+                'unit_start' => '/^### \| ?([0-9]+) ?- /u', 'unit_stop' => '/^###/u', 'unit_count' => 7378,
+                'markup' => ['chapter' => '/^### \| ?(?![0-9])(.+)$/u', 'book' => '/^### \$ (.+)$/u'],
+            ],
+            'muslim' => [
+                'path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.JK000109-ara1',
+                'sha256' => 'a96f38425099d55769435a4d8d240b064d7d98c2326457ed8d28fb1f098d32b4',
+                'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 7461,
+            ],
+            'nasai' => [
+                'path' => '0303Nasai/0303Nasai.SunanSughra/0303Nasai.SunanSughra.Shamela0000829-ara1',
+                'sha256' => '3fce1aacdaa96a20c7fd32f97d6d255196ebe21c458693f9281baf46fd7db11e',
+                'unit_start' => '/^### \|\|\| ?([0-9]+) ?- ?/u', 'unit_stop' => '/^###/u', 'unit_count' => 5768,
+                'markup' => ['chapter' => '/^### \|\| (.+)$/u', 'book' => '/^### \| ?[0-9]+ ?- (.+)$/u'],
+            ],
+            'abudawud' => [
+                'path' => '0275AbuDawudSijistani/0275AbuDawudSijistani.Sunan/0275AbuDawudSijistani.Sunan.Shamela0001726-ara1',
+                'sha256' => '58f8fb59122383c1dd0d7c7184f372a0076f3db9e19e9af9640881564b480472',
+                'unit_start' => '/^### \| ?([0-9]+) ?- /u', 'unit_stop' => '/^###/u', 'unit_count' => 5284,
+                'markup' => ['chapter' => '/^### \| ?(?![0-9])(.+)$/u', 'book' => '/^### \$ (.+)$/u'],
+            ],
+            'ibnmajah' => [
+                'path' => '0273IbnMaja/0273IbnMaja.Sunan/0273IbnMaja.Sunan.Shamela0001198-ara1',
+                'sha256' => '17c6161f01caec91d3ee3ea602d2885f6b2bb499de44d6090a76196945dd6bc9',
+                'unit_start' => '/^### \| ?([0-9]+) ?- /u', 'unit_stop' => '/^###/u', 'unit_count' => 4343,
+                'markup' => ['chapter' => '/^### \| ?(?![0-9])(.+)$/u', 'book' => null],
+            ],
+            'malik' => [
+                'path' => '0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.JK000466-ara1',
+                'sha256' => 'c104e5604d96af249ad631d0c8e92e41e7fd65b53f29d5ae443cb0142637db46',
+                'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 1822,
+            ],
+            'tirmidhi' => [
+                'path' => 'data/0279Tirmidhi/0279Tirmidhi.Sunan/0279Tirmidhi.Sunan.JK000140-ara1.completed',
+                'sha256' => '5bc99d3d942ceaa729a83c11389016d940ae11fb0b641a4e012c743f9e44b647',
+                'unit_start' => '/^### \|\|\| ?([0-9]+)/u', 'unit_stop' => '/^###/u', 'unit_count' => 3976,
+            ],
+        ],
+    ],
 
 ];

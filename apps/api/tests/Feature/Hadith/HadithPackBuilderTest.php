@@ -68,7 +68,7 @@ it('matches the MySQL columns minus the server-only columns, in order', function
     HadithRefAliasFactory::new()->create(['resource_id' => $resourceId]);
 
     // is_complete and incomplete_count are importer state, not pack columns (ADR 0076 «Rule, 7 Nov 2026», step 6b.1).
-    $serverOnly = ['source_id', 'source_key', 'source_text_sha256', 'source_version', 'imported_at', 'is_complete', 'incomplete_count'];
+    $serverOnly = ['source_id', 'source_key', 'source_text_sha256', 'source_version', 'imported_at', 'is_complete', 'incomplete_count', 'unavailable_count'];
     $pdo = hadithPackOpen(Storage::disk('local')->get(hadithPackBuild($resourceId)->path));
 
     foreach (PackSchema::tablesFor(ResourceGroup::HadithCollections) as $table) {

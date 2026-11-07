@@ -296,4 +296,57 @@ final class HadithApiComClient
 
         return is_string($value) && $value !== '' ? $value : null;
     }
+
+    /**
+     * The records of one book that list the number (ADR 0076 §8.6, step 6b.6). A 404 means no record. The request goes through
+     * the paced path of this client, so request_gap_ms and Retry-After apply.
+     *
+     * @return list<HadithApiComRecord>
+     *
+     * @throws HadithApiComException
+     */
+    public function recordsForNumber(string $bookSlug, int $number): array
+    {
+        $this->assertBook($bookSlug);
+
+        try {
+            $json = $this->getJson('hadiths', 'hadiths', ['book' => $bookSlug, 'hadithNumber' => $number], 1);
+        } catch (HadithApiComRequestException $exception) {
+            if ($exception->status === 404) {
+                return [];
+            }
+
+            throw $exception;
+        }
+
+        $hadiths = $json['hadiths'] ?? null;
+        $data = is_array($hadiths) ? ($hadiths['data'] ?? null) : null;
+
+        if (! is_array($data)) {
+            throw $this->shape('hadiths', 1);
+        }
+
+        $records = [];
+
+        foreach ($data as $item) {
+            $id = is_array($item) ? $this->idText($item['id'] ?? null) : null;
+            $listed = is_array($item) ? $item['hadithNumber'] ?? null : null;
+            $text = is_array($item) ? $item['hadithArabic'] ?? null : null;
+
+            if ($id === null || ! is_string($listed) && ! is_int($listed) || ! is_string($text)) {
+                throw $this->shape('hadiths', 1);
+            }
+
+            $numbers = array_values(array_filter(
+                preg_split('~[,\s]+~', trim((string) $listed)) ?: [],
+                static fn (string $part): bool => $part !== '',
+            ));
+
+            if (in_array((string) $number, $numbers, true)) {
+                $records[] = new HadithApiComRecord($id, $numbers, $text);
+            }
+        }
+
+        return $records;
+    }
 }

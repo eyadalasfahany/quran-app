@@ -45,6 +45,7 @@ class HadithCollectionFactory extends Factory
             'books_count' => 1,
             'is_complete' => true,
             'incomplete_count' => 0,
+            'unavailable_count' => 0,
             'source_version' => (string) config('hadith.commit'),
             'imported_at' => now(),
         ];

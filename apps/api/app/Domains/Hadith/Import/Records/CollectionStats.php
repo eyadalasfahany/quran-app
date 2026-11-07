@@ -24,6 +24,7 @@ final readonly class CollectionStats
      * @param  list<string>  $completenessExceptionNumbers  Numbers accepted by hadith.completeness_exceptions.
      * @param  list<string>  $incompleteNumbers  Numbers with no resolution, in file order (ADR 0076 «Rule, 7 Nov 2026»).
      * @param  array<string, string>  $incompleteReasons  Number => reason code for every incomplete number.
+     * @param  list<string>  $unavailableNumbers  Placeholder rows: numbers unrecoverable from every source (rule amended 7 Nov 2026).
      */
     public function __construct(
         public int $hadithInFile = 0,
@@ -59,5 +60,6 @@ final readonly class CollectionStats
         public array $incompleteNumbers = [],
         public array $incompleteReasons = [],
         public bool $complete = false,
+        public array $unavailableNumbers = [],
     ) {}
 }

@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $books_count
  * @property bool $is_complete
  * @property int $incomplete_count
+ * @property int $unavailable_count Placeholder rows of numbers unrecoverable from every source (ADR 0076, rule amended 7 Nov 2026).
  * @property string $source_version
  * @property CarbonImmutable $imported_at
  */
@@ -58,6 +59,7 @@ final class HadithCollection extends Model
             'books_count' => 'integer',
             'is_complete' => 'boolean',
             'incomplete_count' => 'integer',
+            'unavailable_count' => 'integer',
             'imported_at' => 'immutable_datetime',
         ];
     }
