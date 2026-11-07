@@ -8,14 +8,15 @@ use App\Domains\Hadith\Import\Records\SectionMatch;
 
 /**
  * The strict two-way 95% rule for section titles (ADR 0042 §4a, step 6). Pure: no I/O. Numbers align by exact string.
- * A number that maps to more than one chapter is ambiguous and never counts as matched.
+ * A number that maps to more than one chapter is ambiguous and never counts as matched. A number whose chapter has no entry
+ * in the chapter titles (no chapterNumber matches it) is unmapped and never counts as matched.
  */
 final class HadithSectionTitleMatcher
 {
     /**
      * @param  array<string, list<string>>  $sections  Book number => hadith numbers that have text.
-     * @param  list<array{number: string, chapter_id: string}>  $pairs  hadithapi.com hadith => chapter.
-     * @param  array<string, ?string>  $chapterTitles  Chapter id => chapterArabic, as received.
+     * @param  list<array{number: string, chapter_number: string}>  $pairs  hadithapi.com hadith => chapterNumber of its chapter.
+     * @param  array<string, ?string>  $chapterTitles  Chapter number => chapterArabic, as received. Keyed by chapterNumber, never by the chapter's id.
      * @return list<SectionMatch> One per section, in the order of $sections.
      */
     public function match(array $sections, array $pairs, array $chapterTitles, int $thresholdPercent = 95): array
@@ -24,8 +25,8 @@ final class HadithSectionTitleMatcher
         $chapterNumbers = [];
 
         foreach ($pairs as $pair) {
-            $numberChapters[$pair['number']][$pair['chapter_id']] = true;
-            $chapterNumbers[$pair['chapter_id']][$pair['number']] = true;
+            $numberChapters[$pair['number']][$pair['chapter_number']] = true;
+            $chapterNumbers[$pair['chapter_number']][$pair['number']] = true;
         }
 
         $results = [];
@@ -35,12 +36,13 @@ final class HadithSectionTitleMatcher
             $total = count($numbers);
 
             if ($total === 0) {
-                $results[] = $this->rejected($bookNumber, 'empty_section', null, 0, 0, 0, 0);
+                $results[] = $this->rejected($bookNumber, 'empty_section', null, 0, 0, 0, 0, 0);
 
                 continue;
             }
 
             $tally = [];
+            $unmapped = 0;
 
             foreach ($numbers as $number) {
                 $chapters = $numberChapters[$number] ?? [];
@@ -50,11 +52,18 @@ final class HadithSectionTitleMatcher
                 }
 
                 $chapter = (string) array_key_first($chapters);
+
+                if (! array_key_exists($chapter, $chapterTitles)) {
+                    $unmapped++;
+
+                    continue;
+                }
+
                 $tally[$chapter] = ($tally[$chapter] ?? 0) + 1;
             }
 
             if ($tally === []) {
-                $results[] = $this->rejected($bookNumber, 'no_chapter_mapped', null, $total, 0, 0, 0);
+                $results[] = $this->rejected($bookNumber, 'no_chapter_mapped', null, $total, 0, 0, 0, $unmapped);
 
                 continue;
             }
@@ -74,33 +83,33 @@ final class HadithSectionTitleMatcher
             }
 
             if (! $this->meets($forwardMatched, $total, $thresholdPercent)) {
-                $results[] = $this->rejected($bookNumber, 'forward_below_threshold', $best, $total, $forwardMatched, $chapterSize, $backwardMatched);
+                $results[] = $this->rejected($bookNumber, 'forward_below_threshold', $best, $total, $forwardMatched, $chapterSize, $backwardMatched, $unmapped);
 
                 continue;
             }
 
             if (! $this->meets($backwardMatched, $chapterSize, $thresholdPercent)) {
-                $results[] = $this->rejected($bookNumber, 'backward_below_threshold', $best, $total, $forwardMatched, $chapterSize, $backwardMatched);
+                $results[] = $this->rejected($bookNumber, 'backward_below_threshold', $best, $total, $forwardMatched, $chapterSize, $backwardMatched, $unmapped);
 
                 continue;
             }
 
-            $title = $chapterTitles[$best] ?? null;
+            $title = $chapterTitles[$best];
 
             if (! is_string($title) || $title === '') {
-                $results[] = $this->rejected($bookNumber, 'chapter_has_no_title', $best, $total, $forwardMatched, $chapterSize, $backwardMatched);
+                $results[] = $this->rejected($bookNumber, 'chapter_has_no_title', $best, $total, $forwardMatched, $chapterSize, $backwardMatched, $unmapped);
 
                 continue;
             }
 
-            $results[] = new SectionMatch($bookNumber, true, 'accepted', $best, $title, $total, $forwardMatched, $chapterSize, $backwardMatched);
+            $results[] = new SectionMatch($bookNumber, true, 'accepted', $best, $title, $total, $forwardMatched, $chapterSize, $backwardMatched, $unmapped);
         }
 
         return $results;
     }
 
     /**
-     * The highest tally; ties go to the smaller chapter id by strcmp.
+     * The highest tally; ties go to the smaller chapter number by strcmp.
      *
      * @param  array<string, int>  $tally
      */
@@ -124,8 +133,8 @@ final class HadithSectionTitleMatcher
         return $matched * 100 >= $total * $thresholdPercent;
     }
 
-    private function rejected(string $bookNumber, string $reason, ?string $chapterId, int $sectionSize, int $forwardMatched, int $chapterSize, int $backwardMatched): SectionMatch
+    private function rejected(string $bookNumber, string $reason, ?string $chapterNumber, int $sectionSize, int $forwardMatched, int $chapterSize, int $backwardMatched, int $unmappedNumbers): SectionMatch
     {
-        return new SectionMatch($bookNumber, false, $reason, $chapterId, null, $sectionSize, $forwardMatched, $chapterSize, $backwardMatched);
+        return new SectionMatch($bookNumber, false, $reason, $chapterNumber, null, $sectionSize, $forwardMatched, $chapterSize, $backwardMatched, $unmappedNumbers);
     }
 }

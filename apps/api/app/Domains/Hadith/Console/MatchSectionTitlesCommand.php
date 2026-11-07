@@ -172,6 +172,8 @@ final class MatchSectionTitlesCommand extends Command
                 'hadithapi_chapters' => $proposal->hadithapiChapters,
                 'hadithapi_hadith' => $proposal->hadithapiHadith,
                 'ambiguous_numbers' => $proposal->ambiguousNumbers,
+                'unnumbered_chapters' => $proposal->unnumberedChapters,
+                'duplicate_chapter_numbers' => $proposal->duplicateChapterNumbers,
                 'mapping_errors' => $proposal->mappingErrors,
                 'accepted' => (object) $accepted,
                 'rejected' => (object) $rejected,
@@ -198,7 +200,8 @@ final class MatchSectionTitlesCommand extends Command
         return [
             'title_ar' => $match->titleAr,
             'title_ar_source' => 'hadithapi.com',
-            'chapter_id' => $match->chapterId,
+            'chapter_number' => $match->chapterNumber,
+            'unmapped' => $match->unmappedNumbers,
             'forward' => $this->stats($match->forwardMatched, $match->sectionSize, $match->forwardPercent()),
             'backward' => $this->stats($match->backwardMatched, $match->chapterSize, $match->backwardPercent()),
         ];
@@ -211,7 +214,8 @@ final class MatchSectionTitlesCommand extends Command
     {
         return [
             'reason' => $match->reason,
-            'chapter_id' => $match->chapterId,
+            'chapter_number' => $match->chapterNumber,
+            'unmapped' => $match->unmappedNumbers,
             'forward' => $this->stats($match->forwardMatched, $match->sectionSize, $match->forwardPercent()),
             'backward' => $this->stats($match->backwardMatched, $match->chapterSize, $match->backwardPercent()),
         ];

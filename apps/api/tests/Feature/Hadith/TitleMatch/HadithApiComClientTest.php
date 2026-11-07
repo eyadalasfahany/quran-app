@@ -77,7 +77,7 @@ it('sends the key only as the apiKey query parameter', function (): void {
 it('reads only chapter ids and Arabic titles, and only hadith numbers and chapter ids', function (): void {
     Http::fake([
         'hadithapi.com/api/sahih-bukhari/chapters*' => Http::response(['chapters' => [
-            ['id' => 7, 'chapterArabic' => 'FIXTURE chapter title', 'extra' => 'FIXTURE text 7', 'hadiths' => ['FIXTURE text 8']],
+            ['id' => 107, 'chapterNumber' => 7, 'chapterArabic' => 'FIXTURE chapter title', 'extra' => 'FIXTURE text 7', 'hadiths' => ['FIXTURE text 8']],
         ]]),
         'hadithapi.com/api/hadiths*' => Http::response(['hadiths' => ['data' => [
             ['hadithNumber' => '1', 'chapterId' => 7, 'hadithEnglish' => 'FIXTURE text 1', 'grades' => ['FIXTURE grade']],
@@ -87,12 +87,26 @@ it('reads only chapter ids and Arabic titles, and only hadith numbers and chapte
     $chapter = hadithMatchClient()->chapters('sahih-bukhari')[0];
     $ref = hadithMatchClient()->hadithRefs('sahih-bukhari')[0];
 
-    expect($chapter->id)->toBe('7')
+    expect($chapter->chapterNumber)->toBe('7')
         ->and($chapter->titleAr)->toBe('FIXTURE chapter title')
         ->and(get_object_vars($chapter))->toHaveCount(2)
         ->and($ref->hadithNumber)->toBe('1')
-        ->and($ref->chapterId)->toBe('7')
+        ->and($ref->chapterNumber)->toBe('7')
         ->and(get_object_vars($ref))->toHaveCount(2);
+});
+
+it('keeps a missing or empty chapterNumber as null instead of refusing the response', function (): void {
+    Http::fake([
+        'hadithapi.com/api/sahih-bukhari/chapters*' => Http::response(['chapters' => [
+            ['id' => 100, 'chapterArabic' => 'FIXTURE chapter title'],
+            ['id' => 101, 'chapterNumber' => '', 'chapterArabic' => 'FIXTURE chapter title'],
+            ['id' => 102, 'chapterNumber' => 0, 'chapterArabic' => 'FIXTURE chapter title'],
+        ]]),
+    ]);
+
+    $chapters = hadithMatchClient()->chapters('sahih-bukhari');
+
+    expect(array_map(fn ($chapter): ?string => $chapter->chapterNumber, $chapters))->toBe([null, null, '0']);
 });
 
 it('follows pagination to the last page', function (): void {

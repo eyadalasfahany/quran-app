@@ -64,14 +64,16 @@ final class HadithApiComClient
                 throw $this->shape('chapters', 1);
             }
 
-            $id = $this->idText($item['id'] ?? null);
             $title = $item['chapterArabic'] ?? null;
 
-            if ($id === null || ($title !== null && ! is_string($title))) {
+            if ($title !== null && ! is_string($title)) {
                 throw $this->shape('chapters', 1);
             }
 
-            $chapters[] = new HadithApiComChapter($id, is_string($title) && $title !== '' ? $title : null);
+            $chapters[] = new HadithApiComChapter(
+                $this->idText($item['chapterNumber'] ?? null),
+                is_string($title) && $title !== '' ? $title : null,
+            );
         }
 
         return $chapters;
@@ -108,13 +110,13 @@ final class HadithApiComClient
 
             foreach ($data as $item) {
                 $number = is_array($item) ? $this->idText($item['hadithNumber'] ?? null) : null;
-                $chapterId = is_array($item) ? $this->idText($item['chapterId'] ?? null) : null;
+                $chapterNumber = is_array($item) ? $this->idText($item['chapterId'] ?? null) : null;
 
-                if ($number === null || $chapterId === null) {
+                if ($number === null || $chapterNumber === null) {
                     throw $this->shape('hadiths', $page);
                 }
 
-                $refs[] = new HadithApiComHadithRef($number, $chapterId);
+                $refs[] = new HadithApiComHadithRef($number, $chapterNumber);
             }
 
             $lastPage = max(1, $last);

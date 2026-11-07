@@ -186,3 +186,48 @@ it('is not scheduled and not in release.sh or start-web.sh', function (): void {
         ->and(file_get_contents(base_path('docker/release.sh')))->not->toContain('hadith:')
         ->and(file_get_contents(base_path('docker/start-web.sh')))->not->toContain('hadith:');
 });
+
+it('joins hadith to chapters by chapterNumber, never by the chapter id', function (): void {
+    hadithMatchFake(
+        ['sahih-bukhari' => [
+            ['id' => 100, 'chapterNumber' => 0, 'chapterArabic' => 'FIXTURE chapter title 0'],
+            ['id' => 101, 'chapterNumber' => 1, 'chapterArabic' => 'FIXTURE chapter title 1'],
+        ]],
+        ['sahih-bukhari' => [
+            ['hadithNumber' => 1, 'chapterId' => 1],
+            ['hadithNumber' => 2, 'chapterId' => 1],
+        ]],
+    );
+
+    expect(hadithMatchRun(['--collection' => ['bukhari'], '--output' => hadithMatchOutputPath()]))->toBe(0);
+
+    $proposal = json_decode(File::get(hadithMatchOutputPath()), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($proposal['collections']['bukhari']['accepted']['1']['title_ar'])->toBe('FIXTURE chapter title 1')
+        ->and($proposal['collections']['bukhari']['accepted']['1']['chapter_number'])->toBe('1')
+        ->and($proposal['collections']['bukhari']['rejected'])->not->toHaveKey('1');
+});
+
+it('reports unnumbered and duplicate chapters, drops the duplicated number, and counts its hadith as unmapped', function (): void {
+    hadithMatchFake(
+        ['sahih-bukhari' => [
+            ['id' => 100, 'chapterArabic' => 'FIXTURE chapter title 0'],
+            ['id' => 101, 'chapterNumber' => 1, 'chapterArabic' => 'FIXTURE chapter title 1'],
+            ['id' => 102, 'chapterNumber' => 1, 'chapterArabic' => 'FIXTURE chapter title 1 again'],
+        ]],
+        ['sahih-bukhari' => [
+            ['hadithNumber' => 1, 'chapterId' => 1],
+            ['hadithNumber' => 2, 'chapterId' => 1],
+        ]],
+    );
+
+    expect(hadithMatchRun(['--collection' => ['bukhari'], '--output' => hadithMatchOutputPath()]))->toBe(0);
+
+    $bukhari = json_decode(File::get(hadithMatchOutputPath()), true, flags: JSON_THROW_ON_ERROR)['collections']['bukhari'];
+
+    expect($bukhari['unnumbered_chapters'])->toBe(1)
+        ->and($bukhari['duplicate_chapter_numbers'])->toBe(1)
+        ->and($bukhari['accepted'])->toBe([])
+        ->and($bukhari['rejected']['1']['reason'])->toBe('no_chapter_mapped')
+        ->and($bukhari['rejected']['1']['unmapped'])->toBe(2);
+});

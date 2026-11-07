@@ -24,11 +24,11 @@ function hadithMatchNumbers(string $prefix, int $count): array
 
 /**
  * @param  list<string>  $numbers
- * @return list<array{number: string, chapter_id: string}>
+ * @return list<array{number: string, chapter_number: string}>
  */
-function hadithMatchPairs(array $numbers, string $chapterId): array
+function hadithMatchPairs(array $numbers, string $chapterNumber): array
 {
-    return array_map(fn (string $number): array => ['number' => $number, 'chapter_id' => $chapterId], $numbers);
+    return array_map(fn (string $number): array => ['number' => $number, 'chapter_number' => $chapterNumber], $numbers);
 }
 
 it('accepts a section at exactly 95% forward and 95% backward', function (): void {
@@ -113,9 +113,9 @@ it('leaves numbers with no text out of the forward count', function (): void {
 it('aligns numbers by exact string', function (): void {
     $matcher = app(HadithSectionTitleMatcher::class);
 
-    $exact = $matcher->match(['1' => ['2787.2']], [['number' => '2787.2', 'chapter_id' => '1']], ['1' => 'FIXTURE chapter 1'])[0];
-    $loose = $matcher->match(['1' => ['2787.2']], [['number' => '2787.20', 'chapter_id' => '1']], ['1' => 'FIXTURE chapter 1'])[0];
-    $padded = $matcher->match(['1' => ['1']], [['number' => '01', 'chapter_id' => '1']], ['1' => 'FIXTURE chapter 1'])[0];
+    $exact = $matcher->match(['1' => ['2787.2']], [['number' => '2787.2', 'chapter_number' => '1']], ['1' => 'FIXTURE chapter 1'])[0];
+    $loose = $matcher->match(['1' => ['2787.2']], [['number' => '2787.20', 'chapter_number' => '1']], ['1' => 'FIXTURE chapter 1'])[0];
+    $padded = $matcher->match(['1' => ['1']], [['number' => '01', 'chapter_number' => '1']], ['1' => 'FIXTURE chapter 1'])[0];
 
     expect($exact->forwardMatched)->toBe(1)
         ->and($loose->forwardMatched)->toBe(0)
@@ -126,9 +126,9 @@ it('aligns numbers by exact string', function (): void {
 it('never counts an ambiguous number as matched, and it lowers both percentages', function (): void {
     $section = ['1', '2'];
     $pairs = [
-        ['number' => '1', 'chapter_id' => '1'],
-        ['number' => '2', 'chapter_id' => '1'],
-        ['number' => '2', 'chapter_id' => '2'],
+        ['number' => '1', 'chapter_number' => '1'],
+        ['number' => '2', 'chapter_number' => '1'],
+        ['number' => '2', 'chapter_number' => '2'],
     ];
 
     $match = app(HadithSectionTitleMatcher::class)->match(['1' => $section], $pairs, ['1' => 'FIXTURE chapter 1', '2' => 'FIXTURE chapter 2'])[0];
@@ -139,7 +139,7 @@ it('never counts an ambiguous number as matched, and it lowers both percentages'
 });
 
 it('rejects an accepted-by-numbers match whose chapter has no title', function (): void {
-    $match = app(HadithSectionTitleMatcher::class)->match(['1' => ['1']], [['number' => '1', 'chapter_id' => '1']], ['1' => ''])[0];
+    $match = app(HadithSectionTitleMatcher::class)->match(['1' => ['1']], [['number' => '1', 'chapter_number' => '1']], ['1' => ''])[0];
 
     expect($match->reason)->toBe('chapter_has_no_title')
         ->and($match->titleAr)->toBeNull();
@@ -159,7 +159,7 @@ it('rejects when no number maps', function (): void {
 
 it('returns the title byte for byte', function (): void {
     $title = "FIXTURE chapter title\u{200F} ";
-    $match = app(HadithSectionTitleMatcher::class)->match(['1' => ['1']], [['number' => '1', 'chapter_id' => '1']], ['1' => $title])[0];
+    $match = app(HadithSectionTitleMatcher::class)->match(['1' => ['1']], [['number' => '1', 'chapter_number' => '1']], ['1' => $title])[0];
 
     expect($match->accepted)->toBeTrue()
         ->and($match->titleAr === $title)->toBeTrue();
@@ -179,4 +179,25 @@ it('uses the configured threshold', function (): void {
     expect($strict->accepted)->toBeFalse()
         ->and($strict->reason)->toBe('forward_below_threshold')
         ->and($default->accepted)->toBeTrue();
+});
+
+it('counts a number whose chapterNumber matches no chapter as unmapped, not as matched', function (): void {
+    $section = ['1', '2'];
+    $pairs = [
+        ['number' => '1', 'chapter_number' => '99'],
+        ['number' => '2', 'chapter_number' => '1'],
+    ];
+
+    $match = app(HadithSectionTitleMatcher::class)->match(['1' => $section], $pairs, ['1' => 'FIXTURE chapter 1'])[0];
+
+    expect($match->accepted)->toBeFalse()
+        ->and($match->reason)->toBe('forward_below_threshold')
+        ->and($match->forwardMatched)->toBe(1)
+        ->and($match->unmappedNumbers)->toBe(1);
+
+    $onlyUnmapped = app(HadithSectionTitleMatcher::class)->match(['1' => ['1']], [['number' => '1', 'chapter_number' => '99']], ['1' => 'FIXTURE chapter 1'])[0];
+
+    expect($onlyUnmapped->reason)->toBe('no_chapter_mapped')
+        ->and($onlyUnmapped->unmappedNumbers)->toBe(1)
+        ->and($onlyUnmapped->chapterNumber)->toBeNull();
 });

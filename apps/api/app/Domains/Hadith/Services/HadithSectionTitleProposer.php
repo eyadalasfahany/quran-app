@@ -65,17 +65,36 @@ final class HadithSectionTitleProposer
         $refs = $this->client->hadithRefs($bookSlug);
 
         $chapterTitles = [];
+        $unnumberedChapters = 0;
+        $duplicateNumbers = [];
 
         foreach ($chapters as $chapter) {
-            $chapterTitles[$chapter->id] = $chapter->titleAr;
+            if ($chapter->chapterNumber === null) {
+                $unnumberedChapters++;
+
+                continue;
+            }
+
+            if (isset($duplicateNumbers[$chapter->chapterNumber])) {
+                continue;
+            }
+
+            if (array_key_exists($chapter->chapterNumber, $chapterTitles)) {
+                unset($chapterTitles[$chapter->chapterNumber]);
+                $duplicateNumbers[$chapter->chapterNumber] = true;
+
+                continue;
+            }
+
+            $chapterTitles[$chapter->chapterNumber] = $chapter->titleAr;
         }
 
         $pairs = [];
         $chaptersByNumber = [];
 
         foreach ($refs as $ref) {
-            $pairs[] = ['number' => $ref->hadithNumber, 'chapter_id' => $ref->chapterId];
-            $chaptersByNumber[$ref->hadithNumber][$ref->chapterId] = true;
+            $pairs[] = ['number' => $ref->hadithNumber, 'chapter_number' => $ref->chapterNumber];
+            $chaptersByNumber[$ref->hadithNumber][$ref->chapterNumber] = true;
         }
 
         $ambiguous = 0;
@@ -104,6 +123,8 @@ final class HadithSectionTitleProposer
             hadithapiChapters: count($chapters),
             hadithapiHadith: count($refs),
             ambiguousNumbers: $ambiguous,
+            unnumberedChapters: $unnumberedChapters,
+            duplicateChapterNumbers: count($duplicateNumbers),
         );
     }
 }

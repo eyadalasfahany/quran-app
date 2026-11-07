@@ -52,7 +52,8 @@ function hadithMatchFake(array $chaptersByBook, array $hadithsByBook, array $fai
 
 /**
  * The default fixture for sahih-bukhari: book 1 accepted (its title carries U+200F and a trailing space), book 2 rejected
- * (no reference maps it, so no chapter), book 3 accepted with a title.
+ * (no reference maps it, so no chapter), book 3 accepted with a title. Chapter ids (101 to 103) differ from chapterNumbers (1 to 3),
+ * and hadith chapterId values are chapterNumbers.
  *
  * @return array{0: array<string, list<array<string, mixed>>>, 1: array<string, list<array<string, mixed>>>}
  */
@@ -60,9 +61,9 @@ function hadithMatchDefault(): array
 {
     $chapters = [
         'sahih-bukhari' => [
-            ['id' => 1, 'chapterArabic' => "FIXTURE chapter title 1\u{200F} "],
-            ['id' => 2, 'chapterArabic' => 'FIXTURE chapter title 2'],
-            ['id' => 3, 'chapterArabic' => 'FIXTURE chapter title 3'],
+            ['id' => 101, 'chapterNumber' => 1, 'chapterArabic' => "FIXTURE chapter title 1\u{200F} "],
+            ['id' => 102, 'chapterNumber' => 2, 'chapterArabic' => 'FIXTURE chapter title 2'],
+            ['id' => 103, 'chapterNumber' => 3, 'chapterArabic' => 'FIXTURE chapter title 3'],
         ],
     ];
 

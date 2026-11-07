@@ -150,3 +150,7 @@ The protections that remain are the pinned commit SHA and per-file SHA-256 check
 
 Sunnah.com's public pages name three collections differently from fawazahmed0, so, as open question 2 decided, the canonical slugs are Sunnah.com's: `nawawi` → **`nawawi40`**, `qudsi` → **`qudsi40`**, `dehlawi` → **`shahwaliullah40`**. The other seven are unchanged. `config/hadith.php` lists the canonical slugs and maps fawazahmed0's own slugs through `slug_map.fawazahmed0`; fawazahmed0 edition file names (`ara-nawawi`, `ara-qudsi`, `ara-dehlawi`) keep the source's slug. Where this ADR lists `nawawi`, `qudsi` or `dehlawi` as a canonical slug, read the new name. Slugs are now frozen (plan D13).
 
+
+## Note, 7 Nov 2026: hadithapi.com chapter join
+
+Measured on the live API: a hadith's `chapterId` equals the chapter's `chapterNumber`, not its `id`. The section-title matcher joins on `chapterNumber`; where §4a says the client reads `id`, read `chapterNumber`.
