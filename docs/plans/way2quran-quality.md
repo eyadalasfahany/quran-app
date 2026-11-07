@@ -135,15 +135,17 @@ These are all JSON, UTF-8, with sorted keys where written by tools. No Quran tex
 ```json
 {"schema": 1, "surah": 16, "file": "016.mp3", "sha256": "…", "bytes": 19983169, "duration_ms": 1248000,
  "source_last_modified": "…", "first_sound_s": 0.4, "last_sound_s": 1247.1,
- "opening": {"words": 6, "scores": [51.1, 53.1, 53.1, 53.1], "heard": false, "at_s": null},
- "ending": {"words": 6, "scores": [52.6, 58.1], "heard": false, "at_s": null},
+ "opening": {"words": 6, "scores": [51.1, 53.1, 53.1, 53.1], "heard": false, "at_s": null,
+             "probe": {"windows": 2, "score": 53.1, "heard": false}},
+ "ending": {"words": 6, "scores": [52.6, 58.1], "heard": false, "at_s": null,
+            "probe": {"windows": 2, "score": 52.6, "heard": false}},
  "first_heard_ayah": 53, "last_heard_ayah": 119, "ayah_count": 128, "ending_at_s": null, "trailing_s": null,
  "windows": {"head": 4, "tail": 10}, "asr_calls_extra": 12, "ms_per_letter": 160,
- "verdict": "incomplete-both", "check": "completeness-1|tarteel-ai/whisper-base-ar-quran@5c3c53f",
+ "verdict": "incomplete-both", "check": "completeness-2|tarteel-ai/whisper-base-ar-quran@5c3c53f",
  "tool_version": "0.1.0+q1", "seconds": 61.2}
 ```
 
-`verdict` is one of `complete`, `incomplete-start`, `incomplete-end`, `incomplete-both`, `incomplete-middle` and `unverified`. The `suspect-duration` flag is added at report merge, because it needs the reciter's median.
+`probe` is null when not run: when the first 30 s head or tail window fails, two overlapping 16 s windows are transcribed (Q2b, because the ASR stops at 220 tokens and a dense 30 s window loses its last seconds). `verdict` is one of `complete`, `incomplete-start`, `incomplete-end`, `incomplete-both`, `incomplete-middle` and `unverified`. The `suspect-duration` flag is added at report merge, because it needs the reciter's median.
 
 **Anchors report**: key `anchors` inside `aligned/NNN.json`. It is written only with `--quality`, and the export ignores it.
 
