@@ -1,0 +1,17 @@
+{
+  "moshafs": [
+    {
+      "moshaf_id": 86,
+      "files": [
+        {
+          "bytes": 53,
+          "duration_ms": 19017,
+          "key": "audio/mp3quran/86/113-e16b521cee23e607.mp3",
+          "sha256": "e16b521cee23e6070de2be485db7dff8e50def82e21655ec2e4fcdf8f091fcab",
+          "surah": 113,
+          "url": "https://audio.example.test/audio/mp3quran/86/113-e16b521cee23e607.mp3"
+        }
+      ]
+    }
+  ]
+}

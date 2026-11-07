@@ -1,0 +1,149 @@
+name: Tools
+
+# Both Python tools' test suites and the add-reciter workflow guard (ADR 0077, plan way2quran-quality P8).
+# Runs on pull requests, on pushes to main and on demand; it never pushes and holds no secrets. PRs the add-reciter bot opens with
+# GITHUB_TOKEN do not trigger it, so the release PR is opened with a user token and its run must be green.
+# The label `mp3quran-workflow-change` skips only the workflow-guard job.
+on:
+  pull_request:
+    paths:
+      - "tools/**"
+      - ".github/workflows/add-reciter.yml"
+      - ".github/workflows/tools.yml"
+      - "apps/api/config/quran.php"
+      - "apps/api/resources/way2quran/**"
+      - "apps/api/resources/recitation-timings/**"
+  # Pushes to main and manual runs check the suites on Linux too (the goldens are built on macOS). The guard
+  # job compares against a PR's base, so it runs on pull requests only.
+  push:
+    branches: [main]
+    paths:
+      - "tools/**"
+      - ".github/workflows/add-reciter.yml"
+      - ".github/workflows/tools.yml"
+      - "apps/api/config/quran.php"
+      - "apps/api/resources/way2quran/**"
+      - "apps/api/resources/recitation-timings/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tools-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recitation-align:
+    name: recitation-align tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # test_released_gated.py compares against this ref; a PR checkout's HEAD is the merge commit (P18).
+      RELEASE_BASE_REF: ${{ github.event.pull_request.base.sha || 'HEAD' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: tools/recitation-align/uv.lock
+
+      - name: Model revision key
+        id: models
+        run: echo "key=$(grep '_REVISION' tools/recitation-align/recitation_align/models.py | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Hugging Face models (read only)
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/huggingface
+          key: hf-${{ runner.os }}-${{ steps.models.outputs.key }}
+
+      - name: Install dependencies (frozen)
+        working-directory: tools/recitation-align
+        run: uv sync --frozen
+
+      - name: Test recitation-align
+        working-directory: tools/recitation-align
+        run: uv run pytest -q
+
+  mp3quran-ingest:
+    name: mp3quran-ingest tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: tools/mp3quran-ingest/uv.lock
+
+      - name: Install dependencies (frozen)
+        working-directory: tools/mp3quran-ingest
+        run: uv sync --frozen
+
+      - name: Test mp3quran-ingest
+        working-directory: tools/mp3quran-ingest
+        run: uv run pytest -q
+
+  workflow-guard:
+    name: add-reciter workflow guard
+    # The label skips only this job (P8).
+    if: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'mp3quran-workflow-change') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: tools/recitation-align/uv.lock
+
+      - name: Install dependencies (frozen)
+        working-directory: tools/recitation-align
+        run: uv sync --frozen
+
+      - name: MP3Quran steps unchanged against the base (T4)
+        working-directory: tools/recitation-align
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: uv run python scripts/workflow_dump.py --check "$BASE_SHA"
+
+      - name: Way2Quran flags only in Way2Quran steps (B5)
+        working-directory: tools/recitation-align
+        run: uv run python scripts/workflow_dump.py --guards

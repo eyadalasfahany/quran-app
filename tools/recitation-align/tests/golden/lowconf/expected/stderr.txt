@@ -1,0 +1,9 @@
+window ayahs 1-1 (+look-ahead to 1): frames 0-40 (40), tokens 14, 0.8 s
+window ayahs 2-2 (+look-ahead to 2): frames 0-367 (367), tokens 9, 7.3 s
+window ayahs 3-3 (+look-ahead to 3): frames 0-201 (201), tokens 15, 4.0 s
+window ayahs 4-4 (+look-ahead to 4): frames 0-270 (270), tokens 20, 5.4 s
+window ayahs 5-5 (+look-ahead to 5): frames 0-72 (72), tokens 15, 1.4 s
+muqatta'at: 0 opening letter groups spelled out
+basmala: recited score -1.0726, omitted score -0.8476 -> omitted
+window ayahs 1-5 (+look-ahead to 5): frames 0-950 (950), tokens 73, 19.0 s
+113: FALLBACK to the aligner (published spans leave 5 ayahs below 0.4; the aligner leaves 0)

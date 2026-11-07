@@ -1,0 +1,1 @@
+113: ayahs 5, words 23, basmala recited False, ayah starts within 1 s of a pause 0/4 (0.0%), pauses 1, low-confidence ayahs [], words squeezed 0, dropped ayah-0 rows None, end mismatches None, ayah 1 published None ms, first spoken word 380 ms, duration 19017 ms

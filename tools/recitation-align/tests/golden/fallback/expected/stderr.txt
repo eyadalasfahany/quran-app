@@ -1,0 +1,4 @@
+muqatta'at: 0 opening letter groups spelled out
+basmala: recited score -1.0561, omitted score -0.6581 -> omitted
+window ayahs 1-4 (+look-ahead to 4): frames 0-547 (547), tokens 47, 10.9 s
+112: FALLBACK to the aligner (published timings miss ayah(s) [3])

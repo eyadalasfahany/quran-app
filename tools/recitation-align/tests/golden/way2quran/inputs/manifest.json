@@ -1,0 +1,17 @@
+{
+  "moshafs": [
+    {
+      "moshaf_id": 9,
+      "files": [
+        {
+          "bytes": 55,
+          "duration_ms": 10945,
+          "key": "audio/way2quran/9/112-3a806e406db655d0.mp3",
+          "sha256": "3a806e406db655d07d1011d888dd6c194412e0ed4140a58104880cfd627bc67e",
+          "surah": 112,
+          "url": "https://audio.example.test/audio/way2quran/9/112-3a806e406db655d0.mp3"
+        }
+      ]
+    }
+  ]
+}

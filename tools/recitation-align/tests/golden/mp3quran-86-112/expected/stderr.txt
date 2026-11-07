@@ -1,0 +1,4 @@
+window ayahs 1-1 (+look-ahead to 1): frames 0-129 (129), tokens 11, 2.6 s
+window ayahs 2-2 (+look-ahead to 2): frames 0-106 (106), tokens 9, 2.1 s
+window ayahs 3-3 (+look-ahead to 3): frames 0-127 (127), tokens 12, 2.5 s
+window ayahs 4-4 (+look-ahead to 4): frames 0-185 (185), tokens 15, 3.7 s
