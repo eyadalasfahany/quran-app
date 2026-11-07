@@ -85,6 +85,20 @@
       "when": 1793733247339,
       "tag": "0011_duas_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1794071809462,
+      "tag": "0012_hadith_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1794071830001,
+      "tag": "0013_search_hadith",
+      "breakpoints": true
     }
   ]
 }

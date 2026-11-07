@@ -224,6 +224,10 @@ function applyChanges(
     for (const change of changes) {
       applyChange(db, group, resource.id, change);
     }
+    // Hadith's FTS rows are derived from its entries, so a change to them reruns the group's post-import SQL.
+    for (const sql of group.afterImportSql ?? []) {
+      db.run(sql, [resource.id]);
+    }
     db.run('UPDATE installed_resources SET version = ?, last_checked_at = ? WHERE resource_id = ?', [
       resource.version,
       checkedAt,
@@ -321,6 +325,9 @@ function copyPack(db: SqlExecutor, path: string, resource: ContentManifestResour
         const columns = columnList(table);
         db.exec(`INSERT INTO ${table.name} (${columns}) SELECT ${columns} FROM pack.${table.name}`);
       }
+      for (const sql of group.afterImportSql ?? []) {
+        db.run(sql, [resource.id]);
+      }
       upsertInstalled(db, resource, checkedAt);
     });
   } finally {
@@ -386,8 +393,8 @@ export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifes
     db.run('DELETE FROM catalog_resources');
     for (const resource of resources) {
       db.run(
-        `INSERT OR REPLACE INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, language_code, direction, version, pack_size_bytes, is_default, style)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT OR REPLACE INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, language_code, direction, version, pack_size_bytes, is_default, style, source_key)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           resource.id,
           resource.group,
@@ -398,6 +405,8 @@ export function writeCatalog(db: SqlExecutor, resources: readonly ContentManifes
           resource.is_default === true ? 1 : 0,
           // Only recitations carry a style; a missing value (an older API) is null.
           resource.style ?? null,
+          // The collection slug of a hadith resource (the manifest `key`); null when empty or absent.
+          resource.key ? resource.key : null,
         ],
       );
       db.run(

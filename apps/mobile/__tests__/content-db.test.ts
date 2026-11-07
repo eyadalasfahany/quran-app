@@ -232,6 +232,7 @@ describe('resource names migration (0004)', () => {
         'author_ar',
         'is_default',
         'style',
+        'source_key',
       ]);
       expect(columnNames(database, 'catalog_resources')).toEqual(drizzleColumnNames(catalogResources));
       expect(count(database, 'catalog_resources')).toBe(0);

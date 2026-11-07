@@ -87,6 +87,7 @@ export const catalogResources = sqliteTable('catalog_resources', {
   authorAr: text('author_ar'),
   isDefault: integer('is_default').notNull().default(0),
   style: text('style'),
+  sourceKey: text('source_key'),
 });
 
 export const tafsirEntries = sqliteTable(
@@ -540,4 +541,110 @@ export const namesNotes = sqliteTable(
     primaryKey({ columns: [table.resourceId, table.id] }),
     index('names_notes_name_idx').on(table.resourceId, table.nameSlug),
   ],
+);
+
+export const hadithCollections = sqliteTable(
+  'hadith_collections',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    slug: text('slug').notNull().unique(),
+    sourceCode: text('source_code').notNull(),
+    titleAr: text('title_ar'),
+    titleEn: text('title_en'),
+    authorAr: text('author_ar'),
+    authorEn: text('author_en'),
+    attributionAr: text('attribution_ar').notNull(),
+    attributionEn: text('attribution_en').notNull(),
+    sourceUrl: text('source_url'),
+    totalHadith: integer('total_hadith').notNull(),
+    booksCount: integer('books_count').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.id] })],
+);
+
+export const hadithBooks = sqliteTable(
+  'hadith_books',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    bookNumber: text('book_number').notNull(),
+    titleAr: text('title_ar'),
+    titleEn: text('title_en'),
+    position: integer('position').notNull(),
+    hadithCount: integer('hadith_count').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('hadith_books_position_idx').on(table.resourceId, table.position),
+  ],
+);
+
+export const hadithChapters = sqliteTable(
+  'hadith_chapters',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    bookId: integer('book_id').notNull(),
+    chapterNumber: integer('chapter_number').notNull(),
+    sourceChapterKey: text('source_chapter_key'),
+    titleAr: text('title_ar'),
+    titleEn: text('title_en'),
+    position: integer('position').notNull(),
+    hadithCount: integer('hadith_count').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('hadith_chapters_book_position_idx').on(table.resourceId, table.bookId, table.position),
+  ],
+);
+
+export const hadithEntries = sqliteTable(
+  'hadith_entries',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    bookId: integer('book_id').notNull(),
+    chapterId: integer('chapter_id'),
+    hadithNumber: text('hadith_number').notNull(),
+    arabicNumber: text('arabic_number'),
+    position: integer('position').notNull(),
+    textAr: text('text_ar').notNull(),
+    textEn: text('text_en'),
+    narratorEn: text('narrator_en'),
+    textSearch: text('text_search').notNull(),
+    sourceUrl: text('source_url'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('hadith_entries_number_idx').on(table.resourceId, table.hadithNumber),
+    index('hadith_entries_book_position_idx').on(table.resourceId, table.bookId, table.chapterId, table.position),
+  ],
+);
+
+export const hadithGrades = sqliteTable(
+  'hadith_grades',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    entryId: integer('entry_id').notNull(),
+    grade: text('grade').notNull(),
+    gradedBy: text('graded_by'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('hadith_grades_entry_idx').on(table.resourceId, table.entryId),
+  ],
+);
+
+export const hadithRefAliases = sqliteTable(
+  'hadith_ref_aliases',
+  {
+    resourceId: integer('resource_id').notNull(),
+    oldNumber: text('old_number').notNull(),
+    newNumber: text('new_number'),
+    match: text('match').notNull(),
+    sinceVersion: integer('since_version').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.oldNumber, table.sinceVersion] })],
 );

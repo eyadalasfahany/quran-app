@@ -23,6 +23,8 @@ export type ContentGroupSchema = {
   tables: readonly ContentTable[];
   entities: readonly ContentEntity[];
   deleteResourceSql: readonly string[];
+  /** Statements run after the tables are copied, in the same transaction, each with `[resource_id]`. */
+  afterImportSql?: readonly string[];
 };
 
 export type ContentContractGroup = {
@@ -515,12 +517,18 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
       ),
     ],
     deleteResourceSql: [
+      `DELETE FROM search_hadith WHERE ${RESOURCE}`,
       `DELETE FROM hadith_ref_aliases WHERE ${RESOURCE}`,
       `DELETE FROM hadith_grades WHERE ${RESOURCE}`,
       `DELETE FROM hadith_entries WHERE ${RESOURCE}`,
       `DELETE FROM hadith_chapters WHERE ${RESOURCE}`,
       `DELETE FROM hadith_books WHERE ${RESOURCE}`,
       `DELETE FROM hadith_collections WHERE ${RESOURCE}`,
+    ],
+    // The FTS delete comes first so a rerun after applyChanges replaces the rows instead of doubling them.
+    afterImportSql: [
+      `DELETE FROM search_hadith WHERE ${RESOURCE}`,
+      'INSERT INTO search_hadith (entry_id, resource_id, text_search) SELECT id, resource_id, text_search FROM hadith_entries WHERE resource_id = ?',
     ],
   },
 ];

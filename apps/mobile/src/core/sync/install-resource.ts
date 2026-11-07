@@ -93,6 +93,11 @@ async function runInstall(deps: InstallDeps, resourceId: number, options: Instal
     }
   }
 
+  if (resource.group === 'hadith_collections') {
+    // Not auto-selected: without this the next sync would remove the collection the user chose.
+    keepOnDemand(deps.db, [resource.id]);
+  }
+
   onProgress?.(1);
   return { status: 'installed' };
 }
