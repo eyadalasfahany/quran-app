@@ -16,9 +16,9 @@ MANIFEST_SCHEMA = 1
 SOURCE = "mp3quran"  # default; the pipeline passes the source's own string
 
 
-def write_json_atomic(path: Path, data: Any) -> None:
+def write_json_atomic(path: Path, data: Any, *, sort_keys: bool = True) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    text = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    text = json.dumps(data, ensure_ascii=False, indent=2, sort_keys=sort_keys) + "\n"
     descriptor, temp_name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".tmp")
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:

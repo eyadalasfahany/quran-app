@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-11-07T12:00:00Z",
+  "moshafs": [
+    {
+      "files": [
+        {
+          "bytes": 1007,
+          "duration_ms": 1500,
+          "key": "audio/way2quran/1/001-313bd3e58a76fa88.mp3",
+          "sha256": "313bd3e58a76fa884faf6c537b43a13940cbd3baf5aa1118f088718cca50c503",
+          "source_etag": null,
+          "source_last_modified": "Wed, 04 Nov 2026 10:00:00 GMT",
+          "source_url": "https://media.way2quran.com/fixture-reciter/hafs-an-asim/001.mp3",
+          "surah": 1,
+          "url": "https://audio.taybah-app.com/audio/way2quran/1/001-313bd3e58a76fa88.mp3"
+        },
+        {
+          "bytes": 1007,
+          "duration_ms": 1500,
+          "key": "audio/way2quran/1/012-47fbcdeea13be9da.mp3",
+          "sha256": "47fbcdeea13be9da9c1e2f504d7dce4a039dcc44112c3637047ffb2daef5fe1a",
+          "source_etag": null,
+          "source_last_modified": "Wed, 04 Nov 2026 10:00:00 GMT",
+          "source_url": "https://media.way2quran.com/fixture-reciter/hafs-an-asim/012.mp3",
+          "surah": 12,
+          "url": "https://audio.taybah-app.com/audio/way2quran/1/012-47fbcdeea13be9da.mp3"
+        },
+        {
+          "bytes": 1006,
+          "duration_ms": 1500,
+          "key": "audio/way2quran/1/079-79ba04bc86adec58.mp3",
+          "sha256": "79ba04bc86adec58271d18a2ba02415343dc66ec6fd8d24a5025bf0d00dd7c29",
+          "source_etag": null,
+          "source_last_modified": "Wed, 04 Nov 2026 10:00:00 GMT",
+          "source_url": "https://media.way2quran.com/fixture-reciter/hafs-an-asim/79.mp3",
+          "surah": 79,
+          "url": "https://audio.taybah-app.com/audio/way2quran/1/079-79ba04bc86adec58.mp3"
+        }
+      ],
+      "moshaf_id": 1,
+      "moshaf_name": "حفص عن عاصم - مرتل",
+      "name_ar": "قارئ تجريبي للاختبار",
+      "name_en": "Fixture Reciter",
+      "reciter_id": 1,
+      "riwayah": "حفص عن عاصم",
+      "surah_list": [
+        1,
+        12,
+        79
+      ]
+    }
+  ],
+  "public_base": "https://audio.taybah-app.com",
+  "schema": 1,
+  "source": "way2quran"
+}

@@ -23,6 +23,11 @@ DEFAULT_CATALOGUE_OUT = REPO_ROOT / "apps" / "api" / "resources" / "mp3quran" / 
 DEFAULT_MANIFEST = REPO_ROOT / "apps" / "api" / "resources" / "mp3quran" / "manifest.json"
 DEFAULT_WORK_ROOT = TOOL_ROOT / "out" / "audio"
 DEFAULT_DRY_MANIFEST = TOOL_ROOT / "out" / "dry-manifest.json"
+# Way2Quran (ADR 0074): the committed manifest, its dry-run twin (the loader refuses a manifest of another source),
+# and the reciter data file that lists each reciter's exact file names (plan step 5).
+DEFAULT_WAY2QURAN_MANIFEST = REPO_ROOT / "apps" / "api" / "resources" / "way2quran" / "manifest.json"
+DEFAULT_DRY_WAY2QURAN_MANIFEST = TOOL_ROOT / "out" / "dry-way2quran-manifest.json"
+DEFAULT_WAY2QURAN_DATA = TOOL_ROOT / "mp3quran_ingest" / "way2quran_reciters.json"
 
 SECRET_NAMES = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY")
 PLAIN_NAMES = ("R2_BUCKET", "R2_PUBLIC_BASE")

@@ -26,6 +26,9 @@ class RemoteFile:
     content_length: int
     etag: str | None
     last_modified: str | None = None  # the header as sent (an HTTP date), or None
+    content_type: str | None = None  # as sent; Way2Quran checks audio/mpeg (ADR 0074 plan step 6)
+    final_url: str | None = None  # after redirects; a Way2Quran entry refuses any redirect
+    status: int | None = None
 
 
 class _Transient(Exception):
@@ -61,6 +64,8 @@ def _head_once(url: str, timeout: float) -> RemoteFile:
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             headers = response.headers
+            status = response.status
+            final_url = response.geturl()
     except urllib.error.HTTPError as exc:  # before URLError: HTTPError is a subclass of it
         status = exc.code
         exc.close()
@@ -78,6 +83,9 @@ def _head_once(url: str, timeout: float) -> RemoteFile:
         content_length=int(length),
         etag=headers.get("ETag"),
         last_modified=headers.get("Last-Modified"),
+        content_type=headers.get("Content-Type"),
+        final_url=final_url,
+        status=status,
     )
 
 
