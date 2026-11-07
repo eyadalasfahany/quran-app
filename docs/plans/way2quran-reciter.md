@@ -112,12 +112,16 @@ Release blocker: the credit ships in both languages before either reciter is vis
 
 ### Step 10. First data run (developer present; after question 1)
 
+**Superseded (7 Nov 2026)** by `docs/plans/way2quran-quality.md` steps Q10 and Q12 (ADR 0077): runs are quality-mode dispatches, reciter 2 first, reciters 1 and 3 fresh.
+
 1. Dry run locally on three Abadh surahs (1, 2 as the largest, 90 as the one that timed out): `uv run mp3quran-ingest ingest --source way2quran --reciter 1 --surah 1 --surah 2 --surah 90` (no `--upload`). Check bytes equal `Content-Length`, duration, null ETag, `Last-Modified` recorded.
 2. Dispatch the workflow for reciter 1 (`source=way2quran`, `chunks=6`; if a chunk times out, resume with `resume_run_id`). The PR holds the manifest, 114 timing files and the quality table.
 3. Review and merge. Railway imports it **hidden**. Then reciter 2 the same way (54 surahs; `chunks` 3 is enough). A second PR can conflict on `manifest.json`; rebase or rerun on the new `main`.
 Tests: none new; the checks are the PR's quality tables (counts only) and a local `way2quran:import --dry-run` of the merged manifest.
 
 ### Step 11. Accuracy review and release (blocker)
+
+**Superseded (7 Nov 2026)** by `docs/plans/way2quran-quality.md` steps Q9, Q11 and Q13 (ADR 0077): the gate, A6(a) record and release rules replace the pause audit and the listening check; the release is a coordinator PR.
 
 Per reciter, on every surah: the A6(c) pause audit (`docs/plans/recitation-timings.md` line 131: at least 90% of ayah starts at a pause, at least 83% steady, more than 10% of ayahs below the confidence floor blocks the surah); the quality table's lowest-confidence ayahs; a developer listening spot check on three surahs including a long one (listening is not ground truth). Record the numbers in an addendum to ADR 0060. Any failing surah keeps the whole reciter hidden. Then the developer adds the id to `way2quran_released_reciters`; the next deploy shows the reciter; a second deploy writes nothing (idempotent).
 Exit check on the iPhone 17 simulator: reciter appears in the list, streams the R2 URL, downloads one surah offline, highlights ayah and word on three surahs, and for Ebadi the 60 missing surahs show unavailable and continuous play skips them (ADR 0062).

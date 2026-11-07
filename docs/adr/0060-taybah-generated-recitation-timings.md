@@ -2,6 +2,8 @@
 
 Date: 2026-11-04 · Status: accepted (developer, 4 Nov 2026) · Amends ADR 0052 by adding an override layer: a Taybah timing, where one exists for a surah file, is used instead of QF's. ADR 0052's untrusted list, its decisions 1 to 3 and the device checks are unchanged. Amends spec §12 "Timings must match the audio". Rests on ADR 0008, 0022, 0023, 0037, 0039, 0040, 0044 (packs build at web start), 0052. Plan: `docs/plans/recitation-timings.md`.
 
+**See ADR 0077 (7 Nov 2026)** for Way2Quran: verdicts per surah, release rules R1–R7 with a capped `no_highlight` (target 0), and the reinterpretation of "no surah-by-surah shipping" (the reciter is still released once, as a whole). The MP3Quran and QF paths are unchanged.
+
 ## Context
 
 ADR 0052 stopped the app from highlighting four QF chapter reciters whose QF timings do not match their audio: 5 (Hani ar-Rifai), 158 (Abdullah Ali Jabir), 168 (al-Minshawi with kids) and 174 (Yasser ad-Dussary). They play with «بدون تتبع». Decision 2 of that ADR: no audio analysis on the server (no `ffmpeg`).

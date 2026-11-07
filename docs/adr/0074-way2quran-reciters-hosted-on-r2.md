@@ -2,6 +2,8 @@
 
 Date: 2026-11-07 · Status: **accepted** (developer decisions, 7 Nov 2026; the Sources credit ships without a frame, by developer approval) · Extends ADR 0061 (a second reciter source on the same R2 host, same copy-once pipeline, same partial-recording rule) and ADR 0060 (timings made by Taybah). Amends non-negotiable 2 in `CLAUDE.md` (the list of audio hosts: «for MP3Quran reciters» becomes «for MP3Quran and Way2Quran reciters», done 7 Nov 2026) and `docs/content-plan.md` (recitation audio table). Plan: `docs/plans/way2quran-reciter.md`.
 
+**Amended by ADR 0077 (7 Nov 2026):** decisions 8 (release by a coordinator PR guarded by `test_released_gated.py`) and 11 (the pause-audit gate is replaced by the quality-mode gate and release rules). See `docs/adr/0077-way2quran-quality-mode.md`.
+
 ## Context
 
 Taybah plays the 20 QF reciters (ADR 0008) and, from ADR 0061, MP3Quran reciters copied to R2. Way2Quran (https://way2quran.com) is a second recitation site. It is not in the MP3Quran catalogue (v3 API checked by the coordinator, 7 Nov 2026). Facts read on 7 Nov 2026:
