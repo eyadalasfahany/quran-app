@@ -473,6 +473,10 @@
       "green": "Green highlight",
       "blue": "Blue highlight",
       "rose": "Rose highlight"
+    },
+    "collectionCover": {
+      "titled": "Cover of {{title}}",
+      "untitled": "Collection cover"
     }
   },
   "home": {

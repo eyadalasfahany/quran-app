@@ -10,8 +10,11 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 | 4 | Pack contract and hadith search normaliser | |
 | 5 | Source interface and fawazahmed0 client, snapshot | |
 | 6 | Importer, `hadith:import` command, dev-only `hadith:match-section-titles` | |
+| 6b | Chapter matcher and import from OpenITI (D14, ADR 0076, proposed): 6b.0 spike and pins, 6b.1 matcher, 6b.2 import | Waiting for ADR 0076 acceptance |
+| 6c | More chapter collections (Muslim, Tirmidhi, Malik) | After 6b |
 | 7 | API endpoints and contract | |
-| 8 | Design frames (developer approval gate) | |
+| 8 | Design frames (developer approval gate) | Approved 7 Nov 2026 (frames in `screens/frames/hadith/`) |
+| 8b | Chapter frames (changes to approved frames, developer approval gate) | Waiting for ADR 0076 acceptance |
 | 9 | Cover tokens and `CollectionCover` | |
 | 10 | Mobile data layer: content | |
 | 11 | Mobile data layer: personal | |
@@ -31,14 +34,14 @@ One file per step of [`../phase-7.md`](../phase-7.md), written when the step sta
 - No grade is shown through Phase 7: grades are stored with their graders, `hadith.grades_visible` is `false`, and the pack's grade table is empty. There is no `review_status` column. Never invent a collection-level grade.
 - There is no content reviewer. The developer decides the Arabic names, the source-line wording, the gap list and SHA bumps. All ten collections ship.
 - A hadith with no text in the source is not imported and is listed in the report. A missing Arabic title stays `null` and does not block shipping: the UI shows «مجموعة {n}» / «كتاب {n}» (i18n labels) and an ornament-only cover, never an invented or translated title and never the English source name in the Arabic interface.
-- fawazahmed0 has no chapter (باب) level: a book lists its hadith directly. The chapter screens, columns and endpoint exist for Sunnah.com and are tested with fixtures.
+- fawazahmed0 has no chapter (باب) level: a book lists its hadith directly. The chapter screens, columns and endpoint exist for Sunnah.com and are tested with fixtures. **Proposed amendment (D14, ADR 0076, not yet Accepted):** chapter titles and number ranges from OpenITI, titles only and never hadith text, may fill `hadith_chapters` for some collections through the dev-only `hadith:match-chapters` matcher and a committed, SHA-256-pinned data file; the Zenodo pin, the 95% two-way rule and the CC BY-NC-SA credit apply. Until the developer accepts ADR 0076, this bullet stands as written.
 - Saved items reference collection slug + hadith number, never a database id, book id or chapter ordinal.
 - There is no switch or lock (ADR 0045, 2 Nov 2026): the import runs on every deploy, like Azkar. Add the hadith command to `docker/release.sh` only in step 17.
 - No key is needed for hadith data. `HADITH_API_KEY` is optional, **dev-only**, empty in `.env.example`, never read in production and redacted from logs, used only by `hadith:match-section-titles`. Never open or print `apps/api/.env`.
 - **Titles only from the other sources.** Hadith data comes only from fawazahmed0. Collection names come from ummahapi.com (data in `config/hadith_titles.php`), Arabic authors were approved by the developer on 1 Nov 2026, and section titles come from the one-off hadithapi.com matcher (accept only at ≥95% in both directions; titles only, never hadith text or grades; refuses to run in production; not scheduled; not in `release.sh`; the command writes a proposal, never `config/`).
 - Schema, endpoints, packs and screens must not need a change at the Sunnah.com switch (step 18).
 - `apps/mobile/CLAUDE.md` and `apps/api/CLAUDE.md` apply in full: one component per file with its colocated test, tokens via `useTheme()`, i18n for every string, `laravel-standards` for API code, `useWindowClass()` for layout.
-- UI work follows `apple-design`, is reviewed against its frame in `quran-app-screens.html`, and is checked on the iPhone 17 simulator against `frame-shot.py` output. No UI code before step 8 is approved.
+- UI work follows `apple-design`, is reviewed against its frame in `screens/frames/hadith/<FrameId>.html`, and is checked on the iPhone 17 simulator against `frame-shot.py` output. No UI code before step 8 is approved.
 - Shared files are edited additively and at the end (see "Merge risk" in the plan). Namespace i18n keys under `hadith.*`.
 - Don't commit, push, switch branches or add dependencies. Check the branch with `git branch --show-current`.
 - If the code, the spec and an ADR disagree, stop and report.

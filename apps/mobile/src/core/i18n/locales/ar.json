@@ -473,6 +473,10 @@
       "green": "تظليل أخضر",
       "blue": "تظليل أزرق",
       "rose": "تظليل وردي"
+    },
+    "collectionCover": {
+      "titled": "غلاف {{title}}",
+      "untitled": "غلاف مجموعة"
     }
   },
   "home": {

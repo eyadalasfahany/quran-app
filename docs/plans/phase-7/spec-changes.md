@@ -171,3 +171,25 @@ Replace the section text (heading kept) with:
 - `apps/api/CLAUDE.md` «Structure»: add `HadithApiFawaz` (later `SunnahCom`) to the `app/Integrations` list.
 - ADR 0017 gets «Amended by ADR 0042 (الحديث tile gated on an installed collection pack)»; ADR 0032 gets «Amended by ADR 0042 (الحديث card in the menu, same gate)». `docs/adr/README.md` is unchanged.
 - `apps/api/.env.example`: `HADITH_API_KEY=` empty with the comment `# dev-only, used by hadith:match-section-titles`. `apps/api/CLAUDE.md` «Structure»: also note the minimal dev-only `HadithApiCom` client used by the title matcher.
+
+## Proposed by ADR 0076 (chapters from OpenITI): NOT applied
+
+Apply only after the developer accepts ADR 0076. Nothing below has been edited in the spec or the content plan.
+
+### `docs/technical-spec.md`
+1. §5 Hadith intro (line «fawazahmed0 has no chapter level, so `hadith_chapters` stays empty for it»): replace with «`hadith_chapters` is filled only for collections that have a chapter file from OpenITI (ADR 0076); the other collections have no chapters and a book lists its hadith directly.»
+2. §5 `hadith_chapters` row: replace «**Empty for fawazahmed0.**» with «Rows for chaptered collections have `source_id` = `openiti` while the hadith rows keep `source_id` = `fawazahmed0`. `source_chapter_key` is the short ordinal in the OpenITI version; `source_key` is `openiti:{slug}:{book_number}:{ordinal}`. Hadith in a chapter carry `chapter_id`; a book is chaptered completely or not at all (ADR 0076 §7, option C, if accepted).»
+3. §5 `content_sources`: add `openiti` (CC BY-NC-SA 4.0, `granted`; the chapter table is ShareAlike).
+4. §6 pack row (line «`hadith_chapters` is empty for fawazahmed0»): «`hadith_chapters` has rows only for chaptered collections.»
+5. §9 `chapters` row (line «an empty list when the source has none»): unchanged in shape; add «rows for collections with a chapter file».
+6. §4 route comment (line «a book lists its hadith directly when the source has no chapters»): unchanged.
+7. §7: add a short paragraph «Hadith chapters (ADR 0076): dev-only matcher `hadith:match-chapters`, committed pinned data file, importer reads the file only.»
+
+### `docs/content-plan.md`
+1. Hadith sources table (API catalog and «Hadith» section): add a row «OpenITI corpus (Zenodo 10.5281/zenodo.10007820, release 2023.1.8; version DOI to confirm) | Hadith chapter (باب) titles and number ranges only | Zenodo archive, pinned, dev-only matcher | CC BY-NC-SA 4.0 (stated on Zenodo); Shamela-derived, so upstream rights are not cleared (RB21) | Chapter titles for four collections first (ADR 0076)».
+2. «Arabic names» bullet: add «chapter (باب) titles from OpenITI, in `database/data/hadith/chapters/{slug}.json`».
+3. «Credits» line: add «OpenITI (CC BY-NC-SA 4.0) when chapters ship».
+4. «Permissions to request» list: add «Developer: accept CC BY-NC-SA 4.0 for OpenITI chapter titles, the title-cleaning list, and the policy for Quran text inside titles (ADR 0076; non-blocking except Bukhari)».
+
+### `phase-7/README.md` and `phase-7.md`
+Rules and steps were edited additively on 7 Nov 2026 (D14, steps 6b, 6c, 8b, RB17 to RB23). If ADR 0076 is rejected, remove those rows and the proposed-amendment bullet in README.

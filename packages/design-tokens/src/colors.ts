@@ -25,7 +25,7 @@ export type ColorTokens = {
   highlightRose: string;
   danger: string;
   fillSecondary: string;
-  /** Segmented-control and stepper track (quran-app-screens.html, Reader settings). */
+  /** Segmented-control and stepper track (screens/, Reader settings). */
   fillTrack: string;
   lineStrong: string;
   onBrandSurfaceMuted: string;
@@ -39,10 +39,10 @@ export type ColorTokens = {
   glassSelected: string;
   glassFallback: string;
   scrim: string;
-  /** Salah hero green veils (quran-app-screens.html, #Salah); same in every theme. */
+  /** Salah hero green veils (screens/, #Salah); same in every theme. */
   salahHeroVeil: string;
   salahHeroVeilLower: string;
-  /** Prayer-time row photo scrims over surfaceRaised (quran-app-screens.html, #Salah). */
+  /** Prayer-time row photo scrims over surfaceRaised (screens/, #Salah). */
   salahRowScrimBase: string;
   salahRowScrimTop: string;
   salahRowScrimLastBase: string;
@@ -56,10 +56,10 @@ export type ColorTokens = {
   playerInk: string;
   playerMuted: string;
   playerAccent: string;
-  /** The options bar's glass on player-bg (quran-app-screens.html, #Player). */
+  /** The options bar's glass on player-bg (screens/, #Player). */
   playerGlassFill: string;
   playerGlassStroke: string;
-  /** The Qibla instrument (quran-app-screens.html, #Qibla). Same in every theme, like player*. */
+  /** The Qibla instrument (screens/, #Qibla). Same in every theme, like player*. */
   qiblaGlowBrand: string;
   qiblaTickMinor: string;
   qiblaTickMajor: string;
@@ -75,6 +75,20 @@ export type ColorTokens = {
   qiblaDartFrom: string;
   qiblaDartGlow: string;
   qiblaCounterweight: string;
+  /** Hadith collection covers (screens/frames/hadith, HadithCollCovers*). Same in every theme. */
+  coverGreen: string;
+  coverMaroon: string;
+  coverNavy: string;
+  coverBrown: string;
+  coverNeutral: string;
+  coverTitle: string;
+  coverOrnament: string;
+  coverFrameLine: string;
+  coverSpine: string;
+  coverSpineEdge: string;
+  coverPageEdge: string;
+  coverShadow: string;
+  coverShadowSoft: string;
 };
 
 export type ShadowTokens = {
@@ -148,6 +162,19 @@ export const colors: Record<ThemeName, ColorTokens> = {
     qiblaDartFrom: '#a07c33',
     qiblaDartGlow: 'rgba(230, 199, 126, 0.55)',
     qiblaCounterweight: 'rgba(243, 238, 226, 0.22)',
+    coverGreen: '#1f4d40',
+    coverMaroon: '#6b2a34',
+    coverNavy: '#243b5e',
+    coverBrown: '#5c4130',
+    coverNeutral: '#4a5a55',
+    coverTitle: '#f7f3ea',
+    coverOrnament: '#c9a961',
+    coverFrameLine: 'rgba(201, 169, 97, 0.7)',
+    coverSpine: 'rgba(0, 0, 0, 0.28)',
+    coverSpineEdge: 'rgba(201, 169, 97, 0.45)',
+    coverPageEdge: '#efe6d2',
+    coverShadow: 'rgba(19, 35, 31, 0.28)',
+    coverShadowSoft: 'rgba(19, 35, 31, 0.14)',
   },
   sepia: {
     surface: '#f1e6cf',
@@ -214,6 +241,19 @@ export const colors: Record<ThemeName, ColorTokens> = {
     qiblaDartFrom: '#a07c33',
     qiblaDartGlow: 'rgba(230, 199, 126, 0.55)',
     qiblaCounterweight: 'rgba(243, 238, 226, 0.22)',
+    coverGreen: '#1f4d40',
+    coverMaroon: '#6b2a34',
+    coverNavy: '#243b5e',
+    coverBrown: '#5c4130',
+    coverNeutral: '#4a5a55',
+    coverTitle: '#f7f3ea',
+    coverOrnament: '#c9a961',
+    coverFrameLine: 'rgba(201, 169, 97, 0.7)',
+    coverSpine: 'rgba(0, 0, 0, 0.28)',
+    coverSpineEdge: 'rgba(201, 169, 97, 0.45)',
+    coverPageEdge: '#efe6d2',
+    coverShadow: 'rgba(19, 35, 31, 0.28)',
+    coverShadowSoft: 'rgba(19, 35, 31, 0.14)',
   },
   dark: {
     surface: '#0e1715',
@@ -280,6 +320,19 @@ export const colors: Record<ThemeName, ColorTokens> = {
     qiblaDartFrom: '#a07c33',
     qiblaDartGlow: 'rgba(230, 199, 126, 0.55)',
     qiblaCounterweight: 'rgba(243, 238, 226, 0.22)',
+    coverGreen: '#1f4d40',
+    coverMaroon: '#6b2a34',
+    coverNavy: '#243b5e',
+    coverBrown: '#5c4130',
+    coverNeutral: '#4a5a55',
+    coverTitle: '#f7f3ea',
+    coverOrnament: '#c9a961',
+    coverFrameLine: 'rgba(201, 169, 97, 0.7)',
+    coverSpine: 'rgba(0, 0, 0, 0.28)',
+    coverSpineEdge: 'rgba(201, 169, 97, 0.45)',
+    coverPageEdge: '#efe6d2',
+    coverShadow: 'rgba(19, 35, 31, 0.28)',
+    coverShadowSoft: 'rgba(19, 35, 31, 0.14)',
   },
 };
 
