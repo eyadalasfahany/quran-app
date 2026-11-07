@@ -416,3 +416,26 @@ def test_markdown_has_no_arabic_and_stays_small_for_114_rows():
     assert not any(0x0600 <= ord(c) <= 0x06FF for c in md)
     assert len(md.encode("utf-8")) < 60 * 1024
     assert md.count("\n| ") >= 114
+
+
+def test_merge_with_a_committed_pass_fails_r6_when_the_surah_no_longer_passes(tmp_path):
+    base, doc = handoff(tmp_path)
+    previous = R.merge_reciter_report(base, doc, "FIXTURE-previous")
+    assert previous["surahs"]["1"]["verdict"] == "pass"
+    write(base / "gate" / "001.json", gate(1, "no_highlight", reasons=["G3"], stored=False))
+    report = R.merge_reciter_report(base, doc, "FIXTURE-run", previous=previous)
+    assert "R6" in report["release"]["rules_failed"]
+    assert "R6" not in R.merge_reciter_report(base, doc, "FIXTURE-run")["release"]["rules_failed"]
+
+
+def test_a_report_missing_a_gate_file_fails_r1_and_merge_refuses_it(tmp_path):
+    base, doc = handoff(tmp_path)
+    (base / "gate" / "001.json").unlink()
+    with pytest.raises(ValueError, match="no gate or refusal record"):
+        R.merge_reciter_report(base, doc, "FIXTURE-run")
+    # Allowed only while the gate is pending (Q3): the surah is pending, never a verdict, and R5 fails.
+    report = R.merge_reciter_report(base, doc, "FIXTURE-run", allow_pending_gate=True)
+    assert report["surahs"]["1"]["verdict"] == "pending"
+    short = with_a6a(make_report(all_pass(3)))
+    del short["surahs"]["3"]  # three listed, two with a verdict
+    assert "R1" in failed_rules(short)

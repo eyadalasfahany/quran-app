@@ -562,7 +562,7 @@ jobs:
             --parts "$RUNNER_TEMP/handoff" --aligned "$ALIGNED" --refused "$REFUSED" \
             --data ../mp3quran-ingest/mp3quran_ingest/way2quran_reciters.json
 
-      - name: Export committed timing files (Way2Quran quality)
+      - name: Export committed timing files (Way2Quran quality, gated)
         if: ${{ inputs.source == 'way2quran' && inputs.quality }}
         working-directory: tools/recitation-align
         env:
@@ -571,14 +571,16 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
           ALIGNED="out/way2quran/${RECITER}/aligned"
-          DOCS=("$ALIGNED"/*.json)
+          GATE="$RUNNER_TEMP/handoff/gate"
+          DOCS=("$ALIGNED"/*.json "$GATE"/*.json)
           if [ "${#DOCS[@]}" -eq 0 ]; then
-            echo "No aligned surah: no timing files to export."
+            echo "No aligned surah and no gate record: no timing files to export."
             exit 0
           fi
           uv sync --frozen --no-dev
-          uv run python -m recitation_align.export --kind way2quran --recitation-key "$RECITER" \
-            --in "$ALIGNED" \
+          # Only `pass` and `repaired` surahs get a file; a `segments_null` ayah is written with "segments": null.
+          uv run python -m recitation_align.gated_export --kind way2quran --recitation-key "$RECITER" \
+            --in "$ALIGNED" --gate-dir "$GATE" \
             --out "../../apps/api/resources/recitation-timings/way2quran/${RECITER}" \
             --source aligner
 

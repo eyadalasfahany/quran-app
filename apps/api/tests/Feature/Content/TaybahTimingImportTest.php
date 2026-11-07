@@ -599,6 +599,28 @@ it('imports a way2quran file from its own folder and kind (ADR 0074 decision 6)'
         ->and(TaybahRecitationTiming::query()->where('recitation_id', $recitation->id)->count())->toBe(3);
 });
 
+it('imports a way2quran ayah with "segments": null as an ayah timing with null segments (ADR 0077)', function (): void {
+    $recitation = timingRecitation('way2quran', '1');
+    timingAudio($recitation, 108, timingUrl('way2quran', '1', 108));
+    timingWordLayouts(108, [2, 2, 2]);
+    $document = timingDocument('way2quran', '1', 108, [2, 2, 2]);
+    $document['ayahs'][1]['segments'] = null;
+    timingWrite('way2quran', '1', 108, $document);
+
+    $report = timingImporter()->import();
+
+    $rows = TaybahRecitationTiming::query()->where('recitation_id', $recitation->id)->orderBy('verse_id')->get();
+
+    expect(timingSkipReason($report, 'way2quran/1/108.json'))->toBeNull()
+        ->and($report->imported)->toBe(1)
+        ->and($rows)->toHaveCount(3)
+        ->and($rows[0]->segments)->not->toBeNull()
+        ->and($rows[1]->start_ms)->toBe(1000)
+        ->and($rows[1]->end_ms)->toBe(2000)
+        ->and($rows[1]->segments)->toBeNull()
+        ->and($rows[2]->segments)->not->toBeNull();
+});
+
 it('skips a way2quran file whose size differs', function (): void {
     $recitation = timingRecitation('way2quran', '1');
     timingAudio($recitation, 108, timingUrl('way2quran', '1', 108));
