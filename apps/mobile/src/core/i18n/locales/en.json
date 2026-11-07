@@ -1701,5 +1701,76 @@
       "nameLong": "Your name is longer than 100 characters."
     },
     "counter": "{{count}} / {{max}}"
+  },
+  "hadith": {
+    "title": "Hadith",
+    "back": "Back",
+    "untitled": {
+      "collection": "Collection {{n}}",
+      "book": "Book {{n}}",
+      "chapter": "Chapter {{n}}"
+    },
+    "count": {
+      "hadith_one": "1 hadith",
+      "hadith_other": "{{n}} hadith",
+      "books_one": "1 book",
+      "books_other": "{{n}} books",
+      "collectionSummary": "{{hadith}} · {{books}}",
+      "collectionSummarySingle": "{{hadith}} · 1 book"
+    },
+    "download": {
+      "startFor": "Download {{title}}",
+      "progress": "Downloading · {{percent}}",
+      "retry": "Retry",
+      "offlineUnavailable": "Unavailable offline"
+    },
+    "reader": {
+      "numberLabel": "Hadith {{number}}",
+      "toolbar": "Hadith actions",
+      "save": "Save hadith",
+      "unsave": "Remove from saved",
+      "copy": "Copy",
+      "share": "Share"
+    },
+    "pager": {
+      "previous": "Previous",
+      "next": "Next",
+      "position": "{{current}} of {{total}}"
+    },
+    "source": {
+      "credit": "Source: fawazahmed0/hadith-api",
+      "open": "Open source"
+    },
+    "saved": {
+      "mark": "Saved",
+      "unverified": "Unverified",
+      "previouslySaved": "Previously saved hadith",
+      "noticeTitle": "The hadith source changed",
+      "noticeBody": "Some saved items are shown at book level until we verify them."
+    },
+    "search": {
+      "placeholder": "Search hadith",
+      "cancel": "Cancel"
+    },
+    "states": {
+      "loading": "Loading hadith",
+      "offlineTitle": "No collections downloaded",
+      "offlineBody": "Connect to the internet to download a collection.",
+      "errorTitle": "Couldn't load the collections",
+      "errorBody": "Check your connection and try again.",
+      "retry": "Try again",
+      "savedEmptyTitle": "No saved hadith yet",
+      "savedEmptyBody": "Tap the save icon on any hadith to find it here.",
+      "browse": "Browse collections",
+      "noResultsTitle": "No results",
+      "noResultsBody": "Try another word or choose “All”."
+    },
+    "details": {
+      "title": "Source and details",
+      "collection": "Collection",
+      "book": "Book",
+      "number": "Hadith number",
+      "source": "Source"
+    }
   }
 }

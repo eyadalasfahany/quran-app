@@ -1722,5 +1722,84 @@
       "nameLong": "الاسم أطول من ١٠٠ حرف."
     },
     "counter": "{{count}} / {{max}}"
+  },
+  "hadith": {
+    "title": "الحديث",
+    "back": "رجوع",
+    "untitled": {
+      "collection": "مجموعة {{n}}",
+      "book": "كتاب {{n}}",
+      "chapter": "باب {{n}}"
+    },
+    "count": {
+      "hadith_zero": "لا أحاديث",
+      "hadith_one": "حديث واحد",
+      "hadith_two": "حديثان",
+      "hadith_few": "{{n}} أحاديث",
+      "hadith_many": "{{n}} حديثًا",
+      "hadith_other": "{{n}} حديث",
+      "books_zero": "لا كتب",
+      "books_one": "كتاب واحد",
+      "books_two": "كتابان",
+      "books_few": "{{n}} كتب",
+      "books_many": "{{n}} كتابًا",
+      "books_other": "{{n}} كتاب",
+      "collectionSummary": "{{hadith}} · {{books}}",
+      "collectionSummarySingle": "{{hadith}} · كتاب واحد"
+    },
+    "download": {
+      "startFor": "تنزيل {{title}}",
+      "progress": "جارٍ التنزيل · {{percent}}",
+      "retry": "إعادة المحاولة",
+      "offlineUnavailable": "غير متاح دون اتصال"
+    },
+    "reader": {
+      "numberLabel": "حديث رقم {{number}}",
+      "toolbar": "أدوات الحديث",
+      "save": "حفظ الحديث",
+      "unsave": "إزالة من المحفوظات",
+      "copy": "نسخ",
+      "share": "مشاركة"
+    },
+    "pager": {
+      "previous": "السابق",
+      "next": "التالي",
+      "position": "{{current}} من {{total}}"
+    },
+    "source": {
+      "credit": "المصدر: fawazahmed0/hadith-api",
+      "open": "فتح المصدر"
+    },
+    "saved": {
+      "mark": "محفوظ",
+      "unverified": "غير مؤكد",
+      "previouslySaved": "حديث محفوظ سابقًا",
+      "noticeTitle": "تغيّر مصدر الأحاديث",
+      "noticeBody": "تُعرض بعض المحفوظات على مستوى الكتاب حتى نتحقق منها."
+    },
+    "search": {
+      "placeholder": "ابحث في الحديث",
+      "cancel": "إلغاء"
+    },
+    "states": {
+      "loading": "جارٍ تحميل الأحاديث",
+      "offlineTitle": "لا توجد مجموعات محمّلة",
+      "offlineBody": "اتصل بالإنترنت لتنزيل مجموعة.",
+      "errorTitle": "تعذّر تحميل المجموعات",
+      "errorBody": "تحقق من الاتصال ثم حاول مرة أخرى.",
+      "retry": "إعادة المحاولة",
+      "savedEmptyTitle": "لا توجد أحاديث محفوظة بعد",
+      "savedEmptyBody": "اضغط على أيقونة الحفظ في أي حديث لتجده هنا.",
+      "browse": "تصفّح المجموعات",
+      "noResultsTitle": "لا توجد نتائج",
+      "noResultsBody": "جرّب كلمة أخرى أو اختر «الكل»."
+    },
+    "details": {
+      "title": "المصدر والتفاصيل",
+      "collection": "المجموعة",
+      "book": "الكتاب",
+      "number": "رقم الحديث",
+      "source": "المصدر"
+    }
   }
 }
