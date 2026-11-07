@@ -139,3 +139,37 @@ def cached_transcribe_at(wav: np.ndarray, audio_sha256: str, cache_path, windows
     return {"windows": [
         {"start_s": s, "end_s": e, "text": texts[_window_key(s, e)]} for s, e in windows
     ]}
+
+
+# Quality mode, plan Q5: short probe clips (G3 ayah starts, G4 word onsets). Addition only (B2).
+def transcribe_clips(wav: np.ndarray, clips: list[tuple[float, float]], batch: int = 1) -> dict:
+    """Transcribe the [start_s, end_s) clips of `wav`, in the order given.
+
+    Returns {"clips": [{"start_s", "end_s", "text"}, ...], "seconds": float}. `batch` is the number of
+    clips per `generate` call: 1 is the same call as transcribe_at(); more is decided by a local
+    comparison (plan P10). An empty slice is not sent to the model and has the text "".
+    """
+    import time
+
+    out: list[dict | None] = [None] * len(clips)
+    work = []
+    for i, (start_s, end_s) in enumerate(clips):
+        seg = wav[max(0, round(start_s * SAMPLE_RATE)):max(0, round(end_s * SAMPLE_RATE))]
+        if len(seg):
+            work.append((i, seg))
+        else:
+            out[i] = {"start_s": start_s, "end_s": end_s, "text": ""}
+    t0 = time.perf_counter()
+    if work:
+        proc, model = _load()
+        size = max(1, int(batch))
+        for j in range(0, len(work), size):
+            part = work[j:j + size]
+            arg = part[0][1] if size == 1 else [seg for _, seg in part]
+            feats = proc(arg, sampling_rate=SAMPLE_RATE, return_tensors="pt").input_features
+            with torch.inference_mode():
+                ids = model.generate(feats.to(DEVICE), max_new_tokens=MAX_NEW_TOKENS)
+            texts = proc.batch_decode(ids, skip_special_tokens=True)
+            for (i, _), text in zip(part, texts):
+                out[i] = {"start_s": clips[i][0], "end_s": clips[i][1], "text": text.strip()}
+    return {"clips": out, "seconds": round(time.perf_counter() - t0, 3)}
