@@ -25,7 +25,7 @@ export const PERSONAL_TABLES = [
 /**
  * The MMKV keys of personal state, removed by «مسح البيانات» (ADR 0027). Each key is decided here:
  * - Personal, removed: recent searches, the last reading and listening place, the daily reading reminder (on, time and
- *   the notification id), the Azkar search history and recent scopes, misbaha, daily goals, the Hijri adjustment, the
+ *   the notification id), the Azkar search history and recent scopes, the Hadith search history, misbaha, daily goals, the Hijri adjustment, the
  *   reminders hub (Friday, misbaha, the recommended-set offer), the five prayer bells and the widget snapshot (its
  *   numbers; the widgets show the open-the-app state after this).
  * - Device settings, kept: the language, the appearance and dark-after-Maghrib, the reader and audio display and
@@ -42,6 +42,7 @@ export const PERSONAL_STORAGE_KEYS: readonly string[] = [
   storageKeys.dailyReminderNotificationId,
   storageKeys.azkar.recentScopes,
   storageKeys.azkar.searchRecent,
+  storageKeys.hadith.searchRecent,
   storageKeys.sibha.state,
   storageKeys.sibha.today,
   storageKeys.dailyGoals,

@@ -6,10 +6,14 @@ import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
 import { collectionTitle } from '../titles';
-import type { HadithSearchHit, HadithTextRange } from '../types';
+import type { HadithListItem, HadithSearchHit, HadithTextRange } from '../types';
+import { hadithNumberText } from '../number-text';
 
 import { HadithMeta } from './HadithMeta';
 import { formatHadithNumber } from '../format';
+
+// Merged-number bounds (step 6b). Read as optional: until the search query returns them, the plain number is shown.
+type WithBounds = HadithListItem & { numberFirst?: string | null; numberLast?: string | null };
 
 // Frame HadithCollSearchResults: the preview at 19 over 36 (see HadithText for the reason).
 const HADITH_PREVIEW_LINE_HEIGHT = 36;
@@ -64,7 +68,13 @@ export function HadithSearchResultRow({
   const colors = useContrastColors();
   const collection = collectionTitle(hit.collection, locale, t);
   const text = hit.item.textAr;
-  const meta = [collection, bookTitleText, formatHadithNumber(hit.item.hadithNumber, locale)].join(', ');
+  const bounds = hit.item as WithBounds;
+  const numberLabel = hadithNumberText({
+    hadithNumber: hit.item.hadithNumber,
+    numberFirst: bounds.numberFirst,
+    numberLast: bounds.numberLast,
+  });
+  const meta = [collection, bookTitleText, formatHadithNumber(numberLabel, locale)].join(', ');
 
   return (
     <Pressable
@@ -98,7 +108,7 @@ export function HadithSearchResultRow({
           ),
         )}
       </UiText>
-      <HadithMeta bookTitle={bookTitleText} collectionTitle={collection} hadithNumber={hit.item.hadithNumber} testID={`${testID}-meta`} />
+      <HadithMeta bookTitle={bookTitleText} collectionTitle={collection} hadithNumber={numberLabel} testID={`${testID}-meta`} />
     </Pressable>
   );
 }

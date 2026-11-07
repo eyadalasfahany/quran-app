@@ -105,6 +105,7 @@ describe('clearLocalUserData', () => {
     expect(countBookmarksBefore.c).toBe(1);
 
     storage.set(storageKeys.searchRecentQueries, JSON.stringify(['سورة البقرة']));
+    storage.set(storageKeys.hadith.searchRecent, JSON.stringify(['FIXTURE query']));
     storage.set(storageKeys.readerLastVerseKey, '2:255');
     storage.set(storageKeys.readerLastPage, 42);
     storage.set(storageKeys.audioLastPosition, 12345);
@@ -126,6 +127,7 @@ describe('clearLocalUserData', () => {
     expect(countRecents.c).toBe(0);
 
     expect(storage.contains(storageKeys.searchRecentQueries)).toBe(false);
+    expect(storage.contains(storageKeys.hadith.searchRecent)).toBe(false);
     expect(storage.contains(storageKeys.readerLastVerseKey)).toBe(false);
     expect(storage.contains(storageKeys.readerLastPage)).toBe(false);
     expect(storage.contains(storageKeys.audioLastPosition)).toBe(false);

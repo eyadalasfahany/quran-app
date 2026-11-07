@@ -1,7 +1,7 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { buildFtsMatch } from '@/features/search/ftsQuery';
 
-import type { HadithCollectionRef, HadithListItem, HadithSearchHit, HadithSearchPage } from '../types';
+import type { HadithCollectionRef, HadithListItem, HadithSearchHit } from '../types';
 import { hadithResourceId } from './active-resource';
 import { listInstalledCollections } from './content-repository';
 import { highlightRanges, queryTokens } from './text-map';
@@ -15,12 +15,21 @@ type HitRow = {
 
 type HitDetailRow = HadithListItem & {
   bookNumber: string;
+  bookTitleAr: string | null;
+  bookTitleEn: string | null;
   slug: string;
   titleAr: string | null;
   titleEn: string | null;
   attributionAr: string;
   attributionEn: string;
 };
+
+/** A search hit with its book's titles, for the result rows (step 14). */
+export type HadithSearchResultHit = HadithSearchHit & {
+  book: { bookNumber: string; titleAr: string | null; titleEn: string | null };
+};
+
+export type HadithSearchResultPage = { hits: HadithSearchResultHit[]; hasMore: boolean };
 
 /**
  * Full-text search over the installed hadith collections (ADR 0042 §8). The query goes through the hadith normaliser
@@ -30,8 +39,8 @@ export function searchHadith(
   db: SqlExecutor,
   rawQuery: string,
   options: { slugs?: readonly string[]; limit?: number; offset?: number } = {},
-): HadithSearchPage {
-  const empty: HadithSearchPage = { hits: [], hasMore: false };
+): HadithSearchResultPage {
+  const empty: HadithSearchResultPage = { hits: [], hasMore: false };
   const tokens = queryTokens(rawQuery);
   const match = buildFtsMatch(tokens);
   if (match === null) {
@@ -57,7 +66,7 @@ export function searchHadith(
   );
 
   const numbers = new Map(listInstalledCollections(db).map((collection) => [collection.resourceId, collection.number]));
-  const hits: HadithSearchHit[] = [];
+  const hits: HadithSearchResultHit[] = [];
   for (const row of rows.slice(0, limit)) {
     const hit = loadHit(db, row, tokens, numbers);
     if (hit !== undefined) {
@@ -66,6 +75,31 @@ export function searchHadith(
   }
 
   return { hits, hasMore: rows.length > limit };
+}
+
+/**
+ * The total number of matches for the query and scope, across every page (step 14). Same tokens and scope as
+ * `searchHadith`; 0 when the query has no token or the scope has no installed collection.
+ */
+export function countHadithSearch(
+  db: SqlExecutor,
+  rawQuery: string,
+  options: { slugs?: readonly string[] } = {},
+): number {
+  const match = buildFtsMatch(queryTokens(rawQuery));
+  if (match === null) {
+    return 0;
+  }
+  const resourceIds = scopeResourceIds(db, options.slugs);
+  if (resourceIds.length === 0) {
+    return 0;
+  }
+  const placeholders = resourceIds.map(() => '?').join(', ');
+  const row = db.get<{ total: number }>(
+    `SELECT count(*) AS total FROM search_hadith WHERE search_hadith MATCH ? AND resource_id IN (${placeholders})`,
+    [match, ...resourceIds],
+  );
+  return row?.total ?? 0;
 }
 
 /** The installed resource ids to search: the requested slugs that are installed, or every installed collection. */
@@ -88,11 +122,12 @@ function loadHit(
   row: HitRow,
   tokens: readonly string[],
   numbers: ReadonlyMap<number, number>,
-): HadithSearchHit | undefined {
+): HadithSearchResultHit | undefined {
   const detail = db.get<HitDetailRow>(
     `SELECT e.resource_id AS resourceId, e.id, e.book_id AS bookId, e.chapter_id AS chapterId,
             e.hadith_number AS hadithNumber, e.arabic_number AS arabicNumber, e.position, e.text_ar AS textAr,
-            b.book_number AS bookNumber,
+            e.number_first AS numberFirst, e.number_last AS numberLast, e.source_code AS sourceCode,
+            b.book_number AS bookNumber, b.title_ar AS bookTitleAr, b.title_en AS bookTitleEn,
             c.slug AS slug, c.title_ar AS titleAr, c.title_en AS titleEn,
             c.attribution_ar AS attributionAr, c.attribution_en AS attributionEn
      FROM hadith_entries e
@@ -125,9 +160,13 @@ function loadHit(
       arabicNumber: detail.arabicNumber,
       position: detail.position,
       textAr: detail.textAr,
+      numberFirst: detail.numberFirst,
+      numberLast: detail.numberLast,
+      sourceCode: detail.sourceCode,
     },
     collection,
     bookNumber: detail.bookNumber,
+    book: { bookNumber: detail.bookNumber, titleAr: detail.bookTitleAr, titleEn: detail.bookTitleEn },
     ranges: highlightRanges(detail.textAr, tokens),
   };
 }

@@ -60,6 +60,30 @@ describe('HadithSearchResultRow', () => {
     expect(screen.getByRole('button', { name: `${COLLECTION}, ${BOOK}, ١٢٣٤, ${PLACEHOLDER_TEXT}` })).toBeOnTheScreen();
   });
 
+  it('shows the plain number when the item has no bounds', async () => {
+    await renderRow().view;
+    expect(screen.getByTestId(`${TEST_ID}-meta`)).toHaveTextContent(/· ١٢٣٤$/);
+  });
+
+  it('shows the merged range with an en dash when the bounds differ', async () => {
+    const base = searchHitFixture();
+    await renderRow({ ...base, item: { ...base.item, numberFirst: '3.1', numberLast: '3.4' } as typeof base.item }).view;
+    expect(screen.getByTestId(`${TEST_ID}-meta`)).toHaveTextContent(/· ٣٫١–٣٫٤$/);
+  });
+
+  it('shows the plain number when the bounds are equal', async () => {
+    const base = searchHitFixture();
+    await renderRow({ ...base, item: { ...base.item, numberFirst: '5', numberLast: '5' } as typeof base.item }).view;
+    expect(screen.getByTestId(`${TEST_ID}-meta`)).toHaveTextContent(/· ١٢٣٤$/);
+    expect(screen.getByTestId(`${TEST_ID}-meta`)).not.toHaveTextContent('–');
+  });
+
+  it('the accessibility label carries the merged range', async () => {
+    const base = searchHitFixture();
+    await renderRow({ ...base, item: { ...base.item, numberFirst: '3.1', numberLast: '3.4' } as typeof base.item }).view;
+    expect(screen.getByRole('button', { name: `${COLLECTION}, ${BOOK}, ٣٫١–٣٫٤, ${PLACEHOLDER_TEXT}` })).toBeOnTheScreen();
+  });
+
   it('clamps to two lines', async () => {
     await renderRow(searchHitFixture({ item: { ...searchHitFixture().item, textAr: PLACEHOLDER_TEXT_LONG }, ranges: [] })).view;
     expect(screen.getByTestId(`${TEST_ID}-text`).props.numberOfLines).toBe(2);

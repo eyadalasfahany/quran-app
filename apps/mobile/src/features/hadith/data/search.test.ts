@@ -5,7 +5,7 @@ import { normalizeHadithForSearch } from '@/core/text/normalizeHadithForSearch';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { FIXTURE_MULTI, FIXTURE_SINGLE, loadHadithDevFixtures } from './__fixtures__/dev-fixtures';
-import { HADITH_SEARCH_PAGE_SIZE, searchHadith } from './search';
+import { countHadithSearch, HADITH_SEARCH_PAGE_SIZE, searchHadith } from './search';
 
 describe('searchHadith', () => {
   let database: DatabaseSync;
@@ -111,6 +111,49 @@ describe('searchHadith', () => {
     const page = searchHadith(executor, 'FIXTURE');
     expect(page.hits.every((hit) => hit.collection.slug === FIXTURE_SINGLE.slug)).toBe(true);
     expect(page.hits).toHaveLength(3);
+  });
+
+  it('returns the book title fields on each hit', () => {
+    const page = searchHadith(executor, 'FIXTURE', { slugs: [FIXTURE_MULTI.slug] });
+    const inBookTwo = page.hits.find((hit) => hit.item.id === 4);
+    expect(inBookTwo?.book).toEqual({ bookNumber: '2', titleAr: '[عنوان تجريبي]', titleEn: 'FIXTURE title — not a hadith' });
+    const inBookOne = page.hits.find((hit) => hit.item.id === 1);
+    expect(inBookOne?.book).toEqual({ bookNumber: '1', titleAr: null, titleEn: null });
+  });
+
+  it('countHadithSearch counts all matches across installed collections', () => {
+    expect(countHadithSearch(executor, 'FIXTURE')).toBe(9);
+  });
+
+  it('countHadithSearch honours the slug scope', () => {
+    expect(countHadithSearch(executor, 'FIXTURE', { slugs: [FIXTURE_SINGLE.slug] })).toBe(3);
+  });
+
+  it('countHadithSearch returns 0 for a query with no token', () => {
+    expect(countHadithSearch(executor, '')).toBe(0);
+    expect(countHadithSearch(executor, ' ، ؟ ')).toBe(0);
+  });
+
+  it('countHadithSearch returns 0 for an uninstalled slug', () => {
+    expect(countHadithSearch(executor, 'FIXTURE', { slugs: ['unknown-slug'] })).toBe(0);
+  });
+
+  it('normalised query matches diacritic and alef variants (count)', () => {
+    expect(countHadithSearch(executor, 'حديثًا')).toBe(1);
+    expect(countHadithSearch(executor, 'حديثا')).toBe(1);
+    expect(countHadithSearch(executor, 'حَدِيثًا')).toBe(1);
+  });
+
+  it('never returns a placeholder row with empty text', () => {
+    executor.run(
+      `INSERT INTO hadith_entries (resource_id, id, book_id, chapter_id, hadith_number, arabic_number, position, text_ar, text_en, narrator_en, text_search, source_url)
+       VALUES (-1, 90, 1, NULL, '90', NULL, 90, '', NULL, NULL, '', NULL)`,
+    );
+    const before = countHadithSearch(executor, 'FIXTURE');
+    const page = searchHadith(executor, 'FIXTURE', { limit: 50 });
+    expect(page.hits.some((hit) => hit.item.id === 90)).toBe(false);
+    expect(countHadithSearch(executor, 'FIXTURE')).toBe(before);
+    expect(searchHadith(executor, 'تجريبي').hits.some((hit) => hit.item.id === 90)).toBe(false);
   });
 
   it('does not use the Quran index', () => {

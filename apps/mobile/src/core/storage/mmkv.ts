@@ -25,6 +25,11 @@ export const storageKeys = {
   dailyReminderTime: 'settings.dailyReminderTime',
   dailyReminderNotificationId: 'settings.dailyReminderNotificationId',
 
+  // JSON array of recent Hadith search queries, newest first, capped at 20 (phase 7, step 14). Personal, local only.
+  hadith: {
+    searchRecent: 'hadith.searchRecent',
+  },
+
   // Azkar preferences (phase 6, step 5). Personal, local only; not cleared by content updates.
   azkar: {
     fontScale: 'azkar.fontScale',
