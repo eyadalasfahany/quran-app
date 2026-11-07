@@ -281,3 +281,50 @@ it('counts both book heading forms and stores the extra-book title without its n
         ->and($proposal['books'][0]['source_key'])->toBe('openiti:bukhari:book:2')
         ->and($result->report['extra_books'][0]['ordinal'])->toBe(2);
 });
+
+/**
+ * A hadithapi.com merge-next of gap 3 into 4 with hadithapi numbers shifted by +1 (placeholder texts only). The gap's record
+ * (hadithapi 4) sits inside fawazahmed0 4, and both neighbours match at the offset (hadithapi 3 and 5).
+ *
+ * @return array<string, mixed>
+ */
+function gapsOffsetMergeEntry(?int $offset): array
+{
+    $entry = gapsEntry('3', 'merge-next', 'hadithapi.com', '2', '4');
+
+    if ($offset !== null) {
+        $entry['hapi_offset'] = $offset;
+    }
+
+    return $entry;
+}
+
+function gapsOffsetMergeHapi(): void
+{
+    gapsFakeHapi([
+        '3' => ['hadithNumber' => '3', 'hadithArabic' => GAP_TEXT_2],
+        '4' => ['hadithNumber' => '4', 'hadithArabic' => GAP_TEXT_4],
+        '5' => ['hadithNumber' => '5', 'hadithArabic' => GAP_TEXT_4],
+    ]);
+}
+
+it('passes a hadithapi.com merge whose recorded offset holds for the gap and both neighbours', function (): void {
+    gapsOpenItiFile(gapsStandardUnits());
+    gapsDecisionsFile([gapsOffsetMergeEntry(1)]);
+    config(['hadith.api_key' => 'FIXTURE-KEY-0001']);
+    gapsOffsetMergeHapi();
+
+    expect(gapsProposal(gapsBuild('2026-11-07'))['merges'])->toBe([['number' => '3', 'into' => '4', 'origin' => 'hadithapicom']]);
+});
+
+it('fails the same hadithapi.com merge when the decision has no offset, as before', function (): void {
+    gapsOpenItiFile(gapsStandardUnits());
+    gapsDecisionsFile([gapsOffsetMergeEntry(null)]);
+    config(['hadith.api_key' => 'FIXTURE-KEY-0001']);
+    gapsOffsetMergeHapi();
+
+    $proposal = gapsProposal(gapsBuild('2026-11-07'));
+
+    expect($proposal['merges'])->toBe([])
+        ->and($proposal['unresolved'])->toBe([['number' => '3', 'reason' => 'recheck_hapi_failed']]);
+});

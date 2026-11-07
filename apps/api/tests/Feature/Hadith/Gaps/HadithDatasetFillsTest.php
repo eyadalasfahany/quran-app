@@ -174,3 +174,18 @@ it('refuses a gaps file that names an origin outside the closed set', function (
 
     expect(fn (): ?object => app(HadithDataFiles::class)->gaps('bukhari'))->toThrow(HadithDataFileException::class, 'origin_unknown');
 });
+
+it('refuses a dataset fill whose slot record is empty, though the anchor and next neighbour match (malik 1519 shape)', function (): void {
+    datasetsUse([
+        ['Arabic_Text' => GAP_TEXT_1],
+        ['Arabic_Text' => GAP_TEXT_2],
+        ['Arabic_Text' => ''],
+        ['Arabic_Text' => GAP_TEXT_4],
+    ]);
+    gapsDecisionsFile([datasetEntry()]);
+
+    $proposal = gapsProposal(gapsBuild());
+
+    expect($proposal['fills'])->toBe([])
+        ->and($proposal['unresolved'])->toBe([['number' => '3', 'reason' => 'dataset_record_missing']]);
+});

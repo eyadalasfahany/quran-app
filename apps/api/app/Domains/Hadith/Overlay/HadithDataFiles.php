@@ -255,6 +255,7 @@ final class HadithDataFiles
             openitiUnitNumber: $this->optionalNumber($entry[$unitNumberKey] ?? null, $relativePath),
             hapiNumbersInRecord: is_int($hapi) ? $hapi : null,
             openitiFile: $openitiFile,
+            hapiOffset: is_int($entry['hapi_offset'] ?? null) ? $entry['hapi_offset'] : null,
         );
     }
 

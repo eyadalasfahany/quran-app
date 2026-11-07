@@ -397,7 +397,13 @@ final class HadithGapBuilder
             $this->dataset($origin, $slug);
         }
 
-        if ($origin === 'hadithapicom') {
+        if ($origin === 'hadithapicom' && $entry->hapiOffset !== null && $entry->hapiOffset !== 0) {
+            $failure = $this->hapiOffsetMergeFailure($slug, $entry, $into, $byNumber, $entry->hapiOffset);
+
+            if ($failure !== null) {
+                return $failure;
+            }
+        } elseif ($origin === 'hadithapicom') {
             $records = $this->isInteger($entry->hadith) ? $this->hapiRecordFor($slug, $entry->hadith) : [];
 
             if ($records === null) {
@@ -419,6 +425,71 @@ final class HadithGapBuilder
         $this->mergesBySide[$entry->class] = ($this->mergesBySide[$entry->class] ?? 0) + 1;
 
         return ['number' => $entry->hadith, 'into' => $into, 'origin' => $origin];
+    }
+
+    /**
+     * The re-check of a hadithapi.com merge whose decision records an offset (hapi_offset, ADR 0076 measurement): hadithapi
+     * number = fawazahmed0 number + offset, for the gap and both neighbours. Each neighbour's record must match its
+     * fawazahmed0 text (MATCH_THRESHOLD), and the gap's record must sit inside the merged-into text (CONTAINED_DEFAULT).
+     * Returns the reason when the re-check fails, null when it passes. A merge adds no text.
+     *
+     * @param  array<string, SourceHadith>  $byNumber
+     */
+    private function hapiOffsetMergeFailure(string $slug, GapDecision $entry, ?string $into, array $byNumber, int $offset): ?string
+    {
+        if (! $this->isInteger($entry->hadith) || ! $this->isInteger($entry->prev) || ! $this->isInteger($entry->next) || $into === null) {
+            return 'recheck_hapi_failed';
+        }
+
+        $gapNumber = $this->hapiShifted($entry->hadith, $offset);
+
+        if ($gapNumber === null) {
+            return 'recheck_hapi_failed';
+        }
+
+        $gap = $this->hapiRecordFor($slug, $gapNumber);
+
+        if ($gap === null) {
+            return 'hadithapi_key_missing';
+        }
+
+        if ($gap === []) {
+            return 'recheck_hapi_failed';
+        }
+
+        foreach ([$entry->prev, $entry->next] as $neighbour) {
+            $neighbourNumber = $this->hapiShifted((string) $neighbour, $offset);
+            $neighbourRecords = $neighbourNumber === null ? null : $this->hapiRecordFor($slug, $neighbourNumber);
+            $neighbourText = $this->neighbourText($byNumber, (string) $neighbour);
+
+            if ($neighbourRecords === null || $neighbourRecords === [] || $neighbourText === null) {
+                return 'recheck_hapi_failed';
+            }
+
+            if (HadithWordSet::jaccard(HadithWordSet::of($neighbourRecords[0]->textAr), HadithWordSet::of($neighbourText)) < self::MATCH_THRESHOLD) {
+                return 'recheck_hapi_failed';
+            }
+        }
+
+        $intoText = (string) $this->neighbourText($byNumber, $into);
+
+        if (HadithWordSet::containment(HadithWordSet::of($gap[0]->textAr), HadithWordSet::of($intoText)) < self::CONTAINED_DEFAULT) {
+            return 'recheck_hapi_failed';
+        }
+
+        return null;
+    }
+
+    /**
+     * The hadithapi.com number of a fawazahmed0 number under an offset, or null when it is not a positive number.
+     */
+    private function hapiShifted(string $number, int $offset): ?string
+    {
+        if (! $this->isInteger($number) || (int) $number + $offset < 1) {
+            return null;
+        }
+
+        return (string) ((int) $number + $offset);
     }
 
     /**

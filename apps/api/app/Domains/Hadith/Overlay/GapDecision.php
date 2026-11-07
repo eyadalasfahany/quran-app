@@ -24,5 +24,6 @@ final readonly class GapDecision
         public ?string $openitiUnitNumber,
         public ?int $hapiNumbersInRecord,
         public ?string $openitiFile = null,
+        public ?int $hapiOffset = null,
     ) {}
 }
