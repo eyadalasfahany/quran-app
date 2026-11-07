@@ -368,3 +368,21 @@ def test_way2quran_refuses_a_surah_claiming_published_timings(tmp_path, tanzil, 
     assert code == 1
     assert "002: way2quran has no published timings" in capsys.readouterr().err
     assert not (out / "002.json").exists()
+
+
+def test_an_anchors_key_in_the_aligned_document_exports_byte_identically(tmp_path, tanzil):
+    """Plan way2quran-quality Q4 (T5): the `anchors` report written in quality mode is ignored by the export."""
+    words = simple_words(2, [2, 2, 2])
+    plain, anchored = make_doc(2, words, duration_ms=9000), make_doc(2, words, duration_ms=9000)
+    anchored["anchors"] = {"every": 4, "windows": 3, "checkpoints": [[2, 2000]], "cuts": [[2, 1980]],
+                           "merges": [], "held_out": [], "held_out_words": {"n": 0, "within_300ms": 0,
+                                                                            "median_ms": None}}
+    outputs = []
+    for name, doc in (("plain", plain), ("anchored", anchored)):
+        in_dir, out = tmp_path / name / "in", tmp_path / name / "out"
+        write_inputs(in_dir, {2: doc})
+        manifest = write_way2quran_manifest(tmp_path / name / "w.json")
+        assert main(["--kind", "way2quran", "--recitation-key", "7", "--in", str(in_dir), "--out", str(out),
+                     "--tanzil", str(tanzil), "--manifest", str(manifest)]) == 0
+        outputs.append((out / "002.json").read_bytes())
+    assert outputs[0] == outputs[1]

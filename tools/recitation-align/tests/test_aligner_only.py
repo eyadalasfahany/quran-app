@@ -277,3 +277,112 @@ def test_a_quality_refusal_is_recorded_and_the_run_exits_zero(inputs, fakes, mon
     assert record["stage"] == "aligner" and record["surah"] == 1 and record["schema"] == 1
     assert not (inputs["root"] / "out" / "001.json").exists()
     assert "REFUSED (recorded)" in capsys.readouterr().err
+
+
+# anchored pass in quality mode (plan way2quran-quality Q4)
+
+REAL_RUN_ANCHORED = pp.run_anchored
+
+
+@pytest.fixture(autouse=True)
+def anchored_pass_through_the_faked_aligner(monkeypatch):
+    """Q4 replaces the whole-surah aligner by the anchored pass in quality mode. The Q3 tests above fake only
+    `align_full` and write bare completeness records, so by default the anchored pass is stood in for by the
+    faked `align_full` (a failure there is an aligner-stage refusal, as in the anchored pass). Tests of the
+    anchored wiring restore REAL_RUN_ANCHORED."""
+    def stand_in(surah, args, *, sha, wav, em, pauses, ayahs, vocab, blank):
+        words, recited, _ = pp.align_full(wav, surah, ayahs, em=em, pauses=pauses)
+        return words, recited, {"stand_in": True}
+
+    monkeypatch.setattr(pp, "run_anchored", stand_in)
+
+
+def full_completeness_dir(inputs):
+    """A completeness record with the window fields the anchored pass reads (one head and one tail window)."""
+    folder = inputs["root"] / "completeness"
+    folder.mkdir(exist_ok=True)
+    real = json.loads(inputs["manifest"].read_text(encoding="utf-8"))["moshafs"][0]["files"][0]["sha256"]
+    (folder / "001.json").write_text(json.dumps({
+        "surah": 1, "verdict": "complete", "sha256": real, "first_sound_s": 0.0, "last_sound_s": 1.0,
+        "windows": {"head": 1, "tail": 1}}), encoding="utf-8")
+    return folder
+
+
+@pytest.fixture
+def anchored(monkeypatch):
+    """The real run_anchored with a fake ASR cache call and a fake anchored_align. Records what they saw."""
+    seen = {"asr": [], "anchored": 0}
+    monkeypatch.setattr(pp, "run_anchored", REAL_RUN_ANCHORED)
+
+    def fake_at(wav, sha, cache_path, windows):
+        seen["asr"].append((cache_path, list(windows)))
+        return {"windows": [{"start_s": s, "end_s": e, "text": ""} for s, e in windows]}
+
+    def fake_anchored_align(em, surah, ayahs, vocab, blank, **kw):
+        seen["anchored"] += 1
+        seen["windows"] = kw["windows"]
+        return fake_words(), True, {"every": 4, "windows": len(kw["windows"]), "checkpoints": [], "cuts": [],
+                                    "merges": [], "seconds": {"locate": 0.0}}
+
+    monkeypatch.setattr(pp.asr, "cached_transcribe_at", fake_at)
+    monkeypatch.setattr(pp, "anchored_align", fake_anchored_align)
+    return seen
+
+
+def test_quality_calls_the_asr_cache_and_writes_the_anchors_key(inputs, fakes, anchored):
+    folder = full_completeness_dir(inputs)
+    asr_dir = inputs["root"] / "asr"
+    assert pp.main(quality_argv(inputs, "--completeness-dir", str(folder), "--asr-dir", str(asr_dir))) == 0
+    assert anchored["anchored"] == 1 and fakes["aligner_calls"] == 0
+    cache_path, windows = anchored["asr"][0]
+    assert cache_path == asr_dir / "001.json"
+    assert windows == [(0.0, 1.0)]  # the completeness head/tail window is reused, by its exact key
+    doc = json.loads((inputs["root"] / "out" / "001.json").read_text(encoding="utf-8"))
+    assert list(doc)[-1] == "anchors"
+    assert doc["anchors"]["every"] == 4 and "asr" in doc["anchors"]["seconds"]
+
+
+def test_without_quality_neither_the_asr_nor_the_anchors_key(inputs, fakes, anchored):
+    assert pp.main(argv_for(inputs, "--aligner-only", "--source-kind", "way2quran")) == 0
+    assert anchored["asr"] == [] and anchored["anchored"] == 0 and fakes["aligner_calls"] == 1
+    doc = json.loads((inputs["root"] / "out" / "001.json").read_text(encoding="utf-8"))
+    assert "anchors" not in doc
+
+
+def test_the_asr_dir_needs_quality(inputs, fakes):
+    with pytest.raises(SystemExit) as err:
+        pp.main(argv_for(inputs, "--aligner-only", "--source-kind", "way2quran", "--asr-dir", "x"))
+    assert err.value.code == 2
+
+
+def test_the_default_asr_dir_is_the_one_completeness_writes():
+    assert pp.default_dirs("way2quran", 3, aligner_only=True)["asr"] == pp.TOOL_DIR / "out" / "way2quran" / "3" / "asr"
+
+
+def test_the_fail_safe_is_recorded_with_stage_anchors(inputs, fakes, anchored, monkeypatch, capsys):
+    folder = full_completeness_dir(inputs)
+
+    def insufficient(*_a, **_k):
+        raise pp.AnchorsInsufficient("0 checkpoints for 1200 s of audio (need 2)")
+
+    monkeypatch.setattr(pp, "anchored_align", insufficient)
+    refused = inputs["root"] / "refused"
+    assert pp.main(quality_argv(inputs, "--completeness-dir", str(folder), "--refused-dir", str(refused),
+                                "--asr-dir", str(inputs["root"] / "asr"))) == 0
+    record = json.loads((refused / "001.json").read_text(encoding="utf-8"))
+    assert record["stage"] == "anchors" and "checkpoints" in record["reason"]
+    assert not (inputs["root"] / "out" / "001.json").exists()
+    assert fakes["aligner_calls"] == 0  # never a fallback to the drifting aligner
+
+
+def test_an_anchored_alignment_failure_is_an_aligner_refusal(inputs, fakes, anchored, monkeypatch):
+    folder = full_completeness_dir(inputs)
+
+    def no_cut_left(*_a, **_k):
+        raise RuntimeError("segmented alignment failed with no cut left")
+
+    monkeypatch.setattr(pp, "anchored_align", no_cut_left)
+    refused = inputs["root"] / "refused"
+    assert pp.main(quality_argv(inputs, "--completeness-dir", str(folder), "--refused-dir", str(refused),
+                                "--asr-dir", str(inputs["root"] / "asr"))) == 0
+    assert json.loads((refused / "001.json").read_text(encoding="utf-8"))["stage"] == "aligner"

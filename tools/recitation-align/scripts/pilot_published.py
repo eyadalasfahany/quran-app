@@ -32,25 +32,36 @@ With --quality (Way2Quran and --aligner-only only, ADR 0077) the run reads a com
 --completeness-dir first. A surah whose record is missing, is not `complete` or is of another sha256 is a tool
 error (exit 1, nothing written). The aligned documents carry `tool_version` `0.1.0+<QUALITY_VERSION>`. A surah
 the aligner refuses is not a failure: it writes `refused/NNN.json` (--refused-dir) and the run exits 0 (P12).
+
+In quality mode the whole-surah aligner is replaced by the anchored pass (`recitation_align.checkpoints`, plan Q4):
+ASR windows on the schedule come through `transcribe.cached_transcribe_at` (--asr-dir, default beside the aligned
+folder), reusing the completeness head and tail windows already in `asr/NNN.json`; the surah is cut at ASR
+checkpoints and aligned segment by segment; `snap_to_pauses` runs as today; the aligned document gains an
+`anchors` key (the export ignores it). When the fail-safe fires, `refused/NNN.json` has stage `anchors`.
 """
 
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 import torch
 
 from recitation_align import __version__
+from recitation_align import transcribe as asr
 from recitation_align.align import (LOOKAHEAD_TOKENS, MAX_TOKENS, MUQATTAAT, SLACK, STAR_PENALTY,
                                     _expand_muqattaat, _words, align_emissions, align_full, basmala_word_count,
                                     compute_emissions, decide_basmala, emission_key, load_emissions,
                                     load_vocab, save_emissions, surah_tokens)
 from recitation_align.apply_marks import ms_per_frame
 from recitation_align.audio import file_sha256, load_wav16k
-from recitation_align.models import ALIGN_MODEL, ALIGN_REVISION
+from recitation_align.checkpoints import AnchorsInsufficient, anchored_align, schedule, skipped_windows
+from recitation_align.completeness import head_windows, tail_windows
+from recitation_align.models import ALIGN_MODEL, ALIGN_REVISION, SAMPLE_RATE
 from recitation_align.pauses import DEFAULT_MIN_SILENCE_S, DEFAULT_NOISE_DB, cached_pauses
 from recitation_align.published import Normalised, PublishedError, normalise
+from recitation_align.quality import PARAMS as QUALITY_PARAMS
 from recitation_align.quality import tool_version as quality_tool_version
 from recitation_align.report import SCHEMA as REPORT_SCHEMA
 from recitation_align.report import validate_refusal
@@ -77,6 +88,12 @@ SETTINGS = dict(max_tokens=MAX_TOKENS, lookahead_tokens=LOOKAHEAD_TOKENS, slack=
 
 class SurahRefused(Exception):
     """A surah that cannot be produced. Printed as a reason; the batch goes on."""
+
+
+class AnchorsRefused(SurahRefused):
+    """Quality mode: the anchors' fail-safe fired. Recorded with stage `anchors`."""
+
+    stage = "anchors"
 
 
 class QualityInputError(Exception):
@@ -192,7 +209,8 @@ def default_dirs(source_kind: str, ident: int, *, aligner_only: bool) -> dict[st
         base = TOOL_DIR / "out" / "published" / str(ident)
         audio = INGEST_OUT / "audio" / f"mp3quran-{ident}"
         out = base / ("aligner-only" if aligner_only else "aligned")
-    return {"raw": base, "audio": audio, "out": out, "pauses": base / "pauses", "refused": base / "refused"}
+    return {"raw": base, "audio": audio, "out": out, "pauses": base / "pauses", "refused": base / "refused",
+            "asr": base / "asr"}
 
 
 def default_manifest(source_kind: str) -> Path:
@@ -210,8 +228,9 @@ def emissions_file(emissions_dir: Path, source_kind: str, ident: int, surah: int
 
 def write_surah(surah: int, args, *, audio: Path, entry: dict, duration_ms: int, pauses: list,
                 words: list[dict], recited, spans: dict[int, tuple[int, int]], doc_source: str,
-                published: dict, stats: dict) -> dict:
-    """Write the aligned NNN.json for one surah and return its printed summary."""
+                published: dict, stats: dict, anchors: dict | None = None) -> dict:
+    """Write the aligned NNN.json for one surah and return its printed summary. `anchors` (quality mode only)
+    is added as the last key; without it the document is unchanged."""
     doc = {
         "surah": surah,
         "tool_version": quality_tool_version() if getattr(args, "quality", False) else __version__,
@@ -225,6 +244,8 @@ def write_surah(surah: int, args, *, audio: Path, entry: dict, duration_ms: int,
                   for a in sorted(spans)],
         "words": words,
     }
+    if anchors is not None:
+        doc["anchors"] = anchors
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / f"{surah:03d}.json").write_text(
         json.dumps(doc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
@@ -256,13 +277,55 @@ def check_completeness(surah: int, args, entry: dict) -> None:
         raise QualityInputError(f"surah {surah}: the completeness record is of another file (sha256 differs)")
 
 
-def write_refusal(surah: int, args, reason: str) -> None:
+def write_refusal(surah: int, args, reason: str, stage: str = "aligner") -> None:
     """Quality mode (P12): a refused surah is a gate verdict (G1), recorded for the report."""
-    record = {"schema": REPORT_SCHEMA, "surah": surah, "stage": "aligner", "reason": reason}
+    record = {"schema": REPORT_SCHEMA, "surah": surah, "stage": stage, "reason": reason}
     validate_refusal(record)
     args.refused_dir.mkdir(parents=True, exist_ok=True)
     (args.refused_dir / f"{surah:03d}.json").write_text(
         json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def completeness_windows(record: dict) -> tuple[list, list]:
+    """The head and tail windows the completeness check transcribed, rebuilt from its record (same keys as
+    `asr/NNN.json`)."""
+    first, last = record["first_sound_s"], record["last_sound_s"]
+    counts = record["windows"]
+    return head_windows(first, last)[:counts["head"]], tail_windows(last)[:counts["tail"]]
+
+
+def run_anchored(surah: int, args, *, sha: str, wav, em, pauses: list, ayahs: dict, vocab: dict,
+                 blank: int) -> tuple[list[dict], bool | None, dict]:
+    """Quality mode: the anchored pass (plan Q4). ASR windows through `cached_transcribe_at`, then
+    `checkpoints.anchored_align`. Raises AnchorsRefused when the fail-safe fires."""
+    record = json.loads((args.completeness_dir / f"{surah:03d}.json").read_text(encoding="utf-8"))
+    head, tail = completeness_windows(record)
+    duration_s = len(wav) / SAMPLE_RATE
+    sec_per_frame = duration_s / em.shape[0]  # the time base align_full uses
+    windows = schedule(duration_s, head, tail, QUALITY_PARAMS["ASR_EVERY"])
+    cache = args.asr_dir / f"{surah:03d}.json"
+    asr_seconds = 0.0
+
+    def transcribe_windows(ws):
+        nonlocal asr_seconds
+        t0 = time.perf_counter()
+        texts = [w["text"] for w in asr.cached_transcribe_at(wav, sha, cache, ws)["windows"]]
+        asr_seconds += time.perf_counter() - t0
+        return texts
+
+    texts = transcribe_windows(windows)
+    try:
+        words, recited, report = anchored_align(
+            em, surah, ayahs, vocab, blank, sec_per_frame=sec_per_frame,
+            windows=[{"start_s": s, "end_s": e, "text": t} for (s, e), t in zip(windows, texts)],
+            skipped=skipped_windows(duration_s, windows), transcribe_windows=transcribe_windows, pauses=pauses)
+    except AnchorsInsufficient as err:
+        raise AnchorsRefused(f"anchors insufficient: {err}") from err
+    report["seconds"] = {"asr": round(asr_seconds, 1), **report["seconds"]}
+    print(f"{surah:03d}: anchors: windows {report['windows']}, checkpoints {len(report['checkpoints'])}, "
+          f"cuts {len(report['cuts'])}, merges {len(report['merges'])}, ASR {report['seconds']['asr']} s",
+          file=sys.stderr)
+    return words, recited, report
 
 
 def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank: int) -> dict:
@@ -306,8 +369,16 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
 
     if args.aligner_only:
         # No published file is read: the whole-surah aligner is the only source of timings here.
+        anchors = None
         try:
-            words, recited = run_aligner()
+            if quality:
+                # Quality mode: the anchored pass replaces the whole-surah aligner (never a fallback to it).
+                if wav is None:
+                    wav = load_wav16k(audio)
+                words, recited, anchors = run_anchored(surah, args, sha=sha, wav=wav, em=em, pauses=pauses,
+                                                       ayahs=ayahs, vocab=vocab, blank=blank)
+            else:
+                words, recited = run_aligner()
         except RuntimeError as err:
             raise SurahRefused(f"the aligner cannot fit the file: {err}") from err
         return write_surah(
@@ -315,7 +386,7 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
             words=words, recited=recited, spans=ayah_spans(words, duration_ms), doc_source=FALLBACK_SOURCE,
             published={"none": "aligner-only source"},
             stats={"squeezed": 0, "dropped": None, "end_mismatch": None, "ayah1_published": None,
-                   "fallback": None})
+                   "fallback": None}, anchors=anchors)
 
     raw_path = args.raw_dir / f"raw-{surah}.json"
     raw = json.loads(raw_path.read_text(encoding="utf-8"))
@@ -436,14 +507,17 @@ def main(argv: list[str] | None = None) -> int:
                    help="with --quality: NNN.json completeness records (from w2q_completeness.py)")
     p.add_argument("--refused-dir", type=Path, default=None,
                    help="with --quality: where refused/NNN.json go (default beside the aligned folder)")
+    p.add_argument("--asr-dir", type=Path, default=None,
+                   help="with --quality: the ASR cache asr/NNN.json shared with completeness (default beside "
+                        "the aligned folder)")
     args = p.parse_args(argv)
     if args.quality:
         if args.source_kind != "way2quran" or not args.aligner_only:
             p.error("--quality needs --source-kind way2quran --aligner-only")
         if args.completeness_dir is None:
             p.error("--quality needs --completeness-dir")
-    elif args.completeness_dir is not None or args.refused_dir is not None:
-        p.error("--completeness-dir and --refused-dir need --quality")
+    elif args.completeness_dir is not None or args.refused_dir is not None or args.asr_dir is not None:
+        p.error("--completeness-dir, --refused-dir and --asr-dir need --quality")
     if args.aligner_only and args.fallback_aligner:
         p.error("--fallback-aligner has no meaning with --aligner-only")
     if args.source_kind == "way2quran" and not args.aligner_only:
@@ -459,6 +533,7 @@ def main(argv: list[str] | None = None) -> int:
     args.out_dir = args.out_dir or dirs["out"]
     args.pauses_dir = args.pauses_dir or dirs["pauses"]
     args.refused_dir = args.refused_dir or dirs["refused"]
+    args.asr_dir = args.asr_dir or dirs["asr"]
 
     ayahs = load_tanzil(args.tanzil)
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -474,7 +549,7 @@ def main(argv: list[str] | None = None) -> int:
         except SurahRefused as err:
             if getattr(args, "quality", False):
                 # P12: a refusal is a verdict (G1), not a crash. The chunk goes on and the report records it.
-                write_refusal(surah, args, str(err))
+                write_refusal(surah, args, str(err), getattr(err, "stage", "aligner"))
                 print(f"{surah:03d}: REFUSED (recorded): {err}", file=sys.stderr)
                 continue
             failures += 1
