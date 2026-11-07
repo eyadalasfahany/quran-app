@@ -113,7 +113,7 @@ describe('SourcesScreen', () => {
     expect(view.getByText('MP3Quran')).toBeOnTheScreen();
     expect(view.getByText('تلاوات القرّاء')).toBeOnTheScreen();
     expect(view.getByText('Way2Quran')).toBeOnTheScreen();
-    expect(view.getByText('تلاوة الشيخ محمد عبادة والشيخ حسام الدين عبادي. إنتاج مداد')).toBeOnTheScreen();
+    expect(view.getByText('تلاوة الشيخ محمد عبادة والشيخ حسام الدين عبادي والشيخ أحمد بن طالب بن حميد. إنتاج مداد وطريق الإسلام')).toBeOnTheScreen();
   });
 
   it('has a back button that returns to Settings', async () => {

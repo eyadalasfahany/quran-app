@@ -52,11 +52,14 @@ def test_committed_data_file_parses() -> None:
     assert isinstance(load_reciters(DEFAULT_WAY2QURAN_DATA), list)
 
 
-def test_committed_data_lists_both_reciters_with_their_surahs() -> None:
-    """The two reciters from the lister run (plan step 6): 114 files for Abadh, 54 Hafs surahs for Ebadi."""
+def test_committed_data_keeps_the_listed_reciters_and_their_surahs() -> None:
+    """Reciters from the lister runs: 114 files for Abadh (1), 54 Hafs surahs for Ebadi (2), 114 for Ahmed bin
+    Talib bin Hamid (3). Adding a reciter is data only (ADR 0074 decision 7), so later ids may follow."""
     by_id = {r.reciter_id: r for r in load_reciters(DEFAULT_WAY2QURAN_DATA)}
-    assert sorted(by_id) == [1, 2]
+    assert {1, 2, 3} <= set(by_id)
     assert len(by_id[1].files) == 114
+    assert len(by_id[3].files) == 114
+    assert by_id[3].slug == "ahmed-bin-talib-hamid"
     assert sorted(by_id[2].files) == [
         1, 12, 14, 15, 17, 18, 19, 31, 32, 36, 38, 44, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
         61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 72, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88,
