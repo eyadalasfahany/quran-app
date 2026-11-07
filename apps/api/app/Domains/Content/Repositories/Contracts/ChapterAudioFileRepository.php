@@ -11,12 +11,12 @@ interface ChapterAudioFileRepository
     public function deleteForRecitation(int $recitationId): void;
 
     /**
-     * @param  list<array{id: int, recitation_id: int, chapter_id: int, audio_url: string, size_bytes: int|null, duration_ms: int, format: string}>  $rows
+     * @param  list<array{id: int, recitation_id: int, chapter_id: int, audio_url: string, size_bytes: int|null, duration_ms: int, format: string, first_ayah?: int|null, last_ayah?: int|null}>  $rows
      */
     public function insert(array $rows): void;
 
     /**
-     * @param  array{id: int, recitation_id: int, chapter_id: int, audio_url: string, size_bytes: int|null, duration_ms: int, format: string}  $row
+     * @param  array{id: int, recitation_id: int, chapter_id: int, audio_url: string, size_bytes: int|null, duration_ms: int, format: string, first_ayah?: int|null, last_ayah?: int|null}  $row
      */
     public function upsert(array $row): void;
 

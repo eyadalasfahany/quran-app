@@ -6,6 +6,9 @@ export type ChapterAudio = {
   durationMs: number;
   sizeBytes: number | null;
   format: string;
+  /** The recorded ayah range of a partial surah (ADR 0077 amendment). Both null for a whole surah. */
+  firstAyah: number | null;
+  lastAyah: number | null;
 };
 
 /** The audio file for one surah from one recitation. `recitationId` is `recitations.id`, not the resource id. */
@@ -16,7 +19,9 @@ export function chapterAudio(db: SqlExecutor, recitationId: number, chapterId: n
        audio_url AS url,
        duration_ms AS durationMs,
        size_bytes AS sizeBytes,
-       format
+       format,
+       first_ayah AS firstAyah,
+       last_ayah AS lastAyah
      FROM chapter_audio_files
      WHERE recitation_id = ? AND chapter_id = ?
      ORDER BY id

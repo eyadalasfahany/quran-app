@@ -163,6 +163,8 @@ final class PackSchema
                 self::integer('size_bytes', nullable: true),
                 self::integer('duration_ms'),
                 self::text('format'),
+                self::integer('first_ayah', nullable: true),
+                self::integer('last_ayah', nullable: true),
             ],
             primaryKey: ['id'],
             orderBy: ['id'],

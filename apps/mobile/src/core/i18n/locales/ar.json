@@ -655,6 +655,7 @@
       "unavailable": "{{surah}} غير متوفرة بصوت {{reciter}}",
       "skipped": "تخطّي {{surah}} · غير متوفرة بصوت {{reciter}}",
       "skippedMany": "تخطّي {{count}} سور · غير متوفرة بصوت {{reciter}}",
+      "notRecorded": "هذا الجزء غير مسجّل لهذا القارئ",
       "changeReciter": "تغيير القارئ"
     },
     "style": {

@@ -13,5 +13,7 @@ final readonly class Mp3QuranFile
         public string $sha256,
         public int $bytes,
         public int $durationMs,
+        public ?int $firstAyah = null,
+        public ?int $lastAyah = null,
     ) {}
 }

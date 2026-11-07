@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Content\Mp3Quran;
 
+use App\Support\QuranText\ChapterVerseCounts;
 use JsonException;
 
 /**
@@ -13,6 +14,8 @@ use JsonException;
 final class Mp3QuranManifest
 {
     private const int SCHEMA = 1;
+
+    private const int MIN_RANGE_AYAHS = 3;
 
     private readonly ReciterSource $source;
 
@@ -184,7 +187,44 @@ final class Mp3QuranManifest
             return 'surah '.$surah.' url is not public_base and key';
         }
 
-        return new Mp3QuranFile($surah, $expectedKey, $url, $sha256, $bytes, $durationMs);
+        $range = $this->parseRange($raw, $surah);
+
+        if (is_string($range)) {
+            return $range;
+        }
+
+        return new Mp3QuranFile($surah, $expectedKey, $url, $sha256, $bytes, $durationMs, $range[0], $range[1]);
+    }
+
+    /**
+     * The optional recorded ayah range of a partial surah (ADR 0077 amendment): both keys or neither, 1 <= first <= last
+     * <= the surah's ayah count, at least 3 ayahs. Absent or null keys mean the whole surah.
+     *
+     * @param  array<mixed>  $raw
+     * @return array{int|null, int|null}|string the range, or the reason it is invalid
+     */
+    private function parseRange(array $raw, int $surah): array|string
+    {
+        $first = $raw['first_ayah'] ?? null;
+        $last = $raw['last_ayah'] ?? null;
+
+        if ($first === null && $last === null) {
+            return [null, null];
+        }
+
+        if (! is_int($first) || ! is_int($last)) {
+            return 'surah '.$surah.' first_ayah and last_ayah must both be ints';
+        }
+
+        if ($first < 1 || $first > $last || $last > ChapterVerseCounts::forChapter($surah)) {
+            return 'surah '.$surah.' ayah range is outside the surah';
+        }
+
+        if ($last - $first + 1 < self::MIN_RANGE_AYAHS) {
+            return 'surah '.$surah.' ayah range is shorter than '.self::MIN_RANGE_AYAHS.' ayahs';
+        }
+
+        return [$first, $last];
     }
 
     /**

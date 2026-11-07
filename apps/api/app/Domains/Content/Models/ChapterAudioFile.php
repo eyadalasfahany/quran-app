@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $size_bytes
  * @property int $duration_ms
  * @property string $format
+ * @property int|null $first_ayah
+ * @property int|null $last_ayah
  */
 #[Fillable([
     'id',
@@ -29,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'size_bytes',
     'duration_ms',
     'format',
+    'first_ayah',
+    'last_ayah',
 ])]
 #[UseFactory(ChapterAudioFileFactory::class)]
 final class ChapterAudioFile extends Model

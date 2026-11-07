@@ -19,6 +19,7 @@ import {
 import { reciterInitial } from '../player-view';
 import { MiniPlayerChevron } from './MiniPlayerChevron';
 import { MiniPlayerNotice } from './MiniPlayerNotice';
+import { PartialRangeNotice } from './PartialRangeNotice';
 import { MiniPlayerProgressLine } from './MiniPlayerProgressLine';
 import { MiniPlayerTile } from './MiniPlayerTile';
 import { PlayerIconButton } from './PlayerIconButton';
@@ -55,6 +56,7 @@ export function ReaderMiniBar({
   reciterName,
   subtitle,
   notice = null,
+  noticeKind = 'skip',
   playing,
   starting = false,
   fraction,
@@ -67,6 +69,8 @@ export function ReaderMiniBar({
   subtitle: string;
   /** The skip notice line under the subtitle (ADR 0062). Null when none shows. */
   notice?: string | null;
+  /** Which notice `notice` is: the skip notice or the partial-range notice (ADR 0077 amendment). */
+  noticeKind?: 'skip' | 'range';
   playing: boolean;
   /** Audio is starting: the button shows pause with the buffering ring. */
   starting?: boolean;
@@ -149,7 +153,11 @@ export function ReaderMiniBar({
                   <UiText numberOfLines={1} scale="bar" tone="muted" variant={metrics.subtitle.variant} weight={metrics.subtitle.weight}>
                     {subtitle}
                   </UiText>
-                  {notice === null ? null : <MiniPlayerNotice message={notice} testID="mini-player-notice" />}
+                  {notice === null ? null : noticeKind === 'range' ? (
+                    <PartialRangeNotice message={notice} />
+                  ) : (
+                    <MiniPlayerNotice message={notice} testID="mini-player-notice" />
+                  )}
                 </View>
               </Pressable>
               <PlayerIconButton

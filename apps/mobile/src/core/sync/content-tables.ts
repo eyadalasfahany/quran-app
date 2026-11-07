@@ -130,6 +130,8 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
         integer('size_bytes', true),
         integer('duration_ms'),
         text('format'),
+        integer('first_ayah', true),
+        integer('last_ayah', true),
       ]),
       table('recitation_timings', [
         integer('audio_file_id'),

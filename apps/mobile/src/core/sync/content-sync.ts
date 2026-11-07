@@ -323,7 +323,7 @@ function copyPack(db: SqlExecutor, path: string, resource: ContentManifestResour
       }
       for (const table of group.tables) {
         const columns = columnList(table);
-        db.exec(`INSERT INTO ${table.name} (${columns}) SELECT ${columns} FROM pack.${table.name}`);
+        db.exec(`INSERT INTO ${table.name} (${columns}) SELECT ${packSelectList(db, table)} FROM pack.${table.name}`);
       }
       for (const sql of group.afterImportSql ?? []) {
         db.run(sql, [resource.id]);
@@ -335,6 +335,18 @@ function copyPack(db: SqlExecutor, path: string, resource: ContentManifestResour
       db.exec('DETACH DATABASE pack');
     }
   }
+}
+
+/**
+ * The SELECT list for a table's pack copy. A nullable column that an older pack was built without (a column added
+ * later, such as the ayah range of a partial surah) reads as NULL, so a pack built before the column still installs.
+ */
+function packSelectList(db: SqlExecutor, table: ContentTable): string {
+  const present = new Set(db.all<{ name: string }>(`PRAGMA pack.table_info(${table.name})`).map((row) => row.name));
+  if (present.size === 0) {
+    return columnList(table);
+  }
+  return table.columns.map((column) => (column.nullable && !present.has(column.name) ? 'NULL' : column.name)).join(', ');
 }
 
 function assertPackMeta(db: SqlExecutor, resourceId: number): void {

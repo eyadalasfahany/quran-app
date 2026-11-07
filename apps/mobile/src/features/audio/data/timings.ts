@@ -15,7 +15,7 @@ type TimingRow = Omit<AyahTiming, 'segments'> & { segments: string | null };
 /**
  * Timings for one audio file, sorted by start. Returns [] (no highlight, spec §12) when any row has
  * start >= end, two rows overlap, or the file's surah is unknown or not fully covered: one row per ayah of the
- * surah, so a highlight never stops partway or lands on the wrong ayah (ADR 0052). Touching rows
+ * surah (of the recorded range, for a partial surah), so a highlight never stops partway or lands on the wrong ayah (ADR 0052). Touching rows
  * (next.start === prev.end) are valid.
  */
 export function timingsFor(db: SqlExecutor, audioFileId: number): AyahTiming[] {
@@ -30,8 +30,9 @@ export function timingsFor(db: SqlExecutor, audioFileId: number): AyahTiming[] {
      ORDER BY start_ms`,
     [audioFileId],
   );
+  // A partial surah (ADR 0077 amendment) has one timing per recorded ayah, first_ayah to last_ayah.
   const surah = db.get<{ versesCount: number }>(
-    `SELECT chapters.verses_count AS versesCount
+    `SELECT COALESCE(chapter_audio_files.last_ayah, chapters.verses_count) - COALESCE(chapter_audio_files.first_ayah, 1) + 1 AS versesCount
      FROM chapter_audio_files
      JOIN chapters ON chapters.id = chapter_audio_files.chapter_id
      WHERE chapter_audio_files.id = ?`,

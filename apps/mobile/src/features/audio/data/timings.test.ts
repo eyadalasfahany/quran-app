@@ -131,6 +131,22 @@ describe('timingsFor', () => {
   });
 });
 
+describe('timingsFor on a partial surah (ADR 0077 amendment)', () => {
+  it('accepts one timing per recorded ayah and refuses a count that misses the range', () => {
+    insertFile(100, 1, 5);
+    executor.run('UPDATE chapter_audio_files SET first_ayah = 2, last_ayah = 4 WHERE id = 100');
+    insertTiming(100, 2, 0, 1000);
+    insertTiming(100, 3, 1000, 2000);
+    expect(timingsFor(executor, 100)).toEqual([]);
+
+    insertTiming(100, 4, 2000, 3000);
+    expect(timingsFor(executor, 100).map((timing) => timing.verseId)).toEqual([2, 3, 4]);
+
+    insertTiming(100, 5, 3000, 4000);
+    expect(timingsFor(executor, 100)).toEqual([]);
+  });
+});
+
 describe('timingsFitAudio', () => {
   const timings = [row(1, 0, 5000), row(2, 5000, 600_000)];
 

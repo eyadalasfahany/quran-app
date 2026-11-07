@@ -21,6 +21,7 @@ export function ReaderMiniPlayer({
   onToggle,
   unavailable,
   notice,
+  noticeKind,
 }: {
   idle: boolean;
   reciterName: string;
@@ -34,6 +35,8 @@ export function ReaderMiniPlayer({
   unavailable?: { message: string; onChangeReciter: () => void };
   /** The skip notice line under the subtitle, while audio plays (ADR 0062). */
   notice?: string | null;
+  /** Which notice `notice` is: the skip notice (default) or the partial-range notice (ADR 0077 amendment). */
+  noticeKind?: 'skip' | 'range';
 }) {
   const collapsed = useReaderMiniCollapse((state) => state.collapsed);
   const setCollapsed = useReaderMiniCollapse((state) => state.setCollapsed);
@@ -57,6 +60,7 @@ export function ReaderMiniPlayer({
           onToggle={onToggle}
           playing={playing}
           notice={notice}
+          noticeKind={noticeKind}
           reciterName={reciterName}
           starting={starting}
           subtitle={subtitle}

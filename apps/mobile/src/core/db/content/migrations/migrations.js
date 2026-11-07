@@ -16,6 +16,7 @@ import m0011 from './0011_duas_tables.sql';
 import m0012 from './0012_hadith_tables.sql';
 import m0013 from './0013_search_hadith.sql';
 import m0014 from './0014_hadith_number_range.sql';
+import m0015 from './0015_partial_surah_range.sql';
 
   export default {
     journal,
@@ -34,7 +35,8 @@ m0010,
 m0011,
 m0012,
 m0013,
-m0014
+m0014,
+m0015
     }
   }
   

@@ -655,6 +655,7 @@
       "unavailable": "{{surah}} isn't available in {{reciter}}'s voice",
       "skipped": "Skipped {{surah}} · not available in {{reciter}}'s voice",
       "skippedMany": "Skipped {{count}} surahs · not available in {{reciter}}'s voice",
+      "notRecorded": "This part isn't recorded for this reciter",
       "changeReciter": "Change reciter"
     },
     "style": {

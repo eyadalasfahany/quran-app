@@ -1,6 +1,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 
 import { usePlayerStore } from './playerStore';
+import { useRangeNoticeShown } from './range-notice';
 
 // How long the skip notice stays (ADR 0062, Q5): one notice for a run of skipped surahs.
 export const SKIP_NOTICE_MS = 4_000;
@@ -63,5 +64,7 @@ export function resetSkipNoticeForTests(): void {
 export function useSkipNoticeShown(): boolean {
   const shown = useSkipNoticeStore((state) => state.notice !== null);
   const playing = usePlayerStore((state) => state.status === 'playing' || state.status === 'loading');
-  return shown && playing;
+  // The range notice (ADR 0077 amendment) takes the same line and shows at any status.
+  const rangeShown = useRangeNoticeShown();
+  return (shown && playing) || rangeShown;
 }

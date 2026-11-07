@@ -9,6 +9,7 @@ import { gzipSync, gunzipSync } from 'fflate';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import {
   catalogNeedsManifest,
+  importPack,
   syncContent,
   type ContentApi,
   type ContentSyncDeps,
@@ -87,7 +88,7 @@ const README_CONTRACT = [
       },
       {
         name: 'chapter_audio_files',
-        columns: ['id', 'recitation_id', 'chapter_id', 'audio_url', 'size_bytes', 'duration_ms', 'format'],
+        columns: ['id', 'recitation_id', 'chapter_id', 'audio_url', 'size_bytes', 'duration_ms', 'format', 'first_ayah', 'last_ayah'],
       },
       {
         name: 'recitation_timings',
@@ -628,6 +629,57 @@ describe('content sync', () => {
 
       expect(report.resources).toEqual([{ resourceId: 85, status: 'pack-imported' }]);
       expect(useCatalogVersion.getState().version).toBeGreaterThan(before);
+    });
+  });
+
+  it.each([
+    ['a pack built with the ayah range columns', true, [2, 22]],
+    ['a pack built before the ayah range columns existed', false, [null, null]],
+  ])('imports a chapter recitation from %s (partial surahs, ADR 0077)', async (_name, withRange, expected) => {
+    const bytes = gzipDatabase(30, (database) => {
+      database.exec(
+        `CREATE TABLE recitations (id INTEGER, resource_id INTEGER, reciter_name TEXT, reciter_name_ar TEXT, style TEXT, qirat TEXT, has_word_segments INTEGER)`,
+      );
+      database.exec(
+        `CREATE TABLE chapter_audio_files (id INTEGER, recitation_id INTEGER, chapter_id INTEGER, audio_url TEXT, size_bytes INTEGER, duration_ms INTEGER, format TEXT${withRange ? ', first_ayah INTEGER, last_ayah INTEGER' : ''})`,
+      );
+      database.exec(
+        `CREATE TABLE recitation_timings (audio_file_id INTEGER, verse_id INTEGER, start_ms INTEGER, end_ms INTEGER, segments TEXT)`,
+      );
+      database.exec(`INSERT INTO recitations VALUES (1, 30, 'Fixture', 'تجريبي', NULL, NULL, 0)`);
+      database.exec(
+        withRange
+          ? `INSERT INTO chapter_audio_files VALUES (100, 1, 23, 'https://example.test/23.mp3', 10, 1000, 'mp3', 2, 22)`
+          : `INSERT INTO chapter_audio_files VALUES (100, 1, 23, 'https://example.test/23.mp3', 10, 1000, 'mp3')`,
+      );
+    });
+    const hash = await sha256(bytes);
+    const entry = resource({
+      id: 30,
+      group: 'chapter_recitations',
+      version: 2,
+      pack: { url: '/api/v1/content/packs/30/2', size_bytes: bytes.byteLength, sha256: hash },
+    });
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const { selection: _selection, ...installDeps } = await deps(executor, cacheDir, {
+        getManifest: async () => {
+          throw new Error('manifest');
+        },
+        getChanges: async () => {
+          throw new Error('changes');
+        },
+        downloadPack: async (_url: string, toPath: string) => {
+          mkdirSync(parentDir(toPath), { recursive: true });
+          writeFileSync(toPath, bytes);
+        },
+      });
+
+      await expect(importPack(installDeps, entry, NOW)).resolves.toBe('pack-imported');
+      expect(
+        executor.get<{ first: number | null; last: number | null }>(
+          'SELECT first_ayah AS first, last_ayah AS last FROM chapter_audio_files WHERE id = 100',
+        ),
+      ).toEqual({ first: expected[0], last: expected[1] });
     });
   });
 

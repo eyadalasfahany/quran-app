@@ -275,6 +275,8 @@ it('copies chapter recitation columns from the shared contract', function (): vo
             'size_bytes' => 'INTEGER',
             'duration_ms' => 'INTEGER',
             'format' => 'TEXT',
+            'first_ayah' => 'INTEGER',
+            'last_ayah' => 'INTEGER',
         ], ['id']);
         expectPackTable($pdo, 'recitation_timings', [
             'audio_file_id' => 'INTEGER',

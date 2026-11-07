@@ -14,7 +14,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { getLocale } from '@/core/i18n/locale';
 import { networkIsOffline } from '@/core/network/network-state';
 import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
-import { getVerseByKey } from '@/features/reader/data/verses';
+import { getVerseByKey, idToVerseKey } from '@/features/reader/data/verses';
 
 import { activeTimingIndex, activeWordPosition, ayahSeekStartMs } from './active-ayah';
 import { chapterAudio, type ChapterAudio } from './data/audio-files';
@@ -23,6 +23,8 @@ import { upsertRecentListen } from './data/recent-listens';
 import { listReciters, recitationIdForResource } from './data/reciters';
 import { timingsFitAudio, timingsFor, type AyahTiming } from './data/timings';
 import { clampSeek, isChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
+import { endsEarly, isAyahRecorded, recordedRange, startsLate } from './partial-range';
+import { resetRangeNoticeForTests, useRangeNoticeStore } from './range-notice';
 import { resetSkipNoticeForTests, useSkipNoticeStore } from './skip-notice';
 import {
   isRepeatRangeValid,
@@ -466,6 +468,23 @@ function raiseSkipNotice(reciterId: number, fromChapter: number, toChapter: numb
   useSkipNoticeStore.getState().show({ reciterId, chapterIds });
 }
 
+/** The recorded range of a surah's file for this reciter, or null for a whole surah or no file. */
+function rangeFor(db: SqlExecutor, reciterId: number, chapterId: number): ReturnType<typeof recordedRange> {
+  const lookup = lookupAudio(db, reciterId, chapterId);
+  return recordedRange('audio' in lookup ? lookup.audio : undefined);
+}
+
+/** Whether the file for this surah stops before the surah's last ayah. */
+function endsBeforeSurahEnd(db: SqlExecutor, reciterId: number, chapterId: number): boolean {
+  const range = rangeFor(db, reciterId, chapterId);
+  return range !== null && endsEarly(range, getChapter(db, chapterId)?.versesCount ?? range.last);
+}
+
+/** Says the part asked for is not recorded for this reciter (ADR 0077 amendment). */
+function raiseRangeNotice(): void {
+  useRangeNoticeStore.getState().show();
+}
+
 function neighbourChapter(db: SqlExecutor, reciterId: number, chapterId: number, direction: 1 | -1): number | null {
   const chapterIds = ensureQueue(db, reciterId)?.chapterIds ?? [];
   if (direction === 1) {
@@ -603,6 +622,10 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
     dropTimingsThatDoNotFit(chapterId, Math.round(status.duration * 1000));
   }
   if ((current.status === 'playing' || current.status === 'paused') && status.currentIndex === active.chapterIds.length - 1 && isFinishedLastTrack(status)) {
+    // The last file ended inside a surah it only partly records: say so, then stop as at any last surah's end.
+    if (chapterId !== undefined && endsBeforeSurahEnd(contentDb(), active.reciterId, chapterId)) {
+      raiseRangeNotice();
+    }
     stopPlayback();
     return;
   }
@@ -685,6 +708,13 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   if (playingNow && currentIndex === previousIndex + 1 && currentIndex !== loadTarget && endedChapter !== undefined) {
     raiseSkipNotice(active.reciterId, endedChapter, chapterId);
   }
+  // Partial surahs (ADR 0077 amendment): a file that ended before its surah did (natural end only), or one that begins
+  // after its surah's first ayah (any arrival but a user load, whose loadChapter raises it). One notice covers both.
+  const endedEarly = playingNow && !fromUs && endedChapter !== undefined && endsBeforeSurahEnd(db, active.reciterId, endedChapter);
+  const startsLateNow = playingNow && currentIndex !== loadTarget && startsLate(rangeFor(db, active.reciterId, chapterId));
+  if (endedEarly || startsLateNow) {
+    raiseRangeNotice();
+  }
   // moveTo clears the highlight, so a track change that is ours keeps the ayah the load asked for.
   const floor = highlightFloor;
   if (fromUs && floor !== null && floor.chapterId === chapterId) {
@@ -758,10 +788,11 @@ async function loadChapter(
   positionMs: number,
   reciterId: number | null,
   startVerseId?: number,
-  options?: { skippedFrom?: number; repeat?: RepeatRequest },
+  options?: { skippedFrom?: number; repeat?: RepeatRequest; rangeNotice?: 'start' | 'always' },
 ): Promise<void> {
   loadSequence += 1;
   useSkipNoticeStore.getState().clear();
+  useRangeNoticeStore.getState().clear();
   pendingSwitchRepeat = options?.repeat ?? null;
   // A load that starts supersedes any seek still pending from an earlier one, and any ayah held for an earlier load.
   pendingSeek = null;
@@ -810,6 +841,11 @@ async function loadChapter(
     active.playlist.setActiveForLockScreen(true, lockScreenMetadata(db, reciterId, chapterId), LOCK_SCREEN_CONTROLS);
     if (startVerseId !== undefined) {
       highlightFloor = { chapterId, verseId: startVerseId };
+    }
+    // Partial surahs (ADR 0077 amendment): the file begins at first_ayah, so a play from the surah's start says so first.
+    const range = recordedRange(lookup.audio);
+    if (options?.rangeNotice === 'always' ? range !== null : options?.rangeNotice === 'start' && startsLate(range)) {
+      raiseRangeNotice();
     }
     if (active.playlist.currentIndex !== index) {
       intendedIndex = index;
@@ -866,7 +902,7 @@ export function playChapter(chapterId: number, fromMs = 0): Promise<void> {
   return guarded(async () => {
     bumpPlayCommand();
     releaseRepeat();
-    await loadChapter(chapterId, fromMs, currentReciterId(contentDb()));
+    await loadChapter(chapterId, fromMs, currentReciterId(contentDb()), undefined, fromMs === 0 ? { rangeNotice: 'start' } : undefined);
   });
 }
 
@@ -889,6 +925,12 @@ export function playFromVerse(verseKey: string): Promise<void> {
     const lookup = lookupAudio(db, reciterId, verse.chapterId);
     if ('error' in lookup) {
       failLookup(lookup.error, reciterId, verse.chapterId);
+      return;
+    }
+    // Partial surah (ADR 0077 amendment): an ayah the file does not record starts nothing, and says so.
+    if (!isAyahRecorded(recordedRange(lookup.audio), verse.verseNumber)) {
+      store().clearStarting();
+      raiseRangeNotice();
       return;
     }
     const timing = timingsForChapter(db, reciterId, verse.chapterId).find((row) => row.verseId === verse.id);
@@ -965,15 +1007,25 @@ export function nextAyah(): Promise<void> {
       return;
     }
     const following = neighbourChapter(db, reciterId, state.chapterId, 1);
+    const endedEarly = endsBeforeSurahEnd(db, reciterId, state.chapterId);
     if (following === null) {
       stopPlayback();
+      // After stopPlayback, which clears the other notices: the recorded part ended inside the surah.
+      if (endedEarly) {
+        raiseRangeNotice();
+      }
       return;
     }
     releaseRepeat();
     const firstOfFollowing = timingsForChapter(db, reciterId, following)[0];
     await loadChapter(following, firstOfFollowing === undefined ? 0 : ayahSeekStartMs(firstOfFollowing), reciterId, undefined, {
       skippedFrom: state.chapterId,
+      rangeNotice: 'start',
     });
+    // loadChapter clears the notice it replaces, so the end of the recorded part is raised after it.
+    if (endedEarly) {
+      raiseRangeNotice();
+    }
   });
 }
 
@@ -1028,7 +1080,13 @@ export async function switchReciter(resourceId: number, options?: { autoplay?: b
     store().markUnavailable({ reciterId: resourceId, chapterId });
     return 'unavailable';
   }
-  const verseId = ayahToKeep(db, chapterId, state.activeVerseId);
+  // Partial surah (ADR 0077 amendment): an ayah the new reciter's file does not record cannot be kept. The surah starts
+  // from the file's beginning and the notice says why.
+  const range = recordedRange(lookup.audio);
+  const wanted = ayahToKeep(db, chapterId, state.activeVerseId);
+  const wantedNumber = wanted === undefined ? undefined : Number(idToVerseKey(db, wanted)?.split(':')[1]);
+  const keptOutside = range !== null && wantedNumber !== undefined && !isAyahRecorded(range, wantedNumber);
+  const verseId = keptOutside ? undefined : wanted;
   const timing = verseId === undefined ? undefined : timingsForChapter(db, resourceId, chapterId).find((row) => row.verseId === verseId);
   const positionMs = timing === undefined ? 0 : ayahSeekStartMs(timing);
   const carried = repeat === null ? null : { fromVerseId: repeat.fromVerseId, toVerseId: repeat.toVerseId, count: repeat.count };
@@ -1036,7 +1094,10 @@ export async function switchReciter(resourceId: number, options?: { autoplay?: b
   if (playing || autoplay) {
     bumpPlayCommand();
     releaseRepeat();
-    await loadChapter(chapterId, positionMs, resourceId, verseId, { repeat: carried ?? undefined });
+    await loadChapter(chapterId, positionMs, resourceId, verseId, {
+      repeat: carried ?? undefined,
+      rangeNotice: keptOutside ? 'always' : undefined,
+    });
     return 'switched';
   }
   // Paused: the new file is not loaded here. resume() loads it at the new place.
@@ -1045,6 +1106,9 @@ export async function switchReciter(resourceId: number, options?: { autoplay?: b
   store().restore({ reciterId: resourceId, chapterId, positionMs });
   setTrackTimings(db, resourceId, chapterId);
   store().setActive(verseId ?? null, null);
+  if (keptOutside) {
+    raiseRangeNotice();
+  }
   if (carried !== null) {
     setRepeat(carried);
   }
@@ -1154,7 +1218,7 @@ export function nextSurah(): Promise<void> {
       return;
     }
     releaseRepeat();
-    await loadChapter(next, 0, reciterId, undefined, { skippedFrom: state.chapterId });
+    await loadChapter(next, 0, reciterId, undefined, { skippedFrom: state.chapterId, rangeNotice: 'start' });
   });
 }
 
@@ -1185,7 +1249,7 @@ export function previousSurah(): Promise<void> {
     }
     const previous = neighbourChapter(contentDb(), reciterId, state.chapterId, -1) ?? state.chapterId;
     releaseRepeat();
-    await loadChapter(previous, 0, reciterId);
+    await loadChapter(previous, 0, reciterId, undefined, { rangeNotice: 'start' });
   });
 }
 
@@ -1265,5 +1329,6 @@ export function resetPlayerForTests(): void {
   loadTargetIndex = null;
   timingsCache.clear();
   resetSkipNoticeForTests();
+  resetRangeNoticeForTests();
   usePlayerStore.getState().reset();
 }

@@ -176,13 +176,16 @@ final class TaybahTimingImporter
 
         $chapter = $file->chapterId;
         $count = ChapterVerseCounts::forChapter($chapter);
+        // A partial surah (ADR 0077 amendment) lists only its recorded ayahs, from first_ayah to last_ayah.
+        $firstAyah = $audio->first_ayah ?? 1;
+        $lastAyah = $audio->last_ayah ?? $count;
 
-        if (count($file->ayahs) !== $count) {
+        if (count($file->ayahs) !== $lastAyah - $firstAyah + 1) {
             throw new TaybahTimingFileException('ayah rows do not match the surah');
         }
 
         foreach ($file->ayahs as $index => $ayah) {
-            $ayahNumber = $index + 1;
+            $ayahNumber = $firstAyah + $index;
 
             if ($ayah->verseKey !== $chapter.':'.$ayahNumber || $ayah->verseId !== ChapterVerseCounts::verseId($chapter, $ayahNumber)) {
                 throw new TaybahTimingFileException('ayah rows do not match the surah');
@@ -191,15 +194,15 @@ final class TaybahTimingImporter
 
         $this->assertContiguous($file->ayahs);
 
-        $lastEnd = $file->ayahs[$count - 1]->endMs;
+        $lastEnd = $file->ayahs[count($file->ayahs) - 1]->endMs;
         $measured = $file->measuredDurationMs;
 
         if ($lastEnd > $measured + self::MAX_OVERRUN_MS || $measured - $lastEnd > max(self::MIN_TAIL_MS, self::TAIL_SHARE * $measured)) {
             throw new TaybahTimingFileException('timings do not fit the audio');
         }
 
-        $firstVerseId = ChapterVerseCounts::firstVerseId($chapter);
-        $lastVerseId = ChapterVerseCounts::verseId($chapter, $count);
+        $firstVerseId = ChapterVerseCounts::verseId($chapter, $firstAyah);
+        $lastVerseId = ChapterVerseCounts::verseId($chapter, $lastAyah);
         $wordCounts = $this->wordLayouts->wordCountsForVerses(
             (int) config('quran.recitation_timings.word_count_mushaf_id'),
             $firstVerseId,

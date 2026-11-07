@@ -663,3 +663,58 @@ it('names way2quran among the kinds an unknown --kind is refused with', function
         ->expectsOutputToContain('Use qf, mp3quran or way2quran.')
         ->assertFailed();
 });
+
+/**
+ * A recitation whose chapter 112 file records only ayahs 2 to 4 (ADR 0077 amendment), and a timing file for exactly those.
+ *
+ * @param  list<int>  $keepIndexes  zero-based ayah indexes the timing file lists
+ */
+function partialTimingFixture(array $keepIndexes): Recitation
+{
+    $recitation = timingRecitation('mp3quran', '253');
+    $audio = timingAudio($recitation, 112, timingUrl('mp3quran', '253', 112));
+    $audio->update(['first_ayah' => 2, 'last_ayah' => 4]);
+    timingWordLayouts(112, [2, 2, 2, 2]);
+
+    $document = timingDocument('mp3quran', '253', 112, [2, 2, 2, 2]);
+    $ayahs = [];
+
+    foreach ($keepIndexes as $position => $index) {
+        $ayah = $document['ayahs'][$index];
+        $ayah['start_ms'] = $position * 1000;
+        $ayah['end_ms'] = ($position + 1) * 1000;
+        $ayahs[] = $ayah;
+    }
+
+    $document['ayahs'] = $ayahs;
+    $document['audio']['measured_duration_ms'] = count($ayahs) * 1000;
+    timingWrite('mp3quran', '253', 112, $document);
+
+    return $recitation;
+}
+
+it('imports the timings of a partial surah for exactly its recorded ayahs', function (): void {
+    partialTimingFixture([1, 2, 3]);
+
+    $report = timingImporter()->import();
+
+    expect($report->imported)->toBe(1)
+        ->and($report->hasProblems())->toBeFalse()
+        ->and(TaybahRecitationTiming::query()->orderBy('verse_id')->pluck('verse_id')->all())->toBe([
+            ChapterVerseCounts::verseId(112, 2),
+            ChapterVerseCounts::verseId(112, 3),
+            ChapterVerseCounts::verseId(112, 4),
+        ]);
+});
+
+it('skips a partial surah timing file that lists the whole surah or the wrong ayahs', function (array $keep): void {
+    partialTimingFixture($keep);
+
+    $report = timingImporter()->import();
+
+    expect($report->imported)->toBe(0)
+        ->and($report->hasProblems())->toBeTrue();
+})->with([
+    'whole surah' => [[0, 1, 2, 3]],
+    'range shifted by one' => [[0, 1, 2]],
+]);

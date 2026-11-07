@@ -13,6 +13,7 @@ import { useReaderMiniCollapse } from '@/features/reader/mini-bar-collapse';
 import { playVerse } from '../play-verse';
 import { pause, resume } from '../player';
 import { usePlayerStore } from '../playerStore';
+import { resetRangeNoticeForTests, useRangeNoticeStore } from '../range-notice';
 import { resetSkipNoticeForTests, useSkipNoticeStore } from '../skip-notice';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
@@ -623,6 +624,55 @@ describe('MiniPlayer when a surah is unavailable for the reciter (ADR 0062)', ()
         jest.useRealTimers();
       }
     });
+  });
+});
+
+describe('the partial-range notice (ADR 0077 amendment)', () => {
+  const NOTICE = 'هذا الجزء غير مسجّل لهذا القارئ';
+
+  afterEach(async () => {
+    await act(async () => {
+      resetRangeNoticeForTests();
+    });
+  });
+
+  async function showRange() {
+    await act(async () => {
+      useRangeNoticeStore.getState().show();
+    });
+  }
+
+  it('shows in the reader bar while paused, which the skip notice would not', async () => {
+    loadSurah('paused');
+    const view = await renderUi(<MiniPlayer variant="reader" />, { theme: 'light' });
+
+    await showRange();
+
+    expect(view.getByTestId('partial-range-notice')).toBeOnTheScreen();
+    expect(view.getByRole('status').props.children).toBe(NOTICE);
+    expect(flatStyle(view.getByTestId('mini-player-reader').props.style)).toMatchObject({ minHeight: 86 });
+  });
+
+  it('shows in the tabs bar while playing, in place of a skip notice', async () => {
+    loadSurah('playing');
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+
+    await showRange();
+
+    expect(view.getByTestId('partial-range-notice')).toBeOnTheScreen();
+    expect(view.queryByTestId('mini-player-notice')).toBeNull();
+  });
+
+  it('is gone once it clears', async () => {
+    loadSurah('playing');
+    const view = await renderUi(<MiniPlayer variant="tabs" />, { theme: 'light' });
+    await showRange();
+
+    await act(async () => {
+      useRangeNoticeStore.getState().clear();
+    });
+
+    expect(view.queryByTestId('partial-range-notice')).toBeNull();
   });
 });
 

@@ -15,6 +15,7 @@ import { useIdleReciter } from '../hooks/useIdleReciter';
 import { useIsStarting } from '../hooks/useIsStarting';
 import { useMiniPlayerVisible } from '../hooks/useMiniPlayerVisible';
 import { useMiniUnavailable } from '../hooks/useMiniUnavailable';
+import { useRangeNoticeMessage } from '../hooks/useRangeNoticeMessage';
 import { useSkipNoticeMessage } from '../hooks/useSkipNoticeMessage';
 import { usePlayerNames } from '../hooks/usePlayerNames';
 import { useVerseCaption } from '../hooks/useVerseCaption';
@@ -36,6 +37,7 @@ import { MiniPlayerProgressLine } from './MiniPlayerProgressLine';
 import { ReaderMiniPlayer } from './ReaderMiniPlayer';
 import { MiniPlayerTile } from './MiniPlayerTile';
 import { MiniPlayerNotice } from './MiniPlayerNotice';
+import { PartialRangeNotice } from './PartialRangeNotice';
 import { PlayerIconButton } from './PlayerIconButton';
 import { PAUSE_ICON, PLAY_ICON } from './player-icons';
 
@@ -83,7 +85,10 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
   const unavailable = useMiniUnavailable();
   // The skip notice (ADR 0062) draws only while audio plays, with the rest of the playing bar.
   const skipMessage = useSkipNoticeMessage();
-  const notice = isPlaying ? skipMessage : null;
+  // The range notice (ADR 0077 amendment) shows at any status and takes the line.
+  const rangeMessage = useRangeNoticeMessage();
+  const notice = rangeMessage ?? (isPlaying ? skipMessage : null);
+  const noticeKind = rangeMessage === null ? 'skip' : 'range';
 
   if (!visible) {
     return null;
@@ -131,6 +136,7 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
         onOpen={() => router.push('/player')}
         onToggle={onToggle}
         notice={notice}
+        noticeKind={noticeKind}
         playing={isPlaying}
         reciterName={shownReciter}
         starting={starting}
@@ -179,7 +185,11 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
           <UiText numberOfLines={1} scale="bar" tone="muted" variant={metrics.subtitle.variant} weight={metrics.subtitle.weight}>
             {subtitle}
           </UiText>
-          {notice === null ? null : <MiniPlayerNotice message={notice} testID="mini-player-notice" />}
+          {notice === null ? null : noticeKind === 'range' ? (
+            <PartialRangeNotice message={notice} />
+          ) : (
+            <MiniPlayerNotice message={notice} testID="mini-player-notice" />
+          )}
         </View>
       </Pressable>
       <PlayerIconButton

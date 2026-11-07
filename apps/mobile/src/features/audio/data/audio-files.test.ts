@@ -27,7 +27,14 @@ describe('chapterAudio', () => {
       durationMs: 60000,
       sizeBytes: 4096,
       format: 'mp3',
+      firstAyah: null,
+      lastAyah: null,
     });
+  });
+
+  it('reads the recorded ayah range of a partial surah', () => {
+    executor.run('UPDATE chapter_audio_files SET first_ayah = 1, last_ayah = 22 WHERE id = 101');
+    expect(chapterAudio(executor, 1, 2)).toMatchObject({ firstAyah: 1, lastAyah: 22 });
   });
 
   it('keeps a null size', () => {

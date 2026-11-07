@@ -173,6 +173,8 @@ final class Mp3QuranImporter
                 'size_bytes' => $file->bytes,
                 'duration_ms' => $file->durationMs,
                 'format' => self::FORMAT,
+                'first_ayah' => $file->firstAyah,
+                'last_ayah' => $file->lastAyah,
             ];
         }
 
@@ -304,7 +306,15 @@ final class Mp3QuranImporter
         $files = [];
 
         foreach ($moshaf->files as $file) {
-            $files[] = [Mp3QuranFileId::for($moshaf->moshafId, $file->surah, $this->source), $file->surah, $file->url, $file->bytes, $file->durationMs, self::FORMAT];
+            $entry = [Mp3QuranFileId::for($moshaf->moshafId, $file->surah, $this->source), $file->surah, $file->url, $file->bytes, $file->durationMs, self::FORMAT];
+
+            // Only a partial surah adds its range, so every whole-surah fingerprint is what it was before the field existed.
+            if ($file->firstAyah !== null && $file->lastAyah !== null) {
+                $entry[] = $file->firstAyah;
+                $entry[] = $file->lastAyah;
+            }
+
+            $files[] = $entry;
         }
 
         return hash('sha256', json_encode([

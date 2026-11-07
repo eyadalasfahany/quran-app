@@ -165,6 +165,9 @@ export const chapterAudioFiles = sqliteTable('chapter_audio_files', {
   sizeBytes: integer('size_bytes'),
   durationMs: integer('duration_ms').notNull(),
   format: text('format').notNull(),
+  // The recorded ayah range of a partial surah (ADR 0077 amendment). Null is the whole surah.
+  firstAyah: integer('first_ayah'),
+  lastAyah: integer('last_ayah'),
 });
 
 export const recitationTimings = sqliteTable(
