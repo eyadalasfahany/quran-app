@@ -202,3 +202,78 @@ def test_default_manifest_per_source_is_the_ingest_output():
     assert pp.default_manifest("mp3quran").name == "test-manifest-86.json"
     assert pp.default_manifest("way2quran").name == "dry-way2quran-manifest.json"
     assert pp.default_manifest("way2quran").parent == pp.INGEST_OUT
+
+
+# quality mode (plan way2quran-quality Q3)
+
+def quality_argv(inputs, *extra):
+    return argv_for(inputs, "--aligner-only", "--source-kind", "way2quran", "--quality", *extra)
+
+
+def completeness_dir(inputs, *, verdict="complete", sha=None):
+    folder = inputs["root"] / "completeness"
+    folder.mkdir(exist_ok=True)
+    real = json.loads(inputs["manifest"].read_text(encoding="utf-8"))["moshafs"][0]["files"][0]["sha256"]
+    (folder / "001.json").write_text(json.dumps({"surah": 1, "verdict": verdict, "sha256": sha or real}),
+                                     encoding="utf-8")
+    return folder
+
+
+def test_quality_is_refused_for_mp3quran_and_without_aligner_only(inputs, fakes):
+    folder = completeness_dir(inputs)
+    for argv in (argv_for(inputs, "--aligner-only", "--quality", "--completeness-dir", str(folder)),
+                 argv_for(inputs, "--source-kind", "way2quran", "--quality", "--completeness-dir", str(folder))):
+        with pytest.raises(SystemExit) as err:
+            pp.main(argv)
+        assert err.value.code == 2
+    with pytest.raises(SystemExit) as err:
+        pp.main(quality_argv(inputs))  # no --completeness-dir
+    assert err.value.code == 2
+    with pytest.raises(SystemExit) as err:
+        pp.main(argv_for(inputs, "--aligner-only", "--source-kind", "way2quran",
+                         "--completeness-dir", str(folder)))  # the folder without --quality
+    assert err.value.code == 2
+
+
+def test_quality_writes_the_quality_tool_version(inputs, fakes):
+    folder = completeness_dir(inputs)
+    assert pp.main(quality_argv(inputs, "--completeness-dir", str(folder))) == 0
+    doc = json.loads((inputs["root"] / "out" / "001.json").read_text(encoding="utf-8"))
+    assert doc["tool_version"] == "0.1.0+q1"
+
+
+def test_without_quality_the_tool_version_is_the_package_version(inputs, fakes):
+    assert pp.main(argv_for(inputs, "--aligner-only", "--source-kind", "way2quran")) == 0
+    doc = json.loads((inputs["root"] / "out" / "001.json").read_text(encoding="utf-8"))
+    assert doc["tool_version"] == "0.1.0"
+
+
+@pytest.mark.parametrize("kind", ["missing", "incomplete", "sha"])
+def test_quality_refuses_a_missing_incomplete_or_mismatched_record(inputs, fakes, capsys, kind):
+    if kind == "missing":
+        folder = inputs["root"] / "completeness"
+        folder.mkdir()
+    elif kind == "incomplete":
+        folder = completeness_dir(inputs, verdict="incomplete-end")
+    else:
+        folder = completeness_dir(inputs, sha="0" * 64)
+    assert pp.main(quality_argv(inputs, "--completeness-dir", str(folder))) == 1
+    assert not (inputs["root"] / "out" / "001.json").exists()
+    assert not (inputs["root"] / "out" / ".." / "refused").exists()
+    assert "001: ERROR:" in capsys.readouterr().err
+    assert fakes["aligner_calls"] == 0
+
+
+def test_a_quality_refusal_is_recorded_and_the_run_exits_zero(inputs, fakes, monkeypatch, capsys):
+    folder = completeness_dir(inputs)
+
+    def too_long(wav, surah, ayahs, em, pauses):
+        raise RuntimeError("CTC targets longer than the frames")
+
+    monkeypatch.setattr(pp, "align_full", too_long)
+    refused = inputs["root"] / "refused"
+    assert pp.main(quality_argv(inputs, "--completeness-dir", str(folder), "--refused-dir", str(refused))) == 0
+    record = json.loads((refused / "001.json").read_text(encoding="utf-8"))
+    assert record["stage"] == "aligner" and record["surah"] == 1 and record["schema"] == 1
+    assert not (inputs["root"] / "out" / "001.json").exists()
+    assert "REFUSED (recorded)" in capsys.readouterr().err

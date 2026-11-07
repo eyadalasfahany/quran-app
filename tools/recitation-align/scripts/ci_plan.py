@@ -2,6 +2,11 @@
 
     python3 scripts/ci_plan.py --moshafs 253,86 --chunks 6
     python3 scripts/ci_plan.py --source way2quran --moshafs 1 --chunks 6
+    python3 scripts/ci_plan.py --source way2quran --moshafs 1 --quality
+
+An empty --chunks means the source's default (6 for mp3quran, 20 for way2quran, P2). Quality mode (Way2Quran only,
+ADR 0077) is `--quality` or `QUALITY=true` in the environment; the workflow's plan step passes the environment
+only, so its command line is the same for both sources (P16). Quality mode changes nothing in the plan itself.
 
 Writes `chunks` (JSON list of {moshaf, chunk, surahs}) and `moshafs` (JSON list of ids) to $GITHUB_OUTPUT
 when it is set. Standard library only: no torch is installed for this job. A way2quran plan reads only the
@@ -30,7 +35,10 @@ def main(argv=None):
     p.add_argument("--source", choices=ci.SOURCES, default=ci.MANIFEST_SOURCE,
                    help="mp3quran (moshaf ids, the default) or way2quran (reciter ids)")
     p.add_argument("--moshafs", required=True)
-    p.add_argument("--chunks", default="6")
+    p.add_argument("--chunks", default="",
+                   help="chunks per moshaf, 1 to 20; empty: 6 for mp3quran, 20 for way2quran")
+    p.add_argument("--quality", action="store_true",
+                   help="Way2Quran quality mode (also QUALITY=true in the environment); the plan is unchanged")
     p.add_argument("--done", default="",
                    help="resume: comma-separated hand-off artifact names an earlier run uploaded")
     p.add_argument("--manifest", type=Path, default=None,
@@ -41,9 +49,12 @@ def main(argv=None):
     args = p.parse_args(argv)
     manifest_path = args.manifest or REPO / ci.MANIFEST_PATHS[args.source]
     way2quran = args.source == ci.WAY2QURAN_SOURCE
+    quality = args.quality or os.environ.get("QUALITY", "").strip().lower() == "true"
     try:
+        if quality and not way2quran:
+            raise ci.CiError("quality mode is for the way2quran source only")
         moshafs = ci.parse_moshaf_ids(args.moshafs)
-        chunks = ci.parse_chunks(args.chunks)
+        chunks = ci.parse_chunks(args.chunks, args.source)
         manifest = ci.load_json_or_none(manifest_path)
         if way2quran:
             # No API object is built for Way2Quran: the plan cannot reach MP3Quran.
@@ -63,6 +74,8 @@ def main(argv=None):
     except ci.CiError as err:
         print(f"::error::{err}", file=sys.stderr)
         return 1
+    if quality:
+        print("quality mode: completeness, then alignment of the complete surahs, then upload", file=sys.stderr)
     print(json.dumps(result, separators=(",", ":")))
     out = os.environ.get("GITHUB_OUTPUT")
     if out:

@@ -24,6 +24,8 @@ COMPLETENESS_VERDICTS = (
 EXCLUDED_REASONS = COMPLETENESS_VERDICTS[1:]
 GATE_VERDICTS = ("pass", "repaired", "no_highlight")
 SURAH_VERDICTS = ("pass", "repaired", "no_highlight", "unavailable")
+# Q3 only: a complete surah whose gate has not run (the gate lands in Q5/Q6). Never releasable.
+PENDING = "pending"
 REFUSAL_STAGES = ("anchors", "aligner")
 KNOWN_FLAGS = ("suspect-duration",)
 GATE_CHECKS = ("G0", "G1", "G2", "G3", "G4", "G5", "G6", "stretch", "pause")
@@ -116,7 +118,7 @@ def validate_reciter_report(report: dict) -> None:
         if not key.isdigit() or str(int(key)) != key or not 1 <= int(key) <= SURAH_COUNT:
             raise ValueError(f"surah key {key!r} is not a surah number")
         _require(entry, SURAH_ENTRY_KEYS, f"surah {key} entry")
-        if entry["verdict"] not in SURAH_VERDICTS:
+        if entry["verdict"] not in SURAH_VERDICTS + (PENDING,):
             raise ValueError(f"surah {key} verdict {entry['verdict']!r} is not a known verdict")
         if not _HEX64.match(str(entry["sha256"])):
             raise ValueError(f"surah {key} sha256 must be 64 hex characters")
@@ -151,6 +153,7 @@ def release_rules(report: dict, previous: dict | None = None) -> tuple[bool, lis
     # R1: every listed surah has a verdict tied to a sha256, and the report is complete and in quality mode.
     if len(surahs) != listed:
         failed.append("R1")
+    pending = [e for e in surahs.values() if e["verdict"] == PENDING]
 
     unavailable = [e for e in surahs.values() if e["verdict"] == "unavailable"]
     available = [e for e in surahs.values() if e["verdict"] != "unavailable"]
@@ -177,7 +180,7 @@ def release_rules(report: dict, previous: dict | None = None) -> tuple[bool, lis
         failed.append("R4")
     # R5: a passing A6(a) record for this exact tool_version, params_digest and code_digest.
     a6a = report["a6a"]
-    if not (
+    if pending or not (
         isinstance(a6a, dict) and a6a.get("passed") is True
         and a6a.get("tool_version") == report["tool_version"]
         and a6a.get("params_digest") == report["params_digest"]
@@ -209,6 +212,8 @@ def release_rules(report: dict, previous: dict | None = None) -> tuple[bool, lis
         "unavailable": len(unavailable),
         "cross_ayah_unrepresented": cross_unrep,
     }
+    if pending:  # present only while the gate does not exist, so a gated report keeps its keys
+        counts["pending"] = len(pending)
     return (not failed), failed, counts
 
 
@@ -229,6 +234,7 @@ def merge_reciter_report(
     *,
     previous: dict | None = None,
     duration_flags: dict | None = None,
+    allow_pending_gate: bool = False,
 ) -> dict:
     """Build the reciter report from the per-surah records under `handoff_dir`.
 
@@ -237,6 +243,8 @@ def merge_reciter_report(
     (surah number as a string → file name). Every listed surah needs a completeness record. A complete
     surah needs a gate record or a refusal. `duration_flags` ({surah: [flag]}) is supplied by Q2.
     A refused complete surah is `no_highlight` with reason "G1" (P12).
+    `allow_pending_gate` (Q3 only, until the gate exists): a complete surah with neither record becomes
+    `pending` with reason "gate-pending" and `gate: null`; the report then can never be releasable.
     """
     base = Path(handoff_dir)
     reciter_id = data_file_entry["reciter_id"]
@@ -272,6 +280,8 @@ def merge_reciter_report(
         elif refused is not None:
             validate_refusal(refused)
             verdict, reason = "no_highlight", "G1"
+        elif allow_pending_gate:
+            verdict, reason = PENDING, "gate-pending"
         else:
             raise ValueError(f"surah {surah}: complete but has no gate or refusal record")
 
@@ -325,6 +335,9 @@ def pr_markdown(report: dict) -> str:
         entries = [e for e in surahs.values() if e["verdict"] == verdict]
         ayahs = sum(e["completeness"]["ayah_count"] for e in entries)
         lines.append(f"| {verdict} | {len(entries)} | {ayahs} |")
+    pending = [e for e in surahs.values() if e["verdict"] == PENDING]
+    if pending:
+        lines.append(f"| {PENDING} | {len(pending)} | {sum(e['completeness']['ayah_count'] for e in pending)} |")
 
     lines += ["", "## Completeness (excluded)", "", "| Surah | Verdict | Heard | Of |", "| --- | --- | --- | ---: |"]
     for key in sorted(surahs, key=int):

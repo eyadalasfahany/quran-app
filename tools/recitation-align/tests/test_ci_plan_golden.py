@@ -87,3 +87,46 @@ def test_way2quran_plan_matches_the_golden(tmp_path, monkeypatch, capsys, chunks
         "--source", "way2quran", "--moshafs", "5", "--chunks", chunks, "--manifest", str(tmp_path / "none.json"),
         "--data", str(data), "--tanzil", str(TANZIL)])
     check(f"way2quran-chunks-{chunks}", produced)
+
+
+# P2: the chunks input's default is empty; the plan maps it per source (plan way2quran-quality Q3).
+
+def test_an_empty_chunks_input_gives_the_mp3quran_plan_of_six(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(ci, "Api", FakeApi)
+    php = tmp_path / "quran.php"
+    php.write_text(PHP, encoding="utf-8")
+    produced = run(tmp_path, monkeypatch, capsys, [
+        "--moshafs", "86", "--chunks", "", "--manifest", str(tmp_path / "none.json"),
+        "--php", str(php), "--tanzil", str(TANZIL)])
+    check("mp3quran-chunks-6", produced)
+
+
+def test_an_empty_chunks_input_gives_the_way2quran_plan_of_twenty(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(ci, "Api", lambda: pytest.fail("the Way2Quran plan must not build an API client"))
+    data = tmp_path / "reciters.json"
+    data.write_text(json.dumps(way2quran_data()), encoding="utf-8")
+    produced = run(tmp_path, monkeypatch, capsys, [
+        "--source", "way2quran", "--moshafs", "5", "--chunks", "", "--manifest", str(tmp_path / "none.json"),
+        "--data", str(data), "--tanzil", str(TANZIL)])
+    check("way2quran-chunks-20", produced)
+
+
+def test_quality_mode_leaves_the_way2quran_plan_unchanged(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(ci, "Api", lambda: pytest.fail("the Way2Quran plan must not build an API client"))
+    data = tmp_path / "reciters.json"
+    data.write_text(json.dumps(way2quran_data()), encoding="utf-8")
+    base = ["--source", "way2quran", "--moshafs", "5", "--manifest", str(tmp_path / "none.json"),
+            "--data", str(data), "--tanzil", str(TANZIL)]
+    monkeypatch.setenv("QUALITY", "true")  # how the workflow passes it (P16)
+    produced = run(tmp_path, monkeypatch, capsys, base)
+    check("way2quran-chunks-20", produced)
+    monkeypatch.delenv("QUALITY")
+    assert run(tmp_path, monkeypatch, capsys, [*base, "--quality"])["stdout"] == produced["stdout"]
+
+
+def test_quality_mode_is_refused_for_mp3quran(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(ci, "Api", FakeApi)
+    monkeypatch.setenv("QUALITY", "true")
+    code = load_script("ci_plan").main(["--moshafs", "86", "--manifest", str(tmp_path / "none.json"),
+                                        "--tanzil", str(TANZIL)])
+    assert code == 1 and "way2quran source only" in capsys.readouterr().err

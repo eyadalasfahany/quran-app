@@ -39,6 +39,8 @@ WAY2QURAN_SCHEMA = 1
 WAY2QURAN_HAFS_FOLDER = "hafs-an-asim"
 LOW_CONFIDENCE = 0.4
 MAX_CHUNKS = 20
+# The chunks input's default is empty (P2): each source has its own default.
+DEFAULT_CHUNKS = {MANIFEST_SOURCE: 6, WAY2QURAN_SOURCE: 20}
 MOSHAF_IDS_RE = re.compile(r"[0-9]+(,[0-9]+)*")
 PHP_HEAD_RE = r"'{key}'\s*=>\s*\["
 DONE_PATTERNS = {
@@ -84,7 +86,11 @@ def parse_moshaf_ids(text: str) -> list[int]:
     return ids
 
 
-def parse_chunks(value: str) -> int:
+def parse_chunks(value: str, source: str | None = None) -> int:
+    """Chunks per moshaf. An empty value means the source's default (6 for mp3quran, 20 for way2quran)."""
+    if source is not None and not value.strip():
+        check_source(source)
+        return DEFAULT_CHUNKS[source]
     if not re.fullmatch(r"[0-9]+", value.strip()):
         raise CiError(f"chunks must be an integer, got {value!r}")
     chunks = int(value)
@@ -347,11 +353,14 @@ def _content(manifest: dict[str, Any]) -> dict[str, Any]:
 
 
 def merge_manifest(committed: dict[str, Any] | None, parts: list[dict[str, Any]], moshaf_id: int,
-                   source: str = MANIFEST_SOURCE) -> dict[str, Any]:
+                   source: str = MANIFEST_SOURCE, *, surah_list: list[int] | None = None) -> dict[str, Any]:
     """Replace one moshaf's record with the union of its chunk parts. Other moshafs are untouched.
 
     `source` is the manifest's source string (mp3quran or way2quran, ADR 0074); every part and the committed
     manifest (when it has a source) must carry it. A missing committed manifest (`None`) starts a new one.
+
+    `surah_list` (Way2Quran quality mode, ADR 0077) replaces the parts' list with the reciter's remaining
+    surahs after exclusions; the default keeps the parts' list, so a partial reciter is still refused.
 
     Refuses: a part for another moshaf, metadata that differs between parts, a surah listed twice, a
     surah outside surah_list, a missing surah (never ship a partial reciter), a public_base mismatch.
@@ -385,6 +394,8 @@ def merge_manifest(committed: dict[str, Any] | None, parts: list[dict[str, Any]]
     if committed is not None and "source" in committed and committed["source"] != source:
         raise CiError(f"the committed manifest is not {SOURCE_LABELS[source]} manifest")
 
+    if surah_list is not None:
+        meta = {**meta, "surah_list": sorted(surah_list)}
     surah_list = sorted(int(s) for s in meta["surah_list"])
     files: dict[int, dict[str, Any]] = {}
     for record in records:
@@ -431,10 +442,13 @@ def write_text_atomic(path: Path, text: str) -> None:
         raise
 
 
-def check_aligned(aligned_dir: Path, surahs: list[int]) -> None:
-    """Every surah of the reciter has an aligned NNN.json, and no other surah is present."""
+def check_aligned(aligned_dir: Path, surahs: list[int], refused: frozenset[int] | set[int] = frozenset()) -> None:
+    """Every surah of the reciter has an aligned NNN.json, and no other surah is present.
+
+    `refused` (quality mode, P12): surahs the aligner refused. They have no aligned file and are not an error.
+    """
     found = {int(m.group(1)) for p in aligned_dir.glob("*.json") if (m := re.fullmatch(r"(\d{3})\.json", p.name))}
-    missing = [s for s in surahs if s not in found]
+    missing = [s for s in surahs if s not in found and s not in refused]
     if missing:
         raise CiError(f"aligned output missing for surah(s) {missing}; refusing a partial reciter")
     extra = sorted(found - set(surahs))

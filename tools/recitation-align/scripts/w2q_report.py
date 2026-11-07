@@ -1,10 +1,13 @@
 """Way2Quran quality-mode reports (plan way2quran-quality Q1).
 
   merge     --reciter ID --handoff DIR --out PATH --run-id ID [--previous PATH] [--reciters PATH]
+            [--allow-pending-gate]
   markdown  --report PATH --out FILE
 
 `merge` reads the per-surah records under DIR (completeness/, gate/, refused/) and the reciter's entry in
 `way2quran_reciters.json`, then writes the reciter report. `markdown` writes the PR body.
+`--allow-pending-gate` (Q3, until the gate exists): a complete surah with no gate record is `pending`, and the
+report is never releasable.
 """
 
 import argparse
@@ -12,6 +15,7 @@ import json
 import sys
 from pathlib import Path
 
+from recitation_align.completeness import duration_flags
 from recitation_align.report import merge_reciter_report, pr_markdown, validate_reciter_report
 
 TOOL = Path(__file__).resolve().parent.parent
@@ -30,7 +34,11 @@ def cmd_merge(args) -> int:
         return 2
     entry = {"reciter_id": args.reciter, "files": matches[0]["files"]}
     previous = json.loads(Path(args.previous).read_text(encoding="utf-8")) if args.previous else None
-    report = merge_reciter_report(Path(args.handoff), entry, args.run_id, previous=previous)
+    records = [json.loads(p.read_text(encoding="utf-8"))
+               for p in sorted((Path(args.handoff) / "completeness").glob("[0-9][0-9][0-9].json"))]
+    report = merge_reciter_report(Path(args.handoff), entry, args.run_id, previous=previous,
+                                  duration_flags=duration_flags(records),
+                                  allow_pending_gate=args.allow_pending_gate)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(_dump(report), encoding="utf-8")
     rel = report["release"]
@@ -57,6 +65,7 @@ def main(argv=None) -> int:
     m.add_argument("--run-id", required=True)
     m.add_argument("--previous", default=None)
     m.add_argument("--reciters", default=str(DEFAULT_RECITERS))
+    m.add_argument("--allow-pending-gate", action="store_true")
     m.set_defaults(func=cmd_merge)
 
     k = sub.add_parser("markdown")

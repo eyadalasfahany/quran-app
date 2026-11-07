@@ -27,6 +27,11 @@ MP3Quran's (see `default_dirs` and `emissions_file`).
 
 Quality check (printed): share of published ayah starts (ayahs 2..N) within 1 s of an audio pause,
 and ayahs whose words have a mean confidence below 0.4 (basmala excluded). Keys and counts only.
+
+With --quality (Way2Quran and --aligner-only only, ADR 0077) the run reads a completeness record per surah from
+--completeness-dir first. A surah whose record is missing, is not `complete` or is of another sha256 is a tool
+error (exit 1, nothing written). The aligned documents carry `tool_version` `0.1.0+<QUALITY_VERSION>`. A surah
+the aligner refuses is not a failure: it writes `refused/NNN.json` (--refused-dir) and the run exits 0 (P12).
 """
 
 import argparse
@@ -46,6 +51,9 @@ from recitation_align.audio import file_sha256, load_wav16k
 from recitation_align.models import ALIGN_MODEL, ALIGN_REVISION
 from recitation_align.pauses import DEFAULT_MIN_SILENCE_S, DEFAULT_NOISE_DB, cached_pauses
 from recitation_align.published import Normalised, PublishedError, normalise
+from recitation_align.quality import tool_version as quality_tool_version
+from recitation_align.report import SCHEMA as REPORT_SCHEMA
+from recitation_align.report import validate_refusal
 from recitation_align.snap import SNAP_WINDOW_MS, snap_to_pauses
 from recitation_align.text import load_tanzil
 
@@ -69,6 +77,11 @@ SETTINGS = dict(max_tokens=MAX_TOKENS, lookahead_tokens=LOOKAHEAD_TOKENS, slack=
 
 class SurahRefused(Exception):
     """A surah that cannot be produced. Printed as a reason; the batch goes on."""
+
+
+class QualityInputError(Exception):
+    """Quality mode: the completeness record a surah needs is missing, not complete or of another file.
+    A tool error, not a verdict: the run exits non-zero."""
 
 
 def distance_to_pauses(t: float, pauses: list[tuple[float, float]]) -> float:
@@ -179,7 +192,7 @@ def default_dirs(source_kind: str, ident: int, *, aligner_only: bool) -> dict[st
         base = TOOL_DIR / "out" / "published" / str(ident)
         audio = INGEST_OUT / "audio" / f"mp3quran-{ident}"
         out = base / ("aligner-only" if aligner_only else "aligned")
-    return {"raw": base, "audio": audio, "out": out, "pauses": base / "pauses"}
+    return {"raw": base, "audio": audio, "out": out, "pauses": base / "pauses", "refused": base / "refused"}
 
 
 def default_manifest(source_kind: str) -> Path:
@@ -201,7 +214,7 @@ def write_surah(surah: int, args, *, audio: Path, entry: dict, duration_ms: int,
     """Write the aligned NNN.json for one surah and return its printed summary."""
     doc = {
         "surah": surah,
-        "tool_version": __version__,
+        "tool_version": quality_tool_version() if getattr(args, "quality", False) else __version__,
         "align_model": {"id": ALIGN_MODEL, "revision": ALIGN_REVISION},
         "audio": {"file": audio.name, "bytes": entry["bytes"], "sha256": entry["sha256"],
                   "duration_ms": duration_ms},
@@ -231,15 +244,44 @@ def write_surah(surah: int, args, *, audio: Path, entry: dict, duration_ms: int,
     }
 
 
+def check_completeness(surah: int, args, entry: dict) -> None:
+    """Quality mode: the surah's completeness record must exist, say `complete` and match the manifest sha256."""
+    path = args.completeness_dir / f"{surah:03d}.json"
+    if not path.is_file():
+        raise QualityInputError(f"no completeness record for surah {surah} in {args.completeness_dir}")
+    record = json.loads(path.read_text(encoding="utf-8"))
+    if record.get("verdict") != "complete":
+        raise QualityInputError(f"surah {surah} is not complete (completeness verdict {record.get('verdict')!r})")
+    if record.get("sha256") != entry["sha256"]:
+        raise QualityInputError(f"surah {surah}: the completeness record is of another file (sha256 differs)")
+
+
+def write_refusal(surah: int, args, reason: str) -> None:
+    """Quality mode (P12): a refused surah is a gate verdict (G1), recorded for the report."""
+    record = {"schema": REPORT_SCHEMA, "surah": surah, "stage": "aligner", "reason": reason}
+    validate_refusal(record)
+    args.refused_dir.mkdir(parents=True, exist_ok=True)
+    (args.refused_dir / f"{surah:03d}.json").write_text(
+        json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank: int) -> dict:
-    entry = load_entry(manifest, args.moshaf, surah)
+    quality = getattr(args, "quality", False)
+    # In quality mode a missing or mismatched input is a tool error; only the aligner's own refusals are verdicts.
+    fault = QualityInputError if quality else SurahRefused
+    try:
+        entry = load_entry(manifest, args.moshaf, surah)
+    except SurahRefused as err:
+        raise fault(str(err)) from err
     audio = args.audio_dir / f"{surah:03d}.mp3"
     if not audio.is_file():
-        raise SurahRefused(f"audio not found: {audio.name}")
+        raise fault(f"audio not found: {audio.name}")
     sha = file_sha256(audio)
     if sha != entry["sha256"] or audio.stat().st_size != entry["bytes"]:
-        raise SurahRefused("local audio does not match the ingest manifest (sha256 or bytes)")
+        raise fault("local audio does not match the ingest manifest (sha256 or bytes)")
     duration_ms = entry["duration_ms"]
+    if quality:
+        check_completeness(surah, args, entry)
 
     cache = emissions_file(args.emissions_dir, args.source_kind, args.moshaf, surah)
     key = emission_key(sha)
@@ -388,7 +430,20 @@ def main(argv: list[str] | None = None) -> int:
                    help="align a surah whose published timings are refused with the whole-surah aligner")
     p.add_argument("--aligner-only", action="store_true",
                    help="no published file: align every surah with the whole-surah aligner (source aligner)")
+    p.add_argument("--quality", action="store_true",
+                   help="Way2Quran quality mode (needs --aligner-only and --completeness-dir, ADR 0077)")
+    p.add_argument("--completeness-dir", type=Path, default=None,
+                   help="with --quality: NNN.json completeness records (from w2q_completeness.py)")
+    p.add_argument("--refused-dir", type=Path, default=None,
+                   help="with --quality: where refused/NNN.json go (default beside the aligned folder)")
     args = p.parse_args(argv)
+    if args.quality:
+        if args.source_kind != "way2quran" or not args.aligner_only:
+            p.error("--quality needs --source-kind way2quran --aligner-only")
+        if args.completeness_dir is None:
+            p.error("--quality needs --completeness-dir")
+    elif args.completeness_dir is not None or args.refused_dir is not None:
+        p.error("--completeness-dir and --refused-dir need --quality")
     if args.aligner_only and args.fallback_aligner:
         p.error("--fallback-aligner has no meaning with --aligner-only")
     if args.source_kind == "way2quran" and not args.aligner_only:
@@ -403,6 +458,7 @@ def main(argv: list[str] | None = None) -> int:
     args.raw_dir = args.raw_dir or dirs["raw"]
     args.out_dir = args.out_dir or dirs["out"]
     args.pauses_dir = args.pauses_dir or dirs["pauses"]
+    args.refused_dir = args.refused_dir or dirs["refused"]
 
     ayahs = load_tanzil(args.tanzil)
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
@@ -411,7 +467,16 @@ def main(argv: list[str] | None = None) -> int:
     for surah in sorted(set(args.surahs)):
         try:
             r = run_surah(surah, args, manifest, ayahs, vocab, blank)
+        except QualityInputError as err:
+            failures += 1
+            print(f"{surah:03d}: ERROR: {err}", file=sys.stderr)
+            continue
         except SurahRefused as err:
+            if getattr(args, "quality", False):
+                # P12: a refusal is a verdict (G1), not a crash. The chunk goes on and the report records it.
+                write_refusal(surah, args, str(err))
+                print(f"{surah:03d}: REFUSED (recorded): {err}", file=sys.stderr)
+                continue
             failures += 1
             print(f"{surah:03d}: REFUSED: {err}", file=sys.stderr)
             continue
