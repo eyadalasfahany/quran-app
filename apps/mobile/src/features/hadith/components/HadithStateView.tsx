@@ -4,13 +4,15 @@ import { EmptyState, type IconName } from '@/shared/ui';
 
 import { HadithListSkeleton } from './HadithListSkeleton';
 
-type StateKind = 'loading' | 'offlineEmpty' | 'error' | 'savedEmpty' | 'noResults';
+type StateKind = 'loading' | 'offlineEmpty' | 'error' | 'savedEmpty' | 'noResults' | 'notFound';
 
 // Frames HadithCollLoading, HadithCollOffline, HadithCollError, HadithCollSavedEmpty and HadithCollSearchEmpty.
+// notFound has no frame: a collection, book, chapter or hadith that is not in the device's packs.
 // The shared EmptyState draws a 48 point icon, not the frames' 120 point star (Open question 11).
 const CLOUD_OFF: IconName = { ios: 'icloud.slash', android: 'cloud_off' };
 const BOOKMARK: IconName = { ios: 'bookmark', android: 'bookmark' };
 const SEARCH: IconName = { ios: 'magnifyingglass', android: 'search' };
+const BOOK: IconName = { ios: 'book.closed', android: 'menu_book' };
 
 const STATES = {
   offlineEmpty: {
@@ -36,6 +38,12 @@ const STATES = {
     body: 'hadith.states.noResultsBody',
     action: null,
     icon: SEARCH,
+  },
+  notFound: {
+    title: 'hadith.states.notFoundTitle',
+    body: 'hadith.states.notFoundBody',
+    action: 'hadith.states.browse',
+    icon: BOOK,
   },
 } as const;
 

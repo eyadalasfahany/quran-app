@@ -142,6 +142,12 @@ export default function RootLayout() {
         <Stack.Screen name="duas/mine/index" options={pushOptions} />
         <Stack.Screen name="duas/mine/[id]" options={pushOptions} />
         <Stack.Screen name="duas/mine/edit" options={sheetScreenOptions} />
+        <Stack.Screen name="hadith/index" options={pushOptions} />
+        <Stack.Screen name="hadith/search" options={pushOptions} />
+        <Stack.Screen name="hadith/downloads" options={sheetScreenOptions} />
+        <Stack.Screen name="hadith/[collection]/index" options={pushOptions} />
+        <Stack.Screen name="hadith/[collection]/books/[book]/index" options={pushOptions} />
+        <Stack.Screen name="hadith/[collection]/books/[book]/chapters/[chapter]" options={pushOptions} />
         <Stack.Screen name="settings/suggest" options={sheetScreenOptions} />
         <Stack.Screen name="sibha" options={pushOptions} />
         <Stack.Screen name="reminders" options={pushOptions} />

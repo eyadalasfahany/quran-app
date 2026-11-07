@@ -1722,7 +1722,14 @@
       "startFor": "Download {{title}}",
       "progress": "Downloading · {{percent}}",
       "retry": "Retry",
-      "offlineUnavailable": "Unavailable offline"
+      "offlineUnavailable": "Unavailable offline",
+      "sheetTitle": "Download collection",
+      "size": "Size",
+      "wifiOnly": "Wi-Fi only",
+      "cancel": "Cancel",
+      "close": "Close",
+      "offlineNote": "The collection works offline once downloaded.",
+      "waitWifi": "Download starts when you are on Wi-Fi."
     },
     "reader": {
       "numberLabel": "Hadith {{number}}",
@@ -1742,6 +1749,7 @@
       "open": "Open source"
     },
     "saved": {
+      "title": "Saved",
       "mark": "Saved",
       "unverified": "Unverified",
       "previouslySaved": "Previously saved hadith",
@@ -1763,7 +1771,9 @@
       "savedEmptyBody": "Tap the save icon on any hadith to find it here.",
       "browse": "Browse collections",
       "noResultsTitle": "No results",
-      "noResultsBody": "Try another word or choose “All”."
+      "noResultsBody": "Try another word or choose “All”.",
+      "notFoundTitle": "Not available",
+      "notFoundBody": "The collection may not be downloaded on this device."
     },
     "details": {
       "title": "Source and details",
@@ -1771,6 +1781,11 @@
       "book": "Book",
       "number": "Hadith number",
       "source": "Source"
+    },
+    "list": {
+      "search": "Search hadith",
+      "downloads": "Downloads",
+      "credit": "Source: fawazahmed0/hadith-api · Unlicense"
     }
   }
 }

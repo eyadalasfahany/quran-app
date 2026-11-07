@@ -56,6 +56,16 @@ describe('HadithStateView', () => {
     expect(screen.getByRole('button', { name: 'تصفّح المجموعات' })).toBeOnTheScreen();
   });
 
+  it('notFound shows the title, the body and a browse action', async () => {
+    const onAction = jest.fn();
+    await renderUi(<HadithStateView kind="notFound" onAction={onAction} />);
+    expect(screen.getByText('المحتوى غير متوفر')).toBeOnTheScreen();
+    expect(screen.getByText('قد لا تكون المجموعة محمّلة على هذا الجهاز.')).toBeOnTheScreen();
+    await press(screen.getByRole('button', { name: 'تصفّح المجموعات' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(iconNames()).toContain('book.closed');
+  });
+
   it('noResults shows no action', async () => {
     await renderUi(<HadithStateView kind="noResults" onAction={jest.fn()} />);
     expect(screen.queryByRole('button')).toBeNull();

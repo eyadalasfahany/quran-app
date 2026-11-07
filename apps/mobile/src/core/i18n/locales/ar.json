@@ -1751,7 +1751,14 @@
       "startFor": "تنزيل {{title}}",
       "progress": "جارٍ التنزيل · {{percent}}",
       "retry": "إعادة المحاولة",
-      "offlineUnavailable": "غير متاح دون اتصال"
+      "offlineUnavailable": "غير متاح دون اتصال",
+      "sheetTitle": "تنزيل المجموعة",
+      "size": "الحجم",
+      "wifiOnly": "على شبكة Wi-Fi فقط",
+      "cancel": "إلغاء",
+      "close": "إغلاق",
+      "offlineNote": "تعمل المجموعة بعد التنزيل دون إنترنت.",
+      "waitWifi": "يبدأ التنزيل عند الاتصال بشبكة Wi-Fi."
     },
     "reader": {
       "numberLabel": "حديث رقم {{number}}",
@@ -1771,6 +1778,7 @@
       "open": "فتح المصدر"
     },
     "saved": {
+      "title": "المحفوظات",
       "mark": "محفوظ",
       "unverified": "غير مؤكد",
       "previouslySaved": "حديث محفوظ سابقًا",
@@ -1792,7 +1800,9 @@
       "savedEmptyBody": "اضغط على أيقونة الحفظ في أي حديث لتجده هنا.",
       "browse": "تصفّح المجموعات",
       "noResultsTitle": "لا توجد نتائج",
-      "noResultsBody": "جرّب كلمة أخرى أو اختر «الكل»."
+      "noResultsBody": "جرّب كلمة أخرى أو اختر «الكل».",
+      "notFoundTitle": "المحتوى غير متوفر",
+      "notFoundBody": "قد لا تكون المجموعة محمّلة على هذا الجهاز."
     },
     "details": {
       "title": "المصدر والتفاصيل",
@@ -1800,6 +1810,11 @@
       "book": "الكتاب",
       "number": "رقم الحديث",
       "source": "المصدر"
+    },
+    "list": {
+      "search": "بحث في الحديث",
+      "downloads": "التنزيلات",
+      "credit": "المصدر: fawazahmed0/hadith-api · Unlicense"
     }
   }
 }
