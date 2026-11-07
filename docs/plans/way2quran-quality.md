@@ -136,16 +136,17 @@ These are all JSON, UTF-8, with sorted keys where written by tools. No Quran tex
 {"schema": 1, "surah": 16, "file": "016.mp3", "sha256": "…", "bytes": 19983169, "duration_ms": 1248000,
  "source_last_modified": "…", "first_sound_s": 0.4, "last_sound_s": 1247.1,
  "opening": {"words": 6, "scores": [51.1, 53.1, 53.1, 53.1], "heard": false, "at_s": null,
-             "probe": {"windows": 2, "score": 53.1, "heard": false}},
+             "letters_key_words": null,
+             "probe": {"windows": [[0.4, 16.4], [7.4, 23.4], [14.4, 30.4]], "score": 37.5, "heard": false}},
  "ending": {"words": 6, "scores": [52.6, 58.1], "heard": false, "at_s": null,
-            "probe": {"windows": 2, "score": 52.6, "heard": false}},
+            "probe": {"windows": [[1217.1, 1233.1], [1224.1, 1240.1], [1231.1, 1247.1]], "score": 44.7, "heard": false}},
  "first_heard_ayah": 53, "last_heard_ayah": 119, "ayah_count": 128, "ending_at_s": null, "trailing_s": null,
  "windows": {"head": 4, "tail": 10}, "asr_calls_extra": 12, "ms_per_letter": 160,
  "verdict": "incomplete-both", "check": "completeness-2|tarteel-ai/whisper-base-ar-quran@5c3c53f",
  "tool_version": "0.1.0+q1", "seconds": 61.2}
 ```
 
-`probe` is null when not run: when the first 30 s head or tail window fails, two overlapping 16 s windows are transcribed (Q2b, because the ASR stops at 220 tokens and a dense 30 s window loses its last seconds). `verdict` is one of `complete`, `incomplete-start`, `incomplete-end`, `incomplete-both`, `incomplete-middle` and `unverified`. The `suspect-duration` flag is added at report merge, because it needs the reciter's median.
+`probe` is null when not run: when the first 30 s head or tail window scores below 90, three overlapping 16 s windows over 30 s are transcribed (the head probe adds up to 3 windows starting at pauses in the opening). A key's score is the lowest of partial match, in-order coverage of the key (LCS) and reaching the key's outer edge, so a fragment can never pass. Each key also has a long form (twice the words), and surahs whose ayah 1 is only disjoined letters get an extra opening key after them (`letters_key_words`). The probes were added (Q2b, because the ASR stops at 220 tokens and a dense 30 s window loses its last seconds). `verdict` is one of `complete`, `incomplete-start`, `incomplete-end`, `incomplete-both`, `incomplete-middle` and `unverified`. The `suspect-duration` flag is added at report merge, because it needs the reciter's median.
 
 **Anchors report**: key `anchors` inside `aligned/NNN.json`. It is written only with `--quality`, and the export ignores it.
 

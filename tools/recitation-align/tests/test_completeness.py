@@ -27,13 +27,15 @@ def ayahs():
 class FakeFile:
     """Surah `surah`, ayahs first..last, read at `pace` s per word from `lead` s. `filler` extra words follow."""
 
-    def __init__(self, ayahs, surah, first=1, last=None, pace=0.4, lead=1.0, filler=0, noise=False, tail_gap=1.0):
+    def __init__(self, ayahs, surah, first=1, last=None, pace=0.4, lead=1.0, filler=0, noise=False, tail_gap=1.0,
+                 cap=None, loop_until=None, lost_ayahs=()):
         n = max(a for s, a in ayahs if s == surah)
         last = last or n
         words = []
         if first == 1 and surah not in (1, 9):
             words += norm(ayahs[(1, 1)]).split()
-        words += [w for a, w in C.surah_words(surah, ayahs) if first <= a <= last]
+        # ayahs in `lost_ayahs` are recited but the ASR renders each of their words as one letter
+        words += ["ك" if a in lost_ayahs else w for a, w in C.surah_words(surah, ayahs) if first <= a <= last]
         if filler:
             words += [w for _, w in C.surah_words(1, ayahs)] * filler
         if noise:
@@ -43,6 +45,10 @@ class FakeFile:
         self.end = lead + len(words) * pace
         self.calls: list[tuple[float, float]] = []
         self.length_s = self.end + tail_gap
+        self.cap = cap  # the ASR token cap: only the first `cap` words of a window are transcribed
+        # an ASR repetition loop: a window longer than a probe window that holds sound before `loop_until` s gives
+        # one letter repeated; words before `loop_until` are never transcribed
+        self.loop_until = loop_until
 
     @staticmethod
     def _noisy(word):
@@ -59,9 +65,12 @@ class FakeFile:
 
     def text(self, window):
         lo, hi = window
-        return " ".join(
-            w for i, w in enumerate(self.words) if lo <= self.lead + (i + 0.5) * self.pace < hi
-        )
+        if self.loop_until is not None:
+            if hi - lo > C.PROBE_S and lo < self.loop_until:
+                return " ".join(["ك"] * 150)
+            lo = max(lo, self.loop_until)
+        words = [w for i, w in enumerate(self.words) if lo <= self.lead + (i + 0.5) * self.pace < hi]
+        return " ".join(words[: self.cap] if self.cap else words)
 
     def transcribe(self, windows):
         self.calls += list(windows)
@@ -174,7 +183,8 @@ def test_the_window_caps_hold(ayahs):
     assert fake.end > 300 + 120
     rec = run(ayahs, 16, fake)
     assert rec["windows"] == {"head": 4, "tail": 10}
-    assert rec["asr_calls_extra"] == 14 == len(fake.calls)
+    assert len(rec["opening"]["probe"]["windows"]) == 3 and len(rec["ending"]["probe"]["windows"]) == 3
+    assert rec["asr_calls_extra"] == 20 == len(fake.calls)  # 4 head, 3 head probe, 10 tail, 3 end probe
 
 
 def test_a_missing_opening_is_incomplete_start(ayahs):
@@ -213,8 +223,11 @@ def test_the_record_has_the_stored_shape(ayahs):
     rec = run(ayahs, 108, FakeFile(ayahs, 108), file="108.mp3", source_last_modified="Mon, 01 Jan 2024 00:00:00 GMT")
     assert set(rec) == COMPLETENESS_KEYS
     validate_completeness(rec)
-    assert rec["check"].startswith("completeness-1|") and rec["file"] == "108.mp3"
-    assert set(rec["opening"]) == {"words", "scores", "heard", "at_s"}
+    assert rec["check"].startswith("completeness-2|") and rec["file"] == "108.mp3"
+    assert set(rec["ending"]) == {"words", "scores", "heard", "at_s", "probe"}
+    assert set(rec["opening"]) == set(rec["ending"]) | {"letters_key_words"}
+    assert rec["opening"]["letters_key_words"] is None
+    assert rec["opening"]["probe"] is None and rec["ending"]["probe"] is None
 
 
 # --- robustness ---------------------------------------------------------------------------------------
@@ -241,3 +254,204 @@ def test_heard_ayahs_prefers_the_ayah_followed_by_its_successor(ayahs):
     # a refrain-like head: ayah 5 and ayah 6 read in order must give 5, not an earlier lookalike
     text = " ".join(norm(ayahs[(18, a)]) for a in (5, 6, 7))
     assert C.heard_ayahs(text, 18, ayahs) == (5, 7)
+
+
+# --- the end probe (plan Q2b: the ASR token cap cuts the end of a dense 30 s window) ----------------------
+
+CAP = 45  # words: a 30 s window at 0.4 s per word holds 75, a 16 s probe window 40
+
+
+def test_probe_windows_cover_30_s_in_three_overlapping_windows():
+    assert C.probe_windows(1000.0) == [(970.0, 986.0), (977.0, 993.0), (984.0, 1000.0)]
+    assert C.probe_windows(20.0, 2.0) == [(2.0, 6.0), (2.0, 13.0), (4.0, 20.0)]
+    assert C.probe_windows(10.0, 9.5) == []
+    assert C.head_probe_windows(12.0, 1000.0) == [(12.0, 28.0), (19.0, 35.0), (26.0, 42.0)]
+    assert C.head_probe_windows(12.0, 20.0) == [(12.0, 20.0), (19.0, 20.0)]
+
+
+def test_a_complete_file_cut_by_the_token_cap_is_complete_through_the_probe(ayahs):
+    fake = FakeFile(ayahs, 18, cap=CAP)
+    rec = run(ayahs, 18, fake)
+    assert rec["ending"]["scores"][0] < PARAMS["KEY_PASS"]  # the 30 s window alone fails
+    assert rec["ending"]["probe"]["heard"] and rec["ending"]["probe"]["score"] >= PARAMS["KEY_PASS"]
+    assert rec["verdict"] == "complete" and rec["last_heard_ayah"] == rec["ayah_count"]
+    assert rec["windows"]["tail"] == 1 and rec["asr_calls_extra"] == 1 + 1 + 3
+    assert rec["ending_at_s"] == pytest.approx(fake.end, abs=1.0)
+
+
+def test_the_same_file_without_the_cap_needs_no_probe(ayahs):
+    rec = run(ayahs, 18, FakeFile(ayahs, 18))
+    assert rec["verdict"] == "complete" and rec["ending"]["probe"] is None
+    assert rec["asr_calls_extra"] == 2
+
+
+def test_a_missing_ending_under_the_cap_stays_incomplete_end(ayahs):
+    fake = FakeFile(ayahs, 18, first=1, last=107, cap=CAP)
+    rec = run(ayahs, 18, fake)
+    assert rec["verdict"] == "incomplete-end"
+    assert not rec["ending"]["heard"] and not rec["ending"]["probe"]["heard"]
+    assert rec["ending"]["probe"]["score"] < PARAMS["KEY_PASS"]
+    assert rec["last_heard_ayah"] < rec["ayah_count"]
+
+
+def test_a_short_trailer_after_the_ending_still_passes_through_the_probe(ayahs):
+    fake = FakeFile(ayahs, 18, filler=1, pace=0.3, cap=CAP)  # about 9 s of other words after the surah
+    assert len(C.surah_words(1, ayahs)) * fake.pace < C.PROBE_SPAN_S - C.PROBE_S
+    rec = run(ayahs, 18, fake)
+    assert rec["ending"]["scores"][0] < PARAMS["KEY_PASS"]
+    assert rec["verdict"] == "complete" and rec["ending"]["probe"]["heard"]
+    assert rec["trailing_s"] > 5
+
+
+def test_probe_calls_are_counted_and_shared_texts_reused(ayahs):
+    fake = FakeFile(ayahs, 18, cap=CAP)
+    first, last = C.sound_bounds(fake.wav())
+    shared = {w: fake.text(w) for w in [C.head_windows(first, last)[0], C.tail_windows(last)[0]] + C.probe_windows(last, first)}
+    fake.calls.clear()
+    rec = run(ayahs, 18, fake, shared_texts=shared)
+    assert rec["verdict"] == "complete" and rec["asr_calls_extra"] == 0 and fake.calls == []
+
+
+def test_an_opening_lost_to_an_asr_loop_is_heard_through_the_head_probe(ayahs):
+    fake = FakeFile(ayahs, 18, loop_until=2.6)  # the loop covers the basmala's seconds only
+    rec = run(ayahs, 18, fake)
+    assert rec["opening"]["scores"][0] < PARAMS["KEY_PASS"]
+    assert rec["opening"]["probe"]["heard"] and fake.lead <= rec["opening"]["at_s"] < fake.lead + C.PROBE_S
+    assert rec["verdict"] == "complete" and rec["first_heard_ayah"] == 1
+    assert rec["windows"]["head"] == 1
+
+
+def test_a_missing_opening_under_an_asr_loop_stays_incomplete_start(ayahs):
+    fake = FakeFile(ayahs, 18, first=5, last=110, loop_until=2.0)
+    rec = run(ayahs, 18, fake)
+    assert rec["verdict"] == "incomplete-start"
+    assert not rec["opening"]["probe"]["heard"] and rec["opening"]["probe"]["score"] < PARAMS["KEY_PASS"]
+
+
+
+# --- the key score: coverage and edge (plan Q2b) ------------------------------------------------------
+
+def _context(surah, ayahs, upto):
+    """Normalised surah words up to (not including) word index `upto`, as one string."""
+    return " ".join(w for _, w in C.surah_words(surah, ayahs)[:upto])
+
+
+def test_a_full_key_in_context_scores_100(ayahs):
+    key = C.ending_key(2, ayahs)
+    text = _context(2, ayahs, len(C.surah_words(2, ayahs)))
+    assert C.key_score(key, text, from_end=True)[0] == 100.0
+
+
+def test_a_three_letter_fragment_of_the_key_fails(ayahs):
+    for surah, from_end in ((36, False), (18, False), (18, True), (42, False)):
+        for key, lose in C.key_set(surah, ayahs, from_end=from_end):
+            frag = key[-3:] if from_end else key[:3]
+            for text in (frag, key.split()[0], key.split()[-1]):
+                assert C.key_score(key, text, from_end=from_end, lose_outer=lose)[0] < PARAMS["KEY_PASS"], surah
+
+
+def test_a_transcript_ending_two_words_before_the_key_ends_fails(ayahs):
+    for surah in (2, 18, 55, 108):
+        n = len(C.surah_words(surah, ayahs))
+        for key, lose in C.key_set(surah, ayahs, from_end=True):
+            assert C.key_score(key, _context(surah, ayahs, n), from_end=True, lose_outer=lose)[0] >= PARAMS["KEY_PASS"]
+            assert C.key_score(key, _context(surah, ayahs, n - 2), from_end=True,
+                               lose_outer=lose)[0] < PARAMS["KEY_PASS"], surah
+
+
+def test_a_transcript_starting_two_words_after_the_key_starts_fails(ayahs):
+    for surah in (2, 18, 36, 42, 103):
+        words = [w for _, w in C.surah_words(surah, ayahs)]
+        whole = " ".join(words[:60])
+        assert max(C.key_score(k, whole, from_end=False, lose_outer=lo)[0]
+                   for k, lo in C.key_set(surah, ayahs, from_end=False)) >= PARAMS["KEY_PASS"]
+        letters = C.LETTERS_AYAHS.get(surah, 0)  # one word per letters-only ayah: those may be lost, by design
+        for k, lo in C.key_set(surah, ayahs, from_end=False):
+            start = 2 + (letters if k.split()[0] != words[0] else 0)  # two words past the start of this key
+            assert C.key_score(k, " ".join(words[start:60]), from_end=False, lose_outer=lo)[0] < PARAMS["KEY_PASS"], surah
+
+
+def test_the_letters_key_starts_after_the_letters_ayahs(ayahs):
+    words = C.surah_words(36, ayahs)
+    key, n, sim = C.letters_key(36, ayahs)
+    assert key.split()[0] == next(w for a, w in words if a == 2) and sim < PARAMS["KEY_UNIQUE"]
+    assert C.letters_key(42, ayahs)[0].split()[0] == next(w for a, w in C.surah_words(42, ayahs) if a == 3)
+    assert C.letters_key(18, ayahs) is None and C.letters_key(55, ayahs) is None
+    for surah in C.LETTERS_AYAHS:  # every listed opening is one short word per skipped ayah
+        assert all(len([w for a, w in C.surah_words(surah, ayahs) if a == k]) == 1
+                   for k in range(1, C.LETTERS_AYAHS[surah] + 1)), surah
+
+
+def test_one_lost_letters_word_is_tolerated_by_the_edge(ayahs):
+    rec = run(ayahs, 19, FakeFile(ayahs, 19, lost_ayahs=(1,)))
+    assert rec["verdict"] == "complete" and rec["opening"]["scores"][0] >= PARAMS["KEY_PASS"]
+
+
+def test_letters_rendered_as_noise_pass_on_the_letters_key(ayahs):
+    fake = FakeFile(ayahs, 42, lost_ayahs=(1, 2))  # two letters-only ayahs: two outer words lost
+    first, last = C.sound_bounds(fake.wav())
+    window0 = norm(fake.text(C.head_windows(first, last)[0]))
+    assert C.key_score(C.opening_key(42, ayahs), window0, from_end=False)[0] < PARAMS["KEY_PASS"]
+    rec = run(ayahs, 42, fake)
+    assert rec["verdict"] == "complete" and rec["opening"]["letters_key_words"] >= 6
+    assert rec["opening"]["scores"][0] >= PARAMS["KEY_PASS"] and rec["opening"]["probe"] is None
+
+
+def test_a_letters_only_transcript_does_not_pass(ayahs):
+    letters = next(w for a, w in C.surah_words(36, ayahs) if a == 1)
+    fake = FakeFile(ayahs, 36)
+    rec = C.check_file(fake.wav(), 36, ayahs, SHA, 10, lambda ws: [letters] * len(ws))
+    assert not rec["opening"]["heard"] and not rec["ending"]["heard"]
+    assert max(rec["opening"]["scores"]) < PARAMS["KEY_PASS"] and rec["opening"]["probe"]["score"] < PARAMS["KEY_PASS"]
+
+
+def test_a_file_missing_its_first_ayahs_after_the_letters_stays_incomplete_start(ayahs):
+    fake = FakeFile(ayahs, 36, first=4)
+    rec = run(ayahs, 36, fake)
+    assert rec["verdict"] == "incomplete-start" and rec["first_heard_ayah"] >= 4
+
+
+def test_one_word_lost_at_the_outer_edge_is_tolerated_two_are_not(ayahs):
+    key = C.ending_key(18, ayahs)
+    n = len(C.surah_words(18, ayahs))
+    assert C.key_score(key, _context(18, ayahs, n - 1), from_end=True)[0] >= PARAMS["KEY_PASS"]
+    assert C.key_score(key, _context(18, ayahs, n - 2), from_end=True)[0] < PARAMS["KEY_PASS"]
+
+
+def test_a_repeated_word_inside_the_key_still_passes(ayahs):
+    words = [w for _, w in C.surah_words(44, ayahs)]
+    key = C.ending_key(44, ayahs)
+    k = len(key.split())
+    text = " ".join(words[: len(words) - 2] + [words[-3]] + words[-2:])  # the third-last word read twice
+    assert len(text.split()) == len(words) + 1 and k >= 3
+    assert C.key_score(key, text, from_end=True)[0] >= PARAMS["KEY_PASS"]
+
+
+def test_head_probe_adds_windows_at_opening_pauses():
+    assert C.head_probe_windows(0.0, 1000.0, [0.6, 4.9, 9.4, 12.0, 13.5]) == [
+        (0.0, 16.0), (7.0, 23.0), (14.0, 30.0), (4.9, 20.9), (9.4, 25.4), (12.0, 28.0)]
+    wav = np.full(SAMPLE_RATE * 40, 0.1, dtype=np.float32)
+    wav[int(SAMPLE_RATE * 5.0): int(SAMPLE_RATE * 5.5)] = 0.0  # a 0.5 s pause ending at 5.5 s
+    wav[int(SAMPLE_RATE * 9.0): int(SAMPLE_RATE * 9.1)] = 0.0  # too short to count
+    assert C.opening_pauses(wav, 0.0) == [5.5]
+
+
+def test_the_key_set_holds_the_long_forms_and_the_letters_keys(ayahs):
+    keys = C.key_set(36, ayahs, from_end=False)
+    assert len(keys) == 4 and all(lo for _, lo in keys)
+    assert keys[2][0].split()[0] == next(w for a, w in C.surah_words(36, ayahs) if a == 2)
+    assert len(keys[1][0].split()) == 2 * len(keys[0][0].split())
+    short, long_ = (k for k, _ in C.key_set(103, ayahs, from_end=True))
+    n = len(C.surah_words(103, ayahs))
+    assert len(long_.split()) == min(n, 2 * len(short.split())) and long_.endswith(short)
+    assert len(C.key_set(18, ayahs, from_end=True)) == 2
+
+
+def test_a_misheard_word_in_the_key_passes_on_the_long_key(ayahs):
+    words = [w for _, w in C.surah_words(18, ayahs)]
+    key = C.ending_key(18, ayahs)
+    k = len(key.split())
+    garbled = words[: len(words) - k + 1] + ["ك"] + words[len(words) - k + 2:]  # the key's second word misheard
+    text = " ".join(garbled)
+    short, long_ = (C.key_score(kk, text, from_end=True, lose_outer=lo)[0] for kk, lo in C.key_set(18, ayahs, from_end=True))
+    assert long_ > short and long_ >= PARAMS["KEY_PASS"]
