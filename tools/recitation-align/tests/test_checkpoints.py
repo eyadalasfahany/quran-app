@@ -6,6 +6,7 @@ faked: each token is certain on its own frames and blank elsewhere.
 """
 
 import random
+import statistics
 
 import pytest
 import torch
@@ -382,7 +383,7 @@ def test_an_unresolved_pace_break_fires_the_fail_safe(monkeypatch):
 
 
 REPORT_KEYS = {"asr_model", "asr_revision", "every", "windows", "located", "repeats", "checkpoints", "cuts", "merges",
-               "held_out", "held_out_words", "pace_breaks", "repeat_candidates", "last_located_ayah",
+               "held_out", "held_out_words", "held_out_refs", "pace_breaks", "repeat_candidates", "last_located_ayah",
                "insufficient", "seconds"}
 
 
@@ -410,3 +411,10 @@ def test_anchored_align_cuts_at_checkpoints_and_reports_the_held_out_ones(monkey
     assert hw["n"] > 0 and hw["within_300ms"] == hw["n"]
     cut_ayahs = {a for a, _ in report["cuts"]}
     assert all(a not in cut_ayahs for a, _, _ in report["held_out"])
+    # the per-word refs behind held_out_words (plan Q4 review decisions): ayah, position, checkpoint ms, final ms
+    refs = report["held_out_refs"]
+    final = {(w["ayah"], w["position"]): w["start_ms"] for w in out}
+    assert len(refs) == hw["n"] and refs == sorted(refs)
+    assert all(final[(a, p)] == fin and cp >= 0 for a, p, cp, fin in refs)
+    assert sum(abs(fin - cp) <= PARAMS["G5_TOL_MS"] for _, _, cp, fin in refs) == hw["within_300ms"]
+    assert statistics.median(abs(fin - cp) for _, _, cp, fin in refs) == hw["median_ms"]

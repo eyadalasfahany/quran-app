@@ -376,7 +376,8 @@ def test_an_anchors_key_in_the_aligned_document_exports_byte_identically(tmp_pat
     plain, anchored = make_doc(2, words, duration_ms=9000), make_doc(2, words, duration_ms=9000)
     anchored["anchors"] = {"every": 4, "windows": 3, "checkpoints": [[2, 2000]], "cuts": [[2, 1980]],
                            "merges": [], "held_out": [], "held_out_words": {"n": 0, "within_300ms": 0,
-                                                                            "median_ms": None}}
+                                                                            "median_ms": None},
+                           "held_out_refs": [[2, 1, 1980, 2000]]}
     outputs = []
     for name, doc in (("plain", plain), ("anchored", anchored)):
         in_dir, out = tmp_path / name / "in", tmp_path / name / "out"

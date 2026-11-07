@@ -9,8 +9,8 @@ HEX16 = re.compile(r"^[0-9a-f]{16}$")
 
 
 def test_tool_version_is_package_version_plus_quality_version():
-    assert QUALITY_VERSION == "q1"
-    assert tool_version() == "0.1.0+q1"
+    assert QUALITY_VERSION == "q2"
+    assert tool_version() == "0.1.0+q2"
 
 
 def test_every_gate_name_is_in_params():
@@ -37,9 +37,9 @@ def test_params_digest_is_sixteen_hex_and_stable():
     assert digest == params_digest()
 
 
-def test_params_digest_is_pinned_for_q1():
+def test_params_digest_is_pinned_for_q2():
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
-    assert params_digest() == "1eca3af8c75ca85a"
+    assert params_digest() == "79d775dc947f6dbb"
 
 
 def test_params_digest_changes_when_a_parameter_changes(monkeypatch):

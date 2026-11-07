@@ -22,9 +22,10 @@ COMPLETENESS_VERDICTS = (
     "complete", "incomplete-start", "incomplete-end", "incomplete-both", "incomplete-middle", "unverified",
 )
 EXCLUDED_REASONS = COMPLETENESS_VERDICTS[1:]
-GATE_VERDICTS = ("pass", "repaired", "no_highlight")
+# `unavailable` is a gate verdict too (Q6a): G0 records, and a middle gap the gate finds after alignment.
+GATE_VERDICTS = ("pass", "repaired", "no_highlight", "unavailable")
 SURAH_VERDICTS = ("pass", "repaired", "no_highlight", "unavailable")
-# Q3 only: a complete surah whose gate has not run (the gate lands in Q5/Q6). Never releasable.
+# Q3 only (`--allow-pending-gate`): a complete surah whose gate has not run. Never releasable.
 PENDING = "pending"
 REFUSAL_STAGES = ("anchors", "aligner")
 KNOWN_FLAGS = ("suspect-duration",)
@@ -89,6 +90,9 @@ def validate_gate(record: dict, *, stored: bool = False) -> None:
     if record["verdict"] not in GATE_VERDICTS:
         raise ValueError(f"gate.verdict {record['verdict']!r} is not a known verdict")
     _require(record["checks"], GATE_CHECKS, "gate.checks")
+    if record["verdict"] == "unavailable" and (
+            len(record["reasons"]) != 1 or record["reasons"][0] not in EXCLUDED_REASONS):
+        raise ValueError("an unavailable gate record needs exactly one reason, an excluded-surah reason")
 
 
 def validate_refusal(record: dict) -> None:

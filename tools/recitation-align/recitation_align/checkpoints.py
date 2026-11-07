@@ -519,13 +519,17 @@ def anchored_align(em: torch.Tensor, surah: int, ayahs: dict, vocab: dict, blank
     held_out = [[c.ayah, round(c.frame * sec_per_frame * 1000), first_ms[c.ayah]]
                 for c in real if c.ayah not in used_ayahs and c.ayah in first_ms]
     diffs = []
+    refs = []  # [ayah, position, checkpoint ms, final ms]: the held-out words, for G5 (plan Q4 review decisions)
     for c in cps:
         if c.chunk in cut_chunks or c.chunk in rep:
             continue
         for wi, fr in c.words.items():
             k = (sw[wi][0], sw[wi][1])
             if k in word_ms:
-                diffs.append(abs(word_ms[k] - round(fr * sec_per_frame * 1000)))
+                cp_ms = round(fr * sec_per_frame * 1000)
+                diffs.append(abs(word_ms[k] - cp_ms))
+                refs.append([k[0], k[1], cp_ms, word_ms[k]])
+    refs.sort()
     tol = PARAMS["G5_TOL_MS"]
     report = {
         "asr_model": ASR_MODEL, "asr_revision": ASR_REVISION, "every": PARAMS["ASR_EVERY"],
@@ -537,6 +541,7 @@ def anchored_align(em: torch.Tensor, surah: int, ayahs: dict, vocab: dict, blank
         "held_out": held_out,
         "held_out_words": {"n": len(diffs), "within_300ms": sum(d <= tol for d in diffs),
                            "median_ms": round(statistics.median(diffs)) if diffs else None},
+        "held_out_refs": refs,
         "pace_breaks": breaks,
         "repeat_candidates": _repeat_candidates(located, aow, surah),
         "last_located_ayah": aow[max(x.we for x in kept)] if kept else None,

@@ -287,7 +287,29 @@ jobs:
             --manifest "$GITHUB_WORKSPACE/tools/mp3quran-ingest/out/dry-manifest-${RECITER}-${CHUNK}.json" \
             "${SURAH_ARGS[@]}"
 
-      - name: Upload the complete Way2Quran surahs to R2 (quality, last)
+      - name: Gate (Way2Quran quality)
+        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        working-directory: tools/recitation-align
+        env:
+          RECITER: ${{ matrix.moshaf }}
+          CHUNK: ${{ matrix.chunk }}
+          SURAHS_JSON: ${{ toJSON(matrix.surahs) }}
+          RECITATION_TORCH_THREADS: "4"
+          PYTHONUNBUFFERED: "1"
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -euo pipefail
+          INGEST="$GITHUB_WORKSPACE/tools/mp3quran-ingest/out"
+          BASE="out/way2quran/${RECITER}"
+          mapfile -t SURAHS < <(jq -r '.[] | tostring' <<< "$SURAHS_JSON")
+          # A record for every surah of the chunk: G0 for the incomplete ones, G1 for the refused ones. It runs
+          # even when no surah is complete, so the upload step always has its list.
+          uv run python scripts/w2q_gate.py --reciter "$RECITER" --surah "${SURAHS[@]}" \
+            --audio-dir "$INGEST/audio/way2quran-${RECITER}" --aligned-dir "$BASE/aligned" \
+            --completeness-dir "$BASE/completeness" --refused-dir "$BASE/refused" --asr-dir "$BASE/asr" \
+            --pauses-dir "$BASE/pauses" --out-dir "$BASE/gate"
+
+      - name: Upload the available Way2Quran surahs to R2 (quality, last)
         if: ${{ inputs.source == 'way2quran' && inputs.quality }}
         working-directory: tools/mp3quran-ingest
         env:
@@ -300,18 +322,20 @@ jobs:
           R2_PUBLIC_BASE: https://audio.taybah-app.com
         run: |
           set -euo pipefail
-          COMPLETE="$GITHUB_WORKSPACE/tools/recitation-align/out/way2quran/${RECITER}/completeness/complete-surahs.json"
-          mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' "$COMPLETE")
+          # The gate's list: every surah whose verdict is not `unavailable`. A `no_highlight` surah still uploads
+          # (its audio is available); an `unavailable` one never reaches R2 (P1).
+          AVAILABLE="$GITHUB_WORKSPACE/tools/recitation-align/out/way2quran/${RECITER}/gate/available-surahs.json"
+          mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' "$AVAILABLE")
           # An empty --surah list would mean every surah of the reciter, so an empty list uploads nothing.
           if [ "${#SURAH_ARGS[@]}" -eq 0 ]; then
-            echo "No complete surah in this chunk: nothing to upload."
+            echo "No available surah in this chunk: nothing to upload."
             exit 0
           fi
           uv run mp3quran-ingest ingest --source way2quran --reciter "$RECITER" "${SURAH_ARGS[@]}" \
             --upload --via s3 --source-dir "out/audio/way2quran-${RECITER}" \
             --manifest "out/manifest-${RECITER}-${CHUNK}.json"
           VERIFY_ARGS=()
-          while IFS= read -r SURAH; do VERIFY_ARGS+=(--surah "$SURAH"); done < <(jq -r '.[] | tostring' "$COMPLETE")
+          while IFS= read -r SURAH; do VERIFY_ARGS+=(--surah "$SURAH"); done < <(jq -r '.[] | tostring' "$AVAILABLE")
           python3 "$GITHUB_WORKSPACE/tools/recitation-align/scripts/w2q_verify_upload.py" --reciter "$RECITER" \
             --dry "out/dry-manifest-${RECITER}-${CHUNK}.json" --uploaded "out/manifest-${RECITER}-${CHUNK}.json" \
             "${VERIFY_ARGS[@]}"
@@ -497,9 +521,10 @@ jobs:
           if [ -f "checks/way2quran-${RECITER}.json" ]; then
             PREVIOUS=(--previous "checks/way2quran-${RECITER}.json")
           fi
-          # The gate does not exist yet (plan Q5/Q6): complete surahs are `pending` and nothing is releasable.
+          # Every complete surah has a gate record or a refusal (the align job's Gate step). Nothing is releasable
+          # until the A6(a) record exists (R5).
           uv run python scripts/w2q_report.py merge --reciter "$RECITER" --handoff "$RUNNER_TEMP/handoff" \
-            --out "checks/way2quran-${RECITER}.json" --run-id "$GITHUB_RUN_ID" --allow-pending-gate \
+            --out "checks/way2quran-${RECITER}.json" --run-id "$GITHUB_RUN_ID" \
             "${PREVIOUS[@]}"
 
       - name: Exclude unavailable surahs from the reciter data file (Way2Quran quality)
@@ -699,7 +724,7 @@ jobs:
           {
             head -n 1 "$RUNNER_TEMP/w2q-report.md"
             echo
-            echo "Automated quality run ${GITHUB_RUN_ID} for Way2Quran reciter ${RECITER} (ADR 0077). Only complete surahs were uploaded to R2; surahs the check found incomplete are listed below and moved to the reciter's excluded list in the data file. The gate does not exist yet, so every complete surah is pending and the reciter is not releasable. The reciter stays hidden until its id is in quran.way2quran_released_reciters."
+            echo "Automated quality run ${GITHUB_RUN_ID} for Way2Quran reciter ${RECITER} (ADR 0077). Only complete surahs were uploaded to R2; surahs the check found incomplete are listed below and moved to the reciter's excluded list in the data file. Every complete surah went through the gate; the reciter is not releasable until its A6(a) calibration record exists (R5). The reciter stays hidden until its id is in quran.way2quran_released_reciters."
             echo
             tail -n +2 "$RUNNER_TEMP/w2q-report.md"
           } > "$RUNNER_TEMP/pr-body.md"

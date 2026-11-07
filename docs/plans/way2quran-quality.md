@@ -490,6 +490,18 @@ Each step is one reviewable, committable change. Its brief records `<base>`, run
 - **Done:** the tests pass; the spliced result is recorded; the thresholds are frozen in `PARAMS`.
 - **Model:** *stronger model* (Sonnet).
 
+### Q6a review decisions (coordinator, 7 Nov 2026)
+
+- **Frozen:** `PACE_BREAK` upper bound 1.6 (was 2.0), `QUALITY_VERSION` q2 (spliced 018: the splice pair paced 1.93×;
+  unspliced surahs peak at 1.35×). Other thresholds unchanged.
+- **Anchors report:** gains `held_out_refs` = `[ayah, position, checkpoint ms, final ms]`, the exact set behind
+  `held_out_words`.
+- **Safety rule for Q7b:** a run of ≥ `GAP_G3_RUN` consecutive G3 failures that repair cannot fix makes the surah
+  `unavailable` (reason `incomplete-middle`), never `no_highlight`, so audio with a hole is never shipped. A pace
+  break alone stays a flag.
+- **Evidence the gate is strict enough:** 015 pass; 005, 018 and MP3Quran 62:017 need repair (017 also has a mistimed
+  last word in today's live timings); spliced 018 unavailable.
+
 ### Q6b. Gated export and the finalize wiring
 
 - **Files:**

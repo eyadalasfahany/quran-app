@@ -43,6 +43,12 @@ def stage(reciter: int, chunk: int, surahs: list[int], ingest_out: Path, align_o
         uploaded = uploaded_surahs(upload, reciter)
 
     wanted = {f"{s:03d}.json" for s in surahs}
+    # A surah the gate found unavailable (a middle gap, Q6a) is excluded and not uploaded: its aligned document is
+    # not handed on, because finalize refuses an aligned file for a surah that is no longer in the reciter's list.
+    gone = set()
+    for path in sorted((align_out / "gate").glob("[0-9][0-9][0-9].json")):
+        if json.loads(path.read_text(encoding="utf-8")).get("verdict") == "unavailable":
+            gone.add(path.name)
     for name in SUBDIRS:
         source = align_out / name
         if not source.is_dir():
@@ -50,8 +56,11 @@ def stage(reciter: int, chunk: int, surahs: list[int], ingest_out: Path, align_o
         target = handoff / name
         target.mkdir(parents=True, exist_ok=True)
         for path in sorted(source.glob("*.json")):
-            if path.name in wanted:  # the list file complete-surahs.json is not a record
-                shutil.copy2(path, target / path.name)
+            if path.name not in wanted:  # the list files complete-surahs.json and available-surahs.json
+                continue
+            if name == "aligned" and path.name in gone:
+                continue
+            shutil.copy2(path, target / path.name)
 
     complete_file = align_out / "completeness" / "complete-surahs.json"
     complete = sorted(json.loads(complete_file.read_text(encoding="utf-8"))) if complete_file.is_file() else []

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q1"
+QUALITY_VERSION = "q2"
 
 PARAMS: dict = {
     # G0 completeness
@@ -24,8 +24,9 @@ PARAMS: dict = {
     "TAIL_CAP_S": 300,
     "SOUND_DB": -40,
     "DURATION_FLAG": 0.7,
-    # middle gap
-    "PACE_BREAK": (0.5, 2.0),
+    # middle gap. PACE_BREAK was (0.5, 2.0); the spliced-018 experiment (Q6a) showed the splice at 1.93 x the median
+    # pace, against at most 1.35 x on the unspliced 005, 015, 017, 018 and 055, so the upper bound is 1.6.
+    "PACE_BREAK": (0.5, 1.6),
     "ADJ_JUMP": 2.0,
     "GAP_G3_RUN": 3,
     # anchors
