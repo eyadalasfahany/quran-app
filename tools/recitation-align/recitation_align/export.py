@@ -6,6 +6,9 @@ library and `recitation_align.text`, never torch, and never touches MySQL (ADR 0
 
     uv run python -m recitation_align.export --kind mp3quran --recitation-key 253 --in out/253-v7 \
         --out ../../apps/api/resources/recitation-timings/mp3quran/253
+
+Kinds that read an ingest manifest (`MANIFEST_KINDS`) take the audio URL from it. `way2quran` writes to
+apps/api/resources/recitation-timings/way2quran/ID unless --out is given (ADR 0074 decision 6).
 """
 
 import argparse
@@ -21,10 +24,15 @@ from .text import load_tanzil
 FORMAT = 1
 VOCATIVE = "يا"
 FATHA = "َ"
-KINDS = ("mp3quran", "qf")
+KINDS = ("mp3quran", "way2quran", "qf")
+MANIFEST_KINDS = ("mp3quran", "way2quran")
 SOURCES = ("aligner", "mp3quran_published")
 TOOL_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_MANIFEST = Path(__file__).resolve().parents[3] / "apps/api/resources/mp3quran/manifest.json"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_MANIFEST = REPO_ROOT / "apps/api/resources/mp3quran/manifest.json"
+DEFAULT_MANIFESTS = {"mp3quran": DEFAULT_MANIFEST,
+                     "way2quran": REPO_ROOT / "apps/api/resources/way2quran/manifest.json"}
+DEFAULT_OUT_ROOTS = {"way2quran": REPO_ROOT / "apps/api/resources/recitation-timings/way2quran"}
 DEFAULT_TANZIL = (TOOL_DIR / "../../packages/quran-text-check/data/tanzil-quran-simple-1.1.txt").resolve()
 FILE_RE = re.compile(r"(\d{3})\.json")
 
@@ -189,8 +197,8 @@ def map_segments(ws):
     return segments
 
 
-def mp3quran_audio(manifest, key, surah, aligner_audio):
-    """The manifest's audio URL for this moshaf and surah, after the hash checks."""
+def manifest_audio(manifest, key, surah, aligner_audio):
+    """The manifest's audio URL for this moshaf (or Way2Quran reciter) and surah, after the hash checks."""
     entry = None
     for moshaf in manifest.get("moshafs", []):
         if str(moshaf.get("moshaf_id")) == key:
@@ -239,10 +247,13 @@ def _parse(argv):
     parser = argparse.ArgumentParser(prog="recitation_align.export",
                                      description="Convert aligner output to committed timing files.")
     parser.add_argument("--kind", required=True, choices=KINDS)
-    parser.add_argument("--recitation-key", required=True, help="moshaf id (mp3quran) or QF reciter id (qf)")
+    parser.add_argument("--recitation-key", required=True,
+                        help="moshaf id (mp3quran), Way2Quran reciter id (way2quran) or QF reciter id (qf)")
     parser.add_argument("--in", dest="in_dir", required=True, type=Path)
-    parser.add_argument("--out", required=True, type=Path)
-    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    parser.add_argument("--out", type=Path,
+                        help="required for mp3quran and qf; way2quran defaults to recitation-timings/way2quran/ID")
+    parser.add_argument("--manifest", type=Path, default=None,
+                        help="ingest manifest for mp3quran and way2quran (default per kind)")
     parser.add_argument("--urls", type=Path)
     parser.add_argument("--tanzil", type=Path, default=DEFAULT_TANZIL)
     parser.add_argument("--surah", type=int, action="append", dest="surahs")
@@ -250,6 +261,12 @@ def _parse(argv):
     args = parser.parse_args(argv)
     if args.kind == "qf" and args.urls is None:
         parser.error("--urls is required for --kind qf")
+    if args.kind in MANIFEST_KINDS and args.manifest is None:
+        args.manifest = DEFAULT_MANIFESTS[args.kind]
+    if args.out is None:
+        if args.kind not in DEFAULT_OUT_ROOTS:
+            parser.error(f"--out is required for --kind {args.kind}")
+        args.out = DEFAULT_OUT_ROOTS[args.kind] / args.recitation_key
     if args.surahs is not None:
         for surah in args.surahs:
             if not 1 <= surah <= 114:
@@ -262,7 +279,7 @@ def main(argv=None):
     try:
         verse_ids, counts = tanzil_index(args.tanzil)
         manifest = None
-        if args.kind == "mp3quran":
+        if args.kind in MANIFEST_KINDS:
             manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
         urls = None
         if args.kind == "qf":
@@ -293,8 +310,8 @@ def main(argv=None):
             except ValueError as err:
                 raise Refused(f"invalid JSON: {err}") from err
             check_aligner(doc, surah)
-            if args.kind == "mp3quran":
-                url = mp3quran_audio(manifest, args.recitation_key, surah, doc["audio"])
+            if args.kind in MANIFEST_KINDS:
+                url = manifest_audio(manifest, args.recitation_key, surah, doc["audio"])
             else:
                 url = qf_audio(urls, surah)
             # A surah carries its own source when it has one (a published-timings batch can hold a
@@ -302,6 +319,8 @@ def main(argv=None):
             source = doc.get("source", args.source)
             if source not in SOURCES:
                 raise Refused(f"unknown source {source!r}")
+            if args.kind == "way2quran" and source != "aligner":
+                raise Refused(f"way2quran has no published timings; source must be aligner, not {source}")
             timing = build_surah(doc, file_surah=surah, kind=args.kind, key=args.recitation_key,
                                  source=source, audio_url=url, verse_ids=verse_ids, counts=counts)
             data = encode(timing)

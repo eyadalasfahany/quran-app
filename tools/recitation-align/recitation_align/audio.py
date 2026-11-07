@@ -38,7 +38,11 @@ def _read_wav(path: Path) -> np.ndarray:
 
 
 def load_wav16k(path: Path) -> np.ndarray:
-    """Return mono float32 samples at 16 kHz. Other inputs (mp3, stereo, other rates) go through ffmpeg."""
+    """Return mono float32 samples at 16 kHz. Other inputs (mp3, stereo, other rates) go through ffmpeg.
+
+    ffmpeg decodes the first audio stream only: a cover image embedded as a video stream (Way2Quran
+    files carry a PNG) is not read as audio.
+    """
     path = Path(path)
     if _is_wav16k_mono(path):
         return _read_wav(path)
@@ -46,7 +50,7 @@ def load_wav16k(path: Path) -> np.ndarray:
         out = Path(tmp) / "converted.wav"
         cmd = [
             "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
-            "-i", str(path), "-ac", "1", "-ar", str(SAMPLE_RATE),
+            "-i", str(path), "-map", "0:a:0", "-vn", "-ac", "1", "-ar", str(SAMPLE_RATE),
             "-c:a", "pcm_s16le", str(out),
         ]
         try:

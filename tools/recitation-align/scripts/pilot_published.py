@@ -18,6 +18,13 @@ boundaries snapped to pauses) and written with `source: "aligner"`. A surah whos
 many ayahs at low confidence (at least 5 and 5%) is also aligned by the aligner, which is kept only when
 it leaves fewer. The printed line says FALLBACK.
 
+With --aligner-only, no published file is read (--raw-dir is not used), there is no normaliser and no
+published refusal: every surah is aligned by the whole-surah aligner (`align_full`, then `snap_to_pauses`,
+as `run_aligner` does) and written with `source: "aligner"`, and its `published` field says
+`{"none": "aligner-only source"}`. Way2Quran publishes no timings, so it always runs this way:
+`--source-kind way2quran --moshaf RECITER_ID --aligner-only`. Its caches and outputs are kept apart from
+MP3Quran's (see `default_dirs` and `emissions_file`).
+
 Quality check (printed): share of published ayah starts (ayahs 2..N) within 1 s of an audio pause,
 and ayahs whose words have a mean confidence below 0.4 (basmala excluded). Keys and counts only.
 """
@@ -47,6 +54,7 @@ DEFAULT_TANZIL = (TOOL_DIR / "../../packages/quran-text-check/data/tanzil-quran-
 INGEST_OUT = (TOOL_DIR / "../mp3quran-ingest/out").resolve()
 SOURCE = "mp3quran_published"
 FALLBACK_SOURCE = "aligner"
+SOURCE_KINDS = ("mp3quran", "way2quran")
 # Audio this far past the last published ayah end means the published timings miss part of the
 # recitation (moshaf 86 surah 89 repeats ayahs 21-26; the timings stop 151 s before the file ends).
 # Ordinary tails (closing silence) seen on moshaf 86 stay under 27 s.
@@ -156,86 +164,41 @@ def load_entry(manifest: dict, moshaf: int, surah: int) -> dict:
     raise SurahRefused(f"moshaf {moshaf} is not in the ingest manifest")
 
 
-def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank: int) -> dict:
-    entry = load_entry(manifest, args.moshaf, surah)
-    audio = args.audio_dir / f"{surah:03d}.mp3"
-    if not audio.is_file():
-        raise SurahRefused(f"audio not found: {audio.name}")
-    sha = file_sha256(audio)
-    if sha != entry["sha256"] or audio.stat().st_size != entry["bytes"]:
-        raise SurahRefused("local audio does not match the ingest manifest (sha256 or bytes)")
-    duration_ms = entry["duration_ms"]
+def default_dirs(source_kind: str, ident: int, *, aligner_only: bool) -> dict[str, Path]:
+    """Default folders of one source. `ident` is a moshaf id (mp3quran) or a Way2Quran reciter id.
 
-    raw_path = args.raw_dir / f"raw-{surah}.json"
-    raw = json.loads(raw_path.read_text(encoding="utf-8"))
-    verse_count = sum(1 for s, _ in ayahs if s == surah)
-    refusal = None
-    try:
-        norm = normalise(raw, surah=surah, verse_count=verse_count, duration_ms=duration_ms)
-        refusal = published_refusal(norm, duration_ms)
-    except PublishedError as err:
-        refusal = f"published timings refused: {err}"
-    if refusal and not args.fallback_aligner:
-        raise SurahRefused(refusal)
-
-    cache = args.emissions_dir / f"{args.moshaf}-{surah:03d}.npz"
-    key = emission_key(sha)
-    em = load_emissions(cache, key)
-    wav = None
-    if em is None:
-        wav = load_wav16k(audio)
-        em = compute_emissions(wav)
-        save_emissions(cache, key, em)
-    mpf = ms_per_frame(duration_ms, em.shape[0])
-    pauses = cached_pauses(audio, sha, args.pauses_dir / f"{surah:03d}.pauses.json",
-                           DEFAULT_NOISE_DB, DEFAULT_MIN_SILENCE_S)
-
-    def run_aligner():
-        nonlocal wav
-        if wav is None:
-            wav = load_wav16k(audio)
-        found, rec, _decision = align_full(wav, surah, ayahs, em=em, pauses=pauses)
-        snap_to_pauses(found, pauses, window_ms=SNAP_WINDOW_MS)
-        found.sort(key=lambda w: (w["ayah"], w["position"]))
-        return found, rec
-
-    if not refusal:
-        words, recited = align_in_spans(surah, norm, ayahs=ayahs, em=em, mpf=mpf, vocab=vocab, blank=blank)
-        squeezed = force_published_starts(words, norm)
-        words.sort(key=lambda w: (w["ayah"], w["position"]))
-        if args.fallback_aligner and too_many_low(words):
-            # Published spans that leave many ayahs at low confidence may have drifted from the file
-            # (moshaf 62 surah 2: from ayah 179 on). Keep the aligner only when it does strictly better.
-            try:
-                alt, alt_recited = run_aligner()
-            except RuntimeError as err:
-                # The comparison is optional: when the aligner cannot fit the file (moshaf 12
-                # surah 2: CTC targets longer than the frames), keep the published words.
-                print(f"{surah:03d}: aligner comparison failed, keeping published spans ({err})",
-                      file=sys.stderr)
-                alt = None
-            low_pub = low_count(words)
-            low_alt = low_count(alt) if alt is not None else low_pub
-            if low_alt < low_pub:
-                refusal = (f"published spans leave {low_pub} ayahs below {LOW_CONFIDENCE}; "
-                           f"the aligner leaves {low_alt}")
-                words, recited = alt, alt_recited
-    if refusal:
-        if not words_from_aligner(refusal):
-            words, recited = run_aligner()
-        spans = ayah_spans(words, duration_ms)
-        doc_source, squeezed, published = FALLBACK_SOURCE, 0, {"refused": refusal}
-        ayah1_published, end_mismatch, dropped = None, None, None
+    mp3quran keeps the folders it has always had. Way2Quran lives under out/way2quran/ID, so its pauses
+    and outputs never meet MP3Quran's. An aligner-only MP3Quran run writes beside, not over, the
+    published outputs (`aligner-only`).
+    """
+    if source_kind == "way2quran":
+        base = TOOL_DIR / "out" / "way2quran" / str(ident)
+        audio = INGEST_OUT / "audio" / f"way2quran-{ident}"
+        out = base / "aligned"
     else:
-        spans = {a: (norm.starts[a], norm.ends[a]) for a in sorted(norm.starts)}
-        doc_source = SOURCE
-        ayah1_published, end_mismatch, dropped = (norm.ayah1_published_start_ms, norm.end_mismatch,
-                                                  norm.dropped_ayah0)
-        published = {"ayah1_published_start_ms": ayah1_published,
-                      "published_last_end_ms": norm.published_last_end_ms,
-                      "end_mismatch": end_mismatch, "dropped_ayah0": dropped,
-                      "words_squeezed": squeezed}
+        base = TOOL_DIR / "out" / "published" / str(ident)
+        audio = INGEST_OUT / "audio" / f"mp3quran-{ident}"
+        out = base / ("aligner-only" if aligner_only else "aligned")
+    return {"raw": base, "audio": audio, "out": out, "pauses": base / "pauses"}
 
+
+def default_manifest(source_kind: str) -> Path:
+    """The ingest output the aligner reads for audio hashes (a dry run writes the Way2Quran one)."""
+    name = "test-manifest-86.json" if source_kind == "mp3quran" else "dry-way2quran-manifest.json"
+    return INGEST_OUT / name
+
+
+def emissions_file(emissions_dir: Path, source_kind: str, ident: int, surah: int) -> Path:
+    """Emissions cache name. mp3quran is `{moshaf}-{surah}.npz` as before; Way2Quran adds its prefix so
+    reciter 1 never shares a file with moshaf 1."""
+    prefix = str(ident) if source_kind == "mp3quran" else f"way2quran-{ident}"
+    return emissions_dir / f"{prefix}-{surah:03d}.npz"
+
+
+def write_surah(surah: int, args, *, audio: Path, entry: dict, duration_ms: int, pauses: list,
+                words: list[dict], recited, spans: dict[int, tuple[int, int]], doc_source: str,
+                published: dict, stats: dict) -> dict:
+    """Write the aligned NNN.json for one surah and return its printed summary."""
     doc = {
         "surah": surah,
         "tool_version": __version__,
@@ -261,11 +224,110 @@ def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank:
     return {
         "surah": surah, "ayahs": len(spans), "words": len(words), "recited": recited,
         "pauses": len(pauses), "starts_checked": len(starts_s), "within_1s": within,
-        "low_conf_ayahs": low, "words_squeezed": squeezed, "dropped_ayah0": dropped,
-        "end_mismatch": end_mismatch, "ayah1_first_word_ms": first_spoken,
-        "ayah1_published_start_ms": ayah1_published, "duration_ms": duration_ms,
-        "fallback": refusal,
+        "low_conf_ayahs": low, "words_squeezed": stats["squeezed"], "dropped_ayah0": stats["dropped"],
+        "end_mismatch": stats["end_mismatch"], "ayah1_first_word_ms": first_spoken,
+        "ayah1_published_start_ms": stats["ayah1_published"], "duration_ms": duration_ms,
+        "fallback": stats["fallback"],
     }
+
+
+def run_surah(surah: int, args, manifest: dict, ayahs: dict, vocab: dict, blank: int) -> dict:
+    entry = load_entry(manifest, args.moshaf, surah)
+    audio = args.audio_dir / f"{surah:03d}.mp3"
+    if not audio.is_file():
+        raise SurahRefused(f"audio not found: {audio.name}")
+    sha = file_sha256(audio)
+    if sha != entry["sha256"] or audio.stat().st_size != entry["bytes"]:
+        raise SurahRefused("local audio does not match the ingest manifest (sha256 or bytes)")
+    duration_ms = entry["duration_ms"]
+
+    cache = emissions_file(args.emissions_dir, args.source_kind, args.moshaf, surah)
+    key = emission_key(sha)
+    em = load_emissions(cache, key)
+    wav = None
+    if em is None:
+        wav = load_wav16k(audio)
+        em = compute_emissions(wav)
+        save_emissions(cache, key, em)
+    mpf = ms_per_frame(duration_ms, em.shape[0])
+    pauses = cached_pauses(audio, sha, args.pauses_dir / f"{surah:03d}.pauses.json",
+                           DEFAULT_NOISE_DB, DEFAULT_MIN_SILENCE_S)
+
+    def run_aligner():
+        nonlocal wav
+        if wav is None:
+            wav = load_wav16k(audio)
+        found, rec, _decision = align_full(wav, surah, ayahs, em=em, pauses=pauses)
+        snap_to_pauses(found, pauses, window_ms=SNAP_WINDOW_MS)
+        found.sort(key=lambda w: (w["ayah"], w["position"]))
+        return found, rec
+
+    if args.aligner_only:
+        # No published file is read: the whole-surah aligner is the only source of timings here.
+        try:
+            words, recited = run_aligner()
+        except RuntimeError as err:
+            raise SurahRefused(f"the aligner cannot fit the file: {err}") from err
+        return write_surah(
+            surah, args, audio=audio, entry=entry, duration_ms=duration_ms, pauses=pauses,
+            words=words, recited=recited, spans=ayah_spans(words, duration_ms), doc_source=FALLBACK_SOURCE,
+            published={"none": "aligner-only source"},
+            stats={"squeezed": 0, "dropped": None, "end_mismatch": None, "ayah1_published": None,
+                   "fallback": None})
+
+    raw_path = args.raw_dir / f"raw-{surah}.json"
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    verse_count = sum(1 for s, _ in ayahs if s == surah)
+    refusal = None
+    try:
+        norm = normalise(raw, surah=surah, verse_count=verse_count, duration_ms=duration_ms)
+        refusal = published_refusal(norm, duration_ms)
+    except PublishedError as err:
+        refusal = f"published timings refused: {err}"
+    if refusal and not args.fallback_aligner:
+        raise SurahRefused(refusal)
+
+    if not refusal:
+        words, recited = align_in_spans(surah, norm, ayahs=ayahs, em=em, mpf=mpf, vocab=vocab, blank=blank)
+        squeezed = force_published_starts(words, norm)
+        words.sort(key=lambda w: (w["ayah"], w["position"]))
+        if args.fallback_aligner and too_many_low(words):
+            # Published spans that leave many ayahs at low confidence may have drifted from the file
+            # (moshaf 62 surah 2: from ayah 179 on). Keep the aligner only when it does strictly better.
+            try:
+                alt, alt_recited = run_aligner()
+            except RuntimeError as err:
+                # The comparison is optional: when the aligner cannot fit the file (moshaf 12
+                # surah 26: CTC targets longer than the frames), keep the published words.
+                print(f"{surah:03d}: aligner comparison failed, keeping published spans ({err})",
+                      file=sys.stderr)
+                alt = None
+            low_pub = low_count(words)
+            low_alt = low_count(alt) if alt is not None else low_pub
+            if low_alt < low_pub:
+                refusal = (f"published spans leave {low_pub} ayahs below {LOW_CONFIDENCE}; "
+                           f"the aligner leaves {low_alt}")
+                words, recited = alt, alt_recited
+    if refusal:
+        if not words_from_aligner(refusal):
+            words, recited = run_aligner()
+        return write_surah(
+            surah, args, audio=audio, entry=entry, duration_ms=duration_ms, pauses=pauses,
+            words=words, recited=recited, spans=ayah_spans(words, duration_ms), doc_source=FALLBACK_SOURCE,
+            published={"refused": refusal},
+            stats={"squeezed": 0, "dropped": None, "end_mismatch": None, "ayah1_published": None,
+                   "fallback": refusal})
+
+    spans = {a: (norm.starts[a], norm.ends[a]) for a in sorted(norm.starts)}
+    return write_surah(
+        surah, args, audio=audio, entry=entry, duration_ms=duration_ms, pauses=pauses,
+        words=words, recited=recited, spans=spans, doc_source=SOURCE,
+        published={"ayah1_published_start_ms": norm.ayah1_published_start_ms,
+                   "published_last_end_ms": norm.published_last_end_ms,
+                   "end_mismatch": norm.end_mismatch, "dropped_ayah0": norm.dropped_ayah0,
+                   "words_squeezed": squeezed},
+        stats={"squeezed": squeezed, "dropped": norm.dropped_ayah0, "end_mismatch": norm.end_mismatch,
+               "ayah1_published": norm.ayah1_published_start_ms, "fallback": None})
 
 
 def low_count(words: list[dict]) -> int:
@@ -308,23 +370,39 @@ def ayah_spans(words: list[dict], duration_ms: int) -> dict[int, tuple[int, int]
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    p.add_argument("--moshaf", type=int, default=86)
+    p.add_argument("--source-kind", choices=SOURCE_KINDS, default="mp3quran",
+                   help="mp3quran (moshaf ids) or way2quran (reciter ids; needs --aligner-only)")
+    p.add_argument("--moshaf", "--reciter", dest="moshaf", type=int, default=None,
+                   help="moshaf id (mp3quran, default 86) or Way2Quran reciter id")
     p.add_argument("--surah", type=int, action="append", required=True, dest="surahs")
-    p.add_argument("--manifest", type=Path, default=INGEST_OUT / "test-manifest-86.json")
+    p.add_argument("--manifest", type=Path, default=None,
+                   help="ingest manifest with the audio hashes (default: the ingest output for the source)")
     p.add_argument("--audio-dir", type=Path, default=None)
-    p.add_argument("--raw-dir", type=Path, default=None)
+    p.add_argument("--raw-dir", type=Path, default=None,
+                   help="published rows (not read with --aligner-only)")
     p.add_argument("--out-dir", type=Path, default=None)
     p.add_argument("--emissions-dir", type=Path, default=TOOL_DIR / "out" / "emissions")
     p.add_argument("--pauses-dir", type=Path, default=None)
     p.add_argument("--tanzil", type=Path, default=DEFAULT_TANZIL)
     p.add_argument("--fallback-aligner", action="store_true",
                    help="align a surah whose published timings are refused with the whole-surah aligner")
+    p.add_argument("--aligner-only", action="store_true",
+                   help="no published file: align every surah with the whole-surah aligner (source aligner)")
     args = p.parse_args(argv)
-    base = TOOL_DIR / "out" / "published" / str(args.moshaf)
-    args.audio_dir = args.audio_dir or INGEST_OUT / "audio" / f"mp3quran-{args.moshaf}"
-    args.raw_dir = args.raw_dir or base
-    args.out_dir = args.out_dir or base / "aligned"
-    args.pauses_dir = args.pauses_dir or base / "pauses"
+    if args.aligner_only and args.fallback_aligner:
+        p.error("--fallback-aligner has no meaning with --aligner-only")
+    if args.source_kind == "way2quran" and not args.aligner_only:
+        p.error("--source-kind way2quran needs --aligner-only (Way2Quran publishes no timings)")
+    if args.moshaf is None:
+        if args.source_kind == "way2quran":
+            p.error("--moshaf (the Way2Quran reciter id) is required with --source-kind way2quran")
+        args.moshaf = 86
+    dirs = default_dirs(args.source_kind, args.moshaf, aligner_only=args.aligner_only)
+    args.manifest = args.manifest or default_manifest(args.source_kind)
+    args.audio_dir = args.audio_dir or dirs["audio"]
+    args.raw_dir = args.raw_dir or dirs["raw"]
+    args.out_dir = args.out_dir or dirs["out"]
+    args.pauses_dir = args.pauses_dir or dirs["pauses"]
 
     ayahs = load_tanzil(args.tanzil)
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))

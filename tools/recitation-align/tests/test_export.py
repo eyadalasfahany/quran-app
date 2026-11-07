@@ -308,3 +308,63 @@ def test_an_unknown_surah_source_is_refused(tmp_path, tanzil):
                  "--tanzil", str(tanzil), "--urls", str(urls)])
     assert code != 0
     assert not (out / "001.json").exists()
+
+
+# way2quran: a manifest kind with its own folder and no published timings
+
+def write_way2quran_manifest(path, reciter=7, surah=2, sha=SHA, nbytes=1234):
+    manifest = {"moshafs": [{"moshaf_id": reciter, "files": [{
+        "surah": surah, "sha256": sha, "bytes": nbytes,
+        "url": f"https://audio.test/audio/way2quran/{reciter}/{surah:03d}-{sha[:16]}.mp3",
+    }]}]}
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    return path
+
+
+def test_way2quran_writes_its_kind_and_the_manifest_url(tmp_path, tanzil):
+    in_dir, out = tmp_path / "in", tmp_path / "out"
+    write_inputs(in_dir, {2: make_doc(2, simple_words(2, [2, 2, 2]), duration_ms=9000)})
+    manifest = write_way2quran_manifest(tmp_path / "w.json")
+    code = main(["--kind", "way2quran", "--recitation-key", "7", "--in", str(in_dir), "--out", str(out),
+                 "--tanzil", str(tanzil), "--manifest", str(manifest)])
+    assert code == 0
+    obj = json.loads((out / "002.json").read_text(encoding="utf-8"))
+    assert obj["kind"] == "way2quran"
+    assert obj["recitation_key"] == "7"
+    assert obj["source"] == "aligner"
+    assert obj["audio"]["url"] == "https://audio.test/audio/way2quran/7/002-" + SHA[:16] + ".mp3"
+
+
+def test_way2quran_refuses_a_hash_that_differs_from_its_manifest(tmp_path, tanzil, capsys):
+    in_dir, out = tmp_path / "in", tmp_path / "out"
+    write_inputs(in_dir, {2: make_doc(2, simple_words(2, [2, 2, 2]), duration_ms=9000)})
+    manifest = write_way2quran_manifest(tmp_path / "w.json", sha="e0" * 32)
+    code = main(["--kind", "way2quran", "--recitation-key", "7", "--in", str(in_dir), "--out", str(out),
+                 "--tanzil", str(tanzil), "--manifest", str(manifest)])
+    assert code == 1
+    assert "002: audio sha256 differs" in capsys.readouterr().err
+
+
+def test_way2quran_defaults_to_its_manifest_and_timings_folder():
+    args = export._parse(["--kind", "way2quran", "--recitation-key", "7", "--in", "x"])
+    assert args.manifest == export.REPO_ROOT / "apps/api/resources/way2quran/manifest.json"
+    assert args.out == export.REPO_ROOT / "apps/api/resources/recitation-timings/way2quran/7"
+
+
+def test_mp3quran_defaults_are_unchanged_and_out_stays_required():
+    args = export._parse(["--kind", "mp3quran", "--recitation-key", "253", "--in", "x", "--out", "y"])
+    assert args.manifest == export.REPO_ROOT / "apps/api/resources/mp3quran/manifest.json"
+    with pytest.raises(SystemExit):
+        export._parse(["--kind", "mp3quran", "--recitation-key", "253", "--in", "x"])
+
+
+def test_way2quran_refuses_a_surah_claiming_published_timings(tmp_path, tanzil, capsys):
+    in_dir, out = tmp_path / "in", tmp_path / "out"
+    doc = dict(make_doc(2, simple_words(2, [2, 2, 2]), duration_ms=9000), source="mp3quran_published")
+    write_inputs(in_dir, {2: doc})
+    manifest = write_way2quran_manifest(tmp_path / "w.json")
+    code = main(["--kind", "way2quran", "--recitation-key", "7", "--in", str(in_dir), "--out", str(out),
+                 "--tanzil", str(tanzil), "--manifest", str(manifest), "--source", "mp3quran_published"])
+    assert code == 1
+    assert "002: way2quran has no published timings" in capsys.readouterr().err
+    assert not (out / "002.json").exists()
