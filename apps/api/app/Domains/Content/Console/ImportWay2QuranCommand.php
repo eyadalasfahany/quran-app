@@ -21,7 +21,7 @@ use Illuminate\Console\Command;
  * source profile: the manifest parser and the importer must both carry it, or a mismatch would check the wrong source.
  * A reciter is imported hidden (reason held) until its id is in quran.way2quran_released_reciters.
  *
- * Runs with --defer-pack in the same way as mp3quran:import (ADR 0044). start-web.sh does not call it yet.
+ * Runs with --defer-pack in the same way as mp3quran:import (ADR 0044). start-web.sh calls it after the MP3Quran import, only when the manifest exists.
  */
 final class ImportWay2QuranCommand extends Command
 {

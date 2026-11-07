@@ -5,8 +5,8 @@
 #
 # Order: run migrations, create the storage folders, verify the Azkar audio, fetch the pinned secondary snapshots, import the Azkar rows
 # (DB rows only, --defer-pack), fetch the pinned Duas HadeethEnc snapshot and import the Duas rows (DB rows only,
-# --defer-pack), import the MP3Quran recitations and the Taybah timings (DB rows only, --defer-pack; ADR 0060,
-# ADR 0061), build any missing packs, then hand over to supervisord, which runs the web server, Horizon and the
+# --defer-pack), import the MP3Quran recitations, the Way2Quran recitations (once their committed manifest exists; ADR 0074)
+# and the Taybah timings (DB rows only, --defer-pack; ADR 0060, ADR 0061), build any missing packs, then hand over to supervisord, which runs the web server, Horizon and the
 # scheduler (ADR 0065). The import runs here and not in release.sh, because only this container mounts the volume
 # that holds the audio: run before the audio is in place, it would drop the recording rows. Every task logs and continues, so a failure never blocks serving; the current versions keep serving.
 set -u
@@ -61,6 +61,18 @@ if php artisan mp3quran:import --defer-pack; then
   echo "start: MP3Quran recitations up to date"
 else
   echo "WARNING: the MP3Quran import did not finish (manifest or a moshaf was refused; the lines above name it); the current MP3Quran versions keep serving."
+fi
+
+# Way2Quran (ADR 0074): the manifest appears with the first merged Way2Quran PR, so until then the import is skipped, not
+# failed. It runs before the Taybah timings, which attach to the chapter_audio_files rows this import writes.
+if [ -f resources/way2quran/manifest.json ]; then
+  if php artisan way2quran:import --defer-pack; then
+    echo "start: Way2Quran recitations up to date"
+  else
+    echo "WARNING: the Way2Quran import did not finish (manifest or a reciter was refused; the lines above name it); the current Way2Quran versions keep serving."
+  fi
+else
+  echo "start: no Way2Quran manifest yet; the Way2Quran import is skipped"
 fi
 
 if php artisan recitation-timings:import --defer-pack; then

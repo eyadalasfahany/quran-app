@@ -153,3 +153,20 @@ it('the Duas snapshot and import warn and continue without building packs', func
         ->and($start)->not->toContain('duas:import --download --defer-pack --build-packs')
         ->and($start)->not->toContain('duas:snapshot hadeethenc --pinned --build-packs');
 });
+
+it('the start script imports Way2Quran only when its manifest exists, after MP3Quran and before the Taybah timings (ADR 0074)', function (): void {
+    $start = deployFile('docker/start-web.sh');
+
+    $mp3quran = strpos($start, 'php artisan mp3quran:import --defer-pack');
+    $guard = strpos($start, 'if [ -f resources/way2quran/manifest.json ]; then');
+    $way2quran = strpos($start, 'php artisan way2quran:import --defer-pack');
+    $taybah = strpos($start, 'php artisan recitation-timings:import --defer-pack');
+
+    expect($guard)->toBeInt()
+        ->and($way2quran)->toBeGreaterThan($guard)
+        ->and($guard)->toBeGreaterThan($mp3quran)
+        ->and($taybah)->toBeGreaterThan($way2quran)
+        ->and($start)->toContain('if php artisan way2quran:import --defer-pack; then')
+        ->and($start)->toContain('WARNING: the Way2Quran import did not finish')
+        ->and($start)->not->toContain('way2quran:import --defer-pack --build-packs');
+});

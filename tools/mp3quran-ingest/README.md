@@ -2,9 +2,11 @@
 
 Local developer tool (ADR 0061, plan `docs/plans/recitation-timings.md`, step B4). It copies the surah files of an MP3Quran recording to Taybah's Cloudflare R2 bucket, measures and hashes them, and writes `apps/api/resources/mp3quran/manifest.json`. The API imports that manifest at web start; production never calls MP3Quran and never holds R2 keys.
 
+It also copies Way2Quran reciters (ADR 0074, plan `docs/plans/way2quran-reciter.md`). The same tool writes `apps/api/resources/way2quran/manifest.json` for them. See [Way2Quran](#way2quran).
+
 ## Where it runs
 
-- **On the developer's machine, or in the `add-reciter` GitHub workflow (ADR 0061, amended 5 Nov 2026).** Never on Railway. Locally, credentials come from the environment or a local `.env` file. In GitHub they come from the `taybah-app / production` environment's secrets, read only by the align job. See [Run in GitHub Actions](#run-in-github-actions).
+- **On the developer's machine, or in the `add-reciter` GitHub workflow (ADR 0061, amended 5 Nov 2026; Way2Quran in ADR 0074).** Never on Railway. Locally, credentials come from the environment or a local `.env` file. In GitHub they come from the `taybah-app / production` environment's secrets, read only by the align job. See [Run in GitHub Actions](#run-in-github-actions).
 - The tool is separate from `tools/recitation-align` (the aligner) and has its own virtualenv.
 - It needs `ffmpeg` on PATH for the duration measurement. Homebrew installs it in `/opt/homebrew/bin`.
 
@@ -48,6 +50,26 @@ Options: `--surah N` (repeatable; default every surah in `surah_list`), `--sourc
    `uv run mp3quran-ingest ingest --moshaf 253 --source-dir ../recitation-align/out/audio/mp3quran-253`
 2. Inspect `out/dry-manifest.json` (counts, bytes, durations, keys).
 3. Upload, with the same command plus `--upload`.
+
+## Way2Quran
+
+Way2Quran reciters (ADR 0074) come from `--source way2quran --reciter ID`, not `--moshaf`. Only the Hafs files (`hafs-an-asim`) are used; other riwayat are never copied. Nothing here calls the MP3Quran API for them.
+
+- **Data file.** `mp3quran_ingest/way2quran_reciters.json` holds, per reciter, the Taybah reciter id (never reused), slug, names, page URL and `files`: surah number to the exact file name. The files list is the reciter's `surah_list`. Each reciter ships only when every listed surah is in the committed manifest (ADR 0061, partial-recording rule).
+- **Lister.** To add a reciter, run the lister, review the JSON diff, then dispatch the workflow. It reads the reciter page, keeps the Hafs URLs, sends one HEAD per file and never downloads audio. A dry run prints the entry; `--write` updates the data file.
+
+  ```bash
+  uv run mp3quran-ingest way2quran-list --slug hossam-el-din-ebadi --reciter-id 2 \
+    --name-ar "حسام الدين عبادي" --name-en "Hossam El Din Ebadi"            # dry run
+  uv run mp3quran-ingest way2quran-list --slug hossam-el-din-ebadi --reciter-id 2 \
+    --name-ar "حسام الدين عبادي" --name-en "Hossam El Din Ebadi" --write    # records the entry
+  ```
+
+- **Ingest.** `uv run mp3quran-ingest ingest --source way2quran --reciter 1 --surah 1 --surah 2` is a dry run. Add `--upload --via s3` to copy. `--via worker` is refused for this source: the copy Worker is pinned to MP3Quran (ADR 0074 decision 9). The default manifest with `--upload` is `apps/api/resources/way2quran/manifest.json`; a dry run writes `out/dry-way2quran-manifest.json`.
+- **Bytes.** Files are copied as they are (no transcode, no tag or cover-art stripping). `size_bytes` equals the source `Content-Length`, and the sha256 names the source bytes. Each file also records `source_last_modified`; `source_etag` is `null`, because Way2Quran sends no ETag.
+- **Hidden until released.** The import writes a Way2Quran reciter inactive unless its id is in `quran.way2quran_released_reciters` (empty at first), so a merged manifest alone never publishes it.
+- **Timings.** Way2Quran publishes none. Every surah is aligned by `tools/recitation-align` (`pilot_published.py --source-kind way2quran --moshaf ID --aligner-only`) and exported with `--kind way2quran --source aligner`.
+- **Where it runs.** The `add-reciter` workflow with `source` set to `way2quran` (below), or locally with the same commands.
 
 ## Copy modes
 
@@ -103,7 +125,7 @@ Copy `.env.example` to `.env` in this folder and fill it in. `.env` is gitignore
 
 ## Run in GitHub Actions
 
-Workflow: `.github/workflows/add-reciter.yml` (manual, `workflow_dispatch`). It copies one or more Hafs moshafs to R2, aligns them on CPU runners and opens one PR per moshaf. It never pushes to the default branch and never deploys.
+Workflow: `.github/workflows/add-reciter.yml` (manual, `workflow_dispatch`). It copies one or more reciters to R2, aligns them on CPU runners and opens one PR per reciter. It never pushes to the default branch and never deploys. Its `source` input picks the path: `mp3quran` (the default, Hafs moshafs with published timings) or `way2quran` (Way2Quran reciters, aligned by the aligner only).
 
 ### Setup (developer, once)
 
@@ -115,19 +137,20 @@ The bucket name (`quran`) and public base (`https://audio.taybah-app.com`) are p
 
 ### Dispatch
 
-Actions → "Add reciter (MP3Quran)" → Run workflow, or from the terminal:
+Actions → "Add reciter (MP3Quran or Way2Quran)" → Run workflow, or from the terminal:
 
 ```bash
 gh workflow run add-reciter.yml --ref main -f moshaf_ids=253 -f chunks=6
+gh workflow run add-reciter.yml --ref main -f source=way2quran -f moshaf_ids=1 -f chunks=6
 ```
 
-`moshaf_ids` is comma-separated and checked by a pattern (digits and commas only). `chunks` (default 6, 1 to 20) sets how many align jobs each moshaf gets; surahs are balanced by Tanzil text length.
+`source` is `mp3quran` (default) or `way2quran`. `moshaf_ids` is comma-separated and checked by a pattern (digits and commas only); for `way2quran` these are reciter ids. `chunks` (default 6, 1 to 20) sets how many align jobs each moshaf or reciter gets; surahs are balanced by Tanzil text length. A resumed run (`resume_run_id`) reuses only hand-offs of its own source; Way2Quran hand-offs are named `align-w2q-ID-CHUNK` and MP3Quran ones `align-ID-CHUNK`, so the two never collide.
 
 ### What the jobs do
 
-1. **plan** (no secrets). Refuses, with every reason in one message, a moshaf that is not Hafs, has no published timings (its folder is not in `ayat_timing/reads`), is in `mp3quran_held_moshafs` or `mp3quran_duplicates`, or is already in the committed manifest with all its surahs. Otherwise it splits the surah list into chunks.
-2. **align** (one job per chunk, `taybah-app / production` environment, 300-minute limit). Ingests the chunk's surahs with `--upload --via s3`, fetches the published timings for them, aligns the words inside each published span with `pilot_published.py`, and uploads one hand-off artifact.
-3. **finalize** (one job per moshaf, no secrets, `contents: write` only here). Merges the chunk parts into the committed manifest. It refuses a moshaf with any missing surah, so a partial reciter never ships. It exports `apps/api/resources/recitation-timings/mp3quran/<id>/`, runs `uv run pytest -q` here, writes the quality table, pushes `reciter/<id>-<run_id>` and opens the PR.
+1. **plan** (no secrets). For `mp3quran`, refuses with every reason in one message a moshaf that is not Hafs, has no published timings (its folder is not in `ayat_timing/reads`), is in `mp3quran_held_moshafs` or `mp3quran_duplicates`, or is already in the committed manifest with all its surahs. For `way2quran`, it reads only the reciter data file and the committed Way2Quran manifest, and makes no MP3Quran call. It refuses an id not in the data file, a reciter with no Hafs files, and a reciter already complete in the committed manifest. The published-timings and held/duplicates checks do not apply. Otherwise both split the surah list into chunks.
+2. **align** (one job per chunk, `taybah-app / production` environment, 300-minute limit). Ingests the chunk's surahs with `--upload --via s3`. For `mp3quran` it fetches the published timings for them and aligns the words inside each published span with `pilot_published.py --fallback-aligner`. For `way2quran` there are no published timings to fetch: `pilot_published.py --source-kind way2quran --aligner-only` aligns every surah. Either way it uploads one hand-off artifact: `align-ID-CHUNK` (mp3quran) or `align-w2q-ID-CHUNK` (way2quran).
+3. **finalize** (one job per moshaf or reciter, no secrets, `contents: write` only here). Merges the chunk parts into the committed manifest (`mp3quran/manifest.json` or `way2quran/manifest.json`, created when absent). It refuses a reciter with any missing surah, so a partial reciter never ships. It exports `apps/api/resources/recitation-timings/mp3quran/<id>/` or `.../way2quran/<id>/` (`--source aligner` for Way2Quran), runs `uv run pytest -q` here, writes the quality table, pushes `reciter/<id>-<run_id>` (`reciter/way2quran-<id>-<run_id>` for Way2Quran) and opens the PR, titled "Reciter: MP3Quran moshaf <id>" or "Reciter: Way2Quran reciter <id>".
 
 ### Review and deploy
 

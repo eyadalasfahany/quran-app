@@ -26,10 +26,25 @@ USER_AGENT = "recitation-align-ci/0.1 (Taybah add-reciter workflow, ADR 0061)"
 HAFS_REWAYA_ID = 1
 MANIFEST_SCHEMA = 1
 MANIFEST_SOURCE = "mp3quran"
+WAY2QURAN_SOURCE = "way2quran"
+SOURCES = (MANIFEST_SOURCE, WAY2QURAN_SOURCE)
+# Committed manifests per source, relative to the repository root (ADR 0061, ADR 0074 decision 5).
+MANIFEST_PATHS = {
+    MANIFEST_SOURCE: "apps/api/resources/mp3quran/manifest.json",
+    WAY2QURAN_SOURCE: "apps/api/resources/way2quran/manifest.json",
+}
+# How a source reads in refusal messages. The mp3quran wording is the one shipped with ADR 0061.
+SOURCE_LABELS = {MANIFEST_SOURCE: "an mp3quran", WAY2QURAN_SOURCE: "a Way2Quran"}
+WAY2QURAN_SCHEMA = 1
+WAY2QURAN_HAFS_FOLDER = "hafs-an-asim"
 LOW_CONFIDENCE = 0.4
 MAX_CHUNKS = 20
 MOSHAF_IDS_RE = re.compile(r"[0-9]+(,[0-9]+)*")
 PHP_HEAD_RE = r"'{key}'\s*=>\s*\["
+DONE_PATTERNS = {
+    MANIFEST_SOURCE: re.compile(r"align-[0-9]+-[0-9]+"),
+    WAY2QURAN_SOURCE: re.compile(r"align-w2q-[0-9]+-[0-9]+"),
+}
 
 
 class CiError(Exception):
@@ -175,9 +190,86 @@ def load_json_or_none(path: Path) -> dict[str, Any] | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def plan(api: Api, moshaf_ids: list[int], chunks: int, *, manifest: dict[str, Any] | None,
-         php_source: str, tanzil_path: Path) -> dict[str, Any]:
-    """Refuse or chunk. Every refusal is collected first, so one run shows all of them."""
+def check_source(source: str) -> None:
+    if source not in SOURCES:
+        raise CiError(f"unknown source {source!r}; use one of {', '.join(SOURCES)}")
+
+
+def artifact_name(source: str, ident: int, chunk: int) -> str:
+    """Hand-off artifact name. Way2Quran's carries a `w2q-` part, so it never meets an MP3Quran moshaf's (ADR 0074)."""
+    check_source(source)
+    prefix = "align-w2q-" if source == WAY2QURAN_SOURCE else "align-"
+    return f"{prefix}{ident}-{chunk}"
+
+
+def way2quran_reciters(data: Any) -> dict[int, dict[str, Any]]:
+    """Reciter records of the Way2Quran data file, keyed by reciter id. Refuses a file it cannot read."""
+    if not isinstance(data, dict) or data.get("schema") != WAY2QURAN_SCHEMA or not isinstance(data.get("reciters"), list):
+        raise CiError("the Way2Quran reciter data file is not schema 1 with a reciters list")
+    reciters: dict[int, dict[str, Any]] = {}
+    for item in data["reciters"]:
+        rid = int(item["reciter_id"])
+        if rid in reciters:
+            raise CiError(f"reciter {rid} is listed twice in the Way2Quran reciter data file")
+        reciters[rid] = item
+    return reciters
+
+
+def way2quran_surah_list(item: dict[str, Any]) -> list[int]:
+    """The surahs the reciter's data file lists (its Hafs files, keyed by surah number)."""
+    surahs = sorted(int(s) for s in (item.get("files") or {}))
+    if any(not 1 <= s <= 114 for s in surahs):
+        raise CiError(f"reciter {item['reciter_id']} lists a surah outside 1..114")
+    return surahs
+
+
+def plan_way2quran(moshaf_ids: list[int], chunks: int, *, manifest: dict[str, Any] | None,
+                   data: Any, tanzil_path: Path) -> dict[str, Any]:
+    """Way2Quran plan: refuse or chunk from the reciter data file. Makes no MP3Quran call (ADR 0074 decision 7).
+
+    Refuses: an id not in the data file, a reciter with no Hafs files, a reciter already complete in the
+    committed Way2Quran manifest. The MP3Quran held and duplicates lists do not apply, and no published
+    timings exist to check (`plan` never reads them for this source).
+    """
+    reciters = way2quran_reciters(data)
+    weights = surah_weights(tanzil_path)
+    reasons: list[str] = []
+    entries: list[dict[str, Any]] = []
+    for reciter_id in moshaf_ids:
+        try:
+            item = reciters.get(reciter_id)
+            if item is None:
+                raise CiError(f"reciter {reciter_id} is not in the Way2Quran reciter data file")
+            surahs = way2quran_surah_list(item)
+            if item.get("riwayah_folder") != WAY2QURAN_HAFS_FOLDER or not surahs:
+                raise CiError(f"reciter {reciter_id} has no Hafs files")
+            if set(surahs) <= committed_surahs(manifest, reciter_id):
+                raise CiError(f"reciter {reciter_id} is already in the committed Way2Quran manifest with all its surahs")
+        except CiError as err:
+            reasons.append(str(err))
+            continue
+        for index, group in enumerate(chunk_surahs(surahs, weights, chunks), start=1):
+            entries.append({"moshaf": reciter_id, "chunk": index, "surahs": group})
+    if reasons:
+        raise CiError("refused: " + "; ".join(reasons))
+    return {"chunks": entries, "moshafs": moshaf_ids}
+
+
+def plan(api: Api | None, moshaf_ids: list[int], chunks: int, *, manifest: dict[str, Any] | None,
+         php_source: str | None, tanzil_path: Path, source: str = MANIFEST_SOURCE,
+         way2quran_data: Any = None) -> dict[str, Any]:
+    """Refuse or chunk. Every refusal is collected first, so one run shows all of them.
+
+    `source` picks the rules: mp3quran (the MP3Quran moshaf checks, which need `api` and `php_source`) or
+    way2quran (`plan_way2quran`, which needs `way2quran_data` and never touches `api`).
+    """
+    check_source(source)
+    if source == WAY2QURAN_SOURCE:
+        if way2quran_data is None:
+            raise CiError("plan: way2quran_data is needed for way2quran")
+        return plan_way2quran(moshaf_ids, chunks, manifest=manifest, data=way2quran_data, tanzil_path=tanzil_path)
+    if api is None or php_source is None:
+        raise CiError("plan: api and php_source are needed for mp3quran")
     held = set(php_array_keys(php_source, "mp3quran_held_moshafs"))
     duplicates = set(php_array_keys(php_source, "mp3quran_duplicates"))
     weights = surah_weights(tanzil_path)
@@ -204,22 +296,27 @@ def plan(api: Api, moshaf_ids: list[int], chunks: int, *, manifest: dict[str, An
     return {"chunks": entries, "moshafs": moshaf_ids}
 
 
-def parse_done_artifacts(text: str) -> set[str]:
-    """Names of hand-off artifacts an earlier run already uploaded (comma-separated, blanks ignored)."""
+def parse_done_artifacts(text: str, source: str = MANIFEST_SOURCE) -> set[str]:
+    """Names of hand-off artifacts an earlier run already uploaded (comma-separated, blanks ignored).
+
+    Only this source's names pass: an MP3Quran resume never reuses a Way2Quran hand-off, and the reverse.
+    """
+    check_source(source)
     names = {part.strip() for part in text.split(",") if part.strip()}
-    bad = sorted(n for n in names if not re.fullmatch(r"align-[0-9]+-[0-9]+", n))
+    bad = sorted(n for n in names if not DONE_PATTERNS[source].fullmatch(n))
     if bad:
         raise CiError(f"unexpected artifact names from the resumed run: {', '.join(bad)}")
     return names
 
 
-def drop_done_chunks(entries: list[dict[str, Any]], done: set[str]) -> list[dict[str, Any]]:
+def drop_done_chunks(entries: list[dict[str, Any]], done: set[str],
+                     source: str = MANIFEST_SOURCE) -> list[dict[str, Any]]:
     """Resume: keep only the chunks whose hand-off the earlier run never uploaded.
 
     The chunk numbers match only when the earlier run used the same chunk count; a mismatch makes a
     surah appear twice or not at all, and the manifest merge refuses both.
     """
-    return [e for e in entries if f"align-{e['moshaf']}-{e['chunk']}" not in done]
+    return [e for e in entries if artifact_name(source, e["moshaf"], e["chunk"]) not in done]
 
 
 def fetch_published(api: Api, moshaf_id: int, surahs: list[int], out_dir: Path) -> list[Path]:
@@ -249,18 +346,23 @@ def _content(manifest: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in manifest.items() if k != "generated_at"}
 
 
-def merge_manifest(committed: dict[str, Any] | None, parts: list[dict[str, Any]], moshaf_id: int) -> dict[str, Any]:
+def merge_manifest(committed: dict[str, Any] | None, parts: list[dict[str, Any]], moshaf_id: int,
+                   source: str = MANIFEST_SOURCE) -> dict[str, Any]:
     """Replace one moshaf's record with the union of its chunk parts. Other moshafs are untouched.
+
+    `source` is the manifest's source string (mp3quran or way2quran, ADR 0074); every part and the committed
+    manifest (when it has a source) must carry it. A missing committed manifest (`None`) starts a new one.
 
     Refuses: a part for another moshaf, metadata that differs between parts, a surah listed twice, a
     surah outside surah_list, a missing surah (never ship a partial reciter), a public_base mismatch.
     """
+    check_source(source)
     if not parts:
         raise CiError("no manifest parts to merge")
     records: list[dict[str, Any]] = []
     for part in parts:
-        if part.get("schema") != MANIFEST_SCHEMA or part.get("source") != MANIFEST_SOURCE:
-            raise CiError("a manifest part is not an mp3quran manifest, schema 1")
+        if part.get("schema") != MANIFEST_SCHEMA or part.get("source") != source:
+            raise CiError(f"a manifest part is not {SOURCE_LABELS[source]} manifest, schema 1")
         for record in part.get("moshafs", []):
             if int(record["moshaf_id"]) != moshaf_id:
                 raise CiError(f"a manifest part holds moshaf {record['moshaf_id']}, expected {moshaf_id}")
@@ -280,6 +382,8 @@ def merge_manifest(committed: dict[str, Any] | None, parts: list[dict[str, Any]]
     public_base = public_bases.pop()
     if committed is not None and committed.get("public_base") != public_base:
         raise CiError("public_base differs from the committed manifest")
+    if committed is not None and "source" in committed and committed["source"] != source:
+        raise CiError(f"the committed manifest is not {SOURCE_LABELS[source]} manifest")
 
     surah_list = sorted(int(s) for s in meta["surah_list"])
     files: dict[int, dict[str, Any]] = {}
@@ -301,7 +405,7 @@ def merge_manifest(committed: dict[str, Any] | None, parts: list[dict[str, Any]]
     moshafs = sorted(others + [new_record], key=lambda r: int(r["moshaf_id"]))
     manifest: dict[str, Any] = {
         "schema": MANIFEST_SCHEMA,
-        "source": MANIFEST_SOURCE,
+        "source": source,
         "generated_at": None,
         "public_base": public_base,
         "moshafs": moshafs,

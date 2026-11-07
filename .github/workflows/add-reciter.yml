@@ -1,13 +1,23 @@
-name: Add reciter (MP3Quran)
+name: Add reciter (MP3Quran or Way2Quran)
 
-# Manual only. Copies one MP3Quran recording to R2, aligns it on CPU runners and opens a PR with the
-# manifest and the published timings (ADR 0061, amended 5 Nov 2026). The workflow never pushes to the
-# default branch. Production never runs this; the Railway deploy imports the merged manifest.
+# Manual only. Copies one reciter's surah files to R2, aligns them on CPU runners and opens a PR with the
+# manifest and the timings (ADR 0061, amended 5 Nov 2026; Way2Quran: ADR 0074). `source` picks the path:
+# mp3quran uses the published timings (the default, unchanged); way2quran aligns every surah itself, because
+# Way2Quran publishes no timings. The workflow never pushes to the default branch. Production never runs this;
+# the Railway deploy imports the merged manifest.
 on:
   workflow_dispatch:
     inputs:
+      source:
+        description: "Reciter source: mp3quran (published timings, the default) or way2quran (aligner only, ADR 0074)"
+        required: true
+        default: "mp3quran"
+        type: choice
+        options:
+          - mp3quran
+          - way2quran
       moshaf_ids:
-        description: "MP3Quran moshaf ids, comma-separated (Hafs only, with published timings)"
+        description: "MP3Quran moshaf ids (source mp3quran, Hafs only, with published timings) or reciter ids for way2quran, comma-separated"
         required: true
         type: string
       chunks:
@@ -25,7 +35,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: add-reciter-${{ inputs.moshaf_ids }}
+  group: add-reciter-${{ inputs.source }}-${{ inputs.moshaf_ids }}
   cancel-in-progress: false
 
 jobs:
@@ -53,6 +63,7 @@ jobs:
       - name: Validate inputs and plan
         id: plan
         env:
+          SOURCE: ${{ inputs.source }}
           MOSHAF_IDS: ${{ inputs.moshaf_ids }}
           CHUNKS: ${{ inputs.chunks }}
           RESUME_RUN_ID: ${{ inputs.resume_run_id }}
@@ -74,10 +85,10 @@ jobs:
               --jq '.artifacts[] | select(.expired | not) | .name' | paste -sd, -)
             echo "resuming run $RESUME_RUN_ID; reusing: ${DONE:-nothing}"
           fi
-          python3 tools/recitation-align/scripts/ci_plan.py --moshafs "$MOSHAF_IDS" --chunks "$CHUNKS" --done "$DONE"
+          python3 tools/recitation-align/scripts/ci_plan.py --source "$SOURCE" --moshafs "$MOSHAF_IDS" --chunks "$CHUNKS" --done "$DONE"
 
   align:
-    name: Align ${{ matrix.moshaf }} chunk ${{ matrix.chunk }}
+    name: Align ${{ inputs.source == 'way2quran' && 'Way2Quran ' || '' }}${{ matrix.moshaf }} chunk ${{ matrix.chunk }}
     needs: plan
     # A resume whose earlier run already uploaded every chunk aligns nothing and goes straight to finalize.
     if: ${{ needs.plan.result == 'success' && needs.plan.outputs.chunks != '[]' }}
@@ -129,6 +140,7 @@ jobs:
           (cd tools/recitation-align && uv sync --frozen --no-dev)
 
       - name: Ingest chunk to R2 (s3)
+        if: ${{ inputs.source == 'mp3quran' }}
         working-directory: tools/mp3quran-ingest
         env:
           MOSHAF: ${{ matrix.moshaf }}
@@ -145,7 +157,26 @@ jobs:
           uv run mp3quran-ingest ingest --moshaf "$MOSHAF" "${SURAH_ARGS[@]}" \
             --upload --via s3 --manifest "out/manifest-${MOSHAF}-${CHUNK}.json"
 
+      - name: Ingest Way2Quran chunk to R2 (s3)
+        if: ${{ inputs.source == 'way2quran' }}
+        working-directory: tools/mp3quran-ingest
+        env:
+          RECITER: ${{ matrix.moshaf }}
+          CHUNK: ${{ matrix.chunk }}
+          SURAHS_JSON: ${{ toJSON(matrix.surahs) }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: quran
+          R2_PUBLIC_BASE: https://audio.taybah-app.com
+        run: |
+          set -euo pipefail
+          mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
+          uv run mp3quran-ingest ingest --source way2quran --reciter "$RECITER" "${SURAH_ARGS[@]}" \
+            --upload --via s3 --manifest "out/manifest-${RECITER}-${CHUNK}.json"
+
       - name: Fetch MP3Quran published timings
+        if: ${{ inputs.source == 'mp3quran' }}
         working-directory: tools/recitation-align
         env:
           MOSHAF: ${{ matrix.moshaf }}
@@ -155,7 +186,27 @@ jobs:
           mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
           python3 scripts/ci_fetch_published.py --moshaf "$MOSHAF" "${SURAH_ARGS[@]}"
 
+      - name: Align Way2Quran words (aligner only)
+        if: ${{ inputs.source == 'way2quran' }}
+        working-directory: tools/recitation-align
+        env:
+          RECITER: ${{ matrix.moshaf }}
+          CHUNK: ${{ matrix.chunk }}
+          SURAHS_JSON: ${{ toJSON(matrix.surahs) }}
+          RECITATION_TORCH_THREADS: "4"
+          # Show each surah's line as it finishes (stdout is block-buffered in CI otherwise).
+          PYTHONUNBUFFERED: "1"
+          # Optional: authenticated Hugging Face downloads get higher rate limits (empty is fine).
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -euo pipefail
+          mapfile -t SURAH_ARGS < <(jq -r '.[] | ("--surah", tostring)' <<< "$SURAHS_JSON")
+          uv run python scripts/pilot_published.py --source-kind way2quran --moshaf "$RECITER" --aligner-only \
+            --manifest "$GITHUB_WORKSPACE/tools/mp3quran-ingest/out/manifest-${RECITER}-${CHUNK}.json" \
+            "${SURAH_ARGS[@]}"
+
       - name: Align words inside published spans
+        if: ${{ inputs.source == 'mp3quran' }}
         working-directory: tools/recitation-align
         env:
           MOSHAF: ${{ matrix.moshaf }}
@@ -173,7 +224,20 @@ jobs:
             --manifest "$GITHUB_WORKSPACE/tools/mp3quran-ingest/out/manifest-${MOSHAF}-${CHUNK}.json" \
             "${SURAH_ARGS[@]}"
 
+      - name: Stage hand-off files (Way2Quran)
+        if: ${{ inputs.source == 'way2quran' }}
+        env:
+          RECITER: ${{ matrix.moshaf }}
+          CHUNK: ${{ matrix.chunk }}
+        run: |
+          set -euo pipefail
+          HANDOFF="$RUNNER_TEMP/handoff"
+          mkdir -p "$HANDOFF/aligned"
+          cp "tools/mp3quran-ingest/out/manifest-${RECITER}-${CHUNK}.json" "$HANDOFF/"
+          cp tools/recitation-align/out/way2quran/"$RECITER"/aligned/*.json "$HANDOFF/aligned/"
+
       - name: Stage hand-off files
+        if: ${{ inputs.source == 'mp3quran' }}
         env:
           MOSHAF: ${{ matrix.moshaf }}
           CHUNK: ${{ matrix.chunk }}
@@ -187,13 +251,13 @@ jobs:
       - name: Upload hand-off
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: align-${{ matrix.moshaf }}-${{ matrix.chunk }}
+          name: ${{ inputs.source == 'way2quran' && format('align-w2q-{0}-{1}', matrix.moshaf, matrix.chunk) || format('align-{0}-{1}', matrix.moshaf, matrix.chunk) }}
           path: ${{ runner.temp }}/handoff
           if-no-files-found: error
           retention-days: 7
 
   finalize:
-    name: Finalize ${{ matrix.moshaf }} and open PR
+    name: Finalize ${{ inputs.source == 'way2quran' && 'Way2Quran ' || '' }}${{ matrix.moshaf }} and open PR
     needs: [plan, align]
     # Runs even when one chunk failed: the merge refuses a partial reciter, so only complete ones ship.
     if: ${{ !cancelled() && needs.plan.result == 'success' }}
@@ -233,7 +297,7 @@ jobs:
         if: ${{ inputs.resume_run_id != '' }}
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: align-${{ matrix.moshaf }}-*
+          pattern: ${{ inputs.source == 'way2quran' && format('align-w2q-{0}-*', matrix.moshaf) || format('align-{0}-*', matrix.moshaf) }}
           merge-multiple: true
           path: ${{ runner.temp }}/handoff
           run-id: ${{ inputs.resume_run_id }}
@@ -242,11 +306,12 @@ jobs:
       - name: Download hand-offs
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: align-${{ matrix.moshaf }}-*
+          pattern: ${{ inputs.source == 'way2quran' && format('align-w2q-{0}-*', matrix.moshaf) || format('align-{0}-*', matrix.moshaf) }}
           merge-multiple: true
           path: ${{ runner.temp }}/handoff
 
       - name: Merge manifest (refuses a partial reciter)
+        if: ${{ inputs.source == 'mp3quran' }}
         working-directory: tools/recitation-align
         env:
           MOSHAF: ${{ matrix.moshaf }}
@@ -258,7 +323,21 @@ jobs:
           python3 scripts/ci_merge_manifest.py --moshaf "$MOSHAF" \
             --parts "$RUNNER_TEMP/handoff" --aligned "$ALIGNED"
 
+      - name: Merge manifest (Way2Quran, refuses a partial reciter)
+        if: ${{ inputs.source == 'way2quran' }}
+        working-directory: tools/recitation-align
+        env:
+          RECITER: ${{ matrix.moshaf }}
+        run: |
+          set -euo pipefail
+          ALIGNED="out/way2quran/${RECITER}/aligned"
+          mkdir -p "$ALIGNED"
+          cp "$RUNNER_TEMP"/handoff/aligned/*.json "$ALIGNED/"
+          python3 scripts/ci_merge_manifest.py --source way2quran --moshaf "$RECITER" \
+            --parts "$RUNNER_TEMP/handoff" --aligned "$ALIGNED"
+
       - name: Export committed timing files
+        if: ${{ inputs.source == 'mp3quran' }}
         working-directory: tools/recitation-align
         env:
           MOSHAF: ${{ matrix.moshaf }}
@@ -270,6 +349,19 @@ jobs:
             --out "../../apps/api/resources/recitation-timings/mp3quran/${MOSHAF}" \
             --source mp3quran_published
 
+      - name: Export committed timing files (Way2Quran)
+        if: ${{ inputs.source == 'way2quran' }}
+        working-directory: tools/recitation-align
+        env:
+          RECITER: ${{ matrix.moshaf }}
+        run: |
+          set -euo pipefail
+          uv sync --frozen --no-dev
+          uv run python -m recitation_align.export --kind way2quran --recitation-key "$RECITER" \
+            --in "out/way2quran/${RECITER}/aligned" \
+            --out "../../apps/api/resources/recitation-timings/way2quran/${RECITER}" \
+            --source aligner
+
       - name: Test recitation-align
         working-directory: tools/recitation-align
         run: |
@@ -277,6 +369,7 @@ jobs:
           uv run pytest -q
 
       - name: Quality summary
+        if: ${{ inputs.source == 'mp3quran' }}
         working-directory: tools/recitation-align
         env:
           MOSHAF: ${{ matrix.moshaf }}
@@ -285,7 +378,18 @@ jobs:
           python3 scripts/ci_quality.py --moshaf "$MOSHAF" \
             --aligned "out/published/${MOSHAF}/aligned" --out "$RUNNER_TEMP/quality.md"
 
+      - name: Quality summary (Way2Quran)
+        if: ${{ inputs.source == 'way2quran' }}
+        working-directory: tools/recitation-align
+        env:
+          RECITER: ${{ matrix.moshaf }}
+        run: |
+          set -euo pipefail
+          python3 scripts/ci_quality.py --source way2quran --moshaf "$RECITER" \
+            --aligned "out/way2quran/${RECITER}/aligned" --out "$RUNNER_TEMP/quality.md"
+
       - name: Commit, push branch and open PR
+        if: ${{ inputs.source == 'mp3quran' }}
         env:
           GH_TOKEN: ${{ github.token }}
           MOSHAF: ${{ matrix.moshaf }}
@@ -320,3 +424,40 @@ jobs:
           } > "$RUNNER_TEMP/pr-body.md"
           gh pr create --base "$DEFAULT_BRANCH" --head "$BRANCH" \
             --title "Reciter: MP3Quran moshaf ${MOSHAF}" --body-file "$RUNNER_TEMP/pr-body.md"
+
+      - name: Commit, push branch and open PR (Way2Quran)
+        if: ${{ inputs.source == 'way2quran' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RECITER: ${{ matrix.moshaf }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          BRANCH="reciter/way2quran-${RECITER}-${GITHUB_RUN_ID}"
+          if [ "$BRANCH" = "$DEFAULT_BRANCH" ]; then
+            echo "::error::refusing to push to the default branch"
+            exit 1
+          fi
+          MANIFEST_PATH="apps/api/resources/way2quran/manifest.json"
+          TIMINGS_PATH="apps/api/resources/recitation-timings/way2quran/${RECITER}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add "$MANIFEST_PATH" "$TIMINGS_PATH"
+          if git diff --cached --quiet; then
+            echo "::error::nothing changed for Way2Quran reciter ${RECITER}"
+            exit 1
+          fi
+          git commit -m "Reciter: Way2Quran reciter ${RECITER} (run ${GITHUB_RUN_ID})"
+          git push origin "$BRANCH"
+          {
+            echo "Automated run ${GITHUB_RUN_ID} for Way2Quran reciter ${RECITER}."
+            echo
+            echo "Contains the manifest entry and the aligner timings for every surah. Way2Quran publishes no timings, so every surah is aligned here (ADR 0074). Review, then merge; the Railway deploy imports the manifest. The reciter stays hidden until its id is in quran.way2quran_released_reciters."
+            echo
+            echo "## Quality (counts and confidences only)"
+            echo
+            cat "$RUNNER_TEMP/quality.md"
+          } > "$RUNNER_TEMP/pr-body.md"
+          gh pr create --base "$DEFAULT_BRANCH" --head "$BRANCH" \
+            --title "Reciter: Way2Quran reciter ${RECITER}" --body-file "$RUNNER_TEMP/pr-body.md"

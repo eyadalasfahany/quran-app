@@ -1,6 +1,7 @@
 """Quality table for the PR body: per surah counts and lowest ayah confidence (no text).
 
     python3 scripts/ci_quality.py --moshaf 86 --aligned DIR --out PATH
+    python3 scripts/ci_quality.py --source way2quran --moshaf 1 --aligned DIR --out PATH
 """
 
 import argparse
@@ -18,12 +19,15 @@ REPO = TOOL.parents[1]
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    p.add_argument("--source", choices=ci.SOURCES, default=ci.MANIFEST_SOURCE)
     p.add_argument("--moshaf", type=int, required=True)
     p.add_argument("--aligned", type=Path, required=True)
-    p.add_argument("--manifest", type=Path, default=REPO / "apps/api/resources/mp3quran/manifest.json")
+    p.add_argument("--manifest", type=Path, default=None,
+                   help="committed manifest of the source (default: its path in the repository)")
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args(argv)
-    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    manifest_path = args.manifest or REPO / ci.MANIFEST_PATHS[args.source]
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     record = next(r for r in manifest["moshafs"] if int(r["moshaf_id"]) == args.moshaf)
     surahs = [int(s) for s in record["surah_list"]]
     try:
