@@ -1758,6 +1758,7 @@
       "cancel": "إلغاء",
       "close": "إغلاق",
       "offlineNote": "تعمل المجموعة بعد التنزيل دون إنترنت.",
+      "waitingWifi": "بانتظار شبكة Wi-Fi",
       "waitWifi": "يبدأ التنزيل عند الاتصال بشبكة Wi-Fi."
     },
     "reader": {
@@ -1766,7 +1767,8 @@
       "save": "حفظ الحديث",
       "unsave": "إزالة من المحفوظات",
       "copy": "نسخ",
-      "share": "مشاركة"
+      "share": "مشاركة",
+      "copied": "تم النسخ"
     },
     "pager": {
       "previous": "السابق",
@@ -1811,10 +1813,35 @@
       "number": "رقم الحديث",
       "source": "المصدر"
     },
+    "expanded": {
+      "books": "الكتب"
+    },
     "list": {
       "search": "بحث في الحديث",
       "downloads": "التنزيلات",
       "credit": "المصدر: fawazahmed0/hadith-api · Unlicense"
+    },
+    "home": {
+      "tile": "الحديث"
+    },
+    "menu": {
+      "caption": "الأحاديث",
+      "title": "الحديث",
+      "subtitle": "المجموعات والكتب"
+    },
+    "sources": {
+      "fawazahmed0": {
+        "title": "fawazahmed0/hadith-api",
+        "subtitle": "نص الأحاديث · Unlicense"
+      },
+      "openiti": {
+        "title": "OpenITI · مبادرة النصوص الإسلامية المفتوحة",
+        "subtitle": "عناوين الأبواب ونصوص بعض الأحاديث التي ينقصها المصدر الأساسي: OpenITI (مبادرة النصوص الإسلامية المفتوحة)، الإصدار 2023.1.8، الترخيص CC BY-NC-SA 4.0. أُجريت تعديلات: حُذفت رموز التنسيق، وربطت الأبواب بترقيم fawazahmed0/hadith-api."
+      },
+      "hadithapicom": {
+        "title": "hadithapi.com",
+        "subtitle": "نصوص بعض الأحاديث التي ينقصها المصدر الأساسي: hadithapi.com"
+      }
     }
   }
 }

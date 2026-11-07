@@ -9,7 +9,10 @@ import { SettingsGroup } from '@/features/settings/components/SettingsGroup';
 import { SettingsHeader } from '@/features/settings/components/SettingsHeader';
 import { ListRow, Screen, UiText } from '@/shared/ui';
 
-const SOURCES = [
+type SourceEntry = { key: string; url: string; ltr?: boolean; i18n?: string };
+
+// Rows whose text is not under reader.sources (the Hadith sources, frame HadithCollSources) name their i18n prefix.
+const SOURCES: readonly SourceEntry[] = [
   { key: 'qf', url: 'https://quran.foundation' },
   { key: 'tanzil', url: 'https://tanzil.net' },
   { key: 'kfgqpc', url: 'https://qurancomplex.gov.sa' },
@@ -19,7 +22,10 @@ const SOURCES = [
   { key: 'hadeethenc', url: 'https://hadeethenc.com' },
   { key: 'adhan', url: 'https://github.com/batoulapps/adhan-js' },
   { key: 'fonts', url: 'https://openfontlicense.org' },
-] as const;
+  { key: 'fawazahmed0', url: 'https://github.com/fawazahmed0/hadith-api', i18n: 'hadith.sources' },
+  { key: 'openiti', url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', i18n: 'hadith.sources' },
+  { key: 'hadithapicom', url: 'https://hadithapi.com', i18n: 'hadith.sources' },
+];
 
 export function SourcesScreen({ testID }: { testID?: string }) {
   const { t } = useTranslation();
@@ -46,10 +52,10 @@ export function SourcesScreen({ testID }: { testID?: string }) {
                       void Linking.openURL(source.url);
                     }}
                     separator={index < SOURCES.length - 1 ? 'line' : undefined}
-                    subtitle={t(`reader.sources.${source.key}.subtitle`)}
-                    subtitleDirection={'ltr' in source ? 'ltr' : undefined}
+                    subtitle={t(`${source.i18n ?? 'reader.sources'}.${source.key}.subtitle` as never)}
+                    subtitleDirection={source.ltr === true ? 'ltr' : undefined}
                     testID={testID ? `${testID}-${source.key}` : undefined}
-                    title={t(`reader.sources.${source.key}.title`)}
+                    title={t(`${source.i18n ?? 'reader.sources'}.${source.key}.title` as never)}
                   />
                 ))}
               </SettingsGroup>

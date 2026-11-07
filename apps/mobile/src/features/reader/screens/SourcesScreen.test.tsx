@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, type RenderResult } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { Dimensions, Linking } from 'react-native';
 
@@ -6,6 +6,7 @@ import { i18n } from '@/core/i18n';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { testIdsInOrder } from '../../../../jest/hadith-ui-fixtures';
 
 import { SourcesScreen } from './SourcesScreen';
 
@@ -138,5 +139,57 @@ describe('SourcesScreen', () => {
 
   it('uses theme tokens only', () => {
     expect(featureComponentLiterals('features/reader/screens/SourcesScreen.tsx')).toEqual([]);
+  });
+
+  describe('Hadith sources', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    const HADITH_KEYS = ['fawazahmed0', 'openiti', 'hadithapicom'] as const;
+    const URLS: Record<(typeof HADITH_KEYS)[number], string> = {
+      fawazahmed0: 'https://github.com/fawazahmed0/hadith-api',
+      openiti: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+      hadithapicom: 'https://hadithapi.com',
+    };
+    // The row's own test ID, found through the query (hidden elements included, as the rows are not accessible roots).
+    const row = (view: Pick<RenderResult, 'queryAllByTestId'>, id: string): ReturnType<RenderResult['getByTestId']> => {
+      const found = view.queryAllByTestId(id, { includeHiddenElements: true })[0];
+      if (found === undefined) {
+        throw new Error(`No row ${id}`);
+      }
+      return found;
+    };
+    // Group rows in tree order, leaving out the group itself and the row chevrons.
+    const rowIds = (root: unknown) => testIdsInOrder(root, 'sources-group').filter((id) => /^sources-[a-z0-9]+$/.test(id) && id !== 'sources-group');
+    const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    it('shows the fawazahmed0, OpenITI and hadithapi.com rows after the fonts row', async () => {
+      const view = await renderUi(<SourcesScreen testID="sources" />);
+      const ids = rowIds(view.toJSON());
+      expect(ids.slice(-4)).toEqual(['sources-fonts', 'sources-fawazahmed0', 'sources-openiti', 'sources-hadithapicom']);
+    });
+
+    it.each(['ar', 'en'] as const)('shows the OpenITI credit in %s', async (locale) => {
+      const view = await renderUi(<SourcesScreen testID="sources" />, { locale });
+      expect(view.queryAllByText(new RegExp(escapeRegExp(i18n.t('hadith.sources.openiti.title', { lng: locale })))).length).toBeGreaterThan(0);
+      expect(view.queryAllByText(new RegExp(escapeRegExp(i18n.t('hadith.sources.openiti.subtitle', { lng: locale })))).length).toBeGreaterThan(0);
+    });
+
+    it('keeps the existing rows and their order', async () => {
+      const view = await renderUi(<SourcesScreen testID="sources" />);
+      expect(rowIds(view.toJSON()).slice(0, 3)).toEqual(['sources-qf', 'sources-tanzil', 'sources-kfgqpc']);
+    });
+    // Covers the OpenITI row too: its URL is the licence deed.
+    it('each new row opens its URL', async () => {
+      const openURL = jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve());
+      const view = await renderUi(<SourcesScreen testID="sources" />);
+      for (const key of HADITH_KEYS) {
+        fireEvent.press(row(view, `sources-${key}`));
+        expect(openURL).toHaveBeenLastCalledWith(URLS[key]);
+      }
+      openURL.mockRestore();
+    });
+
   });
 });

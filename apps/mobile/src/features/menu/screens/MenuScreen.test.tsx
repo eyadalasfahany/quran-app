@@ -36,6 +36,11 @@ jest.mock('@/features/azkar/data', () => ({
   useContinueAzkar: jest.fn(() => null),
 }));
 
+const mockHadith = { tile: false, menuCard: false };
+jest.mock('@/features/hadith/availability', () => ({
+  useHadithHomeEntry: () => mockHadith,
+}));
+
 jest.mock('@/features/duas/data/hooks', () => ({
   ...jest.requireActual('@/features/duas/data/hooks'),
   useDuasAvailable: jest.fn(() => true),
@@ -110,6 +115,8 @@ describe('MenuScreen', () => {
     withLocation(LONDON);
     withAzkar(false);
     withDuas(true);
+    mockHadith.tile = false;
+    mockHadith.menuCard = false;
     jest.mocked(getVerseByKey).mockReturnValue(reading as never);
     jest.mocked(getChapter).mockReturnValue({ nameArabic: 'البقرة', nameSimple: 'Al-Baqarah' } as never);
     storage.set(storageKeys.readerLastVerseKey, '2:255');
@@ -402,5 +409,43 @@ describe('MenuScreen columns (ADR 0036)', () => {
     await renderUi(<MenuScreen />);
 
     expect(screen.getByTestId('menu-grid-column-2')).toBeOnTheScreen();
+  });
+
+  describe('Hadith card', () => {
+    it('shows the Hadith card when a hadith pack is installed', async () => {
+      mockHadith.tile = true;
+      mockHadith.menuCard = true;
+      await renderUi(<MenuScreen />);
+      expect(screen.getByTestId('menu-card-hadith')).toBeOnTheScreen();
+    });
+
+    it('shows the Hadith card when the catalogue lists a collection but none is installed', async () => {
+      mockHadith.tile = false;
+      mockHadith.menuCard = true;
+      await renderUi(<MenuScreen />);
+      expect(screen.getByTestId('menu-card-hadith')).toBeOnTheScreen();
+    });
+
+    it('hides the Hadith card when there is nothing to show', async () => {
+      mockHadith.tile = false;
+      mockHadith.menuCard = false;
+      await renderUi(<MenuScreen />);
+      expect(screen.queryByTestId('menu-card-hadith')).toBeNull();
+    });
+
+    it('the Hadith card opens the collections list', async () => {
+      mockHadith.menuCard = true;
+      await renderUi(<MenuScreen />);
+      await fireEvent.press(screen.getByTestId('menu-card-hadith'));
+      expect(router.push).toHaveBeenLastCalledWith('/hadith');
+    });
+
+    it('does not change the other cards when the Hadith card is hidden', async () => {
+      withDuas(true);
+      mockHadith.menuCard = false;
+      await renderUi(<MenuScreen />);
+      expect(screen.getByTestId('menu-card-duas')).toBeOnTheScreen();
+      expect(screen.queryByTestId('menu-card-hadith')).toBeNull();
+    });
   });
 });

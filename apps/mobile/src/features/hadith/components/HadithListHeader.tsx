@@ -41,7 +41,7 @@ export function HadithListHeader({
       <IconButton icon={BACK} label={t('hadith.back')} mirrorInRtl onPress={onBack} testID={`${testID}-back`} variant="raised" />
       <View style={{ flex: 1, minWidth: 0 }}>
         {title !== undefined ? (
-          <UiText accessibilityRole="header" numberOfLines={2} style={titleStyle} testID={`${testID}-title`} variant="displaySm">
+          <UiText accessibilityRole="header" style={titleStyle} testID={`${testID}-title`} variant="displaySm">
             {title}
           </UiText>
         ) : null}

@@ -15,6 +15,8 @@ import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { useAzkarAvailable, useRecentAzkarItems } from '@/features/azkar/data';
 import { azkarHref } from '@/features/azkar/routes';
+import { useHadithHomeEntry } from '@/features/hadith/availability';
+import { hadithHref } from '@/features/hadith/routes';
 import { useDuasAvailable } from '@/features/duas/data/hooks';
 import { duasHref } from '@/features/duas/routes';
 import { pause } from '@/features/audio/player';
@@ -61,6 +63,7 @@ const SAVED_ICON: IconName = { ios: 'bookmark', android: 'bookmark' };
 const RECITERS_ICON: IconName = { ios: 'headphones', android: 'headphones' };
 const AZKAR_ICON: IconName = { ios: 'circle.dotted', android: 'scatter_plot' };
 const DUAS_ICON: IconName = { ios: 'hands.sparkles', android: 'volunteer_activism' };
+const HADITH_ICON: IconName = { ios: 'quote.opening', android: 'format_quote' };
 const SIBHA_ICON: IconName = { ios: 'circle.circle', android: 'adjust' };
 
 /**
@@ -85,6 +88,8 @@ export function HomeScreen() {
   // The Azkar blocks show only once Azkar content is installed (ADR 0017, ADR 0031 §10).
   const azkarAvailable = useAzkarAvailable();
   const duasAvailable = useDuasAvailable();
+  // The Hadith tile shows once one collection is installed (plan decision 10; the Menu card also shows for the catalogue).
+  const hadithEntry = useHadithHomeEntry();
   const homeWird = useHomeWird();
   const { goals } = useDailyGoals();
   const continueAzkar = useAzkarMenuPreview().resume;
@@ -115,6 +120,9 @@ export function HomeScreen() {
 
   const tiles = [
     { icon: SURAHS_ICON, key: 'surahs', label: t('home.tiles.surahs'), onPress: () => router.navigate(tabHref('(mushaf)')) },
+    ...(hadithEntry.tile
+      ? [{ icon: HADITH_ICON, key: 'hadith', label: t('hadith.home.tile'), onPress: () => router.push(hadithHref.home) }]
+      : []),
     ...(azkarAvailable
       ? [{ icon: AZKAR_ICON, key: 'azkar', label: t('home.tiles.azkar'), onPress: () => router.push(azkarHref.home) }]
       : []),

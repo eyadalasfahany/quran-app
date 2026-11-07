@@ -136,4 +136,11 @@ describe('HadithDownloadSheet', () => {
   it('has no raw colour literal', () => {
     expect(rawColorLiteralsInFeature('src/features/hadith/components/HadithDownloadSheet.tsx')).toEqual([]);
   });
+
+  it('waiting shows the wait line and a cancel button that calls onCancel', async () => {
+    const callbacks = await renderSheet({ kind: 'waiting' }, { waitingForWifi: true });
+    expect(screen.getByText('يبدأ التنزيل عند الاتصال بشبكة Wi-Fi.')).toBeOnTheScreen();
+    await press(screen.getByRole('button', { name: 'إلغاء' }));
+    expect(callbacks.onCancel).toHaveBeenCalledTimes(1);
+  });
 });

@@ -113,6 +113,8 @@ export function CollectionRow({
         : null;
   } else if (state.kind === 'available') {
     status = t('ui.download.size', { size: formatPackSizeMb(state.sizeBytes, locale) });
+  } else if (state.kind === 'waiting') {
+    status = t('hadith.download.waitingWifi');
   } else {
     const percent = formatPercent(Math.round(Math.min(1, Math.max(0, state.progress)) * 100), locale);
     status = t('hadith.download.progress', { percent });
@@ -174,7 +176,7 @@ export function CollectionRow({
   return (
     <View style={cardStyle} testID={testID}>
       {body}
-      {state.kind === 'available' || state.kind === 'downloading' ? (
+      {state.kind === 'available' || state.kind === 'downloading' || state.kind === 'waiting' ? (
         <CollectionDownloadButton
           collectionTitle={title}
           onCancel={onCancel}

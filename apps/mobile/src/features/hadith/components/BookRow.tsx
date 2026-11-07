@@ -16,6 +16,7 @@ const PADDING_Y = 10;
 const PADDING_X = 16;
 // Compact (the expanded start pane): 52 high, a 17 point title and a 12 point count.
 const COMPACT_MIN_HEIGHT = 52;
+// Compact (the expanded start pane): 52 high, a 17 point title and a 12 point count.
 const COMPACT_TITLE = { fontSize: 17, lineHeight: 30 } as const;
 const DEFAULT_TITLE = { fontSize: 19, lineHeight: 33 } as const;
 

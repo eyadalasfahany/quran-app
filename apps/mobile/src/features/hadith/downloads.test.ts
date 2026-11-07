@@ -1,5 +1,5 @@
 import { act } from '@testing-library/react-native';
-import { getNetworkStateAsync } from 'expo-network';
+import { addNetworkStateListener, getNetworkStateAsync, NetworkStateType } from 'expo-network';
 
 import { installResource, type InstallOptions, type InstallResult } from '@/core/sync';
 import { getWifiOnlyDownloads } from '@/features/audio/settings';
@@ -100,7 +100,7 @@ describe('useHadithDownloads', () => {
     expect(signal?.aborted).toBe(true);
   });
 
-  it('does not start on cellular when Wi-Fi only is on and records reason wifi', async () => {
+  it('does not start on cellular when Wi-Fi only is on and records a waiting entry with reason wifi', async () => {
     jest.mocked(getWifiOnlyDownloads).mockReturnValue(true);
     onWifi(false);
     deferInstalls();
@@ -108,7 +108,7 @@ describe('useHadithDownloads', () => {
       await useHadithDownloads.getState().start(RESOURCE);
     });
     expect(installResource).not.toHaveBeenCalled();
-    expect(useHadithDownloads.getState().byId[RESOURCE]).toEqual({ status: 'failed', progress: 0, reason: 'wifi' });
+    expect(useHadithDownloads.getState().byId[RESOURCE]).toEqual({ status: 'waiting', progress: 0, reason: 'wifi' });
   });
 
   it('starts on Wi-Fi when Wi-Fi only is on', async () => {
@@ -132,6 +132,40 @@ describe('useHadithDownloads', () => {
       await Promise.resolve();
     });
     expect(installResource).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancel removes a waiting entry without an install', async () => {
+    jest.mocked(getWifiOnlyDownloads).mockReturnValue(true);
+    onWifi(false);
+    deferInstalls();
+    await act(async () => {
+      await useHadithDownloads.getState().start(RESOURCE);
+    });
+    act(() => useHadithDownloads.getState().cancel(RESOURCE));
+    expect(useHadithDownloads.getState().byId[RESOURCE]).toBeUndefined();
+    expect(installResource).not.toHaveBeenCalled();
+  });
+
+  it('resumes a waiting download when the device reaches Wi-Fi', async () => {
+    jest.mocked(getWifiOnlyDownloads).mockReturnValue(true);
+    onWifi(false);
+    deferInstalls();
+    await act(async () => {
+      await useHadithDownloads.getState().start(RESOURCE);
+    });
+    const listener = jest.mocked(addNetworkStateListener).mock.calls.at(-1)?.[0];
+    expect(listener).toBeDefined();
+    onWifi(true);
+    await act(async () => {
+      listener?.({ isConnected: true, type: NetworkStateType.WIFI } as Parameters<NonNullable<typeof listener>>[0]);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(installResource).toHaveBeenCalledWith(RESOURCE, expect.anything());
+  });
+
+  it('a waiting entry maps to the waiting state, not failed', () => {
+    expect(downloadStateFor(1, false, 100, false, { 1: { status: 'waiting', progress: 0, reason: 'wifi' } })).toEqual({ kind: 'waiting' });
   });
 
   it('downloadStateFor maps installed, downloading, failed and available', () => {

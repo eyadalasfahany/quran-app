@@ -6,6 +6,9 @@ import { ContentColumn, useTabBarScrollHandlers, useTabContentBottom, useWidthCl
 import { useTheme } from '@/core/theme';
 import { azkarHref } from '@/features/azkar/routes';
 import { MenuDuasCard } from '@/features/duas/components/MenuDuasCard';
+import { MenuHadithCard } from '@/features/hadith/components/MenuHadithCard';
+import { useHadithHomeEntry } from '@/features/hadith/availability';
+import { hadithHref } from '@/features/hadith/routes';
 import { useDuasAvailable } from '@/features/duas/data/hooks';
 import { duasHref } from '@/features/duas/routes';
 // import { MenuNamesCard } from '@/features/names/components/MenuNamesCard';
@@ -56,6 +59,7 @@ export function MenuScreen() {
   const previews = useMenuPreviews();
   const azkar = useAzkarMenuPreview();
   const duasAvailable = useDuasAvailable();
+  const hadithEntry = useHadithHomeEntry();
   // const namesAvailable = useNamesAvailable();
   const hijriDate = useHijriDate();
   const hijriAvailable = isHijriCalendarAvailable();
@@ -123,6 +127,7 @@ export function MenuScreen() {
       />
     ) : null,
     duasAvailable ? <MenuDuasCard key="duas" onPress={() => router.push(duasHref.home)} /> : null,
+    hadithEntry.menuCard ? <MenuHadithCard key="hadith" onPress={() => router.push(hadithHref.home)} /> : null,
     // namesAvailable ? <MenuNamesCard key="names" onPress={() => router.push(namesHref.home)} /> : null,
     <MenuCard
       caption={t('menu.discover.caption')}

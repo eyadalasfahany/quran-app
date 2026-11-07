@@ -11,7 +11,7 @@ import { formatPackSizeMb } from '../format';
 import type { CollectionDownloadState } from './CollectionDownloadButton';
 import { HadithDownloadProgress } from './HadithDownloadProgress';
 
-// Frame HadithCollDownload: the title is Amiri 19 over 33.
+// Frame HadithCollDownload: the title is Amiri 19 over 33 (Amiri's natural leading). UiText scales the line height with the font.
 const TITLE_SIZE = 19;
 const TITLE_LINE_HEIGHT = 33;
 
@@ -64,6 +64,8 @@ export function HadithDownloadSheet({
     );
   } else if (state.kind === 'downloading') {
     action = <HadithDownloadProgress onCancel={onCancel} percent={state.progress} testID={`${testID}-progress`} />;
+  } else if (state.kind === 'waiting') {
+    action = <Button label={t('hadith.download.cancel')} onPress={onCancel} stretch testID={`${testID}-cancel`} variant="secondary" />;
   } else if (state.kind === 'failed') {
     action = (
       <View style={{ gap: theme.space[3] }}>

@@ -94,6 +94,10 @@ jest.mock('@/features/azkar/data', () => ({
 }));
 
 const mockDuas = { available: true };
+const mockHadith = { tile: false, menuCard: false };
+jest.mock('@/features/hadith/availability', () => ({
+  useHadithHomeEntry: () => mockHadith,
+}));
 jest.mock('@/features/duas/data/hooks', () => ({
   useDuasAvailable: () => mockDuas.available,
   useMyDuas: () => [],
@@ -152,6 +156,8 @@ function setWindowWidth(width: number) {
 
 describe('HomeScreen', () => {
   beforeEach(() => {
+    mockHadith.tile = false;
+    mockHadith.menuCard = false;
     setWindowWidth(390);
     storage.remove(storageKeys.readerLastVerseKey);
     jest.mocked(router.push).mockClear();
@@ -650,5 +656,41 @@ describe('HomeScreen bottom clearance', () => {
     expect(view.getByTestId('home-scroll').props.contentContainerStyle.paddingBottom).toBe(
       tabContentClearance('ios', 0) + MINI_PLAYER_TABS_FOOTPRINT + 16,
     );
+  });
+
+  describe('Hadith tile', () => {
+    it('shows the Hadith tile when a hadith pack is installed', async () => {
+      mockHadith.tile = true;
+      const view = await renderUi(<HomeScreen />);
+      expect(view.getByRole('button', { name: 'الحديث' })).toBeOnTheScreen();
+    });
+
+    it('the Hadith tile opens the collections list', async () => {
+      mockHadith.tile = true;
+      const view = await renderUi(<HomeScreen />);
+      await fireEvent.press(view.getByRole('button', { name: 'الحديث' }));
+      expect(router.push).toHaveBeenLastCalledWith('/hadith');
+    });
+
+    it('puts the Hadith tile second, after Surahs', async () => {
+      mockHadith.tile = true;
+      const view = await renderUi(<HomeScreen />);
+      const labels = view.getAllByRole('button').map((button) => button.props.accessibilityLabel as string | undefined);
+      const surahs = labels.indexOf('السور');
+      expect(surahs).toBeGreaterThanOrEqual(0);
+      expect(labels[surahs + 1]).toBe('الحديث');
+    });
+
+    it('hides the Hadith tile when no pack is installed', async () => {
+      mockHadith.tile = false;
+      const view = await renderUi(<HomeScreen />);
+      expect(view.queryByRole('button', { name: 'الحديث' })).toBeNull();
+    });
+
+    it('labels the Hadith tile in English as Hadith', async () => {
+      mockHadith.tile = true;
+      const view = await renderUi(<HomeScreen />, { locale: 'en' });
+      expect(view.getByRole('button', { name: 'Hadith' })).toBeOnTheScreen();
+    });
   });
 });

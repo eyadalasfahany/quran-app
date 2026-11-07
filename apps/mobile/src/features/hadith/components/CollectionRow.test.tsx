@@ -141,4 +141,17 @@ describe('CollectionRow', () => {
     expect(screen.getByTestId(`${TEST_ID}-status`).props.maxFontSizeMultiplier).toBe(maxFontScale.content);
     expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).not.toHaveProperty('height');
   });
+
+  it('waiting shows the Wi-Fi wait text in the muted tone, not the failed text', async () => {
+    await renderRow({ kind: 'waiting' });
+    expect(screen.getByTestId(`${TEST_ID}-status`)).toHaveTextContent('بانتظار شبكة Wi-Fi');
+    expect(screen.queryByTestId(`${TEST_ID}-failed`)).toBeNull();
+    expect(screen.queryByText('تعذّر التنزيل')).toBeNull();
+  });
+
+  it('waiting shows a cancel button that calls onCancel', async () => {
+    const callbacks = await renderRow({ kind: 'waiting' });
+    await press(screen.getByRole('button', { name: 'إيقاف التنزيل' }));
+    expect(callbacks.onCancel).toHaveBeenCalledTimes(1);
+  });
 });

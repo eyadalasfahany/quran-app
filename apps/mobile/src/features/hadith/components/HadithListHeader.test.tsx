@@ -78,4 +78,9 @@ describe('HadithListHeader', () => {
     expect(screen.getByTestId(`${TEST_ID}-title`).props.maxFontSizeMultiplier).toBe(maxFontScale.content);
     expect(flatStyle(screen.getByTestId(`${TEST_ID}-title`).props.style)).not.toHaveProperty('height');
   });
+
+  it('wraps the title in full, with no two-line clamp, so Dynamic Type never cuts it short', async () => {
+    await renderUi(<HadithListHeader onBack={jest.fn()} title="[اسم]" />);
+    expect(screen.getByTestId('hadith-list-header-title').props.numberOfLines).toBeUndefined();
+  });
 });

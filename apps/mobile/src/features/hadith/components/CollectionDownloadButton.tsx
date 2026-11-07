@@ -10,6 +10,7 @@ export type CollectionDownloadState =
   | { kind: 'installed' }
   | { kind: 'available'; sizeBytes: number; offline: boolean }
   | { kind: 'downloading'; progress: number } // 0 to 1
+  | { kind: 'waiting' } // blocked by Wi-Fi only; nothing runs
   | { kind: 'failed' };
 
 /** The trailing control of a collection row: a download pill, a cancel button, or a retry pill. Installed draws nothing. */
@@ -47,6 +48,10 @@ export function CollectionDownloadButton({
         variant="primary"
       />
     );
+  }
+
+  if (state.kind === 'waiting') {
+    return <IconButton icon={CANCEL} label={t('ui.download.cancel')} onPress={onCancel} testID={testID} variant="raised" />;
   }
 
   if (state.kind === 'downloading') {

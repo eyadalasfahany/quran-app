@@ -1729,6 +1729,7 @@
       "cancel": "Cancel",
       "close": "Close",
       "offlineNote": "The collection works offline once downloaded.",
+      "waitingWifi": "Waiting for Wi-Fi",
       "waitWifi": "Download starts when you are on Wi-Fi."
     },
     "reader": {
@@ -1737,7 +1738,8 @@
       "save": "Save hadith",
       "unsave": "Remove from saved",
       "copy": "Copy",
-      "share": "Share"
+      "share": "Share",
+      "copied": "Copied"
     },
     "pager": {
       "previous": "Previous",
@@ -1782,10 +1784,35 @@
       "number": "Hadith number",
       "source": "Source"
     },
+    "expanded": {
+      "books": "Books"
+    },
     "list": {
       "search": "Search hadith",
       "downloads": "Downloads",
       "credit": "Source: fawazahmed0/hadith-api · Unlicense"
+    },
+    "home": {
+      "tile": "Hadith"
+    },
+    "menu": {
+      "caption": "Hadith",
+      "title": "Hadith",
+      "subtitle": "Collections and books"
+    },
+    "sources": {
+      "fawazahmed0": {
+        "title": "fawazahmed0/hadith-api",
+        "subtitle": "Hadith text · Unlicense"
+      },
+      "openiti": {
+        "title": "OpenITI · Open Islamicate Texts Initiative",
+        "subtitle": "Chapter titles, and the text of some hadith missing from the main source: OpenITI (Open Islamicate Texts Initiative), release 2023.1.8, CC BY-NC-SA 4.0. Changes were made: formatting markers removed; chapters mapped to the hadith numbering of fawazahmed0/hadith-api."
+      },
+      "hadithapicom": {
+        "title": "hadithapi.com",
+        "subtitle": "Text of some hadith missing from the main source: hadithapi.com"
+      }
     }
   }
 }
