@@ -258,3 +258,26 @@ it('refuses to run in production before any key or file is read', function (): v
         ->expectsOutputToContain('disabled in production')
         ->assertExitCode(1);
 });
+
+it('counts both book heading forms and stores the extra-book title without its number prefix', function (): void {
+    $lines = "#META#Header#End#\n### | 1 - كتاب FIXTURE\n### || كتاب FIXTURE\n### | 2 - ".GAP_TEXT_2."\n### | 3 - ".GAP_TEXT_GAP."\n";
+    File::ensureDirectoryExists(gapsOpenItiDirectory());
+    File::put(gapsOpenItiDirectory().'/FIXTURE.Sunan.Shamela0000001-ara1', $lines);
+    config(['hadith.openiti.files' => ['bukhari' => [
+        'path' => 'FIXTURE/FIXTURE.Sunan.Shamela0000001-ara1',
+        'sha256' => hash('sha256', $lines),
+        'unit_start' => '/^### \\| ?([0-9]+) ?- /u',
+        'unit_stop' => '/^###/u',
+        'unit_count' => 3,
+    ]]]);
+    config(['hadith.extra_books' => ['bukhari' => [['book_number' => '1.1', 'after_book' => '1', 'first' => '2', 'last' => '3', 'openiti_heading_ordinal' => 2]]]]);
+    gapsDecisionsFile([gapsEntry('3', 'unknown', 'none', '2', '4', null, null)], hash('sha256', $lines));
+
+    $result = gapsBuild();
+    $proposal = gapsProposal($result);
+
+    expect($proposal['books'])->toHaveCount(1)
+        ->and($proposal['books'][0]['title_ar'])->toBe('كتاب FIXTURE')
+        ->and($proposal['books'][0]['source_key'])->toBe('openiti:bukhari:book:2')
+        ->and($result->report['extra_books'][0]['ordinal'])->toBe(2);
+});

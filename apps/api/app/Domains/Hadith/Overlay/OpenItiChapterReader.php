@@ -39,6 +39,7 @@ final class OpenItiChapterReader
             if (str_starts_with($line, '###')) {
                 $census['heading']++;
                 $title = $this->headings->clean($this->headingLines($lines, $index))->title;
+                $title = (string) preg_replace('~^[0-9]+\s*-\s*~u', '', $title);
 
                 if (($bookRx !== null && preg_match($bookRx, $line) === 1) || preg_match(self::BOOK_WORD, $title) === 1) {
                     $boundaries[] = ['kind' => 'book', 'index' => $index];

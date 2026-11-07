@@ -1,0 +1,72 @@
+{
+ "collection": "abudawud",
+ "entries": [
+  {
+   "run_first": 907,
+   "run_last": 907,
+   "run_len": 1,
+   "prev": 906,
+   "next": 908,
+   "rule_class": "confirmed",
+   "hadith": 907,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 907,
+   "openiti_unit_number": 907
+  },
+  {
+   "run_first": 4290,
+   "run_last": 4290,
+   "run_len": 1,
+   "prev": 4289,
+   "next": 4291,
+   "rule_class": "both-match-count-differs",
+   "hadith": 4290,
+   "class": "fill-safe",
+   "source": "hadithapi.com",
+   "window_units": 4,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 2,
+   "prev_jac": 1.0,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0.308,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1",
+   "hapi_prev_jac": 1.0,
+   "hapi_next_jac": 1.0,
+   "hapi_numbers_in_record": 1,
+   "hapi_cont_prev": 0.129,
+   "hapi_cont_next": 0.143,
+   "hapi_best_other_jac": 0.165
+  }
+ ],
+ "hadithapi_same_number": {
+  "checked": 2,
+  "match": 2,
+  "rate": 1.0,
+  "numbers_absent": 0
+ },
+ "fawazahmed0_commit": "df57907be35291c91ad6a6691180e22ca9920784",
+ "openiti": {
+  "source": "zenodo:10.5281/zenodo.10007820",
+  "path": "0275AbuDawudSijistani/0275AbuDawudSijistani.Sunan/0275AbuDawudSijistani.Sunan.Shamela0001726-ara1",
+  "sha256": "58f8fb59122383c1dd0d7c7184f372a0076f3db9e19e9af9640881564b480472"
+ },
+ "text_check": "jaccard>=0.5 on normalised word sets (len>=3)",
+ "containment_threshold": 0.8,
+ "classes": {
+  "fill-safe": "text from source (openiti unit or hadithapi.com record) fills this number",
+  "merge-prev": "number resolves to fawazahmed0 prev hadith",
+  "merge-next": "number resolves to fawazahmed0 next hadith",
+  "unknown": "unresolved; collection held back"
+ },
+ "counts": {
+  "fill-safe/openiti": 1,
+  "fill-safe/hadithapi.com": 1
+ }
+}

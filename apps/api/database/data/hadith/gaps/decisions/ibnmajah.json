@@ -1,0 +1,88 @@
+{
+ "collection": "ibnmajah",
+ "entries": [
+  {
+   "run_first": 1928,
+   "run_last": 1929,
+   "run_len": 2,
+   "prev": 1927,
+   "next": 1930,
+   "rule_class": "confirmed",
+   "hadith": 1928,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 1927,
+   "openiti_unit_number": 1928
+  },
+  {
+   "run_first": 1928,
+   "run_last": 1929,
+   "run_len": 2,
+   "prev": 1927,
+   "next": 1930,
+   "rule_class": "confirmed",
+   "hadith": 1929,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 1928,
+   "openiti_unit_number": 1929
+  },
+  {
+   "run_first": 1955,
+   "run_last": 1955,
+   "run_len": 1,
+   "prev": 1954,
+   "next": 1956,
+   "rule_class": "confirmed",
+   "hadith": 1955,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 1954,
+   "openiti_unit_number": 1955
+  },
+  {
+   "run_first": 2490,
+   "run_last": 2490,
+   "run_len": 1,
+   "prev": 2489,
+   "next": 2491,
+   "rule_class": "confirmed",
+   "hadith": 2490,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 2489,
+   "openiti_unit_number": 2490
+  },
+  {
+   "run_first": 2497,
+   "run_last": 2497,
+   "run_len": 1,
+   "prev": 2496,
+   "next": 2498,
+   "rule_class": "confirmed",
+   "hadith": 2497,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 2496,
+   "openiti_unit_number": 2497
+  }
+ ],
+ "hadithapi_same_number": null,
+ "fawazahmed0_commit": "df57907be35291c91ad6a6691180e22ca9920784",
+ "openiti": {
+  "source": "zenodo:10.5281/zenodo.10007820",
+  "path": "0273IbnMaja/0273IbnMaja.Sunan/0273IbnMaja.Sunan.Shamela0001198-ara1",
+  "sha256": "17c6161f01caec91d3ee3ea602d2885f6b2bb499de44d6090a76196945dd6bc9"
+ },
+ "text_check": "jaccard>=0.5 on normalised word sets (len>=3)",
+ "containment_threshold": 0.8,
+ "classes": {
+  "fill-safe": "text from source (openiti unit or hadithapi.com record) fills this number",
+  "merge-prev": "number resolves to fawazahmed0 prev hadith",
+  "merge-next": "number resolves to fawazahmed0 next hadith",
+  "unknown": "unresolved; collection held back"
+ },
+ "counts": {
+  "fill-safe/openiti": 5
+ }
+}

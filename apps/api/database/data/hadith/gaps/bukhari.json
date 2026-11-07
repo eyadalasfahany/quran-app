@@ -1,0 +1,69 @@
+{
+    "schema_version": 1,
+    "collection": "bukhari",
+    "generator": "hadith:build-gaps 1",
+    "fawazahmed0_commit": "df57907be35291c91ad6a6691180e22ca9920784",
+    "decisions_sha256": "05bd06c8b8c197e6efa8824687a8d60de633cf495571de09fe613ff4b86a8119",
+    "origins": {
+        "openiti": {
+            "source_version": "2023.1.8",
+            "doi": "10.5281/zenodo.10007820",
+            "file": "0256Bukhari/0256Bukhari.Sahih/0256Bukhari.Sahih.Shamela0001681-ara1",
+            "file_sha256": "b19b17cb5da39e06fde6b099dc8674994ca59980f090a12ca86a55adcd163375"
+        },
+        "hadithapicom": {
+            "source_version": "retrieved-2026-11-07",
+            "book_slug": "sahih-bukhari"
+        }
+    },
+    "books": [],
+    "fills": [],
+    "merges": [
+        {
+            "number": "5710",
+            "into": "5709",
+            "origin": "openiti"
+        },
+        {
+            "number": "5711",
+            "into": "5709",
+            "origin": "openiti"
+        },
+        {
+            "number": "5712",
+            "into": "5709",
+            "origin": "openiti"
+        },
+        {
+            "number": "5774",
+            "into": "5773",
+            "origin": "openiti"
+        },
+        {
+            "number": "5775",
+            "into": "5773",
+            "origin": "openiti"
+        },
+        {
+            "number": "6074",
+            "into": "6073",
+            "origin": "hadithapicom"
+        },
+        {
+            "number": "6075",
+            "into": "6073",
+            "origin": "hadithapicom"
+        },
+        {
+            "number": "6174",
+            "into": "6173",
+            "origin": "openiti"
+        },
+        {
+            "number": "6175",
+            "into": "6173",
+            "origin": "openiti"
+        }
+    ],
+    "unresolved": []
+}

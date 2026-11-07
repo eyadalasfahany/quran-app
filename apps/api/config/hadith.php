@@ -150,7 +150,21 @@ return [
     ],
 
     // Committed data files under database/data/hadith, path relative to that folder => lowercase hex SHA-256. null = not committed yet.
-    'data_files' => [],                  // filled in 6b.8 by the developer
+    // SHA-256 of every committed file under database/data/hadith (step 6b.8). The importer refuses a file whose hash differs.
+    'data_files' => [
+        'gaps/decisions/bukhari.json' => '05bd06c8b8c197e6efa8824687a8d60de633cf495571de09fe613ff4b86a8119',
+        'gaps/decisions/abudawud.json' => '1b5979f0e1de6bb2eef34f9983343c712e016d583fde514dc2fd9c6e27b52736',
+        'gaps/decisions/nasai.json' => '0748a983ba6a4c2471efb5cea212c70dad55c80e7ef7e0d8c8bd8d7f75b60653',
+        'gaps/decisions/ibnmajah.json' => '6078b8e424b52cf500fcb07c3aa2ea7a23b401fe5c726ff1150c58883e69062a',
+        'gaps/bukhari.json' => 'e03c11eee7878b258138ca37f1d296552e7cbbcce83406cd2cd34c569f2e8179',
+        'chapters/bukhari.json' => '3509be108c0b3b5ff20d80fbf26fda741624531ad826b3bc67ed0d0ff50f9c18',
+        'gaps/abudawud.json' => '92bd3ce98efc22a0bf0de152881109d76d3da7761d8a4282d178904f3d4e5eb4',
+        'chapters/abudawud.json' => 'd9272422fc70d4fe10e8bc50ca401b6eb5da32b2ceccf6bdf9de29d5e61b509a',
+        'gaps/nasai.json' => '5067d9dd2edfc22ffb6bbe9de2054ac23f614b49397d0b693c32244f67789cae',
+        'chapters/nasai.json' => 'a3644284fcf5f3f6348a3e9941cfb8a1ec67a0d071238d332f482d43b05364a3',
+        'gaps/ibnmajah.json' => 'eb64b38535c4f91b10b950961efdef814f1ccb3d3ad096e69fb25e6d8fecd98e',
+        'chapters/ibnmajah.json' => 'e726bffa4f50eadc60ced46dd219a7df328129e97d903fd6974264de86d0795c',
+    ],
 
     // OpenITI: used only by the dev commands (hadith:build-gaps, hadith:match-chapters). Production never reads it. The
     // SHA-256 values are the primary versions of the gap report (docs/plans/phase-7/gapfill-report.md). unit_count is the

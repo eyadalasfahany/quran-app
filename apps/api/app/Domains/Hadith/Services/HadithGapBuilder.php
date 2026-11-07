@@ -662,6 +662,7 @@ final class HadithGapBuilder
             }
 
             $title = $this->headingCleaner->clean([$line, ...$continuation])->title;
+            $title = (string) preg_replace('~^[0-9]+\s*-\s*~u', '', $title);
 
             if (preg_match('~^(كتاب|أبواب)(\s|$)~u', $title) === 1) {
                 $headings[] = ['index' => $index, 'title' => $title];
