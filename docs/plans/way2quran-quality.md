@@ -1,6 +1,6 @@
 # Way2Quran quality mode: completeness, ASR anchors, repeat-aware alignment, the gate and release
 
-Status: **accepted by the coordinator, 7 Nov 2026** (ADR 0077). Q0–Q12 proceed on it; Q13 (release) also waits for the developer's acceptance of ADR 0077 (see the next section) · Branch: `main`, as for `docs/plans/way2quran-reciter.md`. The tree is shared with Phase 7 work, so each step stages only its own files and records its base commit (`git rev-parse HEAD`) in its brief · ADR: `docs/adr/0077-way2quran-quality-mode.md` · Supersedes steps 10 and 11 of `docs/plans/way2quran-reciter.md`.
+Status: **accepted by the developer, 7 Nov 2026** (ADR 0077). Q0–Q13 proceed on it · Branch: `main`, as for `docs/plans/way2quran-reciter.md`. The tree is shared with Phase 7 work, so each step stages only its own files and records its base commit (`git rev-parse HEAD`) in its brief · ADR: `docs/adr/0077-way2quran-quality-mode.md` · Supersedes steps 10 and 11 of `docs/plans/way2quran-reciter.md`.
 
 ## Rests on
 
@@ -644,7 +644,7 @@ Each step is one reviewable, committable change. Its brief records `<base>`, run
 
 ### Q13. Release PRs (coordinator) and the exit check
 
-- **Waits for** the developer's acceptance of ADR 0077 (the "Decisions that need the developer" section, items 1–3).
+- **Acceptance:** given by the developer on 7 Nov 2026.
 - **For each reciter whose report says `Releasable: yes`:** one PR that adds the id to `quran.way2quran_released_reciters` and one ADR 0060 addendum line pointing at `checks/way2quran-{id}.json`.
   - Open it with a user token (`gh` as the developer's account), never `GITHUB_TOKEN`: PRs opened by `GITHUB_TOKEN` do not trigger `tools.yml`.
   - Before asking for the merge, confirm that a `tools.yml` run exists for the PR's head sha and is green, which includes `test_released_gated.py`.
