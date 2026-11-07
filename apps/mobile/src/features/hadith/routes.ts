@@ -9,6 +9,9 @@ export const hadithHref = {
     (resourceId === undefined ? '/hadith/downloads' : `/hadith/downloads?resource=${resourceId}`) as Href,
   collection: (slug: string): Href => `/hadith/${encodeURIComponent(slug)}` as Href,
   book: (slug: string, bookId: number): Href => `/hadith/${encodeURIComponent(slug)}/books/${bookId}` as Href,
+  /** A run of chapterless hadith: the book route with the run's position range (`from`, `to`, inclusive). */
+  run: (slug: string, bookId: number, from: number, to: number): Href =>
+    `/hadith/${encodeURIComponent(slug)}/books/${bookId}?from=${from}&to=${to}` as Href,
   chapter: (slug: string, bookId: number, chapterId: number): Href =>
     `/hadith/${encodeURIComponent(slug)}/books/${bookId}/chapters/${chapterId}` as Href,
   reader: (slug: string, hadithNumber: string): Href =>

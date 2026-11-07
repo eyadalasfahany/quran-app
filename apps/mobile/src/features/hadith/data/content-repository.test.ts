@@ -12,6 +12,8 @@ import {
   getHadithReaderData,
   hasHadithContent,
   listBookHadith,
+  listBookHadithRange,
+  listBookOutline,
   listBooks,
   listChapterHadith,
   listChapters,
@@ -334,5 +336,114 @@ describe('content repository', () => {
     const uninstalled = catalog.find((entry) => entry.resourceId === 90);
     expect(uninstalled).toMatchObject({ installed: false, slug: null, packSizeBytes: 2048 });
     expect(catalog.find((entry) => entry.resourceId === -1)).toMatchObject({ installed: true, slug: FIXTURE_MULTI.slug });
+  });
+});
+
+/**
+ * A partly chaptered book (book 10 of the first fixture collection). Entry positions 1 to 7 in order: a run of hadith 1,
+ * chapter A (hadith 2 and 3), a run of 4 and 5 (5 is a placeholder), chapter B (hadith 6), a run of 7. Chapter C has no
+ * hadith and sits after B. Placeholder text is a fixture marker; no hadith text.
+ */
+const OUTLINE_BOOK = 10;
+
+function insertOutlineBook(executor: SqlExecutor): void {
+  executor.run(
+    `INSERT INTO hadith_books (resource_id, id, book_number, title_ar, title_en, position, hadith_count)
+     VALUES (-1, ?, '10', NULL, NULL, 10, 6)`,
+    [OUTLINE_BOOK],
+  );
+  const chapters: [number, number, number, number][] = [
+    [21, 1, 2, 1],
+    [22, 2, 1, 2],
+    [23, 3, 0, 3],
+  ];
+  for (const [id, chapterNumber, count, position] of chapters) {
+    executor.run(
+      `INSERT INTO hadith_chapters (resource_id, id, book_id, chapter_number, source_chapter_key, title_ar, title_en, position, hadith_count)
+       VALUES (-1, ?, ?, ?, NULL, '[عنوان تجريبي]', NULL, ?, ?)`,
+      [id, OUTLINE_BOOK, chapterNumber, position, count],
+    );
+  }
+  const entries: [number, number, number | null, string, string, string | null][] = [
+    [201, 1, null, '1', 'FIXTURE text 1 — not a hadith', null],
+    [202, 2, 21, '2', 'FIXTURE text 2 — not a hadith', null],
+    [203, 3, 21, '3', 'FIXTURE text 3 — not a hadith', null],
+    [204, 4, null, '4', 'FIXTURE text 4 — not a hadith', null],
+    [205, 5, null, '5', '', 'unavailable'],
+    [206, 6, 22, '6', 'FIXTURE text 6 — not a hadith', null],
+    [207, 7, null, '7', 'FIXTURE text 7 — not a hadith', null],
+  ];
+  for (const [id, position, chapterId, hadithNumber, textAr, sourceCode] of entries) {
+    executor.run(
+      `INSERT INTO hadith_entries (resource_id, id, book_id, chapter_id, hadith_number, arabic_number, position, text_ar,
+                                   text_en, narrator_en, text_search, source_url, number_first, number_last, source_code)
+       VALUES (-1, ?, ?, ?, ?, NULL, ?, ?, NULL, NULL, ?, NULL, NULL, NULL, ?)`,
+      [id, OUTLINE_BOOK, chapterId, hadithNumber, position, textAr, textAr, sourceCode],
+    );
+  }
+}
+
+describe('book outline', () => {
+  let database: DatabaseSync;
+  let executor: SqlExecutor;
+
+  beforeEach(() => {
+    const opened = openAzkarContentDb();
+    database = opened.database;
+    executor = opened.executor;
+    loadHadithDevFixtures(executor);
+    insertOutlineBook(executor);
+  });
+
+  afterEach(() => {
+    database.close();
+  });
+
+  const shape = (items: ReturnType<typeof listBookOutline>) =>
+    items.map((item) =>
+      item.kind === 'chapter'
+        ? `chapter ${item.chapter.id}`
+        : `run ${item.firstNumber}-${item.lastNumber} x${item.count} (${item.firstPosition}-${item.lastPosition})`,
+    );
+
+  it('places runs before, between and after chapters, with chapters in order', () => {
+    expect(shape(listBookOutline(executor, -1, OUTLINE_BOOK))).toEqual([
+      'run 1-1 x1 (1-1)',
+      'chapter 21',
+      'run 4-5 x2 (4-5)',
+      'chapter 22',
+      'chapter 23',
+      'run 7-7 x1 (7-7)',
+    ]);
+  });
+
+  it('counts a single-hadith run', () => {
+    const runs = listBookOutline(executor, -1, OUTLINE_BOOK).filter((item) => item.kind === 'run');
+    expect(runs[2]).toMatchObject({ kind: 'run', firstNumber: '7', lastNumber: '7', count: 1 });
+  });
+
+  it('counts placeholder rows in a run and in its range', () => {
+    const run = listBookOutline(executor, -1, OUTLINE_BOOK).find((item) => item.kind === 'run' && item.firstNumber === '4');
+    expect(run).toMatchObject({ kind: 'run', lastNumber: '5', count: 2 });
+    const rows = listBookHadithRange(executor, FIXTURE_MULTI.slug, OUTLINE_BOOK, { from: 4, to: 5 });
+    expect(rows.map((row) => row.hadithNumber)).toEqual(['4', '5']);
+    expect(rows[1]?.sourceCode).toBe('unavailable');
+  });
+
+  it('gives a flat list (empty outline) for a book with no chapters', () => {
+    expect(listBookOutline(executor, -1, 2)).toEqual([]);
+  });
+
+  it('lists only chapters for a chaptered book with no chapterless hadith', () => {
+    expect(shape(listBookOutline(executor, -1, 1))).toEqual(['chapter 1', 'chapter 2']);
+  });
+
+  it('pages a position range in position order', () => {
+    const page = listBookHadithRange(executor, FIXTURE_MULTI.slug, OUTLINE_BOOK, { from: 1, to: 7 }, { limit: 2, offset: 1 });
+    expect(page.map((row) => row.hadithNumber)).toEqual(['2', '3']);
+  });
+
+  it('returns no rows for an unknown slug', () => {
+    expect(listBookHadithRange(executor, 'unknown-slug', OUTLINE_BOOK, { from: 1, to: 7 })).toEqual([]);
   });
 });

@@ -9,6 +9,8 @@ export {
   getHadithReaderData,
   hasHadithContent,
   listBookHadith,
+  listBookHadithRange,
+  listBookOutline,
   listBooks,
   listChapterHadith,
   listChapters,

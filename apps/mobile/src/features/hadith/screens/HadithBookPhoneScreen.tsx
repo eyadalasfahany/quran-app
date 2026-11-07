@@ -15,7 +15,7 @@ import { HadithChapterList } from '../components/HadithChapterList';
 import { HadithHadithList } from '../components/HadithHadithList';
 import { HadithListHeader } from '../components/HadithListHeader';
 import { countHadith } from '../counts';
-import { useBookChapters, useBookHadith, useHadithBook, useHadithCollection } from '../hooks';
+import { useBookHadith, useBookOutline, useHadithBook, useHadithCollection } from '../hooks';
 import { useHadithBookmarks } from '../personal';
 import { hadithHref } from '../routes';
 import { bookTitle, collectionTitle } from '../titles';
@@ -25,7 +25,7 @@ const SEARCH = { ios: 'magnifyingglass', android: 'search' } as const;
 const NO_BOOK = -1;
 
 /**
- * One book (phone and medium windows). A chaptered book (option C: never both) lists its chapters; a flat book lists its hadith. The subtitle
+ * One book (phone and medium windows). A chaptered book lists its outline (chapters and runs of chapterless hadith, ADR 0076 option B); a flat book lists its hadith. The subtitle
  * of a chaptered book is the collection title only, as in frame HadithCollChapters.
  */
 export function HadithBookPhoneScreen({
@@ -44,7 +44,7 @@ export function HadithBookPhoneScreen({
   const id = bookId ?? NO_BOOK;
   const book = useHadithBook(slug, id);
   const collection = useHadithCollection(slug);
-  const chapters = useBookChapters(slug, id);
+  const outline = useBookOutline(slug, id);
   const hadith = useBookHadith(slug, id);
   const bookmarks = useHadithBookmarks();
   const savedNumbers = useMemo(
@@ -72,9 +72,10 @@ export function HadithBookPhoneScreen({
     );
     body = book.hasChapters ? (
       <HadithChapterList
-        chapters={chapters}
         header={header}
-        onOpen={(chapter) => router.push(hadithHref.chapter(slug, book.id, chapter.id))}
+        items={outline}
+        onOpenChapter={(chapter) => router.push(hadithHref.chapter(slug, book.id, chapter.id))}
+        onOpenRun={(run) => router.push(hadithHref.run(slug, book.id, run.firstPosition, run.lastPosition))}
       />
     ) : (
       <HadithHadithList

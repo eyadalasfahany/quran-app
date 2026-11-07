@@ -29,6 +29,21 @@ export function chapterTitle(c: { titleAr: string | null; chapterNumber: number 
   return present(c.titleAr) ?? t('hadith.untitled.chapter', { n: formatNumber(c.chapterNumber, locale) });
 }
 
+/** A run of chapterless hadith: «حديث {n}» for one hadith, else «أحاديث {first}–{last}» (Arabic) or "Hadith {first}–{last}". */
+export function runTitle(
+  run: { firstNumber: string; lastNumber: string; count: number },
+  locale: Locale,
+  t: TFunction,
+): string {
+  if (run.count === 1) {
+    return t('hadith.chapters.runSingle', { n: formatHadithNumber(run.firstNumber, locale) });
+  }
+  return t('hadith.chapters.run', {
+    first: formatHadithNumber(run.firstNumber, locale),
+    last: formatHadithNumber(run.lastNumber, locale),
+  });
+}
+
 /** The cover's title: Arabic UI titleAr, English UI titleEn, else null (ornament-only cover). No fallback text. */
 export function coverTitle(c: Titles, locale: Locale): string | null {
   return locale === 'ar' ? present(c.titleAr) : present(c.titleEn);

@@ -2,12 +2,14 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import type {
   HadithBook,
+  HadithBookOutlineItem,
   HadithCatalogEntry,
   HadithChapter,
   HadithCollection,
   HadithCollectionRef,
   HadithDetail,
   HadithListItem,
+  HadithPositionRange,
   HadithReaderData,
   HadithRef,
 } from '../types';
@@ -152,6 +154,27 @@ export function listBookHadith(db: SqlExecutor, slug: string, bookId: number, pa
   }
   const params: (number | string)[] = [resourceId, bookId];
   let sql = `${ITEM_SELECT} WHERE e.resource_id = ? AND e.book_id = ? ORDER BY e.position, e.id`;
+  if (page !== undefined) {
+    sql += ' LIMIT ? OFFSET ?';
+    params.push(page.limit, page.offset);
+  }
+  return db.all<HadithListItem>(sql, params);
+}
+
+/** Hadith of a position range inside one book (a run from the outline), in position order, one page at a time. */
+export function listBookHadithRange(
+  db: SqlExecutor,
+  slug: string,
+  bookId: number,
+  range: HadithPositionRange,
+  page?: Page,
+): HadithListItem[] {
+  const resourceId = hadithResourceId(db, slug);
+  if (resourceId === undefined) {
+    return [];
+  }
+  const params: (number | string)[] = [resourceId, bookId, range.from, range.to];
+  let sql = `${ITEM_SELECT} WHERE e.resource_id = ? AND e.book_id = ? AND e.position BETWEEN ? AND ? ORDER BY e.position, e.id`;
   if (page !== undefined) {
     sql += ' LIMIT ? OFFSET ?';
     params.push(page.limit, page.offset);
@@ -350,6 +373,102 @@ type CatalogRow = {
   slug: string | null;
   sourceKey: string | null;
 };
+
+type OutlineRow = {
+  position: number;
+  hadithNumber: string;
+  chapterId: number | null;
+  numberFirst: string | null;
+  numberLast: string | null;
+};
+
+type OutlineRun = Extract<HadithBookOutlineItem, { kind: 'run' }>;
+
+/**
+ * Maximal runs of rows with no chapter, in position order. A run's first number is the first row's span start and its
+ * last number is the last row's span end, so a merged row at an edge keeps the whole span.
+ */
+function outlineRuns(rows: readonly OutlineRow[]): OutlineRun[] {
+  const runs: OutlineRun[] = [];
+  let open: OutlineRow[] = [];
+  const close = () => {
+    const first = open[0];
+    const last = open[open.length - 1];
+    if (first === undefined || last === undefined) {
+      return;
+    }
+    runs.push({
+      kind: 'run',
+      firstNumber: first.numberFirst ?? first.hadithNumber,
+      lastNumber: last.numberLast ?? last.hadithNumber,
+      count: open.length,
+      firstPosition: first.position,
+      lastPosition: last.position,
+    });
+    open = [];
+  };
+  for (const row of rows) {
+    if (row.chapterId === null) {
+      open.push(row);
+    } else {
+      close();
+    }
+  }
+  close();
+  return runs;
+}
+
+/**
+ * The outline of a book (ADR 0076, option B): every chapter in order, with the runs of chapterless hadith placed between
+ * them by position. A chapter has no position of its own on the entry scale, so it starts where its first hadith sits;
+ * a chapter with no hadith starts where the chapter before it starts. A book with no chapters returns `[]`, and the
+ * screen shows its flat list instead.
+ */
+export function listBookOutline(db: SqlExecutor, resourceId: number, bookId: number): HadithBookOutlineItem[] {
+  const chapters = db.all<HadithChapter>(
+    `SELECT resource_id AS resourceId, id, book_id AS bookId, chapter_number AS chapterNumber,
+            title_ar AS titleAr, title_en AS titleEn, position, hadith_count AS hadithCount
+     FROM hadith_chapters
+     WHERE resource_id = ? AND book_id = ?
+     ORDER BY position, id`,
+    [resourceId, bookId],
+  );
+  if (chapters.length === 0) {
+    return [];
+  }
+  const rows = db.all<OutlineRow>(
+    `SELECT e.position AS position, e.hadith_number AS hadithNumber, e.chapter_id AS chapterId,
+            e.number_first AS numberFirst, e.number_last AS numberLast
+     FROM hadith_entries e
+     WHERE e.resource_id = ? AND e.book_id = ?
+     ORDER BY e.position, e.id`,
+    [resourceId, bookId],
+  );
+
+  const firstRowOfChapter = new Map<number, number>();
+  for (const row of rows) {
+    if (row.chapterId !== null && !firstRowOfChapter.has(row.chapterId)) {
+      firstRowOfChapter.set(row.chapterId, row.position);
+    }
+  }
+
+  const runs = outlineRuns(rows);
+  const outline: HadithBookOutlineItem[] = [];
+  let nextRun = 0;
+  let start = Number.NEGATIVE_INFINITY;
+  for (const chapter of chapters) {
+    start = firstRowOfChapter.get(chapter.id) ?? start;
+    let pending = runs[nextRun];
+    while (pending !== undefined && pending.firstPosition < start) {
+      outline.push(pending);
+      nextRun += 1;
+      pending = runs[nextRun];
+    }
+    outline.push({ kind: 'chapter', chapter });
+  }
+  outline.push(...runs.slice(nextRun));
+  return outline;
+}
 
 export function listHadithCatalog(db: SqlExecutor): HadithCatalogEntry[] {
   const rows = db.all<CatalogRow>(

@@ -119,3 +119,22 @@ export type HadithSearchHit = {
 };
 
 export type HadithSearchPage = { hits: HadithSearchHit[]; hasMore: boolean };
+
+/** An inclusive range of entry positions inside one book (a run opened from the book outline). */
+export type HadithPositionRange = { from: number; to: number };
+
+/**
+ * One row of a partly chaptered book's outline (ADR 0076, option B): an accepted chapter, or a run of hadith that belong
+ * to no chapter. A run's numbers are its first and last hadith numbers (merged spans count from their ends); `count`
+ * includes placeholder rows.
+ */
+export type HadithBookOutlineItem =
+  | { kind: 'chapter'; chapter: HadithChapter }
+  | {
+      kind: 'run';
+      firstNumber: string;
+      lastNumber: string;
+      count: number;
+      firstPosition: number;
+      lastPosition: number;
+    };

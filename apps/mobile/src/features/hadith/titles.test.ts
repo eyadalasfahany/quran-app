@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 
 import { i18n } from '@/core/i18n';
 
-import { bookTitle, chapterTitle, collectionAuthor, collectionTitle, coverTitle } from './titles';
+import { bookTitle, chapterTitle, collectionAuthor, collectionTitle, coverTitle, runTitle } from './titles';
 
 // The real i18n instance, set to the language under test, so `t` returns the locale's copy.
 function tFor(language: 'ar' | 'en'): TFunction {
@@ -60,5 +60,15 @@ describe('titles', () => {
     expect(collectionAuthor({ authorAr: null, authorEn: '[Author]' }, 'ar')).toBeNull();
     expect(collectionAuthor({ authorAr: '[مؤلف]', authorEn: null }, 'en')).toBeNull();
     expect(collectionAuthor({ authorAr: '[مؤلف]', authorEn: '[Author]' }, 'ar')).toBe('[مؤلف]');
+  });
+
+  it('runTitle gives a range in Arabic digits and a single hadith as «حديث n»', () => {
+    expect(runTitle({ firstNumber: '12', lastNumber: '30', count: 19 }, 'ar', tFor('ar'))).toBe('أحاديث ١٢–٣٠');
+    expect(runTitle({ firstNumber: '7', lastNumber: '7', count: 1 }, 'ar', tFor('ar'))).toBe('حديث ٧');
+  });
+
+  it('runTitle gives a range in English digits', () => {
+    expect(runTitle({ firstNumber: '12', lastNumber: '30', count: 19 }, 'en', tFor('en'))).toBe('Hadith 12–30');
+    expect(runTitle({ firstNumber: '7', lastNumber: '7', count: 1 }, 'en', tFor('en'))).toBe('Hadith 7');
   });
 });

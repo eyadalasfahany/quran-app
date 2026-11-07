@@ -4,6 +4,8 @@ export type { PagedHadith } from './hooks';
 export {
   useBookChapters,
   useBookHadith,
+  useBookOutline,
+  useRunHadith,
   useChapterHadith,
   useHadithAvailable,
   useHadithBook,

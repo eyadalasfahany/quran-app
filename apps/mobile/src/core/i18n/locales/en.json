@@ -1826,6 +1826,10 @@
         "title": "hadithapi.com",
         "subtitle": "Text of some hadith missing from the main source: hadithapi.com"
       }
+    },
+    "chapters": {
+      "run": "Hadith {{first}}–{{last}}",
+      "runSingle": "Hadith {{n}}"
     }
   }
 }

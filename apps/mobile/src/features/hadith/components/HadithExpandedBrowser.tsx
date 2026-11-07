@@ -11,7 +11,7 @@ import { IconButton, Screen } from '@/shared/ui';
 
 import { countHadith } from '../counts';
 import { hadithNumberText } from '../number-text';
-import { useBookChapters, useBookHadith, useHadithBook, useHadithBooks, useHadithCollection, useHadithReader } from '../hooks';
+import { useBookHadith, useBookOutline, useHadithBook, useHadithBooks, useHadithCollection, useHadithReader } from '../hooks';
 import { useHadithBookmarks } from '../personal';
 import { useHadithReaderActions } from '../reader-actions';
 import { hadithHref } from '../routes';
@@ -61,7 +61,7 @@ export function HadithExpandedBrowser({
   // The reader's book wins; without a hadith open, the chosen book; else the first book, or the sole book.
   const bookId = reader?.hadith.book.id ?? selection.bookId ?? collection?.soleBookId ?? books[0]?.id ?? null;
   const book = useHadithBook(slug, bookId ?? NO_BOOK);
-  const chapters = useBookChapters(slug, bookId ?? NO_BOOK);
+  const outline = useBookOutline(slug, bookId ?? NO_BOOK);
   const hadith = useBookHadith(slug, bookId ?? NO_BOOK);
   const bookmarks = useHadithBookmarks();
   const savedNumbers = useMemo(
@@ -142,9 +142,10 @@ export function HadithExpandedBrowser({
     );
     end = book.hasChapters ? (
       <HadithChapterList
-        chapters={chapters}
         header={header}
-        onOpen={(chapter) => router.push(hadithHref.chapter(slug, book.id, chapter.id))}
+        items={outline}
+        onOpenChapter={(chapter) => router.push(hadithHref.chapter(slug, book.id, chapter.id))}
+        onOpenRun={(run) => router.push(hadithHref.run(slug, book.id, run.firstPosition, run.lastPosition))}
         testID={`${testID}-chapters`}
       />
     ) : (

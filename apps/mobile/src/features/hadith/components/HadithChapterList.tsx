@@ -3,20 +3,26 @@ import { FlatList, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
-import type { HadithChapter } from '../types';
+import type { HadithBookOutlineItem, HadithChapter } from '../types';
 
 import { ChapterRow } from './ChapterRow';
+import { ChapterRunRow } from './ChapterRunRow';
 
-/** The chapters of a chaptered book, in the order given, 12 apart. */
+/**
+ * The outline of a chaptered book (ADR 0076, option B), in the order given, 12 apart: every chapter with `ChapterRow`,
+ * and each run of chapterless hadith in place with `ChapterRunRow`.
+ */
 export function HadithChapterList({
-  chapters,
+  items,
   header,
-  onOpen,
+  onOpenChapter,
+  onOpenRun,
   testID = 'hadith-chapter-list',
 }: {
-  chapters: HadithChapter[];
+  items: HadithBookOutlineItem[];
   header?: ReactElement;
-  onOpen: (chapter: HadithChapter) => void;
+  onOpenChapter: (chapter: HadithChapter) => void;
+  onOpenRun: (run: { firstPosition: number; lastPosition: number }) => void;
   testID?: string;
 }) {
   const theme = useTheme();
@@ -24,13 +30,25 @@ export function HadithChapterList({
   return (
     <FlatList
       contentContainerStyle={{ paddingBottom: theme.space[8] }}
-      data={chapters}
+      data={items}
       ItemSeparatorComponent={() => <View style={{ height: theme.space[3] }} testID={`${testID}-gap`} />}
-      keyExtractor={(chapter) => `${chapter.id}`}
+      keyExtractor={(item) => (item.kind === 'chapter' ? `chapter-${item.chapter.id}` : `run-${item.firstPosition}`)}
       ListHeaderComponent={header}
-      renderItem={({ item }) => (
-        <ChapterRow chapter={item} onPress={() => onOpen(item)} testID={`${testID}-item-${item.id}`} />
-      )}
+      renderItem={({ item }) =>
+        item.kind === 'chapter' ? (
+          <ChapterRow
+            chapter={item.chapter}
+            onPress={() => onOpenChapter(item.chapter)}
+            testID={`${testID}-item-${item.chapter.id}`}
+          />
+        ) : (
+          <ChapterRunRow
+            onPress={() => onOpenRun(item)}
+            run={item}
+            testID={`${testID}-run-${item.firstPosition}`}
+          />
+        )
+      }
       testID={testID}
     />
   );

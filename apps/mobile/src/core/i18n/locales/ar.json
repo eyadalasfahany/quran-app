@@ -1859,6 +1859,10 @@
         "title": "hadithapi.com",
         "subtitle": "نصوص بعض الأحاديث التي ينقصها المصدر الأساسي: hadithapi.com"
       }
+    },
+    "chapters": {
+      "run": "أحاديث {{first}}–{{last}}",
+      "runSingle": "حديث {{n}}"
     }
   }
 }

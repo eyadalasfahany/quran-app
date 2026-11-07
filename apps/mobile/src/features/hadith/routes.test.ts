@@ -23,6 +23,7 @@ describe('hadithHref', () => {
     expect(hadithHref.collection('bukhari')).toBe('/hadith/bukhari');
     expect(hadithHref.book('bukhari', 7)).toBe('/hadith/bukhari/books/7');
     expect(hadithHref.chapter('bukhari', 7, 9)).toBe('/hadith/bukhari/books/7/chapters/9');
+    expect(hadithHref.run('bukhari', 7, 10, 20)).toBe('/hadith/bukhari/books/7?from=10&to=20');
     expect(hadithHref.reader('bukhari', '3.1')).toBe('/hadith/bukhari/hadith/3.1');
   });
 
