@@ -246,6 +246,14 @@ The earlier "stage 2 / phase 2" deferral is dropped (accuracy bar). The stage is
 - Reciters 3 and 1 get **fresh** runs, never resumed from the pre-quality runs, because their outputs change. Abadh, the heaviest repeater, goes last.
 - Finalize refuses a quality-mode surah that lacks completeness or gate files, so a resume from old artifacts cannot slip through.
 
+### Amendment, 7 Nov 2026: partial surahs ship for their recorded range
+
+Developer decision. A file that holds only part of a surah is shipped for the ayahs it records, when that range passes
+the gate (plan Q11b), instead of being made unavailable. Ayahs outside the range show a small notice
+(«هذا الجزء غير مسجّل لهذا القارئ») and playback continues as at a surah's end. The notice is built in the existing
+player style without a new frame (developer approval, an approved difference under ADR 0010). The range is an additive,
+nullable field on the audio file; QF and MP3Quran rows stay null and behave as today.
+
 ## Reinterpretation of ADR 0060's "no surah-by-surah shipping" for Way2Quran
 
 - **The rule's purpose was that a reciter appears once, as a whole, and is never trickled out over several deploys. That purpose is kept:** the reciter is released once, by one release PR, with its whole available audio set.

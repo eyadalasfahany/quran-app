@@ -626,6 +626,31 @@ Each step is one reviewable, committable change. Its brief records `<base>`, run
 - **Done:** the record is committed with `passed` true. A failure is a work item, and nothing is released.
 - **Model:** *stronger model* (Sonnet).
 
+### Q11b. Partial surahs: play the recorded ayahs, notice for the rest (developer, 7 Nov 2026)
+
+Developer decision: a surah whose file holds only part of it (Q2 verdicts `incomplete-start`, `incomplete-end`,
+`incomplete-both`, e.g. reciter 3: 23:1–22, 19:1–76, 16:53–119) is **shipped for the recorded range** instead of
+being made unavailable, when that range passes the gate. Built in the existing player style **without a new frame**
+(developer approval; an approved difference under ADR 0010).
+
+- **Tools:** Q2 reports the recorded range `[first_ayah, last_ayah]` (the head/tail keys already locate it). Align,
+  anchor and gate only that range; the verdict is per surah as before, computed over the range. A range shorter than
+  3 ayahs, or with a middle gap, stays `unavailable`. The report and PR table show the range.
+- **Timing file and API:** the timing file lists only the recorded ayahs (format unchanged); the manifest/import
+  record the range on the audio file (`first_ayah`, `last_ayah`, null = whole surah). Additive column on
+  `chapter_audio_files` (migration + Pest), carried in the pack/content table (contract regenerated, mobile types).
+  QF and MP3Quran rows keep null, so nothing changes for them.
+- **App:** `audio/player.ts` and the reciter/ayah play paths: starting an ayah outside the range does not play;
+  it shows a small notice in the existing player style («هذا الجزء غير مسجّل لهذا القارئ» / "This part isn't
+  recorded for this reciter"; i18n, both languages). Playing the surah from its start begins at `first_ayah` with the
+  notice shown first. Reaching the end of the range shows the notice, then continues as at a surah's end (continuous
+  play moves on). The notice component is its own file with its own test (frontend rule); VoiceOver announces it.
+  Tests: player unit tests for in-range, before-range, after-range, continuous play; component test; Pest for the
+  importer range; a mobile check on the iPhone 17 simulator.
+- **Done:** reciter 3's 23, 19 and 16 ship for their ranges after Q12 runs; the notice shows in both languages; QF and
+  MP3Quran playback unchanged (existing tests + T-list).
+- **Model:** Sonnet (tools + API), Sonnet (app).
+
 ### Q12. Reciter runs (2 first, then 3 and 1, fresh)
 
 - **Order:**
