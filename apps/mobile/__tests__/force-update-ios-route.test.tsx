@@ -100,10 +100,12 @@ function bootstrap(minimumIos: string | null): BootstrapResponse {
 // The AppState listeners registered while the app is mounted. The test fires them, as iOS does on a foreground.
 let appStateHandlers: ((state: AppStateStatus) => void)[] = [];
 
-// Lets a check that awaits the API call finish, then flushes its state update.
+// Lets a check that awaits the API call finish, then flushes its state update. renderRouter switches Jest to fake
+// timers, so a real setTimeout would never fire here; advancing the fake clock by 0 runs what is due and flushes the
+// awaited promises.
 async function settle(): Promise<void> {
   await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await jest.advanceTimersByTimeAsync(0);
   });
 }
 
