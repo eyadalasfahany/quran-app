@@ -7,6 +7,8 @@ use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Hadith\Import\Records\HadithImportReport;
 use App\Domains\Hadith\Import\Records\HadithIssue;
 use App\Domains\Hadith\Import\Records\MappingResult;
+use App\Domains\Hadith\Overlay\HadithDataFiles;
+use App\Domains\Hadith\Overlay\HadithOverlay;
 use App\Domains\Hadith\Repositories\Contracts\HadithImportRepository;
 use App\Domains\Hadith\Repositories\Eloquent\EloquentHadithImportRepository;
 use App\Domains\Hadith\Services\HadithImporter;
@@ -295,4 +297,60 @@ function hadithImportApproveFixtureGaps(array $slugs = ['bukhari']): void
     }
 
     config(['hadith.completeness_exceptions' => $exceptions]);
+}
+
+/**
+ * Writes a pinned gaps file for one collection into a per-process temporary folder and serves it through HadithDataFiles
+ * (step 6b.3). Returns the folder; the test deletes it. Placeholder text only.
+ *
+ * @param  list<array<string, mixed>>  $fills
+ * @param  list<array<string, mixed>>  $merges
+ * @param  list<array<string, mixed>>  $books
+ * @param  list<array<string, mixed>>  $unresolved
+ */
+function hadithGapsFixtureFile(string $slug, array $fills = [], array $merges = [], array $books = [], array $unresolved = []): string
+{
+    $directory = storage_path('framework/testing/hadith-gaps-'.getmypid());
+    File::ensureDirectoryExists($directory.'/gaps');
+
+    $document = [
+        'schema_version' => 1,
+        'collection' => $slug,
+        'generator' => 'hadith:build-gaps 1',
+        'fawazahmed0_commit' => (string) config('hadith.commit'),
+        'decisions_sha256' => str_repeat('0', 64),
+        'origins' => [
+            'openiti' => ['source_version' => '2023.1.8', 'doi' => 'FIXTURE doi', 'file' => 'FIXTURE file', 'file_sha256' => str_repeat('1', 64)],
+            'hadithapicom' => ['source_version' => 'retrieved-2026-11-07', 'book_slug' => 'FIXTURE book'],
+        ],
+        'books' => $books,
+        'fills' => $fills,
+        'merges' => $merges,
+        'unresolved' => $unresolved,
+    ];
+
+    $bytes = json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";
+    File::put($directory.'/gaps/'.$slug.'.json', $bytes);
+    config(['hadith.data_files' => ['gaps/'.$slug.'.json' => hash('sha256', $bytes)]]);
+    app()->instance(HadithDataFiles::class, new HadithDataFiles($directory));
+
+    return $directory;
+}
+
+/**
+ * Maps a hand-built collection with an overlay (step 6b.3). The clock and attribution are the fixed ones of hadithImportMap().
+ */
+function hadithImportMapWithOverlay(SourceCollection $collection, ?HadithOverlay $overlay): MappingResult
+{
+    return app(HadithMapper::class)->map(
+        $collection,
+        null,
+        1,
+        'fawazahmed0',
+        'FIXTURE-COMMIT',
+        'FIXTURE attribution ar',
+        'FIXTURE attribution en',
+        CarbonImmutable::parse('2026-11-07 10:00:00', 'UTC'),
+        $overlay,
+    );
 }

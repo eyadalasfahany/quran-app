@@ -26,6 +26,7 @@ use App\Domains\Hadith\Import\Records\HadithImportReport;
 use App\Domains\Hadith\Import\Records\HadithIssue;
 use App\Domains\Hadith\Import\Records\IntegrityResult;
 use App\Domains\Hadith\Import\Records\MappingResult;
+use App\Domains\Hadith\Overlay\HadithOverlayBuilder;
 use App\Domains\Hadith\Repositories\Contracts\HadithImportRepository;
 use App\Domains\Hadith\Sources\FawazHadithSource;
 use App\Domains\Hadith\Sources\HadithSnapshotPresence;
@@ -66,6 +67,8 @@ final class HadithImporter
         private readonly HadithRangeCorrections $corrections,
         private readonly HadithCompletenessExceptions $completeness,
         private readonly HadithPlacements $placements,
+        private readonly HadithOverlayBuilder $overlays,
+        private readonly HadithExtraBooks $extraBooks,
     ) {}
 
     /**
@@ -87,6 +90,7 @@ final class HadithImporter
         $this->corrections->assertKnown();
         $this->completeness->assertKnown();
         $this->placements->assertKnown();
+        $this->extraBooks->assertKnown();
         $primary = $this->sources->primary();
         $content = $this->content($primary->code());
 
@@ -122,6 +126,7 @@ final class HadithImporter
         $this->corrections->assertKnown();
         $this->completeness->assertKnown();
         $this->placements->assertKnown();
+        $this->extraBooks->assertKnown();
         $primary = $this->sources->primary();
         $content = $this->content($primary->code());
         $results = [];
@@ -190,7 +195,8 @@ final class HadithImporter
         }
 
         try {
-            $mapping = $this->mapper->map($collection, $info, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'));
+            $overlay = $this->overlays->build($slug, $collection, $this->originSourceIds());
+            $mapping = $this->mapper->map($collection, $info, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'), $overlay);
         } catch (HadithRangeCorrectionException|HadithDataFileException $exception) {
             return $this->result($slug, CollectionImportResult::STATUS_FAILED, $exception->getMessage(), null, [], $unchangedFingerprint, $fingerprint, $resource?->id, $resource?->version, $resource?->version, [], null);
         }
@@ -342,7 +348,8 @@ final class HadithImporter
         }
 
         try {
-            $mapping = $this->mapper->map($collection, null, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'));
+            $overlay = $this->overlays->build($slug, $collection, $this->originSourceIds());
+            $mapping = $this->mapper->map($collection, null, $content->id, $primary->code(), $primary->version(), (string) $content->attribution_ar, (string) $content->attribution_en, CarbonImmutable::now('UTC'), $overlay);
         } catch (HadithRangeCorrectionException|HadithDataFileException $exception) {
             return $this->result($slug, CollectionImportResult::STATUS_FAILED, $exception->getMessage(), null, [], false, null, $resource->id, $resource->version, $resource->version, [], null);
         }
@@ -383,6 +390,27 @@ final class HadithImporter
                 throw new \InvalidArgumentException('Unknown Hadith collection ['.$slug.'].');
             }
         }
+    }
+
+    /**
+     * The content_sources ids of the gap origins that are seeded. The overlay builder refuses a file that names an origin
+     * whose row is missing (step 6b.3).
+     *
+     * @return array<string, int>
+     */
+    private function originSourceIds(): array
+    {
+        $ids = [];
+
+        foreach (['openiti', 'hadithapicom'] as $code) {
+            $source = $this->repository->source($code);
+
+            if ($source !== null) {
+                $ids[$code] = (int) $source->getKey();
+            }
+        }
+
+        return $ids;
     }
 
     private function editionPin(string $sourceSlug): string

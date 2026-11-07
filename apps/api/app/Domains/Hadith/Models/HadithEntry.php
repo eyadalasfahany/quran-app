@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $chapter_id
  * @property string $hadith_number
  * @property string|null $arabic_number
+ * @property string|null $number_first Lowest number of the span this row covers, when merged numbers point here (step 6b.3).
+ * @property string|null $number_last Highest number of that span.
  * @property int $position
  * @property string $text_ar
  * @property string|null $text_en
@@ -29,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $source_url
  * @property int $source_id
  * @property string $source_key
+ * @property string|null $source_code Origin of a filled row (openiti, hadithapicom); null for the primary source.
  * @property string $source_text_sha256
  * @property string $source_version
  * @property CarbonImmutable $imported_at

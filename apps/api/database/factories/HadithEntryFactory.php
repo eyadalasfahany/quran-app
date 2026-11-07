@@ -39,6 +39,8 @@ class HadithEntryFactory extends Factory
             'chapter_id' => null,
             'hadith_number' => (string) $number,
             'arabic_number' => null,
+            'number_first' => null,
+            'number_last' => null,
             'position' => 1,
             'text_ar' => self::LATIN_TEXT,
             'text_en' => null,
@@ -47,6 +49,7 @@ class HadithEntryFactory extends Factory
             'source_url' => null,
             'source_id' => fn (): int => $this->hadithSourceId(),
             'source_key' => 'fawazahmed0:fixture:'.$number,
+            'source_code' => null,
             'source_text_sha256' => hash('sha256', self::LATIN_TEXT),
             'source_version' => (string) config('hadith.commit'),
             'imported_at' => now(),
@@ -71,6 +74,17 @@ class HadithEntryFactory extends Factory
         return $this->state(fn (): array => [
             'text_ar' => self::BIDI_TEXT,
             'source_text_sha256' => hash('sha256', self::BIDI_TEXT),
+        ]);
+    }
+
+    /**
+     * A covering row whose span runs from the first to the last number (step 6b.3).
+     */
+    public function merged(string $first, string $last): static
+    {
+        return $this->state(fn (): array => [
+            'number_first' => $first,
+            'number_last' => $last,
         ]);
     }
 

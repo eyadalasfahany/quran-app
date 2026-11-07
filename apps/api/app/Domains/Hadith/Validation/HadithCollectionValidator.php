@@ -86,6 +86,23 @@ final class HadithCollectionValidator
             }
         }
 
+        foreach ($plan->entries as $covering) {
+            if ($covering['number_first'] === null || $covering['number_last'] === null) {
+                continue;
+            }
+
+            $first = (float) $covering['number_first'];
+            $last = (float) $covering['number_last'];
+
+            foreach ($plan->entries as $entry) {
+                $value = (float) $entry['hadith_number'];
+
+                if ($entry['hadith_number'] !== $covering['hadith_number'] && $value >= $first && $value <= $last) {
+                    $issues[] = new HadithIssue($error, 'merge_range_overlaps_row', (string) $covering['hadith_number']);
+                }
+            }
+        }
+
         foreach ($plan->grades as $grade) {
             if (strlen((string) $grade['source_key']) > self::SOURCE_KEY_MAX) {
                 $issues[] = new HadithIssue($error, 'source_key_too_long', (string) $grade['source_key']);

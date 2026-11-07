@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domains\Hadith\Services;
 
+use App\Domains\Hadith\Exceptions\HadithDataFileException;
 use App\Domains\Hadith\Exceptions\HadithRangeCorrectionException;
 use App\Domains\Hadith\Import\Records\CollectionStats;
 use App\Domains\Hadith\Import\Records\HadithImportPlan;
 use App\Domains\Hadith\Import\Records\HadithIssue;
 use App\Domains\Hadith\Import\Records\MappingResult;
+use App\Domains\Hadith\Overlay\GapBook;
+use App\Domains\Hadith\Overlay\GapFill;
+use App\Domains\Hadith\Overlay\HadithOverlay;
 use App\Domains\Hadith\Sources\Records\SourceCollection;
 use App\Domains\Hadith\Sources\Records\SourceCollectionInfo;
 use App\Domains\Hadith\Sources\Records\SourceHadith;
@@ -27,8 +31,10 @@ final class HadithMapper
      * Bump whenever the mapping rules change: the import fingerprint includes it. 2: range corrections, reference.book 0 is
      * not a mismatch, and a hadith outside every range is listed instead of failing the collection. 3: completeness per
      * collection (ADR 0076 «Rule, 7 Nov 2026»), completeness exceptions. 4: placements of out-of-range hadith (ADR 0076 decision 6).
+     * 5: merges, with number_first and number_last on the covering row (ADR 0076 decision 2, step 6b.3). 6: fills, extra books
+     * and per-row origin (ADR 0076 decision 4 and the gap decisions, step 6b.4).
      */
-    public const int VERSION = 4;
+    public const int VERSION = 6;
 
     private const int GRADE_MAX_BYTES = 120;
 
@@ -51,6 +57,7 @@ final class HadithMapper
 
     /**
      * @throws HadithRangeCorrectionException for a malformed correction or an unknown section
+     * @throws HadithDataFileException when an extra book cannot be placed (the overlay builder normally refuses it first)
      */
     public function map(
         SourceCollection $source,
@@ -61,14 +68,35 @@ final class HadithMapper
         string $attributionAr,
         string $attributionEn,
         CarbonImmutable $now,
+        ?HadithOverlay $overlay = null,
     ): MappingResult {
         $slug = $source->slug;
         $issues = [];
         $corrected = $this->corrections->apply($slug, $source->sections);
-        $sections = $corrected['sections'];
+        $sections = $this->withExtraBooks($corrected['sections'], $overlay);
         $ranges = $this->ranges($sections);
         $exceptions = $this->referenceExceptions($slug);
         $completenessExceptions = $this->completeness->forSlug($slug);
+        $mergeInto = [];
+
+        $merges = $overlay instanceof HadithOverlay ? $overlay->merges : [];
+
+        foreach ($merges as $merged => $covering) {
+            $mergeInto[(string) $merged] = (string) $covering;
+        }
+
+        $fills = $overlay instanceof HadithOverlay ? $overlay->fills : [];
+        $refusedFills = $overlay instanceof HadithOverlay ? $overlay->refusedFills : [];
+        $originSourceIds = $overlay instanceof HadithOverlay ? $overlay->originSourceIds : [];
+        $originVersions = $overlay instanceof HadithOverlay ? $overlay->originVersions : [];
+        $gapBooks = [];
+
+        foreach ($overlay instanceof HadithOverlay ? $overlay->books : [] as $gapBook) {
+            if ($gapBook->bookNumber !== null) {
+                $gapBooks[$gapBook->bookNumber] = $gapBook;
+            }
+        }
+
         $placements = [];
 
         foreach ($this->placements->forSlug($slug) as $placement) {
@@ -94,8 +122,19 @@ final class HadithMapper
             $lastNumber = $hadith->number;
             $number = $hadith->number;
             $text = $hadith->text;
+            $fill = null;
+
+            if (($text === null || $text === '') && isset($fills[$number])) {
+                $fill = $fills[$number];
+                $text = $fill->text;
+                $hadith = new SourceHadith($number, $hadith->arabicNumber, $text, [], null, null);
+            }
 
             if ($text === null || $text === '') {
+                if (isset($mergeInto[$number])) {
+                    continue;
+                }
+
                 $noTextNumbers[] = $number;
 
                 continue;
@@ -149,7 +188,7 @@ final class HadithMapper
                 } else {
                     // Q6 (7 Nov 2026): a placed hadith is exempt from the reference.book check; OpenITI decided its book.
                     $placedNumbers[] = $number;
-                    $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $placements[$number]];
+                    $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $placements[$number], 'fill' => $fill];
 
                     continue;
                 }
@@ -191,13 +230,35 @@ final class HadithMapper
                 }
             }
 
-            $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $sectionKey];
+            $accepted[] = ['hadith' => $hadith, 'text' => $text, 'normalized' => $normalized, 'section' => $sectionKey, 'fill' => $fill];
+        }
+
+        foreach ($refusedFills as $refusedNumber) {
+            $issues[] = new HadithIssue(HadithIssue::SEVERITY_WARNING, 'fill_refused_markup', $refusedNumber);
         }
 
         $countsBySection = [];
+        $acceptedSections = [];
 
         foreach ($accepted as $row) {
             $countsBySection[$row['section']] = ($countsBySection[$row['section']] ?? 0) + 1;
+            $acceptedSections[$row['hadith']->number] = $row['section'];
+        }
+
+        $spans = $this->spans($mergeInto, $acceptedSections);
+
+        foreach ($mergeInto as $merged => $covering) {
+            if (! isset($acceptedSections[$covering])) {
+                $issues[] = new HadithIssue(HadithIssue::SEVERITY_ERROR, 'merge_target_missing', (string) $merged);
+
+                continue;
+            }
+
+            $mergedSections = isset($placements[(string) $merged]) ? [$placements[(string) $merged]] : $this->sectionsHolding((float) $merged, $ranges);
+
+            if ($mergedSections !== [] && ! in_array($acceptedSections[$covering], $mergedSections, true)) {
+                $issues[] = new HadithIssue(HadithIssue::SEVERITY_ERROR, 'merge_range_crosses_book', (string) $merged);
+            }
         }
 
         $books = [];
@@ -213,15 +274,16 @@ final class HadithMapper
 
             $id = count($books) + 1;
             $bookIds[$section->key] = $id;
+            $gap = $gapBooks[$section->key] ?? null;
             $books[] = [
                 'id' => $id,
                 'book_number' => $section->key,
-                'title_ar' => $this->titles->sectionTitleAr($slug, $section->key),
+                'title_ar' => $gap instanceof GapBook ? $gap->titleAr : $this->titles->sectionTitleAr($slug, $section->key),
                 'title_en' => $section->titleEn,
                 'position' => $id,
                 'hadith_count' => $countsBySection[$section->key],
-                'source_id' => $sourceId,
-                'source_key' => $sourceCode.':'.$slug.':'.$section->key,
+                'source_id' => $gap instanceof GapBook && isset($originSourceIds[$gap->origin]) ? $originSourceIds[$gap->origin] : $sourceId,
+                'source_key' => $gap instanceof GapBook ? $gap->sourceKey : $sourceCode.':'.$slug.':'.$section->key,
             ];
         }
 
@@ -243,10 +305,21 @@ final class HadithMapper
             $sourceCode,
             $sourceVersion,
             $now,
+            $spans,
+            $originSourceIds,
+            $originVersions,
             $issues,
         );
 
-        $completeness = $this->assessCompleteness($source, $accepted, $noTextNumbers, $outsideRanges, $completenessExceptions, $issues);
+        $completeness = $this->assessCompleteness($source, $accepted, $noTextNumbers, $outsideRanges, $completenessExceptions, $issues, $mergeInto);
+
+        $filledNumbers = [];
+
+        foreach ($accepted as $row) {
+            if ($row['fill'] instanceof GapFill) {
+                $filledNumbers[] = $row['hadith']->number;
+            }
+        }
 
         $collection = [
             'id' => 1,
@@ -296,6 +369,8 @@ final class HadithMapper
             outsideRanges: $outsideRanges,
             rangeCorrectionsApplied: $corrected['applied'],
             placedNumbers: $placedNumbers,
+            mergedNumbers: $completeness['mergedNumbers'],
+            filledNumbers: $filledNumbers,
             completenessExceptionNumbers: $completeness['exceptionNumbers'],
             incompleteNumbers: $completeness['incomplete'],
             incompleteReasons: $completeness['reasons'],
@@ -310,18 +385,56 @@ final class HadithMapper
     }
 
     /**
+     * The sections with the extra books inserted after their section, in file order (ADR 0076 decision 4, step 6b.4).
+     *
+     * @param  list<SourceSection>  $sections
+     * @return list<SourceSection>
+     *
+     * @throws HadithDataFileException
+     */
+    private function withExtraBooks(array $sections, ?HadithOverlay $overlay): array
+    {
+        if (! $overlay instanceof HadithOverlay) {
+            return $sections;
+        }
+
+        foreach ($overlay->books as $book) {
+            if ($book->bookNumber === null) {
+                throw new HadithDataFileException('An extra book has no decided book number (book_number_undecided).');
+            }
+
+            $position = null;
+
+            foreach ($sections as $index => $section) {
+                if ($section->key === $book->afterBook) {
+                    $position = $index;
+                }
+            }
+
+            if ($position === null) {
+                throw new HadithDataFileException('An extra book is placed after an unknown section (book_after_unknown).');
+            }
+
+            array_splice($sections, $position + 1, 0, [new SourceSection($book->bookNumber, null, $book->first, $book->last, null, null)]);
+        }
+
+        return $sections;
+    }
+
+    /**
      * Every number of the source's numbering is resolved or listed (ADR 0076 §2.2, step 6b.1). A number is resolved when it is
      * accepted, or when it is a no-text or out-of-range number that a completeness exception accepts. Errors also make the
      * collection incomplete. Lists hold numbers and reason codes only.
      *
-     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string}>  $accepted
+     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string, fill: GapFill|null}>  $accepted
      * @param  list<string>  $noTextNumbers
      * @param  list<string>  $outsideRanges
      * @param  list<string>  $exceptions
      * @param  list<HadithIssue>  $issues
-     * @return array{complete: bool, incomplete: list<string>, reasons: array<string, string>, exceptionNumbers: list<string>}
+     * @param  array<string, string>  $mergeInto  merged number => covering number
+     * @return array{complete: bool, incomplete: list<string>, reasons: array<string, string>, exceptionNumbers: list<string>, mergedNumbers: list<string>}
      */
-    private function assessCompleteness(SourceCollection $source, array $accepted, array $noTextNumbers, array $outsideRanges, array $exceptions, array $issues): array
+    private function assessCompleteness(SourceCollection $source, array $accepted, array $noTextNumbers, array $outsideRanges, array $exceptions, array $issues, array $mergeInto): array
     {
         $acceptedNumbers = [];
 
@@ -332,11 +445,25 @@ final class HadithMapper
         $incomplete = [];
         $reasons = [];
         $exceptionNumbers = [];
+        $mergedResolved = [];
 
         foreach ($source->hadiths as $hadith) {
             $number = $hadith->number;
 
             if (isset($acceptedNumbers[$number])) {
+                continue;
+            }
+
+            if (isset($mergeInto[$number])) {
+                if (isset($acceptedNumbers[$mergeInto[$number]])) {
+                    $mergedResolved[] = $number;
+
+                    continue;
+                }
+
+                $incomplete[] = $number;
+                $reasons[$number] = 'merge_target_missing';
+
                 continue;
             }
 
@@ -373,7 +500,56 @@ final class HadithMapper
             'incomplete' => $incomplete,
             'reasons' => $reasons,
             'exceptionNumbers' => $exceptionNumbers,
+            'mergedNumbers' => $mergedResolved,
         ];
+    }
+
+    /**
+     * The span of each covering row: its own number and every merged number it covers, lowest and highest as strings (ADR 0076
+     * decision 2). Compared as decimals. A covering row without merged numbers has no span.
+     *
+     * @param  array<string, string>  $mergeInto
+     * @param  array<string, string>  $acceptedSections  accepted number => section key
+     * @return array<string, array{first: string, last: string}>
+     */
+    private function spans(array $mergeInto, array $acceptedSections): array
+    {
+        $covered = [];
+
+        foreach ($mergeInto as $merged => $covering) {
+            if (isset($acceptedSections[$covering])) {
+                $covered[(string) $covering][] = (string) $merged;
+            }
+        }
+
+        $spans = [];
+
+        foreach ($covered as $covering => $merged) {
+            $numbers = [(string) $covering, ...$merged];
+            usort($numbers, static fn (string $a, string $b): int => (float) $a <=> (float) $b);
+            $spans[(string) $covering] = ['first' => $numbers[0], 'last' => $numbers[array_key_last($numbers)]];
+        }
+
+        return $spans;
+    }
+
+    /**
+     * The section keys whose numeric range holds the value.
+     *
+     * @param  list<array{key: string, from: float, to: float}>  $ranges
+     * @return list<string>
+     */
+    private function sectionsHolding(float $value, array $ranges): array
+    {
+        $keys = [];
+
+        foreach ($ranges as $range) {
+            if ($value >= $range['from'] && $value <= $range['to']) {
+                $keys[] = $range['key'];
+            }
+        }
+
+        return $keys;
     }
 
     /**
@@ -419,8 +595,11 @@ final class HadithMapper
     }
 
     /**
-     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string}>  $accepted
+     * @param  list<array{hadith: SourceHadith, text: string, normalized: string, section: string, fill: GapFill|null}>  $accepted
      * @param  array<string, int>  $bookIds
+     * @param  array<string, array{first: string, last: string}>  $spans
+     * @param  array<string, int>  $originSourceIds
+     * @param  array<string, string>  $originVersions
      * @param  list<HadithIssue>  $issues
      * @return array{0: list<array<string, int|string|null>>, 1: list<array<string, int|string|null>>, 2: array{hadithWithGrades: int, gradesWithoutGrader: int, graders: array<string, int>}, 3: int}
      */
@@ -432,6 +611,9 @@ final class HadithMapper
         string $sourceCode,
         string $sourceVersion,
         CarbonImmutable $now,
+        array $spans,
+        array $originSourceIds,
+        array $originVersions,
         array &$issues,
     ): array {
         $entries = [];
@@ -446,6 +628,7 @@ final class HadithMapper
         foreach ($accepted as $index => $row) {
             $hadith = $row['hadith'];
             $section = $row['section'];
+            $fill = $row['fill'];
             $entryId = $index + 1;
             $positionInBook[$section] = ($positionInBook[$section] ?? 0) + 1;
             $sourceKey = $sourceCode.':'.$slug.':'.$hadith->number;
@@ -456,16 +639,19 @@ final class HadithMapper
                 'chapter_id' => null,
                 'hadith_number' => $hadith->number,
                 'arabic_number' => $hadith->arabicNumber,
+                'number_first' => $spans[$hadith->number]['first'] ?? null,
+                'number_last' => $spans[$hadith->number]['last'] ?? null,
                 'position' => $positionInBook[$section],
                 'text_ar' => $row['text'],
                 'text_en' => null,
                 'narrator_en' => null,
                 'text_search' => $row['normalized'],
                 'source_url' => null,
-                'source_id' => $sourceId,
-                'source_key' => $sourceKey,
+                'source_id' => $fill instanceof GapFill ? $originSourceIds[$fill->origin] : $sourceId,
+                'source_key' => $fill instanceof GapFill ? $fill->sourceKey : $sourceKey,
+                'source_code' => $fill instanceof GapFill ? $fill->origin : null,
                 'source_text_sha256' => hash('sha256', $row['text']),
-                'source_version' => $sourceVersion,
+                'source_version' => $fill instanceof GapFill ? $originVersions[$fill->origin] : $sourceVersion,
                 'imported_at' => $importedAt,
             ];
 

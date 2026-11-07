@@ -297,3 +297,19 @@ function hadithPackRows(PDO $pdo, string $table): array
 
     return $rows;
 }
+
+it('carries number_first, number_last and source_code and keeps them null for a normal row', function (): void {
+    $resourceId = HadithCollectionFactory::new()->create()->resource_id;
+    HadithEntryFactory::new()->merged('5709', '5712')->create(['resource_id' => $resourceId, 'id' => 1, 'book_id' => 1, 'hadith_number' => '5709']);
+    HadithEntryFactory::new()->create(['resource_id' => $resourceId, 'id' => 2, 'book_id' => 1, 'hadith_number' => '1']);
+
+    $pdo = hadithPackOpen(Storage::disk('local')->get(hadithPackBuild($resourceId)->path));
+    $rows = collect(hadithPackRows($pdo, 'hadith_entries'))->keyBy('hadith_number');
+
+    expect($rows['5709']['number_first'])->toBe('5709')
+        ->and($rows['5709']['number_last'])->toBe('5712')
+        ->and($rows['5709']['source_code'])->toBeNull()
+        ->and($rows['1']['number_first'])->toBeNull()
+        ->and($rows['1']['number_last'])->toBeNull()
+        ->and($rows['1']['source_code'])->toBeNull();
+});

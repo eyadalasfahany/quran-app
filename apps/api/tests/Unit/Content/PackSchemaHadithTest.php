@@ -57,7 +57,7 @@ it('gives every hadith table the columns of the canonical contract in order', fu
     'collections' => ['hadith_collections', ['resource_id', 'id', 'slug', 'source_code', 'title_ar', 'title_en', 'author_ar', 'author_en', 'attribution_ar', 'attribution_en', 'source_url', 'total_hadith', 'books_count']],
     'books' => ['hadith_books', ['resource_id', 'id', 'book_number', 'title_ar', 'title_en', 'position', 'hadith_count']],
     'chapters' => ['hadith_chapters', ['resource_id', 'id', 'book_id', 'chapter_number', 'source_chapter_key', 'title_ar', 'title_en', 'position', 'hadith_count']],
-    'entries' => ['hadith_entries', ['resource_id', 'id', 'book_id', 'chapter_id', 'hadith_number', 'arabic_number', 'position', 'text_ar', 'text_en', 'narrator_en', 'text_search', 'source_url']],
+    'entries' => ['hadith_entries', ['resource_id', 'id', 'book_id', 'chapter_id', 'hadith_number', 'arabic_number', 'position', 'text_ar', 'text_en', 'narrator_en', 'text_search', 'source_url', 'number_first', 'number_last', 'source_code']],
     'grades' => ['hadith_grades', ['resource_id', 'id', 'entry_id', 'grade', 'graded_by']],
     'ref aliases' => ['hadith_ref_aliases', ['resource_id', 'old_number', 'new_number', 'match', 'since_version']],
 ]);
@@ -77,7 +77,7 @@ it('declares nullability and kinds as the backend does', function (): void {
             'integer' => ['resource_id', 'id', 'book_id', 'chapter_number', 'position', 'hadith_count'],
         ],
         'hadith_entries' => [
-            'nullable' => ['chapter_id', 'arabic_number', 'text_en', 'narrator_en', 'source_url'],
+            'nullable' => ['chapter_id', 'arabic_number', 'text_en', 'narrator_en', 'source_url', 'number_first', 'number_last', 'source_code'],
             'integer' => ['resource_id', 'id', 'book_id', 'chapter_id', 'position'],
         ],
         'hadith_grades' => [

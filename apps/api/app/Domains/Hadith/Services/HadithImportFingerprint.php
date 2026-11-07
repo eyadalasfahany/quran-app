@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Hadith\Services;
 
+use App\Domains\Hadith\Overlay\HadithDataFiles;
 use App\Domains\Hadith\Sources\FawazHadithSource;
 
 /**
@@ -16,6 +17,7 @@ final class HadithImportFingerprint
         private readonly FawazHadithSource $source,
         private readonly HadithTitles $titles,
         private readonly HadithRangeCorrections $corrections,
+        private readonly HadithDataFiles $dataFiles,
     ) {}
 
     public function of(string $slug, string $attributionAr, string $attributionEn): string
@@ -25,6 +27,8 @@ final class HadithImportFingerprint
         $exceptions = config('hadith.reference_exceptions', []);
         $completenessExceptions = config('hadith.completeness_exceptions', []);
         $completenessExceptions = is_array($completenessExceptions) ? $completenessExceptions : [];
+        $extraBooks = config('hadith.extra_books', []);
+        $extraBooks = is_array($extraBooks) ? $extraBooks : [];
         $placements = config('hadith.placements', []);
         $placements = is_array($placements) ? $placements : [];
         $position = array_search($slug, (array) config('hadith.collections'), true);
@@ -40,7 +44,10 @@ final class HadithImportFingerprint
             'reference_exceptions' => is_array($exceptions) ? ($exceptions[$slug] ?? []) : [],
             'completeness_exceptions' => $completenessExceptions[$slug] ?? [],
             'placements' => $placements[$slug] ?? [],
+            'extra_books' => $extraBooks[$slug] ?? [],
             'range_corrections' => $this->corrections->forSlug($slug),
+            // The gaps file changes merges (and, in 6b.4, fills): its bytes change the version even when the code does not.
+            'gaps_sha256' => $this->dataFiles->actualSha256('gaps/'.$slug.'.json'),
         ];
 
         return hash('sha256', json_encode($inputs, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));

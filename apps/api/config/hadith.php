@@ -140,8 +140,14 @@ return [
     // Numbers the developer accepts as complete without text, merge or fill. Empty. NOT reference_exceptions (a different check).
     'completeness_exceptions' => [],     // e.g. 'muslim' => ['123']; each entry needs a developer decision
 
-    // A book the source lacks, inserted between two source sections (ADR 0076 decision 4). book_number null = undecided (Open question Q3).
-    'extra_books' => [],                 // filled in 6b.4
+    // A book the source lacks, inserted between two source sections (ADR 0076 decision 4, step 6b.4). Nasa'i 3857–3938 is the
+    // book the fawazahmed0 edition does not have; its book_number is '35.1' (between sections 35 and 36, Q3, 7 Nov 2026).
+    // The gaps file must declare exactly these books (HadithOverlayBuilder).
+    'extra_books' => [
+        'nasai' => [
+            ['book_number' => '35.1', 'after_book' => '35', 'first' => '3857', 'last' => '3938', 'openiti_heading_ordinal' => 36],
+        ],
+    ],
 
     // Committed data files under database/data/hadith, path relative to that folder => lowercase hex SHA-256. null = not committed yet.
     'data_files' => [],                  // filled in 6b.8 by the developer
