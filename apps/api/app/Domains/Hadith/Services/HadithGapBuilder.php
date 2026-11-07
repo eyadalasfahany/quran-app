@@ -113,26 +113,28 @@ final class HadithGapBuilder
             $positions[$hadith->number] = $index;
         }
 
-        $outcome = $this->classify($slug, $decisions, $units, $collection, $byNumber, $positions, $retrievedOn);
+        $primaryFile = basename((string) $openiti['path']);
+        $unitsByFile = $this->unitsByFile($slug, $decisions, $openitiDir, $primaryFile, $units);
+        $outcome = $this->classify($slug, $decisions, $unitsByFile, $primaryFile, $collection, $byNumber, $positions, $retrievedOn);
         $extraBooks = $this->extraBooks($slug, $bytes, $units, $openiti);
 
         return $this->proposal($slug, $decisions, $fileSha, $decisionsSha, $openiti, $outcome, $extraBooks, $retrievedOn, count($units));
     }
 
     /**
-     * @param  list<OpenItiUnit>  $units
+     * @param  array<string, list<OpenItiUnit>>  $unitsByFile  file basename => units, the primary file included
      * @param  array<string, SourceHadith>  $byNumber
      * @param  array<string, int>  $positions
      * @return array{fills: list<array<string, mixed>>, merges: list<array<string, mixed>>, unresolved: list<array<string, mixed>>, classes: array<string, int>}
      */
-    private function classify(string $slug, GapDecisions $decisions, array $units, SourceCollection $collection, array $byNumber, array $positions, ?string $retrievedOn): array
+    private function classify(string $slug, GapDecisions $decisions, array $unitsByFile, string $primaryFile, SourceCollection $collection, array $byNumber, array $positions, ?string $retrievedOn): array
     {
         $fills = [];
         $merges = [];
         $unresolved = [];
         $classes = [];
         $seen = [];
-        $runFailures = $this->runFailures($decisions, $units, $byNumber);
+        $runFailures = $this->runFailures($decisions, $unitsByFile, $primaryFile, $byNumber);
 
         foreach ($decisions->entries as $entry) {
             $classes[$entry->class] = ($classes[$entry->class] ?? 0) + 1;
@@ -152,15 +154,15 @@ final class HadithGapBuilder
             }
 
             if ($entry->class === 'fill-safe' && $entry->source === 'openiti') {
-                $key = ($entry->runFirst ?? '').'|'.($entry->runLast ?? '');
+                $file = $this->fileOf($entry, $primaryFile);
 
-                if (isset($runFailures[$key])) {
+                if (isset($runFailures[$this->runKey($entry, $primaryFile)])) {
                     $this->unresolve($unresolved, $entry->hadith, 'recheck_neighbour_failed');
 
                     continue;
                 }
 
-                $fill = $this->openitiFill($slug, $entry, $units, $byNumber);
+                $fill = $this->openitiFill($slug, $entry, $unitsByFile[$file], $byNumber, $file);
 
                 if (is_string($fill)) {
                     $this->unresolve($unresolved, $entry->hadith, $fill);
@@ -205,17 +207,19 @@ final class HadithGapBuilder
      * For each run of OpenITI fill-safe entries, the unit before its first unit must match the first entry's prev, and the unit
      * after its last unit must match the last entry's next (ADR 0076 §8.5, check a). Returns the runs that fail.
      *
-     * @param  list<OpenItiUnit>  $units
+     * A run is checked in the units of its own file (a run never spans two files).
+     *
+     * @param  array<string, list<OpenItiUnit>>  $unitsByFile
      * @param  array<string, SourceHadith>  $byNumber
      * @return array<string, true>
      */
-    private function runFailures(GapDecisions $decisions, array $units, array $byNumber): array
+    private function runFailures(GapDecisions $decisions, array $unitsByFile, string $primaryFile, array $byNumber): array
     {
         $runs = [];
 
         foreach ($decisions->entries as $entry) {
             if ($entry->class === 'fill-safe' && $entry->source === 'openiti' && $entry->openitiUnit !== null) {
-                $runs[($entry->runFirst ?? '').'|'.($entry->runLast ?? '')][] = $entry;
+                $runs[$this->runKey($entry, $primaryFile)][] = $entry;
             }
         }
 
@@ -225,6 +229,7 @@ final class HadithGapBuilder
             usort($entries, static fn (GapDecision $a, GapDecision $b): int => (int) $a->openitiUnit <=> (int) $b->openitiUnit);
             $first = $entries[0];
             $last = $entries[array_key_last($entries)];
+            $units = $unitsByFile[$this->fileOf($first, $primaryFile)];
             $before = $units[(int) $first->openitiUnit - 1] ?? null;
             $after = $units[(int) $last->openitiUnit + 1] ?? null;
 
@@ -239,11 +244,11 @@ final class HadithGapBuilder
     }
 
     /**
-     * @param  list<OpenItiUnit>  $units
+     * @param  list<OpenItiUnit>  $units  the units of the file the entry names ($file)
      * @param  array<string, SourceHadith>  $byNumber
      * @return array<string, mixed>|string a fill row, or the failing re-check code
      */
-    private function openitiFill(string $slug, GapDecision $entry, array $units, array $byNumber): array|string
+    private function openitiFill(string $slug, GapDecision $entry, array $units, array $byNumber, string $file): array|string
     {
         $unit = $units[(int) $entry->openitiUnit] ?? null;
 
@@ -275,7 +280,7 @@ final class HadithGapBuilder
 
         $this->countText($text);
 
-        return $this->fillRow($slug, $entry->hadith, 'openiti', $text, $entry->openitiUnit);
+        return $this->fillRow($slug, $entry->hadith, 'openiti', $text, $entry->openitiUnit, $file);
     }
 
     /**
@@ -438,7 +443,7 @@ final class HadithGapBuilder
     /**
      * @return array<string, mixed>
      */
-    private function fillRow(string $slug, string $number, string $origin, string $text, ?int $unit): array
+    private function fillRow(string $slug, string $number, string $origin, string $text, ?int $unit, ?string $openitiFile = null): array
     {
         $row = [
             'number' => $number,
@@ -448,6 +453,10 @@ final class HadithGapBuilder
 
         if ($unit !== null) {
             $row['unit'] = $unit;
+        }
+
+        if ($openitiFile !== null) {
+            $row['openiti_file'] = $openitiFile;
         }
 
         $row['text_ar'] = $text;
@@ -525,6 +534,130 @@ final class HadithGapBuilder
         $this->residualMarkers = 0;
         $this->doubleSpaces = 0;
         $this->hapiTextWithMarkup = 0;
+    }
+
+    /**
+     * The units of every OpenITI file a fill-safe OpenITI decision names, keyed by file basename. The primary file is always
+     * present. An alternate is loaded only for such a decision, so a merge or an unknown entry never forces its pin.
+     *
+     * @param  list<OpenItiUnit>  $primaryUnits
+     * @return array<string, list<OpenItiUnit>>
+     *
+     * @throws HadithGapBuildException
+     */
+    private function unitsByFile(string $slug, GapDecisions $decisions, string $openitiDir, string $primaryFile, array $primaryUnits): array
+    {
+        $unitsByFile = [$primaryFile => $primaryUnits];
+
+        foreach ($decisions->entries as $entry) {
+            if ($entry->class !== 'fill-safe' || $entry->source !== 'openiti' || $entry->openitiFile === null || isset($unitsByFile[$entry->openitiFile])) {
+                continue;
+            }
+
+            $unitsByFile[$entry->openitiFile] = $this->alternateUnits($slug, $entry->openitiFile, $openitiDir);
+        }
+
+        return $unitsByFile;
+    }
+
+    /**
+     * The units of an alternate OpenITI file, after its SHA-256 check against config (ADR 0076, step 6b.6 alternates).
+     *
+     * @return list<OpenItiUnit>
+     *
+     * @throws HadithGapBuildException
+     */
+    private function alternateUnits(string $slug, string $file, string $openitiDir): array
+    {
+        $alternate = $this->alternateConfig($slug, $file);
+        $sha = $alternate['sha256'];
+        $path = rtrim($openitiDir, '/').'/'.$file;
+        $bytes = is_file($path) ? file_get_contents($path) : false;
+
+        if ($bytes === false) {
+            throw new HadithGapBuildException('The alternate OpenITI file ['.$file.'] of ['.$slug.'] is missing in the given folder (openiti_file_missing).');
+        }
+
+        if (! hash_equals($sha, hash('sha256', $bytes))) {
+            throw new HadithGapBuildException('The alternate OpenITI file ['.$file.'] of ['.$slug.'] differs from its pin in config (openiti_alternate_sha_mismatch).');
+        }
+
+        $units = $this->units->units($path, $alternate['unit_start'], $alternate['unit_stop']);
+
+        if (isset($alternate['unit_count']) && count($units) !== $alternate['unit_count']) {
+            throw new HadithGapBuildException('The unit count of the alternate ['.$file.'] is '.count($units).', not the config '.$alternate['unit_count'].' (unit_count_mismatch).');
+        }
+
+        return $units;
+    }
+
+    /**
+     * The config entry of an alternate file, refused when it is missing or has no SHA-256 pin.
+     *
+     * @return array{path: string, sha256: string, unit_start: string, unit_stop: string, unit_count?: int}
+     *
+     * @throws HadithGapBuildException
+     */
+    private function alternateConfig(string $slug, string $file): array
+    {
+        $alternates = $this->openitiConfig($slug)['alternates'] ?? [];
+
+        foreach (is_array($alternates) ? $alternates : [] as $alternate) {
+            if (! is_array($alternate) || ! is_string($alternate['path'] ?? null) || basename($alternate['path']) !== $file) {
+                continue;
+            }
+
+            if (! is_string($alternate['unit_start'] ?? null) || ! is_string($alternate['unit_stop'] ?? null)) {
+                throw new HadithGapBuildException('Config [hadith.openiti.files] holds an alternate of ['.$slug.'] without unit patterns (openiti_config_missing).');
+            }
+
+            if (! is_string($alternate['sha256'] ?? null) || preg_match('~^[0-9a-f]{64}$~', $alternate['sha256']) !== 1) {
+                throw new HadithGapBuildException('The alternate OpenITI file ['.$file.'] of ['.$slug.'] has no SHA-256 pin in config (openiti_alternate_unpinned).');
+            }
+
+            return $alternate;
+        }
+
+        throw new HadithGapBuildException('The OpenITI file ['.$file.'] named by a decision of ['.$slug.'] is not an alternate in config (openiti_alternate_unknown).');
+    }
+
+    /**
+     * The alternate files a proposal's fills came from, with the pins of config, sorted by path. The primary file is not listed:
+     * it is the origin's own file.
+     *
+     * @param  list<array<string, mixed>>  $fills
+     * @return list<array{file: string, file_sha256: string}>
+     *
+     * @throws HadithGapBuildException
+     */
+    private function alternateFiles(string $slug, array $fills, string $primaryFile): array
+    {
+        $files = [];
+
+        foreach ($fills as $fill) {
+            $file = $fill['openiti_file'] ?? null;
+
+            if (! is_string($file) || $file === $primaryFile || isset($files[$file])) {
+                continue;
+            }
+
+            $alternate = $this->alternateConfig($slug, $file);
+            $files[$file] = ['file' => $alternate['path'], 'file_sha256' => $alternate['sha256']];
+        }
+
+        ksort($files);
+
+        return array_values($files);
+    }
+
+    private function fileOf(GapDecision $entry, string $primaryFile): string
+    {
+        return $entry->openitiFile ?? $primaryFile;
+    }
+
+    private function runKey(GapDecision $entry, string $primaryFile): string
+    {
+        return $this->fileOf($entry, $primaryFile).'|'.($entry->runFirst ?? '').'|'.($entry->runLast ?? '');
     }
 
     /**
@@ -711,6 +844,11 @@ final class HadithGapBuilder
                 'file' => (string) $openiti['path'],
                 'file_sha256' => $fileSha,
             ];
+            $alternateFiles = $this->alternateFiles($slug, $fills, basename((string) $openiti['path']));
+
+            if ($alternateFiles !== []) {
+                $origins['openiti']['alternate_files'] = $alternateFiles;
+            }
         }
 
         if ($hapiUsed) {

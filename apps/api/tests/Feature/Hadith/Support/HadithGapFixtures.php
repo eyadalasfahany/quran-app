@@ -170,3 +170,33 @@ function gapsFakeHapi(array $records): void
         return ['hadiths' => ['data' => $record === null ? [] : [['id' => 'FIXTURE-'.$query['hadithNumber'], ...$record]]]];
     });
 }
+
+/**
+ * Writes a second placeholder OpenITI file into the OpenITI folder and adds it to config as an alternate of bukhari (step 6b.6).
+ * pinned: false leaves the alternate without a SHA-256 pin; $pin overrides the pin (a wrong one makes a mismatch). Returns the path.
+ *
+ * @param  list<array{0: string, 1: string}>  $units  number => text, in file order
+ */
+function gapsAlternateFile(string $name, array $units, bool $pinned = true, ?string $pin = null): string
+{
+    File::ensureDirectoryExists(gapsOpenItiDirectory());
+    $path = gapsOpenItiDirectory().'/'.$name;
+    $lines = ['#META#Header#End#'];
+
+    foreach ($units as [$number, $text]) {
+        $lines[] = '### | '.$number.' - '.$text;
+    }
+
+    $bytes = implode("\n", $lines)."\n";
+    File::put($path, $bytes);
+    $alternates = config('hadith.openiti.files.bukhari.alternates', []);
+    $alternates[] = [
+        'path' => 'FIXTURE/'.$name,
+        'sha256' => $pinned ? ($pin ?? hash('sha256', $bytes)) : null,
+        'unit_start' => '/^### \\| ?([0-9]+) ?- /u',
+        'unit_stop' => '/^###/u',
+    ];
+    config(['hadith.openiti.files.bukhari.alternates' => $alternates]);
+
+    return $path;
+}

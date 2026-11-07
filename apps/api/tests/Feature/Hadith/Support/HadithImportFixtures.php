@@ -145,8 +145,20 @@ function hadithImportUse(array $files): string
     $root = hadithUseTempCache();
     hadithPinFixtures($files);
     hadithFakeCdn($files);
+    hadithImportNoDataFiles();
 
     return $root;
+}
+
+/**
+ * Points the data-file reader at a folder that does not exist, so the committed database/data/hadith files are invisible.
+ * The reader throws pin_missing for any file that exists without a pin, and the fixture collections use the real slugs
+ * (bukhari, abudawud, nasai, ibnmajah), so a real file would fail every import. A test that needs a data file serves its own
+ * (hadithGapsFixtureFile, hadithChaptersFixtureFile), which rebinds the reader after this.
+ */
+function hadithImportNoDataFiles(): void
+{
+    app()->instance(HadithDataFiles::class, new HadithDataFiles(storage_path('framework/testing/hadith-data-none-'.getmypid())));
 }
 
 /**

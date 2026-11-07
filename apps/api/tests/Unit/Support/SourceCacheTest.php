@@ -34,6 +34,9 @@ it('honours a config override', function (): void {
 });
 
 it('defaults to a directory under storage/app/private so it lives on the volume', function (): void {
-    expect(config('content_sources.cache_root'))->toBe(storage_path('app/private/sources'))
-        ->and(SourceCache::path())->toStartWith(storage_path('app/private').DIRECTORY_SEPARATOR);
+    // TestCase points cache_root at a temp folder, so the shipped default is read from the config file itself.
+    $shippedDefault = (require config_path('content_sources.php'))['cache_root'];
+
+    expect($shippedDefault)->toBe(storage_path('app/private/sources'))
+        ->and(str_starts_with($shippedDefault, storage_path('app/private').DIRECTORY_SEPARATOR))->toBeTrue();
 });

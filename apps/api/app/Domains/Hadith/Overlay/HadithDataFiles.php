@@ -232,7 +232,11 @@ final class HadithDataFiles
             throw new HadithDataFileException('Data file ['.$relativePath.'] holds an entry with an unknown source (decision_source_unknown).');
         }
 
-        $unit = $entry['openiti_unit'] ?? null;
+        $openitiPath = $entry['openiti_path'] ?? null;
+        $openitiFile = is_string($openitiPath) && $openitiPath !== '' ? basename($openitiPath) : null;
+        $unitKey = $openitiFile === null ? 'openiti_unit' : 'alt_openiti_unit';
+        $unitNumberKey = $openitiFile === null ? 'openiti_unit_number' : 'alt_openiti_unit_number';
+        $unit = $entry[$unitKey] ?? null;
         $hapi = $entry['hapi_numbers_in_record'] ?? null;
 
         return new GapDecision(
@@ -245,8 +249,9 @@ final class HadithDataFiles
             prev: $this->optionalNumber($entry['prev'] ?? null, $relativePath),
             next: $this->optionalNumber($entry['next'] ?? null, $relativePath),
             openitiUnit: is_int($unit) ? $unit : null,
-            openitiUnitNumber: $this->optionalNumber($entry['openiti_unit_number'] ?? null, $relativePath),
+            openitiUnitNumber: $this->optionalNumber($entry[$unitNumberKey] ?? null, $relativePath),
             hapiNumbersInRecord: is_int($hapi) ? $hapi : null,
+            openitiFile: $openitiFile,
         );
     }
 

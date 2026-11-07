@@ -190,6 +190,12 @@ return [
                 'path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.JK000109-ara1',
                 'sha256' => 'a96f38425099d55769435a4d8d240b064d7d98c2326457ed8d28fb1f098d32b4',
                 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 7461,
+                // Other OpenITI files that decisions name (entry key openiti_path). sha256 null = not pinned yet: the builder
+                // refuses a decision that uses such a file (openiti_alternate_unpinned). Unit patterns not yet checked against them.
+                'alternates' => [
+                    ['path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.Shamela0001727-ara1.mARkdown', 'sha256' => null, 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u'],
+                    ['path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.ShamAY0033938-ara2', 'sha256' => null, 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u'],
+                ],
             ],
             'nasai' => [
                 'path' => '0303Nasai/0303Nasai.SunanSughra/0303Nasai.SunanSughra.Shamela0000829-ara1',
@@ -213,6 +219,10 @@ return [
                 'path' => '0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.JK000466-ara1',
                 'sha256' => 'c104e5604d96af249ad631d0c8e92e41e7fd65b53f29d5ae443cb0142637db46',
                 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 1822,
+                // See muslim: sha256 null = not pinned yet; unit patterns not yet checked against this file.
+                'alternates' => [
+                    ['path' => '0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.Shamela0001699-ara1.completed', 'sha256' => null, 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u'],
+                ],
             ],
             'tirmidhi' => [
                 'path' => 'data/0279Tirmidhi/0279Tirmidhi.Sunan/0279Tirmidhi.Sunan.JK000140-ara1.completed',

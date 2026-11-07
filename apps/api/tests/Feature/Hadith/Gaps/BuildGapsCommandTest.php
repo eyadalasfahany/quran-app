@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domains\Hadith\Overlay\HadithDataFiles;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -43,10 +44,16 @@ it('has no --output option', function (): void {
 });
 
 it('with no --openiti-dir and no committed decisions file, has nothing to build and writes nothing', function (): void {
+    // The repo's committed decisions and their pins must not decide this test: an empty data folder and no pins.
+    File::deleteDirectory(gapsDataDirectory());
+    File::ensureDirectoryExists(gapsDataDirectory());
+    config(['hadith.data_files' => []]);
+    app()->instance(HadithDataFiles::class, new HadithDataFiles(gapsDataDirectory()));
+
     $this->artisan('hadith:build-gaps')
         ->assertSuccessful();
 
-    expect(File::exists(storage_path('app/hadith/proposals/gaps/bukhari.json')))->toBeFalse();
+    expect(File::glob(storage_path('app/hadith/proposals/gaps/*')))->toBe([]);
 });
 
 it('writes the proposal and its report only under storage/app/hadith/proposals/gaps', function (): void {
