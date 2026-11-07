@@ -3,10 +3,15 @@
     python3 scripts/ci_plan.py --moshafs 253,86 --chunks 6
     python3 scripts/ci_plan.py --source way2quran --moshafs 1 --chunks 6
     python3 scripts/ci_plan.py --source way2quran --moshafs 1 --quality
+    python3 scripts/ci_plan.py --source way2quran --moshafs 1,3 --quality --calibrate
 
 An empty --chunks means the source's default (6 for mp3quran, 20 for way2quran, P2). Quality mode (Way2Quran only,
 ADR 0077) is `--quality` or `QUALITY=true` in the environment; the workflow's plan step passes the environment
 only, so its command line is the same for both sources (P16). Quality mode changes nothing in the plan itself.
+
+Calibration mode (P9, plan Q10; `--calibrate` or `CALIBRATE=true`) is for Way2Quran quality only. It reads
+`checks/calibration-surahs.json` and makes one chunk per reciter holding that reciter's calibration surahs; an id
+that is not in the file is refused, and `--chunks` must be empty.
 
 Writes `chunks` (JSON list of {moshaf, chunk, surahs}) and `moshafs` (JSON list of ids) to $GITHUB_OUTPUT
 when it is set. Standard library only: no torch is installed for this job. A way2quran plan reads only the
@@ -27,6 +32,7 @@ REPO = Path(__file__).resolve().parents[3]
 MANIFEST = REPO / ci.MANIFEST_PATHS[ci.MANIFEST_SOURCE]
 PHP = REPO / "apps/api/config/quran.php"
 TANZIL = REPO / "packages/quran-text-check/data/tanzil-quran-simple-1.1.txt"
+CALIBRATION = REPO / ci.CALIBRATION_PATH
 WAY2QURAN_DATA = REPO / "tools/mp3quran-ingest/mp3quran_ingest/way2quran_reciters.json"
 
 
@@ -39,6 +45,11 @@ def main(argv=None):
                    help="chunks per moshaf, 1 to 20; empty: 6 for mp3quran, 20 for way2quran")
     p.add_argument("--quality", action="store_true",
                    help="Way2Quran quality mode (also QUALITY=true in the environment); the plan is unchanged")
+    p.add_argument("--calibrate", action="store_true",
+                   help="Way2Quran quality calibration (also CALIBRATE=true in the environment): the surahs of "
+                        "the calibration file, one chunk per reciter")
+    p.add_argument("--calibration-file", type=Path, default=CALIBRATION,
+                   help="the calibration surahs (default: checks/calibration-surahs.json)")
     p.add_argument("--done", default="",
                    help="resume: comma-separated hand-off artifact names an earlier run uploaded")
     p.add_argument("--manifest", type=Path, default=None,
@@ -50,13 +61,22 @@ def main(argv=None):
     manifest_path = args.manifest or REPO / ci.MANIFEST_PATHS[args.source]
     way2quran = args.source == ci.WAY2QURAN_SOURCE
     quality = args.quality or os.environ.get("QUALITY", "").strip().lower() == "true"
+    calibrate = args.calibrate or os.environ.get("CALIBRATE", "").strip().lower() == "true"
     try:
         if quality and not way2quran:
             raise ci.CiError("quality mode is for the way2quran source only")
+        if calibrate and not (way2quran and quality):
+            raise ci.CiError("calibration mode is for the way2quran source with quality mode only")
+        if calibrate and args.chunks.strip():
+            raise ci.CiError("calibration mode makes one chunk per reciter: leave chunks empty")
         moshafs = ci.parse_moshaf_ids(args.moshafs)
-        chunks = ci.parse_chunks(args.chunks, args.source)
+        chunks = ci.parse_chunks(args.chunks, args.source) if not calibrate else 0
         manifest = ci.load_json_or_none(manifest_path)
-        if way2quran:
+        if calibrate:
+            result = ci.plan_calibration(
+                moshafs, json.loads(args.calibration_file.read_text(encoding="utf-8")),
+                data=json.loads(args.data.read_text(encoding="utf-8")))
+        elif way2quran:
             # No API object is built for Way2Quran: the plan cannot reach MP3Quran.
             result = ci.plan(None, moshafs, chunks, manifest=manifest, php_source=None,
                              tanzil_path=args.tanzil, source=args.source,
@@ -74,6 +94,8 @@ def main(argv=None):
     except ci.CiError as err:
         print(f"::error::{err}", file=sys.stderr)
         return 1
+    if calibrate:
+        print("calibration mode: one chunk per reciter, nothing is uploaded and no PR is opened", file=sys.stderr)
     if quality:
         print("quality mode: completeness, then alignment of the complete surahs, then upload", file=sys.stderr)
     print(json.dumps(result, separators=(",", ":")))

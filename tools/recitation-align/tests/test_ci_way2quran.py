@@ -324,3 +324,101 @@ def test_ci_quality_script_way2quran_reads_its_own_manifest(tmp_path):
                                            "--manifest", str(manifest), "--out", str(out)])
     assert code == 0
     assert "| 1 | aligner | 1 | 1 | 0.900 | 0 |" in out.read_text(encoding="utf-8")
+
+
+# calibration plan (plan Q10, P9)
+
+CALIBRATION = {"schema": 1, "reciters": {"1": [1, 3], "4": [6, 4]}}
+
+
+def test_calibration_plan_is_one_chunk_per_reciter_from_the_file():
+    result = ci.plan_calibration([1, 4], CALIBRATION, data=data_fixture())
+    assert result == {"chunks": [{"moshaf": 1, "chunk": 1, "surahs": [1, 3]},
+                                 {"moshaf": 4, "chunk": 1, "surahs": [4, 6]}], "moshafs": [1, 4]}
+
+
+def test_calibration_plan_ignores_the_committed_manifest_and_calls_no_api():
+    # reciter 4 is complete in a committed manifest, which a normal plan refuses; calibration uploads nothing.
+    assert ci.plan_calibration([4], CALIBRATION, data=data_fixture())["chunks"][0]["surahs"] == [4, 6]
+
+
+@pytest.mark.parametrize("ids, text", [
+    ([2], "reciter 2 is not in the calibration file"),
+    ([999], "reciter 999 is not in the calibration file"),
+])
+def test_calibration_plan_refuses_an_id_that_is_not_in_the_file(ids, text):
+    with pytest.raises(CiError, match=text):
+        ci.plan_calibration(ids, CALIBRATION, data=data_fixture())
+
+
+def test_calibration_plan_refuses_a_surah_the_data_file_does_not_list():
+    doc = {"schema": 1, "reciters": {"1": [1, 5]}}
+    with pytest.raises(CiError, match=r"calibration surah\(s\) \[5\]"):
+        ci.plan_calibration([1], doc, data=data_fixture())
+
+
+@pytest.mark.parametrize("doc", [
+    [], {"schema": 2, "reciters": {}}, {"schema": 1, "reciters": {"x": [1]}},
+    {"schema": 1, "reciters": {"1": []}}, {"schema": 1, "reciters": {"1": [1, 1]}},
+    {"schema": 1, "reciters": {"1": [0]}}, {"schema": 1, "reciters": {"1": [True]}},
+])
+def test_calibration_file_is_validated(doc):
+    with pytest.raises(CiError):
+        ci.calibration_surahs(doc)
+
+
+def test_the_committed_calibration_file_lists_the_plan_surahs():
+    doc = json.loads((REPO / ci.CALIBRATION_PATH).read_text(encoding="utf-8"))
+    assert ci.calibration_surahs(doc) == {1: [5, 9], 3: [15, 16, 18, 19, 23, 55]}
+    result = ci.plan_calibration([1, 3], doc, data=json.loads(REAL_DATA.read_text(encoding="utf-8")))
+    assert [(c["moshaf"], c["chunk"]) for c in result["chunks"]] == [(1, 1), (3, 1)]
+
+
+def calibration_args(tmp_path, tanzil, *extra, ids="1,4"):
+    data = tmp_path / "data.json"
+    data.write_text(json.dumps(data_fixture()), encoding="utf-8")
+    file = tmp_path / "calibration.json"
+    file.write_text(json.dumps(CALIBRATION), encoding="utf-8")
+    return ["--source", "way2quran", "--moshafs", ids, "--data", str(data), "--tanzil", str(tanzil),
+            "--calibration-file", str(file), *extra]
+
+
+def test_ci_plan_script_calibrate_writes_the_output(tmp_path, tanzil, monkeypatch):
+    out = tmp_path / "gh_output"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(out))
+    monkeypatch.delenv("QUALITY", raising=False)
+    code = load_script("ci_plan").main(calibration_args(tmp_path, tanzil, "--quality", "--calibrate"))
+    assert code == 0
+    lines = out.read_text(encoding="utf-8").splitlines()
+    assert json.loads(lines[0].removeprefix("chunks=")) == [
+        {"moshaf": 1, "chunk": 1, "surahs": [1, 3]}, {"moshaf": 4, "chunk": 1, "surahs": [4, 6]}]
+
+
+def test_ci_plan_script_calibrate_from_the_environment_like_the_workflow(tmp_path, tanzil, monkeypatch):
+    monkeypatch.setenv("QUALITY", "true")
+    monkeypatch.setenv("CALIBRATE", "true")
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    assert load_script("ci_plan").main(calibration_args(tmp_path, tanzil)) == 0
+
+
+@pytest.mark.parametrize("flags, env, text", [
+    ([], {"CALIBRATE": "true"}, "way2quran source with quality mode only"),
+    (["--calibrate"], {}, "way2quran source with quality mode only"),
+    (["--quality", "--calibrate", "--chunks", "3"], {}, "leave chunks empty"),
+])
+def test_ci_plan_script_calibrate_refusals(tmp_path, tanzil, monkeypatch, capsys, flags, env, text):
+    monkeypatch.delenv("QUALITY", raising=False)
+    monkeypatch.delenv("CALIBRATE", raising=False)
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    assert load_script("ci_plan").main(calibration_args(tmp_path, tanzil, *flags)) == 1
+    assert text in capsys.readouterr().err
+
+
+def test_ci_plan_script_calibrate_refuses_an_id_not_in_the_file(tmp_path, tanzil, monkeypatch, capsys):
+    monkeypatch.delenv("QUALITY", raising=False)
+    monkeypatch.delenv("CALIBRATE", raising=False)
+    code = load_script("ci_plan").main(calibration_args(tmp_path, tanzil, "--quality", "--calibrate", ids="2"))
+    assert code == 1
+    assert "not in the calibration file" in capsys.readouterr().err
+

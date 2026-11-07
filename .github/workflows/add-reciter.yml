@@ -31,6 +31,11 @@ on:
         required: false
         default: false
         type: boolean
+      calibrate:
+        description: "Way2Quran quality only: calibration run on the surahs of checks/calibration-surahs.json, nothing uploaded and no PR (plan Q10)"
+        required: false
+        default: false
+        type: boolean
       resume_run_id:
         description: "Resume: an earlier run's id. Only the chunks it never uploaded are aligned (same moshaf ids and chunks; its artifacts last 7 days)"
         required: false
@@ -73,6 +78,7 @@ jobs:
           MOSHAF_IDS: ${{ inputs.moshaf_ids }}
           CHUNKS: ${{ inputs.chunks }}
           QUALITY: ${{ inputs.source == 'way2quran' && inputs.quality }}
+          CALIBRATE: ${{ inputs.source == 'way2quran' && inputs.calibrate }}
           RESUME_RUN_ID: ${{ inputs.resume_run_id }}
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -310,7 +316,7 @@ jobs:
             --pauses-dir "$BASE/pauses" --out-dir "$BASE/gate"
 
       - name: Upload the available Way2Quran surahs to R2 (quality, last)
-        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         working-directory: tools/mp3quran-ingest
         env:
           RECITER: ${{ matrix.moshaf }}
@@ -510,7 +516,7 @@ jobs:
             --source aligner
 
       - name: Merge the reciter report (Way2Quran quality)
-        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         working-directory: tools/recitation-align
         env:
           RECITER: ${{ matrix.moshaf }}
@@ -528,7 +534,7 @@ jobs:
             "${PREVIOUS[@]}"
 
       - name: Exclude unavailable surahs from the reciter data file (Way2Quran quality)
-        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         working-directory: tools/mp3quran-ingest
         env:
           RECITER: ${{ matrix.moshaf }}
@@ -539,7 +545,7 @@ jobs:
             --report "../recitation-align/checks/way2quran-${RECITER}.json" --write
 
       - name: Merge manifest (Way2Quran quality, the remaining surahs)
-        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         working-directory: tools/recitation-align
         env:
           RECITER: ${{ matrix.moshaf }}
@@ -563,7 +569,7 @@ jobs:
             --data ../mp3quran-ingest/mp3quran_ingest/way2quran_reciters.json
 
       - name: Export committed timing files (Way2Quran quality, gated)
-        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         working-directory: tools/recitation-align
         env:
           RECITER: ${{ matrix.moshaf }}
@@ -583,6 +589,17 @@ jobs:
             --in "$ALIGNED" --gate-dir "$GATE" \
             --out "../../apps/api/resources/recitation-timings/way2quran/${RECITER}" \
             --source aligner
+
+      - name: Calibration summary (Way2Quran quality)
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && inputs.calibrate }}
+        env:
+          RECITER: ${{ matrix.moshaf }}
+        run: |
+          set -euo pipefail
+          # Asserts the known outcomes of this reciter's calibration surahs and writes the job summary. The speed
+          # is pooled and projected afterwards by `w2q_calibration_check.py combine` (plan Q10).
+          python3 tools/recitation-align/scripts/w2q_calibration_check.py check --reciter "$RECITER" \
+            --handoff "$RUNNER_TEMP/handoff"
 
       - name: Test recitation-align
         working-directory: tools/recitation-align
@@ -685,7 +702,7 @@ jobs:
             --title "Reciter: Way2Quran reciter ${RECITER}" --body-file "$RUNNER_TEMP/pr-body.md"
 
       - name: Report markdown (Way2Quran quality)
-        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         working-directory: tools/recitation-align
         env:
           RECITER: ${{ matrix.moshaf }}
@@ -695,7 +712,7 @@ jobs:
             --out "$RUNNER_TEMP/w2q-report.md"
 
       - name: Commit, push branch and open PR (Way2Quran quality)
-        if: ${{ inputs.source == 'way2quran' && inputs.quality }}
+        if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         env:
           GH_TOKEN: ${{ github.token }}
           RECITER: ${{ matrix.moshaf }}

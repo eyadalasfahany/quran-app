@@ -261,6 +261,57 @@ def plan_way2quran(moshaf_ids: list[int], chunks: int, *, manifest: dict[str, An
     return {"chunks": entries, "moshafs": moshaf_ids}
 
 
+CALIBRATION_SCHEMA = 1
+CALIBRATION_PATH = "tools/recitation-align/checks/calibration-surahs.json"
+
+
+def calibration_surahs(doc: Any) -> dict[int, list[int]]:
+    """The calibration file (`checks/calibration-surahs.json`): reciter id -> its surahs, validated."""
+    if not isinstance(doc, dict) or doc.get("schema") != CALIBRATION_SCHEMA or not isinstance(doc.get("reciters"), dict):
+        raise CiError("the calibration file is not {\"schema\": 1, \"reciters\": {...}}")
+    out: dict[int, list[int]] = {}
+    for key, surahs in doc["reciters"].items():
+        if not str(key).isdigit():
+            raise CiError(f"the calibration file has a reciter key that is not an id: {key!r}")
+        if (not isinstance(surahs, list) or not surahs or len(set(surahs)) != len(surahs)
+                or any(not isinstance(s, int) or isinstance(s, bool) or not 1 <= s <= 114 for s in surahs)):
+            raise CiError(f"the calibration file lists reciter {key} with a bad surah list")
+        out[int(key)] = sorted(surahs)
+    return out
+
+
+def plan_calibration(moshaf_ids: list[int], calibration: Any, *, data: Any) -> dict[str, Any]:
+    """The calibration plan (P9, Q10): one chunk per reciter holding that reciter's calibration surahs.
+
+    Refuses an id that is not in the calibration file, a reciter or a surah the Way2Quran data file does not list,
+    and a non-Hafs reciter. The committed manifest is not read: a calibration uploads nothing, so a reciter that is
+    already complete there can still be measured. Makes no MP3Quran call.
+    """
+    listed = calibration_surahs(calibration)
+    reciters = way2quran_reciters(data)
+    reasons: list[str] = []
+    entries: list[dict[str, Any]] = []
+    for reciter_id in moshaf_ids:
+        try:
+            if reciter_id not in listed:
+                raise CiError(f"reciter {reciter_id} is not in the calibration file")
+            item = reciters.get(reciter_id)
+            if item is None:
+                raise CiError(f"reciter {reciter_id} is not in the Way2Quran reciter data file")
+            if item.get("riwayah_folder") != WAY2QURAN_HAFS_FOLDER:
+                raise CiError(f"reciter {reciter_id} has no Hafs files")
+            missing = sorted(set(listed[reciter_id]) - set(way2quran_surah_list(item)))
+            if missing:
+                raise CiError(f"reciter {reciter_id}: calibration surah(s) {missing} are not in the data file")
+        except CiError as err:
+            reasons.append(str(err))
+            continue
+        entries.append({"moshaf": reciter_id, "chunk": 1, "surahs": listed[reciter_id]})
+    if reasons:
+        raise CiError("refused: " + "; ".join(reasons))
+    return {"chunks": entries, "moshafs": moshaf_ids}
+
+
 def plan(api: Api | None, moshaf_ids: list[int], chunks: int, *, manifest: dict[str, Any] | None,
          php_source: str | None, tanzil_path: Path, source: str = MANIFEST_SOURCE,
          way2quran_data: Any = None) -> dict[str, Any]:
