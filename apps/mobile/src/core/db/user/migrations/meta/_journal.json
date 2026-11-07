@@ -50,6 +50,13 @@
       "when": 1793535000000,
       "tag": "0006_names_favorites",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1793536000000,
+      "tag": "0007_hadith_personal",
+      "breakpoints": true
     }
   ]
 }

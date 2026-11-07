@@ -58,6 +58,8 @@ describe('user.db schema', () => {
       'bookmarks',
       'downloads',
       'dua_favorites',
+      'hadith_bookmarks',
+      'hadith_reading_position',
       'highlights',
       'khatma_logs',
       'khatma_plans',
@@ -109,6 +111,36 @@ describe('user.db schema', () => {
          VALUES ('r2', 'category', 'morning', 1, 'clock', '08:00', NULL, NULL, NULL, 1)`,
       ).run();
     }).toThrow(/unique/i);
+  });
+
+  it('creates the two hadith personal tables with their keys', () => {
+    const columns = (table: string): string[] =>
+      (database.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((row) => row.name);
+
+    expect(columns('hadith_bookmarks')).toEqual([
+      'collection_slug',
+      'hadith_number',
+      'book_number',
+      'unverified',
+      'alias_version',
+      'created_at',
+    ]);
+    expect(columns('hadith_reading_position')).toEqual([
+      'collection_slug',
+      'hadith_number',
+      'book_number',
+      'unverified',
+      'alias_version',
+      'updated_at',
+    ]);
+
+    const primaryKeys = (table: string): string[] =>
+      (database.prepare(`PRAGMA table_info(${table})`).all() as { name: string; pk: number }[])
+        .filter((row) => row.pk > 0)
+        .sort((left, right) => left.pk - right.pk)
+        .map((row) => row.name);
+    expect(primaryKeys('hadith_bookmarks')).toEqual(['collection_slug', 'hadith_number']);
+    expect(primaryKeys('hadith_reading_position')).toEqual(['collection_slug']);
   });
 
   it('indexes verse_id and keeps one live highlight and one live bookmark per kind', () => {
@@ -254,6 +286,7 @@ describe('user.db schema', () => {
       '0004_unknown_nitro',
       '0005_my_duas',
       '0006_names_favorites',
+      '0007_hadith_personal',
     ]);
     expect(readFileSync(join(migrationsDir, '0001_recent_listens.sql'), 'utf8')).toMatch(/^CREATE TABLE `recent_listens`/);
     expect(readFileSync(join(migrationsDir, 'migrations.js'), 'utf8')).toContain('m0001');

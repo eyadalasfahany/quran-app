@@ -211,3 +211,30 @@ export const namesFavorites = sqliteTable('names_favorites', {
   nameSlug: text('name_slug').primaryKey(),
   createdAt: integer('created_at').notNull(),
 });
+
+// Hadith personal state (ADR 0042 §8, plan step 11). Local only (ADR 0027): no sync columns, no outbox.
+// A saved item is a collection slug + hadith number (text), never a database id, book id or chapter id.
+// `book_number` is the fallback place when the hadith cannot be confirmed (after a source switch).
+// `alias_version` is the highest `hadith_ref_aliases.since_version` already applied to the row (0 = none).
+export const hadithBookmarks = sqliteTable(
+  'hadith_bookmarks',
+  {
+    collectionSlug: text('collection_slug').notNull(),
+    hadithNumber: text('hadith_number').notNull(),
+    bookNumber: text('book_number').notNull(),
+    unverified: integer('unverified').notNull().default(0),
+    aliasVersion: integer('alias_version').notNull().default(0),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.collectionSlug, table.hadithNumber] })],
+);
+
+// One reading place per collection, separate from the Quran's `reading_position` (ADR 0028).
+export const hadithReadingPosition = sqliteTable('hadith_reading_position', {
+  collectionSlug: text('collection_slug').primaryKey(),
+  hadithNumber: text('hadith_number').notNull(),
+  bookNumber: text('book_number').notNull(),
+  unverified: integer('unverified').notNull().default(0),
+  aliasVersion: integer('alias_version').notNull().default(0),
+  updatedAt: integer('updated_at').notNull(),
+});

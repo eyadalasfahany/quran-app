@@ -18,6 +18,8 @@ export const PERSONAL_TABLES = [
   'my_duas',
   'dua_favorites',
   'names_favorites',
+  'hadith_bookmarks',
+  'hadith_reading_position',
 ] as const;
 
 /**

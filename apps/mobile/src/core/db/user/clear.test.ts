@@ -35,6 +35,8 @@ describe('clearLocalUserData', () => {
       'my_duas',
       'dua_favorites',
       'names_favorites',
+      'hadith_bookmarks',
+      'hadith_reading_position',
     ]);
   });
 
@@ -58,6 +60,25 @@ describe('clearLocalUserData', () => {
     clearLocalUserData(executor);
 
     for (const table of ['azkar_favorites', 'azkar_progress', 'azkar_reminders', 'my_duas', 'dua_favorites']) {
+      expect(database.prepare(`SELECT count(*) as c FROM ${table}`).get()).toEqual({ c: 0 });
+    }
+
+    database.close();
+  });
+
+  it('empties the hadith personal tables', () => {
+    const { database, executor } = openMigrated();
+
+    executor.exec(
+      `INSERT INTO hadith_bookmarks (collection_slug, hadith_number, book_number, unverified, alias_version, created_at) VALUES ('fixture-multi', '1', '1', 0, 0, 100);`,
+    );
+    executor.exec(
+      `INSERT INTO hadith_reading_position (collection_slug, hadith_number, book_number, unverified, alias_version, updated_at) VALUES ('fixture-multi', '1', '1', 0, 0, 100);`,
+    );
+
+    clearLocalUserData(executor);
+
+    for (const table of ['hadith_bookmarks', 'hadith_reading_position']) {
       expect(database.prepare(`SELECT count(*) as c FROM ${table}`).get()).toEqual({ c: 0 });
     }
 
