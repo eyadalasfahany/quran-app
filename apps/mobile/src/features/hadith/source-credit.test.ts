@@ -12,6 +12,11 @@ describe('hadithCreditKey', () => {
     expect(hadithCreditKey('openiti')).toBe('hadith.source.creditOpeniti');
     expect(hadithCreditKey('hadithapicom')).toBe('hadith.source.creditHadithapicom');
   });
+
+  it('gives the filled-text credit for the meeatif and hadithjson datasets', () => {
+    expect(hadithCreditKey('meeatif')).toBe('hadith.source.creditMeeatif');
+    expect(hadithCreditKey('hadithjson')).toBe('hadith.source.creditHadithjson');
+  });
 });
 
 describe('isUnavailableHadith', () => {

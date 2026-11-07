@@ -146,11 +146,13 @@ describe('SourcesScreen', () => {
       jest.restoreAllMocks();
     });
 
-    const HADITH_KEYS = ['fawazahmed0', 'openiti', 'hadithapicom'] as const;
+    const HADITH_KEYS = ['fawazahmed0', 'openiti', 'hadithapicom', 'meeatif', 'hadithjson'] as const;
     const URLS: Record<(typeof HADITH_KEYS)[number], string> = {
       fawazahmed0: 'https://github.com/fawazahmed0/hadith-api',
       openiti: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
       hadithapicom: 'https://hadithapi.com',
+      meeatif: 'https://huggingface.co/datasets/meeAtif/hadith_datasets',
+      hadithjson: 'https://github.com/AhmedBaset/hadith-json',
     };
     // The row's own test ID, found through the query (hidden elements included, as the rows are not accessible roots).
     const row = (view: Pick<RenderResult, 'queryAllByTestId'>, id: string): ReturnType<RenderResult['getByTestId']> => {
@@ -164,10 +166,18 @@ describe('SourcesScreen', () => {
     const rowIds = (root: unknown) => testIdsInOrder(root, 'sources-group').filter((id) => /^sources-[a-z0-9]+$/.test(id) && id !== 'sources-group');
     const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    it('shows the fawazahmed0, OpenITI and hadithapi.com rows after the fonts row', async () => {
+    it('shows the fawazahmed0, OpenITI, hadithapi.com and dataset rows after the fonts row', async () => {
       const view = await renderUi(<SourcesScreen testID="sources" />);
       const ids = rowIds(view.toJSON());
-      expect(ids.slice(-4)).toEqual(['sources-fonts', 'sources-fawazahmed0', 'sources-openiti', 'sources-hadithapicom']);
+      expect(ids.slice(-6)).toEqual(['sources-fonts', 'sources-fawazahmed0', 'sources-openiti', 'sources-hadithapicom', 'sources-meeatif', 'sources-hadithjson']);
+    });
+
+    it.each(['ar', 'en'] as const)('shows the meeAtif and hadith-json rows in %s', async (locale) => {
+      const view = await renderUi(<SourcesScreen testID="sources" />, { locale });
+      for (const key of ['meeatif', 'hadithjson'] as const) {
+        expect(view.queryAllByText(new RegExp(escapeRegExp(i18n.t(`hadith.sources.${key}.title`, { lng: locale })))).length).toBeGreaterThan(0);
+        expect(view.queryAllByText(new RegExp(escapeRegExp(i18n.t(`hadith.sources.${key}.subtitle`, { lng: locale })))).length).toBeGreaterThan(0);
+      }
     });
 
     it.each(['ar', 'en'] as const)('shows the OpenITI credit in %s', async (locale) => {

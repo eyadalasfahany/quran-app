@@ -1779,7 +1779,9 @@
       "credit": "المصدر: fawazahmed0/hadith-api",
       "open": "فتح المصدر",
       "creditOpeniti": "عناوين الأبواب وبعض نصوص الأحاديث: مشروع OpenITI (الإصدار 2023.1.8)، بترخيص CC BY-NC-SA 4.0",
-      "creditHadithapicom": "بعض نصوص الأحاديث: hadithapi.com"
+      "creditHadithapicom": "بعض نصوص الأحاديث: hadithapi.com",
+      "creditMeeatif": "بعض نصوص الأحاديث: مجموعة بيانات meeAtif/hadith_datasets",
+      "creditHadithjson": "بعض نصوص الأحاديث: مجموعة بيانات hadith-json"
     },
     "unavailable": {
       "title": "الحديث {{n}} غير متوفر حاليًا في المصدر"
@@ -1858,6 +1860,14 @@
       "hadithapicom": {
         "title": "hadithapi.com",
         "subtitle": "نصوص بعض الأحاديث التي ينقصها المصدر الأساسي: hadithapi.com"
+      },
+      "meeatif": {
+        "title": "meeAtif/hadith_datasets",
+        "subtitle": "نصوص بعض الأحاديث من مجموعة بيانات مشتقة من Sunnah.com، ترخيصها ادعاء من الناشر بأنه MIT، والمصدر غير مُعتمد بعد."
+      },
+      "hadithjson": {
+        "title": "hadith-json",
+        "subtitle": "نصوص بعض الأحاديث من مجموعة بيانات مشتقة من Sunnah.com، بلا ترخيص، والمصدر غير مُعتمد بعد."
       }
     },
     "chapters": {

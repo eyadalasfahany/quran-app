@@ -28,6 +28,9 @@ final class HadithDataFiles
         'neighbour_not_fetchable',
         'recheck_hapi_failed',
         'hadithapi_key_missing',
+        'dataset_record_missing',
+        'dataset_text_markup',
+        'recheck_dataset_failed',
     ];
 
     public function __construct(private readonly ?string $baseDirectory = null) {}
@@ -228,7 +231,7 @@ final class HadithDataFiles
             throw new HadithDataFileException('Data file ['.$relativePath.'] holds an entry with an unknown class (decision_class_unknown).');
         }
 
-        if (! in_array($source, ['openiti', 'hadithapi.com', 'none'], true)) {
+        if (! in_array($source, ['openiti', 'hadithapi.com', 'none'], true) && HadithDatasets::originOfSource((string) $source) === null) {
             throw new HadithDataFileException('Data file ['.$relativePath.'] holds an entry with an unknown source (decision_source_unknown).');
         }
 
@@ -418,7 +421,7 @@ final class HadithDataFiles
         $origins = [];
 
         foreach ($value as $code => $origin) {
-            if (! in_array((string) $code, ['openiti', 'hadithapicom'], true) || ! is_array($origin) || ! is_string($origin['source_version'] ?? null) || $origin['source_version'] === '') {
+            if (! in_array((string) $code, ['openiti', 'hadithapicom', 'meeatif', 'hadithjson'], true) || ! is_array($origin) || ! is_string($origin['source_version'] ?? null) || $origin['source_version'] === '') {
                 throw new HadithDataFileException('Data file ['.$relativePath.'] holds an origin that is not valid (origin_unknown).');
             }
 

@@ -110,7 +110,7 @@ final class MatchChaptersCommand extends Command
 
         $originIds = [];
 
-        foreach (['openiti', 'hadithapicom'] as $code) {
+        foreach (['openiti', 'hadithapicom', 'meeatif', 'hadithjson'] as $code) {
             $source = $repository->source($code);
 
             if ($source !== null) {

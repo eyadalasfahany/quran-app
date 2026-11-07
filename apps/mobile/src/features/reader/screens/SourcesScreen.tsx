@@ -25,6 +25,8 @@ const SOURCES: readonly SourceEntry[] = [
   { key: 'fawazahmed0', url: 'https://github.com/fawazahmed0/hadith-api', i18n: 'hadith.sources' },
   { key: 'openiti', url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', i18n: 'hadith.sources' },
   { key: 'hadithapicom', url: 'https://hadithapi.com', i18n: 'hadith.sources' },
+  { key: 'meeatif', url: 'https://huggingface.co/datasets/meeAtif/hadith_datasets', i18n: 'hadith.sources' },
+  { key: 'hadithjson', url: 'https://github.com/AhmedBaset/hadith-json', i18n: 'hadith.sources' },
 ];
 
 export function SourcesScreen({ testID }: { testID?: string }) {

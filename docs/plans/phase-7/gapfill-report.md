@@ -354,3 +354,144 @@ Proposed correction:
   - Backward: 82 of the book's 82 units fall in 3857–3938, 100%.
   - It passes the 95% rule.
 - **Position:** the next OpenITI book maps to fawazahmed0 section 36 (from 3939), and the previous one to section 35 (to 3856).
+
+## Final round, 7 Nov 2026: closing the last unknowns
+
+The rules are the same as before: both neighbours must confirm, a gap is either fill-safe or a merge, and nothing is guessed. The `final-classification-{slug}.json` files are updated and final.
+
+**Change of input path.** During this round, the app's snapshot folder (`apps/api/storage/app/private/sources/hadith/df57907…/editions/`) was rebuilt and no longer holds `ara-muslim.json`, `ara-tirmidhi.json` or `ara-malik.json`. I downloaded these three from `fawazahmed0/hadith-api` at the pinned commit into the scratchpad (`gapfill/faw/`). Their SHA-256s match `config/hadith.php` exactly. Nothing in the app was changed.
+
+### Recorded decisions (in the JSON)
+
+- **Muslim 637–638, 1428–1429, 6701–6702 and 6844–6845:** accepted as fills, with a `decision` field on each entry.
+- **Bukhari 5710–5712:** accepted as a merge into 5709 (`count_fits: false`, no text added), also with a `decision` field.
+
+### Results
+
+| Collection | Unknown before this round | Closed by other OpenITI versions | Closed by hadithapi.com offsets | **Final unknown** |
+| --- | --- | --- | --- | --- |
+| Bukhari | 0 | — | — | **0: complete** |
+| Muslim | 51 | 2 | 1 | **48** (2 in the introduction: 1–2) |
+| Tirmidhi | 9 | 0 | 0 | **9** |
+| Nasa'i | 0 | — | — | **0: complete** |
+| Malik | 21 | 1 | not in hadithapi.com | **20** |
+| Abu Dawud | 0 | — | — | **0: complete** |
+| Ibn Majah | 0 | — | — | **0: complete** |
+
+**1. Muslim.**
+
+- **Other OpenITI versions.** I tried the two Muslim versions not used before, ShamAY0033938 and Shamela0001727.
+  - **Closed:** 209 (fill-safe, from Shamela0001727) and 2295 (merge into the next hadith, from ShamAY0033938).
+  - **Not accepted: 248.** The two versions disagree: ShamAY gives a merge into the next hadith, and Shamela0001727 gives a fill. Both results are recorded in the entry.
+  - Each closed entry records the version used, its path and its SHA-256.
+- **hadithapi.com offsets −2 to +2.** I fetched 109 extra records for Muslim and 30 for Tirmidhi, at least 1.5 s apart, with 0 rate-limit answers.
+  - An offset was accepted only when both fawazahmed0 neighbours match the hadithapi.com records at that same offset, and the count fits.
+  - **Closed:** 2381, a merge into the next hadith at offset +1. The neighbour Jaccards are 0.94 and 0.60, and the gap record is fully contained (1.00) in the next neighbour.
+  - **Not closed: 46 Muslim numbers.** In every other run, no single offset confirms both neighbours. The dominant pattern, 33 numbers, is that the previous neighbour matches only at +1 and the next only at 0. So hadithapi.com files the previous neighbour's text under the gap number and has no separate record for the gap. Other patterns:
+
+    | Previous neighbour matches at | Next neighbour matches at | Gaps |
+    | --- | --- | --- |
+    | 0 | −1 | 7 |
+    | 0 | (no offset) | 3 |
+    | −1 | 0 | 2 |
+    | (no offset) | −2 | 1 |
+
+  - 2 gaps (1–2) have no previous neighbour.
+- **Muslim's final unknowns (48):** 1–2, 128, 248, 881, 1251, 1332, 1648, 1778, 2810, 3038–3039, 3262, 3525, 3836, 3845–3846, 4436, 5114–5115, 5393, 5637, 6144, 6527–6529, 6792, 7016, 7020, 7144, 7317, 7329–7343, 7371, 7557.
+
+**2. Tirmidhi decimals.** I checked all 3 versions (JK000140, Shamela0001435, Shamela0007895).
+
+- **None of the decimal numbers exists as a separate unit between confirmed neighbours** in any version.
+- **For 391.2, 1561.2 and 1884.2,** each run's whole numbers were filled from hadithapi.com. The OpenITI units between the neighbours can then be compared with those fill records:
+  - In Shamela0007895, each unit is fully contained in a fill record (1.00).
+  - In JK000140 and Shamela0001435, the same units are 0.28–0.84 contained, because they carry more text than the hadithapi.com record.
+  - So whether the decimal sub-hadith's text is inside the whole-numbered hadith depends on the version. That is not confirmed, and they stay unknown.
+- **3011.2 and 3015.2:** no version has a separate unit for them, while both neighbours are confirmed single units.
+- **2787.2 and 2855.2:** a neighbour is not confirmed in 2 of the 3 versions.
+- **457–458:** OpenITI has 1 unit for 2 numbers. On hadithapi.com the previous neighbour matches only at +1 and the next only at 0.
+- **Tirmidhi's final unknowns (9):** 391.2, 457, 458, 1561.2, 1884.2, 2787.2, 2855.2, 3011.2, 3015.2.
+
+**3. Malik.** I measured all 10 Muwatta versions in the pinned release.
+
+| Version | Aligned to fawazahmed0 |
+| --- | --- |
+| JK000466 | 93.8% |
+| Shamela0001699 | 92.6% |
+| Shamela0028107 | 47.7% (with commentary) |
+| Shia000901Vols | 47.6% |
+| Shamela0008140 | 43.7% |
+| ShamAY0033923 | 11.1% |
+| Shamela0016050 | 6.3% |
+| ShamAY0033991 | 4.0% |
+| ShamAY0033921 | 3.1% |
+| ShamAY0033922 | 0.9% |
+
+- **Recension.** Only JK000466 and Shamela0001699 match fawazahmed0's recension. They were the only versions accepted as evidence.
+- **Closed:** 1492 (fill-safe, from Shamela0001699).
+- **Candidates recorded but not accepted** (in `not_accepted_candidates`), because their versions align below 50%: 10 numbers from Shamela0028107 and Shamela0008140 (927, 1013, 1090, 1171, 1176, 1191, 1203, 1528, 1583, 1748).
+- **Malik's final unknowns (20):** 522, 671, 684, 694, 927, 994, 1013, 1054, 1057, 1090, 1171, 1176, 1191, 1203, 1389, 1519, 1528, 1583, 1748, 1762. The most common reasons:
+  - OpenITI has 2 units where fawazahmed0 has 1 number (6).
+  - There is no separate OpenITI text (6).
+  - A neighbour is not confirmed (4).
+
+### Final unknown count per collection
+
+| Collection | Final unknown |
+| --- | --- |
+| Bukhari | 0 |
+| Muslim | 48 |
+| Tirmidhi | 9 |
+| Nasa'i | 0 |
+| Malik | 20 |
+| Abu Dawud | 0 |
+| Ibn Majah | 0 |
+
+Under the completeness rule, Muslim, Tirmidhi and Malik stay held back until Sunnah.com (step 18) or another confirmed source closes them.
+
+### Final round, part 2: sunnah.com-derived sources and Dorar
+
+The rules are the same as before: both neighbours must confirm, the count must fit, and the duplication check must pass. Each source's records were treated as ordered units and aligned by text, because neither source shares fawazahmed0's numbering everywhere.
+
+The downloads are in `gapfill/data2/` and were read with `python3 -I`. The fawazahmed0 input was read from the hash-verified copies in `gapfill/faw/`. Nothing was written under `apps/api/storage`.
+
+**Sources:**
+
+| Source | Pin | Files (SHA-256) | Licence claim, provenance | Arabic text | Numbering against fawazahmed0 | Aligned by text |
+| --- | --- | --- | --- | --- | --- | --- |
+| meeAtif/hadith_datasets (Hugging Face) | revision `cd62605e4fef3c46968a5f9fdcccbbbffdf631b5` (2026-02-09) | `Sahih Muslim.json` `1484b907…a55b8`; `` Jami` at-Tirmidhi.json `` `b17d9acc…5d693`; `README.md` `ddcb8605…d595` | "MIT" tag set by the uploader; sunnah.com-derived (each row links to sunnah.com). No Malik. | yes, 0 empty records | sunnah.com references. Muslim uses the Abd al-Baqi number plus a letter, has no introduction and has 7,368 records. Tirmidhi uses its number plus a letter for sub-hadith, with 4,053 records. | Muslim 98.83%, Tirmidhi 99.87% |
+| AhmedBaset/hadith-json (GitHub) | commit `70b83d6d21995bb32f8d7271cd75501be5a922a7` (`main`, 2026-03-28) | `db/by_book/the_9_books/muslim.json` `12e3cbe8…6ae`; `tirmidhi.json` `9ba6da92…437`; `malik.json` `a926eb63…ef8` | No licence; README says it was scraped from sunnah.com | yes. Malik has 125 empty records; Muslim and Tirmidhi have none. | `idInBook` is not fawazahmed0's number. The same-number match rate is Muslim 0.0%, Tirmidhi 19.2%, Malik 5.7%. | Muslim 98.83%, Tirmidhi 99.87%, Malik 99.95% |
+| Dorar.net | — | — | ADR 0031: an official API with a token; no bulk import, no permanent storage | — | — | **Not used.** The repo client (`apps/api/app/Integrations/Dorar/`) has no endpoint paths ("the mapper owns those once Dorar documents them"), and no `DORAR_API_BASE_URL` or token is set locally. So nothing could be confirmed through it. |
+
+**Results for the 77 gaps:**
+
+- **Tirmidhi: 4 closed as fill-safe.** These are 391.2, 1884.2, 2787.2 and 2855.2.
+  - Both sources independently confirm each one: both neighbours match, the count fits, and nothing is duplicated. Their records for these numbers are identical (Jaccard 1.00 between the two sources).
+  - The source recorded is meeAtif, corroborated by hadith-json.
+  - Consistency check: in both runs where the whole number was already filled from hadithapi.com (391 and 1884), the meeAtif record for that whole number matches the hadithapi.com fill (Jaccard 1.00).
+- **Malik: 1 closed as fill-safe.** This is 1519, from hadith-json, the only source with Malik.
+- **Muslim: 0 closed.**
+  - Both sources reproduce the same structure as fawazahmed0:
+    - 23 gaps have no separate record between confirmed single-record neighbours.
+    - 15 are the 7329–7343 run, with 14 records for 15 numbers.
+    - 4 have 1 record for 2 numbers.
+    - 6 have a neighbour that is not confirmed, including 1–2.
+  - So sunnah.com itself appears to have no separate text at these numbers.
+  - For 1–2: hadith-json has introduction records, but none aligns to fawazahmed0 3. So the start of the collection cannot be used as a boundary.
+- **Tirmidhi's remaining 5 (457, 458, 1561.2, 3011.2, 3015.2)** and **Malik's remaining 19** fail for the same structural reasons in both sources:
+  - Source and fawazahmed0 have different record counts (Malik 8, Tirmidhi 3).
+  - There is no separate record (Malik 11, Tirmidhi 2).
+- **Recorded in the JSON:** each still-unknown entry has a `sunnah_derived_results` field with both sources' class and reason. Each `final-classification-*.json` file has an `extra_sources` block with each source's URL, pin, file, SHA-256, licence claim and provenance. Accepted entries have `source` set to `meeAtif/hadith_datasets` or `AhmedBaset/hadith-json`, and `corroborated_by` where both sources agree.
+
+**For the developer:** both sources are sunnah.com-derived. meeAtif's MIT tag is the uploader's own claim, and hadith-json has no licence. These are the same rights questions as RB13. The 5 new fills therefore carry that rights status.
+
+### Final unknown count per collection (after part 2)
+
+| Collection | Final unknown |
+| --- | --- |
+| Bukhari | 0 |
+| Muslim | 48 |
+| Tirmidhi | 5 |
+| Nasa'i | 0 |
+| Malik | 19 |
+| Abu Dawud | 0 |
+| Ibn Majah | 0 |

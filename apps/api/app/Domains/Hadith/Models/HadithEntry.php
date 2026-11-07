@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $source_url
  * @property int $source_id
  * @property string $source_key
- * @property string|null $source_code Origin of a filled row (openiti, hadithapicom); null for the primary source.
+ * @property string|null $source_code Origin of a filled row (openiti, hadithapicom, meeatif, hadithjson); null for the primary source.
  * @property string $source_text_sha256
  * @property string $source_version
  * @property CarbonImmutable $imported_at

@@ -9,6 +9,8 @@ use App\Domains\Hadith\Exceptions\HadithGapBuildException;
 use App\Domains\Hadith\Overlay\GapDecision;
 use App\Domains\Hadith\Overlay\GapDecisions;
 use App\Domains\Hadith\Overlay\HadithDataFiles;
+use App\Domains\Hadith\Overlay\HadithDatasetFile;
+use App\Domains\Hadith\Overlay\HadithDatasets;
 use App\Domains\Hadith\Overlay\HadithWordSet;
 use App\Domains\Hadith\Overlay\OpenItiHeadingCleaner;
 use App\Domains\Hadith\Overlay\OpenItiTextCleaner;
@@ -44,6 +46,12 @@ final class HadithGapBuilder
 
     private ?HadithApiComClient $hapi = null;
 
+    /** @var array<string, HadithDatasetFile> origin code => the dataset file of this run */
+    private array $datasetUsed = [];
+
+    /** @var array<string, HadithDatasetFile> origin|slug => loaded dataset file */
+    private array $datasetLoaded = [];
+
     private bool $hapiKeyMissing = false;
 
     /** @var array<string, int> */
@@ -63,6 +71,7 @@ final class HadithGapBuilder
 
     public function __construct(
         private readonly HadithDataFiles $dataFiles,
+        private readonly HadithDatasets $datasets,
         private readonly HadithSourceRegistry $sources,
         private readonly OpenItiUnitReader $units,
         private readonly OpenItiTextCleaner $textCleaner,
@@ -135,6 +144,7 @@ final class HadithGapBuilder
         $classes = [];
         $seen = [];
         $runFailures = $this->runFailures($decisions, $unitsByFile, $primaryFile, $byNumber);
+        $runSlots = $this->runSlots($decisions);
 
         foreach ($decisions->entries as $entry) {
             $classes[$entry->class] = ($classes[$entry->class] ?? 0) + 1;
@@ -185,13 +195,27 @@ final class HadithGapBuilder
                 continue;
             }
 
-            if (in_array($entry->class, ['merge-prev', 'merge-next'], true) && in_array($entry->source, ['openiti', 'hadithapi.com'], true)) {
+            if (in_array($entry->class, ['merge-prev', 'merge-next'], true) && (in_array($entry->source, ['openiti', 'hadithapi.com'], true) || HadithDatasets::originOfSource($entry->source) !== null)) {
                 $merge = $this->merge($slug, $entry, $byNumber);
 
                 if (is_string($merge)) {
                     $this->unresolve($unresolved, $entry->hadith, $merge);
                 } else {
                     $merges[] = $merge;
+                }
+
+                continue;
+            }
+
+            $datasetOrigin = HadithDatasets::originOfSource($entry->source);
+
+            if ($entry->class === 'fill-safe' && $datasetOrigin !== null) {
+                $fill = $this->datasetFill($slug, $datasetOrigin, $entry, $byNumber, $runSlots[$entry->hadith] ?? ['position' => 1, 'length' => 1]);
+
+                if (is_string($fill)) {
+                    $this->unresolve($unresolved, $entry->hadith, $fill);
+                } else {
+                    $fills[] = $fill;
                 }
 
                 continue;
@@ -363,7 +387,15 @@ final class HadithGapBuilder
             return 'recheck_neighbour_failed';
         }
 
-        $origin = $entry->source === 'openiti' ? 'openiti' : 'hadithapicom';
+        $origin = match ($entry->source) {
+            'openiti' => 'openiti',
+            'hadithapi.com' => 'hadithapicom',
+            default => (string) HadithDatasets::originOfSource($entry->source),
+        };
+
+        if ($origin !== 'openiti' && $origin !== 'hadithapicom') {
+            $this->dataset($origin, $slug);
+        }
 
         if ($origin === 'hadithapicom') {
             $records = $this->isInteger($entry->hadith) ? $this->hapiRecordFor($slug, $entry->hadith) : [];
@@ -387,6 +419,133 @@ final class HadithGapBuilder
         $this->mergesBySide[$entry->class] = ($this->mergesBySide[$entry->class] ?? 0) + 1;
 
         return ['number' => $entry->hadith, 'into' => $into, 'origin' => $origin];
+    }
+
+    /**
+     * A fill from a Sunnah.com-derived dataset (ADR 0076, gap-report extension). The record is located without its number: the
+     * dataset record that best matches fawazahmed0's previous hadith is the anchor (at least 0.5, unique). The gap's slot is the
+     * anchor plus the gap's position in its run (1-based, runs sorted by number); the anchor plus the run length plus one must
+     * match fawazahmed0's next hadith (0.5). The text is stored exactly as the dataset has it; markup is unresolved.
+     *
+     * @param  array<string, SourceHadith>  $byNumber
+     * @param  array{position: int, length: int}  $slot
+     * @return array<string, mixed>|string
+     *
+     * @throws HadithGapBuildException
+     */
+    private function datasetFill(string $slug, string $origin, GapDecision $entry, array $byNumber, array $slot): array|string
+    {
+        $prevText = $entry->prev === null ? null : $this->neighbourText($byNumber, $entry->prev);
+        $nextText = $entry->next === null ? null : $this->neighbourText($byNumber, $entry->next);
+
+        if ($prevText === null || $nextText === null) {
+            return 'recheck_dataset_failed';
+        }
+
+        $texts = $this->dataset($origin, $slug)->texts;
+        $anchor = $this->datasetAnchor($texts, $prevText);
+
+        if ($anchor === null) {
+            return 'dataset_record_missing';
+        }
+
+        $nextAnchor = $anchor + $slot['length'] + 1;
+
+        if (! isset($texts[$nextAnchor]) || HadithWordSet::jaccard(HadithWordSet::of($texts[$nextAnchor]), HadithWordSet::of($nextText)) < self::MATCH_THRESHOLD) {
+            return 'recheck_dataset_failed';
+        }
+
+        $text = $texts[$anchor + $slot['position']] ?? '';
+
+        if ($text === '') {
+            return 'dataset_record_missing';
+        }
+
+        if (preg_match('~[<>]~u', $text) === 1) {
+            return 'dataset_text_markup';
+        }
+
+        $words = HadithWordSet::of($text);
+
+        foreach ([$prevText, $nextText] as $neighbourText) {
+            if (HadithWordSet::containment($words, HadithWordSet::of($neighbourText)) >= self::CONTAINED_DEFAULT) {
+                return 'recheck_duplicate';
+            }
+        }
+
+        $this->countText($text);
+
+        return $this->fillRow($slug, $entry->hadith, $origin, $text, null);
+    }
+
+    /**
+     * The index of the one dataset record that best matches a text (at least MATCH_THRESHOLD); null when none or a tie.
+     *
+     * @param  list<string>  $texts
+     */
+    private function datasetAnchor(array $texts, string $neighbourText): ?int
+    {
+        $words = HadithWordSet::of($neighbourText);
+        $best = null;
+        $bestScore = 0.0;
+        $ties = 0;
+
+        foreach ($texts as $index => $text) {
+            $score = HadithWordSet::jaccard(HadithWordSet::of($text), $words);
+
+            if ($score > $bestScore) {
+                $best = $index;
+                $bestScore = $score;
+                $ties = 1;
+            } elseif ($score === $bestScore && $score > 0.0) {
+                $ties++;
+            }
+        }
+
+        return $best !== null && $bestScore >= self::MATCH_THRESHOLD && $ties === 1 ? $best : null;
+    }
+
+    /**
+     * The position of each gap number in its run (ADR 0076 §8.5, runs of the decisions file), 1-based, and the run length.
+     *
+     * @return array<string, array{position: int, length: int}>
+     */
+    private function runSlots(GapDecisions $decisions): array
+    {
+        $groups = [];
+
+        foreach ($decisions->entries as $entry) {
+            $groups[($entry->runFirst ?? $entry->hadith).'|'.($entry->runLast ?? $entry->hadith)][] = $entry->hadith;
+        }
+
+        $slots = [];
+
+        foreach ($groups as $numbers) {
+            usort($numbers, static fn (string $first, string $second): int => ((float) $first <=> (float) $second) ?: strcmp($first, $second));
+
+            foreach ($numbers as $position => $number) {
+                $slots[$number] = ['position' => $position + 1, 'length' => count($numbers)];
+            }
+        }
+
+        return $slots;
+    }
+
+    /**
+     * The loaded dataset file of an origin and collection, read once per run. Refused by HadithDatasets when unpinned or changed.
+     *
+     * @throws HadithGapBuildException
+     */
+    private function dataset(string $origin, string $slug): HadithDatasetFile
+    {
+        $key = $origin.'|'.$slug;
+
+        if (! isset($this->datasetLoaded[$key])) {
+            $this->datasetLoaded[$key] = $this->datasets->load($origin, $slug);
+            $this->datasetUsed[$origin] = $this->datasetLoaded[$key];
+        }
+
+        return $this->datasetLoaded[$key];
     }
 
     /**
@@ -534,6 +693,8 @@ final class HadithGapBuilder
         $this->residualMarkers = 0;
         $this->doubleSpaces = 0;
         $this->hapiTextWithMarkup = 0;
+        $this->datasetUsed = [];
+        $this->datasetLoaded = [];
     }
 
     /**
@@ -848,6 +1009,18 @@ final class HadithGapBuilder
 
             if ($alternateFiles !== []) {
                 $origins['openiti']['alternate_files'] = $alternateFiles;
+            }
+        }
+
+        foreach ($this->datasetUsed as $origin => $file) {
+            if ($this->fillsOrMergesUse($origin, $fills, $merges)) {
+                $source = (string) HadithDatasets::sourceOfOrigin($origin);
+                $origins[$origin] = [
+                    'source_version' => $source.'@'.substr((string) config('hadith.datasets.'.$origin.'.revision'), 0, 8),
+                    'revision' => (string) config('hadith.datasets.'.$origin.'.revision'),
+                    'file' => $file->name,
+                    'file_sha256' => $file->sha256,
+                ];
             }
         }
 

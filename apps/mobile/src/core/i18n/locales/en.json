@@ -1750,7 +1750,9 @@
       "credit": "Source: fawazahmed0/hadith-api",
       "open": "Open source",
       "creditOpeniti": "Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0",
-      "creditHadithapicom": "Some hadith texts: hadithapi.com"
+      "creditHadithapicom": "Some hadith texts: hadithapi.com",
+      "creditMeeatif": "Some hadith texts: meeAtif/hadith_datasets dataset",
+      "creditHadithjson": "Some hadith texts: hadith-json dataset"
     },
     "unavailable": {
       "title": "Hadith {{n}} isn't available in the source yet"
@@ -1825,6 +1827,14 @@
       "hadithapicom": {
         "title": "hadithapi.com",
         "subtitle": "Text of some hadith missing from the main source: hadithapi.com"
+      },
+      "meeatif": {
+        "title": "meeAtif/hadith_datasets",
+        "subtitle": "Text of some hadith from a dataset derived from Sunnah.com; the uploader claims an MIT licence. The source is not approved yet."
+      },
+      "hadithjson": {
+        "title": "hadith-json",
+        "subtitle": "Text of some hadith from a dataset derived from Sunnah.com; no licence. The source is not approved yet."
       }
     },
     "chapters": {

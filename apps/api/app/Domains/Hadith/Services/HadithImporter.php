@@ -436,7 +436,7 @@ final class HadithImporter
     {
         $ids = [];
 
-        foreach (['openiti', 'hadithapicom'] as $code) {
+        foreach (['openiti', 'hadithapicom', 'meeatif', 'hadithjson'] as $code) {
             $source = $this->repository->source($code);
 
             if ($source !== null) {

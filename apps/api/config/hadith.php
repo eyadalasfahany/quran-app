@@ -166,6 +166,46 @@ return [
         'chapters/ibnmajah.json' => 'e726bffa4f50eadc60ced46dd219a7df328129e97d903fd6974264de86d0795c',
     ],
 
+    /*
+    | Dataset gap sources (ADR 0076, gap-report extension, 7 Nov 2026): Sunnah.com-derived files whose licence is only a
+    | claim or absent. Provenance only. Each origin reads the files of its collections from `dir` (relative to storage/),
+    | after the SHA-256 check against `files`. Records are located by the rule in HadithGapBuilder (an anchor on the
+    | fawazahmed0 previous hadith, then the slot after it); `record.list` is the key of the record array (null = the root
+    | is the array), `record.text` is the field that holds the Arabic text, stored exactly as the dataset has it.
+    */
+    'datasets' => [
+        'meeatif' => [
+            'source' => 'meeAtif/hadith_datasets',
+            'revision' => 'cd62605e4fef3c46968a5f9fdcccbbbffdf631b5',
+            'dir' => 'app/private/sources/datasets/meeatif',
+            'files' => [
+                'Sahih Muslim.json' => '1484b90749b56444095a6bcec2532f001ae1a09226913484580fecf7e6fa55b8',
+                'Jami` at-Tirmidhi.json' => 'b17d9accb861b9eac5f3b8494ff6ee38bffb7f90b08eb77bc2e610c5bb25d693',
+            ],
+            'collections' => [
+                'muslim' => 'Sahih Muslim.json',
+                'tirmidhi' => 'Jami` at-Tirmidhi.json',
+            ],
+            'record' => ['list' => null, 'text' => 'Arabic_Text'],
+        ],
+        'hadithjson' => [
+            'source' => 'AhmedBaset/hadith-json',
+            'revision' => '70b83d6d21995bb32f8d7271cd75501be5a922a7',
+            'dir' => 'app/private/sources/datasets/hadithjson',
+            'files' => [
+                'muslim.json' => '12e3cbe8e2c83acc787b3e1e644877eff0feab11f1b32493386c60703d9076ae',
+                'tirmidhi.json' => '9ba6da92af6b0db9768c67f4c562c24bbbdb7be83509a78c40994c6d93366437',
+                'malik.json' => 'a926eb6395a391c2b7a571cceef8bc058a9d06960a2135f37964a18dc5348ef8',
+            ],
+            'collections' => [
+                'muslim' => 'muslim.json',
+                'tirmidhi' => 'tirmidhi.json',
+                'malik' => 'malik.json',
+            ],
+            'record' => ['list' => 'hadiths', 'text' => 'arabic'],
+        ],
+    ],
+
     // OpenITI: used only by the dev commands (hadith:build-gaps, hadith:match-chapters). Production never reads it. The
     // SHA-256 values are the primary versions of the gap report (docs/plans/phase-7/gapfill-report.md). unit_count is the
     // golden count of the unit reader (step 6b.6). markup holds the chapter and book heading patterns for step 6b.7 (9.2).
@@ -190,11 +230,12 @@ return [
                 'path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.JK000109-ara1',
                 'sha256' => 'a96f38425099d55769435a4d8d240b064d7d98c2326457ed8d28fb1f098d32b4',
                 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 7461,
-                // Other OpenITI files that decisions name (entry key openiti_path). sha256 null = not pinned yet: the builder
-                // refuses a decision that uses such a file (openiti_alternate_unpinned). Unit patterns not yet checked against them.
+                // Other OpenITI files that decisions name (entry key openiti_path). Each pin is the SHA-256 of the file; the unit
+                // patterns and counts are the measurement's (gapfill-report «Primary versions» and the x_/g_ runs, step 6b.6).
+                // The builder refuses a decision that uses an alternate without a pin (openiti_alternate_unpinned).
                 'alternates' => [
-                    ['path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.Shamela0001727-ara1.mARkdown', 'sha256' => null, 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u'],
-                    ['path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.ShamAY0033938-ara2', 'sha256' => null, 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u'],
+                    ['path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.Shamela0001727-ara1.mARkdown', 'sha256' => '511373465b8ca47d53655ef15a3a57de3c943a5d7f307c5537d1aa6c39a5a746', 'unit_start' => '/^### \$ ?([0-9]+)?/u', 'unit_stop' => '/^###/u', 'unit_count' => 6463],
+                    ['path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.ShamAY0033938-ara2', 'sha256' => '5d67f6d47ab9ab08801c7b840b6f36daa138f641fa5ca78f7c6ec0ad39d67478', 'unit_start' => '/^# ([0-9]+)- ?/u', 'unit_stop' => '/^###/u', 'unit_count' => 7699],
                 ],
             ],
             'nasai' => [
@@ -221,7 +262,7 @@ return [
                 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 1822,
                 // See muslim: sha256 null = not pinned yet; unit patterns not yet checked against this file.
                 'alternates' => [
-                    ['path' => '0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.Shamela0001699-ara1.completed', 'sha256' => null, 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u'],
+                    ['path' => '0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.Shamela0001699-ara1.completed', 'sha256' => 'b2b1e115ee424d81629a0f9b6976b92f33437088a5e5fc7c39b6bbbc56f55116', 'unit_start' => '/^# ([0-9]+) - ?/u', 'unit_stop' => '/^###/u', 'unit_count' => 1832],
                 ],
             ],
             'tirmidhi' => [
