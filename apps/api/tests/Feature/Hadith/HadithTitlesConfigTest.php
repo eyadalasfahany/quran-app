@@ -77,8 +77,21 @@ it('marks every author as drafted and approved, and qudsi40 has none', function 
     }
 });
 
-it('has no section titles yet', function (): void {
-    expect(config('hadith_titles.sections'))->toBe([]);
+it('has section titles only for known collections, each a non-empty title from hadithapi.com', function (): void {
+    $sections = config('hadith_titles.sections');
+
+    expect($sections)->toBeArray()->not->toBeEmpty();
+
+    foreach ($sections as $slug => $titles) {
+        expect(config('hadith.collections'))->toContain($slug);
+
+        foreach ($titles as $section => $entry) {
+            expect((string) $section)->toMatch('/^\d+(\.\d+)?$/')
+                ->and(array_keys($entry))->toBe(['title_ar', 'title_ar_source'])
+                ->and($entry['title_ar'])->toBeString()->not->toBe('')
+                ->and($entry['title_ar_source'])->toBe('hadithapi.com');
+        }
+    }
 });
 
 it('contains no Latin text', function (): void {
