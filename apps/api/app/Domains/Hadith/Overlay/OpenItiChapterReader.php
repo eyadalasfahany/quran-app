@@ -7,7 +7,7 @@ namespace App\Domains\Hadith\Overlay;
 /**
  * Scans an OpenITI file for chapters (ADR 0076 §5, brief 9.2 and 9.3, step 6b.7). A chapter starts at a chapter heading and holds
  * the numbered units until the next chapter or book heading. A heading whose cleaned title starts with كتاب or أبواب always ends
- * the chapter and is never a chapter. Headings with no unit are not chapters and are counted. Pure: bytes in, scan out.
+ * the chapter and is never a chapter. A heading whose title is only page markers (ADR 0076 §3) is skipped: it is no boundary. Headings with no unit are not chapters and are counted. Pure: bytes in, scan out.
  */
 final class OpenItiChapterReader
 {
@@ -28,6 +28,7 @@ final class OpenItiChapterReader
         $units = $this->units->unitsOf($bytes, $unitStart, $unitStop);
         $census = ['unit_marker' => 0, 'heading' => 0, 'continuation' => 0, 'page_marker' => 0, 'other' => 0];
         $boundaries = [];
+        $pageMarkerHeadings = 0;
 
         foreach ($lines as $index => $line) {
             if (preg_match($unitStart, $line) === 1) {
@@ -38,13 +39,25 @@ final class OpenItiChapterReader
 
             if ($this->isHeading($line)) {
                 $census['heading']++;
-                $title = $this->headings->clean($this->headingLines($lines, $index))->title;
-                $title = (string) preg_replace('~^[0-9]+\s*-\s*~u', '', $title);
+                $heading = $this->headings->clean($this->headingLines($lines, $index));
+                $cleaned = $heading->title;
+                $isBook = ($bookRx !== null && preg_match($bookRx, $line) === 1) || preg_match(self::BOOK_WORD, $this->bookTitle($cleaned)) === 1;
+                $isChapter = ! $isBook && $chapterRx !== null && preg_match($chapterRx, $line) === 1;
+                [$title, $numberingStripped] = $this->chapterTitle($cleaned);
 
-                if (($bookRx !== null && preg_match($bookRx, $line) === 1) || preg_match(self::BOOK_WORD, $title) === 1) {
-                    $boundaries[] = ['kind' => 'book', 'index' => $index];
-                } elseif ($chapterRx !== null && preg_match($chapterRx, $line) === 1) {
-                    $boundaries[] = ['kind' => 'chapter', 'index' => $index];
+                if ($title === '') {
+                    // A heading that is only page markers is not a boundary: its units continue the current chapter (ADR 0076 §3).
+                    if (($isBook || $isChapter) && OpenItiPageMarkers::contains($cleaned)) {
+                        $pageMarkerHeadings++;
+                    }
+
+                    continue;
+                }
+
+                if ($isBook) {
+                    $boundaries[] = ['kind' => 'book', 'index' => $index, 'title' => $this->bookTitle($cleaned), 'numbering' => false, 'continuation' => $heading->hadContinuation];
+                } elseif ($isChapter) {
+                    $boundaries[] = ['kind' => 'chapter', 'index' => $index, 'title' => $title, 'numbering' => $numberingStripped, 'continuation' => $heading->hadContinuation];
                 }
 
                 continue;
@@ -68,14 +81,20 @@ final class OpenItiChapterReader
         }
 
         $chapters = [];
+        $books = [];
         $headingsWithoutUnits = 0;
 
         foreach ($boundaries as $position => $boundary) {
-            if ($boundary['kind'] !== 'chapter') {
+            if ($boundary['kind'] === 'book') {
+                $bookEnd = $this->nextBookIndex($boundaries, $position);
+                $bookUnits = array_values(array_filter($units, static fn (OpenItiUnit $unit): bool => $unit->lineIndex > $boundary['index'] && $unit->lineIndex < $bookEnd));
+                $books[] = new OpenItiBookHeading($boundary['title'], $bookUnits);
+
                 continue;
             }
 
             $end = $boundaries[$position + 1]['index'] ?? PHP_INT_MAX;
+
             $under = array_values(array_filter($units, static fn (OpenItiUnit $unit): bool => $unit->lineIndex > $boundary['index'] && $unit->lineIndex < $end));
 
             if ($under === []) {
@@ -84,12 +103,50 @@ final class OpenItiChapterReader
                 continue;
             }
 
-            $heading = $this->headings->clean($this->headingLines($lines, $boundary['index']));
-            [$title, $numberingStripped] = $this->stripNumbering($heading->title);
-            $chapters[] = new OpenItiChapter(count($chapters) + 1, $title, $heading->hadContinuation, $under, $numberingStripped);
+            $chapters[] = new OpenItiChapter(count($chapters) + 1, $boundary['title'], $boundary['continuation'], $under, $boundary['numbering']);
         }
 
-        return new OpenItiChapterScan($chapters, $headingsWithoutUnits, $census);
+        return new OpenItiChapterScan($chapters, $headingsWithoutUnits, $census, $books, $pageMarkerHeadings);
+    }
+
+    /**
+     * The index of the next book heading after the boundary at $position, or PHP_INT_MAX when there is none. A book runs to it.
+     *
+     * @param  list<array{kind: string, index: int, title: string, numbering: bool, continuation: bool}>  $boundaries
+     */
+    private function nextBookIndex(array $boundaries, int $position): int
+    {
+        for ($next = $position + 1; isset($boundaries[$next]); $next++) {
+            if ($boundaries[$next]['kind'] === 'book') {
+                return $boundaries[$next]['index'];
+            }
+        }
+
+        return PHP_INT_MAX;
+    }
+
+    /**
+     * The book title as printed: the cleaned heading without its numbering prefix («N - » in Nasa'i, «N ( N ) » in Muslim and Malik)
+     * and without page markers. Used for the book test and as the stored book title.
+     */
+    private function bookTitle(string $cleaned): string
+    {
+        $withoutDash = (string) preg_replace('~^[0-9]+\s*-\s*~u', '', $cleaned);
+        [$title] = $this->stripNumbering($withoutDash);
+
+        return OpenItiPageMarkers::strip($title);
+    }
+
+    /**
+     * The chapter title: the numbering prefix removed (approved G2), then the page markers (ADR 0076 §3).
+     *
+     * @return array{string, bool} the title and whether a numbering prefix was removed
+     */
+    private function chapterTitle(string $cleaned): array
+    {
+        [$title, $numberingStripped] = $this->stripNumbering($cleaned);
+
+        return [OpenItiPageMarkers::strip($title), $numberingStripped];
     }
 
     /**

@@ -33,8 +33,9 @@ final class HadithChapterMatcher
      * @param  array<string, int>  $census  the line-shape census of the scan
      * @param  array{release: string, doi: string, version_id: string, source_file_sha256: string, licence: string}  $meta
      * @param  ?ChapterAlignment  $alignment  the pinned unit => number alignment; null keeps each unit's own number (no alignment file)
+     * @param  int  $pageMarkerHeadings  headings skipped because they hold only page markers (ADR 0076 §3)
      */
-    public function match(string $slug, MappingResult $mapping, array $chapters, int $headingsWithoutUnits, array $census, string $partialBooks, array $meta, ?ChapterAlignment $alignment = null): ChapterMatchResult
+    public function match(string $slug, MappingResult $mapping, array $chapters, int $headingsWithoutUnits, array $census, string $partialBooks, array $meta, ?ChapterAlignment $alignment = null, int $pageMarkerHeadings = 0): ChapterMatchResult
     {
         $context = $this->context($mapping);
         $decisions = [];
@@ -53,7 +54,7 @@ final class HadithChapterMatcher
         $coverage = $this->coverage($context, $decisions);
         $proposal = $this->proposal($slug, $mapping, $decisions, $coverage, $partialBooks, $meta);
 
-        return new ChapterMatchResult($proposal['json'], $this->report($slug, $decisions, $coverage, $partialBooks, $census, $headingsWithoutUnits, $proposal['sha256'], $meta, $alignment?->count()));
+        return new ChapterMatchResult($proposal['json'], $this->report($slug, $decisions, $coverage, $partialBooks, $census, $headingsWithoutUnits, $proposal['sha256'], $meta, $alignment?->count(), $pageMarkerHeadings));
     }
 
     /**
@@ -362,7 +363,7 @@ final class HadithChapterMatcher
      * @param  array{release: string, doi: string, version_id: string, source_file_sha256: string, licence: string}  $meta
      * @return array<string, mixed>
      */
-    private function report(string $slug, array $decisions, array $coverage, string $partialBooks, array $census, int $headingsWithoutUnits, string $proposalSha, array $meta, ?int $alignedUnits): array
+    private function report(string $slug, array $decisions, array $coverage, string $partialBooks, array $census, int $headingsWithoutUnits, string $proposalSha, array $meta, ?int $alignedUnits, int $pageMarkerHeadings): array
     {
         $byResult = [];
         $small = ['accepted' => 0, 'rejected' => 0];
@@ -400,6 +401,7 @@ final class HadithChapterMatcher
             'census' => $census,
             'chapters_parsed' => count($decisions),
             'headings_without_units' => $headingsWithoutUnits,
+            'page_marker_headings' => $pageMarkerHeadings,
             'decisions' => array_map(static fn (array $decision): array => [
                 'book_number' => $decision['book_number'],
                 'ordinal' => $decision['ordinal'],

@@ -115,3 +115,119 @@ it('a single-hash pipe heading is a chapter and a pipe heading with a book word 
         ->and(array_map(static fn ($chapter): array => array_map(static fn ($unit): ?int => $unit->number, $chapter->units), $scan->chapters))->toBe([[1], [3]])
         ->and($scan->census['heading'])->toBe(3);
 });
+
+/*
+| Page markers (ADR 0076 §3, approved 7 Nov 2026): a heading that is only a page marker is no boundary, and a marker inside a title
+| is removed with the whitespace around it. Placeholder titles only.
+*/
+
+it('a page-marker-only heading is no boundary, so its units continue the current chapter', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '### | FIXTURE chapter title 1',
+        '### | 1 - FIXTURE text 1 — not a hadith',
+        '### | [ص: 11]',
+        '### | 2 - FIXTURE text 2 — not a hadith',
+        '### | FIXTURE chapter title 2',
+        '### | 3 - FIXTURE text 3 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, SCAN_UNIT, SCAN_STOP, SCAN_CHAPTER, SCAN_BOOK);
+
+    expect(array_map(static fn ($chapter): string => $chapter->title, $scan->chapters))->toBe(['FIXTURE chapter title 1', 'FIXTURE chapter title 2'])
+        ->and(array_map(static fn ($unit): ?int => $unit->number, $scan->chapters[0]->units))->toBe([1, 2])
+        ->and($scan->headingsWithoutUnits)->toBe(0)
+        ->and($scan->pageMarkerHeadings)->toBe(1);
+});
+
+it('a page-marker-only heading that is a book heading is skipped and the book is not opened', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '### | FIXTURE chapter title 1',
+        '### | 1 - FIXTURE text 1 — not a hadith',
+        '### $ [ج: 2] [ص: 5]',
+        '### | 2 - FIXTURE text 2 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, SCAN_UNIT, SCAN_STOP, SCAN_CHAPTER, SCAN_BOOK);
+
+    expect($scan->books)->toBe([])
+        ->and(array_map(static fn ($unit): ?int => $unit->number, $scan->chapters[0]->units))->toBe([1, 2])
+        ->and($scan->pageMarkerHeadings)->toBe(1);
+});
+
+it('removes an embedded page marker from a real title and keeps the other bytes', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '### | FIXTURE chapter [ص: 12] title',
+        '### | 1 - FIXTURE text 1 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, SCAN_UNIT, SCAN_STOP, SCAN_CHAPTER, SCAN_BOOK);
+
+    expect($scan->chapters[0]->title)->toBe('FIXTURE chapter title')
+        ->and(strlen($scan->chapters[0]->title))->toBe(strlen('FIXTURE chapter title'))
+        ->and($scan->pageMarkerHeadings)->toBe(0);
+});
+
+it('removes page markers written with Arabic-Indic digits', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '### | FIXTURE chapter [ص: ١٢] title',
+        '### | 1 - FIXTURE text 1 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, SCAN_UNIT, SCAN_STOP, SCAN_CHAPTER, SCAN_BOOK);
+
+    expect($scan->chapters[0]->title)->toBe('FIXTURE chapter title');
+});
+
+it('removes a volume marker and a page marker together, with or without a space between them', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '### | FIXTURE chapter [ج: 2][ص: 11]',
+        '### | 1 - FIXTURE text 1 — not a hadith',
+        '### | FIXTURE chapter two [ج 3] [ص: ٤٥٦] title',
+        '### | 2 - FIXTURE text 2 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, SCAN_UNIT, SCAN_STOP, SCAN_CHAPTER, SCAN_BOOK);
+
+    expect(array_map(static fn ($chapter): string => $chapter->title, $scan->chapters))->toBe(['FIXTURE chapter', 'FIXTURE chapter two title']);
+});
+
+it('a book heading with a leading page marker is still a book heading', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '### | FIXTURE chapter title 1',
+        '### | 1 - FIXTURE text 1 — not a hadith',
+        '### | [ص: 7] كتاب FIXTURE book word',
+        '### | FIXTURE chapter title 2',
+        '### | 2 - FIXTURE text 2 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, SCAN_UNIT, SCAN_STOP, SCAN_CHAPTER, SCAN_BOOK);
+
+    expect(array_map(static fn ($chapter): string => $chapter->title, $scan->chapters))->toBe(['FIXTURE chapter title 1', 'FIXTURE chapter title 2'])
+        ->and($scan->chapters[0]->units)->toHaveCount(1)
+        ->and($scan->chapters[1]->units)->toHaveCount(1);
+});
+
+it('a book runs to the next book heading and holds the chapters and units inside it', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '### $ FIXTURE book title 1',
+        '### | FIXTURE chapter title 1',
+        '### | 1 - FIXTURE text 1 — not a hadith',
+        '### | FIXTURE chapter title 2',
+        '### | 2 - FIXTURE text 2 — not a hadith',
+        '### $ FIXTURE book title 2',
+        '### | 3 - FIXTURE text 3 — not a hadith',
+        '',
+    ]);
+    $scan = chapterScanReader()->scan($bytes, SCAN_UNIT, SCAN_STOP, SCAN_CHAPTER, SCAN_BOOK);
+
+    expect(array_map(static fn ($book): string => $book->title, $scan->books))->toBe(['FIXTURE book title 1', 'FIXTURE book title 2'])
+        ->and(array_map(static fn ($unit): ?int => $unit->number, $scan->books[0]->units))->toBe([1, 2])
+        ->and(array_map(static fn ($unit): ?int => $unit->number, $scan->books[1]->units))->toBe([3]);
+});

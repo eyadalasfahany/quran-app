@@ -97,7 +97,7 @@ describe('HadithDetailsPanel', () => {
       />,
       { locale: 'en' },
     );
-    expect(screen.getByText('Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0')).toBeOnTheScreen();
+    expect(screen.getByText('Book and chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0')).toBeOnTheScreen();
     expect(screen.queryByText('Source: fawazahmed0/hadith-api')).toBeNull();
   });
 });

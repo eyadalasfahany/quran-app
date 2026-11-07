@@ -160,15 +160,15 @@ return [
     // Committed data files under database/data/hadith, path relative to that folder => lowercase hex SHA-256. null = not committed yet.
     // SHA-256 of every committed file under database/data/hadith (step 6b.8). The importer refuses a file whose hash differs.
     'data_files' => [
-        'chapters/abudawud.json' => 'e11382e5cfee5fc309c741a353302692b0fc3070c32a45af2aa5820d40b7cc2a',
+        'chapters/abudawud.json' => '4a580ddc4c25fe55f0718f4c3f772d04d6e60d888b352d356468b78579746c8b',
         'chapters/alignment/malik.json' => 'ad11c6a929007ad2c7652fa062ac08a72a8defb295cd5d3de25c652f51b8eaf3',
         'chapters/alignment/muslim.json' => '6e29b21c9fc6656e6922dae3f66c895b1983afaa102ee7f737b31b3dd012e858',
-        'chapters/bukhari.json' => '3509be108c0b3b5ff20d80fbf26fda741624531ad826b3bc67ed0d0ff50f9c18',
-        'chapters/ibnmajah.json' => 'ba81991d9e1e0cf9658017d0588b2cf6d6ddeb60e57b5b54a9044b8dca082f9c',
-        'chapters/malik.json' => 'ac5205ae5a2274e5ce325b06cb9af89b6b75aa451c3097e3e601ab516dfe7978',
-        'chapters/muslim.json' => 'fc52494bdaf34807868fb9183f0191ddfa5b772b67116feed7603d9a376f05c9',
+        'chapters/bukhari.json' => '3c08586986624905e59f7575bc96a53f2b1a41ee8004082d2f35b7976541a473',
+        'chapters/ibnmajah.json' => '0a24157bf769f8722a6c2ea3c37d79d2904a442444089e711c6264e1efa72425',
+        'chapters/malik.json' => 'bee7ba544dfc4852a93eecf87860decf58c4aa316cf6f49fba16d6730a1ca626',
+        'chapters/muslim.json' => '13a0113fb282a1974f42c3701be2e81f04f01f16e28cff5b205ce2e02f14be3b',
         'chapters/nasai.json' => '00a43392bb4dc233c7a6631368a0d1e1c0bfa5ed3e6492b00ceb2d19b37b4f8b',
-        'chapters/tirmidhi.json' => 'a5698b8396803e85882dda3d242191e1f574397ece6f4d86e526182e565d8c4a',
+        'chapters/tirmidhi.json' => '01f983757f3af70cc7fa8020cec1f788f25428bcf4f4973e2a6705946bac98b6',
         'gaps/abudawud.json' => 'c9089bc137a52a5e88f4bb801ccd167a3a19d2c22ff63583d30af3f0ef4fe7a4',
         'gaps/bukhari.json' => 'e03c11eee7878b258138ca37f1d296552e7cbbcce83406cd2cd34c569f2e8179',
         'gaps/decisions/abudawud.json' => '1b5979f0e1de6bb2eef34f9983343c712e016d583fde514dc2fd9c6e27b52736',

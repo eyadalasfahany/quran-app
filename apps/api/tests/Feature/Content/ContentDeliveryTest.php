@@ -15,6 +15,7 @@ use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\ChangeCursor;
 use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Content\Services\Mp3QuranImporter;
+use App\Domains\Hadith\Models\HadithCollection;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -383,6 +384,13 @@ it('returns 404 for the pack and the change feed of an ignored resource even whe
         ->assertJsonPath('code', 'not_found');
 })->with(ResourceGroup::ignoredValues());
 
+function hadithCollectionResource(string $slug): Resource
+{
+    $collection = HadithCollection::factory()->create(['slug' => $slug]);
+
+    return Resource::query()->findOrFail($collection->resource_id);
+}
+
 function packedRecitation(string $sourceKey, ?string $reciterNameAr, ?string $nameAr = null, ?string $style = 'Murattal'): Resource
 {
     $qf = ContentSource::query()->firstOrCreate(['code' => 'qf'], [
@@ -553,6 +561,32 @@ it('changes the manifest ETag when the configured Arabic author changes', functi
     $first->assertJsonPath('resources.0.author_ar', 'ابن كثير');
     $second->assertJsonPath('resources.0.author_ar', 'ابن كثير الدمشقي');
     expect($second->headers->get('ETag'))->not->toBe($first->headers->get('ETag'));
+});
+
+it('serves the approved Arabic author of a hadith collection in the manifest', function (): void {
+    config([
+        'hadith_titles.collections.bukhari.author_ar' => 'FIXTURE author 1 — not a name',
+        'hadith_titles.collections.bukhari.author_ar_status' => 'approved',
+    ]);
+    $collection = hadithCollectionResource('bukhari');
+    app(PackBuilder::class)->build($collection);
+
+    $this->getJson('/api/v1/content/manifest')
+        ->assertJsonPath('resources.0.author_ar', 'FIXTURE author 1 — not a name')
+        ->assertJsonPath('resources.0.author_name', null);
+});
+
+it('serves a null author for a hadith collection with no approved author', function (): void {
+    config([
+        'hadith_titles.collections.qudsi40.author_ar' => null,
+        'hadith_titles.collections.qudsi40.author_ar_status' => 'approved',
+    ]);
+    $collection = hadithCollectionResource('qudsi40');
+    app(PackBuilder::class)->build($collection);
+
+    $this->getJson('/api/v1/content/manifest')
+        ->assertJsonPath('resources.0.author_ar', null)
+        ->assertJsonPath('resources.0.author_name', null);
 });
 
 it('marks only the configured chapter recitation as the default', function (): void {

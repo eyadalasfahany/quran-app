@@ -77,7 +77,7 @@ it('marks every author as drafted and approved, and qudsi40 has none', function 
     }
 });
 
-it('has section titles only for known collections, each a non-empty title from hadithapi.com', function (): void {
+it('has section titles only for known collections, each a non-empty title from hadithapi.com or OpenITI', function (): void {
     $sections = config('hadith_titles.sections');
 
     expect($sections)->toBeArray()->not->toBeEmpty();
@@ -89,7 +89,7 @@ it('has section titles only for known collections, each a non-empty title from h
             expect((string) $section)->toMatch('/^\d+(\.\d+)?$/')
                 ->and(array_keys($entry))->toBe(['title_ar', 'title_ar_source'])
                 ->and($entry['title_ar'])->toBeString()->not->toBe('')
-                ->and($entry['title_ar_source'])->toBe('hadithapi.com');
+                ->and($entry['title_ar_source'])->toBeIn(['hadithapi.com', 'openiti']);
         }
     }
 });

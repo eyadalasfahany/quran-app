@@ -1749,7 +1749,7 @@
     "source": {
       "credit": "Source: fawazahmed0/hadith-api",
       "open": "Open source",
-      "creditOpeniti": "Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0",
+      "creditOpeniti": "Book and chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0",
       "creditHadithapicom": "Some hadith texts: hadithapi.com",
       "creditMeeatif": "Some hadith texts: meeAtif/hadith_datasets dataset",
       "creditHadithjson": "Some hadith texts: hadith-json dataset"
@@ -1822,7 +1822,7 @@
       },
       "openiti": {
         "title": "OpenITI · Open Islamicate Texts Initiative",
-        "subtitle": "Chapter titles, and the text of some hadith missing from the main source: OpenITI (Open Islamicate Texts Initiative), release 2023.1.8, CC BY-NC-SA 4.0. Changes were made: formatting markers removed; chapters mapped to the hadith numbering of fawazahmed0/hadith-api."
+        "subtitle": "Book and chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0. Changes were made: formatting markers removed; chapters mapped to the hadith numbering of fawazahmed0/hadith-api."
       },
       "hadithapicom": {
         "title": "hadithapi.com",

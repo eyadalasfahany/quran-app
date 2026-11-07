@@ -39,6 +39,8 @@ ADR 0042 §4a says titles are stored as received. OpenITI mARkdown headings carr
 3. a line break inside a multi-line heading, replaced by one ASCII space;
 4. ASCII whitespace at both ends.
 
+**Dated addition, 7 Nov 2026 (developer approved, step 6b, page markers):** item 2 covers Shamela page and volume markers in the form `[ص: N]` and `[ج: N]` (colon optional, ASCII or Arabic-Indic digits, several in a row). The marker and the whitespace around it become one ASCII space, and the ends are trimmed. A heading whose title is empty after this removal is not a chapter or book boundary: its units continue the current chapter, and it is counted as a page-marker heading in the report. The same removal applies to book headings (ADR 0076 §5, `hadith:match-book-titles`). It is the only change to the list; no other character class is removed.
+
 Anything the list does not cover is **left in** and counted in the report; a title containing a character class outside the list is reported, not silently cleaned. The word باب at the start of a heading is kept as printed. The cleaning function is tested with placeholder strings only.
 
 ### 4. Quran text inside titles: no default (blocks Bukhari)
@@ -163,3 +165,4 @@ A collection is **complete** (released) when every number in its numbering has t
 ## Decision, 7 Nov 2026 (orchestrator, on the developer's behalf): partly chaptered books use option B
 
 The first `hadith:match-chapters` run (counts only) showed option C would drop most chapters: Bukhari keeps 9 of 97 books chaptered (3,575 accepted chapters lost), Abu Dawud 3 of 44 (1,998 lost), Nasa'i 44 of 50, Ibn Majah 35 of 38. **Option B is chosen**: chapter files are built with `--partial-books=keep`. In a partly chaptered book, the chapter list shows every accepted chapter in order. Each run of hadith not covered by an accepted chapter appears in place as an honest row «أحاديث {first}–{last}» (or «حديث {n}» for one) that opens those hadith. Nothing is invented, and every hadith stays reachable. New frames: `HadithCollChaptersPartial` (plus Dark and English).
+- 7 Nov 2026 (orchestrator, on the developer's behalf): the closed list also removes the Tirmidhi book-heading wrapper `( N … )` (parentheses around a leading number and the title), the same numbering markup as G2. OpenITI now supplies book titles too (107 sections without a hadithapi.com title, two-way 95% rule, `title_ar_source` = `openiti`), so its credit names book titles as well.

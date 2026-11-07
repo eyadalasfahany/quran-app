@@ -36,7 +36,7 @@ describe('HadithSourceLine', () => {
   it('shows the attribution under the credit for a row with its own credit', async () => {
     await renderUi(<HadithSourceLine attribution={ATTRIBUTION} sourceCode="openiti" sourceUrl={null} />, { locale: 'en' });
     expect(screen.getByTestId(`${TEST_ID}-attribution`)).toHaveTextContent(ATTRIBUTION);
-    expect(screen.getByText('Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0')).toBeOnTheScreen();
+    expect(screen.getByText('Book and chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0')).toBeOnTheScreen();
   });
 
   it.each([null, 'fawazahmed0'])('draws the attribution alone for source code %p, not the repeated credit', async (sourceCode) => {
@@ -124,7 +124,7 @@ describe('HadithSourceLine', () => {
 
 
   it.each([
-    ['openiti', 'Chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0'],
+    ['openiti', 'Book and chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0'],
     ['hadithapicom', 'Some hadith texts: hadithapi.com'],
   ])('shows the credit of the row source %s in English', async (sourceCode, credit) => {
     await renderUi(<HadithSourceLine attribution={null} sourceCode={sourceCode} sourceUrl={null} />, { locale: 'en' });

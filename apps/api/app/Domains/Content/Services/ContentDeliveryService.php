@@ -21,6 +21,7 @@ use App\Domains\Content\Packs\PackSchema;
 use App\Domains\Content\Repositories\Contracts\ContentChangeRepository;
 use App\Domains\Content\Repositories\Contracts\ContentPackRepository;
 use App\Domains\Content\Repositories\Contracts\ResourceRepository;
+use App\Domains\Hadith\Services\HadithTitles;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Storage;
@@ -31,6 +32,7 @@ final class ContentDeliveryService
         private readonly ResourceRepository $resources,
         private readonly ContentPackRepository $packs,
         private readonly ContentChangeRepository $changes,
+        private readonly HadithTitles $hadithTitles,
     ) {}
 
     public function manifest(): ContentManifestData
@@ -262,6 +264,10 @@ final class ContentDeliveryService
 
     private function servedArabicAuthor(Resource $resource): ?string
     {
+        if ($resource->group === ResourceGroup::HadithCollections) {
+            return $this->hadithTitles->authorAr($resource->source_key);
+        }
+
         if ($resource->group === ResourceGroup::Tafsirs) {
             $overrides = config('quran.display_authors.ar', []);
             $override = $overrides[(int) $resource->source_key] ?? null;

@@ -13,10 +13,14 @@ final readonly class OpenItiChapterScan
     /**
      * @param  list<OpenItiChapter>  $chapters  chapters that hold at least one unit, in file order
      * @param  array<string, int>  $census  line shape => count
+     * @param  list<OpenItiBookHeading>  $books  the book headings in file order, with the units under each
+     * @param  int  $pageMarkerHeadings  headings that would have been a boundary but hold only page markers (ADR 0076 §3)
      */
     public function __construct(
         public array $chapters,
         public int $headingsWithoutUnits,
         public array $census,
+        public array $books = [],
+        public int $pageMarkerHeadings = 0,
     ) {}
 }

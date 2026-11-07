@@ -6,6 +6,7 @@ namespace App\Domains\Hadith;
 
 use App\Domains\Hadith\Console\BuildGapsCommand;
 use App\Domains\Hadith\Console\ImportHadithCommand;
+use App\Domains\Hadith\Console\MatchBookTitlesCommand;
 use App\Domains\Hadith\Console\MatchChaptersCommand;
 use App\Domains\Hadith\Console\MatchSectionTitlesCommand;
 use App\Domains\Hadith\Repositories\Contracts\HadithImportRepository;
@@ -32,6 +33,7 @@ final class HadithImportServiceProvider extends ServiceProvider
             MatchSectionTitlesCommand::class,
             BuildGapsCommand::class,
             MatchChaptersCommand::class,
+            MatchBookTitlesCommand::class,
         ]);
     }
 }

@@ -1778,7 +1778,7 @@
     "source": {
       "credit": "المصدر: fawazahmed0/hadith-api",
       "open": "فتح المصدر",
-      "creditOpeniti": "عناوين الأبواب وبعض نصوص الأحاديث: مشروع OpenITI (الإصدار 2023.1.8)، بترخيص CC BY-NC-SA 4.0",
+      "creditOpeniti": "عناوين الكتب والأبواب وبعض نصوص الأحاديث: مشروع OpenITI (الإصدار 2023.1.8)، بترخيص CC BY-NC-SA 4.0",
       "creditHadithapicom": "بعض نصوص الأحاديث: hadithapi.com",
       "creditMeeatif": "بعض نصوص الأحاديث: مجموعة بيانات meeAtif/hadith_datasets",
       "creditHadithjson": "بعض نصوص الأحاديث: مجموعة بيانات hadith-json"
@@ -1855,7 +1855,7 @@
       },
       "openiti": {
         "title": "OpenITI · مبادرة النصوص الإسلامية المفتوحة",
-        "subtitle": "عناوين الأبواب ونصوص بعض الأحاديث التي ينقصها المصدر الأساسي: OpenITI (مبادرة النصوص الإسلامية المفتوحة)، الإصدار 2023.1.8، الترخيص CC BY-NC-SA 4.0. أُجريت تعديلات: حُذفت رموز التنسيق، وربطت الأبواب بترقيم fawazahmed0/hadith-api."
+        "subtitle": "عناوين الكتب والأبواب وبعض نصوص الأحاديث: مشروع OpenITI (الإصدار 2023.1.8)، بترخيص CC BY-NC-SA 4.0. أُجريت تعديلات: حُذفت رموز التنسيق، وربطت الأبواب بترقيم fawazahmed0/hadith-api."
       },
       "hadithapicom": {
         "title": "hadithapi.com",
