@@ -685,754 +685,761 @@
         {
             "ordinal": 97,
             "book_number": "1",
+            "first": "125",
+            "last": "125",
+            "title_ar": "باب المسح على الخفين في السفر"
+        },
+        {
+            "ordinal": 98,
+            "book_number": "1",
             "first": "126",
             "last": "127",
             "title_ar": "باب التوقيت في المسح على الخفين للمسافر"
         },
         {
-            "ordinal": 98,
+            "ordinal": 99,
             "book_number": "1",
             "first": "128",
             "last": "129",
             "title_ar": "التوقيت في المسح على الخفين للمقيم"
         },
         {
-            "ordinal": 99,
+            "ordinal": 100,
             "book_number": "1",
             "first": "130",
             "last": "130",
             "title_ar": "صفة الوضوء من غير حدث"
         },
         {
-            "ordinal": 100,
+            "ordinal": 101,
             "book_number": "1",
             "first": "131",
             "last": "133",
             "title_ar": "الوضوء لكل صلاة"
         },
         {
-            "ordinal": 101,
+            "ordinal": 102,
             "book_number": "1",
             "first": "134",
             "last": "135",
             "title_ar": "باب النضح"
         },
         {
-            "ordinal": 102,
+            "ordinal": 103,
             "book_number": "1",
             "first": "136",
             "last": "138",
             "title_ar": "باب الانتفاع بفضل الوضوء"
         },
         {
-            "ordinal": 103,
+            "ordinal": 104,
             "book_number": "1",
             "first": "139",
             "last": "139",
             "title_ar": "باب فرض الوضوء"
         },
         {
-            "ordinal": 104,
+            "ordinal": 105,
             "book_number": "1",
             "first": "140",
             "last": "140",
             "title_ar": "الاعتداء في الوضوء"
         },
         {
-            "ordinal": 105,
+            "ordinal": 106,
             "book_number": "1",
             "first": "141",
             "last": "142",
             "title_ar": "الأمر بإسباغ الوضوء"
         },
         {
-            "ordinal": 106,
+            "ordinal": 107,
             "book_number": "1",
             "first": "143",
             "last": "143",
             "title_ar": "باب الفضل في ذلك"
         },
         {
-            "ordinal": 107,
+            "ordinal": 108,
             "book_number": "1",
             "first": "144",
             "last": "147",
             "title_ar": "ثواب من توضأ كما أمر"
         },
         {
-            "ordinal": 108,
+            "ordinal": 109,
             "book_number": "1",
             "first": "148",
             "last": "148",
             "title_ar": "القول بعد الفراغ من الوضوء"
         },
         {
-            "ordinal": 109,
+            "ordinal": 110,
             "book_number": "1",
             "first": "149",
             "last": "150",
             "title_ar": "حلية الوضوء"
         },
         {
-            "ordinal": 110,
+            "ordinal": 111,
             "book_number": "1",
             "first": "151",
             "last": "151",
             "title_ar": "باب ثواب من أحسن الوضوء ثم صلى ركعتين"
         },
         {
-            "ordinal": 111,
+            "ordinal": 112,
             "book_number": "1",
             "first": "152",
             "last": "157",
             "title_ar": "باب ما ينقض الوضوء وما لا ينقض الوضوء من المذي"
         },
         {
-            "ordinal": 112,
+            "ordinal": 113,
             "book_number": "1",
             "first": "158",
             "last": "158",
             "title_ar": "الوضوء من الغائط"
         },
         {
-            "ordinal": 113,
+            "ordinal": 114,
             "book_number": "1",
             "first": "159",
             "last": "159",
             "title_ar": "الوضوء من الغائط"
         },
         {
-            "ordinal": 114,
+            "ordinal": 115,
             "book_number": "1",
             "first": "160",
             "last": "160",
             "title_ar": "الوضوء من الريح"
         },
         {
-            "ordinal": 115,
+            "ordinal": 116,
             "book_number": "1",
             "first": "161",
             "last": "161",
             "title_ar": "الوضوء من النوم"
         },
         {
-            "ordinal": 116,
+            "ordinal": 117,
             "book_number": "1",
             "first": "162",
             "last": "162",
             "title_ar": "باب النعاس"
         },
         {
-            "ordinal": 117,
+            "ordinal": 118,
             "book_number": "1",
             "first": "163",
             "last": "164",
             "title_ar": "الوضوء من مس الذكر"
         },
         {
-            "ordinal": 118,
+            "ordinal": 119,
             "book_number": "1",
             "first": "165",
             "last": "165",
             "title_ar": "باب ترك الوضوء من ذلك"
         },
         {
-            "ordinal": 119,
+            "ordinal": 120,
             "book_number": "1",
             "first": "166",
             "last": "169",
             "title_ar": "ترك الوضوء من مس الرجل امرأته من غير شهوة"
         },
         {
-            "ordinal": 120,
+            "ordinal": 121,
             "book_number": "1",
             "first": "170",
             "last": "170",
             "title_ar": "ترك الوضوء من القبلة"
         },
         {
-            "ordinal": 121,
+            "ordinal": 122,
             "book_number": "1",
             "first": "171",
             "last": "181",
             "title_ar": "باب الوضوء مما غيرت النار"
         },
         {
-            "ordinal": 122,
+            "ordinal": 123,
             "book_number": "1",
             "first": "182",
             "last": "185",
             "title_ar": "باب ترك الوضوء مما غيرت النار"
         },
         {
-            "ordinal": 123,
+            "ordinal": 124,
             "book_number": "1",
             "first": "186",
             "last": "186",
             "title_ar": "المضمضة من السويق"
         },
         {
-            "ordinal": 124,
+            "ordinal": 125,
             "book_number": "1",
             "first": "187",
             "last": "187",
             "title_ar": "المضمضة من اللبن"
         },
         {
-            "ordinal": 125,
+            "ordinal": 126,
             "book_number": "1",
             "first": "188",
             "last": "188",
             "title_ar": "غسل الكافر إذا أسلم"
         },
         {
-            "ordinal": 126,
+            "ordinal": 127,
             "book_number": "1",
             "first": "189",
             "last": "189",
             "title_ar": "تقديم غسل الكافر إذا أراد أن يسلم"
         },
         {
-            "ordinal": 127,
+            "ordinal": 128,
             "book_number": "1",
             "first": "190",
             "last": "190",
             "title_ar": "الغسل من مواراة المشرك"
         },
         {
-            "ordinal": 128,
+            "ordinal": 129,
             "book_number": "1",
             "first": "191",
             "last": "192",
             "title_ar": "باب وجوب الغسل إذا التقى الختانان"
         },
         {
-            "ordinal": 129,
+            "ordinal": 130,
             "book_number": "1",
             "first": "193",
             "last": "194",
             "title_ar": "الغسل من المني"
         },
         {
-            "ordinal": 130,
+            "ordinal": 131,
             "book_number": "1",
             "first": "195",
             "last": "198",
             "title_ar": "غسل المرأة ترى في منامها ما يرى الرجل"
         },
         {
-            "ordinal": 131,
+            "ordinal": 132,
             "book_number": "1",
             "first": "199",
             "last": "199",
             "title_ar": "باب الذي يحتلم ولا يرى الماء"
         },
         {
-            "ordinal": 132,
+            "ordinal": 133,
             "book_number": "1",
             "first": "200",
             "last": "200",
             "title_ar": "باب الفصل بين ماء الرجل وماء المرأة"
         },
         {
-            "ordinal": 133,
+            "ordinal": 134,
             "book_number": "1",
             "first": "201",
             "last": "208",
             "title_ar": "ذكر الاغتسال من الحيض"
         },
         {
-            "ordinal": 134,
+            "ordinal": 135,
             "book_number": "1",
             "first": "209",
             "last": "212",
             "title_ar": "ذكر الأقراء"
         },
         {
-            "ordinal": 135,
+            "ordinal": 136,
             "book_number": "1",
             "first": "213",
             "last": "213",
             "title_ar": "ذكر اغتسال المستحاضة"
         },
         {
-            "ordinal": 136,
+            "ordinal": 137,
             "book_number": "1",
             "first": "214",
             "last": "214",
             "title_ar": "باب الاغتسال من النفاس"
         },
         {
-            "ordinal": 137,
+            "ordinal": 138,
             "book_number": "1",
             "first": "215",
             "last": "219",
             "title_ar": "باب الفرق بين دم الحيض والاستحاضة"
         },
         {
-            "ordinal": 138,
+            "ordinal": 139,
             "book_number": "1",
             "first": "220",
             "last": "220",
             "title_ar": "باب النهي عن اغتسال الجنب في الماء الدائم"
         },
         {
-            "ordinal": 139,
+            "ordinal": 140,
             "book_number": "1",
             "first": "221",
             "last": "221",
             "title_ar": "باب النهي عن البول في الماء الراكد والاغتسال منه"
         },
         {
-            "ordinal": 140,
+            "ordinal": 141,
             "book_number": "1",
             "first": "222",
             "last": "222",
             "title_ar": "باب ذكر الاغتسال أول الليل"
         },
         {
-            "ordinal": 141,
+            "ordinal": 142,
             "book_number": "1",
             "first": "223",
             "last": "223",
             "title_ar": "الاغتسال أول الليل وآخره"
         },
         {
-            "ordinal": 142,
+            "ordinal": 143,
             "book_number": "1",
             "first": "224",
             "last": "225",
             "title_ar": "باب ذكر الاستتار عند الاغتسال"
         },
         {
-            "ordinal": 143,
+            "ordinal": 144,
             "book_number": "1",
             "first": "226",
             "last": "230",
             "title_ar": "باب ذكر القدر الذي يكتفي به الرجل من الماء للغسل"
         },
         {
-            "ordinal": 144,
+            "ordinal": 145,
             "book_number": "1",
             "first": "231",
             "last": "231",
             "title_ar": "باب ذكر الدلالة على أنه لا وقت في ذلك"
         },
         {
-            "ordinal": 145,
+            "ordinal": 146,
             "book_number": "1",
             "first": "232",
             "last": "237",
             "title_ar": "باب ذكر  اغتسال الرجل والمرأة من نسائه من إناء واحد"
         },
         {
-            "ordinal": 146,
+            "ordinal": 147,
             "book_number": "1",
             "first": "238",
             "last": "238",
             "title_ar": "باب ذكر النهي عن الاغتسال بفضل الجنب"
         },
         {
-            "ordinal": 147,
+            "ordinal": 148,
             "book_number": "1",
             "first": "239",
             "last": "239",
             "title_ar": "باب الرخصة في ذلك"
         },
         {
-            "ordinal": 148,
+            "ordinal": 149,
             "book_number": "1",
             "first": "240",
             "last": "240",
             "title_ar": "باب ذكر الاغتسال في القصعة التي يعجن فيها"
         },
         {
-            "ordinal": 149,
+            "ordinal": 150,
             "book_number": "1",
             "first": "241",
             "last": "241",
             "title_ar": "باب ذكر ترك المرأة نقض ضفر رأسها عند اغتسالها من الجنابة"
         },
         {
-            "ordinal": 150,
+            "ordinal": 151,
             "book_number": "1",
             "first": "242",
             "last": "242",
             "title_ar": "باب ذكر الأمر بذلك للحائض عند الاغتسال للإحرام"
         },
         {
-            "ordinal": 151,
+            "ordinal": 152,
             "book_number": "1",
             "first": "243",
             "last": "243",
             "title_ar": "ذكر غسل الجنب يديه قبل أن يدخلهما الإناء"
         },
         {
-            "ordinal": 152,
+            "ordinal": 153,
             "book_number": "1",
             "first": "244",
             "last": "244",
             "title_ar": "باب ذكر عدد غسل اليدين قبل إدخالهما الإناء"
         },
         {
-            "ordinal": 153,
+            "ordinal": 154,
             "book_number": "1",
             "first": "245",
             "last": "245",
             "title_ar": "إزالة الجنب الأذى عن جسده بعد غسل يديه"
         },
         {
-            "ordinal": 154,
+            "ordinal": 155,
             "book_number": "1",
             "first": "246",
             "last": "246",
             "title_ar": "باب إعادة الجنب غسل يديه بعد إزالة الأذى عن جسده"
         },
         {
-            "ordinal": 155,
+            "ordinal": 156,
             "book_number": "1",
             "first": "247",
             "last": "247",
             "title_ar": "ذكر وضوء الجنب قبل الغسل"
         },
         {
-            "ordinal": 156,
+            "ordinal": 157,
             "book_number": "1",
             "first": "248",
             "last": "249",
             "title_ar": "باب تخليل الجنب رأسه"
         },
         {
-            "ordinal": 157,
+            "ordinal": 158,
             "book_number": "1",
             "first": "250",
             "last": "250",
             "title_ar": "باب ذكر ما يكفي الجنب من إفاضة الماء على رأسه"
         },
         {
-            "ordinal": 158,
+            "ordinal": 159,
             "book_number": "1",
             "first": "251",
             "last": "251",
             "title_ar": "باب ذكر العمل في الغسل من الحيض"
         },
         {
-            "ordinal": 159,
+            "ordinal": 160,
             "book_number": "1",
             "first": "252",
             "last": "252",
             "title_ar": "باب ترك الوضوء من بعد الغسل"
         },
         {
-            "ordinal": 160,
+            "ordinal": 161,
             "book_number": "1",
             "first": "253",
             "last": "253",
             "title_ar": "باب غسل الرجلين في غير المكان الذي يغتسل فيه"
         },
         {
-            "ordinal": 161,
+            "ordinal": 162,
             "book_number": "1",
             "first": "254",
             "last": "254",
             "title_ar": "باب ترك المنديل بعد الغسل"
         },
         {
-            "ordinal": 162,
+            "ordinal": 163,
             "book_number": "1",
             "first": "255",
             "last": "255",
             "title_ar": "باب وضوء الجنب إذا أراد أن يأكل"
         },
         {
-            "ordinal": 163,
+            "ordinal": 164,
             "book_number": "1",
             "first": "256",
             "last": "256",
             "title_ar": "باب اقتصار الجنب على غسل يديه إذا أراد أن يأكل"
         },
         {
-            "ordinal": 164,
+            "ordinal": 165,
             "book_number": "1",
             "first": "257",
             "last": "257",
             "title_ar": "باب اقتصار الجنب على غسل يديه إذا أراد أن يأكل أو يشرب"
         },
         {
-            "ordinal": 165,
+            "ordinal": 166,
             "book_number": "1",
             "first": "258",
             "last": "259",
             "title_ar": "باب وضوء الجنب إذا أراد أن ينام"
         },
         {
-            "ordinal": 166,
+            "ordinal": 167,
             "book_number": "1",
             "first": "260",
             "last": "260",
             "title_ar": "باب وضوء الجنب، وغسل ذكره إذا أراد أن ينام"
         },
         {
-            "ordinal": 167,
+            "ordinal": 168,
             "book_number": "1",
             "first": "261",
             "last": "261",
             "title_ar": "باب في الجنب إذا لم يتوضأ"
         },
         {
-            "ordinal": 168,
+            "ordinal": 169,
             "book_number": "1",
             "first": "262",
             "last": "262",
             "title_ar": "باب في الجنب إذا أراد أن يعود"
         },
         {
-            "ordinal": 169,
+            "ordinal": 170,
             "book_number": "1",
             "first": "263",
             "last": "264",
             "title_ar": "باب إتيان النساء قبل إحداث الغسل"
         },
         {
-            "ordinal": 170,
+            "ordinal": 171,
             "book_number": "1",
             "first": "265",
             "last": "266",
             "title_ar": "باب حجب الجنب من قراءة القرآن"
         },
         {
-            "ordinal": 171,
+            "ordinal": 172,
             "book_number": "1",
             "first": "267",
             "last": "269",
             "title_ar": "باب مماسة الجنب ومجالسته"
         },
         {
-            "ordinal": 172,
+            "ordinal": 173,
             "book_number": "1",
             "first": "270",
             "last": "272",
             "title_ar": "باب استخدام الحائض"
         },
         {
-            "ordinal": 173,
+            "ordinal": 174,
             "book_number": "1",
             "first": "273",
             "last": "273",
             "title_ar": "باب بسط الحائض الخمرة في المسجد"
         },
         {
-            "ordinal": 174,
+            "ordinal": 175,
             "book_number": "1",
             "first": "274",
             "last": "274",
             "title_ar": "باب في الذي يقرأ القرآن ورأسه في حجر امرأته وهي حائض"
         },
         {
-            "ordinal": 175,
+            "ordinal": 176,
             "book_number": "1",
             "first": "275",
             "last": "278",
             "title_ar": "باب غسل الحائض رأس زوجها"
         },
         {
-            "ordinal": 176,
+            "ordinal": 177,
             "book_number": "1",
             "first": "279",
             "last": "280",
             "title_ar": "باب مؤاكلة الحائض والشرب من سؤرها"
         },
         {
-            "ordinal": 177,
+            "ordinal": 178,
             "book_number": "1",
             "first": "281",
             "last": "282",
             "title_ar": "باب الانتفاع بفضل الحائض"
         },
         {
-            "ordinal": 178,
+            "ordinal": 179,
             "book_number": "1",
             "first": "283",
             "last": "284",
             "title_ar": "باب مضاجعة الحائض"
         },
         {
-            "ordinal": 179,
+            "ordinal": 180,
             "book_number": "1",
             "first": "285",
             "last": "287",
             "title_ar": "باب مباشرة الحائض"
         },
         {
-            "ordinal": 180,
+            "ordinal": 181,
             "book_number": "1",
             "first": "288",
             "last": "288",
             "title_ar": "باب تأويل قول الله عز وجل: {ويسألونك عن المحيض}"
         },
         {
-            "ordinal": 181,
+            "ordinal": 182,
             "book_number": "1",
             "first": "289",
             "last": "289",
             "title_ar": "باب ما يجب على من أتى حليلته في حال حيضتها بعد علمه بنهي الله عز وجل عن وطئها"
         },
         {
-            "ordinal": 182,
+            "ordinal": 183,
             "book_number": "1",
             "first": "290",
             "last": "290",
             "title_ar": "باب ما تفعل المحرمة إذا حاضت"
         },
         {
-            "ordinal": 183,
+            "ordinal": 184,
             "book_number": "1",
             "first": "291",
             "last": "291",
             "title_ar": "باب ما تفعل النفساء عند الإحرام"
         },
         {
-            "ordinal": 184,
+            "ordinal": 185,
             "book_number": "1",
             "first": "292",
             "last": "293",
             "title_ar": "باب دم الحيض يصيب الثوب"
         },
         {
-            "ordinal": 185,
+            "ordinal": 186,
             "book_number": "1",
             "first": "294",
             "last": "294",
             "title_ar": "باب المني يصيب الثوب"
         },
         {
-            "ordinal": 186,
+            "ordinal": 187,
             "book_number": "1",
             "first": "295",
             "last": "295",
             "title_ar": "باب غسل المني من الثوب"
         },
         {
-            "ordinal": 187,
+            "ordinal": 188,
             "book_number": "1",
             "first": "296",
             "last": "301",
             "title_ar": "باب فرك المني من الثوب"
         },
         {
-            "ordinal": 188,
+            "ordinal": 189,
             "book_number": "1",
             "first": "302",
             "last": "303",
             "title_ar": "باب بول الصبي الذي لم يأكل الطعام"
         },
         {
-            "ordinal": 189,
+            "ordinal": 190,
             "book_number": "1",
             "first": "304",
             "last": "304",
             "title_ar": "باب بول الجارية"
         },
         {
-            "ordinal": 190,
+            "ordinal": 191,
             "book_number": "1",
             "first": "305",
             "last": "306",
             "title_ar": "باب بول ما يؤكل لحمه"
         },
         {
-            "ordinal": 191,
+            "ordinal": 192,
             "book_number": "1",
             "first": "307",
             "last": "307",
             "title_ar": "باب فرث ما يؤكل لحمه يصيب الثوب"
         },
         {
-            "ordinal": 192,
+            "ordinal": 193,
             "book_number": "1",
             "first": "308",
             "last": "309",
             "title_ar": "باب البزاق يصيب الثوب"
         },
         {
-            "ordinal": 193,
+            "ordinal": 194,
             "book_number": "1",
             "first": "310",
             "last": "310",
             "title_ar": "باب بدء التيمم"
         },
         {
-            "ordinal": 194,
+            "ordinal": 195,
             "book_number": "1",
             "first": "311",
             "last": "311",
             "title_ar": "التيمم في الحضر"
         },
         {
-            "ordinal": 195,
+            "ordinal": 196,
             "book_number": "1",
             "first": "312",
             "last": "313",
             "title_ar": "التيمم"
         },
         {
-            "ordinal": 196,
+            "ordinal": 197,
             "book_number": "1",
             "first": "314",
             "last": "314",
             "title_ar": "باب التيمم في السفر"
         },
         {
-            "ordinal": 197,
+            "ordinal": 198,
             "book_number": "1",
             "first": "315",
             "last": "315",
             "title_ar": "باب الاختلاف في كيفية التيمم"
         },
         {
-            "ordinal": 198,
+            "ordinal": 199,
             "book_number": "1",
             "first": "316",
             "last": "316",
             "title_ar": "نوع آخر من التيمم"
         },
         {
-            "ordinal": 199,
+            "ordinal": 200,
             "book_number": "1",
             "first": "317",
             "last": "317",
             "title_ar": "نوع آخر"
         },
         {
-            "ordinal": 200,
+            "ordinal": 201,
             "book_number": "1",
             "first": "319",
             "last": "319",
             "title_ar": "نوع آخر"
         },
         {
-            "ordinal": 201,
+            "ordinal": 202,
             "book_number": "1",
             "first": "320",
             "last": "320",
             "title_ar": "باب تيمم الجنب"
         },
         {
-            "ordinal": 202,
+            "ordinal": 203,
             "book_number": "1",
             "first": "321",
             "last": "321",
             "title_ar": "باب التيمم بالصعيد"
         },
         {
-            "ordinal": 203,
+            "ordinal": 204,
             "book_number": "1",
             "first": "322",
             "last": "322",
             "title_ar": "باب الصلوات بتيمم واحد"
         },
         {
-            "ordinal": 204,
+            "ordinal": 205,
             "book_number": "1",
             "first": "323",
             "last": "324",
@@ -5803,305 +5810,312 @@
             "ordinal": 1,
             "book_number": "14",
             "first": "1367",
-            "last": "1367",
+            "last": "1368",
             "title_ar": "إيجاب الجمعة"
         },
         {
             "ordinal": 2,
             "book_number": "14",
-            "first": "1370",
+            "first": "1369",
             "last": "1371",
             "title_ar": "باب التشديد في التخلف عن الجمعة"
         },
         {
             "ordinal": 3,
             "book_number": "14",
+            "first": "1372",
+            "last": "1372",
+            "title_ar": "باب كفارة من ترك الجمعة من غير عذر"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "14",
             "first": "1373",
             "last": "1373",
             "title_ar": "باب ذكر فضل يوم الجمعة"
         },
         {
-            "ordinal": 4,
+            "ordinal": 5,
             "book_number": "14",
             "first": "1374",
             "last": "1374",
             "title_ar": "إكثار الصلاة على النبي صلى الله عليه وسلم يوم الجمعة"
         },
         {
-            "ordinal": 5,
+            "ordinal": 6,
             "book_number": "14",
             "first": "1375",
             "last": "1375",
             "title_ar": "باب الأمر بالسواك يوم الجمعة"
         },
         {
-            "ordinal": 6,
+            "ordinal": 7,
             "book_number": "14",
             "first": "1376",
             "last": "1376",
             "title_ar": "باب الأمر بالغسل يوم الجمعة"
         },
         {
-            "ordinal": 7,
+            "ordinal": 8,
             "book_number": "14",
             "first": "1377",
             "last": "1378",
             "title_ar": "باب إيجاب الغسل يوم الجمعة"
         },
         {
-            "ordinal": 8,
+            "ordinal": 9,
             "book_number": "14",
             "first": "1379",
             "last": "1380",
             "title_ar": "باب الرخصة في ترك الغسل يوم الجمعة"
         },
         {
-            "ordinal": 9,
+            "ordinal": 10,
             "book_number": "14",
             "first": "1381",
             "last": "1381",
             "title_ar": "فضل غسل يوم الجمعة"
         },
         {
-            "ordinal": 10,
+            "ordinal": 11,
             "book_number": "14",
             "first": "1382",
             "last": "1383",
             "title_ar": "الهيئة للجمعة"
         },
         {
-            "ordinal": 11,
+            "ordinal": 12,
             "book_number": "14",
             "first": "1384",
             "last": "1384",
             "title_ar": "فضل المشي إلى الجمعة"
         },
         {
-            "ordinal": 12,
+            "ordinal": 13,
             "book_number": "14",
             "first": "1385",
             "last": "1387",
             "title_ar": "باب التبكير إلى الجمعة"
         },
         {
-            "ordinal": 13,
+            "ordinal": 14,
             "book_number": "14",
             "first": "1388",
             "last": "1391",
             "title_ar": "وقت الجمعة"
         },
         {
-            "ordinal": 14,
+            "ordinal": 15,
             "book_number": "14",
             "first": "1392",
             "last": "1394",
             "title_ar": "باب الأذان للجمعة"
         },
         {
-            "ordinal": 15,
+            "ordinal": 16,
             "book_number": "14",
             "first": "1395",
             "last": "1395",
             "title_ar": "باب الصلاة يوم الجمعة لمن جاء وقد خرج الإمام"
         },
         {
-            "ordinal": 16,
+            "ordinal": 17,
             "book_number": "14",
             "first": "1396",
             "last": "1396",
             "title_ar": "مقام الإمام في الخطبة"
         },
         {
-            "ordinal": 17,
+            "ordinal": 18,
             "book_number": "14",
             "first": "1397",
             "last": "1397",
             "title_ar": "قيام الإمام في الخطبة"
         },
         {
-            "ordinal": 18,
+            "ordinal": 19,
             "book_number": "14",
             "first": "1398",
             "last": "1398",
             "title_ar": "باب الفضل في الدنو من الإمام"
         },
         {
-            "ordinal": 19,
+            "ordinal": 20,
             "book_number": "14",
             "first": "1399",
             "last": "1399",
             "title_ar": "النهي عن تخطي رقاب الناس والإمام على المنبر يوم الجمعة"
         },
         {
-            "ordinal": 20,
+            "ordinal": 21,
             "book_number": "14",
             "first": "1400",
             "last": "1400",
             "title_ar": "باب الصلاة يوم الجمعة لمن جاء والإمام يخطب"
         },
         {
-            "ordinal": 21,
+            "ordinal": 22,
             "book_number": "14",
             "first": "1401",
             "last": "1402",
             "title_ar": "باب الإنصات للخطبة يوم الجمعة"
         },
         {
-            "ordinal": 22,
+            "ordinal": 23,
             "book_number": "14",
             "first": "1403",
             "last": "1403",
             "title_ar": "باب فضل الإنصات وترك اللغو يوم الجمعة"
         },
         {
-            "ordinal": 23,
+            "ordinal": 24,
             "book_number": "14",
             "first": "1404",
             "last": "1404",
             "title_ar": "باب كيفية الخطبة"
         },
         {
-            "ordinal": 24,
+            "ordinal": 25,
             "book_number": "14",
             "first": "1405",
             "last": "1407",
             "title_ar": "باب حض الإمام في خطبته على الغسل يوم الجمعة"
         },
         {
-            "ordinal": 25,
+            "ordinal": 26,
             "book_number": "14",
             "first": "1408",
             "last": "1408",
             "title_ar": "باب حث الإمام على الصدقة يوم الجمعة في خطبته"
         },
         {
-            "ordinal": 26,
+            "ordinal": 27,
             "book_number": "14",
             "first": "1409",
             "last": "1410",
             "title_ar": "مخاطبة الإمام رعيته وهو على المنبر"
         },
         {
-            "ordinal": 27,
+            "ordinal": 28,
             "book_number": "14",
             "first": "1411",
             "last": "1411",
             "title_ar": "باب القراءة في الخطبة"
         },
         {
-            "ordinal": 28,
+            "ordinal": 29,
             "book_number": "14",
             "first": "1412",
             "last": "1412",
             "title_ar": "باب الإشارة في الخطبة"
         },
         {
-            "ordinal": 29,
+            "ordinal": 30,
             "book_number": "14",
             "first": "1413",
             "last": "1413",
             "title_ar": "باب نزول الإمام عن المنبر قبل فراغه من الخطبة، وقطعه كلامه ورجوعه إليه  يوم الجمعة"
         },
         {
-            "ordinal": 30,
+            "ordinal": 31,
             "book_number": "14",
             "first": "1414",
             "last": "1414",
             "title_ar": "باب ما يستحب من تقصير الخطبة"
         },
         {
-            "ordinal": 31,
+            "ordinal": 32,
             "book_number": "14",
             "first": "1415",
             "last": "1415",
             "title_ar": "باب كم يخطب"
         },
         {
-            "ordinal": 32,
+            "ordinal": 33,
             "book_number": "14",
             "first": "1416",
             "last": "1416",
             "title_ar": "باب الفصل بين الخطبتين بالجلوس"
         },
         {
-            "ordinal": 33,
+            "ordinal": 34,
             "book_number": "14",
             "first": "1417",
             "last": "1417",
             "title_ar": "باب السكوت في القعدة بين الخطبتين"
         },
         {
-            "ordinal": 34,
+            "ordinal": 35,
             "book_number": "14",
             "first": "1418",
             "last": "1418",
             "title_ar": "باب القراءة في الخطبة الثانية والذكر فيها"
         },
         {
-            "ordinal": 35,
+            "ordinal": 36,
             "book_number": "14",
             "first": "1419",
             "last": "1419",
             "title_ar": "الكلام والقيام بعد النزول عن المنبر"
         },
         {
-            "ordinal": 36,
+            "ordinal": 37,
             "book_number": "14",
             "first": "1420",
             "last": "1420",
             "title_ar": "عدد صلاة الجمعة"
         },
         {
-            "ordinal": 37,
+            "ordinal": 38,
             "book_number": "14",
             "first": "1421",
             "last": "1421",
             "title_ar": "القراءة في صلاة الجمعة بسورة الجمعة والمنافقين"
         },
         {
-            "ordinal": 38,
+            "ordinal": 39,
             "book_number": "14",
             "first": "1422",
             "last": "1422",
             "title_ar": "القراءة في صلاة الجمعة بسبح اسم ربك الأعلى وهل أتاك حديث الغاشية"
         },
         {
-            "ordinal": 39,
+            "ordinal": 40,
             "book_number": "14",
             "first": "1423",
             "last": "1424",
             "title_ar": "ذكر الاختلاف على النعمان بن بشير في القراءة في صلاة الجمعة"
         },
         {
-            "ordinal": 40,
+            "ordinal": 41,
             "book_number": "14",
             "first": "1425",
             "last": "1425",
             "title_ar": "من أدرك ركعة من صلاة الجمعة"
         },
         {
-            "ordinal": 41,
+            "ordinal": 42,
             "book_number": "14",
             "first": "1426",
             "last": "1426",
             "title_ar": "عدد الصلاة بعد الجمعة في المسجد"
         },
         {
-            "ordinal": 42,
+            "ordinal": 43,
             "book_number": "14",
             "first": "1427",
             "last": "1428",
             "title_ar": "صلاة الإمام بعد الجمعة"
         },
         {
-            "ordinal": 43,
+            "ordinal": 44,
             "book_number": "14",
             "first": "1429",
             "last": "1429",
             "title_ar": "باب إطالة الركعتين بعد الجمعة"
         },
         {
-            "ordinal": 44,
+            "ordinal": 45,
             "book_number": "14",
             "first": "1430",
             "last": "1432",
@@ -12938,6 +12952,34 @@
             "first": "3855",
             "last": "3856",
             "title_ar": "الاستثناء"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "35.1",
+            "first": "3857",
+            "last": "3861",
+            "title_ar": "الثالث من الشروط فيه المزارعة والوثائق"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "35.1",
+            "first": "3862",
+            "last": "3927",
+            "title_ar": "ذكر  الأحاديث المختلفة في النهي عن كراء الأرض بالثلث والربع، واختلاف ألفاظ الناقلين للخبر"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "35.1",
+            "first": "3928",
+            "last": "3936",
+            "title_ar": "ذكر اختلاف الألفاظ المأثورة في المزارعة"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "35.1",
+            "first": "3937",
+            "last": "3938",
+            "title_ar": "باب شركة الأبدان"
         },
         {
             "ordinal": 1,

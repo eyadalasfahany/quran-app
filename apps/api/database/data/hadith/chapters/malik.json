@@ -1,0 +1,3822 @@
+{
+    "schema_version": 1,
+    "collection": "malik",
+    "source": "openiti",
+    "release": "2023.1.8",
+    "doi": "10.5281/zenodo.10007820",
+    "version_id": "0179MalikIbnAnas.Muwatta.JK000466-ara1",
+    "source_file_sha256": "c104e5604d96af249ad631d0c8e92e41e7fd65b53f29d5ae443cb0142637db46",
+    "matcher_version": "1",
+    "partial_books": "keep",
+    "licence": "CC BY-NC-SA 4.0, see LICENSE-NOTICE.md",
+    "chapters": [
+        {
+            "ordinal": 1,
+            "book_number": "1",
+            "first": "1",
+            "last": "12",
+            "title_ar": "باب وقوت الصلاة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "1",
+            "first": "13",
+            "last": "14",
+            "title_ar": "باب وقت الجمعة )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "1",
+            "first": "15",
+            "last": "18",
+            "title_ar": "باب من أدرك ركعة من الصلاة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "1",
+            "first": "19",
+            "last": "20",
+            "title_ar": "باب ما جاء في دلوك الشمس وغسق الليل )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "1",
+            "first": "21",
+            "last": "24",
+            "title_ar": "باب جامع الوقوت )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "1",
+            "first": "25",
+            "last": "26",
+            "title_ar": "باب النوم عن الصلاة )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "1",
+            "first": "27",
+            "last": "29",
+            "title_ar": "باب النهي عن الصلاة بالهاجرة )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "1",
+            "first": "30",
+            "last": "31",
+            "title_ar": "باب النهي عن دخول المسجد بريح الثوم وتغطية الفم )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "2",
+            "first": "32",
+            "last": "36",
+            "title_ar": "باب العمل في الوضوء )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "2",
+            "first": "37",
+            "last": "40",
+            "title_ar": "باب وضوء النائم إذا قام إلى الصلاة )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "2",
+            "first": "41",
+            "last": "44",
+            "title_ar": "باب الطهور للوضوء )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "2",
+            "first": "45",
+            "last": "47",
+            "title_ar": "باب ما لا يجب منه الوضوء )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "2",
+            "first": "48",
+            "last": "56",
+            "title_ar": "باب ترك الوضوء مما مسته النار )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "2",
+            "first": "57",
+            "last": "66",
+            "title_ar": "باب جامع الوضوء )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "2",
+            "first": "67",
+            "last": "70",
+            "title_ar": "باب ما جاء في المسح بالرأس والأذنين )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "2",
+            "first": "71",
+            "last": "74",
+            "title_ar": "باب ما جاء في المسح على الخفين )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "2",
+            "first": "75",
+            "last": "76",
+            "title_ar": "باب العمل في المسح  على الخفين )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "2",
+            "first": "77",
+            "last": "79",
+            "title_ar": "باب ما جاء في الرعاف )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "2",
+            "first": "81",
+            "last": "81",
+            "title_ar": "باب العمل في الرعاف )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "2",
+            "first": "82",
+            "last": "83",
+            "title_ar": "باب العمل فيمن غلبه الدم من جرح أو رعاف )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "2",
+            "first": "84",
+            "last": "86",
+            "title_ar": "باب الوضوء من المذي )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "2",
+            "first": "87",
+            "last": "88",
+            "title_ar": "باب الرخصة في ترك الوضوء من المذي )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "2",
+            "first": "89",
+            "last": "94",
+            "title_ar": "باب الوضوء من مس الفرج )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "2",
+            "first": "95",
+            "last": "97",
+            "title_ar": "باب الوضوء من قبلة الرجل امرأته )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "2",
+            "first": "98",
+            "last": "101",
+            "title_ar": "باب العمل في غسل الجنابة )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "2",
+            "first": "102",
+            "last": "106",
+            "title_ar": "باب واجب الغسل إذا التقى الختانان )"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "2",
+            "first": "107",
+            "last": "109",
+            "title_ar": "باب وضوء الجنب إذا أراد أن ينام أو يطعم قبل أن يغتسل )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "2",
+            "first": "110",
+            "last": "114",
+            "title_ar": "باب إعادة الجنب الصلاة وغسله إذا صلى ولم يذكر وغسله ثوبه )"
+        },
+        {
+            "ordinal": 21,
+            "book_number": "2",
+            "first": "115",
+            "last": "116",
+            "title_ar": "باب غسل المرأة إذا رأت في المنام مثل ما يرى الرجل )"
+        },
+        {
+            "ordinal": 22,
+            "book_number": "2",
+            "first": "117",
+            "last": "119",
+            "title_ar": "باب جامع غسل الجنابة )"
+        },
+        {
+            "ordinal": 23,
+            "book_number": "2",
+            "first": "120",
+            "last": "120",
+            "title_ar": "هذا باب في التيمم )"
+        },
+        {
+            "ordinal": 24,
+            "book_number": "2",
+            "first": "121",
+            "last": "122",
+            "title_ar": "باب العمل في التيمم )"
+        },
+        {
+            "ordinal": 25,
+            "book_number": "2",
+            "first": "123",
+            "last": "123",
+            "title_ar": "باب تيمم الجنب )"
+        },
+        {
+            "ordinal": 26,
+            "book_number": "2",
+            "first": "124",
+            "last": "127",
+            "title_ar": "باب ما يحل للرجل من امرأته وهي حائض )"
+        },
+        {
+            "ordinal": 27,
+            "book_number": "2",
+            "first": "128",
+            "last": "129",
+            "title_ar": "باب طهر الحائض )"
+        },
+        {
+            "ordinal": 28,
+            "book_number": "2",
+            "first": "130",
+            "last": "133",
+            "title_ar": "باب جامع الحيضة )"
+        },
+        {
+            "ordinal": 29,
+            "book_number": "2",
+            "first": "134",
+            "last": "138",
+            "title_ar": "باب المستحاضة )"
+        },
+        {
+            "ordinal": 30,
+            "book_number": "2",
+            "first": "139",
+            "last": "140",
+            "title_ar": "باب ما جاء في بول الصبي )"
+        },
+        {
+            "ordinal": 31,
+            "book_number": "2",
+            "first": "141",
+            "last": "142",
+            "title_ar": "باب ما جاء في البول قائما وغيره )"
+        },
+        {
+            "ordinal": 32,
+            "book_number": "2",
+            "first": "143",
+            "last": "145",
+            "title_ar": "باب ما جاء في السواك )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "3",
+            "first": "156",
+            "last": "159",
+            "title_ar": "النداء في السفر وعلى غير وضوء )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "3",
+            "first": "160",
+            "last": "161",
+            "title_ar": "باب قدر السحور من النداء )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "3",
+            "first": "162",
+            "last": "169",
+            "title_ar": "باب افتتاح الصلاة )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "3",
+            "first": "170",
+            "last": "174",
+            "title_ar": "باب القراءة في المغرب والعشاء )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "3",
+            "first": "175",
+            "last": "180",
+            "title_ar": "باب العمل في القراءة )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "3",
+            "first": "181",
+            "last": "184",
+            "title_ar": "باب القراءة في الصبح )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "3",
+            "first": "185",
+            "last": "186",
+            "title_ar": "باب ما جاء في أم القرآن )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "3",
+            "first": "187",
+            "last": "190",
+            "title_ar": "باب القراءة خلف الإمام فيما لا يجهر فيه بالقراءة )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "3",
+            "first": "191",
+            "last": "192",
+            "title_ar": "باب ترك القراءة خلف الإمام فيما جهر فيه )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "3",
+            "first": "193",
+            "last": "196",
+            "title_ar": "باب ما جاء في التأمين خلف الإمام )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "3",
+            "first": "197",
+            "last": "201",
+            "title_ar": "باب العمل في الجلوس في الصلاة )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "3",
+            "first": "202",
+            "last": "206",
+            "title_ar": "باب التشهد في الصلاة )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "3",
+            "first": "207",
+            "last": "207",
+            "title_ar": "باب ما يفعل من رفع رأسه قبل الإمام )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "3",
+            "first": "208",
+            "last": "211",
+            "title_ar": "باب ما يفعل من سلم من ركعتين ساهيا )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "3",
+            "first": "212",
+            "last": "215",
+            "title_ar": "باب إتمام المصلي ما ذكر إذا شك في صلاته )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "3",
+            "first": "216",
+            "last": "217",
+            "title_ar": "باب من قام بعد الإتمام أو في الركعتين )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "3",
+            "first": "218",
+            "last": "221",
+            "title_ar": "باب النظر في الصلاة إلى ما يشغلك عنها )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "4",
+            "first": "222",
+            "last": "224",
+            "title_ar": "باب العمل في السهو )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "5",
+            "first": "225",
+            "last": "228",
+            "title_ar": "باب العمل في غسل يوم الجمعة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "5",
+            "first": "230",
+            "last": "235",
+            "title_ar": "باب ما جاء في الإنصات يوم الجمعة والإمام يخطب )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "5",
+            "first": "236",
+            "last": "236",
+            "title_ar": "باب فيمن أدرك ركعة يوم الجمعة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "5",
+            "first": "237",
+            "last": "237",
+            "title_ar": "5 باب ما جاء في السعي يوم الجمعة"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "5",
+            "first": "238",
+            "last": "239",
+            "title_ar": "باب ما جاء في الساعة التي في يوم الجمعة )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "5",
+            "first": "240",
+            "last": "242",
+            "title_ar": "باب الهيئة وتخطي الرقاب واستقبال الإمام يوم الجمعة )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "5",
+            "first": "243",
+            "last": "245",
+            "title_ar": "باب القراءة في صلاة الجمعة والاحتباء ومن تركها من غير عذر )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "6",
+            "first": "246",
+            "last": "247",
+            "title_ar": "باب الترغيب في الصلاة في رمضان )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "7",
+            "first": "254",
+            "last": "260",
+            "title_ar": "باب ما جاء في صلاة الليل )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "7",
+            "first": "261",
+            "last": "265",
+            "title_ar": "باب صلاة النبي صلى الله عليه وسلم في الوتر )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "7",
+            "first": "266",
+            "last": "275",
+            "title_ar": "باب الأمر بالوتر )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "7",
+            "first": "276",
+            "last": "281",
+            "title_ar": "باب الوتر بعد الفجر )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "7",
+            "first": "282",
+            "last": "286",
+            "title_ar": "باب ما جاء في ركعتي الفجر )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "8",
+            "first": "287",
+            "last": "290",
+            "title_ar": "باب فضل صلاة الجماعة على صلاة الفذ )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "8",
+            "first": "291",
+            "last": "294",
+            "title_ar": "باب ما جاء في العتمة والصبح )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "8",
+            "first": "295",
+            "last": "299",
+            "title_ar": "باب إعادة الصلاة مع الإمام )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "8",
+            "first": "300",
+            "last": "302",
+            "title_ar": "باب العمل في صلاة الجماعة )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "8",
+            "first": "303",
+            "last": "305",
+            "title_ar": "باب صلاة الإمام وهو جالس )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "8",
+            "first": "306",
+            "last": "307",
+            "title_ar": "باب فضل صلاة القائم على صلاة القاعد )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "8",
+            "first": "308",
+            "last": "311",
+            "title_ar": "باب ما جاء في صلاة القاعد في النافلة )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "8",
+            "first": "312",
+            "last": "315",
+            "title_ar": "باب الصلاة الوسطى )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "8",
+            "first": "316",
+            "last": "321",
+            "title_ar": "باب الرخصة في الصلاة في الثوب الواحد )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "8",
+            "first": "322",
+            "last": "325",
+            "title_ar": "باب الرخصة في صلاة المرأة في الدرع والخمار )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "9",
+            "first": "326",
+            "last": "332",
+            "title_ar": "باب الجمع بين الصلاتين في الحضر والسفر )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "9",
+            "first": "333",
+            "last": "335",
+            "title_ar": "باب قصر الصلاة في السفر )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "9",
+            "first": "343",
+            "last": "344",
+            "title_ar": "باب صلاة المسافر ما لم يجمع مكثا )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "9",
+            "first": "345",
+            "last": "345",
+            "title_ar": "باب صلاة الإمام إذا أجمع مكثا )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "9",
+            "first": "346",
+            "last": "349",
+            "title_ar": "باب صلاة المسافر إذا كان إماما أو كان وراء إمام )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "9",
+            "first": "356",
+            "last": "359",
+            "title_ar": "باب صلاة الضحى )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "9",
+            "first": "360",
+            "last": "361",
+            "title_ar": "باب جامع سبحة الضحى )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "9",
+            "first": "362",
+            "last": "366",
+            "title_ar": "باب التشديد في أن يمر أحد بين يدي المصلي )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "9",
+            "first": "367",
+            "last": "370",
+            "title_ar": "باب الرخصة في المرور بين يدي المصلي )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "9",
+            "first": "372",
+            "last": "372",
+            "title_ar": "باب سترة المصلي في السفر )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "9",
+            "first": "373",
+            "last": "374",
+            "title_ar": "باب مسح الحصباء في الصلاة )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "9",
+            "first": "375",
+            "last": "376",
+            "title_ar": "باب ما جاء في تسوية الصفوف )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "9",
+            "first": "377",
+            "last": "378",
+            "title_ar": "باب وضع اليدين إحداهما على الأخرى في الصلاة )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "9",
+            "first": "379",
+            "last": "379",
+            "title_ar": "باب القنوت في الصبح )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "9",
+            "first": "380",
+            "last": "381",
+            "title_ar": "باب النهي عن الصلاة والإنسان يريد حاجته )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "9",
+            "first": "382",
+            "last": "389",
+            "title_ar": "باب انتظار الصلاة والمشي إليها )"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "9",
+            "first": "390",
+            "last": "391",
+            "title_ar": "باب وضع اليدين على ما يوضع عليه الوجه في السجود )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "9",
+            "first": "392",
+            "last": "394",
+            "title_ar": "باب الالتفات والتصفيق عند الحاجة في الصلاة )"
+        },
+        {
+            "ordinal": 21,
+            "book_number": "9",
+            "first": "395",
+            "last": "396",
+            "title_ar": "باب ما يفعل من جاء والإمام راكع )"
+        },
+        {
+            "ordinal": 22,
+            "book_number": "9",
+            "first": "397",
+            "last": "399",
+            "title_ar": "باب ما جاء في الصلاة على النبي صلى الله عليه وسلم )"
+        },
+        {
+            "ordinal": 23,
+            "book_number": "9",
+            "first": "400",
+            "last": "411",
+            "title_ar": "باب العمل في جامع الصلاة )"
+        },
+        {
+            "ordinal": 25,
+            "book_number": "9",
+            "first": "426",
+            "last": "427",
+            "title_ar": "باب جامع الترغيب في الصلاة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "10",
+            "first": "428",
+            "last": "429",
+            "title_ar": "باب العمل في غسل العيدين والنداء فيهما والإقامة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "10",
+            "first": "430",
+            "last": "432",
+            "title_ar": "باب الأمر بالصلاة قبل الخطبة في العيدين )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "10",
+            "first": "433",
+            "last": "434",
+            "title_ar": "باب الأمر بالأكل قبل الغدو في العيد )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "10",
+            "first": "435",
+            "last": "436",
+            "title_ar": "باب ما جاء في التكبير والقراءة في صلاة العيدين )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "10",
+            "first": "437",
+            "last": "438",
+            "title_ar": "باب ترك الصلاة قبل العيدين وبعدهما )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "10",
+            "first": "439",
+            "last": "440",
+            "title_ar": "باب الرخصة في الصلاة قبل العيدين وبعدهما )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "11",
+            "first": "441",
+            "last": "444",
+            "title_ar": "باب صلاة الخوف )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "12",
+            "first": "445",
+            "last": "447",
+            "title_ar": "باب العمل في صلاة الكسوف )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "12",
+            "first": "448",
+            "last": "448",
+            "title_ar": "باب ما جاء في صلاة الخسوف )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "13",
+            "first": "450",
+            "last": "451",
+            "title_ar": "باب ما جاء في الاستسقاء )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "13",
+            "first": "452",
+            "last": "454",
+            "title_ar": "باب الاستمطار بالنجوم )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "14",
+            "first": "455",
+            "last": "456",
+            "title_ar": "باب النهي عن استقبال القبلة والإنسان على حاجته )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "14",
+            "first": "457",
+            "last": "457",
+            "title_ar": "باب الرخصة في استقبال القبلة لبول أو غائط )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "14",
+            "first": "458",
+            "last": "458",
+            "title_ar": "باب النهي عن البصاق في القبلة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "14",
+            "first": "460",
+            "last": "462",
+            "title_ar": "باب ما جاء في القبلة )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "14",
+            "first": "463",
+            "last": "465",
+            "title_ar": "باب ما جاء في مسجد النبي صلى الله عليه وسلم )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "14",
+            "first": "466",
+            "last": "469",
+            "title_ar": "باب ما جاء في خروج النساء إلى المساجد )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "15",
+            "first": "471",
+            "last": "471",
+            "title_ar": "باب الرخصة في قراءة القرآن على غير وضوء )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "15",
+            "first": "472",
+            "last": "473",
+            "title_ar": "باب ما جاء في تحزيب القرآن )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "15",
+            "first": "474",
+            "last": "480",
+            "title_ar": "باب ما جاء في القرآن )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "15",
+            "first": "481",
+            "last": "484",
+            "title_ar": "باب ما جاء في سجود القرآن )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "15",
+            "first": "486",
+            "last": "488",
+            "title_ar": "باب ما جاء في قراءة قل هو الله أحد وتبارك الذي بيده الملك )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "15",
+            "first": "489",
+            "last": "494",
+            "title_ar": "باب ما جاء في ذكر الله تبارك وتعالى )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "15",
+            "first": "495",
+            "last": "505",
+            "title_ar": "باب ما جاء في الدعاء )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "15",
+            "first": "506",
+            "last": "512",
+            "title_ar": "باب العمل في الدعاء )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "15",
+            "first": "513",
+            "last": "519",
+            "title_ar": "باب النهي عن الصلاة بعد الصبح وبعد العصر )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "16",
+            "first": "520",
+            "last": "521",
+            "title_ar": "باب غسل الميت )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "16",
+            "first": "527",
+            "last": "530",
+            "title_ar": "باب المشي أمام الجنازة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "16",
+            "first": "531",
+            "last": "532",
+            "title_ar": "باب النهي عن أن تتبع الجنازة بنار )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "16",
+            "first": "533",
+            "last": "535",
+            "title_ar": "باب التكبير على الجنائز )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "16",
+            "first": "536",
+            "last": "538",
+            "title_ar": "باب ما يقول المصلي على الجنازة )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "16",
+            "first": "539",
+            "last": "540",
+            "title_ar": "باب الصلاة على الجنائز بعد الصبح إلى الإسفار وبعد العصر إلى الإصفرار )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "16",
+            "first": "541",
+            "last": "542",
+            "title_ar": "باب الصلاة على الجنائز في المسجد )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "16",
+            "first": "543",
+            "last": "545",
+            "title_ar": "باب جامع الصلاة على الجنائز )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "16",
+            "first": "546",
+            "last": "551",
+            "title_ar": "باب ما جاء في دفن الميت )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "16",
+            "first": "552",
+            "last": "554",
+            "title_ar": "باب الوقوف للجنائز والجلوس على المقابر )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "16",
+            "first": "555",
+            "last": "556",
+            "title_ar": "باب النهي عن البكاء على الميت )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "16",
+            "first": "557",
+            "last": "559",
+            "title_ar": "باب الحسبة في المصيبة )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "16",
+            "first": "560",
+            "last": "562",
+            "title_ar": "باب جامع الحسبة في المصيبة )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "16",
+            "first": "563",
+            "last": "564",
+            "title_ar": "باب ما جاء في الإختفاء )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "16",
+            "first": "565",
+            "last": "577",
+            "title_ar": "باب جامع الجنائز )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "17",
+            "first": "578",
+            "last": "580",
+            "title_ar": "باب ما تجب فيه الزكاة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "17",
+            "first": "581",
+            "last": "584",
+            "title_ar": "باب الزكاة في العين من الذهب والورق )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "17",
+            "first": "587",
+            "last": "588",
+            "title_ar": "باب مالا زكاة فيه من الحلي والتبر والعنبر )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "17",
+            "first": "589",
+            "last": "592",
+            "title_ar": "باب زكاة أموال اليتامى والتجارة لهم فيها )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "17",
+            "first": "593",
+            "last": "595",
+            "title_ar": "باب الزكاة في الدين )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "17",
+            "first": "596",
+            "last": "596",
+            "title_ar": "باب زكاة العروض )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "17",
+            "first": "597",
+            "last": "598",
+            "title_ar": "باب ما جاء في الكنز )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "17",
+            "first": "600",
+            "last": "600",
+            "title_ar": "باب ما جاء في صدقة البقر )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "17",
+            "first": "601",
+            "last": "601",
+            "title_ar": "باب ما جاء فيما يعتد به من السخل في الصدقة )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "17",
+            "first": "602",
+            "last": "603",
+            "title_ar": "باب النهي عن التضييق على الناس في الصدقة )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "17",
+            "first": "604",
+            "last": "604",
+            "title_ar": "باب أخذ الصدقة ومن يجوز له أخذها )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "17",
+            "first": "605",
+            "last": "607",
+            "title_ar": "باب ما جاء في أخذ الصدقات والتشديد فيها )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "17",
+            "first": "608",
+            "last": "609",
+            "title_ar": "باب زكاة ما يخرص من ثمار النخيل والأعناب )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "17",
+            "first": "610",
+            "last": "610",
+            "title_ar": "باب زكاة الحبوب والزيتون )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "17",
+            "first": "611",
+            "last": "614",
+            "title_ar": "باب ما جاء في صدقة الرقيق والخيل والعسل )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "17",
+            "first": "615",
+            "last": "619",
+            "title_ar": "باب جزية أهل الكتاب والمجوس )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "17",
+            "first": "620",
+            "last": "622",
+            "title_ar": "باب عشور أهل الذمة )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "17",
+            "first": "623",
+            "last": "624",
+            "title_ar": "باب اشتراء الصدقة والعود فيها )"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "17",
+            "first": "625",
+            "last": "625",
+            "title_ar": "باب من تجب عليه زكاة الفطر )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "17",
+            "first": "626",
+            "last": "627",
+            "title_ar": "باب مكيلة زكاة الفطر )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "18",
+            "first": "634",
+            "last": "634",
+            "title_ar": "باب من أجمع الصيام  قبل الفجر )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "18",
+            "first": "636",
+            "last": "638",
+            "title_ar": "باب ما جاء في تعجيل الفطر )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "18",
+            "first": "639",
+            "last": "642",
+            "title_ar": "باب ما جاء في صيام الذي يصبح جنبا في رمضان )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "18",
+            "first": "643",
+            "last": "647",
+            "title_ar": "باب ما جاء في الرخصة في القبلة للصائم )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "18",
+            "first": "648",
+            "last": "651",
+            "title_ar": "باب ما جاء في التشديد في القبلة للصائم )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "18",
+            "first": "652",
+            "last": "657",
+            "title_ar": "باب ما جاء في الصيام في السفر )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "18",
+            "first": "658",
+            "last": "658",
+            "title_ar": "باب ما يفعل من قدم من سفر أو أراده في رمضان )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "18",
+            "first": "659",
+            "last": "660",
+            "title_ar": "باب كفارة من أفطر في رمضان )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "18",
+            "first": "661",
+            "last": "663",
+            "title_ar": "باب ما جاء في حجامة الصائم )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "18",
+            "first": "664",
+            "last": "666",
+            "title_ar": "باب صيام يوم عاشوراء )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "18",
+            "first": "667",
+            "last": "668",
+            "title_ar": "باب صيام يوم الفطر والأضحى والدهر )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "18",
+            "first": "669",
+            "last": "670",
+            "title_ar": "باب النهي عن الوصال في الصيام )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "18",
+            "first": "673",
+            "last": "673",
+            "title_ar": "( باب النذر في الصيام والصيام عن الميت )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "18",
+            "first": "674",
+            "last": "679",
+            "title_ar": "باب ما جاء في قضاء رمضان والكفارات )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "18",
+            "first": "681",
+            "last": "683",
+            "title_ar": "باب فدية من أفطر في رمضان من علة )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "18",
+            "first": "685",
+            "last": "685",
+            "title_ar": "باب جامع قضاء الصيام )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "18",
+            "first": "686",
+            "last": "688",
+            "title_ar": "22 باب جامع الصيام"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "19",
+            "first": "693",
+            "last": "693",
+            "title_ar": "باب ما لا يجوز الاعتكاف إلا به )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "19",
+            "first": "696",
+            "last": "696",
+            "title_ar": "باب قضاء الاعتكاف )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "19",
+            "first": "697",
+            "last": "704",
+            "title_ar": "باب ما جاء في ليلة القدر )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "20",
+            "first": "705",
+            "last": "707",
+            "title_ar": "باب الغسل للإهلال )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "20",
+            "first": "708",
+            "last": "711",
+            "title_ar": "باب غسل المحرم )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "20",
+            "first": "712",
+            "last": "712",
+            "title_ar": "باب ما ينهى عنه من لبس الثياب في الإحرام )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "20",
+            "first": "713",
+            "last": "715",
+            "title_ar": "باب لبس الثياب المصبغة في الإحرام )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "20",
+            "first": "716",
+            "last": "717",
+            "title_ar": "باب لبس المحرم المنطقة )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "20",
+            "first": "718",
+            "last": "722",
+            "title_ar": "باب تخمير المحرم وجهه )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "20",
+            "first": "723",
+            "last": "727",
+            "title_ar": "باب ما جاء في الطيب في الحج )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "20",
+            "first": "728",
+            "last": "732",
+            "title_ar": "باب مواقيت الإهلال  )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "20",
+            "first": "733",
+            "last": "738",
+            "title_ar": "باب العمل في الإهلال )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "20",
+            "first": "739",
+            "last": "739",
+            "title_ar": "باب رفع الصوت بالإهلال )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "20",
+            "first": "740",
+            "last": "742",
+            "title_ar": "باب افراد الحج )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "20",
+            "first": "743",
+            "last": "744",
+            "title_ar": "باب القران في الحج )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "20",
+            "first": "745",
+            "last": "751",
+            "title_ar": "باب قطع التلبية )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "20",
+            "first": "752",
+            "last": "753",
+            "title_ar": "باب إهلال أهل مكة ومن بها من غيرهم )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "20",
+            "first": "754",
+            "last": "756",
+            "title_ar": "باب ما لا يوجب الإحرام من تقليد الهدي )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "20",
+            "first": "757",
+            "last": "757",
+            "title_ar": "باب ما تفعل الحائض في الحج )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "20",
+            "first": "758",
+            "last": "761",
+            "title_ar": "باب العمرة في اشهر الحج )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "20",
+            "first": "762",
+            "last": "762",
+            "title_ar": "باب قطع التلبية في العمرة )"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "20",
+            "first": "763",
+            "last": "766",
+            "title_ar": "باب ما جاء في التمتع )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "20",
+            "first": "767",
+            "last": "770",
+            "title_ar": "باب  جامع ما جاء في العمرة )"
+        },
+        {
+            "ordinal": 21,
+            "book_number": "20",
+            "first": "771",
+            "last": "775",
+            "title_ar": "باب نكاح المحرم )"
+        },
+        {
+            "ordinal": 22,
+            "book_number": "20",
+            "first": "776",
+            "last": "777",
+            "title_ar": "باب حجامة المحرم )"
+        },
+        {
+            "ordinal": 23,
+            "book_number": "20",
+            "first": "778",
+            "last": "784",
+            "title_ar": "باب ما يجوز للمحرم أكله من الصيد )"
+        },
+        {
+            "ordinal": 24,
+            "book_number": "20",
+            "first": "785",
+            "last": "787",
+            "title_ar": "باب ما لا يحل للمحرم أكله من الصيد )"
+        },
+        {
+            "ordinal": 25,
+            "book_number": "20",
+            "first": "788",
+            "last": "791",
+            "title_ar": "باب ما يقتل المحرم من الدواب )"
+        },
+        {
+            "ordinal": 26,
+            "book_number": "20",
+            "first": "792",
+            "last": "796",
+            "title_ar": "باب ما يجوز للمحرم ان يفعله )"
+        },
+        {
+            "ordinal": 27,
+            "book_number": "20",
+            "first": "797",
+            "last": "797",
+            "title_ar": "باب الحج عمن يحج عنه )"
+        },
+        {
+            "ordinal": 28,
+            "book_number": "20",
+            "first": "798",
+            "last": "799",
+            "title_ar": "باب ما جاء فيمن احصر بعدو )"
+        },
+        {
+            "ordinal": 29,
+            "book_number": "20",
+            "first": "800",
+            "last": "804",
+            "title_ar": "باب ما جاء فيمن احصر بغير عدو )"
+        },
+        {
+            "ordinal": 30,
+            "book_number": "20",
+            "first": "805",
+            "last": "807",
+            "title_ar": "باب ما جاء في بناء الكعبة )"
+        },
+        {
+            "ordinal": 31,
+            "book_number": "20",
+            "first": "808",
+            "last": "812",
+            "title_ar": "باب الرمل في الطواف )"
+        },
+        {
+            "ordinal": 32,
+            "book_number": "20",
+            "first": "813",
+            "last": "815",
+            "title_ar": "باب الاستلام في الطواف )"
+        },
+        {
+            "ordinal": 33,
+            "book_number": "20",
+            "first": "816",
+            "last": "816",
+            "title_ar": "باب تقبيل الركن الأسود في الاستلام )"
+        },
+        {
+            "ordinal": 34,
+            "book_number": "20",
+            "first": "817",
+            "last": "817",
+            "title_ar": "باب ركعتا الطواف )"
+        },
+        {
+            "ordinal": 35,
+            "book_number": "20",
+            "first": "818",
+            "last": "820",
+            "title_ar": "باب الصلاة بعد الصبح والعصر في الطواف )"
+        },
+        {
+            "ordinal": 36,
+            "book_number": "20",
+            "first": "821",
+            "last": "823",
+            "title_ar": "باب وداع البيت )"
+        },
+        {
+            "ordinal": 37,
+            "book_number": "20",
+            "first": "824",
+            "last": "826",
+            "title_ar": "باب جامع الطواف )"
+        },
+        {
+            "ordinal": 38,
+            "book_number": "20",
+            "first": "827",
+            "last": "829",
+            "title_ar": "باب البدء بالصفا في السعي )"
+        },
+        {
+            "ordinal": 39,
+            "book_number": "20",
+            "first": "830",
+            "last": "831",
+            "title_ar": "باب جامع السعي )"
+        },
+        {
+            "ordinal": 40,
+            "book_number": "20",
+            "first": "833",
+            "last": "834",
+            "title_ar": "باب صيام يوم عرفة )"
+        },
+        {
+            "ordinal": 41,
+            "book_number": "20",
+            "first": "835",
+            "last": "838",
+            "title_ar": "باب ما جاء في صيام أيام منى )"
+        },
+        {
+            "ordinal": 42,
+            "book_number": "20",
+            "first": "839",
+            "last": "845",
+            "title_ar": "باب ما يجوز من الهدي )"
+        },
+        {
+            "ordinal": 45,
+            "book_number": "20",
+            "first": "859",
+            "last": "860",
+            "title_ar": "باب هدي المحرم إذا أصاب أهله )"
+        },
+        {
+            "ordinal": 46,
+            "book_number": "20",
+            "first": "861",
+            "last": "862",
+            "title_ar": "باب هدي من فاته الحج )"
+        },
+        {
+            "ordinal": 47,
+            "book_number": "20",
+            "first": "863",
+            "last": "865",
+            "title_ar": "باب من أصاب أهله قبل ان يفيض )"
+        },
+        {
+            "ordinal": 48,
+            "book_number": "20",
+            "first": "866",
+            "last": "869",
+            "title_ar": "باب ما استيسر من الهدي )"
+        },
+        {
+            "ordinal": 49,
+            "book_number": "20",
+            "first": "870",
+            "last": "872",
+            "title_ar": "باب جامع الهدي )"
+        },
+        {
+            "ordinal": 50,
+            "book_number": "20",
+            "first": "873",
+            "last": "874",
+            "title_ar": "باب الوقوف بعرفة والمزدلفة )"
+        },
+        {
+            "ordinal": 51,
+            "book_number": "20",
+            "first": "875",
+            "last": "876",
+            "title_ar": "باب وقوف من فاته الحج بعرفة )"
+        },
+        {
+            "ordinal": 52,
+            "book_number": "20",
+            "first": "877",
+            "last": "880",
+            "title_ar": "باب تقديم النساء والصبيان )"
+        },
+        {
+            "ordinal": 53,
+            "book_number": "20",
+            "first": "881",
+            "last": "882",
+            "title_ar": "باب السير في الدفعة )"
+        },
+        {
+            "ordinal": 54,
+            "book_number": "20",
+            "first": "883",
+            "last": "885",
+            "title_ar": "باب ما جاء في النحر في الحج )"
+        },
+        {
+            "ordinal": 55,
+            "book_number": "20",
+            "first": "886",
+            "last": "888",
+            "title_ar": "باب العمل في النحر )"
+        },
+        {
+            "ordinal": 56,
+            "book_number": "20",
+            "first": "889",
+            "last": "890",
+            "title_ar": "باب الحلاق )"
+        },
+        {
+            "ordinal": 57,
+            "book_number": "20",
+            "first": "891",
+            "last": "895",
+            "title_ar": "باب التقصير )"
+        },
+        {
+            "ordinal": 58,
+            "book_number": "20",
+            "first": "896",
+            "last": "897",
+            "title_ar": "باب التلبيد )"
+        },
+        {
+            "ordinal": 59,
+            "book_number": "20",
+            "first": "898",
+            "last": "899",
+            "title_ar": "باب الصلاة في البيت وقصر الصلاة وتعجيل الخطبة بعرفة )"
+        },
+        {
+            "ordinal": 60,
+            "book_number": "20",
+            "first": "900",
+            "last": "900",
+            "title_ar": "باب الصلاة بمنى يوم التروية والجمعة بمنى وعرفة )"
+        },
+        {
+            "ordinal": 61,
+            "book_number": "20",
+            "first": "901",
+            "last": "904",
+            "title_ar": "باب صلاة المزدلفة )"
+        },
+        {
+            "ordinal": 62,
+            "book_number": "20",
+            "first": "905",
+            "last": "907",
+            "title_ar": "باب صلاة منى )"
+        },
+        {
+            "ordinal": 63,
+            "book_number": "20",
+            "first": "908",
+            "last": "908",
+            "title_ar": "باب تكبير أيام التشريق )"
+        },
+        {
+            "ordinal": 64,
+            "book_number": "20",
+            "first": "909",
+            "last": "910",
+            "title_ar": "باب صلاة المعرس والمحصب )"
+        },
+        {
+            "ordinal": 65,
+            "book_number": "20",
+            "first": "911",
+            "last": "913",
+            "title_ar": "باب البيتوتة بمكة ليالي منى )"
+        },
+        {
+            "ordinal": 67,
+            "book_number": "20",
+            "first": "921",
+            "last": "923",
+            "title_ar": "باب الرخصة في رمي الجمار )"
+        },
+        {
+            "ordinal": 68,
+            "book_number": "20",
+            "first": "924",
+            "last": "925",
+            "title_ar": "باب الإفاضة )"
+        },
+        {
+            "ordinal": 69,
+            "book_number": "20",
+            "first": "926",
+            "last": "926",
+            "title_ar": "باب دخول الحائض مكة )"
+        },
+        {
+            "ordinal": 70,
+            "book_number": "20",
+            "first": "929",
+            "last": "932",
+            "title_ar": "باب إفاضة الحائض )"
+        },
+        {
+            "ordinal": 71,
+            "book_number": "20",
+            "first": "934",
+            "last": "937",
+            "title_ar": "باب فدية ما أصيب من الطير والوحش )"
+        },
+        {
+            "ordinal": 72,
+            "book_number": "20",
+            "first": "938",
+            "last": "939",
+            "title_ar": "باب فدية من أصاب شيئا من الجراد وهو محرم )"
+        },
+        {
+            "ordinal": 73,
+            "book_number": "20",
+            "first": "940",
+            "last": "941",
+            "title_ar": "باب فدية  من حلق قبل ان ينحر )"
+        },
+        {
+            "ordinal": 74,
+            "book_number": "20",
+            "first": "943",
+            "last": "943",
+            "title_ar": "باب ما يفعل من نسي من نسكه شيئا )"
+        },
+        {
+            "ordinal": 75,
+            "book_number": "20",
+            "first": "944",
+            "last": "956",
+            "title_ar": "باب جامع الحج )"
+        },
+        {
+            "ordinal": 76,
+            "book_number": "20",
+            "first": "957",
+            "last": "957",
+            "title_ar": "باب صيام التمتع )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "21",
+            "first": "959",
+            "last": "964",
+            "title_ar": "الترغيب في الجهاد )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "21",
+            "first": "965",
+            "last": "965",
+            "title_ar": "باب النهي عن أن يسافر بالقرآن إلى أرض العدو )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "21",
+            "first": "966",
+            "last": "969",
+            "title_ar": "باب النهي عن قتل النساء والولدان في الغزو )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "21",
+            "first": "970",
+            "last": "970",
+            "title_ar": "باب ما جاء في الوفاء بالأمان )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "21",
+            "first": "971",
+            "last": "972",
+            "title_ar": "باب العمل فيمن أعطى شيئا في سبيل الله )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "21",
+            "first": "973",
+            "last": "974",
+            "title_ar": "باب جامع النفل في الغزو )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "21",
+            "first": "976",
+            "last": "977",
+            "title_ar": "باب ما جاء في السلب في النفل )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "21",
+            "first": "978",
+            "last": "978",
+            "title_ar": "باب ما جاء في إعطاء النفل من الخمس )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "21",
+            "first": "979",
+            "last": "979",
+            "title_ar": "باب القسم للخيل في الغزو )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "21",
+            "first": "980",
+            "last": "984",
+            "title_ar": "باب ما جاء في الغلول )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "21",
+            "first": "985",
+            "last": "991",
+            "title_ar": "باب الشهداء في سبيل الله )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "21",
+            "first": "992",
+            "last": "993",
+            "title_ar": "باب ما تكون فيه الشهادة )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "21",
+            "first": "995",
+            "last": "995",
+            "title_ar": "باب ما يكره من الشيء يجعل في سبيل الله )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "21",
+            "first": "997",
+            "last": "1000",
+            "title_ar": "باب الترغيب في الجهاد )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "21",
+            "first": "1001",
+            "last": "1006",
+            "title_ar": "باب ما جاء في الخيل والمسابقة بينها والنفقة في الغزو )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "21",
+            "first": "1007",
+            "last": "1008",
+            "title_ar": "21 باب الدفن في قبر واحد من ضرورة وإنفاذ أبي بكر رضي الله عنه عدة رسول الله صلى الله عليه وسلم بعد وفاة رسول الله صلى الله عليه وسلم"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "22",
+            "first": "1009",
+            "last": "1011",
+            "title_ar": "باب ما يجب من النذور في المشي )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "22",
+            "first": "1012",
+            "last": "1014",
+            "title_ar": "باب فيمن نذر مشيا إلى بيت الله فعجز )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "22",
+            "first": "1015",
+            "last": "1016",
+            "title_ar": "4 باب ما لا يجوز من النذور في معصية الله"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "22",
+            "first": "1018",
+            "last": "1018",
+            "title_ar": "باب اللغو في اليمين )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "22",
+            "first": "1019",
+            "last": "1019",
+            "title_ar": "باب مالا تجب فيه الكفارة من اليمين )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "22",
+            "first": "1024",
+            "last": "1027",
+            "title_ar": "باب جامع الأيمان )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "23",
+            "first": "1028",
+            "last": "1029",
+            "title_ar": "باب ما ينهى عنه من الضحايا )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "23",
+            "first": "1030",
+            "last": "1030",
+            "title_ar": "باب ما يستحب من الضحايا )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "23",
+            "first": "1031",
+            "last": "1032",
+            "title_ar": "باب النهي عن ذبح الضحية قبل انصراف الامام )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "23",
+            "first": "1033",
+            "last": "1035",
+            "title_ar": "باب ادخار لحوم الأضاحي )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "23",
+            "first": "1039",
+            "last": "1041",
+            "title_ar": "باب الضحية عما في بطن المرأة وذكر أيام الأضحى )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "24",
+            "first": "1042",
+            "last": "1043",
+            "title_ar": "باب ما جاء في التسمية على الذبيحة )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "24",
+            "first": "1049",
+            "last": "1049",
+            "title_ar": "باب ما يكره من الذبيحة في الذكاة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "24",
+            "first": "1050",
+            "last": "1051",
+            "title_ar": "باب ذكاة ما في بطن الذبيحة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "25",
+            "first": "1052",
+            "last": "1053",
+            "title_ar": "باب ترك أكل ما قتل المعراض والحجر )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "25",
+            "first": "1055",
+            "last": "1056",
+            "title_ar": "باب ما جاء في صيد المعلمات )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "25",
+            "first": "1058",
+            "last": "1061",
+            "title_ar": "باب ما جاء في صيد البحر )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "25",
+            "first": "1062",
+            "last": "1063",
+            "title_ar": "باب تحريم أكل كل ذي ناب من السباع )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "25",
+            "first": "1064",
+            "last": "1066",
+            "title_ar": "باب ما جاء في جلود الميتة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "26",
+            "first": "1067",
+            "last": "1069",
+            "title_ar": "باب ما جاء في العقيقة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "26",
+            "first": "1070",
+            "last": "1073",
+            "title_ar": "باب العمل في العقيقة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "27",
+            "first": "1074",
+            "last": "1076",
+            "title_ar": "باب ميراث الجد )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "27",
+            "first": "1077",
+            "last": "1079",
+            "title_ar": "باب ميراث الجدة )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "27",
+            "first": "1081",
+            "last": "1082",
+            "title_ar": "باب ما جاء في العمة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "27",
+            "first": "1083",
+            "last": "1087",
+            "title_ar": "باب ميراث أهل الملل )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "27",
+            "first": "1088",
+            "last": "1088",
+            "title_ar": "باب من جهل امره بالقتل أو غير ذلك )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "28",
+            "first": "1094",
+            "last": "1097",
+            "title_ar": "باب استئذان البكر والأيم في انفسهما )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "28",
+            "first": "1098",
+            "last": "1101",
+            "title_ar": "باب ما جاء في الصداق والحباء )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "28",
+            "first": "1105",
+            "last": "1105",
+            "title_ar": "باب المقام عند البكر والأيم )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "28",
+            "first": "1107",
+            "last": "1107",
+            "title_ar": "باب ما لا يجوز من الشروط في النكاح )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "28",
+            "first": "1108",
+            "last": "1110",
+            "title_ar": "باب نكاح المحلل وما اشبهه )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "28",
+            "first": "1111",
+            "last": "1112",
+            "title_ar": "باب ما لا يجمع بينه من النساء )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "28",
+            "first": "1113",
+            "last": "1114",
+            "title_ar": "باب ما لا يجوز من نكاح الرجل أم امرأته )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "28",
+            "first": "1115",
+            "last": "1118",
+            "title_ar": "باب جامع ما لا يجوز من النكاح )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "28",
+            "first": "1119",
+            "last": "1120",
+            "title_ar": "باب نكاح الأمة على الحرة )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "28",
+            "first": "1121",
+            "last": "1123",
+            "title_ar": "باب ما جاء في الرجل يملك امرأته وقد كانت تحته ففارقها )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "28",
+            "first": "1124",
+            "last": "1126",
+            "title_ar": "باب ما جاء في كراهية إصابة الاختين بملك اليمين والمرأة وابنتها )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "28",
+            "first": "1128",
+            "last": "1130",
+            "title_ar": "باب النهي عن ان يصيب الرجل أمة كانت لأبيه )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "28",
+            "first": "1131",
+            "last": "1132",
+            "title_ar": "باب ما جاء في الإحصان )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "28",
+            "first": "1133",
+            "last": "1134",
+            "title_ar": "باب نكاح المتعة )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "28",
+            "first": "1135",
+            "last": "1135",
+            "title_ar": "باب نكاح العبيد )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "28",
+            "first": "1136",
+            "last": "1138",
+            "title_ar": "باب نكاح المشرك إذا أسلمت زوجته قبله )"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "28",
+            "first": "1139",
+            "last": "1143",
+            "title_ar": "باب ما جاء في الوليمة )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "28",
+            "first": "1144",
+            "last": "1149",
+            "title_ar": "باب جامع النكاح )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "29",
+            "first": "1150",
+            "last": "1153",
+            "title_ar": "باب ما جاء في البتة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "29",
+            "first": "1154",
+            "last": "1158",
+            "title_ar": "باب ما جاء في الخلية والبرية وأشباه ذلك )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "29",
+            "first": "1159",
+            "last": "1160",
+            "title_ar": "باب ما يبين من التمليك )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "29",
+            "first": "1161",
+            "last": "1162",
+            "title_ar": "باب ما يجب فيه تطليقة واحدة من التمليك )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "29",
+            "first": "1173",
+            "last": "1177",
+            "title_ar": "باب ظهار الحر )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "29",
+            "first": "1178",
+            "last": "1178",
+            "title_ar": "باب ظهار العبيد )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "29",
+            "first": "1184",
+            "last": "1185",
+            "title_ar": "باب ما جاء في الخلع )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "29",
+            "first": "1187",
+            "last": "1187",
+            "title_ar": "باب طلاق المختلعة )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "29",
+            "first": "1188",
+            "last": "1188",
+            "title_ar": "باب ما جاء في اللعان )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "29",
+            "first": "1190",
+            "last": "1190",
+            "title_ar": "باب ميراث ولد الملاعنة )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "29",
+            "first": "1192",
+            "last": "1194",
+            "title_ar": "باب طلاق البكر )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "29",
+            "first": "1195",
+            "last": "1199",
+            "title_ar": "باب طلاق المريض )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "29",
+            "first": "1201",
+            "last": "1202",
+            "title_ar": "باب ما جاء في متعة الطلاق )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "29",
+            "first": "1204",
+            "last": "1208",
+            "title_ar": "باب ما جاء في طلاق العبد )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "29",
+            "first": "1209",
+            "last": "1209",
+            "title_ar": "20 باب عدة التي تفقد زوجها"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "29",
+            "first": "1211",
+            "last": "1220",
+            "title_ar": "باب ما جاء في الإقراء وعدة الطلاق وطلاق الحائض )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "29",
+            "first": "1221",
+            "last": "1224",
+            "title_ar": "باب ما جاء في عدة المرأة في بيتها إذا طلقت فيه )"
+        },
+        {
+            "ordinal": 21,
+            "book_number": "29",
+            "first": "1225",
+            "last": "1226",
+            "title_ar": "باب ما جاء في نفقة المطلقة )"
+        },
+        {
+            "ordinal": 23,
+            "book_number": "29",
+            "first": "1230",
+            "last": "1230",
+            "title_ar": "باب ما جاء في الحكمين )"
+        },
+        {
+            "ordinal": 24,
+            "book_number": "29",
+            "first": "1232",
+            "last": "1232",
+            "title_ar": "باب ما جاء في يمين الرجل بطلاق ما لم ينكح )"
+        },
+        {
+            "ordinal": 25,
+            "book_number": "29",
+            "first": "1233",
+            "last": "1234",
+            "title_ar": "باب أجل الذي لا يمس امرأته )"
+        },
+        {
+            "ordinal": 27,
+            "book_number": "29",
+            "first": "1243",
+            "last": "1246",
+            "title_ar": "باب عدة المتوفى عنها زوجها إذا كانت حاملا )"
+        },
+        {
+            "ordinal": 28,
+            "book_number": "29",
+            "first": "1247",
+            "last": "1251",
+            "title_ar": "باب مقام المتوفى عنها زوجها في بيتها حتى تحل )"
+        },
+        {
+            "ordinal": 29,
+            "book_number": "29",
+            "first": "1252",
+            "last": "1254",
+            "title_ar": "باب عدة أم الولد إذا توفى عنها سيدها )"
+        },
+        {
+            "ordinal": 30,
+            "book_number": "29",
+            "first": "1255",
+            "last": "1256",
+            "title_ar": "باب عدة الأمة إذا توفي سيدها أو زوجها س 6 - 217 )"
+        },
+        {
+            "ordinal": 31,
+            "book_number": "29",
+            "first": "1257",
+            "last": "1262",
+            "title_ar": "باب ما جاء في العزل )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "30",
+            "first": "1284",
+            "last": "1286",
+            "title_ar": "باب ما جاء في الرضاعة بعد الكبر )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "30",
+            "first": "1287",
+            "last": "1289",
+            "title_ar": "باب جامع ما جاء في الرضاعة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "31",
+            "first": "1290",
+            "last": "1290",
+            "title_ar": "باب ما جاء في بيع العربان )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "31",
+            "first": "1292",
+            "last": "1292",
+            "title_ar": "باب ما جاء في العهدة )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "31",
+            "first": "1293",
+            "last": "1293",
+            "title_ar": "باب العيب في الرقيق )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "31",
+            "first": "1294",
+            "last": "1295",
+            "title_ar": "باب ما يفعل في الوليدة إذا بيعت والشرط فيها )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "31",
+            "first": "1296",
+            "last": "1297",
+            "title_ar": "باب النهي عن أن يطأ الرجل وليدة ولها زوج )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "31",
+            "first": "1298",
+            "last": "1298",
+            "title_ar": "باب ما جاء في ثمر المال يباع أصله )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "31",
+            "first": "1299",
+            "last": "1301",
+            "title_ar": "باب النهي عن بيع الثمار حتى يبدو صلاحها )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "31",
+            "first": "1303",
+            "last": "1303",
+            "title_ar": "باب ما جاء في بيع العرية )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "31",
+            "first": "1305",
+            "last": "1306",
+            "title_ar": "باب الجائحة في بيع الثمار والزرع )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "31",
+            "first": "1307",
+            "last": "1309",
+            "title_ar": "باب ما يجوز في استثناء الثمر )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "31",
+            "first": "1310",
+            "last": "1312",
+            "title_ar": "باب ما يكره من بيع التمر )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "31",
+            "first": "1313",
+            "last": "1315",
+            "title_ar": "باب ما جاء في المزابنة والمحاقلة )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "31",
+            "first": "1316",
+            "last": "1326",
+            "title_ar": "باب بيع الذهب بالفضة تبرا وعينا )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "31",
+            "first": "1328",
+            "last": "1328",
+            "title_ar": "باب المراطلة )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "31",
+            "first": "1329",
+            "last": "1335",
+            "title_ar": "باب العينة وما يشبهها )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "31",
+            "first": "1336",
+            "last": "1337",
+            "title_ar": "باب ما يكره من بيع الطعام إلى أجل )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "31",
+            "first": "1339",
+            "last": "1339",
+            "title_ar": "باب السلفة في الطعام )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "31",
+            "first": "1340",
+            "last": "1342",
+            "title_ar": "باب بيع الطعام بالطعام لا فضل بينهما )"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "31",
+            "first": "1343",
+            "last": "1344",
+            "title_ar": "باب جامع بيع الطعام )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "31",
+            "first": "1345",
+            "last": "1347",
+            "title_ar": "باب الحكرة والتربص )"
+        },
+        {
+            "ordinal": 21,
+            "book_number": "31",
+            "first": "1348",
+            "last": "1350",
+            "title_ar": "باب ما يجوز من بيع الحيوان بعضه ببعض والسلف فيه )"
+        },
+        {
+            "ordinal": 22,
+            "book_number": "31",
+            "first": "1351",
+            "last": "1352",
+            "title_ar": "باب ما لا يجوز من بيع الحيوان )"
+        },
+        {
+            "ordinal": 23,
+            "book_number": "31",
+            "first": "1353",
+            "last": "1355",
+            "title_ar": "باب بيع الحيوان باللحم )"
+        },
+        {
+            "ordinal": 24,
+            "book_number": "31",
+            "first": "1356",
+            "last": "1356",
+            "title_ar": "29 باب ما جاء في ثمن الكلب"
+        },
+        {
+            "ordinal": 25,
+            "book_number": "31",
+            "first": "1357",
+            "last": "1357",
+            "title_ar": "باب السلف وبيع العروض بعضها ببعض )"
+        },
+        {
+            "ordinal": 26,
+            "book_number": "31",
+            "first": "1358",
+            "last": "1358",
+            "title_ar": "باب السلفة في العروض )"
+        },
+        {
+            "ordinal": 27,
+            "book_number": "31",
+            "first": "1359",
+            "last": "1361",
+            "title_ar": "باب النهي عن بيعتين في بيعة )"
+        },
+        {
+            "ordinal": 28,
+            "book_number": "31",
+            "first": "1362",
+            "last": "1362",
+            "title_ar": "باب بيع الغرر )"
+        },
+        {
+            "ordinal": 29,
+            "book_number": "31",
+            "first": "1364",
+            "last": "1364",
+            "title_ar": "باب بيع الخيار )"
+        },
+        {
+            "ordinal": 30,
+            "book_number": "31",
+            "first": "1366",
+            "last": "1368",
+            "title_ar": "باب ما جاء في الربا في الدين )"
+        },
+        {
+            "ordinal": 31,
+            "book_number": "31",
+            "first": "1369",
+            "last": "1370",
+            "title_ar": "باب جامع الدين والحول )"
+        },
+        {
+            "ordinal": 32,
+            "book_number": "31",
+            "first": "1371",
+            "last": "1371",
+            "title_ar": "باب ما جاء في افلاس الغريم )"
+        },
+        {
+            "ordinal": 33,
+            "book_number": "31",
+            "first": "1373",
+            "last": "1374",
+            "title_ar": "باب ما يجوز من السلف )"
+        },
+        {
+            "ordinal": 34,
+            "book_number": "31",
+            "first": "1375",
+            "last": "1378",
+            "title_ar": "باب ما لا يجوز من السلف )"
+        },
+        {
+            "ordinal": 35,
+            "book_number": "31",
+            "first": "1379",
+            "last": "1379",
+            "title_ar": "باب ما ينهى عنه من المساومة والمبايعة )"
+        },
+        {
+            "ordinal": 36,
+            "book_number": "31",
+            "first": "1382",
+            "last": "1385",
+            "title_ar": "باب جامع البيوع )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "32",
+            "first": "1386",
+            "last": "1387",
+            "title_ar": "باب ما جاء في القراض )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "33",
+            "first": "1388",
+            "last": "1388",
+            "title_ar": "باب ما جاء في المساقاة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "34",
+            "first": "1390",
+            "last": "1394",
+            "title_ar": "باب ما جاء في كراء الأرض )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "35",
+            "first": "1395",
+            "last": "1397",
+            "title_ar": "باب ما تقع فيه الشفعة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "35",
+            "first": "1398",
+            "last": "1398",
+            "title_ar": "باب ما لا تقع فيه الشفعة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "36",
+            "first": "1399",
+            "last": "1400",
+            "title_ar": "باب الترغيب في القضاء بالحق )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "36",
+            "first": "1401",
+            "last": "1403",
+            "title_ar": "باب ما جاء في الشهادات )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "36",
+            "first": "1407",
+            "last": "1408",
+            "title_ar": "4 باب القضاء باليمين مع الشاهد )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "36",
+            "first": "1409",
+            "last": "1409",
+            "title_ar": "6 باب القضاء في الدعوى"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "36",
+            "first": "1410",
+            "last": "1410",
+            "title_ar": "باب القضاء في شهادة الصبيان )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "36",
+            "first": "1411",
+            "last": "1412",
+            "title_ar": "باب ما جاء في الحنث على منبر النبي صلى الله عليه وسلم )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "36",
+            "first": "1413",
+            "last": "1413",
+            "title_ar": "باب جامع ما جاء في اليمين على المنبر )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "36",
+            "first": "1415",
+            "last": "1415",
+            "title_ar": "باب القضاء في المستكرهة من النساء )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "36",
+            "first": "1416",
+            "last": "1417",
+            "title_ar": "باب القضاء فيمن ارتد عن الإسلام )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "36",
+            "first": "1418",
+            "last": "1419",
+            "title_ar": "باب القضاء فيمن وجد مع امرأته رجلا )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "36",
+            "first": "1420",
+            "last": "1420",
+            "title_ar": "باب القضاء في المنبوذ )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "36",
+            "first": "1421",
+            "last": "1424",
+            "title_ar": "باب القضاء بالحاق الولد بأبيه )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "36",
+            "first": "1425",
+            "last": "1426",
+            "title_ar": "باب القضاء في أمهات الأولاد )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "36",
+            "first": "1427",
+            "last": "1428",
+            "title_ar": "باب القضاء في عمارة الموات )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "36",
+            "first": "1429",
+            "last": "1431",
+            "title_ar": "باب القضاء في المياه )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "36",
+            "first": "1432",
+            "last": "1435",
+            "title_ar": "باب القضاء في المرفق )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "36",
+            "first": "1436",
+            "last": "1436",
+            "title_ar": "باب القضاء في قسم الأموال )"
+        },
+        {
+            "ordinal": 18,
+            "book_number": "36",
+            "first": "1437",
+            "last": "1438",
+            "title_ar": "باب القضاء في الضواري والحريسة )"
+        },
+        {
+            "ordinal": 19,
+            "book_number": "36",
+            "first": "1439",
+            "last": "1441",
+            "title_ar": "باب ما لا يجوز من النحل )"
+        },
+        {
+            "ordinal": 20,
+            "book_number": "36",
+            "first": "1442",
+            "last": "1442",
+            "title_ar": "باب القضاء في الهبة )"
+        },
+        {
+            "ordinal": 21,
+            "book_number": "36",
+            "first": "1443",
+            "last": "1445",
+            "title_ar": "باب القضاء في العمرى )"
+        },
+        {
+            "ordinal": 22,
+            "book_number": "36",
+            "first": "1446",
+            "last": "1448",
+            "title_ar": "باب القضاء في اللقطة )"
+        },
+        {
+            "ordinal": 23,
+            "book_number": "36",
+            "first": "1449",
+            "last": "1451",
+            "title_ar": "باب القضاء في الضوال )"
+        },
+        {
+            "ordinal": 24,
+            "book_number": "36",
+            "first": "1452",
+            "last": "1454",
+            "title_ar": "باب صدقة الحي عن الميت )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "37",
+            "first": "1456",
+            "last": "1457",
+            "title_ar": "باب جواز وصية الصغير والضعيف والمصاب والسفيه )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "37",
+            "first": "1458",
+            "last": "1458",
+            "title_ar": "باب الوصية في الثلث لا تتعدى )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "37",
+            "first": "1459",
+            "last": "1460",
+            "title_ar": "باب ما جاء في المؤنث من الرجال ومن أحق  بالولد )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "37",
+            "first": "1461",
+            "last": "1462",
+            "title_ar": "باب جامع القضاء وكراهيته )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "37",
+            "first": "1463",
+            "last": "1463",
+            "title_ar": "باب ما يجوز من النحل )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "38",
+            "first": "1465",
+            "last": "1466",
+            "title_ar": "باب من اعتق رقيقا لا يملك مالا غيرهم )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "38",
+            "first": "1467",
+            "last": "1467",
+            "title_ar": "باب القضاء في مال العبد إذا عتق )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "38",
+            "first": "1468",
+            "last": "1469",
+            "title_ar": "باب عتق أمهات الأولاد وجامع القضاء في العتاقة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "38",
+            "first": "1470",
+            "last": "1473",
+            "title_ar": "باب ما يجوز من العتق في الرقاب الواجبة )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "38",
+            "first": "1474",
+            "last": "1474",
+            "title_ar": "باب ما لا يجوز من العتق  في الرقاب الواجبة )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "38",
+            "first": "1475",
+            "last": "1476",
+            "title_ar": "باب عتق الحي عن الميت )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "38",
+            "first": "1477",
+            "last": "1478",
+            "title_ar": "باب فضل عتق الرقاب وعتق الزانية وبن الزنى )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "38",
+            "first": "1479",
+            "last": "1481",
+            "title_ar": "باب مصير الولاء لمن اعتق )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "38",
+            "first": "1484",
+            "last": "1484",
+            "title_ar": "باب جر العبد الولاء إذا اعتق )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "38",
+            "first": "1485",
+            "last": "1487",
+            "title_ar": "باب ميراث الولاء )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "38",
+            "first": "1488",
+            "last": "1488",
+            "title_ar": "باب ميراث السائبة وولاء من اعتق اليهودي والنصراني )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "39",
+            "first": "1489",
+            "last": "1491",
+            "title_ar": "باب القضاء في المكاتب )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "39",
+            "first": "1493",
+            "last": "1493",
+            "title_ar": "باب القطاعة في الكتابة )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "39",
+            "first": "1494",
+            "last": "1494",
+            "title_ar": "باب سعي المكاتب )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "39",
+            "first": "1495",
+            "last": "1495",
+            "title_ar": "باب عتق المكاتب إذا أدى ما عليه قبل محله )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "39",
+            "first": "1496",
+            "last": "1496",
+            "title_ar": "باب ميراث المكاتب إذا عتق )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "40",
+            "first": "1497",
+            "last": "1498",
+            "title_ar": "باب مس الرجل وليدته إذا دبرها )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "40",
+            "first": "1499",
+            "last": "1499",
+            "title_ar": "باب جراح المدبر )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "41",
+            "first": "1500",
+            "last": "1510",
+            "title_ar": "باب ما جاء في الرجم )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "41",
+            "first": "1511",
+            "last": "1511",
+            "title_ar": "باب ما جاء فيمن اعترف على نفسه بالزنى )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "41",
+            "first": "1513",
+            "last": "1515",
+            "title_ar": "باب جامع ما جاء في حد الزنى )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "41",
+            "first": "1516",
+            "last": "1518",
+            "title_ar": "باب الحد في القذف والنفي والتعريض )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "41",
+            "first": "1520",
+            "last": "1520",
+            "title_ar": "باب ما لا حد فيه )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "41",
+            "first": "1521",
+            "last": "1525",
+            "title_ar": "باب ما يجب فيه القطع )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "41",
+            "first": "1526",
+            "last": "1527",
+            "title_ar": "باب ما جاء في قطع الآبق والسارق )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "41",
+            "first": "1529",
+            "last": "1530",
+            "title_ar": "باب ترك الشفاعة للسارق إذا بلغ السلطان )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "41",
+            "first": "1531",
+            "last": "1532",
+            "title_ar": "باب جامع القطع )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "41",
+            "first": "1533",
+            "last": "1536",
+            "title_ar": "باب ما لا قطع فيه )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "42",
+            "first": "1537",
+            "last": "1540",
+            "title_ar": "باب الحد في الخمر )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "42",
+            "first": "1541",
+            "last": "1542",
+            "title_ar": "باب ما ينهى ان ينبذ فيه )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "42",
+            "first": "1543",
+            "last": "1544",
+            "title_ar": "باب ما يكره ان ينبذ جميعا )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "42",
+            "first": "1545",
+            "last": "1547",
+            "title_ar": "باب تحريم الخمر )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "42",
+            "first": "1548",
+            "last": "1551",
+            "title_ar": "باب جامع تحريم الخمر )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "43",
+            "first": "1552",
+            "last": "1552",
+            "title_ar": "باب ذكر العقول )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "43",
+            "first": "1553",
+            "last": "1553",
+            "title_ar": "باب العمل في الدية )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "43",
+            "first": "1555",
+            "last": "1555",
+            "title_ar": "باب ما جاء في دية العمد إذا قبلت وجناية )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "43",
+            "first": "1557",
+            "last": "1557",
+            "title_ar": "باب دية الخطأ في القتل )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "43",
+            "first": "1561",
+            "last": "1561",
+            "title_ar": "باب عقل الجنين )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "43",
+            "first": "1572",
+            "last": "1573",
+            "title_ar": "باب جامع عقل الأسنان )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "43",
+            "first": "1576",
+            "last": "1576",
+            "title_ar": "باب العمل في عقل الأسنان )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "43",
+            "first": "1585",
+            "last": "1588",
+            "title_ar": "باب ما جاء في ميراث العقل والتغليظ فيه )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "43",
+            "first": "1590",
+            "last": "1591",
+            "title_ar": "باب ما جاء في الغيلة والسحر )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "43",
+            "first": "1592",
+            "last": "1592",
+            "title_ar": "باب ما يجب في العمد )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "43",
+            "first": "1595",
+            "last": "1595",
+            "title_ar": "باب ما جاء في دية السائبة وجنايته )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "44",
+            "first": "1596",
+            "last": "1596",
+            "title_ar": "باب تبدئة أهل الدم في القسامة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "45",
+            "first": "1598",
+            "last": "1599",
+            "title_ar": "باب الدعاء للمدينة وأهلها )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "45",
+            "first": "1600",
+            "last": "1606",
+            "title_ar": "باب ما جاء في سكنى المدينة والخروج منها )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "45",
+            "first": "1607",
+            "last": "1610",
+            "title_ar": "باب ما جاء في تحريم المدينة )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "45",
+            "first": "1614",
+            "last": "1615",
+            "title_ar": "باب ما جاء في اجلاء اليهود من المدينة )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "45",
+            "first": "1616",
+            "last": "1617",
+            "title_ar": "باب جامع ما جاء في أمر المدينة )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "45",
+            "first": "1618",
+            "last": "1622",
+            "title_ar": "باب ما جاء في الطاعون )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "46",
+            "first": "1623",
+            "last": "1628",
+            "title_ar": "باب النهى عن القول بالقدر )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "46",
+            "first": "1629",
+            "last": "1632",
+            "title_ar": "باب جامع ما جاء في أهل القدر )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "47",
+            "first": "1633",
+            "last": "1640",
+            "title_ar": "باب ما جاء في حسن الخلق )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "47",
+            "first": "1641",
+            "last": "1642",
+            "title_ar": "باب ما جاء في الحياء )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "47",
+            "first": "1643",
+            "last": "1644",
+            "title_ar": "باب ما جاء في الغضب )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "47",
+            "first": "1645",
+            "last": "1650",
+            "title_ar": "باب ما جاء في المهاجرة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "48",
+            "first": "1651",
+            "last": "1653",
+            "title_ar": "باب ما جاء في لبس الثياب للجمال بها )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "48",
+            "first": "1655",
+            "last": "1655",
+            "title_ar": "باب ما جاء في لبس الثياب المصبغة والذهب )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "48",
+            "first": "1656",
+            "last": "1656",
+            "title_ar": "باب ما جاء في لبس الخز )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "48",
+            "first": "1657",
+            "last": "1659",
+            "title_ar": "باب ما يكره للنساء لبسه من الثياب )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "48",
+            "first": "1660",
+            "last": "1663",
+            "title_ar": "باب ما جاء في إسبال الرجل ثوبه )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "48",
+            "first": "1664",
+            "last": "1664",
+            "title_ar": "باب ما جاء في إسبال المرأة ثوبها )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "48",
+            "first": "1665",
+            "last": "1667",
+            "title_ar": "باب ما جاء في الانتعال )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "48",
+            "first": "1668",
+            "last": "1670",
+            "title_ar": "باب ما جاء في لبس الثياب )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "49",
+            "first": "1671",
+            "last": "1671",
+            "title_ar": "باب ما جاء في صفة النبي صلى الله عليه وسلم )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "49",
+            "first": "1672",
+            "last": "1672",
+            "title_ar": "باب ما جاء في صفة عيسى بن مريم عليه السلام والدجال )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "49",
+            "first": "1673",
+            "last": "1674",
+            "title_ar": "باب ما جاء في السنة في الفطرة )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "49",
+            "first": "1675",
+            "last": "1676",
+            "title_ar": "باب النهي عن الأكل بالشمال )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "49",
+            "first": "1677",
+            "last": "1678",
+            "title_ar": "باب ما جاء في المساكين )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "49",
+            "first": "1679",
+            "last": "1680",
+            "title_ar": "باب ما جاء في معي الكافر )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "49",
+            "first": "1681",
+            "last": "1682",
+            "title_ar": "باب النهي عن الشرب في آنية الفضة والنفخ في الشراب )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "49",
+            "first": "1683",
+            "last": "1686",
+            "title_ar": "باب ما جاء في شرب الرجل وهو قائم )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "49",
+            "first": "1687",
+            "last": "1688",
+            "title_ar": "باب السنة في الشرب ومناولته عن اليمين )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "49",
+            "first": "1706",
+            "last": "1707",
+            "title_ar": "باب ما جاء في أكل اللحم )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "49",
+            "first": "1708",
+            "last": "1709",
+            "title_ar": "باب ما جاء في لبس الخاتم )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "49",
+            "first": "1710",
+            "last": "1710",
+            "title_ar": "باب ما جاء في نزع المعاليق والجرس من العنق )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "50",
+            "first": "1711",
+            "last": "1712",
+            "title_ar": "باب الوضوء من العين )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "50",
+            "first": "1713",
+            "last": "1714",
+            "title_ar": "باب الرقية من العين )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "50",
+            "first": "1715",
+            "last": "1718",
+            "title_ar": "باب ما جاء في أجر المريض )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "50",
+            "first": "1719",
+            "last": "1721",
+            "title_ar": "باب التعوذ والرقية في المرض )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "50",
+            "first": "1722",
+            "last": "1724",
+            "title_ar": "باب تعالج المريض )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "50",
+            "first": "1728",
+            "last": "1729",
+            "title_ar": "باب عيادة المريض والطيرة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "51",
+            "first": "1730",
+            "last": "1734",
+            "title_ar": "باب السنة في الشعر )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "51",
+            "first": "1735",
+            "last": "1736",
+            "title_ar": "باب إصلاح الشعر )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "51",
+            "first": "1737",
+            "last": "1737",
+            "title_ar": "باب ما جاء في صبغ الشعر )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "51",
+            "first": "1738",
+            "last": "1741",
+            "title_ar": "باب ما يؤمر به من التعوذ )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "52",
+            "first": "1747",
+            "last": "1752",
+            "title_ar": "باب ما جاء في الرؤيا )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "52",
+            "first": "1753",
+            "last": "1755",
+            "title_ar": "باب ما جاء في النرد )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "53",
+            "first": "1756",
+            "last": "1757",
+            "title_ar": "باب العمل في السلام )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "53",
+            "first": "1758",
+            "last": "1758",
+            "title_ar": "باب ما جاء في السلام على اليهودي والنصراني )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "53",
+            "first": "1759",
+            "last": "1761",
+            "title_ar": "باب جامع السلام )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "54",
+            "first": "1763",
+            "last": "1765",
+            "title_ar": "باب الاستئذان )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "54",
+            "first": "1766",
+            "last": "1767",
+            "title_ar": "باب التشميت في العطاس )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "54",
+            "first": "1768",
+            "last": "1770",
+            "title_ar": "باب ما جاء في الصور والتماثيل )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "54",
+            "first": "1771",
+            "last": "1773",
+            "title_ar": "باب ما جاء في أكل الضب )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "54",
+            "first": "1774",
+            "last": "1776",
+            "title_ar": "باب ما جاء في أمر الكلاب )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "54",
+            "first": "1777",
+            "last": "1780",
+            "title_ar": "باب ما جاء في أمر الغنم )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "54",
+            "first": "1781",
+            "last": "1782",
+            "title_ar": "باب ما جاء في الفأرة تقع في السمن والبدء بالأكل قبل الصلاة )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "54",
+            "first": "1783",
+            "last": "1785",
+            "title_ar": "باب ما يتقى من الشؤم )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "54",
+            "first": "1786",
+            "last": "1787",
+            "title_ar": "باب ما يكره من الأسماء )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "54",
+            "first": "1788",
+            "last": "1790",
+            "title_ar": "باب ما جاء في الحجامة وأجرة الحجام )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "54",
+            "first": "1791",
+            "last": "1792",
+            "title_ar": "باب ما جاء في المشرق )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "54",
+            "first": "1793",
+            "last": "1795",
+            "title_ar": "باب ما جاء في قتل الحيات وما يقال في ذلك )"
+        },
+        {
+            "ordinal": 13,
+            "book_number": "54",
+            "first": "1796",
+            "last": "1797",
+            "title_ar": "باب ما يؤمر به من الكلام في السفر )"
+        },
+        {
+            "ordinal": 14,
+            "book_number": "54",
+            "first": "1798",
+            "last": "1800",
+            "title_ar": "باب ما جاء في الوحدة في السفر للرجال والنساء )"
+        },
+        {
+            "ordinal": 15,
+            "book_number": "54",
+            "first": "1801",
+            "last": "1802",
+            "title_ar": "باب ما يؤمر به من العمل في السفر )"
+        },
+        {
+            "ordinal": 16,
+            "book_number": "54",
+            "first": "1803",
+            "last": "1805",
+            "title_ar": "باب الأمر بالرفق بالمملوك )"
+        },
+        {
+            "ordinal": 17,
+            "book_number": "54",
+            "first": "1806",
+            "last": "1807",
+            "title_ar": "باب ما جاء في المملوك وهبته )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "55",
+            "first": "1808",
+            "last": "1810",
+            "title_ar": "باب ما جاء في البيعة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "56",
+            "first": "1811",
+            "last": "1814",
+            "title_ar": "باب ما يكره من الكلام )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "56",
+            "first": "1815",
+            "last": "1816",
+            "title_ar": "باب ما يؤمر به من التحفظ في الكلام )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "56",
+            "first": "1817",
+            "last": "1819",
+            "title_ar": "باب ما يكره من الكلام بغير ذكر الله )"
+        },
+        {
+            "ordinal": 4,
+            "book_number": "56",
+            "first": "1820",
+            "last": "1820",
+            "title_ar": "باب ما جاء في الغيبة )"
+        },
+        {
+            "ordinal": 5,
+            "book_number": "56",
+            "first": "1821",
+            "last": "1822",
+            "title_ar": "باب ما جاء فيما يخاف من اللسان )"
+        },
+        {
+            "ordinal": 6,
+            "book_number": "56",
+            "first": "1823",
+            "last": "1824",
+            "title_ar": "باب ما جاء في مناجاة اثنين دون واحد )"
+        },
+        {
+            "ordinal": 7,
+            "book_number": "56",
+            "first": "1825",
+            "last": "1829",
+            "title_ar": "باب ما جاء في الصدق والكذب )"
+        },
+        {
+            "ordinal": 8,
+            "book_number": "56",
+            "first": "1830",
+            "last": "1831",
+            "title_ar": "باب ما جاء في إضاعة المال وذي الوجهين )"
+        },
+        {
+            "ordinal": 9,
+            "book_number": "56",
+            "first": "1832",
+            "last": "1833",
+            "title_ar": "باب ما جاء في عذاب العامة بعمل الخاصة )"
+        },
+        {
+            "ordinal": 10,
+            "book_number": "56",
+            "first": "1834",
+            "last": "1834",
+            "title_ar": "باب ما جاء في التقى )"
+        },
+        {
+            "ordinal": 11,
+            "book_number": "56",
+            "first": "1836",
+            "last": "1836",
+            "title_ar": "باب القول إذا سمعت الرعد )"
+        },
+        {
+            "ordinal": 12,
+            "book_number": "56",
+            "first": "1837",
+            "last": "1838",
+            "title_ar": "باب ما جاء في تركة النبي صلى الله عليه وسلم )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "57",
+            "first": "1839",
+            "last": "1840",
+            "title_ar": "باب ما جاء في صفة جهنم )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "58",
+            "first": "1841",
+            "last": "1846",
+            "title_ar": "باب الترغيب في الصدقة )"
+        },
+        {
+            "ordinal": 2,
+            "book_number": "58",
+            "first": "1847",
+            "last": "1852",
+            "title_ar": "باب ما جاء في التعفف عن المسألة )"
+        },
+        {
+            "ordinal": 3,
+            "book_number": "58",
+            "first": "1853",
+            "last": "1855",
+            "title_ar": "باب ما يكره من الصدقة )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "59",
+            "first": "1856",
+            "last": "1856",
+            "title_ar": "باب ما جاء في طلب العلم )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "60",
+            "first": "1857",
+            "last": "1857",
+            "title_ar": "باب ما يتقى من دعوة المظلوم )"
+        },
+        {
+            "ordinal": 1,
+            "book_number": "61",
+            "first": "1858",
+            "last": "1858",
+            "title_ar": "باب أسماء النبي صلى الله عليه وسلم )"
+        }
+    ]
+}

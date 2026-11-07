@@ -1,0 +1,862 @@
+{
+ "collection": "malik",
+ "entries": [
+  {
+   "run_first": 167,
+   "run_last": 167,
+   "run_len": 1,
+   "prev": 166,
+   "next": 168,
+   "rule_class": "both-match-count-differs",
+   "hadith": 167,
+   "class": "merge-prev",
+   "source": "openiti",
+   "window_units": 3,
+   "prev_block": 2,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.964,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 1.0,
+   "count_fits": true
+  },
+  {
+   "run_first": 470,
+   "run_last": 470,
+   "run_len": 1,
+   "prev": 469,
+   "next": 471,
+   "rule_class": "confirmed",
+   "hadith": 470,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 469,
+   "openiti_unit_number": 469
+  },
+  {
+   "run_first": 485,
+   "run_last": 485,
+   "run_len": 1,
+   "prev": 484,
+   "next": 486,
+   "rule_class": "confirmed",
+   "hadith": 485,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 484,
+   "openiti_unit_number": 484
+  },
+  {
+   "run_first": 522,
+   "run_last": 522,
+   "run_len": 1,
+   "prev": 521,
+   "next": 523,
+   "rule_class": "both-match-count-differs",
+   "hadith": 522,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 4,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 2,
+   "prev_jac": 1.0,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 1,
+   "max_containment_leftover": 0.167,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "other unaligned fawazahmed0 hadith in window",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  },
+  {
+   "run_first": 671,
+   "run_last": 671,
+   "run_len": 1,
+   "prev": 670,
+   "next": 672,
+   "rule_class": "one-neighbour",
+   "hadith": 671,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 1,
+   "prev_block": 1,
+   "next_block": 0,
+   "leftover_units": 0,
+   "prev_jac": 1.0,
+   "next_jac": 0.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "neighbour not confirmed",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  },
+  {
+   "run_first": 684,
+   "run_last": 684,
+   "run_len": 1,
+   "prev": 683,
+   "next": 685,
+   "rule_class": "both-match-count-differs",
+   "hadith": 684,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 1.0,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 694,
+   "run_last": 694,
+   "run_len": 1,
+   "prev": 693,
+   "next": 695,
+   "rule_class": "one-neighbour",
+   "hadith": 694,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 3,
+   "prev_block": 1,
+   "next_block": 0,
+   "leftover_units": 2,
+   "prev_jac": 0.957,
+   "next_jac": 0.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0.379,
+   "min_containment_merged": 0.978,
+   "openiti_class": "unknown",
+   "openiti_reason": "neighbour not confirmed",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  },
+  {
+   "run_first": 927,
+   "run_last": 927,
+   "run_len": 1,
+   "prev": 926,
+   "next": 928,
+   "rule_class": "one-neighbour",
+   "hadith": 927,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 0,
+   "leftover_units": 1,
+   "prev_jac": 0.989,
+   "next_jac": 0.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0.468,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "neighbour not confirmed",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "merge-prev"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 951,
+   "run_last": 951,
+   "run_len": 1,
+   "prev": 950,
+   "next": 952,
+   "rule_class": "confirmed",
+   "hadith": 951,
+   "class": "merge-prev",
+   "source": "openiti",
+   "window_units": 3,
+   "prev_block": 2,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.957,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 1.0,
+   "count_fits": true
+  },
+  {
+   "run_first": 958,
+   "run_last": 958,
+   "run_len": 1,
+   "prev": 957,
+   "next": 959,
+   "rule_class": "confirmed",
+   "hadith": 958,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 955,
+   "openiti_unit_number": 955
+  },
+  {
+   "run_first": 994,
+   "run_last": 994,
+   "run_len": 1,
+   "prev": 993,
+   "next": 995,
+   "rule_class": "both-match-count-differs",
+   "hadith": 994,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 5,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 2,
+   "prev_jac": 1.0,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 1,
+   "other_unaligned_faw_in_window": 1,
+   "max_containment_leftover": 0.4,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "other unaligned fawazahmed0 hadith in window",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  },
+  {
+   "run_first": 1013,
+   "run_last": 1013,
+   "run_len": 1,
+   "prev": 1012,
+   "next": 1014,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1013,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.962,
+   "next_jac": 0.984,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.981,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "merge-next"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1040,
+   "run_last": 1040,
+   "run_len": 1,
+   "prev": 1039,
+   "next": 1041,
+   "rule_class": "confirmed",
+   "hadith": 1040,
+   "class": "merge-prev",
+   "source": "openiti",
+   "window_units": 3,
+   "prev_block": 2,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 1.0,
+   "next_jac": 0.889,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.889,
+   "count_fits": true
+  },
+  {
+   "run_first": 1054,
+   "run_last": 1054,
+   "run_len": 1,
+   "prev": 1053,
+   "next": 1055,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1054,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 4,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 2,
+   "prev_jac": 1.0,
+   "next_jac": 0.889,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0.14,
+   "min_containment_merged": 0.941,
+   "openiti_class": "unknown",
+   "openiti_reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  },
+  {
+   "run_first": 1057,
+   "run_last": 1057,
+   "run_len": 1,
+   "prev": 1056,
+   "next": 1058,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1057,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 4,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 2,
+   "prev_jac": 0.857,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0.211,
+   "min_containment_merged": 0.923,
+   "openiti_class": "unknown",
+   "openiti_reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  },
+  {
+   "run_first": 1090,
+   "run_last": 1090,
+   "run_len": 1,
+   "prev": 1089,
+   "next": 1091,
+   "rule_class": "one-neighbour",
+   "hadith": 1090,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 3,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.904,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 1,
+   "other_unaligned_faw_in_window": 1,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.922,
+   "openiti_class": "unknown",
+   "openiti_reason": "other unaligned fawazahmed0 hadith in window",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "fill-safe"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1171,
+   "run_last": 1171,
+   "run_len": 1,
+   "prev": 1170,
+   "next": 1172,
+   "rule_class": "one-neighbour",
+   "hadith": 1171,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 1,
+   "prev_block": 1,
+   "next_block": 0,
+   "leftover_units": 0,
+   "prev_jac": 0.94,
+   "next_jac": 0.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.947,
+   "openiti_class": "unknown",
+   "openiti_reason": "neighbour not confirmed",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "fill-safe"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1176,
+   "run_last": 1176,
+   "run_len": 1,
+   "prev": 1175,
+   "next": 1177,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1176,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.947,
+   "next_jac": 0.923,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.947,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "merge-prev"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1191,
+   "run_last": 1191,
+   "run_len": 1,
+   "prev": 1190,
+   "next": 1192,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1191,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 3,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.959,
+   "next_jac": 0.98,
+   "ordered": true,
+   "units_outside_span_ignored": 1,
+   "other_unaligned_faw_in_window": 1,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.979,
+   "openiti_class": "unknown",
+   "openiti_reason": "other unaligned fawazahmed0 hadith in window",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0008140-ara1.completed (43.7% aligned)": "fill-safe"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1203,
+   "run_last": 1203,
+   "run_len": 1,
+   "prev": 1202,
+   "next": 1204,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1203,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.952,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "merge-prev"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1338,
+   "run_last": 1338,
+   "run_len": 1,
+   "prev": 1337,
+   "next": 1339,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1338,
+   "class": "merge-prev",
+   "source": "openiti",
+   "window_units": 3,
+   "prev_block": 2,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.929,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.966,
+   "count_fits": true
+  },
+  {
+   "run_first": 1389,
+   "run_last": 1389,
+   "run_len": 1,
+   "prev": 1388,
+   "next": 1390,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1389,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 17,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 2,
+   "prev_jac": 0.974,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 13,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0.061,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  },
+  {
+   "run_first": 1492,
+   "run_last": 1492,
+   "run_len": 1,
+   "prev": 1491,
+   "next": 1493,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1492,
+   "class": "fill-safe",
+   "source": "openiti",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.993,
+   "next_jac": 0.991,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.995,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": null,
+   "openiti_version": "Shamela0001699-ara1.completed",
+   "openiti_path": "0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.Shamela0001699-ara1.completed",
+   "openiti_sha256": "b2b1e115ee424d81629a0f9b6976b92f33437088a5e5fc7c39b6bbbc56f55116",
+   "alt_openiti_unit": 1487,
+   "alt_openiti_unit_number": 4
+  },
+  {
+   "run_first": 1519,
+   "run_last": 1519,
+   "run_len": 1,
+   "prev": 1518,
+   "next": 1520,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1519,
+   "class": "fill-safe",
+   "source": "AhmedBaset/hadith-json",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 1.0,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": null,
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "fill-safe",
+     "reason": null
+    }
+   },
+   "corroborated_by": []
+  },
+  {
+   "run_first": 1528,
+   "run_last": 1528,
+   "run_len": 1,
+   "prev": 1527,
+   "next": 1529,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1528,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 1.0,
+   "next_jac": 0.976,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 1.0,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "merge-prev"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1583,
+   "run_last": 1583,
+   "run_len": 1,
+   "prev": 1582,
+   "next": 1584,
+   "rule_class": "unconfirmed",
+   "hadith": 1583,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 0,
+   "prev_block": 0,
+   "next_block": 0,
+   "leftover_units": 0,
+   "prev_jac": 0.0,
+   "next_jac": 0.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 5,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0,
+   "openiti_class": "unknown",
+   "openiti_reason": "neighbour not confirmed",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "merge-next"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1597,
+   "run_last": 1597,
+   "run_len": 1,
+   "prev": 1596,
+   "next": 1598,
+   "rule_class": "confirmed",
+   "hadith": 1597,
+   "class": "fill-safe",
+   "source": "openiti",
+   "openiti_unit": 1565,
+   "openiti_unit_number": 1566
+  },
+  {
+   "run_first": 1748,
+   "run_last": 1748,
+   "run_len": 1,
+   "prev": 1747,
+   "next": 1749,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1748,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 2,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 0,
+   "prev_jac": 0.933,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0,
+   "min_containment_merged": 0.966,
+   "openiti_class": "unknown",
+   "openiti_reason": "no separate OpenITI text (both neighbours single units)",
+   "reason": "collection not in hadithapi.com",
+   "not_accepted_candidates": {
+    "Shamela0028107-ara1.completed (47.7% aligned, commentary)": "merge-prev"
+   },
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "no separate OpenITI text (both neighbours single units)"
+    }
+   }
+  },
+  {
+   "run_first": 1762,
+   "run_last": 1762,
+   "run_len": 1,
+   "prev": 1761,
+   "next": 1763,
+   "rule_class": "both-match-count-differs",
+   "hadith": 1762,
+   "class": "unknown",
+   "source": "none",
+   "window_units": 4,
+   "prev_block": 1,
+   "next_block": 1,
+   "leftover_units": 2,
+   "prev_jac": 0.984,
+   "next_jac": 1.0,
+   "ordered": true,
+   "units_outside_span_ignored": 0,
+   "other_unaligned_faw_in_window": 0,
+   "max_containment_leftover": 0.409,
+   "min_containment_merged": 0.984,
+   "openiti_class": "unknown",
+   "openiti_reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1",
+   "reason": "collection not in hadithapi.com",
+   "sunnah_derived_results": {
+    "AhmedBaset/hadith-json": {
+     "class": "unknown",
+     "reason": "leftover OpenITI text not in fawazahmed0, count 2 vs 1"
+    }
+   }
+  }
+ ],
+ "hadithapi_same_number": null,
+ "fawazahmed0_commit": "df57907be35291c91ad6a6691180e22ca9920784",
+ "openiti": {
+  "source": "zenodo:10.5281/zenodo.10007820",
+  "path": "0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.JK000466-ara1",
+  "sha256": "c104e5604d96af249ad631d0c8e92e41e7fd65b53f29d5ae443cb0142637db46"
+ },
+ "text_check": "jaccard>=0.5 on normalised word sets (len>=3)",
+ "containment_threshold": 0.8,
+ "classes": {
+  "fill-safe": "text from source (openiti unit or hadithapi.com record) fills this number",
+  "merge-prev": "number resolves to fawazahmed0 prev hadith",
+  "merge-next": "number resolves to fawazahmed0 next hadith",
+  "unknown": "unresolved; collection held back"
+ },
+ "counts": {
+  "merge-prev/openiti": 4,
+  "fill-safe/openiti": 5,
+  "unknown/none": 19,
+  "fill-safe/AhmedBaset/hadith-json": 1
+ },
+ "extra_sources": {
+  "AhmedBaset/hadith-json": {
+   "source": "AhmedBaset/hadith-json",
+   "url": "https://github.com/AhmedBaset/hadith-json",
+   "commit": "70b83d6d21995bb32f8d7271cd75501be5a922a7",
+   "licence_claim": "none",
+   "provenance": "sunnah.com-derived",
+   "file": "db/by_book/the_9_books/malik.json",
+   "sha256": "a926eb6395a391c2b7a571cceef8bc058a9d06960a2135f37964a18dc5348ef8"
+  }
+ }
+}

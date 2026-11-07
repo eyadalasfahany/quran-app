@@ -53,6 +53,7 @@ return [
     // corrected ranges and OpenITI's books. Placed hadith (placements below) are exempt from this check (Q6), so they are not listed here.
     'reference_exceptions' => [
         'ibnmajah' => ['2435', '2464', '2476', '2477', '2528'],
+        'tirmidhi' => ['2795', '3723'], // reference.book points to a book whose corrected range ends earlier (7 Nov 2026)
     ],
 
     /*
@@ -126,6 +127,12 @@ return [
             '10' => ['first' => '2016', 'last' => '2089'],
             '15' => ['first' => '2390', 'last' => '2435'],
         ],
+        // Tirmidhi: sections 39 and 47 run past the start of the next book (40 at 2606, 48 at 3370); corrected ranges verified
+        // against reference.book (33/33 and 419/419), one outlier each listed in reference_exceptions (7 Nov 2026).
+        'tirmidhi' => [
+            '39' => ['first' => '2573', 'last' => '2605'],
+            '47' => ['first' => '2950', 'last' => '3369'],
+        ],
     ],
 
     // Developer-approved explicit placements of a hadith that falls in no section range (ADR 0076 decision 6). number => book_number (the source's section key).
@@ -134,7 +141,8 @@ return [
     // flagged in the gap report.
     'placements' => [
         'bukhari' => ['521' => '9', '2384' => '42', '2516' => '48', '2711' => '54', '3156' => '58', '4978' => '66'], // 2711: weak match, flagged in the gap report
-        'muslim' => ['4968' => '33', '4969' => '33', '4970' => '33', '4971' => '33', '5885' => '41', '5886' => '41'],
+        'muslim' => ['4968' => '33', '4969' => '33', '4970' => '33', '4971' => '33', '5885' => '41', '5886' => '41', '5114' => '36', '5115' => '36'], // 5114-5115: in sections 35 and 36, reference.book 36
+        'malik' => ['958' => '20', '1090' => '27'], // outside every range; 958 by the OpenITI book boundary, 1090 (unavailable) stays in the book it follows
     ],
 
     // Numbers the developer accepts as complete without text, merge or fill. Empty. NOT reference_exceptions (a different check).
@@ -152,18 +160,29 @@ return [
     // Committed data files under database/data/hadith, path relative to that folder => lowercase hex SHA-256. null = not committed yet.
     // SHA-256 of every committed file under database/data/hadith (step 6b.8). The importer refuses a file whose hash differs.
     'data_files' => [
-        'gaps/decisions/bukhari.json' => '05bd06c8b8c197e6efa8824687a8d60de633cf495571de09fe613ff4b86a8119',
-        'gaps/decisions/abudawud.json' => '1b5979f0e1de6bb2eef34f9983343c712e016d583fde514dc2fd9c6e27b52736',
-        'gaps/decisions/nasai.json' => '0748a983ba6a4c2471efb5cea212c70dad55c80e7ef7e0d8c8bd8d7f75b60653',
-        'gaps/decisions/ibnmajah.json' => '6078b8e424b52cf500fcb07c3aa2ea7a23b401fe5c726ff1150c58883e69062a',
-        'gaps/bukhari.json' => 'e03c11eee7878b258138ca37f1d296552e7cbbcce83406cd2cd34c569f2e8179',
+        'chapters/abudawud.json' => 'e11382e5cfee5fc309c741a353302692b0fc3070c32a45af2aa5820d40b7cc2a',
+        'chapters/alignment/malik.json' => 'ad11c6a929007ad2c7652fa062ac08a72a8defb295cd5d3de25c652f51b8eaf3',
+        'chapters/alignment/muslim.json' => '6e29b21c9fc6656e6922dae3f66c895b1983afaa102ee7f737b31b3dd012e858',
         'chapters/bukhari.json' => '3509be108c0b3b5ff20d80fbf26fda741624531ad826b3bc67ed0d0ff50f9c18',
-        'gaps/abudawud.json' => '92bd3ce98efc22a0bf0de152881109d76d3da7761d8a4282d178904f3d4e5eb4',
-        'chapters/abudawud.json' => 'd9272422fc70d4fe10e8bc50ca401b6eb5da32b2ceccf6bdf9de29d5e61b509a',
-        'gaps/nasai.json' => '5067d9dd2edfc22ffb6bbe9de2054ac23f614b49397d0b693c32244f67789cae',
-        'chapters/nasai.json' => 'a3644284fcf5f3f6348a3e9941cfb8a1ec67a0d071238d332f482d43b05364a3',
-        'gaps/ibnmajah.json' => 'eb64b38535c4f91b10b950961efdef814f1ccb3d3ad096e69fb25e6d8fecd98e',
-        'chapters/ibnmajah.json' => 'e726bffa4f50eadc60ced46dd219a7df328129e97d903fd6974264de86d0795c',
+        'chapters/ibnmajah.json' => 'ba81991d9e1e0cf9658017d0588b2cf6d6ddeb60e57b5b54a9044b8dca082f9c',
+        'chapters/malik.json' => 'ac5205ae5a2274e5ce325b06cb9af89b6b75aa451c3097e3e601ab516dfe7978',
+        'chapters/muslim.json' => 'fc52494bdaf34807868fb9183f0191ddfa5b772b67116feed7603d9a376f05c9',
+        'chapters/nasai.json' => '00a43392bb4dc233c7a6631368a0d1e1c0bfa5ed3e6492b00ceb2d19b37b4f8b',
+        'chapters/tirmidhi.json' => 'a5698b8396803e85882dda3d242191e1f574397ece6f4d86e526182e565d8c4a',
+        'gaps/abudawud.json' => 'c9089bc137a52a5e88f4bb801ccd167a3a19d2c22ff63583d30af3f0ef4fe7a4',
+        'gaps/bukhari.json' => 'e03c11eee7878b258138ca37f1d296552e7cbbcce83406cd2cd34c569f2e8179',
+        'gaps/decisions/abudawud.json' => '1b5979f0e1de6bb2eef34f9983343c712e016d583fde514dc2fd9c6e27b52736',
+        'gaps/decisions/bukhari.json' => '05bd06c8b8c197e6efa8824687a8d60de633cf495571de09fe613ff4b86a8119',
+        'gaps/decisions/ibnmajah.json' => '6078b8e424b52cf500fcb07c3aa2ea7a23b401fe5c726ff1150c58883e69062a',
+        'gaps/decisions/malik.json' => '482a97e533ac8b122680e0f610cbd302ed75aaa8e6351903e89288e2197a9c89',
+        'gaps/decisions/muslim.json' => 'd016edc8c4efbcebd08c57efc6bbcd9b0d2629b1dd14b78f325b747294a84b1a',
+        'gaps/decisions/nasai.json' => '0748a983ba6a4c2471efb5cea212c70dad55c80e7ef7e0d8c8bd8d7f75b60653',
+        'gaps/decisions/tirmidhi.json' => '74d9c17f550528a1cf22d99576230a0ca240cb2dee286531fed9e4a9f98fb313',
+        'gaps/ibnmajah.json' => '78ea59129da9cb75cf67e781833cba2ed7aae514ebb8b5ee8741fefedaa17b6e',
+        'gaps/malik.json' => 'ad826b15039bdbe7e17a9be32a83638d62d30f680b165dea57246b961b7fa328',
+        'gaps/muslim.json' => '8af80a2cb5ef6ab62d5360722e1c2fc609c5ef088878b938e4897ae0e92ea936',
+        'gaps/nasai.json' => '42691f6308d73e6c2ebfaad9b4fb6b9d3d8e6b3e0cc5777ece0303165d63d118',
+        'gaps/tirmidhi.json' => '03b8bb5deb7e4dac7b43f3e366a2840ee6e04699d0a0b7d0349571328068061c',
     ],
 
     /*
@@ -230,6 +249,7 @@ return [
                 'path' => '0261Muslim/0261Muslim.Sahih/0261Muslim.Sahih.JK000109-ara1',
                 'sha256' => 'a96f38425099d55769435a4d8d240b064d7d98c2326457ed8d28fb1f098d32b4',
                 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 7461,
+                'markup' => ['chapter' => '/^# \| (.+)$/u', 'book' => '/^# \| [^\p{Arabic}]*(كتاب|أبواب)(\s|$)/u'],
                 // Other OpenITI files that decisions name (entry key openiti_path). Each pin is the SHA-256 of the file; the unit
                 // patterns and counts are the measurement's (gapfill-report «Primary versions» and the x_/g_ runs, step 6b.6).
                 // The builder refuses a decision that uses an alternate without a pin (openiti_alternate_unpinned).
@@ -260,6 +280,7 @@ return [
                 'path' => '0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.JK000466-ara1',
                 'sha256' => 'c104e5604d96af249ad631d0c8e92e41e7fd65b53f29d5ae443cb0142637db46',
                 'unit_start' => '/^# ([0-9]+) /u', 'unit_stop' => '/^(###|# \|)/u', 'unit_count' => 1822,
+                'markup' => ['chapter' => '/^# \| (.+)$/u', 'book' => '/^# \| [^\p{Arabic}]*(كتاب|أبواب)(\s|$)/u'],
                 // See muslim: sha256 null = not pinned yet; unit patterns not yet checked against this file.
                 'alternates' => [
                     ['path' => '0179MalikIbnAnas/0179MalikIbnAnas.Muwatta/0179MalikIbnAnas.Muwatta.Shamela0001699-ara1.completed', 'sha256' => 'b2b1e115ee424d81629a0f9b6976b92f33437088a5e5fc7c39b6bbbc56f55116', 'unit_start' => '/^# ([0-9]+) - ?/u', 'unit_stop' => '/^###/u', 'unit_count' => 1832],
@@ -269,6 +290,7 @@ return [
                 'path' => 'data/0279Tirmidhi/0279Tirmidhi.Sunan/0279Tirmidhi.Sunan.JK000140-ara1.completed',
                 'sha256' => '5bc99d3d942ceaa729a83c11389016d940ae11fb0b641a4e012c743f9e44b647',
                 'unit_start' => '/^### \|\|\| ?([0-9]+)/u', 'unit_stop' => '/^###/u', 'unit_count' => 3976,
+                'markup' => ['chapter' => '/^### \|\| (.+)$/u', 'book' => '/^### \| (.+)$/u'],
             ],
         ],
     ],
