@@ -120,3 +120,18 @@ OpenITI's Shamela-derived versions carry no clear licence from al-Maktaba al-Sha
 1. **Chapter titles that quote Quran verses are shown as printed** in OpenITI (option c), byte for byte after the closed marker-removal list in §3. They are not rejected and the verse part is not cut. This is a developer-approved exception to the rule that Quran text comes only from verified `content.db` verses: the title is shown as a chapter heading from its source, not as Quran text, and it is never used as Quran text (no ayah link, no search in the Quran index).
 2. **The first Hadith release waits for chapters** (step 6b). Plan RB17–RB23 therefore block the Hadith release, not only the chapter files.
 3. The recommended defaults for the other open questions are accepted: the licence (CC BY-NC-SA 4.0, credit in the app's Sources screen next to fawazahmed0), Shamela noted as an upstream risk and not named in the credit, the closed title-cleaning list, the pinned release confirmed at download time (6b.0), `openiti` row `granted` (provenance only), and the partly-chaptered layout decided after the 6b.1 per-book report.
+
+## Developer decision, 7 Nov 2026: OpenITI also fills text gaps in Bukhari and Muslim (Proposed until the gap report is accepted)
+
+The developer wants Bukhari and Muslim complete. fawazahmed0 has numbers with no text in any edition (Bukhari 9, Muslim 203, 89 of them in the introduction), and Bukhari also has 6 hadith outside every book range. The developer chose to fill these from OpenITI (the same pinned release and licence as the chapters), under these rules:
+- A gap is filled only when OpenITI's hadith at that position is confirmed by its neighbours: the fawazahmed0 hadith immediately before and after the gap (or gap run) match OpenITI's neighbours by the same text check the chapter matcher uses. Anything unconfirmed stays out and is listed.
+- The filled text is stored byte for byte as OpenITI has it, after the closed marker-removal list (§3) only, with `source_id` = `openiti` on the row and its own `source_key` and `source_text_sha256`.
+- Its pack and the Sources credit name OpenITI for these rows.
+- This amends the "hadith text only from fawazahmed0" rule (ADR 0042) for these gap rows only.
+- First step: a measured gap report (counts only), for the developer to accept before any import code is written.
+
+**Extended (developer, 7 Nov 2026):** gap filling covers every collection with gaps, not only Bukhari and Muslim: Tirmidhi 74, Nasa'i 86, Malik 29, Abu Dawud 2, Ibn Majah 5 (fawazahmed0 numbers with no text), under the same rules.
+
+## Rule, 7 Nov 2026 (developer): every hadith collection we ship is complete
+
+Every collection that ships has every hadith in its numbering, each with its text and its book (and its chapter once chapters exist). A collection that still has a gap after confirmed OpenITI fills is held back: not packed, not in the manifest, not shown, until the gap is closed (by OpenITI with confirmation, or by Sunnah.com at step 18). The importer reports `complete: yes/no` per collection, and the pack builder refuses an incomplete collection. This replaces the earlier "skip and list" handling of no-text hadith and out-of-range hadith (plan D9, open question 6, RB12) as the shipping rule. Skipped rows are still listed, but they now block that collection.

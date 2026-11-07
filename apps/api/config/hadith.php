@@ -86,4 +86,34 @@ return [
         'max_bytes' => 30_000_000,  // per file; ara-bukhari.json is 9.8 MB
     ],
 
+    // Dev-only title matcher (hadith:match-section-titles, ADR 0042 §4a). Not read in production.
+    'title_match' => [
+        'base_url' => 'https://hadithapi.com/api',
+        'timeout_seconds' => 30,
+        'tries' => 3,
+        'retry_delay_ms' => 1000,   // attempt n waits retry_delay_ms * 2^(n-1)
+        'page_size' => 100,         // see open question 6
+        'max_pages' => 2000,        // safety cap per collection
+        'threshold_percent' => 95,
+        // canonical slug => hadithapi.com book slug. malik and the three forty-hadith collections have no counterpart.
+        'books' => [
+            'bukhari' => 'sahih-bukhari',
+            'muslim' => 'sahih-muslim',
+            'tirmidhi' => 'al-tirmidhi',
+            'abudawud' => 'abu-dawood',
+            'ibnmajah' => 'ibn-e-majah',
+            'nasai' => 'sunan-nasai',
+        ],
+    ],
+
+    // Developer-approved section range corrections (7 Nov 2026), keyed by canonical slug and section number. The source's
+    // section_details for these sections starts at 388 and 384, overlapping other books; corrected to follow the previous
+    // book's last number, verified against reference.book (167/167 and 216/216 agree). Applied before books are assigned.
+    'range_corrections' => [
+        'muslim' => [
+            '16' => ['first' => '3398', 'last' => '3567'],
+            '43' => ['first' => '5938', 'last' => '6168'],
+        ],
+    ],
+
 ];

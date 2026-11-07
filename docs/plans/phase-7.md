@@ -26,6 +26,7 @@ HadeethEnc (daily hadith, topics, explanations, the spec §5 `hadith_categories`
 - **No religious text anywhere**: code, tests, fixtures, frames, docs, reports. Fixtures are placeholders (`FIXTURE text 1 — not a hadith`, «نص تجريبي ١ — ليس حديثًا»), source `taybah-dev-fixture`. Frames use bracketed placeholders such as «[نص الحديث كما ورد في المصدر]». Reports give counts, keys and paths only. This includes grade strings, graders' judgements and section names: use `FIXTURE grade`, `FIXTURE grader`.
 - **Hadith text is never altered.** Arabic is stored byte for byte as received. Only `text_search` is normalised.
 - **No grade is shown** through Phase 7 (D4): grades are stored with their graders, `hadith.grades_visible` is `false`, and the pack's grade table is empty.
+- **Every collection that ships is complete (developer, 7 Nov 2026).** Complete means every hadith number in the collection's numbering has its text and its book (and its chapter once chapters exist). Gaps in fawazahmed0 are filled from OpenITI only when confirmed by both neighbours (ADR 0076). A collection that still has a gap is not packed, not listed in the manifest and not shown in the app until the gap is closed; the import report states `complete: yes/no` per collection. Never ship a partial collection, never hide a gap.
 - **Arabic only.** No English edition is fetched or stored.
 - **All ten collections ship.** There is no switch and no lock (ADR 0045, 2 Nov 2026): the import runs on every deploy, like Azkar, from step 17. There is no content reviewer; the developer decides (Arabic names, source-line wording, gap list, SHA bumps).
 - No key is needed for hadith data. `HADITH_API_KEY` is an **optional, dev-only** entry (empty in `.env.example`, comment "dev-only, used by hadith:match-section-titles"), never read in production and redacted from logs.
@@ -307,6 +308,7 @@ There is no reviewer gate: all ten collections ship with the Hadith release (no 
 
 | # | Blocker | Cleared by |
 | :---: | :--- | :--- |
+| RB24 | **Completeness**: every shipped collection has every hadith with text and book (developer rule, 7 Nov 2026) | Gap report accepted, gaps filled from OpenITI (ADR 0076); any collection still incomplete is held back |
 | RB2 | Sunnah.com key and written terms (switch) | Key, then step 18. **Not a blocker for production with fawazahmed0.** |
 | RB3 | Grades | Nothing to clear: hidden through Phase 7 (`grades_visible=false`). Showing them is a later developer decision. |
 | RB4 | English text | Not stored. Adding it needs its own rights decision. Nothing to clear now. |

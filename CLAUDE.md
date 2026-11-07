@@ -72,7 +72,7 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
 
 ## How to work here
 
-- **Current phase: Phase 7, الحديث (Hadith: full collections)** (ADR 0042, plan `docs/plans/phase-7.md`), not started yet and waiting for the developer's go-ahead. The source is fawazahmed0/hadith-api, pinned to a commit. All ten collections ship with no content reviewer, and grades are hidden. Sunnah.com's key is pending, and HadeethEnc (daily hadith, topics) is deferred.
+- **Current phase: Phase 7, الحديث (Hadith: full collections)** (ADR 0042, plan `docs/plans/phase-7.md`), in progress (steps 2–6 and 8–9 done, 7 Nov 2026). The source is fawazahmed0/hadith-api, pinned to a commit, with chapter titles and text gaps from OpenITI (ADR 0076). **Every hadith collection that ships must be complete**: every hadith with its text and book; an incomplete collection is held back, never shipped partial (developer rule, 7 Nov 2026). Grades are hidden, and there is no content reviewer. Sunnah.com's key is pending, and HadeethEnc (daily hadith, topics) is deferred.
   - **Done (developer, 6 Nov 2026):** Phases 0–6, including the Phase 4 and Phase 5 exit checks and Azkar in production (ADR 0031, 0045).
   - **Shipped:** the follow-ups (widgets and watch ADR 0035, Names, Hijri and Moon ADR 0043, Duas ADR 0044), the store release (v1.0.2), and the suggestions form on the website, the API and the app (ADR 0066).
   - **Rules:** v1 is local-only (ADR 0027). Work one step at a time and keep each change small enough to review. Check the branch with `git branch --show-current`. The developer now works on `main` unless they name a branch.
