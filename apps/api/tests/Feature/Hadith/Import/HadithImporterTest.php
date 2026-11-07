@@ -448,9 +448,11 @@ it('leaves hadith_chapters empty when there is no chapter file', function (): vo
         ->and(HadithEntry::query()->whereNotNull('chapter_id')->count())->toBe(0);
 });
 
-it('does not mention hadith in release.sh or start-web.sh', function (): void {
+it('release.sh does not mention hadith, and start-web.sh runs only the production import, never a dev command (ADR 0076)', function (): void {
     expect(file_get_contents(base_path('docker/release.sh')))->not->toContain('hadith:')
-        ->and(file_get_contents(base_path('docker/start-web.sh')))->not->toContain('hadith:');
+        ->and(file_get_contents(base_path('docker/start-web.sh')))->toContain('php artisan hadith:import --download --defer-pack')
+        ->and(file_get_contents(base_path('docker/start-web.sh')))->not->toContain('hadith:build-gaps')
+        ->and(file_get_contents(base_path('docker/start-web.sh')))->not->toContain('hadith:match-');
 });
 
 it('skips a text-bearing hadith outside every range and lists it, without failing', function (): void {

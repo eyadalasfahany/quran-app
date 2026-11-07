@@ -8,7 +8,7 @@ One container runs per deploy, and it has the volume. There is no pre-deploy ste
 
 | Phase | Config | Container | Volume | Does |
 | --- | --- | --- | --- | --- |
-| Container start | image `CMD` → `entrypoint.sh start-web.sh` | the serving container | **yes**, at `/app/storage/app/private` | `config:cache` (entrypoint); `migrate --force` (stops the start on failure); `azkar:audio-verify`; the two pinned snapshots; `azkar:import --download --defer-pack` (DB rows); `duas:snapshot hadeethenc --pinned` and `duas:import --download --defer-pack` (DB rows); `mp3quran:import --defer-pack` and `recitation-timings:import --defer-pack` (committed manifest and timing files, ADR 0060/0061); `content:ensure-packs` (builds any missing pack); then `exec supervisord`, which runs FrankenPHP, Horizon and the scheduler (ADR 0065) |
+| Container start | image `CMD` → `entrypoint.sh start-web.sh` | the serving container | **yes**, at `/app/storage/app/private` | `config:cache` (entrypoint); `migrate --force` (stops the start on failure); `azkar:audio-verify`; the two pinned snapshots; `azkar:import --download --defer-pack` (DB rows); `duas:snapshot hadeethenc --pinned` and `duas:import --download --defer-pack` (DB rows); `mp3quran:import --defer-pack` and `recitation-timings:import --defer-pack` (committed manifest and timing files, ADR 0060/0061); `hadith:import --download --defer-pack` (DB rows, ADR 0042); `content:ensure-packs` (builds any missing pack); then `exec supervisord`, which runs FrankenPHP, Horizon and the scheduler (ADR 0065) |
 
 A failed migration stops the start. A failed container start (for example a healthcheck timeout) fails the new deployment and the previous one keeps serving. Start-time tasks log and continue, so a missing file never blocks Quran reading, and a failed snapshot or Azkar download warns and keeps the current Azkar version (ADR 0044, amended 2 Nov 2026). An Azkar pack that lists a missing recording is never built (ADR 0040, fail closed).
 
@@ -39,6 +39,36 @@ Retired by ADR 0067: `docker/release.sh` stays in the image for a manual run, bu
 10. `exec supervisord -c /etc/supervisor/taybah.conf` (`docker/supervisord.conf`, ADR 0065). It runs three programs and restarts any that exits: `web` (FrankenPHP), `horizon` and `scheduler` (`schedule:work`). If `web` reaches FATAL, `docker/supervisor-web-fatal.sh` stops the container and Railway restarts it (`restartPolicyType: ALWAYS`). A failing Horizon or scheduler never stops the web server. All three log to the deploy logs.
 
 `entrypoint.sh` never runs the Azkar work and is never edited for it.
+
+## Hadith in production (ADR 0042, ADR 0076)
+
+### What runs at start
+
+`docker/start-web.sh` runs `php artisan hadith:import --download --defer-pack` after the Taybah timings and before `content:ensure-packs`. It is the Azkar pattern: the start logs and continues on failure, and the current Hadith versions keep serving.
+
+1. `--download` fetches the 12 files pinned in `config/hadith.php` (`files`) from fawazahmed0/hadith-api at the pinned commit (`config/hadith.php` `commit`), and checks each file's SHA-256 before anything is written. No other host is contacted. A file already in the pinned source cache on the volume (`sources/`, ADR 0068) is reused when its SHA-256 matches, so later starts download nothing.
+2. The import reads the committed `database/data/hadith/**` files (chapters and gaps, the reviewed decisions) and writes the `hadith` rows, one transaction per collection. It builds no pack (`--defer-pack`); `content:ensure-packs` does that in the same start.
+3. Production needs no key and no OpenITI folder. Production never fetches OpenITI or hadithapi.com. `HADITH_API_KEY` is read only by `hadith:match-section-titles`, which is dev-only, and the OpenITI folder is read only by the dev commands.
+
+### Time and memory
+
+- Memory: the local run peaked at 227 MB. The container's command-line PHP limit is 1 GB (`$PHP_INI_DIR/php-cli.ini`, set in `apps/api/Dockerfile`), so the command needs no `-d memory_limit` flag.
+- Time: not measured on Railway yet. Record the duration of the first deploy's `hadith` lines here. The first start downloads the 12 files (the largest is about 9.8 MB); later starts reuse the cache.
+
+### Checking the report
+
+Each run writes a JSON report to `storage/app/hadith/reports/<Ymd-His-v>.json` (inside the container, not on the volume; a redeploy starts a new one). The start log prints the status table, `<slug>: complete: yes` or `no (<n> incomplete)` per collection, the peak memory and the report path. In the report, each collection has a `status`: `imported` (rows changed), `unchanged` (nothing written), `held_back`, `no_snapshot`, `integrity_failed` or `failed`. To check a deploy: `railway ssh -- sh -c 'cd /app && ls -t storage/app/hadith/reports | head -1'`, then read that file with `cat`.
+
+### Completeness and held-back (ADR 0076)
+
+- A collection ships only when every number in its numbering has text, a merge cover, a fill or a placeholder (`source_code` = `unavailable`, shown in the app as «الحديث {n} غير متوفر حاليًا في المصدر»). The report shows `complete: yes|no` and `incomplete_count`.
+- A collection that is not complete is **held back**: its rows are written, but its resource is inactive, and no pack is built or queued. The manifest does not list it and the app does not show it. Other collections are unaffected.
+- The importer never writes a partial collection as complete. A text-integrity mismatch fails that collection only, and its current version keeps serving.
+- A held-back collection is released by the developer's gap decision (OpenITI with confirmation, or Sunnah.com at step 18), then the next start imports it.
+
+### Dev-only commands (never in production)
+
+`hadith:build-gaps`, `hadith:match-chapters` and `hadith:match-section-titles` never run in production. They are not in `docker/start-web.sh`, not in `docker/release.sh` and not in the scheduler. They read OpenITI or hadithapi.com and write proposals under `storage/app` (`hadith:match-section-titles` also needs `HADITH_API_KEY` and refuses `APP_ENV=production`). Their output reaches production only through a reviewed change to `config/` or `database/data/hadith/`.
 
 ## Railway services
 

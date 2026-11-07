@@ -170,3 +170,45 @@ it('the start script imports Way2Quran only when its manifest exists, after MP3Q
         ->and($start)->toContain('WARNING: the Way2Quran import did not finish')
         ->and($start)->not->toContain('way2quran:import --defer-pack --build-packs');
 });
+
+it('the start script imports Hadith rows after the Azkar, Duas and MP3Quran imports and before the pack build (ADR 0042, ADR 0076)', function (): void {
+    $start = deployFile('docker/start-web.sh');
+
+    $azkar = strpos($start, 'php artisan azkar:import --download --defer-pack');
+    $duas = strpos($start, 'php artisan duas:import --download --defer-pack');
+    $mp3quran = strpos($start, 'php artisan mp3quran:import --defer-pack');
+    $hadith = strpos($start, 'php artisan hadith:import --download --defer-pack');
+    $packs = strpos($start, 'php artisan content:ensure-packs');
+
+    expect($hadith)->toBeInt()
+        ->and($hadith)->toBeGreaterThan($azkar)
+        ->and($hadith)->toBeGreaterThan($duas)
+        ->and($hadith)->toBeGreaterThan($mp3quran)
+        ->and($packs)->toBeGreaterThan($hadith)
+        ->and(substr_count($start, 'hadith:import'))->toBe(1)
+        ->and($start)->not->toContain('hadith:import --download --defer-pack --build-packs');
+});
+
+it('the Hadith import warns and continues like the other imports, without building packs', function (): void {
+    $start = deployFile('docker/start-web.sh');
+
+    expect($start)->toContain('if php artisan hadith:import --download --defer-pack; then')
+        ->and($start)->toContain('echo "start: hadith import done"')
+        ->and($start)->toContain('WARNING: the Hadith import did not finish')
+        ->and($start)->toContain('the current Hadith versions keep serving')
+        ->and($start)->not->toContain('--build-packs');
+});
+
+it('the start script runs no dev-only hadith command and no API key or OpenITI setting (ADR 0042, ADR 0076)', function (): void {
+    $start = deployFile('docker/start-web.sh');
+
+    expect($start)->not->toContain('hadith:build-gaps')
+        ->and($start)->not->toContain('hadith:match-chapters')
+        ->and($start)->not->toContain('hadith:match-section-titles')
+        ->and($start)->not->toContain('HADITH_API_KEY')
+        ->and($start)->not->toContain('openiti');
+});
+
+it('the release script does not mention hadith (the import runs at web start)', function (): void {
+    expect(deployFile('docker/release.sh'))->not->toContain('hadith:');
+});

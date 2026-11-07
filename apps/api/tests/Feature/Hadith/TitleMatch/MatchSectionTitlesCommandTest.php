@@ -184,7 +184,7 @@ it('is not scheduled and not in release.sh or start-web.sh', function (): void {
 
     expect($events->filter(fn (string $command): bool => str_contains($command, 'hadith:'))->all())->toBe([])
         ->and(file_get_contents(base_path('docker/release.sh')))->not->toContain('hadith:')
-        ->and(file_get_contents(base_path('docker/start-web.sh')))->not->toContain('hadith:');
+        ->and(file_get_contents(base_path('docker/start-web.sh')))->not->toContain('hadith:match-section-titles');
 });
 
 it('joins hadith to chapters by chapterNumber, never by the chapter id', function (): void {

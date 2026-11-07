@@ -5,8 +5,9 @@
 #
 # Order: run migrations, create the storage folders, verify the Azkar audio, fetch the pinned secondary snapshots, import the Azkar rows
 # (DB rows only, --defer-pack), fetch the pinned Duas HadeethEnc snapshot and import the Duas rows (DB rows only,
-# --defer-pack), import the MP3Quran recitations, the Way2Quran recitations (once their committed manifest exists; ADR 0074)
-# and the Taybah timings (DB rows only, --defer-pack; ADR 0060, ADR 0061), build any missing packs, then hand over to supervisord, which runs the web server, Horizon and the
+# --defer-pack), import the MP3Quran recitations, the Way2Quran recitations (once their committed manifest exists; ADR 0074),
+# the Taybah timings (DB rows only, --defer-pack; ADR 0060, ADR 0061) and the Hadith rows (DB rows only, --defer-pack; ADR 0042,
+# ADR 0076), build any missing packs, then hand over to supervisord, which runs the web server, Horizon and the
 # scheduler (ADR 0065). The import runs here and not in release.sh, because only this container mounts the volume
 # that holds the audio: run before the audio is in place, it would drop the recording rows. Every task logs and continues, so a failure never blocks serving; the current versions keep serving.
 set -u
@@ -79,6 +80,14 @@ if php artisan recitation-timings:import --defer-pack; then
   echo "start: Taybah recitation timings up to date"
 else
   echo "WARNING: some Taybah timing files were skipped (the lines above name them and the reason); the current versions keep serving."
+fi
+
+# Hadith (ADR 0042, ADR 0076). Reads only the committed database/data/hadith files and the pinned fawazahmed0 snapshot
+# (--download). No API key and no OpenITI folder are needed. Production never runs the dev-only hadith commands.
+if php artisan hadith:import --download --defer-pack; then
+  echo "start: hadith import done"
+else
+  echo "WARNING: the Hadith import did not finish (download, pin, validation or completeness); the current Hadith versions keep serving. The report lists the reason."
 fi
 
 if php artisan content:ensure-packs; then
