@@ -13,6 +13,8 @@ const SOURCES = [
   { key: 'qf', url: 'https://quran.foundation' },
   { key: 'tanzil', url: 'https://tanzil.net' },
   { key: 'kfgqpc', url: 'https://qurancomplex.gov.sa' },
+  { key: 'mp3quran', url: 'https://mp3quran.net' },
+  { key: 'way2quran', url: 'https://way2quran.com' },
   { key: 'opendua', url: 'https://opendua.org/developers', ltr: true },
   { key: 'hadeethenc', url: 'https://hadeethenc.com' },
   { key: 'adhan', url: 'https://github.com/batoulapps/adhan-js' },

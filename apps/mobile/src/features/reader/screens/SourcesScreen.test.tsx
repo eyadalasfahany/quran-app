@@ -21,7 +21,7 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-const SOURCE_KEYS = ['qf', 'tanzil', 'kfgqpc', 'opendua', 'hadeethenc', 'adhan', 'fonts'] as const;
+const SOURCE_KEYS = ['qf', 'tanzil', 'kfgqpc', 'mp3quran', 'way2quran', 'opendua', 'hadeethenc', 'adhan', 'fonts'] as const;
 
 const OPENDUA_ATTRIBUTION =
   "OpenDua dataset v0.0.4 (https://opendua.org), by Ihsan Labs at the Human Development Fund. Based on Hisn al-Muslim by Sa'id ibn Ali ibn Wahf al-Qahtani. OpenDua editorial text and dataset structure are licensed CC BY 4.0. Recitation by Muhammad Jumah for OpenDua. OpenDua makes no ownership claim over the underlying religious texts.";
@@ -30,6 +30,8 @@ const SOURCE_PRESS_CASES = [
   { key: 'qf', url: 'https://quran.foundation' },
   { key: 'tanzil', url: 'https://tanzil.net' },
   { key: 'kfgqpc', url: 'https://qurancomplex.gov.sa' },
+  { key: 'mp3quran', url: 'https://mp3quran.net' },
+  { key: 'way2quran', url: 'https://way2quran.com' },
   { key: 'opendua', url: 'https://opendua.org/developers' },
   { key: 'hadeethenc', url: 'https://hadeethenc.com' },
   { key: 'adhan', url: 'https://github.com/batoulapps/adhan-js' },
@@ -103,6 +105,15 @@ describe('SourcesScreen', () => {
 
     expect(view.getByText('مجمع الملك فهد لطباعة المصحف الشريف')).toBeOnTheScreen();
     expect(view.getByTestId('sources-kfgqpc')).toBeOnTheScreen();
+  });
+
+  it('renders the Arabic audio source credits under RTL', async () => {
+    const view = await renderUi(<SourcesScreen testID="sources" />, { locale: 'ar' });
+
+    expect(view.getByText('MP3Quran')).toBeOnTheScreen();
+    expect(view.getByText('تلاوات القرّاء')).toBeOnTheScreen();
+    expect(view.getByText('Way2Quran')).toBeOnTheScreen();
+    expect(view.getByText('تلاوة الشيخ محمد عبادة والشيخ حسام الدين عبادي. إنتاج مداد')).toBeOnTheScreen();
   });
 
   it('has a back button that returns to Settings', async () => {
