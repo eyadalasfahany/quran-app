@@ -425,6 +425,17 @@ Each step is one reviewable, committable change. Its brief records `<base>`, run
 - **Done:** the tests, the real check and B4 pass.
 - **Model:** *stronger model* (Opus): a CTC segmentation port with merge-on-failure.
 
+### Q4 review decisions (coordinator, 7 Nov 2026)
+
+- **Q2b (inserted before Q5):** completeness false exclusion found on MP3Quran 62 surah 17 (complete file, ending key
+  52–59 < 80). Diagnose and fix, then measure the false-exclusion rate on a large labelled set: MP3Quran files that
+  are known complete (published timings cover the last ayah), at least 60 surahs across moshafs 12, 62, 86, mixing
+  short and long surahs; target 0 false exclusions, with the six known Way2Quran verdicts unchanged.
+- **Held-out data for G5:** the anchors report keeps per-word held-out refs (`held_out_refs`: ayah, position,
+  checkpoint ms, final ms), so Q6a can set aside repeat regions found by stretch/G3 before scoring G5.
+- **Accepted:** the stand-in fixture in `test_aligner_only.py` for the two Q3 tests; the Q4 interpretations (fail-safe
+  floor, pace-break statuses and mechanics, overlap drop, snapping inside `anchored_align`, refrains < 3 words).
+
 ### Q5. The G3 and G4 probe library
 
 - **Files:**
