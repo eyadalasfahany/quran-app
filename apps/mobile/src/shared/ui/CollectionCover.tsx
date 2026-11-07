@@ -17,7 +17,7 @@ const PAGE_EDGE_RADIUS = 2;
 const FRAME_RADIUS = 2;
 
 // A bound book drawn from tokens: a ground, a spine, a page edge, a gold frame line, one ornament and a cream title.
-// The title is optional: a null or empty title draws the ornament only, with no text at all.
+// The title is optional: a null or empty title, and the compact size, draw the ornament only, with no text at all.
 export function CollectionCover({
   slug,
   title,
@@ -27,7 +27,7 @@ export function CollectionCover({
 }: {
   /** A collection slug. A null or unknown slug uses the neutral ground and the star. */
   slug: string | null;
-  /** The Arabic title (Arabic UI) or the source title_en (English UI). Null draws the ornament only. */
+  /** The Arabic title (Arabic UI) or the source title_en (English UI). Null, and the compact size, draw the ornament only. */
   title: string | null;
   size?: CoverSize;
   accessibilityLabel?: string;
@@ -38,7 +38,8 @@ export function CollectionCover({
   const metrics = coverMetrics[size];
   const { colors } = theme;
   const ornamentColor = colors.coverOrnament;
-  const hasTitle = title !== null && title !== '';
+  // The compact cover (the download sheet) prints its title beside it, so it draws the ornament only.
+  const hasTitle = size !== 'compact' && title !== null && title !== '';
   const label = accessibilityLabel ?? (hasTitle ? t('ui.collectionCover.titled', { title }) : t('ui.collectionCover.untitled'));
 
   return (

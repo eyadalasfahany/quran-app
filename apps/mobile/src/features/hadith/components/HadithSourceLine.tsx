@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable, View } from 'react-native';
 
@@ -12,6 +13,10 @@ const LINE_GAP = 2;
 /**
  * The source credit and, when given, the attribution. A null or empty source URL draws the credit as plain
  * text, with no link (fawazahmed0 sets no URL). The attribution stays Arabic, right to left, in both languages.
+ *
+ * A row whose credit is the collection's (null, `fawazahmed0`, or a placeholder) draws one line: the attribution when
+ * it is non-empty, else the credit. The attribution already names the collection's source, so the credit would repeat
+ * it. A row with its own credit (`openiti`, `hadithapicom`, `meeatif`, `hadithjson`) draws both lines.
  */
 export function HadithSourceLine({
   attribution,
@@ -31,13 +36,15 @@ export function HadithSourceLine({
   const theme = useTheme();
   const centred = align === 'center';
   const hasAttribution = attribution !== null && attribution !== '';
-  const credit = t(hadithCreditKey(sourceCode));
+  const creditKey = hadithCreditKey(sourceCode);
+  const credit = t(creditKey);
+  // The collection's credit is redundant with a non-empty attribution: draw the attribution alone.
+  const attributionOnly = hasAttribution && creditKey === 'hadith.source.credit';
 
-  const creditNode =
+  // A source URL makes the credit line a link. A single attribution line keeps the link too.
+  const link = (node: ReactNode) =>
     sourceUrl === null ? (
-      <UiText testID={`${testID}-credit`} tone="muted" variant="label" weight={400}>
-        {credit}
-      </UiText>
+      node
     ) : (
       <Pressable
         accessibilityLabel={t('hadith.source.open')}
@@ -48,25 +55,46 @@ export function HadithSourceLine({
         style={{ justifyContent: 'center', minHeight: theme.size.touchTarget }}
         testID={`${testID}-link`}
       >
+        {node}
+      </Pressable>
+    );
+
+  const attributionNode = (
+    <UiText
+      style={centred ? { ...arabicTextDirection, textAlign: 'center' } : arabicTextDirection}
+      testID={`${testID}-attribution`}
+      tone="muted"
+      variant="label"
+    >
+      {attribution}
+    </UiText>
+  );
+
+  if (attributionOnly) {
+    return (
+      <View style={{ alignItems: centred ? 'center' : 'flex-start', gap: LINE_GAP }} testID={testID}>
+        {link(attributionNode)}
+      </View>
+    );
+  }
+
+  const creditNode =
+    sourceUrl === null ? (
+      <UiText testID={`${testID}-credit`} tone="muted" variant="label" weight={400}>
+        {credit}
+      </UiText>
+    ) : (
+      link(
         <UiText tone="brand" variant="label" weight={400}>
           {credit}
-        </UiText>
-      </Pressable>
+        </UiText>,
+      )
     );
 
   return (
     <View style={{ alignItems: centred ? 'center' : 'flex-start', gap: LINE_GAP }} testID={testID}>
       {creditNode}
-      {hasAttribution ? (
-        <UiText
-          style={centred ? { ...arabicTextDirection, textAlign: 'center' } : arabicTextDirection}
-          testID={`${testID}-attribution`}
-          tone="muted"
-          variant="label"
-        >
-          {attribution}
-        </UiText>
-      ) : null}
+      {hasAttribution ? attributionNode : null}
     </View>
   );
 }

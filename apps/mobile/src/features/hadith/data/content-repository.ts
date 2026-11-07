@@ -367,6 +367,8 @@ type CatalogRow = {
   resourceId: number;
   name: string | null;
   nameAr: string | null;
+  authorName: string | null;
+  authorAr: string | null;
   version: number;
   packSizeBytes: number;
   installedFlag: number;
@@ -472,7 +474,8 @@ export function listBookOutline(db: SqlExecutor, resourceId: number, bookId: num
 
 export function listHadithCatalog(db: SqlExecutor): HadithCatalogEntry[] {
   const rows = db.all<CatalogRow>(
-    `SELECT cr.resource_id AS resourceId, cr.name AS name, cr.name_ar AS nameAr, cr.version AS version,
+    `SELECT cr.resource_id AS resourceId, cr.name AS name, cr.name_ar AS nameAr,
+            cr.author_name AS authorName, cr.author_ar AS authorAr, cr.version AS version,
             cr.pack_size_bytes AS packSizeBytes,
             CASE WHEN ir.resource_id IS NULL THEN 0 ELSE 1 END AS installedFlag,
             CASE WHEN ir.resource_id IS NULL THEN NULL ELSE c.slug END AS slug,
@@ -487,6 +490,8 @@ export function listHadithCatalog(db: SqlExecutor): HadithCatalogEntry[] {
     resourceId: row.resourceId,
     name: row.name,
     nameAr: row.nameAr,
+    authorEn: row.authorName,
+    authorAr: row.authorAr,
     version: row.version,
     packSizeBytes: row.packSizeBytes,
     installed: row.installedFlag === 1,

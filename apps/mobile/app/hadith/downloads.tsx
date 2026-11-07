@@ -6,13 +6,13 @@ import { sheetScreenOptions } from '@/features/reader/form-sheet';
 import { SheetHost } from '@/features/reader/components/SheetHost';
 
 export default function HadithDownloadsRoute() {
-  const { resource } = useLocalSearchParams<{ resource?: string }>();
+  const { resource, autostart } = useLocalSearchParams<{ resource?: string; autostart?: string }>();
 
   return (
     <>
       <Stack.Screen options={sheetScreenOptions} />
       <SheetHost>
-        <HadithDownloadSheetScreen resourceId={parseHadithId(resource)} />
+        <HadithDownloadSheetScreen autostart={__DEV__ && autostart === '1'} resourceId={parseHadithId(resource)} />
       </SheetHost>
     </>
   );

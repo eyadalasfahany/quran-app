@@ -177,14 +177,17 @@ export function CollectionRow({
     <View style={cardStyle} testID={testID}>
       {body}
       {state.kind === 'available' || state.kind === 'downloading' || state.kind === 'waiting' ? (
-        <CollectionDownloadButton
-          collectionTitle={title}
-          onCancel={onCancel}
-          onDownload={onDownload}
-          onRetry={onRetry}
-          state={state}
-          testID={`${testID}-download`}
-        />
+        // The pill sets its own alignSelf to the start, so the wrapper centres both the pill and the cancel button.
+        <View style={{ alignSelf: 'center' }} testID={`${testID}-trailing`}>
+          <CollectionDownloadButton
+            collectionTitle={title}
+            onCancel={onCancel}
+            onDownload={onDownload}
+            onRetry={onRetry}
+            state={state}
+            testID={`${testID}-download`}
+          />
+        </View>
       ) : null}
     </View>
   );

@@ -31,9 +31,12 @@ const SHEET_GAP = 14;
  */
 export function HadithDownloadSheetScreen({
   resourceId,
+  autostart = false,
   testID = 'screen-hadith-downloads',
 }: {
   resourceId: number | null;
+  /** Development builds only: start the install on open, so the simulator check can drive it by deep link. */
+  autostart?: boolean;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -62,6 +65,14 @@ export function HadithDownloadSheetScreen({
       close();
     }
   }, [installedNow, close]);
+
+  const entryId = entry?.resourceId;
+  const started = entryId === undefined ? false : byId[entryId] !== undefined;
+  useEffect(() => {
+    if (__DEV__ && autostart && entryId !== undefined && !installedNow && !started) {
+      void useHadithDownloads.getState().start(entryId);
+    }
+  }, [autostart, entryId, installedNow, started]);
 
   const closeHeader = (
     <SheetHeader

@@ -24,6 +24,8 @@ function entry(over: Partial<HadithCatalogEntry> = {}): HadithCatalogEntry {
     resourceId: 9,
     name: '[Catalogue name]',
     nameAr: '[اسم الكتالوج]',
+    authorEn: null,
+    authorAr: null,
     version: 1,
     packSizeBytes: 1000,
     installed: false,
@@ -52,14 +54,21 @@ describe('collectionRowDataFor', () => {
     expect(row.soleBook).toBe(true);
   });
 
-  it('maps a not-installed entry with the catalogue names and no counts', () => {
-    const row = collectionRowDataFor(entry({ slug: 'abudawud' }), undefined);
+  it('maps a not-installed entry with the catalogue names, authors and no counts', () => {
+    const row = collectionRowDataFor(entry({ slug: 'abudawud', authorAr: '[مؤلف الكتالوج]', authorEn: '[Catalogue author]' }), undefined);
     expect(row.titleAr).toBe('[اسم الكتالوج]');
     expect(row.titleEn).toBe('[Catalogue name]');
+    expect(row.authorAr).toBe('[مؤلف الكتالوج]');
+    expect(row.authorEn).toBe('[Catalogue author]');
     expect(row.totalHadith).toBeNull();
     expect(row.booksCount).toBeNull();
-    expect(row.authorAr).toBeNull();
     expect(row.soleBook).toBe(false);
+  });
+
+  it('keeps a not-installed entry without an author null', () => {
+    const row = collectionRowDataFor(entry({ slug: 'abudawud' }), undefined);
+    expect(row.authorAr).toBeNull();
+    expect(row.authorEn).toBeNull();
   });
 
   it('uses the neutral cover (slug null) when the entry has no slug', () => {

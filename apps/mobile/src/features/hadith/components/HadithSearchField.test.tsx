@@ -22,6 +22,15 @@ describe('HadithSearchField', () => {
     expect(screen.getByPlaceholderText(locale === 'ar' ? 'ابحث في الحديث' : 'Search hadith')).toBeOnTheScreen();
   });
 
+  // The field is the shared SearchField, as in the Quran search. 'left' only in LTR; nothing under RTL, so the caret stays right.
+  it.each([
+    ['ar', undefined],
+    ['en', 'left'],
+  ] as const)('aligns the typed text as %s expects (textAlign %s), as the Quran search does', async (locale, textAlign) => {
+    await renderUi(<HadithSearchField {...handlers()} value="" />, { locale });
+    expect(flatStyle(screen.getByTestId(`${TEST_ID}-field-input`).props.style).textAlign).toBe(textAlign);
+  });
+
   it('shows the placeholder', async () => {
     await renderUi(<HadithSearchField {...handlers()} value="" />);
     expect(screen.getByPlaceholderText('ابحث في الحديث')).toBeOnTheScreen();

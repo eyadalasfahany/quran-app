@@ -52,11 +52,12 @@ describe('HadithDetailsPanel', () => {
     expect(screen.getByTestId(`${TEST_ID}-value-number`)).toHaveTextContent('٢٧٨٧٫٢');
   });
 
-  it('shows the credit and attribution', async () => {
+  it('shows the attribution alone for the collection credit, not the repeated credit', async () => {
     await renderPanel();
-    expect(screen.getByText('المصدر: fawazahmed0/hadith-api')).toBeOnTheScreen();
+    expect(screen.queryByText('المصدر: fawazahmed0/hadith-api')).toBeNull();
     expect(screen.getByText(ATTRIBUTION)).toBeOnTheScreen();
   });
+
 
   it('has radius 28 and a hairline border', async () => {
     await renderPanel();

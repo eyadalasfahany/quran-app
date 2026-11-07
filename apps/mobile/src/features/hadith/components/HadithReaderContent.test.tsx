@@ -57,7 +57,9 @@ describe('HadithReaderContent', () => {
     await renderContent(readerData());
     expect(screen.getByText('حديث رقم ١٢٣٤')).toBeOnTheScreen();
     expect(screen.getByTestId('hadith-reader-content-card-text')).toHaveTextContent(PLACEHOLDER_TEXT);
-    expect(screen.getByText('المصدر: fawazahmed0/hadith-api')).toBeOnTheScreen();
+    // A fawazahmed0 row draws the collection attribution alone; the repeated credit is not drawn.
+    expect(screen.getByText('[سطر النسبة]')).toBeOnTheScreen();
+    expect(screen.queryByText('المصدر: fawazahmed0/hadith-api')).toBeNull();
   });
 
   it('shows the pager with the number and the collection total', async () => {

@@ -100,6 +100,9 @@ export type HadithCatalogEntry = {
   /** From `catalog_resources`. */
   name: string | null;
   nameAr: string | null;
+  /** From `catalog_resources` (`author_name`, `author_ar`): the author line of a row before install. */
+  authorEn: string | null;
+  authorAr: string | null;
   version: number;
   packSizeBytes: number;
   installed: boolean;

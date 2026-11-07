@@ -100,6 +100,20 @@ describe('CollectionCover', () => {
     expect(view.getByTestId('cover-ornament', HIDDEN)).toBeOnTheScreen();
   });
 
+  it('draws no title text at the compact size, the title being printed beside it', async () => {
+    const view = await renderUi(<CollectionCover size="compact" slug="bukhari" testID="cover" title={ARABIC_TITLE} />);
+
+    expect(nodesOfType(view, Text)).toHaveLength(0);
+    expect(view.queryByText(ARABIC_TITLE)).toBeNull();
+    expect(view.getByTestId('cover-ornament', HIDDEN)).toBeOnTheScreen();
+  });
+
+  it.each<CoverSize>(['list', 'header'])('keeps the title at the %s size', async (size) => {
+    const view = await renderUi(<CollectionCover size={size} slug="bukhari" testID="cover" title={ARABIC_TITLE} />);
+
+    expect(view.getByText(ARABIC_TITLE)).toBeOnTheScreen();
+  });
+
   it('draws no title text for an empty title', async () => {
     const view = await renderUi(<CollectionCover slug="muslim" testID="cover" title="" />);
 

@@ -47,6 +47,8 @@ const AVAILABLE: HadithCatalogEntry = {
   resourceId: 2,
   name: '[Available name]',
   nameAr: '[اسم مجموعة متاحة]',
+  authorEn: null,
+  authorAr: null,
   version: 1,
   packSizeBytes: 10276044,
   installed: false,

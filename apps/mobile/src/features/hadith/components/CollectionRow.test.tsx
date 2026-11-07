@@ -76,6 +76,19 @@ describe('CollectionRow', () => {
     expect(screen.getByTestId(`${TEST_ID}-title`)).toHaveTextContent('Collection 1');
   });
 
+  it('not installed: shows the author from the catalogue under the title', async () => {
+    await renderRow({ kind: 'available', sizeBytes: 1, offline: false });
+    expect(screen.getByTestId(`${TEST_ID}-author`)).toHaveTextContent(AUTHOR);
+  });
+
+  it.each([{ kind: 'available', sizeBytes: 1, offline: false }, { kind: 'downloading', progress: 0.2 }, { kind: 'waiting' }] as const)(
+    'centres the trailing button on the row for %o',
+    async (state) => {
+      await renderRow(state);
+      expect(flatStyle(screen.getByTestId(`${TEST_ID}-trailing`).props.style).alignSelf).toBe('center');
+    },
+  );
+
   it('available: shows the size and the download pill instead of the chevron', async () => {
     await renderRow({ kind: 'available', sizeBytes: 10276044, offline: false });
     expect(screen.getByTestId(`${TEST_ID}-status`)).toHaveTextContent('٩٫٨ م.ب');

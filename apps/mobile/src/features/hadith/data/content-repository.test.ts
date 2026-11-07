@@ -324,8 +324,8 @@ describe('content repository', () => {
   it('lists the catalogue with install state and slug', () => {
     loadHadithDevFixtures(executor);
     executor.run(
-      `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default)
-       VALUES (90, 'hadith_collections', 'Uninstalled', NULL, 2, 2048, 0)`,
+      `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, author_name, author_ar, version, pack_size_bytes, is_default)
+       VALUES (90, 'hadith_collections', 'Uninstalled', NULL, 'FIXTURE author en', 'نص تجريبي للمؤلف', 2, 2048, 0)`,
     );
     executor.run(
       `INSERT INTO catalog_resources (resource_id, "group", name, name_ar, version, pack_size_bytes, is_default)
@@ -335,6 +335,7 @@ describe('content repository', () => {
     expect(catalog.map((entry) => entry.resourceId)).toEqual([-2, -1, 90]);
     const uninstalled = catalog.find((entry) => entry.resourceId === 90);
     expect(uninstalled).toMatchObject({ installed: false, slug: null, packSizeBytes: 2048 });
+    expect(uninstalled).toMatchObject({ authorAr: 'نص تجريبي للمؤلف', authorEn: 'FIXTURE author en' });
     expect(catalog.find((entry) => entry.resourceId === -1)).toMatchObject({ installed: true, slug: FIXTURE_MULTI.slug });
   });
 });

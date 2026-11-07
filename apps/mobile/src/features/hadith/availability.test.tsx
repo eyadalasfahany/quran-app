@@ -18,6 +18,8 @@ const ENTRY = {
   resourceId: 1,
   name: null,
   nameAr: null,
+  authorEn: null,
+  authorAr: null,
   version: 1,
   packSizeBytes: 1,
   installed: false,

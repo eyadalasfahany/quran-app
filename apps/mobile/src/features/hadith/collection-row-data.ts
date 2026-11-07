@@ -4,7 +4,7 @@ import type { HadithCatalogEntry, HadithCollection } from './types';
 
 /**
  * The row data of one catalogue entry. An installed entry (matched by resource id) takes its counts and slug from the
- * installed collection. A not-installed entry takes its names from the catalogue and has no counts.
+ * installed collection. A not-installed entry takes its names and authors from the catalogue and has no counts.
  */
 export function collectionRowDataFor(entry: HadithCatalogEntry, installed: HadithCollection | undefined): CollectionRowData {
   if (installed !== undefined) {
@@ -25,8 +25,9 @@ export function collectionRowDataFor(entry: HadithCatalogEntry, installed: Hadit
     number: hadithCollectionNumber(entry.slug ?? '') ?? 0,
     titleAr: entry.nameAr,
     titleEn: entry.name,
-    authorAr: null,
-    authorEn: null,
+    // The author comes from the catalogue (`catalog_resources`), so the row shows it before install.
+    authorAr: entry.authorAr,
+    authorEn: entry.authorEn,
     totalHadith: null,
     booksCount: null,
     soleBook: false,
