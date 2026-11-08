@@ -255,6 +255,30 @@ it('strips the numbering prefix of a Muslim style title in both forms', function
         ->and(array_map(fn (OpenItiChapter $chapter): bool => $chapter->numberingStripped, $scan->chapters))->toBe([true, true, true, true]);
 });
 
+it('drops the closing bracket the numbering opened, and the Quran-quote tags, and keeps balanced brackets', function (): void {
+    $bytes = implode("\n", [
+        '#META#Header#End#',
+        '# | 1 ( 1 FIXTURE chapter title 1 )',
+        '# 1 FIXTURE text 1 — not a hadith',
+        '# | 2 ( 2 FIXTURE chapter @QB@ quoted @QE@ title 2 )',
+        '# 2 FIXTURE text 2 — not a hadith',
+        '# | 4 FIXTURE chapter title 3 )',
+        '# 3 FIXTURE text 3 — not a hadith',
+        '# | FIXTURE chapter title 4 (4)',
+        '# 4 FIXTURE text 4 — not a hadith',
+    ]);
+
+    $scan = alignFixtureScan($bytes, '/^# ([0-9]+) /u', '/^(###|# \|)/u', '/^# \| (.+)$/u');
+
+    expect(array_map(fn (OpenItiChapter $chapter): string => $chapter->title, $scan->chapters))->toBe([
+        'FIXTURE chapter title 1',
+        'FIXTURE chapter quoted title 2',
+        'FIXTURE chapter title 3',
+        'FIXTURE chapter title 4 (4)',
+    ])
+        ->and(array_map(fn (OpenItiChapter $chapter): bool => $chapter->numberingStripped, $scan->chapters))->toBe([true, true, true, false]);
+});
+
 it('counts stripped titles in the report and gives each unit its file-order index', function (): void {
     $bytes = implode("\n", [
         '#META#Header#End#',

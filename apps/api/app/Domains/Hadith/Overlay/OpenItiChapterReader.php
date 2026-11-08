@@ -158,9 +158,22 @@ final class OpenItiChapterReader
     private function stripNumbering(string $title): array
     {
         $digits = '[0-9\x{0660}-\x{0669}]+';
-        $stripped = preg_replace('~^(?:\(\s*'.$digits.'\s*\)|'.$digits.'\s*\(\s*(?:'.$digits.'\s*\)?)?)\s+~u', '', $title, 1, $count);
+        $stripped = (string) preg_replace('~^(?:\(\s*'.$digits.'\s*\)|'.$digits.'\s*\(\s*(?:'.$digits.'\s*\)?)?)\s+~u', '', $title, 1, $count);
 
-        return [(string) $stripped, $count === 1];
+        // «N ( N title )»: the bracket the numbering opens closes at the end of the title, so a left-over «)» goes with it.
+        // One Malik heading drops the «(» («N title )»); its bare number goes too.
+        if (substr_count($stripped, ')') > substr_count($stripped, '(') && preg_match('~\)\s*$~u', $stripped) === 1) {
+            $stripped = (string) preg_replace('~\s*\)\s*$~u', '', $stripped);
+
+            if ($count === 0) {
+                $stripped = (string) preg_replace('~^'.$digits.'\s+~u', '', $stripped, 1, $count);
+            }
+        }
+
+        // OpenITI's Quran-quote tags (@QB@ … @QE@) are markup, never title text.
+        $stripped = trim((string) preg_replace('~\s*@Q[BE]@\s*~u', ' ', $stripped), " \t");
+
+        return [$stripped, $count === 1];
     }
 
     /**
