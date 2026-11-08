@@ -19,6 +19,9 @@ def _load():
     model = WhisperForConditionalGeneration.from_pretrained(
         ASR_MODEL, revision=ASR_REVISION, use_safetensors=False
     ).eval()
+    # The model's config sets max_length 1024; our max_new_tokens already wins, so dropping it only stops
+    # transformers' "both max_new_tokens and max_length" warning on every call.
+    model.generation_config.max_length = None
     return proc, model.to(DEVICE)
 
 
