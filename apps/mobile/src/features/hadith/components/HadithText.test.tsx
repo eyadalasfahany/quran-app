@@ -17,9 +17,9 @@ describe('HadithText', () => {
     expect(screen.getByText(PLACEHOLDER_TEXT)).toBeOnTheScreen();
   });
 
-  it('draws the reader at 24 over 48', async () => {
+  it('draws the reader at 28 over 56', async () => {
     await renderUi(<HadithText text={PLACEHOLDER_TEXT} variant="reader" />);
-    expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).toMatchObject({ fontSize: 24, lineHeight: 48 });
+    expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).toMatchObject({ fontSize: 28, lineHeight: 56 });
   });
 
   it('draws the preview at 19 over 36 and never 34', async () => {
@@ -71,7 +71,7 @@ describe('HadithText', () => {
 
   it('scales the reader with fontScale', async () => {
     await renderUi(<HadithText fontScale={1.5} text={PLACEHOLDER_TEXT} variant="reader" />);
-    expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).toMatchObject({ fontSize: 36, lineHeight: 72 });
+    expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).toMatchObject({ fontSize: 42, lineHeight: 84 });
   });
 
   it('passes the stored text through byte for byte', async () => {
