@@ -33,15 +33,15 @@ describe('useHadithHomeEntry', () => {
     jest.mocked(useContentDb).mockReturnValue({ ready: true, error: null });
   });
 
-  it('tile is false until a pack is installed', async () => {
+  it('tile is false with no pack and an empty catalogue', async () => {
     const { result } = await renderHook(() => useHadithHomeEntry());
     expect(result.current.tile).toBe(false);
   });
 
-  it('menuCard is true when the catalogue lists a collection even if none is installed', async () => {
+  it('both are true when the catalogue lists a collection even if none is installed', async () => {
     jest.mocked(useHadithCatalog).mockReturnValue([ENTRY]);
     const { result } = await renderHook(() => useHadithHomeEntry());
-    expect(result.current).toEqual({ tile: false, menuCard: true });
+    expect(result.current).toEqual({ tile: true, menuCard: true });
   });
 
   it('both are false while the content database is not ready', async () => {
