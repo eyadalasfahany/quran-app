@@ -5,8 +5,10 @@
 
 Only a surah whose gate record says `pass` or `repaired` gets a timing file. `no_highlight` and `unavailable`
 surahs get none. For a shipped surah the ayahs listed in the record's `segments_null` are written with
-`"segments": null`; every other byte comes from `export.build_surah` and the export's own writer, so with no
-nulls the file is byte-identical to `export.main` for the same document. `export.py` is unchanged (P13).
+`"segments": null`, and every word start moves by `PARAMS["WORD_START_SHIFT_MS"]` (Q7h, q8: the aligner hears word
+starts late), clamped to its ayah's start and kept after the word before; ayah rows and segment ends are unchanged.
+Every other byte comes from `export.build_surah` and the export's own writer, so with no nulls and a shift of 0 the
+file is byte-identical to `export.main` for the same document. `export.py` is unchanged (P13), so MP3Quran is too.
 An aligned document with no gate record, a `pass` without an aligned document, or a document of another file
 (sha256 differs from the gate record) is a failure: the surah gets no file and the exit code is 1.
 """
@@ -18,6 +20,7 @@ from pathlib import Path
 
 from . import export
 from .export import Refused
+from .quality import PARAMS
 from .report import validate_gate
 
 SHIPPED = ("pass", "repaired")
@@ -74,6 +77,17 @@ def null_segments(timing, nulls):
         row["segments"] = None
 
 
+def shift_word_starts(timing, shift_ms):
+    """Move every word start of a built timing object by `shift_ms`, never before its ayah's start or the word before
+    it (so no two words tie under the app's last-started-word rule) and never later than it was."""
+    for row in timing["ayahs"]:
+        previous = None
+        for seg in row["segments"] or ():
+            floor = row["start_ms"] if previous is None else max(row["start_ms"], previous + 1)
+            seg[1] = min(seg[1], max(seg[1] + shift_ms, floor))
+            previous = seg[1]
+
+
 def main(argv=None):
     args = _parse(argv if argv is not None else sys.argv[1:])
     try:
@@ -118,6 +132,7 @@ def main(argv=None):
             timing = export.build_surah(doc, file_surah=surah, kind=args.kind, key=args.recitation_key,
                                         source=source, audio_url=url, verse_ids=verse_ids, counts=counts)
             null_segments(timing, record["segments_null"])
+            shift_word_starts(timing, PARAMS["WORD_START_SHIFT_MS"])
             data = export.encode(timing)
         except Refused as err:
             failures.append(f"{label}: {err}")

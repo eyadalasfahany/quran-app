@@ -3,6 +3,7 @@
 import json
 
 from recitation_align import export, gated_export
+from recitation_align.quality import PARAMS
 from test_export import SHA, TANZIL_LINES, make_doc, simple_words, write_inputs, write_manifest
 from test_report import gate as make_gate
 
@@ -40,7 +41,8 @@ def run(base, out, *, extra=()):
         "--tanzil", str(base / "tanzil.txt"), *extra])
 
 
-def test_without_nulls_the_files_are_byte_identical_to_export_main(tmp_path):
+def test_without_nulls_or_shift_the_files_are_byte_identical_to_export_main(tmp_path, monkeypatch):
+    monkeypatch.setitem(PARAMS, "WORD_START_SHIFT_MS", 0)
     base = setup(tmp_path, {1: "pass", 2: "repaired"})
     assert run(base, tmp_path / "gated") == 0
     assert export.main(["--kind", "way2quran", "--recitation-key", KEY, "--in", str(base / "aligned"),
@@ -53,7 +55,8 @@ def test_without_nulls_the_files_are_byte_identical_to_export_main(tmp_path):
         assert (tmp_path / "gated" / name).read_bytes() == (tmp_path / "plain" / name).read_bytes()
 
 
-def test_a_segments_null_ayah_is_written_as_null(tmp_path):
+def test_a_segments_null_ayah_is_written_as_null(tmp_path, monkeypatch):
+    monkeypatch.setitem(PARAMS, "WORD_START_SHIFT_MS", 0)
     base = setup(tmp_path, {2: "pass"}, nulls={2: [2]})
     assert run(base, tmp_path / "gated") == 0
     plain = tmp_path / "plain"
@@ -110,3 +113,35 @@ def test_a_segments_null_ayah_the_surah_lacks_is_refused(tmp_path, capsys):
     base = setup(tmp_path, {1: "pass"}, nulls={1: [9]})
     assert run(base, tmp_path / "gated") == 1
     assert "segments_null lists ayah 9" in capsys.readouterr().err
+
+
+def test_word_starts_move_by_the_shift_and_ayah_rows_and_ends_do_not(tmp_path):
+    # Q7h (q8): one word per second, each 500 ms long; ayah 1 starts at 0, so its first word cannot move
+    base = setup(tmp_path, {2: "pass"})
+    assert run(base, tmp_path / "gated") == 0
+    plain = tmp_path / "plain"
+    export.main(["--kind", "way2quran", "--recitation-key", KEY, "--in", str(base / "aligned"), "--out", str(plain),
+                 "--manifest", str(base / "manifest.json"), "--tanzil", str(base / "tanzil.txt")])
+    got = json.loads((tmp_path / "gated" / "002.json").read_text(encoding="utf-8"))
+    want = json.loads((plain / "002.json").read_text(encoding="utf-8"))
+    shift = PARAMS["WORD_START_SHIFT_MS"]
+    assert shift == -80
+    for g, w in zip(got["ayahs"], want["ayahs"], strict=True):
+        assert (g["start_ms"], g["end_ms"]) == (w["start_ms"], w["end_ms"])
+        assert [s[0] for s in g["segments"]] == [s[0] for s in w["segments"]]
+        assert [s[2] for s in g["segments"]] == [s[2] for s in w["segments"]]
+        for s_got, s_want in zip(g["segments"], w["segments"], strict=True):
+            assert s_got[1] == max(s_want[1] + shift, g["start_ms"])
+    assert got["ayahs"][1]["segments"][1][1] == want["ayahs"][1]["segments"][1][1] - 80
+
+
+def test_the_shift_never_goes_before_the_ayah_or_the_word_before_and_never_later():
+    timing = {"ayahs": [
+        {"start_ms": 1000, "end_ms": 3000, "segments": [[1, 1000, 1040], [2, 1040, 1500], [3, 1500, 2000]]},
+        {"start_ms": 3000, "end_ms": 4000, "segments": None},
+        {"start_ms": 0, "end_ms": 900, "segments": [[1, 30, 400], [2, 400, 900]]},
+    ]}
+    gated_export.shift_word_starts(timing, -80)
+    assert timing["ayahs"][0]["segments"] == [[1, 1000, 1040], [2, 1001, 1500], [3, 1420, 2000]]
+    assert timing["ayahs"][1]["segments"] is None
+    assert timing["ayahs"][2]["segments"] == [[1, 0, 400], [2, 320, 900]]

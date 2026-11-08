@@ -643,6 +643,13 @@ Build steps (the gate's checks stay as they are):
 - The live MP3Quran reciters get the shift only through Q14's verified PRs.
 - **Model:** *stronger model* (Opus).
 
+**Outcome (8 Nov 2026, GitHub, q8):**
+
+- Medians of our word start minus QF's: Al-Husary 61, Al-Sudais 88, Al-Minshawi 90, Al-Afasy 122 ms. No single shift is within ±30 ms of all four (it misses by 1 ms).
+- The decision rule is amended (ADR 0077, q8 amendment): the criterion is the lit-word wrong time. At −80 ms it falls for every reciter (12.0 → 11.2%, 13.7 → 8.6%, 13.8 → 10.7%, 14.2 → 10.1%). −80, not −90, because Al-Husary gains nothing past −80 and an early highlight looks worse.
+- `WORD_START_SHIFT_MS` −80 ships in q8, applied by `gated_export` only. muaalem was not measured (too heavy for the Mac); it gets its own CI check later and does not block a release.
+- The q7 repeat calibration passed on CI (95.2% of back-jumps, 0 false repeats), so q8 also sets `REPEAT_MODE` `"positions"`.
+
 ### Q8. Measure cross-ayah back-jumps, then the conditional format 2
 
 **Measure (always).**

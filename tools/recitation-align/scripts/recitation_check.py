@@ -224,6 +224,9 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
                  export=True)
         res["audio_s"] = audio_seconds(qf / "manifest.json", [n])
         res.update(_gate_summary(_read(work / f"run/gate/{n:03d}.json")))
+        # why the gate decided (our gate's findings only; the gate records themselves stay in the job)
+        _run(TOOL, ["scripts/w2q_explain.py", "--handoff", str(work / "run"), "--surah", str(n), "--out",
+                    str(out / "explain.md")])
         exported = _read(work / f"run/export/{n:03d}.json")
         if exported is None and res["verdict"] in ("pass", "repaired"):
             raise SystemExit(f"{n:03d}: the gate ships timings but gated_export wrote none")

@@ -13,7 +13,8 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q7"  # q7 (Q7g): the CTC repeat proposer, the G3 near-tie, Al-Fatiha's opening, G5 sets repeats aside
+QUALITY_VERSION = "q8"  # q8 (Q7g, Q7h): repeats written as positions again, word starts moved 80 ms earlier
+# q7 (Q7g): the CTC repeat proposer, the G3 near-tie, Al-Fatiha's opening, G5 sets repeats aside
 
 PARAMS: dict = {
     # G0 completeness
@@ -105,7 +106,17 @@ PARAMS: dict = {
     # Q7d: a stretched word with no repeat is a verified elongation when dense ASR over its span hears it at this
     # ratio and hears no other word of the local text at it, and the G3 starts on both sides are OK
     "ELONG_SCORE": 85,
-    "REPEAT_MODE": "null",  # Q7c: the calibration on QF Afasy missed its targets (checks/repeat-calibration.json)
+    # Q7c (q6) set "null" after the calibration missed its targets. Q7g (q8): the CI calibration at q7 (GitHub, QF
+    # Afasy 1, 2, 18, 36, 59) reproduces 95.2% of the back-jump occurrences with 0 false repeats on 258 controls, so
+    # "positions" returns (checks/repeat-calibration.json, second record). Timing is reported, not gated (amendment
+    # of 8 Nov 2026): the controls show the same 120 / 515 ms spread, which is the aligner's, not the repeats'.
+    "REPEAT_MODE": "positions",
+    # Q7h (q8): our word starts are late against QF (median 61, 88, 90 and 122 ms for Al-Husary, Al-Sudais,
+    # Al-Minshawi and Al-Afasy on 18, 36, 59). No single shift puts all four within 30 ms, so the criterion is the
+    # lit-word wrong time (the app's last-started-word rule): at -80 ms it falls for all four (14.2 -> 10.1%,
+    # 13.8 -> 10.7%, 12.0 -> 11.2%, 13.7 -> 8.6%). -80, not -90: Al-Husary already has 10% of words more than 50 ms
+    # early and gains nothing past -80. Applied by gated_export to word starts only (Way2Quran); MP3Quran via Q14.
+    "WORD_START_SHIFT_MS": -80,
     # release (R2, R3, R4)
     "CAP_NO_HIGHLIGHT": 0.01,
     "CAP_SEG_NULL": 0.02,

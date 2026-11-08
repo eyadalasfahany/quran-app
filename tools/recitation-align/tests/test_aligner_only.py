@@ -239,7 +239,7 @@ def test_quality_writes_the_quality_tool_version(inputs, fakes):
     folder = completeness_dir(inputs)
     assert pp.main(quality_argv(inputs, "--completeness-dir", str(folder))) == 0
     doc = json.loads((inputs["root"] / "out" / "001.json").read_text(encoding="utf-8"))
-    assert doc["tool_version"] == "0.1.0+q7"
+    assert doc["tool_version"] == "0.1.0+q8"
 
 
 def test_without_quality_the_tool_version_is_the_package_version(inputs, fakes):

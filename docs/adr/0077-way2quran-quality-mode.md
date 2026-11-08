@@ -269,6 +269,27 @@ Evidence is in plan Q7c, Q7f and Q7g (local runs on QF Afasy; the QF data stays 
   - A better boundary model (`obadx/muaalem-model-v3_2`, MIT) is measured in the same step.
   - A shift reaches the live MP3Quran reciters only through decision 8's verified PRs.
 
+### Amendment, 8 Nov 2026 (q8): repeats are written again; word starts move 80 ms earlier
+
+Evidence: GitHub runs of `recitation-check.yml` at q7 (QF data fetched at run time and discarded; metrics only).
+
+- **Repeats.** The q7 calibration on QF Afasy 1, 2, 18, 36 and 59 reproduces 95.2% of back-jump occurrences with 0 false repeats on 258 control ayahs (`checks/repeat-calibration.json`, second record). `REPEAT_MODE` returns to `"positions"`. Timing is reported, not gated: the controls show the same spread (median 120 ms, p90 515 ms), so it is the aligner's, not the repeats'.
+- **Word starts.** Medians of our start minus QF's, on 18, 36 and 59:
+
+  | Reciter | Median | Lit-word wrong, no shift | At −80 ms |
+  |---|---|---|---|
+  | Al-Husary | 61 ms | 12.0% | 11.2% |
+  | Al-Sudais | 88 ms | 13.7% | 8.6% |
+  | Al-Minshawi | 90 ms | 13.8% | 10.7% |
+  | Al-Afasy | 122 ms | 14.2% | 10.1% |
+
+  - Q7h's rule (one shift within ±30 ms of every reciter's median) misses by 1 ms: no single value fits 61 and 122.
+  - The rule is replaced by the measure the listener sees, the lit-word wrong time under the app's last-started-word rule. At −80 ms it falls for all four reciters.
+  - −80 and not −90: Al-Husary already has 10% of its words more than 50 ms early, and gains nothing past −80. An early highlight looks worse than a late one.
+  - `PARAMS["WORD_START_SHIFT_MS"]` is −80. `gated_export` applies it to Way2Quran word starts only, clamped to the ayah start and kept after the word before. Ayah rows, segment ends and the gate are unchanged.
+  - `export.py` is unchanged, so MP3Quran files stay byte-identical. The live MP3Quran reciters get the shift only through decision 8's verified PRs.
+- **muaalem** (`obadx/muaalem-model-v3_2`) boundaries were not measured: the run is too heavy for the developer's Mac. It gets its own CI check and brief; it does not block a release.
+
 ## Reinterpretation of ADR 0060's "no surah-by-surah shipping" for Way2Quran
 
 - **The rule's purpose was that a reciter appears once, as a whole, and is never trickled out over several deploys. That purpose is kept:** the reciter is released once, by one release PR, with its whole available audio set.
