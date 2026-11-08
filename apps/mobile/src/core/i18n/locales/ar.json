@@ -1726,6 +1726,11 @@
   },
   "hadith": {
     "title": "الحديث",
+    "explanation": {
+      "title": "الشرح",
+      "benefits": "الفوائد",
+      "wordMeanings": "معاني الكلمات"
+    },
     "back": "رجوع",
     "untitled": {
       "collection": "مجموعة {{n}}",
