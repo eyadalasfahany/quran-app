@@ -29,10 +29,10 @@ describe('HadithText', () => {
     expect(style.lineHeight).not.toBe(34);
   });
 
-  it('justifies and sets writing direction rtl in both languages and is never centred', async () => {
+  it('starts at the right, writes rtl in both languages, never justified or centred', async () => {
     for (const locale of locales) {
       const view = await renderUi(<HadithText text={PLACEHOLDER_TEXT} variant="preview" />, { locale });
-      expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).toMatchObject({ textAlign: 'justify', writingDirection: 'rtl' });
+      expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).toMatchObject({ direction: 'ltr', textAlign: 'right', writingDirection: 'rtl' });
       await view.unmount();
     }
     await renderUi(<HadithText text={PLACEHOLDER_TEXT} variant="reader" />);

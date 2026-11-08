@@ -1,7 +1,7 @@
 import { Text } from 'react-native';
 
 import { uiFontFamilies, useTheme } from '@/core/theme';
-import { displayText, UiText } from '@/shared/ui';
+import { arabicTextDirection, displayText, UiText } from '@/shared/ui';
 
 // Frames HadithCollBook, HadithCollSaved and HadithCollSearchResults draw previews at 19 over 36 (1.89x).
 // The typeScale token dhikrList is 19 over 34 (1.79x), below the 1.8x rule, so the preview uses this constant.
@@ -9,8 +9,8 @@ const HADITH_PREVIEW_LINE_HEIGHT = 36;
 const HADITH_PREVIEW_FONT_SIZE = 19;
 const PREVIEW_LINES = 3;
 
-// Hadith text is justified RTL in both UI languages (ADR 0042 section 6). Not centred, never arabicTextDirection.
-const TEXT_DIRECTION = { textAlign: 'justify', writingDirection: 'rtl' } as const;
+// Start-aligned RTL, not justified: iOS justifies Arabic by stretching the letter joins, which this face draws as gaps.
+const TEXT_DIRECTION = arabicTextDirection;
 // Hadith text uses the tafsir body face (IBM Plex Sans Arabic), not Amiri (developer, 8 Nov 2026). Sizes stay as before.
 const HADITH_FONT = { fontFamily: uiFontFamilies[400] } as const;
 const QUOTE = '"';
