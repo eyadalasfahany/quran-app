@@ -91,7 +91,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
 .xr-sw{width:44px;height:44px;border:none;background:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .xr-sw span{width:28px;height:28px;border-radius:14px;border:1.5px solid var(--line-strong);box-sizing:border-box;display:flex;align-items:center;justify-content:center}
 .xr-sw[aria-pressed=true] span{box-shadow:0 0 0 3px var(--surface-raised),0 0 0 5px var(--ink)}
-.xr-sw[aria-pressed=true] span::after{content:"✓";color:var(--ink);font-size:17px;font-weight:700;line-height:1}
+.xr-sw[aria-pressed=true] span::after{content:"";width:5px;height:10px;border:solid var(--ink);border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
 .xr-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2)}
 .xr-act{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:72px;justify-content:center;border-radius:16px;border:1px solid var(--line);background:var(--surface-raised);color:var(--ink);font:inherit;font-size:13px;font-weight:500;cursor:pointer}
 .xr-act svg{color:var(--brand)}
