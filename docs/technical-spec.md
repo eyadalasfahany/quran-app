@@ -833,7 +833,7 @@ For each window, Maestro runs "open reader at 2:255 → rotate or resize → ass
 **CI pipelines (GitHub Actions, path-filtered)**
 
 - `api.yml`: Composer install, Pint, Larastan, Pest (MySQL 9.7 and Redis 8.10 service containers), `composer audit`. Production deploy is Railway, on push to `main` (ADR 0022).
-- `mobile.yml`: `npm ci`, ESLint, `tsc`, Jest, `npx expo-doctor`, and an npm audit gate that fails on high or critical advisories unless `.github/audit-allowlist.json` lists them with a reason and a review date; on tags `mobile-v*`, `eas build` for the `production` profile and `eas submit`.
+- `mobile.yml`: `npm ci`, ESLint, `tsc`, Jest, `npx expo-doctor`, and an npm audit gate that fails on high or critical advisories unless `.github/audit-allowlist.json` lists them with a reason and a review date; on tags `mobile-v*`, `eas build` for the `production` profile, then `eas submit` (iOS binary) and fastlane (`infra/store-release`) for What's New on both stores, App Review and the Play production release (ADR 0079).
 - `contract.yml`: regenerate OpenAPI and TS types, fail on drift.
 - `tools.yml` (ADR 0077): both Python tools' pytest suites (`tools/recitation-align`, `tools/mp3quran-ingest`), the MP3Quran golden runs, the `add-reciter.yml` guard (MP3Quran steps unchanged), and the Way2Quran release guard, on PRs touching `tools/**`, the reciter workflows, `apps/api/config/quran.php` or the committed reciter resources. PRs opened by the add-reciter bot with `GITHUB_TOKEN` do not trigger it; their finalize job runs the recitation-align suite itself. `add-reciter.yml` is manual only.
 - Production deploy is not a second workflow. Railway builds `apps/api/Dockerfile` and runs migrations on boot (ADR 0022).

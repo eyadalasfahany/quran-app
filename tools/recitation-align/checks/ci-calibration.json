@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "run_id": "42457927045",
+  "tool_version": "0.1.0+q5",
+  "surahs": [
+    {
+      "reciter": 1,
+      "surah": 5,
+      "audio_s": 3972.1,
+      "seconds": {
+        "completeness": 42.1,
+        "asr": 656.8,
+        "locate": 0.1,
+        "align": 1.3,
+        "g3": 495.2,
+        "g4": 120.1,
+        "g2": 5.5,
+        "repair": 4141.7,
+        "total": 5462.8
+      },
+      "rtf": {
+        "completeness": 0.0106,
+        "asr": 0.1654,
+        "locate": 0.0,
+        "align": 0.0003,
+        "g3": 0.1247,
+        "g4": 0.0302,
+        "g2": 0.0014,
+        "repair": 1.0427,
+        "total": 1.3753
+      },
+      "completeness": "complete",
+      "gate": "no_highlight",
+      "pooled": true
+    },
+    {
+      "reciter": 1,
+      "surah": 9,
+      "audio_s": 3868.8,
+      "seconds": {
+        "completeness": 32.8,
+        "total": 32.8
+      },
+      "rtf": {
+        "completeness": 0.0085,
+        "total": 0.0085
+      },
+      "completeness": "complete",
+      "gate": "no_highlight",
+      "pooled": false
+    },
+    {
+      "reciter": 3,
+      "surah": 15,
+      "audio_s": 670.5,
+      "seconds": {
+        "completeness": 79.5,
+        "asr": 202.7,
+        "locate": 0.1,
+        "align": 0.2,
+        "g3": 484.6,
+        "g4": 44.3,
+        "g2": 1.8,
+        "total": 813.2
+      },
+      "rtf": {
+        "completeness": 0.1186,
+        "asr": 0.3023,
+        "locate": 0.0001,
+        "align": 0.0003,
+        "g3": 0.7227,
+        "g4": 0.0661,
+        "g2": 0.0027,
+        "total": 1.2128
+      },
+      "completeness": "complete",
+      "gate": "pass",
+      "pooled": true
+    },
+    {
+      "reciter": 3,
+      "surah": 16,
+      "audio_s": 1248.3,
+      "seconds": {
+        "completeness": 571.3,
+        "total": 571.3
+      },
+      "rtf": {
+        "completeness": 0.4577,
+        "total": 0.4577
+      },
+      "completeness": "incomplete-both",
+      "gate": "unavailable",
+      "pooled": false
+    },
+    {
+      "reciter": 3,
+      "surah": 18,
+      "audio_s": 2044.2,
+      "seconds": {
+        "completeness": 47.4,
+        "asr": 494.6,
+        "locate": 0.1,
+        "align": 0.8,
+        "g3": 530.7,
+        "g4": 78.7,
+        "g2": 1.6,
+        "repair": 522.0,
+        "total": 1675.9
+      },
+      "rtf": {
+        "completeness": 0.0232,
+        "asr": 0.242,
+        "locate": 0.0,
+        "align": 0.0004,
+        "g3": 0.2596,
+        "g4": 0.0385,
+        "g2": 0.0008,
+        "repair": 0.2554,
+        "total": 0.8198
+      },
+      "completeness": "complete",
+      "gate": "no_highlight",
+      "pooled": true
+    },
+    {
+      "reciter": 3,
+      "surah": 19,
+      "audio_s": 860.4,
+      "seconds": {
+        "completeness": 439.6,
+        "total": 439.6
+      },
+      "rtf": {
+        "completeness": 0.5109,
+        "total": 0.5109
+      },
+      "completeness": "incomplete-end",
+      "gate": "unavailable",
+      "pooled": false
+    },
+    {
+      "reciter": 3,
+      "surah": 23,
+      "audio_s": 239.0,
+      "seconds": {
+        "completeness": 312.1,
+        "total": 312.1
+      },
+      "rtf": {
+        "completeness": 1.3059,
+        "total": 1.3059
+      },
+      "completeness": "incomplete-end",
+      "gate": "unavailable",
+      "pooled": false
+    },
+    {
+      "reciter": 3,
+      "surah": 55,
+      "audio_s": 468.8,
+      "seconds": {
+        "completeness": 59.2,
+        "asr": 92.1,
+        "locate": 0.0,
+        "align": 0.1,
+        "g3": 355.9,
+        "g4": 45.8,
+        "g2": 2.0,
+        "total": 555.1
+      },
+      "rtf": {
+        "completeness": 0.1263,
+        "asr": 0.1965,
+        "locate": 0.0,
+        "align": 0.0002,
+        "g3": 0.7592,
+        "g4": 0.0977,
+        "g2": 0.0043,
+        "total": 1.1841
+      },
+      "completeness": "complete",
+      "gate": "pass",
+      "pooled": true
+    }
+  ],
+  "rtf": {
+    "completeness": 0.0319,
+    "asr": 0.2021,
+    "locate": 0.0,
+    "align": 0.0003,
+    "g3": 0.2608,
+    "g4": 0.0404,
+    "g2": 0.0015,
+    "repair": 0.6518,
+    "total": 1.1889
+  },
+  "projected_chunk_min": {
+    "1": 156.9,
+    "2": 51.4,
+    "3": 135.9
+  },
+  "assumptions": {
+    "emissions_rtf": 0.328,
+    "fixed_overhead_min": 15.0,
+    "chunks": 20,
+    "limit_min": 240
+  },
+  "decision": "ASR_EVERY=4",
+  "passed": false,
+  "failures": [
+    "1/005: gate no_highlight, expected repaired",
+    "3/018: gate no_highlight, expected pass or repaired"
+  ]
+}

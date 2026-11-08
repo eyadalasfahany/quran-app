@@ -1,0 +1,74 @@
+# Store release lanes run by .github/workflows/mobile.yml on `mobile-v*` tags (ADR 0079).
+# Kept outside apps/mobile: a Gemfile in the Expo project root would change EAS iOS builds.
+require "fileutils"
+require "tmpdir"
+
+APP_ID = "com.taybahapp.taybah"
+NOTES_DIR = File.expand_path("../release-notes", __dir__)
+
+# { "ar" => "...", "en" => "..." } for infra/store-release/release-notes/<version>/{ar,en}.txt
+def release_notes(version)
+  %w[ar en].to_h do |lang|
+    [lang, File.read(File.join(NOTES_DIR, version, "#{lang}.txt"), encoding: "UTF-8").strip]
+  end
+end
+
+desc "App Store: set What's New on an uploaded build and submit it for review (automatic release)"
+lane :ios_release do |options|
+  version = options.fetch(:version)
+  notes = release_notes(version)
+  api_key = app_store_connect_api_key(
+    key_id: ENV.fetch("ASC_KEY_ID"),
+    issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+    key_content: ENV.fetch("ASC_KEY_P8"),
+  )
+  build_number = options.fetch(:build_number).to_s
+  # deliver looks a given build number up once and fails if Apple is still processing it, so wait for that exact build first.
+  FastlaneCore::BuildWatcher.wait_for_build_processing_to_be_complete(
+    app_id: Spaceship::ConnectAPI::App.find(APP_ID).id,
+    platform: "IOS",
+    app_version: version,
+    build_version: build_number,
+    poll_interval: 30,
+    timeout_duration: 60 * 60,
+    return_spaceship_testflight_build: false,
+  )
+  deliver(
+    api_key: api_key,
+    app_identifier: APP_ID,
+    platform: "ios",
+    app_version: version,
+    build_number: build_number,
+    # Empty folder: only the release notes below are sent; name, description and keywords stay as they are.
+    metadata_path: Dir.mktmpdir,
+    release_notes: { "ar-SA" => notes["ar"], "en-US" => notes["en"] },
+    skip_binary_upload: true,
+    skip_screenshots: true,
+    submit_for_review: true,
+    automatic_release: true,
+    run_precheck_before_submit: false,
+    force: true,
+  )
+end
+
+desc "Google Play: upload the AAB with its What's new to production and send it for review"
+lane :android_release do |options|
+  notes = release_notes(options.fetch(:version))
+  Dir.mktmpdir do |dir|
+    { "ar" => notes["ar"], "en-US" => notes["en"] }.each do |locale, text|
+      FileUtils.mkdir_p(File.join(dir, locale, "changelogs"))
+      File.write(File.join(dir, locale, "changelogs", "default.txt"), text)
+    end
+    upload_to_play_store(
+      package_name: APP_ID,
+      json_key_data: ENV.fetch("PLAY_SERVICE_ACCOUNT_JSON"),
+      aab: options.fetch(:aab),
+      track: "production",
+      release_status: "completed",
+      metadata_path: dir,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end

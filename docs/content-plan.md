@@ -60,7 +60,8 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Navigation bar | `expo-navigation-bar` | \~58.0.4 | Hides Android's navigation bar in Mushaf full screen (ADR 0071) |
 | Fonts | `expo-font` | \~58.0.10 | Bundles Amiri, Scheherazade New and IBM Plex Sans Arabic |
 | Errors | `@sentry/react-native` | \~8.28.0 | Crash and error reporting, at the version SDK 58 pins |
-| Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0 | Over-the-air JavaScript fixes and store builds |
+| Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0; CI pins `eas-cli` 27.5.0 in `mobile.yml` | Over-the-air JavaScript fixes and store builds |
+| Store release | fastlane (Ruby gem, CI only) | 2.241.2 (released 2026-10-26); Ruby 3.4 | What's New on both stores, App Review submission, Play upload (ADR 0079). Lives in `infra/store-release`, not in the app |
 | Development builds | `expo-dev-client` | \~58.0.15 | The EAS development profile; MMKV and other native modules don't run in Expo Go |
 | Tests | Jest + `jest-expo` + React Native Testing Library; Maestro | 30.5.2; \~58.0.12; 14.1.0; latest Maestro CLI | Unit and component tests; end-to-end flows on devices |
 | Lint | `eslint` + `eslint-config-expo` | 9.39.5; \~58.0.4 | Expo's flat config; ESLint 9 is the line `eslint-config-expo` supports |
@@ -490,9 +491,9 @@ Builds, store submission and over-the-air fixes all run through EAS, with two ch
 | `production` | Production on Railway, QF production keys (ADR 0022) | TestFlight and Play internal testers, then store users |
 
 - **Builds:** EAS Build per channel; version numbers bumped automatically by EAS.
-- **Submission:** EAS Submit to App Store Connect and Google Play, with Play staged rollout at 10% → 50% → 100%.
+- **Submission:** EAS Submit uploads the iOS build; fastlane sets What's New on both stores, submits for App Review (automatic release) and publishes the Play build to production at 100% (ADR 0079).
 - **Over-the-air updates:** `expo-updates` ships JavaScript-only fixes to the matching channel; any native change (new library, permission, font file) needs a store build.
-- **CI:** GitHub Actions runs lint, Jest, Pest and the text-integrity check on every pull request; tagged releases trigger EAS builds.
+- **CI:** GitHub Actions runs lint, Jest, Pest and the text-integrity check on every pull request; `mobile-v*` tags trigger the store release (ADR 0079).
 - **Store requirements:**
   - privacy policy and terms pages, in Arabic and English, hosted on the app's site
   - App Store privacy labels and Google Play data-safety form: email, account id, bookmarks and notes, crash data; no tracking

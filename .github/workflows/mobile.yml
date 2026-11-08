@@ -1,9 +1,12 @@
 name: Mobile
 
-# Paused: runs only when started by hand (Actions tab → Run workflow).
-# To turn automatic runs back on, uncomment push and pull_request and delete workflow_dispatch.
+# Normal CI is paused: runs only when started by hand (Actions tab → Run workflow).
+# A `mobile-v<version>` tag releases to both stores (ADR 0079, docs/runbooks/store-release.md).
+# To turn automatic runs back on, move the commented branches and paths under the live push key, uncomment pull_request and delete workflow_dispatch.
 on:
   workflow_dispatch:
+  push:
+    tags: ['mobile-v*']
   # push:
   #   branches: [main]
   #   paths:
@@ -31,7 +34,8 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a release mid-submission.
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
 
 jobs:
   checks:
@@ -73,3 +77,135 @@ jobs:
       # High and critical advisories fail unless .github/audit-allowlist.json lists them with a review date.
       - name: npm audit
         run: node .github/scripts/npm-audit.mjs
+
+  # Store release, on `mobile-v<version>` tags only (ADR 0079). Validation runs before any EAS build starts.
+  build:
+    name: EAS build (iOS and Android)
+    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'mobile-v')
+    needs: checks
+    runs-on: ubuntu-24.04
+    # EAS queue time counts here; a timeout would orphan the builds and a re-run would duplicate them.
+    timeout-minutes: 360
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      ios_build_id: ${{ steps.eas.outputs.ios_build_id }}
+      ios_build_number: ${{ steps.eas.outputs.ios_build_number }}
+      android_aab_url: ${{ steps.eas.outputs.android_aab_url }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Tag, version and release notes
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(cd apps/mobile && APP_VARIANT=production npx expo config --type public --json | jq -er .version)
+          node .github/scripts/release-notes-check.mjs "$version" "${TAG#mobile-v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: expo/expo-github-action@5273c2136bd09c2a341fe3340d3e767ce5a13015 # 9.0.2
+        with:
+          eas-version: 27.5.0
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: EAS build (iOS and Android, production profile)
+        id: eas
+        working-directory: apps/mobile
+        run: |
+          eas build --platform all --profile production --non-interactive --wait --json > "$RUNNER_TEMP/builds.json"
+          ios_build_id=$(jq -er '.[] | select(.platform == "IOS") | .id' "$RUNNER_TEMP/builds.json")
+          ios_build_number=$(jq -er '.[] | select(.platform == "IOS") | .appBuildVersion' "$RUNNER_TEMP/builds.json")
+          android_aab_url=$(jq -er '.[] | select(.platform == "ANDROID") | .artifacts.buildUrl' "$RUNNER_TEMP/builds.json")
+          {
+            echo "ios_build_id=$ios_build_id"
+            echo "ios_build_number=$ios_build_number"
+            echo "android_aab_url=$android_aab_url"
+          } >> "$GITHUB_OUTPUT"
+
+  ios:
+    name: App Store (upload, What's New, review)
+    needs: build
+    runs-on: ubuntu-24.04
+    # Includes the lane's 60-minute wait for Apple's build processing.
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # eas submit evaluates app.config.ts, so the workspace needs its dependencies.
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: expo/expo-github-action@5273c2136bd09c2a341fe3340d3e767ce5a13015 # 9.0.2
+        with:
+          eas-version: 27.5.0
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Upload the build to App Store Connect
+        working-directory: apps/mobile
+        env:
+          BUILD_ID: ${{ needs.build.outputs.ios_build_id }}
+        run: eas submit --platform ios --profile production --id "$BUILD_ID" --non-interactive --wait
+
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+          working-directory: infra/store-release
+
+      - name: What's New and App Review
+        working-directory: infra/store-release
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          BUILD_NUMBER: ${{ needs.build.outputs.ios_build_number }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          LANG: C.UTF-8
+          LC_ALL: C.UTF-8
+          FASTLANE_SKIP_UPDATE_CHECK: '1'
+        run: bundle exec fastlane ios_release version:"$VERSION" build_number:"$BUILD_NUMBER"
+
+  android:
+    name: Google Play (upload, What's new, review)
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+          working-directory: infra/store-release
+
+      - name: Download the AAB
+        env:
+          AAB_URL: ${{ needs.build.outputs.android_aab_url }}
+        run: curl -fsSL -o "$RUNNER_TEMP/app.aab" "$AAB_URL"
+
+      - name: Upload with What's new to production
+        working-directory: infra/store-release
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          LANG: C.UTF-8
+          LC_ALL: C.UTF-8
+          FASTLANE_SKIP_UPDATE_CHECK: '1'
+        run: bundle exec fastlane android_release version:"$VERSION" aab:"$RUNNER_TEMP/app.aab"

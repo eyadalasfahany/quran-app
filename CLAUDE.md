@@ -42,7 +42,7 @@ npm workspaces cover `apps/mobile` and `packages/*`. Composer lives inside `apps
 ## Non-negotiables
 
 1. **Quran text is never altered.** Store and render source text byte-for-byte. Never trim, normalize, re-encode or hand-edit it. Only the derived `text_search` column is normalized. The checksum test must pass.
-2. **QF credentials live only in `apps/api` env.** The app calls only our API, the audio URLs QF's API returns (ADR 0008), Taybah's own audio host `audio.taybah-app.com` on Cloudflare R2 (bucket `quran`) for MP3Quran reciters (ADR 0061), and QF's public font CDN `verses.quran.foundation` for mushaf fonts (ADR 0011). Our API never serves or repackages QF font files.
+2. **QF credentials live only in `apps/api` env.** The app calls only our API, the audio URLs QF's API returns (ADR 0008), Taybah's own audio host `audio.taybah-app.com` on Cloudflare R2 (bucket `quran`) for MP3Quran and Way2Quran reciters (ADR 0061, 0074), and QF's public font CDN `verses.quran.foundation` for mushaf fonts (ADR 0011). Our API never serves or repackages QF font files.
 3. **No QF data in the app binary.** The only bundled Quran text is the Tanzil seed. QF content reaches devices through packs and the change feed.
 4. **Offline-first.** Every personal write goes to `user.db` + outbox first. The network is never on the path of a tap.
 5. **Layout follows window size, never device model.** Use `useWindowClass()`; never branch on `Platform.isPad` or a device name.

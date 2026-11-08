@@ -96,3 +96,4 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - **Why:** `runtimeVersion` uses the `fingerprint` policy. An update reaches only the store builds with the same fingerprint, and the rest never see it. Check before publishing: `npx eas-cli fingerprint:compare` against the latest production build. If it differs, make a build instead.
 - **Version:** an OTA update keeps the store version (`version` in `app.config.ts`). Bump it only with a store build.
 - **Before publishing**, run the mobile checks (`npm run lint && npx tsc --noEmit && npm test`).
+- **Store release:** bump `version`, add `infra/store-release/release-notes/<version>/{ar,en}.txt`, push tag `mobile-v<version>`. `mobile.yml` runs the checks, builds both apps, sets What's New on both stores and sends them for review (ADR 0079, `docs/runbooks/store-release.md`).
