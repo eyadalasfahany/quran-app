@@ -274,3 +274,28 @@ def test_combine_fails_on_a_missing_reciter_artifact_and_a_failed_outcome(tmp_pa
     assert run_combine(tmp_path, root, out, monkeypatch) == 1
     doc = json.loads(out.read_text(encoding="utf-8"))
     assert doc["passed"] is False and "reciter 1: no hand-off artifact" in doc["failures"][0]
+
+
+def test_the_check_prints_the_gate_details_of_every_surah(tmp_path, monkeypatch, capsys):
+    good_handoff(tmp_path / "h", 1)
+    put(tmp_path / "h", "refused", 9, {"stage": "anchors", "reason": "unresolved pace break"})
+    assert run_check(tmp_path / "h", 1, tmp_path, monkeypatch) == 0
+    out = capsys.readouterr().out
+    assert "Result: PASS" in out
+    assert "## Gate details (Way2Quran quality)" in out
+    assert "#### Surah 5: repaired" in out
+    assert "- repairs: 2 accepted, 0 rejected" in out
+    assert "#### Surah 9: no record" not in out
+    assert "#### Surah 9: refused" not in out  # 9 is in the calibration file and has a complete record
+    assert "- refused at anchors: unresolved pace break" in out
+
+
+def test_the_check_details_show_a_failed_surah_next_to_its_reason(tmp_path, monkeypatch, capsys):
+    good_handoff(tmp_path / "h", 1)
+    put(tmp_path / "h", "gate", 5, {**gate(5, "no_highlight"), "reasons": ["repair-failed"], "repairs": [
+        {"kind": "onset", "word": "17:17", "region": ["5:17", "5:17"], "accepted": False, "failed": ["not-squeezed"]}]})
+    assert run_check(tmp_path / "h", 1, tmp_path, monkeypatch) == 1
+    out = capsys.readouterr().out
+    assert "#### Surah 5: no_highlight" in out
+    assert "- gate reasons: repair-failed" in out
+    assert "- onset 17:17 (5:17): not-squeezed" in out

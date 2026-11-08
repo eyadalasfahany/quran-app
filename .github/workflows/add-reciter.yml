@@ -515,6 +515,13 @@ jobs:
             --out "../../apps/api/resources/recitation-timings/way2quran/${RECITER}" \
             --source aligner
 
+      - name: Gate details (Way2Quran quality)
+        if: ${{ !cancelled() && inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
+        run: |
+          set -euo pipefail
+          # Why each surah failed the gate, for the job log and summary. A report: it never fails the job.
+          python3 tools/recitation-align/scripts/w2q_explain.py --handoff "$RUNNER_TEMP/handoff"
+
       - name: Merge the reciter report (Way2Quran quality)
         if: ${{ inputs.source == 'way2quran' && inputs.quality && !inputs.calibrate }}
         working-directory: tools/recitation-align

@@ -31,8 +31,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from recitation_align import ci  # noqa: E402
+from w2q_explain import explain_surah  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
 CALIBRATION = REPO / ci.CALIBRATION_PATH
@@ -93,7 +95,8 @@ def load_surah(handoff: Path, reciter: int, surah: int) -> dict:
     comp = read_json(handoff / "completeness" / name)
     gate = read_json(handoff / "gate" / name)
     aligned = read_json(handoff / "aligned" / name)
-    entry = {"reciter": reciter, "surah": surah, "comp": comp, "gate": gate, "aligned": aligned}
+    refused = read_json(handoff / "refused" / name)
+    entry = {"reciter": reciter, "surah": surah, "comp": comp, "gate": gate, "aligned": aligned, "refused": refused}
     seconds = {}
     if comp:
         seconds["completeness"] = float(comp.get("seconds") or 0)
@@ -201,13 +204,14 @@ def markdown(rows: list[dict], failures: list[str]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def evaluate(handoff: Path, reciter: int, surahs: list[int]) -> tuple[list[dict], list[str]]:
-    rows, failures = [], []
+def evaluate(handoff: Path, reciter: int, surahs: list[int]) -> tuple[list[dict], list[str], list[str]]:
+    rows, failures, details = [], [], []
     for surah in surahs:
         entry = load_surah(handoff, reciter, surah)
         failures += check_surah(entry)
         rows.append(surah_row(entry))
-    return rows, failures
+        details += [*explain_surah(surah, entry["comp"], entry["gate"], entry["refused"]), ""]
+    return rows, failures, details
 
 
 def cmd_check(args) -> int:
@@ -215,8 +219,8 @@ def cmd_check(args) -> int:
     if args.reciter not in calibration:
         print(f"::error::reciter {args.reciter} is not in the calibration file", file=sys.stderr)
         return 1
-    rows, failures = evaluate(args.handoff, args.reciter, calibration[args.reciter])
-    text = markdown(rows, failures)
+    rows, failures, details = evaluate(args.handoff, args.reciter, calibration[args.reciter])
+    text = markdown(rows, failures) + "\n" + "\n".join(["## Gate details (Way2Quran quality)", "", *details]).rstrip() + "\n"
     print(text)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
