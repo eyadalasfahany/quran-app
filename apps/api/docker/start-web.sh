@@ -90,6 +90,15 @@ else
   echo "WARNING: the Hadith import did not finish (download, pin, validation or completeness); the current Hadith versions keep serving. The report lists the reason."
 fi
 
+# Hadith explanations (ADR 0078). The first HadeethEnc fetch takes about an hour, longer than the health check allows,
+# so it runs in the background after the hadith import. The pinned snapshot stays on the volume (sources/, ADR 0068), so
+# later starts skip the fetch. The import queues its pack; Horizon builds it. A pin mismatch or failure leaves the current
+# explanations serving; the log names the reason.
+mkdir -p storage/app/hadith
+( php artisan hadith:explanations-snapshot --pinned && php artisan hadith:import-explanations ) \
+  > storage/app/hadith/explanations-start.log 2>&1 &
+echo "start: hadith explanations import started in the background (storage/app/hadith/explanations-start.log)"
+
 if php artisan content:ensure-packs; then
   echo "start: content packs up to date"
 else

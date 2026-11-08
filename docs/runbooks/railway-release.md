@@ -66,6 +66,10 @@ Each run writes a JSON report to `storage/app/hadith/reports/<Ymd-His-v>.json` (
 - The importer never writes a partial collection as complete. A text-integrity mismatch fails that collection only, and its current version keeps serving.
 - A held-back collection is released by the developer's gap decision (OpenITI with confirmation, or Sunnah.com at step 18), then the next start imports it.
 
+### Explanations (ADR 0078)
+
+After the hadith import, `docker/start-web.sh` starts `hadith:explanations-snapshot --pinned` then `hadith:import-explanations` in the background, logging to `storage/app/hadith/explanations-start.log` (in the container). The first start fetches the pinned HadeethEnc snapshot (3,574 records, about an hour) onto the volume; later starts find it pinned and import in seconds. The import queues the `hadith_explanations` pack, which Horizon builds. If HadeethEnc has changed since the pin, the snapshot fails its SHA-256 and is deleted; nothing is imported, and the current explanations keep serving. Re-pin in development and redeploy. Check it with `railway ssh -- sh -c 'cd /app && tail -20 storage/app/hadith/explanations-start.log'`.
+
 ### Dev-only commands (never in production)
 
 `hadith:build-gaps`, `hadith:match-chapters` and `hadith:match-section-titles` never run in production. They are not in `docker/start-web.sh`, not in `docker/release.sh` and not in the scheduler. They read OpenITI or hadithapi.com and write proposals under `storage/app` (`hadith:match-section-titles` also needs `HADITH_API_KEY` and refuses `APP_ENV=production`). Their output reaches production only through a reviewed change to `config/` or `database/data/hadith/`.
