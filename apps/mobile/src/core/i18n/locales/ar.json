@@ -388,6 +388,11 @@
   },
   "myQuran": {
     "tabsLabel": "أقسام مصحفي",
+    "bookmarkKindsLabel": "نوع العلامات",
+    "bookmarkKinds": {
+      "quran": "القرآن",
+      "hadith": "الحديث"
+    },
     "tabs": {
       "bookmarks": "العلامات",
       "highlights": "التظليلات",

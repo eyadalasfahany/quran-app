@@ -388,6 +388,11 @@
   },
   "myQuran": {
     "tabsLabel": "My Quran sections",
+    "bookmarkKindsLabel": "Bookmark type",
+    "bookmarkKinds": {
+      "quran": "Quran",
+      "hadith": "Hadith"
+    },
     "tabs": {
       "bookmarks": "Bookmarks",
       "highlights": "Highlights",

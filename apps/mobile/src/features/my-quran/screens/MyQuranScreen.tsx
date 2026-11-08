@@ -6,6 +6,9 @@ import { ScrollView } from 'react-native';
 import { openContentDb, useContentDb } from '@/core/db/content/open';
 import { SectionScreen, useTabBarScrollHandlers, useTabContentBottom } from '@/core/layout';
 import { useTheme } from '@/core/theme';
+import { SavedHadithList } from '@/features/hadith/components/SavedHadithList';
+import { hadithHref } from '@/features/hadith/routes';
+import { savedItemHref } from '@/features/hadith/saved-row-data';
 import { useAllHighlights, useAllNotes, useBookmarks } from '@/features/library/data';
 import { KhatmaSummaryCard } from '@/features/khatma/components/KhatmaSummaryCard';
 import {
@@ -18,6 +21,7 @@ import { resolvePlanBounds } from '@/features/khatma/plan-bounds';
 import { IconButton } from '@/shared/ui';
 import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 
+import { BookmarkKindTabs, type BookmarkKind } from '../components/BookmarkKindTabs';
 import { BookmarkListCard } from '../components/BookmarkListCard';
 import { HighlightListCard } from '../components/HighlightListCard';
 import { MyQuranTabs, type MyQuranTab } from '../components/MyQuranTabs';
@@ -45,6 +49,7 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
   const highlights = useAllHighlights();
   const notes = useAllNotes();
   const [activeTab, setActiveTab] = useState<MyQuranTab>('bookmarks');
+  const [bookmarkKind, setBookmarkKind] = useState<BookmarkKind>('quran');
   const activePlan = useActivePlan().data[0] ?? null;
   const planLogs = usePlanLogs(activePlan?.id);
   const today = toLocalDateString(new Date());
@@ -124,8 +129,16 @@ export function MyQuranScreen({ testID = 'screen-my-quran' }: { testID?: string 
         testID={`${testID}-list`}
         {...tabScroll}
       >
-        {activeTab === 'bookmarks' ? (
+        {activeTab === 'bookmarks' ? <BookmarkKindTabs onChange={setBookmarkKind} value={bookmarkKind} /> : null}
+        {activeTab === 'bookmarks' && bookmarkKind === 'quran' ? (
           <BookmarkListCard item={bookmark} onOpenMushaf={openMushaf} onOpenVerse={openVerse} />
+        ) : null}
+        {activeTab === 'bookmarks' && bookmarkKind === 'hadith' ? (
+          <SavedHadithList
+            onEmptyAction={() => router.push(hadithHref.home)}
+            onOpen={(item) => router.push(savedItemHref(item))}
+            testID="my-quran-saved-hadith"
+          />
         ) : null}
         {activeTab === 'highlights' ? (
           <HighlightListCard items={highlightItems} onOpenMushaf={openMushaf} onOpenVerse={openVerse} />
