@@ -170,6 +170,30 @@ def g5_vs_qf(held_out_refs: list, refs: list[dict], tol_ms: int = 300) -> dict:
             "of_which_ours_wrong_by_qf": both_off, "checkpoint_off_by_qf": cp_off}
 
 
+def flags_vs_qf(gate_doc: dict, words: list[dict], refs: list[dict]) -> dict:
+    """What QF says about the gate's flags (Q10): each G3-failed ayah start, ours minus QF's, and each stretched word's
+    duration against QF's occurrences of that word (several = QF recites it again). Ours is the aligner's, before
+    repairs."""
+    by_ayah = {r["ayah"]: r for r in refs}
+    ours_start: dict = {}
+    for w in words:
+        if not w.get("basmala"):
+            ours_start[w["ayah"]] = min(ours_start.get(w["ayah"], w["start_ms"]), w["start_ms"])
+    g3 = []
+    for n in gate_doc["checks"].get("G3", {}).get("failed") or []:
+        ref = by_ayah.get(n)
+        qf_ms = min((w["start_ms"] for w in ref["words"]), default=None) if ref else None
+        g3.append({"ayah": n, "ours_ms": ours_start.get(n), "qf_ms": qf_ms,
+                   "err_ms": None if qf_ms is None or n not in ours_start else ours_start[n] - qf_ms})
+    stretch = []
+    for key, position, dur_ms in (gate_doc["checks"].get("stretch") or {}).get("words") or []:
+        ref = by_ayah.get(int(key.split(":")[1]))
+        occ = [w["end_ms"] - w["start_ms"] for w in ref["words"] if w["index"] == position] if ref else []
+        stretch.append({"word": key, "position": position, "ours_ms": dur_ms, "qf_ms": occ,
+                        "qf_repeat_in_ayah": bool(ref) and lit_word.is_repeat(ref["words"])})
+    return {"g3_failed": g3, "stretch": stretch}
+
+
 def _read(path: Path):
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
 
@@ -272,6 +296,8 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
         aligned = _read(work / f"run/aligned/{n:03d}.json")
         if aligned is not None:
             res["g5_vs_qf"] = g5_vs_qf((aligned.get("anchors") or {}).get("held_out_refs") or [], refs)
+            if gate_doc is not None:
+                res["flags_vs_qf"] = flags_vs_qf(gate_doc, aligned["words"], refs)
         res["lit"] = {str(s): lit_word.split(rows, refs, n, s) for s in sorted({0, shift_ms})}
     else:
         rec = item["reciter"]
@@ -304,7 +330,7 @@ def merge(check: str, metrics: list[dict]) -> dict:
     """One summary per check: the per-job verdicts and seconds, and the pooled lit-word counts."""
     jobs = [{k: m.get(k) for k in ("item", "verdict", "reasons", "segments_null", "identical_to_base", "audio_s",
                                    "seconds", "rtf", "gate_rtf", "aligned", "start", "cross_ayah", "listen", "g5",
-                                   "g5_vs_qf") if k in m} for m in metrics]
+                                   "g5_vs_qf", "flags_vs_qf") if k in m} for m in metrics]
     out: dict = {"check": check, "jobs": jobs}
     if check == "afasy-pipeline":
         pooled: dict = {}

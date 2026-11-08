@@ -139,3 +139,16 @@ def test_the_real_check_merge_lists_cross_ayah_entries_per_item():
     out = rc.merge("real-check", jobs)
     assert out["cross_ayah"] == {"1/009": [{"from": "9:119", "to": "9:120", "represented": False}], "3/015": []}
     assert '"1/009"' in rc.markdown(out)
+
+
+def test_flags_against_qf_give_the_start_error_and_the_qf_occurrences():
+    refs = [{"ayah": 2, "start_ms": 1000, "end_ms": 9000,
+             "words": [{"index": 1, "start_ms": 1200, "end_ms": 1600}, {"index": 2, "start_ms": 1600, "end_ms": 2000},
+                       {"index": 1, "start_ms": 2000, "end_ms": 2400}]}]
+    words = [{"ayah": 2, "position": 1, "start_ms": 1500, "end_ms": 6000},
+             {"ayah": 2, "position": 2, "start_ms": 6000, "end_ms": 6400}]
+    gate_doc = {"checks": {"G3": {"failed": [2]}, "stretch": {"words": [["9:2", 1, 4500]]}}}
+    out = rc.flags_vs_qf(gate_doc, words, refs)
+    assert out["g3_failed"] == [{"ayah": 2, "ours_ms": 1500, "qf_ms": 1200, "err_ms": 300}]
+    assert out["stretch"] == [{"word": "9:2", "position": 1, "ours_ms": 4500, "qf_ms": [400, 400],
+                               "qf_repeat_in_ayah": True}]
