@@ -382,6 +382,31 @@ const README_CONTRACT = [
       { entity: 'hadith_ref_alias', key: '{old_number}:{since_version}' },
     ],
   },
+  {
+    group: 'hadith_explanations',
+    tables: [
+      {
+        name: 'hadith_explanations',
+        columns: [
+          'resource_id',
+          'id',
+          'title_ar',
+          'attribution_ar',
+          'reference_ar',
+          'body_ar',
+          'benefits_ar',
+          'words_ar',
+          'intro_ar',
+          'source_url',
+        ],
+      },
+      {
+        name: 'hadith_explanation_links',
+        columns: ['resource_id', 'collection_slug', 'hadith_number', 'explanation_id'],
+      },
+    ],
+    entities: [],
+  },
 ];
 
 type TafsirRow = { groupTafsirId: number; html: string };

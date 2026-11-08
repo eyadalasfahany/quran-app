@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
+import { useLocale } from '@/core/i18n/useLocale';
 
+import type { HadithExplanationView } from '../components/HadithExplanationCard';
 import type {
   HadithBook,
   HadithBookOutlineItem,
@@ -24,6 +26,7 @@ import {
   listBookOutline,
   listBooks,
   listChapterHadith,
+  explanationsFor,
   listChapters,
   listHadithCatalog,
   listInstalledCollections,
@@ -36,6 +39,7 @@ const EMPTY_BOOKS: HadithBook[] = [];
 const EMPTY_CHAPTERS: HadithChapter[] = [];
 const EMPTY_ITEMS: HadithListItem[] = [];
 const EMPTY_OUTLINE: HadithBookOutlineItem[] = [];
+const EMPTY_EXPLANATIONS: HadithExplanationView[] = [];
 
 export function useHadithAvailable(): boolean {
   return useHadithContent(false, hasHadithContent, []);
@@ -138,4 +142,14 @@ export function useChapterHadith(slug: string, chapterId: number): PagedHadith {
 
 export function useHadithReader(slug: string, hadithNumber: string): HadithReaderData | undefined {
   return useHadithContent(undefined, (db) => getHadithReaderData(db, slug, hadithNumber), [slug, hadithNumber]);
+}
+
+/** The explanations of one hadith, one per linked source (ADR 0078). Re-reads when the UI language changes. */
+export function useHadithExplanations(slug: string, hadithNumber: string): HadithExplanationView[] {
+  const locale = useLocale();
+  return useHadithContent(
+    EMPTY_EXPLANATIONS,
+    (db) => explanationsFor(db, slug, hadithNumber, locale),
+    [slug, hadithNumber, locale],
+  );
 }

@@ -66,13 +66,17 @@ function createTable(database: DatabaseSync, table: ContentTable): void {
 }
 
 /**
- * A gzipped hadith pack for `resourceId`. Each table of the hadith group is created with the columns of
+ * A gzipped hadith pack (collections or explanations) for `resourceId`. Each table of the hadith group is created with the columns of
  * `content-tables.ts`, so the test cannot drift from the device schema. A table that the test leaves out is not created.
  */
-export function gzipHadithPack(resourceId: number, rows: HadithPackRows): Uint8Array {
-  const group = contentGroup('hadith_collections');
+export function gzipHadithPack(
+  resourceId: number,
+  rows: HadithPackRows,
+  groupName: 'hadith_collections' | 'hadith_explanations' = 'hadith_collections',
+): Uint8Array {
+  const group = contentGroup(groupName);
   if (group === undefined) {
-    throw new Error('The hadith group is missing.');
+    throw new Error(`The ${groupName} group is missing.`);
   }
   const directory = mkdtempSync(join(tmpdir(), 'hadith-pack-'));
   const path = join(directory, 'pack.sqlite');

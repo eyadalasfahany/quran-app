@@ -3,9 +3,10 @@ import { screen } from '@testing-library/react-native';
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { PLACEHOLDER_TEXT } from '../../../../jest/hadith-ui-fixtures';
+import { PLACEHOLDER_TEXT, PLACEHOLDER_TEXT_LONG } from '../../../../jest/hadith-ui-fixtures';
 import type { HadithReaderData } from '../types';
 
+import type { HadithExplanationView } from './HadithExplanationCard';
 import { HadithReaderContent } from './HadithReaderContent';
 
 jest.mock('react-native-safe-area-context', () => {
@@ -123,5 +124,68 @@ describe('HadithReaderContent', () => {
     expect(screen.queryByRole('button', { name: 'مشاركة' })).toBeNull();
     expect(screen.getByTestId('hadith-reader-header-toolbar-save')).toBeOnTheScreen();
     expect(screen.getByTestId('hadith-reader-content-pager-next')).toBeOnTheScreen();
+  });
+});
+
+describe('HadithReaderContent explanations', () => {
+  const EXPLANATION_A = {
+    sourceName: '[اسم مصدر الشرح الأول]',
+    explanation: PLACEHOLDER_TEXT,
+    benefits: ['[فائدة تجريبية]'],
+    wordMeanings: [{ word: '[كلمة تجريبية]', meaning: '[معنى تجريبي]' }],
+    intro: null,
+  };
+  const EXPLANATION_B = { sourceName: '[اسم مصدر الشرح الثاني]', explanation: PLACEHOLDER_TEXT_LONG, benefits: null, wordMeanings: null, intro: null };
+
+  function renderWithExplanations(
+    explanations: HadithExplanationView[],
+    options: { locale?: 'ar' | 'en'; sourceCode?: string | null } = {},
+  ) {
+    const data = readerData({ hadith: { ...readerData().hadith, sourceCode: options.sourceCode ?? null } });
+    return renderUi(
+      <HadithReaderContent
+        data={data}
+        explanations={explanations}
+        onBack={jest.fn()}
+        onCopy={jest.fn()}
+        onNext={jest.fn()}
+        onPrevious={jest.fn()}
+        onShare={jest.fn()}
+        onToggleSave={jest.fn()}
+        saved={false}
+        showHeader={false}
+        totalHadith={5432}
+      />,
+      { locale: options.locale ?? 'ar' },
+    );
+  }
+
+  it('shows one explanation card under the hadith card', async () => {
+    await renderWithExplanations([EXPLANATION_A]);
+    expect(screen.getByTestId('hadith-reader-content-explanation-0')).toBeOnTheScreen();
+    expect(screen.getByTestId('hadith-reader-content-explanation-0-source')).toHaveTextContent('[اسم مصدر الشرح الأول]');
+    expect(screen.queryByTestId('hadith-reader-content-explanation-1')).toBeNull();
+  });
+
+  it('stacks two sources, one card each, in the given order', async () => {
+    await renderWithExplanations([EXPLANATION_A, EXPLANATION_B]);
+    expect(screen.getByTestId('hadith-reader-content-explanation-0')).toHaveTextContent(/\[اسم مصدر الشرح الأول\]/);
+    expect(screen.getByTestId('hadith-reader-content-explanation-1')).toHaveTextContent(/\[اسم مصدر الشرح الثاني\]/);
+  });
+
+  it('shows no explanation section when there are none', async () => {
+    await renderWithExplanations([]);
+    expect(screen.queryByTestId('hadith-reader-content-explanation-0')).toBeNull();
+    expect(screen.queryByText('الشرح')).toBeNull();
+  });
+
+  it('hides explanations for an unavailable hadith', async () => {
+    await renderWithExplanations([EXPLANATION_A], { sourceCode: 'unavailable' });
+    expect(screen.queryByTestId('hadith-reader-content-explanation-0')).toBeNull();
+  });
+
+  it('titles the card in English under the English UI', async () => {
+    await renderWithExplanations([EXPLANATION_A], { locale: 'en' });
+    expect(screen.getByTestId('hadith-reader-content-explanation-0-title')).toHaveTextContent('Explanation');
   });
 });

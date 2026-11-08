@@ -9,6 +9,7 @@ import { hadithNumberText } from '../number-text';
 import { isUnavailableHadith } from '../source-credit';
 import type { HadithReaderData } from '../types';
 
+import { HadithExplanationCard, type HadithExplanationView } from './HadithExplanationCard';
 import { HadithPager } from './HadithPager';
 import { HadithReaderCard } from './HadithReaderCard';
 import { HadithReaderHeader } from './HadithReaderHeader';
@@ -29,6 +30,7 @@ export function HadithReaderContent({
   onBack,
   showHeader,
   fontScale,
+  explanations = [],
   testID = 'hadith-reader-content',
 }: {
   data: HadithReaderData;
@@ -42,6 +44,8 @@ export function HadithReaderContent({
   onBack: () => void;
   showHeader: boolean;
   fontScale?: number;
+  /** The explanations of this hadith, one card each under the hadith card. Hidden for an unavailable hadith. */
+  explanations?: HadithExplanationView[];
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -65,7 +69,7 @@ export function HadithReaderContent({
           shareable={!unavailable}
         />
       ) : null}
-      <ScrollView contentContainerStyle={{ gap: theme.space[4], paddingBottom: theme.space[4] }}>
+      <ScrollView contentContainerStyle={{ gap: theme.space[3], paddingBottom: theme.space[4] }}>
         <HadithReaderCard
           chainEnd={null}
           fontScale={fontScale}
@@ -74,6 +78,11 @@ export function HadithReaderContent({
           unavailable={unavailable}
           testID={`${testID}-card`}
         />
+        {unavailable
+          ? null
+          : explanations.map((explanation, index) => (
+              <HadithExplanationCard key={index} {...explanation} testID={`${testID}-explanation-${index}`} />
+            ))}
       </ScrollView>
       <HadithPager
         hasNext={next !== null}

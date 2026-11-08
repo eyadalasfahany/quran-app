@@ -16,7 +16,7 @@ import { HadithListHeader } from '../components/HadithListHeader';
 import { HadithStateView } from '../components/HadithStateView';
 import { collectionRowDataFor, orderCatalogEntries } from '../collection-row-data';
 import { downloadStateFor, useHadithDownloads } from '../downloads';
-import { useHadithCatalog, useInstalledHadithCollections } from '../hooks';
+import { useEnsureHadithExplanations, useHadithCatalog, useInstalledHadithCollections } from '../hooks';
 import { hadithHref } from '../routes';
 
 const SEARCH = { ios: 'magnifyingglass', android: 'search' } as const;
@@ -32,6 +32,7 @@ export function HadithCollectionsScreen({ testID = 'screen-hadith-collections' }
   const installed = useInstalledHadithCollections();
   const byId = useHadithDownloads((state) => state.byId);
   const online = useOnline();
+  useEnsureHadithExplanations();
 
   const ordered = useMemo(() => orderCatalogEntries(entries), [entries]);
   const installedByResource = useMemo(() => new Map(installed.map((collection) => [collection.resourceId, collection])), [installed]);

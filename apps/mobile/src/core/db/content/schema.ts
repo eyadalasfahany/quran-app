@@ -654,3 +654,34 @@ export const hadithRefAliases = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.resourceId, table.oldNumber, table.sinceVersion] })],
 );
+
+export const hadithExplanations = sqliteTable(
+  'hadith_explanations',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    titleAr: text('title_ar'),
+    attributionAr: text('attribution_ar'),
+    referenceAr: text('reference_ar'),
+    bodyAr: text('body_ar'),
+    benefitsAr: text('benefits_ar'),
+    wordsAr: text('words_ar'),
+    introAr: text('intro_ar'),
+    sourceUrl: text('source_url').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.id] })],
+);
+
+export const hadithExplanationLinks = sqliteTable(
+  'hadith_explanation_links',
+  {
+    resourceId: integer('resource_id').notNull(),
+    collectionSlug: text('collection_slug').notNull(),
+    hadithNumber: text('hadith_number').notNull(),
+    explanationId: integer('explanation_id').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.collectionSlug, table.hadithNumber, table.explanationId] }),
+    index('hadith_explanation_links_number_idx').on(table.collectionSlug, table.hadithNumber),
+  ],
+);

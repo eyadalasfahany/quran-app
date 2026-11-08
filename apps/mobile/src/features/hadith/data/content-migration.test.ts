@@ -152,7 +152,7 @@ describe('content.db hadith migration', () => {
 
   it('holds no personal data: every hadith table is a pack table', () => {
     const tables = names(executor, `SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'hadith%' ORDER BY name`);
-    expect(tables).toEqual([...HADITH_TABLES].sort());
+    expect(tables).toEqual([...HADITH_TABLES, 'hadith_explanation_links', 'hadith_explanations'].sort());
     for (const personal of ['hadith_bookmarks', 'hadith_reading_position', 'hadith_search_history']) {
       expect(tables).not.toContain(personal);
     }
@@ -190,5 +190,41 @@ describe('content.db hadith migration', () => {
     }
     expect(opened.executor.get<{ count: number }>('SELECT COUNT(*) AS count FROM installed_resources')?.count).toBe(1);
     opened.database.close();
+  });
+
+
+  it('creates the explanation tables with the pack columns and nullability (migration 0016)', () => {
+    const group = contentGroup('hadith_explanations');
+    expect(group).toBeDefined();
+    for (const table of group?.tables ?? []) {
+      const sqlite = columnsOf(executor, table.name);
+      expect(sqlite.map((column) => column.name)).toEqual(table.columns.map((column) => column.name));
+      for (const column of table.columns) {
+        expect(sqlite.find((item) => item.name === column.name)?.notnullFlag).toBe(column.nullable ? 0 : 1);
+      }
+    }
+  });
+
+  it('matches the Drizzle explanation schema columns', () => {
+    const pairs = [
+      ['hadith_explanations', schema.hadithExplanations],
+      ['hadith_explanation_links', schema.hadithExplanationLinks],
+    ] as const;
+    for (const [table, drizzleTable] of pairs) {
+      const drizzleColumns = Object.values(getTableColumns(drizzleTable)).map((column) => column.name);
+      expect(columnsOf(executor, table).map((column) => column.name)).toEqual(drizzleColumns);
+    }
+  });
+
+  it('indexes the explanation links by collection and hadith number', () => {
+    const indexes = names(executor, `SELECT name FROM pragma_index_list('hadith_explanation_links')`);
+    expect(indexes).toContain('hadith_explanation_links_number_idx');
+  });
+
+  it('migration 0016 only adds the two explanation tables and their index', () => {
+    const sql = readFileSync(join(MIGRATIONS, '0016_hadith_explanations.sql'), 'utf8');
+    expect(sql.match(/CREATE TABLE/g)).toHaveLength(2);
+    expect(sql.match(/CREATE INDEX/g)).toHaveLength(1);
+    expect(sql).not.toMatch(/ALTER TABLE|DROP /);
   });
 });

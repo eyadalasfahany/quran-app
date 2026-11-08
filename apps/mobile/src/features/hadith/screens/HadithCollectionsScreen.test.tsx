@@ -39,6 +39,7 @@ jest.mock('@/core/sync', () => ({
 jest.mock('../hooks', () => ({
   useHadithCatalog: jest.fn(() => []),
   useInstalledHadithCollections: jest.fn(() => []),
+  useEnsureHadithExplanations: jest.fn(),
 }));
 
 // Placeholders only: no real hadith text, titles or authors.

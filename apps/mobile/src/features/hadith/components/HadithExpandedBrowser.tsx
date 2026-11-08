@@ -10,8 +10,17 @@ import { useTheme } from '@/core/theme';
 import { IconButton, Screen } from '@/shared/ui';
 
 import { countHadith } from '../counts';
+import { isUnavailableHadith } from '../source-credit';
 import { hadithNumberText } from '../number-text';
-import { useBookHadith, useBookOutline, useHadithBook, useHadithBooks, useHadithCollection, useHadithReader } from '../hooks';
+import {
+  useBookHadith,
+  useBookOutline,
+  useHadithBook,
+  useHadithBooks,
+  useHadithCollection,
+  useHadithExplanations,
+  useHadithReader,
+} from '../hooks';
 import { useHadithBookmarks } from '../personal';
 import { useHadithReaderActions } from '../reader-actions';
 import { hadithHref } from '../routes';
@@ -58,6 +67,7 @@ export function HadithExpandedBrowser({
   const books = useHadithBooks(slug);
   const [selection, setSelection] = useState<Selection>({ bookId: initialBookId, number: initialNumber });
   const reader = useHadithReader(slug, selection.number ?? NO_NUMBER);
+  const explanations = useHadithExplanations(slug, reader?.hadith.hadithNumber ?? NO_NUMBER);
   // The reader's book wins; without a hadith open, the chosen book; else the first book, or the sole book.
   const bookId = reader?.hadith.book.id ?? selection.bookId ?? collection?.soleBookId ?? books[0]?.id ?? null;
   const book = useHadithBook(slug, bookId ?? NO_BOOK);
@@ -127,6 +137,7 @@ export function HadithExpandedBrowser({
       <HadithDetailsPanel
         bookTitle={bookTitle(reader.hadith.book, locale, t)}
         collectionTitle={collectionTitle(collection, locale, t)}
+        explanations={isUnavailableHadith(reader.hadith.sourceCode) ? [] : explanations}
         hadithNumber={hadithNumberText(reader.hadith)}
         testID={`${testID}-details`}
       />

@@ -12,6 +12,8 @@ export {
   useHadithBooks,
   useHadithCatalog,
   useHadithCollection,
+  useHadithExplanations,
   useHadithReader,
   useInstalledHadithCollections,
 } from './hooks';
+export { useEnsureHadithExplanations } from './useEnsureHadithExplanations';

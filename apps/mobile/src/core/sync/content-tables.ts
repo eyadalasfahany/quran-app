@@ -1,4 +1,12 @@
-export type PackGroup = 'tafsirs' | 'mushafs' | 'chapter_recitations' | 'azkar' | 'duas' | 'names' | 'hadith_collections';
+export type PackGroup =
+  | 'tafsirs'
+  | 'mushafs'
+  | 'chapter_recitations'
+  | 'azkar'
+  | 'duas'
+  | 'names'
+  | 'hadith_collections'
+  | 'hadith_explanations';
 
 export type ContentColumn = {
   name: string;
@@ -534,6 +542,35 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
     afterImportSql: [
       `DELETE FROM search_hadith WHERE ${RESOURCE}`,
       'INSERT INTO search_hadith (entry_id, resource_id, text_search) SELECT id, resource_id, text_search FROM hadith_entries WHERE resource_id = ?',
+    ],
+  },
+  {
+    group: 'hadith_explanations',
+    tables: [
+      table('hadith_explanations', [
+        integer('resource_id'),
+        integer('id'),
+        text('title_ar', true),
+        text('attribution_ar', true),
+        text('reference_ar', true),
+        text('body_ar', true),
+        text('benefits_ar', true),
+        text('words_ar', true),
+        text('intro_ar', true),
+        text('source_url'),
+      ]),
+      table('hadith_explanation_links', [
+        integer('resource_id'),
+        text('collection_slug'),
+        text('hadith_number'),
+        integer('explanation_id'),
+      ]),
+    ],
+    // The API writes no change-feed rows for explanations: a new pack sets changes_floor_version, so sync re-imports it.
+    entities: [],
+    deleteResourceSql: [
+      `DELETE FROM hadith_explanation_links WHERE ${RESOURCE}`,
+      `DELETE FROM hadith_explanations WHERE ${RESOURCE}`,
     ],
   },
 ];

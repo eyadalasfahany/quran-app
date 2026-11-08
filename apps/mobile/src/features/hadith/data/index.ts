@@ -1,5 +1,6 @@
 export { HADITH_COLLECTION_SLUGS, hadithCollectionNumber } from './collection-order';
 export { hadithResourceId } from './active-resource';
+export { explanationsFor, uninstalledExplanationResourceIds } from './explanations';
 export {
   findCoveringHadithNumber,
   getBook,

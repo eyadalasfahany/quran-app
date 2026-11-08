@@ -83,3 +83,25 @@ describe('HadithDetailsPanel', () => {
 
 
 });
+
+describe('HadithDetailsPanel explanations', () => {
+  it('shows the explanations in a scroll under the rows', async () => {
+    await renderUi(
+      <HadithDetailsPanel
+        bookTitle={BOOK}
+        collectionTitle={COLLECTION}
+        explanations={[
+          { sourceName: '[اسم مصدر الشرح]', explanation: '[نص الشرح كما ورد]', benefits: null, wordMeanings: null, intro: null },
+        ]}
+        hadithNumber="2787.2"
+      />,
+    );
+    expect(screen.getByTestId(`${TEST_ID}-explanations`)).toBeOnTheScreen();
+    expect(screen.getByText('[اسم مصدر الشرح]')).toBeOnTheScreen();
+  });
+
+  it('draws no explanation scroll when there are none', async () => {
+    await renderPanel();
+    expect(screen.queryByTestId(`${TEST_ID}-explanations`)).toBeNull();
+  });
+});

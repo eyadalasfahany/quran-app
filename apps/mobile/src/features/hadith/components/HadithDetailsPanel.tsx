@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
 import { formatHadithNumber } from '../format';
+
+import { HadithExplanationCard, type HadithExplanationView } from './HadithExplanationCard';
 
 const ROW_PADDING_Y = 10;
 
@@ -14,11 +16,14 @@ export function HadithDetailsPanel({
   collectionTitle,
   bookTitle,
   hadithNumber,
+  explanations = [],
   testID = 'hadith-details-panel',
 }: {
   collectionTitle: string;
   bookTitle: string;
   hadithNumber: string;
+  /** The explanations of this hadith, in a scroll under the rows (frame HadithCollExpandedReaderExplained). */
+  explanations?: HadithExplanationView[];
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -66,6 +71,13 @@ export function HadithDetailsPanel({
           </UiText>
         </View>
       ))}
+      {explanations.length > 0 ? (
+        <ScrollView contentContainerStyle={{ gap: theme.space[3] }} style={{ flex: 1, minHeight: 0 }} testID={`${testID}-explanations`}>
+          {explanations.map((explanation, index) => (
+            <HadithExplanationCard key={index} {...explanation} testID={`${testID}-explanation-${index}`} />
+          ))}
+        </ScrollView>
+      ) : null}
     </View>
   );
 }

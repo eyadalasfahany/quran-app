@@ -10,7 +10,7 @@ import { Screen } from '@/shared/ui';
 
 import { HadithBrowseFallback } from '../components/HadithBrowseFallback';
 import { HadithReaderContent } from '../components/HadithReaderContent';
-import { useHadithCollection, useHadithReader } from '../hooks';
+import { useHadithCollection, useHadithExplanations, useHadithReader } from '../hooks';
 import { useHadithReaderActions } from '../reader-actions';
 import { hadithHref } from '../routes';
 
@@ -26,6 +26,7 @@ export function HadithReaderPhoneScreen({
   const theme = useTheme();
   const { ready } = useContentDb();
   const data = useHadithReader(slug, hadithNumber);
+  const explanations = useHadithExplanations(slug, data?.hadith.hadithNumber ?? '');
   const totalHadith = useHadithCollection(slug)?.totalHadith ?? null;
   const actions = useHadithReaderActions(slug, data, hadithNumber);
 
@@ -46,6 +47,7 @@ export function HadithReaderPhoneScreen({
     body = (
       <HadithReaderContent
         data={data}
+        explanations={explanations}
         onBack={back}
         onCopy={actions.onCopy}
         onNext={() => go(data.next)}

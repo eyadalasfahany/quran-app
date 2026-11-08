@@ -1,6 +1,7 @@
 import { useWindowClass } from '@/core/layout';
 
 import { HadithExpandedBrowser } from '../components/HadithExpandedBrowser';
+import { useEnsureHadithExplanations } from '../hooks';
 
 import { HadithReaderPhoneScreen } from './HadithReaderPhoneScreen';
 
@@ -18,6 +19,7 @@ export function HadithReaderScreen({
   testID?: string;
 }) {
   const windowClass = useWindowClass();
+  useEnsureHadithExplanations();
   if (windowClass === 'expanded') {
     return <HadithExpandedBrowser initialBookId={null} initialNumber={hadithNumber} slug={slug} testID={`${testID}-expanded`} />;
   }
