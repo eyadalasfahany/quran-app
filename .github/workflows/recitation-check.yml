@@ -1,0 +1,223 @@
+name: Recitation check (heavy, dispatch only)
+
+# Manual only. The model runs of the Way2Quran quality work (plan way2quran-quality Q7g/Q7h, ADR 0077) on standard
+# runners, never on the developer's Mac. Nothing is uploaded to R2, nothing is pushed and no secret is read.
+# QF timings and audio (developer, 8 Nov 2026) are fetched at run time from Taybah's public content API into
+# $RUNNER_TEMP by scripts/qf_ref_fetch.py; they are never cached, committed or uploaded: artifacts and summaries hold
+# metrics only (plus the gate records of the Way2Quran and MP3Quran real-check audio). See
+# tools/recitation-align/scripts/recitation_check.py for what each check runs.
+on:
+  workflow_dispatch:
+    inputs:
+      check:
+        description: "Which check"
+        required: true
+        type: choice
+        options:
+          - repeat-calibration
+          - real-check
+          - word-start
+          - afasy-pipeline
+      ref:
+        description: "Branch or SHA to test (empty: the dispatched commit)"
+        required: false
+        default: ""
+        type: string
+      base_ref:
+        description: "real-check: the reference 3/015 must match byte for byte (masked versions and seconds)"
+        required: false
+        default: "main"
+        type: string
+      shift_ms:
+        description: "afasy-pipeline: also split the lit-word time with our word starts moved by this many ms (e.g. -80)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recitation-check-${{ inputs.check }}-${{ inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan ${{ inputs.check }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Plan the jobs
+        id: plan
+        working-directory: tools/recitation-align
+        env:
+          CHECK: ${{ inputs.check }}
+        run: |
+          set -euo pipefail
+          # plan needs only the standard library (lit_word is imported, nothing else)
+          echo "matrix=$(python3 scripts/recitation_check.py plan --check "$CHECK")" >> "$GITHUB_OUTPUT"
+
+  run:
+    name: ${{ inputs.check }} ${{ matrix.item.reciter }} ${{ matrix.item.surah }}
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        item: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Checkout the base (real-check)
+        if: ${{ inputs.check == 'real-check' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.base_ref }}
+          path: base
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: |
+            tools/mp3quran-ingest/uv.lock
+            tools/recitation-align/uv.lock
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Model revision key
+        id: models
+        run: echo "key=$(grep '_REVISION' tools/recitation-align/recitation_align/models.py | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Hugging Face models
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/huggingface
+          key: hf-${{ runner.os }}-${{ steps.models.outputs.key }}
+
+      - name: Whisper model revision
+        id: asr
+        run: |
+          set -euo pipefail
+          REVISION=$(sed -n 's/^ASR_REVISION = "\(.*\)"$/\1/p' tools/recitation-align/recitation_align/models.py)
+          if [ -z "$REVISION" ]; then
+            echo "::error::ASR_REVISION not found in models.py"
+            exit 1
+          fi
+          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the Whisper model
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/huggingface/hub/models--tarteel-ai--whisper-base-ar-quran
+          key: hf-asr-${{ runner.os }}-${{ steps.asr.outputs.revision }}
+
+      - name: Install dependencies (frozen)
+        env:
+          CHECK: ${{ inputs.check }}
+        run: |
+          set -euo pipefail
+          if [ "$CHECK" = "real-check" ]; then (cd tools/mp3quran-ingest && uv sync --frozen --no-dev); fi
+          (cd tools/recitation-align && uv sync --frozen --no-dev)
+
+      - name: Run the check
+        working-directory: tools/recitation-align
+        env:
+          CHECK: ${{ inputs.check }}
+          ITEM: ${{ toJSON(matrix.item) }}
+          SHIFT_MS: ${{ inputs.shift_ms }}
+          RECITATION_TORCH_THREADS: "4"
+          PYTHONUNBUFFERED: "1"
+        run: |
+          set -euo pipefail
+          BASE_ARGS=()
+          if [ "$CHECK" = "real-check" ]; then BASE_ARGS=(--base-tool "$GITHUB_WORKSPACE/base/tools/recitation-align"); fi
+          uv run python scripts/recitation_check.py run --check "$CHECK" --item "$ITEM" --shift-ms "$SHIFT_MS" \
+            --work "$RUNNER_TEMP/work" --out "$RUNNER_TEMP/metrics" "${BASE_ARGS[@]}"
+
+      - name: Upload the metrics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: check-${{ inputs.check }}-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/metrics
+          if-no-files-found: warn
+          retention-days: 14
+
+  merge:
+    name: Merge ${{ inputs.check }}
+    needs: run
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: tools/recitation-align/uv.lock
+
+      - name: Install dependencies (frozen)
+        run: (cd tools/recitation-align && uv sync --frozen --no-dev)
+
+      - name: Download the job metrics
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: check-${{ inputs.check }}-*
+          path: ${{ runner.temp }}/in
+
+      - name: Merge
+        working-directory: tools/recitation-align
+        env:
+          CHECK: ${{ inputs.check }}
+        run: |
+          set -euo pipefail
+          uv run python scripts/recitation_check.py merge --check "$CHECK" --in "$RUNNER_TEMP/in" \
+            --out "$RUNNER_TEMP/summary"
+
+      - name: Upload the summary
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: summary-${{ inputs.check }}
+          path: ${{ runner.temp }}/summary
+          retention-days: 30

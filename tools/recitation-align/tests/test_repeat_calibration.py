@@ -66,3 +66,42 @@ def test_best_prefers_a_passing_setting_then_the_fewest_false_repeats():
 
 def test_is_repeat():
     assert rc.is_repeat(ref(QF_REPEAT)) and not rc.is_repeat(ref([1, 2, 3]))
+
+
+def _cell(kinds, reproduced, false_repeat=False):
+    repeat = [{"repeat_occurrences": 1, "reproduced": r, "errors": [50] * r, "all_errors": [50], "exact": bool(r),
+               "our_repeat": bool(r)} for r in reproduced]
+    control = [{"repeat_occurrences": 0, "reproduced": 0, "errors": [], "all_errors": [10], "exact": True,
+                "our_repeat": false_repeat}]
+    return {"repeat": repeat, "control": control, "kinds": kinds, "lit": {"control": [8, 10]}}
+
+
+def test_merge_pools_the_surah_jobs_into_one_record_judged_on_back_jumps(tmp_path):
+    import json
+
+    from recitation_align.quality import PARAMS
+
+    key = json.dumps([PARAMS["VITERBI_PENALTY"], "total"])
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    a.write_text(json.dumps({"surahs": [1], "cells": {key: _cell(["back-jump"] * 9, [1] * 9)}}))
+    b.write_text(json.dumps({"surahs": [18], "cells": {key: _cell(["back-jump", "same-word-only"], [1, 0])}}))
+    out = tmp_path / "record.json"
+    assert rc.main(["--merge", str(a), str(b), "--out", str(out), "--record"]) == 0
+    rec = json.loads(out.read_text())["records"][-1]
+    assert rec["surahs"] == [1, 18] and rec["confirm"] == "total"
+    assert rec["back_jump"]["reproduced_share"] == 1.0 and rec["back_jump"]["false_repeats"] == 0
+    assert "passed" not in rec["back_jump"] and rec["passed"] is True  # timing reported, not gated
+    assert rec["same_word_only"]["ayahs"] == 1 and rec["lit_agree"] == {"control": 0.8}
+
+
+def test_one_false_repeat_fails_the_merged_record(tmp_path):
+    import json
+
+    from recitation_align.quality import PARAMS
+
+    key = json.dumps([PARAMS["VITERBI_PENALTY"], "total"])
+    a = tmp_path / "a.json"
+    a.write_text(json.dumps({"surahs": [36], "cells": {key: _cell(["back-jump"], [1], false_repeat=True)}}))
+    out = tmp_path / "record.json"
+    rc.main(["--merge", str(a), "--out", str(out), "--record"])
+    assert json.loads(out.read_text())["records"][-1]["passed"] is False

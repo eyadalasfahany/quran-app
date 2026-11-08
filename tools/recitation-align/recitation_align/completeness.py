@@ -64,6 +64,9 @@ PAUSE_S = 0.3  # a pause in the opening: at least this long below `SOUND_DB`
 PAUSE_PROBES = 3  # head-probe windows that start at a pause in the first `PROBE_SPAN_S - PROBE_S` seconds
 # Surahs whose first ayah (42: first two) is only the disjoined letters; ayah numbers, no text.
 LETTERS_AYAHS = {s: 1 for s in (2, 3, 7, 19, 20, 26, 28, 29, 30, 31, 32, 36, 40, 41, 43, 44, 45, 46)} | {42: 2}
+# Q7g: Al-Fatiha's ayah 1 is the basmala, which the ASR may render badly at the very start of a file, so its opening
+# is also heard by the key after it, like a letters ayah (QF Afasy 001: 71.9 with the basmala, 100 after it).
+OPENING_SKIP = LETTERS_AYAHS | {1: 1}
 
 
 def check_string() -> str:
@@ -114,8 +117,9 @@ def opening_key(surah: int, ayahs: dict) -> str:
 
 
 def letters_key(surah: int, ayahs: dict) -> tuple[str, int, float] | None:
-    """The opening key that starts after a letters-only first ayah (`LETTERS_AYAHS`), or None for other surahs."""
-    skip = LETTERS_AYAHS.get(surah)
+    """The opening key that starts after a letters-only first ayah (`LETTERS_AYAHS`) or Al-Fatiha's basmala
+    (`OPENING_SKIP`), or None for other surahs."""
+    skip = OPENING_SKIP.get(surah)
     return _key(surah, ayahs, False, skip) if skip else None
 
 
@@ -125,7 +129,7 @@ def key_set(surah: int, ayahs: dict, *, from_end: bool) -> list[tuple[str, bool]
     and its long form too. Every key may lose its outer word: the ASR also mishears the word after the letters
     as part of them, so a letters surah's opening is heard without the letters and at most one more word."""
     out = []
-    skips = [0] + ([LETTERS_AYAHS[surah]] if not from_end and surah in LETTERS_AYAHS else [])
+    skips = [0] + ([OPENING_SKIP[surah]] if not from_end and surah in OPENING_SKIP else [])
     for skip in skips:
         key, k, _ = _key(surah, ayahs, from_end, skip)
         texts = [w for a, w in surah_words(surah, ayahs) if a > skip]

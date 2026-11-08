@@ -321,15 +321,29 @@ def region_text(surah: int, ayahs: dict, lo: int, hi: int, vocab: dict, *, f0: i
     return RegionText(surah, lo, hi, [sw[i] for i in keep], [wtok[i] for i in keep], f0, f1, spf)
 
 
+def total_logprob(em: torch.Tensor, tokens: list[int], blank: int = 0) -> float:
+    """The log-prob of the best CTC path for `tokens` over all of `em`'s frames: no stars (Q7f's scoring A)."""
+    import torchaudio.functional as F
+
+    with torch.inference_mode():
+        _, scores = F.forced_align(torch.as_tensor(em).float().unsqueeze(0), torch.tensor([tokens]), blank=blank)
+    return float(scores[0].sum())
+
+
 def confirm_ctc(em: torch.Tensor, plain_tokens: list[int], expanded_tokens: list[int], frames: tuple[int, int],
-                blank: int = 0) -> tuple[bool, float | None]:
-    """(accepted, margin): the mean log-prob per frame of the expanded path minus the plain path's, over the same
-    frames, with a leading and a trailing star as in `decide_basmala`. Accepted when the margin beats CTC_MARGIN.
-    A path that cannot fit the frames is rejected with margin None."""
+                blank: int = 0, score: str = "mean") -> tuple[bool, float | None]:
+    """(accepted, margin) of the expanded path against the plain one over the same frames.
+
+    `score` "mean" (Q7b): the mean log-prob per frame, with a leading and a trailing star as in `decide_basmala`;
+    accepted when the margin beats CTC_MARGIN. "total" (Q7g, ADR 0077 amendment of 8 Nov 2026): the total log-prob
+    of the best path, no stars; accepted when the margin is positive. A path that cannot fit is rejected (None)."""
     f0, f1 = frames
     window = em[f0:f1]
     try:
         with torch.inference_mode():
+            if score == "total":
+                margin = total_logprob(window, expanded_tokens, blank) - total_logprob(window, plain_tokens, blank)
+                return margin > 0, round(margin, 2)
             plain = _path_mean(window, plain_tokens, blank, STAR_PENALTY)
             expanded = _path_mean(window, expanded_tokens, blank, STAR_PENALTY)
     except (RuntimeError, ValueError):
@@ -354,7 +368,8 @@ def _second_pass(seq: list[int], k: int) -> tuple[int, int]:
     return i0, k1
 
 
-def confirm_jumps(em: torch.Tensor, rt: "RegionText", seq: list[int], blank: int = 0) -> tuple[list[int], list[dict]]:
+def confirm_jumps(em: torch.Tensor, rt: "RegionText", seq: list[int], blank: int = 0,
+                  score: str = "mean") -> tuple[list[int], list[dict]]:
     """Confirm each back-jump of `seq` on its own: the region is aligned once against `seq` to place the passes, then
     for every jump `confirm_ctc` compares the phrase recited once (plain) with twice (expanded) over the frames of
     both passes (+-JUMP_PAD_FRAMES). A merged region can hold many jumps; one mean over the whole region would dilute
@@ -373,7 +388,7 @@ def confirm_jumps(em: torch.Tensor, rt: "RegionText", seq: list[int], blank: int
         if i0 in agg and k1 in agg:
             f0 = max(rt.f0, agg[i0]["start"] + rt.f0 - JUMP_PAD_FRAMES)
             f1 = min(rt.f1, agg[k1]["end"] + rt.f0 + JUMP_PAD_FRAMES)
-            ok, margin = confirm_ctc(em, rt.tokens(seq[i0:k]), rt.tokens(seq[i0:k1 + 1]), (f0, f1), blank)
+            ok, margin = confirm_ctc(em, rt.tokens(seq[i0:k]), rt.tokens(seq[i0:k1 + 1]), (f0, f1), blank, score)
             rec.update(margin=margin, accepted=ok)
         if not rec["accepted"]:
             drop.update(range(k, k1 + 1))
@@ -486,3 +501,100 @@ def realign_cuts(em: torch.Tensor, rt: RegionText, cuts: list[tuple[int, float]]
         words.extend(_entries(rt, part, agg, f0, occurrence=False))
     words.sort(key=lambda w: (w["ayah"], w["start_ms"]))
     return words
+
+
+
+# --- the emission-driven proposer (Q7g, ADR 0077 amendment of 8 Nov 2026) ------------------------------------------
+
+_NEG = -1e30
+
+
+def viterbi_repeats(em, word_tokens: list[list[int]], blank: int, penalty: float,
+                    max_back: int) -> tuple[list[tuple[int, int, int]] | None, float]:
+    """The recited word sequence of one ayah, read from the CTC emissions.
+
+    A Viterbi over the words' CTC states (blank, the tokens of each word in order, blank, ...) plus back-edges: from
+    the last token of word j to the blank before word i, for j - max_back < i <= j (i == j is a word recited twice).
+    Each back-edge costs `penalty` (log-prob units, summed over the path). No stars: the frames are the words' own.
+    An edge leaves only from a token, so two edges never chain at one frame and max_back bounds the reach. Several
+    ayahs may share one graph (their boundaries are then read from the emissions too); an edge that crosses into the
+    previous ayah is a cross-ayah repeat, which the gate writes without segments (P6) and R7 holds. Returns ([(word, first frame, last frame)] in recited order, the path score);
+    (None, -inf) when the frames are too few for the tokens. A word without tokens never appears."""
+    lp = np.asarray(em.numpy() if isinstance(em, torch.Tensor) else em, dtype=np.float64)
+    words = [w for w in range(len(word_tokens)) if word_tokens[w]]
+    toks, first, last = [], {}, {}
+    for w in words:
+        first[w] = len(toks)
+        toks += list(word_tokens[w])
+        last[w] = len(toks) - 1
+    L = len(toks)
+    T = lp.shape[0]
+    if not L or T < L:
+        return None, float("-inf")
+    ext = np.full(2 * L + 1, blank, dtype=np.int64)
+    ext[1::2] = toks
+    S = len(ext)
+    skip = np.zeros(S, bool)
+    skip[3::2] = ext[3::2] != ext[1:-2:2]  # token s may follow token s-2 directly when the labels differ
+    word_of_state = np.full(S, -1)
+    for w in words:
+        word_of_state[2 * first[w] + 1:2 * last[w] + 2:2] = w
+    pairs = [(2 * first[words[ii]], words[jj]) for jj in range(len(words))
+             for ii in range(max(0, jj - max_back + 1), jj + 1)]
+    tgt = np.array([p[0] for p in pairs])
+    src_tok = np.array([2 * last[w] + 1 for _, w in pairs])
+    bp = np.zeros((T, S), np.int8)  # 0 stay, 1 from s - 1, 2 from s - 2
+    jmp = np.full((T, S), -1, np.int32)  # a back-edge into s after frame t: its source state
+    d = np.full(S, _NEG)
+    d[0], d[1] = lp[0, ext[0]], lp[0, ext[1]]
+    for t in range(T):
+        if t:
+            b = np.full(S, _NEG)
+            b[1:] = d[:-1]
+            c = np.full(S, _NEG)
+            c[2:] = np.where(skip[2:], d[:-2], _NEG)
+            m = np.maximum(np.maximum(d, b), c)
+            bp[t] = np.where(m == d, 0, np.where(m == b, 1, 2))
+            d = m + lp[t, ext]
+        sv = d[src_tok] - penalty  # back-edges: epsilon moves after the frame's emission
+        ss = src_tok
+        best: dict[int, int] = {}
+        for k in np.flatnonzero(sv > d[tgt]):
+            if tgt[k] not in best or sv[k] > sv[best[tgt[k]]]:
+                best[tgt[k]] = k
+        for s_t, k in best.items():
+            d[s_t] = sv[k]
+            jmp[t, s_t] = ss[k]
+    end = S - 1 if d[S - 1] >= d[S - 2] else S - 2
+    score = float(d[end])
+    path = np.empty(T, np.int64)
+    s = end
+    for t in range(T - 1, -1, -1):
+        if jmp[t, s] >= 0:
+            s = int(jmp[t, s])
+        path[t] = s
+        if t:
+            s -= int(bp[t, s])
+    occ: list[list[int]] = []
+    for t in range(T):
+        s = path[t]
+        w = word_of_state[s]
+        if w >= 0 and s == 2 * first[w] + 1 and (t == 0 or path[t - 1] != s):
+            occ.append([int(w), t, t])  # entering a word's first token starts an occurrence
+        elif w >= 0 and occ and occ[-1][0] == w:
+            occ[-1][2] = t
+    return [tuple(o) for o in occ], score
+
+
+def propose(em: torch.Tensor, rt: "RegionText", frames: tuple[int, int], blank: int = 0,
+            penalty: float | None = None, max_back: int | None = None) -> list[int]:
+    """The region's recited sequence (indices into `rt.sw`): `viterbi_repeats` over the region's frames, all its
+    ayahs in one graph, so their boundaries come from the emissions, not from the alignment being repaired.
+    Frames too few for the tokens give the plain order."""
+    penalty = PARAMS["VITERBI_PENALTY"] if penalty is None else penalty
+    max_back = PARAMS["VITERBI_MAX_BACK"] if max_back is None else max_back
+    f0, f1 = frames
+    occ, _ = viterbi_repeats(em[f0:f1], rt.wtok, blank, penalty, max_back)
+    if not occ:
+        return [i for i in range(len(rt.sw)) if rt.wtok[i]]  # a word without tokens is never aligned
+    return [w for w, _, _ in occ]

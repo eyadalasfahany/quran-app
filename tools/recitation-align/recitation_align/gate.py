@@ -58,7 +58,8 @@ def match_start(text: str, local: Local) -> dict:
     Tie-break (Q7d): when a match beginning at word 0 of n (or in the last word of n-1) scores as high as the best
     match elsewhere, the clip is OK: two ayahs with the same opening cannot be told apart by their first words, and
     the best alignment may land on the other one. A real shift between such ayahs is still caught by the probes of
-    the ayahs around them (and, for refrains, by `refrain_resolve`). `tie` is true when this rule decided.
+    the ayahs around them (and, for refrains, by `refrain_resolve`). `tie` is true when this rule decided. Q7g widens
+    it to a near-tie (G3_TIE_DELTA) between ayahs whose first G3_TIE_WORDS words are the same (`_start_tie`).
     """
     hyp = norm(text)
     if not hyp or not local.text:
@@ -70,17 +71,30 @@ def match_start(text: str, local: Local) -> dict:
         return {"verdict": UNSURE, "heard": heard, "score": score}
     good = (a == local.n and wi == 0) or (a == local.n - 1 and local.last_prev >= 0 and wi >= local.last_prev)
     if not good:
-        tie = _start_tie(hyp, local, score)
+        tie = _start_tie(hyp, local, score, heard_at=(a, wi))
         if tie is not None:
             return {"verdict": OK, "heard": tie, "score": score, "tie": True}
     return {"verdict": OK if good else BAD, "heard": heard, "score": score}
 
 
-def _start_tie(hyp: str, local: Local, best: float) -> str | None:
+def _same_opening(local: Local, a: int, b: int) -> bool:
+    """Ayahs a and b of the local text open with the same first G3_TIE_WORDS words (normalised)."""
+    k = PARAMS["G3_TIE_WORDS"]
+    wa = [w for w, x, _ in local.words if x == a][:k]
+    wb = [w for w, x, _ in local.words if x == b][:k]
+    return len(wa) == len(wb) == k and wa == wb
+
+
+def _start_tie(hyp: str, local: Local, best: float, heard_at: tuple[int, int] | None = None) -> str | None:
     """The key of a match that begins in the last word of n-1 or at word 0 of n and scores `best` (the best score
-    anywhere in the local text), or None. Windows are as long as the transcript, as in `partial_ratio`."""
+    anywhere in the local text), or None. Windows are as long as the transcript, as in `partial_ratio`.
+
+    Near-tie (Q7g): when the best match begins at word 0 of another ayah whose first G3_TIE_WORDS words are the same
+    as n's, a match at n:0 within G3_TIE_DELTA points of it counts too (2:150 and 2:232 of QF Afasy: 99 and 98)."""
     if len(hyp) > len(local.text):
         return None
+    if heard_at is not None and heard_at[1] == 0 and heard_at[0] != local.n and _same_opening(local, heard_at[0], local.n):
+        best -= PARAMS["G3_TIE_DELTA"]
     offsets, pos = {}, 0
     for w, a, wi in local.words:
         offsets[(a, wi)] = pos
@@ -570,6 +584,7 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
     g3_failed = sorted(a for a, r in results.items() if r["verdict"] != OK)
     regions = [(a - REPAIR_MARGIN, a + REPAIR_MARGIN) for a in g3_failed]
     regions += [(int(k.split(":")[1]) - REPAIR_MARGIN, int(k.split(":")[1]) + REPAIR_MARGIN) for k, _, _ in stretch]
+    regions += [(a, a) for a in _accepted_repeat_ayahs(repairs or [])]  # Q7g: their checkpoints may sit on a pass
     g5 = held_out_stats(anchors or {}, words, regions)
     nulls = sorted(set(low_conf_ayahs(words)) | set(repair_null))
     ayah_count = completeness["ayah_count"]
@@ -756,10 +771,18 @@ def _splice(words: list[dict], region, new: list[dict], pauses) -> list[dict]:
     return out
 
 
-def _region_g5(anchors: dict, words: list[dict], lo: int, hi: int) -> dict:
+def _accepted_repeat_ayahs(repairs: list[dict]) -> set[int]:
+    """Ayahs that hold an accepted repeat: the ayahs of the accepted back-jumps of the accepted repairs."""
+    return {int(k.split(":")[0]) for r in repairs if r.get("accepted")
+            for j in r.get("jumps", []) if len(j) > 3 and j[3] for k in j[:2]}
+
+
+def _region_g5(anchors: dict, words: list[dict], lo: int, hi: int, set_aside=()) -> dict:
+    """G5 on the region's held-out words; ayahs in `set_aside` (a candidate's repeats, Q7g) are left out, since the
+    anchors' checkpoint of a repeated passage may sit on either pass."""
     inside = {**anchors, "held_out_refs": [r for r in anchors.get("held_out_refs", []) if lo <= r[0] <= hi],
               "held_out": [h for h in anchors.get("held_out", []) if lo <= h[0] <= hi]}
-    return held_out_stats(inside, words)
+    return held_out_stats(inside, words, [(a, a) for a in set_aside])
 
 
 def _structure_ok(words: list[dict], lo: int, hi: int) -> bool:
@@ -878,7 +901,7 @@ def _evaluate(ctx: RepairContext, region, cand: list[dict], raw: dict, before: d
         if a not in repeat_ayahs and verify_elongation(ctx, cand, k, pos, dur, resolved, g2) is not None:
             continue  # a verified elongation, not a failure (recorded by run_repairs)
         fails.append(f"stretch {k}")
-    g5 = _region_g5(ctx.anchors, cand, lo, hi)
+    g5 = _region_g5(ctx.anchors, cand, lo, hi, repeat_ayahs)
     if g5["status"] == "fail" or g5["outlier_ayahs"]:
         fails.append("G5")
     return fails, r["probes"], g2
@@ -914,8 +937,9 @@ def _repeat_ayahs(rp, seq: list[int], word_ayah: list[int]) -> list[int]:
 def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_old: dict | None = None) -> dict:
     """Repair one region (a `repeats.Region`). `raw` is the G3 probes before refrain resolution.
 
-    1. Dense ASR, the recited sequence and its class. A back-jump confirmed by CTC (`confirm_ctc`) is re-aligned
-       with one entry per occurrence (`realign_region`).
+    1. The recited sequence from the CTC emissions (`repeats.propose`, Q7g) and its class. Each back-jump is checked
+       on its own frames by total log-prob (`confirm_jumps(score="total")`), then re-aligned with one entry per
+       occurrence (`realign_region`).
     2. Otherwise (or when that fails), a failing ayah start (raw G3 BAD or UNSURE) is searched by `repair_start`,
        and a failing end (G2) by `repair_last_word`; the region is re-aligned at those points (`realign_cuts`).
     3. Each candidate is accepted only if `_evaluate` finds no failure.
@@ -932,12 +956,11 @@ def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_o
     rt = rp.region_text(surah, ctx.ayahs, lo, hi, ctx.vocab, f0=f0, f1=f1, spf=ctx.spf)
     plain = list(range(len(rt.sw)))
     before = ayah_starts(words)
-    penalty = PARAMS["BACK_PENALTY"] if ctx.back_penalty is None else ctx.back_penalty
+    penalty = PARAMS["VITERBI_PENALTY"] if ctx.back_penalty is None else ctx.back_penalty
     mode = PARAMS["REPEAT_MODE"] if ctx.repeat_mode is None else ctx.repeat_mode
 
-    texts = ctx.dense(rp.dense_windows(region))
-    asr_words = rp.stitch_windows([norm(t).split() for t in texts])
-    seq = rp.recited_sequence(asr_words, rt.keys, penalty)
+    # Q7g: the recited sequence comes from the CTC emissions over the region's frames (no dense ASR)
+    seq = rp.propose(ctx.em, rt, (f0, f1), ctx.blank, penalty)
     kind = rp.classify(seq, rt.word_ayah)
     key = lambda wi: f"{rt.sw[wi][0]}:{rt.sw[wi][1]}"  # noqa: E731
     entry = {"region": region.key(surah), "trigger": list(region.triggers), "kind": kind, "ctc_margin": None,
@@ -960,7 +983,7 @@ def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_o
 
     confirmed = None
     if kind != "none":
-        seq, checked = rp.confirm_jumps(ctx.em, rt, seq, ctx.blank)
+        seq, checked = rp.confirm_jumps(ctx.em, rt, seq, ctx.blank, score="total")
         entry["jumps"] = [[key(j["from"]), key(j["to"]), j["margin"], j["accepted"]] for j in checked]
         margins = [j["margin"] for j in checked if j["accepted"]] or [j["margin"] for j in checked
                                                                          if j["margin"] is not None]

@@ -9,8 +9,8 @@ HEX16 = re.compile(r"^[0-9a-f]{16}$")
 
 
 def test_tool_version_is_package_version_plus_quality_version():
-    assert QUALITY_VERSION == "q6"
-    assert tool_version() == "0.1.0+q6"
+    assert QUALITY_VERSION == "q7"
+    assert tool_version() == "0.1.0+q7"
 
 
 def test_every_gate_name_is_in_params():
@@ -18,10 +18,10 @@ def test_every_gate_name_is_in_params():
         "KEY_PASS", "KEY_UNIQUE", "KEY_WORDS", "HEAD_CAP_S", "TAIL_CAP_S", "SOUND_DB", "DURATION_FLAG",
         "PACE_BREAK", "ADJ_JUMP", "GAP_G3_RUN", "ASR_EVERY", "CUT_SPACING_S", "SCORE_NEAR", "SCORE_FAR",
         "BACK_WORDS", "PACE", "SLOW_WORDS", "EDGE_WORDS", "EDGE_S", "MIN_CONF", "CUT_BACK_FRAMES", "MIN_CP_PER_S",
-        "TAIL_MAX_S", "G3_PRE_S", "G3_POST_S", "G3_SCORE", "G3_REPROBE", "G3_NEXT_WORDS", "G3_CUT_AVOID_S",
+        "TAIL_MAX_S", "G3_PRE_S", "G3_POST_S", "G3_SCORE", "G3_REPROBE", "G3_NEXT_WORDS", "G3_CUT_AVOID_S", "G3_TIE_DELTA", "G3_TIE_WORDS",
         "G3_MIN_WORDS", "G3_MAX_S", "ELONG_SCORE", "G4_MIN", "G4_PER", "G4_PRE_S", "G4_POST_S", "G5_SHARE", "G5_TOL_MS", "G5_MEDIAN_MS", "G5_MIN_N",
         "FLOOR", "NULL_SHARE", "STRETCH_X", "STRETCH_S", "DENSE_WIN_S", "DENSE_HOP_S", "BACK_PENALTY",
-        "CTC_MARGIN", "STEP_PROBE_S", "STEP_SCORE", "REPEAT_MODE", "CAP_NO_HIGHLIGHT", "CAP_SEG_NULL",
+        "CTC_MARGIN", "VITERBI_PENALTY", "VITERBI_MAX_BACK", "STEP_PROBE_S", "STEP_SCORE", "REPEAT_MODE", "CAP_NO_HIGHLIGHT", "CAP_SEG_NULL",
         "CAP_UNAVAILABLE",
     }
     assert names == set(PARAMS)
@@ -37,9 +37,9 @@ def test_params_digest_is_sixteen_hex_and_stable():
     assert digest == params_digest()
 
 
-def test_params_digest_is_pinned_for_q6():
+def test_params_digest_is_pinned_for_q7():
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
-    assert params_digest() == "def7c3b9f140ba58"
+    assert params_digest() == "8ab5b3efbf05b601"
 
 
 def test_params_digest_changes_when_a_parameter_changes(monkeypatch):
@@ -109,3 +109,8 @@ def test_q4_adds_the_pace_adaptive_clip_and_the_elongation_score():
 def test_q6_writes_repeats_without_segments_after_the_calibration_missed_its_targets():
     # Q7c, P14: checks/repeat-calibration.json records the miss
     assert PARAMS["REPEAT_MODE"] == "null" and PARAMS["SLOW_WORDS"] == 0.6
+
+
+def test_q7_adds_the_proposer_and_the_near_tie():
+    assert PARAMS["VITERBI_PENALTY"] == 30.0 and PARAMS["VITERBI_MAX_BACK"] == 12
+    assert PARAMS["G3_TIE_DELTA"] == 2 and PARAMS["G3_TIE_WORDS"] == 3

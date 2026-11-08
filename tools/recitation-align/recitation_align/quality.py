@@ -13,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q6"  # q6 (Q7c): the repeat calibration, REPEAT_MODE "null", slow pace breaks, unresolved repeats
+QUALITY_VERSION = "q7"  # q7 (Q7g): the CTC repeat proposer, the G3 near-tie, Al-Fatiha's opening, G5 sets repeats aside
 
 PARAMS: dict = {
     # G0 completeness
@@ -53,6 +53,10 @@ PARAMS: dict = {
     "G3_REPROBE": (0.0, 0.6),
     "G3_NEXT_WORDS": 8,
     "G3_CUT_AVOID_S": 3,
+    # Q7g: a near-tie between ayahs that open with the same G3_TIE_WORDS words counts as a tie (QF Afasy 2:150 and
+    # 2:232 were BAD at 99 and 98 against the identical opening of the ayah before)
+    "G3_TIE_DELTA": 2,
+    "G3_TIE_WORDS": 3,
     # Q7d: a G3 clip holds about G3_MIN_WORDS words at the surah's pace (seconds per word inside ayahs), at least
     # G3_PRE_S + G3_POST_S and at most G3_MAX_S, so a slow reciter's clip is not one or two words long.
     "G3_MIN_WORDS": 5,
@@ -90,6 +94,12 @@ PARAMS: dict = {
     "DENSE_HOP_S": 5,
     "BACK_PENALTY": 6.0,
     "CTC_MARGIN": 0.02,
+    # Q7g (q7): the repeat proposer is a CTC Viterbi over each ayah's word graph (repeats.viterbi_repeats). On the
+    # Q7c set (65 back-jump ayahs, 248 occurrences; 258 controls) it reproduces 95.2-95.6% of the back-jump
+    # occurrences with 0 false repeats at every penalty from 5 to 30 (94.4% at 40); MAX_BACK 8, 12 and 15 tie.
+    # Penalties 10-30 tie on back-jumps (95.2%, 58 of 65 exact); the safer, higher-penalty end of the tie is 30.
+    "VITERBI_PENALTY": 30.0,
+    "VITERBI_MAX_BACK": 12,
     "STEP_PROBE_S": 0.5,
     "STEP_SCORE": 85,
     # Q7d: a stretched word with no repeat is a verified elongation when dense ASR over its span hears it at this
