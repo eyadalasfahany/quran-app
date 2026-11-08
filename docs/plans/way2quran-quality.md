@@ -580,6 +580,69 @@ Each step is one reviewable, committable change. Its brief records `<base>`, run
 - **Done:** the record is committed with `passed` true, or `REPEAT_MODE="null"` is recorded.
 - **Model:** *stronger model* (Sonnet).
 
+### Q7f. Measurement: where repeats are lost, other acoustic models, Afasy as a reciter (local, 8 Nov 2026)
+
+Measured only; nothing shipped. QF data stayed on the Mac.
+
+- **The CTC model is not the bottleneck.** On the 65 QF Afasy back-jump ayahs, the current wav2vec2 prefers QF's true sequence over the plain one 97% of the time, by total log-prob and by `confirm_ctc` alike. Q7c's misses came from the proposer (dense Whisper plus the DP), which never offered most repeats.
+- **Other models** (scratch venvs, nothing added to the project):
+  - `obadx/muaalem-model-v3_2` (MIT) ties, with about 2× the margin.
+  - MMS-1b-all is no better, and `confirm_ctc`'s stars break on its emissions.
+  - `TBOGamer22/wav2vec2-quran-phonetics`, `mohammed/fastconformer-quran-ar` and `rabah2026/...-quran-v_final` are unusable for this.
+- **"Same word twice" in QF** (35 ayahs): CTC margins centre near zero for every model. These are probably split segments, not acoustic repeats, and the lit word is the same either way. They are scored by lit-word time against QF, not by position sequence, and both numbers are reported.
+- **The pipeline on Afasy himself:** 36 passes. 2, 18 and 59 are `no_highlight`, almost all from repeats the proposer missed. Also:
+  - 2:150 and 2:232 are G3 near-ties (98–99 against 100, identical openings);
+  - 2:222:26 is one real misalignment;
+  - 18's G5 counts repeat ayahs.
+- **Al-Fatiha** is falsely `incomplete-start`: the opening key includes the basmala (ayah 1), which Whisper hears poorly. The key taken after ayah 1 scores 100.
+- **Word starts are late:** ours minus QF has a median of +102 to +161 ms per surah, with fewer than 3% of words more than 50 ms early.
+  - A global −110 ms shift cuts the lit-word disagreement on non-repeat ayahs from 14.3% to 8.7%.
+  - The app keeps the last started word lit (`activeWordPosition`), so only starts are visible; gaps are not.
+  - The old A6 gate compared ayah starts only, so this was never measured. It likely applies to every reciter we time, the live MP3Quran ones included.
+- **Speed:** at q6, Abadh's surah 2 alone projects to 273–390 CI minutes against the 300-minute job timeout, because the dense-Whisper repair dominates.
+
+### Q7g. The emission-driven repeat proposer (q7)
+
+Prototype (`scratchpad/q7g/proposer.py`) on the Q7c set:
+
+- a CTC Viterbi over each ayah's word graph, using the current wav2vec2 emissions;
+- back-edges from the end of word j to the start of word i, for j − MAX_BACK < i ≤ j, each with a penalty;
+- no stars, no ASR.
+
+Results:
+
+- **95% of back-jump occurrences reproduced, with 0 false repeats** on 258 control ayahs, at every penalty from 5 to 40 (MAX_BACK 8–15 identical).
+- RTF 0.004 on cached emissions.
+- Timing: median 120 ms (48 ms after the Q7h shift), p90 405–515 ms; the controls show the same spread.
+
+Build steps (the gate's checks stay as they are):
+
+- **Files:** `recitation_align/repeats.py` gains `viterbi_repeats`. `gate.repair_region` uses it in place of `ctx.dense` + `stitch_windows` + `recited_sequence`, and `confirm_jumps` scores by total log-prob without stars.
+- **Kept unchanged:** `_evaluate` (G3, stretch, G5, moved neighbours), `_outcome`, the onset repair, the elongation and unresolved-repeat checks, and the safety rule.
+- **Also in q7:**
+  - Al-Fatiha: `completeness.LETTERS_AYAHS` gains `1: 1`, so the opening key after the basmala counts.
+  - The G3 tie rule widens to a near-tie (within `G3_TIE_DELTA` of the top score, between ayahs with identical openings).
+  - G5 sets aside ayahs that hold an accepted repeat.
+- **Calibration:** `checks/repeat-calibration.json` is re-run at q7 with the back-jump target (≥ 90%, 0 false repeats). Same-word results are reported by lit-word time. If it passes, `REPEAT_MODE` returns to `"positions"`.
+- **Speed budget:** the repair stage ≤ 0.4 RTF locally on Abadh 005 and 009.
+- **Real check:** Abadh 005 and 009, Ahmed bin Talib 018, MP3Quran 62:017, 015 byte-identical, and Afasy 1, 2, 18, 36 and 59. Afasy 36 keeps 0 false alarms.
+- **Model:** *stronger model* (Opus).
+
+### Q7h. Word-start precision against QF (local)
+
+- **Measure the late bias on more than Afasy before any shift ships.** Use 2–3 other QF reciters whose word segments the local database holds (e.g. Al-Husary, Al-Minshawi, Al-Sudais), with their QF audio, on the same five surahs. Their QF data stays on the Mac.
+- **Compare boundary precision on the control ayahs:**
+  - (a) the current aligner;
+  - (b) the current aligner plus the measured shift;
+  - (c) `obadx/muaalem-model-v3_2` forced alignment (phonetic, per word).
+
+  Report the median, p90 and p99 of start errors, and the lit-word disagreement under the app's rule (the last started word).
+- **Decision rule:**
+  - If one shift holds across the reciters (each reciter's median within ±30 ms of it), it becomes `PARAMS["WORD_START_SHIFT_MS"]`, applied at export for word starts only. Ayah starts and the G3/G2 checks are untouched.
+  - If muaalem's p90 is clearly better (≤ 200 ms where ours is about 400), its adoption as the word-boundary model gets its own brief.
+- The live MP3Quran reciters get the shift only through Q14's verified PRs.
+- **Model:** *stronger model* (Opus).
+
 ### Q8. Measure cross-ayah back-jumps, then the conditional format 2
 
 **Measure (always).**

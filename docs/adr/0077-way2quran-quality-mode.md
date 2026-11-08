@@ -254,6 +254,21 @@ the gate (plan Q11b), instead of being made unavailable. Ayahs outside the range
 player style without a new frame (developer approval, an approved difference under ADR 0010). The range is an additive,
 nullable field on the audio file; QF and MP3Quran rows stay null and behave as today.
 
+### Amendment, 8 Nov 2026: repeats are proposed from the CTC emissions; word starts are measured against QF
+
+Evidence is in plan Q7c, Q7f and Q7g (local runs on QF Afasy; the QF data stays on the Mac).
+
+- **Decision 4, step 2 changes.** Dense-Whisper proposals reproduced at best 13% of QF's repeats (Q7c). Yet on the same ayahs, the CTC model prefers the true back-jump sequence 97% of the time (Q7f).
+  - The proposer becomes a CTC Viterbi over the ayah's word graph with penalised back-edges.
+  - In the prototype it reproduces 95% of back-jump occurrences with 0 false repeats on 258 control ayahs, at about 1/250 of the dense repair's time.
+  - Step 3's confirm scores by total log-prob over the same frames, with no stars.
+  - Until the q7 calibration passes, `REPEAT_MODE` stays `"null"` (Q7c).
+- **Step 5's targets.** The ≥ 90% occurrence target is measured on back-jumps. QF's "same word twice" entries show no acoustic margin for any model tested (probably split segments), and the lit word is the same either way. So they are scored by lit-word time against QF. Both numbers are recorded; neither is dropped.
+- **Word starts.** Ours run late against QF Afasy, with a median of +102 to +161 ms per surah. The old A6 gate compared ayah starts only.
+  - A start shift is adopted only if it holds on other QF reciters (plan Q7h).
+  - A better boundary model (`obadx/muaalem-model-v3_2`, MIT) is measured in the same step.
+  - A shift reaches the live MP3Quran reciters only through decision 8's verified PRs.
+
 ## Reinterpretation of ADR 0060's "no surah-by-surah shipping" for Way2Quran
 
 - **The rule's purpose was that a reciter appears once, as a whole, and is never trickled out over several deploys. That purpose is kept:** the reciter is released once, by one release PR, with its whole available audio set.
