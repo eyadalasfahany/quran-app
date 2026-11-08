@@ -28,10 +28,10 @@ def test_the_plan_has_one_job_per_surah_or_reciter():
     ws = rc.plan("word-start")
     assert len(ws) == 12 and {j["reciter"] for j in ws} == {"afasy", "husary", "sudais", "minshawi"}
     real = rc.plan("real-check")
-    assert [(j["reciter"], j["surah"]) for j in real] == [(1, 5), (1, 9), (3, 18), (3, 15), (62, 17)]
+    assert [(j["reciter"], j["surah"]) for j in real] == [(1, 5), (1, 9), (3, 18), (3, 15), (2, 36), (2, 18), (62, 17)]
     assert [j for j in real if j.get("compare_base")] == [real[3]]
     assert all(len(j["sha256"]) == 64 for j in real if j["source"] == "way2quran")
-    assert (TOOL.parents[1] / real[4]["timing"]).is_file()
+    assert (TOOL.parents[1] / real[6]["timing"]).is_file()
 
 
 def test_the_mask_drops_versions_digests_and_seconds_at_every_level():
@@ -118,3 +118,24 @@ def test_the_summary_shows_each_gate_stage_rtf():
                                    "gate_rtf": {"g3": 0.5, "repair": 0.3}, "identical_to_base": None}])
     assert out["jobs"][0]["gate_rtf"] == {"g3": 0.5, "repair": 0.3}
     assert '"repair": 0.3' in rc.markdown(out)
+
+
+def test_g5_against_qf_tells_which_side_qf_agrees_with():
+    refs = [{"ayah": 1, "start_ms": 0, "end_ms": 9000,
+             "words": [{"index": 1, "start_ms": 1000, "end_ms": 1500}, {"index": 2, "start_ms": 2000, "end_ms": 2500},
+                       {"index": 3, "start_ms": 3000, "end_ms": 3500}]}]
+    held = [[1, 1, 1000, 1100],   # close: not counted as far
+            [1, 2, 2600, 2000],   # far from the checkpoint, ours right by QF, checkpoint off
+            [1, 3, 3000, 3700],   # far, ours wrong by QF
+            [2, 1, 0, 900]]       # no QF word: skipped
+    assert rc.g5_vs_qf(held, refs) == {"n": 3, "ours_far_from_checkpoint": 2, "of_which_ours_right_by_qf": 1,
+                                       "of_which_ours_wrong_by_qf": 1, "checkpoint_off_by_qf": 1}
+
+
+def test_the_real_check_merge_lists_cross_ayah_entries_per_item():
+    jobs = [{"item": {"reciter": 1, "surah": 9}, "verdict": "no_highlight",
+             "cross_ayah": [{"from": "9:119", "to": "9:120", "represented": False}]},
+            {"item": {"reciter": 3, "surah": 15}, "verdict": "pass"}]
+    out = rc.merge("real-check", jobs)
+    assert out["cross_ayah"] == {"1/009": [{"from": "9:119", "to": "9:120", "represented": False}], "3/015": []}
+    assert '"1/009"' in rc.markdown(out)

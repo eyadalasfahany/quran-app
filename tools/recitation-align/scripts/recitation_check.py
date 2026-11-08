@@ -10,10 +10,12 @@ Checks (plan way2quran-quality Q7g/Q7h):
   per surah; `merge` pools them into the `checks/repeat-calibration.json` record shape.
 - `real-check`: Way2Quran 1/005, 1/009, 3/018, 3/015 and MP3Quran 62/017 (`checks/real-check.json`): the audio from
   the public source with its sha256 checked, completeness, the quality pass and the gate; the gate records and the
-  w2q_explain summary. 3/015 also runs at `--base-tool` (the base commit) and compares the aligned document and the
+  w2q_explain summary, the cross-ayah entries, and what each stretched word holds (`listen_stretches.py`, Q8). 3/015
+  also runs at `--base-tool` (the base commit) and compares the aligned document and the
   gate record, versions, digests and seconds masked.
 - `afasy-pipeline`: the full pipeline on QF Afasy 1, 2, 18, 36 and 59 (completeness, quality pass, gate, gated
-  export): the verdicts and the lit-word split for repeat and non-repeat ayahs, at 0 and at `--shift-ms`.
+  export): the verdicts, the gate explanation, G5's numbers with its held-out words against QF (`g5_vs_qf`), and the
+  lit-word split for repeat and non-repeat ayahs, at 0 and at `--shift-ms`.
 - `word-start`: Q7h's metrics (signed word-start error, lit-word wrong time at shifts -60 to -120) on the first pass
   of Afasy, Al-Husary, Al-Sudais and Al-Minshawi, surahs 18, 36 and 59, over Q7h's control ayahs (no QF repeat, the
   same positions as ours).
@@ -146,6 +148,28 @@ def _gate_summary(gate_doc: dict | None) -> dict:
             "repairs_accepted": sum(bool(r.get("accepted")) for r in gate_doc.get("repairs") or [])}
 
 
+def g5_vs_qf(held_out_refs: list, refs: list[dict], tol_ms: int = 300) -> dict:
+    """G5's held-out words (Q10): which side QF agrees with when our start and the ASR checkpoint disagree. Our start is
+    the aligner's, before any repair (the gate's final words are not kept), so repaired regions count as they were."""
+    qf: dict = {}
+    for r in refs:
+        for w in r["words"]:
+            qf.setdefault((r["ayah"], w["index"]), w["start_ms"])
+    far = ours_ok = both_off = cp_off = n = 0
+    for ayah, pos, cp_ms, ours_ms in held_out_refs:
+        q = qf.get((ayah, pos))
+        if q is None:
+            continue
+        n += 1
+        cp_off += abs(cp_ms - q) > tol_ms
+        if abs(ours_ms - cp_ms) > tol_ms:
+            far += 1
+            ours_ok += abs(ours_ms - q) <= tol_ms
+            both_off += abs(ours_ms - q) > tol_ms
+    return {"n": n, "ours_far_from_checkpoint": far, "of_which_ours_right_by_qf": ours_ok,
+            "of_which_ours_wrong_by_qf": both_off, "checkpoint_off_by_qf": cp_off}
+
+
 def _read(path: Path):
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
 
@@ -212,6 +236,16 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
                 (out / sub / src.name).write_bytes(src.read_bytes())
         _run(TOOL, ["scripts/w2q_explain.py", "--handoff", str(out), "--surah", str(n), "--out",
                     str(out / "explain.md")])
+        res["cross_ayah"] = (gate_doc or {}).get("cross_ayah") or []
+        audio_file = audio / f"{n:03d}.mp3"  # the name the gate reads
+        if gate_doc is not None and (gate_doc["checks"].get("stretch") or {}).get("words") and audio_file.is_file():
+            # Q8: what each stretched word holds (Way2Quran/MP3Quran audio only)
+            clock("listen", _run, TOOL, ["scripts/listen_stretches.py", "--gate", str(work / f"ref/gate/{n:03d}.json"),
+                                         "--aligned", str(work / f"ref/aligned/{n:03d}.json"), "--audio",
+                                         str(audio_file), "--out", str(out)], check=False)
+            listened = _read(out / "listen.json")
+            res["listen"] = [{k: r.get(k) for k in ("word", "position", "dur_ms", "gate", "class", "other")}
+                             for r in (listened or {}).get("stretches", [])]
         if item.get("compare_base") and base_tool is not None:
             pipeline(base_tool, rid, [n], manifest, audio, work / "base", Clock())
             pairs = {"aligned": (work / f"ref/aligned/{n:03d}.json", work / f"base/aligned/{n:03d}.json"),
@@ -232,6 +266,12 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
             raise SystemExit(f"{n:03d}: the gate ships timings but gated_export wrote none")
         rows = exported["ayahs"] if exported else None
         refs = json.loads((qf / f"ref/qf-{n:03d}.json").read_text(encoding="utf-8"))
+        gate_doc = _read(work / f"run/gate/{n:03d}.json")
+        if gate_doc is not None:
+            res["g5"] = gate_doc["checks"].get("G5")
+        aligned = _read(work / f"run/aligned/{n:03d}.json")
+        if aligned is not None:
+            res["g5_vs_qf"] = g5_vs_qf((aligned.get("anchors") or {}).get("held_out_refs") or [], refs)
         res["lit"] = {str(s): lit_word.split(rows, refs, n, s) for s in sorted({0, shift_ms})}
     else:
         rec = item["reciter"]
@@ -263,7 +303,8 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
 def merge(check: str, metrics: list[dict]) -> dict:
     """One summary per check: the per-job verdicts and seconds, and the pooled lit-word counts."""
     jobs = [{k: m.get(k) for k in ("item", "verdict", "reasons", "segments_null", "identical_to_base", "audio_s",
-                                   "seconds", "rtf", "gate_rtf", "aligned", "start") if k in m} for m in metrics]
+                                   "seconds", "rtf", "gate_rtf", "aligned", "start", "cross_ayah", "listen", "g5",
+                                   "g5_vs_qf") if k in m} for m in metrics]
     out: dict = {"check": check, "jobs": jobs}
     if check == "afasy-pipeline":
         pooled: dict = {}
@@ -273,6 +314,9 @@ def merge(check: str, metrics: list[dict]) -> dict:
                     acc = pooled.setdefault(s, {}).setdefault(kind, [0, 0, 0])
                     pooled[s][kind] = [a + b for a, b in zip(acc, counts)]
         out["lit"] = {s: {k: lit_word.shares(v) for k, v in by.items()} for s, by in pooled.items()}
+    if check == "real-check":
+        out["cross_ayah"] = {f"{m['item']['reciter']}/{m['item']['surah']:03d}": m.get("cross_ayah") or []
+                             for m in metrics}
     if check == "word-start":
         by_reciter: dict = {}
         for m in metrics:
@@ -295,7 +339,7 @@ def markdown(summary: dict) -> str:
             verdict += f" (identical to base: {j['identical_to_base']})"
         lines.append(f"| {json.dumps(j['item'])} | {verdict} | {j.get('audio_s')} | {json.dumps(j.get('seconds'))} | "
                      f"{(j.get('rtf') or {}).get('total')} | {json.dumps(j.get('gate_rtf'))} |")
-    for key in ("lit", "reciters"):
+    for key in ("lit", "reciters", "cross_ayah"):
         if key in summary:
             lines += ["", f"```json\n{json.dumps(summary[key], indent=1)}\n```"]
     return "\n".join(lines) + "\n"

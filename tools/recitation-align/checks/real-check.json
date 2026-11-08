@@ -6,6 +6,8 @@
     {"reciter": 1, "surah": 9, "source": "way2quran", "sha256": "1538f94adac077b137a039522e3d5f9368c9f9dec6c5ccbcfe91bf24bd872762"},
     {"reciter": 3, "surah": 18, "source": "way2quran", "sha256": "4e4d89c651af884a8813685137d938e764866d615939bb5c47eb796dd513bc85"},
     {"reciter": 3, "surah": 15, "source": "way2quran", "sha256": "54ac53cad129e754289347e22b2cf3b909c1cdbf57db374cc429924a835bc948", "compare_base": true},
+    {"reciter": 2, "surah": 36, "source": "way2quran", "sha256": "b466189255010018573f8aece991b12f2151debc250a4d149b331684ff377e54"},
+    {"reciter": 2, "surah": 18, "source": "way2quran", "sha256": "e486f63bed5d571c18fb1ab6fef6e0f9e0154c3378ac4e9e463f1d1fef1ebae0"},
     {"reciter": 62, "surah": 17, "source": "mp3quran", "timing": "apps/api/resources/recitation-timings/mp3quran/62/017.json"}
   ]
 }
