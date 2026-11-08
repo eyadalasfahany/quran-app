@@ -107,11 +107,12 @@ def gate_surah(surah: int, comp: dict, *, doc: dict | None, refusal: dict | None
     prior = doc.get("repairs")
     if prior:
         # an already repaired document: gated as it is, its repairs carried (no second repair)
-        null = sorted({a for r in prior if r.get("accepted") for a in r.get("null", [])})
+        null = sorted({a for r in prior if r.get("accepted") for a in r.get("null", [])}
+                      | {int(u[0].split(":")[1]) for u in doc.get("unresolved_repeats", [])})
         cross = [c for r in prior if r.get("accepted") for c in r.get("cross", [])]
         return gate.surah_verdict(surah, comp, words=words, anchors=anchors, g2=g2, g4=g4, pauses=pauses, g3=g3,
                                   seconds=seconds, repairs=prior, repair_null=null, cross_ayah=cross,
-                                  elongations=doc.get("elongations", []))
+                                  elongations=doc.get("elongations", []), unresolved=doc.get("unresolved_repeats", []))
     first = gate.surah_verdict(surah, comp, words=words, anchors=anchors, g2=g2, g4=g4, pauses=pauses, g3=g3,
                                seconds=seconds)
     if repair is None or first["verdict"] != "no_highlight" or first["reasons"] != ["needs-repair"]:
@@ -131,12 +132,14 @@ def gate_surah(surah: int, comp: dict, *, doc: dict | None, refusal: dict | None
     record = gate.surah_verdict(
         surah, comp, words=out["words"], anchors=anchors, g2=out["g2"] or g2, g4=g4, pauses=pauses,
         g3={"results": final_results, "unprobed": probes["unprobed"], "moved": probes["moved"]}, seconds=seconds,
-        repairs=out["repairs"], repair_null=out["null"], cross_ayah=out["cross"], elongations=out["elongations"])
+        repairs=out["repairs"], repair_null=out["null"], cross_ayah=out["cross"], elongations=out["elongations"],
+        unresolved=out["unresolved"])
     if record["verdict"] == "repaired":
         doc["words"] = sorted(out["words"], key=lambda w: (w["ayah"], w["start_ms"]))
         doc["ayahs"] = ayah_spans(doc["words"], doc["audio"]["duration_ms"], doc.get("ayahs", []))
         doc["repairs"] = out["repairs"]
         doc["elongations"] = out["elongations"]
+        doc["unresolved_repeats"] = out["unresolved"]
     return record
 
 

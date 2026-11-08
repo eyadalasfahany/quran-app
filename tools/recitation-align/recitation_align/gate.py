@@ -527,7 +527,7 @@ def _record(surah: int, completeness: dict, verdict: str, reasons: list[str], ch
 def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None, words: list[dict] | None = None,
                   anchors: dict | None = None, g2: dict | None = None, g3: dict | None = None,
                   g4: dict | None = None, pauses=None, seconds: dict | None = None, repairs: list | None = None,
-                  repair_null=(), cross_ayah=(), elongations=None) -> dict:
+                  repair_null=(), cross_ayah=(), elongations=None, unresolved=None) -> dict:
     """The gate record of one surah (ADR 0077 decision 5). Precedence:
 
     1. G0: completeness is not `complete` -> `unavailable`, reason = the completeness verdict.
@@ -548,7 +548,9 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
       the NULL_SHARE count; `cross_ayah` is recorded for R7;
     - the verdict is `repaired` when at least one repair was accepted, else `pass`;
     - `elongations` ([key, position, ms, score], Q7d) are stretched words verified as elongations: they are listed in
-      `checks.stretch.elongations` and are no longer a reason to fail.
+      `checks.stretch.elongations` and are no longer a reason to fail;
+    - `unresolved` ([key, position, ms, earlier words heard], Q7c) are stretched words over a repeat that could not
+      be represented: listed in `checks.stretch.unresolved_repeats`; their ayahs come in through `repair_null`.
 
     `g3` is {"results": {ayah: record} (after refrain resolution), "unprobed": [...], "moved": {...}}; `g2` is
     `end_coverage`'s result; `g4` is `word_onset_probes`' result. A record carries verdicts, keys and numbers only.
@@ -587,6 +589,9 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
     if elongations is not None:
         checks["stretch"]["elongations"] = [list(e) for e in elongations]
         verified = {(e[0], e[1]) for e in elongations}
+        if unresolved is not None:  # Q7c: their ayahs are in repair_null (segments_null), not a surah failure
+            checks["stretch"]["unresolved_repeats"] = [list(u) for u in unresolved]
+            verified |= {(u[0], u[1]) for u in unresolved}
         stretch_fail = [x for x in stretch if (x[0], x[1]) not in verified]
     else:
         stretch_fail = stretch
@@ -764,6 +769,34 @@ def _structure_ok(words: list[dict], lo: int, hi: int) -> bool:
     starts = ayah_starts(words)
     seq = [starts[a] for a in sorted(starts) if lo - 1 <= a <= hi + 1]
     return all(b > a for a, b in zip(seq, seq[1:]))
+
+
+def _starts_ok(words: list[dict], n: int, resolved: dict, g2: dict | None) -> bool:
+    """The G3 starts on both sides of ayah n are OK (ayah 1 has none); for the last ayah, G2 passes."""
+    last = max(x["ayah"] for x in _spoken(words))
+    if n >= 2 and (n not in resolved or resolved[n]["verdict"] != OK):
+        return False
+    if n < last and (n + 1 not in resolved or resolved[n + 1]["verdict"] != OK):
+        return False
+    return n < last or (g2 is not None and g2.get("status") == "pass")
+
+
+def unresolved_repeat(ctx: RepairContext, words: list[dict], key: str, position: int, dur_ms: int, resolved: dict,
+                      g2: dict | None) -> dict | None:
+    """Q7c: a stretched word whose span holds a repeat the repeat stage could not represent (dense ASR over the span
+    hears an earlier word of the same ayah at ELONG_SCORE, one that is not the stretched word itself). With the G3
+    starts on both sides OK, the ayah's timing is verified and only its words are uncertain: it ships with
+    `segments: null` (ADR 0077 decision 4, "an ayah flagged as a repeat that is not resolved gets segments: null")
+    instead of failing the surah. Returns {"key", "position", "dur_ms", "earlier"} or None."""
+    w = _entry_of(words, key, position, dur_ms)
+    if w is None or not _starts_ok(words, w["ayah"], resolved, g2):
+        return None
+    target = norm(w["word"])
+    earlier = {norm(x["word"]) for x in _spoken(words) if x["ayah"] == w["ayah"] and x["start_ms"] < w["start_ms"]}
+    earlier.discard(target)
+    heard = norm(ctx.dense([(w["start_ms"] / 1000, w["end_ms"] / 1000)])[0]).split()
+    hits = sum(any(fuzz.ratio(h, e) >= PARAMS["ELONG_SCORE"] for e in earlier) for h in heard)
+    return {"key": key, "position": position, "dur_ms": dur_ms, "earlier": hits} if hits else None
 
 
 def verify_elongation(ctx: RepairContext, words: list[dict], key: str, position: int, dur_ms: int, resolved: dict,
@@ -1204,7 +1237,8 @@ def run_repairs(ctx: RepairContext, words: list[dict], raw: dict, first: dict, d
 
     Returns {"words", "raw" (G3 probes before refrain resolution, re-probed where a repair was accepted), "g2" (the
     latest accepted G2 or None), "repairs" (records), "null", "cross", "elongations" ([key, position, ms, score] of
-    the stretched words left that `verify_elongation` accepts)}.
+    the stretched words left that `verify_elongation` accepts), "unresolved" ([key, position, ms, earlier] of those
+    `unresolved_repeat` finds; their ayahs are in "null")}.
     """
     from . import repeats as rp
 
@@ -1275,4 +1309,14 @@ def run_repairs(ctx: RepairContext, words: list[dict], raw: dict, first: dict, d
         found = verify_elongation(ctx, out["words"], k, pos, dur, resolved, out["g2"] or g2)
         if found is not None:
             out["elongations"].append([found["key"], found["position"], found["dur_ms"], found["score"]])
+    # unresolved repeats (Q7c): the stretched words left whose span hears earlier words of their ayah
+    verified = {(e[0], e[1]) for e in out["elongations"]}
+    out["unresolved"] = []
+    for k, pos, dur in stretched_words(out["words"], ctx.pace):
+        if (k, pos) in verified:
+            continue
+        found = unresolved_repeat(ctx, out["words"], k, pos, dur, resolved, out["g2"] or g2)
+        if found is not None:
+            out["unresolved"].append([found["key"], found["position"], found["dur_ms"], found["earlier"]])
+    out["null"] = sorted(set(out["null"]) | {int(u[0].split(":")[1]) for u in out["unresolved"]})
     return out

@@ -348,6 +348,19 @@ def _word_rates(seq: list[Located]) -> list[tuple[Located, Located, float]]:
     return out
 
 
+def _heard_in_passage(texts: list[str], keys: list[str], lo: int, hi: int) -> bool:
+    """Every text holds speech, and at least SLOW_WORDS of its words are words of keys[lo..hi] (ratio >= 85)."""
+    passage = keys[lo:hi + 1]
+    for t in texts:
+        words = norm(t).split()
+        if len(norm(t)) < MIN_CHUNK_CHARS or not passage:
+            return False
+        found = sum(max(fuzz.ratio(w, k) for k in passage) >= 85 for w in words)
+        if found < PARAMS["SLOW_WORDS"] * len(words):
+            return False
+    return True
+
+
 def pace_breaks(kept: list[Located], keys: list[str], aow: list[int], skipped, transcribe_windows,
                 refrains: set[int], char_pace: float) -> list[dict]:
     """Pace breaks between consecutive kept windows (ADR 0077 decision 2a). Returns one entry per break.
@@ -358,7 +371,11 @@ def pace_breaks(kept: list[Located], keys: list[str], aow: list[int], skipped, t
     - `jump`: two adjacent 30 s windows locate more than `ADJ_JUMP` x 30 s x median pace words apart, both forward
       (`ok`) matches outside a refrain. The middle-gap input of the gate (a flag on its own).
     - `resolved`: no jump, and every skipped window inside the break located.
-    - `unresolved`: no jump, and some audio inside the break could not be placed. The fail-safe fires.
+    - `slow` (Q7c): a slow break (below the `PACE_BREAK` low bound) with no jump and no whole-surah match, where
+      the windows that could not be placed still hear the passage's own words (at least SLOW_WORDS of them): a
+      repeat or a reordering that matches no contiguous text. A flag, not the fail-safe.
+    - `unresolved`: no jump, and some audio inside a fast break (or a slow one with a far match) could not be
+      placed. The fail-safe fires.
     """
     rates = _word_rates(kept)
     if not rates:
@@ -389,6 +406,13 @@ def pace_breaks(kept: list[Located], keys: list[str], aow: list[int], skipped, t
             status = "jump"
         elif len(mid) == len(inside):
             status = "resolved"
+        elif rate < low * med and not any(m.status == "far" for m in mid) and _heard_in_passage(
+                [t for (s, _), t in zip(inside, texts) if s not in {m.start_s for m in mid}], keys,
+                max(0, p.ws - PARAMS["BACK_WORDS"] - REGION_BACK_WORDS), x.we):
+            # more audio than text, never a hole: a hole makes the text jump ahead (fast). The windows that did not
+            # place hear this passage's own words (repeated or reordered), so the words between p and x are fixed
+            # by both ends; G3 and the repeat stage check what lies inside.
+            status = "slow"
         else:
             status = "unresolved"
         out.append({"from_s": p.start_s, "to_s": x.start_s, "from_ayah": aow[p.ws], "to_ayah": aow[x.ws],

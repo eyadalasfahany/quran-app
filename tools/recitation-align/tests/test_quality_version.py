@@ -9,15 +9,15 @@ HEX16 = re.compile(r"^[0-9a-f]{16}$")
 
 
 def test_tool_version_is_package_version_plus_quality_version():
-    assert QUALITY_VERSION == "q5"
-    assert tool_version() == "0.1.0+q5"
+    assert QUALITY_VERSION == "q6"
+    assert tool_version() == "0.1.0+q6"
 
 
 def test_every_gate_name_is_in_params():
     names = {
         "KEY_PASS", "KEY_UNIQUE", "KEY_WORDS", "HEAD_CAP_S", "TAIL_CAP_S", "SOUND_DB", "DURATION_FLAG",
         "PACE_BREAK", "ADJ_JUMP", "GAP_G3_RUN", "ASR_EVERY", "CUT_SPACING_S", "SCORE_NEAR", "SCORE_FAR",
-        "BACK_WORDS", "PACE", "EDGE_WORDS", "EDGE_S", "MIN_CONF", "CUT_BACK_FRAMES", "MIN_CP_PER_S",
+        "BACK_WORDS", "PACE", "SLOW_WORDS", "EDGE_WORDS", "EDGE_S", "MIN_CONF", "CUT_BACK_FRAMES", "MIN_CP_PER_S",
         "TAIL_MAX_S", "G3_PRE_S", "G3_POST_S", "G3_SCORE", "G3_REPROBE", "G3_NEXT_WORDS", "G3_CUT_AVOID_S",
         "G3_MIN_WORDS", "G3_MAX_S", "ELONG_SCORE", "G4_MIN", "G4_PER", "G4_PRE_S", "G4_POST_S", "G5_SHARE", "G5_TOL_MS", "G5_MEDIAN_MS", "G5_MIN_N",
         "FLOOR", "NULL_SHARE", "STRETCH_X", "STRETCH_S", "DENSE_WIN_S", "DENSE_HOP_S", "BACK_PENALTY",
@@ -37,10 +37,9 @@ def test_params_digest_is_sixteen_hex_and_stable():
     assert digest == params_digest()
 
 
-def test_params_digest_is_pinned_for_q4_and_q5():
-    # q5 (Q7e) changed the repair code only: the parameters, and so the pin, are q4's.
+def test_params_digest_is_pinned_for_q6():
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
-    assert params_digest() == "9b4a572515695fb0"
+    assert params_digest() == "def7c3b9f140ba58"
 
 
 def test_params_digest_changes_when_a_parameter_changes(monkeypatch):
@@ -100,8 +99,13 @@ def test_code_files_are_sorted_and_cover_p17():
 
 def test_q3_sets_the_repeat_parameters():
     # Q7b: the back-jump penalty is set (it was None until Q7) and repeats inside an ayah are repeated positions
-    assert PARAMS["BACK_PENALTY"] == 6.0 and PARAMS["REPEAT_MODE"] == "positions"
+    assert PARAMS["BACK_PENALTY"] == 6.0 and PARAMS["REPEAT_MODE"] in ("positions", "null")
 
 
 def test_q4_adds_the_pace_adaptive_clip_and_the_elongation_score():
     assert PARAMS["G3_MIN_WORDS"] == 5 and PARAMS["G3_MAX_S"] == 12.0 and PARAMS["ELONG_SCORE"] == 85
+
+
+def test_q6_writes_repeats_without_segments_after_the_calibration_missed_its_targets():
+    # Q7c, P14: checks/repeat-calibration.json records the miss
+    assert PARAMS["REPEAT_MODE"] == "null" and PARAMS["SLOW_WORDS"] == 0.6

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q5"  # q5 (Q7e): word-onset repair and direct probes; PARAMS as in q4
+QUALITY_VERSION = "q6"  # q6 (Q7c): the repeat calibration, REPEAT_MODE "null", slow pace breaks, unresolved repeats
 
 PARAMS: dict = {
     # G0 completeness
@@ -41,6 +41,9 @@ PARAMS: dict = {
     "MIN_CONF": 0.55,
     "CUT_BACK_FRAMES": 2,
     "MIN_CP_PER_S": 1 / 600,
+    # Q7c: a slow pace break whose unplaced windows hear at least this share of the passage's own words is a flag
+    # (`slow`), not the fail-safe (1/009: 20 of 20 and 17 of 28 words at 3030 s and 3390 s)
+    "SLOW_WORDS": 0.6,
     # G2
     "TAIL_MAX_S": 60,
     # G3
@@ -78,6 +81,11 @@ PARAMS: dict = {
     # frames of its two passes (CTC_MARGIN, unchanged). REPEAT_MODE "positions": a repeat inside an ayah is written
     # as repeated positions (ADR 0077 decision 4, format 1); Q7c calibrates it on QF Afasy and sets "null" (P14)
     # if the targets are missed. R5 holds every release until the A6(a) record exists.
+    # Q7c (q6): on QF Afasy 1, 2, 18, 36 and 59 (100 repeat ayahs, 287 repeat occurrences, 258 control ayahs) the
+    # best setting with 0 false repeats reproduces 13% of the occurrences (BACK_PENALTY 1-2, CTC_MARGIN 0), median
+    # 159 ms, p90 802 ms, against 90% / 60 / 150; without the CTC confirm at most 20%, with 9 false repeats. Dense
+    # Whisper does not hear most of QF's short repeats, and CTC disfavours many of them even on QF's own frames. So
+    # REPEAT_MODE is "null" (P14) and BACK_PENALTY and CTC_MARGIN stay: they keep 0 false repeats and the best p90.
     "DENSE_WIN_S": 10,
     "DENSE_HOP_S": 5,
     "BACK_PENALTY": 6.0,
@@ -87,7 +95,7 @@ PARAMS: dict = {
     # Q7d: a stretched word with no repeat is a verified elongation when dense ASR over its span hears it at this
     # ratio and hears no other word of the local text at it, and the G3 starts on both sides are OK
     "ELONG_SCORE": 85,
-    "REPEAT_MODE": "positions",
+    "REPEAT_MODE": "null",  # Q7c: the calibration on QF Afasy missed its targets (checks/repeat-calibration.json)
     # release (R2, R3, R4)
     "CAP_NO_HIGHLIGHT": 0.01,
     "CAP_SEG_NULL": 0.02,

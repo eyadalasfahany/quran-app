@@ -418,3 +418,37 @@ def test_anchored_align_cuts_at_checkpoints_and_reports_the_held_out_ones(monkey
     assert all(final[(a, p)] == fin and cp >= 0 for a, p, cp, fin in refs)
     assert sum(abs(fin - cp) <= PARAMS["G5_TOL_MS"] for _, _, cp, fin in refs) == hw["within_300ms"]
     assert statistics.median(abs(fin - cp) for _, _, cp, fin in refs) == hw["median_ms"]
+
+
+def test_a_slow_break_whose_unplaced_window_hears_the_passage_reordered_is_slow_not_unresolved():
+    """Q7c, the 1/009 pattern: between 360 and 480 s the reciter repeats and reorders the passage, so one window
+    matches no contiguous text. It still hears the passage's own words: a flag, not the fail-safe. A window that hears
+    other words (or nothing) keeps the break unresolved."""
+    def ws_at(t):
+        if t <= 360:
+            return t
+        return 360 + (t - 360) // 3 if t <= 480 else 400 + (t - 480)
+
+    kept = kept_every([(t, ws_at(t)) for t in (0, 120, 240, 360, 480, 600)], span=10)
+    skipped = [(390.0, 420.0), (420.0, 450.0), (450.0, 480.0)]
+
+    def transcribe_with(odd):
+        def run(ws):
+            out = []
+            for s, _ in ws:
+                lo = ws_at(int(s))
+                out.append(odd(lo) if s == 420.0 else " ".join(KEYS[lo:lo + 10]))
+            return out
+        return run
+
+    def reordered(lo):  # the passage's words, every other one swapped: no contiguous match
+        w = KEYS[lo - 6:lo + 6]
+        return " ".join(w[1::2] + w[0::2])
+
+    breaks = pace_breaks(kept, KEYS, list(range(len(KEYS))), skipped, transcribe_with(reordered), set(),
+                         char_pace(KEYS, 800))
+    assert [b["status"] for b in breaks] == ["slow"] and breaks[0]["located"] == 2
+    strangers = [w for w in placeholder_words(40, seed=99) if w not in KEYS][:12]  # words of no passage here
+    other = pace_breaks(kept, KEYS, list(range(len(KEYS))), skipped,
+                        transcribe_with(lambda lo: " ".join(strangers)), set(), char_pace(KEYS, 800))
+    assert [b["status"] for b in other] == ["unresolved"]
