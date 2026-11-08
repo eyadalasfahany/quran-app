@@ -40,6 +40,8 @@ use App\Domains\Hadith\Models\HadithBook;
 use App\Domains\Hadith\Models\HadithChapter;
 use App\Domains\Hadith\Models\HadithCollection;
 use App\Domains\Hadith\Models\HadithEntry;
+use App\Domains\Hadith\Models\HadithExplanation;
+use App\Domains\Hadith\Models\HadithExplanationLink;
 use App\Domains\Hadith\Models\HadithGrade;
 use App\Domains\Hadith\Models\HadithRefAlias;
 use Illuminate\Database\Query\Builder;
@@ -136,6 +138,10 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
             ),
             'hadith_ref_aliases' => HadithRefAlias::query()->toBase()
                 ->where('hadith_ref_aliases.resource_id', $resourceId),
+            'hadith_explanations' => HadithExplanation::query()->toBase()
+                ->where('hadith_explanations.resource_id', $resourceId),
+            'hadith_explanation_links' => HadithExplanationLink::query()->toBase()
+                ->where('hadith_explanation_links.resource_id', $resourceId),
             default => throw new PackBuildException('Unknown pack table ['.$table->name.'].'),
         };
 

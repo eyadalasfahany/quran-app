@@ -1801,7 +1801,8 @@
                     "azkar",
                     "names",
                     "duas",
-                    "hadith_collections"
+                    "hadith_collections",
+                    "hadith_explanations"
                 ],
                 "title": "ServedResourceGroup"
             },

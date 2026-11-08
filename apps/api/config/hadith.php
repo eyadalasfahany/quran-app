@@ -183,6 +183,7 @@ return [
         'gaps/muslim.json' => '8af80a2cb5ef6ab62d5360722e1c2fc609c5ef088878b938e4897ae0e92ea936',
         'gaps/nasai.json' => '42691f6308d73e6c2ebfaad9b4fb6b9d3d8e6b3e0cc5777ece0303165d63d118',
         'gaps/tirmidhi.json' => '03b8bb5deb7e4dac7b43f3e366a2840ee6e04699d0a0b7d0349571328068061c',
+        'explanations/hadeethenc.json' => '17d0899328fc8037fa8e7aca4129e33df4421d559248a5b182e6f06f6d238c33',
     ],
 
     /*

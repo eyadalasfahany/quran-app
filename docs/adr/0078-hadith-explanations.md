@@ -80,3 +80,9 @@ See `docs/plans/hadith-explanations.md`, «Open questions». Defaults: ship Hade
 - ADR 0042's «HadeethEnc deferred» is amended for explanations only. Daily hadith, topics and the daily push stay deferred.
 - Frames needed before any code: reader card with explanation sections, expanded side panel, download rows for explanation packs.
 - No change to `hadith_entries` or the collection packs; no native change.
+
+## Decisions (8 Nov 2026, coordinator for the developer)
+- **HadeethEnc mapping threshold: containment 0.80, gap 0.10** (plan default was 0.70). Negative control (each record matched against a collection HadeethEnc does not name): 7.4% at 0.70, 4.9% at 0.80, 1.7% at 0.90. The control is an upper bound, because the same hadith often appears in two collections. 0.80 keeps 3,161 links, against 2,229 at 0.90; precision first, without losing a third of the links. Ambiguous (567) and below-threshold (1,807) pairs stay unlinked. Pinned in `config/hadith_explanations.php`.
+- Snapshot 2026-11-08 pinned (3,574 records); 2,673 explanations stored (linked records only); links file `database/data/hadith/explanations/hadeethenc.json` (text-free, SHA-pinned in `config/hadith.php`).
+- Forty-hadith collections get no links, because HadeethEnc names no attribution for them.
+- Grade stored, never packed.

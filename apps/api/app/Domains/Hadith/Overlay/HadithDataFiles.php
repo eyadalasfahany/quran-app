@@ -12,7 +12,7 @@ use App\Domains\Hadith\Exceptions\HadithDataFileException;
  */
 final class HadithDataFiles
 {
-    private const string PATH_PATTERN = '~^(chapters|chapters/alignment|gaps|gaps/decisions)/[a-z0-9]+\.json$~';
+    private const string PATH_PATTERN = '~^(chapters|chapters/alignment|gaps|gaps/decisions|explanations)/[a-z0-9]+\.json$~';
 
     private const string PIN_PATTERN = '~^[0-9a-f]{64}$~';
 
@@ -673,6 +673,14 @@ final class HadithDataFiles
     private function isNumberText(mixed $value): bool
     {
         return is_string($value) && $value !== '' && strlen($value) <= 32;
+    }
+
+    /**
+     * Where a data file lives (for the dev command that writes a new one; this class still reads only).
+     */
+    public function pathOf(string $relativePath): string
+    {
+        return $this->absolutePath($relativePath);
     }
 
     private function absolutePath(string $relativePath): string

@@ -80,6 +80,15 @@ it('stores quran text in the binary collation and no other text column', functio
         'hadith_collections.author_ar',
         'hadith_collections.title_ar',
         'hadith_entries.text_ar',
+        // ADR 0078: HadeethEnc explanation text is source text stored byte-for-byte, like the hadith and dua columns.
+        'hadith_explanations.attribution_ar',
+        'hadith_explanations.benefits_ar',
+        'hadith_explanations.body_ar',
+        'hadith_explanations.grade_ar',
+        'hadith_explanations.intro_ar',
+        'hadith_explanations.reference_ar',
+        'hadith_explanations.title_ar',
+        'hadith_explanations.words_ar',
         // Names of Allah are source text stored byte-for-byte (ADR 0043 A2), like the dua source columns.
         'names.name_ar',
         'tafsir_entries.html',

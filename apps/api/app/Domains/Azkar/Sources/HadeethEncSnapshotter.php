@@ -179,11 +179,30 @@ final class HadeethEncSnapshotter
     }
 
     /**
-     * Retries connection failures, 429 and 5xx with a fixed delay. Other client errors fail at once.
+     * A body that is not JSON is fetched again (a truncated or garbled response); the last one is returned and decode() refuses it.
      *
      * @throws SnapshotException
      */
     private function fetch(string $url, string $configPrefix): string
+    {
+        for ($attempt = 1; ; $attempt++) {
+            $body = $this->fetchOnce($url, $configPrefix);
+            $json = str_starts_with($body, "\xEF\xBB\xBF") ? substr($body, 3) : $body;
+
+            if (json_validate($json) || $attempt >= 3) {
+                return $body;
+            }
+
+            usleep(max(0, (int) config($configPrefix.'.retry_delay_ms', 1000)) * 1000 * $attempt);
+        }
+    }
+
+    /**
+     * Retries connection failures, 429 and 5xx with a fixed delay. Other client errors fail at once.
+     *
+     * @throws SnapshotException
+     */
+    private function fetchOnce(string $url, string $configPrefix): string
     {
         try {
             $response = Http::withUserAgent($this->userAgent())

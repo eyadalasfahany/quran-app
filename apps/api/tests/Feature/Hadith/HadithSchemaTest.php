@@ -177,6 +177,15 @@ it('stores the Arabic columns in the binary collation and every other hadith col
         'hadith_collections.author_ar',
         'hadith_collections.title_ar',
         'hadith_entries.text_ar',
+        // ADR 0078: explanation text is source text stored byte-for-byte (the grade too, though it is hidden).
+        'hadith_explanations.attribution_ar',
+        'hadith_explanations.benefits_ar',
+        'hadith_explanations.body_ar',
+        'hadith_explanations.grade_ar',
+        'hadith_explanations.intro_ar',
+        'hadith_explanations.reference_ar',
+        'hadith_explanations.title_ar',
+        'hadith_explanations.words_ar',
     ]);
 
     $others = collect($rows)

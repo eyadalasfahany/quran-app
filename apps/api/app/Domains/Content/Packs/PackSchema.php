@@ -58,6 +58,10 @@ final class PackSchema
                 self::hadithGrades(),
                 self::hadithRefAliases(),
             ],
+            ResourceGroup::HadithExplanations => [
+                self::hadithExplanations(),
+                self::hadithExplanationLinks(),
+            ],
             default => throw new PackBuildException('Resource group ['.$group->value.'] has no pack schema.'),
         };
     }
@@ -671,6 +675,45 @@ final class PackSchema
             ],
             primaryKey: ['resource_id', 'old_number', 'since_version'],
             orderBy: ['resource_id', 'old_number', 'since_version'],
+        );
+    }
+
+    /**
+     * ADR 0078: the source's text as received. Grades are not packed (hidden, ADR 0042 D4); status and evidence are server-only.
+     */
+    public static function hadithExplanations(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_explanations',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('title_ar', nullable: true),
+                self::text('attribution_ar', nullable: true),
+                self::text('reference_ar', nullable: true),
+                self::text('body_ar', nullable: true),
+                self::text('benefits_ar', nullable: true),
+                self::text('words_ar', nullable: true),
+                self::text('intro_ar', nullable: true),
+                self::text('source_url'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function hadithExplanationLinks(): PackTable
+    {
+        return new PackTable(
+            name: 'hadith_explanation_links',
+            columns: [
+                self::integer('resource_id'),
+                self::text('collection_slug'),
+                self::text('hadith_number'),
+                self::integer('explanation_id'),
+            ],
+            primaryKey: ['resource_id', 'collection_slug', 'hadith_number', 'explanation_id'],
+            orderBy: ['resource_id', 'collection_slug', 'hadith_number', 'explanation_id'],
         );
     }
 
