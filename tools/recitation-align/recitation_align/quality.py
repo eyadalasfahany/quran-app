@@ -13,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q3"
+QUALITY_VERSION = "q4"
 
 PARAMS: dict = {
     # G0 completeness
@@ -50,6 +50,10 @@ PARAMS: dict = {
     "G3_REPROBE": (0.0, 0.6),
     "G3_NEXT_WORDS": 8,
     "G3_CUT_AVOID_S": 3,
+    # Q7d: a G3 clip holds about G3_MIN_WORDS words at the surah's pace (seconds per word inside ayahs), at least
+    # G3_PRE_S + G3_POST_S and at most G3_MAX_S, so a slow reciter's clip is not one or two words long.
+    "G3_MIN_WORDS": 5,
+    "G3_MAX_S": 12.0,
     # G4 (screen only)
     "G4_MIN": 20,
     "G4_PER": 40,
@@ -80,6 +84,9 @@ PARAMS: dict = {
     "CTC_MARGIN": 0.02,
     "STEP_PROBE_S": 0.5,
     "STEP_SCORE": 85,
+    # Q7d: a stretched word with no repeat is a verified elongation when dense ASR over its span hears it at this
+    # ratio and hears no other word of the local text at it, and the G3 starts on both sides are OK
+    "ELONG_SCORE": 85,
     "REPEAT_MODE": "positions",
     # release (R2, R3, R4)
     "CAP_NO_HIGHLIGHT": 0.01,

@@ -9,8 +9,8 @@ HEX16 = re.compile(r"^[0-9a-f]{16}$")
 
 
 def test_tool_version_is_package_version_plus_quality_version():
-    assert QUALITY_VERSION == "q3"
-    assert tool_version() == "0.1.0+q3"
+    assert QUALITY_VERSION == "q4"
+    assert tool_version() == "0.1.0+q4"
 
 
 def test_every_gate_name_is_in_params():
@@ -19,7 +19,7 @@ def test_every_gate_name_is_in_params():
         "PACE_BREAK", "ADJ_JUMP", "GAP_G3_RUN", "ASR_EVERY", "CUT_SPACING_S", "SCORE_NEAR", "SCORE_FAR",
         "BACK_WORDS", "PACE", "EDGE_WORDS", "EDGE_S", "MIN_CONF", "CUT_BACK_FRAMES", "MIN_CP_PER_S",
         "TAIL_MAX_S", "G3_PRE_S", "G3_POST_S", "G3_SCORE", "G3_REPROBE", "G3_NEXT_WORDS", "G3_CUT_AVOID_S",
-        "G4_MIN", "G4_PER", "G4_PRE_S", "G4_POST_S", "G5_SHARE", "G5_TOL_MS", "G5_MEDIAN_MS", "G5_MIN_N",
+        "G3_MIN_WORDS", "G3_MAX_S", "ELONG_SCORE", "G4_MIN", "G4_PER", "G4_PRE_S", "G4_POST_S", "G5_SHARE", "G5_TOL_MS", "G5_MEDIAN_MS", "G5_MIN_N",
         "FLOOR", "NULL_SHARE", "STRETCH_X", "STRETCH_S", "DENSE_WIN_S", "DENSE_HOP_S", "BACK_PENALTY",
         "CTC_MARGIN", "STEP_PROBE_S", "STEP_SCORE", "REPEAT_MODE", "CAP_NO_HIGHLIGHT", "CAP_SEG_NULL",
         "CAP_UNAVAILABLE",
@@ -37,9 +37,9 @@ def test_params_digest_is_sixteen_hex_and_stable():
     assert digest == params_digest()
 
 
-def test_params_digest_is_pinned_for_q3():
+def test_params_digest_is_pinned_for_q4():
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
-    assert params_digest() == "016fa6628b0cc778"
+    assert params_digest() == "9b4a572515695fb0"
 
 
 def test_params_digest_changes_when_a_parameter_changes(monkeypatch):
@@ -100,3 +100,7 @@ def test_code_files_are_sorted_and_cover_p17():
 def test_q3_sets_the_repeat_parameters():
     # Q7b: the back-jump penalty is set (it was None until Q7) and repeats inside an ayah are repeated positions
     assert PARAMS["BACK_PENALTY"] == 6.0 and PARAMS["REPEAT_MODE"] == "positions"
+
+
+def test_q4_adds_the_pace_adaptive_clip_and_the_elongation_score():
+    assert PARAMS["G3_MIN_WORDS"] == 5 and PARAMS["G3_MAX_S"] == 12.0 and PARAMS["ELONG_SCORE"] == 85

@@ -54,6 +54,11 @@ def match_start(text: str, local: Local) -> dict:
 
     OK: the best match begins at word 0 of n, or in the last word of n-1 (the pre-roll), at score >= G3_SCORE.
     BAD: it begins elsewhere. UNSURE: the text is empty or scores below G3_SCORE. `heard` is "ayah:index".
+
+    Tie-break (Q7d): when a match beginning at word 0 of n (or in the last word of n-1) scores as high as the best
+    match elsewhere, the clip is OK: two ayahs with the same opening cannot be told apart by their first words, and
+    the best alignment may land on the other one. A real shift between such ayahs is still caught by the probes of
+    the ayahs around them (and, for refrains, by `refrain_resolve`). `tie` is true when this rule decided.
     """
     hyp = norm(text)
     if not hyp or not local.text:
@@ -64,7 +69,31 @@ def match_start(text: str, local: Local) -> dict:
     if score < PARAMS["G3_SCORE"]:
         return {"verdict": UNSURE, "heard": heard, "score": score}
     good = (a == local.n and wi == 0) or (a == local.n - 1 and local.last_prev >= 0 and wi >= local.last_prev)
+    if not good:
+        tie = _start_tie(hyp, local, score)
+        if tie is not None:
+            return {"verdict": OK, "heard": tie, "score": score, "tie": True}
     return {"verdict": OK if good else BAD, "heard": heard, "score": score}
+
+
+def _start_tie(hyp: str, local: Local, best: float) -> str | None:
+    """The key of a match that begins in the last word of n-1 or at word 0 of n and scores `best` (the best score
+    anywhere in the local text), or None. Windows are as long as the transcript, as in `partial_ratio`."""
+    if len(hyp) > len(local.text):
+        return None
+    offsets, pos = {}, 0
+    for w, a, wi in local.words:
+        offsets[(a, wi)] = pos
+        pos += len(w) + 1
+    if (local.n, 0) not in offsets:
+        return None
+    first = offsets.get((local.n - 1, local.last_prev), offsets[(local.n, 0)]) if local.last_prev >= 0 \
+        else offsets[(local.n, 0)]
+    for c in range(first, offsets[(local.n, 0)] + 1):
+        if fuzz.ratio(hyp, local.text[c:c + len(hyp)]) >= best - 1e-9:
+            a, wi = local.owner[c]
+            return f"{a}:{wi}"
+    return None
 
 
 def ayah_starts(words: list[dict]) -> dict[int, float]:
@@ -76,8 +105,26 @@ def ayah_starts(words: list[dict]) -> dict[int, float]:
     return {a: v / 1000 for a, v in ms.items()}
 
 
-def _clip(t: float, pre: float) -> tuple[float, float]:
-    return max(0.0, t - pre), t + PARAMS["G3_POST_S"]
+def _clip(t: float, pre: float, post: float | None = None) -> tuple[float, float]:
+    return max(0.0, t - pre), t + (PARAMS["G3_POST_S"] if post is None else post)
+
+
+def word_pace(words: list[dict]) -> float:
+    """Seconds per word while reciting: the mean gap between consecutive word starts inside an ayah (basmala
+    excluded, so the pauses between ayahs do not count). 0.0 when no ayah holds two words."""
+    by: dict[int, list[int]] = {}
+    for w in _spoken(words):
+        by.setdefault(w["ayah"], []).append(w["start_ms"])
+    gaps = [(b - a) / 1000 for v in by.values() for a, b in zip(sorted(v), sorted(v)[1:])]
+    return sum(gaps) / len(gaps) if gaps else 0.0
+
+
+def g3_post(words: list[dict]) -> float:
+    """Seconds a G3 clip runs after the start (Q7d, pace-adaptive): the clip holds about G3_MIN_WORDS words at the
+    surah's pace, never less than the G3_PRE_S + G3_POST_S of a fast recitation and never more than G3_MAX_S. The
+    pre-roll is unchanged."""
+    length = min(PARAMS["G3_MAX_S"], PARAMS["G3_MIN_WORDS"] * word_pace(words))
+    return round(max(PARAMS["G3_POST_S"], length - PARAMS["G3_PRE_S"]), 3)
 
 
 def _run(wav, clips, transcribe_clips, batch, timing):
@@ -89,13 +136,13 @@ def _run(wav, clips, transcribe_clips, batch, timing):
 
 
 def probe_ayah_starts(wav, words: list[dict], surah: int, ayahs: dict, transcribe_clips, cuts=(), *,
-                      only=None, batch: int = 1) -> dict:
+                      only=None, batch: int = 1, post: float | None = None) -> dict:
     """G3: probe the start of every ayah 2..N (or of `only`).
 
     `words` is the aligned document's words, `ayahs` the Tanzil dict {(surah, ayah): text}, `cuts` the anchor
     cut times in seconds. A start within G3_CUT_AVOID_S of a cut is not probed; the next start that is not
     near a cut is probed instead (`moved`). A BAD or UNSURE probe is repeated at the pre-rolls in G3_REPROBE
-    and the worse of those results counts.
+    and the worse of those results counts. Each clip runs `post` seconds after the start (default `g3_post(words)`).
 
     Returns {"probes": {ayah: {"verdict", "heard", "score", "start_s", "pre_s", "initial", "reprobed",
     "text"}}, "moved": {ayah: probed ayah}, "unprobed": [ayah], "clips": int, "seconds": float}.
@@ -121,8 +168,9 @@ def probe_ayah_starts(wav, words: list[dict], surah: int, ayahs: dict, transcrib
 
     timing = {"seconds": 0.0, "clips": 0}
     pre = PARAMS["G3_PRE_S"]
+    post = g3_post(words) if post is None else post
     locals_ = {n: local_text(surah, n, ayahs) for n in targets}
-    texts = _run(wav, [_clip(starts[n], pre) for n in targets], transcribe_clips, batch, timing) if targets else []
+    texts = _run(wav, [_clip(starts[n], pre, post) for n in targets], transcribe_clips, batch, timing) if targets else []
     probes: dict[int, dict] = {}
     for n, text in zip(targets, texts):
         r = match_start(text, locals_[n])
@@ -131,7 +179,7 @@ def probe_ayah_starts(wav, words: list[dict], surah: int, ayahs: dict, transcrib
     redo = [n for n in targets if probes[n]["verdict"] != OK]
     if redo:
         pres = PARAMS["G3_REPROBE"]
-        clips = [_clip(starts[n], p) for n in redo for p in pres]
+        clips = [_clip(starts[n], p, post) for n in redo for p in pres]
         again = _run(wav, clips, transcribe_clips, batch, timing)
         for i, n in enumerate(redo):
             rs = [(match_start(again[i * len(pres) + j], locals_[n]), pres[j], again[i * len(pres) + j])
@@ -344,7 +392,7 @@ def _last_word_verdict(text: str, ctx: list[str]) -> dict:
 
 
 def end_coverage(wav, words: list[dict], surah: int, ayahs: dict, transcribe_clips, g3_probes: dict, completeness: dict,
-                 duration_s: float, *, batch: int = 1) -> dict:
+                 duration_s: float, *, batch: int = 1, post: float | None = None) -> dict:
     """G2: the last ayah start and the last word start are probed OK, and the tail after the last word is at most
     TAIL_MAX_S or no longer than completeness's measured `trailing_s` (+ TAIL_TOL_S).
 
@@ -355,7 +403,7 @@ def end_coverage(wav, words: list[dict], surah: int, ayahs: dict, transcribe_cli
     timing = {"seconds": 0.0, "clips": 0}
     probe = g3_probes.get(last_ayah)
     if probe is None:
-        r = probe_ayah_starts(wav, words, surah, ayahs, transcribe_clips, (), only={last_ayah}, batch=batch)
+        r = probe_ayah_starts(wav, words, surah, ayahs, transcribe_clips, (), only={last_ayah}, batch=batch, post=post)
         probe = r["probes"].get(last_ayah)
         timing["seconds"] += r["seconds"]
         timing["clips"] += r["clips"]
@@ -364,14 +412,31 @@ def end_coverage(wav, words: list[dict], surah: int, ayahs: dict, transcribe_cli
     texts = _run(wav, [(max(0.0, t - PARAMS["G4_PRE_S"]), t + PARAMS["G4_POST_S"])], transcribe_clips, batch, timing)
     ctx = [norm(w["word"]) for w in spoken[-4:]]
     word = _last_word_verdict(texts[0], ctx)
+    long_used = False
+    if word["verdict"] != OK:
+        # Q7d: an elongated last word does not fit the short clip; one longer clip (as long as a G3 clip) is tried.
+        # The rule is the same: the match must begin in the last word, so an early or late start still fails.
+        long = _run(wav, [(max(0.0, t - PARAMS["G4_PRE_S"]), t + _last_word_post(post))], transcribe_clips, batch,
+                    timing)
+        again = _last_word_verdict(long[0], ctx)
+        if again["verdict"] == OK:
+            word, long_used = again, True
     tail_s = round(duration_s - max(w["end_ms"] for w in spoken) / 1000, 1)
     trailing = completeness.get("trailing_s") or 0.0
     tail_ok = tail_s <= PARAMS["TAIL_MAX_S"] or tail_s <= trailing + TAIL_TOL_S
     ayah_verdict = probe["verdict"] if probe else UNSURE
     ok = ayah_verdict == OK and word["verdict"] == OK and tail_ok
-    return {"last_ayah": ayah_verdict, "last_word": word["verdict"], "last_word_score": word["score"],
-            "tail_s": tail_s, "tail_ok": tail_ok, "status": "pass" if ok else "fail",
-            "clips": timing["clips"], "seconds": round(timing["seconds"], 3)}
+    out = {"last_ayah": ayah_verdict, "last_word": word["verdict"], "last_word_score": word["score"],
+           "tail_s": tail_s, "tail_ok": tail_ok, "status": "pass" if ok else "fail",
+           "clips": timing["clips"], "seconds": round(timing["seconds"], 3)}
+    if long_used:
+        out["last_word_clip"] = "long"
+    return out
+
+
+def _last_word_post(post: float | None) -> float:
+    """Seconds the long last-word clip runs after the word's start: a G3 clip's length, at least G4_POST_S."""
+    return max(PARAMS["G4_POST_S"], PARAMS["G3_POST_S"] if post is None else post)
 
 
 def _consecutive_failures(failed: list[int], probed: list[int]) -> int:
@@ -445,7 +510,7 @@ def _record(surah: int, completeness: dict, verdict: str, reasons: list[str], ch
 def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None, words: list[dict] | None = None,
                   anchors: dict | None = None, g2: dict | None = None, g3: dict | None = None,
                   g4: dict | None = None, pauses=None, seconds: dict | None = None, repairs: list | None = None,
-                  repair_null=(), cross_ayah=()) -> dict:
+                  repair_null=(), cross_ayah=(), elongations=None) -> dict:
     """The gate record of one surah (ADR 0077 decision 5). Precedence:
 
     1. G0: completeness is not `complete` -> `unavailable`, reason = the completeness verdict.
@@ -464,7 +529,9 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
       a hole is never shipped (Q6a review decisions);
     - `repair_null` (P6 cross-ayah ayahs, REPEAT_MODE "null" regions) join the G6 ayahs in `segments_null` and in
       the NULL_SHARE count; `cross_ayah` is recorded for R7;
-    - the verdict is `repaired` when at least one repair was accepted, else `pass`.
+    - the verdict is `repaired` when at least one repair was accepted, else `pass`;
+    - `elongations` ([key, position, ms, score], Q7d) are stretched words verified as elongations: they are listed in
+      `checks.stretch.elongations` and are no longer a reason to fail.
 
     `g3` is {"results": {ayah: record} (after refrain resolution), "unprobed": [...], "moved": {...}}; `g2` is
     `end_coverage`'s result; `g4` is `word_onset_probes`' result. A record carries verdicts, keys and numbers only.
@@ -500,7 +567,13 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
     }
     probes = [[f"{surah}:{a}", r.get("heard"), r["verdict"], round(r.get("score", 0))]
               for a, r in sorted(results.items()) if r["verdict"] != OK]
-    triggers = {"G3": g3_failed, "stretch": [k for k, _, _ in stretch],
+    if elongations is not None:
+        checks["stretch"]["elongations"] = [list(e) for e in elongations]
+        verified = {(e[0], e[1]) for e in elongations}
+        stretch_fail = [x for x in stretch if (x[0], x[1]) not in verified]
+    else:
+        stretch_fail = stretch
+    triggers = {"G3": g3_failed, "stretch": [k for k, _, _ in stretch_fail],
                 "G2": bool(g2 and g2.get("status") == "fail"), "G5": g5["status"] == "fail",
                 "G5_outliers": g5["outlier_ayahs"]}
     checks["triggers"] = triggers
@@ -511,7 +584,7 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
         return _record(surah, completeness, "unavailable", ["incomplete-middle"], checks, **{**extra, "segments_null": []})
     if repairs is not None and _consecutive_failures(g3_failed, sorted(results)) >= PARAMS["GAP_G3_RUN"]:
         return _record(surah, completeness, "unavailable", ["incomplete-middle"], checks, **{**extra, "segments_null": []})
-    if g3_failed or stretch or triggers["G2"] or triggers["G5"] or g5["outlier_ayahs"]:
+    if g3_failed or stretch_fail or triggers["G2"] or triggers["G5"] or g5["outlier_ayahs"]:
         reason = "needs-repair" if repairs is None else "repair-failed"
         return _record(surah, completeness, "no_highlight", [reason], checks, **{**extra, "segments_null": []})
     if len(nulls) > PARAMS["NULL_SHARE"] * ayah_count:
@@ -554,6 +627,7 @@ class RepairContext:
     batch: int = 1
     back_penalty: float | None = None
     repeat_mode: str | None = None
+    g3_post: float | None = None  # the surah's G3 clip length after the start (None: G3_POST_S)
 
 
 def _steps(direction: int) -> list[float]:
@@ -580,48 +654,66 @@ def start_direction(probe: dict | None, n: int) -> int:
 
 
 def repair_start(wav, words: list[dict], surah: int, n: int, ayahs: dict, transcribe_clips, *, probe=None,
-                 batch: int = 1) -> dict:
+                 batch: int = 1, post: float | None = None) -> dict:
     """Stepped probes for the start of ayah n: clips [t - G3_PRE_S, t + G3_POST_S] at STEP_PROBE_S steps from the
     aligner's start, in the direction `start_direction` gives, until the clip's match begins at n:0 at a score of at
     least STEP_SCORE. Returns {"clip_s": the clip start of that probe or None, "probes": clips used, "score"}."""
     starts = ayah_starts(words)
     local = local_text(surah, n, ayahs)
     pre = PARAMS["G3_PRE_S"]
-    offsets = _steps(start_direction(probe, n))
     timing = {"seconds": 0.0, "clips": 0}
-    size = max(1, int(batch))
-    for j in range(0, len(offsets), size):
-        ts = [starts[n] + d for d in offsets[j:j + size] if starts[n] + d - pre >= 0]
-        if not ts:
-            continue
-        texts = _run(wav, [_clip(t, pre) for t in ts], transcribe_clips, batch, timing)
+
+    def judge(ts):
+        texts = _run(wav, [_clip(t, pre, post) for t in ts], transcribe_clips, batch, timing)
+        out = []
         for t, text in zip(ts, texts):
             r = match_start(text, local)
-            if r["heard"] == f"{n}:0" and r["score"] >= PARAMS["STEP_SCORE"]:
-                return {"clip_s": round(t - pre, 3), "probes": timing["clips"], "score": r["score"]}
-    return {"clip_s": None, "probes": timing["clips"], "score": None}
+            out.append((t, r["heard"] == f"{n}:0", r["score"]))
+        return out
+
+    t = _stepped(starts[n], _steps(start_direction(probe, n)), pre, judge, batch)
+    return {"clip_s": None if t is None else round(t[0] - pre, 3), "probes": timing["clips"],
+            "score": None if t is None else t[1]}
 
 
-def repair_last_word(wav, words: list[dict], transcribe_clips, *, batch: int = 1) -> dict:
-    """The end repair (G2): stepped probes [t - G4_PRE_S, t + G4_POST_S] around the last word's start, both ways,
-    until the clip is heard as that word (`_last_word_verdict` OK) at a score of at least STEP_SCORE."""
+def _stepped(t0: float, offsets: list[float], pre: float, judge, batch: int):
+    """The stepped search shared by the start and end repairs: probe t0 + each offset in order; the first time whose
+    clip is heard as the target at STEP_SCORE wins. When none is, the same offsets shifted by half a step are probed
+    (Q7d: Whisper may hear the target cleanly only between two coarse steps, as at 62:017's last word; the score
+    threshold is unchanged). `judge(times) -> [(time, heard as the target, score)]`. Returns (time, score) or None."""
+    size = max(1, int(batch))
+    half = PARAMS["STEP_PROBE_S"] / 2
+    shifted = [d - half if d > 0 else d + half for d in offsets]
+    for grid in (offsets, shifted):
+        for j in range(0, len(grid), size):
+            ts = [t0 + d for d in grid[j:j + size] if t0 + d - pre >= 0]
+            for t, hit, score in (judge(ts) if ts else []):
+                if hit and score >= PARAMS["STEP_SCORE"]:
+                    return t, score
+    return None
+
+
+def repair_last_word(wav, words: list[dict], transcribe_clips, *, batch: int = 1, post: float | None = None) -> dict:
+    """The end repair (G2): stepped probes [t - G4_PRE_S, t + the long last-word clip] around the last word's start,
+    both ways, until the clip is heard as that word (`_last_word_verdict` OK) at a score of at least STEP_SCORE.
+    The long clip (Q7d) holds an elongated last word, which the short G4 clip cuts off."""
     spoken = sorted(_spoken(words), key=lambda w: (w["ayah"], w["start_ms"]))
     ctx = [norm(w["word"]) for w in spoken[-4:]]
     t0 = spoken[-1]["start_ms"] / 1000
     timing = {"seconds": 0.0, "clips": 0}
-    size = max(1, int(batch))
-    offsets = _steps(0)
-    for j in range(0, len(offsets), size):
-        ts = [t0 + d for d in offsets[j:j + size] if t0 + d - PARAMS["G4_PRE_S"] >= 0]
-        if not ts:
-            continue
-        clips = [(t - PARAMS["G4_PRE_S"], t + PARAMS["G4_POST_S"]) for t in ts]
-        texts = _run(wav, clips, transcribe_clips, batch, timing)
+    pre = PARAMS["G4_PRE_S"]
+
+    def judge(ts):
+        texts = _run(wav, [(t - pre, t + _last_word_post(post)) for t in ts], transcribe_clips, batch, timing)
+        out = []
         for t, text in zip(ts, texts):
             r = _last_word_verdict(text, ctx)
-            if r["verdict"] == OK and r["score"] >= PARAMS["STEP_SCORE"]:
-                return {"clip_s": round(t - PARAMS["G4_PRE_S"], 3), "probes": timing["clips"], "score": r["score"]}
-    return {"clip_s": None, "probes": timing["clips"], "score": None}
+            out.append((t, r["verdict"] == OK, r["score"]))
+        return out
+
+    t = _stepped(t0, _steps(0), pre, judge, batch)
+    return {"clip_s": None if t is None else round(t[0] - pre, 3), "probes": timing["clips"],
+            "score": None if t is None else t[1]}
 
 
 def _frame(ms: float, spf: float) -> int:
@@ -657,8 +749,40 @@ def _structure_ok(words: list[dict], lo: int, hi: int) -> bool:
     return all(b > a for a, b in zip(seq, seq[1:]))
 
 
+def verify_elongation(ctx: RepairContext, words: list[dict], key: str, position: int, dur_ms: int, resolved: dict,
+                      g2: dict | None) -> dict | None:
+    """A stretched word with no repeat behind it (Q7d): accepted as a verified elongation only when
+    - dense ASR over the word's own span hears that word (normalised, ratio >= ELONG_SCORE) and no other word of
+      the local text (ayahs n - 1 .. n + 1) at that score, and
+    - the G3 starts on both sides are OK: ayah n's (ayah 1 has none) and ayah n + 1's; for the last ayah, G2 passes.
+    Returns {"key", "position", "dur_ms", "score"} or None. Keys and numbers only."""
+    n = int(key.split(":")[1])
+    cand = [w for w in _spoken(words) if w["ayah"] == n and w["position"] == position]
+    if not cand:
+        return None
+    w = min(cand, key=lambda x: abs((x["end_ms"] - x["start_ms"]) - dur_ms))
+    last = max(x["ayah"] for x in _spoken(words))
+    if n >= 2 and (n not in resolved or resolved[n]["verdict"] != OK):
+        return None
+    if n < last and (n + 1 not in resolved or resolved[n + 1]["verdict"] != OK):
+        return None
+    if n == last and (g2 is None or g2.get("status") != "pass"):
+        return None
+    target = norm(w["word"])
+    others = {k for a in (n - 1, n, n + 1) if (ctx.surah, a) in ctx.ayahs
+              for k in norm(ctx.ayahs[(ctx.surah, a)]).split() if k != target}
+    heard = norm(ctx.dense([(w["start_ms"] / 1000, w["end_ms"] / 1000)])[0]).split()
+    limit = PARAMS["ELONG_SCORE"]
+    scores = [fuzz.ratio(h, target) for h in heard]
+    if not scores or max(scores) < limit:
+        return None
+    if any(sc < limit and any(fuzz.ratio(h, o) >= limit for o in others) for h, sc in zip(heard, scores)):
+        return None
+    return {"key": key, "position": position, "dur_ms": dur_ms, "score": round(max(scores), 1)}
+
+
 def _evaluate(ctx: RepairContext, region, cand: list[dict], raw: dict, before: dict,
-              old_words: list[dict] | None = None) -> tuple[list, dict, dict]:
+              old_words: list[dict] | None = None, repeat_ayahs=()) -> tuple[list, dict, dict]:
     """Re-probe the region on the candidate words. Returns (failures, the re-probed raw G3 records, G2 or None).
 
     Besides G3, stretch, G5 and G2, an ayah of the region that raised no trigger must keep its start within
@@ -679,7 +803,7 @@ def _evaluate(ctx: RepairContext, region, cand: list[dict], raw: dict, before: d
               and abs(after[a] - before[a]) * 1000 > PARAMS["G5_TOL_MS"]]
     last = max(w["ayah"] for w in _spoken(cand))
     r = probe_ayah_starts(ctx.wav, cand, ctx.surah, ctx.ayahs, ctx.transcribe_clips, ctx.cuts,
-                          only=set(range(max(2, lo), hi + 1)), batch=ctx.batch)
+                          only=set(range(max(2, lo), hi + 1)), batch=ctx.batch, post=ctx.g3_post)
     merged = {**raw, **r["probes"]}
     resolved = refrain_resolve(merged, ctx.usable)
     old_resolved = refrain_resolve(raw, ctx.usable) if raw else {}
@@ -690,26 +814,37 @@ def _evaluate(ctx: RepairContext, region, cand: list[dict], raw: dict, before: d
 
     fails += [f"G3 {ctx.surah}:{a}" for a in sorted(resolved) if lo <= a <= hi and resolved[a]["verdict"] != OK
               and not inherited(a, a in old_resolved and old_resolved[a]["verdict"] != OK)]
-    old_stretch = {k for k, _, _ in stretched_words(old_words, ctx.pace)} if old_words is not None else set()
-    fails += [f"stretch {k}" for k, _, _ in stretched_words(cand, ctx.pace) if lo <= int(k.split(":")[1]) <= hi
-              and not inherited(int(k.split(":")[1]), k in old_stretch)]
-    g5 = _region_g5(ctx.anchors, cand, lo, hi)
-    if g5["status"] == "fail" or g5["outlier_ayahs"]:
-        fails.append("G5")
     g2 = None
     if hi == last:
         g2 = end_coverage(ctx.wav, cand, ctx.surah, ctx.ayahs, ctx.transcribe_clips, resolved, ctx.completeness,
-                          ctx.duration_s, batch=ctx.batch)
+                          ctx.duration_s, batch=ctx.batch, post=ctx.g3_post)
         if g2["status"] != "pass":
             fails.append("G2")
+    old_stretch = {k for k, _, _ in stretched_words(old_words, ctx.pace)} if old_words is not None else set()
+    for k, pos, dur in stretched_words(cand, ctx.pace):
+        a = int(k.split(":")[1])
+        if not lo <= a <= hi or inherited(a, k in old_stretch):
+            continue
+        if a not in repeat_ayahs and verify_elongation(ctx, cand, k, pos, dur, resolved, g2) is not None:
+            continue  # a verified elongation, not a failure (recorded by run_repairs)
+        fails.append(f"stretch {k}")
+    g5 = _region_g5(ctx.anchors, cand, lo, hi)
+    if g5["status"] == "fail" or g5["outlier_ayahs"]:
+        fails.append("G5")
     return fails, r["probes"], g2
 
 
-def _outcome(rp, surah: int, seq: list[int], word_ayah: list[int], mode: str) -> tuple[list[int], list[dict]]:
+def _outcome(rp, surah: int, seq: list[int], word_ayah: list[int], mode: str,
+             new: list[dict] | None = None) -> tuple[list[int], list[dict]]:
     """(segments_null ayahs, cross-ayah entries) of an accepted repeat. A cross-ayah back-jump (P6) nulls ayahs n-1
     and n and is recorded as not represented (R7). REPEAT_MODE "null" (P14) nulls every ayah that would carry
-    repeated positions."""
+    repeated positions. In "positions" mode an ayah whose repeated positions hold an occurrence below FLOOR
+    confidence (Q7d) is nulled too: its highlight could rest on a squeezed pass."""
     null, cross = [], []
+    count: dict[tuple, int] = {}
+    for w in new or []:
+        count[(w["ayah"], w["position"])] = count.get((w["ayah"], w["position"]), 0) + 1
+    null += [w["ayah"] for w in new or [] if count[(w["ayah"], w["position"])] > 1 and w["confidence"] < PARAMS["FLOOR"]]
     for a, b in rp.back_jumps(seq):
         if word_ayah[b] < word_ayah[a]:
             null += [word_ayah[b], word_ayah[a]]
@@ -789,9 +924,10 @@ def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_o
                 entry["failed"].append("align")
             else:
                 cand = _splice(words, region, new, ctx.pauses)
-                fails, probes, g2 = _evaluate(ctx, region, cand, raw, before, words)
+                fails, probes, g2 = _evaluate(ctx, region, cand, raw, before, words,
+                                              _repeat_ayahs(rp, seq, rt.word_ayah))
                 if not fails:
-                    return finish(cand, probes, g2, kind, *_outcome(rp, surah, seq, rt.word_ayah, mode))
+                    return finish(cand, probes, g2, kind, *_outcome(rp, surah, seq, rt.word_ayah, mode, new))
                 entry["failed"] += fails
                 entry["tried_start_ms"] = round(ayah_starts(cand).get(focus, 0) * 1000)
         else:
@@ -811,13 +947,13 @@ def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_o
         if n in repeated:
             continue  # its first occurrence is set by the recited sequence; a probe could land on a later pass
         found = repair_start(ctx.wav, words, surah, n, ctx.ayahs, ctx.transcribe_clips, probe=raw[n],
-                             batch=ctx.batch)
+                             batch=ctx.batch, post=ctx.g3_post)
         entry["steps"] += found["probes"]
         if found["clip_s"] is not None:
             k = next(k for k, wi in enumerate(base) if rt.word_ayah[wi] == n)
             cuts.append((k, found["clip_s"]))
     if "G2" in region.triggers and g2_old is not None and g2_old.get("last_word") != OK:
-        found = repair_last_word(ctx.wav, words, ctx.transcribe_clips, batch=ctx.batch)
+        found = repair_last_word(ctx.wav, words, ctx.transcribe_clips, batch=ctx.batch, post=ctx.g3_post)
         entry["steps"] += found["probes"]
         if found["clip_s"] is not None:
             cuts.append((len(base) - 1, found["clip_s"]))
@@ -831,21 +967,22 @@ def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_o
         entry["failed"].append("align")
         return result
     cand = _splice(words, region, new, ctx.pauses)
-    fails, probes, g2 = _evaluate(ctx, region, cand, raw, before, words)
+    fails, probes, g2 = _evaluate(ctx, region, cand, raw, before, words, repeated)
     if fails:
         entry["failed"] += fails
         entry["tried_start_ms"] = round(ayah_starts(cand).get(focus, 0) * 1000)
         return result
     if confirmed is None:
         return finish(cand, probes, g2, "start")
-    return finish(cand, probes, g2, kind, *_outcome(rp, surah, confirmed, rt.word_ayah, mode))
+    return finish(cand, probes, g2, kind, *_outcome(rp, surah, confirmed, rt.word_ayah, mode, new))
 
 
 def run_repairs(ctx: RepairContext, words: list[dict], raw: dict, first: dict, detect=None) -> dict:
     """Detect the regions of a surah whose first-pass record needs repair and repair them in order.
 
     Returns {"words", "raw" (G3 probes before refrain resolution, re-probed where a repair was accepted), "g2" (the
-    latest accepted G2 or None), "repairs" (records), "null", "cross"}.
+    latest accepted G2 or None), "repairs" (records), "null", "cross", "elongations" ([key, position, ms, score] of
+    the stretched words left that `verify_elongation` accepts)}.
     """
     from . import repeats as rp
 
@@ -890,4 +1027,16 @@ def run_repairs(ctx: RepairContext, words: list[dict], raw: dict, first: dict, d
                 if sub.failing and still_failing(sub):
                     attempt(sub)
     out["null"] = sorted(set(out["null"]))
+
+    # verified elongations (Q7d): the stretched words left, in ayahs where no back-jump was ever confirmed by CTC
+    resolved = refrain_resolve(out["raw"], ctx.usable)
+    jumped = {int(k.split(":")[0]) for e in out["repairs"] for j in e.get("jumps", [])
+              if len(j) > 3 and j[3] for k in j[:2]}
+    out["elongations"] = []
+    for k, pos, dur in stretched_words(out["words"], ctx.pace):
+        if int(k.split(":")[1]) in jumped:
+            continue
+        found = verify_elongation(ctx, out["words"], k, pos, dur, resolved, out["g2"] or g2)
+        if found is not None:
+            out["elongations"].append([found["key"], found["position"], found["dur_ms"], found["score"]])
     return out

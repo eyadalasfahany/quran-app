@@ -270,7 +270,7 @@ def test_finalize_dry_run_produces_the_pr_markdown_and_the_updated_data_file(tmp
     assert lines[0].startswith("Releasable: no (rules failed: ")
     assert "| pending | 2 | 20 |" in lines
     assert "| 3 | incomplete-start | heard 1–10 | of 10 |" in lines
-    assert "| 1 | pending | gate-pending | — | — | — | — | — | — |" in lines
+    assert "| 1 | pending | gate-pending | — | — | — | — | — | — | — |" in lines
 
 
 @pytest.mark.skipif(not INGEST_PY.is_file(), reason="the mp3quran-ingest virtualenv is not installed")

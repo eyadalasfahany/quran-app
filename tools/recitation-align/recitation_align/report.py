@@ -355,21 +355,22 @@ def pr_markdown(report: dict) -> str:
 
     lines += [
         "", "## Gate per surah", "",
-        "| Surah | Verdict | Reasons | G3 ok/n | G5 share | Null segs | Repairs | Pause density | Tail s |",
-        "| --- | --- | --- | --- | --- | ---: | ---: | --- | --- |",
+        "| Surah | Verdict | Reasons | G3 ok/n | G5 share | Null segs | Repairs | Attempts | Pause density | Tail s |",
+        "| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |",
     ]
     for key in sorted(surahs, key=int):
         entry = surahs[key]
         gate = entry["gate"]
         if gate is None:
-            lines.append(f"| {key} | {entry['verdict']} | {_cell(entry['reason'])} | — | — | — | — | — | — |")
+            lines.append(f"| {key} | {entry['verdict']} | {_cell(entry['reason'])} | — | — | — | — | — | — | — |")
             continue
         checks = gate["checks"]
         g3, g5, g2, pause = checks["G3"], checks["G5"], checks["G2"], checks["pause"]
         lines.append(
             f"| {key} | {entry['verdict']} | {_cell(entry['reason'])} "
             f"| {g3.get('ok')}/{g3.get('n')} | {_cell(g5.get('share_300ms'))} "
-            f"| {len(gate['segments_null'])} | {len(gate['repairs'])} "
+            f"| {len(gate['segments_null'])} | {sum(1 for r in gate['repairs'] if r.get('accepted'))} "
+            f"| {len(gate['repairs'])} "
             f"| {_cell(pause.get('density'))} | {_cell(g2.get('tail_s'))} |"
         )
     return "\n".join(lines) + "\n"

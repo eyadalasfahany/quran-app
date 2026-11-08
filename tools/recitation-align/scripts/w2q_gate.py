@@ -90,8 +90,9 @@ def gate_surah(surah: int, comp: dict, *, doc: dict | None, refusal: dict | None
     cuts = [ms / 1000 for _, ms in anchors.get("cuts", [])]
     usable = usable_ayahs(surah, ayahs)
 
+    post = gate.g3_post(words)  # one clip length per surah, from the first-pass words (Q7d)
     t0 = time.perf_counter()
-    probes = gate.probe_ayah_starts(samples, words, surah, ayahs, transcribe_clips, cuts, batch=batch)
+    probes = gate.probe_ayah_starts(samples, words, surah, ayahs, transcribe_clips, cuts, batch=batch, post=post)
     results = gate.refrain_resolve(probes["probes"], usable)
     t_g3 = time.perf_counter() - t0
     t0 = time.perf_counter()
@@ -99,7 +100,7 @@ def gate_surah(surah: int, comp: dict, *, doc: dict | None, refusal: dict | None
     t_g4 = time.perf_counter() - t0
     t0 = time.perf_counter()
     g2 = gate.end_coverage(samples, words, surah, ayahs, transcribe_clips, probes["probes"], comp, duration_s,
-                           batch=batch)
+                           batch=batch, post=post)
     t_g2 = time.perf_counter() - t0
     seconds = {"g3": round(t_g3, 1), "g4": round(t_g4, 1), "g2": round(t_g2, 1)}
     g3 = {"results": results, "unprobed": probes["unprobed"], "moved": probes["moved"]}
@@ -109,7 +110,8 @@ def gate_surah(surah: int, comp: dict, *, doc: dict | None, refusal: dict | None
         null = sorted({a for r in prior if r.get("accepted") for a in r.get("null", [])})
         cross = [c for r in prior if r.get("accepted") for c in r.get("cross", [])]
         return gate.surah_verdict(surah, comp, words=words, anchors=anchors, g2=g2, g4=g4, pauses=pauses, g3=g3,
-                                  seconds=seconds, repairs=prior, repair_null=null, cross_ayah=cross)
+                                  seconds=seconds, repairs=prior, repair_null=null, cross_ayah=cross,
+                                  elongations=doc.get("elongations", []))
     first = gate.surah_verdict(surah, comp, words=words, anchors=anchors, g2=g2, g4=g4, pauses=pauses, g3=g3,
                                seconds=seconds)
     if repair is None or first["verdict"] != "no_highlight" or first["reasons"] != ["needs-repair"]:
@@ -122,18 +124,19 @@ def gate_surah(surah: int, comp: dict, *, doc: dict | None, refusal: dict | None
         surah=surah, ayahs=ayahs, wav=samples, em=em, vocab=tools["vocab"], blank=tools["blank"],
         spf=duration_of(samples, duration_s) / em.shape[0], transcribe_clips=transcribe_clips, dense=tools["dense"],
         completeness=comp, duration_s=duration_s, anchors=anchors, usable=usable, cuts=tuple(cuts), pauses=pauses,
-        pace=gate.surah_pace(words), batch=batch)
+        pace=gate.surah_pace(words), batch=batch, g3_post=post)
     out = gate.run_repairs(ctx, words, probes["probes"], first)
     final_results = gate.refrain_resolve(out["raw"], usable)
     seconds["repair"] = round(time.perf_counter() - t0, 1)
     record = gate.surah_verdict(
         surah, comp, words=out["words"], anchors=anchors, g2=out["g2"] or g2, g4=g4, pauses=pauses,
         g3={"results": final_results, "unprobed": probes["unprobed"], "moved": probes["moved"]}, seconds=seconds,
-        repairs=out["repairs"], repair_null=out["null"], cross_ayah=out["cross"])
+        repairs=out["repairs"], repair_null=out["null"], cross_ayah=out["cross"], elongations=out["elongations"])
     if record["verdict"] == "repaired":
         doc["words"] = sorted(out["words"], key=lambda w: (w["ayah"], w["start_ms"]))
         doc["ayahs"] = ayah_spans(doc["words"], doc["audio"]["duration_ms"], doc.get("ayahs", []))
         doc["repairs"] = out["repairs"]
+        doc["elongations"] = out["elongations"]
     return record
 
 

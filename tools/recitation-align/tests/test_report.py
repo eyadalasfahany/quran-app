@@ -26,7 +26,7 @@ def completeness(surah: int, *, ayah_count: int = 10, verdict: str = "complete",
         "first_heard_ayah": 1, "last_heard_ayah": ayah_count, "ayah_count": ayah_count,
         "ending_at_s": None, "trailing_s": None, "windows": {"head": 1, "tail": 1},
         "asr_calls_extra": 2, "ms_per_letter": 160, "verdict": verdict,
-        "check": "completeness-1|tarteel-ai/whisper-base-ar-quran@FIXTURE", "tool_version": "0.1.0+q3",
+        "check": "completeness-1|tarteel-ai/whisper-base-ar-quran@FIXTURE", "tool_version": "0.1.0+q4",
     }
     if not stored:
         rec["seconds"] = 1.0
@@ -46,7 +46,7 @@ def checks() -> dict:
 
 def gate(surah: int, verdict: str = "pass", *, segments_null=(), cross=(), reasons=(), stored: bool = True):
     rec = {
-        "schema": 1, "surah": surah, "sha256": sha(f"surah {surah}"), "tool_version": "0.1.0+q3",
+        "schema": 1, "surah": surah, "sha256": sha(f"surah {surah}"), "tool_version": "0.1.0+q4",
         "verdict": verdict, "reasons": list(reasons), "checks": checks(), "repairs": [],
         "segments_null": list(segments_null), "cross_ayah": list(cross),
     }
@@ -313,7 +313,7 @@ def test_merge_maps_each_surah_to_its_verdict(tmp_path):
     assert report["release"]["listed_surahs"] == 5
     assert report["release"]["unavailable"] == 1
     assert report["quality_mode"] is True and report["a6a"] is None
-    assert report["tool_version"] == "0.1.0+q3"
+    assert report["tool_version"] == "0.1.0+q4"
     assert report["models"]["asr"].startswith("tarteel-ai/whisper-base-ar-quran@")
 
 
