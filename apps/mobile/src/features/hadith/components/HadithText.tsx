@@ -7,9 +7,6 @@ import { displayText, UiText } from '@/shared/ui';
 // The typeScale token dhikrList is 19 over 34 (1.79x), below the 1.8x rule, so the preview uses this constant.
 const HADITH_PREVIEW_LINE_HEIGHT = 36;
 const HADITH_PREVIEW_FONT_SIZE = 19;
-// Reader text is 28 over 56 (frame HadithCollReader), larger than the shared dhikr token (24 over 48), which Azkar keeps.
-const HADITH_READER_FONT_SIZE = 28;
-const HADITH_READER_LINE_HEIGHT = 56;
 const PREVIEW_LINES = 3;
 
 // Hadith text is justified RTL in both UI languages (ADR 0042 section 6). Not centred, never arabicTextDirection.
@@ -52,11 +49,7 @@ export function HadithText({
     return (
       <UiText
         accessibilityLanguage="ar"
-        style={[
-          displayText('dhikr', fontScale),
-          { fontSize: HADITH_READER_FONT_SIZE * fontScale, lineHeight: HADITH_READER_LINE_HEIGHT * fontScale },
-          TEXT_DIRECTION,
-        ]}
+        style={[displayText('dhikr', fontScale), TEXT_DIRECTION]}
         testID={testID}
         variant="dhikr"
       >
