@@ -13,7 +13,7 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q4"
+QUALITY_VERSION = "q5"  # q5 (Q7e): word-onset repair and direct probes; PARAMS as in q4
 
 PARAMS: dict = {
     # G0 completeness

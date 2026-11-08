@@ -9,8 +9,8 @@ HEX16 = re.compile(r"^[0-9a-f]{16}$")
 
 
 def test_tool_version_is_package_version_plus_quality_version():
-    assert QUALITY_VERSION == "q4"
-    assert tool_version() == "0.1.0+q4"
+    assert QUALITY_VERSION == "q5"
+    assert tool_version() == "0.1.0+q5"
 
 
 def test_every_gate_name_is_in_params():
@@ -37,7 +37,8 @@ def test_params_digest_is_sixteen_hex_and_stable():
     assert digest == params_digest()
 
 
-def test_params_digest_is_pinned_for_q4():
+def test_params_digest_is_pinned_for_q4_and_q5():
+    # q5 (Q7e) changed the repair code only: the parameters, and so the pin, are q4's.
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
     assert params_digest() == "9b4a572515695fb0"
 
