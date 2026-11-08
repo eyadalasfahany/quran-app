@@ -145,6 +145,13 @@ describe('content repository', () => {
     expect(listChapters(executor, FIXTURE_MULTI.slug, 1).map((chapter) => chapter.id)).toEqual([1, 2]);
   });
 
+  it('gives the sole hadith number of a one-hadith chapter and null otherwise', () => {
+    loadHadithDevFixtures(executor);
+    expect(listChapters(executor, FIXTURE_MULTI.slug, 1).map((chapter) => chapter.soleHadithNumber)).toEqual(['1', '2']);
+    executor.run('UPDATE hadith_chapters SET hadith_count = 2 WHERE id = 1');
+    expect(listChapters(executor, FIXTURE_MULTI.slug, 1).map((chapter) => chapter.soleHadithNumber)).toEqual([null, '2']);
+  });
+
   it('lists the hadith of a chapter in position order', () => {
     loadHadithDevFixtures(executor);
     expect(listChapterHadith(executor, FIXTURE_MULTI.slug, 1).map((item) => item.id)).toEqual([1]);

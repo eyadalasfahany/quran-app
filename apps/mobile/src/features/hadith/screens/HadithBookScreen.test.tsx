@@ -87,7 +87,14 @@ describe('HadithBookScreen', () => {
     expect(screen.queryByTestId('hadith-hadith-list')).toBeNull();
   });
 
-  it('a chapter row opens the chapter list', async () => {
+  it('a chapter row with one hadith opens that hadith straight away', async () => {
+    await renderUi(<HadithBookScreen bookId={CHAPTERED_BOOK} slug={SLUG} />);
+    await press(screen.getByTestId('hadith-chapter-list-item-2'));
+    expect(router.push).toHaveBeenCalledWith(`/hadith/${SLUG}/hadith/2`);
+  });
+
+  it('a chapter row with more than one hadith opens the chapter list', async () => {
+    executor.run('UPDATE hadith_chapters SET hadith_count = 2 WHERE id = 2');
     await renderUi(<HadithBookScreen bookId={CHAPTERED_BOOK} slug={SLUG} />);
     await press(screen.getByTestId('hadith-chapter-list-item-2'));
     expect(router.push).toHaveBeenCalledWith(`/hadith/${SLUG}/books/${CHAPTERED_BOOK}/chapters/2`);

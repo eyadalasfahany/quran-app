@@ -51,6 +51,8 @@ export type HadithChapter = {
   titleEn: string | null;
   position: number;
   hadithCount: number;
+  /** The hadith number when the chapter holds exactly one hadith; null otherwise. Opening the chapter opens it directly. */
+  soleHadithNumber: string | null;
 };
 
 /** A hadith as a list row. `textAr` is the stored text, byte for byte. The UI clamps lines; this layer never shortens it. */

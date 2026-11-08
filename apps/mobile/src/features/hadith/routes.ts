@@ -14,6 +14,11 @@ export const hadithHref = {
     `/hadith/${encodeURIComponent(slug)}/books/${bookId}?from=${from}&to=${to}` as Href,
   chapter: (slug: string, bookId: number, chapterId: number): Href =>
     `/hadith/${encodeURIComponent(slug)}/books/${bookId}/chapters/${chapterId}` as Href,
+  /** A chapter, or its only hadith straight away when it holds one (developer, 8 Nov 2026). */
+  openChapter: (slug: string, bookId: number, chapter: { id: number; soleHadithNumber: string | null }): Href =>
+    chapter.soleHadithNumber !== null
+      ? hadithHref.reader(slug, chapter.soleHadithNumber)
+      : hadithHref.chapter(slug, bookId, chapter.id),
   reader: (slug: string, hadithNumber: string): Href =>
     `/hadith/${encodeURIComponent(slug)}/hadith/${encodeURIComponent(hadithNumber)}` as Href,
   /** The Menu's home tab, where Hadith is reached from. */

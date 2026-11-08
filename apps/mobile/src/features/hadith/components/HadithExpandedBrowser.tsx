@@ -152,7 +152,7 @@ export function HadithExpandedBrowser({
       <HadithChapterList
         header={header}
         items={outline}
-        onOpenChapter={(chapter) => router.push(hadithHref.chapter(slug, book.id, chapter.id))}
+        onOpenChapter={(chapter) => router.push(hadithHref.openChapter(slug, book.id, chapter))}
         onOpenRun={(run) => router.push(hadithHref.run(slug, book.id, run.firstPosition, run.lastPosition))}
         testID={`${testID}-chapters`}
       />

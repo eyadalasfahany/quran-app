@@ -138,11 +138,15 @@ export function listChapters(db: SqlExecutor, slug: string, bookId: number): Had
     return [];
   }
   return db.all<HadithChapter>(
-    `SELECT resource_id AS resourceId, id, book_id AS bookId, chapter_number AS chapterNumber,
-            title_ar AS titleAr, title_en AS titleEn, position, hadith_count AS hadithCount
-     FROM hadith_chapters
-     WHERE resource_id = ? AND book_id = ?
-     ORDER BY position, id`,
+    `SELECT c.resource_id AS resourceId, c.id, c.book_id AS bookId, c.chapter_number AS chapterNumber,
+            c.title_ar AS titleAr, c.title_en AS titleEn, c.position, c.hadith_count AS hadithCount,
+            CASE WHEN c.hadith_count = 1 THEN
+              (SELECT e.hadith_number FROM hadith_entries e
+               WHERE e.resource_id = c.resource_id AND e.chapter_id = c.id ORDER BY e.position, e.id LIMIT 1)
+            END AS soleHadithNumber
+     FROM hadith_chapters c
+     WHERE c.resource_id = ? AND c.book_id = ?
+     ORDER BY c.position, c.id`,
     [resourceId, bookId],
   );
 }
@@ -428,11 +432,15 @@ function outlineRuns(rows: readonly OutlineRow[]): OutlineRun[] {
  */
 export function listBookOutline(db: SqlExecutor, resourceId: number, bookId: number): HadithBookOutlineItem[] {
   const chapters = db.all<HadithChapter>(
-    `SELECT resource_id AS resourceId, id, book_id AS bookId, chapter_number AS chapterNumber,
-            title_ar AS titleAr, title_en AS titleEn, position, hadith_count AS hadithCount
-     FROM hadith_chapters
-     WHERE resource_id = ? AND book_id = ?
-     ORDER BY position, id`,
+    `SELECT c.resource_id AS resourceId, c.id, c.book_id AS bookId, c.chapter_number AS chapterNumber,
+            c.title_ar AS titleAr, c.title_en AS titleEn, c.position, c.hadith_count AS hadithCount,
+            CASE WHEN c.hadith_count = 1 THEN
+              (SELECT e.hadith_number FROM hadith_entries e
+               WHERE e.resource_id = c.resource_id AND e.chapter_id = c.id ORDER BY e.position, e.id LIMIT 1)
+            END AS soleHadithNumber
+     FROM hadith_chapters c
+     WHERE c.resource_id = ? AND c.book_id = ?
+     ORDER BY c.position, c.id`,
     [resourceId, bookId],
   );
   if (chapters.length === 0) {

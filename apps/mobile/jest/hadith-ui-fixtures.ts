@@ -57,6 +57,7 @@ export function chapterFixture(over: Partial<HadithChapter> = {}): HadithChapter
     titleEn: null,
     position: 1,
     hadithCount: 24,
+    soleHadithNumber: null,
     ...over,
   };
 }
