@@ -19,6 +19,8 @@ Checks (plan way2quran-quality Q7g/Q7h):
 - `word-start`: Q7h's metrics (signed word-start error, lit-word wrong time at shifts -60 to -120) on the first pass
   of Afasy, Al-Husary, Al-Sudais and Al-Minshawi, surahs 18, 36 and 59, over Q7h's control ayahs (no QF repeat, the
   same positions as ours).
+- `boundary-model`: Q7h (c), the same reciters and surahs through `boundary_trial.py` (muaalem forced alignment inside
+  each QF ayah span, a ceiling) in the venv at $MUAALEM_PYTHON; pooled like `word-start`.
 
 Each job writes `metrics.json` with its seconds and real-time factor. QF references and audio stay in --work (the
 runner's temp folder): only numbers, verdicts and the Way2Quran/MP3Quran gate records reach --out.
@@ -40,7 +42,7 @@ sys.path.insert(0, str(TOOL / "scripts"))
 
 import lit_word  # noqa: E402
 
-CHECKS = ("repeat-calibration", "real-check", "afasy-pipeline", "word-start")
+CHECKS = ("repeat-calibration", "real-check", "afasy-pipeline", "word-start", "boundary-model")
 QF_SURAHS = [1, 2, 18, 36, 59]
 WORD_START_SURAHS = [18, 36, 59]
 # QF chapter recitation packs (content manifest ids) and the reciter id the pipeline uses for their audio
@@ -55,7 +57,7 @@ def plan(check: str) -> list[dict]:
         return [{"surah": n} for n in QF_SURAHS]
     if check == "real-check":
         return json.loads(REAL_CHECK.read_text(encoding="utf-8"))["items"]
-    return [{"reciter": r, "surah": n} for r in QF_RECITERS for n in WORD_START_SURAHS]
+    return [{"reciter": r, "surah": n} for r in QF_RECITERS for n in WORD_START_SURAHS]  # word-start, boundary-model
 
 
 # --- steps -------------------------------------------------------------------------------------------------------------
@@ -299,6 +301,19 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
             if gate_doc is not None:
                 res["flags_vs_qf"] = flags_vs_qf(gate_doc, aligned["words"], refs)
         res["lit"] = {str(s): lit_word.split(rows, refs, n, s) for s in sorted({0, shift_ms})}
+    elif check == "boundary-model":
+        rec = item["reciter"]
+        qf = clock("fetch", fetch_qf, rec, [n], work)
+        res["audio_s"] = audio_seconds(qf / "manifest.json", [n])
+        python = os.environ.get("MUAALEM_PYTHON")
+        if not python:
+            raise SystemExit("boundary-model needs MUAALEM_PYTHON (the trial venv's python)")
+        trial = work / "boundary.json"
+        env = dict(os.environ, PYTHONPATH=str(TOOL), PYTHONUNBUFFERED="1")
+        clock("trial", subprocess.run, [python, "scripts/boundary_trial.py", "--ref", str(qf / f"ref/qf-{n:03d}.json"),
+                                        "--audio", str(qf / f"audio/{n:03d}.mp3"), "--surah", str(n), "--out",
+                                        str(trial)], cwd=TOOL, env=env, check=True)
+        res.update({k: v for k, v in json.loads(trial.read_text(encoding="utf-8")).items() if k != "surah"})
     else:
         rec = item["reciter"]
         qf = clock("fetch", fetch_qf, rec, [n], work)
@@ -343,7 +358,7 @@ def merge(check: str, metrics: list[dict]) -> dict:
     if check == "real-check":
         out["cross_ayah"] = {f"{m['item']['reciter']}/{m['item']['surah']:03d}": m.get("cross_ayah") or []
                              for m in metrics}
-    if check == "word-start":
+    if check in ("word-start", "boundary-model"):
         by_reciter: dict = {}
         for m in metrics:
             r = by_reciter.setdefault(m["item"]["reciter"], {"errors": [], "lit": {}})

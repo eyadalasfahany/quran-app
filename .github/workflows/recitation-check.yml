@@ -18,6 +18,7 @@ on:
           - real-check
           - word-start
           - afasy-pipeline
+          - boundary-model
       ref:
         description: "Branch or SHA to test (empty: the dispatched commit)"
         required: false
@@ -147,6 +148,17 @@ jobs:
           set -euo pipefail
           if [ "$CHECK" = "real-check" ]; then (cd tools/mp3quran-ingest && uv sync --frozen --no-dev); fi
           (cd tools/recitation-align && uv sync --frozen --no-dev)
+
+      - name: Muaalem trial venv (boundary-model)
+        if: ${{ inputs.check == 'boundary-model' }}
+        run: |
+          set -euo pipefail
+          # An evaluation only (plan Q7h (c)), not a tool dependency: quran-muaalem 0.3.0 is QML-1.0, the model MIT.
+          # The versions are the ones the Q7f trial ran with.
+          uv venv "$RUNNER_TEMP/mvenv" --python 3.12
+          uv pip install --python "$RUNNER_TEMP/mvenv/bin/python" torch==2.15.0 torchaudio==2.11.1 numpy==2.5.4 \
+            transformers==4.56.2 quran-muaalem==0.3.0 quran-transcript==0.6.4
+          echo "MUAALEM_PYTHON=$RUNNER_TEMP/mvenv/bin/python" >> "$GITHUB_ENV"
 
       - name: Run the check
         working-directory: tools/recitation-align
