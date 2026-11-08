@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
@@ -35,12 +36,19 @@ export function HadithPager({
   const { t } = useTranslation();
   const locale = useLocale();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const current = formatHadithNumber(position, locale);
   const text = total === null ? current : t('hadith.pager.position', { current, total: formatNumber(total, locale) });
 
   return (
     <View
-      style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[4], justifyContent: 'center' }}
+      style={{
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: theme.space[4],
+        justifyContent: 'center',
+        paddingBottom: insets.bottom + theme.space[4],
+      }}
       testID={testID}
     >
       <IconButton

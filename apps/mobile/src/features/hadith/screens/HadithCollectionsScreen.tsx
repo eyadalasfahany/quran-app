@@ -12,7 +12,6 @@ import { useTheme } from '@/core/theme';
 import { IconButton, Screen } from '@/shared/ui';
 
 import { CollectionRow } from '../components/CollectionRow';
-import { HadithListCredit } from '../components/HadithListCredit';
 import { HadithListHeader } from '../components/HadithListHeader';
 import { HadithStateView } from '../components/HadithStateView';
 import { collectionRowDataFor, orderCatalogEntries } from '../collection-row-data';
@@ -92,14 +91,13 @@ export function HadithCollectionsScreen({ testID = 'screen-hadith-collections' }
             />
           );
         })}
-        <HadithListCredit />
       </ScrollView>
     );
   }
 
   return (
     <Screen testID={testID}>
-      <ContentColumn gutter={theme.size.gutterHome}>
+      <ContentColumn gutter={theme.size.gutterList}>
         <View style={{ flex: 1, gap: theme.space[4], paddingTop: theme.space[2] }}>
           <HadithListHeader onBack={() => goBackOr(hadithHref.homeTab)} title={t('hadith.title')} trailing={trailing} />
           {body}

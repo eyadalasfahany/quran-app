@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { physicalSides } from '../../../../jest/hadith-ui-fixtures';
+import { ancestorStyle, physicalSides } from '../../../../jest/hadith-ui-fixtures';
 import { themes } from '@/core/theme';
 import { maxFontScale } from '@/shared/ui';
 
@@ -82,5 +82,10 @@ describe('HadithListHeader', () => {
   it('wraps the title in full, with no two-line clamp, so Dynamic Type never cuts it short', async () => {
     await renderUi(<HadithListHeader onBack={jest.fn()} title="[اسم]" />);
     expect(screen.getByTestId('hadith-list-header-title').props.numberOfLines).toBeUndefined();
+  });
+
+  it('leaves a gap between the title and the subtitle', async () => {
+    await renderUi(<HadithListHeader onBack={jest.fn()} subtitle="[عنوان فرعي]" title="[عنوان]" />);
+    expect(ancestorStyle(screen.getByTestId(`${TEST_ID}-title`), 'gap')).toBe(themes.light.space[1]);
   });
 });

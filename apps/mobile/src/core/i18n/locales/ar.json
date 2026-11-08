@@ -1778,7 +1778,6 @@
     },
     "source": {
       "credit": "المصدر: fawazahmed0/hadith-api",
-      "open": "فتح المصدر",
       "creditOpeniti": "عناوين الكتب والأبواب وبعض نصوص الأحاديث: مشروع OpenITI (الإصدار 2023.1.8)، بترخيص CC BY-NC-SA 4.0",
       "creditHadithapicom": "بعض نصوص الأحاديث: hadithapi.com",
       "creditMeeatif": "بعض نصوص الأحاديث: مجموعة بيانات meeAtif/hadith_datasets",
@@ -1830,16 +1829,14 @@
       "title": "المصدر والتفاصيل",
       "collection": "المجموعة",
       "book": "الكتاب",
-      "number": "رقم الحديث",
-      "source": "المصدر"
+      "number": "رقم الحديث"
     },
     "expanded": {
       "books": "الكتب"
     },
     "list": {
       "search": "بحث في الحديث",
-      "downloads": "التنزيلات",
-      "credit": "المصدر: fawazahmed0/hadith-api · Unlicense"
+      "downloads": "التنزيلات"
     },
     "home": {
       "tile": "الحديث"

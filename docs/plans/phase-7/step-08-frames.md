@@ -363,3 +363,5 @@ The review set is therefore 49 frames (47 plus the two expanded frames).
 The frames now live in `screens/frames/hadith/HadithColl*.html` (ADR 0075). Known nit: the mark tips of a hidden fourth line can show under some list previews; fix it with the chapter frame changes.
 - 7 Nov 2026 (orchestrator, on the developer's behalf): collections list header gains a Saved (bookmark) icon button to reach `HadithCollSaved` (step 13 answer 3).
 - 7 Nov 2026 (orchestrator, on the developer's behalf): the reader shows one source line, the collection attribution with its licence, instead of the credit line drawn in `HadithCollReader`; filled rows still show their own credit plus the attribution.
+- 8 Nov 2026 (developer): no background behind the reader's share/copy/bookmark buttons.
+- 8 Nov 2026 (developer): no source footnote on hadith screens; sources are credited on the Sources screen and in shared/copied text.

@@ -1,8 +1,11 @@
 import { screen } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
 import { renderUi } from '../../../../jest/render-ui';
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { chapterFixture } from '../../../../jest/hadith-ui-fixtures';
+import { ancestorStyle, chapterFixture } from '../../../../jest/hadith-ui-fixtures';
+import { themes } from '@/core/theme';
+
 import type { HadithBookOutlineItem } from '../types';
 
 import { HadithChapterList } from './HadithChapterList';
@@ -63,5 +66,12 @@ describe('HadithChapterList', () => {
   it('shows the Arabic chapter title in the English UI', async () => {
     await renderUi(<HadithChapterList items={[chapterItem({ id: 3, titleAr: '[اسم الباب]' })]} onOpenChapter={jest.fn()} onOpenRun={jest.fn()} />, { locale: 'en' });
     expect(screen.getByTestId(`${TEST_ID}-item-3-title`)).toHaveTextContent('[اسم الباب]');
+  });
+
+  it('leaves 16 points between the header and the first card', async () => {
+    await renderUi(
+      <HadithChapterList header={<Text testID="list-header">[رأس]</Text>} items={[chapterItem()]} onOpenChapter={jest.fn()} onOpenRun={jest.fn()} />,
+    );
+    expect(ancestorStyle(screen.getByTestId('list-header'), 'paddingBottom')).toBe(themes.light.space[4]);
   });
 });

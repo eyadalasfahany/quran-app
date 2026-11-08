@@ -10,6 +10,11 @@ import type { ThemeName } from '@quran/design-tokens';
 
 import { HadithPager } from './HadithPager';
 
+jest.mock('react-native-safe-area-context', () => {
+  const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
+  return { ...actual, useSafeAreaInsets: () => ({ bottom: 48, left: 0, right: 0, top: 0 }) };
+});
+
 const TEST_ID = 'hadith-pager';
 
 function renderPager(
@@ -75,6 +80,11 @@ describe('HadithPager', () => {
     expect(flatStyle(screen.getByTestId(`${TEST_ID}-previous-icon`, { includeHiddenElements: true }).props.style)).toMatchObject({
       transform: [{ scaleX: -1 }],
     });
+  });
+
+  it('keeps clear of the bottom system inset, with a gap above it', async () => {
+    await renderPager();
+    expect(flatStyle(screen.getByTestId(TEST_ID).props.style).paddingBottom).toBe(48 + themes.light.space[4]);
   });
 
   it('uses start and end, never left and right', async () => {

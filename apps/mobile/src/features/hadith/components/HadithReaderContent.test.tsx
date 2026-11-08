@@ -8,6 +8,11 @@ import type { HadithReaderData } from '../types';
 
 import { HadithReaderContent } from './HadithReaderContent';
 
+jest.mock('react-native-safe-area-context', () => {
+  const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
+  return { ...actual, useSafeAreaInsets: () => ({ bottom: 0, left: 0, right: 0, top: 0 }) };
+});
+
 const TEXT = 'نَصٌّ تَجْرِيبِيٌّ مُشَكَّلٌ لِلْعَرْضِ فَقَطْ — لَيْسَ حَدِيثًا';
 
 function readerData(over: Partial<HadithReaderData> = {}, hadithNumber = '1234'): HadithReaderData {
@@ -53,12 +58,11 @@ function renderContent(data: HadithReaderData, over: Partial<{ showHeader: boole
 }
 
 describe('HadithReaderContent', () => {
-  it('shows the reader card with the number label, the text and the source line', async () => {
+  it('shows the reader card with the number label and the text, and no source footnote', async () => {
     await renderContent(readerData());
     expect(screen.getByText('حديث رقم ١٢٣٤')).toBeOnTheScreen();
     expect(screen.getByTestId('hadith-reader-content-card-text')).toHaveTextContent(PLACEHOLDER_TEXT);
-    // A fawazahmed0 row draws the collection attribution alone; the repeated credit is not drawn.
-    expect(screen.getByText('[سطر النسبة]')).toBeOnTheScreen();
+    expect(screen.queryByText('[سطر النسبة]')).toBeNull();
     expect(screen.queryByText('المصدر: fawazahmed0/hadith-api')).toBeNull();
   });
 

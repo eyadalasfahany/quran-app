@@ -19,7 +19,6 @@ function renderHeader(
 ) {
   return renderUi(
     <CollectionHeader
-      attribution={null}
       booksCount={42}
       collection={COLLECTION}
       soleBook={false}
@@ -37,19 +36,18 @@ describe('CollectionHeader', () => {
     expect(screen.getByTestId(`${TEST_ID}-title`)).toHaveTextContent(locale === 'ar' ? TITLE : '[Collection name]');
   });
 
-  it('centered: shows the 96 by 128 cover, title, author, counts and the credit', async () => {
+  it('centered: shows the 96 by 128 cover, title, author and counts, with no source footnote', async () => {
     await renderHeader();
     expect(screen.getByTestId(`${TEST_ID}-cover`)).toBeOnTheScreen();
     expect(screen.getByTestId(`${TEST_ID}-title`)).toHaveTextContent(TITLE);
     expect(screen.getByTestId(`${TEST_ID}-author`)).toHaveTextContent(AUTHOR);
     expect(screen.getByTestId(`${TEST_ID}-counts`)).toHaveTextContent(/٥٤٣٢ حديثًا · ٤٢ كتابًا/);
-    expect(screen.getByText('المصدر: fawazahmed0/hadith-api')).toBeOnTheScreen();
+    expect(screen.queryByText('المصدر: fawazahmed0/hadith-api')).toBeNull();
   });
 
-  it('inline: shows the 40 by 53 cover beside the text and no credit', async () => {
+  it('inline: shows the 40 by 53 cover beside the text', async () => {
     await renderHeader({ variant: 'inline', soleBook: true, booksCount: 1 });
     expect(screen.getByTestId(`${TEST_ID}-counts`)).toHaveTextContent(/كتاب واحد/);
-    expect(screen.queryByText('المصدر: fawazahmed0/hadith-api')).toBeNull();
   });
 
   it('hides the author when null', async () => {

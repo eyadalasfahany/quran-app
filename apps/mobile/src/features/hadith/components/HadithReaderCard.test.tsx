@@ -9,14 +9,11 @@ import { maxFontScale } from '@/shared/ui';
 import { HadithReaderCard } from './HadithReaderCard';
 
 const TEST_ID = 'hadith-reader-card';
-const ATTRIBUTION = '[سطر النسبة من المصدر]';
 
 function renderCard(props: Partial<Parameters<typeof HadithReaderCard>[0]> = {}, locale: 'ar' | 'en' = 'ar') {
   return renderUi(
     <HadithReaderCard
-      attribution={ATTRIBUTION}
       hadithNumber="1234"
-      sourceUrl={null}
       text={PLACEHOLDER_TEXT_MARKS}
       {...props}
     />,
@@ -31,11 +28,11 @@ describe('HadithReaderCard', () => {
     expect(screen.getByText(PLACEHOLDER_TEXT_MARKS)).toBeOnTheScreen();
   });
 
-  it('draws the number label, the text and the source line in that order', async () => {
+  it('draws the number label before the text, with no source footnote', async () => {
     await renderCard();
     const order = testIdsInOrder(screen.toJSON(), TEST_ID);
     expect(order.indexOf(`${TEST_ID}-number`)).toBeLessThan(order.indexOf(`${TEST_ID}-text`));
-    expect(order.indexOf(`${TEST_ID}-text`)).toBeLessThan(order.indexOf(`${TEST_ID}-source`));
+    expect(screen.queryByTestId(`${TEST_ID}-source`)).toBeNull();
   });
 
   it('has radius 24, padding 22 and 20, and no border', async () => {
@@ -59,19 +56,9 @@ describe('HadithReaderCard', () => {
     expect(joinedChildrenText(screen.getByTestId(`${TEST_ID}-text`).props.children)).toBe(PLACEHOLDER_CHAIN);
   });
 
-  it('draws no link without a sourceUrl', async () => {
-    await renderCard({ sourceUrl: null });
-    expect(screen.queryByRole('link')).toBeNull();
-  });
-
-  it('draws the link when a sourceUrl is given', async () => {
-    await renderCard({ sourceUrl: 'https://example.invalid/source' });
-    expect(screen.getByRole('link', { name: 'فتح المصدر' })).toBeOnTheScreen();
-  });
-
   it('exposes its role, label and state', async () => {
     await renderCard();
-    expect(screen.getByText(ATTRIBUTION)).toBeOnTheScreen();
+    expect(screen.queryByText(/المصدر/)).toBeNull();
     expect(screen.getByTestId(`${TEST_ID}-text`).props.accessibilityLanguage).toBe('ar');
   });
 
@@ -81,7 +68,7 @@ describe('HadithReaderCard', () => {
   });
 
   it.each(['light', 'sepia', 'dark'] as const)('reads its colours from the theme (%s)', async (theme) => {
-    await renderUi(<HadithReaderCard attribution={null} hadithNumber="1" sourceUrl={null} text={PLACEHOLDER_TEXT_MARKS} />, { theme });
+    await renderUi(<HadithReaderCard hadithNumber="1" text={PLACEHOLDER_TEXT_MARKS} />, { theme });
     expect(flatStyle(screen.getByTestId(TEST_ID).props.style).backgroundColor).toBe(themes[theme].colors.surfaceRaised);
   });
 

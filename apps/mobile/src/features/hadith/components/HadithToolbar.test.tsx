@@ -83,6 +83,16 @@ describe('HadithToolbar', () => {
   });
 
 
+  it('draws no background, border or shadow behind the buttons', async () => {
+    await renderToolbar();
+    const style = flatStyle(screen.getByTestId(TEST_ID).props.style);
+    expect(style.backgroundColor).toBeUndefined();
+    expect(style.borderWidth).toBeUndefined();
+    expect(style.shadowOpacity).toBeUndefined();
+    expect(style.elevation).toBeUndefined();
+    expect(screen.queryByTestId(`${TEST_ID}-glass`)).toBeNull();
+  });
+
   it('hides copy and share for a placeholder and keeps save', async () => {
     await renderToolbar({ shareable: false });
     expect(screen.queryByRole('button', { name: 'نسخ' })).toBeNull();

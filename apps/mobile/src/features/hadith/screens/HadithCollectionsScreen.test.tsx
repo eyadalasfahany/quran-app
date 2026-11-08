@@ -153,9 +153,9 @@ describe('HadithCollectionsScreen', () => {
     expect(installResource).toHaveBeenCalledWith(4, expect.anything());
   });
 
-  it('shows the credit footer', async () => {
+  it('shows no source footnote; sources are credited on the Sources screen', async () => {
     await renderUi(<HadithCollectionsScreen />);
-    expect(screen.getByTestId('hadith-list-credit')).toHaveTextContent('المصدر: fawazahmed0/hadith-api · Unlicense');
+    expect(screen.queryByText(/المصدر: fawazahmed0/)).toBeNull();
   });
 
   it('the header search button opens search', async () => {

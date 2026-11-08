@@ -50,7 +50,7 @@ export function HadithSavedScreen({ testID = 'screen-hadith-saved' }: { testID?:
 
   return (
     <Screen testID={testID}>
-      <ContentColumn gutter={theme.size.gutterHome}>
+      <ContentColumn gutter={theme.size.gutterList}>
         <View style={{ flex: 1, gap: theme.space[4], paddingTop: theme.space[2] }}>
           <HadithListHeader onBack={() => goBackOr(hadithHref.home)} title={t('hadith.saved.title')} />
           {body}

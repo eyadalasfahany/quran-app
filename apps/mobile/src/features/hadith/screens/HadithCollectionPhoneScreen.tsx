@@ -55,7 +55,6 @@ export function HadithCollectionPhoneScreen({ slug, testID = 'screen-hadith-coll
       <View style={{ gap: theme.space[4], paddingTop: theme.space[2] }}>
         <HadithListHeader onBack={back} trailing={search} />
         <CollectionHeader
-          attribution={null}
           booksCount={collection.booksCount}
           collection={collection}
           soleBook
@@ -80,7 +79,6 @@ export function HadithCollectionPhoneScreen({ slug, testID = 'screen-hadith-coll
       <View style={{ gap: theme.space[4], paddingTop: theme.space[2] }}>
         <HadithListHeader onBack={back} trailing={search} />
         <CollectionHeader
-          attribution={null}
           booksCount={collection.booksCount}
           collection={collection}
           soleBook={false}
@@ -100,7 +98,7 @@ export function HadithCollectionPhoneScreen({ slug, testID = 'screen-hadith-coll
 
   return (
     <Screen testID={testID}>
-      <ContentColumn gutter={theme.size.gutterHome}>
+      <ContentColumn gutter={theme.size.gutterList}>
         <View style={{ flex: 1, gap: theme.space[4] }}>{body}</View>
       </ContentColumn>
     </Screen>

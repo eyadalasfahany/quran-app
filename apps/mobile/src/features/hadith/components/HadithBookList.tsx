@@ -31,7 +31,7 @@ export function HadithBookList({
       data={books}
       ItemSeparatorComponent={() => <View style={{ height: theme.space[3] }} testID={`${testID}-gap`} />}
       keyExtractor={(book) => `${book.id}`}
-      ListHeaderComponent={header}
+      ListHeaderComponent={header === undefined ? undefined : <View style={{ paddingBottom: theme.space[4] }}>{header}</View>}
       renderItem={({ item }) => (
         <BookRow
           book={item}

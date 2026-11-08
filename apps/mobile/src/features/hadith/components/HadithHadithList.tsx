@@ -41,7 +41,7 @@ export function HadithHadithList({
       data={items}
       ItemSeparatorComponent={() => <View style={{ height: theme.space[3] }} testID={`${testID}-gap`} />}
       keyExtractor={(item) => `${item.id}`}
-      ListHeaderComponent={header}
+      ListHeaderComponent={header === undefined ? undefined : <View style={{ paddingBottom: theme.space[4] }}>{header}</View>}
       onEndReached={hasMore ? onLoadMore : undefined}
       onEndReachedThreshold={END_THRESHOLD}
       renderItem={({ item }) =>

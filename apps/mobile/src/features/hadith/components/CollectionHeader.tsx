@@ -8,7 +8,6 @@ import { collectionSummary } from '../counts';
 import { collectionAuthor, collectionTitle, coverTitle } from '../titles';
 
 import type { CollectionRowData } from './CollectionRow';
-import { HadithSourceLine } from './HadithSourceLine';
 
 // The frames' gaps: 6 between the centred blocks, 2 between the inline text lines, 14 beside the cover.
 const CENTRED_GAP = 6;
@@ -23,7 +22,6 @@ export function CollectionHeader({
   totalHadith,
   booksCount,
   soleBook,
-  attribution,
   variant,
   testID = 'collection-header',
 }: {
@@ -31,7 +29,6 @@ export function CollectionHeader({
   totalHadith: number;
   booksCount: number;
   soleBook: boolean;
-  attribution: string | null;
   variant: 'centered' | 'inline';
   testID?: string;
 }) {
@@ -90,7 +87,6 @@ export function CollectionHeader({
       <UiText align="center" testID={`${testID}-counts`} tone="muted" variant="caption">
         {counts}
       </UiText>
-      <HadithSourceLine align="center" attribution={attribution} sourceUrl={null} testID={`${testID}-source`} />
     </View>
   );
 }

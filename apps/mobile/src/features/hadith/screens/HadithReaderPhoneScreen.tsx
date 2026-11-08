@@ -61,7 +61,7 @@ export function HadithReaderPhoneScreen({
 
   return (
     <Screen testID={testID}>
-      <ContentColumn gutter={theme.size.gutterHome}>
+      <ContentColumn gutter={theme.size.gutterList}>
         <View style={{ flex: 1, paddingTop: theme.space[2] }}>{body}</View>
       </ContentColumn>
     </Screen>

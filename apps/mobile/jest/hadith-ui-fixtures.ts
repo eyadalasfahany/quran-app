@@ -1,3 +1,4 @@
+import { flatStyle } from './render-ui';
 import type { HadithBook, HadithChapter, HadithCollection, HadithListItem, HadithSearchHit } from '@/features/hadith/types';
 
 /**
@@ -139,4 +140,15 @@ export function joinedChildrenText(children: unknown): string {
   return list
     .map((child) => (typeof child === 'string' ? child : (child as { props: { children: string } }).props.children))
     .join('');
+}
+
+/** The style of the nearest ancestor that sets `key`, for checking a wrapper the component builds around a header. */
+export function ancestorStyle(element: { parent: unknown }, key: string): unknown {
+  let node = element.parent as { props: { style?: unknown }; parent: unknown } | null | undefined;
+  while (node) {
+    const style = flatStyle(node.props.style) as Record<string, unknown>;
+    if (style[key] !== undefined) return style[key];
+    node = node.parent as typeof node;
+  }
+  return undefined;
 }

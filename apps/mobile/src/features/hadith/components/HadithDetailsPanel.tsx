@@ -7,8 +7,6 @@ import { UiText, useContrastColors } from '@/shared/ui';
 
 import { formatHadithNumber } from '../format';
 
-import { HadithSourceLine } from './HadithSourceLine';
-
 const ROW_PADDING_Y = 10;
 
 /** The docked «المصدر والتفاصيل» panel of the expanded reader. The screen sets the width. No grade row (D4). */
@@ -16,17 +14,11 @@ export function HadithDetailsPanel({
   collectionTitle,
   bookTitle,
   hadithNumber,
-  attribution,
-  sourceCode = null,
-  sourceUrl,
   testID = 'hadith-details-panel',
 }: {
   collectionTitle: string;
   bookTitle: string;
   hadithNumber: string;
-  attribution: string | null;
-  sourceUrl: string | null;
-  sourceCode?: string | null;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -74,17 +66,6 @@ export function HadithDetailsPanel({
           </UiText>
         </View>
       ))}
-      <View style={{ gap: 2, paddingVertical: ROW_PADDING_Y }} testID={`${testID}-row-source`}>
-        <UiText testID={`${testID}-label-source`} tone="muted" variant="label" weight={400}>
-          {t('hadith.details.source')}
-        </UiText>
-        <HadithSourceLine
-          attribution={attribution}
-          sourceCode={sourceCode}
-          sourceUrl={sourceUrl}
-          testID={`${testID}-value-source`}
-        />
-      </View>
     </View>
   );
 }

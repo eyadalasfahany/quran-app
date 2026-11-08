@@ -11,16 +11,13 @@ import { HadithDetailsPanel } from './HadithDetailsPanel';
 const TEST_ID = 'hadith-details-panel';
 const COLLECTION = '[اسم المجموعة]';
 const BOOK = '[اسم الكتاب]';
-const ATTRIBUTION = '[سطر النسبة من المصدر]';
 
 function renderPanel(options: { locale?: 'ar' | 'en'; theme?: 'light' | 'sepia' | 'dark' } = {}) {
   return renderUi(
     <HadithDetailsPanel
-      attribution={ATTRIBUTION}
       bookTitle={BOOK}
       collectionTitle={COLLECTION}
       hadithNumber="2787.2"
-      sourceUrl={null}
     />,
     options,
   );
@@ -32,13 +29,13 @@ describe('HadithDetailsPanel', () => {
     expect(screen.getByTestId(`${TEST_ID}-title`)).toHaveTextContent(locale === 'ar' ? 'المصدر والتفاصيل' : 'Source and details');
   });
 
-  it('shows the title and four labelled rows in order', async () => {
+  it('shows the title and three labelled rows in order', async () => {
     await renderPanel();
     expect(screen.getByRole('header', { name: 'المصدر والتفاصيل' })).toBeOnTheScreen();
     expect(screen.getByTestId(`${TEST_ID}-label-collection`)).toHaveTextContent('المجموعة');
     expect(screen.getByTestId(`${TEST_ID}-label-book`)).toHaveTextContent('الكتاب');
     expect(screen.getByTestId(`${TEST_ID}-label-number`)).toHaveTextContent('رقم الحديث');
-    expect(screen.getByTestId(`${TEST_ID}-label-source`)).toHaveTextContent('المصدر');
+    expect(screen.queryByTestId(`${TEST_ID}-row-source`)).toBeNull();
   });
 
   it('shows no grade row', async () => {
@@ -52,10 +49,10 @@ describe('HadithDetailsPanel', () => {
     expect(screen.getByTestId(`${TEST_ID}-value-number`)).toHaveTextContent('٢٧٨٧٫٢');
   });
 
-  it('shows the attribution alone for the collection credit, not the repeated credit', async () => {
+  it('draws no source footnote', async () => {
     await renderPanel();
     expect(screen.queryByText('المصدر: fawazahmed0/hadith-api')).toBeNull();
-    expect(screen.getByText(ATTRIBUTION)).toBeOnTheScreen();
+    expect(screen.queryByTestId(`${TEST_ID}-row-source`)).toBeNull();
   });
 
 
@@ -85,19 +82,4 @@ describe('HadithDetailsPanel', () => {
   });
 
 
-  it('shows the OpenITI credit for a row filled from OpenITI', async () => {
-    await renderUi(
-      <HadithDetailsPanel
-        attribution={ATTRIBUTION}
-        bookTitle={BOOK}
-        collectionTitle={COLLECTION}
-        hadithNumber="2787.2"
-        sourceCode="openiti"
-        sourceUrl={null}
-      />,
-      { locale: 'en' },
-    );
-    expect(screen.getByText('Book and chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0')).toBeOnTheScreen();
-    expect(screen.queryByText('Source: fawazahmed0/hadith-api')).toBeNull();
-  });
 });

@@ -1,8 +1,10 @@
 import { screen } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { bookFixture } from '../../../../jest/hadith-ui-fixtures';
+import { ancestorStyle, bookFixture } from '../../../../jest/hadith-ui-fixtures';
+import { themes } from '@/core/theme';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 
 import { HadithBookList } from './HadithBookList';
@@ -45,5 +47,10 @@ describe('HadithBookList', () => {
 
   it('has no raw colour literal', () => {
     expect(rawColorLiteralsInFeature('src/features/hadith/components/HadithBookList.tsx')).toEqual([]);
+  });
+
+  it('leaves 16 points between the header and the first row', async () => {
+    await renderUi(<HadithBookList books={[bookFixture({ id: 1 })]} header={<Text testID="list-header">[رأس]</Text>} onOpen={jest.fn()} />);
+    expect(ancestorStyle(screen.getByTestId('list-header'), 'paddingBottom')).toBe(themes.light.space[4]);
   });
 });

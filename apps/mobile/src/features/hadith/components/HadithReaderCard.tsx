@@ -7,20 +7,14 @@ import { UiText } from '@/shared/ui';
 
 import { formatHadithNumber } from '../format';
 
-import { HadithSourceLine } from './HadithSourceLine';
 import { HadithText } from './HadithText';
 
 // Frame HadithCollReaderPlain: the source line sits 6 below the text.
-const SOURCE_PADDING_TOP = 6;
-
-/** The reader's card: the number label, the text (the focus) and the source line. No border. */
+/** The reader's card: the number label and the text (the focus). No border and no source footnote; sources are credited on the Sources screen. */
 export function HadithReaderCard({
   hadithNumber,
   text,
   chainEnd = null,
-  attribution,
-  sourceUrl,
-  sourceCode = null,
   unavailable = false,
   fontScale = 1,
   testID = 'hadith-reader-card',
@@ -28,9 +22,6 @@ export function HadithReaderCard({
   hadithNumber: string;
   text: string;
   chainEnd?: number | null;
-  attribution: string | null;
-  sourceUrl: string | null;
-  sourceCode?: string | null;
   /** A placeholder: no source has the text. The note replaces the text (ADR 0076). */
   unavailable?: boolean;
   fontScale?: number;
@@ -61,14 +52,6 @@ export function HadithReaderCard({
       ) : (
         <HadithText chainEnd={chainEnd} fontScale={fontScale} testID={`${testID}-text`} text={text} variant="reader" />
       )}
-      <View style={{ paddingTop: SOURCE_PADDING_TOP }}>
-        <HadithSourceLine
-          attribution={attribution}
-          sourceCode={sourceCode}
-          sourceUrl={sourceUrl}
-          testID={`${testID}-source`}
-        />
-      </View>
     </View>
   );
 }

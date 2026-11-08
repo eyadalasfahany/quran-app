@@ -88,7 +88,7 @@ export function HadithExpandedBrowser({
   if (collection !== undefined && !singleBook) {
     start = (
       <View style={{ flex: 1, gap: theme.space[4] }}>
-        <CollectionHeader attribution={null} booksCount={collection.booksCount} collection={collection} soleBook={false} totalHadith={collection.totalHadith} variant="inline" />
+        <CollectionHeader booksCount={collection.booksCount} collection={collection} soleBook={false} totalHadith={collection.totalHadith} variant="inline" />
         <View accessibilityLabel={t('hadith.expanded.books')} accessibilityRole="list" style={{ flex: 1 }}>
           <HadithBookList
             books={books}
@@ -125,12 +125,9 @@ export function HadithExpandedBrowser({
     );
     side = (
       <HadithDetailsPanel
-        attribution={collection.attributionAr || null}
         bookTitle={bookTitle(reader.hadith.book, locale, t)}
         collectionTitle={collectionTitle(collection, locale, t)}
         hadithNumber={hadithNumberText(reader.hadith)}
-        sourceCode={reader.hadith.sourceCode ?? null}
-        sourceUrl={reader.hadith.sourceUrl}
         testID={`${testID}-details`}
       />
     );

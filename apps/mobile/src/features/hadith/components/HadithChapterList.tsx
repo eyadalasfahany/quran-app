@@ -33,7 +33,7 @@ export function HadithChapterList({
       data={items}
       ItemSeparatorComponent={() => <View style={{ height: theme.space[3] }} testID={`${testID}-gap`} />}
       keyExtractor={(item) => (item.kind === 'chapter' ? `chapter-${item.chapter.id}` : `run-${item.firstPosition}`)}
-      ListHeaderComponent={header}
+      ListHeaderComponent={header === undefined ? undefined : <View style={{ paddingBottom: theme.space[4] }}>{header}</View>}
       renderItem={({ item }) =>
         item.kind === 'chapter' ? (
           <ChapterRow

@@ -67,12 +67,9 @@ export function HadithReaderContent({
       ) : null}
       <ScrollView contentContainerStyle={{ gap: theme.space[4], paddingBottom: theme.space[4] }}>
         <HadithReaderCard
-          attribution={hadith.collection.attributionAr || null}
           chainEnd={null}
           fontScale={fontScale}
           hadithNumber={numberText}
-          sourceCode={hadith.sourceCode ?? null}
-          sourceUrl={hadith.sourceUrl}
           text={hadith.textAr}
           unavailable={unavailable}
           testID={`${testID}-card`}

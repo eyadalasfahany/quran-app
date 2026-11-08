@@ -40,6 +40,15 @@ describe('HadithReaderHeader', () => {
     expect(screen.getByTestId(`${TEST_ID}-toolbar`)).toBeOnTheScreen();
   });
 
+  it('draws the toolbar with no container behind its buttons', async () => {
+    await renderHeader();
+    const toolbar = screen.getByTestId(`${TEST_ID}-toolbar`);
+    const style = flatStyle(toolbar.props.style);
+    expect(style.backgroundColor).toBeUndefined();
+    expect(style.borderWidth).toBeUndefined();
+    expect(screen.queryByTestId(`${TEST_ID}-toolbar-glass`)).toBeNull();
+  });
+
   it('calls onBack, onToggleSave, onCopy and onShare', async () => {
     const callbacks = await renderHeader();
     await press(screen.getByRole('button', { name: 'رجوع' }));

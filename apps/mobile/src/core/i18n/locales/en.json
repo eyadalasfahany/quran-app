@@ -1749,7 +1749,6 @@
     },
     "source": {
       "credit": "Source: fawazahmed0/hadith-api",
-      "open": "Open source",
       "creditOpeniti": "Book and chapter titles and some hadith texts: OpenITI (release 2023.1.8), CC BY-NC-SA 4.0",
       "creditHadithapicom": "Some hadith texts: hadithapi.com",
       "creditMeeatif": "Some hadith texts: meeAtif/hadith_datasets dataset",
@@ -1797,16 +1796,14 @@
       "title": "Source and details",
       "collection": "Collection",
       "book": "Book",
-      "number": "Hadith number",
-      "source": "Source"
+      "number": "Hadith number"
     },
     "expanded": {
       "books": "Books"
     },
     "list": {
       "search": "Search hadith",
-      "downloads": "Downloads",
-      "credit": "Source: fawazahmed0/hadith-api · Unlicense"
+      "downloads": "Downloads"
     },
     "home": {
       "tile": "Hadith"

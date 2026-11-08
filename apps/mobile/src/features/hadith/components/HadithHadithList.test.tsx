@@ -1,10 +1,12 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 import { View } from 'react-native';
 
+import { themes } from '@/core/theme';
+
 import { renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { listItemFixture, PLACEHOLDER_TEXT } from '../../../../jest/hadith-ui-fixtures';
+import { ancestorStyle, listItemFixture, PLACEHOLDER_TEXT } from '../../../../jest/hadith-ui-fixtures';
 
 import { HadithHadithList } from './HadithHadithList';
 
@@ -35,6 +37,13 @@ describe('HadithHadithList', () => {
     await renderUi(<HadithHadithList hasMore={false} items={items} onLoadMore={jest.fn()} onOpen={jest.fn()} savedNumbers={new Set(['2'])} />);
     expect(screen.queryByTestId(`${CARD_1}-saved`, { includeHiddenElements: true })).toBeNull();
     expect(screen.getByTestId(`${CARD_2}-saved`, { includeHiddenElements: true })).toBeOnTheScreen();
+  });
+
+  it('leaves 16 points between the header and the first card', async () => {
+    await renderUi(
+      <HadithHadithList header={<View testID="fixture-header-gap" />} hasMore={false} items={[listItemFixture({ id: 1 })]} onLoadMore={jest.fn()} onOpen={jest.fn()} />,
+    );
+    expect(ancestorStyle(screen.getByTestId('fixture-header-gap', { includeHiddenElements: true }), 'paddingBottom')).toBe(themes.light.space[4]);
   });
 
   it('renders the header', async () => {

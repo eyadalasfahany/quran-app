@@ -83,7 +83,7 @@ export function HadithChapterScreen({
 
   return (
     <Screen testID={testID}>
-      <ContentColumn gutter={theme.size.gutterHome}>
+      <ContentColumn gutter={theme.size.gutterList}>
         <View style={{ flex: 1, gap: theme.space[4] }}>{body}</View>
       </ContentColumn>
     </Screen>
