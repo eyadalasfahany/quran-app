@@ -3,10 +3,10 @@ import { screen } from '@testing-library/react-native';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { joinedChildrenText, PLACEHOLDER_TEXT, PLACEHOLDER_TEXT_MARKS, physicalSides } from '../../../../jest/hadith-ui-fixtures';
-import { themes } from '@/core/theme';
+import { themes, uiFontFamilies } from '@/core/theme';
 import { maxFontScale } from '@/shared/ui';
 
-import { HadithText } from './HadithText';
+import { HadithText, quoteParts } from './HadithText';
 
 const TEST_ID = 'hadith-text';
 const CHAIN_TEXT = 'سند ثم متن';
@@ -72,6 +72,39 @@ describe('HadithText', () => {
   it('scales the reader with fontScale', async () => {
     await renderUi(<HadithText fontScale={1.5} text={PLACEHOLDER_TEXT} variant="reader" />);
     expect(flatStyle(screen.getByTestId(TEST_ID).props.style)).toMatchObject({ fontSize: 36, lineHeight: 72 });
+  });
+
+  it.each(['reader', 'preview'] as const)('draws quoted words in gold, marks included (%s)', async (variant) => {
+    const text = 'نص "قول" نص "قول آخر"';
+    await renderUi(<HadithText text={text} variant={variant} />);
+    const quotes = screen.getAllByTestId(`${TEST_ID}-quote`);
+    expect(quotes.map((quote) => quote.props.children)).toEqual(['"قول"', '"قول آخر"']);
+    expect(flatStyle(quotes[0]!.props.style).color).toBe(themes.light.colors.gold);
+    expect(joinedChildrenText(screen.getByTestId(TEST_ID).props.children)).toBe(text);
+  });
+
+  it.each(['نص "قول نص', 'نص بلا علامات', 'نص "أ" "ب'])('leaves %p plain', async (text) => {
+    await renderUi(<HadithText text={text} variant="reader" />);
+    expect(screen.queryByTestId(`${TEST_ID}-quote`)).toBeNull();
+    expect(screen.getByTestId(TEST_ID).props.children).toBe(text);
+  });
+
+  it('colours quotes after the chain, never inside it', async () => {
+    const text = 'سند ثم "متن"';
+    await renderUi(<HadithText chainEnd={4} text={text} variant="preview" />);
+    expect(screen.getByTestId(`${TEST_ID}-chain`)).toHaveTextContent('سند');
+    expect(screen.getByTestId(`${TEST_ID}-quote`).props.children).toBe('"متن"');
+    expect(joinedChildrenText(screen.getByTestId(TEST_ID).props.children)).toBe(text);
+  });
+
+  it.each(['reader', 'preview'] as const)('uses the tafsir body face, not Amiri (%s)', async (variant) => {
+    await renderUi(<HadithText text={PLACEHOLDER_TEXT} variant={variant} />);
+    expect(flatStyle(screen.getByTestId(TEST_ID).props.style).fontFamily).toBe(uiFontFamilies[400]);
+  });
+
+  it('keeps every character when splitting', () => {
+    const text = '"أ"ب"ج"';
+    expect(quoteParts(text).map((part) => part.text).join('')).toBe(text);
   });
 
   it('passes the stored text through byte for byte', async () => {
