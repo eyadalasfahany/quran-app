@@ -1,0 +1,242 @@
+{
+ "schema": 1,
+ "note": "Plan way2quran-quality Q8: cross-ayah back-jumps found by the gate's repeat proposer (repeats.propose, Q7g) and recorded in the gate records' cross_ayah. Measured on GitHub runs; entries are accepted repairs of represented=false (R7).",
+ "date": "2026-11-09",
+ "runs": {
+  "real-check q8": "42503833692",
+  "abadh full run q8": "42506135799 (101 of 114 surahs downloaded)"
+ },
+ "real_check": {
+  "1/005": [],
+  "1/009": [
+   {
+    "from": "9:119",
+    "represented": false,
+    "to": "9:120"
+   }
+  ],
+  "3/018": [],
+  "3/015": [],
+  "2/036": [],
+  "2/018": [],
+  "62/017": []
+ },
+ "abadh_full_run": {
+  "1/021": [
+   {
+    "from": "21:94",
+    "represented": false,
+    "to": "21:95"
+   }
+  ],
+  "1/008": [
+   {
+    "from": "8:33",
+    "represented": false,
+    "to": "8:34"
+   }
+  ],
+  "1/026": [
+   {
+    "from": "26:50",
+    "represented": false,
+    "to": "26:51"
+   },
+   {
+    "from": "26:81",
+    "represented": false,
+    "to": "26:82"
+   },
+   {
+    "from": "26:203",
+    "represented": false,
+    "to": "26:204"
+   },
+   {
+    "from": "26:219",
+    "represented": false,
+    "to": "26:221"
+   }
+  ],
+  "1/041": [
+   {
+    "from": "41:20",
+    "represented": false,
+    "to": "41:21"
+   }
+  ],
+  "1/023": [
+   {
+    "from": "23:98",
+    "represented": false,
+    "to": "23:99"
+   },
+   {
+    "from": "23:99",
+    "represented": false,
+    "to": "23:100"
+   }
+  ],
+  "1/033": [
+   {
+    "from": "33:56",
+    "represented": false,
+    "to": "33:57"
+   },
+   {
+    "from": "33:64",
+    "represented": false,
+    "to": "33:65"
+   }
+  ],
+  "1/057": [
+   {
+    "from": "57:3",
+    "represented": false,
+    "to": "57:4"
+   },
+   {
+    "from": "57:12",
+    "represented": false,
+    "to": "57:13"
+   }
+  ],
+  "1/086": [
+   {
+    "from": "86:9",
+    "represented": false,
+    "to": "86:10"
+   }
+  ],
+  "1/050": [
+   {
+    "from": "50:19",
+    "represented": false,
+    "to": "50:20"
+   }
+  ],
+  "1/020": [
+   {
+    "from": "20:73",
+    "represented": false,
+    "to": "20:74"
+   },
+   {
+    "from": "20:101",
+    "represented": false,
+    "to": "20:102"
+   },
+   {
+    "from": "20:100",
+    "represented": false,
+    "to": "20:101"
+   }
+  ],
+  "1/036": [
+   {
+    "from": "36:53",
+    "represented": false,
+    "to": "36:54"
+   }
+  ],
+  "1/039": [
+   {
+    "from": "39:38",
+    "represented": false,
+    "to": "39:39"
+   },
+   {
+    "from": "39:47",
+    "represented": false,
+    "to": "39:48"
+   },
+   {
+    "from": "39:53",
+    "represented": false,
+    "to": "39:54"
+   }
+  ],
+  "1/014": [
+   {
+    "from": "14:19",
+    "represented": false,
+    "to": "14:20"
+   }
+  ],
+  "1/069": [
+   {
+    "from": "69:15",
+    "represented": false,
+    "to": "69:17"
+   },
+   {
+    "from": "69:22",
+    "represented": false,
+    "to": "69:23"
+   }
+  ],
+  "1/075": [
+   {
+    "from": "75:22",
+    "represented": false,
+    "to": "75:23"
+   }
+  ],
+  "1/044": [
+   {
+    "from": "44:38",
+    "represented": false,
+    "to": "44:39"
+   },
+   {
+    "from": "44:42",
+    "represented": false,
+    "to": "44:43"
+   }
+  ],
+  "1/009": [
+   {
+    "from": "9:119",
+    "represented": false,
+    "to": "9:120"
+   }
+  ],
+  "1/019": [
+   {
+    "from": "19:84",
+    "represented": false,
+    "to": "19:85"
+   }
+  ],
+  "1/042": [
+   {
+    "from": "42:20",
+    "represented": false,
+    "to": "42:21"
+   }
+  ],
+  "1/030": [
+   {
+    "from": "30:11",
+    "represented": false,
+    "to": "30:12"
+   }
+  ],
+  "1/017": [
+   {
+    "from": "17:24",
+    "represented": false,
+    "to": "17:25"
+   }
+  ],
+  "1/015": [
+   {
+    "from": "15:50",
+    "represented": false,
+    "to": "15:51"
+   }
+  ]
+ },
+ "cross_ayah_total": 35,
+ "decision": "cross_ayah > 0: Q8a-Q8d (format 2) are needed before any reciter whose run finds one is released (R7). Reciters 2 and 3 are measured by their own full runs."
+}

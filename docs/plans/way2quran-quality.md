@@ -650,6 +650,15 @@ Build steps (the gate's checks stay as they are):
 - `WORD_START_SHIFT_MS` −80 ships in q8, applied by `gated_export` only. muaalem was not measured (too heavy for the Mac); it gets its own CI check later and does not block a release.
 - The q7 repeat calibration passed on CI (95.2% of back-jumps, 0 false repeats), so q8 also sets `REPEAT_MODE` `"positions"`.
 
+### Q9b. q9: the G2 tail and one null ayah (9 Nov 2026)
+
+- **Done (q9):** the G2 tail fallback and the one-null-ayah floor (ADR 0077, q9 amendment).
+  - The 18-surah Abadh sample goes from 2 to 6 surahs that ship.
+  - Projected over his full run: about 36%.
+- **New checks:** `abadh-sample` (a gate change is tried there in under an hour, before a full run), `g2-probe`, `boundary-model` (muaalem, rabah, fastconformer; none adopted), and the QF comparisons in `afasy-pipeline`.
+- **Experiment:** `VITERBI_MAX_BACK` 40 against 12. Al-Afasy calibration is the same (95.2% of back-jumps, 0 false repeats), and the sample is the same. It is adopted only if the real check on Abadh 9 (43 -> 31 in 9:111) gains, at an acceptable repair RTF.
+- **Next for Abadh:** repeat-aware alignment from the start (developer: fully word by word, nothing less).
+
 ### Q8. Measure cross-ayah back-jumps, then the conditional format 2
 
 **Measure (always).**

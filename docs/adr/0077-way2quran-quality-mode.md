@@ -290,6 +290,22 @@ Evidence: GitHub runs of `recitation-check.yml` at q7 (QF data fetched at run ti
   - `export.py` is unchanged, so MP3Quran files stay byte-identical. The live MP3Quran reciters get the shift only through decision 8's verified PRs.
 - **muaalem** (`obadx/muaalem-model-v3_2`) boundaries were not measured: the run is too heavy for the developer's Mac. It gets its own CI check and brief; it does not block a release.
 
+### Amendment, 9 Nov 2026 (q9): G2's unsure last word, and one null ayah
+
+Evidence: GitHub runs on Abadh (the q8 full run 42506135799; the g2-probe check on his 14 surahs that failed only G2; the 18-surah abadh-sample at q9) and QF Afasy (afasy-pipeline with QF comparisons). QF data was fetched at run time and discarded.
+
+- **G2's last word.** A clip that holds one word is often misheard: Whisper heard «متين» for «دين» and «الم» for «حين». Yet in 11 of those 14 surahs, the last 30 s heard as a whole ended on the surah's last words.
+  - When both last-word clips are unsure, G2 now hears the end of the audio (`G2_TAIL_S` 25) and records `tail_words`.
+  - G2 still fails at first, so the end repair runs first.
+  - After the repairs, a surah whose only G2 failure is that unsure last word ships with its last ayah written without segments. This needs three conditions: the last ayah's start is OK, the tail is short, and `tail_words` is OK.
+  - A BAD clip, where an earlier word is heard at the last word's start (Abadh 1 and 32), still fails.
+- **One null ayah alone no longer fails a short surah** on NULL_SHARE (`max(1, NULL_SHARE x ayahs)`). The reciter cap CAP_SEG_NULL is unchanged.
+- **Kept, with evidence.** The moved-neighbour rule's one rejection on QF Afasy (2:176) was right: the candidate moved the start from 157 ms to 1,818 ms off QF.
+- **Measured, not adopted.** Two Quran-trained boundary models fall within about 1 point of ours on lit-word wrong time, while having QF's own ayah spans as a ceiling:
+  - rabah2026 wav2vec2 (Apache-2.0);
+  - mrmuminov FastConformer (CC BY 4.0).
+- **Developer decision (9 Nov 2026).** Abadh ships only fully word by word, at Al-Afasy quality: no ayah-only highlighting, no audio-only launch, no cap change for him. At q9 about 36% of his surahs pass. His failures are mostly real misalignment around his long repeats, often of an ayah's tail before the next ayah. They are not false alarms. The next step for him is repeat-aware alignment from the start, not repairs after it.
+
 ## Reinterpretation of ADR 0060's "no surah-by-surah shipping" for Way2Quran
 
 - **The rule's purpose was that a reciter appears once, as a whole, and is never trickled out over several deploys. That purpose is kept:** the reciter is released once, by one release PR, with its whole available audio set.
