@@ -1,0 +1,132 @@
+{
+ "schema": 1,
+ "note": "recitation-check.yml abadh-sample: Abadh surahs of at most 13 min (plus 36 and 50, with long repeats) covering each q8 failing check (add-reciter run 42506135799), plus two that ship. A gate change is tried here before a full run.",
+ "items": [
+  {
+   "reciter": 1,
+   "surah": 36,
+   "source": "way2quran",
+   "sha256": "9a9487977759ed83a3840a692d09ca02b6d4644980862e8b570e52cade09d9f4",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 50,
+   "source": "way2quran",
+   "sha256": "ffa705f40923bbcee2903408db882ca5ecde0e6fcf6d8356886ced698632dc84",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 60,
+   "source": "way2quran",
+   "sha256": "5ed096896ccae9d78f1f075956463a56a8688c06fb1ed126dbfe686015bde3d2",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 62,
+   "source": "way2quran",
+   "sha256": "a00999d0d1ecbe586dd1c01456e2239527450458dd8bce8a6e102656877042fc",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 63,
+   "source": "way2quran",
+   "sha256": "4602861d613fa9ddd0dc9040112e5103a56a4025517cebd92d4da003dc02e143",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 66,
+   "source": "way2quran",
+   "sha256": "36ef20093f7a08c55ba4b98d97b5e2e7cce5bdffa574af93e898fee59b403fd3",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 68,
+   "source": "way2quran",
+   "sha256": "cfe45646f8bf7268c3036f554ba19b05893483f65970e512155daac5ea4b4844",
+   "q8": "repaired"
+  },
+  {
+   "reciter": 1,
+   "surah": 71,
+   "source": "way2quran",
+   "sha256": "9cad82e5f52970ed5fc506dc7d85589dd4b7b1579969cf7c2121ee373ddc9c50",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 73,
+   "source": "way2quran",
+   "sha256": "9c7bd4e2366935161b0b1903095e2de98efdc6a621186870434c7e3a29cdc255",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 74,
+   "source": "way2quran",
+   "sha256": "f4c9ce048c270468fe8d9b69e11721f4b6cbd8da3b38879a0d862e83ac733124",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 77,
+   "source": "way2quran",
+   "sha256": "b732df092cf380134d8f304a96ac7e3daa762b2aac1fe589f30e4cc3a8846266",
+   "q8": "repaired"
+  },
+  {
+   "reciter": 1,
+   "surah": 78,
+   "source": "way2quran",
+   "sha256": "fcfdf5059ed642dc51e8c5e0c4d7b2f45a10974119cd99f90ca180615e0ce697",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 86,
+   "source": "way2quran",
+   "sha256": "531f25840f6a576e1d2651f55fe7dcd6ba7739c5dfba5a28958abe58c0e7376a",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 89,
+   "source": "way2quran",
+   "sha256": "72995c12f0b469dca03b2bd15dafd36a866e4b86164df2589661b3ccb9e2d643",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 106,
+   "source": "way2quran",
+   "sha256": "de84cced805a24bfbe052fa703692507c5389a0fd6d701bf89c9bcfa65f328df",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 110,
+   "source": "way2quran",
+   "sha256": "9915bdb48c8cd51394a1866e182bbe2992549b2c63eaf0235f2d414105dd24b9",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 113,
+   "source": "way2quran",
+   "sha256": "040fab221473a9e9de6c000a35d381ef161594279799af5643119a6996d727e4",
+   "q8": "no_highlight"
+  },
+  {
+   "reciter": 1,
+   "surah": 114,
+   "source": "way2quran",
+   "sha256": "e34a3a78155599d638776a9eeb61ac33b3f1ca73e3d7c6ab58beafcc3541646c",
+   "q8": "no_highlight"
+  }
+ ]
+}

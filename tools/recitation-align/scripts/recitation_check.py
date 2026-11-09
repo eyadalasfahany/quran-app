@@ -21,6 +21,8 @@ Checks (plan way2quran-quality Q7g/Q7h):
   same positions as ours).
 - `boundary-model`: Q7h (c), the same reciters and surahs through `boundary_trial.py` (muaalem forced alignment inside
   each QF ayah span, a ceiling) in the venv at $MUAALEM_PYTHON; pooled like `word-start`.
+- `abadh-sample`: Q10, as `real-check` on the Abadh surahs of `checks/abadh-sample.json` (each failing check covered,
+  short surahs): a gate change is tried here before a full run; the summary sets each verdict against q8's.
 - `g2-probe`: Q10, the surahs of `checks/g2-probe.json` aligned (no gate), then `g2_probe.py`: what G2's last-word clip
   and longer or earlier clips hear, with G2's verdict for each.
 
@@ -44,7 +46,7 @@ sys.path.insert(0, str(TOOL / "scripts"))
 
 import lit_word  # noqa: E402
 
-CHECKS = ("repeat-calibration", "real-check", "afasy-pipeline", "word-start", "boundary-model", "g2-probe")
+CHECKS = ("repeat-calibration", "real-check", "afasy-pipeline", "word-start", "boundary-model", "g2-probe", "abadh-sample")
 QF_SURAHS = [1, 2, 18, 36, 59]
 WORD_START_SURAHS = [18, 36, 59]
 # QF chapter recitation packs (content manifest ids) and the reciter id the pipeline uses for their audio
@@ -52,6 +54,7 @@ QF_RECITERS = {"afasy": {"pack": 4, "rid": 7}, "husary": {"pack": 3, "rid": 901}
                "sudais": {"pack": 17, "rid": 908}, "minshawi": {"pack": 20, "rid": 911}}
 REAL_CHECK = TOOL / "checks" / "real-check.json"
 G2_PROBE = TOOL / "checks" / "g2-probe.json"
+ABADH_SAMPLE = TOOL / "checks" / "abadh-sample.json"
 MASK = {"tool_version", "params_digest", "code_digest", "seconds", "generated_at", "date"}
 
 
@@ -62,6 +65,8 @@ def plan(check: str) -> list[dict]:
         return json.loads(REAL_CHECK.read_text(encoding="utf-8"))["items"]
     if check == "g2-probe":
         return json.loads(G2_PROBE.read_text(encoding="utf-8"))["items"]
+    if check == "abadh-sample":
+        return json.loads(ABADH_SAMPLE.read_text(encoding="utf-8"))["items"]
     return [{"reciter": r, "surah": n} for r in QF_RECITERS for n in WORD_START_SURAHS]  # word-start, boundary-model
 
 
@@ -271,7 +276,7 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
                                           "--audio-dir", str(qf / "audio"), "--cache-dir", str(work / "cache"),
                                           "--raw", str(out / f"raw-{n:03d}.json")])
         res["audio_s"] = audio_seconds(qf / "manifest.json", [n])
-    elif check == "real-check":
+    elif check in ("real-check", "abadh-sample"):
         rid = item["reciter"]
         manifest, audio = clock("fetch", real_check_audio, item, work)
         pipeline(TOOL, rid, [n], manifest, audio, work / "ref", clock)
@@ -388,7 +393,10 @@ def merge(check: str, metrics: list[dict]) -> dict:
                     acc = pooled.setdefault(s, {}).setdefault(kind, [0, 0, 0])
                     pooled[s][kind] = [a + b for a, b in zip(acc, counts)]
         out["lit"] = {s: {k: lit_word.shares(v) for k, v in by.items()} for s, by in pooled.items()}
-    if check == "real-check":
+    if check == "abadh-sample":  # the q8 verdict each item carries, against this run's
+        out["vs_q8"] = {f"{m['item']['surah']:03d}": [m["item"].get("q8"), m.get("verdict")] for m in metrics}
+        out["ships"] = sum(m.get("verdict") in ("pass", "repaired") for m in metrics)
+    if check in ("real-check", "abadh-sample"):
         out["cross_ayah"] = {f"{m['item']['reciter']}/{m['item']['surah']:03d}": m.get("cross_ayah") or []
                              for m in metrics}
     if check in ("word-start", "boundary-model"):
@@ -413,7 +421,7 @@ def markdown(summary: dict) -> str:
             verdict += f" (identical to base: {j['identical_to_base']})"
         lines.append(f"| {json.dumps(j['item'])} | {verdict} | {j.get('audio_s')} | {json.dumps(j.get('seconds'))} | "
                      f"{(j.get('rtf') or {}).get('total')} | {json.dumps(j.get('gate_rtf'))} |")
-    for key in ("lit", "reciters", "cross_ayah"):
+    for key in ("lit", "reciters", "vs_q8", "ships", "cross_ayah"):
         if key in summary:
             lines += ["", f"```json\n{json.dumps(summary[key], indent=1)}\n```"]
     return "\n".join(lines) + "\n"

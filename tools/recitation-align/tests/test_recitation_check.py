@@ -166,3 +166,13 @@ def test_moved_against_qf_compares_both_starts_of_a_moved_neighbour():
 def test_the_g2_probe_items_are_pinned_abadh_surahs():
     items = rc.plan("g2-probe")
     assert items and all(i["reciter"] == 1 and len(i["sha256"]) == 64 and i["source"] == "way2quran" for i in items)
+
+
+def test_the_abadh_sample_merge_sets_each_verdict_against_q8():
+    items = rc.plan("abadh-sample")
+    assert 10 <= len(items) <= 20 and all(len(i["sha256"]) == 64 and i.get("q8") for i in items)
+    jobs = [{"item": {"reciter": 1, "surah": 106, "q8": "no_highlight"}, "verdict": "pass"},
+            {"item": {"reciter": 1, "surah": 68, "q8": "repaired"}, "verdict": "no_highlight"}]
+    out = rc.merge("abadh-sample", jobs)
+    assert out["vs_q8"] == {"106": ["no_highlight", "pass"], "068": ["repaired", "no_highlight"]}
+    assert out["ships"] == 1 and out["cross_ayah"] == {"1/106": [], "1/068": []}
