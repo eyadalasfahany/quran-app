@@ -20,7 +20,8 @@ Checks (plan way2quran-quality Q7g/Q7h):
   of Afasy, Al-Husary, Al-Sudais and Al-Minshawi, surahs 18, 36 and 59, over Q7h's control ayahs (no QF repeat, the
   same positions as ours).
 - `boundary-model`: Q7h (c), the same reciters and surahs through `boundary_trial.py` (muaalem forced alignment inside
-  each QF ayah span, a ceiling) in the venv at $MUAALEM_PYTHON; pooled like `word-start`.
+  each QF ayah span, a ceiling) with $TRIAL_MODEL (muaalem, rabah or fastconformer) in the Python at
+  $TRIAL_PYTHON; pooled like `word-start`.
 - `abadh-sample`: Q10, as `real-check` on the Abadh surahs of `checks/abadh-sample.json` (each failing check covered,
   short surahs): a gate change is tried here before a full run; the summary sets each verdict against q8's.
 - `g2-probe`: Q10, the surahs of `checks/g2-probe.json` aligned (no gate), then `g2_probe.py`: what G2's last-word clip
@@ -343,12 +344,12 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
         rec = item["reciter"]
         qf = clock("fetch", fetch_qf, rec, [n], work)
         res["audio_s"] = audio_seconds(qf / "manifest.json", [n])
-        python = os.environ.get("MUAALEM_PYTHON")
+        python, model = os.environ.get("TRIAL_PYTHON"), os.environ.get("TRIAL_MODEL", "muaalem")
         if not python:
-            raise SystemExit("boundary-model needs MUAALEM_PYTHON (the trial venv's python)")
+            raise SystemExit("boundary-model needs TRIAL_PYTHON (the trial's python)")
         trial = work / "boundary.json"
         env = dict(os.environ, PYTHONPATH=str(TOOL), PYTHONUNBUFFERED="1")
-        clock("trial", subprocess.run, [python, "scripts/boundary_trial.py", "--ref", str(qf / f"ref/qf-{n:03d}.json"),
+        clock("trial", subprocess.run, [python, "scripts/boundary_trial.py", "--model", model, "--ref", str(qf / f"ref/qf-{n:03d}.json"),
                                         "--audio", str(qf / f"audio/{n:03d}.mp3"), "--surah", str(n), "--out",
                                         str(trial)], cwd=TOOL, env=env, check=True)
         res.update({k: v for k, v in json.loads(trial.read_text(encoding="utf-8")).items() if k != "surah"})

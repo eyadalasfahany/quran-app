@@ -31,6 +31,15 @@ on:
         required: false
         default: "main"
         type: string
+      model:
+        description: "boundary-model: the Quran-trained CTC model to try"
+        required: false
+        default: "muaalem"
+        type: choice
+        options:
+          - muaalem
+          - rabah
+          - fastconformer
       shift_ms:
         description: "afasy-pipeline: also split the lit-word time with our word starts moved by this many ms (e.g. -80)"
         required: false
@@ -41,7 +50,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: recitation-check-${{ inputs.check }}-${{ inputs.ref }}
+  group: recitation-check-${{ inputs.check }}-${{ inputs.ref }}-${{ inputs.model }}
   cancel-in-progress: false
 
 jobs:
@@ -151,16 +160,29 @@ jobs:
           if [ "$CHECK" = "real-check" ] || [ "$CHECK" = "g2-probe" ] || [ "$CHECK" = "abadh-sample" ]; then (cd tools/mp3quran-ingest && uv sync --frozen --no-dev); fi
           (cd tools/recitation-align && uv sync --frozen --no-dev)
 
-      - name: Muaalem trial venv (boundary-model)
+      - name: Trial model environment (boundary-model)
         if: ${{ inputs.check == 'boundary-model' }}
+        env:
+          MODEL: ${{ inputs.model }}
         run: |
           set -euo pipefail
-          # An evaluation only (plan Q7h (c)), not a tool dependency: quran-muaalem 0.3.0 is QML-1.0, the model MIT.
-          # The versions are the ones the Q7f trial ran with.
-          uv venv "$RUNNER_TEMP/mvenv" --python 3.12
-          uv pip install --python "$RUNNER_TEMP/mvenv/bin/python" torch==2.15.0 torchaudio==2.11.1 numpy==2.5.4 \
-            transformers==4.56.2 quran-muaalem==0.3.0 quran-transcript==0.6.4
-          echo "MUAALEM_PYTHON=$RUNNER_TEMP/mvenv/bin/python" >> "$GITHUB_ENV"
+          # An evaluation only (plan Q7h (c)), never a tool dependency. muaalem: quran-muaalem 0.3.0 is QML-1.0, the
+          # model MIT, at the Q7f trial's versions. rabah (Apache-2.0) runs in the tool's own environment.
+          # fastconformer (CC BY 4.0) needs NeMo, as its model card says (nemo-toolkit 3.0.0).
+          echo "TRIAL_MODEL=$MODEL" >> "$GITHUB_ENV"
+          if [ "$MODEL" = "rabah" ]; then
+            echo "TRIAL_PYTHON=$GITHUB_WORKSPACE/tools/recitation-align/.venv/bin/python" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          uv venv "$RUNNER_TEMP/tvenv" --python 3.12
+          if [ "$MODEL" = "muaalem" ]; then
+            uv pip install --python "$RUNNER_TEMP/tvenv/bin/python" torch==2.15.0 torchaudio==2.11.1 numpy==2.5.4 \
+              transformers==4.56.2 quran-muaalem==0.3.0 quran-transcript==0.6.4
+          else
+            uv pip install --python "$RUNNER_TEMP/tvenv/bin/python" "nemo-toolkit[asr]==3.0.0" torchaudio soundfile \
+              safetensors pyyaml huggingface_hub
+          fi
+          echo "TRIAL_PYTHON=$RUNNER_TEMP/tvenv/bin/python" >> "$GITHUB_ENV"
 
       - name: Run the check
         working-directory: tools/recitation-align
