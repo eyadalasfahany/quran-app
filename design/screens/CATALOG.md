@@ -2,7 +2,7 @@
 
 Token-cheap inventory. **Models: read this or `frames.tsv`, not HTML frames.**
 
-Total: **238** frames · **23** stacks
+Total: **240** frames · **23** stacks
 
 | id | stack | size | theme | status | caption |
 |---|---|---|---|---|---|
@@ -18,6 +18,8 @@ Total: **238** frames · **23** stacks
 | `ReaderSettings` | core | compact | ar-light | source | Reader settings · mid detent (50%) |
 | `SurahIndex` | reading | compact | ar-light | source | Surah index |
 | `Search` | reading | compact | ar-light | source | Search |
+| `SearchEmpty` | reading | compact | ar-light | source | البحث · القرآن، بلا كلمة بحث |
+| `SearchHadithEmpty` | reading | compact | ar-light | source | البحث · الحديث، بلا كلمة بحث |
 | `Reading` | reading | compact | ar-light | source | Reading mode |
 | `ReadingMiniIdle` | reading | compact | ar-light | source | Reading · mini player idle (plays from the top ayah on screen) |
 | `ReadingMiniCollapsed` | reading | compact | ar-light | source | Reading · mini player collapsed (drag down to hide, drag up or tap to show) |

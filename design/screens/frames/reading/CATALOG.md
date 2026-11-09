@@ -2,12 +2,14 @@
 
 Index, search, reading/focus modes, tafsir
 
-11 frames · review page: `design/reading/<Screen>/index.html` (ADR 0087)
+13 frames · review page: `design/reading/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
 | `SurahIndex` | compact | ar-light | source | Surah index |
 | `Search` | compact | ar-light | source | Search |
+| `SearchEmpty` | compact | ar-light | source | البحث · القرآن، بلا كلمة بحث |
+| `SearchHadithEmpty` | compact | ar-light | source | البحث · الحديث، بلا كلمة بحث |
 | `Reading` | compact | ar-light | source | Reading mode |
 | `ReadingMiniIdle` | compact | ar-light | source | Reading · mini player idle (plays from the top ayah on screen) |
 | `ReadingMiniCollapsed` | compact | ar-light | source | Reading · mini player collapsed (drag down to hide, drag up or tap to show) |

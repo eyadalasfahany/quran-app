@@ -1,6 +1,6 @@
 {
   "source": "screens/",
-  "frameCount": 238,
+  "frameCount": 240,
   "assetCount": 7,
   "bytesSavedVsInline": 5921200,
   "stacks": {
@@ -19,6 +19,8 @@
     "reading": [
       "SurahIndex",
       "Search",
+      "SearchEmpty",
+      "SearchHadithEmpty",
       "Reading",
       "ReadingMiniIdle",
       "ReadingMiniCollapsed",
@@ -409,6 +411,26 @@
       "status": "source",
       "path": "frames/reading/Search.html",
       "bytes": 7813
+    },
+    {
+      "id": "SearchEmpty",
+      "stack": "reading",
+      "caption": "البحث · القرآن، بلا كلمة بحث",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/SearchEmpty.html",
+      "bytes": 5880
+    },
+    {
+      "id": "SearchHadithEmpty",
+      "stack": "reading",
+      "caption": "البحث · الحديث، بلا كلمة بحث",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/reading/SearchHadithEmpty.html",
+      "bytes": 5876
     },
     {
       "id": "Reading",
@@ -818,7 +840,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarSearchEmpty.html",
-      "bytes": 6150
+      "bytes": 7052
     },
     {
       "id": "AzkarFavorites",
