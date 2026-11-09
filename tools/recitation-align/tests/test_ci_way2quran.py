@@ -161,7 +161,10 @@ def test_real_data_file_plans_both_reciters_without_network(tanzil):
     counts = {}
     for entry in result["chunks"]:
         counts[entry["moshaf"]] = counts.get(entry["moshaf"], 0) + len(entry["surahs"])
-    assert counts == {1: 114, 2: 54}
+    # a quality run moves the surahs it finds incomplete to `excluded` (ADR 0077), so the counts follow the data file
+    by_id = {r["reciter_id"]: r for r in data["reciters"]}
+    expected = {i: len(set(by_id[i]["files"]) - set(by_id[i].get("excluded") or {})) for i in (1, 2)}
+    assert counts == expected and expected[2] == 54 and expected[1] >= 100
 
 
 # merge (way2quran)
