@@ -50,7 +50,7 @@ export function SearchField({
     >
       <Icon color={colors.inkMuted} name={MAGNIFIER} size={theme.size.iconMd} />
       <TextInput
-        {...uiTextProps('body')}
+        {...uiTextProps('subhead')}
         accessibilityLabel={placeholder}
         autoCapitalize="none"
         autoCorrect={false}
@@ -64,7 +64,7 @@ export function SearchField({
         placeholderTextColor={colors.inkMuted}
         returnKeyType="search"
         style={[
-          theme.text.body,
+          theme.text.subhead,
           // Natural alignment follows the language iOS picked at launch, which lags an in-app switch to English. Under RTL
           // natural is right already, and an explicit 'left' would leave the empty field's caret on the left.
           { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0, ...inputTextAlignment(I18nManager.isRTL) },

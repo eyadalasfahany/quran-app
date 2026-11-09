@@ -8,8 +8,8 @@ const noop = () => undefined;
 
 describe('SearchBar', () => {
   it.each([
-    ['ar', 'إلغاء', 'ابحث في القرآن'],
-    ['en', 'Cancel', 'Search the Quran'],
+    ['ar', 'إلغاء', 'ابحث بآية أو سورة أو رقمها'],
+    ['en', 'Cancel', 'Search by ayah, surah, or number'],
   ] as const)('puts Cancel beside the field in %s', async (locale, cancel, placeholder) => {
     const view = await renderUi(<SearchBar onCancel={noop} onChangeText={noop} onSubmit={noop} value="" />, { locale });
 

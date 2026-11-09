@@ -41,7 +41,7 @@ export function ReciterSearchField({
     >
       <Icon color={colors.inkMuted} name={MAGNIFIER} size={theme.size.iconMd} />
       <TextInput
-        {...uiTextProps('body')}
+        {...uiTextProps('subhead')}
         accessibilityLabel={placeholder}
         accessibilityRole="search"
         autoCapitalize="none"
@@ -52,7 +52,7 @@ export function ReciterSearchField({
         returnKeyType="search"
         // Natural alignment follows the language iOS picked at launch, which lags an in-app switch to English. Under RTL
         // natural is right already, and an explicit 'left' would leave the empty field's caret on the left.
-        style={[theme.text.body, { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0, ...inputTextAlignment(I18nManager.isRTL) }]}
+        style={[theme.text.subhead, { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0, ...inputTextAlignment(I18nManager.isRTL) }]}
         testID={testID ? `${testID}-input` : undefined}
         value={value}
       />

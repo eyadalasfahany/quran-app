@@ -81,7 +81,9 @@ describe('ContentColumn', () => {
     );
     expect(await publishedGutter()).toBe(24);
 
-    act(() => listeners.forEach((listener) => listener()));
+    await act(async () => {
+      listeners.forEach((listener) => listener());
+    });
     expect(await publishedGutter()).toBe(20);
   });
 

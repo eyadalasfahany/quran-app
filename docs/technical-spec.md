@@ -697,7 +697,8 @@ For each change, in one transaction per request:
 - **Quran text:** query and index are normalized with the same rules as `text_search` (no diacritics or tatweel, unified alef and hamza forms, ى → ي, ة → ه) and matched in the `search_quran` FTS5 table. Results show the original Uthmani text with the matched words highlighted by position.
 - **Surahs:** a prefix match on Arabic and transliterated names, plus surah numbers.
 - **Tafsir:** `search_study` FTS5 over downloaded tafsirs only; the filter chip is hidden when no tafsir is downloaded. There is no translation search (ADR 0014).
-- **Root search** (shown in the search screen's hint) needs word-root data, which QF exposes as a separate resource; it is post-launch.
+- **Scopes:** the search screen shows scope chips (القرآن، الحديث، الأذكار), each shown only when its content is installed; Hadith searches all installed collections at once (`search_hadith`, ADR 0042 §8), with the same results and recent searches as the Hadith search screen.
+- **Root search** (the placeholder says what each scope searches; there is no hint line under the field) needs word-root data, which QF exposes as a separate resource; it is post-launch.
 - **Budget:** results for a three-letter query in under 150 ms on a mid-range Android, measured in the release build.
 
 **Motion (reviewed against Apple's HIG on motion, accessibility and Liquid Glass)**

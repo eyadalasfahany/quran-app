@@ -36,7 +36,7 @@ describe('SearchField', () => {
     const input = view.getByTestId('search-input');
 
     expect(input.props.accessibilityLabel).toBe('ابحث في القرآن');
-    expect(input.props.dynamicTypeRamp).toBe('body');
+    expect(input.props.dynamicTypeRamp).toBe('subheadline');
     expect(input.props.placeholder).toBe('ابحث في القرآن');
     expect(input.props.placeholderTextColor).toBe(colors.inkMuted);
     expect(input.props.returnKeyType).toBe('search');

@@ -439,10 +439,9 @@
     }
   },
   "search": {
-    "placeholder": "Search the Quran",
+    "placeholder": "Search by ayah, surah, or number",
     "cancel": "Cancel",
-    "hint": "Search by ayah text, surah number, or name",
-    "empty": "Type to search the Quran",
+    "quranIdleHint": "Search a word from an ayah, or a surah's name or number, to see matching ayahs and surahs.",
     "noResults": "No results",
     "recentTitle": "Recent searches",
     "removeRecent": "Remove {{query}}",
@@ -461,11 +460,10 @@
       "hadith": "Hadith",
       "azkar": "Azkar"
     },
-    "placeholderHadith": "Search hadith",
-    "hintHadith": "Search by a word from the hadith text",
-    "placeholderAzkar": "Search Azkar",
-    "hintAzkar": "Search by a word from the dhikr or a chapter title",
+    "placeholderHadith": "Search by a word from the hadith",
+    "placeholderAzkar": "Search by a word or chapter title",
     "azkarIdleHint": "Search by a word or part of one. Matching chapters and azkar appear here.",
+    "hadithIdleHint": "Search a word or part of one to see matching hadith from the downloaded collections.",
     "azkarChaptersHeading": "Topics",
     "azkarEntriesHeading": "Azkar",
     "azkarNoResultsTitle": "No matching results",

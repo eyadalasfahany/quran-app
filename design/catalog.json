@@ -946,12 +946,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "Search",
-     "untranslated": 0
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "Search",
-     "untranslated": 0
+     "untranslated": 1
     }
    },
    "frames": [

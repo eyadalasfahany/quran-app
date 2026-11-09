@@ -60,7 +60,7 @@ beforeEach(() => {
 });
 
 describe('SearchScreen', () => {
-  it('opens on the search bar, field and Cancel, then the hint, with no title (the Search frame)', async () => {
+  it('opens on the search bar, field and Cancel, with no hint line and no title (the Search frame)', async () => {
     const view = await renderUi(<SearchScreen />);
 
     expect(flatStyle(view.getByTestId('screen-search').props.style)).toMatchObject({
@@ -70,13 +70,15 @@ describe('SearchScreen', () => {
     expect(view.queryByRole('header', { name: 'البحث' })).toBeNull();
     expect(view.getByTestId('search-field-input')).toBeOnTheScreen();
     expect(view.getByRole('button', { name: 'إلغاء' })).toBeOnTheScreen();
-    expect(view.getByText('ابحث بالآية، رقم السورة، أو اسمها')).toBeOnTheScreen();
+    expect(view.queryByText('ابحث بالآية، رقم السورة، أو اسمها')).toBeNull();
   });
 
   it('invites typing before a query, with no recent searches', async () => {
     const view = await renderUi(<SearchScreen />);
 
-    expect(view.getByTestId('search-empty')).toHaveTextContent('ابدأ بالكتابة للبحث في القرآن');
+    expect(view.getByTestId('search-empty')).toHaveTextContent(
+      'ابحث بكلمة من الآية أو باسم السورة أو رقمها، وستظهر الآيات والسور التي تطابقها.',
+    );
     expect(view.queryByTestId('search-recent')).toBeNull();
   });
 
@@ -152,6 +154,6 @@ describe('SearchScreen', () => {
 
     await fireEvent.press(view.getByRole('button', { name: locale === 'ar' ? 'إلغاء' : 'Cancel' }));
     expect(router.back).toHaveBeenCalled();
-    expect(view.getByLabelText(locale === 'ar' ? 'ابحث في القرآن' : 'Search the Quran')).toBeOnTheScreen();
+    expect(view.getByLabelText(locale === 'ar' ? 'ابحث بآية أو سورة أو رقمها' : 'Search by ayah, surah, or number')).toBeOnTheScreen();
   });
 });

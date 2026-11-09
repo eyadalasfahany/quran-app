@@ -10,7 +10,7 @@ import {
 } from '@/features/azkar/data';
 import { readSessionSearchScope, rememberSessionSearchScope } from '@/features/search/searchScope';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { SearchScreen } from './SearchScreen';
 
 // The Azkar scope is tested against the data hooks, not a database: the Quran search is not reached here.
@@ -125,30 +125,41 @@ describe('SearchScreen, the Azkar scope', () => {
     expect(view.queryByTestId('search-azkar-results')).toBeNull();
   });
 
-  describe('placeholder, hint and idle state per scope', () => {
+  describe('placeholder and idle state per scope', () => {
     beforeEach(() => {
       jest.mocked(useAzkarAvailable).mockReturnValue(true);
     });
 
-    it('keeps the Quran placeholder and hint under the Quran scope', async () => {
+    it('keeps the Quran placeholder, with no hint line, under the Quran scope', async () => {
       const view = await renderUi(<SearchScreen />);
 
-      expect(view.getByPlaceholderText('ابحث في القرآن')).toBeOnTheScreen();
-      expect(view.getByText('ابحث بالآية، رقم السورة، أو اسمها')).toBeOnTheScreen();
-      expect(view.getByTestId('search-empty')).toHaveTextContent('ابدأ بالكتابة للبحث في القرآن');
+      expect(view.getByPlaceholderText('ابحث بآية أو سورة أو رقمها')).toBeOnTheScreen();
+      expect(view.queryByText('ابحث بالآية، رقم السورة، أو اسمها')).toBeNull();
+      expect(view.getByTestId('search-empty')).toHaveTextContent(
+        'ابحث بكلمة من الآية أو باسم السورة أو رقمها، وستظهر الآيات والسور التي تطابقها.',
+      );
     });
 
-    it('shows the Azkar placeholder, hint and idle copy under the Azkar scope, not the Quran ones', async () => {
+    it('sets the Quran idle hint in the same caption style as the Azkar idle line', async () => {
+      const view = await renderUi(<SearchScreen />);
+      const quranStyle = flatStyle(view.getByTestId('search-empty').props.style);
+
+      await fireEvent.press(view.getByText('الأذكار'));
+
+      expect(flatStyle(view.getByTestId('search-azkar-idle-hint').props.style)).toEqual(quranStyle);
+    });
+
+    it('shows the Azkar placeholder and idle copy under the Azkar scope, with no hint line and not the Quran ones', async () => {
       const view = await renderUi(<SearchScreen />);
 
       await fireEvent.press(view.getByText('الأذكار'));
 
-      expect(view.getByPlaceholderText('ابحث في الأذكار')).toBeOnTheScreen();
-      expect(view.getByText('ابحث بكلمة من الذكر أو باسم الباب')).toBeOnTheScreen();
+      expect(view.getByPlaceholderText('ابحث بكلمة أو باسم الباب')).toBeOnTheScreen();
+      expect(view.queryByText('ابحث بكلمة من الذكر أو باسم الباب')).toBeNull();
       expect(view.getByTestId('search-azkar-idle-hint')).toHaveTextContent(
         'ابحث بالكلمة أو بجزء منها، وستظهر الأبواب والأذكار التي تطابقها.',
       );
-      expect(view.queryByText('ابحث في القرآن')).toBeNull();
+      expect(view.queryByText('ابحث بآية أو سورة أو رقمها')).toBeNull();
       expect(view.queryByText('ابحث بالآية، رقم السورة، أو اسمها')).toBeNull();
       expect(view.queryByTestId('search-empty')).toBeNull();
     });
@@ -175,12 +186,12 @@ describe('SearchScreen, the Azkar scope', () => {
       expect(storage.getString(storageKeys.searchRecentQueries)).toBeUndefined();
     });
 
-    it.each(locales)('shows the Azkar placeholder and the Azkar tab in %s', async (locale) => {
-      const placeholder = locale === 'ar' ? 'ابحث في الأذكار' : 'Search Azkar';
+    it.each(locales)('shows the Azkar placeholder and the Azkar chip in %s', async (locale) => {
+      const placeholder = locale === 'ar' ? 'ابحث بكلمة أو باسم الباب' : 'Search by a word or chapter title';
       const tab = locale === 'ar' ? 'الأذكار' : 'Azkar';
       const view = await renderUi(<SearchScreen />, { locale });
 
-      await fireEvent.press(view.getByRole('tab', { name: tab }));
+      await fireEvent.press(view.getByRole('radio', { name: tab }));
 
       expect(view.getByPlaceholderText(placeholder)).toBeOnTheScreen();
     });
@@ -216,16 +227,16 @@ describe('SearchScreen, the Azkar scope', () => {
       rememberSessionSearchScope('azkar');
       const view = await renderUi(<SearchScreen />);
 
-      expect(view.getByPlaceholderText('ابحث في الأذكار')).toBeOnTheScreen();
-      expect(view.getByRole('tab', { name: 'الأذكار', selected: true })).toBeOnTheScreen();
+      expect(view.getByPlaceholderText('ابحث بكلمة أو باسم الباب')).toBeOnTheScreen();
+      expect(view.getByRole('radio', { name: 'الأذكار', checked: true })).toBeOnTheScreen();
     });
 
     it('remembers a scope the reader picks, for the next visit', async () => {
       const view = await renderUi(<SearchScreen />);
 
-      await fireEvent.press(view.getByRole('tab', { name: 'الأذكار' }));
+      await fireEvent.press(view.getByRole('radio', { name: 'الأذكار' }));
 
-      expect(view.getByRole('tab', { name: 'الأذكار', selected: true })).toBeOnTheScreen();
+      expect(view.getByRole('radio', { name: 'الأذكار', checked: true })).toBeOnTheScreen();
       expect(readSessionSearchScope()).toBe('azkar');
     });
   });
@@ -254,30 +265,27 @@ describe('SearchScreen, the Azkar scope', () => {
       jest.mocked(useAzkarAvailable).mockReturnValue(true);
     });
 
-    it('exposes the scope as a tab list with the selected tab marked', async () => {
+    it('exposes the scope as a radio group with the selected scope checked', async () => {
       const view = await renderUi(<SearchScreen />);
 
-      // The container is not an accessible element itself, so RNTL's role query skips it; its props carry the role.
-      expect(view.getByTestId('search-scope').props).toMatchObject({
-        accessibilityLabel: 'نطاق البحث',
-        accessibilityRole: 'tablist',
-      });
-      expect(view.getByRole('tab', { name: 'القرآن', selected: true })).toBeOnTheScreen();
-      expect(view.getByRole('tab', { name: 'الأذكار', selected: false })).toBeOnTheScreen();
+      // The container is not an accessible element itself, so RNTL's role query skips it; its props carry the label.
+      expect(view.getByTestId('search-scope').props).toMatchObject({ accessibilityLabel: 'نطاق البحث' });
+      expect(view.getByRole('radio', { name: 'القرآن', checked: true })).toBeOnTheScreen();
+      expect(view.getByRole('radio', { name: 'الأذكار', checked: false })).toBeOnTheScreen();
 
-      await fireEvent.press(view.getByRole('tab', { name: 'الأذكار' }));
+      await fireEvent.press(view.getByRole('radio', { name: 'الأذكار' }));
 
-      expect(view.getByRole('tab', { name: 'الأذكار', selected: true })).toBeOnTheScreen();
-      expect(view.getByRole('tab', { name: 'القرآن', selected: false })).toBeOnTheScreen();
+      expect(view.getByRole('radio', { name: 'الأذكار', checked: true })).toBeOnTheScreen();
+      expect(view.getByRole('radio', { name: 'القرآن', checked: false })).toBeOnTheScreen();
     });
 
     it('sets the field label from the scope, so the field is named for what it searches', async () => {
       const view = await renderUi(<SearchScreen />);
-      expect(view.getByTestId('search-field-input').props.accessibilityLabel).toBe('ابحث في القرآن');
+      expect(view.getByTestId('search-field-input').props.accessibilityLabel).toBe('ابحث بآية أو سورة أو رقمها');
 
-      await fireEvent.press(view.getByRole('tab', { name: 'الأذكار' }));
+      await fireEvent.press(view.getByRole('radio', { name: 'الأذكار' }));
 
-      expect(view.getByTestId('search-field-input').props.accessibilityLabel).toBe('ابحث في الأذكار');
+      expect(view.getByTestId('search-field-input').props.accessibilityLabel).toBe('ابحث بكلمة أو باسم الباب');
     });
   });
 });

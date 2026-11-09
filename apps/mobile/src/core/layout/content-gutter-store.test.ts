@@ -17,7 +17,9 @@ describe('content gutter store', () => {
   it('publishes a new value to a mounted hook', async () => {
     const { result } = await renderHook(() => useContentGutter());
 
-    act(() => setContentGutter(20));
+    await act(async () => {
+      setContentGutter(20);
+    });
 
     expect(result.current).toBe(20);
   });

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 import { AzkarRecentSearches } from '@/features/azkar/components/AzkarRecentSearches';
-import { UiText } from '@/shared/ui';
+import { SearchIdleHint } from '@/features/search/components/SearchIdleHint';
 
 /**
  * The empty-query state of the Azkar scope (screens/, #AzkarSearchEmpty): the recent queries, each
@@ -34,9 +34,7 @@ export function AzkarSearchIdle({
         queries={queries}
         testID={`${testID}-recent`}
       />
-      <UiText testID={`${testID}-hint`} tone="muted" variant="caption">
-        {t('search.azkarIdleHint')}
-      </UiText>
+      <SearchIdleHint testID={`${testID}-hint`} text={t('search.azkarIdleHint')} />
     </View>
   );
 }

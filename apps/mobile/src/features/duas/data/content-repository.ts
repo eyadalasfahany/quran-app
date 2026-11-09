@@ -2,7 +2,6 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import { getVerseRange, verseKeyToId, type VerseRecord } from '@/features/reader/data/verses';
 
 import { activeDuasResourceId } from './active-resource';
-import { hasDuasContent } from './availability';
 import { parseDuaHints } from './hints';
 import type {
   PropheticDuaDetail,
@@ -12,8 +11,6 @@ import type {
   QuranicDuaDetail,
   QuranicDuaSummary,
 } from './model';
-
-export { hasDuasContent };
 
 const QURANIC_SELECT = `
   SELECT

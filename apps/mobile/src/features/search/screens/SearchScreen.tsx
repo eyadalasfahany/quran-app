@@ -11,11 +11,25 @@ import { useAzkarAvailable } from '@/features/azkar/data';
 import { markDiscovered } from '@/features/discover/store';
 import { goBackOr, HOME_TAB } from '@/core/navigation/go-back';
 import { azkarHref } from '@/features/azkar/routes';
+import { HadithRecentSearches } from '@/features/hadith/components/HadithRecentSearches';
+import { HadithSearchResults } from '@/features/hadith/components/HadithSearchResults';
+import { HadithStateView } from '@/features/hadith/components/HadithStateView';
+import { HADITH_SEARCH_PAGE_SIZE } from '@/features/hadith/data';
+import { useHadithAvailable, useHadithSearch } from '@/features/hadith/hooks';
+import {
+  addHadithRecentSearch,
+  clearHadithRecentSearches,
+  readHadithRecentSearches,
+  removeHadithRecentSearch,
+} from '@/features/hadith/recent-searches';
+import { hadithHref } from '@/features/hadith/routes';
 import { getWords, type WordRecord } from '@/features/reader/data/words';
 import { AzkarSearchIdle } from '@/features/search/components/AzkarSearchIdle';
 import { AzkarSearchResults } from '@/features/search/components/AzkarSearchResults';
 import { RecentSearches } from '@/features/search/components/RecentSearches';
 import { SearchBar } from '@/features/search/components/SearchBar';
+import { SearchScopeChips } from '@/features/search/components/SearchScopeChips';
+import { SearchIdleHint } from '@/features/search/components/SearchIdleHint';
 import { SearchMessage } from '@/features/search/components/SearchMessage';
 import { SearchResultRow } from '@/features/search/components/SearchResultRow';
 import { SearchShowMore } from '@/features/search/components/SearchShowMore';
@@ -29,7 +43,7 @@ import {
 } from '@/features/search/recentSearches';
 import { searchQuran, type SearchResult, SEARCH_PAGE_SIZE } from '@/features/search/searchQuran';
 import { readSessionSearchScope, rememberSessionSearchScope, type SearchScope } from '@/features/search/searchScope';
-import { Screen, SegmentedControl, UiText } from '@/shared/ui';
+import { Screen } from '@/shared/ui';
 import { DiscoverTipCard } from '@/features/discover/components/DiscoverTipCard';
 
 const SEARCH_DEBOUNCE_MS = 150;
@@ -47,11 +61,27 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
   const [resultLimit, setResultLimit] = useState(SEARCH_PAGE_SIZE);
   // The Azkar scope exists only once Azkar content is installed (ADR 0031); without it search is Quran only.
   const azkarAvailable = useAzkarAvailable();
+  const hadithAvailable = useHadithAvailable();
   // The last scope the reader picked stays for the rest of the session (search.scope).
   const [scope, setScope] = useState<SearchScope>(readSessionSearchScope);
-  const activeScope: SearchScope = azkarAvailable && scope === 'azkar' ? 'azkar' : 'quran';
+  const scopes: SearchScope[] = ['quran'];
+  if (hadithAvailable) {
+    scopes.push('hadith');
+  }
+  if (azkarAvailable) {
+    scopes.push('azkar');
+  }
+  const activeScope: SearchScope = scopes.includes(scope) ? scope : 'quran';
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
   const activeLimit = query.trim() === debouncedQuery.trim() ? resultLimit : SEARCH_PAGE_SIZE;
+  const [hadithRecent, setHadithRecent] = useState(readHadithRecentSearches);
+  const [hadithLimit, setHadithLimit] = useState(HADITH_SEARCH_PAGE_SIZE);
+  // Only the hadith scope runs the hadith search; the other scopes pass an empty query, which has no tokens.
+  const hadith = useHadithSearch({
+    query: activeScope === 'hadith' ? debouncedQuery : '',
+    scope: null,
+    limit: hadithLimit,
+  });
 
   const page = useMemo(() => {
     if (!ready || debouncedQuery.trim().length === 0) {
@@ -112,6 +142,16 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
     [commitSearch],
   );
 
+  const commitHadithSearch = useCallback((value: string) => {
+    setHadithRecent(addHadithRecentSearch(value));
+  }, []);
+
+  const onSelectHadithRecent = useCallback((value: string) => {
+    setQuery(value);
+    setHadithLimit(HADITH_SEARCH_PAGE_SIZE);
+    setHadithRecent(addHadithRecentSearch(value));
+  }, []);
+
   const selectScope = useCallback((next: SearchScope) => {
     rememberSessionSearchScope(next);
     setScope(next);
@@ -160,8 +200,13 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
     ready &&
     page.results.length === 0 &&
     page.parsed.kind !== 'empty';
-  const placeholder = activeScope === 'azkar' ? t('search.placeholderAzkar') : t('search.placeholder');
-  const hint = activeScope === 'azkar' ? t('search.hintAzkar') : t('search.hint');
+  const placeholder =
+    activeScope === 'hadith'
+      ? t('search.placeholderHadith')
+      : activeScope === 'azkar'
+        ? t('search.placeholderAzkar')
+        : t('search.placeholder');
+  const showHadithIdle = activeScope === 'hadith' && (showRecent || !hadith.hasTokens);
 
   // The keyboard lifts the whole column, field and results alike, so the results keep their room in a short
   // (landscape) window. One avoiding view covers both scopes; a nested one would add its padding twice.
@@ -179,29 +224,56 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
               onChangeText={(text) => {
                 setQuery(text);
                 setResultLimit(SEARCH_PAGE_SIZE);
+                setHadithLimit(HADITH_SEARCH_PAGE_SIZE);
               }}
-              onSubmit={commitSearch}
+              onSubmit={activeScope === 'hadith' ? commitHadithSearch : commitSearch}
               placeholder={placeholder}
               value={query}
             />
             {/* The Discover tour's search step (ADR 0053): a search completes it. */}
             <DiscoverTipCard id="app.search" />
-            <UiText tone="muted" variant="label">
-              {hint}
-            </UiText>
-            {azkarAvailable ? (
-              <SegmentedControl
-                label={t('search.scope.label')}
-                onChange={selectScope}
-                options={[
-                  { key: 'quran', label: t('search.scope.quran') },
-                  { key: 'azkar', label: t('search.scope.azkar') },
-                ]}
-                testID="search-scope"
-                value={activeScope}
-              />
+            {scopes.length > 1 ? (
+              <SearchScopeChips onChange={selectScope} scopes={scopes} value={activeScope} />
             ) : null}
           </View>
+
+          {showHadithIdle ? (
+            <View style={{ gap: theme.space[4], paddingTop: theme.space[4] }}>
+              <HadithRecentSearches
+                onClear={() => setHadithRecent(clearHadithRecentSearches())}
+                onRemove={(entry) => setHadithRecent(removeHadithRecentSearch(entry))}
+                onSelect={onSelectHadithRecent}
+                queries={hadithRecent}
+              />
+              <SearchIdleHint testID="search-hadith-idle-hint" text={t('search.hadithIdleHint')} />
+            </View>
+          ) : null}
+
+          {!showRecent && activeScope === 'hadith' && hadith.hasTokens && hadith.hits.length === 0 ? (
+            <View style={{ paddingTop: theme.space[4] }}>
+              <HadithStateView kind="noResults" />
+            </View>
+          ) : null}
+
+          {!showRecent && activeScope === 'hadith' && hadith.hits.length > 0 ? (
+            <View style={{ flex: 1 }}>
+              <HadithSearchResults
+                hasMore={hadith.hasMore}
+                hits={hadith.hits}
+                key={debouncedQuery}
+                onLoadMore={() => {
+                  if (hadith.hasMore) {
+                    setHadithLimit((current) => current + HADITH_SEARCH_PAGE_SIZE);
+                  }
+                }}
+                onOpen={(hit) => {
+                  commitHadithSearch(query);
+                  router.push(hadithHref.reader(hit.collection.slug, hit.item.hadithNumber));
+                }}
+                total={hadith.total}
+              />
+            </View>
+          ) : null}
 
           {showRecent && activeScope === 'azkar' ? (
             <View style={{ paddingTop: theme.space[4] }}>
@@ -222,7 +294,7 @@ export function SearchScreen({ testID = 'screen-search' }: { testID?: string }) 
                 queries={recent}
                 testID="search-recent"
               />
-              <SearchMessage message={t('search.empty')} testID="search-empty" />
+              <SearchIdleHint testID="search-empty" text={t('search.quranIdleHint')} />
             </View>
           ) : null}
 
