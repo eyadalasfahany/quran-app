@@ -171,6 +171,12 @@ def main(argv=None) -> int:
         spans = F.merge_tokens(ali[0], scores[0].exp())
         frame_ms = (ref["end_ms"] - ref["start_ms"]) / em.shape[0]
         starts = [ref["start_ms"] + round(spans[k].start * frame_ms) for k in first]
+        if len(ctrl) < 3:  # the first ayahs, in the job log: what the model hears, the targets and the first starts
+            best = [i for i, j in zip(em.argmax(-1).tolist(), [None, *em.argmax(-1).tolist()]) if i != j and i != blank]
+            qf = sorted(ref["words"], key=lambda w: w["index"])[:4]
+            print(json.dumps({"ayah": ref["ayah"], "frames": em.shape[0], "classes": em.shape[1], "frame_ms": round(frame_ms, 1),
+                              "targets": len(seq), "greedy_ids": best[:40], "target_ids": seq[:40],
+                              "ours": starts[:4], "qf": [w["start_ms"] for w in qf]}))
         rows.append(rows_of(n, ref["ayah"], ref["start_ms"], ref["end_ms"], starts))
         ctrl.append(ref)
 
