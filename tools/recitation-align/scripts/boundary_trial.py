@@ -177,7 +177,7 @@ def main(argv=None) -> int:
             continue
         model_s += time.perf_counter() - t0
         audio_s += len(seg) / 16000
-        spans = F.merge_tokens(ali[0], scores[0].exp())
+        spans = F.merge_tokens(ali[0], scores[0].exp(), blank=blank)  # FastConformer's blank is not 0
         frame_ms = (ref["end_ms"] - ref["start_ms"]) / em.shape[0]
         starts = [ref["start_ms"] + round(spans[k].start * frame_ms) for k in first]
         if len(ctrl) < 3:  # the first ayahs, in the job log: what the model hears, the targets and the first starts
