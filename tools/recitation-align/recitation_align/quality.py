@@ -103,7 +103,7 @@ PARAMS: dict = {
     # occurrences with 0 false repeats at every penalty from 5 to 30 (94.4% at 40); MAX_BACK 8, 12 and 15 tie.
     # Penalties 10-30 tie on back-jumps (95.2%, 58 of 65 exact); the safer, higher-penalty end of the tie is 30.
     "VITERBI_PENALTY": 30.0,
-    "VITERBI_MAX_BACK": 12,
+    "VITERBI_MAX_BACK": 40,  # experiment: Abadh repeats reach 12+ words back (9:111 43->31)
     "STEP_PROBE_S": 0.5,
     "STEP_SCORE": 85,
     # Q7d: a stretched word with no repeat is a verified elongation when dense ASR over its span hears it at this

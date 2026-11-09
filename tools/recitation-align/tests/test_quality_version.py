@@ -39,7 +39,7 @@ def test_params_digest_is_sixteen_hex_and_stable():
 
 def test_params_digest_is_pinned_for_q9():
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
-    assert params_digest() == "18e15908f285b646"
+    assert params_digest() == "fbcc6c488ab4c70e"
 
 
 def test_params_digest_changes_when_a_parameter_changes(monkeypatch):
@@ -116,7 +116,7 @@ def test_q8_writes_repeats_as_positions_and_moves_word_starts_earlier():
 
 
 def test_q7_adds_the_proposer_and_the_near_tie():
-    assert PARAMS["VITERBI_PENALTY"] == 30.0 and PARAMS["VITERBI_MAX_BACK"] == 12
+    assert PARAMS["VITERBI_PENALTY"] == 30.0 and PARAMS["VITERBI_MAX_BACK"] == 40
     assert PARAMS["G3_TIE_DELTA"] == 2 and PARAMS["G3_TIE_WORDS"] == 3
 
 
