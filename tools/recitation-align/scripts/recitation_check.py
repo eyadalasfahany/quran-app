@@ -21,6 +21,8 @@ Checks (plan way2quran-quality Q7g/Q7h):
   same positions as ours).
 - `boundary-model`: Q7h (c), the same reciters and surahs through `boundary_trial.py` (muaalem forced alignment inside
   each QF ayah span, a ceiling) in the venv at $MUAALEM_PYTHON; pooled like `word-start`.
+- `g2-probe`: Q10, the surahs of `checks/g2-probe.json` aligned (no gate), then `g2_probe.py`: what G2's last-word clip
+  and longer or earlier clips hear, with G2's verdict for each.
 
 Each job writes `metrics.json` with its seconds and real-time factor. QF references and audio stay in --work (the
 runner's temp folder): only numbers, verdicts and the Way2Quran/MP3Quran gate records reach --out.
@@ -42,13 +44,14 @@ sys.path.insert(0, str(TOOL / "scripts"))
 
 import lit_word  # noqa: E402
 
-CHECKS = ("repeat-calibration", "real-check", "afasy-pipeline", "word-start", "boundary-model")
+CHECKS = ("repeat-calibration", "real-check", "afasy-pipeline", "word-start", "boundary-model", "g2-probe")
 QF_SURAHS = [1, 2, 18, 36, 59]
 WORD_START_SURAHS = [18, 36, 59]
 # QF chapter recitation packs (content manifest ids) and the reciter id the pipeline uses for their audio
 QF_RECITERS = {"afasy": {"pack": 4, "rid": 7}, "husary": {"pack": 3, "rid": 901},
                "sudais": {"pack": 17, "rid": 908}, "minshawi": {"pack": 20, "rid": 911}}
 REAL_CHECK = TOOL / "checks" / "real-check.json"
+G2_PROBE = TOOL / "checks" / "g2-probe.json"
 MASK = {"tool_version", "params_digest", "code_digest", "seconds", "generated_at", "date"}
 
 
@@ -57,6 +60,8 @@ def plan(check: str) -> list[dict]:
         return [{"surah": n} for n in QF_SURAHS]
     if check == "real-check":
         return json.loads(REAL_CHECK.read_text(encoding="utf-8"))["items"]
+    if check == "g2-probe":
+        return json.loads(G2_PROBE.read_text(encoding="utf-8"))["items"]
     return [{"reciter": r, "surah": n} for r in QF_RECITERS for n in WORD_START_SURAHS]  # word-start, boundary-model
 
 
@@ -196,6 +201,24 @@ def flags_vs_qf(gate_doc: dict, words: list[dict], refs: list[dict]) -> dict:
     return {"g3_failed": g3, "stretch": stretch}
 
 
+def moved_vs_qf(gate_doc: dict, refs: list[dict]) -> list[dict]:
+    """For each ayah a rejected repair would have moved by more than 300 ms, its start before and in the rejected
+    candidate, each minus QF's ayah start (Q10: is the moved-neighbour rule refusing a correction?)."""
+    qf = {r["ayah"]: min((w["start_ms"] for w in r["words"]), default=None) for r in refs}
+    out = []
+    for entry in gate_doc.get("repairs") or []:
+        starts = entry.get("tried_starts") or {}
+        for f in entry.get("failed") or []:
+            if not f.startswith("moved "):
+                continue
+            a = f.split(":")[1]
+            if a in starts and qf.get(int(a)) is not None:
+                before, after = starts[a]
+                out.append({"region": entry["region"], "ayah": int(a), "before_err_ms": before - qf[int(a)],
+                            "after_err_ms": after - qf[int(a)]})
+    return out
+
+
 def _read(path: Path):
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
 
@@ -300,7 +323,17 @@ def run(check: str, item: dict, work: Path, out: Path, shift_ms: int, base_tool:
             res["g5_vs_qf"] = g5_vs_qf((aligned.get("anchors") or {}).get("held_out_refs") or [], refs)
             if gate_doc is not None:
                 res["flags_vs_qf"] = flags_vs_qf(gate_doc, aligned["words"], refs)
+                res["moved_vs_qf"] = moved_vs_qf(gate_doc, refs)
+                res["g3_probes"] = gate_doc.get("probes")
         res["lit"] = {str(s): lit_word.split(rows, refs, n, s) for s in sorted({0, shift_ms})}
+    elif check == "g2-probe":
+        rid = item["reciter"]
+        manifest, audio = clock("fetch", real_check_audio, item, work)
+        pipeline(TOOL, rid, [n], manifest, audio, work / "ref", clock, gate=False)
+        res["audio_s"] = audio_seconds(manifest, [n])
+        clock("probe", _run, TOOL, ["scripts/g2_probe.py", "--aligned", str(work / f"ref/aligned/{n:03d}.json"),
+                                    "--audio", str(audio / f"{n:03d}.mp3"), "--out", str(out / "g2.json")])
+        res["g2_probe"] = _read(out / "g2.json")
     elif check == "boundary-model":
         rec = item["reciter"]
         qf = clock("fetch", fetch_qf, rec, [n], work)
@@ -345,7 +378,7 @@ def merge(check: str, metrics: list[dict]) -> dict:
     """One summary per check: the per-job verdicts and seconds, and the pooled lit-word counts."""
     jobs = [{k: m.get(k) for k in ("item", "verdict", "reasons", "segments_null", "identical_to_base", "audio_s",
                                    "seconds", "rtf", "gate_rtf", "aligned", "start", "cross_ayah", "listen", "g5",
-                                   "g5_vs_qf", "flags_vs_qf") if k in m} for m in metrics]
+                                   "g5_vs_qf", "flags_vs_qf", "moved_vs_qf", "g3_probes", "g2_probe") if k in m} for m in metrics]
     out: dict = {"check": check, "jobs": jobs}
     if check == "afasy-pipeline":
         pooled: dict = {}

@@ -19,6 +19,7 @@ on:
           - word-start
           - afasy-pipeline
           - boundary-model
+          - g2-probe
       ref:
         description: "Branch or SHA to test (empty: the dispatched commit)"
         required: false
@@ -146,7 +147,7 @@ jobs:
           CHECK: ${{ inputs.check }}
         run: |
           set -euo pipefail
-          if [ "$CHECK" = "real-check" ]; then (cd tools/mp3quran-ingest && uv sync --frozen --no-dev); fi
+          if [ "$CHECK" = "real-check" ] || [ "$CHECK" = "g2-probe" ]; then (cd tools/mp3quran-ingest && uv sync --frozen --no-dev); fi
           (cd tools/recitation-align && uv sync --frozen --no-dev)
 
       - name: Muaalem trial venv (boundary-model)

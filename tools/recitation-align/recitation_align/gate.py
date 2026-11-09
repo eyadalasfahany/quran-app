@@ -934,6 +934,14 @@ def _repeat_ayahs(rp, seq: list[int], word_ayah: list[int]) -> list[int]:
     return sorted({word_ayah[a] for a, _ in rp.back_jumps(seq)} | {word_ayah[b] for _, b in rp.back_jumps(seq)})
 
 
+def _tried_starts(before: dict, cand: list[dict], lo: int, hi: int) -> dict:
+    """{ayah: [start before, start in the rejected candidate]} (ms) around a region: a record of what a rejected
+    repair would have moved (Q10 measures which side QF agrees with)."""
+    after = ayah_starts(cand)
+    return {str(a): [round(before[a] * 1000), round(after[a] * 1000)]
+            for a in range(lo - 1, hi + 2) if a in before and a in after}
+
+
 def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_old: dict | None = None) -> dict:
     """Repair one region (a `repeats.Region`). `raw` is the G3 probes before refrain resolution.
 
@@ -1003,6 +1011,7 @@ def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_o
                     return finish(cand, probes, g2, kind, *_outcome(rp, surah, seq, rt.word_ayah, mode, new))
                 entry["failed"] += fails
                 entry["tried_start_ms"] = round(ayah_starts(cand).get(focus, 0) * 1000)
+                entry["tried_starts"] = _tried_starts(before, cand, lo, hi)
         else:
             entry["failed"].append("ctc")
             entry["kind"] = "none"
@@ -1044,6 +1053,7 @@ def repair_region(ctx: RepairContext, region, words: list[dict], raw: dict, g2_o
     if fails:
         entry["failed"] += fails
         entry["tried_start_ms"] = round(ayah_starts(cand).get(focus, 0) * 1000)
+        entry["tried_starts"] = _tried_starts(before, cand, lo, hi)
         return result
     if confirmed is None:
         return finish(cand, probes, g2, "start")

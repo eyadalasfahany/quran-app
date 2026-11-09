@@ -152,3 +152,17 @@ def test_flags_against_qf_give_the_start_error_and_the_qf_occurrences():
     assert out["g3_failed"] == [{"ayah": 2, "ours_ms": 1500, "qf_ms": 1200, "err_ms": 300}]
     assert out["stretch"] == [{"word": "9:2", "position": 1, "ours_ms": 4500, "qf_ms": [400, 400],
                                "qf_repeat_in_ayah": True}]
+
+
+def test_moved_against_qf_compares_both_starts_of_a_moved_neighbour():
+    refs = [{"ayah": 55, "start_ms": 0, "end_ms": 1, "words": [{"index": 1, "start_ms": 10000, "end_ms": 10400}]}]
+    gate_doc = {"repairs": [{"region": ["5:53", "5:55"], "failed": ["moved 5:55", "no-repeat-found"],
+                             "tried_starts": {"55": [11200, 10100]}},
+                            {"region": ["5:60", "5:61"], "failed": ["G5"], "tried_starts": {"60": [1, 2]}}]}
+    assert rc.moved_vs_qf(gate_doc, refs) == [{"region": ["5:53", "5:55"], "ayah": 55, "before_err_ms": 1200,
+                                                "after_err_ms": 100}]
+
+
+def test_the_g2_probe_items_are_pinned_abadh_surahs():
+    items = rc.plan("g2-probe")
+    assert items and all(i["reciter"] == 1 and len(i["sha256"]) == 64 and i["source"] == "way2quran" for i in items)

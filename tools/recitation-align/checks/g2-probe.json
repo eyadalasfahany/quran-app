@@ -1,0 +1,90 @@
+{
+ "schema": 1,
+ "note": "recitation-check.yml g2-probe: Abadh's surahs that failed only G2 at q8 (add-reciter run 42506135799), pinned by sha256 (plan way2quran-quality Q10).",
+ "items": [
+  {
+   "reciter": 1,
+   "surah": 1,
+   "source": "way2quran",
+   "sha256": "be96d2ef549269b390aa176a75b6adbd840ed1c95feaaf2906fdb87ec7060a6e"
+  },
+  {
+   "reciter": 1,
+   "surah": 15,
+   "source": "way2quran",
+   "sha256": "37094b5d26fd7e0da56c9fff4f095e1772b4ef67dfee66d9b09bbed1fe8b0d65"
+  },
+  {
+   "reciter": 1,
+   "surah": 32,
+   "source": "way2quran",
+   "sha256": "73fbb1a349914264aa09a9a7cc8381b62e0146c389d74dc077a871b25aa8b6ae"
+  },
+  {
+   "reciter": 1,
+   "surah": 38,
+   "source": "way2quran",
+   "sha256": "e65820007e0b1d5b094a9a73f68657b5730b55011b5e7ea55e27ea91080010dc"
+  },
+  {
+   "reciter": 1,
+   "surah": 79,
+   "source": "way2quran",
+   "sha256": "a89ae4de73aa9baff18457de83515284c27eaf568e3b5e35e882b654a2c3010b"
+  },
+  {
+   "reciter": 1,
+   "surah": 86,
+   "source": "way2quran",
+   "sha256": "531f25840f6a576e1d2651f55fe7dcd6ba7739c5dfba5a28958abe58c0e7376a"
+  },
+  {
+   "reciter": 1,
+   "surah": 93,
+   "source": "way2quran",
+   "sha256": "94bf027f6bdf0840071a1945ee4a0e36271bd01cfd85eca1941fb519acc9d71a"
+  },
+  {
+   "reciter": 1,
+   "surah": 101,
+   "source": "way2quran",
+   "sha256": "9052cf2a06a09d97bd76dee8104e5b930d42ac45adb3d41bda8c98f207ecf294"
+  },
+  {
+   "reciter": 1,
+   "surah": 104,
+   "source": "way2quran",
+   "sha256": "3a8590237fa827764f1ded7a97fae8dc0221c06c6a9420665dea48c13a598fbb"
+  },
+  {
+   "reciter": 1,
+   "surah": 106,
+   "source": "way2quran",
+   "sha256": "de84cced805a24bfbe052fa703692507c5389a0fd6d701bf89c9bcfa65f328df"
+  },
+  {
+   "reciter": 1,
+   "surah": 107,
+   "source": "way2quran",
+   "sha256": "e2c4d62ff4bb55ae89362a07e05994eacb337cd59e06bfb85cf5fd70a86ca454"
+  },
+  {
+   "reciter": 1,
+   "surah": 109,
+   "source": "way2quran",
+   "sha256": "45de95c386baf0674230b4d570271b64ff54bcba7fd2632a02502b678e911ad6"
+  },
+  {
+   "reciter": 1,
+   "surah": 110,
+   "source": "way2quran",
+   "sha256": "9915bdb48c8cd51394a1866e182bbe2992549b2c63eaf0235f2d414105dd24b9"
+  },
+  {
+   "reciter": 1,
+   "surah": 113,
+   "source": "way2quran",
+   "sha256": "040fab221473a9e9de6c000a35d381ef161594279799af5643119a6996d727e4"
+  }
+ ]
+}
