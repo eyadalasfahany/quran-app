@@ -2,7 +2,7 @@
 
 Settings + adhan sound + sources
 
-5 frames · open in viewer: `viewer.html?id=<FrameId>`
+5 frames · review page: `design/settings/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

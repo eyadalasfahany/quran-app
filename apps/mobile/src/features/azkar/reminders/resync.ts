@@ -1,4 +1,6 @@
-import { getCoordinates } from '@/features/salah/data/location';
+import { updateRenewReminder } from '@/features/notifications/renew';
+import { coordsFromKey } from '@/features/notifications/sync-state';
+import { resolvePrayerCoordinates, savedPrayerCoordinates } from '@/features/salah/data/prayer-coordinates';
 
 import { readLastKnownCoordinates } from './last-known-coordinates';
 import { listReminders } from './reminders-repository';
@@ -26,20 +28,37 @@ function needsLocation(): boolean {
   return listReminders().some((reminder) => reminder.enabled && reminder.triggerType === 'prayer_relative');
 }
 
-/** The coordinates the sync needs: only an enabled prayer-relative reminder reads the location. */
-async function coordinatesFor(): Promise<Coordinates | null> {
-  return needsLocation() ? getCoordinates() : null;
+/**
+ * The coordinates the last sync was made from. A sync that cannot read the location uses them, so a missing fix never
+ * wipes the prayer-relative reminders (ADR 0083).
+ */
+function lastSyncedCoordinates(): Coordinates | null {
+  return coordsFromKey(readRemindersSyncState()?.coordsKey);
 }
 
-/** As `coordinatesFor`, but for a foreground check: the last known position or the manual city, never a new fix. */
+/** The coordinates the sync needs: only an enabled prayer-relative reminder reads the location (ADR 0086 fallback). */
+async function coordinatesFor(): Promise<Coordinates | null> {
+  return needsLocation() ? ((await resolvePrayerCoordinates()).coords ?? lastSyncedCoordinates()) : null;
+}
+
+/**
+ * The foreground check's coordinates: the last known position or the manual city, never a new fix, then the saved
+ * place, then the last sync's coordinates.
+ */
+async function foregroundCoords(): Promise<Coordinates | null> {
+  return (await readLastKnownCoordinates()) ?? savedPrayerCoordinates() ?? lastSyncedCoordinates();
+}
+
+/** As `coordinatesFor`, but for a foreground check. */
 async function foregroundCoordinatesFor(): Promise<Coordinates | null> {
-  return needsLocation() ? readLastKnownCoordinates() : null;
+  return needsLocation() ? foregroundCoords() : null;
 }
 
 /** Runs the sync now. Resolves to whether a location is still needed and which reminders were left unscheduled, or null when nothing was scheduled or it failed. */
 export async function resyncAzkarReminders(now: Date = new Date()): Promise<{ needsLocation: boolean; unscheduled: string[] } | null> {
   try {
     if (!hasLiveReminders()) {
+      await updateRenewReminder('azkar', null, now);
       return null;
     }
     return await syncAzkarReminders({ now, coords: await coordinatesFor() });
@@ -60,6 +79,7 @@ export async function resyncAzkarReminders(now: Date = new Date()): Promise<{ ne
 export async function resyncAzkarRemindersIfNeeded(now: Date = new Date()): Promise<boolean> {
   try {
     if (!hasLiveReminders()) {
+      await updateRenewReminder('azkar', null, now);
       return false;
     }
     const previous = readRemindersSyncState();
@@ -75,7 +95,7 @@ export async function resyncAzkarRemindersIfNeeded(now: Date = new Date()): Prom
     if (!needsLocation()) {
       return false;
     }
-    const coords = await readLastKnownCoordinates();
+    const coords = await foregroundCoords();
     if (!needsAzkarResync(previous, currentSyncState(now, coords))) {
       return false;
     }

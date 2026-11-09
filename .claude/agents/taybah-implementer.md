@@ -11,6 +11,7 @@ You implement exactly one brief. Read `.claude/agent-rules.md` first and follow 
 1. Read the brief fully.
 2. Study the existing code it names and copy its patterns. Don't widen the scope.
 3. Write the tests the brief lists, alongside the code.
+4. For UI: a new or changed design follows ADR 0087. Draw in `screens/frames/…`, rebuild the reference, and never hand-edit the generated `design/` files.
 
 **Gates:**
 - **Mobile**, with Node 26 on PATH: `npm run lint && npx tsc --noEmit && npx jest <paths>`.

@@ -9,6 +9,7 @@ import {
   loadPrayerLocation,
   peekPrayerLocation,
   reloadPrayerLocation,
+  seedPrayerLocation,
 } from './location-cache';
 
 jest.mock('./location', () => ({
@@ -146,4 +147,62 @@ describe('prayer location cache', () => {
   function tick(ms: number) {
     clock += ms;
   }
+});
+
+describe('prayer location cache: last known place (ADR 0086)', () => {
+  beforeEach(() => {
+    storage.clearAll();
+    invalidatePrayerLocation();
+    jest.clearAllMocks();
+    clock = 1_000_000;
+    jest.spyOn(Date, 'now').mockImplementation(() => clock);
+    jest.mocked(getLocationPermissionStatus).mockResolvedValue(Location.PermissionStatus.GRANTED);
+    setAutoLocation();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('carries stale false for a fresh fix', async () => {
+    jest.mocked(getCoordinates).mockResolvedValue(RIYADH);
+    await expect(loadPrayerLocation()).resolves.toMatchObject({ coords: RIYADH, stale: false });
+  });
+
+  it('carries stale true when the fix is missing and a saved place is used', async () => {
+    storage.set(storageKeys.salah.lastAutoCoords, '24.71,46.68');
+    jest.mocked(getCoordinates).mockResolvedValue(null);
+
+    await expect(loadPrayerLocation()).resolves.toMatchObject({ coords: { lat: 24.71, lng: 46.68 }, stale: true });
+  });
+
+  it('a save of the last place does not invalidate the cached snapshot', async () => {
+    jest.mocked(getCoordinates).mockResolvedValue(RIYADH);
+    const first = await loadPrayerLocation();
+
+    storage.set(storageKeys.salah.lastAutoCoords, '21.42,39.83');
+
+    expect(peekPrayerLocation()).toBe(first);
+  });
+
+  it('seeds the first render from the saved place, marked stale and undetermined', () => {
+    storage.set(storageKeys.salah.lastAutoCoords, '24.71,46.68');
+
+    expect(seedPrayerLocation()).toEqual({
+      source: 'auto',
+      coords: { lat: 24.71, lng: 46.68 },
+      stale: true,
+      permissionStatus: Location.PermissionStatus.UNDETERMINED,
+    });
+  });
+
+  it('does not seed a manual choice or a first-time user with nothing saved', () => {
+    storage.set(storageKeys.salah.lastAutoCoords, '24.71,46.68');
+    setManualLocation({ id: 'makkah', lat: 21.4225, lng: 39.8262 });
+    expect(seedPrayerLocation()).toBeNull();
+
+    setAutoLocation();
+    storage.remove(storageKeys.salah.lastAutoCoords);
+    expect(seedPrayerLocation()).toBeNull();
+  });
 });

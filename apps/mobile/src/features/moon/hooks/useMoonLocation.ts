@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   loadPrayerLocation,
   peekPrayerLocation,
+  seedPrayerLocation,
   type PrayerLocationSnapshot,
 } from '@/features/salah/data/location-cache';
 
@@ -15,7 +16,8 @@ export function useMoonLocation(): {
   loading: boolean;
   refresh: () => Promise<void>;
 } {
-  const [snapshot, setSnapshot] = useState<PrayerLocationSnapshot | null>(() => peekPrayerLocation());
+  // Seeded with the saved last place (ADR 0086); the load below replaces it.
+  const [snapshot, setSnapshot] = useState<PrayerLocationSnapshot | null>(() => seedPrayerLocation());
   const [pending, setPending] = useState(snapshot === null);
 
   const refresh = useCallback(async () => {

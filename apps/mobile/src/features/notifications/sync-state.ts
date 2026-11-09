@@ -25,6 +25,20 @@ export function coordsKey(coords: SyncCoordinates | null): string {
   return `${coords.lat.toFixed(2)},${coords.lng.toFixed(2)}`;
 }
 
+const COORDS_KEY_PATTERN = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/;
+
+/** The coordinates a `coordsKey` was made from, or null for 'none' or an unreadable key. A sync that cannot read the
+ * location falls back to these, so a missing fix never wipes a schedule (ADR 0083). */
+export function coordsFromKey(key: string | undefined): SyncCoordinates | null {
+  const match = key === undefined ? null : COORDS_KEY_PATTERN.exec(key);
+  if (match === null) {
+    return null;
+  }
+  const lat = Number(match[1]);
+  const lng = Number(match[2]);
+  return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : null;
+}
+
 /** The local calendar day of `date`, as `YYYY-MM-DD`. */
 export function localDay(date: Date): string {
   const year = String(date.getFullYear()).padStart(4, '0');

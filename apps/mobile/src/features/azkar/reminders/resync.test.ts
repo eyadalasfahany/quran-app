@@ -1,4 +1,5 @@
-import { storage } from '@/core/storage/mmkv';
+import { storage, storageKeys } from '@/core/storage/mmkv';
+import { updateRenewReminder } from '@/features/notifications/renew';
 import { getCoordinates } from '@/features/salah/data/location';
 
 import { resyncAzkarReminders, resyncAzkarRemindersIfNeeded } from './resync';
@@ -8,6 +9,7 @@ import { listReminders, type AzkarReminder } from './reminders-repository';
 import { currentSyncState, writeRemindersSyncState } from './resync-state';
 
 jest.mock('@/features/salah/data/location', () => ({
+  ...jest.requireActual<typeof import('@/features/salah/data/location')>('@/features/salah/data/location'),
   getCoordinates: jest.fn(),
 }));
 
@@ -23,6 +25,10 @@ jest.mock('./reminders-repository', () => ({
 // The foreground check reads the last known position, never a GPS fix (see last-known-coordinates.ts).
 jest.mock('./last-known-coordinates', () => ({
   readLastKnownCoordinates: jest.fn(),
+}));
+
+jest.mock('@/features/notifications/renew', () => ({
+  updateRenewReminder: jest.fn(() => Promise.resolve()),
 }));
 
 const LONDON = { lat: 51.5074, lng: -0.1278 };
@@ -87,6 +93,15 @@ describe('Azkar reminder resync', () => {
       expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NOW, coords: null });
     });
 
+    it('uses the saved last automatic place when no fix is available (ADR 0086)', async () => {
+      storage.set(storageKeys.salah.lastAutoCoords, '24.71,46.68');
+      jest.mocked(getCoordinates).mockResolvedValueOnce(null);
+
+      await resyncAzkarReminders(NOW);
+
+      expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NOW, coords: { lat: 24.71, lng: 46.68 } });
+    });
+
     it('does not read the location for a clock reminder, which needs none', async () => {
       jest.mocked(listReminders).mockReturnValue([CLOCK_REMINDER]);
 
@@ -102,6 +117,15 @@ describe('Azkar reminder resync', () => {
       await expect(resyncAzkarReminders(NOW)).resolves.toBeNull();
 
       expect(getCoordinates).not.toHaveBeenCalled();
+      expect(syncAzkarReminders).not.toHaveBeenCalled();
+    });
+
+    it('records no azkar renew source when no reminder is scheduled', async () => {
+      jest.mocked(listReminders).mockReturnValue([]);
+
+      await resyncAzkarReminders(NOW);
+
+      expect(updateRenewReminder).toHaveBeenCalledWith('azkar', null, NOW);
       expect(syncAzkarReminders).not.toHaveBeenCalled();
     });
 
@@ -162,12 +186,12 @@ describe('Azkar reminder resync', () => {
       expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NOW, coords: LONDON });
     });
 
-    it('syncs when the location was removed', async () => {
+    it('keeps the last synced coordinates when the location is unavailable on the same day, so nothing resyncs', async () => {
       writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
       jest.mocked(readLastKnownCoordinates).mockResolvedValueOnce(null);
 
-      await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(true);
-      expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NOW, coords: null });
+      await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(false);
+      expect(syncAzkarReminders).not.toHaveBeenCalled();
     });
 
     it('ignores the coordinates for a clock reminder, so a foreground return reads no location', async () => {
@@ -187,6 +211,15 @@ describe('Azkar reminder resync', () => {
       await expect(resyncAzkarRemindersIfNeeded(NOW)).resolves.toBe(false);
       expect(getCoordinates).not.toHaveBeenCalled();
       expect(readLastKnownCoordinates).not.toHaveBeenCalled();
+      expect(syncAzkarReminders).not.toHaveBeenCalled();
+    });
+
+    it('records no azkar renew source when no reminder is scheduled', async () => {
+      jest.mocked(listReminders).mockReturnValue([]);
+
+      await resyncAzkarRemindersIfNeeded(NOW);
+
+      expect(updateRenewReminder).toHaveBeenCalledWith('azkar', null, NOW);
       expect(syncAzkarReminders).not.toHaveBeenCalled();
     });
 
@@ -218,6 +251,24 @@ describe('Azkar reminder resync', () => {
         expect(readLastKnownCoordinates).toHaveBeenCalledTimes(1);
         expect(getCoordinates).not.toHaveBeenCalled();
         expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NEXT_DAY, coords: LONDON });
+      });
+
+      it('keeps prayer-relative reminders on a new day with no last known position, using the last synced coordinates', async () => {
+        writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
+        jest.mocked(readLastKnownCoordinates).mockResolvedValueOnce(null);
+
+        await expect(resyncAzkarRemindersIfNeeded(NEXT_DAY)).resolves.toBe(true);
+
+        expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NEXT_DAY, coords: { lat: 51.51, lng: -0.13 } });
+      });
+
+      it('keeps the last synced coordinates for a launch when GPS gives no fix', async () => {
+        writeRemindersSyncState(syncedAt(NOW, '51.51,-0.13'));
+        jest.mocked(getCoordinates).mockResolvedValueOnce(null);
+
+        await resyncAzkarReminders(NEXT_DAY);
+
+        expect(syncAzkarReminders).toHaveBeenCalledWith({ now: NEXT_DAY, coords: { lat: 51.51, lng: -0.13 } });
       });
 
       it('syncs on a day change without any location read for a clock reminder', async () => {

@@ -1,7 +1,7 @@
 import { I18nManager, TextInput, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { Icon, type IconName, uiTextProps, useContrastColors } from '@/shared/ui';
+import { Icon, type IconName, inputTextAlignment, uiTextProps, useContrastColors } from '@/shared/ui';
 
 const MAGNIFIER: IconName = { ios: 'magnifyingglass', android: 'search' };
 
@@ -52,7 +52,7 @@ export function ReciterSearchField({
         returnKeyType="search"
         // Natural alignment follows the language iOS picked at launch, which lags an in-app switch to English. Under RTL
         // natural is right already, and an explicit 'left' would leave the empty field's caret on the left.
-        style={[theme.text.body, { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0, textAlign: I18nManager.isRTL ? undefined : 'left' }]}
+        style={[theme.text.body, { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0, ...inputTextAlignment(I18nManager.isRTL) }]}
         testID={testID ? `${testID}-input` : undefined}
         value={value}
       />

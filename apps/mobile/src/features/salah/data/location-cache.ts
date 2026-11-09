@@ -3,7 +3,8 @@ import * as Location from 'expo-location';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
 import { getCityById } from './cities';
-import { getCoordinates, getLocationPermissionStatus, getStoredLocationSource, getStoredManualCityId, type LocationSource } from './location';
+import { getLocationPermissionStatus, getStoredLocationSource, getStoredManualCityId, type LocationSource } from './location';
+import { resolvePrayerCoordinates, savedPrayerCoordinates } from './prayer-coordinates';
 
 /**
  * How long one location read serves every screen that asks for it. Home, Menu, Salah and Qibla all mount the same
@@ -17,6 +18,8 @@ export type PrayerLocationSnapshot = {
   cityId?: string;
   cityName?: { ar: string; en: string };
   permissionStatus: Location.PermissionStatus;
+  /** True when the coordinates are the last known place, because no fresh fix was available (ADR 0086). */
+  stale: boolean;
 };
 
 type Entry = { key: string; readAt: number; value: PrayerLocationSnapshot };
@@ -48,7 +51,7 @@ async function readPrayerLocation(): Promise<PrayerLocationSnapshot> {
   const source = getStoredLocationSource();
   const manualCityId = getStoredManualCityId();
   const permissionStatus = await getLocationPermissionStatus();
-  const coords = await getCoordinates();
+  const { coords, stale } = await resolvePrayerCoordinates();
 
   let cityName: { ar: string; en: string } | undefined;
   if (source === 'manual' && manualCityId) {
@@ -57,7 +60,25 @@ async function readPrayerLocation(): Promise<PrayerLocationSnapshot> {
       cityName = { ar: city.ar, en: city.en };
     }
   }
-  return { source, coords, cityId: manualCityId, cityName, permissionStatus };
+  return { source, coords, cityId: manualCityId, cityName, permissionStatus, stale: source === 'manual' ? false : stale };
+}
+
+/**
+ * The first-render value for a consumer with no cached snapshot yet: the saved automatic place, labelled stale, so the
+ * times show at once and the real read replaces it (ADR 0086). Null for a manual choice or nothing saved.
+ */
+export function seedPrayerLocation(): PrayerLocationSnapshot | null {
+  const fresh = peekPrayerLocation();
+  if (fresh !== null) {
+    return fresh;
+  }
+  if (getStoredLocationSource() !== 'auto') {
+    return null;
+  }
+  const coords = savedPrayerCoordinates();
+  return coords === null
+    ? null
+    : { source: 'auto', coords, stale: true, permissionStatus: Location.PermissionStatus.UNDETERMINED };
 }
 
 /**

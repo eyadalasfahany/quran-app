@@ -5,6 +5,10 @@ export const IQAMAH_OFFSET_OPTIONS = [0, 5, 10, 15, 20, 30] as const;
 
 export type IqamahOffsetMinutes = (typeof IQAMAH_OFFSET_OPTIONS)[number];
 
+/** Iqamah notifications are paused (developer, 9 Nov 2026; ADR 0056 amendment). Flip to true, and restore
+ * `<IqamahOffsetRow />` in Settings, to bring them back. */
+export const IQAMAH_ENABLED = false;
+
 function isAllowedOffset(value: number): value is IqamahOffsetMinutes {
   return (IQAMAH_OFFSET_OPTIONS as readonly number[]).includes(value);
 }
@@ -16,6 +20,11 @@ export function getIqamahOffsetMinutes(): IqamahOffsetMinutes {
     return 0;
   }
   return stored;
+}
+
+/** The offset scheduling uses: the stored offset while iqamah is enabled, else 0 (off). */
+export function effectiveIqamahOffsetMinutes(): IqamahOffsetMinutes {
+  return IQAMAH_ENABLED ? getIqamahOffsetMinutes() : 0;
 }
 
 /** Persists only allowed values; others are ignored. */

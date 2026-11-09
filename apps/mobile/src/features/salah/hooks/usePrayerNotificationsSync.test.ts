@@ -21,8 +21,15 @@ type Pending = { identifier: string; content: { data?: Record<string, unknown> }
 let pending: Pending[] = [];
 let sequence = 0;
 
+/** Prayer notifications only: the renew reminder (ADR 0083) shares the `/salah` route and is counted apart. */
+function prayerPending(): Pending[] {
+  return pending.filter((request) => request.content.data?.kind !== 'renew');
+}
+
 function scheduledCount(): number {
-  return jest.mocked(Notifications.scheduleNotificationAsync).mock.calls.length;
+  return jest.mocked(Notifications.scheduleNotificationAsync).mock.calls.filter(
+    ([request]) => (request.content.data as Record<string, unknown> | undefined)?.kind !== 'renew',
+  ).length;
 }
 
 /** Waits for the queued sync to settle: a short real delay lets the chained promises run. */
@@ -108,7 +115,7 @@ describe('usePrayerNotificationsSync', () => {
     await settle();
 
     expect(scheduledCount()).toBe(8);
-    expect(pending).toHaveLength(8);
+    expect(prayerPending()).toHaveLength(8);
   });
 
   it('ignores a background transition', async () => {
@@ -145,7 +152,7 @@ describe('usePrayerNotificationsSync', () => {
     await settle();
 
     expect(scheduledCount()).toBe(8);
-    expect(pending).toHaveLength(8);
+    expect(prayerPending()).toHaveLength(8);
   });
 
   it('on launch with location approved, arms the five unset bells (ADR 0064)', async () => {
@@ -207,7 +214,7 @@ describe('usePrayerNotificationsSync', () => {
     jest.mocked(getCoordinates).mockResolvedValue(RIYADH);
 
     setManualLocation({ id: 'riyadh', lat: RIYADH.lat, lng: RIYADH.lng });
-    await waitFor(() => expect(pending).toHaveLength(40));
+    await waitFor(() => expect(prayerPending()).toHaveLength(40));
     await settle();
 
     for (const key of [
@@ -228,7 +235,7 @@ describe('usePrayerNotificationsSync', () => {
     jest.mocked(getCoordinates).mockResolvedValue(RIYADH);
 
     setManualLocation({ id: 'riyadh', lat: RIYADH.lat, lng: RIYADH.lng });
-    await waitFor(() => expect(pending).toHaveLength(32));
+    await waitFor(() => expect(prayerPending()).toHaveLength(32));
     await settle();
 
     expect(storage.getBoolean(storageKeys.salah.bellIsha)).toBe(false);

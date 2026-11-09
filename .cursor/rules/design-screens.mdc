@@ -21,5 +21,9 @@ combined by `screens/index.html`. Shared styles, script and images live once in
    `gx-fig` block (caption, device chrome, iframe) to that section in `screens/index.html`.
 5. Check: `npm run check:html -w @quran/design-tokens`. Render one frame:
    `python3 packages/design-tokens/scripts/frame-shot.py <FrameId> <out.png>`.
-6. Dark, LTR and tablet variants that nobody drew: `design/AGENTS.md` and `design/CATALOG.md`
+6. After any frame change, rebuild the reference (ADR 0087): `python3 design/screens/scripts/build.py && python3 design/scripts/build_reference.py`.
+   A new design's `gx-cap` caption carries «(بانتظار الموافقة)» until the developer approves it. Review and share it at
+   `design/<stack>/<Screen>/index.html` (light/dark × RTL/LTR × window sizes); no app code before approval.
+   Share it as `design/<stack>/<Screen>/index.html?theme=light&dir=rtl&sizes=compact%2Cmedium%2Cexpanded%2Clandscape` (`theme` light|dark|both, `dir` rtl|ltr|both, `sizes` any of compact, medium, expanded, landscape).
+7. Dark, LTR and tablet variants that nobody drew: `design/AGENTS.md` and `design/CATALOG.md`
    (generated from `screens/`; derived variants are drafts). Never edit `design/` by hand.

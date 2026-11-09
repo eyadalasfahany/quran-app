@@ -7,7 +7,7 @@ import {
   writeSyncState,
   type SyncCoordinates,
 } from '@/features/notifications/sync-state';
-import { getCoordinates } from '@/features/salah/data/location';
+import { resolvePrayerCoordinates, savedPrayerCoordinates } from '@/features/salah/data/prayer-coordinates';
 
 import { readFridayReminder, readMisbahaReminder } from './goal-settings';
 import { type GoalScheduleResult, scheduleFridayReminder, scheduleMisbahaReminder } from './goal-schedule';
@@ -47,7 +47,7 @@ function serialized<T>(task: () => Promise<T>): Promise<T> {
 export function resyncGoalReminders(now: Date = new Date()): Promise<GoalSyncResult | null> {
   return serialized(async () => {
     try {
-      const coords = needsLocation() ? await getCoordinates() : null;
+      const coords = needsLocation() ? (await resolvePrayerCoordinates()).coords : null;
       return await syncGoalReminders({ now, coords });
     } catch (error) {
       console.error(error);
@@ -63,7 +63,7 @@ export function resyncGoalReminders(now: Date = new Date()): Promise<GoalSyncRes
 export function resyncGoalRemindersIfNeeded(now: Date = new Date()): Promise<boolean> {
   return serialized(async () => {
     try {
-      const coords = needsLocation() ? await readLastKnownCoordinates() : null;
+      const coords = needsLocation() ? ((await readLastKnownCoordinates()) ?? savedPrayerCoordinates()) : null;
       const previous = readSyncState(storageKeys.reminders.goalsSync);
       if (previous !== null && !needsResync(previous, currentSyncState(now, coords))) {
         return false;

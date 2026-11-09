@@ -62,11 +62,23 @@ function fakeScheduler() {
     live.delete(id);
     return Promise.resolve();
   });
+  jest.mocked(Notifications.getAllScheduledNotificationsAsync).mockImplementation(() =>
+    Promise.resolve([...live].map(([identifier, request]) => ({ identifier, content: request.content })) as never),
+  );
   return live;
 }
 
+/** The azkar reminder notifications in `map`: the renew reminder (route `/azkar`, ADR 0083) is left out. */
+function reminderIds(map: Map<string, Scheduled>): string[] {
+  return [...map].filter(([, request]) => request.content.data.route !== '/azkar').map(([id]) => id);
+}
+
+/** The reminder calls, without the renew reminder (ADR 0083). */
 function scheduledCalls(): Scheduled[] {
-  return jest.mocked(Notifications.scheduleNotificationAsync).mock.calls.map(([request]) => request as unknown as Scheduled);
+  return jest
+    .mocked(Notifications.scheduleNotificationAsync)
+    .mock.calls.map(([request]) => request as unknown as Scheduled)
+    .filter((request) => request.content.data.route !== '/azkar');
 }
 
 describe('syncAzkarReminders', () => {
@@ -140,7 +152,7 @@ describe('syncAzkarReminders', () => {
     await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
     const saved = getReminder('entry', 'hisn-al-muslim:entry-000075', store);
-    expect(saved?.notificationIds).toEqual([...live.keys()]);
+    expect(saved?.notificationIds).toEqual(reminderIds(live));
     expect(saved?.notificationIds).toHaveLength(AZKAR_ROLLING_DAYS);
   });
 
@@ -153,9 +165,10 @@ describe('syncAzkarReminders', () => {
     await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
     expect(live.size).toBe(afterFirst);
-    expect(afterFirst).toBe(1 + AZKAR_ROLLING_DAYS);
-    // The first sync's ids were all cancelled before the second sync scheduled its own.
-    expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledTimes(1 + AZKAR_ROLLING_DAYS);
+    // One clock, four prayer-relative fires, and the one renew reminder (ADR 0083).
+    expect(afterFirst).toBe(1 + AZKAR_ROLLING_DAYS + 1);
+    // The first sync's ids were all cancelled before the second sync scheduled its own: the reminders and the renew.
+    expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledTimes(1 + AZKAR_ROLLING_DAYS + 1);
   });
 
   it('cancels a disabled reminder and leaves it with no ids', async () => {
@@ -195,6 +208,27 @@ describe('syncAzkarReminders', () => {
     await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
     expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
+  });
+
+  it('schedules a renew a day before the last prayer-relative fire runs out (ADR 0083)', async () => {
+    saveReminder(PRAYER_ENTRY, store);
+
+    await syncAzkarReminders({ now: NOW, coords: LONDON, store });
+
+    const renews = [...live.values()].filter((request) => request.content.data.route === '/azkar');
+    expect(renews).toHaveLength(1);
+    const fires = scheduledCalls().filter((call) => call.content.data.route !== '/azkar');
+    const last = Math.max(...fires.map((call) => (call.trigger.date as Date).getTime()));
+    expect(renews[0]?.trigger).toEqual({ type: 'date', date: new Date(last - 24 * 60 * 60 * 1000) });
+    expect(renews[0]?.content.data).toEqual({ route: '/azkar', kind: 'renew' });
+  });
+
+  it('schedules no renew when only clock reminders are on: they repeat and never run out', async () => {
+    saveReminder(CATEGORY_MORNING, store);
+
+    await syncAzkarReminders({ now: NOW, coords: LONDON, store });
+
+    expect([...live.values()].some((request) => request.content.data.route === '/azkar')).toBe(false);
   });
 
   it('keeps the ids of a part-way failure, so the next sync can cancel them', async () => {
@@ -256,41 +290,41 @@ describe('syncAzkarReminders within the pending pool', () => {
     }
   }
 
-  it('shrinks the windows so six prayer-relative reminders stay within the 21 pending slots', async () => {
+  it('shrinks the windows so six prayer-relative reminders stay within the 20 pending slots', async () => {
     savePrayerEntries(6);
 
     const result = await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
-    expect(live.size).toBe(AZKAR_SLOTS);
+    expect(reminderIds(live)).toHaveLength(AZKAR_SLOTS);
     expect(result).toEqual({ needsLocation: false, unscheduled: [] });
-    // The newest entry gets the shortest window.
-    expect(getReminder('entry', 'e-6', store)?.notificationIds).toHaveLength(AZKAR_SLOTS - 5 * AZKAR_ROLLING_DAYS);
+    // The four oldest keep the full window, the fifth shrinks to 3, and the newest gets the single day left.
+    expect(getReminder('entry', 'e-6', store)?.notificationIds).toHaveLength(1);
   });
 
   it('leaves the newest reminder unscheduled, and reports it, when the pool is full', async () => {
-    savePrayerEntries(24);
+    savePrayerEntries(23);
 
     const result = await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
-    expect(live.size).toBe(AZKAR_SLOTS);
-    expect(result.unscheduled).toEqual(['reminder-22', 'reminder-23', 'reminder-24']);
-    expect(getReminder('entry', 'e-24', store)?.notificationIds).toEqual([]);
+    expect(reminderIds(live)).toHaveLength(AZKAR_SLOTS);
+    expect(result.unscheduled).toEqual(['reminder-21', 'reminder-22', 'reminder-23']);
+    expect(getReminder('entry', 'e-23', store)?.notificationIds).toEqual([]);
   });
 
   it('cancels the old ids of a reminder that a later sync leaves unscheduled', async () => {
-    savePrayerEntries(21);
+    savePrayerEntries(20);
     await syncAzkarReminders({ now: NOW, coords: LONDON, store });
-    expect(live.size).toBe(AZKAR_SLOTS);
+    expect(reminderIds(live)).toHaveLength(AZKAR_SLOTS);
 
-    // A 22nd reminder arrives: the pool is full, so it is the one left out and nothing else changes.
+    // A 21st reminder arrives: the pool is full, so it is the one left out and nothing else changes.
     saveReminder(
-      { targetType: 'entry', targetKey: 'e-22', enabled: true, triggerType: 'prayer_relative', clockTime: null, prayer: 'asr', offsetMinutes: 0 },
+      { targetType: 'entry', targetKey: 'e-21', enabled: true, triggerType: 'prayer_relative', clockTime: null, prayer: 'asr', offsetMinutes: 0 },
       store,
     );
     const result = await syncAzkarReminders({ now: NOW, coords: LONDON, store });
 
-    expect(live.size).toBe(AZKAR_SLOTS);
-    expect(result.unscheduled).toEqual(['reminder-22']);
+    expect(reminderIds(live)).toHaveLength(AZKAR_SLOTS);
+    expect(result.unscheduled).toEqual(['reminder-21']);
   });
 });
 

@@ -28,7 +28,7 @@ export const requestLocationPermissions = async () => {
 };
 
 /** A live GPS fix that takes longer than this is abandoned, so a slow fix never holds up the screen or a sync. */
-export const LOCATION_FIX_TIMEOUT_MS = 15_000;
+export const LOCATION_FIX_TIMEOUT_MS = 30_000;
 
 /** A last-known fix younger than this is used without asking the GPS for a live fix. */
 export const LAST_KNOWN_FRESH_MS = 5 * 60 * 1000;

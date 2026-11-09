@@ -27,6 +27,8 @@ export type ColorTokens = {
   fillSecondary: string;
   /** Segmented-control and stepper track (screens/, Reader settings). */
   fillTrack: string;
+  /** Selected segment in a segmented control; lighter than the track in dark. */
+  segmentSelected: string;
   lineStrong: string;
   onBrandSurfaceMuted: string;
   goldOnBrandSurface: string;
@@ -118,6 +120,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     danger: '#a3392b',
     fillSecondary: '#efe8d8',
     fillTrack: 'rgba(19, 35, 31, 0.06)',
+    segmentSelected: '#fffdf8',
     lineStrong: '#d9d0bc',
     onBrandSurfaceMuted: '#d9e2dd',
     goldOnBrandSurface: '#c9a961',
@@ -197,6 +200,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     danger: '#963425',
     fillSecondary: '#e8dcc2',
     fillTrack: 'rgba(43, 33, 22, 0.06)',
+    segmentSelected: '#f8efdc',
     lineStrong: '#cfbf9f',
     onBrandSurfaceMuted: '#d9e2dd',
     goldOnBrandSurface: '#c9a961',
@@ -276,6 +280,7 @@ export const colors: Record<ThemeName, ColorTokens> = {
     danger: '#f0a493',
     fillSecondary: '#24342f',
     fillTrack: 'rgba(236, 230, 216, 0.06)',
+    segmentSelected: '#24342f',
     lineStrong: '#3c4f48',
     onBrandSurfaceMuted: '#d9e2dd',
     goldOnBrandSurface: '#c9a961',

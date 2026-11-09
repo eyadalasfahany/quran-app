@@ -41,3 +41,9 @@ Offset direction corrected to match mosque practice and the developer's clarific
 
 - ADR 0010: frame or explicit developer approval for the Settings iqamah offset row (same gap as the original prayer notifications section).
 - Developer acceptance of this ADR and the Arabic/English strings in the plan.
+
+## Amendment (9 Nov 2026): paused
+
+The developer has paused iqamah notifications. Scheduling uses offset 0 through `effectiveIqamahOffsetMinutes()` in `apps/mobile/src/features/salah/data/iqamah-offset.ts`, gated by `IQAMAH_ENABLED = false`. The Settings row `<IqamahOffsetRow />` is removed from the prayer notifications group; its import stays commented out. Stored offsets are kept, not deleted, and the settings-change check treats the stored offset as off, so a user who had one gets their pending iqamah notifications cancelled on the next foreground check. The adhan-only window applies (8 days on iOS, 14 on Android). The pure helpers (`iqamahFireDates`, `iqamahNotificationContent`) are unchanged.
+
+To re-enable: set `IQAMAH_ENABLED` to `true` and restore `<IqamahOffsetRow />` in `PrayerNotificationsSection.tsx`. This is a JavaScript change (OTA).

@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 
 import { i18n } from '@/core/i18n';
 import { ensureNotificationChannel, NOTIFICATION_CHANNELS } from '@/features/notifications/channels';
+import { updateRenewReminder } from '@/features/notifications/renew';
 
 import { duasHref } from '@/features/duas/routes';
 
@@ -66,9 +67,16 @@ function dateTriggerInput(date: Date): Notifications.NotificationTriggerInput {
 
 /**
  * Schedules one reminder and records each id in `ids` as it goes, so a failure part-way leaves the ids that were made
- * for the next sync to cancel.
+ * for the next sync to cancel. A prayer-relative reminder also pushes each fire date into `dates` (ADR 0083).
  */
-async function scheduleInto(ids: string[], reminder: AzkarReminder, now: Date, coords: Coordinates | null, window: number): Promise<void> {
+async function scheduleInto(
+  ids: string[],
+  dates: Date[],
+  reminder: AzkarReminder,
+  now: Date,
+  coords: Coordinates | null,
+  window: number,
+): Promise<void> {
   if (!reminder.enabled) {
     return;
   }
@@ -85,6 +93,7 @@ async function scheduleInto(ids: string[], reminder: AzkarReminder, now: Date, c
 
   for (const date of prayerRelativeFireDates(reminder, now, coords, window)) {
     ids.push(await Notifications.scheduleNotificationAsync({ content, trigger: dateTriggerInput(date) }));
+    dates.push(date);
   }
 }
 
@@ -110,6 +119,8 @@ export async function syncAzkarReminders({
   const reminders = listReminders(store);
   const plan = planAzkarBudget(reminders);
   const unscheduled: string[] = [];
+  // Each prayer-relative reminder's last fire: the first of them to run out ends the Azkar schedule (ADR 0083).
+  let earliestExpiry: Date | null = null;
   let needsLocation = false;
   for (const reminder of reminders) {
     for (const id of reminder.notificationIds) {
@@ -117,10 +128,11 @@ export async function syncAzkarReminders({
     }
 
     const ids: string[] = [];
+    const dates: Date[] = [];
     const window = plan.windows.get(reminder.id);
     try {
       if (window !== undefined) {
-        await scheduleInto(ids, reminder, now, coords, window);
+        await scheduleInto(ids, dates, reminder, now, coords, window);
       }
     } finally {
       setNotificationIds(reminder.id, ids, store);
@@ -132,8 +144,13 @@ export async function syncAzkarReminders({
     if (reminder.enabled && reminder.triggerType === 'prayer_relative' && coords === null) {
       needsLocation = true;
     }
+    const lastDate = dates.reduce<Date | null>((latest, date) => (latest === null || date > latest ? date : latest), null);
+    if (lastDate !== null && (earliestExpiry === null || lastDate < earliestExpiry)) {
+      earliestExpiry = lastDate;
+    }
   }
 
   writeRemindersSyncState(currentSyncState(now, coords));
+  await updateRenewReminder('azkar', earliestExpiry, now);
   return { needsLocation, unscheduled };
 }

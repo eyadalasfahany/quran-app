@@ -90,7 +90,11 @@ jest.mock('expo-network', () => ({
 }));
 
 jest.mock('expo-updates', () => ({
+  isEnabled: false,
   reloadAsync: jest.fn(() => Promise.resolve()),
+  checkForUpdateAsync: jest.fn(() => Promise.resolve({ isAvailable: false })),
+  fetchUpdateAsync: jest.fn(() => Promise.resolve({ isNew: false })),
+  useUpdates: () => ({ isUpdatePending: false, downloadedUpdate: undefined }),
 }));
 
 // DevSettings.reload restarts the app. The real module also builds a native emitter that warns in Jest.

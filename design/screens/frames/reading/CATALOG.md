@@ -2,7 +2,7 @@
 
 Index, search, reading/focus modes, tafsir
 
-11 frames · open in viewer: `viewer.html?id=<FrameId>`
+11 frames · review page: `design/reading/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

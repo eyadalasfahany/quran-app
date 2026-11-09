@@ -2,7 +2,7 @@
 
 My Quran
 
-2 frames · open in viewer: `viewer.html?id=<FrameId>`
+2 frames · review page: `design/my-quran/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

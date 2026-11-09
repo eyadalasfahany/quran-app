@@ -9,4 +9,4 @@ Read `.claude/agent-rules.md` first and follow it.
 
 **Step 1: propose.** List the enhancements. For each, give the problem, the change, the risk, and whether it needs the developer's approval. Anything that changes a frame, navigation, the handling of religious content, the schema or dependencies needs approval: list it, don't do it.
 
-**Step 2: implement.** Build only the items the caller marks approved, with tests, and run the gates.
+**Step 2: implement.** Build only the items the caller marks approved, with tests, and run the gates. An approved design change follows ADR 0087: draw it in `screens/frames/…`, rebuild, and review at `design/<stack>/<Screen>/index.html`; generated `design/` files are never hand-edited.

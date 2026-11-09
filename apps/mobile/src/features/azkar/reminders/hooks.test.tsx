@@ -1,11 +1,13 @@
 import * as Notifications from 'expo-notifications';
 import { renderHook, waitFor } from '@testing-library/react-native';
 
+import { storage, storageKeys } from '@/core/storage/mmkv';
 import { getCoordinates } from '@/features/salah/data/location';
 
 import { useHasReminderLocation, useNotificationsGranted } from './hooks';
 
 jest.mock('@/features/salah/data/location', () => ({
+  ...jest.requireActual<typeof import('@/features/salah/data/location')>('@/features/salah/data/location'),
   getCoordinates: jest.fn(),
 }));
 
@@ -34,6 +36,7 @@ describe('useHasReminderLocation', () => {
   });
 
   it('reports no location when none is set or the read fails', async () => {
+    storage.remove(storageKeys.salah.lastAutoCoords);
     jest.mocked(getCoordinates).mockResolvedValueOnce(null);
     const first = await renderHook(() => useHasReminderLocation(true));
     await waitFor(() => expect(first.result.current).toBe(false));
@@ -41,6 +44,17 @@ describe('useHasReminderLocation', () => {
     jest.mocked(getCoordinates).mockRejectedValueOnce(new Error('gps'));
     const second = await renderHook(() => useHasReminderLocation(true));
     await waitFor(() => expect(second.result.current).toBe(false));
+  });
+});
+
+describe('useHasReminderLocation with the saved place', () => {
+  it('counts the last known place when no fix is available (ADR 0086)', async () => {
+    storage.set(storageKeys.salah.lastAutoCoords, '24.71,46.68');
+    jest.mocked(getCoordinates).mockResolvedValueOnce(null);
+
+    const view = await renderHook(() => useHasReminderLocation(true));
+
+    await waitFor(() => expect(view.result.current).toBe(true));
   });
 });
 

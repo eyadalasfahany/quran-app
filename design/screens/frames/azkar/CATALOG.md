@@ -2,7 +2,7 @@
 
 Azkar home, reader, reminders, downloads
 
-26 frames · open in viewer: `viewer.html?id=<FrameId>`
+26 frames · review page: `design/azkar/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

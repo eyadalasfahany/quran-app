@@ -37,11 +37,11 @@ describe('PrayerNotificationsSection', () => {
     expect(view.getByTestId('prayer-reminder-fajr').props.value).toBe(false);
   });
 
-  it('lists the iqamah offset row between the prayer toggles and the adhan sound row', async () => {
+  it('does not list the iqamah offset row while iqamah notifications are paused', async () => {
     const view = await renderUi(<PrayerNotificationsSection />);
 
-    expect(view.getByTestId('iqamah-offset-row')).toBeOnTheScreen();
-    expect(view.getByText('تذكير الإقامة')).toBeOnTheScreen();
+    expect(view.queryByTestId('iqamah-offset-row')).toBeNull();
+    expect(view.queryByText('تذكير الإقامة')).toBeNull();
   });
 
   it('lists the adhan sound row after the five prayers, showing the chosen sound', async () => {

@@ -18,4 +18,10 @@ describe('search scope for the session', () => {
 
     expect(readSessionSearchScope()).toBe('quran');
   });
+
+  it('keeps the Hadith scope too', () => {
+    rememberSessionSearchScope('hadith');
+
+    expect(readSessionSearchScope()).toBe('hadith');
+  });
 });

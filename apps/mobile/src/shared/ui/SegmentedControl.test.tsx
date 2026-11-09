@@ -59,12 +59,19 @@ describe('SegmentedControl', () => {
     const selected = view.getByText('التفسير');
 
     expect(flatStyle(view.getByTestId('seg-tafsir').props.style)).toMatchObject({
-      backgroundColor: themes.light.colors.surfaceRaised,
+      backgroundColor: themes.light.colors.segmentSelected,
       boxShadow: themes.light.shadows.raised,
     });
     expect(flatStyle(selected.props.style).color).toBe(themes.light.colors.ink);
     expect(flatStyle(selected.props.style).fontFamily).toBe('IBMPlexSansArabic-SemiBold');
     expect(flatStyle(view.getByTestId('seg-actions').props.style).backgroundColor).toBe('transparent');
+  });
+
+  it('lifts the selected segment above the track in dark, where a surface-raised fill would be darker', async () => {
+    const view = await renderUi(control('tafsir'), { theme: 'dark' });
+
+    expect(flatStyle(view.getByTestId('seg-tafsir').props.style).backgroundColor).toBe(themes.dark.colors.segmentSelected);
+    expect(themes.dark.colors.segmentSelected).not.toBe(themes.dark.colors.surfaceRaised);
   });
 
   it('sets unselected labels in muted ink, medium weight, at subhead size', async () => {

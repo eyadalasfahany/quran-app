@@ -2,7 +2,7 @@
 
 Token-cheap inventory. **Models: read this or `frames.tsv`, not HTML frames.**
 
-Total: **230** frames · **23** stacks
+Total: **238** frames · **23** stacks
 
 | id | stack | size | theme | status | caption |
 |---|---|---|---|---|---|
@@ -208,14 +208,21 @@ Total: **230** frames · **23** stacks
 | `HadithCollSingleDark` | hadith | compact | dark | source | Hadith single-book collection · dark |
 | `HadithCollSingleEnglish` | hadith | compact | en | source | Hadith single-book collection · English |
 | `HadithCollChapters` | hadith | compact | ar-light | source | Hadith chapters · list · Arabic |
+| `HadithCollChaptersPartial` | hadith | compact | ar-light | source | Partly chaptered book (OpenITI chapters, option B): accepted chapters plus unchaptered runs in place |
 | `HadithCollChaptersDark` | hadith | compact | dark | source | Hadith chapters · list · dark |
+| `HadithCollChaptersPartialDark` | hadith | compact | dark | source | Partly chaptered book (OpenITI chapters, option B): accepted chapters plus unchaptered runs in place · dark |
 | `HadithCollChaptersEnglish` | hadith | compact | en | source | Hadith chapters · list · English |
+| `HadithCollChaptersPartialEnglish` | hadith | compact | en | source | Partly chaptered book (OpenITI chapters, option B): accepted chapters plus unchaptered runs in place · English |
 | `HadithCollChapterHadith` | hadith | compact | ar-light | source | Hadith chapter · hadith list · Arabic |
 | `HadithCollChapterHadithDark` | hadith | compact | dark | source | Hadith chapter · hadith list · dark |
 | `HadithCollChapterHadithEnglish` | hadith | compact | en | source | Hadith chapter · hadith list · English |
-| `HadithCollReader` | hadith | compact | ar-light | source | Hadith reader · Arabic |
-| `HadithCollReaderDark` | hadith | compact | dark | source | Hadith reader · dark |
-| `HadithCollReaderEnglish` | hadith | compact | en | source | Hadith reader · English |
+| `HadithCollReader` | hadith | compact | ar-light | source | Hadith reader · Arabic · hadith text 28/56 pt |
+| `HadithCollReaderExplained` | hadith | compact | ar-light | source | Hadith reader · Arabic · explanation card under the hadith (HadeethEnc), top of the page · hadith text 28/56 pt |
+| `HadithCollReaderTwoExplanations` | hadith | compact | ar-light | source | Hadith reader · Arabic · two explanation cards stacked (HadeethEnc, then a classical commentary), scrolled to the second card · hadith text 28/56 pt |
+| `HadithCollReaderDark` | hadith | compact | dark | source | Hadith reader · dark · hadith text 28/56 pt |
+| `HadithCollReaderExplainedDark` | hadith | compact | dark | source | Hadith reader · dark · explanation card under the hadith · hadith text 28/56 pt |
+| `HadithCollReaderEnglish` | hadith | compact | en | source | Hadith reader · English · hadith text 28/56 pt |
+| `HadithCollReaderExplainedEnglish` | hadith | compact | en | source | Hadith reader · English UI · explanation card (Arabic text, English labels) · hadith text 28/56 pt |
 | `HadithCollReaderPlain` | hadith | compact | ar-light | source | Hadith reader · single-colour fallback (source does not mark the chain) · Arabic |
 | `HadithCollReaderGrade` | hadith | compact | ar-light | source | Hadith reader · future state: grade (not built, labelled) · Arabic |
 | `HadithCollSearch` | hadith | compact | ar-light | source | Hadith search · empty query · Arabic |
@@ -231,7 +238,8 @@ Total: **230** frames · **23** stacks
 | `HadithCollSavedUnverified` | hadith | compact | ar-light | source | Saved hadith · unverified notice · Arabic |
 | `HadithCollSavedEmpty` | hadith | compact | ar-light | source | Empty · saved hadith · Arabic |
 | `HadithCollExpanded` | hadith | expanded | ar-light | source | Hadith · expanded window · 1194 × 834 · tab rail, books pane, book list |
-| `HadithCollExpandedReader` | hadith | expanded | ar-light | source | Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel |
+| `HadithCollExpandedReader` | hadith | expanded | ar-light | source | Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel · hadith text 28/56 pt |
+| `HadithCollExpandedReaderExplained` | hadith | expanded | ar-light | source | Hadith reader · expanded window · explanation cards in the side panel · hadith text 28/56 pt |
 | `HadithCollMenu` | hadith | compact | ar-light | source | Menu · new cards · Hadith entry · Arabic |
 | `HadithCollMenuDark` | hadith | compact | dark | source | Menu · new cards · Hadith entry · dark |
 | `HadithCollMenuEnglish` | hadith | compact | en | source | Menu · new cards · Hadith entry · English |

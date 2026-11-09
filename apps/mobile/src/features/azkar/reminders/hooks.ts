@@ -3,7 +3,7 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { openUserDb } from '@/core/db/user/open';
-import { getCoordinates } from '@/features/salah/data/location';
+import { resolvePrayerCoordinates } from '@/features/salah/data/prayer-coordinates';
 
 import { liveReminderQuery } from './live-queries';
 import { type AzkarReminder, type AzkarReminderRow, type ReminderTargetType, rowToReminder } from './reminders-repository';
@@ -30,8 +30,8 @@ export function useHasReminderLocation(active: boolean): boolean | null {
       return undefined;
     }
     let mounted = true;
-    getCoordinates()
-      .then((coords) => {
+    resolvePrayerCoordinates()
+      .then(({ coords }) => {
         if (mounted) {
           setAvailable(coords !== null);
         }

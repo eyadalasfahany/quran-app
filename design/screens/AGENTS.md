@@ -16,7 +16,7 @@ Taybah HTML design frames, split for humans and for low token use.
 4. **Only if you must see markup:** one file `frames/<stack>/<FrameId>.html` (partial, no chrome).
 5. **Never** open `common/styles.css` unless changing shared CSS.
 6. **Never** open more than one large frame unless asked.
-7. Humans preview with `viewer.html?id=Main` or `index.html`.
+7. Humans review at `design/<stack>/<Screen>/index.html` (ADR 0087). This folder is the build's intermediate input.
 
 ## Hard rules
 
@@ -35,9 +35,8 @@ Taybah HTML design frames, split for humans and for low token use.
 | salah | prayer, qibla |
 | azkar / duas | azkar + duas |
 | home / menu* | home additions, menu |
-| widgets / watch / wear | surfaces outside the app chrome |
-| expanded / sizes / devices | form factors |
-| notifications | local notification frames |
+| widgets / watch | surfaces outside the app chrome |
+| expanded | medium and expanded windows |
 
 ## Rebuild
 

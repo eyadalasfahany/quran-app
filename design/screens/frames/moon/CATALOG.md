@@ -2,7 +2,7 @@
 
 Moon sighting
 
-4 frames · open in viewer: `viewer.html?id=<FrameId>`
+4 frames · review page: `design/moon/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

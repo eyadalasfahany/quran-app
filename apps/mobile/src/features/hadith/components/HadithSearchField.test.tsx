@@ -1,4 +1,5 @@
 import { fireEvent, screen } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -22,13 +23,26 @@ describe('HadithSearchField', () => {
     expect(screen.getByPlaceholderText(locale === 'ar' ? 'ابحث في الحديث' : 'Search hadith')).toBeOnTheScreen();
   });
 
-  // The field is the shared SearchField, as in the Quran search. 'left' only in LTR; nothing under RTL, so the caret stays right.
+  // The field is the shared SearchField, as in the Quran search. Arabic is explicitly right-aligned in an LTR node, so it stays right on an English phone.
   it.each([
-    ['ar', undefined],
-    ['en', 'left'],
-  ] as const)('aligns the typed text as %s expects (textAlign %s), as the Quran search does', async (locale, textAlign) => {
+    ['ar', { direction: 'ltr', textAlign: 'right', writingDirection: 'rtl' }],
+    ['en', { textAlign: 'left' }],
+  ] as const)('aligns the typed text as %s expects, as the Quran search does', async (locale, alignment) => {
     await renderUi(<HadithSearchField {...handlers()} value="" />, { locale });
-    expect(flatStyle(screen.getByTestId(`${TEST_ID}-field-input`).props.style).textAlign).toBe(textAlign);
+    expect(flatStyle(screen.getByTestId(`${TEST_ID}-field-input`).props.style)).toMatchObject(alignment);
+  });
+
+  it('on Android under RTL sets no alignment key, so the platform keeps its natural alignment', async () => {
+    const platform = jest.replaceProperty(Platform, 'OS', 'android');
+    try {
+      await renderUi(<HadithSearchField {...handlers()} value="" />, { locale: 'ar' });
+      const style = flatStyle(screen.getByTestId(`${TEST_ID}-field-input`).props.style);
+      expect(style).not.toHaveProperty('textAlign');
+      expect(style).not.toHaveProperty('direction');
+      expect(style).not.toHaveProperty('writingDirection');
+    } finally {
+      platform.restore();
+    }
   });
 
   it('shows the placeholder', async () => {

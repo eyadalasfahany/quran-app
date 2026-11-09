@@ -173,6 +173,14 @@
     "verifyDownloads": "Connect once to verify your downloads",
     "staleContent": "Connect to update the content"
   },
+  "updates": {
+    "banner": {
+      "message": "A new update is ready",
+      "subtitle": "Restart to apply the improvements",
+      "update": "Update",
+      "hint": "Restarts the app; any playing audio stops."
+    }
+  },
   "nav": {
     "main": "Main navigation"
   },
@@ -450,8 +458,11 @@
     "scope": {
       "label": "Search in",
       "quran": "Quran",
+      "hadith": "Hadith",
       "azkar": "Azkar"
     },
+    "placeholderHadith": "Search hadith",
+    "hintHadith": "Search by a word from the hadith text",
     "placeholderAzkar": "Search Azkar",
     "hintAzkar": "Search by a word from the dhikr or a chapter title",
     "azkarIdleHint": "Search by a word or part of one. Matching chapters and azkar appear here.",
@@ -609,6 +620,7 @@
     "upcoming": "Next",
     "sourceAuto": "Automatic",
     "sourceManual": "Manual",
+    "sourceLastKnown": "Last known location",
     "notify": "{{name}} reminder",
     "exactAlarm": {
       "title": "Keep the adhan on time",
@@ -840,6 +852,16 @@
       "goals": "Daily goals and Friday reminders",
       "prayerVoice": "Prayer: {{name}}",
       "prayerSilent": "Prayer (silent)"
+    },
+    "renew": {
+      "prayer": {
+        "title": "Prayer notifications",
+        "body": "Open Taybah to keep prayer notifications coming."
+      },
+      "azkar": {
+        "title": "Azkar reminders",
+        "body": "Open Taybah to keep azkar reminders coming."
+      }
     }
   },
   "settings": {

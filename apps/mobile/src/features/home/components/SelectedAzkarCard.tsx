@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
-import { useTheme } from '@/core/theme';
+import { useTextScale, useTheme } from '@/core/theme';
 import { UiText, useContrastColors } from '@/shared/ui';
 
 const TRACK_HEIGHT = 4;
-// The card is 148 pt wide with 16 pt padding and 10 pt between its parts (screens/, #Main).
+// The frame's card is 148 pt wide (16 pt padding, 10 pt gaps); it grows with the text scale so the title stays on one line.
 const CARD_WIDTH = 148;
 const CARD_PADDING = 16;
 const CARD_GAP = 10;
@@ -31,6 +31,7 @@ export function SelectedAzkarCard({
   const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
+  const factor = useTextScale();
   const clamped = Math.min(Math.max(fraction, 0), 1);
 
   return (
@@ -44,13 +45,15 @@ export function SelectedAzkarCard({
         borderRadius: theme.radius.lg,
         borderWidth: theme.stroke.hairline,
         gap: CARD_GAP,
+        minWidth: Math.round(CARD_WIDTH * factor),
         opacity: pressed ? theme.opacity.pressed : 1,
         padding: CARD_PADDING,
-        width: CARD_WIDTH,
       })}
       testID={testID}
     >
-      <UiText variant="headline">{title}</UiText>
+      <UiText numberOfLines={1} variant="headline">
+        {title}
+      </UiText>
       <View style={{ backgroundColor: colors.line, borderRadius: TRACK_HEIGHT / 2, height: TRACK_HEIGHT, overflow: 'hidden' }}>
         <View
           style={{

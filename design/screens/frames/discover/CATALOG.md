@@ -2,7 +2,7 @@
 
 Discover Taybah
 
-6 frames · open in viewer: `viewer.html?id=<FrameId>`
+6 frames · review page: `design/discover/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

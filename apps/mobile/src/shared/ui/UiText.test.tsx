@@ -120,4 +120,40 @@ describe('UiText', () => {
       expect(flatStyle(view.getByText('نص').props.style)).toMatchObject({ fontSize: 17, lineHeight: 26 });
     });
   });
+
+  describe('Amiri line box (iOS clip)', () => {
+    afterEach(() => {
+      resetWindowSize();
+    });
+
+    it('pads a display style below Amiri natural leading and keeps its layout', async () => {
+      const view = await renderUi(<UiText variant="displaySm">نص</UiText>);
+      const style = flatStyle(view.getByText('نص').props.style);
+
+      expect(style).toMatchObject({ paddingTop: 5, paddingBottom: 5, marginTop: -5, marginBottom: -5, lineHeight: 26 });
+    });
+
+    it('adds the pad to the caller padding', async () => {
+      const view = await renderUi(<UiText variant="displaySm" style={{ paddingTop: 8 }}>نص</UiText>);
+      const style = flatStyle(view.getByText('نص').props.style);
+
+      expect(style).toMatchObject({ paddingTop: 13, paddingBottom: 5, marginTop: -5, marginBottom: -5 });
+    });
+
+    it('adds no padding or margin to a ui style', async () => {
+      const view = await renderUi(<UiText variant="body">نص</UiText>);
+      const style = flatStyle(view.getByText('نص').props.style);
+
+      expect(style.paddingTop).toBeUndefined();
+      expect(style.marginTop).toBeUndefined();
+    });
+
+    it('adds nothing when the line height already reaches the natural leading', async () => {
+      const view = await renderUi(<UiText variant="displayLg" style={{ lineHeight: 60 }}>نص</UiText>);
+      const style = flatStyle(view.getByText('نص').props.style);
+
+      expect(style.paddingTop).toBeUndefined();
+      expect(style.marginTop).toBeUndefined();
+    });
+  });
 });

@@ -2,7 +2,7 @@
 
 First launch
 
-3 frames · open in viewer: `viewer.html?id=<FrameId>`
+3 frames · review page: `design/onboarding/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

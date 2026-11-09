@@ -29,6 +29,13 @@ describe('SelectedAzkarCard', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('starts at the frame width and keeps the title on one line', async () => {
+    const view = await renderUi(<SelectedAzkarCard fraction={0} onPress={jest.fn()} progressText="x" title="أذكار الصباح" />);
+
+    expect(flatStyle(view.getByTestId('home-selected-azkar-card').props.style).minWidth).toBe(148);
+    expect(view.getByText('أذكار الصباح').props.numberOfLines).toBe(1);
+  });
+
   it('uses theme tokens rather than raw colours', () => {
     expect(rawColorLiteralsInFeature('src/features/home/components/SelectedAzkarCard.tsx')).toEqual([]);
   });

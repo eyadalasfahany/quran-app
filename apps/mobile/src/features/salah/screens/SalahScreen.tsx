@@ -51,19 +51,20 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const { source, coords, cityId, cityName, permissionStatus, pending, refresh } = usePrayerLocation();
+  const { source, coords, cityId, cityName, permissionStatus, pending, refresh, stale } = usePrayerLocation();
   const { now, times } = usePrayerClock(coords);
   const [sheetOpen, setSheetOpen] = useState(false);
   const miniShown = useMiniPlayerVisible('tabs');
   // The skip notice's line sits on the tabs mini bar while it shows (ADR 0062), so the list clears it too.
   const noticeShown = useSkipNoticeShown();
 
-  // The tab is the permission's context: ask on first visit rather than from a cold modal.
+  // The tab is the permission's context: ask on first visit rather than from a cold modal. A saved place seeds the
+  // first render as UNDETERMINED (ADR 0086), so the prompt waits until there is no place to show.
   useEffect(() => {
-    if (source === 'auto' && permissionStatus === Location.PermissionStatus.UNDETERMINED) {
+    if (coords === null && source === 'auto' && permissionStatus === Location.PermissionStatus.UNDETERMINED) {
       void requestLocationAndArmBells().then(() => refresh());
     }
-  }, [source, permissionStatus, refresh]);
+  }, [coords, source, permissionStatus, refresh]);
 
   const next = useNextPrayer(times, coords, now);
   const hijri = useHijriDate(now);
@@ -74,7 +75,7 @@ export function SalahScreen({ onBack }: { onBack?: () => void } = {}) {
   // Still resolving the first fix, or waiting on the system prompt: show the loading state, never the empty state.
   const locating =
     pending || (coords === null && source === 'auto' && permissionStatus === Location.PermissionStatus.UNDETERMINED);
-  const sourceLabel = t(source === 'auto' ? 'salah.sourceAuto' : 'salah.sourceManual');
+  const sourceLabel = t(stale ? 'salah.sourceLastKnown' : source === 'auto' ? 'salah.sourceAuto' : 'salah.sourceManual');
   // The tabs mini bar floats over the list. The qibla row is as tall as a touch
   // target plus its vertical padding; add that on top of the bar footprint so
   // the row can scroll fully above the player and stay tappable.

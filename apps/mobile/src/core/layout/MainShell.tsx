@@ -5,12 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
 import { MINI_PLAYER_SIDE } from '@/features/audio/mini-player-metrics';
-import { useOfflineStrip } from '@/core/network/useOfflineStrip';
 import { useOnline } from '@/core/network/useOnline';
+import { useUpdateStrip } from '@/core/updates/useUpdateStrip';
 import { useTheme } from '@/core/theme';
 import { spring } from '@/core/theme/motion';
-import { OfflineBanner } from '@/shared/ui';
+import { OfflineBanner, UpdateBanner } from '@/shared/ui';
 
+import { useContentGutter } from './content-gutter-store';
 import { TabBarScrollSync } from './TabBarScrollSync';
 import { miniPlayerBottom, miniPlayerHiddenTabsBottom, tabBarSideClearance } from './tab-bar-clearance';
 import { TabRailContext } from './TabRailContext';
@@ -28,6 +29,7 @@ export function MainShell({ children }: { children: ReactNode }) {
   // The rail takes the start edge: the screens and the mini player clear it there.
   const rail = useTabRail();
   const railSide = tabBarSideClearance(rail);
+  const gutter = useContentGutter();
   const tabsScrollHidden = useTabBarHiddenOnScroll();
   const playerBottom = miniPlayerBottom(Platform.OS, insets.bottom, rail);
   const playerDrop = playerBottom - miniPlayerHiddenTabsBottom(Platform.OS, insets.bottom, rail);
@@ -37,24 +39,31 @@ export function MainShell({ children }: { children: ReactNode }) {
     playerSlide.value = withSpring(tabsScrollHidden ? 1 : 0, spring());
   }, [tabsScrollHidden, playerSlide]);
   const playerDock = useAnimatedStyle(() => ({ transform: [{ translateY: playerSlide.value * playerDrop }] }));
-  // The offline strip sits under the top safe area and pushes the screens down by its height (ADR 0037). The screens
-  // keep their own top inset, so the strip is placed on the blank band above them and never covers a title.
+  // The offline and OTA update notices float in one dock under the status bar. They never push the screens down:
+  // a native tab ignores a content margin on iOS (ADR 0085).
   const online = useOnline();
-  const offlineStrip = useOfflineStrip(!online);
-  const pushDown = useAnimatedStyle(() => ({ marginTop: offlineStrip.layout.value * offlineStrip.natural.value }));
+  const updateStrip = useUpdateStrip();
 
   return (
     <TabRailContext.Provider value={railSide}>
       <View style={{ backgroundColor: theme.colors.surface, flex: 1, flexDirection: 'row' }} testID="main-shell">
         <TabBarScrollSync />
         <View style={{ flex: 1 }}>
-          <Animated.View style={[{ flex: 1 }, pushDown]}>{children}</Animated.View>
+          {children}
+          {/* box-none: the notices pass touches through to the screen, and their buttons still take them. */}
           <View
-            pointerEvents="none"
-            style={{ end: 0, position: 'absolute', start: railSide, top: insets.top }}
+            pointerEvents="box-none"
+            style={{
+              end: gutter,
+              gap: theme.space[2],
+              position: 'absolute',
+              start: railSide + gutter,
+              top: insets.top + theme.space[2],
+            }}
             testID="offline-strip-dock"
           >
-            <OfflineBanner motion={offlineStrip} visible={!online} />
+            <OfflineBanner visible={!online} />
+            <UpdateBanner onUpdate={updateStrip.update} visible={updateStrip.visible} />
           </View>
         </View>
         {/* The mini player floats above the bottom bar on a phone, and clears the rail on its start side in a rail window. */}

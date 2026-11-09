@@ -1,7 +1,5 @@
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { useOfflineStrip } from '@/core/network/useOfflineStrip';
-
 import { locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 
@@ -17,40 +15,44 @@ const mockReduceMotion = useReducedMotion as unknown as jest.Mock;
 const arabic = 'أنت غير متصل. المصحف والتلاوات المحمّلة تعمل كالمعتاد.';
 const english = 'You are offline. The mushaf and downloaded recitations work as usual.';
 
-function OfflineBannerHarness({ visible, testID }: { visible: boolean; testID?: string }) {
-  const motion = useOfflineStrip(visible);
-  return <OfflineBanner visible={visible} motion={motion} testID={testID} />;
-}
-
 describe('OfflineBanner', () => {
   beforeEach(() => {
     mockReduceMotion.mockReturnValue(false);
   });
 
-  it('draws the frame text as a status notice when visible', async () => {
-    const view = await renderUi(<OfflineBannerHarness visible />);
+  it('draws the message as a polite status notice when visible', async () => {
+    const view = await renderUi(<OfflineBanner visible />);
 
-    expect(view.getByLabelText(arabic)).toBeOnTheScreen();
+    const status = view.getByLabelText(arabic);
+    expect(status.props.accessibilityRole).toBe('text');
+    expect(status.props.accessibilityLiveRegion).toBe('polite');
     expect(view.getByText(arabic)).toBeOnTheScreen();
     // The glyph is decorative, so it is hidden from accessibility and found with includeHiddenElements.
     expect(view.getByTestId('offline-banner-icon', { includeHiddenElements: true })).toBeOnTheScreen();
   });
 
-  it('draws nothing while the device is online', async () => {
-    const view = await renderUi(<OfflineBannerHarness visible={false} testID="banner" />);
+  it('draws nothing once it is hidden under Reduce Motion', async () => {
+    mockReduceMotion.mockReturnValue(true);
+    const view = await renderUi(<OfflineBanner visible={false} />);
 
-    expect(view.queryByTestId('banner')).toBeNull();
+    expect(view.queryByTestId('offline-banner', { includeHiddenElements: true })).toBeNull();
     expect(view.queryByText(arabic)).toBeNull();
   });
 
   it('never takes a press: it is a notice, not a control', async () => {
-    const view = await renderUi(<OfflineBannerHarness visible />);
+    const view = await renderUi(<OfflineBanner visible />);
 
     expect(view.queryByRole('button')).toBeNull();
   });
 
+  it('uses the given testID', async () => {
+    const view = await renderUi(<OfflineBanner testID="banner" visible />);
+
+    expect(view.getByTestId('banner')).toBeOnTheScreen();
+  });
+
   it.each(locales)('shows its message under %s', async (locale) => {
-    const view = await renderUi(<OfflineBannerHarness visible />, { locale });
+    const view = await renderUi(<OfflineBanner visible />, { locale });
     const message = locale === 'ar' ? arabic : english;
 
     expect(view.getByLabelText(message)).toBeOnTheScreen();
@@ -58,7 +60,7 @@ describe('OfflineBanner', () => {
 
   it('still shows its message under Reduce Motion', async () => {
     mockReduceMotion.mockReturnValue(true);
-    const view = await renderUi(<OfflineBannerHarness visible />);
+    const view = await renderUi(<OfflineBanner visible />);
 
     expect(view.getByLabelText(arabic)).toBeOnTheScreen();
   });

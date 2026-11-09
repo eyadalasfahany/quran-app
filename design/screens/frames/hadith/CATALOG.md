@@ -2,7 +2,7 @@
 
 Daily hadith
 
-53 frames · open in viewer: `viewer.html?id=<FrameId>`
+61 frames · review page: `design/hadith/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
@@ -31,14 +31,21 @@ Daily hadith
 | `HadithCollSingleDark` | compact | dark | source | Hadith single-book collection · dark |
 | `HadithCollSingleEnglish` | compact | en | source | Hadith single-book collection · English |
 | `HadithCollChapters` | compact | ar-light | source | Hadith chapters · list · Arabic |
+| `HadithCollChaptersPartial` | compact | ar-light | source | Partly chaptered book (OpenITI chapters, option B): accepted chapters plus unchaptered runs in place |
 | `HadithCollChaptersDark` | compact | dark | source | Hadith chapters · list · dark |
+| `HadithCollChaptersPartialDark` | compact | dark | source | Partly chaptered book (OpenITI chapters, option B): accepted chapters plus unchaptered runs in place · dark |
 | `HadithCollChaptersEnglish` | compact | en | source | Hadith chapters · list · English |
+| `HadithCollChaptersPartialEnglish` | compact | en | source | Partly chaptered book (OpenITI chapters, option B): accepted chapters plus unchaptered runs in place · English |
 | `HadithCollChapterHadith` | compact | ar-light | source | Hadith chapter · hadith list · Arabic |
 | `HadithCollChapterHadithDark` | compact | dark | source | Hadith chapter · hadith list · dark |
 | `HadithCollChapterHadithEnglish` | compact | en | source | Hadith chapter · hadith list · English |
-| `HadithCollReader` | compact | ar-light | source | Hadith reader · Arabic |
-| `HadithCollReaderDark` | compact | dark | source | Hadith reader · dark |
-| `HadithCollReaderEnglish` | compact | en | source | Hadith reader · English |
+| `HadithCollReader` | compact | ar-light | source | Hadith reader · Arabic · hadith text 28/56 pt |
+| `HadithCollReaderExplained` | compact | ar-light | source | Hadith reader · Arabic · explanation card under the hadith (HadeethEnc), top of the page · hadith text 28/56 pt |
+| `HadithCollReaderTwoExplanations` | compact | ar-light | source | Hadith reader · Arabic · two explanation cards stacked (HadeethEnc, then a classical commentary), scrolled to the second card · hadith text 28/56 pt |
+| `HadithCollReaderDark` | compact | dark | source | Hadith reader · dark · hadith text 28/56 pt |
+| `HadithCollReaderExplainedDark` | compact | dark | source | Hadith reader · dark · explanation card under the hadith · hadith text 28/56 pt |
+| `HadithCollReaderEnglish` | compact | en | source | Hadith reader · English · hadith text 28/56 pt |
+| `HadithCollReaderExplainedEnglish` | compact | en | source | Hadith reader · English UI · explanation card (Arabic text, English labels) · hadith text 28/56 pt |
 | `HadithCollReaderPlain` | compact | ar-light | source | Hadith reader · single-colour fallback (source does not mark the chain) · Arabic |
 | `HadithCollReaderGrade` | compact | ar-light | source | Hadith reader · future state: grade (not built, labelled) · Arabic |
 | `HadithCollSearch` | compact | ar-light | source | Hadith search · empty query · Arabic |
@@ -54,7 +61,8 @@ Daily hadith
 | `HadithCollSavedUnverified` | compact | ar-light | source | Saved hadith · unverified notice · Arabic |
 | `HadithCollSavedEmpty` | compact | ar-light | source | Empty · saved hadith · Arabic |
 | `HadithCollExpanded` | expanded | ar-light | source | Hadith · expanded window · 1194 × 834 · tab rail, books pane, book list |
-| `HadithCollExpandedReader` | expanded | ar-light | source | Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel |
+| `HadithCollExpandedReader` | expanded | ar-light | source | Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel · hadith text 28/56 pt |
+| `HadithCollExpandedReaderExplained` | expanded | ar-light | source | Hadith reader · expanded window · explanation cards in the side panel · hadith text 28/56 pt |
 | `HadithCollMenu` | compact | ar-light | source | Menu · new cards · Hadith entry · Arabic |
 | `HadithCollMenuDark` | compact | dark | source | Menu · new cards · Hadith entry · dark |
 | `HadithCollMenuEnglish` | compact | en | source | Menu · new cards · Hadith entry · English |

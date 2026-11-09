@@ -1,7 +1,9 @@
 import { fireEvent } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
+import { arabicTextDirection } from '@/shared/ui/textStyles';
 
 import { ReciterSearchField } from './ReciterSearchField';
 
@@ -38,15 +40,44 @@ describe('ReciterSearchField', () => {
   });
 
   it.each([
-    ['en', 'left'],
-    ['ar', undefined],
-  ] as const)('aligns the typed text as %s expects (textAlign %s)', async (locale, textAlign) => {
+    ['en', { textAlign: 'left' }],
+    ['ar', arabicTextDirection],
+  ] as const)('aligns the typed text as %s expects', async (locale, alignment) => {
     const view = await renderUi(
       <ReciterSearchField onChangeText={() => undefined} placeholder="placeholder" testID="search" value="" />,
       { locale },
     );
 
-    expect(flatStyle(view.getByRole('search').props.style).textAlign).toBe(textAlign);
+    expect(flatStyle(view.getByRole('search').props.style)).toMatchObject(alignment);
+  });
+
+  it('keeps an Arabic field on the right on an English phone: LTR node, right-aligned, RTL writing', async () => {
+    const view = await renderUi(
+      <ReciterSearchField onChangeText={() => undefined} placeholder="placeholder" testID="search" value="" />,
+      { locale: 'ar' },
+    );
+
+    expect(flatStyle(view.getByRole('search').props.style)).toMatchObject({
+      direction: 'ltr',
+      textAlign: 'right',
+      writingDirection: 'rtl',
+    });
+  });
+
+  it('on Android under RTL sets no alignment key, so the platform keeps its natural alignment', async () => {
+    const platform = jest.replaceProperty(Platform, 'OS', 'android');
+    try {
+      const view = await renderUi(
+        <ReciterSearchField onChangeText={() => undefined} placeholder="placeholder" testID="search" value="" />,
+        { locale: 'ar' },
+      );
+      const style = flatStyle(view.getByRole('search').props.style);
+      expect(style).not.toHaveProperty('textAlign');
+      expect(style).not.toHaveProperty('direction');
+      expect(style).not.toHaveProperty('writingDirection');
+    } finally {
+      platform.restore();
+    }
   });
 
   it('has no raw colour literals', () => {

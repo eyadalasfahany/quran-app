@@ -43,3 +43,5 @@ Date: 2026-10-27 · Status: accepted; decision 1 amended by ADR 0075 (the screen
 - **Not in v1:** IndoPak and Tajweed per-word text (the plan's "later" items).
 - **The 21 verses where reciters disagree** get rechecked once a full QF mushaf layout is synced (production).
 - **Step 7's seed** (in progress) needs a follow-up for the Basmala split. The word map is a new Phase 1 step.
+
+Amended by ADR 0087 (9 Nov 2026): every new or changed design is drawn in `screens/frames/`, rebuilt into `design/`, and reviewed at `design/<stack>/<Screen>/index.html`.

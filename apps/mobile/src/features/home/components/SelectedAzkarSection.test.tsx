@@ -1,7 +1,7 @@
 import { fireEvent } from '@testing-library/react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { SelectedAzkarSection, type SelectedAzkarItem } from './SelectedAzkarSection';
 
 const items: SelectedAzkarItem[] = [
@@ -35,6 +35,14 @@ describe('SelectedAzkarSection', () => {
     await fireEvent.press(view.getByRole('button', { name: 'عرض الكل' }));
 
     expect(onSeeAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('bleeds the row to the page gutter on both sides', async () => {
+    const view = await renderUi(<SelectedAzkarSection items={items} onOpen={jest.fn()} onSeeAll={jest.fn()} />);
+    const list = view.getByTestId('home-selected-azkar-list');
+
+    expect(flatStyle(list.props.style).marginHorizontal).toBe(-20);
+    expect(flatStyle(list.props.contentContainerStyle).paddingHorizontal).toBe(20);
   });
 
   it('draws nothing without a session', async () => {

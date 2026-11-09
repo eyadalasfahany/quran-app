@@ -71,7 +71,7 @@ export function SegmentedControl<K extends string>({
             style={({ pressed }) => ({
               alignItems: 'center',
               backgroundColor: selected
-                ? theme.colors.surfaceRaised
+                ? theme.colors.segmentSelected
                 : pressed && !disabled
                   ? theme.colors.glassSelected
                   : 'transparent',

@@ -142,9 +142,13 @@ export function HomeScreen() {
   return (
     <SectionScreen gutter={theme.size.gutterHome} testID="screen-home" title={t('home.greeting')} trailing={<SearchButton onPress={() => router.push('/search')} testID="home-search" />}>
       <ScrollView
-        contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: bottom + theme.space[4] }}
+        contentContainerStyle={{
+          gap: theme.size.sectionGap,
+          paddingBottom: bottom + theme.space[4],
+          paddingHorizontal: theme.size.gutterHome,
+        }}
         showsVerticalScrollIndicator={false}
-        style={{ flex: 1 }}
+        style={{ flex: 1, marginHorizontal: -theme.size.gutterHome }}
         testID="home-scroll"
         {...tabScroll}
       >

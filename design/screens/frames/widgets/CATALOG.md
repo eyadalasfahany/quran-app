@@ -2,7 +2,7 @@
 
 iOS + Android widgets + help
 
-16 frames · open in viewer: `viewer.html?id=<FrameId>`
+16 frames · review page: `design/widgets/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

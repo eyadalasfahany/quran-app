@@ -22,6 +22,7 @@ export { EmptyState, type EmptyStateAction } from './EmptyState';
 export { FloatingTabBar } from './FloatingTabBar';
 export { FloatingTabBarItem } from './FloatingTabBarItem';
 export { GlassSurface } from './GlassSurface';
+export { FloatingNotice } from './FloatingNotice';
 export { GoldFrame, type GoldFrameVariant } from './GoldFrame';
 export { highlightColors, highlightFill, highlightToken, type HighlightColor } from './highlight';
 export { HighlightRow } from './HighlightRow';
@@ -52,6 +53,7 @@ export { SurahCartouche } from './SurahCartouche';
 export {
   arabicTextDirection,
   displayText,
+  inputTextAlignment,
   latinTextDirection,
   maxFontScale,
   quranText,
@@ -60,6 +62,7 @@ export {
 } from './textStyles';
 export { TaybahSplashLogo } from './TaybahSplashLogo';
 export { TitlePill } from './TitlePill';
+export { UpdateBanner } from './UpdateBanner';
 export { ToggleRow } from './ToggleRow';
 export { TOOLBAR_PILL_INSET, ToolbarPill } from './ToolbarPill';
 export { textToneColor, UiText, type TextTone } from './UiText';

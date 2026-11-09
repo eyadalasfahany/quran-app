@@ -231,12 +231,7 @@
     pages.appendChild(el('div', { class: 'tree-label', text: 'Elsewhere' }));
     pages.appendChild(el('ul', { class: 'tree' }, [
       ['../quran-app-design-system.html', 'Design system (tokens)'],
-      ['../screens/index.html', 'Screens (design source)'],
-      ['screens/extras/devices/index.html', 'Devices'],
-      ['screens/extras/sizes/index.html', 'Widget and watch sizes'],
-      ['screens/extras/notifications/index.html', 'Notifications'],
-      ['screens/extras/wear/index.html', 'Wear OS'],
-      ['screens/extras/components/index.html', 'Shared components']
+      ['../screens/index.html', 'Screens (design source)']
     ].map(function (l) { return el('li', null, [el('a', { href: BASE + l[0], text: l[1] })]); })));
   }
 

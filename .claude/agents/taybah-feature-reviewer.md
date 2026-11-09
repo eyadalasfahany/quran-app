@@ -22,4 +22,6 @@ You check features visually and behaviourally. Read `.claude/agent-rules.md` and
 - Reduce Motion behaviour
 - no unsourced religious section and no unlicensed audio control appears
 
+New or changed designs follow ADR 0087: the frame in `screens/frames/` is the source, and the review also checks the reference at `design/<stack>/<Screen>/index.html` (derived variants are drafts; generated `design/` files are never hand-edited).
+
 A mismatch not approved in an ADR or a brief fails the review. Report per frame: pass or fail, the specifics, and the screenshot paths.

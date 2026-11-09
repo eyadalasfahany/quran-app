@@ -1,6 +1,11 @@
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
-import { getIqamahOffsetMinutes, IQAMAH_OFFSET_OPTIONS, setIqamahOffsetMinutes } from './iqamah-offset';
+import {
+  effectiveIqamahOffsetMinutes,
+  getIqamahOffsetMinutes,
+  IQAMAH_OFFSET_OPTIONS,
+  setIqamahOffsetMinutes,
+} from './iqamah-offset';
 
 describe('iqamah offset (MMKV)', () => {
   beforeEach(() => {
@@ -40,5 +45,11 @@ describe('iqamah offset (MMKV)', () => {
     setIqamahOffsetMinutes(12);
     expect(getIqamahOffsetMinutes()).toBe(0);
     expect(storage.getNumber(storageKeys.salah.iqamahOffsetMinutes)).toBeUndefined();
+  });
+
+  it('paused: the effective offset is 0 even when 10 is stored, and the stored value is kept', () => {
+    setIqamahOffsetMinutes(10);
+    expect(effectiveIqamahOffsetMinutes()).toBe(0);
+    expect(getIqamahOffsetMinutes()).toBe(10);
   });
 });

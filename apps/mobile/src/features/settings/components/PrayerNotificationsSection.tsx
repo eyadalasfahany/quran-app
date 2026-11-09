@@ -8,7 +8,8 @@ import { prayerSoundName } from '@/features/salah/data/adhan-sounds';
 import { usePrayerSound } from '@/features/salah/hooks/usePrayerSound';
 import { ListRow, UiText } from '@/shared/ui';
 
-import { IqamahOffsetRow } from './IqamahOffsetRow';
+// Paused: iqamah notifications (IQAMAH_ENABLED in features/salah/data/iqamah-offset.ts).
+// import { IqamahOffsetRow } from './IqamahOffsetRow';
 import { PrayerReminderRow } from './PrayerReminderRow';
 import { SettingsGroup } from './SettingsGroup';
 // import { TestIqamahButton } from './TestIqamahButton';
@@ -29,7 +30,6 @@ export function PrayerNotificationsSection({ testID = 'prayer-notifications-sect
         {BELL_PRAYERS.map((prayer) => (
           <PrayerReminderRow key={prayer} prayer={prayer} />
         ))}
-        <IqamahOffsetRow />
         <ListRow
           chevron
           onPress={() => router.push('/adhan-sound' as Href)}

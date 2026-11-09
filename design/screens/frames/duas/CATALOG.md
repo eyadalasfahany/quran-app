@@ -2,7 +2,7 @@
 
 Duas + my duas
 
-17 frames · open in viewer: `viewer.html?id=<FrameId>`
+17 frames · review page: `design/duas/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

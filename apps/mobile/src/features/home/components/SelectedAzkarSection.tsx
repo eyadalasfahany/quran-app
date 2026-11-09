@@ -57,7 +57,13 @@ export function SelectedAzkarSection({
           </UiText>
         </Pressable>
       </View>
-      <ScrollView contentContainerStyle={{ gap: ROW_GAP }} horizontal showsHorizontalScrollIndicator={false} testID={`${testID}-list`}>
+      <ScrollView
+        contentContainerStyle={{ gap: ROW_GAP, paddingHorizontal: theme.size.gutterHome }}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginHorizontal: -theme.size.gutterHome }}
+        testID={`${testID}-list`}
+      >
         {items.map((item) => (
           <SelectedAzkarCard
             fraction={item.fraction}

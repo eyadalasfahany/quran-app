@@ -2,7 +2,7 @@
 
 Apple Watch
 
-3 frames · open in viewer: `viewer.html?id=<FrameId>`
+3 frames · review page: `design/watch/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

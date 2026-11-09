@@ -44,7 +44,13 @@ describe('NextPrayerHero', () => {
   it('reads as one accessible block naming the prayer and the countdown', async () => {
     const view = await renderUi(<NextPrayerHero {...PROPS} />);
 
-    expect(view.getByTestId('salah-hero').props.accessibilityLabel).toBe('الصلاة القادمة: المغرب ٥:٤٧، متبقٍ ١:٢٣');
+    expect(view.getByTestId('salah-hero').props.accessibilityLabel).toBe('الصلاة القادمة: المغرب ٥:٤٧، متبقٍ ١:٢٣، تلقائي');
+  });
+
+  it('says the place is the last known one in the accessible name (ADR 0086)', async () => {
+    const view = await renderUi(<NextPrayerHero {...PROPS} sourceLabel="آخر موقع معروف" />);
+
+    expect(view.getByTestId('salah-hero').props.accessibilityLabel).toContain('آخر موقع معروف');
   });
 
   it('keeps the light hero palette in dark mode: the green card is theme-stable', async () => {

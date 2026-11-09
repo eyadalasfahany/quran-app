@@ -13,6 +13,7 @@ import {
   PRAYER_NOTIFICATION_SLOTS,
   PRAYER_ROLLING_DAYS_WITH_IQAMAH,
   prayerRollingDays,
+  RENEW_REMINDER_SLOTS,
 } from '@/features/notifications/budget';
 import { writeSyncState, currentSyncState } from '@/features/notifications/sync-state';
 
@@ -28,6 +29,7 @@ import { dismissExactAlarmPrompt, isExactAlarmPromptVisible } from './exact-alar
 import { setIqamahOffsetMinutes } from './iqamah-offset';
 import {
   armDefaultPrayerBells,
+  PRAYER_ROUTE,
   enabledPrayers,
   requestLocationAndArmBells,
   iqamahFireDates,
@@ -78,8 +80,9 @@ type Pending = {
 let pending: Pending[] = [];
 let sequence = 0;
 
+/** Prayer notifications: the route is shared with the renew reminder (ADR 0083), which is counted separately. */
 function prayerPending(): Pending[] {
-  return pending.filter((request) => request.content.data?.route === '/salah');
+  return pending.filter((request) => request.content.data?.route === '/salah' && request.content.data?.kind !== 'renew');
 }
 
 function adhanPending(): Pending[] {
@@ -91,7 +94,9 @@ function iqamahPending(): Pending[] {
 }
 
 function scheduledCalls() {
-  return jest.mocked(Notifications.scheduleNotificationAsync).mock.calls;
+  return jest.mocked(Notifications.scheduleNotificationAsync).mock.calls.filter(
+    ([request]) => (request.content.data as Record<string, unknown> | undefined)?.kind !== 'renew',
+  );
 }
 
 function setBells(...names: NextPrayerName[]) {
@@ -344,7 +349,9 @@ describe('prayer notifications', () => {
         setBells('dhuhr');
         await syncPrayerNotifications({ now: NOW, coords: LONDON });
 
-        expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledTimes(1);
+        // The renew reminder also creates the `reminders` channel on Android (ADR 0083); only the prayer channels count here.
+        const prayerChannels = jest.mocked(Notifications.setNotificationChannelAsync).mock.calls.filter(([id]) => id !== 'reminders');
+        expect(prayerChannels).toHaveLength(1);
         expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(
           'prayer_adhan_allahu_akbar_short',
           expect.objectContaining({ name: 'الصلاة: الله أكبر', sound: 'allahu_akbar_short.wav' }),
@@ -382,6 +389,22 @@ describe('prayer notifications', () => {
       expect(prayerPending()).toHaveLength(16);
     });
 
+    it('re-plans a renew reminder a day before the last prayer fire, and none when no bell is on (ADR 0083)', async () => {
+      setBells('fajr');
+      await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+      const renews = pending.filter((request) => request.content.data?.kind === 'renew');
+      const lastFire = Math.max(...prayerPending().map((request) => (request.trigger as { date: Date }).date.getTime()));
+      expect(renews).toHaveLength(1);
+      expect(renews[0]?.content.data).toEqual({ route: PRAYER_ROUTE, kind: 'renew' });
+      expect(renews[0]?.trigger).toEqual({ type: 'date', date: new Date(lastFire - 24 * 60 * 60 * 1000) });
+
+      setBells();
+      await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+      expect(pending.filter((request) => request.content.data?.kind === 'renew')).toHaveLength(0);
+    });
+
     it('removes every prayer notification when all bells are off', async () => {
       setBells('fajr');
       await syncPrayerNotifications({ now: NOW, coords: LONDON });
@@ -409,38 +432,64 @@ describe('prayer notifications', () => {
       expect(storage.getString(storageKeys.salah.notificationsSync)).toBeUndefined();
     });
 
-    it('with iqamah offset 10 schedules adhan and iqamah (4 each per prayer), at most 40 total', async () => {
+    it('paused: with iqamah offset 10 stored, schedules adhan only (8 per prayer on iOS), no iqamah', async () => {
       setBells(...PRAYERS);
       setIqamahOffsetMinutes(10);
       await syncPrayerNotifications({ now: NOW, coords: LONDON });
 
       expect(prayerPending()).toHaveLength(40);
-      expect(adhanPending()).toHaveLength(20);
-      expect(iqamahPending()).toHaveLength(20);
-      for (const request of iqamahPending()) {
-        expect(request.content.sound).toBe('default');
-        expect(request.content.data?.kind).toBe('iqamah');
-      }
+      expect(adhanPending()).toHaveLength(40);
+      expect(iqamahPending()).toHaveLength(0);
+      expect(pending.filter((request) => request.content.data?.kind === 'iqamah')).toHaveLength(0);
       for (const request of adhanPending()) {
         expect(request.content.data?.kind).toBeUndefined();
       }
     });
 
-    it('creates the system prayer channel for iqamah on Android, not an adhan voice channel', async () => {
+    it('paused: with iqamah offset 10 stored on Android, schedules adhan only (14 per prayer), no iqamah', async () => {
+      const restore = jest.replaceProperty(Platform, 'OS', 'android');
+      try {
+        setBells(...PRAYERS);
+        setIqamahOffsetMinutes(10);
+        await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+        expect(adhanPending()).toHaveLength(70);
+        expect(pending.filter((request) => request.content.data?.kind === 'iqamah')).toHaveLength(0);
+      } finally {
+        restore.restore();
+      }
+    });
+
+    it('paused: the adhan keeps its alarmClock delivery on Android and no iqamah channel is needed', async () => {
       const restore = jest.replaceProperty(Platform, 'OS', 'android');
       try {
         setBells('dhuhr');
         setIqamahOffsetMinutes(10);
         await syncPrayerNotifications({ now: NOW, coords: LONDON });
 
-        expect(Notifications.setNotificationChannelAsync).toHaveBeenCalledWith(
-          'prayer',
-          expect.objectContaining({ name: expect.any(String) }),
-        );
-        const iqamahTrigger = scheduledCalls().find(([request]) => request.content.data?.kind === 'iqamah')?.[0].trigger;
-        expect(iqamahTrigger).toMatchObject({ channelId: 'prayer' });
+        expect(iqamahPending()).toHaveLength(0);
         const adhanTrigger = scheduledCalls().find(([request]) => request.content.data?.kind !== 'iqamah')?.[0].trigger;
-        expect(adhanTrigger).toMatchObject({ channelId: 'prayer_adhan_allahu_akbar_short' });
+        expect(adhanTrigger).toMatchObject({
+          channelId: 'prayer_adhan_allahu_akbar_short',
+          delivery: 'alarmClock',
+        });
+      } finally {
+        restore.restore();
+      }
+    });
+
+    it('paused: on iOS no notification carries a delivery key, and no iqamah is scheduled', async () => {
+      const restore = jest.replaceProperty(Platform, 'OS', 'ios');
+      try {
+        setBells('dhuhr');
+        setIqamahOffsetMinutes(10);
+        await syncPrayerNotifications({ now: NOW, coords: LONDON });
+
+        expect(adhanPending().length).toBeGreaterThan(0);
+        expect(iqamahPending()).toHaveLength(0);
+        for (const [request] of scheduledCalls()) {
+          expect(request.trigger).not.toHaveProperty('delivery');
+        }
       } finally {
         restore.restore();
       }
@@ -464,13 +513,13 @@ describe('prayer notifications', () => {
   });
 
   describe('setIqamahOffset', () => {
-    it('persists the offset and re-plans once', async () => {
+    it('persists the offset and re-plans once (paused: adhan only, no iqamah)', async () => {
       setBells('fajr');
       await setIqamahOffset(15, NOW);
 
       expect(storage.getNumber(storageKeys.salah.iqamahOffsetMinutes)).toBe(15);
       expect(prayerPending()).toHaveLength(8);
-      expect(iqamahPending()).toHaveLength(4);
+      expect(iqamahPending()).toHaveLength(0);
     });
   });
 
@@ -554,13 +603,14 @@ describe('prayer notifications', () => {
       expect(getCoordinates).toHaveBeenCalledWith({ lastKnownOnly: false });
     });
 
-    it('a changed iqamah offset re-plans on the foreground check', async () => {
+    it('a stored iqamah offset does not re-plan on the foreground check while iqamah is paused', async () => {
       await resyncPrayerNotifications(NOW);
       jest.mocked(Notifications.scheduleNotificationAsync).mockClear();
       setIqamahOffsetMinutes(10);
 
-      await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(true);
-      expect(iqamahPending().length).toBeGreaterThan(0);
+      await expect(resyncPrayerNotificationsIfNeeded(NOW)).resolves.toBe(false);
+      expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
+      expect(iqamahPending()).toHaveLength(0);
     });
 
     it('concurrent triggers (launch, foreground, location) coalesce into one schedule', async () => {
@@ -573,6 +623,43 @@ describe('prayer notifications', () => {
       expect(results.filter(Boolean)).toHaveLength(1);
       expect(scheduledCalls()).toHaveLength(16);
       expect(prayerPending()).toHaveLength(16);
+    });
+
+    it('a new day with no fix keeps the schedule for the place of the last sync, not an empty schedule', async () => {
+      await resyncPrayerNotifications(NOW);
+      jest.mocked(getCoordinates).mockResolvedValue(null);
+      const day = local(2026, 11, 1, 8);
+
+      await expect(resyncPrayerNotificationsIfNeeded(day)).resolves.toBe(true);
+
+      const expected = prayerFireDates(['fajr', 'maghrib'], day, LONDON).map((fire) => fire.date.getTime()).sort();
+      const scheduled = prayerPending()
+        .map((request) => (request.trigger as { date: Date }).date.getTime())
+        .sort();
+      expect(scheduled.length).toBeGreaterThan(0);
+      expect(scheduled).toEqual(expected);
+    });
+
+    it('with no fix and nothing synced before, schedules from the saved last automatic place (ADR 0086)', async () => {
+      storage.set(storageKeys.salah.lastAutoCoords, '51.51,-0.13');
+      jest.mocked(getCoordinates).mockResolvedValue(null);
+
+      await resyncPrayerNotifications(NOW);
+
+      const expected = prayerFireDates(['fajr', 'maghrib'], NOW, { lat: 51.51, lng: -0.13 }).map((fire) => fire.date.getTime()).sort();
+      const scheduled = prayerPending()
+        .map((request) => (request.trigger as { date: Date }).date.getTime())
+        .sort();
+      expect(scheduled.length).toBeGreaterThan(0);
+      expect(scheduled).toEqual(expected);
+    });
+
+    it('with no fix and nothing synced before, schedules nothing', async () => {
+      jest.mocked(getCoordinates).mockResolvedValue(null);
+
+      await resyncPrayerNotifications(NOW);
+
+      expect(scheduledCalls()).toHaveLength(0);
     });
 
     it('reads the location only when a prayer is on', async () => {
@@ -967,9 +1054,10 @@ describe('prayer notifications', () => {
 
         await setPrayerSound('makkah', NOW);
 
+        // Two prayers on Android: 14 days each (ADR 0083).
         expect(storage.getString(storageKeys.salah.prayerSound)).toBe('makkah');
-        expect(scheduledCalls()).toHaveLength(16);
-        expect(prayerPending()).toHaveLength(16);
+        expect(scheduledCalls()).toHaveLength(28);
+        expect(prayerPending()).toHaveLength(28);
         for (const request of prayerPending()) {
           expect(request.content.sound).toBe('adhan_makkah.wav');
           expect(request.trigger).toMatchObject({ channelId: 'prayer_adhan_makkah' });
@@ -978,7 +1066,7 @@ describe('prayer notifications', () => {
         jest.clearAllMocks();
         await setPrayerSound('silent', NOW);
 
-        expect(prayerPending()).toHaveLength(16);
+        expect(prayerPending()).toHaveLength(28);
         for (const request of prayerPending()) {
           expect(request.content.sound).toBe(false);
           expect(request.trigger).toMatchObject({ channelId: 'prayer_silent' });
@@ -997,7 +1085,13 @@ describe('prayer notifications', () => {
   describe('budget fit', () => {
     it('keeps five prayers of 8 days within the prayer share, and the whole pool at the iOS limit', () => {
       expect(PRAYERS.length * 8).toBeLessThanOrEqual(PRAYER_NOTIFICATION_SLOTS);
-      const pool = PRAYER_NOTIFICATION_SLOTS + AZKAR_SLOTS + DAILY_REMINDER_SLOTS + FRIDAY_REMINDER_SLOTS + MISBAHA_REMINDER_SLOTS;
+      const pool =
+        PRAYER_NOTIFICATION_SLOTS +
+        AZKAR_SLOTS +
+        DAILY_REMINDER_SLOTS +
+        FRIDAY_REMINDER_SLOTS +
+        MISBAHA_REMINDER_SLOTS +
+        RENEW_REMINDER_SLOTS;
       expect(pool).toBe(64);
       expect(pool).toBe(IOS_PENDING_LIMIT);
     });

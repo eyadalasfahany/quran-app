@@ -46,3 +46,5 @@ Developer, 7 Nov 2026 («a folder that has the screens, another directory contai
 - Agents read 5–40 KB per frame instead of searching a 2.4 MB file.
 - A frame and its index entry are two files to keep in step when adding or renaming a frame; the check catches a mismatch.
 - `design/screens` (the earlier split) is still generated, now from `screens/`, and `design/` builds on it unchanged.
+
+Amended by ADR 0087 (9 Nov 2026): every design change is rebuilt into design/ and reviewed there.

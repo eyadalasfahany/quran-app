@@ -30,6 +30,11 @@ export const storageKeys = {
     searchRecent: 'hadith.searchRecent',
   },
 
+  updates: {
+    /** Epoch ms of the last foreground update check (at most every 6 hours). */
+    lastCheckAt: 'updates.lastCheckAt',
+  },
+
   // Azkar preferences (phase 6, step 5). Personal, local only; not cleared by content updates.
   azkar: {
     fontScale: 'azkar.fontScale',
@@ -97,6 +102,12 @@ export const storageKeys = {
     recommendedShown: 'reminders.recommendedShown',
   },
 
+  // Notifications shared by prayer and Azkar (ADR 0083).
+  notifications: {
+    // JSON: each source's last scheduled fire in ms (`prayer`, `azkar`), or null, for the renew reminder.
+    renew: 'notifications.renew',
+  },
+
   // Salah data layer
   salah: {
     locationSource: 'salah.locationSource',
@@ -115,6 +126,8 @@ export const storageKeys = {
     prayerSound: 'salah.prayerSound',
     // Minutes before prayer time for the iqamah heads-up (ADR 0056). 0, 5, 10, 15, 20 or 30 only; absent means off (0).
     iqamahOffsetMinutes: 'salah.iqamahOffsetMinutes',
+    /** The last automatic fix, as a `coordsKey` (2 decimals). Device only; cleared by «مسح البيانات» (ADR 0086). */
+    lastAutoCoords: 'salah.lastAutoCoords',
   },
 } as const;
 

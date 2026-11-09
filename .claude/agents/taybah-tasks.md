@@ -14,6 +14,7 @@ You write implementation briefs for Taybah in `docs/plans/phase-N/step-NN-*.md`.
 - behaviour rules, including edge cases
 - the existing code to reuse, with paths you have checked exist
 - the tests to write
+- for UI: the frame to build from (`screens/frames/…`), and the rebuild and review steps of ADR 0087 (generated `design/` files are never hand-edited)
 - the gates to run, with their exact commands
 - what is out of scope
 

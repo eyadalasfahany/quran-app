@@ -1,14 +1,33 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { View } from 'react-native';
+import { useNavigation } from 'expo-router';
 
 import { useTheme } from '@/core/theme';
 
-// Reading and Focus cap the text column at about 720 (spec §4).
+import { setContentGutter } from './content-gutter-store';
+
 export const CONTENT_COLUMN_MAX_WIDTH = 720;
 
-// The side gutter defaults to space[6] (24). Home and the surah index pass their frame's gutter.
+// Outside a navigator (tests, a screen rendered alone) there is no navigation object: the column publishes on mount.
+function useOptionalNavigation() {
+  try {
+    return useNavigation();
+  } catch {
+    return undefined;
+  }
+}
+
 export function ContentColumn({ children, gutter, testID }: { children: ReactNode; gutter?: number; testID?: string }) {
   const theme = useTheme();
+  const navigation = useOptionalNavigation();
+  const resolvedGutter = gutter ?? theme.space[6];
+
+  // Only the focused screen's gutter counts: the floating notices follow it (ADR 0085).
+  useEffect(() => {
+    const publish = () => setContentGutter(resolvedGutter);
+    if (navigation?.isFocused?.() ?? true) publish();
+    return navigation?.addListener?.('focus', publish);
+  }, [navigation, resolvedGutter]);
 
   return (
     <View
@@ -16,7 +35,7 @@ export function ContentColumn({ children, gutter, testID }: { children: ReactNod
         alignSelf: 'center',
         flex: 1,
         maxWidth: CONTENT_COLUMN_MAX_WIDTH,
-        paddingHorizontal: gutter ?? theme.space[6],
+        paddingHorizontal: resolvedGutter,
         width: '100%',
       }}
       testID={testID}

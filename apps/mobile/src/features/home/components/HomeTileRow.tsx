@@ -33,8 +33,9 @@ export function HomeTileRow({
     return (
       <View onLayout={onLayout} testID={`${testID}-frame`}>
         <ScrollView
-          contentContainerStyle={{ gap }}
+          contentContainerStyle={{ gap, paddingHorizontal: theme.size.gutterHome }}
           horizontal
+          style={{ marginHorizontal: -theme.size.gutterHome }}
           showsHorizontalScrollIndicator={false}
           testID={testID}
         >

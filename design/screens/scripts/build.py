@@ -4,8 +4,7 @@
 - Reads screens/ (ADR 0075) through packages/design-tokens/scripts/screens_lib.py; never writes there
 - Externalizes base64 images → assets/
 - Writes lean frame partials (no per-frame document chrome)
-- Writes AGENTS.md + CATALOG.md (what models should read)
-- Writes viewer.html + index.html for humans
+- Writes AGENTS.md, CATALOG.md and README.md (what models read). Humans review at design/<stack>/<Screen>/index.html (ADR 0087)
 """
 from __future__ import annotations
 
@@ -250,7 +249,7 @@ def main() -> None:
     if not style_m:
         raise SystemExit("no style block")
 
-    # wipe generated content, keep scripts + hand-written common extras we rewrite
+    # wipe generated content, keep scripts
     if OUT.exists():
         for child in OUT.iterdir():
             if child.name == "scripts":
@@ -268,9 +267,6 @@ def main() -> None:
         "/* From screens/screens.css — edit it there, not here */\n" + style_m.group(1),
         encoding="utf-8",
     )
-
-    # copy device/catalog CSS from previous if present in scripts sibling templates — rewrite below
-    # (written by write_common_css)
 
     section_positions: list[tuple[int, str]] = []
     for m in re.finditer(r'<section class="gx-sec"[^>]*>.*?<h2 class="gx-h2">(.*?)</h2>', html, re.S):
@@ -328,21 +324,9 @@ def main() -> None:
     for fr in frames:
         by_stack.setdefault(fr["stack"], []).append(fr)
 
-    write_common_css(common)
     write_catalogs(frames, by_stack)
     write_agents()
     write_readme(frames, by_stack, len(digest_map), total_saved)
-    write_viewer()
-    write_index(frames, by_stack)
-    write_stack_indexes(by_stack)
-
-    # extras: devices, sizes, notifications, wear (hand-authored lean pages)
-    import sys
-
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from gen_extras import write_extras  # noqa: E402
-
-    write_extras(OUT, by_stack)
 
     manifest = {
         "source": "screens/",
@@ -366,16 +350,6 @@ def main() -> None:
     html_bytes = sum(f["bytes"] for f in frames)
     print(f"frames={len(frames)} stacks={len(by_stack)} assets={len(digest_map)}")
     print(f"frame HTML total KB={html_bytes // 1024}  (base64 externalized, ~{total_saved // 1024}KB removed from markup)")
-
-
-def write_common_css(common: Path) -> None:
-    # keep devices.css + catalog.css next to build — import from gen_extras templates
-    devices = Path(__file__).with_name("devices.css")
-    catalog = Path(__file__).with_name("catalog.css")
-    if devices.exists():
-        shutil.copy(devices, common / "devices.css")
-    if catalog.exists():
-        shutil.copy(catalog, common / "catalog.css")
 
 
 def write_catalogs(frames: list[dict], by_stack: dict[str, list[dict]]) -> None:
@@ -403,7 +377,7 @@ def write_catalogs(frames: list[dict], by_stack: dict[str, list[dict]]) -> None:
             "",
             blurb,
             "",
-            f"{len(items)} frames · open in viewer: `viewer.html?id=<FrameId>`",
+            f"{len(items)} frames · review page: `design/{stack}/<Screen>/index.html` (ADR 0087)",
             "",
             "| id | size | theme | status | caption |",
             "|---|---|---|---|---|",
@@ -441,7 +415,7 @@ Taybah HTML design frames, split for humans and for low token use.
 4. **Only if you must see markup:** one file `frames/<stack>/<FrameId>.html` (partial, no chrome).
 5. **Never** open `common/styles.css` unless changing shared CSS.
 6. **Never** open more than one large frame unless asked.
-7. Humans preview with `viewer.html?id=Main` or `index.html`.
+7. Humans review at `design/<stack>/<Screen>/index.html` (ADR 0087). This folder is the build's intermediate input.
 
 ## Hard rules
 
@@ -460,9 +434,8 @@ Taybah HTML design frames, split for humans and for low token use.
 | salah | prayer, qibla |
 | azkar / duas | azkar + duas |
 | home / menu* | home additions, menu |
-| widgets / watch / wear | surfaces outside the app chrome |
-| expanded / sizes / devices | form factors |
-| notifications | local notification frames |
+| widgets / watch | surfaces outside the app chrome |
+| expanded | medium and expanded windows |
 
 ## Rebuild
 
@@ -478,16 +451,14 @@ def write_readme(frames: list[dict], by_stack: dict, assets: int, saved: int) ->
     (OUT / "README.md").write_text(
         f"""# Taybah — design screens
 
-Team-share design catalog. **Humans browse HTML**; **models read catalogs** (not megabytes of markup).
+Build input for the design review pages. **Humans review at `design/<stack>/<Screen>/index.html`** (ADR 0087); **models read catalogs** (not megabytes of markup).
 
 Generated from `screens/` (the design source, ADR 0075); edit frames there.
 
-## Share with the team
+## Review
 
-1. Open [`index.html`](index.html) (or host this folder).
-2. Deep-link any frame: [`viewer.html?id=Main`](viewer.html?id=Main).
-3. Stack lists: [`frames/<stack>/`](frames/) — each has `CATALOG.md`.
-4. Devices / sizes / notifications / Wear OS: [`extras/`](extras/).
+1. Review pages: `design/<stack>/<Screen>/index.html` (ADR 0087). Nothing here is for review.
+2. Stack lists: [`frames/<stack>/`](frames/) — each has `CATALOG.md`.
 
 ## For AI / agents (token budget)
 
@@ -511,11 +482,9 @@ Never open `common/styles.css` or many frames unless asked.
 ```
 design/screens/
   AGENTS.md CATALOG.md frames.tsv frames.json
-  index.html  viewer.html?id=FrameId
   common/     shared CSS
   assets/     extracted images (once)
   frames/<stack>/   lean partials + CATALOG.md
-  extras/     devices, sizes, notifications, wear, components
   scripts/build.py
 ```
 
@@ -527,156 +496,6 @@ python design/screens/scripts/build.py
 """,
         encoding="utf-8",
     )
-
-
-def write_viewer() -> None:
-    (OUT / "viewer.html").write_text(
-        """<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Frame viewer — Taybah</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="common/styles.css">
-<link rel="stylesheet" href="common/devices.css">
-<link rel="stylesheet" href="common/catalog.css">
-<style>
-.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:16px 24px;border-bottom:1px solid #e7dfcc;background:#fffdf8;position:sticky;top:0;z-index:10}
-.bar input,.bar select{min-height:40px;padding:0 12px;border-radius:10px;border:1px solid #e7dfcc;font:inherit}
-.bar button{min-height:40px;padding:0 16px;border-radius:10px;border:none;background:#1f4d40;color:#f7f3ea;font:inherit;font-weight:600;cursor:pointer}
-#meta{color:#5b6a64;font-size:13px}
-#stage{padding:24px;overflow:auto}
-</style>
-</head>
-<body>
-<div class="bar">
-  <a href="index.html">← catalog</a>
-  <label>Frame <input id="fid" list="ids" placeholder="Main" style="width:220px"></label>
-  <datalist id="ids"></datalist>
-  <button type="button" id="go">Open</button>
-  <span id="meta"></span>
-</div>
-<section id="stage" class="gx-sec"><p class="gx-note">Loading…</p></section>
-<script>
-const params = new URLSearchParams(location.search);
-const stage = document.getElementById('stage');
-const meta = document.getElementById('meta');
-const fidInput = document.getElementById('fid');
-let catalog = null;
-
-async function loadCatalog(){
-  const res = await fetch('frames.json');
-  catalog = await res.json();
-  const dl = document.getElementById('ids');
-  for (const f of catalog.frames){
-    const o = document.createElement('option');
-    o.value = f.id;
-    dl.appendChild(o);
-  }
-}
-
-async function show(id){
-  if (!catalog) await loadCatalog();
-  const f = catalog.frames.find(x => x.id === id);
-  if (!f){ stage.innerHTML = '<p class="gx-note">Frame not found: '+id+'</p>'; return; }
-  fidInput.value = id;
-  meta.textContent = f.stack+' · '+f.size+' · '+f.theme+' · '+f.status+' — '+f.caption;
-  history.replaceState(null,'','?id='+encodeURIComponent(id));
-  const html = await fetch(f.path).then(r => r.text());
-  stage.innerHTML = '<div class="gx-row">'+html+'</div>';
-}
-
-document.getElementById('go').onclick = () => show(fidInput.value.trim());
-fidInput.addEventListener('keydown', e => { if (e.key==='Enter') show(fidInput.value.trim()); });
-loadCatalog().then(() => show(params.get('id') || 'Main'));
-</script>
-</body>
-</html>
-""",
-        encoding="utf-8",
-    )
-
-
-def write_index(frames: list[dict], by_stack: dict[str, list[dict]]) -> None:
-    stack_cards = "".join(
-        f'<a class="catalog-card" href="frames/{s}/index.html"><strong>{s}</strong>'
-        f'<span>{len(items)} · {STACK_BLURBS.get(s, "")}</span></a>'
-        for s, items in sorted(by_stack.items())
-    )
-    extras = "".join(
-        f'<a class="catalog-card" href="extras/{href}"><span class="badge">extras</span>'
-        f"<strong>{title}</strong><span>{sub}</span></a>"
-        for href, title, sub in [
-            ("devices/index.html", "devices", "iOS + Android shells"),
-            ("sizes/index.html", "sizes", "Window + widget + watch sizes"),
-            ("notifications/index.html", "notifications", "Local notification frames"),
-            ("wear/index.html", "wear", "Wear OS"),
-            ("components/index.html", "components", "Shared UI chrome"),
-        ]
-    )
-    (OUT / "index.html").write_text(
-        f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Taybah — design screens</title>
-<link rel="stylesheet" href="common/styles.css">
-<link rel="stylesheet" href="common/catalog.css">
-</head>
-<body>
-<header class="gx-head">
-  <p><a href="../../screens/index.html">screens (source)</a> · <a href="../../quran-app-design-system.html">design system</a> · <a href="AGENTS.md">AGENTS.md</a> · <a href="CATALOG.md">CATALOG.md</a></p>
-  <h1>Taybah design screens</h1>
-  <p>{len(frames)} frames · {len(by_stack)} stacks · lean partials + shared viewer. Open any frame: <a href="viewer.html?id=Main">viewer.html?id=Main</a></p>
-</header>
-<section class="gx-sec">
-  <p class="gx-note">Team: use this catalog. Agents: read <code>AGENTS.md</code> then <code>CATALOG.md</code> — skip HTML unless reviewing one frame.</p>
-  <h2 class="gx-h2">Extras</h2>
-  <ul class="catalog-grid">{extras}</ul>
-  <h2 class="gx-h2">Stacks</h2>
-  <ul class="catalog-grid">{stack_cards}</ul>
-</section>
-</body>
-</html>
-""",
-        encoding="utf-8",
-    )
-
-
-def write_stack_indexes(by_stack: dict[str, list[dict]]) -> None:
-    for stack, items in by_stack.items():
-        links = "\n".join(
-            f'    <li><a href="../../viewer.html?id={f["id"]}">{f["id"]}</a> — {f["caption"]}</li>'
-            for f in items
-        )
-        (FRAMES / stack / "index.html").write_text(
-            f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{stack} — Taybah</title>
-<link rel="stylesheet" href="../../common/styles.css">
-<link rel="stylesheet" href="../../common/catalog.css">
-</head>
-<body>
-<header class="gx-head">
-  <p><a href="../../index.html">← catalog</a> · <a href="CATALOG.md">CATALOG.md</a></p>
-  <h1>{stack}</h1>
-  <p>{STACK_BLURBS.get(stack, "")} · {len(items)} frames</p>
-</header>
-<section class="gx-sec">
-  <ul class="catalog-list">
-{links}
-  </ul>
-</section>
-</body>
-</html>
-""",
-            encoding="utf-8",
-        )
 
 
 if __name__ == "__main__":

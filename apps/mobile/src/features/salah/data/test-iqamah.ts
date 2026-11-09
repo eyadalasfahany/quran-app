@@ -10,7 +10,7 @@ import {
 import { ensureReminderPermission } from '@/features/notifications/permission';
 
 import { getPrayerSound } from './adhan-sounds';
-import { getIqamahOffsetMinutes } from './iqamah-offset';
+import { effectiveIqamahOffsetMinutes } from './iqamah-offset';
 import {
   enabledPrayers,
   iqamahNotificationContent,
@@ -21,13 +21,14 @@ import type { NextPrayerName } from './prayer-times';
 /** The test adhan (and unpaired iqamah) fires this many seconds after the tap. */
 export const TEST_IQAMAH_DELAY_SECONDS = 5;
 
-function intervalTrigger(seconds: number, androidChannelId: string): Notifications.NotificationTriggerInput {
+/** Android: a DATE trigger with alarm-clock delivery, the same path as real prayers (ADR 0082). iOS: a time interval. */
+function testTrigger(seconds: number, androidChannelId: string): Notifications.NotificationTriggerInput {
   return Platform.OS === 'android'
     ? {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds,
-        repeats: false,
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: new Date(Date.now() + seconds * 1000),
         channelId: androidChannelId,
+        delivery: 'alarmClock',
       }
     : { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, repeats: false };
 }
@@ -46,7 +47,7 @@ export function testIqamahPrayer(): NextPrayerName {
 export async function sendTestIqamahNotification(options?: {
   prayer?: NextPrayerName;
   delaySeconds?: number;
-  /** Default true when `getIqamahOffsetMinutes()` > 0. */
+  /** Default true when the effective iqamah offset is > 0. */
   includeAdhanPair?: boolean;
 }): Promise<
   { sent: false } | { sent: true; prayer: NextPrayerName; offsetMinutes: number; paired: boolean; delaySeconds: number }
@@ -58,7 +59,7 @@ export async function sendTestIqamahNotification(options?: {
 
   const prayer = options?.prayer ?? testIqamahPrayer();
   const delaySeconds = options?.delaySeconds ?? TEST_IQAMAH_DELAY_SECONDS;
-  const offsetMinutes = getIqamahOffsetMinutes();
+  const offsetMinutes = effectiveIqamahOffsetMinutes();
   const paired = options?.includeAdhanPair ?? offsetMinutes > 0;
 
   if (paired) {
@@ -74,7 +75,7 @@ export async function sendTestIqamahNotification(options?: {
         data: adhanContent.data,
         sound: adhanContent.sound,
       },
-      trigger: intervalTrigger(delaySeconds, prayerChannelId(sound)),
+      trigger: testTrigger(delaySeconds, prayerChannelId(sound)),
     });
 
     const iqamahSeconds = delaySeconds + offsetMinutes;
@@ -86,7 +87,7 @@ export async function sendTestIqamahNotification(options?: {
         data: iqContent.data,
         sound: iqContent.sound,
       },
-      trigger: intervalTrigger(iqamahSeconds, NOTIFICATION_CHANNELS.prayer),
+      trigger: testTrigger(iqamahSeconds, NOTIFICATION_CHANNELS.prayer),
     });
 
     return { sent: true, prayer, offsetMinutes, paired: true, delaySeconds };
@@ -101,7 +102,7 @@ export async function sendTestIqamahNotification(options?: {
       data: iqContent.data,
       sound: iqContent.sound,
     },
-    trigger: intervalTrigger(delaySeconds, NOTIFICATION_CHANNELS.prayer),
+    trigger: testTrigger(delaySeconds, NOTIFICATION_CHANNELS.prayer),
   });
 
   return { sent: true, prayer, offsetMinutes, paired: false, delaySeconds };

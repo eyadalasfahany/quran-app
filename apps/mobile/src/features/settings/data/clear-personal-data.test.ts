@@ -161,6 +161,24 @@ describe('clearPersonalData', () => {
     }
   });
 
+  it('removes the saved last automatic place (ADR 0086) with the other personal state', async () => {
+    storage.set(storageKeys.salah.lastAutoCoords, '24.71,46.68');
+
+    await clearPersonalData();
+
+    expect(storage.contains(storageKeys.salah.lastAutoCoords)).toBe(false);
+  });
+
+  it('drops the renew state before the resyncs rebuild it, so no stale schedule end survives the clear', async () => {
+    storage.set(storageKeys.notifications.renew, JSON.stringify({ prayer: Date.now() + 86_400_000 * 5, azkar: null }));
+
+    const result = await clearPersonalData();
+
+    expect(result.failed).toEqual([]);
+    const renew = JSON.parse(storage.getString(storageKeys.notifications.renew) ?? '{}') as Record<string, unknown>;
+    expect(renew.prayer ?? null).toBeNull();
+  });
+
   it('rebuilds the widget snapshot and requests the Android widget update', async () => {
     jest.replaceProperty(Platform, 'OS', 'android');
     storage.set(storageKeys.widgets.snapshot, JSON.stringify({ schemaVersion: 1, progress: { percent: 80 } }));

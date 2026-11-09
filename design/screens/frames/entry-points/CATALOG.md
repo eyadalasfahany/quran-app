@@ -2,7 +2,7 @@
 
 Menu cards + home Hijri line
 
-5 frames · open in viewer: `viewer.html?id=<FrameId>`
+5 frames · review page: `design/entry-points/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

@@ -75,6 +75,17 @@ How a variant is derived:
 
 Widgets and the watch are boards, shown at their drawn size only. The watch is dark only.
 
+## New designs (ADR 0087)
+
+Every new or changed design follows this flow:
+
+1. Draw the frame as one file in `screens/frames/<section>/<FrameId>.html`. Copy a sibling in the same section to start. Shared styles, script and images stay in `screens/screens.css`, `screens/screens.js` and `design-assets/`. A hand-drawn variant is a sibling `<FrameId>Dark.html` or `<FrameId>English.html`.
+2. Add its `gx-fig` block with the iframe to `screens/index.html`. A new design's caption contains «(بانتظار الموافقة)», which makes it `awaiting-approval`. The developer removes the marker on approval.
+3. Rebuild with the two commands below.
+4. Review it at `design/<stack>/<Screen>/index.html`; share it as `design/<stack>/<Screen>/index.html?theme=light&dir=rtl&sizes=compact%2Cmedium%2Cexpanded%2Clandscape` (`theme` light|dark|both, `dir` rtl|ltr|both, `sizes` any of compact, medium, expanded, landscape). Derived variants are drafts; drawn variants must match.
+
+Never hand-edit anything under `design/` that the build writes. Commit the regenerated `design/` output with the frame change.
+
 ## Rebuild
 
 After a frame in `screens/` changes, refresh the split, then this reference:

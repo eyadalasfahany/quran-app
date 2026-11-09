@@ -109,6 +109,15 @@ describe("HomeTileRow overflow", () => {
     expect(view.getByRole("button", { name: "Reciters" })).toBeOnTheScreen();
   });
 
+  it("bleeds the scrolling row to the page gutter on both sides", async () => {
+    const view = await renderUi(<HomeTileRow tiles={fiveTiles} />, { locale: "en" });
+    await layout(view, "home-tiles-frame", 350);
+
+    const scroll = view.getByTestId("home-tiles");
+    expect(flatStyle(scroll.props.style).marginHorizontal).toBe(-20);
+    expect(flatStyle(scroll.props.contentContainerStyle).paddingHorizontal).toBe(20);
+  });
+
   it("lays the five tiles out in a row on a wide window", async () => {
     const view = await renderUi(<HomeTileRow tiles={fiveTiles} />, { locale: "en" });
     await layout(view, "home-tiles-frame", 900);

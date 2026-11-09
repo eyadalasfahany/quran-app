@@ -19,6 +19,12 @@
   - Shared styles, script and images live once, in `screens/screens.css`, `screens/screens.js` and `design-assets/`. Never copy them into a frame, and never inline an image as base64.
   - Edit only the frame file you're changing. To add a frame, copy a sibling in the same section, then add its `gx-fig` block with the iframe to `index.html`.
   - `npm run check:html -w @quran/design-tokens` checks the folder.
+- **Flow for every new or changed design (ADR 0087):**
+  - Draw the frame in `screens/frames/<section>/<FrameId>.html`. A new design's `gx-fig` caption in `screens/index.html` carries «(بانتظار الموافقة)» until the developer approves it.
+  - Rebuild: `python3 design/screens/scripts/build.py && python3 design/scripts/build_reference.py`.
+  - Review at `design/<stack>/<Screen>/index.html`. Derived variants are drafts.
+  - Hand a design over as its review link, e.g. `design/<stack>/<Screen>/index.html?theme=light&dir=rtl&sizes=compact%2Cmedium%2Cexpanded%2Clandscape` (`theme` light|dark|both, `dir` rtl|ltr|both, `sizes` any of compact, medium, expanded, landscape).
+  - Never hand-edit the generated files under `design/`.
 - Layouts these don't cover are drawn there from the existing tokens and approved before code.
 - Figma (https://www.figma.com/design/nwU9tRr75v8RrHunlKaA9U/Quran-App-%E2%80%94-Design) is optional reference only.
 
@@ -93,7 +99,7 @@ No Docker or Caddy locally for now (ADR 0003, 0004); first-time MySQL user setup
   - **Tests:** each component has its own colocated test file (`ComponentName.test.tsx`) covering render, variants and props, interaction, RTL, and its accessibility role and label.
   - **Screens:** screens (`app/` routes and feature screens) only compose these components, with no one-off styled UI built inside a screen.
   - **Design:** all UI work follows the `apple-design` skill (`.agents/skills/apple-design/SKILL.md`, Apple HIG). Read it before building UI, and check the result against it before calling the work done.
-  - **Review against the HTML:** every review compares the built UI with its frame in `screens/` (`screens/frames/<section>/<FrameId>.html`; tokens and components in `quran-app-design-system.html`). It must be identical to the frame unless the developer has approved a difference (recorded in an ADR or the step brief). A mismatch fails the review.
+  - **Review against the HTML:** every review compares the built UI with its frame in `screens/` (`screens/frames/<section>/<FrameId>.html`; tokens and components in `quran-app-design-system.html`). It must be identical to the frame unless the developer has approved a difference (recorded in an ADR or the step brief). A mismatch fails the review. The reviewer also views the frame at `design/<stack>/<Screen>/index.html`; its derived variants are drafts, and a mismatch with one is a question for the developer (ADR 0087).
   - **Visual check:** the review also compares a screenshot of the running app on the **iPhone 17 simulator** (`xcrun simctl io booted screenshot`) with the frame rendered at 390 × 844 (`python3 packages/design-tokens/scripts/frame-shot.py <frame-id> <out.png>`, headless Chrome; frame ids are the `gx-fig` ids, e.g. `ReaderSettings`). Unit tests and style values alone don't pass a UI review.
 - **Delegation rule (every agent):** implementation tasks go to a subagent on the cheapest available model (Haiku). The orchestrating agent writes the brief, then reviews the diff against the spec and the HTML screens before the developer commits.
 

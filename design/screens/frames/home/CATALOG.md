@@ -2,7 +2,7 @@
 
 Home additions, misbaha, daily goals
 
-14 frames · open in viewer: `viewer.html?id=<FrameId>`
+14 frames · review page: `design/home/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

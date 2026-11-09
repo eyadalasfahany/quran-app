@@ -6,7 +6,7 @@ import { storage } from '@/core/storage/mmkv';
 
 import { setBellEnabled } from './bells';
 import { setIqamahOffsetMinutes } from './iqamah-offset';
-import { iqamahNotificationContent, prayerNotificationContent } from './notifications';
+import { iqamahNotificationContent } from './notifications';
 import {
   sendTestIqamahNotification,
   TEST_IQAMAH_DELAY_SECONDS,
@@ -73,24 +73,40 @@ describe('sendTestIqamahNotification', () => {
     }
   });
 
-  it('schedules adhan first then iqamah when offset is on', async () => {
+  it('on Android uses a DATE trigger with alarm-clock delivery, so the test follows the real prayer path', async () => {
+    const restore = jest.replaceProperty(Platform, 'OS', 'android');
+    try {
+      const before = Date.now();
+      await sendTestIqamahNotification({ prayer: 'fajr', delaySeconds: 5 });
+      const after = Date.now();
+
+      const trigger = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[0]?.[0].trigger as unknown as {
+        type: string;
+        date: Date;
+        channelId: string;
+        delivery: string;
+      };
+      expect(trigger).toMatchObject({ type: 'date', channelId: 'prayer', delivery: 'alarmClock' });
+      expect(trigger).not.toHaveProperty('seconds');
+      expect(trigger.date.getTime()).toBeGreaterThanOrEqual(before + 5000);
+      expect(trigger.date.getTime()).toBeLessThanOrEqual(after + 5000);
+    } finally {
+      restore.restore();
+    }
+  });
+
+  it('paused: a stored offset does not pair the test with an adhan; it is iqamah only', async () => {
     setIqamahOffsetMinutes(10);
 
     const outcome = await sendTestIqamahNotification({ prayer: 'maghrib', delaySeconds: 5 });
 
-    expect(outcome).toMatchObject({ sent: true, paired: true, offsetMinutes: 10 });
-    expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(2);
-    const adhanCall = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[0]?.[0];
-    const iqCall = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[1]?.[0];
-    const expectedAdhan = prayerNotificationContent('maghrib');
+    expect(outcome).toMatchObject({ sent: true, paired: false, offsetMinutes: 0 });
+    expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(1);
+    const iqCall = jest.mocked(Notifications.scheduleNotificationAsync).mock.calls[0]?.[0];
     const expectedIqamah = iqamahNotificationContent('maghrib');
-    expect(adhanCall?.content.title).toBe(expectedAdhan.title);
-    expect(adhanCall?.content.body).toBe(expectedAdhan.body);
-    expect(adhanCall?.content.data).toEqual({ route: '/salah' });
-    expect(adhanCall?.trigger).toEqual(expect.objectContaining({ seconds: 5 }));
     expect(iqCall?.content.title).toBe(expectedIqamah.title);
     expect(iqCall?.content.data).toEqual({ route: '/salah', kind: 'iqamah' });
-    expect(iqCall?.trigger).toEqual(expect.objectContaining({ seconds: 15 }));
+    expect(iqCall?.trigger).toEqual(expect.objectContaining({ seconds: 5 }));
   });
 
   it('schedules nothing and reports sent false when notifications are refused', async () => {

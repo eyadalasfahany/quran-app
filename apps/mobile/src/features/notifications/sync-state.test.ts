@@ -1,6 +1,7 @@
 import { storage } from '@/core/storage/mmkv';
 
 import {
+  coordsFromKey,
   coordsKey,
   currentSyncState,
   localDay,
@@ -65,5 +66,28 @@ describe('schedule sync state', () => {
 
     storage.set(KEY, JSON.stringify({ day: 1 }));
     expect(readSyncState(KEY)).toBeNull();
+  });
+});
+
+describe('coordsFromKey', () => {
+  it('reads back the coordinates a key was made from, to two decimals', () => {
+    expect(coordsFromKey(coordsKey({ lat: 51.5074, lng: -0.1278 }))).toEqual({ lat: 51.51, lng: -0.13 });
+    expect(coordsFromKey('21.42,39.83')).toEqual({ lat: 21.42, lng: 39.83 });
+  });
+
+  it('reads null for none, undefined and garbage', () => {
+    expect(coordsFromKey('none')).toBeNull();
+    expect(coordsFromKey(undefined)).toBeNull();
+    expect(coordsFromKey('')).toBeNull();
+    expect(coordsFromKey('51.51')).toBeNull();
+    expect(coordsFromKey('a,b')).toBeNull();
+    expect(coordsFromKey('1,2,3')).toBeNull();
+  });
+
+  it('reads null outside the latitude and longitude ranges', () => {
+    expect(coordsFromKey('91,0')).toBeNull();
+    expect(coordsFromKey('-90.01,0')).toBeNull();
+    expect(coordsFromKey('0,181')).toBeNull();
+    expect(coordsFromKey('0,-180')).toEqual({ lat: 0, lng: -180 });
   });
 });

@@ -2,7 +2,7 @@
 
 Home, mushaf, ayah sheet, player, reader settings
 
-10 frames · open in viewer: `viewer.html?id=<FrameId>`
+10 frames · review page: `design/core/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

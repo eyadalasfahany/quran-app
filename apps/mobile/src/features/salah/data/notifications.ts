@@ -13,6 +13,7 @@ import {
   prunePrayerChannels,
 } from '@/features/notifications/channels';
 import { ensureReminderPermission, needsExactAlarmAccess } from '@/features/notifications/permission';
+import { updateRenewReminder } from '@/features/notifications/renew';
 import {
   currentSyncState,
   readSyncState,
@@ -23,16 +24,16 @@ import {
 import { adhanVoiceFile, getPrayerSound, type PrayerSoundId, setPrayerSoundValue } from './adhan-sounds';
 import { showExactAlarmPrompt } from './exact-alarm-prompt';
 import { BELL_PRAYERS, getBellEnabled, isBellUnset, setBellEnabled } from './bells';
-import { getIqamahOffsetMinutes, setIqamahOffsetMinutes, type IqamahOffsetMinutes } from './iqamah-offset';
+import { effectiveIqamahOffsetMinutes, setIqamahOffsetMinutes, type IqamahOffsetMinutes } from './iqamah-offset';
 import { getCityById } from './cities';
 import {
-  getCoordinates,
   getLocationPermissionStatus,
   getStoredLocationSource,
   getStoredManualCityId,
   requestLocationPermissions,
   type CoordinatesOptions,
 } from './location';
+import { resolvePrayerCoordinates } from './prayer-coordinates';
 import { type NextPrayerName, type PrayerTimesOutput, timesFor } from './prayer-times';
 
 /**
@@ -208,9 +209,15 @@ export function iqamahNotificationContent(prayer: NextPrayerName): IqamahNotific
 }
 
 // Android delivers through the channel of the chosen sound (the channel fixes the sound); iOS has no channels and ignores the field.
+/** Android delivers prayers with `alarmClock` (ADR 0082) so OEM battery policies don't defer them. */
 function prayerTrigger(date: Date, sound: PrayerSoundId): Notifications.NotificationTriggerInput {
   return Platform.OS === 'android'
-    ? { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: prayerChannelId(sound) }
+    ? {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date,
+        channelId: prayerChannelId(sound),
+        delivery: 'alarmClock',
+      }
     : { type: Notifications.SchedulableTriggerInputTypes.DATE, date };
 }
 
@@ -221,6 +228,7 @@ function iqamahTrigger(date: Date): Notifications.NotificationTriggerInput {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date,
         channelId: NOTIFICATION_CHANNELS.prayer,
+        delivery: 'alarmClock',
       }
     : { type: Notifications.SchedulableTriggerInputTypes.DATE, date };
 }
@@ -228,6 +236,17 @@ function iqamahTrigger(date: Date): Notifications.NotificationTriggerInput {
 /** The prayers whose bell is on, in the order the times card lists them. */
 export function enabledPrayers(): NextPrayerName[] {
   return BELL_PRAYERS.filter((prayer) => getBellEnabled(prayer));
+}
+
+/** The latest fire among `fires`, or null when there is none: where the prayer schedule runs out (ADR 0083). */
+function latestFireDate(fires: readonly PrayerFire[]): Date | null {
+  let latest: Date | null = null;
+  for (const fire of fires) {
+    if (latest === null || fire.date.getTime() > latest.getTime()) {
+      latest = fire.date;
+    }
+  }
+  return latest;
 }
 
 /**
@@ -251,7 +270,7 @@ function scheduleSettings(): string {
   return JSON.stringify({
     prayers: enabledPrayers(),
     sound: getPrayerSound(),
-    iqamahOffset: getIqamahOffsetMinutes(),
+    iqamahOffset: effectiveIqamahOffsetMinutes(),
     source: storage.getString(storageKeys.salah.locationSource) ?? null,
     manualCityId: storage.getString(storageKeys.salah.manualCityId) ?? null,
     manualLat: storage.getNumber(storageKeys.salah.manualLat) ?? null,
@@ -269,7 +288,7 @@ const settingsKey = `${storageKeys.salah.notificationsSync}.settings`;
  */
 export async function syncPrayerNotifications({ now, coords }: { now: Date; coords: SyncCoordinates | null }): Promise<void> {
   const prayers = enabledPrayers();
-  const offset = getIqamahOffsetMinutes();
+  const offset = effectiveIqamahOffsetMinutes();
   const days = prayerRollingDays(offset);
   const adhanFires = prayerFireDates(prayers, now, coords, days);
   const iqamahFires = iqamahFireDates(prayers, now, coords, offset, days);
@@ -295,6 +314,7 @@ export async function syncPrayerNotifications({ now, coords }: { now: Date; coor
         trigger: iqamahTrigger(fire.date),
       });
     }
+    await updateRenewReminder('prayer', latestFireDate([...adhanFires, ...iqamahFires]), now);
   } catch (error) {
     storage.remove(storageKeys.salah.notificationsSync);
     storage.remove(settingsKey);
@@ -314,9 +334,15 @@ function serialized<T>(task: () => Promise<T>): Promise<T> {
   return run;
 }
 
-/** The coordinates a sync needs: read only when a prayer is on, so a GPS fix is never requested for nothing. */
+/**
+ * The coordinates a sync needs: read only when a prayer is on, so a GPS fix is never requested for nothing. When the
+ * location cannot be read, the last known place stands in, so a missing fix never wipes the schedule (ADR 0083, 0086).
+ */
 async function coordinatesForSync(options: CoordinatesOptions = {}): Promise<SyncCoordinates | null> {
-  return enabledPrayers().length > 0 ? getCoordinates(options) : null;
+  if (enabledPrayers().length === 0) {
+    return null;
+  }
+  return (await resolvePrayerCoordinates(options)).coords;
 }
 
 /**

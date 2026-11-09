@@ -7,6 +7,7 @@ import {
   loadPrayerLocation,
   peekPrayerLocation,
   reloadPrayerLocation,
+  seedPrayerLocation,
   type PrayerLocationSnapshot,
 } from '../data/location-cache';
 import { PrayerTimesOutput, NextPrayerName, nextPrayer, timesFor } from '../data/prayer-times';
@@ -32,6 +33,7 @@ const EMPTY_SNAPSHOT: PrayerLocationSnapshot = {
   source: 'auto',
   coords: null,
   permissionStatus: Location.PermissionStatus.UNDETERMINED,
+  stale: false,
 };
 
 /**
@@ -40,7 +42,8 @@ const EMPTY_SNAPSHOT: PrayerLocationSnapshot = {
  * read lands, so a screen can show a loading state instead of the no-location state.
  */
 export const usePrayerLocation = (): PrayerLocation => {
-  const [snapshot, setSnapshot] = useState<PrayerLocationSnapshot | null>(() => peekPrayerLocation());
+  // The saved last place seeds the first render (ADR 0086); the load below still runs and replaces it.
+  const [snapshot, setSnapshot] = useState<PrayerLocationSnapshot | null>(() => seedPrayerLocation());
   const [pending, setPending] = useState(snapshot === null);
 
   const load = useCallback(async () => {
@@ -95,6 +98,7 @@ export const usePrayerLocation = (): PrayerLocation => {
     const needsRead =
       peekPrayerLocation() === null ||
       view?.coords === null ||
+      view?.stale === true ||
       view?.permissionStatus !== Location.PermissionStatus.GRANTED;
     if (!needsRead) {
       return;
@@ -124,6 +128,7 @@ export const usePrayerLocation = (): PrayerLocation => {
     permissionStatus: view.permissionStatus,
     refresh,
     source: view.source,
+    stale: view.stale,
   };
 };
 

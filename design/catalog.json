@@ -175,6 +175,7 @@
     "HadithCollBooks",
     "HadithCollChapterHadith",
     "HadithCollChapters",
+    "HadithCollChaptersPartial",
     "HadithCollCovers",
     "HadithCollCoversSepia",
     "HadithCollDownload",
@@ -182,14 +183,17 @@
     "HadithCollError",
     "HadithCollExpanded",
     "HadithCollExpandedReader",
+    "HadithCollExpandedReaderExplained",
     "HadithCollList",
     "HadithCollLoading",
     "HadithCollMenu",
     "HadithCollOffline",
     "HadithCollOfflineDownloaded",
     "HadithCollReader",
+    "HadithCollReaderExplained",
     "HadithCollReaderGrade",
     "HadithCollReaderPlain",
+    "HadithCollReaderTwoExplanations",
     "HadithCollSaved",
     "HadithCollSavedEmpty",
     "HadithCollSavedUnverified",
@@ -3222,12 +3226,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "Downloads",
-     "untranslated": 0
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "Downloads",
-     "untranslated": 0
+     "untranslated": 1
     }
    },
    "frames": [
@@ -3747,6 +3751,44 @@
    ]
   },
   {
+   "id": "HadithCollChaptersPartial",
+   "stack": "hadith",
+   "caption": "Partly chaptered book (OpenITI chapters, option B): accepted chapters plus unchaptered runs in place",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollChaptersPartial",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollChaptersPartialDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollChaptersPartialEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollChaptersPartialEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollChaptersPartial",
+    "HadithCollChaptersPartialDark",
+    "HadithCollChaptersPartialEnglish"
+   ]
+  },
+  {
    "id": "HadithCollCovers",
    "stack": "hadith",
    "caption": "Hadith collection covers · light · Arabic",
@@ -3843,12 +3885,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollDownload",
-     "untranslated": 4
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollDownload",
-     "untranslated": 4
+     "untranslated": 0
     }
    },
    "frames": [
@@ -3915,12 +3957,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollError",
-     "untranslated": 2
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollError",
-     "untranslated": 2
+     "untranslated": 0
     }
    },
    "frames": [
@@ -3969,7 +4011,7 @@
   {
    "id": "HadithCollExpandedReader",
    "stack": "hadith",
-   "caption": "Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel",
+   "caption": "Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel · hadith text 28/56 pt",
    "status": "source",
    "kind": "window",
    "fixed": true,
@@ -3993,16 +4035,55 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollExpandedReader",
-     "untranslated": 6
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollExpandedReader",
-     "untranslated": 6
+     "untranslated": 1
     }
    },
    "frames": [
     "HadithCollExpandedReader"
+   ]
+  },
+  {
+   "id": "HadithCollExpandedReaderExplained",
+   "stack": "hadith",
+   "caption": "Hadith reader · expanded window · explanation cards in the side panel · hadith text 28/56 pt",
+   "status": "source",
+   "kind": "window",
+   "fixed": true,
+   "drawnSize": "expanded",
+   "window": [
+    1194,
+    834
+   ],
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollExpandedReaderExplained",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollExpandedReaderExplained",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollExpandedReaderExplained",
+     "untranslated": 8
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollExpandedReaderExplained",
+     "untranslated": 8
+    }
+   },
+   "frames": [
+    "HadithCollExpandedReaderExplained"
    ]
   },
   {
@@ -4141,12 +4222,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollOffline",
-     "untranslated": 3
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollOffline",
-     "untranslated": 3
+     "untranslated": 1
     }
    },
    "frames": [
@@ -4192,7 +4273,7 @@
   {
    "id": "HadithCollReader",
    "stack": "hadith",
-   "caption": "Hadith reader · Arabic",
+   "caption": "Hadith reader · Arabic · hadith text 28/56 pt",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -4228,6 +4309,44 @@
    ]
   },
   {
+   "id": "HadithCollReaderExplained",
+   "stack": "hadith",
+   "caption": "Hadith reader · Arabic · explanation card under the hadith (HadeethEnc), top of the page · hadith text 28/56 pt",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollReaderExplained",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "HadithCollReaderExplainedDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "HadithCollReaderExplainedEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderExplainedEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "HadithCollReaderExplained",
+    "HadithCollReaderExplainedDark",
+    "HadithCollReaderExplainedEnglish"
+   ]
+  },
+  {
    "id": "HadithCollReaderGrade",
    "stack": "hadith",
    "caption": "Hadith reader · future state: grade (not built, labelled) · Arabic",
@@ -4251,12 +4370,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollReaderGrade",
-     "untranslated": 2
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollReaderGrade",
-     "untranslated": 2
+     "untranslated": 1
     }
    },
    "frames": [
@@ -4287,16 +4406,52 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollReaderPlain",
-     "untranslated": 1
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollReaderPlain",
-     "untranslated": 1
+     "untranslated": 0
     }
    },
    "frames": [
     "HadithCollReaderPlain"
+   ]
+  },
+  {
+   "id": "HadithCollReaderTwoExplanations",
+   "stack": "hadith",
+   "caption": "Hadith reader · Arabic · two explanation cards stacked (HadeethEnc, then a classical commentary), scrolled to the second card · hadith text 28/56 pt",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "HadithCollReaderTwoExplanations",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "HadithCollReaderTwoExplanations",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderTwoExplanations",
+     "untranslated": 8
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "HadithCollReaderTwoExplanations",
+     "untranslated": 8
+    }
+   },
+   "frames": [
+    "HadithCollReaderTwoExplanations"
    ]
   },
   {
@@ -4359,12 +4514,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollSavedEmpty",
-     "untranslated": 3
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollSavedEmpty",
-     "untranslated": 3
+     "untranslated": 0
     }
    },
    "frames": [
@@ -4395,12 +4550,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollSavedUnverified",
-     "untranslated": 6
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollSavedUnverified",
-     "untranslated": 6
+     "untranslated": 0
     }
    },
    "frames": [
@@ -4431,12 +4586,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollSearch",
-     "untranslated": 5
+     "untranslated": 3
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollSearch",
-     "untranslated": 5
+     "untranslated": 3
     }
    },
    "frames": [
@@ -4467,12 +4622,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollSearchEmpty",
-     "untranslated": 2
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollSearchEmpty",
-     "untranslated": 2
+     "untranslated": 1
     }
    },
    "frames": [
@@ -4503,12 +4658,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollSearchResults",
-     "untranslated": 6
+     "untranslated": 5
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollSearchResults",
-     "untranslated": 6
+     "untranslated": 5
     }
    },
    "frames": [
@@ -4577,12 +4732,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "HadithCollSources",
-     "untranslated": 1
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "HadithCollSources",
-     "untranslated": 1
+     "untranslated": 0
     }
    },
    "frames": [

@@ -19,6 +19,7 @@ You review the working-tree diff (`git diff` plus untracked files from `git stat
 - ADR 0014, and the non-negotiables in `CLAUDE.md`
 - the Laravel architecture tests (`apps/api/tests/Unit/ArchitectureTest.php`) and laravel-standards
 - the mobile structure rules: one component per file with its colocated test, screens only compose, tokens, i18n
+- UI designs follow ADR 0087: drawn in `screens/frames/…`, rebuilt into `design/`, and no generated `design/` file hand-edited
 - `user.db` migrations are additive
 - no religious text anywhere in code, fixtures or tests
 - tests assert real behaviour

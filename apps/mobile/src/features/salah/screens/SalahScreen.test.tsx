@@ -10,7 +10,7 @@ import { usePlayerStore } from '@/features/audio/playerStore';
 
 import { flatStyle, renderUi } from '../../../../jest/render-ui';
 
-import { setManualLocation } from '../data/location';
+import { requestLocationPermissions, setManualLocation } from '../data/location';
 import { SalahScreen } from './SalahScreen';
 
 const INSETS = { top: 59, right: 0, bottom: 34, left: 0 };
@@ -161,6 +161,28 @@ describe('SalahScreen', () => {
 
     await fireEvent.press(view.getByTestId('salah-no-location-action'));
     expect(view.getByTestId('salah-location-sheet')).toBeTruthy();
+  });
+
+  it('shows the saved last place with its times and the last-known label, not the empty state (ADR 0086)', async () => {
+    mockLocation.mockReturnValue({
+      source: 'auto',
+      coords: RIYADH,
+      cityId: undefined,
+      cityName: undefined,
+      permissionStatus: 'undetermined',
+      pending: false,
+      stale: true,
+      refresh: jest.fn(),
+    } as never);
+
+    const view = await renderUi(screen());
+
+    expect(view.getByTestId('salah-hero-place')).toHaveTextContent(/آخر موقع معروف/);
+    expect(view.getByTestId('salah-hero-name')).toHaveTextContent('العصر');
+    expect(view.queryByTestId('salah-locating')).toBeNull();
+    expect(view.queryByTestId('salah-no-location')).toBeNull();
+    // A seeded place never opens the system prompt: the place is there, so there is nothing to ask for yet.
+    expect(requestLocationPermissions).not.toHaveBeenCalled();
   });
 
   it('shows the loading state, not the empty state, while the location read is pending with permission granted', async () => {

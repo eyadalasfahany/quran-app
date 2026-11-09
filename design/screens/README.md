@@ -1,15 +1,13 @@
 # Taybah — design screens
 
-Team-share design catalog. **Humans browse HTML**; **models read catalogs** (not megabytes of markup).
+Build input for the design review pages. **Humans review at `design/<stack>/<Screen>/index.html`** (ADR 0087); **models read catalogs** (not megabytes of markup).
 
 Generated from `screens/` (the design source, ADR 0075); edit frames there.
 
-## Share with the team
+## Review
 
-1. Open [`index.html`](index.html) (or host this folder).
-2. Deep-link any frame: [`viewer.html?id=Main`](viewer.html?id=Main).
-3. Stack lists: [`frames/<stack>/`](frames/) — each has `CATALOG.md`.
-4. Devices / sizes / notifications / Wear OS: [`extras/`](extras/).
+1. Review pages: `design/<stack>/<Screen>/index.html` (ADR 0087). Nothing here is for review.
+2. Stack lists: [`frames/<stack>/`](frames/) — each has `CATALOG.md`.
 
 ## For AI / agents (token budget)
 
@@ -25,7 +23,7 @@ Never open `common/styles.css` or many frames unless asked.
 
 ## Stats
 
-- **230** frames · **23** stacks · **7** deduped image assets
+- **238** frames · **23** stacks · **7** deduped image assets
 - Base64 stripped from markup (~**5782 KB** not repeated per Salah frame)
 
 ## Layout
@@ -33,11 +31,9 @@ Never open `common/styles.css` or many frames unless asked.
 ```
 design/screens/
   AGENTS.md CATALOG.md frames.tsv frames.json
-  index.html  viewer.html?id=FrameId
   common/     shared CSS
   assets/     extracted images (once)
   frames/<stack>/   lean partials + CATALOG.md
-  extras/     devices, sizes, notifications, wear, components
   scripts/build.py
 ```
 

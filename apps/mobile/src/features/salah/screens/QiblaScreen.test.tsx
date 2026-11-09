@@ -57,6 +57,7 @@ const mockLocationWithCoords = {
   permissionStatus: Location.PermissionStatus.GRANTED,
   refresh: jest.fn(() => Promise.resolve()),
   source: 'auto' as const,
+  stale: false,
 };
 
 jest.mock('../hooks', () => ({ usePrayerLocation: jest.fn(() => mockLocationWithCoords) }));

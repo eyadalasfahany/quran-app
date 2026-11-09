@@ -6,7 +6,7 @@ import { useTheme } from '@/core/theme';
 
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
-import { uiTextProps } from './textStyles';
+import { inputTextAlignment, uiTextProps } from './textStyles';
 import { useContrastColors } from './useContrastColors';
 
 const MAGNIFIER = { ios: 'magnifyingglass', android: 'search' } as const;
@@ -67,7 +67,7 @@ export function SearchField({
           theme.text.body,
           // Natural alignment follows the language iOS picked at launch, which lags an in-app switch to English. Under RTL
           // natural is right already, and an explicit 'left' would leave the empty field's caret on the left.
-          { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0, textAlign: I18nManager.isRTL ? undefined : 'left' },
+          { color: colors.ink, flex: 1, minHeight: theme.size.touchTarget, paddingVertical: 0, ...inputTextAlignment(I18nManager.isRTL) },
         ]}
         testID={testID ? `${testID}-input` : undefined}
         value={value}

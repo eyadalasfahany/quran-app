@@ -148,6 +148,10 @@ exports[`DownloadsScreen matches RTL render tree 1`] = `
                 "fontFamily": "Amiri-Bold",
                 "fontSize": 28,
                 "lineHeight": 36,
+                "marginBottom": -7,
+                "marginTop": -7,
+                "paddingBottom": 7,
+                "paddingTop": 7,
                 "textAlign": "left",
               }
             }

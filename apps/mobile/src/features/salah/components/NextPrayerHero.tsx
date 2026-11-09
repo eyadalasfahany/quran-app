@@ -44,9 +44,10 @@ export function NextPrayerHero({
   const place = [time, city, sourceLabel].filter(Boolean).join(' · ');
   const fraction = Math.min(1, Math.max(0, progress));
   const track = { borderRadius: theme.radius.progress, height: TRACK_HEIGHT };
-  const accessibilityLabel = t('common.a11yPair', {
+  const accessibilityLabel = t('common.a11yTriple', {
     label: `${t('salah.next')}: ${prayerName} ${time}`,
     title: t('salah.remaining', { time: remaining }),
+    detail: sourceLabel,
   });
 
   return (

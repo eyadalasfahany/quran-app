@@ -99,7 +99,7 @@
       "^app-group-store$": "<rootDir>/modules/app-group-store/src/index.ts"
     },
     "testTimeout": 30000,
-    "maxWorkers": "50%",
-    "workerIdleMemoryLimit": "1GB"
+    "maxWorkers": 3,
+    "workerIdleMemoryLimit": "768MB"
   }
 }

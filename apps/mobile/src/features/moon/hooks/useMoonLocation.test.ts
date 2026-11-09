@@ -14,6 +14,7 @@ describe('useMoonLocation', () => {
     jest.spyOn(locationCache, 'peekPrayerLocation').mockReturnValue(null);
     const load = jest.spyOn(locationCache, 'loadPrayerLocation').mockResolvedValue({
       source: 'manual',
+      stale: false,
       coords: { lat: 21.4, lng: 39.8 },
       cityId: 'makkah',
       cityName: { ar: 'FIXTURE city 1 — not a dhikr', en: 'FIXTURE city 1 — not a dhikr' },

@@ -16,6 +16,7 @@ You are the planner for Taybah, an Arabic-first Quran app (Expo and Laravel mono
 - the decisions that need the developer: licensing, religious interpretation, navigation, destructive migrations, ADR conflicts. List them; never decide them.
 - steps small enough to review
 - the tests for each step
+- for UI: new or changed designs follow ADR 0087 (draw in `screens/frames/…`, rebuild, review at `design/<stack>/<Screen>/index.html`; generated `design/` files are never hand-edited)
 - release blockers
 
 Base every claim on files you read, and cite their paths.

@@ -2,7 +2,7 @@
 
 Medium + expanded windows
 
-7 frames · open in viewer: `viewer.html?id=<FrameId>`
+7 frames · review page: `design/expanded/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|

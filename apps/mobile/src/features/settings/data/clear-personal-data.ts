@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { clearLocalUserData, SCHEDULE_CACHE_KEYS } from '@/core/db/user/clear';
-import { storage } from '@/core/storage/mmkv';
+import { storage, storageKeys } from '@/core/storage/mmkv';
 import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
 import { syncDailyReminder } from '@/features/notifications/reminder-service';
 import { resyncGoalReminders } from '@/features/reminders/data/goal-sync';
@@ -79,6 +79,9 @@ export async function clearPersonalData(): Promise<ClearPersonalDataResult> {
   };
 
   await step('notifications.cancel', cancelPendingNotifications);
+  storage.remove(storageKeys.salah.lastAutoCoords);
+  // The renew state records when each schedule ran out; the resyncs below rebuild it from the empty state.
+  storage.remove(storageKeys.notifications.renew);
   await step('reminders.azkar', () => resyncAzkarReminders());
   await step('reminders.goals', () => resyncGoalReminders());
   await step('reminders.daily', () => syncDailyReminder());

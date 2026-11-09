@@ -8,7 +8,10 @@ import { timesFor } from '@/features/salah/data/prayer-times';
 import { writeFridayReminder, writeMisbahaReminder } from './goal-settings';
 import { resyncGoalReminders, resyncGoalRemindersIfNeeded } from './goal-sync';
 
-jest.mock('@/features/salah/data/location', () => ({ getCoordinates: jest.fn() }));
+jest.mock('@/features/salah/data/location', () => ({
+  ...jest.requireActual<typeof import('@/features/salah/data/location')>('@/features/salah/data/location'),
+  getCoordinates: jest.fn(),
+}));
 jest.mock('@/features/azkar/reminders/last-known-coordinates', () => ({ readLastKnownCoordinates: jest.fn() }));
 jest.mock('@/features/salah/data/prayer-times', () => ({ timesFor: jest.fn() }));
 
@@ -60,6 +63,16 @@ describe('goal reminder sync', () => {
 
     expect(readLastKnownCoordinates).toHaveBeenCalled();
     expect(getCoordinates).not.toHaveBeenCalled();
+  });
+
+  it('a foreground check with no last known position uses the saved place (ADR 0086)', async () => {
+    writeFridayReminder({ enabled: true, mode: 'dhuhr', clockTime: null });
+    storage.set(storageKeys.salah.lastAutoCoords, '24.71,46.68');
+    jest.mocked(readLastKnownCoordinates).mockResolvedValueOnce(null);
+
+    await resyncGoalRemindersIfNeeded(MORNING);
+
+    expect(timesFor).toHaveBeenCalledWith(expect.any(Date), { lat: 24.71, lng: 46.68 });
   });
 
   it('re-plans when the location changes, even on the same day', async () => {

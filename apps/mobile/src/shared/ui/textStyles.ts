@@ -1,5 +1,5 @@
 import { quranTypeScale, typeScale, type QuranTypeToken, type TypeToken } from '@quran/design-tokens';
-import type { TextProps, TextStyle } from 'react-native';
+import { Platform, type TextProps, type TextStyle } from 'react-native';
 
 import { displayFontFamilies, quranFontFamily, type UiTypeToken } from '@/core/theme';
 
@@ -41,6 +41,13 @@ export const latinTextDirection: TextStyle = {
   textAlign: 'left',
   writingDirection: 'ltr',
 };
+
+// A text field's alignment. On iOS under RTL, natural alignment follows the system language, not forceRTL, so an Arabic
+// field on an English phone put its placeholder on the left. The explicit Arabic direction keeps it on the right.
+// Android keeps its natural alignment under RTL (no alignment key).
+export function inputTextAlignment(rtl: boolean): TextStyle {
+  return rtl ? (Platform.OS === 'ios' ? arabicTextDirection : {}) : { textAlign: 'left' };
+}
 
 // Quran text ignores the system text size and follows the reader's own 80–160% setting.
 export function quranText(token: QuranTypeToken, fontScale = 1, family: string = quranFontFamily): TextStyle {
