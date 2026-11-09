@@ -54,7 +54,7 @@ def load_wav16k(path: Path) -> np.ndarray:
             "-c:a", "pcm_s16le", str(out),
         ]
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True)
+            proc = subprocess.run(cmd, capture_output=True, text=True, errors="replace")  # non-UTF-8 tags
         except FileNotFoundError as exc:
             raise RuntimeError("ffmpeg is needed to read this file and was not found on PATH") from exc
         if proc.returncode != 0:

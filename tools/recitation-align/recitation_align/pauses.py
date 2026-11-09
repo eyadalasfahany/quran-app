@@ -30,7 +30,8 @@ def detect_pauses(audio: Path, noise_db: float = DEFAULT_NOISE_DB,
                   min_silence_s: float = DEFAULT_MIN_SILENCE_S) -> list[tuple[float, float]]:
     cmd = ["ffmpeg", "-hide_banner", "-nostats", "-i", str(audio), "-map", "0:a:0", "-vn",
            "-af", f"silencedetect=noise={noise_db}dB:d={min_silence_s}", "-f", "null", "-"]
-    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    # errors="replace": ffmpeg echoes the file's tags, which some MP3s carry in a non-UTF-8 encoding
+    proc = subprocess.run(cmd, capture_output=True, text=True, errors="replace", check=False)
     if proc.returncode != 0:
         raise RuntimeError(f"ffmpeg failed on {audio}: {proc.stderr[-500:]}")
     return parse_silencedetect(proc.stderr)

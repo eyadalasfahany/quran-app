@@ -40,7 +40,7 @@ def measure_duration_ms(path: Path, ffmpeg: str = "ffmpeg") -> int:
         "-f", "null",
         "-",
     ]
-    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    result = subprocess.run(command, capture_output=True, text=True, errors="replace", check=False)  # non-UTF-8 tags
     if result.returncode != 0:
         detail = result.stderr.strip()[:300]
         raise AudioError(f"ffmpeg could not decode {path.name}: {detail}")
