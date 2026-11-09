@@ -9,8 +9,8 @@ HEX16 = re.compile(r"^[0-9a-f]{16}$")
 
 
 def test_tool_version_is_package_version_plus_quality_version():
-    assert QUALITY_VERSION == "q8"
-    assert tool_version() == "0.1.0+q8"
+    assert QUALITY_VERSION == "q9"
+    assert tool_version() == "0.1.0+q9"
 
 
 def test_every_gate_name_is_in_params():
@@ -19,7 +19,7 @@ def test_every_gate_name_is_in_params():
         "PACE_BREAK", "ADJ_JUMP", "GAP_G3_RUN", "ASR_EVERY", "CUT_SPACING_S", "SCORE_NEAR", "SCORE_FAR",
         "BACK_WORDS", "PACE", "SLOW_WORDS", "EDGE_WORDS", "EDGE_S", "MIN_CONF", "CUT_BACK_FRAMES", "MIN_CP_PER_S",
         "TAIL_MAX_S", "G3_PRE_S", "G3_POST_S", "G3_SCORE", "G3_REPROBE", "G3_NEXT_WORDS", "G3_CUT_AVOID_S", "G3_TIE_DELTA", "G3_TIE_WORDS",
-        "G3_MIN_WORDS", "G3_MAX_S", "ELONG_SCORE", "G4_MIN", "G4_PER", "G4_PRE_S", "G4_POST_S", "G5_SHARE", "G5_TOL_MS", "G5_MEDIAN_MS", "G5_MIN_N",
+        "G3_MIN_WORDS", "G3_MAX_S", "ELONG_SCORE", "G2_TAIL_S", "G4_MIN", "G4_PER", "G4_PRE_S", "G4_POST_S", "G5_SHARE", "G5_TOL_MS", "G5_MEDIAN_MS", "G5_MIN_N",
         "FLOOR", "NULL_SHARE", "STRETCH_X", "STRETCH_S", "DENSE_WIN_S", "DENSE_HOP_S", "BACK_PENALTY",
         "CTC_MARGIN", "VITERBI_PENALTY", "VITERBI_MAX_BACK", "STEP_PROBE_S", "STEP_SCORE", "REPEAT_MODE", "WORD_START_SHIFT_MS", "CAP_NO_HIGHLIGHT", "CAP_SEG_NULL",
         "CAP_UNAVAILABLE",
@@ -37,9 +37,9 @@ def test_params_digest_is_sixteen_hex_and_stable():
     assert digest == params_digest()
 
 
-def test_params_digest_is_pinned_for_q8():
+def test_params_digest_is_pinned_for_q9():
     # Tripwire: a change to PARAMS must bump QUALITY_VERSION and this pin together.
-    assert params_digest() == "eafd0ee725f84f14"
+    assert params_digest() == "18e15908f285b646"
 
 
 def test_params_digest_changes_when_a_parameter_changes(monkeypatch):
@@ -118,3 +118,7 @@ def test_q8_writes_repeats_as_positions_and_moves_word_starts_earlier():
 def test_q7_adds_the_proposer_and_the_near_tie():
     assert PARAMS["VITERBI_PENALTY"] == 30.0 and PARAMS["VITERBI_MAX_BACK"] == 12
     assert PARAMS["G3_TIE_DELTA"] == 2 and PARAMS["G3_TIE_WORDS"] == 3
+
+
+def test_q9_hears_the_end_of_the_audio_when_the_last_word_is_unsure():
+    assert PARAMS["G2_TAIL_S"] == 25.0

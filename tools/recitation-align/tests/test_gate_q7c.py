@@ -32,10 +32,11 @@ def test_a_stretch_over_an_unrepresented_repeat_nulls_its_ayah_and_the_surah_sti
     assert rec["verdict"] == "pass" and rec["segments_null"] == [4]
 
 
-def test_it_counts_in_the_null_share():
-    world, words = short_repeat_world(n_ayahs=8)  # 1 of 8 ayahs nulled is above NULL_SHARE
+def test_it_counts_in_the_null_share_but_one_ayah_alone_never_fails_a_short_surah():
+    world, words = short_repeat_world(n_ayahs=8)  # 1 of 8 ayahs nulled: above NULL_SHARE, but alone (q9)
     rec, _ = V.gate_world(world, words, n_ayahs=8)
-    assert rec["verdict"] == "no_highlight" and rec["reasons"] == ["segments-null-share"]
+    assert rec["verdict"] in ("pass", "repaired") and len(rec["segments_null"]) == 1
+    assert rec["checks"]["G6"]["share"] == 0.125
 
 
 def test_an_unresolved_repeat_needs_ok_starts_on_both_sides_and_an_earlier_word_heard():

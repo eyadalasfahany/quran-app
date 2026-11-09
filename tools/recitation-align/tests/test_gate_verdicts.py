@@ -336,11 +336,13 @@ def tiny_words(ayahs, gap_ms=10000):
 
 
 class Hear:
-    """A fake transcriber: a clip starting near an ayah start hears its first words; the last-word clip hears
-    `last` (default the true last word)."""
+    """A fake transcriber: a clip starting near an ayah start hears its first words; the last-word clips (short and
+    long) hear `last` (default the true last word); a clip ending at `tail_end` (G2's q9 tail) hears `tail`
+    (default the whole last ayah)."""
 
-    def __init__(self, ayahs, words, last=None, ayah_text=None):
+    def __init__(self, ayahs, words, last=None, ayah_text=None, tail=None, tail_end=None):
         self.ayahs, self.words, self.last, self.ayah_text = ayahs, words, last, ayah_text
+        self.tail, self.tail_end = tail, tail_end
         self.starts = {}
         for w in words:
             self.starts[w["start_ms"]] = w
@@ -349,9 +351,12 @@ class Hear:
         out = []
         last = self.words[-1]
         for s, e in clips:
-            if abs((e - s) - (PARAMS["G4_PRE_S"] + PARAMS["G4_POST_S"])) < 1e-6:
-                t = s + PARAMS["G4_PRE_S"]
-                text = self.last if self.last is not None and abs(t * 1000 - last["start_ms"]) < 1 else last["word"]
+            if self.tail_end is not None and abs(e - self.tail_end) < 1e-6:
+                text = self.tail if self.tail is not None else self.ayahs[(SURAH, last["ayah"])]
+            elif abs((s + PARAMS["G4_PRE_S"]) * 1000 - last["start_ms"]) < 1:
+                text = self.last if self.last is not None else last["word"]
+            elif abs((e - s) - (PARAMS["G4_PRE_S"] + PARAMS["G4_POST_S"])) < 1e-6:
+                text = last["word"]
             else:
                 a = round((s + PARAMS["G3_PRE_S"]) * 1000 / 10000)
                 text = self.ayah_text(a) if self.ayah_text else " ".join(self.ayahs[(SURAH, a)].split()[:5])
@@ -377,8 +382,42 @@ def test_end_coverage_fails_on_a_wrong_last_word():
     other = words[-4]["word"]
     r = run_end(ayahs, words, Hear(ayahs, words, last=other), duration_s=words[-1]["end_ms"] / 1000 + 3)
     assert r["last_word"] == BAD and r["status"] == "fail"
-    empty = run_end(ayahs, words, Hear(ayahs, words, last=""), duration_s=words[-1]["end_ms"] / 1000 + 3)
+    end = words[-1]["end_ms"] / 1000 + 3
+    empty = run_end(ayahs, words, Hear(ayahs, words, last="", tail="", tail_end=end), duration_s=end)
     assert empty["last_word"] == UNSURE and empty["status"] == "fail"
+
+
+def test_end_coverage_unsure_on_both_clips_records_whether_the_tail_ends_on_the_last_words():
+    # q9 (Q10): one-word clips are often misheard; G2 still fails (the end repair runs first) and records the tail
+    ayahs = tiny_ayahs()
+    words = tiny_words(ayahs)
+    end = words[-1]["end_ms"] / 1000 + 3
+    r = run_end(ayahs, words, Hear(ayahs, words, last=GIBBERISH, tail_end=end), duration_s=end)
+    assert r["last_word"] == UNSURE and r["status"] == "fail" and r["tail_words"] == OK
+    # a closing du'a (words not in the surah) after the last words
+    tail = ayahs[(SURAH, words[-1]["ayah"])] + " " + GIBBERISH
+    r = run_end(ayahs, words, Hear(ayahs, words, last=GIBBERISH, tail=tail, tail_end=end), duration_s=end)
+    assert r["tail_words"] == UNSURE and r["status"] == "fail"
+    # a BAD clip (an earlier word heard at the start) never reaches the tail
+    r = run_end(ayahs, words, Hear(ayahs, words, last=words[-4]["word"], tail_end=end), duration_s=end)
+    assert r["last_word"] == BAD and "tail_words" not in r
+
+
+def test_after_repairs_an_unverified_last_word_with_a_verified_ending_nulls_only_the_last_ayah():
+    g2 = {"status": "fail", "last_ayah": OK, "last_word": UNSURE, "tail_ok": True, "tail_words": OK}
+    assert gate._g2_last_word_only(g2)
+    assert not gate._g2_last_word_only({**g2, "tail_words": UNSURE})
+    assert not gate._g2_last_word_only({**g2, "last_word": BAD})
+    assert not gate._g2_last_word_only({**g2, "last_ayah": UNSURE})
+    assert not gate._g2_last_word_only({**g2, "tail_ok": False})
+
+
+def test_the_tail_verdict_needs_the_last_two_words_at_the_end():
+    ctx = [placeholder(i, 5) for i in (1, 2, 3, 4)]
+    assert gate._tail_verdict(" ".join(ctx), ctx)["verdict"] == OK
+    assert gate._tail_verdict(" ".join(ctx[:3]), ctx)["verdict"] == UNSURE  # the last word is not heard
+    assert gate._tail_verdict(" ".join(ctx) + " " + ctx[0], ctx)["verdict"] == UNSURE  # something after it
+    assert gate._tail_verdict("", ctx)["verdict"] == UNSURE
 
 
 def test_end_coverage_fails_on_a_wrong_last_ayah_start():
@@ -889,3 +928,21 @@ def test_a_failing_neighbour_may_move_inside_the_next_ayahs_repair_and_must_then
     assert not any(r == [f"{SURAH}:4", f"{SURAH}:6"] for r, _ in regions)  # 5 was fixed already: not retried
     fixed = next(r for r in rec["repairs"] if r["accepted"])
     assert abs(fixed["starts"]["5"][1] - world.first(5, 1)[3]) <= 20 and abs(fixed["starts"]["4"][1] - world.first(4, 1)[3]) <= 20
+
+
+def test_q9_an_unverified_last_word_needs_repair_first_then_ships_without_the_last_ayahs_segments():
+    g2 = {**good_g2(), "status": "fail", "last_word": UNSURE, "tail_words": OK}
+    first = valid(verdict(g2=g2))
+    assert first["verdict"] == "no_highlight" and first["reasons"] == ["needs-repair"]
+    after = valid(verdict(g2=g2, repairs=[]))
+    assert after["verdict"] == "pass" and after["segments_null"] == [30]
+    assert valid(verdict(g2={**g2, "tail_words": UNSURE}, repairs=[]))["verdict"] == "no_highlight"
+
+
+def test_q9_one_null_ayah_alone_never_fails_a_short_surah():
+    words = make_words(n_ayahs=4)
+    g2 = {**good_g2(), "status": "fail", "last_word": UNSURE, "tail_words": OK}
+    rec = valid(verdict(words, g2=g2, c=comp(ayah_count=4), repairs=[]))
+    assert rec["verdict"] == "pass" and rec["segments_null"] == [4]
+    two = [dict(w, confidence=0.1) if w["ayah"] == 1 else w for w in words]  # and ayah 1 below the G6 floor
+    assert valid(verdict(two, g2=g2, c=comp(ayah_count=4), repairs=[]))["reasons"] == ["segments-null-share"]

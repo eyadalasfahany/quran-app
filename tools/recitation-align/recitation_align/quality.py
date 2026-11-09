@@ -13,7 +13,8 @@ from pathlib import Path
 
 from . import __version__
 
-QUALITY_VERSION = "q8"  # q8 (Q7g, Q7h): repeats written as positions again, word starts moved 80 ms earlier
+QUALITY_VERSION = "q9"  # q9 (Q10): G2's unsure last word nulls the last ayah when the audio ends on its words
+# q8 (Q7g, Q7h): repeats written as positions again, word starts moved 80 ms earlier
 # q7 (Q7g): the CTC repeat proposer, the G3 near-tie, Al-Fatiha's opening, G5 sets repeats aside
 
 PARAMS: dict = {
@@ -62,6 +63,8 @@ PARAMS: dict = {
     # G3_PRE_S + G3_POST_S and at most G3_MAX_S, so a slow reciter's clip is not one or two words long.
     "G3_MIN_WORDS": 5,
     "G3_MAX_S": 12.0,
+    # G2 (q9): the end of the audio heard as a whole when the last-word clips are unsure (Whisper hears 30 s)
+    "G2_TAIL_S": 25.0,
     # G4 (screen only)
     "G4_MIN": 20,
     "G4_PER": 40,

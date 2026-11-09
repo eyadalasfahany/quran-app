@@ -443,7 +443,7 @@ def end_coverage(wav, words: list[dict], surah: int, ayahs: dict, transcribe_cli
     texts = _run(wav, [(max(0.0, t - PARAMS["G4_PRE_S"]), t + PARAMS["G4_POST_S"])], transcribe_clips, batch, timing)
     ctx = [norm(w["word"]) for w in spoken[-4:]]
     word = _last_word_verdict(texts[0], ctx)
-    long_used = False
+    long_used, tail_words = False, None
     if word["verdict"] != OK:
         # Q7d: an elongated last word does not fit the short clip; one longer clip (as long as a G3 clip) is tried.
         # The rule is the same: the match must begin in the last word, so an early or late start still fails.
@@ -452,6 +452,18 @@ def end_coverage(wav, words: list[dict], surah: int, ayahs: dict, transcribe_cli
         again = _last_word_verdict(long[0], ctx)
         if again["verdict"] == OK:
             word, long_used = again, True
+        elif again["verdict"] == BAD:
+            word = again  # an earlier word is heard at the last word's start: a real misplacement
+        else:
+            # q9 (Q10): a clip that holds one word is often misheard (Abadh at q8: 13 of 14 such surahs, while the end
+            # of the audio heard as a whole ended on the right words). Unsure on both clips, the last G2_TAIL_S of the
+            # audio (from the last ayah's start at the earliest) is heard. G2 still fails, so the end repair runs
+            # first; `surah_verdict` then writes the last ayah without segments when the tail ends on the surah's
+            # last two words (its start is unverified, its ayah is not).
+            first = min(w["start_ms"] for w in spoken if w["ayah"] == last_ayah) / 1000
+            tail = _run(wav, [(max(first, duration_s - PARAMS["G2_TAIL_S"]), duration_s)], transcribe_clips, batch,
+                        timing)
+            tail_words = _tail_verdict(tail[0], ctx)["verdict"]
     tail_s = round(duration_s - max(w["end_ms"] for w in spoken) / 1000, 1)
     trailing = completeness.get("trailing_s") or 0.0
     tail_ok = tail_s <= PARAMS["TAIL_MAX_S"] or tail_s <= trailing + TAIL_TOL_S
@@ -462,12 +474,37 @@ def end_coverage(wav, words: list[dict], surah: int, ayahs: dict, transcribe_cli
            "clips": timing["clips"], "seconds": round(timing["seconds"], 3)}
     if long_used:
         out["last_word_clip"] = "long"
+    if tail_words is not None:
+        out["tail_words"] = tail_words
     return out
+
+
+TAIL_END_CHARS = 2  # the tail's match may stop this many characters before its end (a trailing letter misheard)
+
+
+def _tail_verdict(text: str, ctx: list[str]) -> dict:
+    """q9 G2 fallback: OK when `text` (the end of the audio) ends with the last two words of `ctx` at score >=
+    G3_SCORE; UNSURE otherwise (a closing du'a or anything after them, or nothing heard, keeps the surah failing)."""
+    hyp = norm(text)
+    target = " ".join(ctx[-2:])
+    if not hyp:
+        return {"verdict": UNSURE, "score": 0.0}
+    al = fuzz.partial_ratio_alignment(target, hyp)
+    score = float(al.score)
+    ok = score >= PARAMS["G3_SCORE"] and al.dest_end >= len(hyp) - TAIL_END_CHARS
+    return {"verdict": OK if ok else UNSURE, "score": score}
 
 
 def _last_word_post(post: float | None) -> float:
     """Seconds the long last-word clip runs after the word's start: a G3 clip's length, at least G4_POST_S."""
     return max(PARAMS["G4_POST_S"], PARAMS["G3_POST_S"] if post is None else post)
+
+
+def _g2_last_word_only(g2: dict | None) -> bool:
+    """q9: G2 fails only because the last word's clips were unsure, while the last ayah's start is OK, the tail is
+    short and the end of the audio ends on the surah's last two words (`tail_words` OK)."""
+    return bool(g2 and g2.get("status") == "fail" and g2.get("last_ayah") == OK and g2.get("tail_ok")
+                and g2.get("last_word") == UNSURE and g2.get("tail_words") == OK)
 
 
 def _consecutive_failures(failed: list[int], probed: list[int]) -> int:
@@ -586,7 +623,9 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
     regions += [(int(k.split(":")[1]) - REPAIR_MARGIN, int(k.split(":")[1]) + REPAIR_MARGIN) for k, _, _ in stretch]
     regions += [(a, a) for a in _accepted_repeat_ayahs(repairs or [])]  # Q7g: their checkpoints may sit on a pass
     g5 = held_out_stats(anchors or {}, words, regions)
-    nulls = sorted(set(low_conf_ayahs(words)) | set(repair_null))
+    g2_null = repairs is not None and _g2_last_word_only(g2)
+    last_ayah = max((w["ayah"] for w in _spoken(words)), default=None)
+    nulls = sorted(set(low_conf_ayahs(words)) | set(repair_null) | ({last_ayah} if g2_null else set()))
     ayah_count = completeness["ayah_count"]
     checks = {
         "G0": "complete", "G1": "ok",
@@ -611,7 +650,7 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
     else:
         stretch_fail = stretch
     triggers = {"G3": g3_failed, "stretch": [k for k, _, _ in stretch_fail],
-                "G2": bool(g2 and g2.get("status") == "fail"), "G5": g5["status"] == "fail",
+                "G2": bool(g2 and g2.get("status") == "fail") and not g2_null, "G5": g5["status"] == "fail",
                 "G5_outliers": g5["outlier_ayahs"]}
     checks["triggers"] = triggers
     extra = {"probes": probes, "seconds": seconds, "segments_null": nulls}
@@ -624,7 +663,7 @@ def surah_verdict(surah: int, completeness: dict, *, refusal: dict | None = None
     if g3_failed or stretch_fail or triggers["G2"] or triggers["G5"] or g5["outlier_ayahs"]:
         reason = "needs-repair" if repairs is None else "repair-failed"
         return _record(surah, completeness, "no_highlight", [reason], checks, **{**extra, "segments_null": []})
-    if len(nulls) > PARAMS["NULL_SHARE"] * ayah_count:
+    if len(nulls) > max(1, PARAMS["NULL_SHARE"] * ayah_count):  # q9: one ayah alone never fails a short surah
         return _record(surah, completeness, "no_highlight", ["segments-null-share"], checks,
                        **{**extra, "segments_null": []})
     if repairs is not None and any(r.get("accepted") for r in repairs):
