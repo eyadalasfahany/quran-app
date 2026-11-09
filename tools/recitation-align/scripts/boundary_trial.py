@@ -9,8 +9,9 @@ Models (`--model`):
   quran_transcript's Uthmani words.
 - `rabah`: rabah2026/wav2vec2-large-xlsr-53-arabic-quran-v_final (Apache-2.0), 20 ms frames, letters with harakat and
   `|` between words; the words are the model repo's own `quran_text.txt` (Uthmani, Tanzil style).
-- `fastconformer`: mrmuminov/quran-fastconformer-ctc-ar (CC BY 4.0), 40 ms frames, 62 Uthmani characters, loaded with
-  the model repo's own `code/quranic` (NeMo); the same `quran_text.txt` words, characters outside its alphabet dropped.
+- `fastconformer`: mrmuminov/quran-fastconformer-ctc-ar (CC BY 4.0), 40 ms frames, loaded with the model repo's own
+  `code/quranic` (NeMo); the same `quran_text.txt` words aligned as letters only (the marks' posteriors summed into
+  the blank, as baklarrrr/quran-timings does), characters outside its alphabet dropped.
 
 Control ayahs only (QF recites no repeat). Each ayah is cut at QF's own span, so this is the model's ceiling, not a
 pipeline result. An ayah whose word count differs from QF's, or a word with no token in the model's alphabet, is
@@ -21,6 +22,7 @@ import argparse
 import json
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 TOOL = Path(__file__).resolve().parents[1]
@@ -115,15 +117,22 @@ def backend(name: str):
     model = CharCtc.from_release(str(root), "cpu")
     model.eval()
     chars = json.loads((root / "vocab.json").read_text(encoding="utf-8"))
-    vocab = {c: i for i, c in enumerate(chars)}
+    # Letters only, as baklarrrr/quran-timings aligns with this model: harakat, shadda, sukun, the small Uthmani signs
+    # and tatweel are merged into the blank (their posteriors summed into it), so a word is its letters.
+    marks = [i for i, c in enumerate(chars) if unicodedata.category(c) == "Mn" or c == "\u0640"]
+    keep = [i for i in range(len(chars)) if i not in marks]
+    vocab = {chars[i]: k for k, i in enumerate(keep)}
+    blank = len(keep)
 
     def emissions(seg):
         with torch.inference_mode():
             wave = torch.from_numpy(seg).float().unsqueeze(0)
-            log_probs, _ = model(wave, torch.tensor([wave.shape[1]]))
-        return torch.log_softmax(log_probs.float(), -1)[0]
+            log_probs, lengths = model(wave, torch.tensor([wave.shape[1]]))
+        lp = torch.log_softmax(log_probs.float(), -1)[0][: int(lengths[0])]
+        merged = torch.logsumexp(lp[:, [len(chars), *marks]], dim=-1, keepdim=True)
+        return torch.cat([lp[:, keep], merged], dim=-1)
 
-    return emissions, words, lambda w: [vocab[c] for c in w if c in vocab and c != " "], len(chars), vocab.get(" ")
+    return emissions, words, lambda w: [vocab[c] for c in w if c in vocab and c != " "], blank, vocab.get(" ")
 
 
 def main(argv=None) -> int:
