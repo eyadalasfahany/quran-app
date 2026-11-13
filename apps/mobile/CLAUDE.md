@@ -87,7 +87,14 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 
 ## Releasing (developer, 6 Nov 2026)
 
-- **OTA by default.** Ship JavaScript, asset and copy changes with `eas update --channel production` (EAS Update, `expo-updates`). Don't make a new store build for them.
+- **OTA by default.** Ship JavaScript, asset and copy changes with an EAS Update (`expo-updates`). Don't make a new store build for them. Publish from `apps/mobile` with the production variables set:
+
+  ```bash
+  APP_VARIANT=production EXPO_PUBLIC_API_URL=https://app.taybah-app.com \
+    npx eas-cli update --channel production --environment production --message "<what changed>"
+  ```
+
+  `eas update` doesn't read the `env` block of the `production` profile in `eas.json`. Without these two variables it bundles the dev config (the `.dev` bundle ID, no API URL), and its runtime version matches no store build. Check that the runtime versions it prints equal the store builds' fingerprints.
 - **A store build is needed only when the native layer changes:**
   - a package installed or upgraded with `npx expo install` or npm
   - a config plugin added or changed
