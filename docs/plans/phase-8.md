@@ -62,6 +62,10 @@ Pin candidate: GitHub ref `6d0c197e84a46a3cadbd36a045d09cb2bc9aa71e` (the ref Gi
 
 `JK009247` is corrupt: in 1,053 places the letters U+0670 (dagger alef, decimal 1648) and U+0671 (alef wasla, 1649) were replaced by « صلى الله عليه وسلم», a line break and `# 1648 ; ` or `# 1649 ; `. Words are split and Quran verses inside the book are broken (for example «فلعنة صلى الله عليه وسلم / # 1649 ; لله على …» for «فلعنة الله على الكافرين»). Restoring it would mean guessing where the word spaces were, so the version is unusable. `Shamela0023692` (دار الفيحاء، دمشق، ط2 1425هـ) has none of this, keeps real paragraphs and has 279 headings. The canonicalizer removes its page markers, milestones and the editor's footnote markers «N» (closed list), and leaves the editor's footnote bodies out of the paragraphs. Q1 is closed with this choice; the developer can still revisit it.
 
+### Timeline by the Prophet's age (developer, 14 Nov 2026, overnight)
+
+The timeline is organised by the Prophet's ﷺ age, one tick per year from 0 to 63, never by Hijri years or «قبل/بعد البعثة». The primary label everywhere is the age; the Hijri or ق.هـ year is a small secondary detail on the event page only. Life-stage bands sit over the axis: «الطفولة» (٠–١١), «الصبا» (١٢–١٩), «الشباب» (٢٠–٣٩), «الكهولة» (٤٠–٦٣). Key moments (المولد ٠، الزواج من خديجة ٢٥، نزول الوحي ٤٠، الهجرة ٥٣، الوفاة ٦٣) are milestone marks, not the structure. The list view groups by stage, then age. The four review batches E1 to E4 are only how the data is reviewed, not how the app groups it.
+
 ## Rules
 
 - All earlier rules apply (`CLAUDE.md`, `apps/mobile/CLAUDE.md`, `apple-design`, tokens through `useTheme()`, one component per file with a colocated test, screens only compose, `useWindowClass()` only, all strings in `ar.json` and `en.json`).
