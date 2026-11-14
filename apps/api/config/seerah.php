@@ -102,7 +102,7 @@ return [
         'paragraphs' => 1087,
         'places' => 81,
         'exclusions' => 63,
-        'routes' => 0,
+        'routes' => 12,
         'milestones' => 5,
         'events' => ['E1' => 11, 'E2' => 26, 'E3' => 59, 'E4' => 115],
     ],

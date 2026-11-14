@@ -129,7 +129,7 @@
           }
         ]
       },
-      "route": null,
+      "route": "r-hijra",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [
@@ -1197,7 +1197,7 @@
         "certainty": "stated",
         "evidence": []
       },
-      "route": null,
+      "route": "r-badr",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [],

@@ -1324,7 +1324,7 @@
           }
         ]
       },
-      "route": null,
+      "route": "r-khaybar",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [],
@@ -2058,7 +2058,7 @@
         "certainty": "stated",
         "evidence": []
       },
-      "route": null,
+      "route": "r-fath",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [],
@@ -2310,7 +2310,7 @@
         "certainty": "stated",
         "evidence": []
       },
-      "route": null,
+      "route": "r-hunayn",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [
@@ -2355,7 +2355,7 @@
         "certainty": "stated",
         "evidence": []
       },
-      "route": null,
+      "route": "r-taif-ghazwa",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [],
@@ -2807,7 +2807,7 @@
         "certainty": "stated",
         "evidence": []
       },
-      "route": null,
+      "route": "r-tabuk",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [],

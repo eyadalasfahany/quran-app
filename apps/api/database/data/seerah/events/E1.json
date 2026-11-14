@@ -274,7 +274,7 @@
           }
         ]
       },
-      "route": null,
+      "route": "r-sham-1",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [],
@@ -407,7 +407,7 @@
           }
         ]
       },
-      "route": null,
+      "route": "r-sham-2",
       "order_exception": null,
       "origin": "drafted_by_agent",
       "flags": [],
