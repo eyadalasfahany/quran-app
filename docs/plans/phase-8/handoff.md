@@ -61,6 +61,15 @@ The report opens with «أخرى» and «غير محدد», then every event by 
 - The map-performance spike (step 27) was not measured on a device.
 - `PackBuilderTest` («leaves the previous pack…») fails only when tests run as root (this sandbox); it passes in CI.
 
+## Review
+
+An independent code review of the mobile feature found no crash path; its nine findings (show-on-map opening the list, the map not panning to the place, a one-event city not opening, the spot-sheet push, retry with no catalogue entry, the mini-map drawing the whole art, live route strokes, back to the Menu tab, unused art copies) are fixed with regression tests (`72cbdca`). Two of them should still be tried on the simulator: open an event from a crowded spot's sheet, and tap the age chip on an event page.
+
+## CI
+
+- API and Contract workflows: green on this branch.
+- Mobile workflow: ESLint, tsc and Jest green; **`expo-doctor` fails on «18 packages out of date»**. That comes from Expo's newer patch releases, not from Seerah, and fixing it changes the native fingerprint (store build), so it is left for you.
+
 ## CI fixed on the way (also broken on main)
 
 - `StartupConfigTest` counted `hadith:import` inside `hadith:import-explanations`.
