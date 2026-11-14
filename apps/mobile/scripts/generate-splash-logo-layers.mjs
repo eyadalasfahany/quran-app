@@ -5,8 +5,9 @@
  * Crop rects must match apps/mobile/src/shared/ui/splash-logo-raster-layers.ts
  *
  * The logo is the gold line-art mosque with the gold «طيبة» and "taybah" lettering under it
- * (docs/branding/taybah-mosque-logo.svg), so every layer is cut from the same mask: the logo with
- * its cream background removed.
+ * (docs/branding/taybah-mosque-logo.svg, ADR 0088), so every layer is cut from the same mask: the logo
+ * with its cream background removed. The splash draws the mosque as pen strokes
+ * (splash-mosque-strokes.ts), then fades these layers in: the brush mosque, then each word.
  */
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -21,9 +22,7 @@ const CANVAS = 1254;
 
 /** [width, height, x, y] — overlapping bands avoid missing pixels between layers */
 const LAYERS = [
-  ['minaret-left.png', [200, 720, 282, 72]],
-  ['minaret-right.png', [200, 720, 772, 72]],
-  ['dome.png', [CANVAS, 720, 0, 72]],
+  ['mosque.png', [CANVAS, 720, 0, 72]],
   ['arabic.png', [CANVAS, 290, 0, 790]],
   ['english.png', [CANVAS, 120, 0, 1075]],
 ];

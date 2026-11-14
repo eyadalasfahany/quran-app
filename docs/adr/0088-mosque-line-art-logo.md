@@ -8,12 +8,13 @@ The Taybah logo was a filled illustration: a green dome and gold minarets, with 
 
 ## Decision
 
-1. **New source of truth.** `docs/branding/taybah-mosque-logo.svg` is the vector master. `docs/branding/taybah-nabawi-logo.png` is its 1254 × 1254 render on cream `#F9F7F2`, in the same layout as the old logo (mosque on top, «طيبة», then "taybah"), and stays the input of the generators.
+1. **New source of truth.** `apps/mobile/scripts/generate-mosque-logo.py` holds the mosque's hand-placed centrelines and writes `docs/branding/taybah-mosque-lineart.svg` (the mosque in brush strokes), `docs/branding/taybah-mosque-logo.svg` (the full logo, with the traced lettering from `taybah-wordmark-ar.svg` and `taybah-wordmark-latin.svg`) and the splash's `splash-mosque-strokes.ts`. `docs/branding/taybah-nabawi-logo.png` is the logo's 1254 × 1254 render on cream `#F9F7F2`, in the same layout as the old logo (mosque on top, «طيبة», then "taybah"), and stays the input of the asset generators.
 2. **Everything is regenerated from it**, never hand-edited:
    - `apps/mobile/scripts/generate-brand-assets.mjs`: the iOS icon, the Android adaptive foreground, themed (monochrome) icon and notification icon, the splash logo images, the widget and watch icons, the website logo, favicon and apple-touch icon, the Play feature graphic and the root `logo.png`.
-   - `apps/mobile/scripts/generate-splash-logo-layers.mjs`: the five animated-splash layers (two minarets, the dome, the Arabic and the Latin words). The new logo is all gold, so every layer is cut from one mask instead of separate gold and green masks; the crop rects moved to the new artwork and `splash-logo-raster-layers.ts` matches them.
+   - `apps/mobile/scripts/generate-splash-logo-layers.mjs`: the splash's three fade-in layers (the brush mosque, «طيبة», "taybah"), all cut from one mask since the logo is all gold.
    - The tracked widget and watch `AppIcon.appiconset` PNGs are resized from the new widget and watch icons.
-3. **The app icon uses the line art as it is** (developer, 14 Nov 2026). At home-screen size (60 pt) and smaller, the thin lines read faintly; the developer accepted this rather than drawing a bolder icon-only variant.
+3. **The splash draws the vector** (developer, 14 Nov 2026). The mosque's centrelines draw themselves with a gold pen (`launchGold`) in order: base, dome, minarets bottom-up, finials last, each line easing in and out on its own window. The exact brush mosque then fades in over the pen lines, and «طيبة» and "taybah" fade in while rising a few points. The splash runs 1200 ms (was 1800 ms) on a linear clock; with Reduce Motion on, the finished logo shows at once. The final frame is the logo itself.
+4. **The app icon uses the line art as it is** (developer, 14 Nov 2026). At home-screen size (60 pt) and smaller, the thin lines read faintly; the developer accepted this rather than drawing a bolder icon-only variant.
 
 ## Consequences
 

@@ -370,3 +370,6 @@ export const shadows: Record<ThemeName, ShadowTokens> = {
 // Cream launch backdrop shown behind the native splash and the animated overlay. Not a theme colour: it stays cream
 // in every theme, and app.config.ts repeats the same value for expo-splash-screen.
 export const launchBackground = '#F9F7F2';
+
+// Gold pen of the animated splash's line-art mosque (ADR 0088): the logo's gold, the same in every theme.
+export const launchGold = '#a07c33';

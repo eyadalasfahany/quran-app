@@ -1,12 +1,17 @@
 import { useEffect, useRef } from 'react';
-import { runOnJS, useReducedMotion, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
+import { Easing, runOnJS, useReducedMotion, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 
 import type { DurationToken } from '@quran/design-tokens';
 
 import { timing } from '@/core/theme';
 
 // 0 → 1 as an outline draws in once, starting on mount. With Reduce Motion on, it is 1 immediately.
-export function useDrawOnMount(onComplete?: () => void, speed: DurationToken = 'draw'): SharedValue<number> {
+// `linear` runs the clock at a constant rate, for timelines whose parts ease themselves (the splash).
+export function useDrawOnMount(
+  onComplete?: () => void,
+  speed: DurationToken = 'draw',
+  pace: 'ease' | 'linear' = 'ease',
+): SharedValue<number> {
   const reduceMotion = useReducedMotion();
   const progress = useSharedValue(reduceMotion ? 1 : 0);
   const onCompleteRef = useRef(onComplete);
@@ -24,12 +29,13 @@ export function useDrawOnMount(onComplete?: () => void, speed: DurationToken = '
       return;
     }
     progress.value = 0;
-    progress.value = withTiming(1, timing(speed), (finished) => {
+    const config = pace === 'linear' ? { ...timing(speed), easing: Easing.linear } : timing(speed);
+    progress.value = withTiming(1, config, (finished) => {
       if (finished) {
         runOnJS(finish)();
       }
     });
-  }, [progress, reduceMotion, speed]);
+  }, [pace, progress, reduceMotion, speed]);
 
   return progress;
 }

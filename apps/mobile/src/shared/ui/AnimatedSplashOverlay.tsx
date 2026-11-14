@@ -10,7 +10,7 @@ type Props = {
   onFinished: () => void;
 };
 
-// Brief branded splash after the native launch screen: Taybah mark SVG path draw.
+// Brief branded splash after the native launch screen: the Taybah mark drawing itself in (ADR 0088).
 export function AnimatedSplashOverlay({ appReady, onFinished }: Props) {
   const nativeHidden = useRef(false);
   const [drawComplete, setDrawComplete] = useState(false);

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { TaybahSplashLogo } from './TaybahSplashLogo';
 
-// Full Taybah mark on the launch splash: SVG path draw (masjid + wordmark), not a static PNG.
+// Full Taybah mark on the launch splash: the line-art mosque draws itself, then the lettering fades in (ADR 0088).
 export function SplashBrandMark({ onDrawComplete }: { onDrawComplete?: () => void }) {
   const { t } = useTranslation();
 

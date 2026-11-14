@@ -48,6 +48,7 @@ export { SkeletonBlock, type SkeletonTone } from './SkeletonBlock';
 export { SkeletonGroup } from './SkeletonGroup';
 export { SplashBrandMark } from './SplashBrandMark';
 export { SplashLogoRasterLayer } from './SplashLogoRasterLayer';
+export { SplashMosqueStroke } from './SplashMosqueStroke';
 export { StaleContentBanner } from './StaleContentBanner';
 export { SurahCartouche } from './SurahCartouche';
 export {

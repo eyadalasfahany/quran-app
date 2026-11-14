@@ -5,6 +5,7 @@ import { locales, renderUi } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 
 import { splashRasterLayers } from './splash-logo-raster-layers';
+import { splashMosqueStrokes } from './splash-mosque-strokes';
 import { TaybahSplashLogo } from './TaybahSplashLogo';
 
 jest.mock('react-native-reanimated', () => {
@@ -20,14 +21,45 @@ describe('TaybahSplashLogo', () => {
     reducedMotion.mockReturnValue(false);
   });
 
-  it('draws a square logo at the splash size, with one band per raster layer', async () => {
+  it('draws a square logo at the splash size: a pen line per mosque stroke, then each fade-in layer', async () => {
     const view = await renderUi(<TaybahSplashLogo />);
     const style = StyleSheet.flatten(view.getByTestId('taybah-splash-logo', HIDDEN).props.style);
 
     expect(style).toMatchObject({ height: 280, width: 280 });
+    expect(splashMosqueStrokes.length).toBeGreaterThan(0);
+    for (const stroke of splashMosqueStrokes) {
+      expect(view.getByTestId(`splash-stroke-${stroke.id}`, HIDDEN)).toBeTruthy();
+    }
     for (const layer of splashRasterLayers) {
       expect(view.getByTestId(`splash-logo-${layer.id}`, HIDDEN)).toBeTruthy();
     }
+  });
+
+  it('starts with the pen lines visible and every fade-in layer hidden', async () => {
+    const view = await renderUi(<TaybahSplashLogo />);
+
+    expect(StyleSheet.flatten(view.getByTestId('splash-mosque-pen', HIDDEN).props.style).opacity).toBe(1);
+    for (const layer of splashRasterLayers) {
+      expect(StyleSheet.flatten(view.getByTestId(`splash-logo-${layer.id}`, HIDDEN).props.style).opacity).toBe(0);
+    }
+  });
+
+  it('shows the finished logo at once with Reduce Motion on: brush mosque and words in, pen lines gone', async () => {
+    reducedMotion.mockReturnValue(true);
+    const view = await renderUi(<TaybahSplashLogo />);
+
+    expect(StyleSheet.flatten(view.getByTestId('splash-mosque-pen', HIDDEN).props.style).opacity).toBe(0);
+    for (const layer of splashRasterLayers) {
+      expect(StyleSheet.flatten(view.getByTestId(`splash-logo-${layer.id}`, HIDDEN).props.style).opacity).toBe(1);
+    }
+  });
+
+  it('draws the mosque before the lettering, and the Arabic before the Latin', () => {
+    const lastStrokeEnd = Math.max(...splashMosqueStrokes.map((stroke) => stroke.segment[1]));
+    const start = (id: string) => splashRasterLayers.find((layer) => layer.id === id)?.segment[0] ?? -1;
+
+    expect(start('arabic')).toBeGreaterThanOrEqual(lastStrokeEnd);
+    expect(start('english')).toBeGreaterThan(start('arabic'));
   });
 
   it('is hidden from accessibility, because its parent carries the label', async () => {
