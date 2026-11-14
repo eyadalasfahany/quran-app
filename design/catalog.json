@@ -6431,12 +6431,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahCluster",
-     "untranslated": 0
+     "untranslated": 8
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahCluster",
-     "untranslated": 0
+     "untranslated": 8
     }
    },
    "frames": [
@@ -6446,7 +6446,7 @@
   {
    "id": "SeerahClusterSheet",
    "stack": "seerah",
-   "caption": "أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب السنة (بانتظار الموافقة)",
+   "caption": "أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب العمر (بانتظار الموافقة)",
    "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
@@ -6467,12 +6467,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahClusterSheet",
-     "untranslated": 0
+     "untranslated": 11
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahClusterSheet",
-     "untranslated": 0
+     "untranslated": 11
     }
    },
    "frames": [
@@ -6482,7 +6482,7 @@
   {
    "id": "SeerahEvent",
    "stack": "seerah",
-   "caption": "صفحة الحدث · نص الكتاب، السنة والمكان، السابق والتالي، المصدر (بانتظار الموافقة)",
+   "caption": "صفحة الحدث · نص الكتاب، العمر (والسنة الهجرية تفصيلًا) والمكان، السابق والتالي، المصدر (بانتظار الموافقة)",
    "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
@@ -6520,7 +6520,7 @@
   {
    "id": "SeerahEventOther",
    "stack": "seerah",
-   "caption": "صفحة الحدث · المكان «أخرى» والسنة «غير محدد» (بانتظار الموافقة)",
+   "caption": "صفحة الحدث · المكان «أخرى» والعمر «غير محدد» (بانتظار الموافقة)",
    "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
@@ -6541,12 +6541,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahEventOther",
-     "untranslated": 0
+     "untranslated": 6
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahEventOther",
-     "untranslated": 0
+     "untranslated": 6
     }
    },
    "frames": [
@@ -6580,12 +6580,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahExpanded",
-     "untranslated": 0
+     "untranslated": 8
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahExpanded",
-     "untranslated": 0
+     "untranslated": 8
     }
    },
    "frames": [
@@ -6619,12 +6619,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahExpandedCity",
-     "untranslated": 0
+     "untranslated": 12
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahExpandedCity",
-     "untranslated": 0
+     "untranslated": 12
     }
    },
    "frames": [
@@ -6693,12 +6693,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahMapKey",
-     "untranslated": 0
+     "untranslated": 23
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahMapKey",
-     "untranslated": 0
+     "untranslated": 23
     }
    },
    "frames": [
@@ -6729,12 +6729,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahMapMadinah",
-     "untranslated": 0
+     "untranslated": 5
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahMapMadinah",
-     "untranslated": 0
+     "untranslated": 5
     }
    },
    "frames": [
@@ -6765,12 +6765,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahMapMakkah",
-     "untranslated": 0
+     "untranslated": 8
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahMapMakkahDark",
-     "untranslated": 0
+     "untranslated": 8
     }
    },
    "frames": [
@@ -6819,7 +6819,7 @@
   {
    "id": "SeerahMapRegionYear",
    "stack": "seerah",
-   "caption": "الخريطة · سنة محددة: الهجرة، العمر ٥٣، والباقي باهت (بانتظار الموافقة)",
+   "caption": "الخريطة · عمر محدد: ٥٣ سنة (الهجرة)، والباقي باهت (بانتظار الموافقة)",
    "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
@@ -6840,12 +6840,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahMapRegionYear",
-     "untranslated": 0
+     "untranslated": 2
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahMapRegionYear",
-     "untranslated": 0
+     "untranslated": 2
     }
    },
    "frames": [
@@ -6948,12 +6948,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateDownload",
-     "untranslated": 0
+     "untranslated": 3
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateDownload",
-     "untranslated": 0
+     "untranslated": 3
     }
    },
    "frames": [
@@ -6984,12 +6984,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateDownloading",
-     "untranslated": 0
+     "untranslated": 2
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateDownloading",
-     "untranslated": 0
+     "untranslated": 2
     }
    },
    "frames": [
@@ -7020,12 +7020,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateEmptyYear",
-     "untranslated": 0
+     "untranslated": 4
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateEmptyYear",
-     "untranslated": 0
+     "untranslated": 4
     }
    },
    "frames": [
@@ -7056,12 +7056,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateError",
-     "untranslated": 0
+     "untranslated": 2
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateError",
-     "untranslated": 0
+     "untranslated": 2
     }
    },
    "frames": [
@@ -7092,12 +7092,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateOffline",
-     "untranslated": 0
+     "untranslated": 3
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateOffline",
-     "untranslated": 0
+     "untranslated": 3
     }
    },
    "frames": [
@@ -7128,12 +7128,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahTimeline",
-     "untranslated": 0
+     "untranslated": 8
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahTimeline",
-     "untranslated": 0
+     "untranslated": 8
     }
    },
    "frames": [

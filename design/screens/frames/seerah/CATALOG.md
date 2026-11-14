@@ -9,16 +9,16 @@ Seerah map, timeline, event page, list
 | `SeerahMapRegion` | compact | ar-light | awaiting-approval | الخريطة · المنطقة (بانتظار الموافقة) |
 | `SeerahMapRegionDark` | compact | dark | awaiting-approval | الخريطة · المنطقة · داكن (بانتظار الموافقة) |
 | `SeerahMapRegionEnglish` | compact | en | awaiting-approval | Map · region · English UI, map labels stay Arabic (بانتظار الموافقة) |
-| `SeerahMapRegionYear` | compact | ar-light | awaiting-approval | الخريطة · سنة محددة: الهجرة، العمر ٥٣، والباقي باهت (بانتظار الموافقة) |
+| `SeerahMapRegionYear` | compact | ar-light | awaiting-approval | الخريطة · عمر محدد: ٥٣ سنة (الهجرة)، والباقي باهت (بانتظار الموافقة) |
 | `SeerahMapMakkah` | compact | ar-light | awaiting-approval | خريطة مكة · المعالم والأحداث، تجميع وإخفاء أسماء متزاحمة، نافذة حدث (بانتظار الموافقة) |
 | `SeerahMapMakkahDark` | compact | dark | awaiting-approval | خريطة مكة · داكن (بانتظار الموافقة) |
 | `SeerahMapMadinah` | compact | ar-light | awaiting-approval | خريطة المدينة · المعالم والأحداث، موضع تقريبي (بانتظار الموافقة) |
 | `SeerahCluster` | compact | ar-light | awaiting-approval | مجموعة تنفتح على حلقة (٦ أحداث أو أقل) · دار الأرقم (بانتظار الموافقة) |
-| `SeerahClusterSheet` | compact | ar-light | awaiting-approval | أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب السنة (بانتظار الموافقة) |
-| `SeerahEvent` | compact | ar-light | awaiting-approval | صفحة الحدث · نص الكتاب، السنة والمكان، السابق والتالي، المصدر (بانتظار الموافقة) |
+| `SeerahClusterSheet` | compact | ar-light | awaiting-approval | أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب العمر (بانتظار الموافقة) |
+| `SeerahEvent` | compact | ar-light | awaiting-approval | صفحة الحدث · نص الكتاب، العمر (والسنة الهجرية تفصيلًا) والمكان، السابق والتالي، المصدر (بانتظار الموافقة) |
 | `SeerahEventDark` | compact | dark | awaiting-approval | صفحة الحدث · داكن (بانتظار الموافقة) |
 | `SeerahEventEnglish` | compact | en | awaiting-approval | Event page · English UI, the book stays Arabic (بانتظار الموافقة) |
-| `SeerahEventOther` | compact | ar-light | awaiting-approval | صفحة الحدث · المكان «أخرى» والسنة «غير محدد» (بانتظار الموافقة) |
+| `SeerahEventOther` | compact | ar-light | awaiting-approval | صفحة الحدث · المكان «أخرى» والعمر «غير محدد» (بانتظار الموافقة) |
 | `SeerahList` | compact | ar-light | awaiting-approval | «عرض كقائمة» · مجمّعة بالفترة والسنة، و«غير محدد» في آخرها (بانتظار الموافقة) |
 | `SeerahListDark` | compact | dark | awaiting-approval | «عرض كقائمة» · داكن (بانتظار الموافقة) |
 | `SeerahListEnglish` | compact | en | awaiting-approval | List view · English UI (بانتظار الموافقة) |

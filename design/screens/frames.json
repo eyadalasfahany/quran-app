@@ -2719,7 +2719,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSources.html",
-      "bytes": 8267
+      "bytes": 8642
     },
     {
       "id": "SeerahMapRegion",
@@ -2729,7 +2729,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegion.html",
-      "bytes": 38431
+      "bytes": 39974
     },
     {
       "id": "SeerahMapRegionDark",
@@ -2739,7 +2739,7 @@
       "theme": "dark",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegionDark.html",
-      "bytes": 38384
+      "bytes": 39927
     },
     {
       "id": "SeerahMapRegionEnglish",
@@ -2749,17 +2749,17 @@
       "theme": "en",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegionEnglish.html",
-      "bytes": 38098
+      "bytes": 39602
     },
     {
       "id": "SeerahMapRegionYear",
       "stack": "seerah",
-      "caption": "الخريطة · سنة محددة: الهجرة، العمر ٥٣، والباقي باهت (بانتظار الموافقة)",
+      "caption": "الخريطة · عمر محدد: ٥٣ سنة (الهجرة)، والباقي باهت (بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegionYear.html",
-      "bytes": 36701
+      "bytes": 38406
     },
     {
       "id": "SeerahMapMakkah",
@@ -2769,7 +2769,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapMakkah.html",
-      "bytes": 31576
+      "bytes": 33089
     },
     {
       "id": "SeerahMapMakkahDark",
@@ -2779,7 +2779,7 @@
       "theme": "dark",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapMakkahDark.html",
-      "bytes": 31430
+      "bytes": 32943
     },
     {
       "id": "SeerahMapMadinah",
@@ -2789,7 +2789,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapMadinah.html",
-      "bytes": 28090
+      "bytes": 29587
     },
     {
       "id": "SeerahCluster",
@@ -2799,27 +2799,27 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahCluster.html",
-      "bytes": 31982
+      "bytes": 33519
     },
     {
       "id": "SeerahClusterSheet",
       "stack": "seerah",
-      "caption": "أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب السنة (بانتظار الموافقة)",
+      "caption": "أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب العمر (بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahClusterSheet.html",
-      "bytes": 13886
+      "bytes": 13890
     },
     {
       "id": "SeerahEvent",
       "stack": "seerah",
-      "caption": "صفحة الحدث · نص الكتاب، السنة والمكان، السابق والتالي، المصدر (بانتظار الموافقة)",
+      "caption": "صفحة الحدث · نص الكتاب، العمر (والسنة الهجرية تفصيلًا) والمكان، السابق والتالي، المصدر (بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahEvent.html",
-      "bytes": 11144
+      "bytes": 11281
     },
     {
       "id": "SeerahEventDark",
@@ -2829,7 +2829,7 @@
       "theme": "dark",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahEventDark.html",
-      "bytes": 11058
+      "bytes": 11150
     },
     {
       "id": "SeerahEventEnglish",
@@ -2839,17 +2839,17 @@
       "theme": "en",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahEventEnglish.html",
-      "bytes": 10871
+      "bytes": 10959
     },
     {
       "id": "SeerahEventOther",
       "stack": "seerah",
-      "caption": "صفحة الحدث · المكان «أخرى» والسنة «غير محدد» (بانتظار الموافقة)",
+      "caption": "صفحة الحدث · المكان «أخرى» والعمر «غير محدد» (بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahEventOther.html",
-      "bytes": 9607
+      "bytes": 9641
     },
     {
       "id": "SeerahList",
@@ -2859,7 +2859,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahList.html",
-      "bytes": 10138
+      "bytes": 10414
     },
     {
       "id": "SeerahListDark",
@@ -2869,7 +2869,7 @@
       "theme": "dark",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahListDark.html",
-      "bytes": 10074
+      "bytes": 10350
     },
     {
       "id": "SeerahListEnglish",
@@ -2879,7 +2879,7 @@
       "theme": "en",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahListEnglish.html",
-      "bytes": 9862
+      "bytes": 10131
     },
     {
       "id": "SeerahMapKey",
@@ -2889,7 +2889,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapKey.html",
-      "bytes": 12269
+      "bytes": 14849
     },
     {
       "id": "SeerahTimeline",
@@ -2899,7 +2899,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahTimeline.html",
-      "bytes": 74163
+      "bytes": 80289
     },
     {
       "id": "SeerahStateDownload",
@@ -2909,7 +2909,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahStateDownload.html",
-      "bytes": 5410
+      "bytes": 4549
     },
     {
       "id": "SeerahStateDownloading",
@@ -2919,7 +2919,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahStateDownloading.html",
-      "bytes": 4852
+      "bytes": 3991
     },
     {
       "id": "SeerahStateOffline",
@@ -2929,7 +2929,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahStateOffline.html",
-      "bytes": 5344
+      "bytes": 4483
     },
     {
       "id": "SeerahStateError",
@@ -2939,7 +2939,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahStateError.html",
-      "bytes": 5152
+      "bytes": 4291
     },
     {
       "id": "SeerahStateEmptyYear",
@@ -2949,7 +2949,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahStateEmptyYear.html",
-      "bytes": 31579
+      "bytes": 33191
     },
     {
       "id": "SeerahExpanded",
@@ -2959,7 +2959,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahExpanded.html",
-      "bytes": 46779
+      "bytes": 47524
     },
     {
       "id": "SeerahExpandedCity",
@@ -2969,7 +2969,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahExpandedCity.html",
-      "bytes": 37039
+      "bytes": 37799
     },
     {
       "id": "SeerahMenu",
