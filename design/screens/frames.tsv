@@ -22,9 +22,9 @@ Focus	reading	compact	ar-light	source	Focus mode
 Tafsir	reading	compact	ar-light	source	Tafsir · mid detent (50%)
 TafsirFull	reading	compact	ar-light	source	Tafsir · full detent
 TafsirDownload	reading	compact	ar-light	source	Tafsir · not downloaded · mid detent (50%)
-Salah	salah	compact	ar-light	source	الصلاة
+Salah	salah	compact	ar-light	awaiting-approval	الصلاة · زر رجوع وسطر التاريخ تحت العنوان (ADR 0081, 0089، بانتظار الموافقة)
 SalahAdhanSoundEntry	salah	compact	dark	source	الصلاة · صوت الأذان (الرأس — انظر #Salah / #SalahDark؛ ADR 0057)
-SalahDark	salah	compact	dark	source	الصلاة · Dark
+SalahDark	salah	compact	dark	awaiting-approval	الصلاة · Dark (ADR 0089, بانتظار الموافقة)
 Qibla	salah	compact	ar-light	source	اتجاه القبلة · القرص ثابت والإبرة تتبع القبلة (ADR 0049)
 QiblaLandscape	salah	compact-short	ar-light	awaiting-approval	اتجاه القبلة · أفقي، ٨٤٤ × ٣٩٠ (بانتظار الموافقة)
 MyQuran	my-quran	compact	ar-light	source	My Quran
@@ -95,12 +95,12 @@ MainMenuTab	menu	compact	ar-light	source	Home · tab bar with القائمة (AD
 MenuV2	menu-v2	compact	ar-light	source	Menu V2 · Arabic
 MenuV2Dark	menu-v2	compact	dark	source	Menu V2 · Dark
 MenuV2Accent	menu-v2	compact	ar-light	source	Menu V2 · option D2, green prayer card
-HomeAzkar	home	compact	ar-light	source	Home · top: reading, next prayer, azkar
-HomeAzkarLower	home	compact	ar-light	source	Home · scrolled: progress, tiles, picks
+HomeAzkar	home	compact	ar-light	awaiting-approval	Home · top: reading, next prayer with Qibla, today's progress (ADR 0089, بانتظار الموافقة)
+HomeAzkarLower	home	compact	ar-light	awaiting-approval	Home · scrolled: continue azkar, tiles by daily use, picks (ADR 0089, بانتظار الموافقة)
 HomeAzkarRecent	home	compact	ar-light	source	Home · scrolled: recent azkar and listens
-HomeAzkarDark	home	compact	dark	source	Home · top · Dark
-HomeAzkarLowerDark	home	compact	dark	source	Home · scrolled · Dark
-HomeAzkarEnglish	home	compact	en	source	Home · top · English (LTR)
+HomeAzkarDark	home	compact	dark	awaiting-approval	Home · top · Dark (ADR 0089, بانتظار الموافقة)
+HomeAzkarLowerDark	home	compact	dark	awaiting-approval	Home · scrolled · Dark (ADR 0089, بانتظار الموافقة)
+HomeAzkarEnglish	home	compact	en	awaiting-approval	Home · top · English (LTR) (ADR 0089, بانتظار الموافقة)
 Sibha	home	compact	ar-light	source	Misbaha · counter
 SibhaLandscape	home	compact-short	ar-light	awaiting-approval	Misbaha · أفقي، ٨٤٤ × ٣٩٠ (بانتظار الموافقة)
 SibhaDark	home	compact	dark	source	Misbaha · counter · Dark
@@ -235,7 +235,7 @@ HadithCollSavedEmpty	hadith	compact	ar-light	source	Empty · saved hadith · Ara
 HadithCollExpanded	hadith	expanded	ar-light	source	Hadith · expanded window · 1194 × 834 · tab rail, books pane, book list
 HadithCollExpandedReader	hadith	expanded	ar-light	source	Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel · hadith text 28/56 pt
 HadithCollExpandedReaderExplained	hadith	expanded	ar-light	source	Hadith reader · expanded window · explanation cards in the side panel · hadith text 28/56 pt
-HadithCollMenu	hadith	compact	ar-light	source	Menu · new cards · Hadith entry · Arabic
-HadithCollMenuDark	hadith	compact	dark	source	Menu · new cards · Hadith entry · dark
-HadithCollMenuEnglish	hadith	compact	en	source	Menu · new cards · Hadith entry · English
+HadithCollMenu	hadith	compact	ar-light	awaiting-approval	Menu · ordered by daily use, Qibla and Misbaha cards (ADR 0089, بانتظار الموافقة)
+HadithCollMenuDark	hadith	compact	dark	awaiting-approval	Menu · new cards · Hadith entry · dark (ADR 0089, بانتظار الموافقة)
+HadithCollMenuEnglish	hadith	compact	en	awaiting-approval	Menu · new cards · Hadith entry · English (ADR 0089, بانتظار الموافقة)
 HadithCollSources	hadith	compact	ar-light	source	Settings · المصادر والشكر · Hadith row added

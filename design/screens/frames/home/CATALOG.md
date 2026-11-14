@@ -6,12 +6,12 @@ Home additions, misbaha, daily goals
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
-| `HomeAzkar` | compact | ar-light | source | Home · top: reading, next prayer, azkar |
-| `HomeAzkarLower` | compact | ar-light | source | Home · scrolled: progress, tiles, picks |
+| `HomeAzkar` | compact | ar-light | awaiting-approval | Home · top: reading, next prayer with Qibla, today's progress (ADR 0089, بانتظار الموافقة) |
+| `HomeAzkarLower` | compact | ar-light | awaiting-approval | Home · scrolled: continue azkar, tiles by daily use, picks (ADR 0089, بانتظار الموافقة) |
 | `HomeAzkarRecent` | compact | ar-light | source | Home · scrolled: recent azkar and listens |
-| `HomeAzkarDark` | compact | dark | source | Home · top · Dark |
-| `HomeAzkarLowerDark` | compact | dark | source | Home · scrolled · Dark |
-| `HomeAzkarEnglish` | compact | en | source | Home · top · English (LTR) |
+| `HomeAzkarDark` | compact | dark | awaiting-approval | Home · top · Dark (ADR 0089, بانتظار الموافقة) |
+| `HomeAzkarLowerDark` | compact | dark | awaiting-approval | Home · scrolled · Dark (ADR 0089, بانتظار الموافقة) |
+| `HomeAzkarEnglish` | compact | en | awaiting-approval | Home · top · English (LTR) (ADR 0089, بانتظار الموافقة) |
 | `Sibha` | compact | ar-light | source | Misbaha · counter |
 | `SibhaLandscape` | compact-short | ar-light | awaiting-approval | Misbaha · أفقي، ٨٤٤ × ٣٩٠ (بانتظار الموافقة) |
 | `SibhaDark` | compact | dark | source | Misbaha · counter · Dark |

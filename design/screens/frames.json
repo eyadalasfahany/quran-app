@@ -300,7 +300,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/Main.html",
-      "bytes": 15399
+      "bytes": 15497
     },
     {
       "id": "MainLandscapeRail",
@@ -310,7 +310,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/core/MainLandscapeRail.html",
-      "bytes": 4274
+      "bytes": 4286
     },
     {
       "id": "Mushaf",
@@ -320,7 +320,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/Mushaf.html",
-      "bytes": 13961
+      "bytes": 14048
     },
     {
       "id": "MushafFullscreenEnter",
@@ -330,7 +330,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/MushafFullscreenEnter.html",
-      "bytes": 13405
+      "bytes": 13492
     },
     {
       "id": "MushafFullscreen",
@@ -340,7 +340,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/MushafFullscreen.html",
-      "bytes": 8982
+      "bytes": 9039
     },
     {
       "id": "AyahSheet",
@@ -350,7 +350,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/AyahSheet.html",
-      "bytes": 11517
+      "bytes": 11603
     },
     {
       "id": "Player",
@@ -360,7 +360,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/Player.html",
-      "bytes": 10393
+      "bytes": 10468
     },
     {
       "id": "PlayerReciters",
@@ -370,7 +370,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/PlayerReciters.html",
-      "bytes": 13304
+      "bytes": 13351
     },
     {
       "id": "PlayerReciterDownloading",
@@ -380,7 +380,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/PlayerReciterDownloading.html",
-      "bytes": 13364
+      "bytes": 13411
     },
     {
       "id": "ReaderSettings",
@@ -390,7 +390,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/ReaderSettings.html",
-      "bytes": 13885
+      "bytes": 13991
     },
     {
       "id": "SurahIndex",
@@ -400,7 +400,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/SurahIndex.html",
-      "bytes": 22522
+      "bytes": 22696
     },
     {
       "id": "Search",
@@ -410,7 +410,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/Search.html",
-      "bytes": 7813
+      "bytes": 7866
     },
     {
       "id": "SearchEmpty",
@@ -420,7 +420,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/SearchEmpty.html",
-      "bytes": 5880
+      "bytes": 5912
     },
     {
       "id": "SearchHadithEmpty",
@@ -430,7 +430,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/SearchHadithEmpty.html",
-      "bytes": 5876
+      "bytes": 5908
     },
     {
       "id": "Reading",
@@ -440,7 +440,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/Reading.html",
-      "bytes": 25191
+      "bytes": 25283
     },
     {
       "id": "ReadingMiniIdle",
@@ -450,7 +450,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/ReadingMiniIdle.html",
-      "bytes": 17632
+      "bytes": 17722
     },
     {
       "id": "ReadingMiniCollapsed",
@@ -460,7 +460,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/ReadingMiniCollapsed.html",
-      "bytes": 16556
+      "bytes": 16637
     },
     {
       "id": "ReadingMiniUnavailable",
@@ -470,7 +470,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/ReadingMiniUnavailable.html",
-      "bytes": 18006
+      "bytes": 18087
     },
     {
       "id": "ReadingMiniSkipped",
@@ -480,7 +480,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/ReadingMiniSkipped.html",
-      "bytes": 26754
+      "bytes": 26901
     },
     {
       "id": "Focus",
@@ -490,7 +490,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/Focus.html",
-      "bytes": 7670
+      "bytes": 7719
     },
     {
       "id": "Tafsir",
@@ -500,7 +500,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/Tafsir.html",
-      "bytes": 6653
+      "bytes": 6710
     },
     {
       "id": "TafsirFull",
@@ -510,7 +510,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/TafsirFull.html",
-      "bytes": 6637
+      "bytes": 6694
     },
     {
       "id": "TafsirDownload",
@@ -520,17 +520,17 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/reading/TafsirDownload.html",
-      "bytes": 5756
+      "bytes": 5781
     },
     {
       "id": "Salah",
       "stack": "salah",
-      "caption": "الصلاة",
+      "caption": "الصلاة · زر رجوع وسطر التاريخ تحت العنوان (ADR 0081, 0089، بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/salah/Salah.html",
-      "bytes": 12248
+      "bytes": 12457
     },
     {
       "id": "SalahAdhanSoundEntry",
@@ -540,17 +540,17 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/salah/SalahAdhanSoundEntry.html",
-      "bytes": 12358
+      "bytes": 12453
     },
     {
       "id": "SalahDark",
       "stack": "salah",
-      "caption": "الصلاة · Dark",
+      "caption": "الصلاة · Dark (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "dark",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/salah/SalahDark.html",
-      "bytes": 12225
+      "bytes": 12364
     },
     {
       "id": "Qibla",
@@ -560,7 +560,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/Qibla.html",
-      "bytes": 12097
+      "bytes": 12188
     },
     {
       "id": "QiblaLandscape",
@@ -570,7 +570,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/salah/QiblaLandscape.html",
-      "bytes": 12629
+      "bytes": 12725
     },
     {
       "id": "MyQuran",
@@ -580,7 +580,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/my-quran/MyQuran.html",
-      "bytes": 9281
+      "bytes": 9329
     },
     {
       "id": "Reciters",
@@ -590,7 +590,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/audio/Reciters.html",
-      "bytes": 24454
+      "bytes": 24601
     },
     {
       "id": "ReciterSurahsUnavailable",
@@ -600,7 +600,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/ReciterSurahsUnavailable.html",
-      "bytes": 12574
+      "bytes": 12575
     },
     {
       "id": "Settings",
@@ -610,7 +610,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/settings/Settings.html",
-      "bytes": 11398
+      "bytes": 11472
     },
     {
       "id": "AdhanSoundPicker",
@@ -620,7 +620,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/settings/AdhanSoundPicker.html",
-      "bytes": 6628
+      "bytes": 6629
     },
     {
       "id": "AdhanSoundPickerDark",
@@ -630,7 +630,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/settings/AdhanSoundPickerDark.html",
-      "bytes": 6626
+      "bytes": 6627
     },
     {
       "id": "SettingsAdhanSoundRow",
@@ -640,7 +640,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/settings/SettingsAdhanSoundRow.html",
-      "bytes": 16307
+      "bytes": 16382
     },
     {
       "id": "SettingsSuggestCard",
@@ -650,7 +650,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/SettingsSuggestCard.html",
-      "bytes": 11392
+      "bytes": 11393
     },
     {
       "id": "SuggestSheet",
@@ -660,7 +660,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/SuggestSheet.html",
-      "bytes": 6360
+      "bytes": 6361
     },
     {
       "id": "SuggestSheetError",
@@ -670,7 +670,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/SuggestSheetError.html",
-      "bytes": 6835
+      "bytes": 6836
     },
     {
       "id": "SuggestSheetSending",
@@ -680,7 +680,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/SuggestSheetSending.html",
-      "bytes": 6913
+      "bytes": 6914
     },
     {
       "id": "SuggestSheetSent",
@@ -690,7 +690,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/SuggestSheetSent.html",
-      "bytes": 4930
+      "bytes": 4931
     },
     {
       "id": "SuggestSheetOffline",
@@ -700,7 +700,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/salah/SuggestSheetOffline.html",
-      "bytes": 7446
+      "bytes": 7447
     },
     {
       "id": "SuggestSheetDark",
@@ -710,7 +710,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/salah/SuggestSheetDark.html",
-      "bytes": 6347
+      "bytes": 6348
     },
     {
       "id": "SuggestSheetEnglish",
@@ -720,7 +720,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/salah/SuggestSheetEnglish.html",
-      "bytes": 6170
+      "bytes": 6171
     },
     {
       "id": "Sources",
@@ -730,7 +730,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/settings/Sources.html",
-      "bytes": 6473
+      "bytes": 6514
     },
     {
       "id": "SignIn",
@@ -740,7 +740,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/account/SignIn.html",
-      "bytes": 5438
+      "bytes": 5473
     },
     {
       "id": "VerifyCode",
@@ -750,7 +750,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/account/VerifyCode.html",
-      "bytes": 5009
+      "bytes": 5046
     },
     {
       "id": "MainAzkar",
@@ -760,7 +760,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/MainAzkar.html",
-      "bytes": 15600
+      "bytes": 15698
     },
     {
       "id": "SalahAzkar",
@@ -770,7 +770,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/SalahAzkar.html",
-      "bytes": 13143
+      "bytes": 13248
     },
     {
       "id": "AzkarHome",
@@ -780,7 +780,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/azkar/AzkarHome.html",
-      "bytes": 14009
+      "bytes": 14076
     },
     {
       "id": "AzkarHomeDark",
@@ -790,7 +790,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/azkar/AzkarHomeDark.html",
-      "bytes": 13998
+      "bytes": 14065
     },
     {
       "id": "AzkarHomeEnglish",
@@ -800,7 +800,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/azkar/AzkarHomeEnglish.html",
-      "bytes": 13789
+      "bytes": 13856
     },
     {
       "id": "AzkarLoading",
@@ -810,7 +810,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarLoading.html",
-      "bytes": 7386
+      "bytes": 7405
     },
     {
       "id": "AzkarCategory",
@@ -820,7 +820,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarCategory.html",
-      "bytes": 9231
+      "bytes": 9285
     },
     {
       "id": "AzkarSearch",
@@ -830,7 +830,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarSearch.html",
-      "bytes": 6280
+      "bytes": 6322
     },
     {
       "id": "AzkarSearchEmpty",
@@ -840,7 +840,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarSearchEmpty.html",
-      "bytes": 7052
+      "bytes": 7089
     },
     {
       "id": "AzkarFavorites",
@@ -850,7 +850,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarFavorites.html",
-      "bytes": 8642
+      "bytes": 8678
     },
     {
       "id": "AzkarFavoritesEmpty",
@@ -860,7 +860,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarFavoritesEmpty.html",
-      "bytes": 2295
+      "bytes": 2307
     },
     {
       "id": "AzkarUnavailable",
@@ -870,7 +870,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarUnavailable.html",
-      "bytes": 2033
+      "bytes": 2045
     },
     {
       "id": "AzkarReader",
@@ -880,7 +880,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarReader.html",
-      "bytes": 6722
+      "bytes": 6750
     },
     {
       "id": "AzkarReaderDark",
@@ -890,7 +890,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/azkar/AzkarReaderDark.html",
-      "bytes": 6735
+      "bytes": 6763
     },
     {
       "id": "AzkarReaderDone",
@@ -900,7 +900,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarReaderDone.html",
-      "bytes": 6937
+      "bytes": 6964
     },
     {
       "id": "AzkarReaderComplete",
@@ -910,7 +910,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarReaderComplete.html",
-      "bytes": 3166
+      "bytes": 3181
     },
     {
       "id": "AzkarReaderAudio",
@@ -920,7 +920,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarReaderAudio.html",
-      "bytes": 8468
+      "bytes": 8496
     },
     {
       "id": "AzkarPlayer",
@@ -930,7 +930,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/azkar/AzkarPlayer.html",
-      "bytes": 5729
+      "bytes": 5766
     },
     {
       "id": "AzkarPlayerDark",
@@ -940,7 +940,7 @@
       "theme": "dark",
       "status": "awaiting-approval",
       "path": "frames/azkar/AzkarPlayerDark.html",
-      "bytes": 5741
+      "bytes": 5778
     },
     {
       "id": "AzkarDetails",
@@ -950,7 +950,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarDetails.html",
-      "bytes": 8937
+      "bytes": 8979
     },
     {
       "id": "AzkarDetailsFull",
@@ -960,7 +960,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarDetailsFull.html",
-      "bytes": 11475
+      "bytes": 11542
     },
     {
       "id": "AzkarReminders",
@@ -970,7 +970,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarReminders.html",
-      "bytes": 24740
+      "bytes": 24877
     },
     {
       "id": "AzkarRemindersDenied",
@@ -980,7 +980,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarRemindersDenied.html",
-      "bytes": 25649
+      "bytes": 25790
     },
     {
       "id": "AzkarDownloads",
@@ -990,7 +990,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarDownloads.html",
-      "bytes": 6424
+      "bytes": 6468
     },
     {
       "id": "AzkarDownloadsEmpty",
@@ -1000,7 +1000,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarDownloadsEmpty.html",
-      "bytes": 2413
+      "bytes": 2426
     },
     {
       "id": "AzkarExpanded",
@@ -1010,7 +1010,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/azkar/AzkarExpanded.html",
-      "bytes": 9443
+      "bytes": 9491
     },
     {
       "id": "DuasHome",
@@ -1020,7 +1020,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/DuasHome.html",
-      "bytes": 9776
+      "bytes": 9777
     },
     {
       "id": "DuasHomeDark",
@@ -1030,7 +1030,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/duas/DuasHomeDark.html",
-      "bytes": 9772
+      "bytes": 9773
     },
     {
       "id": "DuasHomeEnglish",
@@ -1040,7 +1040,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/duas/DuasHomeEnglish.html",
-      "bytes": 9484
+      "bytes": 9485
     },
     {
       "id": "DuaQuranDetail",
@@ -1050,7 +1050,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/DuaQuranDetail.html",
-      "bytes": 5661
+      "bytes": 5662
     },
     {
       "id": "DuaQuranDetailDark",
@@ -1060,7 +1060,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/duas/DuaQuranDetailDark.html",
-      "bytes": 5675
+      "bytes": 5676
     },
     {
       "id": "DuaQuranDetailEnglish",
@@ -1070,7 +1070,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/duas/DuaQuranDetailEnglish.html",
-      "bytes": 5606
+      "bytes": 5607
     },
     {
       "id": "DuaHadithDetail",
@@ -1080,7 +1080,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/DuaHadithDetail.html",
-      "bytes": 8745
+      "bytes": 8746
     },
     {
       "id": "DuaHadithDetailDark",
@@ -1090,7 +1090,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/duas/DuaHadithDetailDark.html",
-      "bytes": 8749
+      "bytes": 8750
     },
     {
       "id": "DuaHadithDetailEnglish",
@@ -1100,7 +1100,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/duas/DuaHadithDetailEnglish.html",
-      "bytes": 8423
+      "bytes": 8424
     },
     {
       "id": "MyDuas",
@@ -1110,7 +1110,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/MyDuas.html",
-      "bytes": 7211
+      "bytes": 7212
     },
     {
       "id": "MyDuasDark",
@@ -1120,7 +1120,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/duas/MyDuasDark.html",
-      "bytes": 7214
+      "bytes": 7215
     },
     {
       "id": "MyDuasEnglish",
@@ -1130,7 +1130,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/duas/MyDuasEnglish.html",
-      "bytes": 7185
+      "bytes": 7186
     },
     {
       "id": "MyDuaEditor",
@@ -1140,7 +1140,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/MyDuaEditor.html",
-      "bytes": 11030
+      "bytes": 11031
     },
     {
       "id": "MyDuaEditorDark",
@@ -1150,7 +1150,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/duas/MyDuaEditorDark.html",
-      "bytes": 11012
+      "bytes": 11013
     },
     {
       "id": "MyDuaEditorEnglish",
@@ -1160,7 +1160,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/duas/MyDuaEditorEnglish.html",
-      "bytes": 10901
+      "bytes": 10902
     },
     {
       "id": "MyDuasEmpty",
@@ -1170,7 +1170,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/MyDuasEmpty.html",
-      "bytes": 2262
+      "bytes": 2263
     },
     {
       "id": "MyDuasEmptyEnglish",
@@ -1180,7 +1180,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/duas/MyDuasEmptyEnglish.html",
-      "bytes": 2563
+      "bytes": 2564
     },
     {
       "id": "Menu",
@@ -1190,7 +1190,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/menu/Menu.html",
-      "bytes": 15733
+      "bytes": 15803
     },
     {
       "id": "MenuDark",
@@ -1200,7 +1200,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/menu/MenuDark.html",
-      "bytes": 15760
+      "bytes": 15830
     },
     {
       "id": "MenuEnglish",
@@ -1210,7 +1210,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/menu/MenuEnglish.html",
-      "bytes": 15335
+      "bytes": 15405
     },
     {
       "id": "MainMenuTab",
@@ -1220,7 +1220,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/menu/MainMenuTab.html",
-      "bytes": 16723
+      "bytes": 16821
     },
     {
       "id": "MenuV2",
@@ -1230,7 +1230,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/menu-v2/MenuV2.html",
-      "bytes": 20064
+      "bytes": 20068
     },
     {
       "id": "MenuV2Dark",
@@ -1240,7 +1240,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/menu-v2/MenuV2Dark.html",
-      "bytes": 19236
+      "bytes": 19240
     },
     {
       "id": "MenuV2Accent",
@@ -1250,27 +1250,27 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/menu-v2/MenuV2Accent.html",
-      "bytes": 20587
+      "bytes": 20591
     },
     {
       "id": "HomeAzkar",
       "stack": "home",
-      "caption": "Home · top: reading, next prayer, azkar",
+      "caption": "Home · top: reading, next prayer with Qibla, today's progress (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/home/HomeAzkar.html",
-      "bytes": 9247
+      "bytes": 12717
     },
     {
       "id": "HomeAzkarLower",
       "stack": "home",
-      "caption": "Home · scrolled: progress, tiles, picks",
+      "caption": "Home · scrolled: continue azkar, tiles by daily use, picks (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/home/HomeAzkarLower.html",
-      "bytes": 16804
+      "bytes": 14221
     },
     {
       "id": "HomeAzkarRecent",
@@ -1280,37 +1280,37 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/home/HomeAzkarRecent.html",
-      "bytes": 10798
+      "bytes": 10846
     },
     {
       "id": "HomeAzkarDark",
       "stack": "home",
-      "caption": "Home · top · Dark",
+      "caption": "Home · top · Dark (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "dark",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/home/HomeAzkarDark.html",
-      "bytes": 9235
+      "bytes": 12701
     },
     {
       "id": "HomeAzkarLowerDark",
       "stack": "home",
-      "caption": "Home · scrolled · Dark",
+      "caption": "Home · scrolled · Dark (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "dark",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/home/HomeAzkarLowerDark.html",
-      "bytes": 16811
+      "bytes": 14199
     },
     {
       "id": "HomeAzkarEnglish",
       "stack": "home",
-      "caption": "Home · top · English (LTR)",
+      "caption": "Home · top · English (LTR) (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "en",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/home/HomeAzkarEnglish.html",
-      "bytes": 9087
+      "bytes": 12476
     },
     {
       "id": "Sibha",
@@ -1320,7 +1320,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/home/Sibha.html",
-      "bytes": 4996
+      "bytes": 5015
     },
     {
       "id": "SibhaLandscape",
@@ -1330,7 +1330,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/home/SibhaLandscape.html",
-      "bytes": 5120
+      "bytes": 5143
     },
     {
       "id": "SibhaDark",
@@ -1340,7 +1340,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/home/SibhaDark.html",
-      "bytes": 4991
+      "bytes": 5010
     },
     {
       "id": "SibhaResetDialog",
@@ -1350,7 +1350,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/home/SibhaResetDialog.html",
-      "bytes": 6962
+      "bytes": 6993
     },
     {
       "id": "SibhaResetDialogDark",
@@ -1360,7 +1360,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/home/SibhaResetDialogDark.html",
-      "bytes": 6981
+      "bytes": 7012
     },
     {
       "id": "DailyGoalsSheet",
@@ -1370,7 +1370,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/home/DailyGoalsSheet.html",
-      "bytes": 17240
+      "bytes": 17340
     },
     {
       "id": "HomeDailyProgressEmpty",
@@ -1380,7 +1380,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/home/HomeDailyProgressEmpty.html",
-      "bytes": 7356
+      "bytes": 7387
     },
     {
       "id": "HomeNextPrayerNoLocation",
@@ -1390,7 +1390,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/home/HomeNextPrayerNoLocation.html",
-      "bytes": 9075
+      "bytes": 9117
     },
     {
       "id": "OnboardLanguage",
@@ -1400,7 +1400,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardLanguage.html",
-      "bytes": 5079
+      "bytes": 5117
     },
     {
       "id": "OnboardScript",
@@ -1410,7 +1410,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardScript.html",
-      "bytes": 9119
+      "bytes": 9188
     },
     {
       "id": "OnboardReciter",
@@ -1420,7 +1420,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardReciter.html",
-      "bytes": 12318
+      "bytes": 12408
     },
     {
       "id": "Khatma",
@@ -1430,7 +1430,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/account/Khatma.html",
-      "bytes": 12635
+      "bytes": 12761
     },
     {
       "id": "Downloads",
@@ -1440,7 +1440,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/account/Downloads.html",
-      "bytes": 8644
+      "bytes": 8712
     },
     {
       "id": "Account",
@@ -1450,7 +1450,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/account/Account.html",
-      "bytes": 5704
+      "bytes": 5743
     },
     {
       "id": "DeleteAccount",
@@ -1460,7 +1460,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/account/DeleteAccount.html",
-      "bytes": 3869
+      "bytes": 3896
     },
     {
       "id": "Offline",
@@ -1470,7 +1470,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/Offline.html",
-      "bytes": 4649
+      "bytes": 4674
     },
     {
       "id": "EmptyMyQuran",
@@ -1480,7 +1480,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/my-quran/EmptyMyQuran.html",
-      "bytes": 6334
+      "bytes": 6353
     },
     {
       "id": "HomeDark",
@@ -1490,7 +1490,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/states/HomeDark.html",
-      "bytes": 15408
+      "bytes": 15506
     },
     {
       "id": "HomeEnglish",
@@ -1500,7 +1500,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/states/HomeEnglish.html",
-      "bytes": 15132
+      "bytes": 15230
     },
     {
       "id": "HomeAndroid",
@@ -1510,7 +1510,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/HomeAndroid.html",
-      "bytes": 15347
+      "bytes": 15445
     },
     {
       "id": "Hadith",
@@ -1520,7 +1520,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/Hadith.html",
-      "bytes": 7716
+      "bytes": 7780
     },
     {
       "id": "HadithDetail",
@@ -1530,7 +1530,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithDetail.html",
-      "bytes": 6165
+      "bytes": 6205
     },
     {
       "id": "HadithDetailEnglish",
@@ -1540,7 +1540,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithDetailEnglish.html",
-      "bytes": 8460
+      "bytes": 8510
     },
     {
       "id": "LoadingReciters",
@@ -1550,7 +1550,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/audio/LoadingReciters.html",
-      "bytes": 13273
+      "bytes": 13346
     },
     {
       "id": "LoadingHome",
@@ -1560,7 +1560,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/LoadingHome.html",
-      "bytes": 12013
+      "bytes": 12083
     },
     {
       "id": "LoadingIndex",
@@ -1570,7 +1570,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/LoadingIndex.html",
-      "bytes": 17476
+      "bytes": 17575
     },
     {
       "id": "LoadingTafsir",
@@ -1580,7 +1580,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/LoadingTafsir.html",
-      "bytes": 5137
+      "bytes": 5181
     },
     {
       "id": "LoadingMushaf",
@@ -1590,7 +1590,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/LoadingMushaf.html",
-      "bytes": 14003
+      "bytes": 14075
     },
     {
       "id": "PlayerBuffering",
@@ -1600,7 +1600,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/audio/PlayerBuffering.html",
-      "bytes": 11683
+      "bytes": 11758
     },
     {
       "id": "WidgetNextPrayerSmall",
@@ -1610,7 +1610,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/widgets/WidgetNextPrayerSmall.html",
-      "bytes": 5833
+      "bytes": 5834
     },
     {
       "id": "WidgetNextPrayerSmallDark",
@@ -1620,7 +1620,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/widgets/WidgetNextPrayerSmallDark.html",
-      "bytes": 5843
+      "bytes": 5844
     },
     {
       "id": "WidgetProgressMedium",
@@ -1630,7 +1630,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/widgets/WidgetProgressMedium.html",
-      "bytes": 10885
+      "bytes": 10886
     },
     {
       "id": "WidgetProgressMediumDark",
@@ -1640,7 +1640,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/widgets/WidgetProgressMediumDark.html",
-      "bytes": 10852
+      "bytes": 10853
     },
     {
       "id": "WidgetContinueReading",
@@ -1650,7 +1650,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/widgets/WidgetContinueReading.html",
-      "bytes": 10406
+      "bytes": 10407
     },
     {
       "id": "WidgetContinueReadingDark",
@@ -1660,7 +1660,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/widgets/WidgetContinueReadingDark.html",
-      "bytes": 10397
+      "bytes": 10398
     },
     {
       "id": "WidgetLockScreen",
@@ -1670,7 +1670,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/widgets/WidgetLockScreen.html",
-      "bytes": 4048
+      "bytes": 4049
     },
     {
       "id": "WidgetLockScreenDark",
@@ -1680,7 +1680,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/widgets/WidgetLockScreenDark.html",
-      "bytes": 4073
+      "bytes": 4074
     },
     {
       "id": "AndroidWidgets",
@@ -1690,7 +1690,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/widgets/AndroidWidgets.html",
-      "bytes": 12772
+      "bytes": 12773
     },
     {
       "id": "AndroidWidgetsDark",
@@ -1700,7 +1700,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/widgets/AndroidWidgetsDark.html",
-      "bytes": 13111
+      "bytes": 13112
     },
     {
       "id": "WatchHome",
@@ -1710,7 +1710,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/watch/WatchHome.html",
-      "bytes": 13508
+      "bytes": 13509
     },
     {
       "id": "WatchSibha",
@@ -1720,7 +1720,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/watch/WatchSibha.html",
-      "bytes": 8172
+      "bytes": 8173
     },
     {
       "id": "WatchComplications",
@@ -1730,7 +1730,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/watch/WatchComplications.html",
-      "bytes": 7715
+      "bytes": 7716
     },
     {
       "id": "ExpandedHome",
@@ -1740,7 +1740,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/expanded/ExpandedHome.html",
-      "bytes": 8888
+      "bytes": 8916
     },
     {
       "id": "ExpandedHomeDark",
@@ -1750,7 +1750,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/expanded/ExpandedHomeDark.html",
-      "bytes": 11262
+      "bytes": 11294
     },
     {
       "id": "ReaderExpandedActions",
@@ -1760,7 +1760,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/expanded/ReaderExpandedActions.html",
-      "bytes": 8223
+      "bytes": 8224
     },
     {
       "id": "ReaderExpandedTafsir",
@@ -1770,7 +1770,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/expanded/ReaderExpandedTafsir.html",
-      "bytes": 5376
+      "bytes": 5377
     },
     {
       "id": "ReaderOverlayTafsir",
@@ -1780,7 +1780,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/expanded/ReaderOverlayTafsir.html",
-      "bytes": 5711
+      "bytes": 5712
     },
     {
       "id": "ReaderExpandedDark",
@@ -1790,7 +1790,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/expanded/ReaderExpandedDark.html",
-      "bytes": 8178
+      "bytes": 8179
     },
     {
       "id": "ReaderMedium",
@@ -1800,7 +1800,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/expanded/ReaderMedium.html",
-      "bytes": 8341
+      "bytes": 8342
     },
     {
       "id": "AsmaaList",
@@ -1810,7 +1810,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/asmaa/AsmaaList.html",
-      "bytes": 15086
+      "bytes": 15087
     },
     {
       "id": "AsmaaListDark",
@@ -1820,7 +1820,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/asmaa/AsmaaListDark.html",
-      "bytes": 15091
+      "bytes": 15092
     },
     {
       "id": "AsmaaListEnglish",
@@ -1830,7 +1830,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/asmaa/AsmaaListEnglish.html",
-      "bytes": 14957
+      "bytes": 14958
     },
     {
       "id": "AsmaaDetail",
@@ -1840,7 +1840,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/asmaa/AsmaaDetail.html",
-      "bytes": 7683
+      "bytes": 7684
     },
     {
       "id": "AsmaaDetailDark",
@@ -1850,7 +1850,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/asmaa/AsmaaDetailDark.html",
-      "bytes": 8181
+      "bytes": 8182
     },
     {
       "id": "HijriCalendar",
@@ -1860,7 +1860,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hijri/HijriCalendar.html",
-      "bytes": 25970
+      "bytes": 25971
     },
     {
       "id": "HijriCalendarDark",
@@ -1870,7 +1870,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hijri/HijriCalendarDark.html",
-      "bytes": 25962
+      "bytes": 25963
     },
     {
       "id": "HijriCalendarEnglish",
@@ -1880,7 +1880,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hijri/HijriCalendarEnglish.html",
-      "bytes": 25578
+      "bytes": 25579
     },
     {
       "id": "HijriAdjust",
@@ -1890,7 +1890,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hijri/HijriAdjust.html",
-      "bytes": 27134
+      "bytes": 27135
     },
     {
       "id": "HijriAdjustDark",
@@ -1900,7 +1900,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hijri/HijriAdjustDark.html",
-      "bytes": 27604
+      "bytes": 27605
     },
     {
       "id": "MoonSighting",
@@ -1910,7 +1910,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/moon/MoonSighting.html",
-      "bytes": 6782
+      "bytes": 6783
     },
     {
       "id": "MoonSightingDark",
@@ -1920,7 +1920,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/moon/MoonSightingDark.html",
-      "bytes": 6791
+      "bytes": 6792
     },
     {
       "id": "MoonSightingEnglish",
@@ -1930,7 +1930,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/moon/MoonSightingEnglish.html",
-      "bytes": 6492
+      "bytes": 6493
     },
     {
       "id": "MoonSightingNoLocation",
@@ -1940,7 +1940,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/moon/MoonSightingNoLocation.html",
-      "bytes": 2772
+      "bytes": 2773
     },
     {
       "id": "MenuNewCards",
@@ -1950,7 +1950,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/entry-points/MenuNewCards.html",
-      "bytes": 12480
+      "bytes": 12481
     },
     {
       "id": "MenuNewCardsDark",
@@ -1960,7 +1960,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/entry-points/MenuNewCardsDark.html",
-      "bytes": 12493
+      "bytes": 12494
     },
     {
       "id": "MenuNewCardsEnglish",
@@ -1970,7 +1970,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/entry-points/MenuNewCardsEnglish.html",
-      "bytes": 12178
+      "bytes": 12179
     },
     {
       "id": "HomeHijriDate",
@@ -1980,7 +1980,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/entry-points/HomeHijriDate.html",
-      "bytes": 16901
+      "bytes": 17000
     },
     {
       "id": "HomeHijriDateDark",
@@ -1990,7 +1990,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/entry-points/HomeHijriDateDark.html",
-      "bytes": 16951
+      "bytes": 17050
     },
     {
       "id": "DiscoverCard",
@@ -2000,7 +2000,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/discover/DiscoverCard.html",
-      "bytes": 3996
+      "bytes": 3997
     },
     {
       "id": "DiscoverCardNew",
@@ -2010,7 +2010,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/discover/DiscoverCardNew.html",
-      "bytes": 3832
+      "bytes": 3833
     },
     {
       "id": "DiscoverCardDone",
@@ -2020,7 +2020,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/discover/DiscoverCardDone.html",
-      "bytes": 2222
+      "bytes": 2223
     },
     {
       "id": "DiscoverScreen",
@@ -2030,7 +2030,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/discover/DiscoverScreen.html",
-      "bytes": 14623
+      "bytes": 14624
     },
     {
       "id": "DiscoverTip",
@@ -2040,7 +2040,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/discover/DiscoverTip.html",
-      "bytes": 3683
+      "bytes": 3684
     },
     {
       "id": "DiscoverWidgetSheet",
@@ -2050,7 +2050,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/discover/DiscoverWidgetSheet.html",
-      "bytes": 2893
+      "bytes": 2894
     },
     {
       "id": "WidgetsHelp",
@@ -2060,7 +2060,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/widgets/WidgetsHelp.html",
-      "bytes": 9223
+      "bytes": 9224
     },
     {
       "id": "WidgetsHelpDark",
@@ -2070,7 +2070,7 @@
       "theme": "dark",
       "status": "awaiting-approval",
       "path": "frames/widgets/WidgetsHelpDark.html",
-      "bytes": 9256
+      "bytes": 9257
     },
     {
       "id": "WidgetAddConfirm",
@@ -2080,7 +2080,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/widgets/WidgetAddConfirm.html",
-      "bytes": 3563
+      "bytes": 3564
     },
     {
       "id": "WidgetAddConfirmDark",
@@ -2090,7 +2090,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/widgets/WidgetAddConfirmDark.html",
-      "bytes": 3570
+      "bytes": 3571
     },
     {
       "id": "WidgetAddConfirmAlready",
@@ -2100,7 +2100,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/widgets/WidgetAddConfirmAlready.html",
-      "bytes": 2968
+      "bytes": 2969
     },
     {
       "id": "WidgetAddConfirmAlreadyDark",
@@ -2110,7 +2110,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/widgets/WidgetAddConfirmAlreadyDark.html",
-      "bytes": 3393
+      "bytes": 3394
     },
     {
       "id": "HadithCollCovers",
@@ -2120,7 +2120,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollCovers.html",
-      "bytes": 21283
+      "bytes": 21284
     },
     {
       "id": "HadithCollCoversSepia",
@@ -2130,7 +2130,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollCoversSepia.html",
-      "bytes": 21004
+      "bytes": 21005
     },
     {
       "id": "HadithCollCoversDark",
@@ -2140,7 +2140,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollCoversDark.html",
-      "bytes": 21311
+      "bytes": 21312
     },
     {
       "id": "HadithCollList",
@@ -2150,7 +2150,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollList.html",
-      "bytes": 17391
+      "bytes": 17392
     },
     {
       "id": "HadithCollListDark",
@@ -2160,7 +2160,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollListDark.html",
-      "bytes": 17409
+      "bytes": 17410
     },
     {
       "id": "HadithCollListEnglish",
@@ -2170,7 +2170,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollListEnglish.html",
-      "bytes": 17101
+      "bytes": 17102
     },
     {
       "id": "HadithCollUntitled",
@@ -2180,7 +2180,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollUntitled.html",
-      "bytes": 13523
+      "bytes": 13524
     },
     {
       "id": "HadithCollUntitledDark",
@@ -2190,7 +2190,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollUntitledDark.html",
-      "bytes": 13542
+      "bytes": 13543
     },
     {
       "id": "HadithCollUntitledEnglish",
@@ -2200,7 +2200,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollUntitledEnglish.html",
-      "bytes": 14399
+      "bytes": 14400
     },
     {
       "id": "HadithCollUntitledBooks",
@@ -2210,7 +2210,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollUntitledBooks.html",
-      "bytes": 11001
+      "bytes": 11002
     },
     {
       "id": "HadithCollUntitledBooksDark",
@@ -2220,7 +2220,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollUntitledBooksDark.html",
-      "bytes": 11053
+      "bytes": 11054
     },
     {
       "id": "HadithCollUntitledBooksEnglish",
@@ -2230,7 +2230,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollUntitledBooksEnglish.html",
-      "bytes": 10840
+      "bytes": 10841
     },
     {
       "id": "HadithCollBooks",
@@ -2240,7 +2240,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollBooks.html",
-      "bytes": 11470
+      "bytes": 11471
     },
     {
       "id": "HadithCollBooksDark",
@@ -2250,7 +2250,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollBooksDark.html",
-      "bytes": 11513
+      "bytes": 11514
     },
     {
       "id": "HadithCollBooksEnglish",
@@ -2260,7 +2260,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollBooksEnglish.html",
-      "bytes": 11258
+      "bytes": 11259
     },
     {
       "id": "HadithCollBook",
@@ -2270,7 +2270,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollBook.html",
-      "bytes": 12112
+      "bytes": 12113
     },
     {
       "id": "HadithCollBookDark",
@@ -2280,7 +2280,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollBookDark.html",
-      "bytes": 12179
+      "bytes": 12180
     },
     {
       "id": "HadithCollBookEnglish",
@@ -2290,7 +2290,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollBookEnglish.html",
-      "bytes": 8404
+      "bytes": 8405
     },
     {
       "id": "HadithCollSingle",
@@ -2300,7 +2300,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSingle.html",
-      "bytes": 13416
+      "bytes": 13417
     },
     {
       "id": "HadithCollSingleDark",
@@ -2310,7 +2310,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollSingleDark.html",
-      "bytes": 13478
+      "bytes": 13479
     },
     {
       "id": "HadithCollSingleEnglish",
@@ -2320,7 +2320,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollSingleEnglish.html",
-      "bytes": 9702
+      "bytes": 9703
     },
     {
       "id": "HadithCollChapters",
@@ -2330,7 +2330,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollChapters.html",
-      "bytes": 7235
+      "bytes": 7236
     },
     {
       "id": "HadithCollChaptersPartial",
@@ -2340,7 +2340,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollChaptersPartial.html",
-      "bytes": 9335
+      "bytes": 9336
     },
     {
       "id": "HadithCollChaptersDark",
@@ -2350,7 +2350,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollChaptersDark.html",
-      "bytes": 7248
+      "bytes": 7249
     },
     {
       "id": "HadithCollChaptersPartialDark",
@@ -2360,7 +2360,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollChaptersPartialDark.html",
-      "bytes": 9361
+      "bytes": 9362
     },
     {
       "id": "HadithCollChaptersEnglish",
@@ -2370,7 +2370,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollChaptersEnglish.html",
-      "bytes": 7115
+      "bytes": 7116
     },
     {
       "id": "HadithCollChaptersPartialEnglish",
@@ -2380,7 +2380,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollChaptersPartialEnglish.html",
-      "bytes": 9192
+      "bytes": 9193
     },
     {
       "id": "HadithCollChapterHadith",
@@ -2390,7 +2390,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollChapterHadith.html",
-      "bytes": 10504
+      "bytes": 10505
     },
     {
       "id": "HadithCollChapterHadithDark",
@@ -2400,7 +2400,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollChapterHadithDark.html",
-      "bytes": 10553
+      "bytes": 10554
     },
     {
       "id": "HadithCollChapterHadithEnglish",
@@ -2410,7 +2410,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollChapterHadithEnglish.html",
-      "bytes": 7422
+      "bytes": 7423
     },
     {
       "id": "HadithCollReader",
@@ -2420,7 +2420,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollReader.html",
-      "bytes": 5804
+      "bytes": 5805
     },
     {
       "id": "HadithCollReaderExplained",
@@ -2430,7 +2430,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderExplained.html",
-      "bytes": 8094
+      "bytes": 8095
     },
     {
       "id": "HadithCollReaderTwoExplanations",
@@ -2440,7 +2440,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderTwoExplanations.html",
-      "bytes": 9184
+      "bytes": 9185
     },
     {
       "id": "HadithCollReaderDark",
@@ -2450,7 +2450,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderDark.html",
-      "bytes": 5545
+      "bytes": 5546
     },
     {
       "id": "HadithCollReaderExplainedDark",
@@ -2460,7 +2460,7 @@
       "theme": "dark",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderExplainedDark.html",
-      "bytes": 8080
+      "bytes": 8081
     },
     {
       "id": "HadithCollReaderEnglish",
@@ -2470,7 +2470,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderEnglish.html",
-      "bytes": 5077
+      "bytes": 5078
     },
     {
       "id": "HadithCollReaderExplainedEnglish",
@@ -2480,7 +2480,7 @@
       "theme": "en",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderExplainedEnglish.html",
-      "bytes": 7561
+      "bytes": 7562
     },
     {
       "id": "HadithCollReaderPlain",
@@ -2490,7 +2490,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderPlain.html",
-      "bytes": 5858
+      "bytes": 5859
     },
     {
       "id": "HadithCollReaderGrade",
@@ -2500,7 +2500,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollReaderGrade.html",
-      "bytes": 6633
+      "bytes": 6634
     },
     {
       "id": "HadithCollSearch",
@@ -2510,7 +2510,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSearch.html",
-      "bytes": 6727
+      "bytes": 6728
     },
     {
       "id": "HadithCollSearchResults",
@@ -2520,7 +2520,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSearchResults.html",
-      "bytes": 7021
+      "bytes": 7022
     },
     {
       "id": "HadithCollSearchEmpty",
@@ -2530,7 +2530,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSearchEmpty.html",
-      "bytes": 4355
+      "bytes": 4356
     },
     {
       "id": "HadithCollDownload",
@@ -2540,7 +2540,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollDownload.html",
-      "bytes": 4627
+      "bytes": 4628
     },
     {
       "id": "HadithCollLoading",
@@ -2550,7 +2550,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollLoading.html",
-      "bytes": 4607
+      "bytes": 4608
     },
     {
       "id": "HadithCollOffline",
@@ -2560,7 +2560,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollOffline.html",
-      "bytes": 2970
+      "bytes": 2971
     },
     {
       "id": "HadithCollOfflineDownloaded",
@@ -2570,7 +2570,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollOfflineDownloaded.html",
-      "bytes": 18988
+      "bytes": 18989
     },
     {
       "id": "HadithCollDownloadFailed",
@@ -2580,7 +2580,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollDownloadFailed.html",
-      "bytes": 17311
+      "bytes": 17312
     },
     {
       "id": "HadithCollError",
@@ -2590,7 +2590,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollError.html",
-      "bytes": 2396
+      "bytes": 2397
     },
     {
       "id": "HadithCollSaved",
@@ -2600,7 +2600,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSaved.html",
-      "bytes": 10559
+      "bytes": 10560
     },
     {
       "id": "HadithCollSavedUnverified",
@@ -2610,7 +2610,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSavedUnverified.html",
-      "bytes": 7429
+      "bytes": 7430
     },
     {
       "id": "HadithCollSavedEmpty",
@@ -2620,7 +2620,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSavedEmpty.html",
-      "bytes": 2408
+      "bytes": 2409
     },
     {
       "id": "HadithCollExpanded",
@@ -2630,7 +2630,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollExpanded.html",
-      "bytes": 22742
+      "bytes": 22743
     },
     {
       "id": "HadithCollExpandedReader",
@@ -2640,7 +2640,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollExpandedReader.html",
-      "bytes": 17763
+      "bytes": 17764
     },
     {
       "id": "HadithCollExpandedReaderExplained",
@@ -2650,37 +2650,37 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollExpandedReaderExplained.html",
-      "bytes": 19931
+      "bytes": 19932
     },
     {
       "id": "HadithCollMenu",
       "stack": "hadith",
-      "caption": "Menu · new cards · Hadith entry · Arabic",
+      "caption": "Menu · ordered by daily use, Qibla and Misbaha cards (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/hadith/HadithCollMenu.html",
-      "bytes": 13282
+      "bytes": 14977
     },
     {
       "id": "HadithCollMenuDark",
       "stack": "hadith",
-      "caption": "Menu · new cards · Hadith entry · dark",
+      "caption": "Menu · new cards · Hadith entry · dark (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "dark",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/hadith/HadithCollMenuDark.html",
-      "bytes": 13295
+      "bytes": 14984
     },
     {
       "id": "HadithCollMenuEnglish",
       "stack": "hadith",
-      "caption": "Menu · new cards · Hadith entry · English",
+      "caption": "Menu · new cards · Hadith entry · English (ADR 0089, بانتظار الموافقة)",
       "size": "compact",
       "theme": "en",
-      "status": "source",
+      "status": "awaiting-approval",
       "path": "frames/hadith/HadithCollMenuEnglish.html",
-      "bytes": 12958
+      "bytes": 14592
     },
     {
       "id": "HadithCollSources",
@@ -2690,7 +2690,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSources.html",
-      "bytes": 7275
+      "bytes": 7319
     }
   ]
 }

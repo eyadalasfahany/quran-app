@@ -1297,8 +1297,8 @@
   {
    "id": "Salah",
    "stack": "salah",
-   "caption": "الصلاة",
-   "status": "source",
+   "caption": "الصلاة · زر رجوع وسطر التاريخ تحت العنوان (ADR 0081, 0089، بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2801,8 +2801,8 @@
   {
    "id": "HomeAzkar",
    "stack": "home",
-   "caption": "Home · top: reading, next prayer, azkar",
-   "status": "source",
+   "caption": "Home · top: reading, next prayer with Qibla, today's progress (ADR 0089, بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2839,8 +2839,8 @@
   {
    "id": "HomeAzkarLower",
    "stack": "home",
-   "caption": "Home · scrolled: progress, tiles, picks",
-   "status": "source",
+   "caption": "Home · scrolled: continue azkar, tiles by daily use, picks (ADR 0089, بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -4237,8 +4237,8 @@
   {
    "id": "HadithCollMenu",
    "stack": "hadith",
-   "caption": "Menu · new cards · Hadith entry · Arabic",
-   "status": "source",
+   "caption": "Menu · ordered by daily use, Qibla and Misbaha cards (ADR 0089, بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",

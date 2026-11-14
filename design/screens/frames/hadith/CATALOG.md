@@ -63,9 +63,9 @@ Daily hadith
 | `HadithCollExpanded` | expanded | ar-light | source | Hadith · expanded window · 1194 × 834 · tab rail, books pane, book list |
 | `HadithCollExpandedReader` | expanded | ar-light | source | Hadith reader · expanded window · 1194 × 834 · tab rail, books pane, side panel · hadith text 28/56 pt |
 | `HadithCollExpandedReaderExplained` | expanded | ar-light | source | Hadith reader · expanded window · explanation cards in the side panel · hadith text 28/56 pt |
-| `HadithCollMenu` | compact | ar-light | source | Menu · new cards · Hadith entry · Arabic |
-| `HadithCollMenuDark` | compact | dark | source | Menu · new cards · Hadith entry · dark |
-| `HadithCollMenuEnglish` | compact | en | source | Menu · new cards · Hadith entry · English |
+| `HadithCollMenu` | compact | ar-light | awaiting-approval | Menu · ordered by daily use, Qibla and Misbaha cards (ADR 0089, بانتظار الموافقة) |
+| `HadithCollMenuDark` | compact | dark | awaiting-approval | Menu · new cards · Hadith entry · dark (ADR 0089, بانتظار الموافقة) |
+| `HadithCollMenuEnglish` | compact | en | awaiting-approval | Menu · new cards · Hadith entry · English (ADR 0089, بانتظار الموافقة) |
 | `HadithCollSources` | compact | ar-light | source | Settings · المصادر والشكر · Hadith row added |
 
 ## Model rule
