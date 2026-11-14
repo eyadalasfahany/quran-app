@@ -1,6 +1,6 @@
 # Phase 8 — السيرة النبوية (Seerah): an interactive map and timeline of «نور اليقين»
 
-Status: **plan written 14 Nov 2026; autonomous overnight build requested (see «Revision»); nothing accepted, nothing built yet** · Branch: `main` (CLAUDE.md, the developer works on `main` unless they name a branch) · ADR 0089 (**Proposed**) · Content plan entry added (**proposed**) · Spec edits **listed, not applied**: [`phase-8/spec-changes.md`](phase-8/spec-changes.md) · Data formats, validator and review report: [`phase-8/data-format.md`](phase-8/data-format.md).
+Status: **plan written 14 Nov 2026; autonomous overnight build requested (see «Revision»); nothing accepted, nothing built yet** · Branch: `claude/focused-hamilton-18qhkz` (the overnight work branch the developer allowed) · ADR 0089 (**Proposed**) · Content plan entry added (**proposed**) · Spec edits **listed, not applied**: [`phase-8/spec-changes.md`](phase-8/spec-changes.md) · Data formats, validator and review report: [`phase-8/data-format.md`](phase-8/data-format.md).
 
 **Goal:** a Seerah section that is a full-screen, hand-drawn, offline SVG map with semantic zoom (region, then city with landmarks) and a timeline of the Prophet's ﷺ age 0 to 63, where every event of the book «نور اليقين في سيرة سيد المرسلين» sits on its place and its year, and the developer has reviewed and signed off every one of them. The event page shows the book's text verbatim. There is a «عرض كقائمة» alternative for screen readers.
 
