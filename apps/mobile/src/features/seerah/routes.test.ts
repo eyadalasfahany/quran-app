@@ -8,7 +8,7 @@ describe('seerahHref', () => {
   it('builds the fixed routes', () => {
     expect(seerahHref.home).toBe('/seerah');
     expect(seerahHref.list).toBe('/seerah?view=list');
-    expect(seerahHref.homeTab).toBe('/(main)/(home)');
+    expect(seerahHref.menuTab).toBe('/(main)/(menu)');
   });
 
   it('builds and encodes the event route', () => {
@@ -20,10 +20,18 @@ describe('seerahHref', () => {
 
 describe('seerahHref.map', () => {
   it('builds the map route with an age and a place', () => {
-    expect(seerahHref.map()).toBe('/seerah');
-    expect(seerahHref.map({ age: 40 })).toBe('/seerah?age=40');
-    expect(seerahHref.map({ place: 'makkah.kaaba' })).toBe('/seerah?place=makkah.kaaba');
-    expect(seerahHref.map({ age: 0, place: 'a b' })).toBe('/seerah?age=0&place=a%20b');
+    expect(seerahHref.map({ age: 40 })).toBe('/seerah?view=map&age=40');
+    expect(seerahHref.map({ place: 'makkah.kaaba' })).toBe('/seerah?view=map&place=makkah.kaaba');
+    expect(seerahHref.map({ age: 0, place: 'a b' })).toBe('/seerah?view=map&age=0&place=a%20b');
+  });
+
+  it('always asks for the map, even with nothing else to focus', () => {
+    expect(seerahHref.map()).toBe('/seerah?view=map');
+  });
+
+  it('never returns the list view, whatever the focus', () => {
+    expect(seerahHref.map({ place: 'badr' })).not.toContain('view=list');
+    expect(new URLSearchParams(String(seerahHref.map({ age: 3 })).split('?')[1]).get('view')).toBe('map');
   });
 });
 

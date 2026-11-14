@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react-native";
 
 import { useOnline } from "@/core/network/useOnline";
-import { installResource } from "@/core/sync";
+import { installResource, runDeviceContentSync } from "@/core/sync";
 import {
   resetHadithDownloads,
   useHadithDownloads,
@@ -14,6 +14,7 @@ jest.mock("@/core/network/useOnline", () => ({
 }));
 jest.mock("@/core/sync", () => ({
   installResource: jest.fn(() => new Promise(() => undefined)),
+  runDeviceContentSync: jest.fn(() => Promise.resolve()),
 }));
 
 const ENTRY = {
@@ -51,6 +52,24 @@ describe("useSeerahDownload", () => {
       (await renderHook(() => useSeerahDownload(undefined))).result.current.view
         .kind,
     ).toBe("error");
+  });
+
+  it("re-syncs the catalogue from the error when there is no entry, and installs nothing", async () => {
+    const { result } = await renderHook(() => useSeerahDownload(undefined));
+    await act(async () => {
+      result.current.start();
+    });
+    expect(runDeviceContentSync).toHaveBeenCalledTimes(1);
+    expect(installResource).not.toHaveBeenCalled();
+  });
+
+  it("does not re-sync the catalogue when the entry is there", async () => {
+    const { result } = await renderHook(() => useSeerahDownload(ENTRY));
+    await act(async () => {
+      result.current.start();
+    });
+    expect(runDeviceContentSync).not.toHaveBeenCalled();
+    expect(installResource).toHaveBeenCalledTimes(1);
   });
 
   it("starts the install for the entry and reports its progress", async () => {

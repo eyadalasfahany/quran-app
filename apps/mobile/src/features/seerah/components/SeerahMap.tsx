@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
@@ -58,6 +58,11 @@ export type SeerahMapProps = {
   /** Events in the «أخرى» bucket that match the focus; 0 hides the chip. */
   otherCount: number;
   selectedPlaceId?: string | null;
+  /**
+   * A place to centre on (the event page's «show on map»). The map pans to its pin once each time it changes, animated
+   * unless Reduce Motion is on. Selecting a pin does not pan: only this does.
+   */
+  focusPlaceId?: string | null;
   /** The map is drawn under the header and the timeline; edge chips keep clear of them. */
   insets?: { top: number; bottom: number };
   /** A single place (or one event) was tapped; `scale` tells the screen if the fan-out is active. */
@@ -90,6 +95,7 @@ export function SeerahMap({
   dimmedRouteIds = [],
   otherCount,
   selectedPlaceId = null,
+  focusPlaceId = null,
   insets = { bottom: 220, top: 112 },
   onPinPress,
   onCityOpen,
@@ -279,6 +285,21 @@ export function SeerahMap({
 
   const panTo = (pin: SeerahMapPin) => apply(centerOn({ x: pin.x, y: pin.y }, view.scale, size), true);
 
+  // The focused place is panned to once; the guard keeps a re-render (new pins, a new `panTo`) from panning again.
+  const focusedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (focusPlaceId === null) {
+      focusedRef.current = null;
+      return;
+    }
+    const pin = pins.find((item) => item.placeId === focusPlaceId);
+    if (pin === undefined || focusedRef.current === focusPlaceId) {
+      return;
+    }
+    focusedRef.current = focusPlaceId;
+    panTo(pin);
+  });
+
   const edgeGroups: Record<EdgeDirection, typeof edges> = { east: [], north: [], south: [], west: [] };
   edges.forEach((edge) => edgeGroups[edge.direction].push(edge));
   const renderEdge = ({ direction, pin }: (typeof edges)[number]) => (
@@ -307,6 +328,7 @@ export function SeerahMap({
         <View style={StyleSheet.absoluteFill}>
           <Animated.View
             style={[{ height: content.height, left: 0, position: 'absolute', top: 0, transformOrigin: 'top left', width: content.width }, layerStyle]}
+            testID={`${testID}-layer`}
           >
             <SvgXml height={content.height} width={content.width} xml={art} />
             <Svg height={content.height} pointerEvents="none" style={StyleSheet.absoluteFill} width={content.width}>
@@ -316,7 +338,7 @@ export function SeerahMap({
                   dimmed={dimmedRouteIds.includes(path.routeId)}
                   key={`${path.routeId}-${path.d.slice(0, 24)}`}
                   kind={path.kind}
-                  scale={view.scale}
+                  scale={scale}
                   testID={`${testID}-route-${path.routeId}`}
                 />
               ))}
@@ -363,7 +385,7 @@ export function SeerahMap({
                       <MapPin
                         dimmed={pin.dimmed}
                         label={pinLabel(pin)}
-                        onPress={() => onPinPress(pin.placeId, view.scale)}
+                        onPress={() => (pin.opensLevel === null ? onPinPress(pin.placeId, view.scale) : onCityOpen(pin.opensLevel, pin.placeId))}
                         selected={selected}
                         testID={`${testID}-pin-${pin.placeId}`}
                         uncertain={pin.uncertain}

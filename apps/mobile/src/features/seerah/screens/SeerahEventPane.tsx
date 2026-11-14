@@ -57,7 +57,6 @@ export function SeerahEventPane({
         placeName={name(event.placeId)}
         point={{ x: position.x, y: position.y }}
         route={path === undefined ? null : { d: path.d, kind: path.kind }}
-        viewbox={level.viewbox}
       />
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps

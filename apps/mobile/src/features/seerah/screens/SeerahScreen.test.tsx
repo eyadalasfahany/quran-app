@@ -1,6 +1,7 @@
-import { act, cleanup, screen } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { AccessibilityInfo } from 'react-native';
+import { setUpTests, useReducedMotion } from 'react-native-reanimated';
 
 import { useOnline } from '@/core/network/useOnline';
 import { installResource } from '@/core/sync';
@@ -24,6 +25,10 @@ jest.mock('expo-router', () => ({
   router: { back: jest.fn(), canGoBack: jest.fn(() => true), navigate: jest.fn(), push: jest.fn(), replace: jest.fn() },
 }));
 jest.mock('@/core/network/useOnline', () => ({ useOnline: jest.fn(() => true) }));
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  return { __esModule: true, ...actual, default: actual.default, useReducedMotion: jest.fn(() => false) };
+});
 jest.mock('@/core/sync', () => ({
   installResource: jest.fn(() => new Promise(() => undefined)),
   runDeviceContentSync: jest.fn(() => Promise.resolve()),
@@ -36,6 +41,8 @@ jest.mock('../hooks', () => ({
   useSeerahReady: jest.fn(),
   useSeerahWorld: jest.fn(),
 }));
+
+setUpTests();
 
 const BOOK: SeerahBook = {
   attributionAr: 'x',
@@ -102,6 +109,7 @@ describe('SeerahScreen', () => {
     mocked.world.mockReturnValue(EMPTY);
     mocked.event.mockReturnValue(undefined);
     jest.spyOn(AccessibilityInfo, 'isScreenReaderEnabled').mockResolvedValue(false);
+    jest.mocked(useReducedMotion).mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -160,6 +168,13 @@ describe('SeerahScreen', () => {
       expect(screen.getByText('تعذّر فتح السيرة')).toBeOnTheScreen();
     });
 
+    it('goes back to the Menu tab when there is no history', async () => {
+      jest.mocked(router.canGoBack).mockReturnValueOnce(false);
+      await renderGesture(<SeerahScreen />);
+      await press(screen.getByTestId('seerah-state-back'));
+      expect(router.replace).toHaveBeenCalledWith('/(main)/(menu)');
+    });
+
     it('renders nothing before content.db is ready', async () => {
       mocked.ready.mockReturnValue(false);
       await renderGesture(<SeerahScreen />);
@@ -191,6 +206,22 @@ describe('SeerahScreen', () => {
       await renderGesture(<SeerahScreen initialView="list" />);
       await press(screen.getAllByText('[عنوان الفصل في الكتاب]')[0] as never);
       expect(router.push).toHaveBeenCalledWith('/seerah/event/e001');
+    });
+
+    it('centres the map on the place from the route, with its pin selected', async () => {
+      // Reduce Motion: the view is written at once. The badr pin (803, 1122) at the region's 0.6 zoom, on a 390 x 844 window.
+      jest.mocked(useReducedMotion).mockReturnValue(true);
+      await renderGesture(<SeerahScreen initialPlace="badr" initialView="map" />);
+      expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({
+        transform: [{ translateX: 195 - 803 * 0.6 }, { translateY: 422 - 1122 * 0.6 }, { scale: 0.6 }],
+      });
+    });
+
+    it('opens the map from the route parameter even when the list is remembered', async () => {
+      storage.set(storageKeys.seerah.view, 'list');
+      await renderGesture(<SeerahScreen initialView="map" />);
+      expect(screen.getByTestId('seerah-map')).toBeOnTheScreen();
+      expect(screen.queryByTestId('seerah-list')).toBeNull();
     });
 
     it('opens the remembered list', async () => {
@@ -234,6 +265,23 @@ describe('SeerahScreen', () => {
       expect(screen.getByTestId('seerah-event-callout')).toBeOnTheScreen();
       await press(screen.getByRole('button', { name: /^فتح/ }));
       expect(router.push).toHaveBeenCalledWith('/seerah/event/e006');
+    });
+
+    it('pushes an event from the spot sheet on the next frame, after the sheet has closed', async () => {
+      jest.useFakeTimers();
+      await renderGesture(<SeerahScreen />);
+      await press(screen.getByRole('button', { name: /^أخرى/ }));
+      expect(screen.getByTestId('seerah-spot-sheet')).toBeOnTheScreen();
+      await act(async () => {
+        fireEvent.press(screen.getAllByText('[عنوان الفصل في الكتاب]')[0] as never);
+      });
+      expect(screen.queryByTestId('seerah-spot-sheet')).toBeNull();
+      expect(router.push).not.toHaveBeenCalled();
+      await act(async () => {
+        jest.advanceTimersToNextTimer();
+      });
+      expect(router.push).toHaveBeenCalledTimes(1);
+      expect(router.push).toHaveBeenCalledWith(expect.stringMatching(/^\/seerah\/event\//));
     });
 
     it('opens the event as a sheet on a medium window', async () => {

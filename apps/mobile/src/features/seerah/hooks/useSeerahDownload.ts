@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 
 import { useOnline } from "@/core/network/useOnline";
+import { runDeviceContentSync } from "@/core/sync";
 import { useHadithDownloads } from "@/features/hadith/downloads";
 
 import type { SeerahCatalogEntry } from "../data";
@@ -27,9 +28,13 @@ export function useSeerahDownload(entry: SeerahCatalogEntry | undefined): {
   const resourceId = entry?.resourceId;
   const running = resourceId === undefined ? undefined : byId[resourceId];
 
+  // Without a catalogue entry there is nothing to install: the action re-syncs the catalogue (as the hadith screen does)
+  // and the entry arrives with it.
   const start = useCallback(() => {
     if (resourceId !== undefined) {
       void begin(resourceId);
+    } else {
+      void runDeviceContentSync();
     }
   }, [begin, resourceId]);
   const cancel = useCallback(() => {

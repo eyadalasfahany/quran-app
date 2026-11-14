@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
 import Svg, { SvgXml } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
@@ -21,7 +22,6 @@ const ZOOM = 0.9;
  */
 export function EventMiniMap({
   art,
-  viewbox,
   point,
   placeName,
   route = null,
@@ -29,7 +29,6 @@ export function EventMiniMap({
   testID = 'seerah-event-minimap',
 }: {
   art: string;
-  viewbox: readonly [number, number, number, number];
   /** The place's position in viewbox units. */
   point: { x: number; y: number };
   placeName: string;
@@ -41,10 +40,10 @@ export function EventMiniMap({
   const theme = useTheme();
   const colors = useContrastColors();
   const [width, setWidth] = useState(0);
-  const contentWidth = (viewbox[2] - viewbox[0]) * ZOOM;
-  const contentHeight = (viewbox[3] - viewbox[1]) * ZOOM;
-  const left = width / 2 - point.x * ZOOM;
-  const top = HEIGHT / 2 - point.y * ZOOM;
+  const miniScale = useSharedValue(ZOOM);
+  // Only the window around the place is drawn: the strip shows a few hundred units of the art at ZOOM points per unit, not
+  // the whole art scaled down. Centred on the place, the same size as the strip (so the art is not stretched).
+  const crop = width === 0 ? null : `${point.x - width / 2 / ZOOM} ${point.y - HEIGHT / 2 / ZOOM} ${width / ZOOM} ${HEIGHT / ZOOM}`;
 
   return (
     <Pressable
@@ -62,11 +61,11 @@ export function EventMiniMap({
       }}
       testID={testID}
     >
-      <View pointerEvents="none" style={{ height: contentHeight, left, position: 'absolute', top, width: contentWidth }} testID={`${testID}-art`}>
-        <SvgXml height={contentHeight} width={contentWidth} xml={art} />
-        {route === null ? null : (
-          <Svg height={contentHeight} style={{ position: 'absolute' }} viewBox={`0 0 ${viewbox[2] - viewbox[0]} ${viewbox[3] - viewbox[1]}`} width={contentWidth}>
-            <RouteLine d={route.d} kind={route.kind} scale={ZOOM} />
+      <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={`${testID}-art`}>
+        {crop === null ? null : <SvgXml height={HEIGHT} testID={`${testID}-art-svg`} viewBox={crop} width={width} xml={art} />}
+        {route === null || crop === null ? null : (
+          <Svg height={HEIGHT} style={{ position: 'absolute' }} viewBox={crop} width={width}>
+            <RouteLine d={route.d} kind={route.kind} scale={miniScale} />
           </Svg>
         )}
       </View>

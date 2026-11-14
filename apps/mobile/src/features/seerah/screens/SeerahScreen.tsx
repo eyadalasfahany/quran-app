@@ -85,6 +85,7 @@ export function SeerahScreen({
   const [levelId, setLevelId] = useState(REGION);
   const [focus, setFocus] = useState<SeerahFocus>(initialAge);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [focusPlaceId, setFocusPlaceId] = useState<string | null>(null);
   const [callout, setCallout] = useState<SeerahEvent | null>(null);
   const [spot, setSpot] = useState<{ title: string; events: SeerahEvent[] } | null>(null);
   const [keyOpen, setKeyOpen] = useState(false);
@@ -119,6 +120,7 @@ export function SeerahScreen({
     if (target !== null) {
       setLevelId(target.levelId);
       setSelectedPlaceId(target.pinPlaceId);
+      setFocusPlaceId(target.pinPlaceId);
     }
   }
 
@@ -137,6 +139,13 @@ export function SeerahScreen({
     } else {
       setOpenEventId(id);
     }
+  };
+
+  // A row of the spot sheet (a modal): the sheet closes first, and the event opens on the next frame. A push that lands
+  // while the modal is still dismissing is dropped on iOS.
+  const openFromSpot = (id: string) => {
+    setSpot(null);
+    requestAnimationFrame(() => openEvent(id));
   };
 
   const showSpot = (title: string, events: SeerahEvent[]) => {
@@ -163,6 +172,7 @@ export function SeerahScreen({
     if (target !== null) {
       setLevelId(target.levelId);
       setSelectedPlaceId(target.pinPlaceId);
+      setFocusPlaceId(target.pinPlaceId);
     }
     chooseView('map');
   };
@@ -177,7 +187,7 @@ export function SeerahScreen({
     return <Screen testID={testID} topInset={false} />;
   }
 
-  const backToMenu = () => goBackOr(seerahHref.homeTab);
+  const backToMenu = () => goBackOr(seerahHref.menuTab);
   const stateScreen = (kind: SeerahStateKind) => (
     <Screen testID={testID} topInset={false}>
       <SeerahBackdrop />
@@ -247,6 +257,7 @@ export function SeerahScreen({
         areaLabels={level.areaLabels}
         art={art}
         dimmedRouteIds={dimmedRoutes}
+        focusPlaceId={focusPlaceId}
         insets={{ bottom: expanded ? theme.space[8] : TIMELINE_CLEARANCE, top: insets.top + 80 }}
         key={level.id}
         levelId={level.id}
@@ -348,7 +359,7 @@ export function SeerahScreen({
           <SpotSheet
             eventsLabel={eventCountText(t, spot.events.length)}
             onClose={() => setSpot(null)}
-            onRowPress={openEvent}
+            onRowPress={openFromSpot}
             rows={spot.events.map(eventRow)}
             title={spot.title}
           />

@@ -1,5 +1,6 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import { usePanGesture, usePinchGesture } from 'react-native-gesture-handler';
+import { setUpTests, useReducedMotion } from 'react-native-reanimated';
 
 import { locales } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -13,6 +14,13 @@ import { SeerahMap, type SeerahMapProps } from './SeerahMap';
 jest.mock('react-native-gesture-handler', () => {
   const actual = jest.requireActual<typeof import('react-native-gesture-handler')>('react-native-gesture-handler');
   return { ...actual, usePanGesture: jest.fn(actual.usePanGesture), usePinchGesture: jest.fn(actual.usePinchGesture) };
+});
+
+setUpTests();
+
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  return { __esModule: true, ...actual, default: actual.default, useReducedMotion: jest.fn(() => false) };
 });
 
 const ART = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
@@ -67,6 +75,7 @@ function gestures() {
 beforeEach(() => {
   jest.mocked(usePanGesture).mockClear();
   jest.mocked(usePinchGesture).mockClear();
+  jest.mocked(useReducedMotion).mockReturnValue(false);
 });
 
 describe('SeerahMap', () => {
@@ -95,6 +104,14 @@ describe('SeerahMap', () => {
     expect(onCityOpen).toHaveBeenCalledWith('madinah', 'madinah');
     await press(screen.getByTestId('seerah-map-pin-badr'));
     expect(onPinPress).toHaveBeenCalledWith('badr', 0.6);
+  });
+
+  it('a city with one event still opens its map on a tap', async () => {
+    const city = makePin({ count: 1, eventTitle: 'حدث واحد', name: 'المدينة', opensLevel: 'madinah', placeId: 'madinah', x: 878, y: 1053.3 });
+    const { onCityOpen, onPinPress } = await mountMap([city]);
+    await press(screen.getByTestId('seerah-map-pin-madinah'));
+    expect(onCityOpen).toHaveBeenCalledWith('madinah', 'madinah');
+    expect(onPinPress).not.toHaveBeenCalled();
   });
 
   it('a place with several events and no map reports the tap to the screen', async () => {
@@ -208,6 +225,22 @@ describe('SeerahMap', () => {
     });
     expect(screen.getByTestId('seerah-map-pin-madinah')).toBeOnTheScreen();
     expect(onCityOpen).not.toHaveBeenCalled();
+  });
+
+  it('pans to the focused pin, centred, at the level zoom (Reduce Motion: at once)', async () => {
+    // Window 390 x 844; 0.6 per unit; the badr pin (803, 1122) is in the middle of the window, clamped inside the art.
+    jest.mocked(useReducedMotion).mockReturnValue(true);
+    await mountMap([madinah, makkah, badr], { focusPlaceId: 'badr' });
+    expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({
+      transform: [{ translateX: 195 - 803 * 0.6 }, { translateY: 422 - 1122 * 0.6 }, { scale: 0.6 }],
+    });
+  });
+
+  it('does not pan to a selected pin: only the focus does', async () => {
+    await mountMap([madinah, makkah, badr], { selectedPlaceId: 'badr' });
+    expect(screen.getByTestId('seerah-map-layer')).not.toHaveAnimatedStyle({
+      transform: [{ translateX: 195 - 803 * 0.6 }, { translateY: 422 - 1122 * 0.6 }, { scale: 0.6 }],
+    });
   });
 
   it('draws the routes, faint when dimmed, and the area labels', async () => {

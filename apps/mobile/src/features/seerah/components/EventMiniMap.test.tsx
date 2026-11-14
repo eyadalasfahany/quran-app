@@ -10,7 +10,7 @@ import { act } from 'react';
 import { EventMiniMap } from './EventMiniMap';
 
 const ART = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
-const base = { art: ART, onPress: jest.fn(), placeName: 'بدر', point: { x: 803, y: 1122 }, viewbox: [0, 0, 1644, 2400] as const };
+const base = { art: ART, onPress: jest.fn(), placeName: 'بدر', point: { x: 803, y: 1122 } };
 
 async function layOut() {
   await act(async () => {
@@ -39,10 +39,27 @@ describe('EventMiniMap', () => {
     expect(screen.getByTestId('seerah-event-minimap-halo')).toBeOnTheScreen();
   });
 
-  it('centres the art on the place at 0.9', async () => {
+  it('crops the art to a window centred on the place at 0.9 points a unit', async () => {
     await renderUi(<EventMiniMap {...base} />);
     await layOut();
-    expect(flatStyle(screen.getByTestId('seerah-event-minimap-art').props.style)).toMatchObject({ left: 358 / 2 - 803 * 0.9, top: 84 - 1122 * 0.9, width: 1644 * 0.9 });
+    const svg = screen.getByTestId('seerah-event-minimap-art-svg').props;
+    // The strip is 358 x 168 pt: 358 / 0.9 by 168 / 0.9 units, so the art is not stretched.
+    expect(svg.vbWidth).toBeCloseTo(358 / 0.9);
+    expect(svg.vbHeight).toBeCloseTo(168 / 0.9);
+    expect(svg.minX + svg.vbWidth / 2).toBeCloseTo(803);
+    expect(svg.minY + svg.vbHeight / 2).toBeCloseTo(1122);
+  });
+
+  it('draws a few hundred units, not the whole art', async () => {
+    await renderUi(<EventMiniMap {...base} />);
+    await layOut();
+    const svg = screen.getByTestId('seerah-event-minimap-art-svg').props;
+    expect(svg.vbWidth * svg.vbHeight).toBeLessThan((1644 * 2400) / 10);
+  });
+
+  it('draws nothing of the art before the strip has a width', async () => {
+    await renderUi(<EventMiniMap {...base} />);
+    expect(screen.queryByTestId('seerah-event-minimap-art-svg')).toBeNull();
   });
 
   it('draws the route when the event has one', async () => {

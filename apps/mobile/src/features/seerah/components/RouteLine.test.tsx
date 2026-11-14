@@ -1,3 +1,5 @@
+import { renderHook } from '@testing-library/react-native';
+import { setUpTests, useSharedValue, type SharedValue } from 'react-native-reanimated';
 import Svg from 'react-native-svg';
 
 import { locales, renderUi, svgPaint } from '../../../../jest/render-ui';
@@ -5,17 +7,27 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { themes } from '@/core/theme';
 
 import type { SeerahRouteKind } from '../types';
-import { ROUTE_STYLE, RouteLine } from './RouteLine';
+import { ROUTE_STYLE, RouteLine, routeStroke } from './RouteLine';
+
+setUpTests();
 
 const D = 'M0,0 C10,10 20,10 30,0';
 
-function line(kind: SeerahRouteKind, props: { scale?: number; dimmed?: boolean } = {}, locale: (typeof locales)[number] = 'ar') {
-  return renderUi(
+function Line({ kind, scale, dimmed }: { kind: SeerahRouteKind; scale: SharedValue<number>; dimmed?: boolean }) {
+  return (
     <Svg height={50} width={50}>
-      <RouteLine d={D} kind={kind} testID="route" {...props} />
-    </Svg>,
-    { locale },
+      <RouteLine d={D} dimmed={dimmed} kind={kind} scale={scale} testID="route" />
+    </Svg>
   );
+}
+
+async function sharedScale(initial: number): Promise<SharedValue<number>> {
+  const { result } = await renderHook(() => useSharedValue(initial));
+  return result.current;
+}
+
+function line(kind: SeerahRouteKind, props: { scale?: number; dimmed?: boolean } = {}, locale: (typeof locales)[number] = 'ar') {
+  return sharedScale(props.scale ?? 1).then((scale) => renderUi(<Line dimmed={props.dimmed} kind={kind} scale={scale} />, { locale }));
 }
 
 describe('RouteLine', () => {
@@ -49,6 +61,12 @@ describe('RouteLine', () => {
     const view = await line('hijra', { scale: 0.5 });
     expect(view.getByTestId('route-stroke').props.strokeWidth).toBe(ROUTE_STYLE.hijra.width / 0.5);
     expect(view.getByTestId('route-halo').props.strokeWidth).toBe((ROUTE_STYLE.hijra.width + 3) / 0.5);
+  });
+
+  it('computes the widths and dash from the zoom, as the UI thread does on each frame of a pinch', () => {
+    expect(routeStroke('hijra', 0.25)).toEqual({ dash: undefined, halo: (ROUTE_STYLE.hijra.width + 3) / 0.25, width: ROUTE_STYLE.hijra.width / 0.25 });
+    // A dotted trip: the dash is in units of the stroke width, so it too keeps its screen size.
+    expect(routeStroke('trip', 0.5).dash).toBe(ROUTE_STYLE.trip.dash!.map((part) => (part / 0.5) * ROUTE_STYLE.trip.width).join(' '));
   });
 
   it('is drawn beneath a page-colour halo', async () => {
