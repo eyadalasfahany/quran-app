@@ -126,8 +126,9 @@ describe('SeerahMap', () => {
   });
 
   it('hides the label that collides and keeps the one with the higher priority', async () => {
-    const strong = makePin({ count: 2, labelPriority: 90, name: 'قوي', opensLevel: null, placeId: 'strong', x: 878, y: 1000 });
-    const weak = makePin({ count: 2, labelPriority: 10, name: 'ضعيف', opensLevel: null, placeId: 'weak', x: 878 + 60 / 0.6, y: 1000 });
+    // Not 44 pt apart in a line, so they stay separate pins, but the weak label runs into the strong one.
+    const strong = makePin({ count: 2, labelPriority: 90, name: 'اسم طويل جدا للموضع القوي', opensLevel: null, placeId: 'strong', x: 878, y: 1000 });
+    const weak = makePin({ count: 2, labelPriority: 10, name: 'اسم طويل جدا للموضع الضعيف', opensLevel: null, placeId: 'weak', x: 878 - 50 / 0.6, y: 1000 + 30 / 0.6 });
     await mountMap([strong, weak]);
     expect(screen.getByTestId('seerah-map-label-strong', hidden)).toBeOnTheScreen();
     expect(screen.queryByTestId('seerah-map-label-weak', hidden)).toBeNull();
@@ -135,7 +136,7 @@ describe('SeerahMap', () => {
   });
 
   it('turns a region beyond the window into an edge chip that pans there', async () => {
-    const sham = makePin({ count: 7, kind: 'region', name: 'الشام', opensLevel: null, placeId: 'sham', x: 676, y: -400 });
+    const sham = makePin({ count: 7, kind: 'region', name: 'الشام', opensLevel: null, placeId: 'sham', x: 878, y: 100 });
     await mountMap([madinah, makkah, sham]);
     expect(screen.queryByTestId('seerah-map-pin-sham')).toBeNull();
     const chip = screen.getByRole('button', { name: 'الشام، ٧ أحداث، خارج الشاشة شمالًا' });

@@ -2,10 +2,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 import Svg, { SvgXml } from 'react-native-svg';
 import { scheduleOnRN } from 'react-native-worklets';
 
+import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { spring, useDissolve } from '@/core/theme/motion';
 import { UiText } from '@/shared/ui';
@@ -20,7 +21,6 @@ import {
   estimateLabelWidth,
   isOnScreen,
   levelSwitch,
-  pinchView,
   placeLabels,
   toContent,
   toScreen,
@@ -35,6 +35,7 @@ import { CounterScaled } from './CounterScaled';
 import { EdgeChip } from './EdgeChip';
 import { MapLabel } from './MapLabel';
 import { MapPin } from './MapPin';
+import { panValues, pinchValues, springView, writeView, type ViewValues } from './map-view-values';
 import { RouteLine } from './RouteLine';
 
 const OFFSCREEN_MARGIN = 60;
@@ -98,6 +99,7 @@ export function SeerahMap({
 }: SeerahMapProps) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const locale = useLocale();
   const reduceMotion = useReducedMotion();
   const dissolve = useDissolve();
   const window = useWindowDimensions();
@@ -105,7 +107,8 @@ export function SeerahMap({
   const content = useMemo(() => ({ height: viewbox[3] - viewbox[1], width: viewbox[2] - viewbox[0] }), [viewbox]);
 
   const startCentre = useMemo(() => {
-    const counted = pins.filter((pin) => pin.count > 0);
+    // The first view centres on the places with events; regions (Sham, Abyssinia) are edge chips, not a reason to scroll.
+    const counted = pins.filter((pin) => pin.count > 0 && pin.kind !== 'region');
     const from = counted.length > 0 ? counted : pins;
     return from.length === 0
       ? { x: content.width / 2, y: content.height / 2 }
@@ -125,22 +128,19 @@ export function SeerahMap({
   const scale = useSharedValue(initial.scale);
   const tx = useSharedValue(initial.tx);
   const ty = useSharedValue(initial.ty);
+  const values = useMemo<ViewValues>(() => ({ scale, tx, ty }), [scale, tx, ty]);
 
   const apply = useCallback(
     (next: MapView, animate: boolean) => {
       const clamped = clampView({ ...next, scale: clampScale(next.scale, zoom) }, content, size);
       if (animate && !reduceMotion) {
-        scale.value = withSpring(clamped.scale, spring());
-        tx.value = withSpring(clamped.tx, spring());
-        ty.value = withSpring(clamped.ty, spring());
+        springView(values, clamped, spring());
       } else {
-        scale.value = clamped.scale;
-        tx.value = clamped.tx;
-        ty.value = clamped.ty;
+        writeView(values, clamped);
       }
       setView(clamped);
     },
-    [content, reduceMotion, scale, size, tx, ty, zoom],
+    [content, reduceMotion, size, values, zoom],
   );
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -153,9 +153,7 @@ export function SeerahMap({
     const next = { height, width };
     setSize(next);
     const resized = clampView(centerOn(middle, view.scale, next), content, next);
-    scale.value = resized.scale;
-    tx.value = resized.tx;
-    ty.value = resized.ty;
+    writeView(values, resized);
     setView(resized);
   };
 
@@ -187,9 +185,7 @@ export function SeerahMap({
   const pan = usePanGesture({
     onUpdate: (event) => {
       'worklet';
-      const next = clampView({ scale: scale.value, tx: tx.value + event.changeX, ty: ty.value + event.changeY }, content, size);
-      tx.value = next.tx;
-      ty.value = next.ty;
+      panValues(values, { x: event.changeX, y: event.changeY }, content, size);
     },
     onDeactivate: () => {
       'worklet';
@@ -199,14 +195,7 @@ export function SeerahMap({
   const pinch = usePinchGesture({
     onUpdate: (event) => {
       'worklet';
-      const next = clampView(
-        pinchView({ scale: scale.value, tx: tx.value, ty: ty.value }, event.scaleChange, { x: event.focalX, y: event.focalY }, zoom),
-        content,
-        size,
-      );
-      scale.value = next.scale;
-      tx.value = next.tx;
-      ty.value = next.ty;
+      pinchValues(values, event.scaleChange, { x: event.focalX, y: event.focalY }, zoom, content, size);
     },
     onDeactivate: () => {
       'worklet';
@@ -356,7 +345,7 @@ export function SeerahMap({
                     {pin === null ? (
                       <ClusterPin
                         count={item.cluster.count}
-                        label={t('seerah.map.pin.cluster', { events: eventCountText(t, item.cluster.count), places: item.cluster.memberIds.length })}
+                        label={t('seerah.map.pin.cluster', { events: eventCountText(t, item.cluster.count), places: formatNumber(item.cluster.memberIds.length, locale) })}
                         onPress={() => zoomTo(item.cluster)}
                         testID={`${testID}-cluster-${item.cluster.id}`}
                       />

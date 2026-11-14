@@ -2050,6 +2050,10 @@
         }
       }
     },
+    "callout": {
+      "open": "Open",
+      "openLabel": "Open: {{title}}"
+    },
     "menu": {
       "caption": "Seerah",
       "title": "Seerah",
