@@ -5,7 +5,7 @@ import Svg from 'react-native-svg';
 
 import { SPLASH_LOGO_VIEWBOX, SPLASH_PEN_FADE, splashRasterLayers } from './splash-logo-raster-layers';
 import { segmentProgress, smoothStep } from './splash-logo-segment';
-import { SPLASH_MOSQUE_STROKE_WIDTH, splashMosqueStrokes } from './splash-mosque-strokes';
+import { splashMosqueStrokes } from './splash-mosque-strokes';
 import { SplashLogoRasterLayer } from './SplashLogoRasterLayer';
 import { SplashMosqueStroke } from './SplashMosqueStroke';
 import { useDrawOnMount } from './useDrawOnMount';
@@ -31,13 +31,7 @@ export function TaybahSplashLogo({ onDrawComplete }: { onDrawComplete?: () => vo
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, penStyle]} testID="splash-mosque-pen">
         <Svg height={DISPLAY} viewBox={`0 0 ${SPLASH_LOGO_VIEWBOX} ${SPLASH_LOGO_VIEWBOX}`} width={DISPLAY}>
           {splashMosqueStrokes.map((stroke) => (
-            <SplashMosqueStroke
-              color={launchGold}
-              globalProgress={progress}
-              key={stroke.id}
-              stroke={stroke}
-              strokeWidth={SPLASH_MOSQUE_STROKE_WIDTH}
-            />
+            <SplashMosqueStroke color={launchGold} globalProgress={progress} key={stroke.id} stroke={stroke} />
           ))}
         </Svg>
       </Animated.View>

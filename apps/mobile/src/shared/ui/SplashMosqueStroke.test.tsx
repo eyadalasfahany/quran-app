@@ -5,7 +5,7 @@ import Svg from 'react-native-svg';
 import { locales, renderUi, svgPaint } from '../../../jest/render-ui';
 import { rawColorLiterals } from '../../../jest/ui-source';
 
-import { SPLASH_MOSQUE_STROKE_WIDTH, splashMosqueStrokes, type SplashMosqueStroke as Stroke } from './splash-mosque-strokes';
+import { splashMosqueStrokes, type SplashMosqueStroke as Stroke } from './splash-mosque-strokes';
 import { SplashMosqueStroke } from './SplashMosqueStroke';
 
 function strokeAt(index: number): Stroke {
@@ -20,12 +20,7 @@ const [start, end] = stroke.segment;
 function drawn(progress: number, locale: (typeof locales)[number] = 'ar') {
   return renderUi(
     <Svg height={10} width={10}>
-      <SplashMosqueStroke
-        color={launchGold}
-        globalProgress={makeMutable(progress)}
-        stroke={stroke}
-        strokeWidth={SPLASH_MOSQUE_STROKE_WIDTH}
-      />
+      <SplashMosqueStroke color={launchGold} globalProgress={makeMutable(progress)} stroke={stroke} />
     </Svg>,
     { locale },
   );
@@ -34,13 +29,21 @@ function drawn(progress: number, locale: (typeof locales)[number] = 'ar') {
 const path = async (progress: number) => (await drawn(progress)).getByTestId(`splash-stroke-${stroke.id}`);
 
 describe('SplashMosqueStroke', () => {
-  it('draws its centreline unfilled with the gold pen at the splash width', async () => {
+  it('draws its centreline unfilled with the gold pen, as wide as its brush stroke', async () => {
     expect((await path(1)).props).toMatchObject({
       d: stroke.d,
       fill: null,
       stroke: svgPaint(launchGold),
-      strokeWidth: SPLASH_MOSQUE_STROKE_WIDTH,
+      strokeWidth: stroke.width,
     });
+  });
+
+  it('keeps every pen line as fine as the logo: no line wider than the heaviest brush stroke', () => {
+    // The heaviest brush stroke is about 0.95 mosque units at its fullest (6.35 canvas units on average).
+    for (const line of splashMosqueStrokes) {
+      expect(line.width).toBeGreaterThan(0);
+      expect(line.width).toBeLessThanOrEqual(6.5);
+    }
   });
 
   it('is hidden before its window and fully drawn after it', async () => {

@@ -5,17 +5,16 @@ import type { SplashMosqueStroke as Stroke } from './splash-mosque-strokes';
 import { segmentProgress, smoothStep } from './splash-logo-segment';
 
 // One centreline of the line-art mosque, drawn by the gold pen in its window of the splash. Each line eases in and
-// out on its own, so the drawing reads as one smooth hand.
+// out on its own, so the drawing reads as one smooth hand. The pen is as wide as the line's brush stroke on average,
+// so the drawing already has the finished logo's weight.
 export function SplashMosqueStroke({
   color,
   globalProgress,
   stroke,
-  strokeWidth,
 }: {
   color: string;
   globalProgress: SharedValue<number>;
   stroke: Stroke;
-  strokeWidth: number;
 }) {
   const progress = useDerivedValue(() => smoothStep(segmentProgress(globalProgress.value, stroke.segment)));
 
@@ -24,7 +23,7 @@ export function SplashMosqueStroke({
       outline={stroke}
       progress={progress}
       stroke={color}
-      strokeWidth={strokeWidth}
+      strokeWidth={stroke.width}
       testID={`splash-stroke-${stroke.id}`}
     />
   );
