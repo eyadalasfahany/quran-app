@@ -75,7 +75,7 @@ function createTable(database: DatabaseSync, table: ContentTable): void {
 export function gzipHadithPack(
   resourceId: number,
   rows: HadithPackRows,
-  groupName: 'hadith_collections' | 'hadith_explanations' = 'hadith_collections',
+  groupName = 'hadith_collections',
 ): Uint8Array {
   const group = contentGroup(groupName);
   if (group === undefined) {

@@ -1978,7 +1978,9 @@
         "yearNotStatedBody": "So it has no age, and is shown at the end of the timeline under “Not stated”, between the two events next to it in the book.",
         "uncertainTitle": "Approximate place or time",
         "uncertainBody": "The book does not give this exactly."
-      }
+      },
+      "notFoundTitle": "This event is not available",
+      "notFoundBody": "Seerah may not be downloaded on this device."
     },
     "list": {
       "periods": "Periods",
@@ -2058,6 +2060,16 @@
       "caption": "Seerah",
       "title": "Seerah",
       "subtitle": "On the map and the timeline"
+    },
+    "sources": {
+      "openiti": {
+        "title": "OpenITI · “Nur al-Yaqin” by al-Khudari",
+        "subtitle": "Text of the Seerah book · CC BY-NC-SA 4.0 · Changes made: only the automatic markup was removed"
+      },
+      "naturalEarth": {
+        "title": "Natural Earth",
+        "subtitle": "Coastlines of the Seerah map · Public domain"
+      }
     }
   }
 }

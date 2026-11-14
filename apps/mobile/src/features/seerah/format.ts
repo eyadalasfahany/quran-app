@@ -40,3 +40,8 @@ export function stageName(t: TFunction, age: number): string | null {
 export function stageRangeShort(t: TFunction, from: number, to: number): string {
   return t('seerah.stageRangeShort', { from: num(from), to: num(to) });
 }
+
+/** «من ٤٠ إلى ٦٣ سنة» */
+export function stageRangeText(t: TFunction, from: number, to: number): string {
+  return t('seerah.stageRange', { from: num(from), to: num(to) });
+}

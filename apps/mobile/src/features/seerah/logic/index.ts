@@ -7,3 +7,4 @@ export * from './places';
 export * from './timeline';
 export * from './zoom';
 export * from './routes';
+export * from './map-target';

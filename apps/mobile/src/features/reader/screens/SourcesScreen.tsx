@@ -7,9 +7,10 @@ import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { SettingsGroup } from '@/features/settings/components/SettingsGroup';
 import { SettingsHeader } from '@/features/settings/components/SettingsHeader';
+import { useSeerahBook } from '@/features/seerah/hooks';
 import { ListRow, Screen, UiText } from '@/shared/ui';
 
-type SourceEntry = { key: string; url: string; ltr?: boolean; i18n?: string };
+type SourceEntry = { key: string; url: string; ltr?: boolean; i18n?: string; text?: string; seerahBook?: boolean };
 
 // Rows whose text is not under reader.sources (the Hadith sources, frame HadithCollSources) name their i18n prefix.
 const SOURCES: readonly SourceEntry[] = [
@@ -27,11 +28,15 @@ const SOURCES: readonly SourceEntry[] = [
   { key: 'hadithapicom', url: 'https://hadithapi.com', i18n: 'hadith.sources' },
   { key: 'meeatif', url: 'https://huggingface.co/datasets/meeAtif/hadith_datasets', i18n: 'hadith.sources' },
   { key: 'hadithjson', url: 'https://github.com/AhmedBaset/hadith-json', i18n: 'hadith.sources' },
+  // Phase 8: the Seerah book (ADR 0089) and the coastlines its map is drawn from (frame SeerahSources).
+  { key: 'seerahOpeniti', text: 'openiti', url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', i18n: 'seerah.sources', seerahBook: true },
+  { key: 'naturalEarth', url: 'https://www.naturalearthdata.com', i18n: 'seerah.sources' },
 ];
 
 export function SourcesScreen({ testID }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const seerahBook = useSeerahBook();
 
   return (
     // Screen keeps the header below the safe area, as on Settings.
@@ -54,10 +59,16 @@ export function SourcesScreen({ testID }: { testID?: string }) {
                       void Linking.openURL(source.url);
                     }}
                     separator={index < SOURCES.length - 1 ? 'line' : undefined}
-                    subtitle={t(`${source.i18n ?? 'reader.sources'}.${source.key}.subtitle` as never)}
+                    subtitle={[
+                      t(`${source.i18n ?? 'reader.sources'}.${source.text ?? source.key}.subtitle` as never),
+                      // The edition is read from the installed book row, so the credit names what is on the device.
+                      source.seerahBook === true && seerahBook !== undefined ? seerahBook.editionAr : null,
+                    ]
+                      .filter((part) => part !== null)
+                      .join(' · ')}
                     subtitleDirection={source.ltr === true ? 'ltr' : undefined}
                     testID={testID ? `${testID}-${source.key}` : undefined}
-                    title={t(`${source.i18n ?? 'reader.sources'}.${source.key}.title` as never)}
+                    title={t(`${source.i18n ?? 'reader.sources'}.${source.text ?? source.key}.title` as never)}
                   />
                 ))}
               </SettingsGroup>

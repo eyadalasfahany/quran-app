@@ -30,6 +30,11 @@ export const storageKeys = {
     searchRecent: 'hadith.searchRecent',
   },
 
+  // Seerah: the view the reader chose, `map` or `list` (ADR 0089). Absent until they choose; a screen reader suggests the list.
+  seerah: {
+    view: 'seerah.view',
+  },
+
   updates: {
     /** Epoch ms of the last foreground update check (at most every 6 hours). */
     lastCheckAt: 'updates.lastCheckAt',

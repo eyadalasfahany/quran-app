@@ -112,3 +112,6 @@ export const paragraphsFixture: SeerahParagraph[] = [
   { id: 'p00001', position: 1, page: 123, text: `${FIXTURE_PARAGRAPH} ١` },
   { id: 'p00002', position: 2, page: 123, text: `${FIXTURE_PARAGRAPH} ٢` },
 ];
+
+/** The region level as the screens read it: one drawn level (the region), for screen and route tests. */
+export const levelsForTest: SeerahMapLevel[] = [regionLevelFixture];
