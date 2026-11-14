@@ -118,16 +118,41 @@ final class RecordReader
     }
 
     /**
+     * A required enum value. An unknown value is a V18 error and the fallback is returned, so the parse goes on.
+     *
+     * @template T of BackedEnum
+     *
+     * @param  class-string<T>  $enum
+     * @param  T  $fallback
+     * @return T
+     */
+    public function enumOf(string $key, string $enum, BackedEnum $fallback): BackedEnum
+    {
+        $value = $this->record[$key] ?? null;
+        $case = is_string($value) ? $enum::tryFrom($value) : null;
+
+        if ($case === null) {
+            $this->issues->error('V18', $this->where, $key.' has an unknown value');
+
+            return $fallback;
+        }
+
+        return $case;
+    }
+
+    /**
+     * An optional enum value: null when the key is null, an error when it is set but unknown.
+     *
      * @template T of BackedEnum
      *
      * @param  class-string<T>  $enum
      * @return T|null
      */
-    public function enum(string $key, string $enum, bool $nullable = false): ?BackedEnum
+    public function enumOrNull(string $key, string $enum): ?BackedEnum
     {
         $value = $this->record[$key] ?? null;
 
-        if ($nullable && $value === null) {
+        if ($value === null) {
             return null;
         }
 

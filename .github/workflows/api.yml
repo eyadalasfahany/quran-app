@@ -94,5 +94,9 @@ jobs:
       - name: composer qa
         run: composer qa
 
+      # Seerah data (ADR 0089): canonical formatting, then the structure validation V1 to V19 (drafts allowed).
+      - name: Seerah data format and validation
+        run: php artisan seerah:fmt --check && php artisan seerah:validate --structure
+
       - name: composer audit
         run: composer audit --no-interaction

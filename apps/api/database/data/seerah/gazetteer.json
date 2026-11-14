@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "source_sha256": "67a42abe6490692d6f77f6749ea2ae9a3def5fddff4bd53872e820a285f7481a",
+  "places": [
+    {
+      "id": "arabia",
+      "parent": null,
+      "kind": "region",
+      "name_ar": "الجزيرة العربية",
+      "names_in_book": [],
+      "name_en": null,
+      "geo": null,
+      "evidence": [],
+      "origin": "curated_by_developer",
+      "flags": [
+        {
+          "code": "not_in_book_directly",
+          "note": "Structural root of the gazetteer tree. The book names no such place; the developer decides whether it has a label on any map."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "other",
+      "parent": null,
+      "kind": "region",
+      "name_ar": "أخرى",
+      "names_in_book": [],
+      "name_en": null,
+      "geo": null,
+      "evidence": [],
+      "origin": "curated_by_developer",
+      "flags": [
+        {
+          "code": "not_in_book_directly",
+          "note": "The bucket for an event whose place the book does not state (ADR 0089). It has no coordinates and no map position."
+        }
+      ],
+      "note": null
+    }
+  ]
+}

@@ -79,10 +79,10 @@ return [
     ],
 
     /*
-    | The age axis (Q6, provisional convention checked by V11): age 53 is the first Hijri year, age 52 the year before the Hijra
-    | (1 ق.هـ). Age 0 to 63 is the whole timeline.
+    | The age axis (Q6, provisional convention checked by V11, App\Domains\Seerah\Dataset\AgeConvention): age 53 is the first Hijri
+    | year, age 52 the year before the Hijra (1 ق.هـ). Age 0 to 63 is the whole timeline.
     */
-    'age' => ['min' => 0, 'max' => 63, 'hijra_age' => 53],
+    'age' => ['min' => 0, 'max' => 63],
 
     /* The six milestone keys of milestones.json (V15). */
     'milestones' => ['birth', 'bitha', 'hijra', 'badr', 'fath', 'death'],
