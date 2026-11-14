@@ -58,6 +58,10 @@ Pin candidate: GitHub ref `6d0c197e84a46a3cadbd36a045d09cb2bc9aa71e` (the ref Gi
 - **Could not verify (stated so, not guessed):** GitHub's API refused repository access in this session, so the commit date, whether `6d0c197…` is the branch head, and whether this exact file is inside the Zenodo release 2023.1.8 (DOI `10.5281/zenodo.10007820` in ADR 0076) are **unconfirmed**. Step 2 confirms them, or pins the GitHub ref and records that the licence statement comes from the Zenodo record. The edition metadata above is the file headers' own.
 - **Other sources looked for:** Arabic Wikisource and Internet Archive full text were searched; the search found catalogue records and shops only (editions by مؤسسة الرسالة 2004, دار المعاجم 1990, دار ابن كثير 1997 are annotated editions in copyright). Shamela itself has no stated redistribution licence. OpenITI is the only clean digital source found.
 
+### Edition decided (14 Nov 2026, overnight run): `Shamela0023692`, not `JK009247`
+
+`JK009247` is corrupt: in 1,053 places the letters U+0670 (dagger alef, decimal 1648) and U+0671 (alef wasla, 1649) were replaced by « صلى الله عليه وسلم», a line break and `# 1648 ; ` or `# 1649 ; `. Words are split and Quran verses inside the book are broken (for example «فلعنة صلى الله عليه وسلم / # 1649 ; لله على …» for «فلعنة الله على الكافرين»). Restoring it would mean guessing where the word spaces were, so the version is unusable. `Shamela0023692` (دار الفيحاء، دمشق، ط2 1425هـ) has none of this, keeps real paragraphs and has 279 headings. The canonicalizer removes its page markers, milestones and the editor's footnote markers «N» (closed list), and leaves the editor's footnote bodies out of the paragraphs. Q1 is closed with this choice; the developer can still revisit it.
+
 ## Rules
 
 - All earlier rules apply (`CLAUDE.md`, `apps/mobile/CLAUDE.md`, `apple-design`, tokens through `useTheme()`, one component per file with a colocated test, screens only compose, `useWindowClass()` only, all strings in `ar.json` and `en.json`).

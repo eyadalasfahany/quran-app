@@ -6,7 +6,7 @@ Date: 2026-11-14 · Status: **Proposed** (the developer made the product decisio
 
 The developer wants a Seerah feature that is a map and a timeline, not a list of articles. The book is «نور اليقين في سيرة سيد المرسلين» by محمد الخضري بك (d. 1345 AH / 1927), chosen because it is concise and chronological. The author is in the public domain; a digital edition is not automatically so (see Licence).
 
-A source was found and read on 14 Nov 2026: OpenITI `1350AH`, folder `data/1345IbnCafifiKhudari/1345IbnCafifiKhudari.NurYaqin/`, three digital versions (`JK009247-ara1`, `ShamAY0034443-ara1`, `Shamela0023692-ara1`). Details, sizes, SHA-256 values and structure counts are in the plan («The source»).
+A source was found and read on 14 Nov 2026: OpenITI `1350AH`, folder `data/1345IbnCafifiKhudari/1345IbnCafifiKhudari.NurYaqin/`, three digital versions (`JK009247-ara1`, `ShamAY0034443-ara1`, `Shamela0023692-ara1`). Details, sizes, SHA-256 values and structure counts are in the plan («The source»). **Chosen edition: `Shamela0023692-ara1`** (دار الفيحاء، دمشق، ط2 1425هـ): `JK009247` replaces 1,053 letters (U+0670, U+0671) with « صلى الله عليه وسلم» and a `# 164x ;` marker, breaking words and Quran verses, so it is unusable (plan, «Edition decided»).
 
 Two properties of this feature are new for Taybah and drive the decisions below:
 
