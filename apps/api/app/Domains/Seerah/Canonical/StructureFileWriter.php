@@ -38,14 +38,7 @@ final class StructureFileWriter
             ),
         ];
 
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-
-        // Strings in JSON never hold a raw line break, so every run of leading spaces is indentation: halve it.
-        return preg_replace_callback(
-            '/^ +/m',
-            static fn (array $match): string => str_repeat(' ', intdiv(strlen($match[0]), 2)),
-            $json,
-        )."\n";
+        return SeerahJson::render($data);
     }
 
     /**
