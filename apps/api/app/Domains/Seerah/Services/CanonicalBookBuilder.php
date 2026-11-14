@@ -35,7 +35,7 @@ final class CanonicalBookBuilder
             throw new SeerahCanonicalException('The source file differs from its pin (source_sha_mismatch).');
         }
 
-        $book = (new BookCanonicalizer)->canonicalize($bytes);
+        $book = (new BookCanonicalizer)->canonicalize($bytes, $pinsChecked ? $this->frontTitles() : []);
         $canonicalSha256 = $book->sha256();
         $pin = config('seerah.canonical_sha256');
 
@@ -50,5 +50,15 @@ final class CanonicalBookBuilder
             pinsChecked: $pinsChecked,
             canonicalPinMissing: $pin === null,
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function frontTitles(): array
+    {
+        $titles = config('seerah.front_headings');
+
+        return is_array($titles) ? array_values(array_map(strval(...), $titles)) : [];
     }
 }

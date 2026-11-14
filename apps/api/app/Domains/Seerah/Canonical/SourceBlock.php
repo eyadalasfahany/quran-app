@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Canonical;
 
+use App\Domains\Seerah\Enums\BlockKind;
+
 /**
- * A paragraph or a heading wrapper line with the continuation lines that join it. `headingWrap` is true for a `# | ` line.
+ * A heading, paragraph or footnote with the continuation lines (`~~`) that join it.
  */
 final class SourceBlock
 {
@@ -13,7 +15,7 @@ final class SourceBlock
      * @param  list<SourceLine>  $lines
      */
     public function __construct(
-        public readonly bool $headingWrap,
+        public readonly BlockKind $kind,
         public array $lines,
     ) {}
 }

@@ -21,19 +21,30 @@ final class CanonicalCounts
 
     public int $milestoneTokens = 0;
 
+    /** Editor's footnote references «N» inside headings and paragraphs (removed with one adjacent space). */
+    public int $footnoteReferences = 0;
+
+    /** Shamela HTML `</span>` tags (removed with one adjacent space). */
+    public int $htmlTags = 0;
+
     public int $continuationLines = 0;
 
     public int $paragraphMarkers = 0;
 
     public int $bareMarkers = 0;
 
-    /** Printed-line markers `# NNNN ;`: kept as text (not in the closed list), counted for the developer's decision. */
-    public int $printedLineMarkers = 0;
+    /** Editor's footnote bodies (`# «N»` and their continuations): excluded from the book, counted here. */
+    public int $footnoteBlocks = 0;
 
-    /** Paragraphs that had no text after the removals (a bare marker or a page marker alone). Not kept. */
+    public int $footnoteLines = 0;
+
+    /** Heading wrappers with no text (`### | `): dropped, counted. */
+    public int $emptyHeadings = 0;
+
+    /** Paragraphs that had no text after the removals. Not kept. */
     public int $emptyParagraphs = 0;
 
-    /** Pipes `|` kept inside the canonical text (block-closing and internal separators, not in the closed list). */
+    /** Pipes `|` left in the canonical text. */
     public int $pipes = 0;
 
     /** Complete `{…}` runs found inside one paragraph or heading. */
@@ -54,10 +65,14 @@ final class CanonicalCounts
             'first_page' => $this->firstPage,
             'last_page' => $this->lastPage,
             'milestone_tokens' => $this->milestoneTokens,
+            'footnote_references' => $this->footnoteReferences,
+            'html_tags' => $this->htmlTags,
             'continuation_lines' => $this->continuationLines,
             'paragraph_markers' => $this->paragraphMarkers,
             'bare_markers' => $this->bareMarkers,
-            'printed_line_markers' => $this->printedLineMarkers,
+            'footnote_blocks' => $this->footnoteBlocks,
+            'footnote_lines' => $this->footnoteLines,
+            'empty_headings' => $this->emptyHeadings,
             'empty_paragraphs' => $this->emptyParagraphs,
             'pipes' => $this->pipes,
             'braced_runs' => $this->bracedRuns,

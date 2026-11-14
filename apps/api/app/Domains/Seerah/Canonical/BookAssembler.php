@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Canonical;
 
+use App\Domains\Seerah\Enums\BlockKind;
 use App\Domains\Seerah\Enums\SectionLevel;
 use App\Domains\Seerah\Exceptions\SeerahCanonicalException;
 
 /**
  * Turns the blocks into the canonical book (ADR 0089 §3). Stateful for one run only; create a new instance per run.
  *
- * Removed from the text, and nothing else: page markers (their number is kept as the page of the text that follows) and
- * milestone tokens, each with one adjacent space; the paragraph marker and the heading wrapper (already read by the reader);
- * the joins of continuation lines, which become one space. A page marker, a milestone and a join never change a letter.
+ * Removed from the text, and nothing else, each token with one adjacent space (the following space, else the preceding one):
+ * page markers `PageV##P###` (their number becomes the page of the text after them), milestone tokens `ms###`, the editor's
+ * footnote references `«N»` and the HTML tags `</span>`. Also removed: the header, the markers `### | ` (heading wrapper),
+ * `# ` (paragraph) and `~~` (continuation, whose line joins the one above with one space). Footnote bodies (`# «N»` blocks)
+ * are not paragraphs: they are excluded and counted; their page markers still move the page.
  *
- * Headings: `# | N ( title ) N` (the number is printed as text, the title is kept exactly); a `# | ` line of one line that starts
- * with «الباب» or «الفصل» is a Bab or a Fasl (its ordinal is read from the next word); any other one-line `# | ` is a heading.
- * A `# | ` block of more than one line is body text that shares the wrapper, not a heading.
+ * The first headings must be the configured front-matter titles, in order (ADR 0089 §4 front matter); every other heading is
+ * `heading`.
  */
 final class BookAssembler
 {
@@ -24,25 +26,11 @@ final class BookAssembler
 
     private const string MILESTONE_PATTERN = '~ms\d{3}(?!\d)~u';
 
-    private const string NUMBERED_START = '~^\d+ \( ~u';
+    private const string FOOTNOTE_PATTERN = '~«\d+»~u';
 
-    private const string NUMBERED_HEADING = '~^(\d+) \( (.+) \) (\d+)$~u';
+    private const string HTML_TAG_PATTERN = '~</span>~u';
 
     private const string BRACED_RUN = '~\{[^{}]*\}~u';
-
-    /** The ordinals of the book's Bab and Fasl lines, as the book spells them. */
-    private const array ORDINALS = [
-        'الأول' => 1,
-        'الثاني' => 2,
-        'الثالث' => 3,
-        'الرابع' => 4,
-        'الخامس' => 5,
-        'السادس' => 6,
-        'السابع' => 7,
-        'الثامن' => 8,
-        'التاسع' => 9,
-        'العاشر' => 10,
-    ];
 
     /** The page in force; 0 before the first page marker. */
     private int $page = 0;
@@ -53,20 +41,23 @@ final class BookAssembler
     /** @var list<CanonicalParagraph> */
     private array $paragraphs = [];
 
-    /** @var list<array{rank: int, id: string}> */
-    private array $stack = [];
-
     private ?int $current = null;
 
+    private int $headingIndex = 0;
+
+    /**
+     * @param  list<string>  $frontTitles  the exact titles of the front-matter headings, in book order
+     */
     public function __construct(
         private readonly CanonicalCounts $counts,
         private readonly UnparsedLines $unparsed,
+        private readonly array $frontTitles,
     ) {}
 
     /**
      * @param  list<SourceBlock>  $blocks
      *
-     * @throws SeerahCanonicalException when a line is unparsed or the book has no heading
+     * @throws SeerahCanonicalException when a line is unparsed, the front matter does not match, or the book has no heading
      */
     public function assemble(array $blocks): CanonicalBook
     {
@@ -76,6 +67,10 @@ final class BookAssembler
 
         if (! $this->unparsed->isEmpty()) {
             throw new SeerahCanonicalException('The source has unparsed lines: '.$this->unparsed->summary().'.');
+        }
+
+        if ($this->headingIndex < count($this->frontTitles)) {
+            throw new SeerahCanonicalException('The source has fewer headings than its front matter (front_mismatch).');
         }
 
         if ($this->sectionRows === []) {
@@ -95,16 +90,23 @@ final class BookAssembler
 
     private function assembleBlock(SourceBlock $block): void
     {
-        $parts = [];
-        $firstText = '';
-        $blockPage = $this->page;
         $first = $block->lines[0]->number;
 
+        if ($block->kind === BlockKind::Footnote) {
+            foreach ($block->lines as $line) {
+                $this->stripTokens($line->body, false);
+            }
+
+            return;
+        }
+
+        $blockPage = $this->page;
+        $parts = [];
+
         foreach ($block->lines as $position => $line) {
-            $text = $this->stripTokens($line->body);
+            $text = $this->stripTokens($line->body, true);
 
             if ($position === 0) {
-                $firstText = $text;
                 $blockPage = $this->page;
             }
 
@@ -115,61 +117,57 @@ final class BookAssembler
 
         $joined = implode(' ', $parts);
 
-        if (! $block->headingWrap) {
-            $this->paragraphOrEmpty($joined, $blockPage, $first);
-
-            return;
-        }
-
-        if (preg_match(self::NUMBERED_START, $firstText) === 1) {
-            if (preg_match(self::NUMBERED_HEADING, $joined, $match) === 1 && $match[1] === $match[3]) {
-                $this->addHeading(SectionLevel::Heading, null, $match[1], $match[2], $blockPage, $first);
-
-                return;
-            }
-
-            $this->unparsed->add($first, 'heading_numbered');
+        if ($block->kind === BlockKind::Paragraph) {
+            $this->addParagraph($joined, $blockPage, $first);
 
             return;
         }
 
         if (count($block->lines) > 1) {
-            if ($this->isStructural($firstText)) {
-                $this->unparsed->add($first, 'heading_split');
-
-                return;
-            }
-
-            $this->paragraphOrEmpty($joined, $blockPage, $first);
+            $this->unparsed->add($first, 'heading_split');
 
             return;
         }
 
         if ($joined === '') {
-            $this->unparsed->add($first, 'heading_empty');
+            $this->counts->emptyHeadings++;
 
             return;
         }
 
-        if (! $this->isStructural($joined)) {
-            $this->addHeading(SectionLevel::Heading, null, null, $joined, $blockPage, $first);
-
-            return;
-        }
-
-        $ordinal = $this->ordinal($joined);
-
-        if ($ordinal === null) {
-            $this->unparsed->add($first, 'heading_ordinal');
-
-            return;
-        }
-
-        $level = str_starts_with($joined, 'الباب ') ? SectionLevel::Bab : SectionLevel::Fasl;
-        $this->addHeading($level, $ordinal, null, $joined, $blockPage, $first);
+        $this->addHeading($joined, $blockPage, $first);
     }
 
-    private function paragraphOrEmpty(string $text, int $page, int $line): void
+    private function addHeading(string $title, int $page, int $line): void
+    {
+        if (str_contains($title, "\t")) {
+            $this->unparsed->add($line, 'tab_in_text');
+
+            return;
+        }
+
+        $level = SectionLevel::Heading;
+
+        if ($this->headingIndex < count($this->frontTitles)) {
+            if ($title !== $this->frontTitles[$this->headingIndex]) {
+                throw new SeerahCanonicalException('A front-matter heading differs from the configured title (front_mismatch).');
+            }
+
+            $level = SectionLevel::Front;
+        }
+
+        $this->headingIndex++;
+        $this->openSection($level, $title, $page);
+    }
+
+    private function openSection(SectionLevel $level, string $title, int $page): void
+    {
+        $id = sprintf('s%03d', count($this->sectionRows) + 1);
+        $this->sectionRows[] = new SectionDraft($id, $level, $title, $page);
+        $this->current = count($this->sectionRows) - 1;
+    }
+
+    private function addParagraph(string $text, int $page, int $line): void
     {
         if ($text === '') {
             $this->counts->emptyParagraphs++;
@@ -184,7 +182,7 @@ final class BookAssembler
         }
 
         if ($this->current === null) {
-            $this->openSection(SectionLevel::Front, null, null, '', $page);
+            $this->openSection(SectionLevel::Front, '', $page);
         }
 
         $section = $this->sectionRows[$this->current ?? 0];
@@ -195,41 +193,13 @@ final class BookAssembler
         $section->paragraphTo = $id;
     }
 
-    private function addHeading(SectionLevel $level, ?int $number, ?string $printed, string $title, int $page, int $line): void
-    {
-        if (str_contains($title, "\t")) {
-            $this->unparsed->add($line, 'tab_in_text');
-
-            return;
-        }
-
-        $this->openSection($level, $number, $printed, $title, $page);
-    }
-
-    private function openSection(SectionLevel $level, ?int $number, ?string $printed, string $title, int $page): void
-    {
-        while ($this->stack !== [] && $this->stack[array_key_last($this->stack)]['rank'] >= $level->rank()) {
-            array_pop($this->stack);
-        }
-
-        $parent = $this->stack === [] ? null : $this->stack[array_key_last($this->stack)]['id'];
-        $id = sprintf('s%03d', count($this->sectionRows) + 1);
-
-        $this->sectionRows[] = new SectionDraft($id, $level, $number, $printed, $parent, $title, $page);
-        $this->current = count($this->sectionRows) - 1;
-
-        if ($level !== SectionLevel::Front) {
-            $this->stack[] = ['rank' => $level->rank(), 'id' => $id];
-        }
-    }
-
     /**
-     * Removes page markers and milestone tokens with one adjacent space each, counting them. A page marker sets the page in
-     * force; its number is the page the following text is on.
+     * Removes the tokens of a line, each with one adjacent space. With $keep false (a footnote body) only the page markers
+     * are applied and counted; the text is discarded.
      */
-    private function stripTokens(string $body): string
+    private function stripTokens(string $body, bool $keep): string
     {
-        $tokens = $this->tokens($body);
+        $tokens = $this->tokens($body, $keep);
 
         if ($tokens === []) {
             return $body;
@@ -247,8 +217,12 @@ final class BookAssembler
                 $this->counts->pageMarkers++;
                 $this->counts->firstPage ??= $this->page;
                 $this->counts->lastPage = $this->page;
-            } else {
+            } elseif ($token['kind'] === 'ms') {
                 $this->counts->milestoneTokens++;
+            } elseif ($token['kind'] === 'fn') {
+                $this->counts->footnoteReferences++;
+            } else {
+                $this->counts->htmlTags++;
             }
 
             for ($i = $offset; $i < $after; $i++) {
@@ -260,6 +234,10 @@ final class BookAssembler
             } elseif ($offset > 0 && $body[$offset - 1] === ' ' && ! $skip[$offset - 1]) {
                 $skip[$offset - 1] = true;
             }
+        }
+
+        if (! $keep) {
+            return '';
         }
 
         $out = '';
@@ -274,24 +252,24 @@ final class BookAssembler
     }
 
     /**
-     * The page markers and milestone tokens of a line, in order of position.
+     * The tokens of a line in order of position. Page markers are always listed; the other kinds only when $keep is true.
      *
-     * @return list<array{offset: int, length: int, page: ?int}>
+     * @return list<array{offset: int, length: int, page: ?int, kind: string}>
      */
-    private function tokens(string $body): array
+    private function tokens(string $body, bool $keep): array
     {
         $tokens = [];
 
         if (preg_match_all(self::PAGE_PATTERN, $body, $pages, PREG_OFFSET_CAPTURE) > 0) {
             foreach ($pages[0] as $index => [$text, $offset]) {
-                $tokens[] = ['offset' => $offset, 'length' => strlen($text), 'page' => (int) $pages[1][$index][0]];
+                $tokens[] = ['offset' => $offset, 'length' => strlen($text), 'page' => (int) $pages[1][$index][0], 'kind' => 'page'];
             }
         }
 
-        if (preg_match_all(self::MILESTONE_PATTERN, $body, $milestones, PREG_OFFSET_CAPTURE) > 0) {
-            foreach ($milestones[0] as [$text, $offset]) {
-                $tokens[] = ['offset' => $offset, 'length' => strlen($text), 'page' => null];
-            }
+        if ($keep) {
+            $this->addTokens($tokens, self::MILESTONE_PATTERN, 'ms', $body);
+            $this->addTokens($tokens, self::FOOTNOTE_PATTERN, 'fn', $body);
+            $this->addTokens($tokens, self::HTML_TAG_PATTERN, 'html', $body);
         }
 
         usort($tokens, static fn (array $a, array $b): int => $a['offset'] <=> $b['offset']);
@@ -299,16 +277,16 @@ final class BookAssembler
         return $tokens;
     }
 
-    private function isStructural(string $text): bool
+    /**
+     * @param  list<array{offset: int, length: int, page: ?int, kind: string}>  $tokens
+     */
+    private function addTokens(array &$tokens, string $pattern, string $kind, string $body): void
     {
-        return str_starts_with($text, 'الباب ') || str_starts_with($text, 'الفصل ');
-    }
-
-    private function ordinal(string $text): ?int
-    {
-        $words = array_values(array_filter(explode(' ', $text), static fn (string $word): bool => $word !== ''));
-
-        return self::ORDINALS[$words[1] ?? ''] ?? null;
+        if (preg_match_all($pattern, $body, $matches, PREG_OFFSET_CAPTURE) > 0) {
+            foreach ($matches[0] as [$text, $offset]) {
+                $tokens[] = ['offset' => $offset, 'length' => strlen($text), 'page' => null, 'kind' => $kind];
+            }
+        }
     }
 
     /**
@@ -317,21 +295,20 @@ final class BookAssembler
     private function countMarkup(array $sections): void
     {
         foreach ($sections as $section) {
-            $this->countBraces($section->title);
-            $this->counts->pipes += substr_count($section->title, '|');
+            $this->countText($section->title);
         }
 
         foreach ($this->paragraphs as $paragraph) {
-            $this->countBraces($paragraph->text);
-            $this->counts->pipes += substr_count($paragraph->text, '|');
+            $this->countText($paragraph->text);
         }
     }
 
-    private function countBraces(string $text): void
+    private function countText(string $text): void
     {
         $runs = preg_match_all(self::BRACED_RUN, $text);
 
         $this->counts->bracedRuns += $runs === false ? 0 : $runs;
+        $this->counts->pipes += substr_count($text, '|');
 
         if (substr_count($text, '{') !== substr_count($text, '}')) {
             $this->counts->bracedUnbalanced++;

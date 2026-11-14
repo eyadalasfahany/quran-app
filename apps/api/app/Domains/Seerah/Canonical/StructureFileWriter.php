@@ -29,9 +29,6 @@ final class StructureFileWriter
                 static fn (CanonicalSection $section): array => [
                     'id' => $section->id,
                     'level' => $section->level->value,
-                    'number' => $section->number,
-                    'printed_number' => $section->printedNumber,
-                    'parent' => $section->parentId,
                     'title' => $section->title,
                     'page' => $section->page,
                     'paragraph_from' => $section->paragraphFrom,

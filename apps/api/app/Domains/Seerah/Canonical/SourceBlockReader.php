@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Canonical;
 
+use App\Domains\Seerah\Enums\BlockKind;
+
 /**
- * Reads the lines after the header into blocks. A block starts at a paragraph marker (`# `, or a bare `#`) or at a heading
- * wrapper (`# | `). A continuation (`~~`) and a printed-line marker (`# NNNN ;`) join the block above them; a blank line ends it.
- * Every other line is recorded as unparsed. It never changes text: it only sorts lines.
+ * Reads the lines after the header into blocks (Shamela edition, ADR 0089 step 3). A block starts at a heading wrapper
+ * (`### | `), a paragraph marker (`# ` or a bare `#`) or an editor's footnote body (`# «N»`). A continuation (`~~`) joins the
+ * block above it; a blank line ends it. Any other line is recorded as unparsed. It never changes text: it only sorts lines.
  */
 final class SourceBlockReader
 {
-    private const string PRINTED_LINE = '~^# \d+ ;(?: |$)~u';
+    private const string FOOTNOTE_START = '~^# «\d+»~u';
 
     /**
      * @param  list<string>  $lines
@@ -33,42 +35,46 @@ final class SourceBlockReader
                 continue;
             }
 
-            if (str_starts_with($line, '# |') && ! str_starts_with($line, '# | ')) {
+            if (str_starts_with($line, '~~')) {
+                $this->join($blocks, $open, new SourceLine($number, substr($line, 2)), $counts, $unparsed);
+
+                continue;
+            }
+
+            if (str_starts_with($line, '### | ') || $line === '### |') {
+                $blocks[] = new SourceBlock(BlockKind::Heading, [new SourceLine($number, substr($line, 6))]);
+                $open = array_key_last($blocks);
+
+                continue;
+            }
+
+            if (str_starts_with($line, '###')) {
                 $unparsed->add($number, 'heading_markup');
                 $open = null;
 
                 continue;
             }
 
-            if (str_starts_with($line, '# | ')) {
-                $blocks[] = new SourceBlock(true, [new SourceLine($number, substr($line, 4))]);
+            if (preg_match(self::FOOTNOTE_START, $line) === 1) {
+                $counts->footnoteBlocks++;
+                $counts->footnoteLines++;
+                $blocks[] = new SourceBlock(BlockKind::Footnote, [new SourceLine($number, substr($line, 2))]);
                 $open = array_key_last($blocks);
 
                 continue;
             }
 
-            if (preg_match(self::PRINTED_LINE, $line) === 1) {
-                $counts->printedLineMarkers++;
-                $this->join($blocks, $open, new SourceLine($number, substr($line, 2)), $unparsed);
+            if ($line === '#') {
+                $counts->bareMarkers++;
+                $blocks[] = new SourceBlock(BlockKind::Paragraph, [new SourceLine($number, '')]);
+                $open = array_key_last($blocks);
 
                 continue;
             }
 
-            if (str_starts_with($line, '~~')) {
-                $counts->continuationLines++;
-                $this->join($blocks, $open, new SourceLine($number, substr($line, 2)), $unparsed);
-
-                continue;
-            }
-
-            if ($line === '#' || str_starts_with($line, '# ')) {
-                if ($line === '#') {
-                    $counts->bareMarkers++;
-                } else {
-                    $counts->paragraphMarkers++;
-                }
-
-                $blocks[] = new SourceBlock(false, [new SourceLine($number, $line === '#' ? '' : substr($line, 2))]);
+            if (str_starts_with($line, '# ')) {
+                $counts->paragraphMarkers++;
+                $blocks[] = new SourceBlock(BlockKind::Paragraph, [new SourceLine($number, substr($line, 2))]);
                 $open = array_key_last($blocks);
 
                 continue;
@@ -84,12 +90,18 @@ final class SourceBlockReader
     /**
      * @param  list<SourceBlock>  $blocks
      */
-    private function join(array &$blocks, ?int $open, SourceLine $line, UnparsedLines $unparsed): void
+    private function join(array &$blocks, ?int $open, SourceLine $line, CanonicalCounts $counts, UnparsedLines $unparsed): void
     {
         if ($open === null) {
             $unparsed->add($line->number, 'continuation_without_block');
 
             return;
+        }
+
+        $counts->continuationLines++;
+
+        if ($blocks[$open]->kind === BlockKind::Footnote) {
+            $counts->footnoteLines++;
         }
 
         $blocks[$open]->lines[] = $line;

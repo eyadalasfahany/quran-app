@@ -7,8 +7,7 @@ namespace App\Domains\Seerah\Canonical;
 use App\Domains\Seerah\Enums\SectionLevel;
 
 /**
- * A section while the book is being assembled: its paragraph range grows as paragraphs are added, then it becomes a
- * CanonicalSection.
+ * A section while the book is being assembled: its paragraph range grows as paragraphs are added.
  */
 final class SectionDraft
 {
@@ -19,9 +18,6 @@ final class SectionDraft
     public function __construct(
         public readonly string $id,
         public readonly SectionLevel $level,
-        public readonly ?int $number,
-        public readonly ?string $printedNumber,
-        public readonly ?string $parentId,
         public readonly string $title,
         public readonly int $page,
     ) {}
@@ -31,9 +27,6 @@ final class SectionDraft
         return new CanonicalSection(
             id: $this->id,
             level: $this->level,
-            number: $this->number,
-            printedNumber: $this->printedNumber,
-            parentId: $this->parentId,
             title: $this->title,
             page: $this->page,
             paragraphFrom: $this->paragraphFrom,

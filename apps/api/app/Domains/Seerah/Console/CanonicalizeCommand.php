@@ -56,12 +56,13 @@ final class CanonicalizeCommand extends Command
         File::put($target, $writer->render($build));
 
         $book = $build->book;
+        $counts = $book->counts;
         $this->line('sections: '.count($book->sections).' ('.$this->levelSummary($book).')');
         $this->line('paragraphs: '.count($book->paragraphs));
-        $this->line('pages: '.($book->counts->firstPage ?? '-').' to '.($book->counts->lastPage ?? '-').' ('.$book->counts->pageMarkers.' markers)');
-        $this->line('braced runs: '.$book->counts->bracedRuns.' (unbalanced: '.$book->counts->bracedUnbalanced.')');
-        $this->line('printed-line markers kept: '.$book->counts->printedLineMarkers);
-        $this->line('pipes kept: '.$book->counts->pipes);
+        $this->line('pages: '.($counts->firstPage ?? '-').' to '.($counts->lastPage ?? '-').' ('.$counts->pageMarkers.' markers)');
+        $this->line('braced runs: '.$counts->bracedRuns.' (unbalanced: '.$counts->bracedUnbalanced.')');
+        $this->line('footnote bodies excluded: '.$counts->footnoteBlocks.' blocks, '.$counts->footnoteLines.' lines');
+        $this->line('footnote references removed: '.$counts->footnoteReferences);
         $this->line('source SHA-256: '.$build->sourceSha256);
         $this->line('canonical SHA-256: '.$build->canonicalSha256);
         $this->line('pins checked: '.($build->pinsChecked ? 'yes' : 'no (--source)'));
