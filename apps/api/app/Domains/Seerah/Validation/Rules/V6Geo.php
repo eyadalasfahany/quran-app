@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Validation\Rules;
 
+use App\Domains\Seerah\Dataset\Flag;
 use App\Domains\Seerah\Dataset\GeoMath;
 use App\Domains\Seerah\Dataset\PlaceTree;
 use App\Domains\Seerah\Enums\FlagCode;
@@ -78,7 +79,7 @@ final class V6Geo implements ValidationRule
     }
 
     /**
-     * @param  list<\App\Domains\Seerah\Dataset\Flag>  $flags
+     * @param  list<Flag>  $flags
      */
     private function notInBook(array $flags): bool
     {

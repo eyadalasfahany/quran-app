@@ -60,7 +60,7 @@ final class QuoteExtractor
     }
 
     /**
-     * @return list<array{string, int, int}>  key, byte start, byte end
+     * @return list<array{string, int, int}> key, byte start, byte end
      */
     private function tokens(string $paragraph): array
     {

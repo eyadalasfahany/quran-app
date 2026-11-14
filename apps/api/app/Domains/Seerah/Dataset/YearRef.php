@@ -10,11 +10,12 @@ use App\Domains\Seerah\Enums\YearBasis;
 
 /**
  * The year of an event on the age axis, with its Hijri form (V11). The «غير محدد» bucket has every number null.
- *
- * @param  list<Evidence>  $evidence
  */
 final readonly class YearRef
 {
+    /**
+     * @param  list<Evidence>  $evidence
+     */
     public function __construct(
         public YearBasis $basis,
         public ?int $ageFrom,

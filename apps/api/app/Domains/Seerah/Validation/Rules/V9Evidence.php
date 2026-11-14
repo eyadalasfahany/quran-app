@@ -6,6 +6,7 @@ namespace App\Domains\Seerah\Validation\Rules;
 
 use App\Domains\Seerah\Dataset\EventRecord;
 use App\Domains\Seerah\Dataset\Evidence;
+use App\Domains\Seerah\Dataset\Flag;
 use App\Domains\Seerah\Dataset\PlaceTree;
 use App\Domains\Seerah\Enums\Certainty;
 use App\Domains\Seerah\Enums\FlagCode;
@@ -205,7 +206,7 @@ final class V9Evidence implements ValidationRule
     }
 
     /**
-     * @param  list<\App\Domains\Seerah\Dataset\Flag>  $flags
+     * @param  list<Flag>  $flags
      */
     private function hasFlag(array $flags, FlagCode $code): bool
     {

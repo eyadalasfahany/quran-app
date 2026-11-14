@@ -7,8 +7,8 @@ namespace App\Domains\Seerah\Dataset\Parsing;
 use App\Domains\Seerah\Dataset\Evidence;
 use App\Domains\Seerah\Dataset\Flag;
 use App\Domains\Seerah\Dataset\Geo;
-use App\Domains\Seerah\Enums\GeoPrecision;
 use App\Domains\Seerah\Enums\FlagCode;
+use App\Domains\Seerah\Enums\GeoPrecision;
 use App\Domains\Seerah\Validation\IssueBag;
 
 /**
@@ -49,7 +49,7 @@ final class FragmentParser
             $flag->expectKeys(['code', 'note']);
             $code = $flag->enumOrNull('code', FlagCode::class);
 
-            if (! $code instanceof FlagCode) {
+            if ($code === null) {
                 return null;
             }
 
@@ -67,7 +67,7 @@ final class FragmentParser
             return new Geo(
                 lat: $values->float('lat'),
                 lng: $values->float('lng'),
-                precision: $precision instanceof GeoPrecision ? $precision : GeoPrecision::Area,
+                precision: $precision,
                 source: $values->string('source'),
                 box: self::box($values),
                 note: $values->nullableString('note'),
@@ -88,7 +88,7 @@ final class FragmentParser
             return null;
         }
 
-        if (count($raw) !== 4 || ! array_is_list($raw) || ! array_all($raw, is_numeric(...))) {
+        if (count($raw) !== 4 || ! array_is_list($raw) || ! array_all($raw, static fn (mixed $value): bool => is_numeric($value))) {
             $values->issues()->error('V6', $values->where(), 'box must be four numbers: south, west, north, east');
 
             return null;

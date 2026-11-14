@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Seerah\Validation\Rules;
 
 use App\Domains\Seerah\Dataset\DrawnLayout;
+use App\Domains\Seerah\Dataset\MapPosition;
 use App\Domains\Seerah\Dataset\PlaceTree;
 use App\Domains\Seerah\Validation\IssueBag;
 use App\Domains\Seerah\Validation\ValidationContext;
@@ -47,12 +48,22 @@ final class V7DrawnPositions implements ValidationRule
         }
     }
 
+    /**
+     * A place is drawn when a layout whose parent place is one of its ancestors holds a position for it. The region map's
+     * parent is the root, so a city in a sub-region (Busra in al-Sham) is drawn on it too.
+     */
     private function drawn(string $place, PlaceTree $tree, ValidationContext $context): bool
     {
-        $parent = $tree->get($place)?->parent;
+        $ancestors = [];
+        $current = $tree->get($place)?->parent;
+
+        while ($current !== null && ! in_array($current, $ancestors, true)) {
+            $ancestors[] = $current;
+            $current = $tree->get($current)?->parent;
+        }
 
         foreach ($context->data->layouts as $layout) {
-            if ($layout->parentPlace === $place || ($parent !== null && $layout->parentPlace === $parent)) {
+            if ($layout->parentPlace === $place || in_array($layout->parentPlace, $ancestors, true)) {
                 foreach ($layout->positions as $position) {
                     if ($position->place === $place) {
                         return true;
@@ -109,7 +120,7 @@ final class V7DrawnPositions implements ValidationRule
     }
 
     /**
-     * @param  list<array{0: \App\Domains\Seerah\Dataset\MapPosition, 1: float, 2: float}>  $placed
+     * @param  list<array{0: MapPosition, 1: float, 2: float}>  $placed
      */
     private function compass(array $placed, string $where, IssueBag $issues): void
     {
@@ -121,10 +132,10 @@ final class V7DrawnPositions implements ValidationRule
     }
 
     private function pair(
-        \App\Domains\Seerah\Dataset\MapPosition $a,
+        MapPosition $a,
         float $aLat,
         float $aLng,
-        \App\Domains\Seerah\Dataset\MapPosition $b,
+        MapPosition $b,
         float $bLat,
         float $bLng,
         string $where,

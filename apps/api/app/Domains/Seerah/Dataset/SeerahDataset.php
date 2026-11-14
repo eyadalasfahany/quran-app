@@ -7,24 +7,19 @@ namespace App\Domains\Seerah\Dataset;
 use App\Domains\Seerah\Canonical\CanonicalSection;
 
 /**
- * Everything in the data folder, parsed. A file that is missing or fails to parse is null or absent here, and its problem is in
- * the issue list of the loader. Immutable.
- *
- * @param  array<string, EventsFile>  $events  batch => file
- * @param  array<string, DrawnLayout>  $layouts  level => layout
- * @param  array<string, SignOff>  $signOffs  group => sign-off
- * @param  list<CanonicalSection>|null  $structure  the sections of book/structure.json, in book order
+ * Everything in the data folder, parsed. A file that is missing or fails to parse is null or empty here, and its problem is in the
+ * issue list of the loader. Immutable.
  */
 final readonly class SeerahDataset
 {
     /**
-     * @param  array<string, EventsFile>  $events
-     * @param  array<string, DrawnLayout>  $layouts
-     * @param  array<string, SignOff>  $signOffs
-     * @param  list<CanonicalSection>|null  $structure
+     * @param  array<string, EventsFile>  $events  batch => file
      * @param  list<Route>  $routes
      * @param  list<Milestone>  $milestones
      * @param  list<Exclusion>  $exclusions
+     * @param  array<string, DrawnLayout>  $layouts  level => layout
+     * @param  array<string, SignOff>  $signOffs  group => sign-off
+     * @param  list<CanonicalSection>|null  $structure  the sections of book/structure.json, in book order
      */
     public function __construct(
         public ?string $structureSourceSha256,

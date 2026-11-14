@@ -34,7 +34,7 @@ final class ExclusionParser
 
             return new Exclusion(
                 section: $exclusion->string('section'),
-                reason: $reason instanceof ExclusionReason ? $reason : ExclusionReason::Other,
+                reason: $reason,
                 note: $exclusion->nullableString('note'),
             );
         });

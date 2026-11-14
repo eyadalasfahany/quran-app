@@ -1,0 +1,92 @@
+{
+  "format": 1,
+  "level": "makkah",
+  "parent_place": "makkah",
+  "viewbox": [
+    0,
+    0,
+    1600,
+    1500
+  ],
+  "art": "design-assets/seerah/map-makkah.svg",
+  "positions": [
+    {
+      "place": "makkah.aqaba",
+      "x": 1018.6,
+      "y": 771.8,
+      "label_priority": 42,
+      "label_side": "start"
+    },
+    {
+      "place": "makkah.arafat",
+      "x": 1115.4,
+      "y": 935.9,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "makkah.arqam",
+      "x": 768.8,
+      "y": 743.5,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "makkah.dar-al-nadwa",
+      "x": 715.7,
+      "y": 744.7,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "makkah.dar-ibn-judan",
+      "x": 724.3,
+      "y": 781.3,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "makkah.hira",
+      "x": 925.4,
+      "y": 538.9,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "makkah.kaaba",
+      "x": 730,
+      "y": 760,
+      "label_priority": 54,
+      "label_side": "end"
+    },
+    {
+      "place": "makkah.mina",
+      "x": 1052.7,
+      "y": 807.2,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "makkah.safa",
+      "x": 759.6,
+      "y": 777.2,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "makkah.shib",
+      "x": 833.3,
+      "y": 754.0,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "makkah.thawr",
+      "x": 862.0,
+      "y": 1032.7,
+      "label_priority": 36,
+      "label_side": "end"
+    }
+  ],
+  "route_paths": []
+}

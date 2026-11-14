@@ -1,6 +1,4317 @@
 {
   "format": 1,
   "batch": "E4",
-  "period": "Years 6 to 11 and the death",
-  "events": []
+  "period": "Years 6 to 11 and the closing chapters",
+  "events": [
+    {
+      "id": "e118",
+      "section": "s118",
+      "title_ar": "(سرية)",
+      "span": {
+        "from": "p00457",
+        "to": "p00458"
+      },
+      "kind": "event",
+      "place": {
+        "id": "darba",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00457",
+            "quote": "بناحية ضربة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_hijri",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00457",
+            "quote": "ولعشر خلون من محرم السنة السادسة"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e119",
+      "section": "s119",
+      "title_ar": "غزوة بني لحيان",
+      "span": {
+        "from": "p00459",
+        "to": "p00459"
+      },
+      "kind": "event",
+      "place": {
+        "id": "raji",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00459",
+            "quote": "مقتل أصحاب الرجيع"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": "Raji named as the place the army reached; the Banu Lihyan lands are not named"
+    },
+    {
+      "id": "e120",
+      "section": "s120",
+      "title_ar": "غزوة الغابة",
+      "span": {
+        "from": "p00460",
+        "to": "p00462"
+      },
+      "kind": "event",
+      "place": {
+        "id": "ghaba",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00460",
+            "quote": "ترعى بالغابة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e121",
+      "section": "s121",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00463",
+        "to": "p00464"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e122.1",
+      "section": "s122",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00465",
+        "to": "p00465"
+      },
+      "kind": "event",
+      "place": {
+        "id": "dhu-al-qissa",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00465",
+            "quote": "بذي القصة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e122.2",
+      "section": "s122",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00466",
+        "to": "p00467"
+      },
+      "kind": "event",
+      "place": {
+        "id": "jumum",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00467",
+            "quote": "في الجموم"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e123.1",
+      "section": "s123",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00468",
+        "to": "p00468"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": "caravan intercepted on its way from Sham to Makkah; place not named"
+    },
+    {
+      "id": "e123.2",
+      "section": "s123",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00469",
+        "to": "p00470"
+      },
+      "kind": "event",
+      "place": {
+        "id": "taraf",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00470",
+            "quote": "وهم مقيمون بالطرف"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e123.3",
+      "section": "s123",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00471",
+        "to": "p00473"
+      },
+      "kind": "event",
+      "place": {
+        "id": "wadi-al-qura",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00472",
+            "quote": "فزارة المقيمين في وادي القرى"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e124.1",
+      "section": "s124",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00474",
+        "to": "p00474"
+      },
+      "kind": "event",
+      "place": {
+        "id": "dumat-al-jandal",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00474",
+            "quote": "في دومة الجندل"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e124.2",
+      "section": "s124",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00475",
+        "to": "p00477"
+      },
+      "kind": "event",
+      "place": {
+        "id": "fadak",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00476",
+            "quote": "بني سعد بن بكر بفدك"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e125",
+      "section": "s125",
+      "title_ar": "قتل أبي رافع",
+      "span": {
+        "from": "p00478",
+        "to": "p00479"
+      },
+      "kind": "event",
+      "place": {
+        "id": "khaybar",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00478",
+            "quote": "فساروا حتى أتوا خيبر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e126",
+      "section": "s126",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00480",
+        "to": "p00481"
+      },
+      "kind": "event",
+      "place": {
+        "id": "khaybar",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00480",
+            "quote": "حتى قدموا خيبر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e127",
+      "section": "s127",
+      "title_ar": "قصة عكل وعرينة",
+      "span": {
+        "from": "p00482",
+        "to": "p00483"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00482",
+            "quote": "فلم يوافقهم هواء المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e128.1",
+      "section": "s128",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00484",
+        "to": "p00484"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00484",
+            "quote": "حتى وصل إلى المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e128.2",
+      "section": "s128",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00485",
+        "to": "p00486"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00485",
+            "quote": "فلما قدما مكة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e129",
+      "section": "s129",
+      "title_ar": "غزوة الحديبية",
+      "span": {
+        "from": "p00487",
+        "to": "p00491"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hudaybiyah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00488",
+            "quote": "بالنزول أقصى الحديبية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e130",
+      "section": "s130",
+      "title_ar": "بيعة الرضوان",
+      "span": {
+        "from": "p00492",
+        "to": "p00492"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hudaybiyah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00488",
+            "quote": "بالنزول أقصى الحديبية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e131",
+      "section": "s131",
+      "title_ar": "صلح الحديبية",
+      "span": {
+        "from": "p00493",
+        "to": "p00493"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hudaybiyah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00488",
+            "quote": "بالنزول أقصى الحديبية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e132",
+      "section": "s132",
+      "title_ar": "1- ",
+      "span": {
+        "from": "p00494",
+        "to": "p00494"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hudaybiyah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00488",
+            "quote": "بالنزول أقصى الحديبية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e133",
+      "section": "s133",
+      "title_ar": "2- ",
+      "span": {
+        "from": "p00495",
+        "to": "p00495"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hudaybiyah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00488",
+            "quote": "بالنزول أقصى الحديبية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e134",
+      "section": "s134",
+      "title_ar": "3- ",
+      "span": {
+        "from": "p00496",
+        "to": "p00496"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hudaybiyah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00488",
+            "quote": "بالنزول أقصى الحديبية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e135",
+      "section": "s135",
+      "title_ar": "4- ",
+      "span": {
+        "from": "p00497",
+        "to": "p00504"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hudaybiyah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00504",
+            "quote": "وفي رجوعه عليه الصلاة والسلام من الحديبية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e136",
+      "section": "s136",
+      "title_ar": "مكاتبة الملوك",
+      "span": {
+        "from": "p00505",
+        "to": "p00506"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_hijri",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00505",
+            "quote": "في أواخر سنة ست"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e137",
+      "section": "s137",
+      "title_ar": "كتاب قيصر",
+      "span": {
+        "from": "p00507",
+        "to": "p00507"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e138",
+      "section": "s138",
+      "title_ar": "حديث أبي سفيان",
+      "span": {
+        "from": "p00508",
+        "to": "p00515"
+      },
+      "kind": "event",
+      "place": {
+        "id": "bayt-al-maqdis",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00508",
+            "quote": "في القدس"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e139",
+      "section": "s139",
+      "title_ar": "كتاب أمير بصرى",
+      "span": {
+        "from": "p00516",
+        "to": "p00516"
+      },
+      "kind": "event",
+      "place": {
+        "id": "mutah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00516",
+            "quote": "فلما بلغ مؤتة"
+          }
+        ],
+        "also": [
+          "busra"
+        ]
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": "letter to the governor of Busra; the messenger was stopped at Mutah"
+    },
+    {
+      "id": "e140",
+      "section": "s140",
+      "title_ar": "كتاب الحارث بن أبي شمر",
+      "span": {
+        "from": "p00517",
+        "to": "p00517"
+      },
+      "kind": "event",
+      "place": {
+        "id": "dimashq",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00517",
+            "quote": "إلى أمير دمشق"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e141",
+      "section": "s141",
+      "title_ar": "كتاب المقوقس",
+      "span": {
+        "from": "p00518",
+        "to": "p00520"
+      },
+      "kind": "event",
+      "place": {
+        "id": "misr",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00519",
+            "quote": "مصر من جهة قيصر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e142",
+      "section": "s142",
+      "title_ar": "كتاب النجاشي",
+      "span": {
+        "from": "p00521",
+        "to": "p00522"
+      },
+      "kind": "event",
+      "place": {
+        "id": "habasha",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00522",
+            "quote": "ملك الحبشة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e143",
+      "section": "s143",
+      "title_ar": "كتاب كسرى",
+      "span": {
+        "from": "p00523",
+        "to": "p00524"
+      },
+      "kind": "event",
+      "place": {
+        "id": "faris",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00523",
+            "quote": "كسرى ملك الفرس"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e144",
+      "section": "s144",
+      "title_ar": "كتاب المنذر بن ساوى",
+      "span": {
+        "from": "p00525",
+        "to": "p00525"
+      },
+      "kind": "event",
+      "place": {
+        "id": "bahrain",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00525",
+            "quote": "ملك البحرين"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e145",
+      "section": "s145",
+      "title_ar": "كتاب ملكي عمان",
+      "span": {
+        "from": "p00526",
+        "to": "p00529"
+      },
+      "kind": "event",
+      "place": {
+        "id": "uman",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00526",
+            "quote": "ملكي عمان"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e146",
+      "section": "s146",
+      "title_ar": "كتاب هوذة بن علي",
+      "span": {
+        "from": "p00530",
+        "to": "p00530"
+      },
+      "kind": "event",
+      "place": {
+        "id": "yamama",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00530",
+            "quote": "ملك اليمامة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 58,
+        "age_to": 58,
+        "era": "ah",
+        "hijri_from": 6,
+        "hijri_to": 6,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e148",
+      "section": "s148",
+      "title_ar": "غزوة خيبر",
+      "span": {
+        "from": "p00531",
+        "to": "p00538"
+      },
+      "kind": "event",
+      "place": {
+        "id": "khaybar",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00531",
+            "quote": "لغزو يهود خيبر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_hijri",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00531",
+            "quote": "وفي محرم السنة السابعة"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e149",
+      "section": "s149",
+      "title_ar": "زواج صفية",
+      "span": {
+        "from": "p00539",
+        "to": "p00539"
+      },
+      "kind": "event",
+      "place": {
+        "id": "khaybar",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00531",
+            "quote": "لغزو يهود خيبر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e150",
+      "section": "s150",
+      "title_ar": "النهي عن نكاح المتعة",
+      "span": {
+        "from": "p00540",
+        "to": "p00540"
+      },
+      "kind": "event",
+      "place": {
+        "id": "khaybar",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00540",
+            "quote": "وهو بخيبر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e151",
+      "section": "s151",
+      "title_ar": "رجوع مهاجري الحبشة",
+      "span": {
+        "from": "p00541",
+        "to": "p00541"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e152",
+      "section": "s152",
+      "title_ar": "فتح فدك",
+      "span": {
+        "from": "p00542",
+        "to": "p00542"
+      },
+      "kind": "event",
+      "place": {
+        "id": "fadak",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00542",
+            "quote": "من يهود فدك"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e153",
+      "section": "s153",
+      "title_ar": "صلح تيماء",
+      "span": {
+        "from": "p00543",
+        "to": "p00543"
+      },
+      "kind": "event",
+      "place": {
+        "id": "tayma",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00543",
+            "quote": "يهود تيماء"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e154",
+      "section": "s154",
+      "title_ar": "فتح وادي القرى",
+      "span": {
+        "from": "p00544",
+        "to": "p00546"
+      },
+      "kind": "event",
+      "place": {
+        "id": "wadi-al-qura",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00544",
+            "quote": "يهود وادي القرى"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e155",
+      "section": "s155",
+      "title_ar": "إسلام خالد ورفيقيه",
+      "span": {
+        "from": "p00547",
+        "to": "p00547"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e156",
+      "section": "s156",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00548",
+        "to": "p00549"
+      },
+      "kind": "event",
+      "place": {
+        "id": "turbah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00548",
+            "quote": "جمعا من هوزان بتربة يظهرون العداوة للمسلمين"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e157.1",
+      "section": "s157",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00550",
+        "to": "p00550"
+      },
+      "kind": "event",
+      "place": {
+        "id": "fadak",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00550",
+            "quote": "بني مرة بناحية فدك"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e157.2",
+      "section": "s157",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00551",
+        "to": "p00554"
+      },
+      "kind": "event",
+      "place": {
+        "id": "mayfaa",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00552",
+            "quote": "إلى أهل الميفعة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e158",
+      "section": "s158",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00555",
+        "to": "p00555"
+      },
+      "kind": "event",
+      "place": {
+        "id": "yumn-jubar",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00555",
+            "quote": "بأرض اسمها يمن وجبار"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e159",
+      "section": "s159",
+      "title_ar": "(عمرة القضاء)",
+      "span": {
+        "from": "p00556",
+        "to": "p00557"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00556",
+            "quote": "ولما حان وقت دخوله مكة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_relative",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00556",
+            "quote": "لما حال الحول على عمرة الحديبية"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e160",
+      "section": "s160",
+      "title_ar": "زواج ميمونة",
+      "span": {
+        "from": "p00558",
+        "to": "p00558"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00558",
+            "quote": "وهو بمكة ميمونة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 59,
+        "age_to": 59,
+        "era": "ah",
+        "hijri_from": 7,
+        "hijri_to": 7,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e162.1",
+      "section": "s162",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00559",
+        "to": "p00559"
+      },
+      "kind": "event",
+      "place": {
+        "id": "kudayd",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00559",
+            "quote": "يسكنون بالكديد"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e162.2",
+      "section": "s162",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00560",
+        "to": "p00562"
+      },
+      "kind": "event",
+      "place": {
+        "id": "fadak",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00561",
+            "quote": "بني مرة بفدك"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e163",
+      "section": "s163",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00563",
+        "to": "p00563"
+      },
+      "kind": "event",
+      "place": {
+        "id": "dhat-atlah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00563",
+            "quote": "إلى ذات أطلاح من أرض الشام"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e164",
+      "section": "s164",
+      "title_ar": "غزوة مؤتة",
+      "span": {
+        "from": "p00564",
+        "to": "p00576"
+      },
+      "kind": "event",
+      "place": {
+        "id": "mutah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00566",
+            "quote": "وصلوا مؤتة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e165",
+      "section": "s165",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00577",
+        "to": "p00578"
+      },
+      "kind": "event",
+      "place": {
+        "id": "wadi-al-qura",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00577",
+            "quote": "وراء وادي القرى"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e166",
+      "section": "s166",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00579",
+        "to": "p00581"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": "the Juhayna tribe is said to live on the sea coast; no place is named"
+    },
+    {
+      "id": "e167",
+      "section": "s167",
+      "title_ar": "غزوة الفتح الأعظم",
+      "span": {
+        "from": "p00582",
+        "to": "p00591"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00585",
+            "quote": "حربا بمكة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e168",
+      "section": "s168",
+      "title_ar": "العفو عند المقدرة",
+      "span": {
+        "from": "p00592",
+        "to": "p00608"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah.kaaba",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00592",
+            "quote": "دخل الكعبة وكبر في نواحيها"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e169",
+      "section": "s169",
+      "title_ar": "وفود كعب بن زهير",
+      "span": {
+        "from": "p00609",
+        "to": "p00619"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00609",
+            "quote": "جاء المدينة بعد أن قدمها"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e170",
+      "section": "s170",
+      "title_ar": "بيعة النساء",
+      "span": {
+        "from": "p00620",
+        "to": "p00621"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00621",
+            "quote": "بمكة بعد فتحها"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e171",
+      "section": "s171",
+      "title_ar": "هدم العزى",
+      "span": {
+        "from": "p00622",
+        "to": "p00622"
+      },
+      "kind": "event",
+      "place": {
+        "id": "nakhla",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00622",
+            "quote": "ببطن نخلة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e172",
+      "section": "s172",
+      "title_ar": "هدم سواع",
+      "span": {
+        "from": "p00623",
+        "to": "p00623"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00623",
+            "quote": "على ثلاثة أميال من مكة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": "the temple of Suwa is three miles from Makkah; no separate place is named"
+    },
+    {
+      "id": "e173",
+      "section": "s173",
+      "title_ar": "هدم مناة",
+      "span": {
+        "from": "p00624",
+        "to": "p00624"
+      },
+      "kind": "event",
+      "place": {
+        "id": "mushallal",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00624",
+            "quote": "لكلب وخزاعة وهيكلها بالمشلل وهو جبل على"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e174",
+      "section": "s174",
+      "title_ar": "غزوة حنين",
+      "span": {
+        "from": "p00625",
+        "to": "p00631"
+      },
+      "kind": "event",
+      "place": {
+        "id": "hunayn",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00650",
+            "quote": "وغزوة حنين"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e176",
+      "section": "s176",
+      "title_ar": "غزوة الطائف",
+      "span": {
+        "from": "p00632",
+        "to": "p00633"
+      },
+      "kind": "event",
+      "place": {
+        "id": "taif",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00632",
+            "quote": "إلى الطائف"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e177",
+      "section": "s177",
+      "title_ar": "تقسيم السبي",
+      "span": {
+        "from": "p00634",
+        "to": "p00639"
+      },
+      "kind": "event",
+      "place": {
+        "id": "jiranah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00634",
+            "quote": "إلى الجعرانة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e178",
+      "section": "s178",
+      "title_ar": "وفود هوازن",
+      "span": {
+        "from": "p00640",
+        "to": "p00648"
+      },
+      "kind": "event",
+      "place": {
+        "id": "jiranah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00648",
+            "quote": "أتى رسول الله بالجعرانة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e179",
+      "section": "s179",
+      "title_ar": "عمرة الجعرانة",
+      "span": {
+        "from": "p00649",
+        "to": "p00650"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00649",
+            "quote": "ودخل مكة بليل"
+          }
+        ],
+        "also": [
+          "jiranah"
+        ]
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e180",
+      "section": "s180",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00651",
+        "to": "p00651"
+      },
+      "kind": "event",
+      "place": {
+        "id": "yemen",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00651",
+            "quote": "تسكن اليمن"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e181.1",
+      "section": "s181",
+      "title_ar": "وفود صداء",
+      "span": {
+        "from": "p00652",
+        "to": "p00652"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00651",
+            "quote": "ولما رجع عليه الصلاة والسلام إلى المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e181.2",
+      "section": "s181",
+      "title_ar": "وفود صداء",
+      "span": {
+        "from": "p00653",
+        "to": "p00654"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e182",
+      "section": "s182",
+      "title_ar": "وفود تميم",
+      "span": {
+        "from": "p00655",
+        "to": "p00657"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00654",
+            "quote": "وتوجه بالكل إلى المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e183",
+      "section": "s183",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00658",
+        "to": "p00659"
+      },
+      "kind": "event",
+      "place": {
+        "id": "bani-mustaliq",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00658",
+            "quote": "بني المصطلق"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e184",
+      "section": "s184",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00660",
+        "to": "p00660"
+      },
+      "kind": "event",
+      "place": {
+        "id": "jeddah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00660",
+            "quote": "حتى وصل جدة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 60,
+        "age_to": 60,
+        "era": "ah",
+        "hijri_from": 8,
+        "hijri_to": 8,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e186",
+      "section": "s186",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00661",
+        "to": "p00661"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e187",
+      "section": "s187",
+      "title_ar": "وفود عدي بن حاتم",
+      "span": {
+        "from": "p00662",
+        "to": "p00663"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00662",
+            "quote": "فخرج حتى جاء المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e188",
+      "section": "s188",
+      "title_ar": "غزوة تبوك",
+      "span": {
+        "from": "p00664",
+        "to": "p00670"
+      },
+      "kind": "event",
+      "place": {
+        "id": "tabuk",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00669",
+            "quote": "ولما وصلوا إلى تبوك"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e189",
+      "section": "s189",
+      "title_ar": "وفود صاحب أيلة",
+      "span": {
+        "from": "p00671",
+        "to": "p00672"
+      },
+      "kind": "event",
+      "place": {
+        "id": "tabuk",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00671",
+            "quote": "ولم ير صلى الله عليه وسلم بتبوك جيشا"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e190",
+      "section": "s190",
+      "title_ar": "كتاب صاحب أيلة",
+      "span": {
+        "from": "p00673",
+        "to": "p00674"
+      },
+      "kind": "event",
+      "place": {
+        "id": "tabuk",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00671",
+            "quote": "ولم ير صلى الله عليه وسلم بتبوك جيشا"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e191",
+      "section": "s191",
+      "title_ar": "كتاب أهل أذرح وجرباء",
+      "span": {
+        "from": "p00675",
+        "to": "p00676"
+      },
+      "kind": "event",
+      "place": {
+        "id": "tabuk",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00671",
+            "quote": "ولم ير صلى الله عليه وسلم بتبوك جيشا"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e192",
+      "section": "s192",
+      "title_ar": "مسجد الضرار",
+      "span": {
+        "from": "p00677",
+        "to": "p00677"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00677",
+            "quote": "ولما استقر عليه الصلاة والسلام بالمدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e193",
+      "section": "s193",
+      "title_ar": "حديث الثلاثة الذين خلفوا",
+      "span": {
+        "from": "p00678",
+        "to": "p00678"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00677",
+            "quote": "ولما استقر عليه الصلاة والسلام بالمدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e194",
+      "section": "s194",
+      "title_ar": "وفود ثقيف",
+      "span": {
+        "from": "p00679",
+        "to": "p00680"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00680",
+            "quote": "فخرجوا متوجهين إلى المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e195",
+      "section": "s195",
+      "title_ar": "كتاب أهل الطائف",
+      "span": {
+        "from": "p00681",
+        "to": "p00685"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00680",
+            "quote": "فخرجوا متوجهين إلى المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e196",
+      "section": "s196",
+      "title_ar": "هدم اللات",
+      "span": {
+        "from": "p00686",
+        "to": "p00686"
+      },
+      "kind": "event",
+      "place": {
+        "id": "taif",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00686",
+            "quote": "صنم ثقيف بالطائف"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e197",
+      "section": "s197",
+      "title_ar": "حج أبي بكر",
+      "span": {
+        "from": "p00687",
+        "to": "p00688"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah.mina",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00688",
+            "quote": "فلما اجتمعوا بمنى يوم النحر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e198",
+      "section": "s198",
+      "title_ar": "وفاة ابن أبي",
+      "span": {
+        "from": "p00689",
+        "to": "p00689"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e199",
+      "section": "s199",
+      "title_ar": "وفاة أم كلثوم",
+      "span": {
+        "from": "p00690",
+        "to": "p00690"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 61,
+        "age_to": 61,
+        "era": "ah",
+        "hijri_from": 9,
+        "hijri_to": 9,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e201.1",
+      "section": "s201",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00691",
+        "to": "p00691"
+      },
+      "kind": "event",
+      "place": {
+        "id": "najran",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00691",
+            "quote": "بني عبد المدان بنجران"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e201.2",
+      "section": "s201",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00692",
+        "to": "p00694"
+      },
+      "kind": "event",
+      "place": {
+        "id": "yemen",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00693",
+            "quote": "إلى بني مذحج قبيلة يمانية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e203.1",
+      "section": "s203",
+      "title_ar": "بعث العمال إلى اليمن",
+      "span": {
+        "from": "p00695",
+        "to": "p00696"
+      },
+      "kind": "event",
+      "place": {
+        "id": "yemen",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00695",
+            "quote": "إلى اليمن عمالا من قبله"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e203.2",
+      "section": "s203",
+      "title_ar": "بعث العمال إلى اليمن",
+      "span": {
+        "from": "p00697",
+        "to": "p00699"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00698",
+            "quote": "حتى دخل مكة ضحى"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_hijri",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00698",
+            "quote": "وفي السنة العاشرة حج"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e204",
+      "section": "s204",
+      "title_ar": "خطبة الوداع",
+      "span": {
+        "from": "p00700",
+        "to": "p00708"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah.arafat",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00700",
+            "quote": "وفي التاسع منه توجه إلى عرفة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e206",
+      "section": "s206",
+      "title_ar": "وفود نجران",
+      "span": {
+        "from": "p00710",
+        "to": "p00710"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e207",
+      "section": "s207",
+      "title_ar": "وفود ضمام بن ثعلبة",
+      "span": {
+        "from": "p00711",
+        "to": "p00713"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e208",
+      "section": "s208",
+      "title_ar": "وفود عبد القيس",
+      "span": {
+        "from": "p00714",
+        "to": "p00716"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e209",
+      "section": "s209",
+      "title_ar": "وفود بني حنيفة",
+      "span": {
+        "from": "p00717",
+        "to": "p00717"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e210",
+      "section": "s210",
+      "title_ar": "وفود طيء",
+      "span": {
+        "from": "p00718",
+        "to": "p00718"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e211",
+      "section": "s211",
+      "title_ar": "وفود كندة",
+      "span": {
+        "from": "p00719",
+        "to": "p00723"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e212",
+      "section": "s212",
+      "title_ar": "وفود أزدشنوءة",
+      "span": {
+        "from": "p00724",
+        "to": "p00724"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e213",
+      "section": "s213",
+      "title_ar": "وفود رسول ملوك حمير",
+      "span": {
+        "from": "p00725",
+        "to": "p00725"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e214",
+      "section": "s214",
+      "title_ar": "كتاب ملوك حمير",
+      "span": {
+        "from": "p00726",
+        "to": "p00727"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00726",
+            "quote": "فلقيناه بالمدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e215",
+      "section": "s215",
+      "title_ar": "وفود همدان",
+      "span": {
+        "from": "p00728",
+        "to": "p00734"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e216",
+      "section": "s216",
+      "title_ar": "وفود تجيب",
+      "span": {
+        "from": "p00735",
+        "to": "p00735"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e217",
+      "section": "s217",
+      "title_ar": "وفود ثعلبة",
+      "span": {
+        "from": "p00736",
+        "to": "p00736"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e218",
+      "section": "s218",
+      "title_ar": "وفود بني سعد بن هذيم",
+      "span": {
+        "from": "p00737",
+        "to": "p00740"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00738",
+            "quote": "فنزلنا ناحية من المدينة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e219",
+      "section": "s219",
+      "title_ar": "وفود بني فزارة",
+      "span": {
+        "from": "p00741",
+        "to": "p00742"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e220",
+      "section": "s220",
+      "title_ar": "وفود بني أسد",
+      "span": {
+        "from": "p00743",
+        "to": "p00743"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e221",
+      "section": "s221",
+      "title_ar": "وفود بني عذرة",
+      "span": {
+        "from": "p00744",
+        "to": "p00744"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e222",
+      "section": "s222",
+      "title_ar": "وفود بني محارب",
+      "span": {
+        "from": "p00745",
+        "to": "p00745"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e223",
+      "section": "s223",
+      "title_ar": "وفود غسان",
+      "span": {
+        "from": "p00746",
+        "to": "p00746"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e224",
+      "section": "s224",
+      "title_ar": "وفاة إبراهيم بن النبي عليه السلام ",
+      "span": {
+        "from": "p00747",
+        "to": "p00747"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 62,
+        "age_to": 62,
+        "era": "ah",
+        "hijri_from": 10,
+        "hijri_to": 10,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e226",
+      "section": "s226",
+      "title_ar": "سرية",
+      "span": {
+        "from": "p00748",
+        "to": "p00749"
+      },
+      "kind": "event",
+      "place": {
+        "id": "ubna",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00748",
+            "quote": "إلى أبني حيث قتل زيد بن حارثة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 63,
+        "age_to": 63,
+        "era": "ah",
+        "hijri_from": 11,
+        "hijri_to": 11,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e227",
+      "section": "s227",
+      "title_ar": "مرض الرسول صلى الله عليه وسلم",
+      "span": {
+        "from": "p00750",
+        "to": "p00750"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah.aisha-house",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00750",
+            "quote": "أن يمرض في بيت عائشة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_hijri",
+        "age_from": 63,
+        "age_to": 63,
+        "era": "ah",
+        "hijri_from": 11,
+        "hijri_to": 11,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00750",
+            "quote": "من السنة الحادية عشرة من الهجرة"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e228",
+      "section": "s228",
+      "title_ar": "صلاة أبي بكر بالناس",
+      "span": {
+        "from": "p00751",
+        "to": "p00754"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "section_year",
+        "age_from": 63,
+        "age_to": 63,
+        "era": "ah",
+        "hijri_from": 11,
+        "hijri_to": 11,
+        "certainty": "stated",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "e229",
+      "section": "s229",
+      "title_ar": "وفاة رسول الله صلى الله عليه وسلم",
+      "span": {
+        "from": "p00755",
+        "to": "p00758"
+      },
+      "kind": "event",
+      "place": {
+        "id": "madinah.aisha-house",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00756",
+            "quote": "في حجرة عائشة حيث توفي"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_hijri",
+        "age_from": 63,
+        "age_to": 63,
+        "era": "ah",
+        "hijri_from": 11,
+        "hijri_to": 11,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00755",
+            "quote": "13 ربيع أول سنة 11"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e257",
+      "section": "s257",
+      "title_ar": "ومن معجزاته عليه السلام قصة حنين الجذع.",
+      "span": {
+        "from": "p00856",
+        "to": "p00857"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "unspecified",
+        "age_from": null,
+        "age_to": null,
+        "era": null,
+        "hijri_from": null,
+        "hijri_to": null,
+        "certainty": "unspecified",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "year_not_stated",
+          "note": "The book does not state the year; in «غير محدد» for the developer."
+        },
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": null
+    }
+  ]
 }

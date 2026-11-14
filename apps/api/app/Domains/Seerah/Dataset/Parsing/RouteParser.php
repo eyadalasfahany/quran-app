@@ -38,7 +38,7 @@ final class RouteParser
                 stops: $route->stringList('stops'),
                 events: $route->stringList('events'),
                 evidence: FragmentParser::evidence($route, 'evidence'),
-                kind: $kind instanceof RouteKind ? $kind : RouteKind::Trip,
+                kind: $kind,
             );
         });
     }

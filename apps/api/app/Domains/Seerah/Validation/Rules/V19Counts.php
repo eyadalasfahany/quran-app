@@ -24,7 +24,7 @@ final class V19Counts implements ValidationRule
         $actual = [
             'sections' => count($context->index->sections()),
             'paragraphs' => count($context->book->paragraphs),
-            'places' => count($context->data->gazetteer?->places ?? []),
+            'places' => count($context->data->gazetteer->places ?? []),
             'exclusions' => count($context->data->exclusions),
             'routes' => count($context->data->routes),
             'milestones' => count($context->data->milestones),

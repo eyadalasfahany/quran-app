@@ -3,6 +3,71 @@
   "source_sha256": "67a42abe6490692d6f77f6749ea2ae9a3def5fddff4bd53872e820a285f7481a",
   "places": [
     {
+      "id": "abwa",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الأبواء",
+      "names_in_book": [
+        "بالأبواء",
+        "الأبواء"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 23.1,
+        "lng": 39.13,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "near Mastura"
+      },
+      "evidence": [
+        {
+          "para": "p00028",
+          "quote": "فماتت بالأبواء فحضنته أم"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "al-is",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "العيص",
+      "names_in_book": [
+        "العيص"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.56,
+        "lng": 38.6,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "al-Is, coastal plain west of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00270",
+          "quote": "حتى وصل ساحل البحر من ناحية العيص"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
       "id": "arabia",
       "parent": null,
       "kind": "region",
@@ -16,6 +81,1228 @@
         {
           "code": "not_in_book_directly",
           "note": "Structural root of the gazetteer tree. The book names no such place; the developer decides whether it has a label on any map."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "badr",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "بدر",
+      "names_in_book": [
+        "بدر",
+        "وادي بدر"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 23.779,
+        "lng": 38.79,
+        "precision": "site",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00292",
+          "quote": "حتى وصلوا وادي بدر"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "bahrain",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "البحرين",
+      "names_in_book": [
+        "البحرين"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 25.4,
+        "lng": 49.6,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "historical al-Bahrayn (eastern Arabia, al-Ahsa)"
+      },
+      "evidence": [
+        {
+          "para": "p00525",
+          "quote": "ملك البحرين"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "bani-mustaliq",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "المريسيع",
+      "names_in_book": [
+        "المريسيع",
+        "بني المصطلق"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 22.3,
+        "lng": 39.05,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "al-Muraysi', near Qudayd"
+      },
+      "evidence": [
+        {
+          "para": "p00406",
+          "quote": "ولما وصل المسلمون إلى المريسيع"
+        },
+        {
+          "para": "p00658",
+          "quote": "بني المصطلق"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "bani-sad",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "بني سعد بن بكر",
+      "names_in_book": [
+        "بني سعد بن بكر",
+        "بني سعد"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.05,
+        "lng": 40.35,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "the desert of Banu Sa'd, south-east of Ta'if"
+      },
+      "evidence": [
+        {
+          "para": "p00025",
+          "quote": "فجاءت نسوة من بني سعد بن بكر"
+        },
+        {
+          "para": "p00045",
+          "quote": "فاسترضع في بني سعد"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "banu-nadir",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "بني النضير",
+      "names_in_book": [
+        "بني النضير"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.429,
+        "lng": 39.628,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "south-east of Madinah, al-Awali"
+      },
+      "evidence": [
+        {
+          "para": "p00395",
+          "quote": "في ديار بني النضير"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "banu-qaynuqa",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "بني قينقاع",
+      "names_in_book": [
+        "بني قينقاع"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.464,
+        "lng": 39.612,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "south of the mosque"
+      },
+      "evidence": [
+        {
+          "para": "p00335",
+          "quote": "يهود بني قينقاع"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "banu-qurayza",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "بني قريظة",
+      "names_in_book": [
+        "بني قريظة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.443,
+        "lng": 39.637,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "south-east of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00440",
+          "quote": "أمره الله باللحوق ببني قريظة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "bayt-al-maqdis",
+      "parent": "sham",
+      "kind": "city",
+      "name_ar": "بيت المقدس",
+      "names_in_book": [
+        "بيت المقدس",
+        "إيلياء",
+        "القدس"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 31.7761,
+        "lng": 35.2358,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "al-Masjid al-Aqsa"
+      },
+      "evidence": [
+        {
+          "para": "p00180",
+          "quote": "إلى بيت المقدس بإيلياء"
+        },
+        {
+          "para": "p00508",
+          "quote": "في القدس"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "bir-mauna",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "بئر معونة",
+      "names_in_book": [
+        "بئر معونة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.7,
+        "lng": 40.6,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "between the lands of Banu Amir and Banu Sulaym"
+      },
+      "evidence": [
+        {
+          "para": "p00392",
+          "quote": "حتى نزلوا بئر معونة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "buhran",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "بحران",
+      "names_in_book": [
+        "بحران"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.1,
+        "lng": 39.9,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "in the Hijaz, south-east of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00352",
+          "quote": "ولما وصل بحران"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "busra",
+      "parent": "sham",
+      "kind": "city",
+      "name_ar": "بصرى",
+      "names_in_book": [
+        "بصرى"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 32.517,
+        "lng": 36.481,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00030",
+          "quote": "وهم بقرب بصرى بحيرى الراهب"
+        },
+        {
+          "para": "p00516",
+          "quote": "إلى أمير بصرى"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "buwat",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "بواط",
+      "names_in_book": [
+        "بواط"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.2,
+        "lng": 39.0,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Jabal Buwat, west of Madinah towards Yanbu"
+      },
+      "evidence": [
+        {
+          "para": "p00276",
+          "quote": "حتى بلغ بواط"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "darba",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "ضربة",
+      "names_in_book": [
+        "ضربة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.4,
+        "lng": 41.5,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "in Najd, on the road to Makkah from Iraq"
+      },
+      "evidence": [
+        {
+          "para": "p00457",
+          "quote": "بناحية ضربة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "dhat-atlah",
+      "parent": "sham",
+      "kind": "city",
+      "name_ar": "ذات أطلاح",
+      "names_in_book": [
+        "ذات أطلاح"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 30.8,
+        "lng": 35.6,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "in the land of al-Sham beyond Wadi al-Qura; location uncertain"
+      },
+      "evidence": [
+        {
+          "para": "p00563",
+          "quote": "إلى ذات أطلاح من أرض الشام"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "dhu-al-qissa",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "ذو القصة",
+      "names_in_book": [
+        "ذي القصة",
+        "ذو القصة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.65,
+        "lng": 39.9,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "east of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00465",
+          "quote": "بذي القصة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "dhu-amarr",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "ذو أمر",
+      "names_in_book": [
+        "ذا أمر",
+        "ذو أمر"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 25.0,
+        "lng": 40.3,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "in Najd, east of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00349",
+          "quote": "حتى وصلوا ماء يسمى ذا أمر"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "dimashq",
+      "parent": "sham",
+      "kind": "city",
+      "name_ar": "دمشق",
+      "names_in_book": [
+        "دمشق"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 33.513,
+        "lng": 36.292,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00517",
+          "quote": "إلى أمير دمشق"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "dumat-al-jandal",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "دومة الجندل",
+      "names_in_book": [
+        "دومة الجندل"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 29.81,
+        "lng": 39.87,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00403",
+          "quote": "بدومة الجندل"
+        },
+        {
+          "para": "p00474",
+          "quote": "في دومة الجندل"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "fadak",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "فدك",
+      "names_in_book": [
+        "فدك"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 25.95,
+        "lng": 40.48,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "al-Ha'it"
+      },
+      "evidence": [
+        {
+          "para": "p00542",
+          "quote": "من يهود فدك"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "faris",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "فارس",
+      "names_in_book": [
+        "فارس",
+        "الفرس"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 32.5,
+        "lng": 51.7,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Persia, drawing centroid"
+      },
+      "evidence": [
+        {
+          "para": "p00523",
+          "quote": "كسرى ملك الفرس"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "ghaba",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الغابة",
+      "names_in_book": [
+        "الغابة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.58,
+        "lng": 39.6,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "al-Ghaba, north of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00460",
+          "quote": "ترعى بالغابة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "habasha",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "الحبشة",
+      "names_in_book": [
+        "الحبشة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 14.13,
+        "lng": 38.72,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Aksum, seat of the Najashi"
+      },
+      "evidence": [
+        {
+          "para": "p00146",
+          "quote": "فأشار إلى الحبشة"
+        },
+        {
+          "para": "p00160",
+          "quote": "أن يهاجروا للحبشة"
+        },
+        {
+          "para": "p00522",
+          "quote": "ملك الحبشة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "hamra-al-asad",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "حمراء الأسد",
+      "names_in_book": [
+        "حمراء الأسد"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.3,
+        "lng": 39.45,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "about 13 km south-west of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00380",
+          "quote": "وهم في حمراء الأسد"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "hudaybiyah",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الحديبية",
+      "names_in_book": [
+        "الحديبية"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.44,
+        "lng": 39.63,
+        "precision": "site",
+        "source": "manual",
+        "box": null,
+        "note": "al-Shumaysi"
+      },
+      "evidence": [
+        {
+          "para": "p00488",
+          "quote": "بالنزول أقصى الحديبية"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "hunayn",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "حنين",
+      "names_in_book": [
+        "حنين"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.55,
+        "lng": 40.03,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Wadi Hunayn between Makkah and Ta'if; location differs among scholars"
+      },
+      "evidence": [
+        {
+          "para": "p00650",
+          "quote": "وغزوة حنين"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "jeddah",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "جدة",
+      "names_in_book": [
+        "جدة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4858,
+        "lng": 39.1925,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00660",
+          "quote": "حتى وصل جدة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "jiranah",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الجعرانة",
+      "names_in_book": [
+        "الجعرانة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.56,
+        "lng": 39.95,
+        "precision": "site",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00634",
+          "quote": "إلى الجعرانة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "jumum",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الجموم",
+      "names_in_book": [
+        "الجموم"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.8,
+        "lng": 39.3,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "in the lands of Banu Sulaym, north of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00467",
+          "quote": "في الجموم"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "khaybar",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "خيبر",
+      "names_in_book": [
+        "خيبر"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 25.695,
+        "lng": 39.29,
+        "precision": "site",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00480",
+          "quote": "حتى قدموا خيبر"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "kudayd",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الكديد",
+      "names_in_book": [
+        "الكديد"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 22.6,
+        "lng": 39.3,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "between Qudayd and Usfan"
+      },
+      "evidence": [
+        {
+          "para": "p00559",
+          "quote": "يسكنون بالكديد"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "madinah",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "المدينة",
+      "names_in_book": [
+        "المدينة",
+        "بالمدينة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.4672,
+        "lng": 39.6111,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Madinah, at the Prophet's Mosque"
+      },
+      "evidence": [
+        {
+          "para": "p00207",
+          "quote": "بالهجرة إلى المدينة"
+        },
+        {
+          "para": "p00482",
+          "quote": "فلم يوافقهم هواء المدينة"
+        },
+        {
+          "para": "p00662",
+          "quote": "فخرج حتى جاء المدينة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "مكة",
+      "names_in_book": [
+        "مكة",
+        "بمكة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4225,
+        "lng": 39.8262,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Makkah, at the Masjid al-Haram"
+      },
+      "evidence": [
+        {
+          "para": "p00019",
+          "quote": "والمقيمون منهم بمكة يسمون"
+        },
+        {
+          "para": "p00038",
+          "quote": "فلما قدما مكة ورأت خديجة ربحها العظيم"
+        },
+        {
+          "para": "p00096",
+          "quote": "في ضواحي مكة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "mayfaa",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الميفعة",
+      "names_in_book": [
+        "الميفعة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 25.3,
+        "lng": 41.0,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "in Najd"
+      },
+      "evidence": [
+        {
+          "para": "p00552",
+          "quote": "إلى أهل الميفعة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "misr",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "مصر",
+      "names_in_book": [
+        "مصر"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 30.0,
+        "lng": 31.2,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Egypt, drawing centroid"
+      },
+      "evidence": [
+        {
+          "para": "p00519",
+          "quote": "مصر من جهة قيصر"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "mushallal",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "المشلل",
+      "names_in_book": [
+        "المشلل"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 22.4,
+        "lng": 39.2,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "near Qudayd, the site of Manat"
+      },
+      "evidence": [
+        {
+          "para": "p00624",
+          "quote": "لكلب وخزاعة وهيكلها بالمشلل وهو جبل على"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "mutah",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "مؤتة",
+      "names_in_book": [
+        "مؤتة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 31.08,
+        "lng": 35.7,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Mu'ta, Jordan"
+      },
+      "evidence": [
+        {
+          "para": "p00566",
+          "quote": "وصلوا مؤتة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "najd",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "نجد",
+      "names_in_book": [
+        "نجد"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.8,
+        "lng": 43.5,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Najd, drawing centroid"
+      },
+      "evidence": [
+        {
+          "para": "p00398",
+          "quote": "قبائل من نجد"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "najran",
+      "parent": "yemen",
+      "kind": "city",
+      "name_ar": "نجران",
+      "names_in_book": [
+        "نجران",
+        "بنجران"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 17.4917,
+        "lng": 44.1322,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00691",
+          "quote": "بني عبد المدان بنجران"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "nakhla",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "نخلة",
+      "names_in_book": [
+        "بنخلة",
+        "نخلة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.62,
+        "lng": 40.15,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Wadi Nakhla between Makkah and Ta'if"
+      },
+      "evidence": [
+        {
+          "para": "p00034",
+          "quote": "حتى أدركوا قريشا وكنانة بنخلة"
+        },
+        {
+          "para": "p00279",
+          "quote": "وسار الباقون حتى وصلوا نخلة"
+        },
+        {
+          "para": "p00622",
+          "quote": "ببطن نخلة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
         }
       ],
       "note": null
@@ -36,6 +1323,1196 @@
           "note": "The bucket for an event whose place the book does not state (ADR 0089). It has no coordinates and no map position."
         }
       ],
+      "note": null
+    },
+    {
+      "id": "qatan",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "قطن",
+      "names_in_book": [
+        "قطنا",
+        "قطن"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 25.4,
+        "lng": 42.1,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "a mountain in Najd"
+      },
+      "evidence": [
+        {
+          "para": "p00385",
+          "quote": "حتى بلغ قطنا"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "rabigh",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "رابغ",
+      "names_in_book": [
+        "رابغ"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 22.7986,
+        "lng": 39.0349,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00271",
+          "quote": "فوافوا العير ببطن رابغ"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "raji",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الرجيع",
+      "names_in_book": [
+        "بالرجيع",
+        "الرجيع"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.9,
+        "lng": 39.4,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "a well of Hudhayl between Usfan and Makkah"
+      },
+      "evidence": [
+        {
+          "para": "p00389",
+          "quote": "حتى إذا كانوا بالرجيع"
+        },
+        {
+          "para": "p00459",
+          "quote": "مقتل أصحاب الرجيع"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "safwan",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "سفوان",
+      "names_in_book": [
+        "سفوان"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 23.9,
+        "lng": 38.9,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "a valley near Badr"
+      },
+      "evidence": [
+        {
+          "para": "p00278",
+          "quote": "فسار حتى بلغ سفوان"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "sham",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "الشام",
+      "names_in_book": [
+        "الشام"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 33.5,
+        "lng": 36.5,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Greater Syria, drawing centroid"
+      },
+      "evidence": [
+        {
+          "para": "p00030",
+          "quote": "السفر بتجارة إلى الشام"
+        },
+        {
+          "para": "p00037",
+          "quote": "سافر إلى الشام المرة الثانية"
+        },
+        {
+          "para": "p00192",
+          "quote": "عبر قادمة من الشام"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "tabuk",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "تبوك",
+      "names_in_book": [
+        "تبوك",
+        "بتبوك"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 28.3838,
+        "lng": 36.555,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00669",
+          "quote": "ولما وصلوا إلى تبوك"
+        },
+        {
+          "para": "p00671",
+          "quote": "ولم ير صلى الله عليه وسلم بتبوك جيشا"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "taif",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الطائف",
+      "names_in_book": [
+        "الطائف",
+        "بالطائف"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.2703,
+        "lng": 40.4158,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00174",
+          "quote": "إلى ثقيف بالطائف"
+        },
+        {
+          "para": "p00632",
+          "quote": "إلى الطائف"
+        },
+        {
+          "para": "p00686",
+          "quote": "صنم ثقيف بالطائف"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "taraf",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "الطرف",
+      "names_in_book": [
+        "الطرف"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.85,
+        "lng": 40.2,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "east of Madinah"
+      },
+      "evidence": [
+        {
+          "para": "p00470",
+          "quote": "وهم مقيمون بالطرف"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "tayma",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "تيماء",
+      "names_in_book": [
+        "تيماء"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 27.63,
+        "lng": 38.55,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00543",
+          "quote": "يهود تيماء"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "turbah",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "تربة",
+      "names_in_book": [
+        "تربة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.22,
+        "lng": 41.65,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Turaba"
+      },
+      "evidence": [
+        {
+          "para": "p00548",
+          "quote": "جمعا من هوزان بتربة يظهرون العداوة للمسلمين"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "ubna",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "أبنى",
+      "names_in_book": [
+        "أبني",
+        "أبنى"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 31.6,
+        "lng": 35.1,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Ubna in Palestine, the target of Usama's expedition; location uncertain"
+      },
+      "evidence": [
+        {
+          "para": "p00748",
+          "quote": "إلى أبني حيث قتل زيد بن حارثة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "ukaz",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "عكاظ",
+      "names_in_book": [
+        "عكاظ",
+        "سوق عكاظ"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.6,
+        "lng": 40.42,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Suq Ukaz, north of Ta'if"
+      },
+      "evidence": [
+        {
+          "para": "p00032",
+          "quote": "إلى سوق عكاظ لتباع له"
+        },
+        {
+          "para": "p00034",
+          "quote": "فموعدنا عكاظ العام المقبل"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "uman",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "عمان",
+      "names_in_book": [
+        "عمان"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 23.6,
+        "lng": 57.5,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00526",
+          "quote": "ملكي عمان"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "urana",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "عرنة",
+      "names_in_book": [
+        "بعرنة",
+        "عرنة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.35,
+        "lng": 39.96,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Wadi Urana near Arafat"
+      },
+      "evidence": [
+        {
+          "para": "p00386",
+          "quote": "المقيم بعرنة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "ushayra",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "العشيرة",
+      "names_in_book": [
+        "العشيرة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.2,
+        "lng": 38.4,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "near Yanbu"
+      },
+      "evidence": [
+        {
+          "para": "p00277",
+          "quote": "حتى بلغ العشيرة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "waddan",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "ودان",
+      "names_in_book": [
+        "ودان"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 23.05,
+        "lng": 39.15,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "near al-Abwa"
+      },
+      "evidence": [
+        {
+          "para": "p00275",
+          "quote": "حتى بلغ ودان"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "wadi-al-qura",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "وادي القرى",
+      "names_in_book": [
+        "وادي القرى"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 26.62,
+        "lng": 37.92,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "near al-Ula"
+      },
+      "evidence": [
+        {
+          "para": "p00544",
+          "quote": "يهود وادي القرى"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "yamama",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "اليمامة",
+      "names_in_book": [
+        "اليمامة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.15,
+        "lng": 47.3,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "al-Yamama, near al-Kharj"
+      },
+      "evidence": [
+        {
+          "para": "p00530",
+          "quote": "ملك اليمامة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "yemen",
+      "parent": "arabia",
+      "kind": "region",
+      "name_ar": "اليمن",
+      "names_in_book": [
+        "اليمن"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 15.35,
+        "lng": 44.2,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Yemen, drawing centroid near San'a"
+      },
+      "evidence": [
+        {
+          "para": "p00651",
+          "quote": "تسكن اليمن"
+        },
+        {
+          "para": "p00691",
+          "quote": "بنجران من أرض اليمن"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "yumn-jubar",
+      "parent": "arabia",
+      "kind": "city",
+      "name_ar": "يمن وجبار",
+      "names_in_book": [
+        "يمن وجبار"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 25.3,
+        "lng": 40.4,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Yumn and Jabar, lands of Ghatafan"
+      },
+      "evidence": [
+        {
+          "para": "p00555",
+          "quote": "بأرض اسمها يمن وجبار"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "madinah.abu-ayyub",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "دار أبي أيوب",
+      "names_in_book": [
+        "دار أبي أيوب"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.4669,
+        "lng": 39.6118,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "south-east of the Prophet's Mosque"
+      },
+      "evidence": [
+        {
+          "para": "p00231",
+          "quote": "أمام دار أبي أيوب الأنصاري"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "madinah.aisha-house",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "بيت عائشة",
+      "names_in_book": [
+        "بيت عائشة",
+        "حجرة عائشة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.4673,
+        "lng": 39.6115,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "the Prophet's chamber, inside the mosque"
+      },
+      "evidence": [
+        {
+          "para": "p00750",
+          "quote": "أن يمرض في بيت عائشة"
+        },
+        {
+          "para": "p00756",
+          "quote": "في حجرة عائشة حيث توفي"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "madinah.bani-salim",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "بني سالم بن عوف",
+      "names_in_book": [
+        "بني سالم بن عوف"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.4562,
+        "lng": 39.605,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Masjid al-Jumu'a, Wadi Ranuna"
+      },
+      "evidence": [
+        {
+          "para": "p00229",
+          "quote": "في بني سالم بن عوف"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "madinah.khandaq",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "الخندق",
+      "names_in_book": [
+        "الخندق"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.476,
+        "lng": 39.597,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "north-west of the city, near Jabal Sal'/Masajid al-Fath"
+      },
+      "evidence": [
+        {
+          "para": "p00430",
+          "quote": "على اقتحام الخندق"
+        },
+        {
+          "para": "p00425",
+          "quote": "وشرعوا في حفره شمالي المدينة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "madinah.masjid",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "مسجده الشريف",
+      "names_in_book": [
+        "مسجده الشريف",
+        "مسجده"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.4672,
+        "lng": 39.6111,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00231",
+          "quote": "وذلك محل مسجده الشريف"
+        },
+        {
+          "para": "p00244",
+          "quote": "ثم شرع عليه الصلاة والسلام في بناء مسجده"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "madinah.quba",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "قباء",
+      "names_in_book": [
+        "قباء",
+        "بقباء",
+        "مسجد قباء"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.4393,
+        "lng": 39.6173,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Masjid Quba"
+      },
+      "evidence": [
+        {
+          "para": "p00216",
+          "quote": "في بني عمرو بن عوف بقباء"
+        },
+        {
+          "para": "p00222",
+          "quote": "أسس فيها مسجد قباء"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "madinah.uhud",
+      "parent": "madinah",
+      "kind": "landmark",
+      "name_ar": "أحد",
+      "names_in_book": [
+        "أحد"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 24.5012,
+        "lng": 39.6136,
+        "precision": "site",
+        "source": "manual",
+        "box": null,
+        "note": "Mount Uhud, battlefield at Jabal al-Rumat"
+      },
+      "evidence": [
+        {
+          "para": "p00359",
+          "quote": "حتى نزل الشعب من أحد"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah.aqaba",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "العقبة",
+      "names_in_book": [
+        "العقبة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4207,
+        "lng": 39.873,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Jamrat al-Aqaba, Mina"
+      },
+      "evidence": [
+        {
+          "para": "p00198",
+          "quote": "فاجتمعوا به عند العقبة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah.arafat",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "عرفة",
+      "names_in_book": [
+        "عرفة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.3549,
+        "lng": 39.9842,
+        "precision": "site",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00700",
+          "quote": "وفي التاسع منه توجه إلى عرفة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah.arqam",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "دار الأرقم",
+      "names_in_book": [
+        "دار الأرقم"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4231,
+        "lng": 39.8277,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "near al-Safa"
+      },
+      "evidence": [
+        {
+          "para": "p00150",
+          "quote": "وكان إسلامه في دار الأرقم بن أبي الأرقم"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "makkah.dar-al-nadwa",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "دار الندوة",
+      "names_in_book": [
+        "دار الندوة"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.423,
+        "lng": 39.8257,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "north-west side of the Ka'ba, now inside the Haram"
+      },
+      "evidence": [
+        {
+          "para": "p00208",
+          "quote": "في دار الندوة"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "makkah.dar-ibn-judan",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "دار عبد الله بن جدعان",
+      "names_in_book": [
+        "دار عبد الله بن جدعان"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4218,
+        "lng": 39.826,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "near the Haram"
+      },
+      "evidence": [
+        {
+          "para": "p00036",
+          "quote": "فتم في دار عبد الله بن جدعان التميمي"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "makkah.hira",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "غار حراء",
+      "names_in_book": [
+        "غار حراء"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4575,
+        "lng": 39.8592,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Jabal al-Nur"
+      },
+      "evidence": [
+        {
+          "para": "p00072",
+          "quote": "وكان يخلو بغار حراء"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah.kaaba",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "الكعبة",
+      "names_in_book": [
+        "الكعبة",
+        "البيت"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4225,
+        "lng": 39.8262,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00040",
+          "quote": "جاء سيل جارف فصدع جدران الكعبة"
+        },
+        {
+          "para": "p00159",
+          "quote": "وضعوها في جوف الكعبة"
+        },
+        {
+          "para": "p00103",
+          "quote": "الصلاة عند البيت"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah.mina",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "منى",
+      "names_in_book": [
+        "منى",
+        "بمنى"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4133,
+        "lng": 39.8933,
+        "precision": "site",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00688",
+          "quote": "فلما اجتمعوا بمنى يوم النحر"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah.safa",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "الصفا",
+      "names_in_book": [
+        "الصفا"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4219,
+        "lng": 39.8273,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": null
+      },
+      "evidence": [
+        {
+          "para": "p00098",
+          "quote": "فصعد على الصفا"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "makkah.shib",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "شعب بني هاشم",
+      "names_in_book": [
+        "شعب بني هاشم",
+        "شعب أبي طالب"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.4228,
+        "lng": 39.8317,
+        "precision": "area",
+        "source": "manual",
+        "box": null,
+        "note": "Shi'b Bani Hashim / Abi Talib, east of the Haram near the Mawlid site"
+      },
+      "evidence": [
+        {
+          "para": "p00023",
+          "quote": "وكانت ولادته في دار أبي طالب بشعب بني هاشم"
+        },
+        {
+          "para": "p00159",
+          "quote": "في شعب أبي طالب"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "approximate_location",
+          "note": "The real-world location is approximate or disputed."
+        }
+      ],
+      "note": null
+    },
+    {
+      "id": "makkah.thawr",
+      "parent": "makkah",
+      "kind": "landmark",
+      "name_ar": "غار ثور",
+      "names_in_book": [
+        "غار ثور"
+      ],
+      "name_en": null,
+      "geo": {
+        "lat": 21.377,
+        "lng": 39.8497,
+        "precision": "exact",
+        "source": "manual",
+        "box": null,
+        "note": "Jabal Thawr"
+      },
+      "evidence": [
+        {
+          "para": "p00211",
+          "quote": "وسارا حتى بلغا غار ثور فاختفيا فيه"
+        }
+      ],
+      "origin": "drafted_by_agent",
+      "flags": [],
       "note": null
     }
   ]

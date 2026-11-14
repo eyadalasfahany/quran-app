@@ -18,7 +18,7 @@ final class FlagsView implements ReportView
         $html = '<section id="flags"><h2>4. قائمة القرارات</h2>';
         $count = 0;
 
-        foreach ($context->run->data->gazetteer?->places ?? [] as $place) {
+        foreach ($context->run->data->gazetteer->places ?? [] as $place) {
             if ($place->flags === []) {
                 continue;
             }

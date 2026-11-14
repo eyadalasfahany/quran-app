@@ -17,7 +17,7 @@ use App\Domains\Seerah\Validation\IssueBag;
 final class SignOffApprover
 {
     /**
-     * @return list<string>  the reasons for refusing (empty when the group can be signed)
+     * @return list<string> the reasons for refusing (empty when the group can be signed)
      */
     public function refusals(string $group, SeerahDataset $data, IssueBag $issues): array
     {
@@ -102,7 +102,7 @@ final class SignOffApprover
         $items = [];
 
         if ($group === 'G') {
-            foreach ($data->gazetteer?->places ?? [] as $place) {
+            foreach ($data->gazetteer->places ?? [] as $place) {
                 if ($place->flags !== []) {
                     $items[$place->id] = array_map(static fn ($flag): FlagCode => $flag->code, $place->flags);
                 }

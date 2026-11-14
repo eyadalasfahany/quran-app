@@ -8,12 +8,13 @@ use App\Domains\Seerah\Enums\PlaceBasis;
 
 /**
  * The place of an event: the gazetteer id, how the book states it, its quotes, and the other places the span names.
- *
- * @param  list<Evidence>  $evidence
- * @param  list<string>  $also
  */
 final readonly class PlaceRef
 {
+    /**
+     * @param  list<Evidence>  $evidence
+     * @param  list<string>  $also
+     */
     public function __construct(
         public string $id,
         public PlaceBasis $basis,

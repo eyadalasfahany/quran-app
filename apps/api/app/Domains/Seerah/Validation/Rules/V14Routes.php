@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Domains\Seerah\Validation\Rules;
 
 use App\Domains\Seerah\Dataset\DrawnLayout;
+use App\Domains\Seerah\Dataset\EventRecord;
 use App\Domains\Seerah\Dataset\MapPosition;
+use App\Domains\Seerah\Dataset\Route;
 use App\Domains\Seerah\Validation\IssueBag;
 use App\Domains\Seerah\Validation\ValidationContext;
 
@@ -62,7 +64,7 @@ final class V14Routes implements ValidationRule
 
     /**
      * @param  array{string, string}  $segment
-     * @param  array<string, \App\Domains\Seerah\Dataset\Route>  $routes
+     * @param  array<string, Route>  $routes
      */
     private function curve(DrawnLayout $layout, string $routeId, array $segment, string $d, array $routes, ValidationContext $context, IssueBag $issues): void
     {
@@ -132,7 +134,7 @@ final class V14Routes implements ValidationRule
         return false;
     }
 
-    private function event(string $id, ValidationContext $context): ?\App\Domains\Seerah\Dataset\EventRecord
+    private function event(string $id, ValidationContext $context): ?EventRecord
     {
         foreach ($context->data->allEvents() as $event) {
             if ($event->id === $id) {

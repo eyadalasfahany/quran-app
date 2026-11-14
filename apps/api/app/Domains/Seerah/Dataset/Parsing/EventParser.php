@@ -61,7 +61,7 @@ final class EventParser
     {
         $reader = new RecordReader($item, $where, 'V8', $issues);
         $reader->expectKeys(self::EVENT_KEYS);
-        $kind = $reader->enumOf('kind', \App\Domains\Seerah\Enums\EventKind::class, EventKind::Event);
+        $kind = $reader->enumOf('kind', EventKind::class, EventKind::Event);
         $origin = $reader->enumOf('origin', Origin::class, Origin::DraftedByAgent);
 
         return new EventRecord(
@@ -70,12 +70,12 @@ final class EventParser
             section: $reader->string('section'),
             titleAr: $reader->string('title_ar'),
             span: $this->span($reader),
-            kind: $kind instanceof EventKind ? $kind : EventKind::Event,
+            kind: $kind,
             place: $this->placeRef($reader),
             year: $this->yearRef($reader),
             route: $reader->nullableString('route'),
             orderException: $this->orderException($reader),
-            origin: $origin instanceof Origin ? $origin : Origin::DraftedByAgent,
+            origin: $origin,
             flags: FragmentParser::flags($reader, 'flags'),
             note: $reader->nullableString('note'),
         );
@@ -102,7 +102,7 @@ final class EventParser
 
             return new PlaceRef(
                 id: $ref->string('id'),
-                basis: $basis instanceof PlaceBasis ? $basis : PlaceBasis::Unstated,
+                basis: $basis,
                 evidence: FragmentParser::evidence($ref, 'evidence'),
                 also: $ref->stringList('also'),
             );
@@ -121,13 +121,13 @@ final class EventParser
             $era = $ref->enumOrNull('era', Era::class);
 
             return new YearRef(
-                basis: $basis instanceof YearBasis ? $basis : YearBasis::Unspecified,
+                basis: $basis,
                 ageFrom: $ref->nullableInt('age_from'),
                 ageTo: $ref->nullableInt('age_to'),
                 era: $era instanceof Era ? $era : null,
                 hijriFrom: $ref->nullableInt('hijri_from'),
                 hijriTo: $ref->nullableInt('hijri_to'),
-                certainty: $certainty instanceof Certainty ? $certainty : Certainty::Unspecified,
+                certainty: $certainty,
                 evidence: FragmentParser::evidence($ref, 'evidence'),
             );
         }, true);

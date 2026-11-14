@@ -6,11 +6,12 @@ namespace App\Domains\Seerah\Dataset;
 
 /**
  * The drawn curve of one segment of a route, between two stops (V14 checks its end points).
- *
- * @param  array{string, string}  $segment
  */
 final readonly class RoutePath
 {
+    /**
+     * @param  array{string, string}  $segment
+     */
     public function __construct(
         public string $route,
         public array $segment,

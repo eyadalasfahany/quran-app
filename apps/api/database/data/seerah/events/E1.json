@@ -2,5 +2,503 @@
   "format": 1,
   "batch": "E1",
   "period": "Makkah before the Bi'tha",
-  "events": []
+  "events": [
+    {
+      "id": "e004",
+      "section": "s004",
+      "title_ar": "زواج عبد الله بامنة وحملها",
+      "span": {
+        "from": "p00022",
+        "to": "p00024"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah.shib",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00023",
+            "quote": "وكانت ولادته في دار أبي طالب بشعب بني هاشم"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_relative",
+        "age_from": 0,
+        "age_to": 0,
+        "era": "bh",
+        "hijri_from": 53,
+        "hijri_to": 53,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00022",
+            "quote": "وهو يوافق السنة الأولى من حادثة الفيل"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": "Place: the book names the birth house in شعب بني هاشم (no separate mention of Makkah in the span). Year: birth = age 0 by convention; the book dates it to the first year of the Elephant."
+    },
+    {
+      "id": "e005",
+      "section": "s005",
+      "title_ar": "الرضاع",
+      "span": {
+        "from": "p00025",
+        "to": "p00026"
+      },
+      "kind": "event",
+      "place": {
+        "id": "bani-sad",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00025",
+            "quote": "فجاءت نسوة من بني سعد بن بكر"
+          },
+          {
+            "para": "p00025",
+            "quote": "يلتمسوا المراضع لمواليدهم في البوادي"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_relative",
+        "age_from": 0,
+        "age_to": 4,
+        "era": "bh",
+        "hijri_from": 53,
+        "hijri_to": 49,
+        "certainty": "approximate",
+        "evidence": [
+          {
+            "para": "p00026",
+            "quote": "وكانت تربو عن أربع سنوات"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": "The book names the tribe (بني سعد) and the desert (البوادي); the place is the tribe's desert."
+    },
+    {
+      "id": "e006",
+      "section": "s006",
+      "title_ar": "حادثة شق الصدر",
+      "span": {
+        "from": "p00027",
+        "to": "p00027"
+      },
+      "kind": "event",
+      "place": {
+        "id": "bani-sad",
+        "basis": "implied",
+        "evidence": [
+          {
+            "para": "p00027",
+            "quote": "وحصل له وهو بينهم حادثة مهمة"
+          },
+          {
+            "para": "p00025",
+            "quote": "فجاءت نسوة من بني سعد بن بكر"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "implied",
+        "age_from": 0,
+        "age_to": 4,
+        "era": "bh",
+        "hijri_from": 53,
+        "hijri_to": 49,
+        "certainty": "approximate",
+        "evidence": [
+          {
+            "para": "p00027",
+            "quote": "وحصل له وهو بينهم حادثة مهمة"
+          },
+          {
+            "para": "p00026",
+            "quote": "وكانت تربو عن أربع سنوات"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_implied",
+          "note": "The place is implied by the surrounding text, not named in this section."
+        },
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        },
+        {
+          "code": "year_implied",
+          "note": "The year is derived from a nearby statement in the book, not stated for this section."
+        }
+      ],
+      "note": "Happened while he was with the foster family (بينهم) before Halima returned him to his mother; place and year follow the previous section."
+    },
+    {
+      "id": "e007.1",
+      "section": "s007",
+      "title_ar": "وفاة امنة وكفالة عبد المطلب ووفاته وكفالة أبي طالب",
+      "span": {
+        "from": "p00028",
+        "to": "p00028"
+      },
+      "kind": "event",
+      "place": {
+        "id": "abwa",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00028",
+            "quote": "فماتت بالأبواء فحضنته أم"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "unspecified",
+        "age_from": null,
+        "age_to": null,
+        "era": null,
+        "hijri_from": null,
+        "hijri_to": null,
+        "certainty": "unspecified",
+        "evidence": []
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "year_not_stated",
+          "note": "The book does not state the year; in «غير محدد» for the developer."
+        }
+      ],
+      "note": "Amina's death on the return from Madinah; the book gives no age for it."
+    },
+    {
+      "id": "e007.2",
+      "section": "s007",
+      "title_ar": "وفاة امنة وكفالة عبد المطلب ووفاته وكفالة أبي طالب",
+      "span": {
+        "from": "p00029",
+        "to": "p00029"
+      },
+      "kind": "event",
+      "place": {
+        "id": "other",
+        "basis": "unstated",
+        "evidence": [],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_age",
+        "age_from": 8,
+        "age_to": 8,
+        "era": "bh",
+        "hijri_from": 45,
+        "hijri_to": 45,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00029",
+            "quote": "بعد ثماني سنوات من عمر الرسول"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "place_not_stated",
+          "note": "The book does not name the place of this section; placed in «أخرى» for the developer."
+        }
+      ],
+      "note": "Guardianship of Abdul Muttalib, his death after eight years of the Prophet's age, then Abu Talib; no place named in this paragraph."
+    },
+    {
+      "id": "e008",
+      "section": "s008",
+      "title_ar": "السفر إلى الشام",
+      "span": {
+        "from": "p00030",
+        "to": "p00030"
+      },
+      "kind": "event",
+      "place": {
+        "id": "sham",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00030",
+            "quote": "أراد عمه وكفيله السفر بتجارة إلى الشام"
+          },
+          {
+            "para": "p00030",
+            "quote": "وهم بقرب بصرى بحيرى الراهب"
+          }
+        ],
+        "also": [
+          "busra"
+        ]
+      },
+      "year": {
+        "basis": "stated_age",
+        "age_from": 12,
+        "age_to": 12,
+        "era": "bh",
+        "hijri_from": 41,
+        "hijri_to": 41,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00030",
+            "quote": "ولما بلغت سنه عليه الصلاة والسلام اثنتي عشرة سنة"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e009",
+      "section": "s009",
+      "title_ar": "حرب الفجار",
+      "span": {
+        "from": "p00031",
+        "to": "p00035"
+      },
+      "kind": "event",
+      "place": {
+        "id": "nakhla",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00034",
+            "quote": "حتى أدركوا قريشا وكنانة بنخلة"
+          },
+          {
+            "para": "p00034",
+            "quote": "وكان فيهم رسول الله صلى الله عليه وسلم"
+          }
+        ],
+        "also": [
+          "ukaz"
+        ]
+      },
+      "year": {
+        "basis": "stated_age",
+        "age_from": 20,
+        "age_to": 20,
+        "era": "bh",
+        "hijri_from": 33,
+        "hijri_to": 33,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00031",
+            "quote": "عشرين سنة حضر حرب الفجار"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": "The first clash is at Nakhla where the Prophet was present; the book then sets the next year's meeting at Ukaz (the book does not say explicitly where the main battle was fought)."
+    },
+    {
+      "id": "e010",
+      "section": "s010",
+      "title_ar": "حلف الفضول",
+      "span": {
+        "from": "p00036",
+        "to": "p00036"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah.dar-ibn-judan",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00036",
+            "quote": "فتم في دار عبد الله بن جدعان التميمي"
+          },
+          {
+            "para": "p00036",
+            "quote": "ألا يجدوا بمكة مظلوما"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_relative",
+        "age_from": 20,
+        "age_to": 20,
+        "era": "bh",
+        "hijri_from": 33,
+        "hijri_to": 33,
+        "certainty": "approximate",
+        "evidence": [
+          {
+            "para": "p00036",
+            "quote": "وعند رجوع قريش من حرب الفجار تداعوا لحلف الفضول"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": "Dated by the book as on the return from Harb al-Fijar (age 20 in the previous section)."
+    },
+    {
+      "id": "e011",
+      "section": "s011",
+      "title_ar": "رحلته إلى الشام المرة الثانية",
+      "span": {
+        "from": "p00037",
+        "to": "p00037"
+      },
+      "kind": "event",
+      "place": {
+        "id": "sham",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00037",
+            "quote": "سافر إلى الشام المرة الثانية"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_age",
+        "age_from": 25,
+        "age_to": 25,
+        "era": "bh",
+        "hijri_from": 28,
+        "hijri_to": 28,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00037",
+            "quote": "خمسا وعشرين سنة سافر إلى الشام"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    },
+    {
+      "id": "e012",
+      "section": "s012",
+      "title_ar": "زواجه خديجة",
+      "span": {
+        "from": "p00038",
+        "to": "p00039"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00038",
+            "quote": "فلما قدما مكة ورأت خديجة ربحها العظيم"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_relative",
+        "age_from": 25,
+        "age_to": 25,
+        "era": "bh",
+        "hijri_from": 28,
+        "hijri_to": 28,
+        "certainty": "approximate",
+        "evidence": [
+          {
+            "para": "p00037",
+            "quote": "خمسا وعشرين سنة سافر إلى الشام"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [
+        {
+          "code": "evidence_outside_span",
+          "note": "The quote comes from a neighbouring section of the book."
+        }
+      ],
+      "note": "Marriage follows the return from the second Sham trip (age 25 in the previous section); no age is stated inside this section."
+    },
+    {
+      "id": "e013",
+      "section": "s013",
+      "title_ar": "بناء البيت",
+      "span": {
+        "from": "p00040",
+        "to": "p00044"
+      },
+      "kind": "event",
+      "place": {
+        "id": "makkah.kaaba",
+        "basis": "stated",
+        "evidence": [
+          {
+            "para": "p00040",
+            "quote": "جاء سيل جارف فصدع جدران الكعبة"
+          }
+        ],
+        "also": []
+      },
+      "year": {
+        "basis": "stated_age",
+        "age_from": 35,
+        "age_to": 35,
+        "era": "bh",
+        "hijri_from": 18,
+        "hijri_to": 18,
+        "certainty": "stated",
+        "evidence": [
+          {
+            "para": "p00040",
+            "quote": "بلغت سنه عليه الصلاة والسلام خمسا وثلاثين سنة"
+          }
+        ]
+      },
+      "route": null,
+      "order_exception": null,
+      "origin": "drafted_by_agent",
+      "flags": [],
+      "note": null
+    }
+  ]
 }

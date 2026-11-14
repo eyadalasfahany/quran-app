@@ -1,0 +1,421 @@
+{
+  "format": 1,
+  "level": "region",
+  "parent_place": "arabia",
+  "viewbox": [
+    0,
+    0,
+    1644,
+    2400
+  ],
+  "art": "design-assets/seerah/map-region.svg",
+  "positions": [
+    {
+      "place": "abwa",
+      "x": 834.1,
+      "y": 1190.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "al-is",
+      "x": 785.6,
+      "y": 1044.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "badr",
+      "x": 803.0,
+      "y": 1122.1,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "bahrain",
+      "x": 1640,
+      "y": 960.0,
+      "label_priority": 51,
+      "label_side": "start"
+    },
+    {
+      "place": "bani-mustaliq",
+      "x": 826.8,
+      "y": 1270.0,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "bani-sad",
+      "x": 945.5,
+      "y": 1395.0,
+      "label_priority": 42,
+      "label_side": "start"
+    },
+    {
+      "place": "bayt-al-maqdis",
+      "x": 478.3,
+      "y": 322.4,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "bir-mauna",
+      "x": 968.4,
+      "y": 1030.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "buhran",
+      "x": 904.4,
+      "y": 1090.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "busra",
+      "x": 592.1,
+      "y": 248.3,
+      "label_priority": 30,
+      "label_side": "end"
+    },
+    {
+      "place": "buwat",
+      "x": 822.2,
+      "y": 1080.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "darba",
+      "x": 1050.6,
+      "y": 1060.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "dhat-atlah",
+      "x": 511.6,
+      "y": 420.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "dhu-al-qissa",
+      "x": 904.4,
+      "y": 1035.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "dhu-amarr",
+      "x": 941.0,
+      "y": 1000.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "dimashq",
+      "x": 574.8,
+      "y": 148.7,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "dumat-al-jandal",
+      "x": 901.7,
+      "y": 519.0,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "fadak",
+      "x": 957.4,
+      "y": 905.0,
+      "label_priority": 54,
+      "label_side": "start"
+    },
+    {
+      "place": "faris",
+      "x": 1640,
+      "y": 250.0,
+      "label_priority": 51,
+      "label_side": "start"
+    },
+    {
+      "place": "ghaba",
+      "x": 877.0,
+      "y": 1042.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "habasha",
+      "x": 796.6,
+      "y": 2087.0,
+      "label_priority": 63,
+      "label_side": "end"
+    },
+    {
+      "place": "hamra-al-asad",
+      "x": 863.3,
+      "y": 1070.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "hudaybiyah",
+      "x": 879.7,
+      "y": 1356.0,
+      "label_priority": 72,
+      "label_side": "end"
+    },
+    {
+      "place": "hunayn",
+      "x": 916.3,
+      "y": 1345.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "jeddah",
+      "x": 839.8,
+      "y": 1351.4,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "jiranah",
+      "x": 909.0,
+      "y": 1344.0,
+      "label_priority": 42,
+      "label_side": "start"
+    },
+    {
+      "place": "jumum",
+      "x": 849.6,
+      "y": 1020.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "khaybar",
+      "x": 848.7,
+      "y": 930.5,
+      "label_priority": 60,
+      "label_side": "end"
+    },
+    {
+      "place": "kudayd",
+      "x": 849.6,
+      "y": 1240.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "madinah",
+      "x": 878.0,
+      "y": 1053.3,
+      "label_priority": 100,
+      "label_side": "end"
+    },
+    {
+      "place": "makkah",
+      "x": 897.7,
+      "y": 1357.8,
+      "label_priority": 100,
+      "label_side": "end"
+    },
+    {
+      "place": "mayfaa",
+      "x": 1004.9,
+      "y": 970.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "misr",
+      "x": 109.6,
+      "y": 500.0,
+      "label_priority": 51,
+      "label_side": "end"
+    },
+    {
+      "place": "mushallal",
+      "x": 840.5,
+      "y": 1260.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "mutah",
+      "x": 520.7,
+      "y": 392.0,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "najd",
+      "x": 1233.3,
+      "y": 1020.0,
+      "label_priority": 51,
+      "label_side": "start"
+    },
+    {
+      "place": "najran",
+      "x": 1291.0,
+      "y": 1750.8,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "nakhla",
+      "x": 927.2,
+      "y": 1338.0,
+      "label_priority": 48,
+      "label_side": "start"
+    },
+    {
+      "place": "qatan",
+      "x": 1105.4,
+      "y": 960.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "rabigh",
+      "x": 825.4,
+      "y": 1220.1,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "raji",
+      "x": 858.7,
+      "y": 1310.0,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "safwan",
+      "x": 813.1,
+      "y": 1110.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "sham",
+      "x": 593.8,
+      "y": 150.0,
+      "label_priority": 57,
+      "label_side": "end"
+    },
+    {
+      "place": "tabuk",
+      "x": 598.8,
+      "y": 661.6,
+      "label_priority": 54,
+      "label_side": "end"
+    },
+    {
+      "place": "taif",
+      "x": 951.5,
+      "y": 1373.0,
+      "label_priority": 48,
+      "label_side": "start"
+    },
+    {
+      "place": "taraf",
+      "x": 931.8,
+      "y": 1015.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "tayma",
+      "x": 781.1,
+      "y": 737.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "turbah",
+      "x": 1064.3,
+      "y": 1378.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "ubna",
+      "x": 465.9,
+      "y": 340.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "ukaz",
+      "x": 951.9,
+      "y": 1340.0,
+      "label_priority": 30,
+      "label_side": "start"
+    },
+    {
+      "place": "uman",
+      "x": 1640,
+      "y": 1140.0,
+      "label_priority": 51,
+      "label_side": "start"
+    },
+    {
+      "place": "urana",
+      "x": 909.9,
+      "y": 1365.0,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "ushayra",
+      "x": 767.4,
+      "y": 1080.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "waddan",
+      "x": 835.9,
+      "y": 1195.0,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "wadi-al-qura",
+      "x": 723.5,
+      "y": 838.0,
+      "label_priority": 48,
+      "label_side": "end"
+    },
+    {
+      "place": "yamama",
+      "x": 1580.4,
+      "y": 1085.0,
+      "label_priority": 51,
+      "label_side": "start"
+    },
+    {
+      "place": "yemen",
+      "x": 1297.2,
+      "y": 1965.0,
+      "label_priority": 63,
+      "label_side": "start"
+    },
+    {
+      "place": "yumn-jubar",
+      "x": 950.1,
+      "y": 970.0,
+      "label_priority": 36,
+      "label_side": "start"
+    }
+  ],
+  "route_paths": []
+}

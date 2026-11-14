@@ -22,7 +22,7 @@ final class ReviewRecords
     {
         $records = [];
 
-        foreach ($data->gazetteer?->places ?? [] as $place) {
+        foreach ($data->gazetteer->places ?? [] as $place) {
             $records[] = self::record('G', $place->id, RecordSerializer::place($place));
         }
 

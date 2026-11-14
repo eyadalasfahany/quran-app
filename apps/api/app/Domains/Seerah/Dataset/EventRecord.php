@@ -10,11 +10,12 @@ use App\Domains\Seerah\Enums\Origin;
 /**
  * One event: the book's heading as its title, its span, place and year. `place` and `year` are null only in a skeleton the author
  * has not filled in (V9 then fails). `order_exception` holds the note of an event the book tells out of time order (V12).
- *
- * @param  list<Flag>  $flags
  */
 final readonly class EventRecord
 {
+    /**
+     * @param  list<Flag>  $flags
+     */
     public function __construct(
         public string $id,
         public string $batch,

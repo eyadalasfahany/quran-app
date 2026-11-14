@@ -39,7 +39,7 @@ final class OverviewView implements ReportView
         }
 
         $html .= '</tbody></table>';
-        $html .= '<p>الأماكن: '.count($data->gazetteer?->places ?? []).' · الاستثناءات: '.count($data->exclusions).' · المسارات: '.count($data->routes).' · المحطات: '.count($data->milestones).'</p>';
+        $html .= '<p>الأماكن: '.count($data->gazetteer->places ?? []).' · الاستثناءات: '.count($data->exclusions).' · المسارات: '.count($data->routes).' · المحطات: '.count($data->milestones).'</p>';
 
         $html .= '<h3>نتائج المدقق</h3>';
         $html .= '<p>أخطاء: '.$run->issues->count(Severity::Error).' · تحذيرات: '.$run->issues->count(Severity::Warning).'</p>';

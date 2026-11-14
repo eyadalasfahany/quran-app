@@ -26,11 +26,11 @@ final class EventCard
         $html .= '<dt>المكان</dt><dd>'.self::place($context, $event).'</dd>';
         $html .= '<dt>السنة</dt><dd>'.self::year($context, $event).'</dd>';
 
-        foreach ($event->year?->evidence ?? [] as $evidence) {
+        foreach ($event->year->evidence ?? [] as $evidence) {
             $html .= '<dt>نص السنة</dt><dd>'.self::quote($context, $evidence).'</dd>';
         }
 
-        foreach ($event->place?->evidence ?? [] as $evidence) {
+        foreach ($event->place->evidence ?? [] as $evidence) {
             $html .= '<dt>نص المكان</dt><dd>'.self::quote($context, $evidence).'</dd>';
         }
 

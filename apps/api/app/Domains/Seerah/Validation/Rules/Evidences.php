@@ -19,18 +19,18 @@ final class Evidences
     {
         $all = [];
 
-        foreach ($context->data->gazetteer?->places ?? [] as $place) {
+        foreach ($context->data->gazetteer->places ?? [] as $place) {
             foreach ($place->evidence as $evidence) {
                 $all[] = ['where' => 'gazetteer '.$place->id, 'evidence' => $evidence];
             }
         }
 
         foreach ($context->data->allEvents() as $event) {
-            foreach ($event->place?->evidence ?? [] as $evidence) {
+            foreach ($event->place->evidence ?? [] as $evidence) {
                 $all[] = ['where' => $event->id.' place', 'evidence' => $evidence];
             }
 
-            foreach ($event->year?->evidence ?? [] as $evidence) {
+            foreach ($event->year->evidence ?? [] as $evidence) {
                 $all[] = ['where' => $event->id.' year', 'evidence' => $evidence];
             }
         }

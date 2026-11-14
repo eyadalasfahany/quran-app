@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Validation\Rules;
 
-use App\Domains\Seerah\Dataset\Flag;
 use App\Domains\Seerah\Validation\IssueBag;
 use App\Domains\Seerah\Validation\ValidationContext;
 
@@ -20,7 +19,7 @@ final class V10Decisions implements ValidationRule
 
         $records = [];
 
-        foreach ($context->data->gazetteer?->places ?? [] as $place) {
+        foreach ($context->data->gazetteer->places ?? [] as $place) {
             $records[] = ['G', 'gazetteer '.$place->id, $place->id, $place->flags, false];
         }
 
@@ -48,7 +47,7 @@ final class V10Decisions implements ValidationRule
             }
 
             foreach ($flags as $flag) {
-                if ($flag instanceof Flag && ! in_array($flag->code, $decision->codes, true)) {
+                if (! in_array($flag->code, $decision->codes, true)) {
                     $issues->error('V10', $where, 'the decision does not settle the flag '.$flag->code->value);
                 }
             }

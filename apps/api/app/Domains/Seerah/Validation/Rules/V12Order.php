@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Validation\Rules;
 
-use App\Domains\Seerah\Dataset\EventRecord;
 use App\Domains\Seerah\Dataset\AgeConvention;
+use App\Domains\Seerah\Dataset\EventRecord;
 use App\Domains\Seerah\Enums\Era;
 use App\Domains\Seerah\Validation\IssueBag;
 use App\Domains\Seerah\Validation\ValidationContext;

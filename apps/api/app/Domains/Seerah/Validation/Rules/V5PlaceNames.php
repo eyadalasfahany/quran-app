@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Validation\Rules;
 
+use App\Domains\Seerah\Dataset\Flag;
 use App\Domains\Seerah\Enums\FlagCode;
 use App\Domains\Seerah\Validation\IssueBag;
 use App\Domains\Seerah\Validation\ValidationContext;
@@ -16,7 +17,7 @@ final class V5PlaceNames implements ValidationRule
 {
     public function check(ValidationContext $context, IssueBag $issues): void
     {
-        foreach ($context->data->gazetteer?->places ?? [] as $place) {
+        foreach ($context->data->gazetteer->places ?? [] as $place) {
             if ($place->id === 'other' || $this->flagged($place->flags, FlagCode::NotInBookDirectly)) {
                 continue;
             }
@@ -39,7 +40,7 @@ final class V5PlaceNames implements ValidationRule
     }
 
     /**
-     * @param  list<\App\Domains\Seerah\Dataset\Flag>  $flags
+     * @param  list<Flag>  $flags
      */
     private function flagged(array $flags, FlagCode $code): bool
     {

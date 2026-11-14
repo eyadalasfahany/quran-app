@@ -9,13 +9,14 @@ use App\Domains\Seerah\Enums\PlaceKind;
 
 /**
  * One gazetteer entry. `names_in_book` are the exact strings the book uses; `evidence` quotes the book naming the place.
- *
- * @param  list<string>  $namesInBook
- * @param  list<Evidence>  $evidence
- * @param  list<Flag>  $flags
  */
 final readonly class Place
 {
+    /**
+     * @param  list<string>  $namesInBook
+     * @param  list<Evidence>  $evidence
+     * @param  list<Flag>  $flags
+     */
     public function __construct(
         public string $id,
         public ?string $parent,

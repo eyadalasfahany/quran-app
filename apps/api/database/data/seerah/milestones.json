@@ -1,4 +1,30 @@
 {
   "format": 1,
-  "milestones": []
+  "milestones": [
+    {
+      "id": "birth",
+      "label_ar": "المولد",
+      "event": "e004"
+    },
+    {
+      "id": "marriage",
+      "label_ar": "الزواج",
+      "event": "e012"
+    },
+    {
+      "id": "revelation",
+      "label_ar": "الوحي",
+      "event": "e020"
+    },
+    {
+      "id": "hijra",
+      "label_ar": "الهجرة",
+      "event": "e047"
+    },
+    {
+      "id": "death",
+      "label_ar": "الوفاة",
+      "event": "e229"
+    }
+  ]
 }

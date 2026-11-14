@@ -84,8 +84,8 @@ return [
     */
     'age' => ['min' => 0, 'max' => 63],
 
-    /* The six milestone keys of milestones.json (V15). */
-    'milestones' => ['birth', 'bitha', 'hijra', 'badr', 'fath', 'death'],
+    /* The milestone keys of milestones.json (V15): the timeline's marks on the Prophet's age axis (developer, 14 Nov 2026). */
+    'milestones' => ['birth', 'marriage', 'revelation', 'hijra', 'death'],
 
     /* The plausible box for every coordinate (V6), in degrees: south, west, north, east. */
     'geo_box' => ['south' => 10.0, 'west' => 30.0, 'north' => 38.0, 'east' => 60.0],
@@ -97,11 +97,11 @@ return [
     'counts' => [
         'sections' => 258,
         'paragraphs' => 1087,
-        'places' => 2,
-        'exclusions' => 0,
+        'places' => 81,
+        'exclusions' => 63,
         'routes' => 0,
-        'milestones' => 0,
-        'events' => ['E1' => 0, 'E2' => 0, 'E3' => 0, 'E4' => 0],
+        'milestones' => 5,
+        'events' => ['E1' => 11, 'E2' => 26, 'E3' => 59, 'E4' => 115],
     ],
 
     /*

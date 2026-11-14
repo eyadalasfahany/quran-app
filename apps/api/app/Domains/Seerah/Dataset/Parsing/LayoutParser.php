@@ -70,7 +70,7 @@ final class LayoutParser
      */
     private function viewbox(mixed $value, string $where, IssueBag $issues): ?array
     {
-        if (! is_array($value) || count($value) !== 4 || ! array_is_list($value) || ! array_all($value, is_numeric(...))) {
+        if (! is_array($value) || count($value) !== 4 || ! array_is_list($value) || ! array_all($value, static fn (mixed $item): bool => is_numeric($item))) {
             $issues->error('V7', $where, 'viewbox must be four numbers: x, y, width, height');
 
             return null;

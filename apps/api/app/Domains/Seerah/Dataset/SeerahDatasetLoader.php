@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Dataset;
 
+use App\Domains\Seerah\Canonical\CanonicalSection;
 use App\Domains\Seerah\Dataset\Parsing\EventParser;
 use App\Domains\Seerah\Dataset\Parsing\ExclusionParser;
 use App\Domains\Seerah\Dataset\Parsing\GazetteerParser;
@@ -59,7 +60,7 @@ final class SeerahDatasetLoader
     }
 
     /**
-     * @return array{source: string, canonical: string, sections: list<\App\Domains\Seerah\Canonical\CanonicalSection>}|null
+     * @return array{source: string, canonical: string, sections: list<CanonicalSection>}|null
      */
     private function structure(string $directory, IssueBag $issues): ?array
     {

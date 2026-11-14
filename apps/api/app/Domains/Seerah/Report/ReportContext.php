@@ -16,8 +16,6 @@ use App\Domains\Seerah\Validation\ValidationRun;
 /**
  * Everything the report views read, computed once: the run, the place tree, the review status of every record, and the digest each
  * group would be signed with (the same digest seerah:approve writes).
- *
- * @param  array<string, array{from: string, to: string, start_title: string, period: string}>  $batches
  */
 final class ReportContext
 {
@@ -32,12 +30,15 @@ final class ReportContext
     /** @var array<string, array<string, string>> */
     private array $recordsByGroup = [];
 
+    /**
+     * @param  array<string, array{from: string, to: string, start_title: string, period: string}>  $batches
+     */
     public function __construct(
         public readonly ValidationRun $run,
         public readonly CanonicalBuild $build,
         public readonly array $batches,
     ) {
-        $this->tree = new PlaceTree($run->data->gazetteer?->places ?? []);
+        $this->tree = new PlaceTree($run->data->gazetteer->places ?? []);
 
         foreach (ReviewRecords::of($run->data) as $record) {
             $this->recordsByGroup[$record->group][$record->id] = $record->hash;
@@ -85,7 +86,7 @@ final class ReportContext
         }
 
         foreach ($this->tree->ancestors($placeId) as $ancestor) {
-            $names[] = $this->tree->get($ancestor)?->nameAr ?? $ancestor;
+            $names[] = $this->tree->get($ancestor)->nameAr ?? $ancestor;
         }
 
         return implode(' › ', array_reverse($names));

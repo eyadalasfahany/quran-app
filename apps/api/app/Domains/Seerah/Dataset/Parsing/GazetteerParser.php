@@ -49,13 +49,13 @@ final class GazetteerParser
         return new Place(
             id: $reader->string('id'),
             parent: $reader->nullableString('parent'),
-            kind: $kind instanceof PlaceKind ? $kind : PlaceKind::Region,
+            kind: $kind,
             nameAr: $reader->string('name_ar'),
             namesInBook: $reader->stringList('names_in_book'),
             nameEn: $reader->nullableString('name_en'),
             geo: FragmentParser::geo($reader, 'geo'),
             evidence: FragmentParser::evidence($reader, 'evidence'),
-            origin: $origin instanceof Origin ? $origin : Origin::DraftedByAgent,
+            origin: $origin,
             flags: FragmentParser::flags($reader, 'flags'),
             note: $reader->nullableString('note'),
         );

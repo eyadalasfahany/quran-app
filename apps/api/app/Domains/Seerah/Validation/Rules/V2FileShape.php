@@ -32,7 +32,7 @@ final class V2FileShape implements ValidationRule
     {
         $seen = [];
 
-        foreach ($context->data->gazetteer?->places ?? [] as $place) {
+        foreach ($context->data->gazetteer->places ?? [] as $place) {
             if (! preg_match(self::PLACE_ID, $place->id)) {
                 $issues->error('V2', 'gazetteer '.$place->id, 'place id does not match its pattern');
             }

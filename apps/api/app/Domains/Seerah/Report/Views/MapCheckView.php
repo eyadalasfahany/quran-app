@@ -41,7 +41,7 @@ final class MapCheckView implements ReportView
 
                 $html .= '<g class="pin" data-ages="'.Html::esc(implode(',', $ages)).'">'
                     .'<circle cx="'.Html::esc((string) $position->x).'" cy="'.Html::esc((string) $position->y).'" r="8" class="status-'.Html::esc($context->status('G', $position->place)->value).'"/>'
-                    .'<text x="'.Html::esc((string) ($position->x + 12)).'" y="'.Html::esc((string) ($position->y + 4)).'">'.Html::esc($place?->nameAr ?? $position->place).'</text></g>';
+                    .'<text x="'.Html::esc((string) ($position->x + 12)).'" y="'.Html::esc((string) ($position->y + 4)).'">'.Html::esc($place->nameAr ?? $position->place).'</text></g>';
             }
 
             $html .= '</svg>';

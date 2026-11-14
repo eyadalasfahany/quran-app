@@ -33,7 +33,6 @@ final class BookIndex
     private array $yearOfSection = [];
 
     /**
-     * @param  CanonicalBook  $book
      * @param  array<string, int>  $yearHeadings  heading title => Hijri year
      */
     public function __construct(CanonicalBook $book, array $yearHeadings)

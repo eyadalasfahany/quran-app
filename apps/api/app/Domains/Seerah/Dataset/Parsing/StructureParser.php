@@ -45,7 +45,7 @@ final class StructureParser
 
         return new CanonicalSection(
             id: $reader->string('id'),
-            level: $level instanceof SectionLevel ? $level : SectionLevel::Heading,
+            level: $level,
             title: $reader->string('title'),
             page: $reader->int('page'),
             paragraphFrom: $reader->nullableString('paragraph_from'),

@@ -28,6 +28,10 @@ Effects on the rest of this file (read with these in mind):
 | Cut lines | The «ship later, not partial» rule applies to a future release; in this run the whole book is built. «If the art slips»: the Madinah city map is the first thing to simplify, never skipped. |
 | Step 35 | Replaced by «local verification»: `npm run lint && npx tsc --noEmit && npm test`, `composer qa` where it can run, Expo web screenshots vs frames, and a written hand-off report. |
 
+## Build notes for steps 4 to 6 (14 Nov 2026)
+
+Built in `apps/api` (see [`phase-8/data-format.md`](phase-8/data-format.md), «Build decisions»): the formats, the loader, `seerah:fmt`, `seerah:validate` (V1 to V19; `--structure` default, `--release`, and `--complete` for the strict coverage and count checks), the four authoring tools, `seerah:report`, and `seerah:approve` (developer only). The edition facts differ from the first draft of this plan: 258 sections, flat headings, year headings as sections, no braces; the batches are E1 `s003`–`s019`, E2 `s020`–`s044`, E3 `s045`–`s116`, E4 `s117`–`s258` (config `seerah.batches`). The committed data is empty skeletons, so the structure run is green with two warnings and the release run is red until the sign-offs exist. CI runs `seerah:fmt --check` and `seerah:validate` after the tests in `.github/workflows/api.yml`.
+
 ## Sources this plan rests on (read for this plan)
 
 - `CLAUDE.md`, `.claude/agent-rules.md` (rules 6, 7, 10, 11; no religious text in plans, fixtures or reports; counts, keys and paths only).

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Seerah\Canonical;
 
 use App\Domains\Seerah\Enums\SectionLevel;
+use App\Domains\Seerah\Format\SeerahJson;
 
 /**
  * Renders book/structure.json (data-format.md): fixed key order, Arabic as literal characters, two-space indent, one trailing

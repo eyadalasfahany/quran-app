@@ -1,0 +1,85 @@
+{
+  "format": 1,
+  "level": "madinah",
+  "parent_place": "madinah",
+  "viewbox": [
+    0,
+    0,
+    1600,
+    1500
+  ],
+  "art": "design-assets/seerah/map-madinah.svg",
+  "positions": [
+    {
+      "place": "banu-nadir",
+      "x": 921.2,
+      "y": 1059.1,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "banu-qaynuqa",
+      "x": 817.8,
+      "y": 829.1,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "banu-qurayza",
+      "x": 1008.0,
+      "y": 972.1,
+      "label_priority": 36,
+      "label_side": "start"
+    },
+    {
+      "place": "madinah.abu-ayyub",
+      "x": 816.7,
+      "y": 767.8,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "madinah.aisha-house",
+      "x": 809.8,
+      "y": 757.3,
+      "label_priority": 42,
+      "label_side": "end"
+    },
+    {
+      "place": "madinah.bani-salim",
+      "x": 719.4,
+      "y": 918.6,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "madinah.khandaq",
+      "x": 631.9,
+      "y": 645.5,
+      "label_priority": 48,
+      "label_side": "end"
+    },
+    {
+      "place": "madinah.masjid",
+      "x": 800,
+      "y": 760,
+      "label_priority": 36,
+      "label_side": "end"
+    },
+    {
+      "place": "madinah.quba",
+      "x": 854.8,
+      "y": 1029.3,
+      "label_priority": 48,
+      "label_side": "end"
+    },
+    {
+      "place": "madinah.uhud",
+      "x": 820.0,
+      "y": 462.9,
+      "label_priority": 36,
+      "label_side": "end"
+    }
+  ],
+  "route_paths": []
+}

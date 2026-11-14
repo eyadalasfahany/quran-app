@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Seerah\Report\Views;
 
+use App\Domains\Seerah\Dataset\EventRecord;
 use App\Domains\Seerah\Dataset\Place;
 use App\Domains\Seerah\Report\Html;
 use App\Domains\Seerah\Report\ReportContext;
@@ -16,7 +17,7 @@ final class PlacesView implements ReportView
 {
     public function render(ReportContext $context): string
     {
-        $places = $context->run->data->gazetteer?->places ?? [];
+        $places = $context->run->data->gazetteer->places ?? [];
         $html = '<section id="places"><h2>2. حسب المكان</h2>';
 
         if ($places === []) {
@@ -42,12 +43,12 @@ final class PlacesView implements ReportView
 
     /**
      * @param  list<Place>  $places
-     * @param  array<string, list<\App\Domains\Seerah\Dataset\EventRecord>>  $usage
+     * @param  array<string, list<EventRecord>>  $usage
      */
     private static function node(ReportContext $context, array $places, Place $place, int $depth, array $usage): string
     {
         $events = $usage[$place->id] ?? [];
-        usort($events, static fn ($a, $b): int => ($a->year?->ageFrom ?? 999) <=> ($b->year?->ageFrom ?? 999));
+        usort($events, static fn ($a, $b): int => ($a->year->ageFrom ?? 999) <=> ($b->year->ageFrom ?? 999));
 
         $html = '<div class="place" style="margin-inline-start:'.($depth * 16).'px" data-status="'.Html::esc($context->status('G', $place->id)->value).'">';
         $html .= '<h3>'.Html::esc($place->nameAr).' <span class="ids">'.Html::esc($place->id.' · '.$place->kind->value).'</span> '

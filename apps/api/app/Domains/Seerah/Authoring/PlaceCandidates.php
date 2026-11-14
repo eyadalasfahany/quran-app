@@ -19,6 +19,7 @@ final class PlaceCandidates
     {
         $counts = [];
         $paragraphsOf = [];
+        $surfaces = [];
         $cues = array_map(SearchText::normalise(...), SeedPlaces::CUE_WORDS);
         $seeds = array_map(SearchText::normalise(...), SeedPlaces::NAMES);
         $keyOf = static fn (string $word): string => SearchText::normalise((string) preg_replace('/[\p{P}\p{S}]+/u', '', $word));
@@ -32,10 +33,12 @@ final class PlaceCandidates
 
                 if (in_array($key, $seeds, true)) {
                     $this->add($counts, $paragraphsOf, 'seed', $key, $paragraph->id);
+                    $surfaces['seed'."\t".$key] ??= $this->surface($token);
                 }
 
                 if ($index > 0 && in_array($keyOf($tokens[$index - 1]), $cues, true) && $key !== '') {
                     $this->add($counts, $paragraphsOf, 'cue', $key, $paragraph->id);
+                    $surfaces['cue'."\t".$key] ??= $this->surface($token);
                 }
             }
         }
@@ -44,12 +47,25 @@ final class PlaceCandidates
 
         foreach ($counts as $composite => $count) {
             [$source, $name] = explode("\t", $composite, 2);
-            $rows[] = ['source' => $source, 'name' => $name, 'count' => $count, 'paragraphs' => array_slice($paragraphsOf[$composite], 0, 5)];
+            $rows[] = [
+                'source' => $source,
+                'name' => $surfaces[$composite] ?? $name,
+                'count' => $count,
+                'paragraphs' => array_slice($paragraphsOf[$composite], 0, 5),
+            ];
         }
 
         usort($rows, static fn (array $a, array $b): int => [$b['count'], $a['source'], $a['name']] <=> [$a['count'], $b['source'], $b['name']]);
 
         return array_slice($rows, 0, $limit);
+    }
+
+    /**
+     * The word as the book spells it (without its punctuation).
+     */
+    private function surface(string $token): string
+    {
+        return (string) preg_replace('/[\p{P}\p{S}]+/u', '', $token);
     }
 
     /**

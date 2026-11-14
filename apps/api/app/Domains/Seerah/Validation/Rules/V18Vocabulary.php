@@ -19,7 +19,7 @@ final class V18Vocabulary implements ValidationRule
 
     public function check(ValidationContext $context, IssueBag $issues): void
     {
-        foreach ($context->data->gazetteer?->places ?? [] as $place) {
+        foreach ($context->data->gazetteer->places ?? [] as $place) {
             $this->flags($place->flags, 'gazetteer '.$place->id, true, $issues);
         }
 

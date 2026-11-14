@@ -1,4 +1,320 @@
 {
   "format": 1,
-  "excluded": []
+  "excluded": [
+    {
+      "section": "s001",
+      "reason": "front_matter",
+      "note": "The modern editor's preface to the third printing."
+    },
+    {
+      "section": "s002",
+      "reason": "front_matter",
+      "note": "The author's opening formula and introduction."
+    },
+    {
+      "section": "s003",
+      "reason": "genealogy",
+      "note": "genealogy: lineage list, no event"
+    },
+    {
+      "section": "s014",
+      "reason": "no_chronology",
+      "note": "description of his livelihood before the mission (shepherding, trade); no single event or date"
+    },
+    {
+      "section": "s015",
+      "reason": "no_chronology",
+      "note": "description of his character before the mission; no event"
+    },
+    {
+      "section": "s016",
+      "reason": "no_chronology",
+      "note": "list of favours and miracles before prophethood; no place or date of its own"
+    },
+    {
+      "section": "s017",
+      "reason": "prophecy_background",
+      "note": "prophecies of the Torah about him; background, no event"
+    },
+    {
+      "section": "s018",
+      "reason": "prophecy_background",
+      "note": "prophecies of the Gospel about him; background, no event"
+    },
+    {
+      "section": "s019",
+      "reason": "no_chronology",
+      "note": "background: reports of scholars and rabbis expecting a prophet; no single event or date"
+    },
+    {
+      "section": "s049",
+      "reason": "no_chronology",
+      "note": "reflection on the migration of the prophets; no event or place"
+    },
+    {
+      "section": "s060",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s063",
+      "reason": "no_chronology",
+      "note": "description of Jewish hostility in Madinah; no dated event"
+    },
+    {
+      "section": "s064",
+      "reason": "no_chronology",
+      "note": "description of the hypocrites; no dated event"
+    },
+    {
+      "section": "s066",
+      "reason": "no_chronology",
+      "note": "ruling on the legitimacy of fighting; no place or event"
+    },
+    {
+      "section": "s070",
+      "reason": "no_chronology",
+      "note": "deaths list"
+    },
+    {
+      "section": "s071",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s078",
+      "reason": "no_chronology",
+      "note": "ruling (fasting of Ramadan); no place or event"
+    },
+    {
+      "section": "s079",
+      "reason": "no_chronology",
+      "note": "ruling (zakat al-fitr); no place or event"
+    },
+    {
+      "section": "s080",
+      "reason": "no_chronology",
+      "note": "ruling (zakat on wealth); no place or event"
+    },
+    {
+      "section": "s088",
+      "reason": "no_chronology",
+      "note": "institution of the Eid prayer; ruling, no place or event"
+    },
+    {
+      "section": "s090",
+      "reason": "year_heading",
+      "note": "year heading; its one paragraph describes Ka’b ibn al-Ashraf as background to the next section"
+    },
+    {
+      "section": "s098",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s099",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s106",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s115",
+      "reason": "no_chronology",
+      "note": "revelation of the hijab verses; ruling, no place or event"
+    },
+    {
+      "section": "s116",
+      "reason": "no_chronology",
+      "note": "ruling (obligation of Hajj); no place or event"
+    },
+    {
+      "section": "s117",
+      "reason": "year_heading",
+      "note": "year heading without text"
+    },
+    {
+      "section": "s147",
+      "reason": "year_heading",
+      "note": "year heading without text"
+    },
+    {
+      "section": "s161",
+      "reason": "year_heading",
+      "note": "year heading without text"
+    },
+    {
+      "section": "s175",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s185",
+      "reason": "year_heading",
+      "note": "year heading only"
+    },
+    {
+      "section": "s200",
+      "reason": "year_heading",
+      "note": "year heading only"
+    },
+    {
+      "section": "s202",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s205",
+      "reason": "other",
+      "note": "general introduction to the delegations; no single event or place"
+    },
+    {
+      "section": "s225",
+      "reason": "year_heading",
+      "note": "year heading only"
+    },
+    {
+      "section": "s230",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s231",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s232",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s233",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s234",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s235",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s236",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s237",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s238",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s239",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s240",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s241",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s242",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s243",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s244",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s245",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s246",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s247",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s248",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s249",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s250",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s251",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s252",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s253",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s254",
+      "reason": "no_chronology",
+      "note": "descriptive closing chapter (character, family, qualities, Quran's inimitability); no specific event or place"
+    },
+    {
+      "section": "s255",
+      "reason": "other",
+      "note": "heading without text"
+    },
+    {
+      "section": "s256",
+      "reason": "no_chronology",
+      "note": "list of miracle reports across several occasions; not one event"
+    },
+    {
+      "section": "s258",
+      "reason": "no_chronology",
+      "note": "list of miracles and prayers answered, then closing prayer and the book's table of contents"
+    }
+  ]
 }
