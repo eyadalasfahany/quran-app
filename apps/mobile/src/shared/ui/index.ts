@@ -16,7 +16,6 @@ export { ConfirmDialogButton, type ConfirmDialogButtonTone } from './ConfirmDial
 export { ConfirmDialogIcon, type ConfirmDialogIconTone } from './ConfirmDialogIcon';
 export { Divider } from './Divider';
 export { DownloadRow, type DownloadRowActionLabels, type DownloadRowState } from './DownloadRow';
-export { DrawnLogoLayer } from './DrawnLogoLayer';
 export { DrawnPath } from './DrawnPath';
 export { EmptyState, type EmptyStateAction } from './EmptyState';
 export { FloatingTabBar } from './FloatingTabBar';
@@ -48,6 +47,7 @@ export { SkeletonBlock, type SkeletonTone } from './SkeletonBlock';
 export { SkeletonGroup } from './SkeletonGroup';
 export { SplashBrandMark } from './SplashBrandMark';
 export { SplashLogoRasterLayer } from './SplashLogoRasterLayer';
+export { SplashMosqueStroke } from './SplashMosqueStroke';
 export { StaleContentBanner } from './StaleContentBanner';
 export { SurahCartouche } from './SurahCartouche';
 export {

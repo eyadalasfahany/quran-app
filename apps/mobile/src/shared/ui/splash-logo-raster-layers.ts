@@ -1,62 +1,37 @@
-// Full 1254×1254 canvases; clip rects overlap vertically (see generate-splash-logo-layers.mjs).
+// Full 1254×1254 canvases cut from the logo (see generate-splash-logo-layers.mjs, ADR 0088). Each fades in over
+// the pen-drawn mosque: first the brush mosque itself, then «طيبة», then "taybah".
 
 export const SPLASH_LOGO_VIEWBOX = 1254 as const;
 
 export type SplashRasterLayer = {
   id: string;
   source: number;
-  /** Clip / reveal band in viewBox coordinates */
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  /** Fade-in window on the splash's 0 → 1 progress. */
   segment: readonly [number, number];
+  /** How far the layer rises into place while it fades in, in viewBox units. */
+  rise: number;
 };
 
 export const splashRasterLayers: readonly SplashRasterLayer[] = [
   {
-    id: 'minaretLeft',
-    source: require('../../../assets/images/splash-layers/minaret-left.png'),
-    x: 48,
-    y: 52,
-    width: 440,
-    height: 610,
-    segment: [0, 0.32],
-  },
-  {
-    id: 'minaretRight',
-    source: require('../../../assets/images/splash-layers/minaret-right.png'),
-    x: 766,
-    y: 52,
-    width: 440,
-    height: 610,
-    segment: [0.12, 0.38],
-  },
-  {
-    id: 'dome',
-    source: require('../../../assets/images/splash-layers/dome.png'),
-    x: 0,
-    y: 52,
-    width: 1254,
-    height: 600,
-    segment: [0.28, 0.58],
+    id: 'mosque',
+    source: require('../../../assets/images/splash-layers/mosque.png'),
+    segment: [0.56, 0.74],
+    rise: 0,
   },
   {
     id: 'arabic',
     source: require('../../../assets/images/splash-layers/arabic.png'),
-    x: 0,
-    y: 548,
-    width: 1254,
-    height: 420,
-    segment: [0.52, 0.78],
+    segment: [0.62, 0.86],
+    rise: 14,
   },
   {
     id: 'english',
     source: require('../../../assets/images/splash-layers/english.png'),
-    x: 0,
-    y: 868,
-    width: 1254,
-    height: 340,
-    segment: [0.72, 1],
+    segment: [0.76, 0.96],
+    rise: 10,
   },
 ] as const;
+
+// The pen lines fade out as the brush mosque fades in over them.
+export const SPLASH_PEN_FADE: readonly [number, number] = [0.6, 0.76];

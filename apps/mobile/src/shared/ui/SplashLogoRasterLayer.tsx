@@ -1,12 +1,11 @@
 import { Image, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useDerivedValue, type SharedValue } from 'react-native-reanimated';
 
-import { segmentProgress } from './splash-logo-segment';
 import { SPLASH_LOGO_VIEWBOX, type SplashRasterLayer } from './splash-logo-raster-layers';
+import { segmentProgress, smoothStep } from './splash-logo-segment';
 
-// Pixel-accurate logo slice revealed top-down (cream counters and letter weight stay exact).
-// A plain View with overflow hidden grows over the slice. An animated SVG <ClipPath> is not used: react-native-svg
-// on Android does not redraw when a clip path's child changes, so the mark stayed invisible there.
+// One pixel-exact part of the logo (the brush mosque, «طيبة» or "taybah") fading in and rising gently into place
+// in its window of the splash. Opacity and transform run on a plain view, which redraws on both platforms.
 export function SplashLogoRasterLayer({
   globalProgress,
   layer,
@@ -18,32 +17,28 @@ export function SplashLogoRasterLayer({
   size: number;
 }) {
   const scale = size / SPLASH_LOGO_VIEWBOX;
-  const localProgress = useDerivedValue(() => segmentProgress(globalProgress.value, layer.segment));
+  const localProgress = useDerivedValue(() => smoothStep(segmentProgress(globalProgress.value, layer.segment)));
 
-  const revealStyle = useAnimatedStyle(() => ({
-    height: layer.height * scale * localProgress.value,
+  const fadeStyle = useAnimatedStyle(() => ({
+    opacity: localProgress.value,
+    transform: [{ translateY: layer.rise * scale * (1 - localProgress.value) }],
   }));
 
   return (
     <Animated.View
-      style={[
-        styles.band,
-        { left: layer.x * scale, top: layer.y * scale, width: layer.width * scale },
-        revealStyle,
-      ]}
+      pointerEvents="none"
+      style={[styles.layer, { height: size, width: size }, fadeStyle]}
       testID={`splash-logo-${layer.id}`}
     >
-      <Image
-        source={layer.source}
-        style={{ height: size, left: -layer.x * scale, position: 'absolute', top: -layer.y * scale, width: size }}
-      />
+      <Image source={layer.source} style={{ height: size, width: size }} />
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  band: {
-    overflow: 'hidden',
+  layer: {
+    left: 0,
     position: 'absolute',
+    top: 0,
   },
 });

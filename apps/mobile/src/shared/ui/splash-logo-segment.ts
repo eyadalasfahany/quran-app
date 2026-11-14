@@ -8,3 +8,9 @@ export function segmentProgress(value: number, [start, end]: readonly [number, n
   }
   return (value - start) / (end - start);
 }
+
+// Eases a 0 → 1 window in and out (smoothstep), so each splash line starts and settles gently.
+export function smoothStep(value: number): number {
+  'worklet';
+  return value * value * (3 - 2 * value);
+}

@@ -2,8 +2,9 @@
 /**
  * Taybah brand PNGs for iOS, Android, website, and store listing.
  *
- * Source of truth: docs/branding/taybah-nabawi-logo.png
- * (identical to repo-root `image (93).png`). Never hand-edit outputs.
+ * Source of truth: docs/branding/taybah-nabawi-logo.png, the 1254×1254 render of the line-art mosque logo
+ * docs/branding/taybah-mosque-logo.svg on cream #F9F7F2 (ADR 0088); identical to repo-root `image (93).png`.
+ * Never hand-edit outputs.
  *
  * Android launcher (Expo prebuild from one foreground PNG):
  *   - Adaptive foreground: 1024×1024; keep logo in center ~66% (432dp safe zone on 108dp canvas).

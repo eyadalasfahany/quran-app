@@ -11,8 +11,9 @@ export const duration = {
   slow: 300,
   // An ornament's gold outline drawing itself in, once, when it first scrolls into view.
   draw: 700,
-  // Launch splash: Taybah mark (minarets, dome, Arabic and Latin wordmark) drawn in sequence.
-  splash: 1800,
+  // Launch splash: the line-art mosque draws itself with a gold pen, then the brush mosque and the
+  // «طيبة» and "taybah" lettering fade in (ADR 0088).
+  splash: 1200,
   // One pulse of a loading skeleton, each way: opacity 1 to 0.55 and back (screens/, #loading).
   pulse: 1000,
 } as const;
