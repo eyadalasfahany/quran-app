@@ -21,4 +21,4 @@ The Taybah logo was a filled illustration: a green dome and gold minarets, with 
 - **Store build, not OTA.** The app icon, Android icons and splash images are native assets, so the change changes the native fingerprint. It ships in a store build (version bump), not with `eas update`; publishing an OTA update from this commit would reach no store build.
 - The website picks up the new logo and favicons when it deploys.
 - `docs/branding` keeps the earlier logo concepts for history; they are no longer used.
-- `taybah-logo-layers.ts` (the traced vector layers for `DrawnLogoLayer`) still describes the old logo. Nothing in the app renders it (the splash uses the raster layers); refresh it with `scripts/extract-taybah-logo-layers.mjs` if `DrawnLogoLayer` is used again.
+- The old splash animation is removed: the raster reveal of five bands, and the unused traced-outline animation of the old logo (`DrawnLogoLayer`, `taybah-logo-layers.ts` and `scripts/extract-taybah-logo-layers.mjs`).

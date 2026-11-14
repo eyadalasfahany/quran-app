@@ -16,7 +16,6 @@ export { ConfirmDialogButton, type ConfirmDialogButtonTone } from './ConfirmDial
 export { ConfirmDialogIcon, type ConfirmDialogIconTone } from './ConfirmDialogIcon';
 export { Divider } from './Divider';
 export { DownloadRow, type DownloadRowActionLabels, type DownloadRowState } from './DownloadRow';
-export { DrawnLogoLayer } from './DrawnLogoLayer';
 export { DrawnPath } from './DrawnPath';
 export { EmptyState, type EmptyStateAction } from './EmptyState';
 export { FloatingTabBar } from './FloatingTabBar';
