@@ -1,0 +1,175 @@
+{
+ "format": 1,
+ "level": "makkah",
+ "parent_place": "makkah",
+ "art": "design-assets/seerah/map-makkah.svg",
+ "art_dark": "design-assets/seerah/map-makkah-dark.svg",
+ "viewbox": [
+  0,
+  0,
+  1000,
+  1240
+ ],
+ "projection": {
+  "kind": "radial-log",
+  "center": {
+   "lat": 21.4225,
+   "lng": 39.8262
+  },
+  "center_xy": [
+   430,
+   600
+  ],
+  "r0_km": 0.35,
+  "a": 107,
+  "formula": "east_km = (lng - center.lng) * 111.32 * cos(center.lat); north_km = (lat - center.lat) * 110.57; r = hypot(east_km, north_km); R = a * ln(1 + r / r0_km); x = cx + R * east_km / r; y = cy - R * north_km / r",
+  "why": "bearings exact and distance order kept (V7 compass check holds); the old town gets room for its events",
+  "rings_km": [
+   1,
+   2,
+   5,
+   10,
+   20
+  ]
+ },
+ "zoom": {
+  "min_px_per_unit": 0.39,
+  "default_px_per_unit": 0.6,
+  "max_px_per_unit": 3.0,
+  "fan_out_px_per_unit": 2.2
+ },
+ "positions": [
+  {
+   "place": "makkah.kaaba",
+   "name_ar": "الكعبة",
+   "lat": 21.4225,
+   "lng": 39.8262,
+   "x": 430,
+   "y": 600,
+   "kind": "sacred",
+   "label_priority": 100,
+   "label_side": "end"
+  },
+  {
+   "place": "makkah.safa_marwa",
+   "name_ar": "الصفا والمروة",
+   "lat": 21.4239,
+   "lng": 39.8276,
+   "x": 464.7,
+   "y": 563.0,
+   "kind": "landmark",
+   "label_priority": 70,
+   "label_side": "start"
+  },
+  {
+   "place": "makkah.arqam",
+   "name_ar": "دار الأرقم",
+   "lat": 21.4216,
+   "lng": 39.8281,
+   "x": 476.7,
+   "y": 623.6,
+   "kind": "landmark",
+   "label_priority": 60,
+   "label_side": "start"
+  },
+  {
+   "place": "makkah.khadijah",
+   "name_ar": "بيت خديجة",
+   "lat": 21.4249,
+   "lng": 39.8293,
+   "x": 494.7,
+   "y": 546.6,
+   "kind": "landmark",
+   "label_priority": 60,
+   "label_side": "end"
+  },
+  {
+   "place": "makkah.shib",
+   "name_ar": "شعب أبي طالب",
+   "lat": 21.4232,
+   "lng": 39.8322,
+   "x": 539.0,
+   "y": 586.4,
+   "kind": "landmark",
+   "label_priority": 75,
+   "label_side": "end"
+  },
+  {
+   "place": "makkah.hira",
+   "name_ar": "غار حراء",
+   "lat": 21.4576,
+   "lng": 39.8617,
+   "x": 635.4,
+   "y": 383.4,
+   "kind": "landmark",
+   "label_priority": 90,
+   "label_side": "end"
+  },
+  {
+   "place": "makkah.thawr",
+   "name_ar": "غار ثور",
+   "lat": 21.377,
+   "lng": 39.85,
+   "x": 563.5,
+   "y": 872.3,
+   "kind": "landmark",
+   "label_priority": 85,
+   "label_side": "end"
+  },
+  {
+   "place": "makkah.aqabah",
+   "name_ar": "العقبة",
+   "lat": 21.421,
+   "lng": 39.873,
+   "x": 718.6,
+   "y": 609.9,
+   "kind": "landmark",
+   "label_priority": 70,
+   "label_side": "start"
+  },
+  {
+   "place": "makkah.mina",
+   "name_ar": "منى",
+   "lat": 21.4133,
+   "lng": 39.8933,
+   "x": 752.7,
+   "y": 647.2,
+   "kind": "landmark",
+   "label_priority": 65,
+   "label_side": "end"
+  },
+  {
+   "place": "makkah.muzdalifah",
+   "name_ar": "مزدلفة",
+   "lat": 21.388,
+   "lng": 39.93,
+   "x": 784.5,
+   "y": 725.7,
+   "kind": "landmark",
+   "label_priority": 40,
+   "label_side": "end"
+  },
+  {
+   "place": "makkah.arafat",
+   "name_ar": "عرفات",
+   "lat": 21.3549,
+   "lng": 39.9842,
+   "x": 815.4,
+   "y": 775.9,
+   "kind": "landmark",
+   "label_priority": 80,
+   "label_side": "start"
+  },
+  {
+   "place": "makkah.hajun",
+   "name_ar": "الحجون",
+   "lat": 21.4372,
+   "lng": 39.8268,
+   "x": 437.1,
+   "y": 414.9,
+   "kind": "landmark",
+   "label_priority": 40,
+   "label_side": "start"
+  }
+ ]
+}

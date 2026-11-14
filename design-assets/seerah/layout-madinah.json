@@ -1,0 +1,109 @@
+{
+ "format": 1,
+ "level": "madinah",
+ "parent_place": "madinah",
+ "art": "design-assets/seerah/map-madinah.svg",
+ "art_dark": "design-assets/seerah/map-madinah-dark.svg",
+ "viewbox": [
+  0,
+  0,
+  1000,
+  1240
+ ],
+ "projection": {
+  "kind": "radial-log",
+  "center": {
+   "lat": 24.4672,
+   "lng": 39.6111
+  },
+  "center_xy": [
+   500,
+   600
+  ],
+  "r0_km": 0.6,
+  "a": 150,
+  "formula": "east_km = (lng - center.lng) * 111.32 * cos(center.lat); north_km = (lat - center.lat) * 110.57; r = hypot(east_km, north_km); R = a * ln(1 + r / r0_km); x = cx + R * east_km / r; y = cy - R * north_km / r",
+  "why": "bearings exact and distance order kept (V7 compass check holds); the old town gets room for its events",
+  "rings_km": [
+   1,
+   2,
+   5,
+   10,
+   20
+  ]
+ },
+ "zoom": {
+  "min_px_per_unit": 0.39,
+  "default_px_per_unit": 0.6,
+  "max_px_per_unit": 3.0,
+  "fan_out_px_per_unit": 2.2
+ },
+ "positions": [
+  {
+   "place": "madinah.masjid",
+   "name_ar": "المسجد النبوي",
+   "lat": 24.4672,
+   "lng": 39.6111,
+   "x": 500,
+   "y": 600,
+   "kind": "sacred",
+   "label_priority": 100,
+   "label_side": "end"
+  },
+  {
+   "place": "madinah.baqi",
+   "name_ar": "البقيع",
+   "lat": 24.467,
+   "lng": 39.6162,
+   "x": 593.2,
+   "y": 604.0,
+   "kind": "landmark",
+   "label_priority": 60,
+   "label_side": "end"
+  },
+  {
+   "place": "madinah.quba",
+   "name_ar": "قباء",
+   "lat": 24.4393,
+   "lng": 39.6173,
+   "x": 554.8,
+   "y": 869.3,
+   "kind": "sacred",
+   "label_priority": 90,
+   "label_side": "end"
+  },
+  {
+   "place": "madinah.uhud",
+   "name_ar": "أحد",
+   "lat": 24.503,
+   "lng": 39.613,
+   "x": 514.8,
+   "y": 296.0,
+   "kind": "landmark",
+   "label_priority": 95,
+   "label_side": "end"
+  },
+  {
+   "place": "madinah.khandaq",
+   "name_ar": "الخندق",
+   "lat": 24.479,
+   "lng": 39.599,
+   "x": 358.0,
+   "y": 448.9,
+   "kind": "landmark",
+   "label_priority": 85,
+   "label_side": "start"
+  },
+  {
+   "place": "madinah.rumah",
+   "name_ar": "بئر رومة",
+   "lat": 24.4934,
+   "lng": 39.5781,
+   "x": 259.1,
+   "y": 391.3,
+   "kind": "landmark",
+   "label_priority": 50,
+   "label_side": "start"
+  }
+ ]
+}

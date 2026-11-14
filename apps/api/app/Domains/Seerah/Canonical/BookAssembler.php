@@ -20,7 +20,9 @@ use App\Domains\Seerah\Exceptions\SeerahCanonicalException;
  */
 final class BookAssembler
 {
-    private const string TOKEN_PATTERN = '~PageV(\d+)P(\d+)|ms(\d{3})(?!\d)~u';
+    private const string PAGE_PATTERN = '~PageV\d+P(\d+)~u';
+
+    private const string MILESTONE_PATTERN = '~ms\d{3}(?!\d)~u';
 
     private const string NUMBERED_START = '~^\d+ \( ~u';
 
@@ -45,7 +47,7 @@ final class BookAssembler
     /** The page in force; 0 before the first page marker. */
     private int $page = 0;
 
-    /** @var list<array{id: string, level: SectionLevel, number: ?int, printed: ?string, parent: ?string, title: string, page: int, from: ?string, to: ?string}> */
+    /** @var list<SectionDraft> */
     private array $sectionRows = [];
 
     /** @var list<CanonicalParagraph> */
@@ -82,18 +84,8 @@ final class BookAssembler
 
         $sections = [];
 
-        foreach ($this->sectionRows as $row) {
-            $sections[] = new CanonicalSection(
-                id: $row['id'],
-                level: $row['level'],
-                number: $row['number'],
-                printedNumber: $row['printed'],
-                parentId: $row['parent'],
-                title: $row['title'],
-                page: $row['page'],
-                paragraphFrom: $row['from'],
-                paragraphTo: $row['to'],
-            );
+        foreach ($this->sectionRows as $draft) {
+            $sections[] = $draft->toSection();
         }
 
         $this->countMarkup($sections);
@@ -195,12 +187,12 @@ final class BookAssembler
             $this->openSection(SectionLevel::Front, null, null, '', $page);
         }
 
-        $sectionIndex = $this->current ?? 0;
+        $section = $this->sectionRows[$this->current ?? 0];
         $id = sprintf('p%05d', count($this->paragraphs) + 1);
-        $this->paragraphs[] = new CanonicalParagraph($id, $this->sectionRows[$sectionIndex]['id'], $page, $text);
+        $this->paragraphs[] = new CanonicalParagraph($id, $section->id, $page, $text);
 
-        $this->sectionRows[$sectionIndex]['from'] ??= $id;
-        $this->sectionRows[$sectionIndex]['to'] = $id;
+        $section->paragraphFrom ??= $id;
+        $section->paragraphTo = $id;
     }
 
     private function addHeading(SectionLevel $level, ?int $number, ?string $printed, string $title, int $page, int $line): void
@@ -223,17 +215,7 @@ final class BookAssembler
         $parent = $this->stack === [] ? null : $this->stack[array_key_last($this->stack)]['id'];
         $id = sprintf('s%03d', count($this->sectionRows) + 1);
 
-        $this->sectionRows[] = [
-            'id' => $id,
-            'level' => $level,
-            'number' => $number,
-            'printed' => $printed,
-            'parent' => $parent,
-            'title' => $title,
-            'page' => $page,
-            'from' => null,
-            'to' => null,
-        ];
+        $this->sectionRows[] = new SectionDraft($id, $level, $number, $printed, $parent, $title, $page);
         $this->current = count($this->sectionRows) - 1;
 
         if ($level !== SectionLevel::Front) {
@@ -247,22 +229,21 @@ final class BookAssembler
      */
     private function stripTokens(string $body): string
     {
-        $found = preg_match_all(self::TOKEN_PATTERN, $body, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        $tokens = $this->tokens($body);
 
-        if ($found === false || $found === 0) {
+        if ($tokens === []) {
             return $body;
         }
 
         $length = strlen($body);
         $skip = array_fill(0, $length, false);
 
-        foreach ($matches as $match) {
-            $offset = $match[0][1];
-            $size = strlen($match[0][0]);
-            $isPage = $match[1][0] !== '';
+        foreach ($tokens as $token) {
+            $offset = $token['offset'];
+            $after = $offset + $token['length'];
 
-            if ($isPage) {
-                $this->page = (int) $match[2][0];
+            if ($token['page'] !== null) {
+                $this->page = $token['page'];
                 $this->counts->pageMarkers++;
                 $this->counts->firstPage ??= $this->page;
                 $this->counts->lastPage = $this->page;
@@ -270,11 +251,9 @@ final class BookAssembler
                 $this->counts->milestoneTokens++;
             }
 
-            for ($i = $offset; $i < $offset + $size; $i++) {
+            for ($i = $offset; $i < $after; $i++) {
                 $skip[$i] = true;
             }
-
-            $after = $offset + $size;
 
             if ($after < $length && $body[$after] === ' ') {
                 $skip[$after] = true;
@@ -292,6 +271,32 @@ final class BookAssembler
         }
 
         return $out;
+    }
+
+    /**
+     * The page markers and milestone tokens of a line, in order of position.
+     *
+     * @return list<array{offset: int, length: int, page: ?int}>
+     */
+    private function tokens(string $body): array
+    {
+        $tokens = [];
+
+        if (preg_match_all(self::PAGE_PATTERN, $body, $pages, PREG_OFFSET_CAPTURE) > 0) {
+            foreach ($pages[0] as $index => [$text, $offset]) {
+                $tokens[] = ['offset' => $offset, 'length' => strlen($text), 'page' => (int) $pages[1][$index][0]];
+            }
+        }
+
+        if (preg_match_all(self::MILESTONE_PATTERN, $body, $milestones, PREG_OFFSET_CAPTURE) > 0) {
+            foreach ($milestones[0] as [$text, $offset]) {
+                $tokens[] = ['offset' => $offset, 'length' => strlen($text), 'page' => null];
+            }
+        }
+
+        usort($tokens, static fn (array $a, array $b): int => $a['offset'] <=> $b['offset']);
+
+        return $tokens;
     }
 
     private function isStructural(string $text): bool

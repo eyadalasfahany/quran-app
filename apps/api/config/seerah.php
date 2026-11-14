@@ -40,8 +40,8 @@ return [
     ],
 
     /*
-    | The SHA-256 of the canonical text (seerah:canonicalize prints it). Null until the first green run; the developer pins it
-    | after reading the section report. A command run that changes the canonical text fails until this pin is changed.
+    | The SHA-256 of the canonical text (seerah:canonicalize prints it). Pinned after the first green run of the step 3 report; a change
+    | needs a developer edit after reading the new report. A command run that changes the canonical text fails until this pin is changed.
     */
-    'canonical_sha256' => null,
+    'canonical_sha256' => '6f2a58033cd623d598c996c684b4d2d73181acaac41a624c0bcc2752c6c446e2',
 ];
