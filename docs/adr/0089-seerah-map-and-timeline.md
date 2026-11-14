@@ -57,13 +57,21 @@ Semantic zoom is two coordinate spaces (region and city), not one infinite zoom:
 - **This is heavier than for hadith chapter titles**: here the whole book text ships in the pack, so the Seerah pack is adapted material under ShareAlike, and the NonCommercial term applies to it. Taybah is free today; the term would block monetising the Seerah section later. This is a developer decision (Q2).
 - Editions add copyright of their own (an editor's introduction, footnotes, headings). The step-2 brief requires proof that the chosen version holds no editorial text, or a list of what to strip.
 
+## Decisions relayed on 14 Nov 2026 (later, via the coordinator; the developer confirms)
+
+1. The whole feature is built in one autonomous run, with no step waiting for approval; the plan's gates become checkpoints.
+2. **ADR 0087's approval gate is waived for Phase 8.** Frames are still drawn in `screens/frames/seerah/` and rebuilt first, then implemented at once. This is an exception to ADR 0087 §4, for this phase only.
+3. An event whose place or year the book does not state is **not invented and does not block**: it goes under the place «أخرى» (`other`) or the year bucket «غير محدد», flagged, and the review report lists these first. Every section is still covered. This refines non-negotiable 6's «flagged for the developer» into a visible bucket.
+4. **No production release** (no OTA, no deploy); commits to the work branch are allowed; the developer verifies on the simulator. Production import stays blocked by `--release` validation, which needs sign-offs.
+5. The build environment has no MySQL and no iOS simulator, so the correctness-critical parts (canonicalizer, validator, report, pack rows) are DB-free and the MySQL tests run in CI. Visual checks use Expo web.
+
 ## Developer decisions still open
 
 Listed with defaults in `docs/plans/phase-8.md`, «Questions for the developer». The ones that block the first steps are: edition and version (Q1), licence acceptance (Q2), the age and Hijri year convention (Q6) and whether an event with no stated place or year is shown (Q7). Q8 (non-event sections), Q9 (disputed dates and sites), Q10 (no human figures on the map) and Q12 (navigation entry) are religious-interpretation or navigation decisions and are never taken by an agent.
 
 ## Consequences
 
-- A new content tree, a new pack group, a new importer, one catalogue endpoint, a new device content table set, new screens. About 33 steps (plan), roughly half of them content work that cannot be skipped: the gazetteer and the events are the product.
+- A new content tree, a new pack group, a new importer, one catalogue endpoint, a new device content table set, new screens. About 35 steps (plan), roughly half of them content work that cannot be skipped: the gazetteer and the events are the product.
 - The review gate is a mandatory step with a sign-off per period; no pack is built in production without a release-mode validator pass (100% of records approved and not stale, every section covered or excluded, no open flag).
 - The map art is the largest unknown (plan risk R1). It is drawn and approved as frames before code (ADR 0087).
 - If ADR 0076 is not accepted, the `openiti` row in `content_sources` does not exist yet; the Seerah import migration must create it idempotently or wait (plan, dependencies).

@@ -155,6 +155,13 @@ Field rules:
 
 **Anything the book does not state explicitly** (`basis` is `implied` or `unstated`, or `certainty` is `developer_assigned`) must carry the matching flag and **cannot be signed off by an agent's edit**. The developer writes the decision in the sign-off file's `decisions` map (`"e042": { "year": { … }, "note": … }`); the validator applies it as an override and the report shows it in a distinct colour. If the developer declines to assign, the event is `background` with no year on the map or is excluded; it is never given a guessed year.
 
+### The «أخرى» place and the «غير محدد» year bucket (developer, 14 Nov 2026)
+
+- Place `other` is a fixed gazetteer entry: `{ "id": "other", "parent": null, "kind": "region", "name_ar": "أخرى", "geo": null, "evidence": [], "flags": ["not_in_book_directly"] }`. It needs no coordinates and no evidence; V4, V5 and V6 exempt it. An event that uses it has `place.basis: "unstated"`, `place.id: "other"`, empty evidence and the flag `place_not_stated`.
+- Year bucket: `year.basis: "unspecified"`, `age_from`, `age_to`, `hijri_from`, `hijri_to` all `null`, `era: null`, `certainty: "unspecified"`, flag `year_not_stated`. Shown after age 63 on the timeline as «غير محدد» and in its own group in the list.
+- Nothing is placed in these buckets by guessing: the validator allows them only with the flag, and the report lists every such event **first** (view 0b), before the periods.
+- Use them only when the book's span gives no stated place or year. If a quote states it, the event gets the real place or year.
+
 ## `routes.json`
 
 ```json
@@ -229,7 +236,7 @@ Written by `php artisan seerah:approve E1`, which the developer runs after readi
 
 ## Validator (`php artisan seerah:validate [--release]`)
 
-Pest runs it on committed data and on placeholder fixtures; CI runs it on every change under `apps/api/database/data/seerah/**`, `apps/api/app/Domains/Seerah/**` and `config/seerah.php`. **Dev mode** reports errors and warnings; **`--release`** also fails on any `draft` or `stale` record, any flag without a decision, any uncovered section. The importer refuses to run in production without `--release` passing.
+Pest runs it on committed data and on placeholder fixtures; CI runs it on every change under `apps/api/database/data/seerah/**`, `apps/api/app/Domains/Seerah/**` and `config/seerah.php`. Three modes after the 14 Nov revision: **`--structure`** (CI and the overnight run: V1 to V15, V18, V19; `draft` records are allowed; `other` and the year bucket are allowed with their flag), **dev** (same, plus warnings), **`--release`** (needs sign-offs). **Dev mode** reports errors and warnings; **`--release`** also fails on any `draft` or `stale` record, any flag without a decision, any uncovered section. The importer refuses to run in production without `--release` passing.
 
 | # | Rule | Severity |
 | --- | --- | --- |
@@ -259,6 +266,7 @@ One self-contained, right-to-left HTML file (inline CSS and a small inline scrip
 
 | View | Content |
 | --- | --- |
+| **0b. «أخرى» and «غير محدد» first** | Every event in the place `other` or the year bucket `unspecified`, with the book's span around it, grouped by section, so the developer can assign the real place or year (or confirm the bucket). Shown above everything else after the overview. |
 | **0. Overview** | Counts per batch (events, places, sections, exclusions), status counts (approved, stale, draft), open flags, validator errors and warnings, the pins (source commit, SHA-256s). |
 | **1. By period → year → event** | Batch (E1..E4) → age and era («ق.هـ ١٣» style label) → event: the book's heading, status chip, place name and its path (region › city › landmark), certainty, `basis`, **the year quote and the place quote shown in their paragraph with the quote highlighted**, the page number, and a button to jump to the place. Flags in red. |
 | **2. By place → events** | The gazetteer tree. Each place: names in the book, evidence quote in context, coordinates and source, drawn position, status, and all events that use it (year order). Landmarks with no event are listed as «بلا حدث». |

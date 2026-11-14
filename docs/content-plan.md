@@ -338,6 +338,20 @@ The first Hadith release is **full collections** (collection → book → hadith
 - **Review (amended for Phase 7 collections, ADR 0042):** there is no content reviewer for these collections; the developer decides the Arabic names, the source-line wording and the gap list. The content plan's "the content reviewer signs off on the Hadith section" is not applied to them. Azkar's own reviewer rules (ADR 0031) are unchanged.
 - **Tables (deferred):** `hadith_categories`, `hadiths`, `hadith_translations`, `daily_hadiths` stay as the HadeethEnc design.
 
+## Seerah (proposed, ADR 0089, Phase 8)
+
+One book for v1: «نور اليقين في سيرة سيد المرسلين» by محمد الخضري بك (d. 1345 AH / 1927; the author's text is public domain). Shown as an interactive map and timeline; the event page shows the book's text verbatim. Ibn Hisham may follow; الرحيق المختوم is out (copyright).
+
+| Source | What it gives us | Access | Terms we must follow | Use |
+| --- | --- | --- | --- | --- |
+| OpenITI `OpenITI/1350AH`, folder `data/1345IbnCafifiKhudari/1345IbnCafifiKhudari.NurYaqin/` (candidate ref `6d0c197e84a46a3cadbd36a045d09cb2bc9aa71e`, checked 14 Nov 2026) | Full Arabic text. Candidate versions: `JK009247-ara1` (مكتبة الإيمان 1419هـ, cleaned of paratext; SHA-256 `f8ce38b3…3683`), `Shamela0023692-ara1` (دار الفيحاء 1425هـ; `5d9bbdbd…1895c`), `ShamAY0034443-ara1` (19 headings, unusable) | GitHub raw, pinned; committed copy in the repo | CC BY-NC-SA 4.0 per the Zenodo record (ADR 0076; not stated in the GitHub repo); Shamela-derived upstream unclear (RB21); editor's additions may be in copyright. Credit and «changes made» on the Sources screen | Edition and licence **open** (plan Q1, Q2); version chosen in step 2 |
+| Wikidata | Coordinates of places | Public | CC0 | Place coordinates, source recorded per place; no OpenStreetMap (ODbL ShareAlike) |
+| Natural Earth | Coastline and relief for the hand-stylised region map | Public download | Public domain | Map art base; no modern borders |
+
+- **Rules:** no AI-written summaries; event titles are the book's headings; place and year come from the book's words; what the book does not state goes to the «أخرى» place or the «غير محدد» year bucket and is flagged (never invented). Every section of the book is covered by an event or an exclusion with a reason.
+- **Review:** a generated report and hash-bound sign-offs (`docs/plans/phase-8/data-format.md`); the developer is the reviewer (no content reviewer, as for hadith).
+- **Permissions to request (non-blocking):** OpenITI or the Shamela side, in writing, for the NonCommercial and ShareAlike terms (Q2).
+
 ## Languages & localization
 
 Arabic is the default interface language and English is the second; Quran text is always right-to-left whatever the interface language.

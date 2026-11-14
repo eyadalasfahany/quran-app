@@ -1,10 +1,32 @@
 # Phase 8 — السيرة النبوية (Seerah): an interactive map and timeline of «نور اليقين»
 
-Status: **plan written 14 Nov 2026; nothing accepted, nothing built** · Branch: `main` (CLAUDE.md, the developer works on `main` unless they name a branch) · ADR 0089 (**Proposed**) · Content plan entry added (**proposed**) · Spec edits **listed, not applied**: [`phase-8/spec-changes.md`](phase-8/spec-changes.md) · Data formats, validator and review report: [`phase-8/data-format.md`](phase-8/data-format.md).
+Status: **plan written 14 Nov 2026; autonomous overnight build requested (see «Revision»); nothing accepted, nothing built yet** · Branch: `main` (CLAUDE.md, the developer works on `main` unless they name a branch) · ADR 0089 (**Proposed**) · Content plan entry added (**proposed**) · Spec edits **listed, not applied**: [`phase-8/spec-changes.md`](phase-8/spec-changes.md) · Data formats, validator and review report: [`phase-8/data-format.md`](phase-8/data-format.md).
 
 **Goal:** a Seerah section that is a full-screen, hand-drawn, offline SVG map with semantic zoom (region, then city with landmarks) and a timeline of the Prophet's ﷺ age 0 to 63, where every event of the book «نور اليقين في سيرة سيد المرسلين» sits on its place and its year, and the developer has reviewed and signed off every one of them. The event page shows the book's text verbatim. There is a «عرض كقائمة» alternative for screen readers.
 
 **The content is the product.** The map and timeline are only as good as the place and year assigned to each event, and the book does not state all of them. So the plan puts the data model, the validator and the review gate **before** the screens, and makes the sign-off a mandatory step.
+
+## Revision (14 Nov 2026, later the same day): autonomous build, relayed by the coordinator as developer decisions
+
+These five decisions **override** anything below that says a step waits for the developer. The developer has to confirm them in the ADR (they came through the coordinator, not in the developer's own words in this session).
+
+1. **Build everything in one autonomous run:** frames, data for the **whole book**, validator, importer, API and pack, app screens, tests. No step waits for approval. The gates in the steps table become **checkpoints**: the step writes its report and the build continues. The developer's review happens afterwards, on the report and the simulator.
+2. **Frames are pre-approved; the ADR 0087 approval gate is waived for Phase 8** (recorded in ADR 0089). Frames are still drawn first in `screens/frames/seerah/`, rebuilt with the two build scripts, and checked with `check:html`; app code starts right after, from the frames. Captions may keep «(بانتظار الموافقة)» until the developer looks.
+3. **Nothing is invented and nothing blocks.** An event whose place the book does not state goes under a dedicated place **«أخرى»** (id `other`, kind `region`, no coordinates, no map position of its own, drawn as a «أخرى» pin on the region map's edge); an event whose year the book does not state goes into a **«غير محدد»** year bucket (`year.basis = unspecified`, age null, shown at the end of the timeline and in the list under its own heading). Both carry the matching flag (`place_not_stated`, `year_not_stated`). **Every section of the book must be covered** (V13 stays strict): an event or an exclusion, and a section with no clear place is an event in «أخرى», not a gap. The developer reviews the «أخرى» and «غير محدد» buckets later. **The review report lists them first** (view 0b).
+4. **No production release.** No `eas update`, no deploy, no step 26 or 35 (they become «prepared, not run»). Work is committed and pushed to the work branch (the developer allowed this; agents still do not push without it being the work branch). The developer checks the result on the simulator.
+5. **Environment of the overnight run:** PHP 8.3 (the project targets 8.5, so run `composer` with `--ignore-platform-req=php` if the platform check fails and say so), Node 22, python3, network to GitHub and OpenITI; **no MySQL, no iOS simulator**. `apps/api/phpunit.xml` sets `DB_CONNECTION=mysql` (`quran_testing`), so tests that touch the database cannot run here. The design therefore keeps **everything that matters for correctness DB-free**: canonicalizer, structure parser, loader, validator V1 to V19, report, authoring tools and the pack-row builder are pure PHP over files and need no `RefreshDatabase`; they run here. The MySQL schema, importer and endpoint tests are written alongside and run in CI (and are run locally only if the migrations also run on SQLite, which the `utf8mb4_0900_bin` collations prevent: do not weaken them for SQLite). Mobile: Jest runs here; **Expo web** (`npx expo start --web`) is used for visual checks, compared against `frame-shot.py` renders; no `xcrun simctl`.
+
+Effects on the rest of this file (read with these in mind):
+
+| Where | Change |
+| --- | --- |
+| Rules, «Not done by an agent» | **Superseded.** For this run the agent drafts the whole book as `draft`; running `seerah:approve` is still **not** allowed, so nothing is signed. `reviews/` stays empty; every record is `draft`. The developer's sign-off comes later and does not block the build. |
+| `--release` validation | Two modes: **`--structure`** (CI and this run: V1 to V15, V18, V19 must pass; `draft` is allowed) and **`--release`** (needs sign-offs; not run now). The importer in this run uses `--structure`; production refuses to import without `--release`, so nothing can reach production by accident. |
+| V9, V10 | `place.basis = unstated` is now valid with `place.id = other` (flag required); `year.basis = unspecified` is valid with the «غير محدد» bucket (flag required). An unstated place or year **outside** these buckets is still an error. Inferring a place or year is still an error without a stated quote. |
+| V11, V12 | Events in the «غير محدد» year bucket are ignored by the ordering check and by the 0..63 range check; they sit between their book neighbours for prev/next. |
+| Q7 | **Decided: option (a) in the bucket form above.** Q8 to Q19 keep their defaults and the build uses the default of each (excluded sections, hidden disputed marks, no figures, Menu card and sidebar, pack, agent-drafted maps, Wikidata, Arabic names). They stay open for the developer to change later. |
+| Cut lines | The «ship later, not partial» rule applies to a future release; in this run the whole book is built. «If the art slips»: the Madinah city map is the first thing to simplify, never skipped. |
+| Step 35 | Replaced by «local verification»: `npm run lint && npx tsc --noEmit && npm test`, `composer qa` where it can run, Expo web screenshots vs frames, and a written hand-off report. |
 
 ## Sources this plan rests on (read for this plan)
 
@@ -187,7 +209,7 @@ One component per file, one colocated `*.test.tsx` each; screens only compose. P
 
 ## Steps
 
-Each step is one reviewable change; a step brief (`phase-8/step-NN-*.md`) is written when the step starts. «Gate» marks a developer decision or sign-off that must happen before the next dependent step.
+Each step is one reviewable change; a step brief (`phase-8/step-NN-*.md`) is written when the step starts. «Gate» marks a developer decision or sign-off; **after the Revision above it is a checkpoint: the step writes its report and the next step starts, the developer reads it later.** Steps 26 and 35 are prepared, not run (no release). Where a step needs a decision the default in «Questions» is used and recorded in the step's report.
 
 | # | Step | Description | Depends on | Gate |
 | :---: | :--- | :--- | :--- | :--- |
@@ -198,7 +220,7 @@ Each step is one reviewable change; a step brief (`phase-8/step-NN-*.md`) is wri
 | 5 | Authoring tools | `seerah:find`, `seerah:quote`, `seerah:skeleton`, `seerah:place-candidates` (spec in `data-format.md`) | 3, 4 | |
 | 6 | Review report and approve command | `seerah:report` (views 0 to 7, filters, print style), `seerah:approve` (developer only), digest in the report footer. Built on placeholder data first | 4 | Developer looks at the report on fixtures and says if it is readable |
 | 7 | Frames A: map key and art | `SeerahMapKey`, region art direction; `design-assets/seerah/map-region.svg` drafted from simplified Natural Earth relief and hand-stylised; a decision on pin and label symbology | 1 | **Developer approves art direction** |
-| 8 | Frames B: screens | Region, city, timeline, cluster, event, list, expanded, states, menu and Sources rows; `build.py` and `build_reference.py`; review links | 7 | **Developer approves all frames** |
+| 8 | Frames B: screens | Region, city, timeline, cluster, event, list, expanded, states, menu and Sources rows, the «أخرى» pin and the «غير محدد» year bucket; `build.py` and `build_reference.py`; review links | 7 | Pre-approved (waiver, ADR 0089); app code follows at once |
 | 9 | Gazetteer draft | `gazetteer.json` from `seerah:place-candidates` and the book: every place, tree, `names_in_book`, evidence quotes by `seerah:quote`; no coordinates yet | 5, 6 | |
 | 10 | Coordinates and geo checks | `geo` for every place from Wikidata or manual with a note; V6 plausibility; disputed and approximate flags | 9 | **Review gate G: developer signs the gazetteer** (`seerah:approve G`) |
 | 11 | Map art and layouts | `map-makkah.svg`, `map-madinah.svg`; `map/layout.*.json` positions, label priority, route paths; V7 direction check; report view 3 | 8, 10 | **Developer approves the three maps** |
