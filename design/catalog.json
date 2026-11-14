@@ -325,6 +325,33 @@
     "SettingsAdhanSoundRow",
     "Sources"
    ]
+  },
+  {
+   "id": "seerah",
+   "title": "Seerah",
+   "blurb": "Map, timeline, event page and list",
+   "screens": [
+    "SeerahCluster",
+    "SeerahClusterSheet",
+    "SeerahEvent",
+    "SeerahEventOther",
+    "SeerahExpanded",
+    "SeerahExpandedCity",
+    "SeerahList",
+    "SeerahMapKey",
+    "SeerahMapMadinah",
+    "SeerahMapMakkah",
+    "SeerahMapRegion",
+    "SeerahMapRegionYear",
+    "SeerahMenu",
+    "SeerahSources",
+    "SeerahStateDownload",
+    "SeerahStateDownloading",
+    "SeerahStateEmptyYear",
+    "SeerahStateError",
+    "SeerahStateOffline",
+    "SeerahTimeline"
+   ]
   }
  ],
  "screens": [
@@ -6378,6 +6405,739 @@
    },
    "frames": [
     "Sources"
+   ]
+  },
+  {
+   "id": "SeerahCluster",
+   "stack": "seerah",
+   "caption": "مجموعة تنفتح على حلقة (٦ أحداث أو أقل) · دار الأرقم (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahCluster",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahCluster",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahCluster",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahCluster",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahCluster"
+   ]
+  },
+  {
+   "id": "SeerahClusterSheet",
+   "stack": "seerah",
+   "caption": "أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب السنة (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahClusterSheet",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahClusterSheet",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahClusterSheet",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahClusterSheet",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahClusterSheet"
+   ]
+  },
+  {
+   "id": "SeerahEvent",
+   "stack": "seerah",
+   "caption": "صفحة الحدث · نص الكتاب، السنة والمكان، السابق والتالي، المصدر (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahEvent",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "SeerahEventDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "SeerahEventEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahEventEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahEvent",
+    "SeerahEventDark",
+    "SeerahEventEnglish"
+   ]
+  },
+  {
+   "id": "SeerahEventOther",
+   "stack": "seerah",
+   "caption": "صفحة الحدث · المكان «أخرى» والسنة «غير محدد» (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahEventOther",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahEventOther",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahEventOther",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahEventOther",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahEventOther"
+   ]
+  },
+  {
+   "id": "SeerahExpanded",
+   "stack": "seerah",
+   "caption": "نافذة واسعة ١١٩٤ × ٨٣٤ · الخط الزمني عموديًا في البداية، الخريطة، صفحة الحدث في النهاية (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "window",
+   "fixed": true,
+   "drawnSize": "expanded",
+   "window": [
+    1194,
+    834
+   ],
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahExpanded",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahExpanded",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahExpanded",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahExpanded",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahExpanded"
+   ]
+  },
+  {
+   "id": "SeerahExpandedCity",
+   "stack": "seerah",
+   "caption": "نافذة واسعة · خريطة المدينة وسنة مختارة (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "window",
+   "fixed": true,
+   "drawnSize": "expanded",
+   "window": [
+    1194,
+    834
+   ],
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahExpandedCity",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahExpandedCity",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahExpandedCity",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahExpandedCity",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahExpandedCity"
+   ]
+  },
+  {
+   "id": "SeerahList",
+   "stack": "seerah",
+   "caption": "«عرض كقائمة» · مجمّعة بالفترة والسنة، و«غير محدد» في آخرها (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahList",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "SeerahListDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "SeerahListEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahListEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahList",
+    "SeerahListDark",
+    "SeerahListEnglish"
+   ]
+  },
+  {
+   "id": "SeerahMapKey",
+   "stack": "seerah",
+   "caption": "مفتاح الخريطة · الرموز والطرق (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahMapKey",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahMapKey",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahMapKey",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahMapKey",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahMapKey"
+   ]
+  },
+  {
+   "id": "SeerahMapMadinah",
+   "stack": "seerah",
+   "caption": "خريطة المدينة · المعالم والأحداث، موضع تقريبي (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahMapMadinah",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahMapMadinah",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahMapMadinah",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahMapMadinah",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahMapMadinah"
+   ]
+  },
+  {
+   "id": "SeerahMapMakkah",
+   "stack": "seerah",
+   "caption": "خريطة مكة · المعالم والأحداث، تجميع وإخفاء أسماء متزاحمة، نافذة حدث (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahMapMakkah",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "SeerahMapMakkahDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahMapMakkah",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahMapMakkahDark",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahMapMakkah",
+    "SeerahMapMakkahDark"
+   ]
+  },
+  {
+   "id": "SeerahMapRegion",
+   "stack": "seerah",
+   "caption": "الخريطة · المنطقة (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahMapRegion",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "SeerahMapRegionDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "SeerahMapRegionEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahMapRegionEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahMapRegion",
+    "SeerahMapRegionDark",
+    "SeerahMapRegionEnglish"
+   ]
+  },
+  {
+   "id": "SeerahMapRegionYear",
+   "stack": "seerah",
+   "caption": "الخريطة · سنة محددة: الهجرة، العمر ٥٣، والباقي باهت (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahMapRegionYear",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahMapRegionYear",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahMapRegionYear",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahMapRegionYear",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahMapRegionYear"
+   ]
+  },
+  {
+   "id": "SeerahMenu",
+   "stack": "seerah",
+   "caption": "القائمة · بطاقة السيرة النبوية (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahMenu",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahMenu",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahMenu",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahMenu",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "SeerahMenu"
+   ]
+  },
+  {
+   "id": "SeerahSources",
+   "stack": "seerah",
+   "caption": "الإعدادات · المصادر والشكر · صف السيرة وخريطتها (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahSources",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahSources",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahSources",
+     "untranslated": 3
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahSources",
+     "untranslated": 3
+    }
+   },
+   "frames": [
+    "SeerahSources"
+   ]
+  },
+  {
+   "id": "SeerahStateDownload",
+   "stack": "seerah",
+   "caption": "السيرة غير منزّلة · الحجم وزر التنزيل (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahStateDownload",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahStateDownload",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahStateDownload",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahStateDownload",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahStateDownload"
+   ]
+  },
+  {
+   "id": "SeerahStateDownloading",
+   "stack": "seerah",
+   "caption": "جارٍ التنزيل (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahStateDownloading",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahStateDownloading",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahStateDownloading",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahStateDownloading",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahStateDownloading"
+   ]
+  },
+  {
+   "id": "SeerahStateEmptyYear",
+   "stack": "seerah",
+   "caption": "سنة بلا أحداث (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahStateEmptyYear",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahStateEmptyYear",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahStateEmptyYear",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahStateEmptyYear",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahStateEmptyYear"
+   ]
+  },
+  {
+   "id": "SeerahStateError",
+   "stack": "seerah",
+   "caption": "تعذّر فتح البيانات (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahStateError",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahStateError",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahStateError",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahStateError",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahStateError"
+   ]
+  },
+  {
+   "id": "SeerahStateOffline",
+   "stack": "seerah",
+   "caption": "دون اتصال ولم تُنزَّل بعد (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahStateOffline",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahStateOffline",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahStateOffline",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahStateOffline",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahStateOffline"
+   ]
+  },
+  {
+   "id": "SeerahTimeline",
+   "stack": "seerah",
+   "caption": "الخط الزمني · الحالات: دون اختيار، السحب، سنة مختارة، غير محدد (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "SeerahTimeline",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "SeerahTimeline",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "SeerahTimeline",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "SeerahTimeline",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "SeerahTimeline"
    ]
   }
  ]

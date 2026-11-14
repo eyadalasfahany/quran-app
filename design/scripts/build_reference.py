@@ -41,6 +41,8 @@ SRC = DESIGN / 'screens'
 COMMON = DESIGN / 'common'
 LOCALES = ROOT / 'apps' / 'mobile' / 'src' / 'core' / 'i18n' / 'locales'
 TOKENS = ROOT / 'packages' / 'design-tokens' / 'src' / 'colors.ts'
+_PAIRS = DESIGN / 'screens' / 'assets' / 'dark-pairs.json'
+DARK_PAIRS = json.loads(_PAIRS.read_text(encoding='utf-8')) if _PAIRS.exists() else {}
 EXTRA = Path(__file__).resolve().parent / 'ltr-strings.json'
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -72,6 +74,7 @@ STACK_TITLES = {
     'my-quran': ('My Quran', 'Bookmarks, notes, highlights'),
     'audio': ('Audio', 'Reciters and buffering'),
     'settings': ('Settings', 'Settings, adhan sound, sources'),
+    'seerah': ('Seerah', 'Map, timeline, event page and list'),
 }
 # Boards that are not app windows: shown at their drawn size only.
 FIXED_STACKS = {'widgets', 'watch'}
@@ -79,6 +82,8 @@ FIXED_STACKS = {'widgets', 'watch'}
 ALIASES = {'HomeDark': ('Main', 'dark-rtl'), 'HomeEnglish': ('Main', 'light-ltr')}
 # Screens whose content is a Quran page or an instrument: in LTR only the chrome direction
 # changes; the drawing itself is not mirrored.
+# Seerah frames show a map: geography is never mirrored, and their chrome uses logical properties.
+NO_MIRROR_PREFIXES = ('Seerah',)
 NO_MIRROR = {'Mushaf', 'LoadingMushaf', 'Qibla', 'QiblaLandscape', 'Reading', 'Focus',
              'ReadingMiniIdle', 'ReadingMiniCollapsed'}
 VARIANTS = ['light-rtl', 'dark-rtl', 'light-ltr', 'dark-ltr']
@@ -201,6 +206,12 @@ class ColorMap:
         for k, v in self.tokens.items():
             if k[:3] == c[:3]:
                 return (*v[:3], c[3])
+        return None
+
+    def own(self, g, c, cx):
+        for table, key in ((self.ctx, (g, c, cx)), (self.grp, (g, c)), (self.any, c)):
+            if key in table:
+                return table[key].most_common(1)[0][0]
         return None
 
     def apply(self, root: Node):
@@ -697,6 +708,34 @@ def mark_roles(root: Node):
             c.attrs['data-role'] = 'float'
 
 
+class LayeredColorMap(ColorMap):
+    """Learns from one section's drawn pairs only and falls back to the shared map, so a section
+    with its own colour use (the Seerah map pins) neither changes nor is changed by the others."""
+    def __init__(self, base: ColorMap):
+        super().__init__()
+        self.base = base
+
+    def lookup(self, g, c, cx):
+        return self.own(g, c, cx) or self.base.lookup(g, c, cx)
+
+
+def own_maps(sid: str) -> bool:
+    return sid.startswith(NO_MIRROR_PREFIXES)
+
+
+def swap_art(tree: Node, theme: str):
+    """Art drawn in both themes (design/screens/assets/dark-pairs.json): use the one for the theme."""
+    pairs = DARK_PAIRS if theme == 'dark' else {v: k for k, v in DARK_PAIRS.items()}
+    if not pairs:
+        return
+    for n in walk(tree):
+        if n.tag == '#text':
+            continue
+        for k, v in list(n.attrs.items()):
+            if v and 'assets/' in v:
+                n.attrs[k] = re.sub(r'assets/([0-9a-f]+\.\w+)', lambda m: 'assets/' + pairs.get(m.group(1), m.group(1)), v)
+
+
 def screen_root(tree: Node):
     """(kind, node): 'phone' = the 390x844 inline root, 'window' = a drawn tablet window."""
     for n in walk(tree):
@@ -762,6 +801,7 @@ def main():
     # learn ------------------------------------------------------------------------------------
     l2d, d2l = ColorMap(), ColorMap()
     l2d.tokens, d2l.tokens = token_tables()
+    l2d_own, d2l_own = LayeredColorMap(l2d), LayeredColorMap(d2l)
     tr = Translator()
     for s in screens.values():
         for slot, fid in s['drawn'].items():
@@ -775,8 +815,8 @@ def main():
                         tr.learn(x.text, y.text)
                 elif x.tag != '#root':
                     if slot == 'dark-rtl':
-                        l2d.learn(x, y)
-                        d2l.learn(y, x)
+                        (l2d_own if own_maps(s['id']) else l2d).learn(x, y)
+                        (d2l_own if own_maps(s['id']) else d2l).learn(y, x)
                     elif slot == 'light-ltr':
                         for k in ('aria-label', 'title'):
                             if x.attrs.get(k) and y.attrs.get(k):
@@ -848,14 +888,18 @@ def main():
                 need_translate = sd == 'rtl' and direction == 'ltr'
                 k, r = screen_root(tree)
                 if st != theme:
+                    swap_art(tree, theme)
                     if k == 'window':
                         for n in walk(tree):
                             if n.tag != '#text' and 'data-theme' in n.attrs:
                                 n.attrs['data-theme'] = theme
                     else:
-                        (l2d if theme == 'dark' else d2l).apply(r)
+                        if own_maps(s['id']):
+                            (l2d_own if theme == 'dark' else d2l_own).apply(r)
+                        else:
+                            (l2d if theme == 'dark' else d2l).apply(r)
                 if sd != direction:
-                    mirror(tree, physical=s['id'] not in NO_MIRROR)
+                    mirror(tree, physical=s['id'] not in NO_MIRROR and not s['id'].startswith(NO_MIRROR_PREFIXES))
             k, r = screen_root(tree)
             missing = []
             if need_translate:

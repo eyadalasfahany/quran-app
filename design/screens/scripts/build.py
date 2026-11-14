@@ -41,6 +41,7 @@ SECTION_SLUGS = [
     ("رؤية الهلال", "moon"),
     ("نقاط الدخول", "entry-points"),
     ("الودجات وساعة آبل", "widgets"),
+    ("السيرة النبوية", "seerah"),
 ]
 
 ID_STACK: dict[str, str] = {
@@ -142,9 +143,13 @@ STACK_BLURBS = {
     "widgets": "iOS + Android widgets + help",
     "watch": "Apple Watch",
     "expanded": "Medium + expanded windows",
+    "seerah": "Seerah map, timeline, event page, list",
 }
 
-EXT = {"jpeg": "jpg", "jpg": "jpg", "png": "png", "webp": "webp", "gif": "gif", "svg+xml": "svg"}
+EXT = {"jpeg": "jpg", "jpg": "jpg", "png": "png", "webp": "webp", "gif": "gif", "svg+xml": "svg", "svg": "svg"}
+# design-assets art drawn twice, as <name>.<ext> and <name>-dark.<ext>: light asset -> dark asset, so the
+# reference build can swap the art when it derives a variant in the other theme (Seerah maps).
+DARK_PAIRS: dict[str, str] = {}
 
 
 def section_slug(title: str) -> str:
@@ -202,11 +207,19 @@ def externalize_images(fig: str, rel_prefix: str, digest_map: dict[str, str]) ->
 
     # Frames reference repo-root images (design-assets/...) instead of inlining them.
     # Treat them like inline images so the asset names stay the same.
-    def repl_file(m: re.Match[str]) -> str:
-        path = ROOT / m.group(0)
+    def asset_name(path: Path) -> str:
         mime = "jpeg" if path.suffix.lower() in (".jpg", ".jpeg") else path.suffix.lower().lstrip(".")
         b64 = base64.b64encode(path.read_bytes()).decode("ascii")
         return repl(re.match(r"(.+)\|(.+)", f"{mime}|{b64}", re.S))
+
+    def repl_file(m: re.Match[str]) -> str:
+        path = ROOT / m.group(0)
+        out_name = asset_name(path)
+        stem = path.stem[:-5] if path.stem.endswith("-dark") else path.stem
+        light, dark = path.with_name(stem + path.suffix), path.with_name(stem + "-dark" + path.suffix)
+        if light.exists() and dark.exists():
+            DARK_PAIRS[asset_name(light).rsplit("/", 1)[-1]] = asset_name(dark).rsplit("/", 1)[-1]
+        return out_name
 
     out = re.sub(r'design-assets/[^)"\'\s]+', repl_file, out)
     return out, saved
@@ -326,6 +339,7 @@ def main() -> None:
 
     write_catalogs(frames, by_stack)
     write_agents()
+    (ASSETS / "dark-pairs.json").write_text(json.dumps(DARK_PAIRS, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     write_readme(frames, by_stack, len(digest_map), total_saved)
 
     manifest = {
