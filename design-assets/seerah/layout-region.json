@@ -207,24 +207,24 @@
  "edge_pins": [
   {
    "place": "other",
-   "anchor": "start-edge",
-   "note": "أخرى: no coordinates; pinned to the screen edge, not the map"
+   "anchor": "west-edge",
+   "note": "أخرى (other): no coordinates; a chip fixed to the west edge of the screen, above the timeline, not a map position"
   }
  ],
  "area_labels": [
   {
    "id": "area.red_sea",
    "name_ar": "البحر الأحمر",
-   "x": 730.8,
-   "y": 1240.0,
-   "rotate": -62
+   "x": 575.5,
+   "y": 1000.0,
+   "rotate": -58
   },
   {
    "id": "area.hijaz",
    "name_ar": "الحجاز",
-   "x": 817.6,
-   "y": 990.0,
-   "rotate": -55
+   "x": 758.2,
+   "y": 710.0,
+   "rotate": -50
   },
   {
    "id": "area.najd",

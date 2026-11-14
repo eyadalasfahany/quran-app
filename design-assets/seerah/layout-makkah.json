@@ -7,8 +7,8 @@
  "viewbox": [
   0,
   0,
-  1000,
-  1240
+  1600,
+  1500
  ],
  "projection": {
   "kind": "radial-log",
@@ -17,8 +17,8 @@
    "lng": 39.8262
   },
   "center_xy": [
-   430,
-   600
+   730,
+   760
   ],
   "r0_km": 0.35,
   "a": 107,
@@ -44,8 +44,8 @@
    "name_ar": "الكعبة",
    "lat": 21.4225,
    "lng": 39.8262,
-   "x": 430,
-   "y": 600,
+   "x": 730,
+   "y": 760,
    "kind": "sacred",
    "label_priority": 100,
    "label_side": "end"
@@ -55,8 +55,8 @@
    "name_ar": "الصفا والمروة",
    "lat": 21.4239,
    "lng": 39.8276,
-   "x": 464.7,
-   "y": 563.0,
+   "x": 764.7,
+   "y": 723.0,
    "kind": "landmark",
    "label_priority": 70,
    "label_side": "start"
@@ -66,8 +66,8 @@
    "name_ar": "دار الأرقم",
    "lat": 21.4216,
    "lng": 39.8281,
-   "x": 476.7,
-   "y": 623.6,
+   "x": 776.7,
+   "y": 783.6,
    "kind": "landmark",
    "label_priority": 60,
    "label_side": "start"
@@ -77,8 +77,8 @@
    "name_ar": "بيت خديجة",
    "lat": 21.4249,
    "lng": 39.8293,
-   "x": 494.7,
-   "y": 546.6,
+   "x": 794.7,
+   "y": 706.6,
    "kind": "landmark",
    "label_priority": 60,
    "label_side": "end"
@@ -88,8 +88,8 @@
    "name_ar": "شعب أبي طالب",
    "lat": 21.4232,
    "lng": 39.8322,
-   "x": 539.0,
-   "y": 586.4,
+   "x": 839.0,
+   "y": 746.4,
    "kind": "landmark",
    "label_priority": 75,
    "label_side": "end"
@@ -99,8 +99,8 @@
    "name_ar": "غار حراء",
    "lat": 21.4576,
    "lng": 39.8617,
-   "x": 635.4,
-   "y": 383.4,
+   "x": 935.4,
+   "y": 543.4,
    "kind": "landmark",
    "label_priority": 90,
    "label_side": "end"
@@ -110,8 +110,8 @@
    "name_ar": "غار ثور",
    "lat": 21.377,
    "lng": 39.85,
-   "x": 563.5,
-   "y": 872.3,
+   "x": 863.5,
+   "y": 1032.3,
    "kind": "landmark",
    "label_priority": 85,
    "label_side": "end"
@@ -121,8 +121,8 @@
    "name_ar": "العقبة",
    "lat": 21.421,
    "lng": 39.873,
-   "x": 718.6,
-   "y": 609.9,
+   "x": 1018.6,
+   "y": 769.9,
    "kind": "landmark",
    "label_priority": 70,
    "label_side": "start"
@@ -132,8 +132,8 @@
    "name_ar": "منى",
    "lat": 21.4133,
    "lng": 39.8933,
-   "x": 752.7,
-   "y": 647.2,
+   "x": 1052.7,
+   "y": 807.2,
    "kind": "landmark",
    "label_priority": 65,
    "label_side": "end"
@@ -143,8 +143,8 @@
    "name_ar": "مزدلفة",
    "lat": 21.388,
    "lng": 39.93,
-   "x": 784.5,
-   "y": 725.7,
+   "x": 1084.5,
+   "y": 885.7,
    "kind": "landmark",
    "label_priority": 40,
    "label_side": "end"
@@ -154,8 +154,8 @@
    "name_ar": "عرفات",
    "lat": 21.3549,
    "lng": 39.9842,
-   "x": 815.4,
-   "y": 775.9,
+   "x": 1115.4,
+   "y": 935.9,
    "kind": "landmark",
    "label_priority": 80,
    "label_side": "start"
@@ -165,8 +165,8 @@
    "name_ar": "الحجون",
    "lat": 21.4372,
    "lng": 39.8268,
-   "x": 437.1,
-   "y": 414.9,
+   "x": 737.1,
+   "y": 574.9,
    "kind": "landmark",
    "label_priority": 40,
    "label_side": "start"

@@ -7,8 +7,8 @@
  "viewbox": [
   0,
   0,
-  1000,
-  1240
+  1600,
+  1500
  ],
  "projection": {
   "kind": "radial-log",
@@ -17,8 +17,8 @@
    "lng": 39.6111
   },
   "center_xy": [
-   500,
-   600
+   800,
+   760
   ],
   "r0_km": 0.6,
   "a": 150,
@@ -44,8 +44,8 @@
    "name_ar": "المسجد النبوي",
    "lat": 24.4672,
    "lng": 39.6111,
-   "x": 500,
-   "y": 600,
+   "x": 800,
+   "y": 760,
    "kind": "sacred",
    "label_priority": 100,
    "label_side": "end"
@@ -55,8 +55,8 @@
    "name_ar": "البقيع",
    "lat": 24.467,
    "lng": 39.6162,
-   "x": 593.2,
-   "y": 604.0,
+   "x": 893.2,
+   "y": 764.0,
    "kind": "landmark",
    "label_priority": 60,
    "label_side": "end"
@@ -66,8 +66,8 @@
    "name_ar": "قباء",
    "lat": 24.4393,
    "lng": 39.6173,
-   "x": 554.8,
-   "y": 869.3,
+   "x": 854.8,
+   "y": 1029.3,
    "kind": "sacred",
    "label_priority": 90,
    "label_side": "end"
@@ -77,8 +77,8 @@
    "name_ar": "أحد",
    "lat": 24.503,
    "lng": 39.613,
-   "x": 514.8,
-   "y": 296.0,
+   "x": 814.8,
+   "y": 456.0,
    "kind": "landmark",
    "label_priority": 95,
    "label_side": "end"
@@ -88,8 +88,8 @@
    "name_ar": "الخندق",
    "lat": 24.479,
    "lng": 39.599,
-   "x": 358.0,
-   "y": 448.9,
+   "x": 658.0,
+   "y": 608.9,
    "kind": "landmark",
    "label_priority": 85,
    "label_side": "start"
@@ -99,8 +99,8 @@
    "name_ar": "بئر رومة",
    "lat": 24.4934,
    "lng": 39.5781,
-   "x": 259.1,
-   "y": 391.3,
+   "x": 559.1,
+   "y": 551.3,
    "kind": "landmark",
    "label_priority": 50,
    "label_side": "start"
