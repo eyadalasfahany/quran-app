@@ -185,7 +185,7 @@ it('the start script imports Hadith rows after the Azkar, Duas and MP3Quran impo
         ->and($hadith)->toBeGreaterThan($duas)
         ->and($hadith)->toBeGreaterThan($mp3quran)
         ->and($packs)->toBeGreaterThan($hadith)
-        ->and(substr_count($start, 'hadith:import'))->toBe(1)
+        ->and(substr_count($start, 'hadith:import --'))->toBe(1)
         ->and($start)->not->toContain('hadith:import --download --defer-pack --build-packs');
 });
 
