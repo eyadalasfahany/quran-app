@@ -354,6 +354,14 @@ describe('query plans', () => {
   });
 });
 
+/** The SQLite type of a pack column in a test fixture (ADR 0089 adds REAL). */
+function sqlTypeOf(kind: 'integer' | 'real' | 'text'): string {
+  if (kind === 'integer') {
+    return 'INTEGER';
+  }
+  return kind === 'real' ? 'REAL' : 'TEXT';
+}
+
 function requiredVerse(key: string): { id: number; textUthmani: string } {
   const verse = getVerseByKey(executor, key);
   if (verse === undefined) {
@@ -451,7 +459,7 @@ function installPack(
       throw new Error(`Missing primary key for ${table.name}.`);
     }
     const columns = table.columns
-      .map((column) => `${column.name} ${column.kind === 'integer' ? 'INTEGER' : 'TEXT'}${column.nullable ? '' : ' NOT NULL'}`)
+      .map((column) => `${column.name} ${sqlTypeOf(column.kind)}${column.nullable ? '' : ' NOT NULL'}`)
       .join(', ');
     pack.exec(`CREATE TABLE ${table.name} (${columns}, PRIMARY KEY (${primaryKey}))`);
   }

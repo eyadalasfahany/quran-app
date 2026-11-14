@@ -20,6 +20,9 @@ return [
         'title_ar' => 'نور اليقين في سيرة سيد المرسلين',
         'author_ar' => 'محمد بن عفيفي الباجوري، المعروف بالشيخ الخضري',
         'edition_ar' => 'دار الفيحاء - دمشق، الطبعة الثانية 1425 هـ (Shamela 23692)',
+        // The credit lines the app shows (Sources), from data/seerah/source/LICENSE-NOTICE.md (ADR 0089, licence).
+        'attribution_ar' => 'نور اليقين في سيرة سيد المرسلين، لمحمد بن عفيفي الباجوري الخضري. النص عن مشروع OpenITI (Shamela 23692)، بترخيص CC BY-NC-SA 4.0',
+        'attribution_en' => 'Nur al-Yaqin fi Sirat Sayyid al-Mursalin by Muhammad ibn Afifi al-Bajuri al-Khadiri. Text from OpenITI (Shamela 23692), CC BY-NC-SA 4.0',
     ],
 
     'source' => [

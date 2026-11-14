@@ -91,6 +91,18 @@ it('stores quran text in the binary collation and no other text column', functio
         'hadith_explanations.words_ar',
         // Names of Allah are source text stored byte-for-byte (ADR 0043 A2), like the dua source columns.
         'names.name_ar',
+        // ADR 0089: the Seerah book's text and its editorial labels, byte-for-byte (the paragraphs are the book's own text).
+        'seerah_books.attribution_ar',
+        'seerah_books.author_ar',
+        'seerah_books.edition_ar',
+        'seerah_books.title_ar',
+        'seerah_event_evidence.quote_ar',
+        'seerah_events.title_ar',
+        'seerah_milestones.label_ar',
+        'seerah_paragraphs.text_ar',
+        'seerah_places.name_ar',
+        'seerah_routes.name_ar',
+        'seerah_sections.title_ar',
         'tafsir_entries.html',
         'word_layouts.glyph',
     ]);

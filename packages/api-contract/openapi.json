@@ -803,6 +803,36 @@
                 }
             }
         },
+        "/seerah/books": {
+            "get": {
+                "operationId": "v1.seerah.books.index",
+                "tags": [
+                    "SeerahBook"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`SeerahBooksResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SeerahBooksResource"
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Not modified.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "null"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/suggestions": {
             "post": {
                 "operationId": "v1.suggestions.store",
@@ -1789,6 +1819,77 @@
                 ],
                 "title": "HealthStatus"
             },
+            "SeerahBooksResource": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "resource_id": {
+                                    "type": "integer"
+                                },
+                                "slug": {
+                                    "type": "string"
+                                },
+                                "title_ar": {
+                                    "type": "string"
+                                },
+                                "author_ar": {
+                                    "type": "string"
+                                },
+                                "edition_ar": {
+                                    "type": "string"
+                                },
+                                "attribution_ar": {
+                                    "type": "string"
+                                },
+                                "attribution_en": {
+                                    "type": "string"
+                                },
+                                "sections_count": {
+                                    "type": "integer"
+                                },
+                                "paragraphs_count": {
+                                    "type": "integer"
+                                },
+                                "places_count": {
+                                    "type": "integer"
+                                },
+                                "events_count": {
+                                    "type": "integer"
+                                },
+                                "routes_count": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "resource_id",
+                                "slug",
+                                "title_ar",
+                                "author_ar",
+                                "edition_ar",
+                                "attribution_ar",
+                                "attribution_en",
+                                "sections_count",
+                                "paragraphs_count",
+                                "places_count",
+                                "events_count",
+                                "routes_count"
+                            ]
+                        }
+                    },
+                    "next_cursor": {
+                        "type": "null"
+                    }
+                },
+                "required": [
+                    "data",
+                    "next_cursor"
+                ],
+                "title": "SeerahBooksResource"
+            },
             "ServedResourceGroup": {
                 "type": "string",
                 "enum": [
@@ -1802,7 +1903,8 @@
                     "names",
                     "duas",
                     "hadith_collections",
-                    "hadith_explanations"
+                    "hadith_explanations",
+                    "seerah"
                 ],
                 "title": "ServedResourceGroup"
             },

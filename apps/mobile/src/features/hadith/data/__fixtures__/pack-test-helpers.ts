@@ -53,8 +53,11 @@ export function manifestBody(resources: ContentManifestResource[]): ContentManif
   return { generated_at: '2026-11-07T00:00:00.000Z', pack_schema_version: 1, resources };
 }
 
-function columnType(kind: 'integer' | 'text'): string {
-  return kind === 'integer' ? 'INTEGER' : 'TEXT';
+function columnType(kind: 'integer' | 'real' | 'text'): string {
+  if (kind === 'integer') {
+    return 'INTEGER';
+  }
+  return kind === 'real' ? 'REAL' : 'TEXT';
 }
 
 function createTable(database: DatabaseSync, table: ContentTable): void {

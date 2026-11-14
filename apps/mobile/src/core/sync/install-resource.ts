@@ -93,8 +93,8 @@ async function runInstall(deps: InstallDeps, resourceId: number, options: Instal
     }
   }
 
-  if (resource.group === 'hadith_collections' || resource.group === 'hadith_explanations') {
-    // Not auto-selected: without this the next sync would remove the collection (or explanations) the user chose.
+  if (resource.group === 'hadith_collections' || resource.group === 'hadith_explanations' || resource.group === 'seerah') {
+    // Not auto-selected: without this the next sync would remove the collection (or explanations, or the Seerah book) the user chose.
     keepOnDemand(deps.db, [resource.id]);
   }
 

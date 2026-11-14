@@ -120,6 +120,13 @@
       "when": 1794144804592,
       "tag": "0016_hadith_explanations",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1794694250137,
+      "tag": "0017_seerah_tables",
+      "breakpoints": true
     }
   ]
 }

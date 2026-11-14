@@ -28,6 +28,8 @@ enum ResourceGroup: string
     case HadithCollections = 'hadith_collections';
     // ADR 0078: HadeethEnc explanations (شرح) as their own optional pack group, one pack per source.
     case HadithExplanations = 'hadith_explanations';
+    // ADR 0089: the Seerah book «نور اليقين» (map and timeline), one pack per book.
+    case Seerah = 'seerah';
 
     public function isIgnored(): bool
     {

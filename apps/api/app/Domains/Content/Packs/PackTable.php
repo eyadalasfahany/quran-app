@@ -23,7 +23,7 @@ final readonly class PackTable
         $definitions = [];
 
         foreach ($this->columns as $column) {
-            $sql = $column->name.' '.($column->integer ? 'INTEGER' : 'TEXT');
+            $sql = $column->name.' '.$this->sqlType($column);
 
             if (! $column->nullable) {
                 $sql .= ' NOT NULL';
@@ -35,5 +35,14 @@ final readonly class PackTable
         $definitions[] = 'PRIMARY KEY ('.implode(', ', $this->primaryKey).')';
 
         return 'CREATE TABLE '.$this->name.' ('.implode(', ', $definitions).')';
+    }
+
+    private function sqlType(PackColumn $column): string
+    {
+        if ($column->integer) {
+            return 'INTEGER';
+        }
+
+        return $column->real ? 'REAL' : 'TEXT';
     }
 }
