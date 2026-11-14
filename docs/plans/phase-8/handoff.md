@@ -28,7 +28,7 @@ cd ../mobile && npx expo start                        # iPhone 17 simulator
 
 Open the Menu → «السيرة النبوية» → download the book (on-demand, like a hadith collection) → the map opens.
 
-**No new native package was added**, so after your review this can ship as an EAS Update (check with `npx eas-cli fingerprint:compare`).
+Seerah itself adds no native package, but the Expo patch updates below (`6330ba7`) change the native fingerprint, so **the next release is a store build**, not an EAS Update.
 
 ## Review the content
 
@@ -67,7 +67,7 @@ An independent code review of the mobile feature found no crash path; its nine f
 ## CI
 
 - API and Contract workflows: green on this branch.
-- Mobile workflow: ESLint, tsc and Jest green; **`expo-doctor` fails on «18 packages out of date»**. That comes from Expo's newer patch releases, not from Seerah, and fixing it changes the native fingerprint (store build), so it is left for you.
+- Mobile workflow: `expo-doctor` failed on «18 packages out of date» (Expo's newer SDK 58 patches). At your request (`6330ba7`), `npx expo install --fix` moved expo and 17 expo-* packages to the expected patches; the postinstall patches still apply. The npm audit gate then failed on new `@xmldom/xmldom` advisories (≤0.8.14) through `@bacons/xcode` → `@expo/plist@0.0.18` (0.7.13): an `overrides` entry pins 0.8.15 there. Lint, tsc and all 9,086 Jest tests pass locally.
 
 ## CI fixed on the way (also broken on main)
 
