@@ -1,4 +1,4 @@
-import { index, integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const meta = sqliteTable('meta', {
   key: text('key').primaryKey(),
@@ -684,4 +684,204 @@ export const hadithExplanationLinks = sqliteTable(
     primaryKey({ columns: [table.resourceId, table.collectionSlug, table.hadithNumber, table.explanationId] }),
     index('hadith_explanation_links_number_idx').on(table.collectionSlug, table.hadithNumber),
   ],
+);
+
+// ADR 0091: the Seerah book (map and timeline). Columns and their order are the pack contract (PackSchema::seerah*); the device
+// tables are the same tables, written by pack import only.
+
+export const seerahBooks = sqliteTable(
+  'seerah_books',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    slug: text('slug').notNull(),
+    titleAr: text('title_ar').notNull(),
+    authorAr: text('author_ar').notNull(),
+    editionAr: text('edition_ar').notNull(),
+    attributionAr: text('attribution_ar').notNull(),
+    attributionEn: text('attribution_en').notNull(),
+    sectionsCount: integer('sections_count').notNull(),
+    paragraphsCount: integer('paragraphs_count').notNull(),
+    placesCount: integer('places_count').notNull(),
+    eventsCount: integer('events_count').notNull(),
+    routesCount: integer('routes_count').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.id] })],
+);
+
+export const seerahSections = sqliteTable(
+  'seerah_sections',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    code: text('code').notNull(),
+    level: text('level').notNull(),
+    titleAr: text('title_ar').notNull(),
+    page: integer('page').notNull(),
+    position: integer('position').notNull(),
+    paragraphFrom: integer('paragraph_from'),
+    paragraphTo: integer('paragraph_to'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('seerah_sections_position_idx').on(table.resourceId, table.position),
+  ],
+);
+
+export const seerahParagraphs = sqliteTable(
+  'seerah_paragraphs',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    sectionId: integer('section_id').notNull(),
+    position: integer('position').notNull(),
+    page: integer('page').notNull(),
+    textAr: text('text_ar').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('seerah_paragraphs_section_idx').on(table.resourceId, table.sectionId, table.position),
+  ],
+);
+
+export const seerahPlaces = sqliteTable(
+  'seerah_places',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    slug: text('slug').notNull(),
+    parentId: integer('parent_id'),
+    kind: text('kind').notNull(),
+    nameAr: text('name_ar').notNull(),
+    lat: real('lat'),
+    lng: real('lng'),
+    geoPrecision: text('geo_precision'),
+    flags: text('flags').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.id] })],
+);
+
+export const seerahMapLevels = sqliteTable(
+  'seerah_map_levels',
+  {
+    resourceId: integer('resource_id').notNull(),
+    level: text('level').notNull(),
+    parentPlaceId: integer('parent_place_id').notNull(),
+    viewbox: text('viewbox').notNull(),
+    art: text('art').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.level] })],
+);
+
+export const seerahMapPositions = sqliteTable(
+  'seerah_map_positions',
+  {
+    resourceId: integer('resource_id').notNull(),
+    level: text('level').notNull(),
+    placeId: integer('place_id').notNull(),
+    x: real('x').notNull(),
+    y: real('y').notNull(),
+    labelPriority: integer('label_priority').notNull(),
+    labelSide: text('label_side').notNull(),
+    // 1 when the place's own marker is drawn in the level's art (ADR 0091, amendment); NULL from a pack built before it.
+    artLandmark: integer('art_landmark'),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.level, table.placeId] })],
+);
+
+export const seerahRoutes = sqliteTable(
+  'seerah_routes',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    slug: text('slug').notNull(),
+    kind: text('kind').notNull(),
+    nameAr: text('name_ar').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.id] })],
+);
+
+export const seerahRouteStops = sqliteTable(
+  'seerah_route_stops',
+  {
+    resourceId: integer('resource_id').notNull(),
+    routeId: integer('route_id').notNull(),
+    position: integer('position').notNull(),
+    placeId: integer('place_id').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.routeId, table.position] })],
+);
+
+export const seerahMapRoutePaths = sqliteTable(
+  'seerah_map_route_paths',
+  {
+    resourceId: integer('resource_id').notNull(),
+    level: text('level').notNull(),
+    routeId: integer('route_id').notNull(),
+    fromPlaceId: integer('from_place_id').notNull(),
+    toPlaceId: integer('to_place_id').notNull(),
+    pathD: text('path_d').notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.resourceId, table.level, table.routeId, table.fromPlaceId, table.toPlaceId],
+    }),
+  ],
+);
+
+export const seerahEvents = sqliteTable(
+  'seerah_events',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    slug: text('slug').notNull(),
+    position: integer('position').notNull(),
+    sectionId: integer('section_id').notNull(),
+    paragraphFrom: integer('paragraph_from'),
+    paragraphTo: integer('paragraph_to'),
+    titleAr: text('title_ar').notNull(),
+    kind: text('kind').notNull(),
+    placeId: integer('place_id'),
+    placeBasis: text('place_basis'),
+    also: text('also').notNull(),
+    ageFrom: integer('age_from'),
+    ageTo: integer('age_to'),
+    era: text('era'),
+    hijriFrom: integer('hijri_from'),
+    hijriTo: integer('hijri_to'),
+    yearBasis: text('year_basis'),
+    certainty: text('certainty'),
+    routeId: integer('route_id'),
+    flags: text('flags').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('seerah_events_position_idx').on(table.resourceId, table.position),
+    index('seerah_events_age_idx').on(table.resourceId, table.ageFrom),
+  ],
+);
+
+export const seerahEventEvidence = sqliteTable(
+  'seerah_event_evidence',
+  {
+    resourceId: integer('resource_id').notNull(),
+    eventId: integer('event_id').notNull(),
+    kind: text('kind').notNull(),
+    position: integer('position').notNull(),
+    paragraphId: integer('paragraph_id').notNull(),
+    quoteAr: text('quote_ar').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.eventId, table.kind, table.position] })],
+);
+
+export const seerahMilestones = sqliteTable(
+  'seerah_milestones',
+  {
+    resourceId: integer('resource_id').notNull(),
+    milestoneKey: text('milestone_key').notNull(),
+    labelAr: text('label_ar').notNull(),
+    eventId: integer('event_id').notNull(),
+    position: integer('position').notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.resourceId, table.milestoneKey] })],
 );

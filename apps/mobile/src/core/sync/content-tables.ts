@@ -6,11 +6,13 @@ export type PackGroup =
   | 'duas'
   | 'names'
   | 'hadith_collections'
-  | 'hadith_explanations';
+  | 'hadith_explanations'
+  | 'seerah';
 
 export type ContentColumn = {
   name: string;
-  kind: 'integer' | 'text';
+  /** `real` is a REAL column (ADR 0091: coordinates and drawn positions). */
+  kind: 'integer' | 'real' | 'text';
   nullable: boolean;
 };
 
@@ -573,6 +575,152 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
       `DELETE FROM hadith_explanations WHERE ${RESOURCE}`,
     ],
   },
+  {
+    // ADR 0091: the Seerah book. A pack import replaces every row of the resource; the API writes no change-feed rows for it,
+    // so a new pack sets changes_floor_version and sync re-imports the pack.
+    group: 'seerah',
+    tables: [
+      table('seerah_books', [
+        integer('resource_id'),
+        integer('id'),
+        text('slug'),
+        text('title_ar'),
+        text('author_ar'),
+        text('edition_ar'),
+        text('attribution_ar'),
+        text('attribution_en'),
+        integer('sections_count'),
+        integer('paragraphs_count'),
+        integer('places_count'),
+        integer('events_count'),
+        integer('routes_count'),
+      ]),
+      table('seerah_sections', [
+        integer('resource_id'),
+        integer('id'),
+        text('code'),
+        text('level'),
+        text('title_ar'),
+        integer('page'),
+        integer('position'),
+        integer('paragraph_from', true),
+        integer('paragraph_to', true),
+      ]),
+      table('seerah_paragraphs', [
+        integer('resource_id'),
+        integer('id'),
+        integer('section_id'),
+        integer('position'),
+        integer('page'),
+        text('text_ar'),
+      ]),
+      table('seerah_places', [
+        integer('resource_id'),
+        integer('id'),
+        text('slug'),
+        integer('parent_id', true),
+        text('kind'),
+        text('name_ar'),
+        real('lat', true),
+        real('lng', true),
+        text('geo_precision', true),
+        text('flags'),
+      ]),
+      table('seerah_map_levels', [
+        integer('resource_id'),
+        text('level'),
+        integer('parent_place_id'),
+        text('viewbox'),
+        text('art'),
+      ]),
+      table('seerah_map_positions', [
+        integer('resource_id'),
+        text('level'),
+        integer('place_id'),
+        real('x'),
+        real('y'),
+        integer('label_priority'),
+        text('label_side'),
+        // Added after the first Seerah packs: an older pack has no such column and reads NULL (not a landmark).
+        integer('art_landmark', true),
+      ]),
+      table('seerah_routes', [
+        integer('resource_id'),
+        integer('id'),
+        text('slug'),
+        text('kind'),
+        text('name_ar'),
+      ]),
+      table('seerah_route_stops', [
+        integer('resource_id'),
+        integer('route_id'),
+        integer('position'),
+        integer('place_id'),
+      ]),
+      table('seerah_map_route_paths', [
+        integer('resource_id'),
+        text('level'),
+        integer('route_id'),
+        integer('from_place_id'),
+        integer('to_place_id'),
+        text('path_d'),
+      ]),
+      table('seerah_events', [
+        integer('resource_id'),
+        integer('id'),
+        text('slug'),
+        integer('position'),
+        integer('section_id'),
+        integer('paragraph_from', true),
+        integer('paragraph_to', true),
+        text('title_ar'),
+        text('kind'),
+        integer('place_id', true),
+        text('place_basis', true),
+        text('also'),
+        integer('age_from', true),
+        integer('age_to', true),
+        text('era', true),
+        integer('hijri_from', true),
+        integer('hijri_to', true),
+        text('year_basis', true),
+        text('certainty', true),
+        integer('route_id', true),
+        text('flags'),
+      ]),
+      table('seerah_event_evidence', [
+        integer('resource_id'),
+        integer('event_id'),
+        text('kind'),
+        integer('position'),
+        integer('paragraph_id'),
+        text('quote_ar'),
+      ]),
+      table('seerah_milestones', [
+        integer('resource_id'),
+        text('milestone_key'),
+        text('label_ar'),
+        integer('event_id'),
+        integer('position'),
+      ]),
+    ],
+    // No entity change feed for the book: a pack import replaces every row (see the comment on the group).
+    entities: [],
+    deleteResourceSql: [
+      `DELETE FROM seerah_milestones WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_event_evidence WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_events WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_map_route_paths WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_route_stops WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_routes WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_map_positions WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_map_levels WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_places WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_paragraphs WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_sections WHERE ${RESOURCE}`,
+      `DELETE FROM seerah_books WHERE ${RESOURCE}`,
+    ],
+  },
 ];
 
 export function contentGroup(group: string): ContentGroupSchema | undefined {
@@ -622,4 +770,8 @@ function integer(name: string, nullable = false): ContentColumn {
 
 function text(name: string, nullable = false): ContentColumn {
   return { name, kind: 'text', nullable };
+}
+
+function real(name: string, nullable = false): ContentColumn {
+  return { name, kind: 'real', nullable };
 }

@@ -33,6 +33,24 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
+    # Scramble reads Eloquent column types from the schema (the manifest route reads `resources`), so the export needs a
+    # migrated database.
+    services:
+      mysql:
+        image: mysql:9.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: quran
+          MYSQL_USER: quran
+          MYSQL_PASSWORD: quran
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -63,12 +81,12 @@ jobs:
           composer install --working-dir=apps/api --no-interaction --no-progress --prefer-dist
           npm ci
 
-      # The export boots Laravel but never touches MySQL or Redis, so no services are needed.
       - name: Environment
         working-directory: apps/api
         run: |
           cp .env.example .env
           php artisan key:generate --no-interaction
+          php artisan migrate --no-interaction --force
 
       - name: Regenerate openapi.json and schema.d.ts
         run: npm run generate -w @quran/api-contract

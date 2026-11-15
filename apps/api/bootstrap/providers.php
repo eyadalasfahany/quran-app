@@ -11,6 +11,7 @@ use App\Domains\Hadith\HadithImportServiceProvider;
 use App\Domains\Hadith\HadithServiceProvider;
 use App\Domains\Hadith\HadithSourceServiceProvider;
 use App\Domains\Names\NamesServiceProvider;
+use App\Domains\Seerah\SeerahServiceProvider;
 use App\Domains\Sync\SyncServiceProvider;
 use App\Integrations\Dorar\DorarServiceProvider;
 use App\Integrations\HadithApiCom\HadithApiComServiceProvider;
@@ -36,4 +37,5 @@ return [
     HadithApiComServiceProvider::class,
     HadithImportServiceProvider::class,
     HadithServiceProvider::class,
+    SeerahServiceProvider::class,
 ];

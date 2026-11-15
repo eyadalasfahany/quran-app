@@ -26,6 +26,7 @@ final class PackBuilder
         private readonly DuasPackReadiness $duas,
         private readonly NamesSourceGate $namesGate,
         private readonly HadithPackReadiness $hadith,
+        private readonly SeerahPackReadiness $seerah,
     ) {}
 
     public function build(Resource $resource): ContentPackData
@@ -62,6 +63,11 @@ final class PackBuilder
         if ($resource->group === ResourceGroup::HadithCollections) {
             // ADR 0076 «Rule, 7 Nov 2026»: an incomplete hadith collection is not packed.
             $this->hadith->assertReady($resource->id);
+        }
+
+        if ($resource->group === ResourceGroup::Seerah) {
+            // ADR 0091: no Seerah pack unless the importer has written the book.
+            $this->seerah->assertReady($resource->id);
         }
 
         $temp = storage_path('app/tmp/pack-'.$resource->id.'-'.$resource->version.'-'.bin2hex(random_bytes(8)).'.sqlite');

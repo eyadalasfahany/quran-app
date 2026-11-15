@@ -1902,5 +1902,215 @@
       "run": "أحاديث {{first}}–{{last}}",
       "runSingle": "حديث {{n}}"
     }
+  },
+  "seerah": {
+    "title": "السيرة النبوية",
+    "regionSubtitle": "الجزيرة العربية",
+    "bookSubtitle": "نور اليقين · الخضري",
+    "back": "رجوع",
+    "close": "إغلاق",
+    "stages": {
+      "childhood": "الطفولة",
+      "adolescence": "الصبا",
+      "youth": "الشباب",
+      "maturity": "الكهولة"
+    },
+    "stageRange": "من {{from}} إلى {{to}} سنة",
+    "stageRangeShort": "{{from}}–{{to}}",
+    "age": {
+      "label": "عمره {{age}} سنة",
+      "short": "عمره {{age}}",
+      "range": "عمره {{from}}–{{to}} سنة",
+      "unspecified": "العمر غير محدد",
+      "unspecifiedTitle": "عمر غير محدد",
+      "all": "كل الأعمار",
+      "bucket": "غير محدد"
+    },
+    "era": {
+      "bh": "{{year}} ق.هـ",
+      "ah": "{{year}} هـ"
+    },
+    "eventCount_zero": "لا أحداث",
+    "eventCount_one": "حدث واحد",
+    "eventCount_two": "حدثان",
+    "eventCount_few": "{{formatted}} أحداث",
+    "eventCount_many": "{{formatted}} حدثًا",
+    "eventCount_other": "{{formatted}} حدث",
+    "map": {
+      "label": "خريطة السيرة النبوية",
+      "key": "مفتاح الخريطة",
+      "toList": "عرض كقائمة",
+      "toMap": "عرض كخريطة",
+      "levelRegion": "المنطقة",
+      "levelRegionLabel": "العودة إلى خريطة المنطقة",
+      "pin": {
+        "single": "{{title}}، {{age}}",
+        "place": "{{name}}، {{events}}",
+        "placeAge": "{{name}}، {{events}}، {{age}}",
+        "city": "{{label}}، تفتح خريطة {{name}}",
+        "approximate": "{{label}}، موضع أو وقت تقريبي",
+        "empty": "{{name}}، معلم بلا أحداث",
+        "cluster": "{{places}} مواضع متقاربة، {{events}}. يكبّر الخريطة",
+        "hint": "اضغط مرتين للفتح"
+      },
+      "edge": {
+        "north": "{{name}}، {{events}}، خارج الشاشة شمالًا",
+        "south": "{{name}}، {{events}}، خارج الشاشة جنوبًا",
+        "west": "{{name}}، {{events}}، خارج الشاشة غربًا",
+        "east": "{{name}}، {{events}}، خارج الشاشة شرقًا",
+        "hint": "اضغط للانتقال"
+      },
+      "other": {
+        "name": "أخرى",
+        "label": "أخرى: أحداث لم يذكر الكتاب مكانها، {{events}}"
+      }
+    },
+    "timeline": {
+      "group": "الخط الزمني: عمر النبي ﷺ من {{from}} إلى {{to}} سنة",
+      "hint": "{{events}} · اسحب لاختيار عمر",
+      "previous": "العمر السابق",
+      "next": "العمر التالي",
+      "handle": "العمر",
+      "value": "{{age}}، {{events}}",
+      "valueAll": "{{age}}، {{events}}",
+      "subtitle": "{{stage}} · {{events}}",
+      "subtitleMilestone": "{{stage}} · {{milestone}} · {{events}}",
+      "all": "الكل",
+      "allHint": "يعرض كل الأعمار",
+      "unspecified": "غير محدد",
+      "unspecifiedLabel": "غير محدد، {{events}}",
+      "unspecifiedSubtitle": "{{events}} لم يذكر الكتاب وقتها",
+      "chip": "{{age}}، {{stage}}",
+      "milestones": {
+        "birth": "المولد",
+        "marriage": "الزواج",
+        "bitha": "الوحي",
+        "hijra": "الهجرة",
+        "badr": "بدر",
+        "fath": "الفتح",
+        "death": "الوفاة"
+      }
+    },
+    "event": {
+      "back": "رجوع إلى الخريطة",
+      "onMap": "على الخريطة",
+      "showOnMap": "عرض على الخريطة: {{place}}",
+      "ageChipLabel": "{{age}}، {{era}}. يعرض هذا العمر على الخريطة",
+      "ageChipLabelPlain": "{{age}}. يعرض هذا العمر على الخريطة",
+      "placeChipLabel": "المكان: {{name}}. يعرضه على الخريطة",
+      "alsoPlaces": "أماكن مذكورة أيضًا:",
+      "alsoPlacesLabel": "أماكن مذكورة أيضًا: {{names}}",
+      "source": "المصدر: «نور اليقين في سيرة سيد المرسلين»، محمد الخضري بك · ص {{page}} · نسخة OpenITI",
+      "sourceNoPage": "المصدر: «نور اليقين في سيرة سيد المرسلين»، محمد الخضري بك · نسخة OpenITI",
+      "pager": {
+        "label": "التنقل بين الأحداث",
+        "previous": "السابق",
+        "next": "التالي",
+        "previousLabel": "السابق: {{title}}",
+        "nextLabel": "التالي: {{title}}",
+        "position": "{{index}} من {{total}}"
+      },
+      "notes": {
+        "placeNotStatedTitle": "لم يذكر الكتاب مكان هذا الحدث",
+        "placeNotStatedBody": "لذلك لا يظهر على الخريطة، ويُعرض مع «أخرى».",
+        "yearNotStatedTitle": "لم يذكر الكتاب وقت هذا الحدث",
+        "yearNotStatedBody": "فلا يُنسب إلى عمر، ويظهر في آخر الخط الزمني تحت «غير محدد»، بين الحدثين اللذين يجاورانه في الكتاب.",
+        "uncertainTitle": "موضع أو وقت تقريبي",
+        "uncertainBody": "لم يحدد الكتاب هذا بدقة."
+      },
+      "notFoundTitle": "لا يوجد هذا الحدث",
+      "notFoundBody": "قد لا تكون السيرة محمَّلة على هذا الجهاز."
+    },
+    "list": {
+      "periods": "الفترات",
+      "unspecifiedNote": "أحداث لم يذكر الكتاب وقتها، بترتيب الكتاب.",
+      "rowUnspecified": "{{place}} · العمر غير محدد"
+    },
+    "spot": {
+      "subtitle": "{{events}} في هذا الموضع · بترتيب العمر",
+      "subtitleNearby": "{{events}} · بترتيب العمر",
+      "nearbyTitle": "{{places}} مواضع متقاربة",
+      "grabber": "مقبض اللوحة"
+    },
+    "states": {
+      "downloadTitle": "السيرة على الخريطة",
+      "downloadBody": "أحداث كتاب «نور اليقين في سيرة سيد المرسلين» للخضري في أماكنها وسنواتها، من المولد إلى الوفاة، مع نص الكتاب.",
+      "downloadMeta": "{{size}} · يعمل دون إنترنت بعد التنزيل",
+      "downloadAction": "تنزيل السيرة",
+      "downloadingTitle": "جارٍ التنزيل…",
+      "downloadingMeta": "{{done}} من {{total}} · يمكنك مغادرة الشاشة، ويكتمل التنزيل.",
+      "downloadingAction": "إلغاء التنزيل",
+      "offlineTitle": "لا يوجد اتصال بالإنترنت",
+      "offlineBody": "تنزيل السيرة يحتاج إلى اتصال مرة واحدة. بعدها تعمل الخريطة والنص دون إنترنت.",
+      "offlineAction": "إعادة المحاولة",
+      "errorTitle": "تعذّر فتح السيرة",
+      "errorBody": "ملف السيرة على جهازك ناقص. أعد تنزيله ({{size}}).",
+      "errorAction": "إعادة التنزيل",
+      "emptyYearTitle": "لا أحداث في هذا العمر",
+      "emptyYearBody": "لا يذكر الكتاب حدثًا وعمره {{age}} سنة.",
+      "emptyYearAction": "أقرب عمر: {{age}}",
+      "progress": "نسبة التنزيل"
+    },
+    "key": {
+      "places": "المواضع",
+      "routes": "الطرق",
+      "timeline": "الخط الزمني: عمره ﷺ",
+      "city": "مدينة لها خريطة",
+      "cityHint": "الحلقة الذهبية: اضغط للدخول إلى خريطتها",
+      "cluster": "عدة أحداث في موضع",
+      "clusterHint": "الرقم عددها؛ اضغط للتكبير أو لعرضها",
+      "single": "حدث واحد",
+      "singleHint": "عنوانه والعمر بجانبه",
+      "approximate": "موضع أو وقت تقريبي",
+      "approximateHint": "الحافة المتقطعة؛ يوضّحها صفحة الحدث",
+      "empty": "معلم بلا أحداث",
+      "emptyHint": "للتوجيه فقط",
+      "other": "أخرى",
+      "otherHint": "أحداث لم يذكر الكتاب مكانها",
+      "edge": "خارج الشاشة",
+      "edgeHint": "أحداث في هذا الاتجاه؛ اضغط للانتقال",
+      "milestonesNote": "محطة: المولد، الزواج من خديجة، نزول الوحي، الهجرة، الوفاة",
+      "route": {
+        "hijra": {
+          "title": "الهجرة",
+          "hint": "من مكة إلى المدينة"
+        },
+        "taif": {
+          "title": "رحلة الطائف",
+          "hint": "ذهابًا وعودة"
+        },
+        "trip": {
+          "title": "رحلة الشام",
+          "hint": "رحلات التجارة"
+        },
+        "habasha": {
+          "title": "الهجرة إلى الحبشة",
+          "hint": "هجرة الصحابة عبر البحر"
+        },
+        "ghazwa": {
+          "title": "الغزوات",
+          "hint": "من المدينة إلى موضع الغزوة"
+        }
+      }
+    },
+    "callout": {
+      "open": "فتح",
+      "openLabel": "فتح: {{title}}"
+    },
+    "menu": {
+      "caption": "السيرة",
+      "title": "السيرة النبوية",
+      "subtitle": "على الخريطة والخط الزمني"
+    },
+    "sources": {
+      "openiti": {
+        "title": "OpenITI · «نور اليقين» للخضري",
+        "subtitle": "نص كتاب السيرة · CC BY-NC-SA 4.0 · أزيلت علامات الترقيم الآلي فقط"
+      },
+      "naturalEarth": {
+        "title": "Natural Earth",
+        "subtitle": "سواحل خريطة السيرة · ملكية عامة"
+      }
+    }
   }
 }

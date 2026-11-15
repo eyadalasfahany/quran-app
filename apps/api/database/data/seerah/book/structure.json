@@ -1,0 +1,2098 @@
+{
+  "format": 1,
+  "source_sha256": "5d9bbdbd7b3c17f361383a79825fa08bfbdad5848a48436d3173af383cb1895c",
+  "canonical_sha256": "67a42abe6490692d6f77f6749ea2ae9a3def5fddff4bd53872e820a285f7481a",
+  "counts": {
+    "sections_by_level": {
+      "front": 2,
+      "heading": 256
+    },
+    "paragraphs": 1087,
+    "canonical": {
+      "header_lines": 37,
+      "blank_lines": 1,
+      "page_markers": 279,
+      "first_page": 0,
+      "last_page": 280,
+      "milestone_tokens": 220,
+      "footnote_references": 1238,
+      "html_tags": 22,
+      "continuation_lines": 4632,
+      "paragraph_markers": 1109,
+      "bare_markers": 0,
+      "footnote_blocks": 64,
+      "footnote_lines": 103,
+      "empty_headings": 21,
+      "empty_paragraphs": 22,
+      "pipes": 0,
+      "braced_runs": 0,
+      "braced_unbalanced": 0
+    }
+  },
+  "sections": [
+    {
+      "id": "s001",
+      "level": "front",
+      "title": "مقدمة الطبعة الثالثة",
+      "page": 0,
+      "paragraph_from": "p00001",
+      "paragraph_to": "p00012"
+    },
+    {
+      "id": "s002",
+      "level": "front",
+      "title": "بسم الله الرحمن الرحيم",
+      "page": 4,
+      "paragraph_from": "p00013",
+      "paragraph_to": "p00015"
+    },
+    {
+      "id": "s003",
+      "level": "heading",
+      "title": "النسب الشريف",
+      "page": 5,
+      "paragraph_from": "p00016",
+      "paragraph_to": "p00021"
+    },
+    {
+      "id": "s004",
+      "level": "heading",
+      "title": "زواج عبد الله بامنة وحملها",
+      "page": 8,
+      "paragraph_from": "p00022",
+      "paragraph_to": "p00024"
+    },
+    {
+      "id": "s005",
+      "level": "heading",
+      "title": "الرضاع",
+      "page": 9,
+      "paragraph_from": "p00025",
+      "paragraph_to": "p00026"
+    },
+    {
+      "id": "s006",
+      "level": "heading",
+      "title": "حادثة شق الصدر",
+      "page": 10,
+      "paragraph_from": "p00027",
+      "paragraph_to": "p00027"
+    },
+    {
+      "id": "s007",
+      "level": "heading",
+      "title": "وفاة امنة وكفالة عبد المطلب ووفاته وكفالة أبي طالب",
+      "page": 10,
+      "paragraph_from": "p00028",
+      "paragraph_to": "p00029"
+    },
+    {
+      "id": "s008",
+      "level": "heading",
+      "title": "السفر إلى الشام",
+      "page": 11,
+      "paragraph_from": "p00030",
+      "paragraph_to": "p00030"
+    },
+    {
+      "id": "s009",
+      "level": "heading",
+      "title": "حرب الفجار",
+      "page": 11,
+      "paragraph_from": "p00031",
+      "paragraph_to": "p00035"
+    },
+    {
+      "id": "s010",
+      "level": "heading",
+      "title": "حلف الفضول",
+      "page": 13,
+      "paragraph_from": "p00036",
+      "paragraph_to": "p00036"
+    },
+    {
+      "id": "s011",
+      "level": "heading",
+      "title": "رحلته إلى الشام المرة الثانية",
+      "page": 14,
+      "paragraph_from": "p00037",
+      "paragraph_to": "p00037"
+    },
+    {
+      "id": "s012",
+      "level": "heading",
+      "title": "زواجه خديجة",
+      "page": 14,
+      "paragraph_from": "p00038",
+      "paragraph_to": "p00039"
+    },
+    {
+      "id": "s013",
+      "level": "heading",
+      "title": "بناء البيت",
+      "page": 15,
+      "paragraph_from": "p00040",
+      "paragraph_to": "p00044"
+    },
+    {
+      "id": "s014",
+      "level": "heading",
+      "title": "معيشته عليه الصلاة والسلام قبل البعثة",
+      "page": 17,
+      "paragraph_from": "p00045",
+      "paragraph_to": "p00046"
+    },
+    {
+      "id": "s015",
+      "level": "heading",
+      "title": "سيرته في قومه قبل البعثة",
+      "page": 18,
+      "paragraph_from": "p00047",
+      "paragraph_to": "p00053"
+    },
+    {
+      "id": "s016",
+      "level": "heading",
+      "title": "ما أكرمه الله به قبل النبوة",
+      "page": 19,
+      "paragraph_from": "p00054",
+      "paragraph_to": "p00059"
+    },
+    {
+      "id": "s017",
+      "level": "heading",
+      "title": "تبشير التوراة به",
+      "page": 20,
+      "paragraph_from": "p00060",
+      "paragraph_to": "p00065"
+    },
+    {
+      "id": "s018",
+      "level": "heading",
+      "title": "تبشير الإنجيل",
+      "page": 22,
+      "paragraph_from": "p00066",
+      "paragraph_to": "p00067"
+    },
+    {
+      "id": "s019",
+      "level": "heading",
+      "title": "حركة الأفكار قبل البعثة",
+      "page": 23,
+      "paragraph_from": "p00068",
+      "paragraph_to": "p00069"
+    },
+    {
+      "id": "s020",
+      "level": "heading",
+      "title": "بدء الوحي",
+      "page": 24,
+      "paragraph_from": "p00070",
+      "paragraph_to": "p00074"
+    },
+    {
+      "id": "s021",
+      "level": "heading",
+      "title": "فترة الوحي",
+      "page": 27,
+      "paragraph_from": "p00075",
+      "paragraph_to": "p00075"
+    },
+    {
+      "id": "s022",
+      "level": "heading",
+      "title": "عود الوحي",
+      "page": 27,
+      "paragraph_from": "p00076",
+      "paragraph_to": "p00077"
+    },
+    {
+      "id": "s023",
+      "level": "heading",
+      "title": "الدعوة سرا",
+      "page": 28,
+      "paragraph_from": "p00078",
+      "paragraph_to": "p00097"
+    },
+    {
+      "id": "s024",
+      "level": "heading",
+      "title": "الجهر بالتبليغ",
+      "page": 34,
+      "paragraph_from": "p00098",
+      "paragraph_to": "p00102"
+    },
+    {
+      "id": "s025",
+      "level": "heading",
+      "title": "الإيذاء",
+      "page": 37,
+      "paragraph_from": "p00103",
+      "paragraph_to": "p00121"
+    },
+    {
+      "id": "s026",
+      "level": "heading",
+      "title": "إسلام حمزة",
+      "page": 42,
+      "paragraph_from": "p00122",
+      "paragraph_to": "p00146"
+    },
+    {
+      "id": "s027",
+      "level": "heading",
+      "title": "هجرة الحبشة الأولى",
+      "page": 50,
+      "paragraph_from": "p00147",
+      "paragraph_to": "p00148"
+    },
+    {
+      "id": "s028",
+      "level": "heading",
+      "title": "إسلام عمر",
+      "page": 50,
+      "paragraph_from": "p00149",
+      "paragraph_to": "p00150"
+    },
+    {
+      "id": "s029",
+      "level": "heading",
+      "title": "رجوع مهاجري الحبشة",
+      "page": 51,
+      "paragraph_from": "p00151",
+      "paragraph_to": "p00158"
+    },
+    {
+      "id": "s030",
+      "level": "heading",
+      "title": "كتابة الصحيفة",
+      "page": 54,
+      "paragraph_from": "p00159",
+      "paragraph_to": "p00159"
+    },
+    {
+      "id": "s031",
+      "level": "heading",
+      "title": "هجرة الحبشة الثانية",
+      "page": 54,
+      "paragraph_from": "p00160",
+      "paragraph_to": "p00161"
+    },
+    {
+      "id": "s032",
+      "level": "heading",
+      "title": "نقض الصحيفة",
+      "page": 55,
+      "paragraph_from": "p00162",
+      "paragraph_to": "p00163"
+    },
+    {
+      "id": "s033",
+      "level": "heading",
+      "title": "وفود نجران",
+      "page": 56,
+      "paragraph_from": "p00164",
+      "paragraph_to": "p00164"
+    },
+    {
+      "id": "s034",
+      "level": "heading",
+      "title": "وفاة خديجة رضي الله عنها",
+      "page": 57,
+      "paragraph_from": "p00165",
+      "paragraph_to": "p00165"
+    },
+    {
+      "id": "s035",
+      "level": "heading",
+      "title": "زواج سودة",
+      "page": 57,
+      "paragraph_from": "p00166",
+      "paragraph_to": "p00167"
+    },
+    {
+      "id": "s036",
+      "level": "heading",
+      "title": "زواج عائشة رضي الله عنها",
+      "page": 58,
+      "paragraph_from": "p00168",
+      "paragraph_to": "p00173"
+    },
+    {
+      "id": "s037",
+      "level": "heading",
+      "title": "هجرة الطائف",
+      "page": 59,
+      "paragraph_from": "p00174",
+      "paragraph_to": "p00176"
+    },
+    {
+      "id": "s038",
+      "level": "heading",
+      "title": "الاحتماء بالمطعم بن عدي",
+      "page": 61,
+      "paragraph_from": "p00177",
+      "paragraph_to": "p00177"
+    },
+    {
+      "id": "s039",
+      "level": "heading",
+      "title": "وفد دوس",
+      "page": 61,
+      "paragraph_from": "p00178",
+      "paragraph_to": "p00179"
+    },
+    {
+      "id": "s040",
+      "level": "heading",
+      "title": "الاسراء والمعراج",
+      "page": 62,
+      "paragraph_from": "p00180",
+      "paragraph_to": "p00193"
+    },
+    {
+      "id": "s041",
+      "level": "heading",
+      "title": "العرض على القبائل",
+      "page": 65,
+      "paragraph_from": "p00194",
+      "paragraph_to": "p00195"
+    },
+    {
+      "id": "s042",
+      "level": "heading",
+      "title": "بدء إسلام الأنصار",
+      "page": 66,
+      "paragraph_from": "p00196",
+      "paragraph_to": "p00196"
+    },
+    {
+      "id": "s043",
+      "level": "heading",
+      "title": "العقبة الأولى",
+      "page": 66,
+      "paragraph_from": "p00197",
+      "paragraph_to": "p00201"
+    },
+    {
+      "id": "s044",
+      "level": "heading",
+      "title": "العقبة الثانية",
+      "page": 68,
+      "paragraph_from": "p00202",
+      "paragraph_to": "p00205"
+    },
+    {
+      "id": "s045",
+      "level": "heading",
+      "title": "هجرة المسلمين إلى المدينة",
+      "page": 69,
+      "paragraph_from": "p00206",
+      "paragraph_to": "p00207"
+    },
+    {
+      "id": "s046",
+      "level": "heading",
+      "title": "دار الندوة",
+      "page": 70,
+      "paragraph_from": "p00208",
+      "paragraph_to": "p00209"
+    },
+    {
+      "id": "s047",
+      "level": "heading",
+      "title": "هجرة المصطفى صلى الله عليه وسلم ",
+      "page": 71,
+      "paragraph_from": "p00210",
+      "paragraph_to": "p00215"
+    },
+    {
+      "id": "s048",
+      "level": "heading",
+      "title": "النزول بقباء",
+      "page": 74,
+      "paragraph_from": "p00216",
+      "paragraph_to": "p00216"
+    },
+    {
+      "id": "s049",
+      "level": "heading",
+      "title": "هجرة الأنبياء",
+      "page": 75,
+      "paragraph_from": "p00217",
+      "paragraph_to": "p00217"
+    },
+    {
+      "id": "s050",
+      "level": "heading",
+      "title": "أعمال مكة",
+      "page": 75,
+      "paragraph_from": "p00218",
+      "paragraph_to": "p00221"
+    },
+    {
+      "id": "s051",
+      "level": "heading",
+      "title": "مسجد قباء",
+      "page": 76,
+      "paragraph_from": "p00222",
+      "paragraph_to": "p00223"
+    },
+    {
+      "id": "s052",
+      "level": "heading",
+      "title": "الوصول إلى المدينة",
+      "page": 77,
+      "paragraph_from": "p00224",
+      "paragraph_to": "p00228"
+    },
+    {
+      "id": "s053",
+      "level": "heading",
+      "title": "أول جمعة",
+      "page": 77,
+      "paragraph_from": "p00229",
+      "paragraph_to": "p00230"
+    },
+    {
+      "id": "s054",
+      "level": "heading",
+      "title": "النزول على أبي أيوب",
+      "page": 78,
+      "paragraph_from": "p00231",
+      "paragraph_to": "p00234"
+    },
+    {
+      "id": "s055",
+      "level": "heading",
+      "title": "نزول المهاجرين",
+      "page": 79,
+      "paragraph_from": "p00235",
+      "paragraph_to": "p00235"
+    },
+    {
+      "id": "s056",
+      "level": "heading",
+      "title": "إخوة الإسلام",
+      "page": 79,
+      "paragraph_from": "p00236",
+      "paragraph_to": "p00240"
+    },
+    {
+      "id": "s057",
+      "level": "heading",
+      "title": "هجرة أهل البيت",
+      "page": 80,
+      "paragraph_from": "p00241",
+      "paragraph_to": "p00241"
+    },
+    {
+      "id": "s058",
+      "level": "heading",
+      "title": "حمى المدينة",
+      "page": 80,
+      "paragraph_from": "p00242",
+      "paragraph_to": "p00242"
+    },
+    {
+      "id": "s059",
+      "level": "heading",
+      "title": "منع المستضعفين من الهجرة",
+      "page": 81,
+      "paragraph_from": "p00243",
+      "paragraph_to": "p00243"
+    },
+    {
+      "id": "s060",
+      "level": "heading",
+      "title": "السنة الأولى",
+      "page": 82,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s061",
+      "level": "heading",
+      "title": "بناء المسجد",
+      "page": 82,
+      "paragraph_from": "p00244",
+      "paragraph_to": "p00247"
+    },
+    {
+      "id": "s062",
+      "level": "heading",
+      "title": "بدء الأذان",
+      "page": 83,
+      "paragraph_from": "p00248",
+      "paragraph_to": "p00255"
+    },
+    {
+      "id": "s063",
+      "level": "heading",
+      "title": "يهود المدينة",
+      "page": 85,
+      "paragraph_from": "p00256",
+      "paragraph_to": "p00257"
+    },
+    {
+      "id": "s064",
+      "level": "heading",
+      "title": "المنافقون",
+      "page": 86,
+      "paragraph_from": "p00258",
+      "paragraph_to": "p00258"
+    },
+    {
+      "id": "s065",
+      "level": "heading",
+      "title": "معاهدة اليهود",
+      "page": 87,
+      "paragraph_from": "p00259",
+      "paragraph_to": "p00259"
+    },
+    {
+      "id": "s066",
+      "level": "heading",
+      "title": "مشروعية القتال",
+      "page": 87,
+      "paragraph_from": "p00260",
+      "paragraph_to": "p00268"
+    },
+    {
+      "id": "s067",
+      "level": "heading",
+      "title": "بدء القتال",
+      "page": 89,
+      "paragraph_from": "p00269",
+      "paragraph_to": "p00269"
+    },
+    {
+      "id": "s068",
+      "level": "heading",
+      "title": "سرية",
+      "page": 89,
+      "paragraph_from": "p00270",
+      "paragraph_to": "p00270"
+    },
+    {
+      "id": "s069",
+      "level": "heading",
+      "title": "سرية",
+      "page": 90,
+      "paragraph_from": "p00271",
+      "paragraph_to": "p00271"
+    },
+    {
+      "id": "s070",
+      "level": "heading",
+      "title": "وفيات",
+      "page": 90,
+      "paragraph_from": "p00272",
+      "paragraph_to": "p00274"
+    },
+    {
+      "id": "s071",
+      "level": "heading",
+      "title": "السنة الثانية",
+      "page": 92,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s072",
+      "level": "heading",
+      "title": "غزوة ودان",
+      "page": 92,
+      "paragraph_from": "p00275",
+      "paragraph_to": "p00275"
+    },
+    {
+      "id": "s073",
+      "level": "heading",
+      "title": "غزوة بواط",
+      "page": 92,
+      "paragraph_from": "p00276",
+      "paragraph_to": "p00276"
+    },
+    {
+      "id": "s074",
+      "level": "heading",
+      "title": "غزوة العشيرة",
+      "page": 93,
+      "paragraph_from": "p00277",
+      "paragraph_to": "p00277"
+    },
+    {
+      "id": "s075",
+      "level": "heading",
+      "title": "غزوة بدر الأولى",
+      "page": 93,
+      "paragraph_from": "p00278",
+      "paragraph_to": "p00278"
+    },
+    {
+      "id": "s076",
+      "level": "heading",
+      "title": "سرية",
+      "page": 94,
+      "paragraph_from": "p00279",
+      "paragraph_to": "p00279"
+    },
+    {
+      "id": "s077",
+      "level": "heading",
+      "title": "تحويل القبلة",
+      "page": 95,
+      "paragraph_from": "p00280",
+      "paragraph_to": "p00280"
+    },
+    {
+      "id": "s078",
+      "level": "heading",
+      "title": "صوم رمضان",
+      "page": 95,
+      "paragraph_from": "p00281",
+      "paragraph_to": "p00281"
+    },
+    {
+      "id": "s079",
+      "level": "heading",
+      "title": "صدقة الفطر",
+      "page": 96,
+      "paragraph_from": "p00282",
+      "paragraph_to": "p00282"
+    },
+    {
+      "id": "s080",
+      "level": "heading",
+      "title": "زكاة المال",
+      "page": 96,
+      "paragraph_from": "p00283",
+      "paragraph_to": "p00283"
+    },
+    {
+      "id": "s081",
+      "level": "heading",
+      "title": "غزوة بدر الكبرى",
+      "page": 96,
+      "paragraph_from": "p00284",
+      "paragraph_to": "p00312"
+    },
+    {
+      "id": "s082",
+      "level": "heading",
+      "title": "أسرى بدر",
+      "page": 106,
+      "paragraph_from": "p00313",
+      "paragraph_to": "p00314"
+    },
+    {
+      "id": "s083",
+      "level": "heading",
+      "title": "الفداء",
+      "page": 106,
+      "paragraph_from": "p00315",
+      "paragraph_to": "p00316"
+    },
+    {
+      "id": "s084",
+      "level": "heading",
+      "title": "الفداء",
+      "page": 107,
+      "paragraph_from": "p00317",
+      "paragraph_to": "p00332"
+    },
+    {
+      "id": "s085",
+      "level": "heading",
+      "title": "العتاب في الفداء",
+      "page": 111,
+      "paragraph_from": "p00333",
+      "paragraph_to": "p00334"
+    },
+    {
+      "id": "s086",
+      "level": "heading",
+      "title": "غزوة قينقاع",
+      "page": 112,
+      "paragraph_from": "p00335",
+      "paragraph_to": "p00336"
+    },
+    {
+      "id": "s087",
+      "level": "heading",
+      "title": "جلاء قينقاع",
+      "page": 113,
+      "paragraph_from": "p00337",
+      "paragraph_to": "p00340"
+    },
+    {
+      "id": "s088",
+      "level": "heading",
+      "title": "صلاة العيد",
+      "page": 114,
+      "paragraph_from": "p00341",
+      "paragraph_to": "p00342"
+    },
+    {
+      "id": "s089",
+      "level": "heading",
+      "title": "زواج علي بفاطمة عليهما السلام",
+      "page": 114,
+      "paragraph_from": "p00343",
+      "paragraph_to": "p00343"
+    },
+    {
+      "id": "s090",
+      "level": "heading",
+      "title": "السنة الثالثة",
+      "page": 115,
+      "paragraph_from": "p00344",
+      "paragraph_to": "p00344"
+    },
+    {
+      "id": "s091",
+      "level": "heading",
+      "title": "قتل كعب بن الأشرف",
+      "page": 115,
+      "paragraph_from": "p00345",
+      "paragraph_to": "p00348"
+    },
+    {
+      "id": "s092",
+      "level": "heading",
+      "title": "غزوة غطفان",
+      "page": 117,
+      "paragraph_from": "p00349",
+      "paragraph_to": "p00350"
+    },
+    {
+      "id": "s093",
+      "level": "heading",
+      "title": "غزوة بحران",
+      "page": 117,
+      "paragraph_from": "p00351",
+      "paragraph_to": "p00352"
+    },
+    {
+      "id": "s094",
+      "level": "heading",
+      "title": "سرية",
+      "page": 118,
+      "paragraph_from": "p00353",
+      "paragraph_to": "p00353"
+    },
+    {
+      "id": "s095",
+      "level": "heading",
+      "title": "غزوة أحد",
+      "page": 118,
+      "paragraph_from": "p00354",
+      "paragraph_to": "p00378"
+    },
+    {
+      "id": "s096",
+      "level": "heading",
+      "title": "غزوة حمراء الأسد",
+      "page": 126,
+      "paragraph_from": "p00379",
+      "paragraph_to": "p00380"
+    },
+    {
+      "id": "s097",
+      "level": "heading",
+      "title": "حوادث",
+      "page": 127,
+      "paragraph_from": "p00381",
+      "paragraph_to": "p00383"
+    },
+    {
+      "id": "s098",
+      "level": "heading",
+      "title": "السنة الرابعة",
+      "page": 129,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s099",
+      "level": "heading",
+      "title": "(",
+      "page": 129,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s100",
+      "level": "heading",
+      "title": "سرية",
+      "page": 129,
+      "paragraph_from": "p00384",
+      "paragraph_to": "p00391"
+    },
+    {
+      "id": "s101",
+      "level": "heading",
+      "title": "سرية",
+      "page": 131,
+      "paragraph_from": "p00392",
+      "paragraph_to": "p00393"
+    },
+    {
+      "id": "s102",
+      "level": "heading",
+      "title": "غزوة بني النضير",
+      "page": 132,
+      "paragraph_from": "p00394",
+      "paragraph_to": "p00397"
+    },
+    {
+      "id": "s103",
+      "level": "heading",
+      "title": "غزوة ذات الرقاع",
+      "page": 133,
+      "paragraph_from": "p00398",
+      "paragraph_to": "p00399"
+    },
+    {
+      "id": "s104",
+      "level": "heading",
+      "title": "غزوة بدر الاخرة",
+      "page": 134,
+      "paragraph_from": "p00400",
+      "paragraph_to": "p00401"
+    },
+    {
+      "id": "s105",
+      "level": "heading",
+      "title": "حوادث",
+      "page": 135,
+      "paragraph_from": "p00402",
+      "paragraph_to": "p00402"
+    },
+    {
+      "id": "s106",
+      "level": "heading",
+      "title": "السنة الخامسة",
+      "page": 136,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s107",
+      "level": "heading",
+      "title": "غزوة دومة الجندل",
+      "page": 136,
+      "paragraph_from": "p00403",
+      "paragraph_to": "p00403"
+    },
+    {
+      "id": "s108",
+      "level": "heading",
+      "title": "غزوة بني المصطلق",
+      "page": 136,
+      "paragraph_from": "p00404",
+      "paragraph_to": "p00410"
+    },
+    {
+      "id": "s109",
+      "level": "heading",
+      "title": "حديث الإفك",
+      "page": 139,
+      "paragraph_from": "p00411",
+      "paragraph_to": "p00422"
+    },
+    {
+      "id": "s110",
+      "level": "heading",
+      "title": "غزوة الخندق",
+      "page": 143,
+      "paragraph_from": "p00423",
+      "paragraph_to": "p00433"
+    },
+    {
+      "id": "s111",
+      "level": "heading",
+      "title": "الخدعة في الحرب",
+      "page": 146,
+      "paragraph_from": "p00434",
+      "paragraph_to": "p00437"
+    },
+    {
+      "id": "s112",
+      "level": "heading",
+      "title": "هزيمة الأحزاب",
+      "page": 147,
+      "paragraph_from": "p00438",
+      "paragraph_to": "p00439"
+    },
+    {
+      "id": "s113",
+      "level": "heading",
+      "title": "غزوة بني قريظة",
+      "page": 148,
+      "paragraph_from": "p00440",
+      "paragraph_to": "p00444"
+    },
+    {
+      "id": "s114",
+      "level": "heading",
+      "title": "زواج زينب بنت جحش",
+      "page": 150,
+      "paragraph_from": "p00445",
+      "paragraph_to": "p00449"
+    },
+    {
+      "id": "s115",
+      "level": "heading",
+      "title": "الحجاب",
+      "page": 152,
+      "paragraph_from": "p00450",
+      "paragraph_to": "p00455"
+    },
+    {
+      "id": "s116",
+      "level": "heading",
+      "title": "فرض الحج",
+      "page": 155,
+      "paragraph_from": "p00456",
+      "paragraph_to": "p00456"
+    },
+    {
+      "id": "s117",
+      "level": "heading",
+      "title": "السنة السادسة",
+      "page": 156,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s118",
+      "level": "heading",
+      "title": "(سرية)",
+      "page": 156,
+      "paragraph_from": "p00457",
+      "paragraph_to": "p00458"
+    },
+    {
+      "id": "s119",
+      "level": "heading",
+      "title": "غزوة بني لحيان",
+      "page": 157,
+      "paragraph_from": "p00459",
+      "paragraph_to": "p00459"
+    },
+    {
+      "id": "s120",
+      "level": "heading",
+      "title": "غزوة الغابة",
+      "page": 157,
+      "paragraph_from": "p00460",
+      "paragraph_to": "p00462"
+    },
+    {
+      "id": "s121",
+      "level": "heading",
+      "title": "سرية",
+      "page": 158,
+      "paragraph_from": "p00463",
+      "paragraph_to": "p00464"
+    },
+    {
+      "id": "s122",
+      "level": "heading",
+      "title": "سرية",
+      "page": 159,
+      "paragraph_from": "p00465",
+      "paragraph_to": "p00467"
+    },
+    {
+      "id": "s123",
+      "level": "heading",
+      "title": "سرية",
+      "page": 160,
+      "paragraph_from": "p00468",
+      "paragraph_to": "p00473"
+    },
+    {
+      "id": "s124",
+      "level": "heading",
+      "title": "سرية",
+      "page": 161,
+      "paragraph_from": "p00474",
+      "paragraph_to": "p00477"
+    },
+    {
+      "id": "s125",
+      "level": "heading",
+      "title": "قتل أبي رافع",
+      "page": 162,
+      "paragraph_from": "p00478",
+      "paragraph_to": "p00479"
+    },
+    {
+      "id": "s126",
+      "level": "heading",
+      "title": "سرية",
+      "page": 163,
+      "paragraph_from": "p00480",
+      "paragraph_to": "p00481"
+    },
+    {
+      "id": "s127",
+      "level": "heading",
+      "title": "قصة عكل وعرينة",
+      "page": 163,
+      "paragraph_from": "p00482",
+      "paragraph_to": "p00483"
+    },
+    {
+      "id": "s128",
+      "level": "heading",
+      "title": "سرية",
+      "page": 164,
+      "paragraph_from": "p00484",
+      "paragraph_to": "p00486"
+    },
+    {
+      "id": "s129",
+      "level": "heading",
+      "title": "غزوة الحديبية",
+      "page": 165,
+      "paragraph_from": "p00487",
+      "paragraph_to": "p00491"
+    },
+    {
+      "id": "s130",
+      "level": "heading",
+      "title": "بيعة الرضوان",
+      "page": 168,
+      "paragraph_from": "p00492",
+      "paragraph_to": "p00492"
+    },
+    {
+      "id": "s131",
+      "level": "heading",
+      "title": "صلح الحديبية",
+      "page": 168,
+      "paragraph_from": "p00493",
+      "paragraph_to": "p00493"
+    },
+    {
+      "id": "s132",
+      "level": "heading",
+      "title": "1- ",
+      "page": 168,
+      "paragraph_from": "p00494",
+      "paragraph_to": "p00494"
+    },
+    {
+      "id": "s133",
+      "level": "heading",
+      "title": "2- ",
+      "page": 168,
+      "paragraph_from": "p00495",
+      "paragraph_to": "p00495"
+    },
+    {
+      "id": "s134",
+      "level": "heading",
+      "title": "3- ",
+      "page": 169,
+      "paragraph_from": "p00496",
+      "paragraph_to": "p00496"
+    },
+    {
+      "id": "s135",
+      "level": "heading",
+      "title": "4- ",
+      "page": 169,
+      "paragraph_from": "p00497",
+      "paragraph_to": "p00504"
+    },
+    {
+      "id": "s136",
+      "level": "heading",
+      "title": "مكاتبة الملوك",
+      "page": 171,
+      "paragraph_from": "p00505",
+      "paragraph_to": "p00506"
+    },
+    {
+      "id": "s137",
+      "level": "heading",
+      "title": "كتاب قيصر",
+      "page": 172,
+      "paragraph_from": "p00507",
+      "paragraph_to": "p00507"
+    },
+    {
+      "id": "s138",
+      "level": "heading",
+      "title": "حديث أبي سفيان",
+      "page": 172,
+      "paragraph_from": "p00508",
+      "paragraph_to": "p00515"
+    },
+    {
+      "id": "s139",
+      "level": "heading",
+      "title": "كتاب أمير بصرى",
+      "page": 174,
+      "paragraph_from": "p00516",
+      "paragraph_to": "p00516"
+    },
+    {
+      "id": "s140",
+      "level": "heading",
+      "title": "كتاب الحارث بن أبي شمر",
+      "page": 174,
+      "paragraph_from": "p00517",
+      "paragraph_to": "p00517"
+    },
+    {
+      "id": "s141",
+      "level": "heading",
+      "title": "كتاب المقوقس",
+      "page": 174,
+      "paragraph_from": "p00518",
+      "paragraph_to": "p00520"
+    },
+    {
+      "id": "s142",
+      "level": "heading",
+      "title": "كتاب النجاشي",
+      "page": 175,
+      "paragraph_from": "p00521",
+      "paragraph_to": "p00522"
+    },
+    {
+      "id": "s143",
+      "level": "heading",
+      "title": "كتاب كسرى",
+      "page": 176,
+      "paragraph_from": "p00523",
+      "paragraph_to": "p00524"
+    },
+    {
+      "id": "s144",
+      "level": "heading",
+      "title": "كتاب المنذر بن ساوى",
+      "page": 177,
+      "paragraph_from": "p00525",
+      "paragraph_to": "p00525"
+    },
+    {
+      "id": "s145",
+      "level": "heading",
+      "title": "كتاب ملكي عمان",
+      "page": 177,
+      "paragraph_from": "p00526",
+      "paragraph_to": "p00529"
+    },
+    {
+      "id": "s146",
+      "level": "heading",
+      "title": "كتاب هوذة بن علي",
+      "page": 178,
+      "paragraph_from": "p00530",
+      "paragraph_to": "p00530"
+    },
+    {
+      "id": "s147",
+      "level": "heading",
+      "title": "السنة السابعة",
+      "page": 179,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s148",
+      "level": "heading",
+      "title": "غزوة خيبر",
+      "page": 179,
+      "paragraph_from": "p00531",
+      "paragraph_to": "p00538"
+    },
+    {
+      "id": "s149",
+      "level": "heading",
+      "title": "زواج صفية",
+      "page": 182,
+      "paragraph_from": "p00539",
+      "paragraph_to": "p00539"
+    },
+    {
+      "id": "s150",
+      "level": "heading",
+      "title": "النهي عن نكاح المتعة",
+      "page": 182,
+      "paragraph_from": "p00540",
+      "paragraph_to": "p00540"
+    },
+    {
+      "id": "s151",
+      "level": "heading",
+      "title": "رجوع مهاجري الحبشة",
+      "page": 183,
+      "paragraph_from": "p00541",
+      "paragraph_to": "p00541"
+    },
+    {
+      "id": "s152",
+      "level": "heading",
+      "title": "فتح فدك",
+      "page": 183,
+      "paragraph_from": "p00542",
+      "paragraph_to": "p00542"
+    },
+    {
+      "id": "s153",
+      "level": "heading",
+      "title": "صلح تيماء",
+      "page": 183,
+      "paragraph_from": "p00543",
+      "paragraph_to": "p00543"
+    },
+    {
+      "id": "s154",
+      "level": "heading",
+      "title": "فتح وادي القرى",
+      "page": 183,
+      "paragraph_from": "p00544",
+      "paragraph_to": "p00546"
+    },
+    {
+      "id": "s155",
+      "level": "heading",
+      "title": "إسلام خالد ورفيقيه",
+      "page": 184,
+      "paragraph_from": "p00547",
+      "paragraph_to": "p00547"
+    },
+    {
+      "id": "s156",
+      "level": "heading",
+      "title": "سرية",
+      "page": 184,
+      "paragraph_from": "p00548",
+      "paragraph_to": "p00549"
+    },
+    {
+      "id": "s157",
+      "level": "heading",
+      "title": "سرية",
+      "page": 185,
+      "paragraph_from": "p00550",
+      "paragraph_to": "p00554"
+    },
+    {
+      "id": "s158",
+      "level": "heading",
+      "title": "سرية",
+      "page": 186,
+      "paragraph_from": "p00555",
+      "paragraph_to": "p00555"
+    },
+    {
+      "id": "s159",
+      "level": "heading",
+      "title": "(عمرة القضاء)",
+      "page": 186,
+      "paragraph_from": "p00556",
+      "paragraph_to": "p00557"
+    },
+    {
+      "id": "s160",
+      "level": "heading",
+      "title": "زواج ميمونة",
+      "page": 187,
+      "paragraph_from": "p00558",
+      "paragraph_to": "p00558"
+    },
+    {
+      "id": "s161",
+      "level": "heading",
+      "title": "السنة الثامنة",
+      "page": 188,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s162",
+      "level": "heading",
+      "title": "سرية",
+      "page": 188,
+      "paragraph_from": "p00559",
+      "paragraph_to": "p00562"
+    },
+    {
+      "id": "s163",
+      "level": "heading",
+      "title": "سرية",
+      "page": 189,
+      "paragraph_from": "p00563",
+      "paragraph_to": "p00563"
+    },
+    {
+      "id": "s164",
+      "level": "heading",
+      "title": "غزوة مؤتة",
+      "page": 189,
+      "paragraph_from": "p00564",
+      "paragraph_to": "p00576"
+    },
+    {
+      "id": "s165",
+      "level": "heading",
+      "title": "سرية",
+      "page": 191,
+      "paragraph_from": "p00577",
+      "paragraph_to": "p00578"
+    },
+    {
+      "id": "s166",
+      "level": "heading",
+      "title": "سرية",
+      "page": 192,
+      "paragraph_from": "p00579",
+      "paragraph_to": "p00581"
+    },
+    {
+      "id": "s167",
+      "level": "heading",
+      "title": "غزوة الفتح الأعظم",
+      "page": 193,
+      "paragraph_from": "p00582",
+      "paragraph_to": "p00591"
+    },
+    {
+      "id": "s168",
+      "level": "heading",
+      "title": "العفو عند المقدرة",
+      "page": 198,
+      "paragraph_from": "p00592",
+      "paragraph_to": "p00608"
+    },
+    {
+      "id": "s169",
+      "level": "heading",
+      "title": "وفود كعب بن زهير",
+      "page": 201,
+      "paragraph_from": "p00609",
+      "paragraph_to": "p00619"
+    },
+    {
+      "id": "s170",
+      "level": "heading",
+      "title": "بيعة النساء",
+      "page": 202,
+      "paragraph_from": "p00620",
+      "paragraph_to": "p00621"
+    },
+    {
+      "id": "s171",
+      "level": "heading",
+      "title": "هدم العزى",
+      "page": 202,
+      "paragraph_from": "p00622",
+      "paragraph_to": "p00622"
+    },
+    {
+      "id": "s172",
+      "level": "heading",
+      "title": "هدم سواع",
+      "page": 202,
+      "paragraph_from": "p00623",
+      "paragraph_to": "p00623"
+    },
+    {
+      "id": "s173",
+      "level": "heading",
+      "title": "هدم مناة",
+      "page": 202,
+      "paragraph_from": "p00624",
+      "paragraph_to": "p00624"
+    },
+    {
+      "id": "s174",
+      "level": "heading",
+      "title": "غزوة حنين",
+      "page": 203,
+      "paragraph_from": "p00625",
+      "paragraph_to": "p00631"
+    },
+    {
+      "id": "s175",
+      "level": "heading",
+      "title": "سرية",
+      "page": 206,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s176",
+      "level": "heading",
+      "title": "غزوة الطائف",
+      "page": 206,
+      "paragraph_from": "p00632",
+      "paragraph_to": "p00633"
+    },
+    {
+      "id": "s177",
+      "level": "heading",
+      "title": "تقسيم السبي",
+      "page": 208,
+      "paragraph_from": "p00634",
+      "paragraph_to": "p00639"
+    },
+    {
+      "id": "s178",
+      "level": "heading",
+      "title": "وفود هوازن",
+      "page": 210,
+      "paragraph_from": "p00640",
+      "paragraph_to": "p00648"
+    },
+    {
+      "id": "s179",
+      "level": "heading",
+      "title": "عمرة الجعرانة",
+      "page": 211,
+      "paragraph_from": "p00649",
+      "paragraph_to": "p00650"
+    },
+    {
+      "id": "s180",
+      "level": "heading",
+      "title": "سرية",
+      "page": 212,
+      "paragraph_from": "p00651",
+      "paragraph_to": "p00651"
+    },
+    {
+      "id": "s181",
+      "level": "heading",
+      "title": "وفود صداء",
+      "page": 212,
+      "paragraph_from": "p00652",
+      "paragraph_to": "p00654"
+    },
+    {
+      "id": "s182",
+      "level": "heading",
+      "title": "وفود تميم",
+      "page": 212,
+      "paragraph_from": "p00655",
+      "paragraph_to": "p00657"
+    },
+    {
+      "id": "s183",
+      "level": "heading",
+      "title": "سرية",
+      "page": 213,
+      "paragraph_from": "p00658",
+      "paragraph_to": "p00659"
+    },
+    {
+      "id": "s184",
+      "level": "heading",
+      "title": "سرية",
+      "page": 214,
+      "paragraph_from": "p00660",
+      "paragraph_to": "p00660"
+    },
+    {
+      "id": "s185",
+      "level": "heading",
+      "title": "السنة التاسعة",
+      "page": 215,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s186",
+      "level": "heading",
+      "title": "سرية",
+      "page": 215,
+      "paragraph_from": "p00661",
+      "paragraph_to": "p00661"
+    },
+    {
+      "id": "s187",
+      "level": "heading",
+      "title": "وفود عدي بن حاتم",
+      "page": 216,
+      "paragraph_from": "p00662",
+      "paragraph_to": "p00663"
+    },
+    {
+      "id": "s188",
+      "level": "heading",
+      "title": "غزوة تبوك",
+      "page": 216,
+      "paragraph_from": "p00664",
+      "paragraph_to": "p00670"
+    },
+    {
+      "id": "s189",
+      "level": "heading",
+      "title": "وفود صاحب أيلة",
+      "page": 219,
+      "paragraph_from": "p00671",
+      "paragraph_to": "p00672"
+    },
+    {
+      "id": "s190",
+      "level": "heading",
+      "title": "كتاب صاحب أيلة",
+      "page": 219,
+      "paragraph_from": "p00673",
+      "paragraph_to": "p00674"
+    },
+    {
+      "id": "s191",
+      "level": "heading",
+      "title": "كتاب أهل أذرح وجرباء",
+      "page": 220,
+      "paragraph_from": "p00675",
+      "paragraph_to": "p00676"
+    },
+    {
+      "id": "s192",
+      "level": "heading",
+      "title": "مسجد الضرار",
+      "page": 220,
+      "paragraph_from": "p00677",
+      "paragraph_to": "p00677"
+    },
+    {
+      "id": "s193",
+      "level": "heading",
+      "title": "حديث الثلاثة الذين خلفوا",
+      "page": 221,
+      "paragraph_from": "p00678",
+      "paragraph_to": "p00678"
+    },
+    {
+      "id": "s194",
+      "level": "heading",
+      "title": "وفود ثقيف",
+      "page": 221,
+      "paragraph_from": "p00679",
+      "paragraph_to": "p00680"
+    },
+    {
+      "id": "s195",
+      "level": "heading",
+      "title": "كتاب أهل الطائف",
+      "page": 222,
+      "paragraph_from": "p00681",
+      "paragraph_to": "p00685"
+    },
+    {
+      "id": "s196",
+      "level": "heading",
+      "title": "هدم اللات",
+      "page": 223,
+      "paragraph_from": "p00686",
+      "paragraph_to": "p00686"
+    },
+    {
+      "id": "s197",
+      "level": "heading",
+      "title": "حج أبي بكر",
+      "page": 223,
+      "paragraph_from": "p00687",
+      "paragraph_to": "p00688"
+    },
+    {
+      "id": "s198",
+      "level": "heading",
+      "title": "وفاة ابن أبي",
+      "page": 224,
+      "paragraph_from": "p00689",
+      "paragraph_to": "p00689"
+    },
+    {
+      "id": "s199",
+      "level": "heading",
+      "title": "وفاة أم كلثوم",
+      "page": 224,
+      "paragraph_from": "p00690",
+      "paragraph_to": "p00690"
+    },
+    {
+      "id": "s200",
+      "level": "heading",
+      "title": "السنة العاشرة",
+      "page": 225,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s201",
+      "level": "heading",
+      "title": "سرية",
+      "page": 225,
+      "paragraph_from": "p00691",
+      "paragraph_to": "p00694"
+    },
+    {
+      "id": "s202",
+      "level": "heading",
+      "title": "حجة الوداع",
+      "page": 226,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s203",
+      "level": "heading",
+      "title": "بعث العمال إلى اليمن",
+      "page": 226,
+      "paragraph_from": "p00695",
+      "paragraph_to": "p00699"
+    },
+    {
+      "id": "s204",
+      "level": "heading",
+      "title": "خطبة الوداع",
+      "page": 227,
+      "paragraph_from": "p00700",
+      "paragraph_to": "p00708"
+    },
+    {
+      "id": "s205",
+      "level": "heading",
+      "title": "الوفود",
+      "page": 229,
+      "paragraph_from": "p00709",
+      "paragraph_to": "p00709"
+    },
+    {
+      "id": "s206",
+      "level": "heading",
+      "title": "وفود نجران",
+      "page": 229,
+      "paragraph_from": "p00710",
+      "paragraph_to": "p00710"
+    },
+    {
+      "id": "s207",
+      "level": "heading",
+      "title": "وفود ضمام بن ثعلبة",
+      "page": 230,
+      "paragraph_from": "p00711",
+      "paragraph_to": "p00713"
+    },
+    {
+      "id": "s208",
+      "level": "heading",
+      "title": "وفود عبد القيس",
+      "page": 230,
+      "paragraph_from": "p00714",
+      "paragraph_to": "p00716"
+    },
+    {
+      "id": "s209",
+      "level": "heading",
+      "title": "وفود بني حنيفة",
+      "page": 232,
+      "paragraph_from": "p00717",
+      "paragraph_to": "p00717"
+    },
+    {
+      "id": "s210",
+      "level": "heading",
+      "title": "وفود طيء",
+      "page": 232,
+      "paragraph_from": "p00718",
+      "paragraph_to": "p00718"
+    },
+    {
+      "id": "s211",
+      "level": "heading",
+      "title": "وفود كندة",
+      "page": 232,
+      "paragraph_from": "p00719",
+      "paragraph_to": "p00723"
+    },
+    {
+      "id": "s212",
+      "level": "heading",
+      "title": "وفود أزدشنوءة",
+      "page": 233,
+      "paragraph_from": "p00724",
+      "paragraph_to": "p00724"
+    },
+    {
+      "id": "s213",
+      "level": "heading",
+      "title": "وفود رسول ملوك حمير",
+      "page": 233,
+      "paragraph_from": "p00725",
+      "paragraph_to": "p00725"
+    },
+    {
+      "id": "s214",
+      "level": "heading",
+      "title": "كتاب ملوك حمير",
+      "page": 233,
+      "paragraph_from": "p00726",
+      "paragraph_to": "p00727"
+    },
+    {
+      "id": "s215",
+      "level": "heading",
+      "title": "وفود همدان",
+      "page": 234,
+      "paragraph_from": "p00728",
+      "paragraph_to": "p00734"
+    },
+    {
+      "id": "s216",
+      "level": "heading",
+      "title": "وفود تجيب",
+      "page": 235,
+      "paragraph_from": "p00735",
+      "paragraph_to": "p00735"
+    },
+    {
+      "id": "s217",
+      "level": "heading",
+      "title": "وفود ثعلبة",
+      "page": 235,
+      "paragraph_from": "p00736",
+      "paragraph_to": "p00736"
+    },
+    {
+      "id": "s218",
+      "level": "heading",
+      "title": "وفود بني سعد بن هذيم",
+      "page": 236,
+      "paragraph_from": "p00737",
+      "paragraph_to": "p00740"
+    },
+    {
+      "id": "s219",
+      "level": "heading",
+      "title": "وفود بني فزارة",
+      "page": 236,
+      "paragraph_from": "p00741",
+      "paragraph_to": "p00742"
+    },
+    {
+      "id": "s220",
+      "level": "heading",
+      "title": "وفود بني أسد",
+      "page": 237,
+      "paragraph_from": "p00743",
+      "paragraph_to": "p00743"
+    },
+    {
+      "id": "s221",
+      "level": "heading",
+      "title": "وفود بني عذرة",
+      "page": 237,
+      "paragraph_from": "p00744",
+      "paragraph_to": "p00744"
+    },
+    {
+      "id": "s222",
+      "level": "heading",
+      "title": "وفود بني محارب",
+      "page": 238,
+      "paragraph_from": "p00745",
+      "paragraph_to": "p00745"
+    },
+    {
+      "id": "s223",
+      "level": "heading",
+      "title": "وفود غسان",
+      "page": 238,
+      "paragraph_from": "p00746",
+      "paragraph_to": "p00746"
+    },
+    {
+      "id": "s224",
+      "level": "heading",
+      "title": "وفاة إبراهيم بن النبي عليه السلام ",
+      "page": 238,
+      "paragraph_from": "p00747",
+      "paragraph_to": "p00747"
+    },
+    {
+      "id": "s225",
+      "level": "heading",
+      "title": "السنة الحادية عشرة",
+      "page": 239,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s226",
+      "level": "heading",
+      "title": "سرية",
+      "page": 239,
+      "paragraph_from": "p00748",
+      "paragraph_to": "p00749"
+    },
+    {
+      "id": "s227",
+      "level": "heading",
+      "title": "مرض الرسول صلى الله عليه وسلم",
+      "page": 240,
+      "paragraph_from": "p00750",
+      "paragraph_to": "p00750"
+    },
+    {
+      "id": "s228",
+      "level": "heading",
+      "title": "صلاة أبي بكر بالناس",
+      "page": 240,
+      "paragraph_from": "p00751",
+      "paragraph_to": "p00754"
+    },
+    {
+      "id": "s229",
+      "level": "heading",
+      "title": "وفاة رسول الله صلى الله عليه وسلم",
+      "page": 242,
+      "paragraph_from": "p00755",
+      "paragraph_to": "p00758"
+    },
+    {
+      "id": "s230",
+      "level": "heading",
+      "title": "شمائله عليه السلام",
+      "page": 243,
+      "paragraph_from": "p00759",
+      "paragraph_to": "p00765"
+    },
+    {
+      "id": "s231",
+      "level": "heading",
+      "title": "نظافة جسمه وطيب ريحه ص",
+      "page": 245,
+      "paragraph_from": "p00766",
+      "paragraph_to": "p00767"
+    },
+    {
+      "id": "s232",
+      "level": "heading",
+      "title": "وفور عقله ص",
+      "page": 245,
+      "paragraph_from": "p00768",
+      "paragraph_to": "p00769"
+    },
+    {
+      "id": "s233",
+      "level": "heading",
+      "title": "فصاحة لسانه ص",
+      "page": 246,
+      "paragraph_from": "p00770",
+      "paragraph_to": "p00770"
+    },
+    {
+      "id": "s234",
+      "level": "heading",
+      "title": "كلامه وفصاحته ص",
+      "page": 246,
+      "paragraph_from": "p00771",
+      "paragraph_to": "p00776"
+    },
+    {
+      "id": "s235",
+      "level": "heading",
+      "title": "شرف نسبه، وكرم بلده ص",
+      "page": 248,
+      "paragraph_from": "p00777",
+      "paragraph_to": "p00781"
+    },
+    {
+      "id": "s236",
+      "level": "heading",
+      "title": "قدره ومنزلته ص",
+      "page": 250,
+      "paragraph_from": "p00782",
+      "paragraph_to": "p00784"
+    },
+    {
+      "id": "s237",
+      "level": "heading",
+      "title": "الخصال المكتسبة من الأخلاق الحميدة",
+      "page": 251,
+      "paragraph_from": "p00785",
+      "paragraph_to": "p00791"
+    },
+    {
+      "id": "s238",
+      "level": "heading",
+      "title": "الحلم والاحتمال والعفو والقدرة، والصبر على ما يكره ص",
+      "page": 252,
+      "paragraph_from": "p00792",
+      "paragraph_to": "p00799"
+    },
+    {
+      "id": "s239",
+      "level": "heading",
+      "title": "شجاعته ص",
+      "page": 254,
+      "paragraph_from": "p00800",
+      "paragraph_to": "p00802"
+    },
+    {
+      "id": "s240",
+      "level": "heading",
+      "title": "حياؤه ص",
+      "page": 255,
+      "paragraph_from": "p00803",
+      "paragraph_to": "p00803"
+    },
+    {
+      "id": "s241",
+      "level": "heading",
+      "title": "حسن عشرته وأدبه ص",
+      "page": 255,
+      "paragraph_from": "p00804",
+      "paragraph_to": "p00805"
+    },
+    {
+      "id": "s242",
+      "level": "heading",
+      "title": "شفقته ورأفته ص",
+      "page": 257,
+      "paragraph_from": "p00806",
+      "paragraph_to": "p00808"
+    },
+    {
+      "id": "s243",
+      "level": "heading",
+      "title": "وفاؤه وصلته الرحم ص",
+      "page": 257,
+      "paragraph_from": "p00809",
+      "paragraph_to": "p00810"
+    },
+    {
+      "id": "s244",
+      "level": "heading",
+      "title": "تواضعه ص",
+      "page": 258,
+      "paragraph_from": "p00811",
+      "paragraph_to": "p00812"
+    },
+    {
+      "id": "s245",
+      "level": "heading",
+      "title": "[عدله ص وأمانته، وعفته، وصدق لهجته]",
+      "page": 259,
+      "paragraph_from": "p00813",
+      "paragraph_to": "p00814"
+    },
+    {
+      "id": "s246",
+      "level": "heading",
+      "title": "وقاره عليه الصلاة والسلام وصمته، وتؤدته، ومروءته",
+      "page": 260,
+      "paragraph_from": "p00815",
+      "paragraph_to": "p00815"
+    },
+    {
+      "id": "s247",
+      "level": "heading",
+      "title": "زهده ص في الدنيا",
+      "page": 260,
+      "paragraph_from": "p00816",
+      "paragraph_to": "p00820"
+    },
+    {
+      "id": "s248",
+      "level": "heading",
+      "title": "[خوفه ص من ربه، وطاعته له، وشدة عبادته]",
+      "page": 262,
+      "paragraph_from": "p00821",
+      "paragraph_to": "p00824"
+    },
+    {
+      "id": "s249",
+      "level": "heading",
+      "title": "معجزاته عليه السلام",
+      "page": 263,
+      "paragraph_from": "p00825",
+      "paragraph_to": "p00827"
+    },
+    {
+      "id": "s250",
+      "level": "heading",
+      "title": "إعجاز القرآن الكريم",
+      "page": 264,
+      "paragraph_from": "p00828",
+      "paragraph_to": "p00828"
+    },
+    {
+      "id": "s251",
+      "level": "heading",
+      "title": "أولها: حسن تأليفه، والتئام كلمه، وفصاحته",
+      "page": 264,
+      "paragraph_from": "p00829",
+      "paragraph_to": "p00835"
+    },
+    {
+      "id": "s252",
+      "level": "heading",
+      "title": "الوجه الثاني من إعجاز القران: صورة نظمه العجيب",
+      "page": 267,
+      "paragraph_from": "p00836",
+      "paragraph_to": "p00837"
+    },
+    {
+      "id": "s253",
+      "level": "heading",
+      "title": "الوجه الثالث من الإعجاز: ما أنطوى عليه من الأخبار بالمغيبات",
+      "page": 267,
+      "paragraph_from": "p00838",
+      "paragraph_to": "p00840"
+    },
+    {
+      "id": "s254",
+      "level": "heading",
+      "title": "الوجه الرابع: ما أنبأ به من أخبار القرون السالفة",
+      "page": 268,
+      "paragraph_from": "p00841",
+      "paragraph_to": "p00847"
+    },
+    {
+      "id": "s255",
+      "level": "heading",
+      "title": "ومن معجزاته صلى الله عليه وسلم: انشقاق القمر",
+      "page": 270,
+      "paragraph_from": null,
+      "paragraph_to": null
+    },
+    {
+      "id": "s256",
+      "level": "heading",
+      "title": "ومن معجزاته صلى الله عليه وسلم: نبع الماء من بين أصابعه، وتكثيره ببركته",
+      "page": 271,
+      "paragraph_from": "p00848",
+      "paragraph_to": "p00855"
+    },
+    {
+      "id": "s257",
+      "level": "heading",
+      "title": "ومن معجزاته عليه السلام قصة حنين الجذع.",
+      "page": 272,
+      "paragraph_from": "p00856",
+      "paragraph_to": "p00857"
+    },
+    {
+      "id": "s258",
+      "level": "heading",
+      "title": "ومن معجزاته عليه السلام: إبراء المرضى، وذوي العاهات.",
+      "page": 273,
+      "paragraph_from": "p00858",
+      "paragraph_to": "p01087"
+    }
+  ]
+}

@@ -71,7 +71,7 @@ final class SqlitePackWriter
     }
 
     /**
-     * @param  array<string, int|string|null>  $row
+     * @param  array<string, int|float|string|null>  $row
      */
     public function insert(PackTable $table, array $row): void
     {
@@ -85,6 +85,9 @@ final class SqlitePackWriter
                 $statement->bindValue($index, null, PDO::PARAM_NULL);
             } elseif (is_int($value)) {
                 $statement->bindValue($index, $value, PDO::PARAM_INT);
+            } elseif (is_float($value)) {
+                // The shortest round-trip form, so a REAL column keeps the value the builder read.
+                $statement->bindValue($index, json_encode($value, JSON_PRESERVE_ZERO_FRACTION), PDO::PARAM_STR);
             } else {
                 $statement->bindValue($index, $value, PDO::PARAM_STR);
             }

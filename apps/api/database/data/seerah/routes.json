@@ -1,0 +1,221 @@
+{
+  "format": 1,
+  "routes": [
+    {
+      "id": "r-sham-1",
+      "name_ar": "السفر إلى الشام",
+      "stops": [
+        "makkah",
+        "sham"
+      ],
+      "events": [
+        "e008"
+      ],
+      "evidence": [
+        {
+          "para": "p00030",
+          "quote": "أراد عمه وكفيله السفر بتجارة إلى الشام"
+        }
+      ],
+      "kind": "trip"
+    },
+    {
+      "id": "r-sham-2",
+      "name_ar": "رحلته إلى الشام المرة الثانية",
+      "stops": [
+        "makkah",
+        "sham"
+      ],
+      "events": [
+        "e011"
+      ],
+      "evidence": [
+        {
+          "para": "p00037",
+          "quote": "سافر إلى الشام المرة الثانية"
+        }
+      ],
+      "kind": "trip"
+    },
+    {
+      "id": "r-habasha-1",
+      "name_ar": "هجرة الحبشة الأولى",
+      "stops": [
+        "makkah",
+        "habasha"
+      ],
+      "events": [
+        "e027"
+      ],
+      "evidence": [
+        {
+          "para": "p00146",
+          "quote": "فأشار إلى الحبشة"
+        }
+      ],
+      "kind": "habasha"
+    },
+    {
+      "id": "r-habasha-2",
+      "name_ar": "هجرة الحبشة الثانية",
+      "stops": [
+        "makkah",
+        "habasha"
+      ],
+      "events": [
+        "e031"
+      ],
+      "evidence": [
+        {
+          "para": "p00160",
+          "quote": "أمر جميع المسلمين أن يهاجروا للحبشة"
+        }
+      ],
+      "kind": "habasha"
+    },
+    {
+      "id": "r-taif",
+      "name_ar": "هجرة الطائف",
+      "stops": [
+        "makkah",
+        "taif"
+      ],
+      "events": [
+        "e037"
+      ],
+      "evidence": [
+        {
+          "para": "p00174",
+          "quote": "إلى ثقيف بالطائف"
+        }
+      ],
+      "kind": "taif"
+    },
+    {
+      "id": "r-hijra",
+      "name_ar": "هجرة المصطفى صلى الله عليه وسلم",
+      "stops": [
+        "makkah",
+        "madinah"
+      ],
+      "events": [
+        "e047"
+      ],
+      "evidence": [
+        {
+          "para": "p00211",
+          "quote": "وسارا حتى بلغا غار ثور فاختفيا فيه"
+        }
+      ],
+      "kind": "hijra"
+    },
+    {
+      "id": "r-badr",
+      "name_ar": "غزوة بدر الكبرى",
+      "stops": [
+        "madinah",
+        "badr"
+      ],
+      "events": [
+        "e081"
+      ],
+      "evidence": [
+        {
+          "para": "p00292",
+          "quote": "حتى وصلوا وادي بدر"
+        }
+      ],
+      "kind": "ghazwa"
+    },
+    {
+      "id": "r-khaybar",
+      "name_ar": "غزوة خيبر",
+      "stops": [
+        "madinah",
+        "khaybar"
+      ],
+      "events": [
+        "e148"
+      ],
+      "evidence": [
+        {
+          "para": "p00531",
+          "quote": "لغزو يهود خيبر"
+        }
+      ],
+      "kind": "ghazwa"
+    },
+    {
+      "id": "r-fath",
+      "name_ar": "غزوة الفتح الأعظم",
+      "stops": [
+        "madinah",
+        "makkah"
+      ],
+      "events": [
+        "e167"
+      ],
+      "evidence": [
+        {
+          "para": "p00585",
+          "quote": "حربا بمكة"
+        }
+      ],
+      "kind": "ghazwa"
+    },
+    {
+      "id": "r-hunayn",
+      "name_ar": "غزوة حنين",
+      "stops": [
+        "makkah",
+        "hunayn"
+      ],
+      "events": [
+        "e174"
+      ],
+      "evidence": [
+        {
+          "para": "p00650",
+          "quote": "وغزوة حنين"
+        }
+      ],
+      "kind": "ghazwa"
+    },
+    {
+      "id": "r-taif-ghazwa",
+      "name_ar": "غزوة الطائف",
+      "stops": [
+        "hunayn",
+        "taif"
+      ],
+      "events": [
+        "e176"
+      ],
+      "evidence": [
+        {
+          "para": "p00632",
+          "quote": "إلى الطائف"
+        }
+      ],
+      "kind": "ghazwa"
+    },
+    {
+      "id": "r-tabuk",
+      "name_ar": "غزوة تبوك",
+      "stops": [
+        "madinah",
+        "tabuk"
+      ],
+      "events": [
+        "e188"
+      ],
+      "evidence": [
+        {
+          "para": "p00669",
+          "quote": "ولما وصلوا إلى تبوك"
+        }
+      ],
+      "kind": "ghazwa"
+    }
+  ]
+}

@@ -53,8 +53,11 @@ export function manifestBody(resources: ContentManifestResource[]): ContentManif
   return { generated_at: '2026-11-07T00:00:00.000Z', pack_schema_version: 1, resources };
 }
 
-function columnType(kind: 'integer' | 'text'): string {
-  return kind === 'integer' ? 'INTEGER' : 'TEXT';
+function columnType(kind: 'integer' | 'real' | 'text'): string {
+  if (kind === 'integer') {
+    return 'INTEGER';
+  }
+  return kind === 'real' ? 'REAL' : 'TEXT';
 }
 
 function createTable(database: DatabaseSync, table: ContentTable): void {
@@ -72,7 +75,7 @@ function createTable(database: DatabaseSync, table: ContentTable): void {
 export function gzipHadithPack(
   resourceId: number,
   rows: HadithPackRows,
-  groupName: 'hadith_collections' | 'hadith_explanations' = 'hadith_collections',
+  groupName = 'hadith_collections',
 ): Uint8Array {
   const group = contentGroup(groupName);
   if (group === undefined) {
