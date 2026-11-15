@@ -24,6 +24,8 @@ const STROKE = 6;
 const TAP_SCALE = 1.04;
 const PULSE_SCALE = 1.08;
 const CHECK = { ios: 'checkmark', android: 'check' } as const;
+/** The gap between «اضغط» and «عند الانتهاء» in the idle frame (2 pt, not a space step). */
+const PROMPT_GAP = 2;
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -31,12 +33,13 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
  * The control for every dhikr unit (ADR 0031 §6, developer 1 Nov 2026): a 120 pt button with a ring.
  * - A sourced count above 1: «٢ من ٣» in the centre, the ring filling per count.
  * - A sourced count of 1: the same ring, «٠ من ١» then «١ من ١», completing on one tap.
- * - No sourced count (`requiredCount` null): the single variant. An empty ring with a check and «تم» in the centre;
- *   one tap fills the ring and completes. No number is shown, because a missing count is never read as 1.
+ * - No sourced count (`requiredCount` null): the single variant. Before the tap (`AzkarReaderSingleIdle`) the centre reads
+ *   «اضغط» over «عند الانتهاء» and the ring is empty; after the tap (`AzkarReaderSingleDone`) it shows a check and «تم»
+ *   and the ring is full. One tap completes it. No number is shown, because a missing count is never read as 1.
  *
  * `compact` (a short window) draws an 88 pt ring with smaller centre text and no caption under it; the hint stays on
- * the button for VoiceOver and TalkBack. The single variant also draws no caption under the ring (`AzkarReaderDone`):
- * the check and «تم» carry the action, and the hint stays on the button only.
+ * the button for VoiceOver and TalkBack. The single variant also draws no caption under the ring: the centre text
+ * carries the action, and the hint stays on the button only.
  *
  * Each count bumps the ring with a spring; completion pulses it. Reduce Motion: the ring jumps to its state, and nothing
  * scales. A reset action clears this unit's progress.
@@ -123,6 +126,7 @@ export function AzkarCounter({
         accessibilityHint={single ? t('azkar.counter.doneHint') : t('azkar.counter.hint')}
         accessibilityLabel={single ? t('azkar.counter.doneLabel') : t('azkar.counter.label', { position: formatNumber(position, locale) })}
         accessibilityRole="button"
+        accessibilityState={single ? { disabled: false, selected: completed } : undefined}
         accessibilityValue={valueText === undefined ? undefined : { text: valueText }}
         onAccessibilityAction={(event) => {
           if (event.nativeEvent.actionName === 'reset') {
@@ -164,11 +168,20 @@ export function AzkarCounter({
             />
           </Svg>
           <Animated.View style={scaleStyle}>
-            {single ? (
+            {single && completed ? (
               <View style={{ alignItems: 'center', gap: theme.space[1] }}>
                 <Icon color={theme.colors.brand} name={CHECK} size={compact ? 24 : 32} testID={`${testID}-check`} />
-                <UiText align="center" testID={`${testID}-done`} variant="subhead">
+                <UiText align="center" testID={`${testID}-done`} variant="subhead" weight={600}>
                   {t('azkar.reader.done')}
+                </UiText>
+              </View>
+            ) : single ? (
+              <View style={{ alignItems: 'center', gap: PROMPT_GAP }}>
+                <UiText align="center" testID={`${testID}-prompt`} variant={compact ? 'caption' : 'subhead'} weight={600}>
+                  {t('azkar.counter.tapPrompt')}
+                </UiText>
+                <UiText align="center" tone="muted" variant={compact ? 'label' : 'caption'}>
+                  {t('azkar.counter.tapPromptDetail')}
                 </UiText>
               </View>
             ) : (

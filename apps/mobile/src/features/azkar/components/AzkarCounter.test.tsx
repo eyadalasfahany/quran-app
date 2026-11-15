@@ -85,12 +85,20 @@ describe('AzkarCounter', () => {
       expect(screen.queryByText(counter.props.accessibilityHint as string)).toBeNull();
     });
 
-    it('keeps the check and «تم» for the single variant', async () => {
-      const { ui } = renderCounter({ compact: true, requiredCount: null });
+    it('keeps the check and «تم» for the completed single variant', async () => {
+      const { ui } = renderCounter({ compact: true, requiredCount: null, completed: true });
       await renderUi(ui);
 
       expect(screen.getByTestId('azkar-counter-check', { includeHiddenElements: true })).toBeOnTheScreen();
       expect(screen.getByTestId('azkar-counter-done')).toBeOnTheScreen();
+    });
+
+    it('keeps the «اضغط» prompt for the idle single variant', async () => {
+      const { ui } = renderCounter({ compact: true, requiredCount: null });
+      await renderUi(ui);
+
+      expect(screen.getByTestId('azkar-counter-prompt')).toBeOnTheScreen();
+      expect(screen.getByText('عند الانتهاء')).toBeOnTheScreen();
     });
 
     it('shows the caption at the full size', async () => {
@@ -143,12 +151,36 @@ describe('AzkarCounter', () => {
       expect(screen.getByTestId('azkar-counter-ring')).toBeTruthy();
     });
 
-    it('shows a check and the «تم» label inside the ring', async () => {
-      const { ui } = renderCounter({ requiredCount: null, value: 0 });
+    it('shows no check and no «تم» before the tap, but the «اضغط» prompt and «عند الانتهاء»', async () => {
+      const { ui } = renderCounter({ requiredCount: null, value: 0, completed: false });
+      await renderUi(ui);
+      expect(screen.queryByTestId('azkar-counter-check')).toBeNull();
+      expect(screen.queryByTestId('azkar-counter-done')).toBeNull();
+      expect(screen.queryByText('تم')).toBeNull();
+      expect(screen.getByTestId('azkar-counter-prompt')).toBeTruthy();
+      expect(screen.getByText('اضغط')).toBeTruthy();
+      expect(screen.getByText('عند الانتهاء')).toBeTruthy();
+    });
+
+    it('reports the idle state as not selected', async () => {
+      const { ui } = renderCounter({ requiredCount: null, completed: false });
+      await renderUi(ui);
+      expect(screen.getByRole('button', { name: 'وضع علامة «تم»' }).props.accessibilityState).toEqual({ disabled: false, selected: false });
+    });
+
+    it('shows a check and the «تم» label inside the ring once completed', async () => {
+      const { ui } = renderCounter({ requiredCount: null, value: 0, completed: true });
       await renderUi(ui);
       expect(screen.getByTestId('azkar-counter-check', { includeHiddenElements: true })).toBeTruthy();
       expect(screen.getByTestId('azkar-counter-done')).toBeTruthy();
       expect(screen.getByText('تم')).toBeTruthy();
+      expect(screen.queryByTestId('azkar-counter-prompt')).toBeNull();
+    });
+
+    it('reports the completed state as selected', async () => {
+      const { ui } = renderCounter({ requiredCount: null, completed: true });
+      await renderUi(ui);
+      expect(screen.getByRole('button', { name: 'وضع علامة «تم»' }).props.accessibilityState).toEqual({ disabled: false, selected: true });
     });
 
     it('calls onTap once when pressed, and does not read a count', async () => {
@@ -175,14 +207,22 @@ describe('AzkarCounter', () => {
       expect(screen.getByTestId('azkar-counter-done')).toBeTruthy();
     });
 
-    it('renders in English with the English label; hint stays on the button only (AzkarReaderDone has no caption)', async () => {
+    it('renders in English with the English prompt and label; hint stays on the button only', async () => {
       const { ui } = renderCounter({ requiredCount: null, value: 0 });
       await renderUi(ui, { locale: 'en' });
       const button = screen.getByRole('button', { name: 'Mark as done' });
       expect(button).toBeTruthy();
-      expect(screen.getByText('Done')).toBeTruthy();
+      expect(screen.getByText('Tap')).toBeTruthy();
+      expect(screen.getByText('when done')).toBeTruthy();
       expect(button.props.accessibilityHint).toBe('Tap to mark done');
       expect(screen.queryByText('Tap to mark done')).toBeNull();
+    });
+
+    it('renders in English with «Done» once completed', async () => {
+      const { ui } = renderCounter({ requiredCount: null, value: 0, completed: true });
+      await renderUi(ui, { locale: 'en' });
+      expect(screen.getByText('Done')).toBeTruthy();
+      expect(screen.queryByText('Tap')).toBeNull();
     });
 
     it('draws no caption under the ring in Arabic either', async () => {

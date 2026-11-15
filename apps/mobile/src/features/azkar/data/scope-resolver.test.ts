@@ -44,6 +44,34 @@ describe('resolveAzkarScope', () => {
     expect(resolved?.total).toBeGreaterThan(0);
   });
 
+  it('counts only the visible entries of a browse topic that lost some to Duas (ADR 0091)', () => {
+    executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-008'`);
+
+    expect(resolveAzkarScope(executor, 'ar', NOW)('category:home-and-family')?.total).toBe(1);
+  });
+
+  it('does not resolve a browse topic whose entries have all moved, so it is not continued or listed', () => {
+    executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-007'`);
+
+    expect(resolveAzkarScope(executor, 'ar', NOW)('category:travel')).toBeNull();
+  });
+
+  it('keeps a session resolving even when its entry is typed dua', () => {
+    executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-001'`);
+
+    expect(resolveAzkarScope(executor, 'ar', NOW)('category:morning')?.total).toBe(3);
+  });
+
+  it('still resolves an entry scope for a moved entry (a reminder or Home target)', () => {
+    executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-008'`);
+
+    expect(resolveAzkarScope(executor, 'ar', NOW)('entry:fixture:entry-008')).toMatchObject({
+      entryKey: 'fixture:entry-008',
+      periodKey: 'session',
+      total: 1,
+    });
+  });
+
   it('returns null for unknown categories, unknown entries and unknown prefixes', () => {
     const resolve = resolveAzkarScope(executor, 'ar', NOW);
 

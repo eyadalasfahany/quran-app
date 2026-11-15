@@ -185,6 +185,8 @@ export const recitationTimings = sqliteTable(
 // Azkar (ADR 0031 §9). Canonical content, delivered as the `azkar` pack group. Column order and keys match
 // the API's canonical tables and the pack. Allowed values are enforced by the TS enums below, not by SQL checks.
 export const azkarEntryTypes = ['invocation', 'instruction', 'narration'] as const;
+// Where a Hisn dua shows (ADR 0091). Null means Azkar. Added in migration 0017; older packs lack the column.
+export const azkarEntryHomes = ['duas'] as const;
 export const azkarItemKinds = ['recitation', 'instruction', 'narration'] as const;
 export const azkarSegmentKinds = ['text', 'quran'] as const;
 export const azkarReviewStatuses = ['sourced', 'reviewed'] as const;
@@ -237,6 +239,7 @@ export const azkarEntries = sqliteTable(
     reviewStatus: text('review_status', { enum: azkarReviewStatuses }).notNull(),
     sourceVersion: text('source_version').notNull(),
     importedAt: integer('imported_at').notNull(),
+    home: text('home', { enum: azkarEntryHomes }),
   },
   (table) => [
     primaryKey({ columns: [table.resourceId, table.id] }),

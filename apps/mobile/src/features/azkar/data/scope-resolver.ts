@@ -32,10 +32,15 @@ export function resolveAzkarScope(db: SqlExecutor, locale: Locale, now: Date): (
         if (category === undefined) {
           return null;
         }
+        const total = listCategoryUnits(db, categoryId, locale).length;
+        // A browse topic whose entries all moved to Duas has nothing to continue or to list (ADR 0091).
+        if (category.kind === 'browse' && total === 0) {
+          return null;
+        }
         return {
           scopeKey: scopeKeyForCategory(categoryId),
           periodKey: periodKey(category.progressPeriod, now),
-          total: listCategoryUnits(db, categoryId, locale).length,
+          total,
           categoryId,
           entryKey: null,
           occasion: category.occasion,

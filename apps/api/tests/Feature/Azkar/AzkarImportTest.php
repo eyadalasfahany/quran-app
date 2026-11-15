@@ -438,8 +438,8 @@ it('replaces the azkar rows in one transaction, bumps the version and queues the
         ->and(AzkarEntry::query()->count())->toBe(4)
         ->and(AzkarItem::query()->count())->toBe(7)
         ->and(AzkarSegment::query()->count())->toBe(9)
-        ->and(AzkarCategory::query()->count())->toBe(7)
-        ->and(AzkarEntryCategory::query()->count())->toBe(8)
+        ->and(AzkarCategory::query()->count())->toBe(8)
+        ->and(AzkarEntryCategory::query()->count())->toBe(7)
         ->and(AzkarRecording::query()->count())->toBe(0)
         ->and(AzkarNote::query()->count())->toBe(0);
 
@@ -726,4 +726,48 @@ it('leaves out an excluded entry that has no errors and lists it in the report',
         ->and(AzkarEntry::query()->where('entry_key', 'hisn-al-muslim:entry-000001')->exists())->toBeFalse()
         ->and(AzkarEntry::query()->count())->toBe(3)
         ->and($report->content['excluded'])->toBe([['entry' => 'hisn-al-muslim:entry-000001', 'reason' => 'quran_reference_unidentified']]);
+});
+
+it('replaces a split tag with its topics in config order, and keeps the other browse topics', function (): void {
+    azkarEnableWetImport();
+    azkarWetRun(azkarFixturePath());
+
+    $browse = AzkarCategory::query()->where('kind', 'browse')->orderBy('position')->get(['id', 'position']);
+    $links = fn (string $categoryId): array => AzkarEntryCategory::query()
+        ->where('category_id', $categoryId)
+        ->orderBy('position')
+        ->get()
+        ->map(fn ($row): array => [$row->entry_id, $row->variation_key])
+        ->all();
+
+    expect($browse->map(fn ($row): array => [$row->id, $row->position])->all())
+        ->toBe([['morning-topic', 6], ['evening-topic', 7], ['travel', 8]])
+        ->and(AzkarCategory::query()->where('id', 'morning-and-evening')->exists())->toBeFalse()
+        ->and($links('morning-topic'))->toBe([[3, 'morning']])
+        ->and($links('evening-topic'))->toBe([])
+        ->and($links('travel'))->toBe([[2, '*'], [4, '*']])
+        ->and(AzkarEntryCategory::query()->count())->toBe(7);
+});
+
+it('splits a tag by session (with the session key) and by everything except a session (with the browse key)', function (): void {
+    azkarEnableWetImport();
+    config(['azkar.split_topics' => [
+        'morning-and-evening' => [
+            'wake-topic' => ['session' => 'after_waking'],
+            'rest-topic' => ['except_session' => 'after_waking'],
+        ],
+    ]]);
+    azkarWetRun(azkarFixturePath());
+
+    $browse = AzkarCategory::query()->where('kind', 'browse')->orderBy('position')->pluck('id')->all();
+    $links = fn (string $categoryId): array => AzkarEntryCategory::query()
+        ->where('category_id', $categoryId)
+        ->orderBy('position')
+        ->get()
+        ->map(fn ($row): array => [$row->entry_id, $row->variation_key])
+        ->all();
+
+    expect($browse)->toBe(['wake-topic', 'rest-topic', 'travel'])
+        ->and($links('wake-topic'))->toBe([[1, '*']])
+        ->and($links('rest-topic'))->toBe([[3, '*']]);
 });

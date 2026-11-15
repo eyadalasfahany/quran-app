@@ -114,6 +114,8 @@ final class ImportAzkarCommand extends Command
         $recordings = is_array($gated['recordings'] ?? null) ? $gated['recordings'] : [];
         $english = is_array($gated['english'] ?? null) ? $gated['english'] : [];
         $changed = $report->changedUpstreamTexts;
+        $entryTypes = is_array($content['entry_types'] ?? null) ? $content['entry_types'] : [];
+        $movedByCategory = is_array($entryTypes['moved_to_duas_by_category'] ?? null) ? $entryTypes['moved_to_duas_by_category'] : [];
 
         $this->line('Status: '.$report->status.($report->dryRun ? ' (dry run)' : ''));
         $this->table(['Metric', 'Value'], [
@@ -127,6 +129,11 @@ final class ImportAzkarCommand extends Command
             ['segments: quran', $segments['quran'] ?? 0],
             ['quran passages mapped', $quran['mapped'] ?? 0],
             ['quran passages unmapped', $quran['unmapped'] ?? 0],
+            ['reviewed dua', $entryTypes['reviewed_dua'] ?? 0],
+            ['reviewed dhikr', $entryTypes['reviewed_dhikr'] ?? 0],
+            ['moved to Duas (home=duas)', $entryTypes['moved_to_duas'] ?? 0],
+            ['reviewed duas kept whole in sessions', $entryTypes['duas_kept_in_sessions'] ?? 0],
+            ['candidates not applied', $entryTypes['candidates_not_applied'] ?? 0],
             ['items with required_count', $sourced['items_with_required_count'] ?? 0],
             ['items without required_count', $sourced['items_without_required_count'] ?? 0],
             ['english stored', $english['stored'] ?? 0],
@@ -156,6 +163,10 @@ final class ImportAzkarCommand extends Command
 
         $this->line(sprintf('  required_count conflicts (primary kept): %d', count($sourced['required_count_conflicts'] ?? [])));
         $this->line(sprintf('  required_count ambiguous (left null): %d', count($sourced['required_count_ambiguous'] ?? [])));
+
+        foreach ($movedByCategory as $categoryId => $count) {
+            $this->line(sprintf('  moved to Duas from browse category %s: %d', $categoryId, $count));
+        }
 
         $counts = [];
 

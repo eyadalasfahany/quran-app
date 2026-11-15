@@ -34,6 +34,9 @@ export type { FavoriteCard } from './favorite-cards';
 export { resolveAzkarScope } from './scope-resolver';
 export type { ResolvedAzkarScope } from './scope-resolver';
 export { firstArabicText } from './preview';
+export type { QuranPreviewRef } from './preview';
+export { listHisnDuaEntries, listHisnDuaTopics } from './duas-bridge';
+export type { HisnDuaEntry, HisnDuaTopic } from './duas-bridge';
 export {
   addAzkarRecentSearch,
   clearAzkarRecentSearches,

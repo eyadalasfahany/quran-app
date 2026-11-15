@@ -1,6 +1,6 @@
 {
   "source": "screens/",
-  "frameCount": 244,
+  "frameCount": 249,
   "assetCount": 7,
   "bytesSavedVsInline": 5921200,
   "stacks": {
@@ -89,6 +89,8 @@
       "AzkarReader",
       "AzkarReaderDark",
       "AzkarReaderDone",
+      "AzkarReaderSingleIdle",
+      "AzkarReaderSingleDone",
       "AzkarReaderComplete",
       "AzkarReaderAudio",
       "AzkarPlayer",
@@ -104,9 +106,12 @@
     "duas": [
       "DuasHomeCategories",
       "DuasCategory",
+      "DuasSearch",
       "DuasHome",
       "DuasHomeDark",
       "DuasHomeEnglish",
+      "DuaQuranDetailNoSource",
+      "DuaHadithDetailNoSource",
       "DuaQuranDetail",
       "DuaQuranDetailDark",
       "DuaQuranDetailEnglish",
@@ -927,6 +932,26 @@
       "bytes": 6964
     },
     {
+      "id": "AzkarReaderSingleIdle",
+      "stack": "azkar",
+      "caption": "Reader · no sourced count, before the tap: empty ring, «اضغط عند الانتهاء», no check (replaces AzkarReaderDone) (approved 15 Nov 2026)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarReaderSingleIdle.html",
+      "bytes": 7036
+    },
+    {
+      "id": "AzkarReaderSingleDone",
+      "stack": "azkar",
+      "caption": "Reader · no sourced count, after the tap: full ring, check and «تم» (approved 15 Nov 2026)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/azkar/AzkarReaderSingleDone.html",
+      "bytes": 7004
+    },
+    {
       "id": "AzkarReaderComplete",
       "stack": "azkar",
       "caption": "Reader · session complete",
@@ -1039,22 +1064,32 @@
     {
       "id": "DuasHomeCategories",
       "stack": "duas",
-      "caption": "الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (بانتظار الموافقة)",
+      "caption": "الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasHomeCategories.html",
-      "bytes": 7899
+      "bytes": 7888
     },
     {
       "id": "DuasCategory",
       "stack": "duas",
-      "caption": "الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (بانتظار الموافقة)",
+      "caption": "الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/DuasCategory.html",
+      "bytes": 10456
+    },
+    {
+      "id": "DuasSearch",
+      "stack": "duas",
+      "caption": "الأدعية · search: categories first, then duas with their category; mirrors AzkarSearch (ADR 0091) (بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
       "status": "awaiting-approval",
-      "path": "frames/duas/DuasCategory.html",
-      "bytes": 10467
+      "path": "frames/duas/DuasSearch.html",
+      "bytes": 6450
     },
     {
       "id": "DuasHome",
@@ -1085,6 +1120,26 @@
       "status": "source",
       "path": "frames/duas/DuasHomeEnglish.html",
       "bytes": 9485
+    },
+    {
+      "id": "DuaQuranDetailNoSource",
+      "stack": "duas",
+      "caption": "دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuaQuranDetailNoSource.html",
+      "bytes": 5264
+    },
+    {
+      "id": "DuaHadithDetailNoSource",
+      "stack": "duas",
+      "caption": "دعاء نبوي · without sources: no takhrij line, no links, no المرجع or الدرجة, no credit lines (developer 15 Nov) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuaHadithDetailNoSource.html",
+      "bytes": 5903
     },
     {
       "id": "DuaQuranDetail",

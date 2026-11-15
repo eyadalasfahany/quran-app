@@ -9,6 +9,7 @@ use App\Domains\Azkar\Audio\AzkarAudioManifest;
 use App\Domains\Azkar\Data\FlatItem;
 use App\Domains\Azkar\Data\ImportPlan;
 use App\Domains\Azkar\Data\ImportStats;
+use App\Domains\Azkar\Enums\AzkarEntryClass;
 use App\Domains\Azkar\OpenDua\StepFlattener;
 use App\Domains\Azkar\Sources\SourceProfile;
 use Carbon\CarbonImmutable;
@@ -16,15 +17,21 @@ use Carbon\CarbonImmutable;
 /**
  * Turns a validated catalogue into rows for the eight canonical tables (ADR 0031 transformation rules).
  * Reads config, the catalogue and the audio store's file sizes, and writes nothing. Entries in $blockedEntries are not emitted.
+ *
+ * Plan step 3: a reviewed dua outside the session categories gets home 'duas' (moved to Duas). Reviewed rows come from
+ * config azkar_entry_types.php through EntryTypePolicy; with no reviewed rows, entry_class and home are null everywhere.
  */
 final class AzkarTransformer
 {
+    public const string HOME_DUAS = 'duas';
+
     public function __construct(
         private readonly StepFlattener $flattener,
         private readonly QuranSegmenter $segmenter,
         private readonly QuranReferencePolicy $policy,
         private readonly AzkarAudioManifest $audio,
         private readonly AzkarAudioFiles $files,
+        private readonly EntryTypePolicy $entryTypes,
     ) {}
 
     /**
@@ -43,6 +50,7 @@ final class AzkarTransformer
         [$chapters, $chapterNumberById] = $this->chapterRows($this->list($catalogue['chapters'] ?? null), $stats);
         $reciterNames = $this->reciterNames($this->list($catalogue['reciters'] ?? null));
         $tags = $this->list($catalogue['tags'] ?? null);
+        $typePlan = $this->entryTypes->resolve($this->entryTypeConfig());
 
         $entries = [];
         $notes = [];
@@ -174,6 +182,9 @@ final class AzkarTransformer
                 'review_status' => 'sourced',
                 'source_version' => $sourceVersion,
                 'imported_at' => $importedAt,
+                'entry_class' => ($typePlan->types[$entryKey] ?? null)?->value,
+                // Set below, once the entry's category links exist (the session rule reads them).
+                'home' => null,
             ];
             $entryMeta[] = ['id' => $entryId, 'chapter' => $chapterNumber, 'variations' => $variationIds, 'tags' => $fields['tags']];
 
@@ -184,6 +195,8 @@ final class AzkarTransformer
         }
 
         [$categories, $entryCategories] = $this->categories($entryMeta, $tags);
+        $entries = $this->withHome($entries, $entryCategories, $stats);
+        $stats->candidatesNotApplied = count($typePlan->candidates);
 
         // Upstream counts.recordings counts distinct recording ids; one id may sit in two places (ADR 0031 §6, report).
         $stats->recordingObjects = count($recordingIds);
@@ -389,6 +402,9 @@ final class AzkarTransformer
     }
 
     /**
+     * Session categories (ADR 0031 §6), then browse topics. A catalogue tag named in config azkar.split_topics is not
+     * emitted: its split topics take its place, in config order (developer request, 15 Nov 2026).
+     *
      * @param  list<array{id: int|string, chapter: int, variations: list<string>, tags: list<string>, entryId?: int}>  $entryMeta
      * @param  list<mixed>  $tags
      * @return array{0: list<array<string, int|string|null>>, 1: list<array<string, int|string|null>>}
@@ -401,6 +417,7 @@ final class AzkarTransformer
         $sessions = config('azkar.session_categories', []);
         $sessions = is_array($sessions) ? $sessions : [];
         $timedVariations = [];
+        $sessionKeys = [];
         $position = 0;
 
         foreach ($sessions as $definition) {
@@ -420,62 +437,169 @@ final class AzkarTransformer
                 'progress_period' => $progressPeriod,
             ];
 
+            $sessionKeys[(string) $categoryId] = $this->sessionKeys($entryMeta, $definition, $timedVariations);
             $ordinal = 0;
-            $variation = is_string($definition['variation'] ?? null) ? $definition['variation'] : null;
 
-            foreach ($entryMeta as $meta) {
-                if ($meta['chapter'] !== ($definition['chapter'] ?? null)) {
-                    continue;
-                }
-
-                $variationKey = '*';
-
-                if ($variation !== null) {
-                    if (in_array($variation, $meta['variations'], true)) {
-                        $variationKey = $variation;
-                    } elseif (array_intersect($meta['variations'], $timedVariations) !== []) {
-                        continue;
-                    }
-                }
-
+            foreach ($sessionKeys[(string) $categoryId] as $entryId => $variationKey) {
                 $ordinal++;
                 $entryCategories[] = [
                     'category_id' => (string) $categoryId,
-                    'entry_id' => $meta['id'],
+                    'entry_id' => $entryId,
                     'variation_key' => $variationKey,
                     'position' => $ordinal,
                 ];
             }
         }
 
+        $splitTopics = $this->splitTopics();
+
         foreach ($this->tagIds($tags) as $tagId) {
-            $position++;
-            $categories[] = [
-                'id' => $tagId,
-                'kind' => 'browse',
-                'position' => $position,
-                'occasion' => null,
-                'progress_period' => $progressPeriod,
-            ];
-
-            $ordinal = 0;
-
-            foreach ($entryMeta as $meta) {
-                if (! in_array($tagId, $meta['tags'], true)) {
-                    continue;
-                }
-
-                $ordinal++;
-                $entryCategories[] = [
-                    'category_id' => $tagId,
-                    'entry_id' => $meta['id'],
-                    'variation_key' => '*',
-                    'position' => $ordinal,
+            foreach ($this->browseTopics($tagId, $splitTopics[$tagId] ?? null, $entryMeta, $sessionKeys) as $topic) {
+                $position++;
+                $categories[] = [
+                    'id' => $topic['id'],
+                    'kind' => 'browse',
+                    'position' => $position,
+                    'occasion' => null,
+                    'progress_period' => $progressPeriod,
                 ];
+
+                $ordinal = 0;
+
+                foreach ($topic['entries'] as $entryId => $variationKey) {
+                    $ordinal++;
+                    $entryCategories[] = [
+                        'category_id' => $topic['id'],
+                        'entry_id' => $entryId,
+                        'variation_key' => $variationKey,
+                        'position' => $ordinal,
+                    ];
+                }
             }
         }
 
         return [$categories, $entryCategories];
+    }
+
+    /**
+     * The entries of one session category, with their variation keys. A timed session skips an entry that has only the
+     * other timed variation.
+     *
+     * @param  list<array{id: int|string, chapter: int, variations: list<string>, tags: list<string>}>  $entryMeta
+     * @param  array<array-key, mixed>  $definition
+     * @param  list<string>  $timedVariations
+     * @return array<int|string, string> Entry id => variation key.
+     */
+    private function sessionKeys(array $entryMeta, array $definition, array $timedVariations): array
+    {
+        $variation = is_string($definition['variation'] ?? null) ? $definition['variation'] : null;
+        $keys = [];
+
+        foreach ($entryMeta as $meta) {
+            if ($meta['chapter'] !== ($definition['chapter'] ?? null)) {
+                continue;
+            }
+
+            $variationKey = '*';
+
+            if ($variation !== null) {
+                if (in_array($variation, $meta['variations'], true)) {
+                    $variationKey = $variation;
+                } elseif (array_intersect($meta['variations'], $timedVariations) !== []) {
+                    continue;
+                }
+            }
+
+            $keys[$meta['id']] = $variationKey;
+        }
+
+        return $keys;
+    }
+
+    /**
+     * The browse topics that replace one catalogue tag: the tag itself, or its split topics from config azkar.split_topics.
+     *
+     * @param  list<array{id: int|string, chapter: int, variations: list<string>, tags: list<string>}>  $entryMeta
+     * @param  array<string, array<int|string, string>>  $sessionKeys  Session id => entry id => variation key.
+     * @return list<array{id: string, entries: array<int|string, string>}>
+     */
+    private function browseTopics(string $tagId, mixed $split, array $entryMeta, array $sessionKeys): array
+    {
+        if (! is_array($split)) {
+            return [['id' => $tagId, 'entries' => $this->tagEntries($entryMeta, $tagId, null, $sessionKeys)]];
+        }
+
+        $topics = [];
+
+        foreach ($split as $topicId => $rule) {
+            $topics[] = [
+                'id' => (string) $topicId,
+                'entries' => $this->tagEntries($entryMeta, $tagId, is_array($rule) ? $rule : [], $sessionKeys),
+            ];
+        }
+
+        return $topics;
+    }
+
+    /**
+     * The entries of a tag, with their variation keys. A null rule takes the whole tag with the browse key '*'. A split rule
+     * takes the tag's entries in session 'session' with that session's key, or the tag's entries not in session
+     * 'except_session' with '*'.
+     *
+     * @param  list<array{id: int|string, chapter: int, variations: list<string>, tags: list<string>}>  $entryMeta
+     * @param  array<array-key, mixed>|null  $rule
+     * @param  array<string, array<int|string, string>>  $sessionKeys
+     * @return array<int|string, string> Entry id => variation key.
+     */
+    private function tagEntries(array $entryMeta, string $tagId, ?array $rule, array $sessionKeys): array
+    {
+        $entries = [];
+
+        foreach ($entryMeta as $meta) {
+            if (! in_array($tagId, $meta['tags'], true)) {
+                continue;
+            }
+
+            $entryId = $meta['id'];
+
+            if ($rule === null) {
+                $entries[$entryId] = '*';
+
+                continue;
+            }
+
+            if (isset($rule['session'])) {
+                $sessionId = (string) $rule['session'];
+
+                if (array_key_exists($entryId, $sessionKeys[$sessionId] ?? [])) {
+                    $entries[$entryId] = $sessionKeys[$sessionId][$entryId];
+                }
+
+                continue;
+            }
+
+            if (isset($rule['except_session'])) {
+                $sessionId = (string) $rule['except_session'];
+
+                if (! array_key_exists($entryId, $sessionKeys[$sessionId] ?? [])) {
+                    $entries[$entryId] = '*';
+                }
+            }
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Config azkar.split_topics: catalogue tag id => topic id => rule.
+     *
+     * @return array<array-key, mixed>
+     */
+    private function splitTopics(): array
+    {
+        $splits = config('azkar.split_topics', []);
+
+        return is_array($splits) ? $splits : [];
     }
 
     /**
@@ -493,6 +617,65 @@ final class AzkarTransformer
         }
 
         return $ids;
+    }
+
+    /**
+     * The `entries` map of config azkar_entry_types.php, read once per import.
+     *
+     * @return array<array-key, mixed>
+     */
+    private function entryTypeConfig(): array
+    {
+        $entries = config('azkar_entry_types.entries', []);
+
+        return is_array($entries) ? $entries : [];
+    }
+
+    /**
+     * Plan step 3 rule: a reviewed dua gets home 'duas' unless one of its final category links is a session category.
+     * A browse topic does not keep it in Azkar (D2). Also tallies the report counts for entry types and moves.
+     *
+     * @param  list<array<string, int|string|null>>  $entries
+     * @param  list<array<string, int|string|null>>  $entryCategories
+     * @return list<array<string, int|string|null>>
+     */
+    private function withHome(array $entries, array $entryCategories, ImportStats $stats): array
+    {
+        $sessions = config('azkar.session_categories', []);
+        $sessionIds = array_map('strval', array_keys(is_array($sessions) ? $sessions : []));
+        $linksByEntry = [];
+
+        foreach ($entryCategories as $link) {
+            $linksByEntry[(int) $link['entry_id']][] = (string) $link['category_id'];
+        }
+
+        foreach ($entries as $index => $entry) {
+            if ($entry['entry_class'] === AzkarEntryClass::Dhikr->value) {
+                $stats->entryTypesDhikr++;
+            }
+
+            if ($entry['entry_class'] !== AzkarEntryClass::Dua->value) {
+                continue;
+            }
+
+            $stats->entryTypesDua++;
+            $linkedIds = $linksByEntry[(int) $entry['id']] ?? [];
+
+            if (array_intersect($linkedIds, $sessionIds) !== []) {
+                $stats->duasKeptInSessions++;
+
+                continue;
+            }
+
+            $entries[$index]['home'] = self::HOME_DUAS;
+            $stats->homeDuas++;
+
+            foreach ($linkedIds as $categoryId) {
+                $stats->homeDuasByCategory[$categoryId] = ($stats->homeDuasByCategory[$categoryId] ?? 0) + 1;
+            }
+        }
+
+        return $entries;
     }
 
     /**

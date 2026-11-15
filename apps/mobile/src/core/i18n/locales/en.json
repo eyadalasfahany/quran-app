@@ -923,6 +923,10 @@
       "after_waking": "On waking",
       "morning-and-evening": "Morning and evening",
       "sleep-and-waking": "Sleep and waking",
+      "morning-topic": "Morning",
+      "evening-topic": "Evening",
+      "sleep-topic": "Sleep",
+      "waking-topic": "Waking",
       "prayer-and-the-masjid": "Prayer and the masjid",
       "wudu-and-purification": "Wudu and purification",
       "food-and-drink": "Food and drink",
@@ -984,6 +988,8 @@
       "hint": "Tap to count",
       "doneLabel": "Mark as done",
       "doneHint": "Tap to mark done",
+      "tapPrompt": "Tap",
+      "tapPromptDetail": "when done",
       "reset": "Reset count"
     },
     "details": {
@@ -1167,7 +1173,11 @@
       "categoryCount_few": "{{number}} duas",
       "categoryCount_many": "{{number}} duas",
       "categoryCount_other": "{{number}} duas",
-      "quranTitle": "Quranic duas"
+      "quranTitle": "Quranic duas",
+      "categoriesHeading": "Categories",
+      "showAll": "Show all {{number}}",
+      "showLess": "Show less",
+      "sourcesLine": "Sources: Quran · Hisn al-Muslim · HadeethEnc (HadeethEnc.com)"
     },
     "favorites": {
       "title": "Favourites",
@@ -1211,6 +1221,18 @@
     "reminders": {
       "notificationTitle": "A reminder from My duas",
       "notificationBody": "Open to read your dua"
+    },
+    "categories": {
+      "quran": "From the Quran"
+    },
+    "sources": {
+      "quran": "Quran",
+      "hadeethenc": "HadeethEnc",
+      "hisn": "Hisn al-Muslim"
+    },
+    "category": {
+      "caption": "{{count}} · {{source}}",
+      "cardCaption": "{{source}} · {{number}}"
     },
     "quran": {
       "listTitle": "Quranic duas",

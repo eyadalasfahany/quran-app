@@ -111,6 +111,17 @@ export function countPropheticDuas(db: SqlExecutor): number {
   return row?.count ?? 0;
 }
 
+/** The prophetic duas of one HadeethEnc group, in position order: the items of its category (ADR 0091). */
+export function listPropheticDuasInGroup(db: SqlExecutor, groupId: number): PropheticDuaSummary[] {
+  const resourceId = activeDuasResourceId(db);
+
+  if (resourceId === -1) {
+    return [];
+  }
+
+  return db.all<PropheticDuaSummary>(`${PROPHETIC_SELECT} AND i.group_id = ? ORDER BY i.position`, [resourceId, groupId]);
+}
+
 export function listPropheticDuaSections(db: SqlExecutor): PropheticDuaSection[] {
   const resourceId = activeDuasResourceId(db);
 

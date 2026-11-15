@@ -129,6 +129,42 @@ describe('azkar search', () => {
     expect(searchAzkarEntries(executor, '%')).toEqual([]);
     expect(searchAzkarEntries(executor, '_')).toEqual([]);
   });
+
+  describe('entries moved to Duas (ADR 0091)', () => {
+    it('does not return a moved entry for its text, nor for its chapter title', () => {
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-008'`);
+
+      expect(searchAzkarEntries(executor, 'نص تجريبي ١١')).toEqual([]);
+      const chapterHits = searchAzkarEntries(executor, 'مرجعي ثان').map((hit) => hit.entryKey);
+      expect(chapterHits).toContain('fixture:entry-003');
+      expect(chapterHits).not.toContain('fixture:entry-008');
+    });
+
+    it('does not return a moved entry whose only browse topic has emptied', () => {
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-007'`);
+
+      expect(searchAzkarEntries(executor, 'نص تجريبي ٨')).toEqual([]);
+    });
+
+    it('still returns a session entry typed dua, for its text and for its chapter title', () => {
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-001'`);
+
+      expect(searchAzkarEntries(executor, 'مرجعي أول').map((hit) => hit.entryKey)).toEqual([
+        'fixture:entry-001',
+        'fixture:entry-002',
+      ]);
+      expect(searchAzkarEntries(executor, 'تجريبي ٢').map((hit) => hit.entryKey)).toEqual(['fixture:entry-001']);
+    });
+
+    it('keeps an entry in a session searchable even when its browse topic hides it', () => {
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-002'`);
+
+      expect(searchAzkarEntries(executor, 'مرجعي أول').map((hit) => hit.entryKey)).toEqual([
+        'fixture:entry-001',
+        'fixture:entry-002',
+      ]);
+    });
+  });
 });
 
 describe('mapMatchToOriginal', () => {

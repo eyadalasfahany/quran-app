@@ -227,6 +227,8 @@ final class PackSchema
                 self::text('review_status'),
                 self::text('source_version'),
                 self::integer('imported_at'),
+                // Plan step 3: 'duas' moves the entry to Duas. Null everywhere until reviewed types exist. No entry_class here.
+                self::text('home', nullable: true),
             ],
             primaryKey: ['resource_id', 'id'],
             orderBy: ['resource_id', 'id'],

@@ -18,6 +18,12 @@ describe('duasHref', () => {
     expect(duasHref.hadithDetail('hadeethenc:1')).toBe('/duas/hadith/hadeethenc%3A1');
   });
 
+  it('builds a category route with the id URL-encoded', () => {
+    expect(duasHref.category('quran')).toBe('/duas/category/quran');
+    expect(duasHref.category('hadeethenc:12')).toBe('/duas/category/hadeethenc%3A12');
+    expect(duasHref.category('hisn:browse-a')).toBe('/duas/category/hisn%3Abrowse-a');
+  });
+
   it('opens the editor with an optional id', () => {
     expect(duasHref.mineEdit()).toBe('/duas/mine/edit');
     expect(duasHref.mineEdit('abc')).toBe('/duas/mine/edit?id=abc');

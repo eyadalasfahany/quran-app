@@ -1,5 +1,6 @@
 import {
   azkarCategoryKinds,
+  azkarEntryHomes,
   azkarEntryTypes,
   azkarItemKinds,
   azkarNoteKinds,
@@ -24,6 +25,7 @@ import {
   type AzkarChapter,
   type AzkarEntry,
   type AzkarEntryDetail,
+  type AzkarEntryHome,
   type AzkarItem,
   type AzkarItemDetail,
   type AzkarNote,
@@ -76,7 +78,8 @@ const ENTRY_SELECT = `
     timing_prayer AS timingPrayer,
     review_status AS reviewStatus,
     source_version AS sourceVersion,
-    imported_at AS importedAt
+    imported_at AS importedAt,
+    home
   FROM azkar_entries
 `;
 
@@ -94,7 +97,8 @@ const JOINED_ENTRY_COLUMNS = `
     e.timing_prayer AS timingPrayer,
     e.review_status AS reviewStatus,
     e.source_version AS sourceVersion,
-    e.imported_at AS importedAt`;
+    e.imported_at AS importedAt,
+    e.home AS home`;
 
 const ITEM_SELECT = `
   SELECT
@@ -178,12 +182,13 @@ type CategoryRow = Omit<AzkarCategory, 'kind' | 'occasion' | 'progressPeriod'> &
 
 type ChapterRow = AzkarChapter;
 
-type EntryRow = Omit<AzkarEntry, 'entryType' | 'occasion' | 'timingType' | 'timingPrayer' | 'reviewStatus'> & {
+type EntryRow = Omit<AzkarEntry, 'entryType' | 'occasion' | 'timingType' | 'timingPrayer' | 'reviewStatus' | 'home'> & {
   entryType: string;
   occasion: string | null;
   timingType: string | null;
   timingPrayer: string | null;
   reviewStatus: string;
+  home: string | null;
 };
 
 type ItemRow = Omit<AzkarItem, 'kind'> & { kind: string };
@@ -205,17 +210,22 @@ export function hasAzkarContent(db: SqlExecutor): boolean {
   return db.get<{ one: number }>('SELECT 1 AS one FROM azkar_entries WHERE resource_id = ? LIMIT 1', [activeAzkarResourceId(db)]) !== undefined;
 }
 
-/** Session categories first, then browse; each in its stored position. `unitCount` is built for `locale`. */
+/**
+ * Session categories first, then browse; each in its stored position. `unitCount` is built for `locale`. A browse topic
+ * with no visible entry (every entry moved to Duas, see `listCategoryEntries`) is left out; a session always stays.
+ */
 export function listCategories(db: SqlExecutor, locale: Locale = 'ar'): AzkarCategoryListItem[] {
   const rows = db.all<CategoryRow>(
     `${CATEGORY_SELECT} WHERE resource_id = ? ORDER BY CASE kind WHEN 'session' THEN 0 ELSE 1 END, position, id`,
     [activeAzkarResourceId(db)],
   );
 
-  return rows.map((row) => {
-    const category = asCategory(row);
-    return { ...category, unitCount: listCategoryUnits(db, category.id, locale).length };
-  });
+  return rows
+    .map((row) => {
+      const category = asCategory(row);
+      return { ...category, unitCount: listCategoryUnits(db, category.id, locale).length };
+    })
+    .filter((category) => category.kind === 'session' || category.unitCount > 0);
 }
 
 /** Category ids in display order, without building units (cheap enough to run per keystroke). */
@@ -240,13 +250,16 @@ export type VariationOverrides = Readonly<Record<string, string>>;
  * Entries of a category in chapter order, then entry position. A link with a specific `variation_key` uses exactly
  * that variation. A `'*'` link uses ONE of the entry's alternatives: the override when it names one, else the first
  * alternative in upstream order. Alternatives are never concatenated.
+ *
+ * An entry with `home = 'duas'` (ADR 0091) is hidden from a browse topic. A session still lists it, so its session
+ * is unchanged.
  */
 export function listCategoryEntries(
   db: SqlExecutor,
   categoryId: string,
   overrides: VariationOverrides = {},
 ): AzkarCategoryEntry[] {
-  // One join reads the links with their entries and chapters, so no entry is fetched on its own.
+  // One join reads the links with their entries, chapters and categories, so no entry is fetched on its own.
   const links = db.all<EntryRow & CategoryLinkRow>(
     `SELECT ${JOINED_ENTRY_COLUMNS},
        ec.variation_key AS linkVariationKey,
@@ -254,7 +267,9 @@ export function listCategoryEntries(
      FROM azkar_entry_categories ec
      JOIN azkar_entries e ON e.resource_id = ec.resource_id AND e.id = ec.entry_id
      JOIN azkar_chapters c ON c.resource_id = e.resource_id AND c.id = e.chapter_id
+     JOIN azkar_categories cat ON cat.resource_id = ec.resource_id AND cat.id = ec.category_id
      WHERE ec.resource_id = ? AND ec.category_id = ?
+       AND (e.home IS NULL OR cat.kind = 'session')
      ORDER BY c.number, e.position, e.id`,
     [activeAzkarResourceId(db), categoryId],
   );
@@ -547,7 +562,13 @@ function asEntry(row: EntryRow): AzkarEntry {
     reviewStatus: asAzkarEnum(azkarReviewStatuses, row.reviewStatus, 'review status'),
     sourceVersion: row.sourceVersion,
     importedAt: row.importedAt,
+    home: asEntryHome(row.home),
   };
+}
+
+/** `duas` stays `duas`; any other value, or none (a pack built before migration 0017), reads as Azkar (null). */
+function asEntryHome(value: string | null): AzkarEntryHome | null {
+  return value !== null && (azkarEntryHomes as readonly string[]).includes(value) ? (value as AzkarEntryHome) : null;
 }
 
 function asItem(row: ItemRow): AzkarItem {

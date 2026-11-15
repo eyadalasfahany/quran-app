@@ -1,5 +1,6 @@
 import {
   azkarCategoryKinds,
+  azkarEntryHomes,
   azkarEntryTypes,
   azkarItemKinds,
   azkarNoteKinds,
@@ -13,6 +14,8 @@ import {
 
 export type AzkarCategoryKind = (typeof azkarCategoryKinds)[number];
 export type AzkarEntryType = (typeof azkarEntryTypes)[number];
+/** Where a Hisn dua shows (ADR 0091): `duas`, or null for Azkar. */
+export type AzkarEntryHome = (typeof azkarEntryHomes)[number];
 export type AzkarItemKind = (typeof azkarItemKinds)[number];
 export type AzkarSegmentKind = (typeof azkarSegmentKinds)[number];
 export type AzkarNoteKind = (typeof azkarNoteKinds)[number];
@@ -53,6 +56,7 @@ export type AzkarEntry = {
   reviewStatus: AzkarReviewStatus;
   sourceVersion: string;
   importedAt: number;
+  home: AzkarEntryHome | null;
 };
 
 export type AzkarItem = {

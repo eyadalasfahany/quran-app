@@ -379,6 +379,7 @@ describe('azkar migration (0008)', () => {
       'review_status',
       'source_version',
       'imported_at',
+      'home',
     ],
     azkar_items: [
       'resource_id',
@@ -454,6 +455,39 @@ describe('azkar migration (0008)', () => {
       for (const [name, columns] of Object.entries(canonical)) {
         expect(columnNames(database, name)).toEqual(columns);
       }
+    } finally {
+      database.close();
+    }
+  });
+
+  it('adds the nullable home column to a database that already holds entries (migration 0017)', () => {
+    const { database, executor } = openNodeSqlite(':memory:');
+    try {
+      const journal = JSON.parse(readFileSync(join(migrationsDir, 'meta/_journal.json'), 'utf8')) as {
+        entries: { idx: number; tag: string }[];
+      };
+      const before = [...journal.entries].sort((left, right) => left.idx - right.idx).filter((entry) => entry.tag !== '0017_azkar_entry_home');
+      for (const entry of before) {
+        executor.exec(readFileSync(join(migrationsDir, `${entry.tag}.sql`), 'utf8'));
+      }
+      expect(columnNames(database, 'azkar_entries')).not.toContain('home');
+      executor.run(
+        `INSERT INTO azkar_entries (resource_id, id, entry_key, chapter_id, position, source_reference, entry_type, review_status, source_version, imported_at)
+         VALUES (-9, 1, 'fixture:v16-entry', 1, 1, 'FIXTURE', 'invocation', 'sourced', 'taybah-dev-fixture', 0)`,
+      );
+
+      executor.exec(readFileSync(join(migrationsDir, '0017_azkar_entry_home.sql'), 'utf8'));
+
+      expect(columnNames(database, 'azkar_entries').at(-1)).toBe('home');
+      expect(executor.get('SELECT entry_key AS entryKey, home FROM azkar_entries WHERE id = 1')).toEqual({
+        entryKey: 'fixture:v16-entry',
+        home: null,
+      });
+      const home = database
+        .prepare('PRAGMA table_info(azkar_entries)')
+        .all()
+        .find((row) => (row as { name: string }).name === 'home') as { notnull: number } | undefined;
+      expect(home?.notnull).toBe(0);
     } finally {
       database.close();
     }

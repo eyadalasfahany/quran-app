@@ -353,6 +353,15 @@ final class AzkarImporter
                 'items' => ['recitation' => $stats->itemsRecitation, 'instruction' => $stats->itemsInstruction, 'narration' => $stats->itemsNarration],
                 'segments' => ['text' => $stats->segmentsText, 'quran' => $stats->segmentsQuran],
                 'quran_passages' => ['mapped' => $stats->quranPassagesMapped, 'unmapped' => $stats->quranPassagesUnmapped],
+                // Plan step 3: counts only. Reviewed types come from config azkar_entry_types.php; candidates are never applied.
+                'entry_types' => [
+                    'reviewed_dua' => $stats->entryTypesDua,
+                    'reviewed_dhikr' => $stats->entryTypesDhikr,
+                    'moved_to_duas' => $stats->homeDuas,
+                    'moved_to_duas_by_category' => $stats->homeDuasByCategory,
+                    'duas_kept_in_sessions' => $stats->duasKeptInSessions,
+                    'candidates_not_applied' => $stats->candidatesNotApplied,
+                ],
             ],
             sourced: [
                 'items_with_required_count' => $stats->itemsWithRequiredCount,

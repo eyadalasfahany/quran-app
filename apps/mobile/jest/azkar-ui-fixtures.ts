@@ -88,6 +88,7 @@ export function makeEntry(overrides: Partial<AzkarEntry> = {}): AzkarEntry {
     reviewStatus: 'sourced',
     sourceVersion: 'taybah-dev-fixture',
     importedAt: 0,
+    home: null,
     ...overrides,
   };
 }

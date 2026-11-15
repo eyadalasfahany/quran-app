@@ -1,8 +1,10 @@
-import { screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
 import { renderUi } from '../../../../jest/render-ui';
 import * as duasHooks from '../data/hooks';
-import { DuasHomeScreen } from './DuasHomeScreen';
+import type { DuaCategory } from '../data/model';
+import { DUAS_HOME_CATEGORY_LIMIT, DuasHomeScreen } from './DuasHomeScreen';
 
 const mockedDuasHooks = duasHooks as jest.Mocked<typeof duasHooks>;
 
@@ -17,76 +19,125 @@ jest.mock('react-native-safe-area-context', () => {
 
 jest.mock('../data/hooks', () => ({
   useMyDuas: jest.fn(),
-  usePropheticDuaSections: jest.fn(),
-  useQuranicDuasAvailable: jest.fn(),
-  useQuranicDuasList: jest.fn(),
+  useDuaCategories: jest.fn(),
 }));
+
+// Fixture categories: the Quran category, then HadeethEnc groups with fixture titles. No dua text.
+const QURAN: DuaCategory = { id: 'quran', kind: 'quran', titleKey: 'duas.categories.quran', title: null, count: 28, sourceKind: 'duas' };
+
+function group(index: number): DuaCategory {
+  return {
+    id: `hadeethenc:${index}`,
+    kind: 'hadeethenc',
+    titleKey: null,
+    title: `FIXTURE group ${index}`,
+    count: index,
+    sourceKind: 'duas',
+  };
+}
+
+/** Ten categories: more than the eight the home shows first. */
+const TEN_CATEGORIES: DuaCategory[] = [QURAN, ...Array.from({ length: 9 }, (_, index) => group(index + 1))];
 
 describe('DuasHomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedDuasHooks.useMyDuas.mockReturnValue([]);
-    mockedDuasHooks.useQuranicDuasAvailable.mockReturnValue(false);
-    mockedDuasHooks.useQuranicDuasList.mockReturnValue([]);
-    mockedDuasHooks.usePropheticDuaSections.mockReturnValue([]);
+    mockedDuasHooks.useDuaCategories.mockReturnValue([]);
   });
 
-  it('always shows the mine card', async () => {
+  it('shows the mine card, the title and the favourites button', async () => {
     await renderUi(<DuasHomeScreen />);
+
     expect(screen.getByTestId('duas-mine-card')).toBeOnTheScreen();
+    expect(screen.getByRole('header', { name: 'الأدعية' })).toBeOnTheScreen();
+    expect(screen.getByTestId('duas-home-favorites')).toBeOnTheScreen();
   });
 
-  it('always shows the add-mine button at the bottom of the scroll', async () => {
+  it('shows no search button, until the search frame is approved', async () => {
     await renderUi(<DuasHomeScreen />);
-    expect(screen.getByTestId('duas-home-add-mine')).toBeOnTheScreen();
+
+    expect(screen.queryByRole('button', { name: 'بحث' })).toBeNull();
   });
 
-  it('hides quran and sunnah sections when no content exists', async () => {
+  it('shows the sources line under the blocks', async () => {
     await renderUi(<DuasHomeScreen />);
+
+    expect(screen.getByTestId('duas-source-credit')).toHaveTextContent(
+      'المصادر: القرآن الكريم · حصن المسلم · موسوعة الأحاديث النبوية (HadeethEnc.com)',
+    );
+  });
+
+  it('hides the categories heading and grid when there are no categories', async () => {
+    await renderUi(<DuasHomeScreen />);
+
     expect(screen.queryByTestId('duas-categories-heading')).toBeNull();
-    expect(screen.queryByTestId('duas-quran-section')).toBeNull();
-    expect(screen.queryByTestId('duas-sunnah-section')).toBeNull();
-    expect(screen.queryByTestId('duas-source-hisn')).toBeNull();
-    expect(screen.queryByTestId('duas-source-hadith')).toBeNull();
-    expect(screen.queryByTestId('duas-source-hadith-pending')).toBeNull();
-    expect(screen.queryByTestId('duas-hisn-topics-heading')).toBeNull();
-    expect(screen.queryByTestId('duas-attribution-line')).toBeNull();
+    expect(screen.queryByTestId('duas-categories-toggle')).toBeNull();
+    expect(screen.queryByRole('button', { name: /عرض/ })).toBeNull();
   });
 
-  it('shows the quran section alone when only Quranic duas exist', async () => {
-    mockedDuasHooks.useQuranicDuasAvailable.mockReturnValue(true);
-    mockedDuasHooks.useQuranicDuasList.mockReturnValue([
-      { duaKey: 'quran:1:1', position: 1, surah: 1, verseFrom: 1, verseTo: null },
-    ]);
+  it('shows the categories heading and one tile per category, with the count and source', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue([QURAN, group(1)]);
     await renderUi(<DuasHomeScreen />);
-    expect(screen.getByTestId('duas-quran-section')).toBeOnTheScreen();
-    expect(screen.getByTestId('duas-category-quran')).toBeOnTheScreen();
-    expect(screen.queryByTestId('duas-sunnah-section')).toBeNull();
+
+    expect(screen.getByTestId('duas-categories-heading')).toHaveTextContent('التصنيفات');
+    expect(screen.getByRole('button', { name: 'من القرآن الكريم، ٢٨ دعاءً · القرآن' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'FIXTURE group 1، دعاء واحد · HadeethEnc' })).toBeOnTheScreen();
   });
 
-  it('shows prophetic topic tiles from sections with items and a group id', async () => {
-    mockedDuasHooks.usePropheticDuaSections.mockReturnValue([
-      {
-        groupId: 2,
-        title: 'FIXTURE category title',
-        items: [{ duaKey: 'hadeethenc:1', position: 1, groupId: 2, title: 'FIXTURE row title' }],
-      },
-      {
-        groupId: 3,
-        title: 'FIXTURE empty group',
-        items: [],
-      },
-      {
-        groupId: null,
-        title: 'FIXTURE ungrouped',
-        items: [{ duaKey: 'hadeethenc:2', position: 2, groupId: null, title: 'FIXTURE row title 2' }],
-      },
-    ]);
+  it('shows the first eight categories and an expand link for the total', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue(TEN_CATEGORIES);
     await renderUi(<DuasHomeScreen />);
-    expect(screen.getByTestId('duas-sunnah-section')).toBeOnTheScreen();
-    expect(screen.getByTestId('duas-category-hadith-2')).toBeOnTheScreen();
-    expect(screen.queryByTestId('duas-category-hadith-3')).toBeNull();
-    expect(screen.getByText('FIXTURE category title')).toBeOnTheScreen();
-    expect(screen.queryByTestId('duas-quran-section')).toBeNull();
+
+    expect(screen.getByTestId(`duas-categories-tile-${TEN_CATEGORIES[DUAS_HOME_CATEGORY_LIMIT - 1]!.id}`)).toBeOnTheScreen();
+    expect(screen.queryByTestId(`duas-categories-tile-${TEN_CATEGORIES[DUAS_HOME_CATEGORY_LIMIT]!.id}`)).toBeNull();
+    expect(screen.getByRole('button', { name: 'عرض الكل ١٠' }).props.accessibilityState).toMatchObject({ expanded: false });
+  });
+
+  it('expands the grid in place on «عرض الكل», then collapses on «عرض أقل»', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue(TEN_CATEGORIES);
+    await renderUi(<DuasHomeScreen />);
+
+    await fireEvent.press(screen.getByTestId('duas-categories-toggle'));
+    expect(screen.getByTestId(`duas-categories-tile-${TEN_CATEGORIES[9]!.id}`)).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'عرض أقل' }).props.accessibilityState).toMatchObject({ expanded: true });
+
+    await fireEvent.press(screen.getByTestId('duas-categories-toggle'));
+    expect(screen.queryByTestId(`duas-categories-tile-${TEN_CATEGORIES[9]!.id}`)).toBeNull();
+    expect(screen.getByRole('button', { name: 'عرض الكل ١٠' })).toBeOnTheScreen();
+  });
+
+  it('shows no expand link when all categories fit in the first eight', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue(TEN_CATEGORIES.slice(0, DUAS_HOME_CATEGORY_LIMIT));
+    await renderUi(<DuasHomeScreen />);
+
+    expect(screen.queryByRole('button', { name: /عرض/ })).toBeNull();
+  });
+
+  it('opens a category on its tile press', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue([QURAN]);
+    await renderUi(<DuasHomeScreen />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'من القرآن الكريم، ٢٨ دعاءً · القرآن' }));
+    expect(router.push).toHaveBeenCalledWith('/duas/category/quran');
+  });
+
+  it('opens favourites from its button and the mine card from its card', async () => {
+    await renderUi(<DuasHomeScreen />);
+
+    await fireEvent.press(screen.getByTestId('duas-home-favorites'));
+    expect(router.push).toHaveBeenLastCalledWith('/duas/favorites');
+
+    await fireEvent.press(screen.getByTestId('duas-mine-card'));
+    expect(router.push).toHaveBeenLastCalledWith('/duas/mine');
+  });
+
+  it('renders the category names and the expand link in English', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue(TEN_CATEGORIES);
+    await renderUi(<DuasHomeScreen />, { locale: 'en' });
+
+    expect(screen.getByTestId('duas-categories-toggle')).toHaveTextContent('Show all 10');
+    expect(screen.getByRole('button', { name: 'From the Quran, 28 duas · Quran' })).toBeOnTheScreen();
+    expect(screen.getByTestId('duas-categories-heading')).toHaveTextContent('Categories');
   });
 });

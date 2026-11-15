@@ -1,57 +1,55 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { Button, IconButton, Screen } from '@/shared/ui';
-import { AzkarListCard } from '@/features/azkar/components/AzkarListCard';
-import { AzkarScreenHeader } from '@/features/azkar/components/AzkarScreenHeader';
-import { AzkarTopicTile } from '@/features/azkar/components/AzkarTopicTile';
+import { IconButton, Screen } from '@/shared/ui';
 
-import type { PropheticDuaSection } from '../data/model';
-import { useMyDuas, usePropheticDuaSections, useQuranicDuasAvailable, useQuranicDuasList } from '../data/hooks';
+import { DuasCategoryGrid, type DuasCategoryGridItem } from '../components/DuasCategoryGrid';
+import { DuasCategoryHeader } from '../components/DuasCategoryHeader';
 import { DuasMineCard } from '../components/DuasMineCard';
-import { DuasSection } from '../components/DuasSection';
-import { DuasSourceRow } from '../components/DuasSourceRow';
+import { DuasSourceCredit } from '../components/DuasSourceCredit';
+import { categoryCaption, categoryName } from '../data/category-labels';
+import { useDuaCategories, useMyDuas } from '../data/hooks';
 import { duasHref, goBackOr } from '../routes';
 
 const BOOKMARK = { ios: 'bookmark', android: 'bookmark' } as const;
 
-/** Chunks prophetic groups into rows of two, as Azkar home lays out browse topics. */
-function pairs<T>(items: readonly T[]): T[][] {
-  const rows: T[][] = [];
-  for (let index = 0; index < items.length; index += 2) {
-    rows.push(items.slice(index, index + 2));
-  }
-  return rows;
-}
+/** Categories shown before «عرض الكل» expands the grid in place (screens/, #DuasHomeCategories). */
+export const DUAS_HOME_CATEGORY_LIMIT = 8;
 
-/** Duas home (screens/, #DuasHome): «أدعيتي», Quranic list row, prophetic topic tiles. */
+/**
+ * Duas home (screens/, #DuasHomeCategories): the header, the «أدعيتي» card, the «التصنيفات» grid of the first eight
+ * categories with «عرض الكل N» to expand it in place, and the sources line. The search button waits for the
+ * DuasSearch frame, so the header has no search control yet.
+ */
 export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
-  const quranAvailable = useQuranicDuasAvailable();
-  const quranItems = useQuranicDuasList();
   const myDuas = useMyDuas();
-  const sections = usePropheticDuaSections();
-  const propheticGroups = useMemo(
+  const categories = useDuaCategories();
+  const [expanded, setExpanded] = useState(false);
+
+  const tiles = useMemo<DuasCategoryGridItem[]>(
     () =>
-      sections.filter(
-        (section): section is PropheticDuaSection & { groupId: number } =>
-          section.items.length > 0 && section.groupId !== null,
-      ),
-    [sections],
+      (expanded ? categories : categories.slice(0, DUAS_HOME_CATEGORY_LIMIT)).map((category) => ({
+        id: category.id,
+        name: categoryName(category, t),
+        caption: categoryCaption(category, locale, t),
+        onPress: () => router.push(duasHref.category(category.id)),
+      })),
+    [categories, expanded, locale, t],
   );
 
   return (
     <Screen testID={testID}>
-      <ContentColumn gutter={theme.size.gutterHome}>
-        <View style={{ flex: 1, gap: theme.size.sectionGap, paddingTop: theme.space[2] }}>
-          <AzkarScreenHeader
+      <ContentColumn gutter={theme.size.gutterList}>
+        <View style={{ flex: 1, gap: theme.size.blockGap, paddingTop: theme.space[2] }}>
+          <DuasCategoryHeader
             onBack={() => goBackOr(duasHref.homeTab)}
             title={t('duas.home.title')}
             trailing={
@@ -64,61 +62,27 @@ export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: strin
               />
             }
           />
-          <ScrollView contentContainerStyle={{ gap: theme.size.sectionGap, paddingBottom: theme.space[8] }}>
+          <ScrollView contentContainerStyle={{ gap: theme.size.blockGap, paddingBottom: theme.space[8] }}>
             <DuasMineCard count={myDuas.length} onPress={() => router.push(duasHref.mine)} />
-            {quranAvailable ? (
-              <DuasSection
-                caption={t('duas.home.quranSectionCaption')}
-                testID="duas-quran-section"
-                title={t('duas.home.quranSectionHeading')}
-              >
-                <AzkarListCard>
-                  <DuasSourceRow
-                    detail={t('duas.home.categoryCount', {
-                      count: quranItems.length,
-                      number: formatNumber(quranItems.length, locale),
-                    })}
-                    onPress={() => router.push(duasHref.quranList)}
-                    separator={false}
-                    testID="duas-category-quran"
-                    title={t('duas.home.quranTitle')}
-                  />
-                </AzkarListCard>
-              </DuasSection>
+            {categories.length > 0 ? (
+              <DuasCategoryGrid
+                heading={t('duas.home.categoriesHeading')}
+                items={tiles}
+                testID="duas-categories"
+                toggle={
+                  categories.length > DUAS_HOME_CATEGORY_LIMIT
+                    ? {
+                        expanded,
+                        label: expanded
+                          ? t('duas.home.showLess')
+                          : t('duas.home.showAll', { number: formatNumber(categories.length, locale) }),
+                        onPress: () => setExpanded((value) => !value),
+                      }
+                    : undefined
+                }
+              />
             ) : null}
-            {propheticGroups.length > 0 ? (
-              <DuasSection
-                caption={t('duas.home.sunnahSectionCaption')}
-                testID="duas-sunnah-section"
-                title={t('duas.home.sunnahSectionHeading')}
-              >
-                <View style={{ gap: theme.space[3] }}>
-                  {pairs(propheticGroups).map((row, rowIndex) => (
-                    <View key={rowIndex} style={{ flexDirection: 'row', gap: theme.space[3] }}>
-                      {row.map((section) => (
-                        <AzkarTopicTile
-                          countText={t('duas.home.categoryCount', {
-                            count: section.items.length,
-                            number: formatNumber(section.items.length, locale),
-                          })}
-                          key={section.groupId}
-                          onPress={() => router.push(duasHref.hadithGroup(section.groupId))}
-                          testID={`duas-category-hadith-${section.groupId}`}
-                          title={section.title ?? t('duas.hadith.listTitle')}
-                        />
-                      ))}
-                    </View>
-                  ))}
-                </View>
-              </DuasSection>
-            ) : null}
-            <Button
-              label={t('duas.mine.add')}
-              onPress={() => router.push(duasHref.mineEdit())}
-              stretch
-              testID="duas-home-add-mine"
-              variant="secondary"
-            />
+            <DuasSourceCredit text={t('duas.home.sourcesLine')} />
           </ScrollView>
         </View>
       </ContentColumn>

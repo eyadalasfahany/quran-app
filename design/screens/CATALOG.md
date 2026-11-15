@@ -2,7 +2,7 @@
 
 Token-cheap inventory. **Models: read this or `frames.tsv`, not HTML frames.**
 
-Total: **244** frames · **23** stacks
+Total: **249** frames · **23** stacks
 
 | id | stack | size | theme | status | caption |
 |---|---|---|---|---|---|
@@ -69,6 +69,8 @@ Total: **244** frames · **23** stacks
 | `AzkarReader` | azkar | compact | ar-light | source | Reader · counted item |
 | `AzkarReaderDark` | azkar | compact | dark | source | Reader · Dark |
 | `AzkarReaderDone` | azkar | compact | ar-light | source | Reader · item without a sourced count (single ring) |
+| `AzkarReaderSingleIdle` | azkar | compact | ar-light | source | Reader · no sourced count, before the tap: empty ring, «اضغط عند الانتهاء», no check (replaces AzkarReaderDone) (approved 15 Nov 2026) |
+| `AzkarReaderSingleDone` | azkar | compact | ar-light | source | Reader · no sourced count, after the tap: full ring, check and «تم» (approved 15 Nov 2026) |
 | `AzkarReaderComplete` | azkar | compact | ar-light | source | Reader · session complete |
 | `AzkarReaderAudio` | azkar | compact | ar-light | source | Reader · licensed recording |
 | `AzkarPlayer` | azkar | compact | ar-light | awaiting-approval | Azkar player · full sheet · light · بانتظار الموافقة |
@@ -80,11 +82,14 @@ Total: **244** frames · **23** stacks
 | `AzkarDownloads` | azkar | compact | ar-light | source | Downloads · licensed recording (future) |
 | `AzkarDownloadsEmpty` | azkar | compact | ar-light | source | Empty · recordings (licensed recording, future) |
 | `AzkarExpanded` | azkar | expanded | ar-light | source | Azkar reader · expanded · 1194 × 834 |
-| `DuasHomeCategories` | duas | compact | ar-light | awaiting-approval | الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (بانتظار الموافقة) |
-| `DuasCategory` | duas | compact | ar-light | awaiting-approval | الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (بانتظار الموافقة) |
+| `DuasHomeCategories` | duas | compact | ar-light | source | الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (approved 15 Nov 2026) |
+| `DuasCategory` | duas | compact | ar-light | source | الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026) |
+| `DuasSearch` | duas | compact | ar-light | awaiting-approval | الأدعية · search: categories first, then duas with their category; mirrors AzkarSearch (ADR 0091) (بانتظار الموافقة) |
 | `DuasHome` | duas | compact | ar-light | source | الأدعية · Arabic |
 | `DuasHomeDark` | duas | compact | dark | source | الأدعية · Dark |
 | `DuasHomeEnglish` | duas | compact | en | source | Duas home · English (LTR) |
+| `DuaQuranDetailNoSource` | duas | compact | ar-light | awaiting-approval | دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (بانتظار الموافقة) |
+| `DuaHadithDetailNoSource` | duas | compact | ar-light | awaiting-approval | دعاء نبوي · without sources: no takhrij line, no links, no المرجع or الدرجة, no credit lines (developer 15 Nov) (بانتظار الموافقة) |
 | `DuaQuranDetail` | duas | compact | ar-light | source | دعاء قرآني · Arabic |
 | `DuaQuranDetailDark` | duas | compact | dark | source | دعاء قرآني · Dark |
 | `DuaQuranDetailEnglish` | duas | compact | en | source | Quranic dua · English (LTR) |

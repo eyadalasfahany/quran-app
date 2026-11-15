@@ -2,7 +2,7 @@
 
 Azkar home, reader, reminders, downloads
 
-28 frames · review page: `design/azkar/<Screen>/index.html` (ADR 0087)
+30 frames · review page: `design/azkar/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
@@ -23,6 +23,8 @@ Azkar home, reader, reminders, downloads
 | `AzkarReader` | compact | ar-light | source | Reader · counted item |
 | `AzkarReaderDark` | compact | dark | source | Reader · Dark |
 | `AzkarReaderDone` | compact | ar-light | source | Reader · item without a sourced count (single ring) |
+| `AzkarReaderSingleIdle` | compact | ar-light | source | Reader · no sourced count, before the tap: empty ring, «اضغط عند الانتهاء», no check (replaces AzkarReaderDone) (approved 15 Nov 2026) |
+| `AzkarReaderSingleDone` | compact | ar-light | source | Reader · no sourced count, after the tap: full ring, check and «تم» (approved 15 Nov 2026) |
 | `AzkarReaderComplete` | compact | ar-light | source | Reader · session complete |
 | `AzkarReaderAudio` | compact | ar-light | source | Reader · licensed recording |
 | `AzkarPlayer` | compact | ar-light | awaiting-approval | Azkar player · full sheet · light · بانتظار الموافقة |

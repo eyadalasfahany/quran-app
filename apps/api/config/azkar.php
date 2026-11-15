@@ -245,6 +245,24 @@ return [
     ],
 
     /*
+    | Developer request (15 Nov 2026): the combined browse tags become separate topics. A tag listed here is not emitted
+    | as a browse category; its topics are emitted in place of it, in the order given. Each topic is one of:
+    |   'session' => X         the tag's entries that are in session category X, with that session's variation key;
+    |   'except_session' => X  the tag's entries that are not in session category X, with the browse key '*'.
+    | Session categories themselves are unchanged.
+    */
+    'split_topics' => [
+        'morning-and-evening' => [
+            'morning-topic' => ['session' => 'morning'],
+            'evening-topic' => ['session' => 'evening'],
+        ],
+        'sleep-and-waking' => [
+            'sleep-topic' => ['except_session' => 'after_waking'],
+            'waking-topic' => ['session' => 'after_waking'],
+        ],
+    ],
+
+    /*
     | ADR 0031 §12. The primary source supplies the canonical catalogue. The other source is used only to cross-verify.
     | opendua is the default until the developer chooses otherwise.
     */

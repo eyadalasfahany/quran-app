@@ -27,6 +27,7 @@ const migrationsDir = join(process.cwd(), 'src/core/db/content/migrations');
 const EXACT = 'ٱلرَّحْمَـٰنِ‏ٱلرَّحِيمِ';
 const REPLACEMENT = 'بِسْمِ‏ٱللَّهِ';
 const NOW = 1_700_000_000_000;
+const HOME_MIGRATION = '0017_azkar_entry_home';
 
 const README_CONTRACT = [
   {
@@ -125,6 +126,7 @@ const README_CONTRACT = [
           'review_status',
           'source_version',
           'imported_at',
+          'home',
         ],
       },
       {
@@ -483,6 +485,39 @@ function gzipDatabase(resourceId: number, fill: (database: DatabaseSync) => void
   }
 }
 
+/**
+ * A pack built from the content migrations, as the API builds one: the current schema, with the migration named
+ * by `HOME_MIGRATION` left out when `withHome` is false (a pack built before that column existed).
+ */
+function gzipMigratedPack(
+  resourceId: number,
+  options: { withHome: boolean },
+  fill: (database: DatabaseSync) => void,
+): Uint8Array {
+  const directory = mkdtempSync(join(tmpdir(), 'content-pack-'));
+  const path = join(directory, 'pack.sqlite');
+  try {
+    const database = new DatabaseSync(path);
+    database.exec('PRAGMA journal_mode = DELETE');
+    const journal = JSON.parse(readFileSync(join(migrationsDir, 'meta/_journal.json'), 'utf8')) as {
+      entries: { idx: number; tag: string }[];
+    };
+    for (const entry of [...journal.entries].sort((left, right) => left.idx - right.idx)) {
+      if (!options.withHome && entry.tag === HOME_MIGRATION) {
+        continue;
+      }
+      database.exec(readFileSync(join(migrationsDir, `${entry.tag}.sql`), 'utf8'));
+    }
+    database.prepare('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)').run('pack_schema_version', '1');
+    database.prepare('INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)').run('resource_id', String(resourceId));
+    fill(database);
+    database.close();
+    return gzipSync(new Uint8Array(readFileSync(path)));
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
 function fileStore(cacheDir: string): FileStore {
   return {
     cacheDir,
@@ -705,6 +740,50 @@ describe('content sync', () => {
           'SELECT first_ayah AS first, last_ayah AS last FROM chapter_audio_files WHERE id = 100',
         ),
       ).toEqual({ first: expected[0], last: expected[1] });
+    });
+  });
+
+  it.each([
+    ['a pack built before the home column existed (migration 0017)', false, [null, null]],
+    ['a pack built with the home column', true, ['duas', null]],
+  ])('imports azkar entries from %s (ADR 0091)', async (_name, withHome, expected) => {
+    const bytes = gzipMigratedPack(31, { withHome }, (database) => {
+      database.exec(
+        `INSERT INTO azkar_entries (resource_id, id, entry_key, chapter_id, position, source_reference, entry_type, review_status, source_version, imported_at)
+         VALUES (31, 1, 'fixture:home-a', 1, 1, 'FIXTURE', 'invocation', 'sourced', 'taybah-dev-fixture', 0),
+                (31, 2, 'fixture:home-b', 1, 2, 'FIXTURE', 'invocation', 'sourced', 'taybah-dev-fixture', 0)`,
+      );
+      if (withHome) {
+        database.exec(`UPDATE azkar_entries SET home = 'duas' WHERE id = 1`);
+      }
+    });
+    const hash = await sha256(bytes);
+    const entry = resource({
+      id: 31,
+      group: 'azkar',
+      version: 1,
+      pack: { url: '/api/v1/content/packs/31/1', size_bytes: bytes.byteLength, sha256: hash },
+    });
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const { selection: _selection, ...installDeps } = await deps(executor, cacheDir, {
+        getManifest: async () => {
+          throw new Error('manifest');
+        },
+        getChanges: async () => {
+          throw new Error('changes');
+        },
+        downloadPack: downloadInto(bytes),
+      });
+
+      await expect(importPack(installDeps, entry, NOW)).resolves.toBe('pack-imported');
+      expect(
+        executor.all<{ entryKey: string; home: string | null }>(
+          'SELECT entry_key AS entryKey, home FROM azkar_entries WHERE resource_id = 31 ORDER BY id',
+        ),
+      ).toEqual([
+        { entryKey: 'fixture:home-a', home: expected[0] },
+        { entryKey: 'fixture:home-b', home: expected[1] },
+      ]);
     });
   });
 

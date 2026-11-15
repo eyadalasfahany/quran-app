@@ -35,5 +35,17 @@ final class ImportStats extends Data
         public int $recordingsDownloadable = 0,
         /** Recordings left out because their file is not in the Taybah audio store (ADR 0040 §2). */
         public int $recordingsMissingFile = 0,
+        /** Emitted entries with a reviewed dua type (plan step 3). */
+        public int $entryTypesDua = 0,
+        /** Emitted entries with a reviewed dhikr type (plan step 3). */
+        public int $entryTypesDhikr = 0,
+        /** Reviewed duas moved out of Azkar (home 'duas'). */
+        public int $homeDuas = 0,
+        /** @var array<string, int> Moved duas per browse category id that they belong to. */
+        public array $homeDuasByCategory = [],
+        /** Reviewed duas that stay whole in a session category. */
+        public int $duasKeptInSessions = 0,
+        /** Candidate rows in config azkar_entry_types.php, never applied (EntryTypePolicy). */
+        public int $candidatesNotApplied = 0,
     ) {}
 }

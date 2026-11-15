@@ -923,6 +923,10 @@
       "after_waking": "أذكار الاستيقاظ",
       "morning-and-evening": "الصباح والمساء",
       "sleep-and-waking": "النوم والاستيقاظ",
+      "morning-topic": "الصباح",
+      "evening-topic": "المساء",
+      "sleep-topic": "النوم",
+      "waking-topic": "الاستيقاظ",
       "prayer-and-the-masjid": "الصلاة والمسجد",
       "wudu-and-purification": "الوضوء والطهارة",
       "food-and-drink": "الطعام والشراب",
@@ -984,6 +988,8 @@
       "hint": "اضغط للعدّ",
       "doneLabel": "وضع علامة «تم»",
       "doneHint": "اضغط للإتمام",
+      "tapPrompt": "اضغط",
+      "tapPromptDetail": "عند الانتهاء",
       "reset": "إعادة الضبط"
     },
     "details": {
@@ -1167,7 +1173,11 @@
       "categoryCount_few": "{{number}} أدعية",
       "categoryCount_many": "{{number}} دعاءً",
       "categoryCount_other": "{{number}} دعاء",
-      "quranTitle": "الأدعية القرآنية"
+      "quranTitle": "الأدعية القرآنية",
+      "categoriesHeading": "التصنيفات",
+      "showAll": "عرض الكل {{number}}",
+      "showLess": "عرض أقل",
+      "sourcesLine": "المصادر: القرآن الكريم · حصن المسلم · موسوعة الأحاديث النبوية (HadeethEnc.com)"
     },
     "favorites": {
       "title": "المفضلة",
@@ -1211,6 +1221,18 @@
     "reminders": {
       "notificationTitle": "تذكير من أدعيتك",
       "notificationBody": "افتح لتقرأ دعاءك"
+    },
+    "categories": {
+      "quran": "من القرآن الكريم"
+    },
+    "sources": {
+      "quran": "القرآن",
+      "hadeethenc": "HadeethEnc",
+      "hisn": "حصن المسلم"
+    },
+    "category": {
+      "caption": "{{count}} · {{source}}",
+      "cardCaption": "{{source}} · {{number}}"
     },
     "quran": {
       "listTitle": "الأدعية القرآنية",

@@ -196,6 +196,8 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
         text('review_status'),
         text('source_version'),
         integer('imported_at'),
+        // Added in pack builds after entry types (ADR 0091). Older packs lack it; packSelectList reads NULL.
+        text('home', true),
       ]),
       table('azkar_items', [
         integer('resource_id'),

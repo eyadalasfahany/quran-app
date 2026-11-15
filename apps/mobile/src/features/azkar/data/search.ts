@@ -8,6 +8,15 @@ export const AZKAR_SEARCH_LIMIT = 50;
 /** Segment rows read before entries are grouped. A cap keeps a very common query bounded. */
 const MAX_SEGMENT_ROWS = 500;
 
+/**
+ * An entry search may return (ADR 0091): every entry, except one moved to Duas (`home = 'duas'`) that no session lists.
+ * The entry's alias is `e`. A session dua stays searchable, because it is still shown in its session.
+ */
+const SEARCHABLE_ENTRY = `(e.home IS NULL OR EXISTS (
+  SELECT 1 FROM azkar_entry_categories sec
+  JOIN azkar_categories sc ON sc.resource_id = sec.resource_id AND sc.id = sec.category_id
+  WHERE sec.resource_id = e.resource_id AND sec.entry_id = e.id AND sc.kind = 'session'))`;
+
 export type AzkarSearchHit = {
   entryKey: string;
   /** The first matching segment's original Arabic text (or, for a chapter-title hit, the entry's first text), never altered. */
@@ -65,6 +74,7 @@ export function searchAzkarEntries(db: SqlExecutor, rawQuery: string, limit = AZ
      JOIN azkar_items i ON i.resource_id = s.resource_id AND i.id = s.item_id
      JOIN azkar_entries e ON e.resource_id = i.resource_id AND e.id = i.entry_id
      WHERE s.resource_id = ? AND s.kind = 'text' AND s.text_search LIKE ? ESCAPE '\\'
+       AND ${SEARCHABLE_ENTRY}
      ORDER BY e.entry_key, i.position, s.position
      LIMIT ?`,
     [resourceId, `%${escapeLike(query)}%`, MAX_SEGMENT_ROWS],
@@ -114,6 +124,7 @@ function searchChapterTitles(db: SqlExecutor, resourceId: number, query: string)
      JOIN azkar_segments s ON s.resource_id = i.resource_id AND s.item_id = i.id
      WHERE e.resource_id = ?
        AND e.chapter_id IN (${chapterIds.map(() => '?').join(', ')})
+       AND ${SEARCHABLE_ENTRY}
        AND s.kind = 'text' AND s.text_ar IS NOT NULL AND s.text_ar <> ''
      ORDER BY c.number, e.position, i.position, i.id, s.position`,
     [resourceId, ...chapterIds],

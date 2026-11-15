@@ -1,0 +1,1 @@
+ALTER TABLE `azkar_entries` ADD `home` text;

@@ -8,10 +8,18 @@ import { useLocale } from '@/core/i18n';
 import { useQuranReferenceLabel } from '@/features/azkar/data';
 import { hasPropheticDuas, hasQuranicDuas } from './availability';
 import { getPropheticDua, getQuranicDua, listPropheticDuaSections, listQuranicDuas } from './content-repository';
+import { listDuaCategories, listDuaCategoryItems } from './categories';
 import { listDuaFavoriteCards, type DuaFavoriteCard } from './favorite-cards';
 import { liveDuaFavoritesQuery, liveIsDuaFavoriteQuery, liveMyDuasQuery } from './live-queries';
 import type { MyDua } from './my-duas-repository';
-import type { PropheticDuaDetail, PropheticDuaSection, QuranicDuaDetail, QuranicDuaSummary } from './model';
+import type {
+  DuaCategory,
+  DuaCategoryItem,
+  PropheticDuaDetail,
+  PropheticDuaSection,
+  QuranicDuaDetail,
+  QuranicDuaSummary,
+} from './model';
 
 function readOr<T>(fallback: T, read: () => T): T {
   try {
@@ -149,5 +157,37 @@ export function useDuaFavoriteCards(): DuaFavoriteCard[] {
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [favorites, quranReference, revision],
+  );
+}
+
+/** The Duas categories (ADR 0091), in display order. Re-reads when the catalogue changes. */
+export function useDuaCategories(): DuaCategory[] {
+  const revision = useContentRevision();
+
+  return useMemo(
+    () =>
+      readOr<DuaCategory[]>([], () => {
+        const { executor } = openContentDb();
+        return listDuaCategories(executor);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [revision],
+  );
+}
+
+/** The cards of one Duas category. A Quranic card's reference follows the locale; re-reads on a catalogue change. */
+export function useDuaCategoryItems(categoryId: string): DuaCategoryItem[] {
+  const revision = useContentRevision();
+  const locale = useLocale();
+  const quranReference = useQuranReferenceLabel(locale);
+
+  return useMemo(
+    () =>
+      readOr<DuaCategoryItem[]>([], () => {
+        const { executor } = openContentDb();
+        return listDuaCategoryItems(executor, categoryId, quranReference);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [categoryId, quranReference, revision],
   );
 }

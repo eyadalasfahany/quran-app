@@ -217,6 +217,80 @@ describe('azkar content repository', () => {
     expect(alternative?.items.map((item) => item.itemKey)).toEqual(['fixture:item-013']);
   });
 
+  it('reads home as duas only for a Hisn dua, and as null for Azkar or an unknown value (ADR 0091)', () => {
+    loadAzkarDevFixtures(executor);
+    executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-008'`);
+    executor.run(`UPDATE azkar_entries SET home = 'unknown' WHERE entry_key = 'fixture:entry-007'`);
+
+    expect(getEntry(executor, 'fixture:entry-008')?.entry.home).toBe('duas');
+    expect(getEntry(executor, 'fixture:entry-007')?.entry.home).toBeNull();
+    expect(getEntry(executor, 'fixture:entry-001')?.entry.home).toBeNull();
+    expect(listCategoryEntries(executor, 'home-and-family').map((entry) => [entry.entry.entryKey, entry.entry.home])).toEqual([
+      ['fixture:entry-003', null],
+    ]);
+  });
+
+  describe('entries moved to Duas (ADR 0091)', () => {
+    it('hides a moved entry from its browse topic: the list, the units and the count', () => {
+      loadAzkarDevFixtures(executor);
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-008'`);
+
+      expect(listCategoryEntries(executor, 'home-and-family').map((entry) => entry.entry.entryKey)).toEqual(['fixture:entry-003']);
+      expect(listCategoryUnits(executor, 'home-and-family', 'ar').map((unit) => unit.entryKey)).toEqual(['fixture:entry-003']);
+      expect(listCategories(executor, 'ar').find((category) => category.id === 'home-and-family')?.unitCount).toBe(1);
+    });
+
+    it('drops a browse topic whose entries have all moved from the topic list', () => {
+      loadAzkarDevFixtures(executor);
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-007'`);
+
+      expect(listCategoryEntries(executor, 'travel')).toEqual([]);
+      expect(listCategories(executor, 'ar').map((category) => category.id)).not.toContain('travel');
+      expect(listCategories(executor, 'ar').map((category) => category.id)).toContain('home-and-family');
+    });
+
+    it('keeps a session entry typed dua in its session, with its count unchanged', () => {
+      loadAzkarDevFixtures(executor);
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-001'`);
+
+      expect(listCategoryEntries(executor, 'morning').map((entry) => entry.entry.entryKey)).toEqual([
+        'fixture:entry-001',
+        'fixture:entry-002',
+      ]);
+      expect(listCategories(executor, 'ar').find((category) => category.id === 'morning')?.unitCount).toBe(3);
+    });
+
+    it('hides a dua only from the browse topic it is linked to, not from a session it is also in', () => {
+      loadAzkarDevFixtures(executor);
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-002'`);
+
+      expect(listCategoryEntries(executor, 'food-and-drink')).toEqual([]);
+      expect(listCategoryEntries(executor, 'morning').map((entry) => entry.entry.entryKey)).toContain('fixture:entry-002');
+    });
+
+    it('still resolves a moved entry by key, with its items and chapter', () => {
+      loadAzkarDevFixtures(executor);
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-008'`);
+
+      const detail = getEntry(executor, 'fixture:entry-008');
+      expect(detail?.entry.home).toBe('duas');
+      expect(detail?.chapter).toMatchObject({ number: 2 });
+      expect(detail?.items.map((item) => item.itemKey)).toEqual(['fixture:item-012']);
+    });
+
+    it('leaves a moved entry out of the category units but not out of the entry lookup', () => {
+      loadAzkarDevFixtures(executor);
+      executor.run(`UPDATE azkar_entries SET home = 'duas' WHERE entry_key = 'fixture:entry-008'`);
+
+      expect(listCategoryUnits(executor, 'home-and-family', 'ar', { 'fixture:entry-008': 'alternative' }).map((unit) => unit.entryKey)).toEqual([
+        'fixture:entry-003',
+      ]);
+      expect(getEntry(executor, 'fixture:entry-008', { 'fixture:entry-008': 'alternative' })?.items.map((item) => item.itemKey)).toEqual([
+        'fixture:item-013',
+      ]);
+    });
+  });
+
   it('returns undefined for an unknown entry', () => {
     loadAzkarDevFixtures(executor);
     expect(getEntry(executor, 'fixture:missing')).toBeUndefined();
