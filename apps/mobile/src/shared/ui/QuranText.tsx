@@ -2,13 +2,11 @@ import type { QuranTypeToken } from '@quran/design-tokens';
 import type { Ref } from 'react';
 import { Text, type HostInstance, type StyleProp, type TextProps, type TextStyle } from 'react-native';
 
-import { quranFonts, useQuranFont } from '@/core/theme';
-
 import { quranText } from './textStyles';
 import { textToneColor, type TextTone } from './UiText';
 import { useContrastColors } from './useContrastColors';
 
-// Every Quran string, rendered exactly as stored, in the reader's chosen Quran font. It follows the reader's
+// Every Quran string, rendered exactly as stored, in Amiri Quran (ADR 0090). It follows the reader's
 // 80–160% setting, never the system text size, and is never truncated.
 export function QuranText({
   variant,
@@ -30,14 +28,12 @@ export function QuranText({
   ref?: Ref<HostInstance>;
 } & Omit<TextProps, 'style' | 'allowFontScaling' | 'numberOfLines' | 'ellipsizeMode'>) {
   const colors = useContrastColors();
-  const font = useQuranFont();
-
   return (
     <Text
       {...rest}
       allowFontScaling={false}
       style={[
-        quranText(variant, fontScale, quranFonts[font].family),
+        quranText(variant, fontScale),
         { color: textToneColor(colors, tone) },
         align === 'start' ? null : { textAlign: align },
         style,

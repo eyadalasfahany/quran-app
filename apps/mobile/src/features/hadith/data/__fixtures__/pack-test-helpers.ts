@@ -39,6 +39,7 @@ export function resource(
     author_name: 'FIXTURE author',
     author_ar: null,
     is_default: false,
+    has_word_boxes: false,
     style: null,
     language_code: 'ar',
     direction: 'rtl',

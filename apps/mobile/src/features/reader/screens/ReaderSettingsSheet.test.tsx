@@ -38,30 +38,31 @@ describe('ReaderSettingsSheet', () => {
     expect(view.getByText('طريقة العرض')).toBeOnTheScreen();
     expect(view.getByText('المظهر')).toBeOnTheScreen();
     expect(view.getByText('حجم خط المصحف')).toBeOnTheScreen();
-    expect(view.getByText('خط المصحف')).toBeOnTheScreen();
+    expect(view.getByText('المصحف')).toBeOnTheScreen();
 
     const labels = view
-      .getAllByText(/^(طريقة العرض|المظهر|حجم خط المصحف|خط المصحف)$/)
+      .getAllByText(/^(طريقة العرض|المظهر|حجم خط المصحف|المصحف)$/)
       .map((node) => node.props.children as string);
-    expect(labels).toEqual(['طريقة العرض', 'المظهر', 'حجم خط المصحف', 'خط المصحف']);
+    expect(labels).toEqual(['طريقة العرض', 'المظهر', 'حجم خط المصحف', 'المصحف']);
   });
 
-  it('applies the chosen Quran font at once, without changing the mode', async () => {
+  it('applies the chosen mushaf at once, without changing the mode', async () => {
     useReaderSettings.getState().setMode('mushaf');
     const view = await renderUi(<ReaderSettingsSheet />);
-    expect(view.getByTestId('reader-font-picker-amiriQuran').props.accessibilityState?.checked).toBe(true);
+    expect(view.getByTestId('mushaf-hafs').props.accessibilityState?.checked).toBe(true);
 
-    await fireEvent.press(view.getByTestId('reader-font-picker-scheherazadeNew'));
+    await fireEvent.press(view.getByTestId('mushaf-warsh'));
 
-    expect(useReaderSettings.getState().quranFont).toBe('scheherazadeNew');
+    expect(useReaderSettings.getState().mushaf).toBe('warsh');
     expect(useReaderSettings.getState().mode).toBe('mushaf');
-    expect(view.getByTestId('reader-font-picker-scheherazadeNew').props.accessibilityState?.checked).toBe(true);
+    expect(view.getByTestId('mushaf-warsh').props.accessibilityState?.checked).toBe(true);
   });
 
-  it.each(locales)('names both fonts in %s', async (locale) => {
+  it.each(locales)('names the five riwayat in %s', async (locale) => {
     const view = await renderUi(<ReaderSettingsSheet />, { locale });
-    expect(view.getByText(locale === 'ar' ? 'أميري' : 'Amiri')).toBeOnTheScreen();
-    expect(view.getByText(locale === 'ar' ? 'شهرزاد' : 'Scheherazade')).toBeOnTheScreen();
+    expect(view.getByText(locale === 'ar' ? 'حفص عن عاصم' : 'Hafs from Asim')).toBeOnTheScreen();
+    expect(view.getByText(locale === 'ar' ? 'الدوري عن أبي عمرو' : 'Al-Duri from Abu Amr')).toBeOnTheScreen();
+    expect(view.getAllByRole('radio')).toHaveLength(5);
   });
 
   it('shows no Quran preview behind the controls', async () => {

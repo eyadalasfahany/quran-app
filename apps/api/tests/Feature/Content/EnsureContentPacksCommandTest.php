@@ -7,6 +7,7 @@ use App\Domains\Content\Models\ContentPack;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\PackBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
@@ -49,4 +50,22 @@ it('prunes orphaned rows before building when asked', function (): void {
         ->expectsOutputToContain('OK '.$resource->id);
 
     expect(Storage::disk('local')->exists($pack->path))->toBeTrue();
+});
+
+it('skips an svg mushaf without a pack, because its input is the source cache', function (): void {
+    $source = DB::table('content_sources')->where('code', 'quran_ws')->value('id');
+    $resource = Resource::factory()->create([
+        'source_id' => $source,
+        'group' => ResourceGroup::SvgMushafs,
+        'source_key' => 'warsh',
+        'version' => 1,
+        'is_active' => true,
+    ]);
+
+    $this->artisan('content:ensure-packs')
+        ->assertSuccessful()
+        ->expectsOutputToContain('SKIP '.$resource->id.': SVG mushafs are built by mushaf:publish')
+        ->expectsOutputToContain('built=0, skipped=1, failed=0');
+
+    expect(ContentPack::query()->count())->toBe(0);
 });

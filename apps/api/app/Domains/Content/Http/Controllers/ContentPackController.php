@@ -19,7 +19,7 @@ final class ContentPackController extends Controller
         $pack = $this->delivery->pack($resource, $version);
 
         return response()->file($this->delivery->absolutePath($pack), [
-            'Content-Type' => 'application/gzip',
+            'Content-Type' => $this->delivery->isGzipped($pack) ? 'application/gzip' : 'application/vnd.sqlite3',
             'Cache-Control' => 'public, max-age=31536000, immutable',
             'ETag' => '"'.$pack->sha256.'"',
         ]);

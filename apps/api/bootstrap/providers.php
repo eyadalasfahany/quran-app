@@ -10,6 +10,7 @@ use App\Domains\Feedback\FeedbackServiceProvider;
 use App\Domains\Hadith\HadithImportServiceProvider;
 use App\Domains\Hadith\HadithServiceProvider;
 use App\Domains\Hadith\HadithSourceServiceProvider;
+use App\Domains\Mushaf\MushafServiceProvider;
 use App\Domains\Names\NamesServiceProvider;
 use App\Domains\Seerah\SeerahServiceProvider;
 use App\Domains\Sync\SyncServiceProvider;
@@ -38,4 +39,5 @@ return [
     HadithImportServiceProvider::class,
     HadithServiceProvider::class,
     SeerahServiceProvider::class,
+    MushafServiceProvider::class,
 ];

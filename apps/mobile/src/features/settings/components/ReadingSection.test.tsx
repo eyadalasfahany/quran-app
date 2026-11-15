@@ -28,10 +28,10 @@ describe('ReadingSection', () => {
   });
 
   it.each([
-    ['ar', 'شهرزاد'],
-    ['en', 'Scheherazade'],
-  ] as const)('shows the chosen Quran font as the font row value (%s)', async (locale, name) => {
-    const view = await renderUi(<ReadingSection fontValue={name} />, { locale });
+    ['ar', 'ورش عن نافع'],
+    ['en', 'Warsh from Nafi'],
+  ] as const)('shows the chosen mushaf as the row value (%s)', async (locale, name) => {
+    const view = await renderUi(<ReadingSection mushafValue={name} />, { locale });
     expect(view.getByText(name)).toBeOnTheScreen();
   });
 
@@ -39,8 +39,8 @@ describe('ReadingSection', () => {
     const view = await renderUi(<ReadingSection />);
 
     expect(view.getByRole('header', { name: 'القراءة' })).toBeOnTheScreen();
-    expect(view.getByText('خط المصحف')).toBeOnTheScreen();
-    expect(view.getByText('أميري')).toBeOnTheScreen();
+    expect(view.getByText('المصحف')).toBeOnTheScreen();
+    expect(view.getByText('حفص عن عاصم')).toBeOnTheScreen();
     expect(view.getByText('طريقة العرض والمظهر')).toBeOnTheScreen();
     expect(view.getByText('مصحف · تلقائي')).toBeOnTheScreen();
     expect(view.getByText('الوضع الداكن تلقائيًا بعد المغرب')).toBeOnTheScreen();
@@ -49,20 +49,20 @@ describe('ReadingSection', () => {
   });
 
   it('fires navigation callbacks on tapping rows', async () => {
-    const onPressFont = jest.fn();
+    const onPressMushaf = jest.fn();
     const onPressAppearance = jest.fn();
     const onPressTafsir = jest.fn();
 
     const view = await renderUi(
       <ReadingSection
         onPressAppearance={onPressAppearance}
-        onPressQuranFont={onPressFont}
+        onPressMushaf={onPressMushaf}
         onPressTafsir={onPressTafsir}
       />,
     );
 
-    await fireEvent.press(view.getByTestId('reading-font-row'));
-    expect(onPressFont).toHaveBeenCalledTimes(1);
+    await fireEvent.press(view.getByTestId('reading-mushaf-row'));
+    expect(onPressMushaf).toHaveBeenCalledTimes(1);
 
     await fireEvent.press(view.getByTestId('reading-appearance-row'));
     expect(onPressAppearance).toHaveBeenCalledTimes(1);
@@ -95,13 +95,13 @@ describe('ReadingSection', () => {
     const view = await renderUi(<ReadingSection />, { locale });
 
     const expectedHeader = locale === 'en' ? 'Reading' : 'القراءة';
-    const expectedFont = locale === 'en' ? 'Quran font' : 'خط المصحف';
+    const expectedMushaf = locale === 'en' ? 'Mushaf' : 'المصحف';
     const expectedAppearance = locale === 'en' ? 'Reading mode and appearance' : 'طريقة العرض والمظهر';
     const expectedDark = locale === 'en' ? 'Dark mode automatically after Maghrib' : 'الوضع الداكن تلقائيًا بعد المغرب';
     const expectedTafsir = locale === 'en' ? 'Default tafsir' : 'التفسير الافتراضي';
 
     expect(view.getByRole('header', { name: expectedHeader })).toBeOnTheScreen();
-    expect(view.getByText(expectedFont)).toBeOnTheScreen();
+    expect(view.getByText(expectedMushaf)).toBeOnTheScreen();
     expect(view.getByText(expectedAppearance)).toBeOnTheScreen();
     expect(view.getByText(expectedDark)).toBeOnTheScreen();
     expect(view.getByText(expectedTafsir)).toBeOnTheScreen();

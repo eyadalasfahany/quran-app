@@ -540,6 +540,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     changes_since_min_version: 1,
     key: 'fixture-key',
     is_default: false,
+    has_word_boxes: false,
     style: null,
     ...overrides,
   };
@@ -1372,6 +1373,41 @@ describe('content sync', () => {
           `SELECT resource_id AS resourceId FROM installed_resources WHERE "group" = 'azkar'`,
         ),
       ).toEqual([{ resourceId: 2 }]);
+    });
+  });
+
+  it('ignores an svg_mushafs resource: no install, no report entry, and an unrelated installed resource stays', async () => {
+    const svgEntry = resource({
+      id: 77,
+      group: 'svg_mushafs',
+      key: 'hafs',
+      version: 1,
+      pack: { url: '/api/v1/content/packs/77/1', size_bytes: 1, sha256: 'abc' },
+    });
+    const published = manifest([svgEntry, resource({ id: 2, group: 'tafsirs', version: 1 })]);
+    const downloadPack = jest.fn(async () => {
+      throw new Error('no pack is needed');
+    });
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      executor.run(
+        `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at) VALUES (2, 'tafsirs', 1, 'hash', 0)`,
+      );
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        })),
+        selection: () => [2],
+      });
+
+      expect(report.resources).toEqual([{ resourceId: 2, status: 'unchanged' }]);
+      expect(downloadPack).not.toHaveBeenCalled();
+      expect(executor.all('SELECT resource_id AS resourceId FROM installed_resources WHERE resource_id = 77')).toEqual([]);
+      expect(executor.all('SELECT resource_id AS resourceId FROM installed_resources WHERE resource_id = 2')).toEqual([{ resourceId: 2 }]);
     });
   });
 

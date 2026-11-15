@@ -67,6 +67,7 @@ final class ContentDeliveryService
                 packSha256: $pack->sha256,
                 changesSinceMinVersion: $resource->changes_floor_version,
                 isDefault: $this->isDefault($resource),
+                hasWordBoxes: $pack->has_word_boxes,
             );
         }
 
@@ -101,6 +102,14 @@ final class ContentDeliveryService
             schemaVersion: $pack->schema_version,
             builtAt: $pack->built_at,
         );
+    }
+
+    /**
+     * Only the SVG mushaf packs are stored uncompressed (ADR 0090); every other pack is gzip.
+     */
+    public function isGzipped(ContentPackData $pack): bool
+    {
+        return ! str_ends_with($pack->path, '.sqlite');
     }
 
     public function absolutePath(ContentPackData $pack): string

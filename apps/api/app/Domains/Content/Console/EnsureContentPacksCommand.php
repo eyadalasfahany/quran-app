@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Content\Console;
 
+use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Models\ContentPack;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\PackBuilder;
@@ -36,6 +37,14 @@ final class EnsureContentPacksCommand extends Command
 
         foreach ($resources as $resource) {
             $label = (string) $resource->id;
+
+            if ($resource->group === ResourceGroup::SvgMushafs) {
+                $this->line("SKIP {$label}: SVG mushafs are built by mushaf:publish");
+                $skipped++;
+
+                continue;
+            }
+
             $existing = ContentPack::query()
                 ->where('resource_id', $resource->id)
                 ->where('version', $resource->version)

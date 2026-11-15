@@ -1,7 +1,7 @@
 import { act, fireEvent } from '@testing-library/react-native';
 
 import { formatNumber, i18n } from '@/core/i18n';
-import { QuranFontProvider, themes } from '@/core/theme';
+import { themes } from '@/core/theme';
 
 import { openReaderTestContent } from '../../../../jest/reader-test-db';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -100,13 +100,13 @@ describe('HafsMushafPage', () => {
     expect(view.getByTestId('page-marker-1:1')).toBeOnTheScreen();
   });
 
-  it('keeps Scheherazade New lines to the start instead of justifying them (ADR 0048 §11)', async () => {
-    const view = await renderUi(<QuranFontProvider font="scheherazadeNew">{fatihaPage()}</QuranFontProvider>);
+  it('always justifies the lines in Amiri Quran', async () => {
+    const view = await renderUi(fatihaPage());
     const style = flatStyle(view.getByTestId('page-text-1:1').props.style);
 
-    expect(style.fontFamily).toBe('ScheherazadeNew-Regular');
-    expect(style.textAlign).toBe('right');
-    expect(style.direction).toBe('ltr');
+    expect(style.fontFamily).toBe('AmiriQuran');
+    expect(style.textAlign).toBe('justify');
+    expect(style.direction).toBe('rtl');
     expect(view.getByTestId('page-ayah-1:1').props.children).toBe(ayahText);
   });
 

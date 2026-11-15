@@ -25,6 +25,7 @@
     "@quran/quran-text-check": "*",
     "@react-native-community/datetimepicker": "9.2.1",
     "@shopify/flash-list": "2.3.2",
+    "@shopify/react-native-skia": "2.14.0",
     "adhan": "4.4.6",
     "app-group-store": "file:./modules/app-group-store",
     "drizzle-orm": "0.45.4",

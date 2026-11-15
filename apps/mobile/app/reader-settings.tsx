@@ -8,7 +8,7 @@ export default function ReaderSettingsRoute() {
   return (
     <>
       <Stack.Screen options={sheetScreenOptions} />
-      <SheetHost>
+      <SheetHost initialDetent="full">
         <ReaderSettingsSheet />
       </SheetHost>
     </>

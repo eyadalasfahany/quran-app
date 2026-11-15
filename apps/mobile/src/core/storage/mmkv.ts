@@ -61,6 +61,11 @@ export const storageKeys = {
     today: 'sibha.today',
   },
 
+  // SVG mushaf packs (ADR 0090). One JSON record per riwayah: the installed version, its checksum and its word-box flag.
+  svgMushaf: {
+    installed: (key: string) => `svgMushaf.installed.${key}`,
+  },
+
   // Discover Taybah (ADR 0053). Local only; cleared with the other personal data.
   discover: {
     // JSON array of the registry ids the person has completed.

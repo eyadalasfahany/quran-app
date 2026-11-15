@@ -66,6 +66,30 @@ jest.mock('../HafsMushafList', () => {
     },
   };
 });
+// The Madinah container stands in: its list and card are tested alone. The pack's state is set per test.
+let mockContainerProps: { mushafKey: string; onReadNow?: () => void; anchorVerseKey: string } | undefined;
+jest.mock('../components/MushafSvgContainer', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    MushafSvgContainer: (props: { mushafKey: string; onReadNow?: () => void; anchorVerseKey: string; testID?: string }) => {
+      mockContainerProps = props;
+      return createElement(View, { testID: 'svg-container' });
+    },
+  };
+});
+
+// The pack's manifest entry and install state, per test; absent in the manifest by default (the Hafs list shows).
+let mockSvgPack: { availableVersion: number | null; reader: unknown; status: string } = {
+  availableVersion: null,
+  reader: null,
+  status: 'absent',
+};
+jest.mock('@/core/mushaf-pack', () => ({
+  ...jest.requireActual<typeof import('@/core/mushaf-pack')>('@/core/mushaf-pack'),
+  useSvgMushafPack: () => ({ cancel: jest.fn(), download: jest.fn(), progress: 0, sizeBytes: null, ...mockSvgPack }),
+}));
+
 // The reading list stands in for FlashList's scroll-to-anchor, which Jest can't run; the props it was given are checked.
 let mockReadingProps:
   | {
@@ -141,6 +165,45 @@ describe('ReaderScreen', () => {
     mockBookmarks = [];
     mockHighlights = new Map();
     mockExecutor = undefined;
+    mockSvgPack = { availableVersion: null, reader: null, status: 'absent' };
+    mockContainerProps = undefined;
+  });
+
+  describe('Madinah pages (ADR 0090 decision 4)', () => {
+    beforeEach(() => {
+      mockMushafProps = undefined;
+      mockContainerProps = undefined;
+      mockSvgPack = { availableVersion: null, reader: null, status: 'absent' };
+    });
+
+    it('keeps the Hafs list while the pack is not in the manifest', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+      expect(mockMushafProps).toBeDefined();
+      expect(mockContainerProps).toBeUndefined();
+    });
+
+    it('shows the Madinah container for the shown riwayah once the pack is listed', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+      expect(mockContainerProps?.mushafKey).toBe('hafs');
+      expect(mockMushafProps).toBeUndefined();
+    });
+
+    it('the read-now action of the card switches to Reading, and keeps the anchor ayah', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+      await act(async () => {
+        mockContainerProps?.onReadNow?.();
+      });
+      expect(useReaderSettings.getState().mode).toBe('reading');
+      expect(mockContainerProps?.anchorVerseKey).toBe('2:255');
+    });
   });
 
   it('keeps the anchor ayah when the reading mode changes', async () => {

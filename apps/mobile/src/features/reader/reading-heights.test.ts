@@ -14,9 +14,11 @@ describe('estimateReadingRowHeight', () => {
 });
 
 describe('heightCacheSignature', () => {
-  it('changes with the Quran font, so rows measured in one font are not reused for another', () => {
-    const amiri = heightCacheSignature(390, 1, 'reading', 'amiriQuran');
-    expect(heightCacheSignature(390, 1, 'reading', 'scheherazadeNew')).not.toBe(amiri);
-    expect(heightCacheSignature(390, 1, 'reading', 'amiriQuran')).toBe(amiri);
+  it('is stable for the same layout and changes with width, font scale and mode', () => {
+    const base = heightCacheSignature(390, 1, 'reading');
+    expect(heightCacheSignature(390, 1, 'reading')).toBe(base);
+    expect(heightCacheSignature(360, 1, 'reading')).not.toBe(base);
+    expect(heightCacheSignature(390, 1.2, 'reading')).not.toBe(base);
+    expect(heightCacheSignature(390, 1, 'focus')).not.toBe(base);
   });
 });

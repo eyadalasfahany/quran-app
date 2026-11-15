@@ -196,6 +196,51 @@
       "switchToReading": "اقرأ في وضع القراءة",
       "retry": "إعادة المحاولة"
     },
+    "mushafDownload": {
+      "title": "تنزيل المصحف",
+      "subtitle": "مصحف {{name}} · {{size}}",
+      "subtitleNoSize": "مصحف {{name}}",
+      "progressLabel": "تقدم التنزيل",
+      "readWhileDownloading": "يمكنك القراءة في وضع القراءة أثناء التنزيل.",
+      "readNow": "القراءة الآن",
+      "cancel": "إلغاء التنزيل",
+      "download": "تنزيل",
+      "downloadWithData": "تنزيل بالبيانات",
+      "retry": "إعادة المحاولة",
+      "waitingWifi": "التنزيل ينتظر شبكة Wi-Fi.",
+      "error": {
+        "network": "تعذّر الاتصال. أعد المحاولة.",
+        "checksum": "الملف تالف. أعد التنزيل.",
+        "size": "حجم الملف غير متوقع.",
+        "import": "تعذّر تثبيت الملف.",
+        "unavailable": "المصحف غير متاح الآن.",
+        "storage": "لا توجد مساحة كافية على الجهاز."
+      },
+      "pageError": "تعذّر تحميل هذه الصفحة.",
+      "pageRetry": "إعادة المحاولة"
+    },
+    "mushafs": {
+      "publisher": "مجمع الملك فهد",
+      "year": "{{year}}هـ",
+      "downloaded": "مُنزَّل",
+      "size": "{{mb}} ميغابايت",
+      "hafs": {
+        "name": "حفص عن عاصم"
+      },
+      "warsh": {
+        "name": "ورش عن نافع"
+      },
+      "qalun": {
+        "name": "قالون عن نافع"
+      },
+      "shubah": {
+        "name": "شعبة عن عاصم"
+      },
+      "duri": {
+        "name": "الدوري عن أبي عمرو"
+      },
+      "group": "اختيار المصحف"
+    },
     "sources": {
       "title": "المصادر",
       "qfFonts": "خطوط القرآن مقدَّمة من Quran Foundation",
@@ -339,17 +384,7 @@
       "fontScale": "حجم خط المصحف",
       "decreaseFont": "تصغير الخط",
       "increaseFont": "تكبير الخط",
-      "fontLabel": "خط المصحف",
-      "fonts": {
-        "amiriQuran": {
-          "name": "أميري",
-          "subtitle": "الرسم العثماني · خط أميري القرآني"
-        },
-        "scheherazadeNew": {
-          "name": "شهرزاد",
-          "subtitle": "الرسم العثماني · خط شهرزاد الجديد"
-        }
-      },
+      "mushaf": "المصحف",
       "decreaseGlyph": "أ−",
       "increaseGlyph": "أ+",
       "themeLabel": "المظهر",
@@ -879,7 +914,7 @@
       "en": "English"
     },
     "reading": {
-      "quranFont": "خط المصحف",
+      "mushaf": "المصحف",
       "appearance": "طريقة العرض والمظهر",
       "appearanceValue": "مصحف · تلقائي",
       "darkAfterMaghrib": "الوضع الداكن تلقائيًا بعد المغرب",
@@ -1272,10 +1307,8 @@
       "englishDetail": "Interface only"
     },
     "script": {
-      "title": "كيف تحب أن تقرأ؟",
-      "subtitle": "اختر طريقة العرض. يمكنك تغييرها في أي وقت من الإعدادات.",
-      "previewCaption": "معاينة: الرسم العثماني · حفص",
-      "modeGroup": "طريقة العرض"
+      "title": "اختر المصحف",
+      "subtitle": "يمكنك تغييره لاحقًا من الإعدادات."
     },
     "reciter": {
       "title": "اختر قارئك",

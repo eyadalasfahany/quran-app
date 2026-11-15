@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Text, View, type HostInstance } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
-import { quranFonts, useQuranFont, useTheme } from '@/core/theme';
+import { useTheme } from '@/core/theme';
 import {
   AyahEndMark,
   GoldFrame,
@@ -33,7 +33,6 @@ const FRAME_CONTENT = {
 // A justified paragraph's short last line follows the layout direction, and the shared Quran style's 'ltr' would put it
 // on the left on Android. Right-aligned text keeps 'ltr', because iOS mirrors textAlign 'right' under 'rtl'.
 const JUSTIFIED_PARAGRAPH = { direction: 'rtl', width: '100%' } as const;
-const START_PARAGRAPH = { width: '100%' } as const;
 
 export function HafsMushafPage({
   verses,
@@ -83,7 +82,6 @@ export function HafsMushafPage({
   // The host Text of each paragraph, keyed by its first ayah, so its layout can be reported with its node.
   const paragraphNodes = useRef(new Map<string, HostInstance>());
   const theme = useTheme();
-  const font = useQuranFont();
   const colors = useContrastColors();
 
   return (
@@ -120,7 +118,7 @@ export function HafsMushafPage({
               />
             ) : null}
             <QuranText
-              align={quranFonts[font].mushafAlign}
+              align="justify"
               fontScale={fontScale}
               onTextLayout={(event) => {
                 followProps?.onTextLayout(event);
@@ -137,7 +135,7 @@ export function HafsMushafPage({
                   paragraphNodes.current.set(first.verseKey, node);
                 }
               }}
-              style={quranFonts[font].mushafAlign === 'justify' ? JUSTIFIED_PARAGRAPH : START_PARAGRAPH}
+              style={JUSTIFIED_PARAGRAPH}
               testID={testID ? `${testID}-text-${first.verseKey}` : undefined}
               variant="quranMushaf"
             >

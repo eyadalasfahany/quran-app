@@ -26,5 +26,6 @@ final class ContentManifestEntryData extends Data
         public readonly string $packSha256,
         public readonly int $changesSinceMinVersion,
         public readonly bool $isDefault,
+        public readonly bool $hasWordBoxes,
     ) {}
 }

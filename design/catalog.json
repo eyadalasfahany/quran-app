@@ -6,11 +6,13 @@
    "blurb": "Home, mushaf, ayah actions, player, reader settings",
    "screens": [
     "AyahSheet",
+    "AyahSheetRiwayah",
     "Main",
     "MainLandscapeRail",
     "Mushaf",
     "MushafFullscreen",
     "MushafFullscreenEnter",
+    "MushafPlaybackRiwayah",
     "Player",
     "PlayerReciterDownloading",
     "PlayerReciters",
@@ -23,11 +25,13 @@
    "blurb": "Surah index, search, reading and focus modes, tafsir",
    "screens": [
     "Focus",
+    "FocusOtherRiwayah",
     "Reading",
     "ReadingMiniCollapsed",
     "ReadingMiniIdle",
     "ReadingMiniSkipped",
     "ReadingMiniUnavailable",
+    "ReadingOtherRiwayah",
     "Search",
     "SearchEmpty",
     "SearchHadithEmpty",
@@ -45,6 +49,8 @@
     "Qibla",
     "QiblaLandscape",
     "ReciterSurahsUnavailable",
+    "RecitersRiwayahHeader",
+    "RecitersRiwayahRow",
     "Salah",
     "SalahAdhanSoundEntry",
     "SettingsSuggestCard",
@@ -397,6 +403,42 @@
    ]
   },
   {
+   "id": "AyahSheetRiwayah",
+   "stack": "core",
+   "caption": "Ayah actions · ayah in Warsh (non-Hafs): reference and riwayah in the header, no text card, highlight row, and only حفظ and ملاحظة (ADR 0090, step 9 Part F) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "AyahSheetRiwayah",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "AyahSheetRiwayah",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "AyahSheetRiwayah",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "AyahSheetRiwayah",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "AyahSheetRiwayah"
+   ]
+  },
+  {
    "id": "Main",
    "stack": "core",
    "caption": "Home",
@@ -592,6 +634,42 @@
    ]
   },
   {
+   "id": "MushafPlaybackRiwayah",
+   "stack": "core",
+   "caption": "Mushaf · Hafs pages while a Hafs reciter plays for a reader who chose Warsh (ADR 0090 decision 12, step 9b Q6) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "MushafPlaybackRiwayah",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "MushafPlaybackRiwayah",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "MushafPlaybackRiwayah",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "MushafPlaybackRiwayah",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "MushafPlaybackRiwayah"
+   ]
+  },
+  {
    "id": "Player",
    "stack": "core",
    "caption": "Player",
@@ -772,6 +850,42 @@
    ]
   },
   {
+   "id": "FocusOtherRiwayah",
+   "stack": "reading",
+   "caption": "Focus mode · Warsh chosen: the position line names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "FocusOtherRiwayah",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "FocusOtherRiwayah",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "FocusOtherRiwayah",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "FocusOtherRiwayah",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "FocusOtherRiwayah"
+   ]
+  },
+  {
    "id": "Reading",
    "stack": "reading",
    "caption": "Reading mode",
@@ -949,6 +1063,42 @@
    },
    "frames": [
     "ReadingMiniUnavailable"
+   ]
+  },
+  {
+   "id": "ReadingOtherRiwayah",
+   "stack": "reading",
+   "caption": "Reading mode · Warsh chosen: the title pill names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "ReadingOtherRiwayah",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "ReadingOtherRiwayah",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "ReadingOtherRiwayah",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "ReadingOtherRiwayah",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "ReadingOtherRiwayah"
    ]
   },
   {
@@ -1319,6 +1469,78 @@
    },
    "frames": [
     "ReciterSurahsUnavailable"
+   ]
+  },
+  {
+   "id": "RecitersRiwayahHeader",
+   "stack": "salah",
+   "caption": "Listen › Reciters · one muted line above the list, rows unchanged (ADR 0090 decision 12, step 9b Part C, option b) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "RecitersRiwayahHeader",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "RecitersRiwayahHeader",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "RecitersRiwayahHeader",
+     "untranslated": 3
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "RecitersRiwayahHeader",
+     "untranslated": 3
+    }
+   },
+   "frames": [
+    "RecitersRiwayahHeader"
+   ]
+  },
+  {
+   "id": "RecitersRiwayahRow",
+   "stack": "salah",
+   "caption": "Listen › Reciters · each row names its riwayah on the second line (ADR 0090 decision 12, step 9b Part C, option a) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "RecitersRiwayahRow",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "RecitersRiwayahRow",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "RecitersRiwayahRow",
+     "untranslated": 2
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "RecitersRiwayahRow",
+     "untranslated": 2
+    }
+   },
+   "frames": [
+    "RecitersRiwayahRow"
    ]
   },
   {

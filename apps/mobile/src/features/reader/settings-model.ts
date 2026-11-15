@@ -1,7 +1,6 @@
 import { storage, storageKeys } from '@/core/storage/mmkv';
-import { DEFAULT_QURAN_FONT, isQuranFont, type QuranFont } from '@/core/theme';
-
 import { READER_MODES, type ReaderMode } from './anchor/reading-anchor';
+import { DEFAULT_MUSHAF, isMushafKey, type MushafKey } from './mushafs';
 
 export const READER_SETTINGS_VERSION = 1;
 export const FONT_SCALE_MIN = 0.8;
@@ -11,7 +10,7 @@ export const FONT_SCALE_STEP = 0.1;
 export type ReaderSettings = {
   mode: ReaderMode;
   fontScale: number;
-  quranFont: QuranFont;
+  mushaf: MushafKey;
   tafsirId: number | null;
 };
 
@@ -33,7 +32,7 @@ type PersistedReaderSettings = {
   version?: unknown;
   mode?: unknown;
   fontScale?: unknown;
-  quranFont?: unknown;
+  mushaf?: unknown;
   tafsirChosen?: unknown;
   tafsirId?: unknown;
 };
@@ -42,7 +41,7 @@ export function defaultReaderSettings(): LoadedReaderSettings {
   return {
     mode: 'reading',
     fontScale: 1,
-    quranFont: DEFAULT_QURAN_FONT,
+    mushaf: DEFAULT_MUSHAF,
     tafsirId: null,
     tafsirChosen: false,
   };
@@ -69,8 +68,8 @@ export function migrateReaderSettings(raw: unknown): LoadedReaderSettings {
   return {
     mode: isReaderMode(blob.mode) ? blob.mode : defaults.mode,
     fontScale: clampFontScale(blob.fontScale),
-    // Added by ADR 0048 without a version bump: an older blob, or a value no longer offered, reads the default.
-    quranFont: isQuranFont(blob.quranFont) ? blob.quranFont : defaults.quranFont,
+    // A blob without a mushaf (or with a legacy quranFont, ADR 0090) reads the default; the old key is never written back.
+    mushaf: isMushafKey(blob.mushaf) ? blob.mushaf : defaults.mushaf,
     tafsirChosen,
     tafsirId,
   };
@@ -101,7 +100,7 @@ export function writeReaderSettings(settings: LoadedReaderSettings): void {
     version: READER_SETTINGS_VERSION,
     mode: settings.mode,
     fontScale: clampFontScale(settings.fontScale),
-    quranFont: settings.quranFont,
+    mushaf: settings.mushaf,
     tafsirChosen: settings.tafsirChosen,
     tafsirId: settings.tafsirId,
   };

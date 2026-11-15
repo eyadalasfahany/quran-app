@@ -30,6 +30,8 @@ enum ResourceGroup: string
     case HadithExplanations = 'hadith_explanations';
     // ADR 0091: the Seerah book «نور اليقين» (map and timeline), one pack per book.
     case Seerah = 'seerah';
+    // ADR 0090: one pack per riwayah of the Madinah page artwork.
+    case SvgMushafs = 'svg_mushafs';
 
     public function isIgnored(): bool
     {

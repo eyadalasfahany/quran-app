@@ -1,4 +1,4 @@
-import { bundledFonts, QURAN_FONTS, quranFonts } from '@/core/theme';
+import { bundledFonts, quranFontFamily } from '@/core/theme';
 
 import { displayText, maxFontScale, quranText, uiTextProps } from './textStyles';
 
@@ -13,19 +13,9 @@ describe('text styles', () => {
     expect(displayText('numeral').fontFamily).toBe('Amiri-Regular');
   });
 
-  it('sets Quran text in the given family, defaulting to Amiri Quran', () => {
-    expect(quranText('quranReading', 1, 'ScheherazadeNew-Regular')).toMatchObject({
-      fontFamily: 'ScheherazadeNew-Regular',
-      fontSize: 27,
-      lineHeight: 57,
-    });
+  it('sets Quran text in Amiri Quran, the one bundled Quran font', () => {
     expect(quranText('quranReading').fontFamily).toBe('AmiriQuran');
-  });
-
-  it('registers every Quran font as a bundled font', () => {
-    for (const font of QURAN_FONTS) {
-      expect(Object.keys(bundledFonts)).toContain(quranFonts[font].family);
-    }
+    expect(Object.keys(bundledFonts)).toContain(quranFontFamily);
   });
 
   it('scales Quran text and its line height with the reader setting', () => {

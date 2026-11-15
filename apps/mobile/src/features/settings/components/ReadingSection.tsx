@@ -1,29 +1,29 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { DEFAULT_QURAN_FONT } from '@/core/theme';
 import { readDarkAfterMaghrib, saveDarkAfterMaghrib } from '@/core/theme/appearance';
+import { DEFAULT_MUSHAF } from '@/features/reader/mushafs';
 import { ListRow, ToggleRow, UiText } from '@/shared/ui';
 
 import { SettingsGroup } from './SettingsGroup';
 
 export function ReadingSection({
-  onPressQuranFont,
+  onPressMushaf,
   onPressAppearance,
   onPressTafsir,
   darkAfterMaghrib: controlledDark,
   onDarkAfterMaghribChange,
-  fontValue,
+  mushafValue,
   appearanceValue,
   tafsirValue,
   testID = 'reading-section',
 }: {
-  onPressQuranFont?: () => void;
+  onPressMushaf?: () => void;
   onPressAppearance?: () => void;
   onPressTafsir?: () => void;
   darkAfterMaghrib?: boolean;
   onDarkAfterMaghribChange?: (value: boolean) => void;
-  fontValue?: string;
+  mushafValue?: string;
   appearanceValue?: string;
   tafsirValue?: string;
   testID?: string;
@@ -46,13 +46,13 @@ export function ReadingSection({
     <SettingsGroup testID={testID} title={t('settings.sections.reading')}>
       <ListRow
         chevron
-        onPress={onPressQuranFont}
+        onPress={onPressMushaf}
         separator="line"
-        testID="reading-font-row"
-        title={t('settings.reading.quranFont')}
+        testID="reading-mushaf-row"
+        title={t('settings.reading.mushaf')}
         trailing={
           <UiText tone="muted" variant="subhead">
-            {fontValue ?? t(`reader.settings.fonts.${DEFAULT_QURAN_FONT}.name`)}
+            {mushafValue ?? t(`reader.mushafs.${DEFAULT_MUSHAF}.name`)}
           </UiText>
         }
       />
