@@ -2,10 +2,12 @@
 
 Duas + my duas
 
-17 frames · review page: `design/duas/<Screen>/index.html` (ADR 0087)
+19 frames · review page: `design/duas/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
+| `DuasHomeCategories` | compact | ar-light | awaiting-approval | الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (بانتظار الموافقة) |
+| `DuasCategory` | compact | ar-light | awaiting-approval | الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (بانتظار الموافقة) |
 | `DuasHome` | compact | ar-light | source | الأدعية · Arabic |
 | `DuasHomeDark` | compact | dark | source | الأدعية · Dark |
 | `DuasHomeEnglish` | compact | en | source | Duas home · English (LTR) |

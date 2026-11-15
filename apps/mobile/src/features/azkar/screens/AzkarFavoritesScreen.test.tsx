@@ -22,7 +22,7 @@ jest.mock('../data/favorites-repository', () => ({
 
 jest.mock('../data/hooks', () => ({
   useFavoriteCards: jest.fn(),
-  useQuranReferenceLabel: jest.fn(() => (ref: { verseFrom: number } | null) => (ref === null ? null : `سورة الفاتحة · ${ref.verseFrom}`)),
+  useQuranReferencesLabel: jest.fn(() => (refs: { verseFrom: number }[]) => (refs[0] === undefined ? null : `سورة الفاتحة · ${refs[0].verseFrom}`)),
 }));
 
 const mocked = hooks as jest.Mocked<typeof hooks>;
@@ -57,8 +57,8 @@ describe('AzkarFavoritesScreen', () => {
 
   it('lists the saved dhikr, numbered, and opens one on press', async () => {
     mocked.useFavoriteCards.mockReturnValue([
-      { entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW, quranRef: null },
-      { entryKey: 'fixture:entry-003', occasion: 'evening', preview: null, quranRef: null },
+      { entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW, quranRefs: [] },
+      { entryKey: 'fixture:entry-003', occasion: 'evening', preview: null, quranRefs: [] },
     ]);
     await renderUi(<AzkarFavoritesScreen />);
 
@@ -71,7 +71,7 @@ describe('AzkarFavoritesScreen', () => {
 
   it('shows surah and verses for a saved dhikr that opens with a Quran passage', async () => {
     mocked.useFavoriteCards.mockReturnValue([
-      { entryKey: 'fixture:entry-002', occasion: null, preview: null, quranRef: { surah: 1, verseFrom: 2, verseTo: 2 } },
+      { entryKey: 'fixture:entry-002', occasion: null, preview: null, quranRefs: [{ surah: 1, verseFrom: 2, verseTo: 2 }] },
     ]);
     await renderUi(<AzkarFavoritesScreen />);
 
@@ -79,7 +79,7 @@ describe('AzkarFavoritesScreen', () => {
   });
 
   it('removes a favourite from its bookmark without opening it', async () => {
-    mocked.useFavoriteCards.mockReturnValue([{ entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW, quranRef: null }]);
+    mocked.useFavoriteCards.mockReturnValue([{ entryKey: 'fixture:entry-001', occasion: 'morning', preview: PREVIEW, quranRefs: [] }]);
     await renderUi(<AzkarFavoritesScreen />);
 
     await press(screen.getByRole('button', { name: 'إزالة من المفضلة' }));

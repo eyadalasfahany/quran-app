@@ -6,7 +6,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 import type { ScopeSummary } from './progress';
 
 import { openAzkarContentDb } from '../../../../jest/azkar-test-db';
-import { cachedCategorySummaries, useQuranReferenceLabel, useSessionCategoryProgress } from './hooks';
+import { cachedCategorySummaries, useQuranReferenceLabel, useQuranReferencesLabel, useSessionCategoryProgress } from './hooks';
 import { loadAzkarDevFixtures } from './__fixtures__/dev-fixtures';
 import { periodKey } from './progress';
 
@@ -169,5 +169,82 @@ describe('useQuranReferenceLabel', () => {
 
     expect(result.current(null)).toBeNull();
     expect(result.current({ surah: 99, verseFrom: 1, verseTo: 1 })).toBeNull();
+  });
+});
+
+describe('useQuranReferencesLabel', () => {
+  let database: DatabaseSync;
+
+  beforeEach(() => {
+    const opened = openAzkarContentDb();
+    database = opened.database;
+    mockExecutor = opened.executor;
+    opened.executor.run(
+      `INSERT INTO chapters (id, name_arabic, name_simple, name_en, revelation_place, revelation_order, verses_count, bismillah_pre, page_start, page_end)
+       VALUES (1, 'الفاتحة', 'Al-Fatihah', 'The Opener', 'makkah', 5, 7, 0, 1, 1),
+              (2, 'البقرة', 'Al-Baqarah', 'The Cow', 'madinah', 87, 286, 1, 2, 49)`,
+    );
+  });
+
+  afterEach(async () => {
+    database.close();
+    mockExecutor = null;
+    await i18n.changeLanguage('ar');
+  });
+
+  it('is null for no passages', async () => {
+    const { result } = await renderHook(() => useQuranReferencesLabel('ar'));
+
+    expect(result.current([])).toBeNull();
+  });
+
+  it('labels one surah with the single-reference label, from the first verse to the last', async () => {
+    const { result } = await renderHook(() => useQuranReferencesLabel('ar'));
+
+    expect(result.current([{ surah: 2, verseFrom: 255, verseTo: 255 }])).toBe('سورة البقرة · ٢٥٥');
+    expect(
+      result.current([
+        { surah: 2, verseFrom: 1, verseTo: 5 },
+        { surah: 2, verseFrom: 255, verseTo: 255 },
+      ]),
+    ).toBe('سورة البقرة · ١–٢٥٥');
+  });
+
+  it('joins the distinct surah names, in order, when the passages span more than one surah', async () => {
+    await i18n.changeLanguage('ar');
+    const { result } = await renderHook(() => useQuranReferencesLabel('ar'));
+
+    expect(
+      result.current([
+        { surah: 2, verseFrom: 255, verseTo: 255 },
+        { surah: 1, verseFrom: 1, verseTo: 7 },
+        { surah: 2, verseFrom: 285, verseTo: 286 },
+      ]),
+    ).toBe('سورة البقرة · سورة الفاتحة');
+  });
+
+  it('uses English surah names in English', async () => {
+    await i18n.changeLanguage('en');
+    const { result } = await renderHook(() => useQuranReferencesLabel('en'));
+
+    expect(
+      result.current([
+        { surah: 1, verseFrom: 1, verseTo: 7 },
+        { surah: 2, verseFrom: 255, verseTo: 255 },
+      ]),
+    ).toBe('Surah Al-Fatihah · Surah Al-Baqarah');
+  });
+
+  it('skips a surah that cannot be read, and is null when none can', async () => {
+    const { result } = await renderHook(() => useQuranReferencesLabel('ar'));
+
+    expect(
+      result.current([
+        { surah: 99, verseFrom: 1, verseTo: 1 },
+        { surah: 2, verseFrom: 255, verseTo: 255 },
+        { surah: 98, verseFrom: 1, verseTo: 1 },
+      ]),
+    ).toBe('سورة البقرة');
+    expect(result.current([{ surah: 99, verseFrom: 1, verseTo: 1 }])).toBeNull();
   });
 });

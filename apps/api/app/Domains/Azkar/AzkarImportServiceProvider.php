@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Azkar;
 
 use App\Domains\Azkar\Console\CompareSourcesCommand;
+use App\Domains\Azkar\Console\EntryTypesCheckCommand;
 use App\Domains\Azkar\Console\HadeethEncLinksCommand;
 use App\Domains\Azkar\Console\ImportAzkarCommand;
 use App\Domains\Azkar\Console\QuranMapCandidatesCommand;
@@ -39,6 +40,7 @@ final class AzkarImportServiceProvider extends ServiceProvider
             SyncAzkarAudioCommand::class,
             VerifyAzkarAudioCommand::class,
             SetupAzkarCommand::class,
+            EntryTypesCheckCommand::class,
         ]);
     }
 }

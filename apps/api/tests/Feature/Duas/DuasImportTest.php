@@ -10,7 +10,9 @@ use App\Domains\Duas\Models\DuaHadith;
 use App\Domains\Duas\Models\DuaItem;
 use App\Domains\Duas\Models\DuaQuranSpan;
 use App\Domains\Duas\Services\DuasImporter;
+use App\Domains\Duas\Services\DuasImportPlanner;
 use App\Support\Storage\SourceCache;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -26,6 +28,8 @@ beforeEach(function (): void {
         'duas.hadeethenc.snapshot_date' => '',
         'duas.hadeethenc.snapshot_sha256' => '',
         'duas.collection_books' => [],
+        'duas.hadeethenc.hidden_category_ids' => [],
+        'duas.hadeethenc.excluded_hadith_ids' => [],
     ]);
 });
 
@@ -249,4 +253,77 @@ it('writes no production item for a candidate quran span but keeps reviewed and 
         ->and(DuaHadith::query()->count())->toBe(1);
 
     File::deleteDirectory(SourceCache::path('duas/hadeethenc/'.$date));
+});
+
+/**
+ * @param  list<int>  $hadithIds
+ * @return array<int, array<string, string>>
+ */
+function duasPlannerHadithRecords(array $hadithIds): array
+{
+    $records = [];
+
+    foreach ($hadithIds as $id) {
+        $records[$id] = [
+            'title' => 'FIXTURE title '.$id.' — not a dua',
+            'hadeeth' => 'FIXTURE hadith '.$id.' — not a dua',
+            'attribution' => 'FIXTURE attribution — not a dua',
+        ];
+    }
+
+    return $records;
+}
+
+function duasPlannerRun(array $hadithIds, array $hadithGroups = [], array $hadithPrimaryGroup = []): array
+{
+    return app(DuasImportPlanner::class)->plan(
+        quranMap: [],
+        hisnLinks: [],
+        collectionRefs: [],
+        collectionBooks: [],
+        hadithRecords: duasPlannerHadithRecords($hadithIds),
+        importedAt: CarbonImmutable::now('UTC'),
+        hadeethSourceId: 1,
+        hadeethSourceVersion: '2099-05-05',
+        hadithGroups: $hadithGroups,
+        hadithPrimaryGroup: $hadithPrimaryGroup,
+    );
+}
+
+it('does not import a hadith whose id is in excluded_hadith_ids', function (): void {
+    config(['duas.hadeethenc.excluded_hadith_ids' => [42 => 'duplicate_of:43']]);
+
+    $planned = duasPlannerRun(
+        hadithIds: [42, 43],
+        hadithGroups: [['id' => 1, 'source_category_id' => 301, 'title' => 'FIXTURE cat 301', 'position' => 1]],
+        hadithPrimaryGroup: [42 => 1, 43 => 1],
+    );
+
+    $hadithKeys = array_column(array_filter($planned['plan']->items, fn (array $item): bool => $item['kind'] === 'hadith'), 'source_key');
+
+    expect($hadithKeys)->toBe(['43'])
+        ->and(array_column($planned['plan']->hadith, 'hadeeth_id'))->toBe([43])
+        ->and($planned['issues'])->toBe([]);
+});
+
+it('does not import a hadith with no primary group when groups exist', function (): void {
+    $planned = duasPlannerRun(
+        hadithIds: [42, 43],
+        hadithGroups: [['id' => 1, 'source_category_id' => 302, 'title' => 'FIXTURE cat 302', 'position' => 1]],
+        hadithPrimaryGroup: [43 => 1],
+    );
+
+    expect(array_column($planned['plan']->hadith, 'hadeeth_id'))->toBe([43])
+        ->and($planned['plan']->stats->hadithAccepted)->toBe(1)
+        ->and($planned['issues'])->toBe([]);
+});
+
+it('imports a hadith with a null group when no groups are present', function (): void {
+    $planned = duasPlannerRun(hadithIds: [42]);
+
+    $item = array_values(array_filter($planned['plan']->items, fn (array $row): bool => $row['kind'] === 'hadith'))[0] ?? null;
+
+    expect($item)->not->toBeNull()
+        ->and($item['group_id'])->toBeNull()
+        ->and(array_column($planned['plan']->hadith, 'hadeeth_id'))->toBe([42]);
 });

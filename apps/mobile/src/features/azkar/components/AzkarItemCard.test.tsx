@@ -25,11 +25,20 @@ describe('AzkarItemCard', () => {
     expect(screen.getByRole('button', { name: '١, سورة البقرة · ٢٥٥' })).toBeOnTheScreen();
   });
 
-  it('prefers the text preview over the Quran reference', async () => {
+  it('shows the preview and the Quran reference under it, as one muted line', async () => {
     await renderUi(<AzkarItemCard number={1} onPress={jest.fn()} preview={PREVIEW} quranReference="سورة البقرة · ٢٥٥" requiredCount={null} />);
 
     expect(screen.getByText(PREVIEW)).toBeOnTheScreen();
-    expect(screen.queryByTestId('azkar-item-card-quran-reference')).toBeNull();
+    const reference = screen.getByTestId('azkar-item-card-quran-reference');
+    expect(reference).toHaveTextContent('سورة البقرة · ٢٥٥');
+    expect(flatStyle(reference.props.style)).toMatchObject({ color: expect.any(String) });
+    expect(reference.props.numberOfLines).toBe(1);
+  });
+
+  it('labels the card with the preview first, then the reference, when both exist', async () => {
+    await renderUi(<AzkarItemCard number={1} onPress={jest.fn()} preview={PREVIEW} quranReference="سورة البقرة · ٢٥٥" requiredCount={null} />);
+
+    expect(screen.getByRole('button', { name: `١, ${PREVIEW}, سورة البقرة · ٢٥٥` })).toBeOnTheScreen();
   });
 
   it('shows the Quran reference in English too', async () => {
@@ -39,6 +48,17 @@ describe('AzkarItemCard', () => {
     );
 
     expect(screen.getByRole('button', { name: '1, Surah Al-Baqarah · 255' })).toBeOnTheScreen();
+  });
+
+  it('shows the preview and the reference together in English, the preview right-aligned', async () => {
+    await renderUi(
+      <AzkarItemCard number={1} onPress={jest.fn()} preview={PREVIEW} quranReference="Surah Al-Baqarah · 255" requiredCount={null} />,
+      { locale: 'en' },
+    );
+
+    expect(screen.getByRole('button', { name: `1, ${PREVIEW}, Surah Al-Baqarah · 255` })).toBeOnTheScreen();
+    expect(screen.getByTestId('azkar-item-card-quran-reference')).toHaveTextContent('Surah Al-Baqarah · 255');
+    expect(flatStyle(screen.getByText(PREVIEW).props.style)).toMatchObject({ textAlign: 'right', writingDirection: 'rtl' });
   });
 
   it('shows the count chip only when the count is sourced', async () => {

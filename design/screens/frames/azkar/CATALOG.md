@@ -2,7 +2,7 @@
 
 Azkar home, reader, reminders, downloads
 
-26 frames · review page: `design/azkar/<Screen>/index.html` (ADR 0087)
+28 frames · review page: `design/azkar/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
@@ -13,6 +13,8 @@ Azkar home, reader, reminders, downloads
 | `AzkarHomeEnglish` | compact | en | source | Azkar home · English (LTR) |
 | `AzkarLoading` | compact | ar-light | source | Azkar home · loading |
 | `AzkarCategory` | compact | ar-light | source | Category · morning azkar |
+| `AzkarCategoryQuranRef` | compact | ar-light | awaiting-approval | Category · card with its Quran reference under the preview (ADR 0090) (بانتظار الموافقة) |
+| `AzkarChapters` | compact | ar-light | awaiting-approval | كل الأبواب · the 132 chapters in book order; a row opens the AzkarCategory layout for that chapter (بانتظار الموافقة) |
 | `AzkarSearch` | compact | ar-light | source | Search · results |
 | `AzkarSearchEmpty` | compact | ar-light | source | Search · empty query, recent searches |
 | `AzkarFavorites` | compact | ar-light | source | Favourites |

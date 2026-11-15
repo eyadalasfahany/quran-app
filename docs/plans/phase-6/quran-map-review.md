@@ -6,6 +6,7 @@ Production imports accept only map rows marked `reviewed` (`apps/api/config/azka
 - **Tanzil:** `packages/quran-text-check/data/tanzil-quran-uthmani-1.1.txt`, byte for byte. Verse numbers are added in brackets for reading.
 - **What the app shows:** a reviewed row renders the Tanzil verses, never the OpenDua spelling (non-negotiable 1). The OpenDua span is here only to identify the passage.
 - **Unmatched rows:** the matcher was not confident, so no Tanzil text is shown. Identify the passage by hand. Several rows share one span (the same text appears in several entries); one answer covers all of them.
+- **15 Nov 2026 (ADR 0090, proposed):** rows for entries 70, 76 and 99 (112:1–4, 113:1–5, 114:1–6) and entry 110 (32:1) were prepared as `reviewed` at the developer's request, after an exact comparison with the bundled Tanzil text and `verses` (verse 1 is stored without the basmala). They wait for the developer's confirmation (sections 3–5, 8–13, 16 below). Entries 50, 206, 207, 235 and 236 quote part of a verse and stay excluded (`quran_partial_verse`). A segment maps to whole verses only, so a partial mapping would show words the dhikr does not quote.
 - **After review:** set each confirmed row's `status` to `reviewed` (and correct `surah`, `verse_from`, `verse_to` where needed) in `config/azkar_quran_map.php`, then run `php artisan azkar:quran-map-candidates` to see the counts. Re-running keeps reviewed rows.
 
 Generated 1 Nov 2026.

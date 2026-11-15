@@ -1023,7 +1023,15 @@
       "sourceLine_two": "Hisn al-Muslim · {{number}} dhikr",
       "sourceLine_few": "Hisn al-Muslim · {{number}} dhikr",
       "sourceLine_many": "Hisn al-Muslim · {{number}} dhikr",
-      "quranReference": "Surah {{name}} · {{verses}}"
+      "quranReference": "Surah {{name}} · {{verses}}",
+      "quranSurahName": "Surah {{name}}"
+    },
+    "sessions": {
+      "morning": "Morning",
+      "evening": "Evening",
+      "after_prayer": "After prayer",
+      "before_sleep": "Before sleep",
+      "after_waking": "On waking"
     },
     "search": {
       "placeholder": "Search azkar",

@@ -100,6 +100,8 @@ ID_STACK: dict[str, str] = {
     "HomeAndroid": "states",
     "Offline": "states",
     "DuasHome": "duas",
+    "DuasHomeCategories": "duas",
+    "DuasCategory": "duas",
     "DuasHomeDark": "duas",
     "DuasHomeEnglish": "duas",
     "DuaQuranDetail": "duas",

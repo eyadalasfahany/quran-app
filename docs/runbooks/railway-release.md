@@ -28,7 +28,7 @@ Retired by ADR 0067: `docker/release.sh` stays in the image for a manual run, bu
 ### The web container start (`docker/start-web.sh`)
 
 1. Creates `storage/app/private/packs` and `storage/app/private/azkar-audio` on the volume, and `storage/app/tmp` and `storage/app/azkar/reports` in the container.
-2. `php artisan azkar:audio-verify`: presence and size of the 238 shipped recordings (fast). A failure logs which files are missing. Use `--full` by hand to hash them too.
+2. `php artisan azkar:audio-verify`: presence and size of the 241 shipped recordings (fast; 238 before ADR 0090. After deploying ADR 0090, run `azkar:audio-sync` once to fetch OD-070, OD-076 and OD-099). A failure logs which files are missing. Use `--full` by hand to hash them too.
 3. `php artisan azkar:snapshot hisnmuslim --pinned` and `php artisan azkar:snapshot hadeethenc --pinned`. When the folder on the volume already matches every pinned file SHA-256, the command logs `already pinned` and skips the download (same pin check as above).
 4. `php artisan azkar:import --download --defer-pack` (see «The Azkar import at web start»).
 5. `php artisan duas:snapshot hadeethenc --pinned`. The Duas HadeethEnc pin (`config/duas.php`, date and SHA-256) differs from Azkar's, so this is a second fetch into `storage/app/duas/hadeethenc`, not a reuse of step 3. A snapshot already on the volume that matches its pin is kept with `Snapshot already pinned`. A failure prints a warning and the Duas import runs without it.

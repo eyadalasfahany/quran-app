@@ -133,6 +133,7 @@ Dorar (الدرر السنية) offers an official hadith API with an approved a
   - The 9 entries whose passages are still `unmatched` are left out of every import, production included: entries 50, 70, 76, 99, 110, 206, 207, 235 and 236. Production ships 258 of 267 entries.
   - The exclusion is a reviewed list in `config/azkar.php` (`excluded_entries`), not a general skip. Errors on any other entry still fail the import, and `--skip-blocked` stays local only.
   - An entry comes back by identifying its passages, marking its map rows `reviewed` and removing it from the list. The review sheet is `docs/plans/phase-6/quran-map-review.md`.
+- **Amended 15 Nov 2026 (developer, ADR 0090):** entries 70, 76 and 99 (المعوذات: 112:1–4, 113:1–5, 114:1–6) and entry 110 (﴿الم﴾ = 32:1) are `reviewed` and back in every import. Production ships 262 of 267 entries. Entries 50, 206, 207, 235 and 236 quote part of a verse, so they stay excluded (reason `quran_partial_verse`) until a segment can point to part of a verse.
 - **Production deploy (Railway, ADR 0022):** schema migrations, then the Azkar import, which downloads the pinned file, verifies its SHA-256, and no-ops with exit 0 while locked. Then the pack build, which runs at web start, not in pre-deploy, and does not block start (amended 2 Nov 2026, ADR 0044). No seeders, factories or dev fixtures run in production.
 
 ### 12. Additional sources (developer, 1 Nov 2026)

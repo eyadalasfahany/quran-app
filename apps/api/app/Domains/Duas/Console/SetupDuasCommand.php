@@ -7,8 +7,12 @@ namespace App\Domains\Duas\Console;
 use Illuminate\Console\Command;
 
 /**
- * Runs the Duas HadeethEnc snapshot, catalogue import (deferred or immediate pack), and content pack ensure chain for
- * local and production setup (ADR 0044-duas).
+ * One command for all Duas content, local and production (ADR 0044-duas). Duas has no audio (ADR 0055). The steps run
+ * in this order:
+ *
+ *  1. duas:snapshot hadeethenc --pinned (the pinned HadeethEnc snapshot).
+ *  2. duas:import --download (the pinned catalogue, with a deferred pack unless --build-packs).
+ *  3. content:ensure-packs.
  */
 final class SetupDuasCommand extends Command
 {

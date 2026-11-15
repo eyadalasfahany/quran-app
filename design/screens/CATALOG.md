@@ -2,7 +2,7 @@
 
 Token-cheap inventory. **Models: read this or `frames.tsv`, not HTML frames.**
 
-Total: **240** frames · **23** stacks
+Total: **244** frames · **23** stacks
 
 | id | stack | size | theme | status | caption |
 |---|---|---|---|---|---|
@@ -59,6 +59,8 @@ Total: **240** frames · **23** stacks
 | `AzkarHomeEnglish` | azkar | compact | en | source | Azkar home · English (LTR) |
 | `AzkarLoading` | azkar | compact | ar-light | source | Azkar home · loading |
 | `AzkarCategory` | azkar | compact | ar-light | source | Category · morning azkar |
+| `AzkarCategoryQuranRef` | azkar | compact | ar-light | awaiting-approval | Category · card with its Quran reference under the preview (ADR 0090) (بانتظار الموافقة) |
+| `AzkarChapters` | azkar | compact | ar-light | awaiting-approval | كل الأبواب · the 132 chapters in book order; a row opens the AzkarCategory layout for that chapter (بانتظار الموافقة) |
 | `AzkarSearch` | azkar | compact | ar-light | source | Search · results |
 | `AzkarSearchEmpty` | azkar | compact | ar-light | source | Search · empty query, recent searches |
 | `AzkarFavorites` | azkar | compact | ar-light | source | Favourites |
@@ -78,6 +80,8 @@ Total: **240** frames · **23** stacks
 | `AzkarDownloads` | azkar | compact | ar-light | source | Downloads · licensed recording (future) |
 | `AzkarDownloadsEmpty` | azkar | compact | ar-light | source | Empty · recordings (licensed recording, future) |
 | `AzkarExpanded` | azkar | expanded | ar-light | source | Azkar reader · expanded · 1194 × 834 |
+| `DuasHomeCategories` | duas | compact | ar-light | awaiting-approval | الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (بانتظار الموافقة) |
+| `DuasCategory` | duas | compact | ar-light | awaiting-approval | الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (بانتظار الموافقة) |
 | `DuasHome` | duas | compact | ar-light | source | الأدعية · Arabic |
 | `DuasHomeDark` | duas | compact | dark | source | الأدعية · Dark |
 | `DuasHomeEnglish` | duas | compact | en | source | Duas home · English (LTR) |

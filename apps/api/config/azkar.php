@@ -207,18 +207,16 @@ return [
         132 => 'من أنواع الخير والآداب الجامعة',
     ],
 
-    // ADR 0031 §11 (amended 1 Nov 2026): entries left out of every import, production included, until their Quran
-    // passages are identified and reviewed. Keyed by entry_key; the value is the reason, shown in the import report.
+    // ADR 0031 §11 (amended 1 Nov 2026) and ADR 0090 (15 Nov 2026): entries left out of every import, production
+    // included. Each quotes only part of a verse, and a Quran segment maps to whole verses only (the app renders the
+    // verses from content.db), so mapping them would show words the dhikr does not quote. Keyed by entry_key; the value
+    // is the reason, shown in the import report.
     'excluded_entries' => [
-        'hisn-al-muslim:entry-000050' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000070' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000076' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000099' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000110' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000206' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000207' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000235' => 'quran_reference_unidentified',
-        'hisn-al-muslim:entry-000236' => 'quran_reference_unidentified',
+        'hisn-al-muslim:entry-000050' => 'quran_partial_verse',
+        'hisn-al-muslim:entry-000206' => 'quran_partial_verse',
+        'hisn-al-muslim:entry-000207' => 'quran_partial_verse',
+        'hisn-al-muslim:entry-000235' => 'quran_partial_verse',
+        'hisn-al-muslim:entry-000236' => 'quran_partial_verse',
     ],
 
     // §7: occasion and timing from each chapter's own title. Chapters not listed keep every field null.

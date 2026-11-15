@@ -1,15 +1,16 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { getEntry } from './content-repository';
-import { firstArabicText, firstQuranRef, type QuranPreviewRef } from './preview';
+import { firstArabicText, quranRefs, type QuranPreviewRef } from './preview';
 import type { AzkarFavorite, AzkarOccasion } from './model';
 
 export type FavoriteCard = {
   entryKey: string;
   occasion: AzkarOccasion | null;
+  /** The first Arabic text segment, or null. */
   preview: string | null;
-  /** The opening Quran passage when there is no text preview, or null. */
-  quranRef: QuranPreviewRef | null;
+  /** Every Quran passage of the entry in order (empty when it has none), shown even when there is a text preview. */
+  quranRefs: QuranPreviewRef[];
 };
 
 /**
@@ -28,7 +29,7 @@ export function listFavoriteCards(db: SqlExecutor, favorites: readonly AzkarFavo
       entryKey: favorite.entryKey,
       occasion: detail.entry.occasion,
       preview,
-      quranRef: preview === null ? firstQuranRef(detail.items) : null,
+      quranRefs: quranRefs(detail.items),
     });
   }
   return cards;

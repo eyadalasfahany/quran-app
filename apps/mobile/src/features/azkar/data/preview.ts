@@ -19,16 +19,25 @@ export function firstArabicText(items: readonly AzkarItemDetail[]): string | nul
 export type QuranPreviewRef = { surah: number; verseFrom: number; verseTo: number };
 
 /**
- * The first Quran segment of a list of items, for a card with no Arabic text preview. The card shows its surah and
- * verses in the UI font, never the verse text: an ayah is never clamped or set in the UI font.
+ * The first Quran segment of a list of items. Kept for callers that need one passage; cards use `quranRefs`. The card
+ * shows its surah and verses in the UI font, never the verse text: an ayah is never clamped or set in the UI font.
  */
 export function firstQuranRef(items: readonly AzkarItemDetail[]): QuranPreviewRef | null {
+  return quranRefs(items)[0] ?? null;
+}
+
+/**
+ * Every Quran segment of a list of items, in order, for a card. A card shows these references even when it also has a
+ * text preview (an entry may open with a short lead-in and then a Quran passage). Verse text is never returned.
+ */
+export function quranRefs(items: readonly AzkarItemDetail[]): QuranPreviewRef[] {
+  const refs: QuranPreviewRef[] = [];
   for (const item of items) {
     for (const segment of item.segments) {
       if (segment.kind === 'quran' && segment.quranSurah !== null && segment.quranVerseFrom !== null) {
-        return { surah: segment.quranSurah, verseFrom: segment.quranVerseFrom, verseTo: segment.quranVerseTo ?? segment.quranVerseFrom };
+        refs.push({ surah: segment.quranSurah, verseFrom: segment.quranVerseFrom, verseTo: segment.quranVerseTo ?? segment.quranVerseFrom });
       }
     }
   }
-  return null;
+  return refs;
 }

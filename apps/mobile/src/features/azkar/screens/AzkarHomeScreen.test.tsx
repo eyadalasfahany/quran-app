@@ -89,8 +89,8 @@ describe('AzkarHomeScreen', () => {
     await renderUi(<AzkarHomeScreen />);
 
     expect(screen.getByRole('header', { name: 'أذكار اليوم' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'أذكار الصباح، ١٢ من ٢٤' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'أذكار المساء، ٠ من ٦' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'الصباح، ١٢ من ٢٤' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'المساء، ٠ من ٦' })).toBeOnTheScreen();
     expect(screen.getByRole('header', { name: 'المواضيع' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'السفر، ٥ أذكار' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'الطعام والشراب، ٨ أذكار' })).toBeOnTheScreen();
@@ -102,7 +102,7 @@ describe('AzkarHomeScreen', () => {
     ]);
     await renderUi(<AzkarHomeScreen />);
 
-    expect(screen.getByRole('button', { name: 'أذكار المساء، ٦ من ٦، مكتمل' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'المساء، ٦ من ٦، مكتمل' })).toBeOnTheScreen();
   });
 
   it('shows the continue card for the scope in progress and opens its reader', async () => {
@@ -126,7 +126,7 @@ describe('AzkarHomeScreen', () => {
   it('opens the category, favourites and search from the screen', async () => {
     await renderUi(<AzkarHomeScreen />);
 
-    await press(screen.getByRole('button', { name: 'أذكار المساء، ٠ من ٦' }));
+    await press(screen.getByRole('button', { name: 'المساء، ٠ من ٦' }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/category/evening');
 
     await press(screen.getByRole('button', { name: 'السفر، ٥ أذكار' }));

@@ -107,7 +107,7 @@ export function AzkarHomeScreen() {
               })}
               separator={index < sessions.length - 1}
               testID={`azkar-session-${category.id}`}
-              title={t(`azkar.categories.${category.id}` as never)}
+              title={t(`azkar.sessions.${category.id}` as never)}
             />
           );
         })}

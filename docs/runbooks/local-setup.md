@@ -41,6 +41,20 @@ composer qa                  # needs MySQL and Redis running
 
 Mail goes to `storage/logs/laravel.log` (`MAIL_MAILER=log`).
 
+### Content: one command per feature
+
+Each command fetches, verifies and imports all of that feature's content, then builds its pack. They are safe to re-run: files already present and matching their pins are kept.
+
+```bash
+php artisan azkar:setup   # audio (241 recordings) → pinned hisnmuslim + HadeethEnc snapshots → OpenDua import → packs
+php artisan duas:setup    # pinned HadeethEnc snapshot → Duas import → packs (Duas has no audio, ADR 0055)
+```
+
+- `azkar:setup --skip-audio` skips the audio download and check. `--from=<folder>` copies the recordings from a folder instead of downloading them, and `--full` also hashes every file.
+- A snapshot that can't be fetched only warns (as at web start), and the import runs without it.
+
+**Android emulator:** the app calls `EXPO_PUBLIC_API_URL`. If that is the Mac's LAN address (for a phone on Wi-Fi), serve the API there too (`php artisan serve --host=<LAN IP>`), or set it to `http://10.0.2.2:8000` for the emulator and restart Metro. Otherwise no pack downloads and Azkar shows «الأذكار غير متاحة بعد».
+
 ## Mobile (iOS dev build)
 
 ```bash

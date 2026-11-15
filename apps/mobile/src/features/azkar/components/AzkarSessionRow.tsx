@@ -9,8 +9,9 @@ import { AzkarProgressRing } from './AzkarProgressRing';
 const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
 
 /**
- * One session category on Azkar home (screens/, #AzkarHome): its name, «١٢ من ٢٤», and a progress ring.
- * A completed session says so in its label.
+ * One session category on Azkar home (screens/, #AzkarHome): a progress ring, then its name and «١٢ من ٢٤» (the count
+ * aligned to the end of the column), then a chevron. In RTL the order reads from the start edge. A completed session says
+ * so in its label.
  */
 export function AzkarSessionRow({
   title,
@@ -54,16 +55,16 @@ export function AzkarSessionRow({
       })}
       testID={testID}
     >
-      <View style={{ flex: 1, gap: theme.space[1] }}>
+      <AzkarProgressRing completed={completed} fraction={fraction} testID={`${testID}-ring`} />
+      <View style={{ flex: 1, gap: theme.space[1] }} testID={`${testID}-text`}>
         <UiText variant="body" weight={600}>
           {title}
         </UiText>
-        <UiText tone="muted" variant="caption">
+        <UiText style={{ alignSelf: 'flex-end' }} tone="muted" variant="caption">
           {progressText}
         </UiText>
       </View>
-      <Icon color={colors.inkMuted} mirrorInRtl name={CHEVRON} size={16} />
-      <AzkarProgressRing completed={completed} fraction={fraction} testID={`${testID}-ring`} />
+      <Icon color={colors.inkMuted} mirrorInRtl name={CHEVRON} size={16} testID={`${testID}-chevron`} />
     </Pressable>
   );
 }

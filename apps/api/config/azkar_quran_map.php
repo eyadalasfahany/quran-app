@@ -25,9 +25,9 @@ return [
         [95, 8, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.70', 'check' => 'uthmani:0.67'],
     ],
     'hisn-al-muslim:entry-000070:standard:2' => [
-        [17, 111, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.58', 'check' => 'uthmani:0.58'],
-        [17, 42, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
-        [4, 170, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
+        [112, 1, 4, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
+        [113, 1, 5, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
+        [114, 1, 6, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
     ],
     'hisn-al-muslim:entry-000071:standard:2' => [
         [2, 255, null, 'status' => 'reviewed', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
@@ -36,14 +36,14 @@ return [
         [2, 255, null, 'status' => 'reviewed', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
     ],
     'hisn-al-muslim:entry-000076:standard:1' => [
-        [17, 111, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.58', 'check' => 'uthmani:0.58'],
-        [17, 42, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
-        [4, 170, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
+        [112, 1, 4, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
+        [113, 1, 5, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
+        [114, 1, 6, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
     ],
     'hisn-al-muslim:entry-000099:standard:2' => [
-        [17, 111, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.58', 'check' => 'uthmani:0.58'],
-        [17, 42, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
-        [4, 170, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.50', 'check' => 'uthmani:0.50'],
+        [112, 1, 4, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
+        [113, 1, 5, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
+        [114, 1, 6, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
     ],
     'hisn-al-muslim:entry-000100:standard:1' => [
         [2, 255, null, 'status' => 'reviewed', 'evidence' => 'similarity:0.99', 'check' => 'uthmani:0.99'],
@@ -52,7 +52,7 @@ return [
         [2, 285, 286, 'status' => 'reviewed', 'evidence' => 'similarity:1.00', 'check' => 'uthmani:0.99'],
     ],
     'hisn-al-muslim:entry-000110:standard:1' => [
-        [26, 225, null, 'status' => 'unmatched', 'evidence' => 'similarity:0.21', 'check' => 'uthmani:0.21'],
+        [32, 1, null, 'status' => 'reviewed', 'evidence' => 'manual:tanzil-exact', 'check' => 'uthmani:exact'],
     ],
     'hisn-al-muslim:entry-000135:standard:2' => [
         [57, 3, null, 'status' => 'reviewed', 'evidence' => 'exact-simple', 'check' => 'uthmani:0.99'],

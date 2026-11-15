@@ -139,9 +139,21 @@ final class DuasImportPlanner
         $hadithRows = [];
         $hadithKeyToItem = [];
 
+        $excludedHadithIds = config('duas.hadeethenc.excluded_hadith_ids', []);
+        $excludedHadithIds = is_array($excludedHadithIds) ? array_map(intval(...), array_keys($excludedHadithIds)) : [];
+
         if ($hadithRecords !== []) {
             foreach ($hadithRecords as $id => $record) {
                 if (! is_array($record)) {
+                    continue;
+                }
+
+                // ADR 0090: a hadith left out of Duas (a duplicate, or only in hidden categories) gets no item and no issue.
+                if (in_array((int) $id, $excludedHadithIds, true)) {
+                    continue;
+                }
+
+                if ($hadithGroups !== [] && ! isset($hadithPrimaryGroup[$id])) {
                     continue;
                 }
 

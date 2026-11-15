@@ -1,14 +1,15 @@
 import type { ReaderUnit } from './reader-units';
-import { firstArabicText, firstQuranRef, type QuranPreviewRef } from './preview';
+import { firstArabicText, quranRefs, type QuranPreviewRef } from './preview';
 
 /** One dhikr card on the category screen: an entry, shown once, with its first unit's key for the reader. */
 export type CategoryCard = {
   entryKey: string;
   /** The unit the card opens in the reader. */
   unitKey: string;
+  /** The first Arabic text segment, or null. */
   preview: string | null;
-  /** The opening Quran passage when there is no text preview, or null. */
-  quranRef: QuranPreviewRef | null;
+  /** Every Quran passage of the entry in order (empty when it has none), shown even when there is a text preview. */
+  quranRefs: QuranPreviewRef[];
   /** The sourced count of the entry's first unit, or null. Never defaulted. */
   requiredCount: number | null;
   /** True when every unit of the entry is completed in the current period. */
@@ -38,7 +39,7 @@ export function buildCategoryCards(units: readonly ReaderUnit[], completed: Read
       entryKey,
       unitKey: first.unitKey,
       preview,
-      quranRef: preview === null ? firstQuranRef(first.body) : null,
+      quranRefs: quranRefs(first.body),
       requiredCount: first.requiredCount,
       done: entryUnits.every((unit) => completed.has(unit.unitKey)),
     });

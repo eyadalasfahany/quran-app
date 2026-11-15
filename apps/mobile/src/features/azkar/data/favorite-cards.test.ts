@@ -32,6 +32,12 @@ describe('listFavoriteCards', () => {
     expect(cards[1]?.preview).toBe('نص تجريبي ١ — ليس ذكرًا');
   });
 
+  it('keeps the Quran references of an entry that also has a text preview', () => {
+    const [card] = listFavoriteCards(executor, [{ entryKey: 'fixture:entry-002', createdAt: 1 }]);
+
+    expect(card).toMatchObject({ preview: 'نص تجريبي ٣ — ليس ذكرًا', quranRefs: [{ surah: 1, verseFrom: 1, verseTo: 1 }] });
+  });
+
   it('skips a favourite whose entry no longer exists', () => {
     expect(listFavoriteCards(executor, [{ entryKey: 'fixture:gone', createdAt: 1 }])).toEqual([]);
   });

@@ -9,7 +9,7 @@ import { EmptyState, IconButton, Screen } from '@/shared/ui';
 
 import { AzkarItemCard } from '../components/AzkarItemCard';
 import { AzkarScreenHeader } from '../components/AzkarScreenHeader';
-import { useFavoriteCards, useQuranReferenceLabel } from '../data';
+import { useFavoriteCards, useQuranReferencesLabel } from '../data';
 import { toggleFavorite } from '../data/favorites-repository';
 import { azkarHref, goBackOr } from '../routes';
 
@@ -24,7 +24,7 @@ export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { te
   const { t } = useTranslation();
   const theme = useTheme();
   const cards = useFavoriteCards();
-  const quranReference = useQuranReferenceLabel(useLocale());
+  const quranReference = useQuranReferencesLabel(useLocale());
 
   return (
     <Screen testID={testID}>
@@ -57,7 +57,7 @@ export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { te
                   number={index + 1}
                   onPress={() => router.push(azkarHref.entry(card.entryKey))}
                   preview={card.preview}
-                  quranReference={quranReference(card.quranRef)}
+                  quranReference={quranReference(card.quranRefs)}
                   requiredCount={null}
                   testID={`azkar-favorite-${index + 1}`}
                 />

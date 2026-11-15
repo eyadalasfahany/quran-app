@@ -8,6 +8,7 @@ use App\Domains\Azkar\Exceptions\SnapshotException;
 
 /**
  * Builds HadeethEnc category groups for prophetic duas from a pinned snapshot directory (ADR 0044-duas §3).
+ * Categories listed in duas.hadeethenc.hidden_category_ids consume a group id but produce no group (ADR 0090).
  */
 final class HadeethEncDuasGroupBuilder
 {
@@ -57,6 +58,9 @@ final class HadeethEncDuasGroupBuilder
             }
         }
 
+        $hiddenCategoryIds = config('duas.hadeethenc.hidden_category_ids', []);
+        $hiddenCategoryIds = is_array($hiddenCategoryIds) ? array_map(intval(...), $hiddenCategoryIds) : [];
+
         $groups = [];
         $hadithPrimaryGroup = [];
         $nextGroupId = 1;
@@ -76,6 +80,11 @@ final class HadeethEncDuasGroupBuilder
             }
 
             $groupId = $nextGroupId++;
+
+            if (in_array($categoryId, $hiddenCategoryIds, true)) {
+                continue;
+            }
+
             $groups[] = [
                 'id' => $groupId,
                 'source_category_id' => $categoryId,

@@ -1,5 +1,5 @@
 import { makeItem, quranSegment, textSegment } from '../../../../jest/azkar-ui-fixtures';
-import { firstArabicText, firstQuranRef } from './preview';
+import { firstArabicText, firstQuranRef, quranRefs } from './preview';
 
 describe('firstArabicText', () => {
   it('returns the first text segment unaltered', () => {
@@ -35,5 +35,28 @@ describe('firstQuranRef', () => {
   it('is null when no item has a Quran segment', () => {
     expect(firstQuranRef([])).toBeNull();
     expect(firstQuranRef([makeItem({ segments: [textSegment('نص تجريبي ١ — ليس ذكرًا')] })])).toBeNull();
+  });
+});
+
+describe('quranRefs', () => {
+  it('returns every Quran segment in order, across items, even after a text preview', () => {
+    const items = [
+      makeItem({ id: 1, segments: [textSegment('نص تجريبي ١ — ليس ذكرًا'), quranSegment(255)] }),
+      makeItem({ id: 2, segments: [quranSegment(1, 7)] }),
+    ];
+    expect(quranRefs(items)).toEqual([
+      { surah: 1, verseFrom: 255, verseTo: 255 },
+      { surah: 1, verseFrom: 1, verseTo: 7 },
+    ]);
+  });
+
+  it('is empty when no item has a Quran segment', () => {
+    expect(quranRefs([])).toEqual([]);
+    expect(quranRefs([makeItem({ segments: [textSegment('نص تجريبي ١ — ليس ذكرًا')] })])).toEqual([]);
+  });
+
+  it('keeps firstQuranRef as the first of them', () => {
+    const items = [makeItem({ id: 1, segments: [quranSegment(255), quranSegment(1, 7)] })];
+    expect(firstQuranRef(items)).toEqual(quranRefs(items)[0]);
   });
 });

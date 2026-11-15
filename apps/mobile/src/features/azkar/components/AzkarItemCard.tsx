@@ -13,8 +13,9 @@ const CHECK = { ios: 'checkmark', android: 'check' } as const;
 /**
  * One dhikr on a category or favourites list (screens/, #AzkarCategory): the number medallion, a
  * two-line preview of the Arabic text, and at the end the sourced count chip, the completed mark, or a custom action
- * (the favourites bookmark). A list preview may clamp to two lines; the reader never does. An entry that opens with a
- * Quran passage has no text preview: it shows `quranReference` (surah and verses) in the UI font, never the ayah.
+ * (the favourites bookmark). A list preview may clamp to two lines; the reader never does. An entry with a Quran
+ * passage shows `quranReference` (surah and verses) in the UI font, never the ayah: under the preview as one muted line
+ * when both exist, alone when there is no preview. The card label reads the preview, then the reference.
  */
 export function AzkarItemCard({
   number,
@@ -29,7 +30,7 @@ export function AzkarItemCard({
 }: {
   number: number;
   preview: string | null;
-  /** «سورة البقرة · ٢٥٥» for an entry that opens with a Quran passage, shown when there is no preview. */
+  /** «سورة البقرة · ٢٥٥» for an entry with a Quran passage: shown under the preview, or alone without one. */
   quranReference?: string | null;
   /** The sourced count, or null. Never shown as 1 (ADR 0031 §6). */
   requiredCount: number | null;
@@ -44,7 +45,7 @@ export function AzkarItemCard({
   const theme = useTheme();
   const colors = useContrastColors();
   const locale = useLocale();
-  const shown = preview ?? quranReference;
+  const shown = [preview, quranReference].filter((part): part is string => Boolean(part)).join(', ');
   const accessibleLabel = label ?? `${formatNumber(number, locale)}${shown ? `, ${shown}` : ''}${done ? `, ${t('azkar.browse.completed')}` : ''}`;
 
   return (
@@ -67,15 +68,22 @@ export function AzkarItemCard({
       testID={testID}
     >
       <NumberMedallion number={number} testID={`${testID}-medallion`} />
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, gap: theme.space[1] }}>
         {preview ? (
           <UiText numberOfLines={2} style={[displayText('dhikrList'), arabicTextDirection]} variant="body">
             {preview}
           </UiText>
-        ) : quranReference ? (
-          <UiText numberOfLines={2} style={{ color: colors.inkMuted }} testID={`${testID}-quran-reference`} variant="body">
-            {quranReference}
-          </UiText>
+        ) : null}
+        {quranReference ? (
+          preview ? (
+            <UiText numberOfLines={1} style={{ color: colors.inkMuted }} testID={`${testID}-quran-reference`} variant="caption">
+              {quranReference}
+            </UiText>
+          ) : (
+            <UiText numberOfLines={2} style={{ color: colors.inkMuted }} testID={`${testID}-quran-reference`} variant="body">
+              {quranReference}
+            </UiText>
+          )
         ) : null}
       </View>
       {action ?? null}

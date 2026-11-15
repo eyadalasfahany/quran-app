@@ -1,6 +1,6 @@
 {
   "source": "screens/",
-  "frameCount": 240,
+  "frameCount": 244,
   "assetCount": 7,
   "bytesSavedVsInline": 5921200,
   "stacks": {
@@ -79,6 +79,8 @@
       "AzkarHomeEnglish",
       "AzkarLoading",
       "AzkarCategory",
+      "AzkarCategoryQuranRef",
+      "AzkarChapters",
       "AzkarSearch",
       "AzkarSearchEmpty",
       "AzkarFavorites",
@@ -100,6 +102,8 @@
       "AzkarExpanded"
     ],
     "duas": [
+      "DuasHomeCategories",
+      "DuasCategory",
       "DuasHome",
       "DuasHomeDark",
       "DuasHomeEnglish",
@@ -823,6 +827,26 @@
       "bytes": 9285
     },
     {
+      "id": "AzkarCategoryQuranRef",
+      "stack": "azkar",
+      "caption": "Category · card with its Quran reference under the preview (ADR 0090) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/azkar/AzkarCategoryQuranRef.html",
+      "bytes": 9623
+    },
+    {
+      "id": "AzkarChapters",
+      "stack": "azkar",
+      "caption": "كل الأبواب · the 132 chapters in book order; a row opens the AzkarCategory layout for that chapter (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/azkar/AzkarChapters.html",
+      "bytes": 12798
+    },
+    {
       "id": "AzkarSearch",
       "stack": "azkar",
       "caption": "Search · results",
@@ -1011,6 +1035,26 @@
       "status": "source",
       "path": "frames/azkar/AzkarExpanded.html",
       "bytes": 9491
+    },
+    {
+      "id": "DuasHomeCategories",
+      "stack": "duas",
+      "caption": "الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuasHomeCategories.html",
+      "bytes": 7899
+    },
+    {
+      "id": "DuasCategory",
+      "stack": "duas",
+      "caption": "الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuasCategory.html",
+      "bytes": 10467
     },
     {
       "id": "DuasHome",

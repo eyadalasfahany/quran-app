@@ -1023,7 +1023,15 @@
       "sourceLine_few": "حصن المسلم · {{number}} أذكار",
       "sourceLine_many": "حصن المسلم · {{number}} ذكرًا",
       "sourceLine_other": "حصن المسلم · {{number}} ذكرًا",
-      "quranReference": "سورة {{name}} · {{verses}}"
+      "quranReference": "سورة {{name}} · {{verses}}",
+      "quranSurahName": "سورة {{name}}"
+    },
+    "sessions": {
+      "morning": "الصباح",
+      "evening": "المساء",
+      "after_prayer": "بعد الصلاة",
+      "before_sleep": "النوم",
+      "after_waking": "الاستيقاظ"
     },
     "search": {
       "placeholder": "ابحث في الأذكار",

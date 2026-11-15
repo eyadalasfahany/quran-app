@@ -13,6 +13,7 @@ export {
   useFavorites,
   useIsFavorite,
   useQuranReferenceLabel,
+  useQuranReferencesLabel,
   useRecentAzkarItems,
   useScopeProgress,
   useSessionCategoryProgress,

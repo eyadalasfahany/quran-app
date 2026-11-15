@@ -1,4 +1,4 @@
-import { makeItem, makeUnit, quranSegment } from '../../../../jest/azkar-ui-fixtures';
+import { makeItem, makeUnit, quranSegment, textSegment } from '../../../../jest/azkar-ui-fixtures';
 import { buildCategoryCards } from './category-cards';
 
 describe('buildCategoryCards', () => {
@@ -21,15 +21,39 @@ describe('buildCategoryCards', () => {
     expect(buildCategoryCards(units, new Set(['a:1', 'a:2', 'b:1'])).map((card) => card.done)).toEqual([true, true]);
   });
 
-  it('takes the preview from the first unit body', () => {
+  it('takes the preview from the first unit body, and no Quran references when there are none', () => {
     expect(buildCategoryCards(units, new Set())[0]?.preview).toBe('نص تجريبي 1 — ليس ذكرًا');
-    expect(buildCategoryCards(units, new Set())[0]?.quranRef).toBeNull();
+    expect(buildCategoryCards(units, new Set())[0]?.quranRefs).toEqual([]);
   });
 
   it('gives an entry that opens with a Quran passage its surah and verses instead of a preview', () => {
     const quran = [makeUnit({ unitKey: 'q:1', entryKey: 'entry-q', body: [makeItem({ id: 4, segments: [quranSegment(255)] })] })];
 
-    expect(buildCategoryCards(quran, new Set())[0]).toMatchObject({ preview: null, quranRef: { surah: 1, verseFrom: 255, verseTo: 255 } });
+    expect(buildCategoryCards(quran, new Set())[0]).toMatchObject({
+      preview: null,
+      quranRefs: [{ surah: 1, verseFrom: 255, verseTo: 255 }],
+    });
+  });
+
+  it('keeps every Quran reference of an entry even when it also has a text preview', () => {
+    const lead = [
+      makeUnit({
+        unitKey: 'l:1',
+        entryKey: 'entry-l',
+        body: [
+          makeItem({ id: 5, segments: [textSegment('نص تجريبي ١ — ليس ذكرًا'), quranSegment(255)] }),
+          makeItem({ id: 6, segments: [quranSegment(1, 7)] }),
+        ],
+      }),
+    ];
+
+    expect(buildCategoryCards(lead, new Set())[0]).toMatchObject({
+      preview: 'نص تجريبي ١ — ليس ذكرًا',
+      quranRefs: [
+        { surah: 1, verseFrom: 255, verseTo: 255 },
+        { surah: 1, verseFrom: 1, verseTo: 7 },
+      ],
+    });
   });
 
   it('returns no cards for no units', () => {

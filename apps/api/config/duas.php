@@ -19,6 +19,15 @@ return [
         'language' => 'ar',
         // Decision 5: textual dua categories only (103 distinct hadiths in the pinned snapshot).
         'category_ids' => [301, 302, 303, 305, 306, 307, 308, 313],
+        // ADR 0090 (15 Nov 2026): categories kept in the pinned snapshot but not shown in Duas, because they are azkar
+        // already in Hisn al-Muslim (Azkar). Their group ids are still consumed, so the ids of the shown groups stay stable.
+        'hidden_category_ids' => [301, 302, 303, 305, 306, 308],
+        // ADR 0090: hadiths left out of Duas, keyed by HadeethEnc id; the value is the reason.
+        'excluded_hadith_ids' => [
+            3598 => 'duplicate_of:3056',
+            3596 => 'duplicate_of:3057',
+            66012 => 'duplicate_of:5883',
+        ],
         'per_page' => 100,
         'gap_ms' => 300,
         'retry_delay_ms' => 1000,

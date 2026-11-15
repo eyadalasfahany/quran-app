@@ -61,6 +61,8 @@
    "blurb": "Azkar home, reader, player, reminders, downloads",
    "screens": [
     "AzkarCategory",
+    "AzkarCategoryQuranRef",
+    "AzkarChapters",
     "AzkarDetails",
     "AzkarDetailsFull",
     "AzkarDownloads",
@@ -91,7 +93,9 @@
    "screens": [
     "DuaHadithDetail",
     "DuaQuranDetail",
+    "DuasCategory",
     "DuasHome",
+    "DuasHomeCategories",
     "MyDuaEditor",
     "MyDuas",
     "MyDuasEmpty"
@@ -1622,6 +1626,78 @@
    ]
   },
   {
+   "id": "AzkarCategoryQuranRef",
+   "stack": "azkar",
+   "caption": "Category · card with its Quran reference under the preview (ADR 0090) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "AzkarCategoryQuranRef",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "AzkarCategoryQuranRef",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "AzkarCategoryQuranRef",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "AzkarCategoryQuranRef",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "AzkarCategoryQuranRef"
+   ]
+  },
+  {
+   "id": "AzkarChapters",
+   "stack": "azkar",
+   "caption": "كل الأبواب · the 132 chapters in book order; a row opens the AzkarCategory layout for that chapter (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "AzkarChapters",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "AzkarChapters",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "AzkarChapters",
+     "untranslated": 12
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "AzkarChapters",
+     "untranslated": 12
+    }
+   },
+   "frames": [
+    "AzkarChapters"
+   ]
+  },
+  {
    "id": "AzkarDetails",
    "stack": "azkar",
    "caption": "Source and details · sheet (mid)",
@@ -2465,6 +2541,42 @@
    ]
   },
   {
+   "id": "DuasCategory",
+   "stack": "duas",
+   "caption": "الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasCategory",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasCategory",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasCategory",
+     "untranslated": 7
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasCategory",
+     "untranslated": 7
+    }
+   },
+   "frames": [
+    "DuasCategory"
+   ]
+  },
+  {
    "id": "DuasHome",
    "stack": "duas",
    "caption": "الأدعية · Arabic",
@@ -2500,6 +2612,42 @@
     "DuasHome",
     "DuasHomeDark",
     "DuasHomeEnglish"
+   ]
+  },
+  {
+   "id": "DuasHomeCategories",
+   "stack": "duas",
+   "caption": "الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasHomeCategories",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasHomeCategories",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasHomeCategories",
+     "untranslated": 11
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasHomeCategories",
+     "untranslated": 11
+    }
+   },
+   "frames": [
+    "DuasHomeCategories"
    ]
   },
   {

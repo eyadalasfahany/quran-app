@@ -21,7 +21,7 @@ New evidence, read by the developer on 1 Nov 2026:
 2. **Taybah hosts the files itself.** The app never streams from `audio.opendua.org`, and the API never proxies to it. The archive's files sit in Taybah's own storage and our API serves them. They are not committed to git.
 3. **Attribution** shown with the audio: «Recitation by Muhammad Jumah for OpenDua».
 4. **Storage.** Production file storage is a Railway volume attached to the API service, with no R2 or S3. Packs and audio live on it. The service runs one replica. The migration steps are in `docs/plans/phase-6/step-14-audio-and-storage.md`.
-5. **Scope.** The 258 entries that ship (ADR 0031 §11, amended) get audio. The 9 excluded entries get none: their recordings are not imported. 238 of 249 tracks ship.
+5. **Scope.** The 258 entries that ship (ADR 0031 §11, amended) get audio. The 9 excluded entries get none: their recordings are not imported. 238 of 249 tracks ship. **Amended 15 Nov 2026 (ADR 0090):** entries 70, 76, 99 and 110 return. Entry 110 has no recording, so 241 of 249 tracks ship (60,609,672 bytes, 6,044 s).
 6. **Written confirmation is requested, not required.** A non-blocking email to `opendua@hdfund.org` asks them to confirm streaming, offline download and re-hosting by Taybah, and the attribution wording. The answer is filed beside ADR 0038's.
 
 The rights record values (`licence`, `licence_url`, `redistribution_allowed`, the meaning of `rights_verified_at`) and the way the files are first copied are proposals in the plan, not decisions of this ADR. They become part of it when the developer confirms them (plan, open question 4).

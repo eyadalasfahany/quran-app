@@ -303,6 +303,40 @@ export function useQuranReferenceLabel(locale: Locale): (ref: QuranPreviewRef | 
   );
 }
 
+/**
+ * The label for every Quran passage of a card. One surah: the single-reference label, from the first verse to the last.
+ * Several surahs: their names joined with a middle dot, in order. Empty: null.
+ */
+export function useQuranReferencesLabel(locale: Locale): (refs: readonly QuranPreviewRef[]) => string | null {
+  const { t } = useTranslation();
+  const revision = useContentRevision();
+  const { executor } = openContentDb();
+  const singleLabel = useQuranReferenceLabel(locale);
+  return useCallback(
+    (refs: readonly QuranPreviewRef[]) => {
+      const first = refs[0];
+      const last = refs[refs.length - 1];
+      if (first === undefined || last === undefined) {
+        return null;
+      }
+      const surahs = [...new Set(refs.map((ref) => ref.surah))];
+      if (surahs.length === 1) {
+        return singleLabel({ surah: first.surah, verseFrom: first.verseFrom, verseTo: last.verseTo });
+      }
+      const names: string[] = [];
+      for (const surah of surahs) {
+        const chapter = readOr<ReturnType<typeof getChapter>>(undefined, () => getChapter(executor, surah));
+        if (chapter !== undefined) {
+          names.push(t('azkar.browse.quranSurahName', { name: chapterDisplayName(chapter, locale) }));
+        }
+      }
+      return names.length === 0 ? null : names.join(' · ');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executor, locale, revision, singleLabel, t],
+  );
+}
+
 /** A session category with its progress in the current period (Home's «أذكار مختارة» and the daily goals). */
 export type SessionCategoryProgress = {
   id: string;
