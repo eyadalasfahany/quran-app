@@ -1,6 +1,15 @@
 # Partial-verse Quran segments (ADR 0092 step 6) — plan
 
-Date: 15 Nov 2026 · Status: **proposed** · Parent plan: `docs/plans/single-topics-audio.md` step 6 · Branch: `main`.
+Date: 15 Nov 2026 · Status: **built, not released** (steps 6.0–6.7 done on the working tree; 6.8 is the developer's release, OTA first) · ADR 0093 accepted · Parent plan: `docs/plans/single-topics-audio.md` step 6 · Branch: `main`.
+
+## Results (15 Nov 2026)
+
+- **6.0 analysis.** Exact normalised word-run search over the pinned catalogue. Entry 50 → 23:14 words 18–21 (one run). Entry 235 → 2:201 words 4–14 (one run). Entry 236 → 2:158 words 1–6 (one run; ADR 0090 says part of 2:158, the old map guess 44:48 was wrong). Entries 206 and 207 → no run: each quotes one token that is not a Quran word in the word map. Entry 110 (﴿الم﴾) is ambiguous as a word run and stays on its reviewed whole-verse row.
+- **Returned (reviewed, `developer:2026-11-15`):** 50, 235, 236. Removed from `excluded_entries`. Entry 50's type row copies its chapter-mate 51 (`dua`). 235 and 236 have no chapter-mate, so no type row (reported). Their topics come from their chapters' reviewed rows (chapters 117 and 118 hajj, chapter 21 prayer), so no topic row was added.
+- **Still excluded:** 206 and 207 (`quran_partial_verse`): no exact word run. Decision needed from the developer.
+- **Deviations from the steps:** 6.4 builds only exact word runs (the developer's rule: a quote that is not one contiguous run stays excluded), so no similarity-based word candidates were added. The review sheet holds keys, verse references and positions only, not the OpenDua span text, as the developer asked. No visible partial mark was added (no frame).
+- **Gates.** Mobile: `npm run lint`, `npx tsc --noEmit`, `npm test` (see the report). API: `pint --dirty`, `phpstan` (0 errors), Pest on Azkar, Support and Content folders (Windows baseline failures only: ImportPathOptions path and CRLF cases, PackBuilder `con*.tmp` unlink locks, SourceCache path). The 6,236-verse checksum and the word-map TS tests pass.
+- **Release order.** App OTA first, then the API (`docs/runbooks/railway-release.md`, «Partial-verse segments»). ADR 0093 decision 8.
 Agents write no religious text: fixtures use marked placeholders (`.claude/agent-rules.md`). The review sheet below is generated from source data by a command, never typed.
 
 ## Rests on

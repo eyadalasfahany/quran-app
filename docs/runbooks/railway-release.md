@@ -204,6 +204,17 @@ Azkar is on. There is no switch. What decides the content:
 
 The secondary sources are read only when their snapshot is on the server and matches its pin. A missing or mismatching snapshot never fails the deploy.
 
+## Partial-verse segments (ADR 0093): release order
+
+Entries 50, 235 and 236 quote part of a verse. Their word ranges reach production in the Azkar pack, so the release order matters:
+
+1. **App first.** Publish the mobile app as an EAS Update (`eas update --channel production`, see `apps/mobile/CLAUDE.md`, «Releasing»). Check `npx eas-cli fingerprint:compare` first. Wait until the update has reached the devices you care about.
+2. **API second.** Deploy the API (the migration `add_word_range_to_azkar_segments_table` runs at start, the Azkar import and the pack rebuild run at web start). Only then do the three entries reach the pack.
+
+Why: an app that has not taken the update does not know `word_from` and `word_to`, so it would show a partial segment as the whole verse, which is words the dhikr does not quote. The window is one launch of an app that has not updated. Do not deploy the API before the app update is out.
+
+Check after the deploy: `php artisan azkar:import --report` shows 265 of 267 entries, and the Azkar import report lists no `quran_reference_candidate` warnings in production.
+
 ## Checking a deploy
 
 - **Pre-deploy log:** `migrate` only.

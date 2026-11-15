@@ -56,7 +56,7 @@ jest.mock('../data/hooks', () => {
 jest.mock('../data/content-repository', () => ({
   getCategory: jest.fn(() => undefined),
   getEntry: jest.fn(),
-  getQuranSegmentVerses: jest.fn(),
+  getQuranSegmentTexts: jest.fn(() => []),
   listRecordingsForItems: jest.fn(() => []),
 }));
 
@@ -152,7 +152,7 @@ describe('AzkarReaderScreen', () => {
     mockIsFavorite.mockReturnValue(false);
     mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: 3 })]));
     contentMock.getEntry.mockReturnValue(makeDetail());
-    contentMock.getQuranSegmentVerses.mockReturnValue([{ textUthmani: 'آية تجريبية' }] as never);
+    contentMock.getQuranSegmentTexts.mockReturnValue(['آية تجريبية'] as never);
     progress.recordTap.mockReturnValue({ accepted: true, completedNow: false } as never);
   });
 
@@ -275,7 +275,7 @@ describe('AzkarReaderScreen', () => {
     );
     await renderReader();
 
-    expect(contentMock.getQuranSegmentVerses).toHaveBeenCalled();
+    expect(contentMock.getQuranSegmentTexts).toHaveBeenCalled();
     expect(screen.getByText(/آية تجريبية/)).toBeTruthy();
   });
 
@@ -801,7 +801,7 @@ describe('the reader audio controls', () => {
     mockIsFavorite.mockReturnValue(false);
     mockEntry.mockReturnValue(entryWith([makeItem({ id: 1, requiredCount: 3 })]));
     contentMock.getEntry.mockReturnValue(makeDetail());
-    contentMock.getQuranSegmentVerses.mockReturnValue([{ textUthmani: 'آية تجريبية' }] as never);
+    contentMock.getQuranSegmentTexts.mockReturnValue(['آية تجريبية'] as never);
     mockOnline.mockReturnValue(true);
     mockStartPlayback.mockClear();
     contentMock.listRecordingsForItems.mockReturnValue([]);

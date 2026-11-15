@@ -46,6 +46,18 @@ it('lists an unmatched span with its matcher reference, and leaves out a whole-v
         ->not->toContain('entry-000902');
 });
 
+it('shows a reviewed row as decided by the developer, with its evidence, and not as a tick box', function (): void {
+    $sheet = wsSheet()->render([
+        'hisn-al-muslim:entry-000903:standard:1' => [
+            [1, 1, null, 'status' => 'reviewed', 'evidence' => 'developer:2026-11-15', 'words' => [2, 3]],
+        ],
+    ]);
+
+    expect($sheet)
+        ->toContain('- Decision: reviewed by the developer (developer:2026-11-15)')
+        ->not->toContain('[ ] reviewed');
+});
+
 it('says so when nothing is listed', function (): void {
     expect(wsSheet()->render([]))->toContain('No span is listed.');
 });
