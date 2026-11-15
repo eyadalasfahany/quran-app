@@ -19,15 +19,20 @@ return [
         'language' => 'ar',
         // Decision 5: textual dua categories only (103 distinct hadiths in the pinned snapshot).
         'category_ids' => [301, 302, 303, 305, 306, 307, 308, 313],
-        // ADR 0090 (15 Nov 2026): categories kept in the pinned snapshot but not shown in Duas, because they are azkar
-        // already in Hisn al-Muslim (Azkar). Their group ids are still consumed, so the ids of the shown groups stay stable.
-        'hidden_category_ids' => [301, 302, 303, 305, 306, 308],
+        // ADR 0090 (15 Nov 2026) hid categories 301, 302, 303, 305, 306 and 308 because they repeat azkar already in Hisn
+        // al-Muslim. ADR 0092 decision 4 (15 Nov 2026) shows them again: the list is empty. Group ids are still assigned
+        // for every category in the snapshot, so the ids of the groups stay stable.
+        'hidden_category_ids' => [],
         // ADR 0090: hadiths left out of Duas, keyed by HadeethEnc id; the value is the reason.
         'excluded_hadith_ids' => [
             3598 => 'duplicate_of:3056',
             3596 => 'duplicate_of:3057',
             66012 => 'duplicate_of:5883',
         ],
+        // ADR 0092 decision 4 and open point 1: a reviewed list of HadeethEnc id => Hisn entry_key, for hadiths that repeat
+        // a Hisn al-Muslim entry. Such a hadith is left out of Duas like an excluded one. Taybah does not match the texts;
+        // the developer fills this list by review. It starts empty.
+        'duplicate_of_hisn' => [],
         'per_page' => 100,
         'gap_ms' => 300,
         'retry_delay_ms' => 1000,

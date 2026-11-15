@@ -9,6 +9,7 @@ use App\Domains\Azkar\Audio\AzkarAudioManifest;
 use App\Domains\Azkar\Data\FlatItem;
 use App\Domains\Azkar\Data\ImportPlan;
 use App\Domains\Azkar\Data\ImportStats;
+use App\Domains\Azkar\Data\TopicPlan;
 use App\Domains\Azkar\Enums\AzkarEntryClass;
 use App\Domains\Azkar\OpenDua\StepFlattener;
 use App\Domains\Azkar\Sources\SourceProfile;
@@ -20,6 +21,8 @@ use Carbon\CarbonImmutable;
  *
  * Plan step 3: a reviewed dua outside the session categories gets home 'duas' (moved to Duas). Reviewed rows come from
  * config azkar_entry_types.php through EntryTypePolicy; with no reviewed rows, entry_class and home are null everywhere.
+ *
+ * ADR 0092 decisions 1-2: a chapter with a reviewed row in config azkar_topics.php has one browse topic (TopicPolicy).
  */
 final class AzkarTransformer
 {
@@ -32,6 +35,7 @@ final class AzkarTransformer
         private readonly AzkarAudioManifest $audio,
         private readonly AzkarAudioFiles $files,
         private readonly EntryTypePolicy $entryTypes,
+        private readonly TopicPolicy $topics,
     ) {}
 
     /**
@@ -51,6 +55,8 @@ final class AzkarTransformer
         $reciterNames = $this->reciterNames($this->list($catalogue['reciters'] ?? null));
         $tags = $this->list($catalogue['tags'] ?? null);
         $typePlan = $this->entryTypes->resolve($this->entryTypeConfig());
+        $topicPlan = $this->topicPlan();
+        $topicIds = $this->topicIds();
 
         $entries = [];
         $notes = [];
@@ -194,9 +200,12 @@ final class AzkarTransformer
             }
         }
 
-        [$categories, $entryCategories] = $this->categories($entryMeta, $tags);
+        [$categories, $entryCategories] = $this->categories($entryMeta, $tags, $topicPlan, $topicIds);
         $entries = $this->withHome($entries, $entryCategories, $stats);
         $stats->candidatesNotApplied = count($typePlan->candidates);
+        $stats->topicCandidatesNotApplied = count($topicPlan->candidates);
+        $stats->topicRowsRejected = count($topicPlan->errors);
+        $stats->browseEntriesByTopic = $this->browseEntriesByTopic($entryCategories, $topicIds);
 
         // Upstream counts.recordings counts distinct recording ids; one id may sit in two places (ADR 0031 §6, report).
         $stats->recordingObjects = count($recordingIds);
@@ -405,11 +414,17 @@ final class AzkarTransformer
      * Session categories (ADR 0031 §6), then browse topics. A catalogue tag named in config azkar.split_topics is not
      * emitted: its split topics take its place, in config order (developer request, 15 Nov 2026).
      *
+     * ADR 0092 decisions 1-2: a chapter with a reviewed row leaves its catalogue tags and joins its one topic, so an entry
+     * is listed once. A split row keeps only the catalogue tag it names, and that tag splits as before. The topics come
+     * after the tags, in config order. A topic whose id is already a browse category is appended to it, with no repeated
+     * entry. A tag category that the reviewed rows emptied is not emitted. Session categories never change.
+     *
      * @param  list<array{id: int|string, chapter: int, variations: list<string>, tags: list<string>, entryId?: int}>  $entryMeta
      * @param  list<mixed>  $tags
+     * @param  list<string>  $topicIds  The topics of config azkar_topics.php, in order.
      * @return array{0: list<array<string, int|string|null>>, 1: list<array<string, int|string|null>>}
      */
-    private function categories(array $entryMeta, array $tags): array
+    private function categories(array $entryMeta, array $tags, TopicPlan $topicPlan, array $topicIds): array
     {
         $categories = [];
         $entryCategories = [];
@@ -452,33 +467,151 @@ final class AzkarTransformer
         }
 
         $splitTopics = $this->splitTopics();
+        // Browse categories in emission order: category id => entry id => variation key.
+        $browse = [];
 
         foreach ($this->tagIds($tags) as $tagId) {
-            foreach ($this->browseTopics($tagId, $splitTopics[$tagId] ?? null, $entryMeta, $sessionKeys) as $topic) {
-                $position++;
-                $categories[] = [
-                    'id' => $topic['id'],
-                    'kind' => 'browse',
-                    'position' => $position,
-                    'occasion' => null,
-                    'progress_period' => $progressPeriod,
-                ];
+            $split = $splitTopics[$tagId] ?? null;
+            $whole = $this->browseTopics($tagId, $split, $entryMeta, $sessionKeys);
+            $reviewed = $this->browseTopics($tagId, $split, $this->tagMeta($entryMeta, $tagId, $topicPlan), $sessionKeys);
 
-                $ordinal = 0;
-
-                foreach ($topic['entries'] as $entryId => $variationKey) {
-                    $ordinal++;
-                    $entryCategories[] = [
-                        'category_id' => $topic['id'],
-                        'entry_id' => $entryId,
-                        'variation_key' => $variationKey,
-                        'position' => $ordinal,
-                    ];
+            foreach ($reviewed as $index => $topic) {
+                if ($topic['entries'] === [] && $whole[$index]['entries'] !== []) {
+                    continue;
                 }
+
+                $this->addBrowseEntries($browse, $topic['id'], $topic['entries']);
+            }
+        }
+
+        foreach ($topicIds as $topicId) {
+            $entries = [];
+
+            foreach ($entryMeta as $meta) {
+                if (($topicPlan->topics[$meta['chapter']] ?? null) === $topicId) {
+                    $entries[$meta['id']] = '*';
+                }
+            }
+
+            if ($entries !== []) {
+                $this->addBrowseEntries($browse, $topicId, $entries);
+            }
+        }
+
+        foreach ($browse as $categoryId => $entries) {
+            $position++;
+            $categories[] = [
+                'id' => (string) $categoryId,
+                'kind' => 'browse',
+                'position' => $position,
+                'occasion' => null,
+                'progress_period' => $progressPeriod,
+            ];
+
+            $ordinal = 0;
+
+            foreach ($entries as $entryId => $variationKey) {
+                $ordinal++;
+                $entryCategories[] = [
+                    'category_id' => (string) $categoryId,
+                    'entry_id' => $entryId,
+                    'variation_key' => $variationKey,
+                    'position' => $ordinal,
+                ];
             }
         }
 
         return [$categories, $entryCategories];
+    }
+
+    /**
+     * Adds entries to a browse category, creating the category when it is new. An entry already in it is not added twice.
+     *
+     * @param  array<string, array<int|string, string>>  $browse  Category id => entry id => variation key, in emission order.
+     * @param  array<int|string, string>  $entries
+     */
+    private function addBrowseEntries(array &$browse, string $categoryId, array $entries): void
+    {
+        $browse[$categoryId] ??= [];
+
+        foreach ($entries as $entryId => $variationKey) {
+            if (! array_key_exists($entryId, $browse[$categoryId])) {
+                $browse[$categoryId][$entryId] = $variationKey;
+            }
+        }
+    }
+
+    /**
+     * The entries a catalogue tag lists under ADR 0092: every entry except those of a chapter with a reviewed row. A
+     * chapter with a split row keeps only the tag it names.
+     *
+     * @param  list<array{id: int|string, chapter: int, variations: list<string>, tags: list<string>, entryId?: int}>  $entryMeta
+     * @return list<array{id: int|string, chapter: int, variations: list<string>, tags: list<string>, entryId?: int}>
+     */
+    private function tagMeta(array $entryMeta, string $tagId, TopicPlan $topicPlan): array
+    {
+        return array_values(array_filter($entryMeta, static function (array $meta) use ($tagId, $topicPlan): bool {
+            if (isset($topicPlan->topics[$meta['chapter']])) {
+                return false;
+            }
+
+            return ! isset($topicPlan->splits[$meta['chapter']]) || $topicPlan->splits[$meta['chapter']] === $tagId;
+        }));
+    }
+
+    /**
+     * The chapter rows of config azkar_topics.php, read through TopicPolicy (ADR 0092 decision 2).
+     */
+    private function topicPlan(): TopicPlan
+    {
+        [$topics, $chapters] = $this->topicConfig();
+
+        return $this->topics->resolve($topics, $chapters, $this->splitTopics());
+    }
+
+    /**
+     * The topic ids of config azkar_topics.php, in config order.
+     *
+     * @return list<string>
+     */
+    private function topicIds(): array
+    {
+        [$topics] = $this->topicConfig();
+
+        return array_values(array_filter(array_keys($topics), is_string(...)));
+    }
+
+    /**
+     * @return array{0: array<array-key, mixed>, 1: array<array-key, mixed>} The `topics` map and the `chapters` map.
+     */
+    private function topicConfig(): array
+    {
+        $topics = config('azkar_topics.topics', []);
+        $chapters = config('azkar_topics.chapters', []);
+
+        return [is_array($topics) ? $topics : [], is_array($chapters) ? $chapters : []];
+    }
+
+    /**
+     * Entries per topic id, for the topics that have at least one entry (report counts, ADR 0092 decision 4).
+     *
+     * @param  list<array<string, int|string|null>>  $entryCategories
+     * @param  list<string>  $topicIds
+     * @return array<string, int>
+     */
+    private function browseEntriesByTopic(array $entryCategories, array $topicIds): array
+    {
+        $counts = [];
+
+        foreach ($entryCategories as $link) {
+            $categoryId = (string) $link['category_id'];
+
+            if (in_array($categoryId, $topicIds, true)) {
+                $counts[$categoryId] = ($counts[$categoryId] ?? 0) + 1;
+            }
+        }
+
+        return $counts;
     }
 
     /**

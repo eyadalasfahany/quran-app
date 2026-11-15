@@ -362,6 +362,12 @@ final class AzkarImporter
                     'duas_kept_in_sessions' => $stats->duasKeptInSessions,
                     'candidates_not_applied' => $stats->candidatesNotApplied,
                 ],
+                // ADR 0092 decision 2: counts only. Reviewed chapter rows come from config azkar_topics.php.
+                'topics' => [
+                    'entries_by_topic' => $stats->browseEntriesByTopic,
+                    'candidates_not_applied' => $stats->topicCandidatesNotApplied,
+                    'rows_rejected' => $stats->topicRowsRejected,
+                ],
             ],
             sourced: [
                 'items_with_required_count' => $stats->itemsWithRequiredCount,

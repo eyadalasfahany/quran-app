@@ -90,6 +90,7 @@ SIZE_FRAMES = {
     'Qibla': {'landscape': 'QiblaLandscape'},
     'Sibha': {'landscape': 'SibhaLandscape'},
     'AzkarReader': {'related': ['AzkarExpanded']},
+    'DuasHomeCategories': {'related': ['DuasHomeCategoriesExpanded']},
     'AyahSheet': {'related': ['ReaderMedium', 'ReaderExpandedActions']},
     'Tafsir': {'related': ['ReaderExpandedTafsir', 'ReaderOverlayTafsir']},
     'Mushaf': {'related': ['ReaderExpandedDark']},

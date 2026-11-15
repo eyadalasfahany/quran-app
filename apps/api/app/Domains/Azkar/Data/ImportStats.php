@@ -47,5 +47,11 @@ final class ImportStats extends Data
         public int $duasKeptInSessions = 0,
         /** Candidate rows in config azkar_entry_types.php, never applied (EntryTypePolicy). */
         public int $candidatesNotApplied = 0,
+        /** @var array<string, int> Emitted entries per browse topic id, for topics with at least one entry (ADR 0092). */
+        public array $browseEntriesByTopic = [],
+        /** Candidate chapter rows in config azkar_topics.php, never applied (TopicPolicy). */
+        public int $topicCandidatesNotApplied = 0,
+        /** Chapter rows in config azkar_topics.php that are malformed or name an unknown topic or split (TopicPolicy). */
+        public int $topicRowsRejected = 0,
     ) {}
 }

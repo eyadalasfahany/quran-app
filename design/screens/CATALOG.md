@@ -2,7 +2,7 @@
 
 Token-cheap inventory. **Models: read this or `frames.tsv`, not HTML frames.**
 
-Total: **249** frames · **23** stacks
+Total: **267** frames · **23** stacks
 
 | id | stack | size | theme | status | caption |
 |---|---|---|---|---|---|
@@ -82,20 +82,38 @@ Total: **249** frames · **23** stacks
 | `AzkarDownloads` | azkar | compact | ar-light | source | Downloads · licensed recording (future) |
 | `AzkarDownloadsEmpty` | azkar | compact | ar-light | source | Empty · recordings (licensed recording, future) |
 | `AzkarExpanded` | azkar | expanded | ar-light | source | Azkar reader · expanded · 1194 × 834 |
-| `DuasHomeCategories` | duas | compact | ar-light | source | الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, hadith dua books, Hisn al-Muslim topics; count only, no sources on screen, styled like Azkar (developer 15 Nov 2026); counts are mock (approved 15 Nov 2026) |
+| `DuasHome` | duas | compact | ar-light | awaiting-approval | الأدعية · on the Azkar home layout (ADR 0092 decision 5): Azkar header, «أدعيتي» card, «التصنيفات» in the Azkar section title and Azkar topic tiles (body 600 name, caption count, 16 pt padding, 88 pt min height, 12 pt gap); first eight categories, «عرض الكل» expands in place; single-name topics from config/azkar_topics.php; no sources card, no Hisn source tiles; counts are mock (بانتظار الموافقة) |
+| `DuasHomeDark` | duas | compact | dark | awaiting-approval | الأدعية · Dark, same layout as DuasHome (بانتظار الموافقة) |
+| `DuasHomeEnglish` | duas | compact | en | awaiting-approval | Duas home · English (LTR), same layout as DuasHome (بانتظار الموافقة) |
+| `DuasHomeCategories` | duas | compact | ar-light | awaiting-approval | الأدعية · «عرض الكل» expanded in place: every category in the Azkar topic tiles, «عرض أقل» collapses; counts are mock (بانتظار الموافقة) |
+| `DuasLoading` | duas | compact | ar-light | awaiting-approval | الأدعية · loading: skeleton of the header, «أدعيتي» card and tiles (from AzkarLoading) (بانتظار الموافقة) |
+| `DuasUnavailable` | duas | compact | ar-light | awaiting-approval | الأدعية · unavailable (direct route, from AzkarUnavailable) (بانتظار الموافقة) |
+| `DuasHomeCategoriesExpanded` | duas | expanded | ar-light | awaiting-approval | الأدعية · expanded · 1194 × 834: tab rail with القائمة current, the phone layout in the 640 pt content column (بانتظار الموافقة) |
 | `DuasCategory` | duas | compact | ar-light | source | الأدعية · one category (الموت والمتوفى): the Azkar category card, number and dua text only, no sources (developer 15 Nov 2026); a Hisn row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026) |
+| `DuasCategoryDark` | duas | compact | dark | awaiting-approval | الأدعية · one category · Dark (DuasCategory layout, topic «الجنائز») (بانتظار الموافقة) |
+| `DuasCategoryEnglish` | duas | compact | en | awaiting-approval | Duas · one category · English (LTR) (DuasCategory layout, topic Funerals) (بانتظار الموافقة) |
+| `DuasCategoryQuran` | duas | compact | ar-light | awaiting-approval | الأدعية · «من القرآن الكريم»: Azkar item cards with the ring badge, the ayah in the Quran face and its surah · ayah line under it (as AzkarCategoryQuranRef) (بانتظار الموافقة) |
 | `DuasSearch` | duas | compact | ar-light | source | الأدعية · search: categories first, then duas with their category; mirrors AzkarSearch (ADR 0091) (approved 15 Nov 2026) |
-| `DuasHome` | duas | compact | ar-light | source | الأدعية · Arabic |
-| `DuasHomeDark` | duas | compact | dark | source | الأدعية · Dark |
-| `DuasHomeEnglish` | duas | compact | en | source | Duas home · English (LTR) |
+| `DuasSearchEmpty` | duas | compact | ar-light | awaiting-approval | الأدعية · search, empty query: recent searches and the hint (from AzkarSearchEmpty; no scope chips in Duas) (بانتظار الموافقة) |
+| `DuasSearchNoResults` | duas | compact | ar-light | awaiting-approval | الأدعية · search, no results: «لا توجد نتائج مطابقة» (بانتظار الموافقة) |
+| `DuasFavorites` | duas | compact | ar-light | awaiting-approval | الأدعية · المفضلة: Azkar favourite cards with the ring badge and the category under the text (from AzkarFavorites) (بانتظار الموافقة) |
+| `DuasFavoritesEmpty` | duas | compact | ar-light | awaiting-approval | الأدعية · المفضلة · empty (from AzkarFavoritesEmpty) (بانتظار الموافقة) |
 | `DuaQuranDetailNoSource` | duas | compact | ar-light | source | دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (approved 15 Nov 2026) |
+| `DuaQuranDetail` | duas | compact | ar-light | awaiting-approval | دعاء قرآني · Arabic, rebased on DuaQuranDetailNoSource (surah · ayah line only) (بانتظار الموافقة) |
+| `DuaQuranDetailDark` | duas | compact | dark | awaiting-approval | دعاء قرآني · Dark, rebased on DuaQuranDetailNoSource (بانتظار الموافقة) |
+| `DuaQuranDetailEnglish` | duas | compact | en | awaiting-approval | Quranic dua · English (LTR), rebased on DuaQuranDetailNoSource (بانتظار الموافقة) |
+| `DuaQuranDetailAudio` | duas | compact | ar-light | awaiting-approval | دعاء قرآني · play button «تشغيل» in the action row beside Aa, share and save (ADR 0092 decision 3); «فتح في المصحف» stays in the pager row (بانتظار الموافقة) |
+| `DuaQuranDetailPlaying` | duas | compact | ar-light | awaiting-approval | دعاء قرآني · playing with the Quran player: the current ayah in the reader highlight (highlight-active, brand edge), «إيقاف» in the action row, the reader player bar above the actions (بانتظار الموافقة) |
 | `DuaHadithDetailNoSource` | duas | compact | ar-light | source | دعاء نبوي · without sources: no takhrij line, no links, no المرجع or الدرجة, no credit lines (developer 15 Nov) (approved 15 Nov 2026) |
-| `DuaQuranDetail` | duas | compact | ar-light | source | دعاء قرآني · Arabic |
-| `DuaQuranDetailDark` | duas | compact | dark | source | دعاء قرآني · Dark |
-| `DuaQuranDetailEnglish` | duas | compact | en | source | Quranic dua · English (LTR) |
-| `DuaHadithDetail` | duas | compact | ar-light | source | دعاء نبوي · Arabic |
-| `DuaHadithDetailDark` | duas | compact | dark | source | دعاء نبوي · Dark |
-| `DuaHadithDetailEnglish` | duas | compact | en | source | Prophetic dua · English (LTR) |
+| `DuaHadithDetail` | duas | compact | ar-light | awaiting-approval | دعاء نبوي · Arabic, rebased on DuaHadithDetailNoSource; no play button (no licensed recording) (بانتظار الموافقة) |
+| `DuaHadithDetailDark` | duas | compact | dark | awaiting-approval | دعاء نبوي · Dark, rebased on DuaHadithDetailNoSource (بانتظار الموافقة) |
+| `DuaHadithDetailEnglish` | duas | compact | en | awaiting-approval | Prophetic dua · English (LTR), rebased on DuaHadithDetailNoSource (بانتظار الموافقة) |
+| `DuaHisnDetail` | duas | compact | ar-light | awaiting-approval | دعاء من حصن المسلم · text only: Azkar reader top bar, the dua text, save / share / Aa, previous and next chips; no counter, no source line (بانتظار الموافقة) |
+| `DuaHisnDetailDark` | duas | compact | dark | awaiting-approval | دعاء من حصن المسلم · Dark (بانتظار الموافقة) |
+| `DuaHisnDetailEnglish` | duas | compact | en | awaiting-approval | Hisn al-Muslim dua · English (LTR); the dua text stays Arabic (بانتظار الموافقة) |
+| `DuaHisnDetailAudio` | duas | compact | ar-light | awaiting-approval | دعاء من حصن المسلم · with its recording (ADR 0092 decision 3): play and download in the action row (from AzkarReaderAudio), no counter ring (بانتظار الموافقة) |
+| `DuaHisnDetailAudioPlaying` | duas | compact | ar-light | awaiting-approval | دعاء من حصن المسلم · playing: pause in the action row and the Azkar player bar (AzkarPlayerBar) above it; the bar opens AzkarPlayer (بانتظار الموافقة) |
+| `DuaHisnDetailAudioOffline` | duas | compact | ar-light | awaiting-approval | دعاء من حصن المسلم · offline, not downloaded: «غير متاح دون اتصال» pill, no play control (بانتظار الموافقة) |
 | `MyDuas` | duas | compact | ar-light | source | أدعيتي · Arabic |
 | `MyDuasDark` | duas | compact | dark | source | أدعيتي · Dark |
 | `MyDuasEnglish` | duas | compact | en | source | My duas · English (LTR) |

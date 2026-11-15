@@ -139,8 +139,7 @@ final class DuasImportPlanner
         $hadithRows = [];
         $hadithKeyToItem = [];
 
-        $excludedHadithIds = config('duas.hadeethenc.excluded_hadith_ids', []);
-        $excludedHadithIds = is_array($excludedHadithIds) ? array_map(intval(...), array_keys($excludedHadithIds)) : [];
+        $excludedHadiths = $this->excludedHadiths();
 
         if ($hadithRecords !== []) {
             foreach ($hadithRecords as $id => $record) {
@@ -148,8 +147,9 @@ final class DuasImportPlanner
                     continue;
                 }
 
-                // ADR 0090: a hadith left out of Duas (a duplicate, or only in hidden categories) gets no item and no issue.
-                if (in_array((int) $id, $excludedHadithIds, true)) {
+                // ADR 0090 and ADR 0092 decision 4: a hadith left out of Duas (an excluded id, or a repeat of a Hisn entry)
+                // gets no item and no issue.
+                if (isset($excludedHadiths[(int) $id])) {
                     continue;
                 }
 
@@ -319,6 +319,29 @@ final class DuasImportPlanner
             'plan' => new DuasImportPlan($items, $quranSpans, $groups, $hadithRows, $links, $refs, $books, $stats),
             'issues' => $issues,
         ];
+    }
+
+    /**
+     * The HadeethEnc ids left out of Duas, with the reason: config duas.hadeethenc.excluded_hadith_ids (ADR 0090), and
+     * duas.hadeethenc.duplicate_of_hisn (ADR 0092 decision 4), which gives the Hisn entry_key the hadith repeats.
+     *
+     * @return array<int, string>
+     */
+    private function excludedHadiths(): array
+    {
+        $excluded = config('duas.hadeethenc.excluded_hadith_ids', []);
+        $duplicates = config('duas.hadeethenc.duplicate_of_hisn', []);
+        $reasons = [];
+
+        foreach (is_array($excluded) ? $excluded : [] as $id => $reason) {
+            $reasons[(int) $id] = (string) $reason;
+        }
+
+        foreach (is_array($duplicates) ? $duplicates : [] as $id => $entryKey) {
+            $reasons[(int) $id] = 'duplicate_of_hisn:'.(string) $entryKey;
+        }
+
+        return $reasons;
     }
 
     /**

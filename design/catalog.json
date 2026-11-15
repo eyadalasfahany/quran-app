@@ -95,12 +95,26 @@
    "screens": [
     "DuaHadithDetail",
     "DuaHadithDetailNoSource",
+    "DuaHisnDetail",
+    "DuaHisnDetailAudio",
+    "DuaHisnDetailAudioOffline",
+    "DuaHisnDetailAudioPlaying",
     "DuaQuranDetail",
+    "DuaQuranDetailAudio",
     "DuaQuranDetailNoSource",
+    "DuaQuranDetailPlaying",
     "DuasCategory",
+    "DuasCategoryQuran",
+    "DuasFavorites",
+    "DuasFavoritesEmpty",
     "DuasHome",
     "DuasHomeCategories",
+    "DuasHomeCategoriesExpanded",
+    "DuasLoading",
     "DuasSearch",
+    "DuasSearchEmpty",
+    "DuasSearchNoResults",
+    "DuasUnavailable",
     "MyDuaEditor",
     "MyDuas",
     "MyDuasEmpty"
@@ -2544,8 +2558,8 @@
   {
    "id": "DuaHadithDetail",
    "stack": "duas",
-   "caption": "دعاء نبوي · Arabic",
-   "status": "source",
+   "caption": "دعاء نبوي · Arabic, rebased on DuaHadithDetailNoSource; no play button (no licensed recording) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2616,10 +2630,156 @@
    ]
   },
   {
+   "id": "DuaHisnDetail",
+   "stack": "duas",
+   "caption": "دعاء من حصن المسلم · text only: Azkar reader top bar, the dua text, save / share / Aa, previous and next chips; no counter, no source line (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaHisnDetail",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "DuaHisnDetailDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "DuaHisnDetailEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaHisnDetailEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaHisnDetail",
+    "DuaHisnDetailDark",
+    "DuaHisnDetailEnglish"
+   ]
+  },
+  {
+   "id": "DuaHisnDetailAudio",
+   "stack": "duas",
+   "caption": "دعاء من حصن المسلم · with its recording (ADR 0092 decision 3): play and download in the action row (from AzkarReaderAudio), no counter ring (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaHisnDetailAudio",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudio",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudio",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudio",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaHisnDetailAudio"
+   ]
+  },
+  {
+   "id": "DuaHisnDetailAudioOffline",
+   "stack": "duas",
+   "caption": "دعاء من حصن المسلم · offline, not downloaded: «غير متاح دون اتصال» pill, no play control (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaHisnDetailAudioOffline",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudioOffline",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudioOffline",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudioOffline",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaHisnDetailAudioOffline"
+   ]
+  },
+  {
+   "id": "DuaHisnDetailAudioPlaying",
+   "stack": "duas",
+   "caption": "دعاء من حصن المسلم · playing: pause in the action row and the Azkar player bar (AzkarPlayerBar) above it; the bar opens AzkarPlayer (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaHisnDetailAudioPlaying",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudioPlaying",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudioPlaying",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaHisnDetailAudioPlaying",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaHisnDetailAudioPlaying"
+   ]
+  },
+  {
    "id": "DuaQuranDetail",
    "stack": "duas",
-   "caption": "دعاء قرآني · Arabic",
-   "status": "source",
+   "caption": "دعاء قرآني · Arabic, rebased on DuaQuranDetailNoSource (surah · ayah line only) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2654,6 +2814,42 @@
    ]
   },
   {
+   "id": "DuaQuranDetailAudio",
+   "stack": "duas",
+   "caption": "دعاء قرآني · play button «تشغيل» in the action row beside Aa, share and save (ADR 0092 decision 3); «فتح في المصحف» stays in the pager row (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaQuranDetailAudio",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuaQuranDetailAudio",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuaQuranDetailAudio",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaQuranDetailAudio",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaQuranDetailAudio"
+   ]
+  },
+  {
    "id": "DuaQuranDetailNoSource",
    "stack": "duas",
    "caption": "دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (approved 15 Nov 2026)",
@@ -2677,16 +2873,52 @@
     "light-ltr": {
      "how": "derived",
      "from": "DuaQuranDetailNoSource",
-     "untranslated": 1
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "DuaQuranDetailNoSource",
-     "untranslated": 1
+     "untranslated": 0
     }
    },
    "frames": [
     "DuaQuranDetailNoSource"
+   ]
+  },
+  {
+   "id": "DuaQuranDetailPlaying",
+   "stack": "duas",
+   "caption": "دعاء قرآني · playing with the Quran player: the current ayah in the reader highlight (highlight-active, brand edge), «إيقاف» in the action row, the reader player bar above the actions (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaQuranDetailPlaying",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuaQuranDetailPlaying",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuaQuranDetailPlaying",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaQuranDetailPlaying",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaQuranDetailPlaying"
    ]
   },
   {
@@ -2706,30 +2938,140 @@
      "untranslated": 0
     },
     "dark-rtl": {
-     "how": "derived",
-     "from": "DuasCategory",
+     "how": "drawn",
+     "from": "DuasCategoryDark",
      "untranslated": 0
     },
     "light-ltr": {
-     "how": "derived",
-     "from": "DuasCategory",
+     "how": "drawn",
+     "from": "DuasCategoryEnglish",
      "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
-     "from": "DuasCategory",
+     "from": "DuasCategoryEnglish",
      "untranslated": 0
     }
    },
    "frames": [
-    "DuasCategory"
+    "DuasCategory",
+    "DuasCategoryDark",
+    "DuasCategoryEnglish"
+   ]
+  },
+  {
+   "id": "DuasCategoryQuran",
+   "stack": "duas",
+   "caption": "الأدعية · «من القرآن الكريم»: Azkar item cards with the ring badge, the ayah in the Quran face and its surah · ayah line under it (as AzkarCategoryQuranRef) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasCategoryQuran",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasCategoryQuran",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasCategoryQuran",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasCategoryQuran",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuasCategoryQuran"
+   ]
+  },
+  {
+   "id": "DuasFavorites",
+   "stack": "duas",
+   "caption": "الأدعية · المفضلة: Azkar favourite cards with the ring badge and the category under the text (from AzkarFavorites) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasFavorites",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasFavorites",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasFavorites",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasFavorites",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuasFavorites"
+   ]
+  },
+  {
+   "id": "DuasFavoritesEmpty",
+   "stack": "duas",
+   "caption": "الأدعية · المفضلة · empty (from AzkarFavoritesEmpty) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasFavoritesEmpty",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasFavoritesEmpty",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasFavoritesEmpty",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasFavoritesEmpty",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuasFavoritesEmpty"
    ]
   },
   {
    "id": "DuasHome",
    "stack": "duas",
-   "caption": "الأدعية · Arabic",
-   "status": "source",
+   "caption": "الأدعية · on the Azkar home layout (ADR 0092 decision 5): Azkar header, «أدعيتي» card, «التصنيفات» in the Azkar section title and Azkar topic tiles (body 600 name, caption count, 16 pt padding, 88 pt min height, 12 pt gap); first eight categories, «عرض الكل» expands in place; single-name topics from config/azkar_topics.php; no sources card, no Hisn source tiles; counts are mock (بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2766,13 +3108,17 @@
   {
    "id": "DuasHomeCategories",
    "stack": "duas",
-   "caption": "الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, hadith dua books, Hisn al-Muslim topics; count only, no sources on screen, styled like Azkar (developer 15 Nov 2026); counts are mock (approved 15 Nov 2026)",
-   "status": "source",
+   "caption": "الأدعية · «عرض الكل» expanded in place: every category in the Azkar topic tiles, «عرض أقل» collapses; counts are mock (بانتظار الموافقة)",
+   "status": "awaiting-approval",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
    "window": null,
-   "sizeFrames": {},
+   "sizeFrames": {
+    "related": [
+     "DuasHomeCategoriesExpanded"
+    ]
+   },
    "variants": {
     "light-rtl": {
      "how": "drawn",
@@ -2787,16 +3133,91 @@
     "light-ltr": {
      "how": "derived",
      "from": "DuasHomeCategories",
-     "untranslated": 1
+     "untranslated": 5
     },
     "dark-ltr": {
      "how": "derived",
      "from": "DuasHomeCategories",
-     "untranslated": 1
+     "untranslated": 5
     }
    },
    "frames": [
     "DuasHomeCategories"
+   ]
+  },
+  {
+   "id": "DuasHomeCategoriesExpanded",
+   "stack": "duas",
+   "caption": "الأدعية · expanded · 1194 × 834: tab rail with القائمة current, the phone layout in the 640 pt content column (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "window",
+   "fixed": true,
+   "drawnSize": "expanded",
+   "window": [
+    1194,
+    834
+   ],
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasHomeCategoriesExpanded",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasHomeCategoriesExpanded",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasHomeCategoriesExpanded",
+     "untranslated": 4
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasHomeCategoriesExpanded",
+     "untranslated": 4
+    }
+   },
+   "frames": [
+    "DuasHomeCategoriesExpanded"
+   ]
+  },
+  {
+   "id": "DuasLoading",
+   "stack": "duas",
+   "caption": "الأدعية · loading: skeleton of the header, «أدعيتي» card and tiles (from AzkarLoading) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasLoading",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasLoading",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasLoading",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasLoading",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuasLoading"
    ]
   },
   {
@@ -2833,6 +3254,114 @@
    },
    "frames": [
     "DuasSearch"
+   ]
+  },
+  {
+   "id": "DuasSearchEmpty",
+   "stack": "duas",
+   "caption": "الأدعية · search, empty query: recent searches and the hint (from AzkarSearchEmpty; no scope chips in Duas) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasSearchEmpty",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasSearchEmpty",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasSearchEmpty",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasSearchEmpty",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuasSearchEmpty"
+   ]
+  },
+  {
+   "id": "DuasSearchNoResults",
+   "stack": "duas",
+   "caption": "الأدعية · search, no results: «لا توجد نتائج مطابقة» (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasSearchNoResults",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasSearchNoResults",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasSearchNoResults",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasSearchNoResults",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "DuasSearchNoResults"
+   ]
+  },
+  {
+   "id": "DuasUnavailable",
+   "stack": "duas",
+   "caption": "الأدعية · unavailable (direct route, from AzkarUnavailable) (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuasUnavailable",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "DuasUnavailable",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "DuasUnavailable",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuasUnavailable",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "DuasUnavailable"
    ]
   },
   {

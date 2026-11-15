@@ -96,6 +96,39 @@ it('produces no group for a hidden category and keeps the id the next shown cate
         ->and($built['hadithPrimaryGroup'][12])->toBe(2);
 });
 
+it('imports all six textual categories with stable group ids when none is hidden (ADR 0092 decision 4)', function (): void {
+    $titles = [301 => 'FIXTURE cat 301', 302 => 'FIXTURE cat 302', 303 => 'FIXTURE cat 303', 305 => 'FIXTURE cat 305', 306 => 'FIXTURE cat 306', 308 => 'FIXTURE cat 308'];
+    $directory = duasGroupFixtureDirectory($titles, [301 => [10], 302 => [11], 303 => [12], 305 => [13], 306 => [14], 308 => [15]]);
+
+    config(['duas.hadeethenc.hidden_category_ids' => []]);
+
+    $built = app(HadeethEncDuasGroupBuilder::class)->build($directory);
+
+    expect(array_column($built['groups'], 'id'))->toBe([1, 2, 3, 4, 5, 6])
+        ->and(array_column($built['groups'], 'source_category_id'))->toBe([301, 302, 303, 305, 306, 308])
+        ->and(array_column($built['groups'], 'position'))->toBe([1, 2, 3, 4, 5, 6])
+        ->and($built['hadithPrimaryGroup'])->toBe([10 => 1, 11 => 2, 12 => 3, 13 => 4, 14 => 5, 15 => 6]);
+});
+
+it('keeps the group ids of the other categories when one is hidden', function (): void {
+    $titles = [301 => 'FIXTURE cat 301', 302 => 'FIXTURE cat 302', 303 => 'FIXTURE cat 303'];
+    $directory = duasGroupFixtureDirectory($titles, [301 => [10], 302 => [11], 303 => [12]]);
+
+    config(['duas.hadeethenc.hidden_category_ids' => [302]]);
+
+    $built = app(HadeethEncDuasGroupBuilder::class)->build($directory);
+
+    expect(array_column($built['groups'], 'id'))->toBe([1, 3]);
+});
+
+it('the shipped config hides no HadeethEnc category', function (): void {
+    /** @var array<string, mixed> $shipped */
+    $shipped = require config_path('duas.php');
+
+    expect($shipped['hadeethenc']['hidden_category_ids'])->toBe([])
+        ->and($shipped['hadeethenc']['duplicate_of_hisn'])->toBe([]);
+});
+
 it('gives a hadith listed in a hidden and a shown category the shown group as primary', function (): void {
     $directory = duasGroupFixtureDirectory(
         [301 => 'FIXTURE cat hidden', 302 => 'FIXTURE cat shown'],

@@ -35,6 +35,8 @@ beforeEach(function (): void {
     Bus::fake();
     azkarPinTo(azkarFixturePath());
     azkarUseFixtureReferences();
+    // ADR 0092: the reviewed topic rows are off here, so these expectations stay the catalogue tags (see AzkarTopicsTest).
+    config(['azkar_topics.chapters' => []]);
     // No snapshot is read on this path: both snapshot dates point at a folder that does not exist (ADR 0042).
     config(['azkar.hisnmuslim.snapshot_date' => '1900-01-01', 'azkar.hadeethenc.snapshot_date' => '1900-01-01']);
 });

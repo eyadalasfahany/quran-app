@@ -12,6 +12,7 @@ use App\Domains\Azkar\Console\QuranMapCandidatesCommand;
 use App\Domains\Azkar\Console\SetupAzkarCommand;
 use App\Domains\Azkar\Console\SnapshotCommand;
 use App\Domains\Azkar\Console\SyncAzkarAudioCommand;
+use App\Domains\Azkar\Console\TopicsCheckCommand;
 use App\Domains\Azkar\Console\VerifyAzkarAudioCommand;
 use App\Domains\Azkar\Repositories\Contracts\AzkarImportRepository;
 use App\Domains\Azkar\Repositories\Eloquent\EloquentAzkarImportRepository;
@@ -41,6 +42,7 @@ final class AzkarImportServiceProvider extends ServiceProvider
             VerifyAzkarAudioCommand::class,
             SetupAzkarCommand::class,
             EntryTypesCheckCommand::class,
+            TopicsCheckCommand::class,
         ]);
     }
 }

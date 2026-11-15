@@ -52,6 +52,8 @@ beforeEach(function (): void {
         ],
         'azkar.audio_version' => '0.0.2',
         'azkar_entry_types.entries' => [],
+        // ADR 0092: the reviewed topic rows are off here; the browse expectations are the catalogue tags.
+        'azkar_topics.chapters' => [],
     ]);
     ContentSource::query()->where('code', 'opendua')->update(['permission_status' => 'granted']);
     azkarAudioTestManifest(['OD-901.mp3' => 'FIXTURE audio bytes']);

@@ -20,243 +20,243 @@ declare(strict_types=1);
 
 return [
     'quran:2:128' => [
-        [2, 128, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [2, 128, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:2:129' => [
-        [2, 129, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [2, 129, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:2:200' => [
-        [2, 200, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [2, 200, null, 'status' => 'rejected', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:2:201' => [
-        [2, 201, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [2, 201, null, 'status' => 'reviewed', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:8' => [
-        [3, 8, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [3, 8, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:9' => [
-        [3, 9, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [3, 9, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:26' => [
-        [3, 26, null, 'status' => 'candidate', 'rule' => 'rule_contains_allahumma'],
+        [3, 26, null, 'status' => 'reviewed', 'rule' => 'rule_contains_allahumma', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:40' => [
-        [3, 40, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [3, 40, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:41' => [
-        [3, 41, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [3, 41, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:53' => [
-        [3, 53, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [3, 53, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:147' => [
-        [3, 147, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [3, 147, null, 'status' => 'reviewed', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:192' => [
-        [3, 192, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [3, 192, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:193' => [
-        [3, 193, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [3, 193, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:3:194' => [
-        [3, 194, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [3, 194, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:5:25' => [
-        [5, 25, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [5, 25, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:5:114' => [
-        [5, 114, null, 'status' => 'candidate', 'rule' => 'rule_contains_allahumma'],
+        [5, 114, null, 'status' => 'reviewed', 'rule' => 'rule_contains_allahumma', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:7:89' => [
-        [7, 89, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [7, 89, null, 'status' => 'reviewed', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:7:122' => [
-        [7, 122, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [7, 122, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:7:151' => [
-        [7, 151, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [7, 151, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:8:32' => [
-        [8, 32, null, 'status' => 'candidate', 'rule' => 'rule_contains_allahumma'],
+        [8, 32, null, 'status' => 'rejected', 'rule' => 'rule_contains_allahumma', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:10:10' => [
-        [10, 10, null, 'status' => 'candidate', 'rule' => 'rule_contains_allahumma'],
+        [10, 10, null, 'status' => 'reviewed', 'rule' => 'rule_contains_allahumma', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:11:47' => [
-        [11, 47, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [11, 47, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:12:33' => [
-        [12, 33, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [12, 33, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:12:101' => [
-        [12, 101, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [12, 101, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:14:36' => [
-        [14, 36, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [14, 36, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:14:37' => [
-        [14, 37, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [14, 37, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:14:38' => [
-        [14, 38, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [14, 38, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:14:40' => [
-        [14, 40, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [14, 40, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:14:41' => [
-        [14, 41, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [14, 41, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:15:36' => [
-        [15, 36, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [15, 36, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:15:39' => [
-        [15, 39, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [15, 39, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:17:102' => [
-        [17, 102, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [17, 102, null, 'status' => 'rejected', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:18:10' => [
-        [18, 10, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [18, 10, null, 'status' => 'reviewed', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:19:4' => [
-        [19, 4, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [19, 4, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:19:8' => [
-        [19, 8, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [19, 8, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:19:10' => [
-        [19, 10, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [19, 10, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:19:65' => [
-        [19, 65, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [19, 65, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:20:25' => [
-        [20, 25, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [20, 25, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:20:50' => [
-        [20, 50, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [20, 50, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:20:125' => [
-        [20, 125, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [20, 125, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:21:112' => [
-        [21, 112, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [21, 112, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:23:26' => [
-        [23, 26, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [23, 26, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:23:39' => [
-        [23, 39, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [23, 39, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:23:93' => [
-        [23, 93, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [23, 93, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:23:94' => [
-        [23, 94, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [23, 94, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:23:106' => [
-        [23, 106, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [23, 106, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:23:107' => [
-        [23, 107, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [23, 107, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:23:118' => [
-        [23, 118, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [23, 118, null, 'status' => 'reviewed', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:26:12' => [
-        [26, 12, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [26, 12, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:26:24' => [
-        [26, 24, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [26, 24, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:26:28' => [
-        [26, 28, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [26, 28, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:26:48' => [
-        [26, 48, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [26, 48, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:26:83' => [
-        [26, 83, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [26, 83, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:26:117' => [
-        [26, 117, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [26, 117, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:26:169' => [
-        [26, 169, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [26, 169, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:28:16' => [
-        [28, 16, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [28, 16, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:28:17' => [
-        [28, 17, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [28, 17, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:28:24' => [
-        [28, 24, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [28, 24, null, 'status' => 'reviewed', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:28:33' => [
-        [28, 33, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [28, 33, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:29:30' => [
-        [29, 30, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [29, 30, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:33:68' => [
-        [33, 68, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [33, 68, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:36:16' => [
-        [36, 16, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [36, 16, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:37:5' => [
-        [37, 5, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [37, 5, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:37:100' => [
-        [37, 100, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [37, 100, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:38:35' => [
-        [38, 35, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [38, 35, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:38:61' => [
-        [38, 61, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [38, 61, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:38:66' => [
-        [38, 66, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [38, 66, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:38:79' => [
-        [38, 79, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [38, 79, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:39:46' => [
-        [39, 46, null, 'status' => 'candidate', 'rule' => 'rule_contains_allahumma'],
+        [39, 46, null, 'status' => 'reviewed', 'rule' => 'rule_contains_allahumma', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:40:8' => [
-        [40, 8, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [40, 8, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:40:11' => [
-        [40, 11, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [40, 11, null, 'status' => 'rejected', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:44:7' => [
-        [44, 7, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [44, 7, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:44:12' => [
-        [44, 12, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [44, 12, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:55:17' => [
-        [55, 17, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [55, 17, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:59:10' => [
-        [59, 10, null, 'status' => 'candidate', 'rule' => 'rule_imperative_list'],
+        [59, 10, null, 'status' => 'reviewed', 'rule' => 'rule_imperative_list', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:60:5' => [
-        [60, 5, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [60, 5, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:71:5' => [
-        [71, 5, null, 'status' => 'candidate', 'rule' => 'rule_speech_verb'],
+        [71, 5, null, 'status' => 'reviewed', 'rule' => 'rule_speech_verb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:71:28' => [
-        [71, 28, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [71, 28, null, 'status' => 'reviewed', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:73:9' => [
-        [73, 9, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [73, 9, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
     'quran:78:37' => [
-        [78, 37, null, 'status' => 'candidate', 'rule' => 'rule_vocative_rabb'],
+        [78, 37, null, 'status' => 'rejected', 'rule' => 'rule_vocative_rabb', 'evidence' => 'developer:2026-11-15'],
     ],
 ];

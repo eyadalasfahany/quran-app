@@ -14,6 +14,10 @@ use App\Domains\Azkar\Data\ImportPlan;
  *
  * Plan step 3: `entry_class` and `home` join an entry's input only when they are set. With no reviewed types, both are
  * null everywhere and the fingerprint is the one an import had before these columns existed (no version bump).
+ *
+ * ADR 0092 decision 2: config azkar_topics.php joins the input only when it holds at least one chapter row. With no rows
+ * the fingerprint is the one an import had before the topic config existed. With rows, a change to the config (rows,
+ * topic list or names) moves the fingerprint, so the resource version bumps.
  */
 final class AzkarImportFingerprint
 {
@@ -48,6 +52,12 @@ final class AzkarImportFingerprint
             'notes' => $plan->notes,
             'recordings' => $plan->recordings,
         ];
+
+        $topicRows = config('azkar_topics.chapters', []);
+
+        if (is_array($topicRows) && $topicRows !== []) {
+            $payload['topics'] = config('azkar_topics', []);
+        }
 
         return hash('sha256', json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }

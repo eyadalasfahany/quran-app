@@ -30,6 +30,7 @@ beforeEach(function (): void {
         'duas.collection_books' => [],
         'duas.hadeethenc.hidden_category_ids' => [],
         'duas.hadeethenc.excluded_hadith_ids' => [],
+        'duas.hadeethenc.duplicate_of_hisn' => [],
     ]);
 });
 
@@ -303,6 +304,19 @@ it('does not import a hadith whose id is in excluded_hadith_ids', function (): v
 
     expect($hadithKeys)->toBe(['43'])
         ->and(array_column($planned['plan']->hadith, 'hadeeth_id'))->toBe([43])
+        ->and($planned['issues'])->toBe([]);
+});
+
+it('does not import a hadith whose id is in duplicate_of_hisn, as for an excluded id (ADR 0092 decision 4)', function (): void {
+    config(['duas.hadeethenc.duplicate_of_hisn' => [42 => 'FIXTURE-entry-key']]);
+
+    $planned = duasPlannerRun(
+        hadithIds: [42, 43],
+        hadithGroups: [['id' => 1, 'source_category_id' => 301, 'title' => 'FIXTURE cat 301', 'position' => 1]],
+        hadithPrimaryGroup: [42 => 1, 43 => 1],
+    );
+
+    expect(array_column($planned['plan']->hadith, 'hadeeth_id'))->toBe([43])
         ->and($planned['issues'])->toBe([]);
 });
 
