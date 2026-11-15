@@ -7,16 +7,13 @@ import { View } from 'react-native';
 import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { UiText, Screen } from '@/shared/ui';
+import { RecentSearches, Screen, SearchBar, SearchCategoryRow, SearchResultRow, UiText } from '@/shared/ui';
 import { useDebouncedValue } from '@/features/search/hooks/useDebouncedValue';
 
-import { AzkarRecentSearches } from '../components/AzkarRecentSearches';
-import { AzkarSearchBar } from '../components/AzkarSearchBar';
-import { AzkarSearchResultRow } from '../components/AzkarSearchResultRow';
 import { AzkarSectionTitle } from '../components/AzkarSectionTitle';
-import { AzkarTopicTile } from '../components/AzkarTopicTile';
 import {
   addAzkarRecentSearch,
+  categoryMatchRange,
   clearAzkarRecentSearches,
   readAzkarRecentSearches,
   removeAzkarRecentSearch,
@@ -28,7 +25,7 @@ import { azkarHref, goBackOr } from '../routes';
 
 const SEARCH_DEBOUNCE_MS = 150;
 
-/** One row of the hit list: the «المداخل» heading, or one matching dhikr with its number. */
+/** One row of the hit list: the «الأذكار» heading, or one matching dhikr with its number. */
 type HitRow = { kind: 'heading' } | { kind: 'hit'; hit: AzkarSearchHit; number: number };
 
 /**
@@ -66,7 +63,8 @@ export function AzkarSearchScreen({ testID = 'screen-azkar-search' }: { testID?:
           <UiText tone="muted" variant="caption">
             {t('azkar.search.hint')}
           </UiText>
-          <AzkarRecentSearches
+          <RecentSearches
+            clearLabel={t('azkar.search.clear')}
             onClear={() => setRecent(clearAzkarRecentSearches())}
             onRemove={(value) => setRecent(removeAzkarRecentSearch(value))}
             onSelect={(value) => {
@@ -74,6 +72,9 @@ export function AzkarSearchScreen({ testID = 'screen-azkar-search' }: { testID?:
               remember(value);
             }}
             queries={recent}
+            removeLabel={(value) => t('azkar.search.removeRecent', { query: value })}
+            testID="azkar-recent-searches"
+            title={t('azkar.search.recentTitle')}
           />
         </>
       ) : null}
@@ -81,21 +82,25 @@ export function AzkarSearchScreen({ testID = 'screen-azkar-search' }: { testID?:
       {matchedCategories.length > 0 ? (
         <View style={{ gap: theme.space[3] }}>
           <AzkarSectionTitle title={t('azkar.search.chaptersHeading')} testID="azkar-search-chapters" />
-          {matchedCategories.map((category) => (
-            <AzkarTopicTile
-              countText={t('azkar.browse.topicCount', {
-                count: category.unitCount,
-                number: formatNumber(category.unitCount, locale),
-              })}
-              key={category.id}
-              onPress={() => {
-                remember(query);
-                router.push(azkarHref.category(category.id));
-              }}
-              testID={`azkar-search-category-${category.id}`}
-              title={t(`azkar.categories.${category.id}` as never)}
-            />
-          ))}
+          {matchedCategories.map((category) => {
+            const title = t(`azkar.categories.${category.id}` as never);
+            return (
+              <SearchCategoryRow
+                countText={t('azkar.browse.topicCount', {
+                  count: category.unitCount,
+                  number: formatNumber(category.unitCount, locale),
+                })}
+                highlight={categoryMatchRange(title, query)}
+                key={category.id}
+                onPress={() => {
+                  remember(query);
+                  router.push(azkarHref.category(category.id));
+                }}
+                testID={`azkar-search-category-${category.id}`}
+                title={title}
+              />
+            );
+          })}
         </View>
       ) : null}
     </View>
@@ -105,7 +110,8 @@ export function AzkarSearchScreen({ testID = 'screen-azkar-search' }: { testID?:
     <Screen testID={testID}>
       <ContentColumn gutter={theme.size.gutterHome}>
         <View style={{ flex: 1, gap: theme.space[5], paddingTop: theme.space[2] }}>
-          <AzkarSearchBar
+          <SearchBar
+            backLabel={t('azkar.browse.back')}
             onBack={() => goBackOr(azkarHref.home)}
             onChangeText={setQuery}
             onSubmit={(value) => {
@@ -113,6 +119,8 @@ export function AzkarSearchScreen({ testID = 'screen-azkar-search' }: { testID?:
                 remember(value);
               }
             }}
+            placeholder={t('azkar.search.placeholder')}
+            testID="azkar-search-bar"
             value={query}
           />
           <FlashList
@@ -135,7 +143,7 @@ export function AzkarSearchScreen({ testID = 'screen-azkar-search' }: { testID?:
               item.kind === 'heading' ? (
                 <AzkarSectionTitle title={t('azkar.search.entriesHeading')} testID="azkar-search-entries" />
               ) : (
-                <AzkarSearchResultRow
+                <SearchResultRow
                   highlight={item.hit.highlight}
                   number={item.number}
                   onPress={() => {

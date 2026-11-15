@@ -44,10 +44,10 @@ describe('DuasCategoryHeader', () => {
     expect(screen.getByText('FIXTURE trailing')).toBeOnTheScreen();
   });
 
-  it('sets the title at the frame size', async () => {
+  it('sets the title at the Azkar header size (28 pt, displayMd)', async () => {
     await renderUi(<DuasCategoryHeader onBack={jest.fn()} title="FIXTURE title" />);
 
-    expect(flatStyle(screen.getByText('FIXTURE title').props.style)).toMatchObject({ fontSize: 26, lineHeight: 34 });
+    expect(flatStyle(screen.getByText('FIXTURE title').props.style)).toMatchObject({ fontSize: 28, lineHeight: 36 });
   });
 
   it('uses no raw colour literals', () => {

@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { renderUi } from '../../../../jest/render-ui';
+import { toggleAzkarFavorite } from '@/features/azkar/data';
 import { toggleDuaFavorite } from '../data/favorites-repository';
 import * as duasHooks from '../data/hooks';
 import { DuasFavoritesScreen } from './DuasFavoritesScreen';
@@ -20,6 +21,11 @@ jest.mock('../data/favorites-repository', () => ({
   toggleDuaFavorite: jest.fn(),
 }));
 
+// The Azkar favourites store is the one a Hisn dua's bookmark removes from.
+jest.mock('@/features/azkar/data', () => ({
+  toggleAzkarFavorite: jest.fn(),
+}));
+
 jest.mock('../data/hooks', () => ({
   useDuaFavoriteCards: jest.fn(),
 }));
@@ -28,6 +34,7 @@ const mocked = duasHooks as jest.Mocked<typeof duasHooks>;
 
 const PREVIEW = 'FIXTURE title 1 — not a dua';
 const REFERENCE = 'FIXTURE surah ref · 1';
+const HISN_PREVIEW = 'FIXTURE text 1 — not a dua';
 
 describe('DuasFavoritesScreen', () => {
   beforeEach(() => {
@@ -80,6 +87,36 @@ describe('DuasFavoritesScreen', () => {
 
     await press(screen.getByTestId('dua-favorite-remove-1'));
     expect(toggleDuaFavorite).toHaveBeenCalledWith('hadeethenc:1');
+    expect(toggleAzkarFavorite).not.toHaveBeenCalled();
+    expect(router.push).not.toHaveBeenCalled();
+  });
+
+  it('lists a saved Hisn dua by its text and reference, numbered in the same list', async () => {
+    mocked.useDuaFavoriteCards.mockReturnValue([
+      { kind: 'hisn', entryKey: 'FIXTURE:entry-1', preview: HISN_PREVIEW, quranReference: REFERENCE },
+      { duaKey: 'hadeethenc:1', kind: 'hadith', preview: PREVIEW, quranReference: null },
+    ]);
+    await renderUi(<DuasFavoritesScreen />);
+
+    expect(screen.getByRole('button', { name: `١, ${HISN_PREVIEW}, ${REFERENCE}` })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: `٢, ${PREVIEW}` })).toBeOnTheScreen();
+  });
+
+  it('opens a Hisn dua in its Azkar entry', async () => {
+    mocked.useDuaFavoriteCards.mockReturnValue([{ kind: 'hisn', entryKey: 'FIXTURE:entry-1', preview: HISN_PREVIEW, quranReference: null }]);
+    await renderUi(<DuasFavoritesScreen />);
+
+    await press(screen.getByRole('button', { name: `١, ${HISN_PREVIEW}` }));
+    expect(router.push).toHaveBeenLastCalledWith('/azkar/entry/FIXTURE%3Aentry-1');
+  });
+
+  it('removes a Hisn dua by removing its Azkar favourite, not the Duas one', async () => {
+    mocked.useDuaFavoriteCards.mockReturnValue([{ kind: 'hisn', entryKey: 'FIXTURE:entry-1', preview: HISN_PREVIEW, quranReference: null }]);
+    await renderUi(<DuasFavoritesScreen />);
+
+    await press(screen.getByTestId('dua-favorite-remove-1'));
+    expect(toggleAzkarFavorite).toHaveBeenCalledWith('FIXTURE:entry-1');
+    expect(toggleDuaFavorite).not.toHaveBeenCalled();
     expect(router.push).not.toHaveBeenCalled();
   });
 

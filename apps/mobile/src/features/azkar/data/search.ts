@@ -142,6 +142,52 @@ function searchChapterTitles(db: SqlExecutor, resourceId: number, query: string)
   return hits;
 }
 
+/** A code-unit range of a string. */
+export type MatchRange = { start: number; end: number };
+
+/**
+ * The range of the query inside a category label, or null when it has none (or the match cannot be mapped back). The
+ * label is never rewritten; the caller highlights the range.
+ */
+export function categoryMatchRange(label: string, rawQuery: string): MatchRange | null {
+  const query = normalizeForSearch(rawQuery);
+  if (query.length === 0) {
+    return null;
+  }
+  return mapMatchToOriginal(label, normalizeForSearch(label), query);
+}
+
+/** Characters a search row keeps of a long text: enough for two clamped lines around the match. */
+export const SNIPPET_CHARS = 160;
+
+/**
+ * A window of `text` around its highlight, so a long text shows its match on a two-line row. A text no longer than the
+ * window, or one with no highlight, comes back whole. The window starts after a space when one falls before the match, so
+ * a word is not cut at its start. The text is only cut, never changed, and the range moves with it.
+ */
+export function snippetAround(
+  text: string,
+  highlight: MatchRange | null,
+  maxChars = SNIPPET_CHARS,
+): { text: string; highlight: MatchRange | null } {
+  if (highlight === null || text.length <= maxChars) {
+    return { text, highlight };
+  }
+
+  let start = Math.max(0, highlight.start - Math.floor((maxChars - (highlight.end - highlight.start)) / 2));
+  if (start > 0) {
+    const space = text.indexOf(' ', start);
+    if (space >= 0 && space < highlight.start) {
+      start = space + 1;
+    }
+  }
+  const end = Math.min(text.length, start + maxChars);
+  if (highlight.end > end) {
+    return { text: text.slice(start, end), highlight: null };
+  }
+  return { text: text.slice(start, end), highlight: { start: highlight.start - start, end: highlight.end - start } };
+}
+
 /** Whether a localised category label matches the query, using the same normalisation. */
 export function matchesCategoryLabel(rawQuery: string, label: string): boolean {
   const query = normalizeForSearch(rawQuery);
@@ -183,6 +229,7 @@ export function mapMatchToOriginal(
   return normalizeForSearch(original.slice(start, end)) === normalizedQuery ? { start, end } : null;
 }
 
-function escapeLike(value: string): string {
+/** Escapes LIKE wildcards in a query, for `ESCAPE '\'`. Shared with the Duas search. */
+export function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (char) => `\\${char}`);
 }

@@ -3,11 +3,10 @@ import { ScrollView, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { AzkarSearchResultRow } from '@/features/azkar/components/AzkarSearchResultRow';
 import { AzkarSectionTitle } from '@/features/azkar/components/AzkarSectionTitle';
 import { AzkarTopicTile } from '@/features/azkar/components/AzkarTopicTile';
 import { useAzkarCategories, useAzkarSearch } from '@/features/azkar/data';
-import { EmptyState } from '@/shared/ui';
+import { EmptyState, SearchResultRow } from '@/shared/ui';
 
 const SEARCH_ICON = { ios: 'magnifyingglass', android: 'search' } as const;
 
@@ -88,7 +87,7 @@ export function AzkarSearchResults({
         <View style={{ gap: theme.space[3] }}>
           <AzkarSectionTitle testID={`${testID}-entries`} title={t('search.azkarEntriesHeading')} />
           {entries.map((hit, index) => (
-            <AzkarSearchResultRow
+            <SearchResultRow
               highlight={hit.highlight}
               key={hit.entryKey}
               number={index + 1}

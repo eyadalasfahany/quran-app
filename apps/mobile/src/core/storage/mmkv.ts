@@ -30,6 +30,11 @@ export const storageKeys = {
     searchRecent: 'hadith.searchRecent',
   },
 
+  // JSON array of recent Duas search queries, newest first, capped at 10. Personal, local only.
+  duas: {
+    searchRecent: 'duas.searchRecent',
+  },
+
   updates: {
     /** Epoch ms of the last foreground update check (at most every 6 hours). */
     lastCheckAt: 'updates.lastCheckAt',

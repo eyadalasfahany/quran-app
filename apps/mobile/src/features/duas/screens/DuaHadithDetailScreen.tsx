@@ -17,7 +17,6 @@ import { useAzkarFontScale } from '@/features/azkar/data/hooks';
 
 import { DuaHadithBody } from '../components/DuaHadithBody';
 import { DuaReaderActions } from '../components/DuaReaderActions';
-import { DuaSourceLink } from '../components/DuaSourceLink';
 import { neighbourPropheticDuas } from '../data/content-repository';
 import { usePropheticDua } from '../data/hooks';
 import { duaHadithShareText } from '../data/share-text';
@@ -86,13 +85,12 @@ export function DuaHadithDetailScreen({ duaKey, testID = 'screen-dua-hadith-deta
             title={t('duas.hadith.listTitle')}
           />
           <ScrollView contentContainerStyle={{ flexGrow: 1, gap: theme.size.sectionGap, paddingBottom: theme.space[6], paddingTop: theme.space[4] }}>
-            <DuaHadithBody attribution={dua.attribution} fontScale={fontScale} text={dua.hadeeth} />
+            <DuaHadithBody fontScale={fontScale} text={dua.hadeeth} />
             <View style={{ paddingHorizontal: theme.space[2] }}>
-              <AzkarDetailsSection body={dua.explanation} caption={credit} title={t('duas.hadith.explanation')} />
-              <AzkarDetailsSection body={dua.reference} caption={credit} title={t('duas.hadith.reference')} />
-              <AzkarDetailsSection body={dua.grade} caption={credit} title={t('duas.hadith.grade')} />
-              <AzkarDetailsSection body={hints} caption={credit} title={t('duas.hadith.hints')} />
-              <DuaSourceLink url={dua.sourceUrl} />
+              {/* Meaning and benefits only: the reference, the grade, the narrator line and every source credit are
+                  not shown (developer, 15 Nov 2026). The data stays in content.db and the share text. */}
+              <AzkarDetailsSection body={dua.explanation} title={t('duas.hadith.explanation')} />
+              <AzkarDetailsSection body={hints} title={t('duas.hadith.hints')} />
             </View>
           </ScrollView>
           <DuaReaderActions

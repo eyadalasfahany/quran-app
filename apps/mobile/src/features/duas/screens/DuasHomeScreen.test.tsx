@@ -54,18 +54,49 @@ describe('DuasHomeScreen', () => {
     expect(screen.getByTestId('duas-home-favorites')).toBeOnTheScreen();
   });
 
-  it('shows no search button, until the search frame is approved', async () => {
+  it('shows the search button before the favourites button in the header', async () => {
     await renderUi(<DuasHomeScreen />);
 
-    expect(screen.queryByRole('button', { name: 'بحث' })).toBeNull();
+    const search = screen.getByTestId('duas-home-search');
+    const favourites = screen.getByTestId('duas-home-favorites');
+    expect(search).toHaveProp('accessibilityLabel', 'بحث');
+    expect(search).toHaveProp('accessibilityRole', 'button');
+    // Search comes first in the tree, so it is the start-most header control, as Azkar's is.
+    const order = screen.getAllByRole('button').map((button) => button.props.testID);
+    expect(order.indexOf('duas-home-search')).toBeLessThan(order.indexOf('duas-home-favorites'));
+    expect(favourites).toBeOnTheScreen();
   });
 
-  it('shows the sources line under the blocks', async () => {
+  it('opens Duas search from the search button', async () => {
     await renderUi(<DuasHomeScreen />);
 
-    expect(screen.getByTestId('duas-source-credit')).toHaveTextContent(
-      'المصادر: القرآن الكريم · حصن المسلم · موسوعة الأحاديث النبوية (HadeethEnc.com)',
-    );
+    await fireEvent.press(screen.getByTestId('duas-home-search'));
+    expect(router.push).toHaveBeenLastCalledWith('/duas/search');
+  });
+
+  it('shows the hadith book categories from the categories hook, with their fallback names', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue([
+      {
+        id: 'hadithbook:muslim:48',
+        kind: 'hadithbook',
+        titleKey: null,
+        title: null,
+        count: 3,
+        sourceKind: 'hadith',
+        bookNumber: '48',
+      },
+    ]);
+    await renderUi(<DuasHomeScreen />);
+
+    expect(screen.getByRole('button', { name: 'كتاب ٤٨، ٣ أدعية' })).toBeOnTheScreen();
+  });
+
+  it('shows no source text anywhere on the screen', async () => {
+    mockedDuasHooks.useDuaCategories.mockReturnValue(TEN_CATEGORIES);
+    await renderUi(<DuasHomeScreen />);
+
+    expect(screen.queryByText(/المصادر|HadeethEnc|حصن المسلم|Hisn|OpenDua/)).toBeNull();
+    expect(screen.queryByTestId('duas-source-credit')).toBeNull();
   });
 
   it('hides the categories heading and grid when there are no categories', async () => {
@@ -76,13 +107,13 @@ describe('DuasHomeScreen', () => {
     expect(screen.queryByRole('button', { name: /عرض/ })).toBeNull();
   });
 
-  it('shows the categories heading and one tile per category, with the count and source', async () => {
+  it('shows the categories heading and one tile per category, with the count only', async () => {
     mockedDuasHooks.useDuaCategories.mockReturnValue([QURAN, group(1)]);
     await renderUi(<DuasHomeScreen />);
 
     expect(screen.getByTestId('duas-categories-heading')).toHaveTextContent('التصنيفات');
-    expect(screen.getByRole('button', { name: 'من القرآن الكريم، ٢٨ دعاءً · القرآن' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'FIXTURE group 1، دعاء واحد · HadeethEnc' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'من القرآن الكريم، ٢٨ دعاءً' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'FIXTURE group 1، دعاء واحد' })).toBeOnTheScreen();
   });
 
   it('shows the first eight categories and an expand link for the total', async () => {
@@ -118,7 +149,7 @@ describe('DuasHomeScreen', () => {
     mockedDuasHooks.useDuaCategories.mockReturnValue([QURAN]);
     await renderUi(<DuasHomeScreen />);
 
-    await fireEvent.press(screen.getByRole('button', { name: 'من القرآن الكريم، ٢٨ دعاءً · القرآن' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'من القرآن الكريم، ٢٨ دعاءً' }));
     expect(router.push).toHaveBeenCalledWith('/duas/category/quran');
   });
 
@@ -137,7 +168,7 @@ describe('DuasHomeScreen', () => {
     await renderUi(<DuasHomeScreen />, { locale: 'en' });
 
     expect(screen.getByTestId('duas-categories-toggle')).toHaveTextContent('Show all 10');
-    expect(screen.getByRole('button', { name: 'From the Quran, 28 duas · Quran' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'From the Quran, 28 duas' })).toBeOnTheScreen();
     expect(screen.getByTestId('duas-categories-heading')).toHaveTextContent('Categories');
   });
 });

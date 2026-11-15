@@ -1,16 +1,19 @@
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { openContentDb } from '@/core/db/content/open';
 import { useCatalogVersion } from '@/core/sync/catalog-version';
 import { openUserDb } from '@/core/db/user/open';
 import { useLocale } from '@/core/i18n';
-import { useQuranReferenceLabel } from '@/features/azkar/data';
+import { useFavorites, useQuranReferenceLabel, useQuranReferencesLabel } from '@/features/azkar/data';
 import { hasPropheticDuas, hasQuranicDuas } from './availability';
 import { getPropheticDua, getQuranicDua, listPropheticDuaSections, listQuranicDuas } from './content-repository';
+import { categoryName } from './category-labels';
 import { listDuaCategories, listDuaCategoryItems } from './categories';
-import { listDuaFavoriteCards, type DuaFavoriteCard } from './favorite-cards';
+import { listDuaFavoriteList, type DuaFavoriteListCard } from './favorite-cards';
 import { liveDuaFavoritesQuery, liveIsDuaFavoriteQuery, liveMyDuasQuery } from './live-queries';
+import { searchDuas, type DuaSearchResult } from './search';
 import type { MyDua } from './my-duas-repository';
 import type {
   DuaCategory,
@@ -139,25 +142,51 @@ export function useIsDuaFavorite(duaKey: string): boolean {
 }
 
 /**
- * Dua favourites, newest first, for the favourites screen. A Quranic card carries its surah and verses (never the
- * verse text); a prophetic card carries its title. Re-reads when the content revision changes.
+ * The favourites list (screens/, #DuasFavorites): Duas favourites and saved Hisn duas, newest first across both. A
+ * Quranic card carries its surah and verses (never the verse text); a prophetic card carries its title. Live: it follows
+ * both the Duas and the Azkar favourites. Re-reads when the content revision changes.
  */
-export function useDuaFavoriteCards(): DuaFavoriteCard[] {
+export function useDuaFavoriteCards(): DuaFavoriteListCard[] {
   const revision = useContentRevision();
   const locale = useLocale();
   const quranReference = useQuranReferenceLabel(locale);
+  const quranReferences = useQuranReferencesLabel(locale);
   const { db } = openUserDb();
   const { data: favorites } = useLiveQuery(liveDuaFavoritesQuery(db));
+  const { data: azkarFavorites } = useFavorites();
 
   return useMemo(
     () =>
-      readOr<DuaFavoriteCard[]>([], () => {
+      readOr<DuaFavoriteListCard[]>([], () => {
         const { executor } = openContentDb();
-        return listDuaFavoriteCards(executor, favorites, quranReference);
+        return listDuaFavoriteList(executor, favorites, azkarFavorites, quranReference, quranReferences);
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [favorites, quranReference, revision],
+    [azkarFavorites, favorites, quranReference, quranReferences, revision],
   );
+}
+
+const NO_SEARCH: DuaSearchResult = { categories: [], duas: [] };
+
+/**
+ * Duas search for one query (screens/, #DuasSearch). Category names are read in the current language. Re-reads when the
+ * catalogue changes or the language does. An empty query returns nothing.
+ */
+export function useDuaSearch(query: string): DuaSearchResult {
+  const revision = useContentRevision();
+  const { t } = useTranslation();
+  const locale = useLocale();
+
+  return useMemo(() => {
+    if (query.trim().length === 0) {
+      return NO_SEARCH;
+    }
+    return readOr<DuaSearchResult>(NO_SEARCH, () => {
+      const { executor } = openContentDb();
+      return searchDuas(executor, query, (category) => categoryName(category, t, locale));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, t, locale, revision]);
 }
 
 /** The Duas categories (ADR 0091), in display order. Re-reads when the catalogue changes. */

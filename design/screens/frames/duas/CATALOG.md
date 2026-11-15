@@ -6,14 +6,14 @@ Duas + my duas
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
-| `DuasHomeCategories` | compact | ar-light | source | الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (approved 15 Nov 2026) |
-| `DuasCategory` | compact | ar-light | source | الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026) |
-| `DuasSearch` | compact | ar-light | awaiting-approval | الأدعية · search: categories first, then duas with their category; mirrors AzkarSearch (ADR 0091) (بانتظار الموافقة) |
+| `DuasHomeCategories` | compact | ar-light | source | الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, hadith dua books, Hisn al-Muslim topics; count only, no sources on screen, styled like Azkar (developer 15 Nov 2026); counts are mock (approved 15 Nov 2026) |
+| `DuasCategory` | compact | ar-light | source | الأدعية · one category (الموت والمتوفى): the Azkar category card, number and dua text only, no sources (developer 15 Nov 2026); a Hisn row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026) |
+| `DuasSearch` | compact | ar-light | source | الأدعية · search: categories first, then duas with their category; mirrors AzkarSearch (ADR 0091) (approved 15 Nov 2026) |
 | `DuasHome` | compact | ar-light | source | الأدعية · Arabic |
 | `DuasHomeDark` | compact | dark | source | الأدعية · Dark |
 | `DuasHomeEnglish` | compact | en | source | Duas home · English (LTR) |
-| `DuaQuranDetailNoSource` | compact | ar-light | awaiting-approval | دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (بانتظار الموافقة) |
-| `DuaHadithDetailNoSource` | compact | ar-light | awaiting-approval | دعاء نبوي · without sources: no takhrij line, no links, no المرجع or الدرجة, no credit lines (developer 15 Nov) (بانتظار الموافقة) |
+| `DuaQuranDetailNoSource` | compact | ar-light | source | دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (approved 15 Nov 2026) |
+| `DuaHadithDetailNoSource` | compact | ar-light | source | دعاء نبوي · without sources: no takhrij line, no links, no المرجع or الدرجة, no credit lines (developer 15 Nov) (approved 15 Nov 2026) |
 | `DuaQuranDetail` | compact | ar-light | source | دعاء قرآني · Arabic |
 | `DuaQuranDetailDark` | compact | dark | source | دعاء قرآني · Dark |
 | `DuaQuranDetailEnglish` | compact | en | source | Quranic dua · English (LTR) |

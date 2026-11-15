@@ -10,6 +10,7 @@ describe('duasHref', () => {
   it('builds the fixed routes', () => {
     expect(duasHref.home).toBe('/duas');
     expect(duasHref.favorites).toBe('/duas/favorites');
+    expect(duasHref.search).toBe('/duas/search');
     expect(duasHref.mine).toBe('/duas/mine');
     expect(duasHref.quranList).toBe('/duas/quran');
     expect(duasHref.quranDetail('quran:1:1')).toBe('/duas/quran/quran%3A1%3A1');

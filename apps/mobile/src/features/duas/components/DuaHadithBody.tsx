@@ -4,17 +4,15 @@ import { useTheme } from '@/core/theme';
 import { displayText, UiText } from '@/shared/ui';
 
 /**
- * Prophetic dua text and attribution (screens/, #DuaHadithDetail). The text takes the reader's text size
- * the way `DhikrText` does. No audio (ADR 0055 §3).
+ * Prophetic dua text (screens/, #DuaHadithDetailNoSource). The text takes the reader's text size the way `DhikrText`
+ * does. The narrator and takhrij line is not shown (developer, 15 Nov 2026); the data keeps it. No audio (ADR 0055 §3).
  */
 export function DuaHadithBody({
   text,
-  attribution,
   fontScale = 1,
   testID = 'dua-hadith-body',
 }: {
   text: string;
-  attribution: string;
   fontScale?: number;
   testID?: string;
 }) {
@@ -26,11 +24,6 @@ export function DuaHadithBody({
       <UiText align="center" style={[displayText('dhikr', fontScale), { writingDirection: 'rtl' }]} variant="dhikr" weight={400}>
         {text}
       </UiText>
-      {attribution.trim().length > 0 ? (
-        <UiText align="center" tone="muted" variant="caption">
-          {attribution}
-        </UiText>
-      ) : null}
     </View>
   );
 }

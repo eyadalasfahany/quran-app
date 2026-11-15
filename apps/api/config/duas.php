@@ -37,6 +37,14 @@ return [
     ],
 
     // Decision 18: five books of supplication (slug => book number). Filled by the import from this list.
-    'collection_books' => [],
+    // The developer asked for them as Duas categories on 15 Nov 2026 (ADR 0091). Navigation only: the hadiths are read
+    // from the Phase 7 hadith packs on the device; nothing is copied into the Duas pack.
+    'collection_books' => [
+        'bukhari' => 80,
+        'muslim' => 48,
+        'tirmidhi' => 48,
+        'ibnmajah' => 34,
+        'nasai' => 50,
+    ],
 
 ];

@@ -60,3 +60,16 @@ The original wording of each point follows.
 1. The review sheet rows the developer wants applied are marked `reviewed` and committed (the release can ship without any).
 2. The new frames approved by the developer (ADR 0087).
 3. `npx eas-cli fingerprint:compare` shows no fingerprint change.
+
+## Later decisions (developer, 15 Nov 2026)
+
+1. **Types reviewed:** the developer reviewed the classification sheet and had every row marked `reviewed`, which moves 97 duas to Duas. The sheet lists each dhikr on its own row, under each of its categories (`docs/plans/azkar-duas-split/classification.md`).
+2. **Separate topics:** the OpenDua tags «الصباح والمساء» and «النوم والاستيقاظ» are split into four Azkar topics: `morning-topic`, `evening-topic`, `sleep-topic` and `waking-topic` (`config/azkar.php` `split_topics`).
+3. **«تم» ring:** before the tap, the ring of an entry with no sourced count shows «اضغط / عند الانتهاء» and no check. The check and «تم» appear only after the tap (frames `AzkarReaderSingleIdle` and `AzkarReaderSingleDone`, which replace `AzkarReaderDone`).
+4. **Hadith dua books:** the five books of supplication become Duas categories: Bukhari 80, Muslim 48, Tirmidhi 48, Ibn Majah 34 and Nasa'i 50 (content plan, decision 18). The hadiths are read from the Phase 7 hadith packs on the device, and nothing is copied into the Duas pack.
+5. **No sources on the Duas screens:** home, category and dua detail show no source, takhrij, reference, grade or credit line.
+   - Attribution moves to Settings › المصادر.
+   - HadeethEnc's terms ask apps to name it clearly as the source. Crediting it only in Settings is a risk the developer accepts; the written confirmation request to HadeethEnc should ask whether that is enough.
+6. **Same design as Azkar:** the Duas home, category and search screens use the Azkar header, cards, tiles and search layout.
+7. **Duas search ships in this change.** This reverses D6 above.
+8. **Other dua sources:** a search on 15 Nov 2026 found no other openly licensed collection of new duas. The GitHub dua datasets copy Hisn al-Muslim under MIT with no provenance, and the wiki collections are outside the app's sources. The permission requests in `docs/permission-requests/duas-sources.md` stay the route to more content.

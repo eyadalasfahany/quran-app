@@ -6,13 +6,12 @@ import { ScrollView, View } from 'react-native';
 import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import { IconButton, Screen } from '@/shared/ui';
+import { IconButton, Screen, SearchButton } from '@/shared/ui';
 
 import { DuasCategoryGrid, type DuasCategoryGridItem } from '../components/DuasCategoryGrid';
 import { DuasCategoryHeader } from '../components/DuasCategoryHeader';
 import { DuasMineCard } from '../components/DuasMineCard';
-import { DuasSourceCredit } from '../components/DuasSourceCredit';
-import { categoryCaption, categoryName } from '../data/category-labels';
+import { categoryCountText, categoryName } from '../data/category-labels';
 import { useDuaCategories, useMyDuas } from '../data/hooks';
 import { duasHref, goBackOr } from '../routes';
 
@@ -23,8 +22,8 @@ export const DUAS_HOME_CATEGORY_LIMIT = 8;
 
 /**
  * Duas home (screens/, #DuasHomeCategories): the header, the «أدعيتي» card, the «التصنيفات» grid of the first eight
- * categories with «عرض الكل N» to expand it in place, and the sources line. The search button waits for the
- * DuasSearch frame, so the header has no search control yet.
+ * categories with «عرض الكل N» to expand it in place. Sources are not shown here (developer, 15 Nov 2026). The header
+ * trails search, then favourites, as Azkar's does (ADR 0091 part 6). The gutter is Azkar's (`gutterHome`).
  */
 export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: string }) {
   const { t } = useTranslation();
@@ -38,8 +37,8 @@ export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: strin
     () =>
       (expanded ? categories : categories.slice(0, DUAS_HOME_CATEGORY_LIMIT)).map((category) => ({
         id: category.id,
-        name: categoryName(category, t),
-        caption: categoryCaption(category, locale, t),
+        name: categoryName(category, t, locale),
+        caption: categoryCountText(category.count, locale, t),
         onPress: () => router.push(duasHref.category(category.id)),
       })),
     [categories, expanded, locale, t],
@@ -47,19 +46,22 @@ export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: strin
 
   return (
     <Screen testID={testID}>
-      <ContentColumn gutter={theme.size.gutterList}>
+      <ContentColumn gutter={theme.size.gutterHome}>
         <View style={{ flex: 1, gap: theme.size.blockGap, paddingTop: theme.space[2] }}>
           <DuasCategoryHeader
             onBack={() => goBackOr(duasHref.homeTab)}
             title={t('duas.home.title')}
             trailing={
-              <IconButton
-                icon={BOOKMARK}
-                label={t('duas.home.favourites')}
-                onPress={() => router.push(duasHref.favorites)}
-                testID="duas-home-favorites"
-                variant="raised"
-              />
+              <>
+                <SearchButton onPress={() => router.push(duasHref.search)} testID="duas-home-search" />
+                <IconButton
+                  icon={BOOKMARK}
+                  label={t('duas.home.favourites')}
+                  onPress={() => router.push(duasHref.favorites)}
+                  testID="duas-home-favorites"
+                  variant="raised"
+                />
+              </>
             }
           />
           <ScrollView contentContainerStyle={{ gap: theme.size.blockGap, paddingBottom: theme.space[8] }}>
@@ -82,7 +84,6 @@ export function DuasHomeScreen({ testID = 'screen-duas-home' }: { testID?: strin
                 }
               />
             ) : null}
-            <DuasSourceCredit text={t('duas.home.sourcesLine')} />
           </ScrollView>
         </View>
       </ContentColumn>

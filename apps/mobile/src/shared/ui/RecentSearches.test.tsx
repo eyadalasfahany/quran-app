@@ -1,25 +1,28 @@
 import { screen } from '@testing-library/react-native';
 
-import { press } from '../../../../jest/azkar-ui-fixtures';
-import { renderUi } from '../../../../jest/render-ui';
-import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { AzkarRecentSearches } from './AzkarRecentSearches';
+import { press } from '../../../jest/azkar-ui-fixtures';
+import { rawColorLiteralsInFeature } from '../../../jest/feature-ui-source';
+import { renderUi } from '../../../jest/render-ui';
 
-function renderRecent(queries: string[] = ['الصباح', 'المساء'], locale: 'ar' | 'en' = 'ar') {
+import { RecentSearches } from './RecentSearches';
+
+const LABELS = {
+  title: 'عمليات البحث الأخيرة',
+  clearLabel: 'مسح السجل',
+  removeLabel: (query: string) => `إزالة ${query}`,
+};
+
+function renderRecent(queries: string[] = ['الصباح', 'المساء']) {
   const handlers = { onSelect: jest.fn(), onRemove: jest.fn(), onClear: jest.fn() };
-  return {
-    ...handlers,
-    ui: <AzkarRecentSearches queries={queries} {...handlers} />,
-    locale,
-  };
+  return { ...handlers, ui: <RecentSearches queries={queries} {...LABELS} {...handlers} /> };
 }
 
-describe('AzkarRecentSearches', () => {
+describe('RecentSearches', () => {
   it('renders nothing without recent queries', async () => {
     const { ui } = renderRecent([]);
     await renderUi(ui);
 
-    expect(screen.queryByTestId('azkar-recent-searches')).toBeNull();
+    expect(screen.queryByTestId('recent-searches')).toBeNull();
   });
 
   it('lists each query with the heading and the clear action', async () => {
@@ -50,15 +53,25 @@ describe('AzkarRecentSearches', () => {
     expect(onClear).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the English labels', async () => {
-    const { ui } = renderRecent(['morning'], 'en');
-    await renderUi(ui, { locale: 'en' });
+  it('uses the English labels the caller passes', async () => {
+    await renderUi(
+      <RecentSearches
+        clearLabel="Clear history"
+        onClear={jest.fn()}
+        onRemove={jest.fn()}
+        onSelect={jest.fn()}
+        queries={['morning']}
+        removeLabel={(query) => `Remove ${query}`}
+        title="Recent searches"
+      />,
+      { locale: 'en' },
+    );
 
     expect(screen.getByRole('button', { name: 'Clear history' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Remove morning' })).toBeOnTheScreen();
   });
 
   it('uses theme tokens rather than raw colours', () => {
-    expect(rawColorLiteralsInFeature('src/features/azkar/components/AzkarRecentSearches.tsx')).toEqual([]);
+    expect(rawColorLiteralsInFeature('src/shared/ui/RecentSearches.tsx')).toEqual([]);
   });
 });

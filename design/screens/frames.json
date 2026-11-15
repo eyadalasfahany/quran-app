@@ -1064,32 +1064,32 @@
     {
       "id": "DuasHomeCategories",
       "stack": "duas",
-      "caption": "الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, Hisn al-Muslim topics; source under each count; counts are mock (approved 15 Nov 2026)",
+      "caption": "الأدعية · sourced categories only (ADR 0091 D1): Quranic, HadeethEnc groups, hadith dua books, Hisn al-Muslim topics; count only, no sources on screen, styled like Azkar (developer 15 Nov 2026); counts are mock (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/DuasHomeCategories.html",
-      "bytes": 7888
+      "bytes": 7567
     },
     {
       "id": "DuasCategory",
       "stack": "duas",
-      "caption": "الأدعية · one Hisn al-Muslim topic (الموت والمتوفى): chapter title, dua text, book number; a row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026)",
+      "caption": "الأدعية · one category (الموت والمتوفى): the Azkar category card, number and dua text only, no sources (developer 15 Nov 2026); a Hisn row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/DuasCategory.html",
-      "bytes": 10456
+      "bytes": 7688
     },
     {
       "id": "DuasSearch",
       "stack": "duas",
-      "caption": "الأدعية · search: categories first, then duas with their category; mirrors AzkarSearch (ADR 0091) (بانتظار الموافقة)",
+      "caption": "الأدعية · search: categories first, then duas with their category; mirrors AzkarSearch (ADR 0091) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasSearch.html",
-      "bytes": 6450
+      "bytes": 6439
     },
     {
       "id": "DuasHome",
@@ -1124,22 +1124,22 @@
     {
       "id": "DuaQuranDetailNoSource",
       "stack": "duas",
-      "caption": "دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (بانتظار الموافقة)",
+      "caption": "دعاء قرآني · without «المصدر والتفاصيل»; the surah and ayah stay (developer 15 Nov) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaQuranDetailNoSource.html",
-      "bytes": 5264
+      "bytes": 5253
     },
     {
       "id": "DuaHadithDetailNoSource",
       "stack": "duas",
-      "caption": "دعاء نبوي · without sources: no takhrij line, no links, no المرجع or الدرجة, no credit lines (developer 15 Nov) (بانتظار الموافقة)",
+      "caption": "دعاء نبوي · without sources: no takhrij line, no links, no المرجع or الدرجة, no credit lines (developer 15 Nov) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHadithDetailNoSource.html",
-      "bytes": 5903
+      "bytes": 5892
     },
     {
       "id": "DuaQuranDetail",

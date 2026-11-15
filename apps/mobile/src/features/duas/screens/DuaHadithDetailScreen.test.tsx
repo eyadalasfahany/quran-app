@@ -39,7 +39,8 @@ const FIXTURE = {
   total: 1,
 };
 
-const CREDIT_AR = 'المصدر: موسوعة الأحاديث النبوية (HadeethEnc.com) · ١';
+// Every credit, reference and grade text a source would show. None may render on this screen.
+const SOURCE_TEXT = /المصدر|HadeethEnc|المرجع|الدرجة|فتح على|FIXTURE attribution|FIXTURE reference|FIXTURE grade/;
 
 describe('DuaHadithDetailScreen', () => {
   beforeEach(() => {
@@ -60,18 +61,22 @@ describe('DuaHadithDetailScreen', () => {
     expect(screen.queryByText(FIXTURE.title)).toBeNull();
   });
 
-  it('renders the text and the four sections, each with the source credit', async () => {
+  it('renders the text and the meaning and benefits sections', async () => {
     mocked.usePropheticDua.mockReturnValue(FIXTURE);
     await renderUi(<DuaHadithDetailScreen duaKey={FIXTURE.duaKey} />);
     expect(screen.getByText(FIXTURE.hadeeth)).toBeOnTheScreen();
     expect(screen.getByText('المعنى')).toBeOnTheScreen();
     expect(screen.getByText(FIXTURE.explanation)).toBeOnTheScreen();
-    expect(screen.getByText('المرجع')).toBeOnTheScreen();
-    expect(screen.getByText(FIXTURE.reference)).toBeOnTheScreen();
-    expect(screen.getByText('الدرجة')).toBeOnTheScreen();
-    expect(screen.getByText(FIXTURE.grade)).toBeOnTheScreen();
     expect(screen.getByText('الفوائد')).toBeOnTheScreen();
-    expect(screen.getAllByText(CREDIT_AR)).toHaveLength(4);
+  });
+
+  it('shows no reference or grade section, even when the data has them', async () => {
+    mocked.usePropheticDua.mockReturnValue(FIXTURE);
+    await renderUi(<DuaHadithDetailScreen duaKey={FIXTURE.duaKey} />);
+    expect(screen.queryByText('المرجع')).toBeNull();
+    expect(screen.queryByText(FIXTURE.reference)).toBeNull();
+    expect(screen.queryByText('الدرجة')).toBeNull();
+    expect(screen.queryByText(FIXTURE.grade)).toBeNull();
   });
 
   it('shows each hint as its own paragraph within one section', async () => {
@@ -80,20 +85,21 @@ describe('DuaHadithDetailScreen', () => {
     expect(screen.getByText(FIXTURE_HINTS.join('\n\n'))).toBeOnTheScreen();
   });
 
-  it('hides a section whose field is empty', async () => {
-    mocked.usePropheticDua.mockReturnValue({ ...FIXTURE, grade: null, hints: [] });
-    await renderUi(<DuaHadithDetailScreen duaKey={FIXTURE.duaKey} />);
-    expect(screen.queryByText('الدرجة')).toBeNull();
-    expect(screen.queryByText('الفوائد')).toBeNull();
-    expect(screen.getByText('المعنى')).toBeOnTheScreen();
-  });
-
-  it('offers the source link, which is labelled as a link', async () => {
+  it('shows no source text, no narrator line and no source link', async () => {
     mocked.usePropheticDua.mockReturnValue(FIXTURE);
     await renderUi(<DuaHadithDetailScreen duaKey={FIXTURE.duaKey} />);
-    expect(screen.getByRole('link', { name: 'فتح على HadeethEnc.com' })).toBeOnTheScreen();
-    expect(screen.queryByTestId('dua-link-card')).toBeNull();
-    expect(screen.queryByTestId('duas-attribution-line')).toBeNull();
+    expect(screen.queryByText(SOURCE_TEXT)).toBeNull();
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByTestId('dua-source-link')).toBeNull();
+    expect(screen.queryByTestId('dua-hadith-body-attribution')).toBeNull();
+  });
+
+  it('hides a section whose field is empty', async () => {
+    mocked.usePropheticDua.mockReturnValue({ ...FIXTURE, explanation: null, hints: [] });
+    await renderUi(<DuaHadithDetailScreen duaKey={FIXTURE.duaKey} />);
+    expect(screen.queryByText('المعنى')).toBeNull();
+    expect(screen.queryByText('الفوائد')).toBeNull();
+    expect(screen.getByText(FIXTURE.hadeeth)).toBeOnTheScreen();
   });
 
   it('shows the action row, and opens the text size control on its Aa button', async () => {

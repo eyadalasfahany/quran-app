@@ -35,8 +35,18 @@ export { resolveAzkarScope } from './scope-resolver';
 export type { ResolvedAzkarScope } from './scope-resolver';
 export { firstArabicText } from './preview';
 export type { QuranPreviewRef } from './preview';
-export { listHisnDuaEntries, listHisnDuaTopics } from './duas-bridge';
-export type { HisnDuaEntry, HisnDuaTopic } from './duas-bridge';
+export { listHisnDuaEntries, listHisnDuaFavorites, listHisnDuaTopics, searchHisnDuas } from './duas-bridge';
+export type { HisnDuaEntry, HisnDuaFavorite, HisnDuaSearchHit, HisnDuaTopic } from './duas-bridge';
+export {
+  categoryMatchRange,
+  escapeLike,
+  mapMatchToOriginal,
+  matchesCategoryLabel,
+  snippetAround,
+  SNIPPET_CHARS,
+  type MatchRange,
+} from './search';
+export { toggleFavorite as toggleAzkarFavorite } from './favorites-repository';
 export {
   addAzkarRecentSearch,
   clearAzkarRecentSearches,

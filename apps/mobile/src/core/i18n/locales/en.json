@@ -1185,6 +1185,17 @@
       "emptyBody": "Save a dua from the lists to find it here.",
       "browse": "Browse duas"
     },
+    "search": {
+      "placeholder": "Search duas",
+      "back": "Back",
+      "hint": "Search by a word or part of one. Matching categories and duas appear here.",
+      "recentTitle": "Recent searches",
+      "clear": "Clear history",
+      "removeRecent": "Remove {{query}}",
+      "categoriesHeading": "Categories",
+      "duasHeading": "Duas",
+      "noResults": "No matching results"
+    },
     "mine": {
       "title": "My duas",
       "writtenByYou": "Written by you",

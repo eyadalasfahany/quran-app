@@ -3,8 +3,9 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { at, openAzkarContentDb } from '../../../../jest/azkar-test-db';
+import { seedHadithBookFixtures } from '../../../../jest/duas-pack-fixtures';
 import { seedHisnFixture } from '../../../../jest/hisn-dua-fixtures';
-import { listDuaCategories, listDuaCategoryItems, parseDuaCategoryId } from './categories';
+import { hadithBookCategoryId, listDuaCategories, listDuaCategoryItems, parseDuaCategoryId } from './categories';
 
 const DUAS_RESOURCE_ID = 50;
 
@@ -234,6 +235,113 @@ describe('duas categories', () => {
     });
   });
 
+  describe('hadith book categories (ADR 0091 part 4)', () => {
+    it('lists a hadith book after the HadeethEnc groups and before the Hisn topics, in position order', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+      seedHisnFixture(executor);
+
+      expect(listDuaCategories(executor).map((category) => category.id)).toEqual([
+        'quran',
+        'hadeethenc:1',
+        'hadeethenc:3',
+        'hadithbook:bukhari:80',
+        'hadithbook:muslim:48',
+        'hisn:browse-a',
+        'hisn:browse-b',
+      ]);
+    });
+
+    it('names a book by its Arabic title, sources its count from the book, and marks it as a hadith source', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+
+      const bukhari = listDuaCategories(executor).find((category) => category.id === 'hadithbook:bukhari:80');
+
+      expect(bukhari).toEqual({
+        id: 'hadithbook:bukhari:80',
+        kind: 'hadithbook',
+        titleKey: null,
+        title: 'FIXTURE book title 80',
+        count: 2,
+        sourceKind: 'hadith',
+        bookNumber: '80',
+      });
+    });
+
+    it('gives a book with an empty Arabic title no title, so the UI shows the fallback name', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+
+      const muslim = listDuaCategories(executor).find((category) => category.id === 'hadithbook:muslim:48');
+
+      expect(muslim?.title).toBeNull();
+      expect(muslim?.bookNumber).toBe('48');
+    });
+
+    it('hides a book when its collection pack is not installed (nasai, ibnmajah)', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+
+      const ids = listDuaCategories(executor).map((category) => category.id);
+
+      expect(ids.some((id) => id.startsWith('hadithbook:nasai:'))).toBe(false);
+    });
+
+    it('hides a book that is missing from the pack, and a book with no hadith', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+
+      const ids = listDuaCategories(executor).map((category) => category.id);
+
+      expect(ids).not.toContain('hadithbook:muslim:99');
+      expect(ids).not.toContain('hadithbook:muslim:49');
+      expect(ids).not.toContain('hadithbook:bukhari:81');
+    });
+
+    it('lists no hadith book when the duas pack is missing, even with the hadith packs installed', () => {
+      seedHadithBookFixtures(executor);
+
+      expect(listDuaCategories(executor)).toEqual([]);
+    });
+
+    it('lists the hadith of a book as items in book order, each with its stored text', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+
+      expect(listDuaCategoryItems(executor, 'hadithbook:bukhari:80')).toEqual([
+        {
+          kind: 'hadith-entry',
+          slug: 'bukhari',
+          hadithNumber: '80.1',
+          preview: 'FIXTURE hadith text 80.1 with  double  spaces ',
+        },
+        { kind: 'hadith-entry', slug: 'bukhari', hadithNumber: '80.2', preview: 'FIXTURE hadith text 80.2' },
+      ]);
+    });
+
+    it('returns no items for a book that is not listed, or whose pack is missing', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+
+      expect(listDuaCategoryItems(executor, 'hadithbook:bukhari:81')).toEqual([]);
+      expect(listDuaCategoryItems(executor, 'hadithbook:nasai:50')).toEqual([]);
+      expect(listDuaCategoryItems(executor, 'hadithbook:muslim:99')).toEqual([]);
+    });
+
+    it('counts each hadith book as the number of its listed items', () => {
+      seedDuasPack(executor);
+      seedHadithBookFixtures(executor);
+
+      const books = listDuaCategories(executor).filter((category) => category.kind === 'hadithbook');
+
+      expect(books.length).toBeGreaterThan(0);
+      for (const book of books) {
+        expect(book.count).toBe(listDuaCategoryItems(executor, book.id).length);
+      }
+    });
+  });
+
   describe('parseDuaCategoryId', () => {
     it('reads the three id forms and rejects the rest', () => {
       expect(parseDuaCategoryId('quran')).toEqual({ kind: 'quran' });
@@ -242,6 +350,26 @@ describe('duas categories', () => {
       expect(parseDuaCategoryId('hadeethenc:x')).toBeNull();
       expect(parseDuaCategoryId('hisn:')).toBeNull();
       expect(parseDuaCategoryId('session-x')).toBeNull();
+    });
+
+    it('reads a hadith book id with its collection slug and book number', () => {
+      expect(parseDuaCategoryId('hadithbook:bukhari:80')).toEqual({
+        kind: 'hadithbook',
+        collectionSlug: 'bukhari',
+        bookNumber: '80',
+      });
+      expect(parseDuaCategoryId('hadithbook:bukhari')).toBeNull();
+      expect(parseDuaCategoryId('hadithbook::80')).toBeNull();
+      expect(parseDuaCategoryId('hadithbook:Bukhari:80')).toBeNull();
+      expect(parseDuaCategoryId('hadithbook:bukhari:')).toBeNull();
+    });
+
+    it('builds the hadith book id that parses back to the same book', () => {
+      expect(parseDuaCategoryId(hadithBookCategoryId('muslim', '48'))).toEqual({
+        kind: 'hadithbook',
+        collectionSlug: 'muslim',
+        bookNumber: '48',
+      });
     });
   });
 });
