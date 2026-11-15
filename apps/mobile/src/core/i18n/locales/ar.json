@@ -1145,6 +1145,7 @@
     }
   },
   "duas": {
+    "detail": { "progress": "{{current}} من {{total}}" },
     "menu": {
       "caption": "الدعاء",
       "title": "الأدعية",

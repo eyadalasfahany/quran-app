@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { formatHadithNumber } from '@/features/hadith/format';
 
-import type { DuaCategory } from './model';
+import type { DuaCategory, DuaFavoriteCategory } from './model';
 
 /**
  * Labels for a Duas category (ADR 0091): its name and its count. The sources are not shown on Duas screens (developer,
@@ -27,4 +27,22 @@ export function categoryName(category: DuaCategory, t: TFunction, locale: Locale
 /** «٢٨ دعاءً» in the locale's plural form (`duas.home.categoryCount`). Used by a home tile and the category header. */
 export function categoryCountText(count: number, locale: Locale, t: TFunction): string {
   return t('duas.home.categoryCount', { count, number: formatNumber(count, locale) });
+}
+
+/**
+ * The muted category line of a favourite: «من القرآن الكريم» for a Quranic dua, the Duas topic name for a Hisn dua, the
+ * HadeethEnc group title as received for a prophetic dua. Null when the favourite has no category.
+ */
+export function favoriteCategoryName(category: DuaFavoriteCategory | null, t: TFunction): string | null {
+  if (category === null) {
+    return null;
+  }
+  switch (category.kind) {
+    case 'quran':
+      return t('duas.categories.quran');
+    case 'hisn':
+      return t(`azkar.categories.${category.topicId}` as never);
+    case 'hadeethenc':
+      return category.title;
+  }
 }

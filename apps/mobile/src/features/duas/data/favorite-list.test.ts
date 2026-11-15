@@ -52,8 +52,16 @@ describe('listDuaFavoriteList', () => {
       entryKey: 'FIXTURE:entry-1',
       preview: 'FIXTURE text 1 — not a dua',
       quranReference: 'FIXTURE ref 1:2-4',
+      category: { kind: 'hisn', topicId: 'browse-a' },
     });
-    expect(cards[1]).toEqual({ kind: 'quran', duaKey: 'quran:1:1', preview: null, quranReference: 'FIXTURE ref 1:1-1' });
+    expect(cards[1]).toEqual({
+      kind: 'quran',
+      duaKey: 'quran:1:1',
+      preview: null,
+      text: '',
+      quranReference: 'FIXTURE ref 1:1-1',
+      category: { kind: 'quran' },
+    });
   });
 
   it('puts a Duas favourite first when both kinds were saved at the same moment', () => {
@@ -101,6 +109,13 @@ describe('listDuaFavoriteList', () => {
 
   it('shows a HadeethEnc favourite by its title, with no reference', () => {
     const [card] = list([{ duaKey: 'hadeethenc:1', createdAt: 1 }], []);
-    expect(card).toEqual({ kind: 'hadith', duaKey: 'hadeethenc:1', preview: 'FIXTURE title 1', quranReference: null });
+    expect(card).toEqual({
+      kind: 'hadith',
+      duaKey: 'hadeethenc:1',
+      preview: 'FIXTURE title 1',
+      text: null,
+      quranReference: null,
+      category: { kind: 'hadeethenc', title: 'FIXTURE group 1' },
+    });
   });
 });

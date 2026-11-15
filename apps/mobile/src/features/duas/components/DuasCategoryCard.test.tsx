@@ -6,6 +6,8 @@ import { DuasCategoryCard } from './DuasCategoryCard';
 
 // Fixture text only: no dua is written here.
 const PREVIEW = 'FIXTURE preview 1 — not a dua';
+// A placeholder for a verse, never Quran text.
+const QURAN_TEXT = 'FIXTURE verse text — not Quran';
 
 describe('DuasCategoryCard', () => {
   describe('hisn variant', () => {
@@ -14,6 +16,7 @@ describe('DuasCategoryCard', () => {
 
       const preview = screen.getByText(PREVIEW);
       expect(preview.props.numberOfLines).toBe(2);
+      expect(preview.props.ellipsizeMode).toBe('tail');
       expect(flatStyle(preview.props.style)).toMatchObject({ fontSize: 19, lineHeight: 34, textAlign: 'right', writingDirection: 'rtl' });
       expect(screen.getByTestId('duas-category-card-number', { includeHiddenElements: true })).toHaveTextContent('٢');
     });
@@ -73,13 +76,32 @@ describe('DuasCategoryCard', () => {
   });
 
   describe('quran variant', () => {
-    it('shows the reference as the text in the UI font, and no Quran text', async () => {
-      await renderUi(<DuasCategoryCard kind="quran" number={1} onPress={jest.fn()} reference="FIXTURE surah · 1" />);
+    it('shows the stored verse text in the Quran face, never clamped, above a muted reference line', async () => {
+      await renderUi(<DuasCategoryCard kind="quran" number={1} onPress={jest.fn()} reference="FIXTURE surah · 1" text={QURAN_TEXT} />);
 
+      const text = screen.getByTestId('duas-category-card-text');
+      expect(text).toHaveTextContent(QURAN_TEXT);
+      expect(text.props.numberOfLines).toBeUndefined();
+      expect(text.props.ellipsizeMode).toBeUndefined();
       const reference = screen.getByTestId('duas-category-card-reference');
       expect(reference).toHaveTextContent('FIXTURE surah · 1');
-      expect(reference.props.numberOfLines).toBe(2);
+      expect(reference.props.numberOfLines).toBe(1);
+      expect(flatStyle(reference.props.style)).toMatchObject({ color: expect.any(String) });
+      expect(screen.getByRole('button', { name: `١، ${QURAN_TEXT}, FIXTURE surah · 1` })).toBeOnTheScreen();
+    });
+
+    it('shows the reference alone when the verse text is missing', async () => {
+      await renderUi(<DuasCategoryCard kind="quran" number={1} onPress={jest.fn()} reference="FIXTURE surah · 1" text="" />);
+
+      expect(screen.queryByTestId('duas-category-card-text')).toBeNull();
       expect(screen.getByRole('button', { name: '١، FIXTURE surah · 1' })).toBeOnTheScreen();
+    });
+
+    it('uses the Azkar card rhythm: the same padding and minimum height', async () => {
+      await renderUi(<DuasCategoryCard kind="quran" number={1} onPress={jest.fn()} reference="FIXTURE surah · 1" text={QURAN_TEXT} />);
+
+      const card = flatStyle(screen.getByTestId('duas-category-card').props.style);
+      expect(card).toMatchObject({ minHeight: 44, padding: 16 });
     });
 
     it('calls onPress when pressed', async () => {

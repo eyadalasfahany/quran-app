@@ -1,25 +1,32 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { listHisnDuaFavorites, type QuranPreviewRef } from '@/features/azkar/data';
 
-import { getPropheticDua, getQuranicDua } from './content-repository';
+import { getPropheticDua, getPropheticGroupTitle, getQuranicDua, getQuranicDuaText } from './content-repository';
+import type { DuaFavoriteCategory } from './model';
 
 export type DuaFavoriteCard = {
   duaKey: string;
   kind: 'quran' | 'hadith';
-  /** The Arabic title of a prophetic dua. Quranic duas have no text preview. */
+  /** The Arabic title of a prophetic dua. Null for a Quranic dua. */
   preview: string | null;
+  /** The stored verse text of a Quranic dua, never truncated. Null for a prophetic dua. */
+  text: string | null;
   /** «سورة … · …» for a Quranic dua, from `quranReference`. Null for a prophetic dua. */
   quranReference: string | null;
+  /** The muted category line: «من القرآن الكريم» or the HadeethEnc group title. */
+  category: DuaFavoriteCategory | null;
 };
 
 /** A saved Hisn dua (an Azkar favourite whose entry is a Hisn dua, ADR 0091), shown read-only on the favourites list. */
 export type HisnFavoriteCard = {
   kind: 'hisn';
   entryKey: string;
-  /** The first Arabic text of the entry, or null. Never Quran text. */
+  /** The recited text of the entry (never instruction, never Quran text), or null. */
   preview: string | null;
   /** «سورة … · …» of the entry's Quran passages, or null. */
   quranReference: string | null;
+  /** The muted category line: the Duas topic the entry is listed under. */
+  category: DuaFavoriteCategory | null;
 };
 
 /** One row of the favourites list: a Duas favourite or a saved Hisn dua. */
@@ -36,17 +43,29 @@ function resolveDuaFavorite(db: SqlExecutor, duaKey: string, quranReference: Ref
       duaKey,
       kind: 'quran',
       preview: null,
+      text: getQuranicDuaText(db, quran),
       quranReference: quranReference({
         surah: quran.surah,
         verseFrom: quran.verseFrom,
         verseTo: quran.verseTo ?? quran.verseFrom,
       }),
+      category: { kind: 'quran' },
     };
   }
 
   const prophetic = getPropheticDua(db, duaKey);
   if (prophetic !== undefined) {
-    return { duaKey, kind: 'hadith', preview: prophetic.title, quranReference: null };
+    return {
+      duaKey,
+      kind: 'hadith',
+      preview: prophetic.title,
+      text: null,
+      quranReference: null,
+      category: {
+        kind: 'hadeethenc',
+        title: prophetic.groupId === null ? null : getPropheticGroupTitle(db, prophetic.groupId),
+      },
+    };
   }
 
   return undefined;
@@ -54,7 +73,7 @@ function resolveDuaFavorite(db: SqlExecutor, duaKey: string, quranReference: Ref
 
 /**
  * The favourites that still resolve to a dua, in the order given (newest first). A favourite whose row is gone from the
- * content pack is skipped, not deleted. A Quranic dua never carries its verse text here: only its surah and verses.
+ * content pack is skipped, not deleted. A Quranic dua carries its stored verse text and its surah and verses.
  */
 export function listDuaFavoriteCards(
   db: SqlExecutor,
@@ -101,6 +120,7 @@ export function listDuaFavoriteList(
         entryKey: hisn.entryKey,
         preview: hisn.preview,
         quranReference: quranReferences(hisn.quranRefs),
+        category: hisn.topicId === null ? null : { kind: 'hisn', topicId: hisn.topicId },
       },
     });
   }

@@ -4,7 +4,7 @@ import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { at, openAzkarContentDb } from '../../../../jest/azkar-test-db';
 import { HISN_FIXTURE_RESOURCE_ID, seedHisnFixture } from '../../../../jest/hisn-dua-fixtures';
-import { listHisnDuaEntries, listHisnDuaTopics } from './duas-bridge';
+import { listHisnDuaEntries, listHisnDuaFavorites, listHisnDuaTopics } from './duas-bridge';
 
 describe('azkar duas bridge', () => {
   let database: DatabaseSync;
@@ -122,5 +122,105 @@ describe('azkar duas bridge', () => {
 
       expect(at(listHisnDuaEntries(executor, 'browse-a'), 0).chapterTitle).toBeNull();
     });
+  });
+});
+
+/**
+ * Adds one Hisn dua (entry 20, in browse topic `browse-a`, home `duas`) whose steps are given in order: each step is
+ * an item of kind `kind` with one text segment. Every text is a marked placeholder, never a dua.
+ */
+function addHisnDuaWithSteps(executor: SqlExecutor, steps: { kind: 'recitation' | 'instruction'; text: string }[]): void {
+  const resourceId = HISN_FIXTURE_RESOURCE_ID;
+  executor.run(
+    `INSERT INTO azkar_entries (resource_id, id, entry_key, chapter_id, position, source_reference, entry_type, occasion,
+       timing_type, timing_prayer, review_status, source_version, imported_at, home)
+     VALUES (?, 20, 'FIXTURE:entry-20', 1, 9, 'FIXTURE-REF-20', 'invocation', NULL, NULL, NULL, 'sourced', 'fixture', 0, 'duas')`,
+    [resourceId],
+  );
+  executor.run(`INSERT INTO azkar_entry_categories (resource_id, category_id, entry_id, variation_key, position) VALUES (?, 'browse-a', 20, '*', 99)`, [
+    resourceId,
+  ]);
+  steps.forEach((step, index) => {
+    const itemId = 200 + index;
+    executor.run(
+      `INSERT INTO azkar_items (resource_id, id, entry_id, item_key, variation_key, position, kind, required_count)
+       VALUES (?, ?, 20, ?, 'default', ?, ?, NULL)`,
+      [resourceId, itemId, `FIXTURE:item-20-${index}`, index + 1, step.kind],
+    );
+    executor.run(
+      `INSERT INTO azkar_segments (resource_id, item_id, position, kind, text_ar, quran_surah, quran_verse_from, quran_verse_to, text_search)
+       VALUES (?, ?, 1, 'text', ?, NULL, NULL, NULL, NULL)`,
+      [resourceId, itemId, step.text],
+    );
+  });
+}
+
+describe('Hisn card preview from the recited text', () => {
+  let database: DatabaseSync;
+  let executor: SqlExecutor;
+
+  beforeEach(() => {
+    const opened = openAzkarContentDb();
+    database = opened.database;
+    executor = opened.executor;
+    seedHisnFixture(executor);
+  });
+
+  afterEach(() => {
+    database.close();
+  });
+
+  const entry20 = () => listHisnDuaEntries(executor, 'browse-a').find((entry) => entry.entryKey === 'FIXTURE:entry-20');
+
+  it('takes the recited text when the first step is an instruction', () => {
+    addHisnDuaWithSteps(executor, [
+      { kind: 'instruction', text: 'FIXTURE instruction — not a dua' },
+      { kind: 'recitation', text: 'FIXTURE body — not a dua' },
+    ]);
+
+    expect(entry20()?.preview).toBe('FIXTURE body — not a dua');
+  });
+
+  it('skips a short lead-in fragment that ends with a colon and takes the recitation body after it', () => {
+    addHisnDuaWithSteps(executor, [
+      { kind: 'recitation', text: '…ويقول:' },
+      { kind: 'recitation', text: 'FIXTURE body 2 — not a dua' },
+    ]);
+
+    expect(entry20()?.preview).toBe('FIXTURE body 2 — not a dua');
+  });
+
+  it('keeps a long text that happens to end with a colon', () => {
+    const long = 'FIXTURE one two three four five six — not a dua:';
+    addHisnDuaWithSteps(executor, [{ kind: 'recitation', text: long }]);
+
+    expect(entry20()?.preview).toBe(long);
+  });
+
+  it('gives no preview when no recited step has text other than lead-ins', () => {
+    addHisnDuaWithSteps(executor, [
+      { kind: 'instruction', text: 'FIXTURE instruction — not a dua' },
+      { kind: 'recitation', text: 'ويقول:' },
+    ]);
+
+    expect(entry20()?.preview).toBeNull();
+  });
+
+  it('builds the saved favourite preview the same way, with its topic', () => {
+    addHisnDuaWithSteps(executor, [
+      { kind: 'instruction', text: 'FIXTURE instruction — not a dua' },
+      { kind: 'recitation', text: 'FIXTURE body 3 — not a dua' },
+    ]);
+
+    const [favorite] = listHisnDuaFavorites(executor, [{ entryKey: 'FIXTURE:entry-20', createdAt: 1 }]);
+    expect(favorite).toMatchObject({ preview: 'FIXTURE body 3 — not a dua', topicId: 'browse-a' });
+  });
+
+  it('gives a favourite no topic when it is in no browse category', () => {
+    addHisnDuaWithSteps(executor, [{ kind: 'recitation', text: 'FIXTURE body 4 — not a dua' }]);
+    executor.run(`DELETE FROM azkar_entry_categories WHERE resource_id = ? AND entry_id = 20`, [HISN_FIXTURE_RESOURCE_ID]);
+
+    const [favorite] = listHisnDuaFavorites(executor, [{ entryKey: 'FIXTURE:entry-20', createdAt: 1 }]);
+    expect(favorite).toMatchObject({ topicId: null });
   });
 });

@@ -17,8 +17,9 @@ const BOOKMARK = { ios: 'bookmark.fill', android: 'bookmark' } as const;
 const EMPTY_ICON = { ios: 'bookmark', android: 'bookmark' } as const;
 
 /**
- * Saved dhikr (screens/, #AzkarFavorites and #AzkarFavoritesEmpty). Each card opens its entry; the
- * bookmark removes it. An empty list says how to add one and offers the browse screen.
+ * Saved dhikr (screens/, #AzkarFavorites and #AzkarFavoritesEmpty). Each row carries the gold ring, the preview, a
+ * muted occasion line (frame #AzkarFavorites) and the bookmark that removes it. Each card opens its entry. An empty
+ * list says how to add one and offers the browse screen.
  */
 export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { testID?: string }) {
   const { t } = useTranslation();
@@ -53,6 +54,8 @@ export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { te
                       variant="raised"
                     />
                   }
+                  badge="ring"
+                  category={card.occasion === null ? null : t(`azkar.occasions.${card.occasion}` as never)}
                   key={card.entryKey}
                   number={index + 1}
                   onPress={() => router.push(azkarHref.entry(card.entryKey))}
@@ -69,4 +72,3 @@ export function AzkarFavoritesScreen({ testID = 'screen-azkar-favorites' }: { te
     </Screen>
   );
 }
-

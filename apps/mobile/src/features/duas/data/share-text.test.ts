@@ -1,4 +1,4 @@
-import { duaHadithShareText, duaMineShareText, duaQuranShareText } from './share-text';
+import { duaHadithShareText, duaHisnShareText, duaMineShareText, duaQuranShareText } from './share-text';
 
 const VERSE_1 = 'FIXTURE VERSE 1 — not a dua';
 const VERSE_2 = 'FIXTURE VERSE 2 — not a dua';
@@ -42,5 +42,26 @@ describe('duaMineShareText', () => {
   it('is the body exactly as written, with nothing appended', () => {
     const body = `  FIXTURE text 1 — not a dua \n second line  `;
     expect(duaMineShareText(body)).toBe(body);
+  });
+});
+
+describe('duaHisnShareText', () => {
+  const TEXT_1 = 'FIXTURE text 1 — not a dua';
+  const TEXT_2 = 'FIXTURE text 2 — not a dua';
+  const resolve = () => [VERSE_1, VERSE_2];
+
+  it('joins the Arabic segments with one space, with no source line', () => {
+    const items = [{ segments: [{ kind: 'text', textAr: TEXT_1 }] }, { segments: [{ kind: 'text', textAr: TEXT_2 }] }];
+    expect(duaHisnShareText(items as never, resolve as never)).toBe(`${TEXT_1} ${TEXT_2}`);
+  });
+
+  it('wraps a Quran segment in ﴿ ﴾ with its verses joined by one space', () => {
+    const items = [{ segments: [{ kind: 'quran', textAr: null }] }];
+    expect(duaHisnShareText(items as never, resolve as never)).toBe(`﴿${VERSE_1} ${VERSE_2}﴾`);
+  });
+
+  it('leaves out a Quran segment that resolves to no verses', () => {
+    const items = [{ segments: [{ kind: 'quran', textAr: null }, { kind: 'text', textAr: TEXT_1 }] }];
+    expect(duaHisnShareText(items as never, () => [] as never)).toBe(TEXT_1);
   });
 });

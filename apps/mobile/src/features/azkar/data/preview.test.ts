@@ -1,5 +1,5 @@
 import { makeItem, quranSegment, textSegment } from '../../../../jest/azkar-ui-fixtures';
-import { firstArabicText, firstQuranRef, quranRefs } from './preview';
+import { firstArabicText, firstQuranRef, isLeadInFragment, quranRefs, recitationPreview } from './preview';
 
 describe('firstArabicText', () => {
   it('returns the first text segment unaltered', () => {
@@ -58,5 +58,36 @@ describe('quranRefs', () => {
   it('keeps firstQuranRef as the first of them', () => {
     const items = [makeItem({ id: 1, segments: [quranSegment(255), quranSegment(1, 7)] })];
     expect(firstQuranRef(items)).toEqual(quranRefs(items)[0]);
+  });
+});
+
+describe('isLeadInFragment', () => {
+  it.each(['ويقول:', '…ويقول:', 'يقول:', 'FIXTURE lead-in:'])('treats %s as a lead-in', (text) => {
+    expect(isLeadInFragment(text)).toBe(true);
+  });
+
+  it('keeps a body text, and a colon after more than four words', () => {
+    expect(isLeadInFragment('FIXTURE one two three four five:')).toBe(false);
+    expect(isLeadInFragment('نص تجريبي ١ — ليس ذكرًا')).toBe(false);
+  });
+});
+
+describe('recitationPreview', () => {
+  it('ignores instruction and narration steps', () => {
+    const items = [
+      makeItem({ id: 1, kind: 'instruction', segments: [textSegment('نص تجريبي ١ — تعليمات')] }),
+      makeItem({ id: 2, kind: 'narration', segments: [textSegment('نص تجريبي ٢ — رواية')] }),
+      makeItem({ id: 3, kind: 'recitation', segments: [textSegment('نص تجريبي ٣ — ليس ذكرًا', 1, 3)] }),
+    ];
+    expect(recitationPreview(items)).toBe('نص تجريبي ٣ — ليس ذكرًا');
+  });
+
+  it('skips a lead-in fragment and takes the recitation body', () => {
+    const items = [makeItem({ id: 1, kind: 'recitation', segments: [textSegment('ويقول:')] }), makeItem({ id: 2, segments: [textSegment('نص تجريبي ٤ — ليس ذكرًا', 1, 2)] })];
+    expect(recitationPreview(items)).toBe('نص تجريبي ٤ — ليس ذكرًا');
+  });
+
+  it('is null with no recitation text', () => {
+    expect(recitationPreview([makeItem({ kind: 'instruction', segments: [textSegment('نص تجريبي ١ — تعليمات')] })])).toBeNull();
   });
 });

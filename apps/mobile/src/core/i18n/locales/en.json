@@ -1145,6 +1145,7 @@
     }
   },
   "duas": {
+    "detail": { "progress": "{{current}} of {{total}}" },
     "menu": {
       "caption": "Supplication",
       "title": "Duas",

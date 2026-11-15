@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { renderUi } from '../../../../jest/render-ui';
@@ -41,6 +42,61 @@ const FIXTURE = {
 
 // Every credit, reference and grade text a source would show. None may render on this screen.
 const SOURCE_TEXT = /المصدر|HadeethEnc|المرجع|الدرجة|فتح على|FIXTURE attribution|FIXTURE reference|FIXTURE grade/;
+
+describe('DuaHadithDetailScreen inside a Duas category', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mocked.usePropheticDua.mockReturnValue({ ...FIXTURE, index: 45, total: 45 });
+  });
+
+  it('counts within the category, not the whole list (position of the category, not the dua index)', async () => {
+    await renderUi(
+      <DuaHadithDetailScreen
+        duaKey={FIXTURE.duaKey}
+        pager={{ position: 2, total: 41, previousHref: '/duas/category/x/0', nextHref: '/duas/category/x/2' }}
+        title="FIXTURE category — not a dua"
+      />,
+    );
+    expect(screen.getByText('٢ من ٤١')).toBeOnTheScreen();
+    expect(screen.queryByText('٤٥ من ٤٥')).toBeNull();
+  });
+
+  it('titles the top bar with the category name', async () => {
+    await renderUi(
+      <DuaHadithDetailScreen
+        duaKey={FIXTURE.duaKey}
+        pager={{ position: 1, total: 2, previousHref: null, nextHref: '/duas/category/x/1' }}
+        title="FIXTURE category — not a dua"
+      />,
+    );
+    expect(screen.getByText('FIXTURE category — not a dua')).toBeOnTheScreen();
+    expect(screen.queryByText('الأدعية النبوية')).toBeNull();
+  });
+
+  it('pages to the next item of the category, and disables previous on the first', async () => {
+    await renderUi(
+      <DuaHadithDetailScreen
+        duaKey={FIXTURE.duaKey}
+        pager={{ position: 1, total: 2, previousHref: null, nextHref: '/duas/category/x/1' }}
+        title="FIXTURE category — not a dua"
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'السابق' }).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    await press(screen.getByRole('button', { name: 'التالي' }));
+    expect(router.replace).toHaveBeenCalledWith('/duas/category/x/1');
+  });
+
+  it('shows no source text inside a category either', async () => {
+    await renderUi(
+      <DuaHadithDetailScreen
+        duaKey={FIXTURE.duaKey}
+        pager={{ position: 1, total: 2, previousHref: null, nextHref: '/duas/category/x/1' }}
+        title="FIXTURE category — not a dua"
+      />,
+    );
+    expect(screen.queryByText(SOURCE_TEXT)).toBeNull();
+  });
+});
 
 describe('DuaHadithDetailScreen', () => {
   beforeEach(() => {

@@ -10,6 +10,7 @@ import { AzkarScreenHeader } from '@/features/azkar/components/AzkarScreenHeader
 import { toggleAzkarFavorite } from '@/features/azkar/data';
 import { azkarHref } from '@/features/azkar/routes';
 
+import { favoriteCategoryName } from '../data/category-labels';
 import { toggleDuaFavorite } from '../data/favorites-repository';
 import type { DuaFavoriteListCard } from '../data/favorite-cards';
 import { useDuaFavoriteCards } from '../data/hooks';
@@ -19,9 +20,10 @@ const BOOKMARK = { ios: 'bookmark.fill', android: 'bookmark' } as const;
 const EMPTY_ICON = { ios: 'bookmark', android: 'bookmark' } as const;
 
 /**
- * Saved duas (screens/, favourites). Each card opens its dua; the bookmark removes it. A Hisn dua (saved from Azkar)
- * opens its Azkar entry, and its bookmark removes the Azkar favourite. A Quranic card shows its surah and verses, never
- * the verse text. An empty list says how to add one and offers the browse screen.
+ * Saved duas (screens/, #DuasFavorites). Each row is the Azkar favourites row (#AzkarFavorites): the gold ring, the
+ * text, a muted category line, and the bookmark that removes it. A Quranic row shows its verse text in the Quran face
+ * (never truncated) and its reference. A Hisn dua (saved from Azkar) opens its Azkar entry, and its bookmark removes the
+ * Azkar favourite. An empty list says how to add one and offers the browse screen.
  */
 export function DuasFavoritesScreen({ testID = 'screen-duas-favorites' }: { testID?: string }) {
   const { t } = useTranslation();
@@ -55,11 +57,14 @@ export function DuasFavoritesScreen({ testID = 'screen-duas-favorites' }: { test
                       variant="raised"
                     />
                   }
+                  badge="ring"
+                  category={favoriteCategoryName(card.category, t)}
                   key={cardKey(card)}
                   number={index + 1}
                   onPress={() => router.push(openRoute(card))}
                   preview={card.preview}
                   quranReference={card.quranReference}
+                  quranText={card.kind === 'quran' ? card.text : null}
                   requiredCount={null}
                   testID={`dua-favorite-${index + 1}`}
                 />

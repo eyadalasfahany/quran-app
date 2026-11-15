@@ -96,7 +96,7 @@ export function Button({
           testID={testID ? `${testID}-icon` : undefined}
         />
       ) : null}
-      <UiText tone={tone} variant={size === 'small' ? 'caption' : 'headline'} weight={600}>
+      <UiText align="center" tone={tone} variant={size === 'small' ? 'caption' : 'headline'} weight={600}>
         {label}
       </UiText>
     </Pressable>

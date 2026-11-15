@@ -31,6 +31,7 @@ export { IconButton, ICON_BUTTON_SIZE, type IconButtonVariant } from './IconButt
 export { ListRow } from './ListRow';
 export { MedallionOutline } from './MedallionOutline';
 export { NumberMedallion } from './NumberMedallion';
+export { NumberRing } from './NumberRing';
 export { OfflineBanner } from './OfflineBanner';
 export { OnboardingRadioCard } from './OnboardingRadioCard';
 export { OnboardingStepIndicator } from './OnboardingStepIndicator';

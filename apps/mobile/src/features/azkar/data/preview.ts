@@ -15,6 +15,40 @@ export function firstArabicText(items: readonly AzkarItemDetail[]): string | nul
   return null;
 }
 
+/** A lead-in fragment is short and ends with a colon («…ويقول:»), so it introduces the recited text rather than being it. */
+const LEAD_IN_MAX_WORDS = 4;
+
+/** True when `text` is a short lead-in fragment that only introduces the recitation. */
+export function isLeadInFragment(text: string): boolean {
+  const trimmed = text.replace(/^[\s.…]+/, '').trim();
+  if (trimmed.length === 0) {
+    return true;
+  }
+  return /[:：]$/.test(trimmed) && trimmed.split(/\s+/).length <= LEAD_IN_MAX_WORDS;
+}
+
+/**
+ * The card preview of an entry, built from its recited text only. Instruction and narration steps never supply it.
+ * A lead-in fragment is skipped, so the preview is the recitation body that follows it. Text is returned unaltered.
+ */
+export function recitationPreview(items: readonly AzkarItemDetail[]): string | null {
+  for (const item of items) {
+    if (item.kind !== 'recitation') {
+      continue;
+    }
+    for (const segment of item.segments) {
+      if (segment.kind !== 'text' || segment.textAr === null || segment.textAr.length === 0) {
+        continue;
+      }
+      if (isLeadInFragment(segment.textAr)) {
+        continue;
+      }
+      return segment.textAr;
+    }
+  }
+  return null;
+}
+
 /** The surah and verse range of a Quran segment, for a card that opens with a Quran passage. */
 export type QuranPreviewRef = { surah: number; verseFrom: number; verseTo: number };
 

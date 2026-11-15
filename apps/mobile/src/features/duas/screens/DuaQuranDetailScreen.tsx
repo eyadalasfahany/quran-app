@@ -1,7 +1,6 @@
-import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Share, View } from 'react-native';
+import { Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -9,18 +8,21 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { Screen } from '@/shared/ui';
-import { AzkarReaderControls } from '@/features/azkar/components/AzkarReaderControls';
 import { AzkarReaderTopBar } from '@/features/azkar/components/AzkarReaderTopBar';
 import { AzkarTextSizeControl } from '@/features/azkar/components/AzkarTextSizeControl';
 import { useAzkarFontScale } from '@/features/azkar/data/hooks';
 import { getChapter } from '@/features/reader/data/chapters';
 
 import { DuaOpenInMushafButton } from '../components/DuaOpenInMushafButton';
+import { DuaPagerControls } from '../components/DuaPagerControls';
 import { DuaQuranSourceLine } from '../components/DuaQuranSourceLine';
 import { DuaQuranText } from '../components/DuaQuranText';
 import { DuaReaderActions } from '../components/DuaReaderActions';
+import { DuaScrollRegion } from '../components/DuaScrollRegion';
+import { type DuaPager } from '../data/category-pager';
 import { getQuranicDuaVerses, neighbourQuranicDuas } from '../data/content-repository';
 import { useQuranicDua } from '../data/hooks';
+import type { QuranicDuaDetail } from '../data/model';
 import { duaQuranShareText } from '../data/share-text';
 import { verseRangeLabel } from '../data/verse-range';
 import { duasHref, goBackOr } from '../routes';
@@ -36,8 +38,39 @@ function chapterName(surah: number, locale: 'ar' | 'en'): string {
   }
 }
 
-/** Quranic dua detail (screens/, #DuaQuranDetail). */
-export function DuaQuranDetailScreen({ duaKey, testID = 'screen-dua-quran-detail' }: { duaKey: string; testID?: string }) {
+/** The pager of a Quranic dua opened outside a category (search, the list): the whole list, by its neighbours. */
+function listPager(dua: QuranicDuaDetail): DuaPager {
+  let neighbours: { previous: string | null; next: string | null } = { previous: null, next: null };
+  try {
+    const { executor } = openContentDb();
+    neighbours = neighbourQuranicDuas(executor, dua.position);
+  } catch {
+    // No content database: the pager has no neighbours.
+  }
+  return {
+    position: dua.position,
+    total: dua.total,
+    previousHref: neighbours.previous === null ? null : duasHref.quranDetail(neighbours.previous),
+    nextHref: neighbours.next === null ? null : duasHref.quranDetail(neighbours.next),
+  };
+}
+
+/**
+ * Quranic dua detail (screens/, #DuaQuranDetail). Opened from a Duas category, it pages within that category
+ * (`pager`, ADR 0091 decision 11) and is titled with the category's name. Opened from the list or search, it pages
+ * through the whole list.
+ */
+export function DuaQuranDetailScreen({
+  duaKey,
+  pager,
+  title,
+  testID = 'screen-dua-quran-detail',
+}: {
+  duaKey: string;
+  pager?: DuaPager;
+  title?: string;
+  testID?: string;
+}) {
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
@@ -60,40 +93,36 @@ export function DuaQuranDetailScreen({ duaKey, testID = 'screen-dua-quran-detail
     }
   }, [dua]);
 
-  const neighbours = useMemo(() => {
-    if (dua === undefined) {
-      return { previous: null, next: null };
+  const readingPager = useMemo<DuaPager | null>(() => {
+    if (pager !== undefined) {
+      return pager;
     }
+    return dua === undefined ? null : listPager(dua);
+  }, [pager, dua]);
 
-    try {
-      const { executor } = openContentDb();
+  const listTitle = title ?? t('duas.quran.listTitle');
+  const closeFallback = pager === undefined ? duasHref.quranList : duasHref.home;
 
-      return neighbourQuranicDuas(executor, dua.position);
-    } catch {
-      return { previous: null, next: null };
-    }
-  }, [dua]);
-
-  if (dua === undefined) {
+  if (dua === undefined || readingPager === null) {
     return (
       <Screen testID={testID}>
         <ContentColumn gutter={theme.size.gutterHome}>
-          <AzkarReaderTopBar fraction={0} onClose={() => goBackOr(duasHref.quranList)} progressText="" title={t('duas.quran.listTitle')} />
+          <AzkarReaderTopBar fraction={0} onClose={() => goBackOr(closeFallback)} progressText="" title={listTitle} />
         </ContentColumn>
       </Screen>
     );
   }
 
   const progressText = t('duas.quran.progress', {
-    current: formatNumber(dua.position, locale),
-    total: formatNumber(dua.total, locale),
+    current: formatNumber(readingPager.position, locale),
+    total: formatNumber(readingPager.total, locale),
   });
-  const fraction = dua.total === 0 ? 0 : dua.position / dua.total;
-  const title = chapterName(dua.surah, locale);
-  const sourceLine = t('duas.quran.sourceLine', { surah: title, range: verseRangeLabel(dua.verseFrom, dua.verseTo, locale) });
+  const fraction = readingPager.total === 0 ? 0 : readingPager.position / readingPager.total;
+  const surahName = chapterName(dua.surah, locale);
+  const sourceLine = t('duas.quran.sourceLine', { surah: surahName, range: verseRangeLabel(dua.verseFrom, dua.verseTo, locale) });
 
   const onShare = () => {
-    const source = t('duas.quran.shareSource', { surah: title, range: verseRangeLabel(dua.verseFrom, dua.verseTo, locale) });
+    const source = t('duas.quran.shareSource', { surah: surahName, range: verseRangeLabel(dua.verseFrom, dua.verseTo, locale) });
     void Share.share({ message: duaQuranShareText(verses, source) });
   };
 
@@ -103,22 +132,14 @@ export function DuaQuranDetailScreen({ duaKey, testID = 'screen-dua-quran-detail
         <View style={{ flex: 1, paddingBottom: insets.bottom }}>
           <AzkarReaderTopBar
             fraction={fraction}
-            onClose={() => goBackOr(duasHref.quranList)}
+            onClose={() => goBackOr(closeFallback)}
             progressText={progressText}
-            title={t('duas.quran.listTitle')}
+            title={listTitle}
           />
-          <ScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              gap: theme.size.sectionGap,
-              justifyContent: 'center',
-              paddingBottom: theme.space[6],
-              paddingTop: theme.space[4],
-            }}
-          >
+          <DuaScrollRegion contentContainerStyle={{ justifyContent: 'center' }}>
             <DuaQuranText fontScale={fontScale} verses={verses} />
             <DuaQuranSourceLine text={sourceLine} />
-          </ScrollView>
+          </DuaScrollRegion>
           <DuaReaderActions
             duaKey={dua.duaKey}
             onShare={onShare}
@@ -126,14 +147,9 @@ export function DuaQuranDetailScreen({ duaKey, testID = 'screen-dua-quran-detail
             textSizeOpen={textSizeOpen}
           />
           {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
-          <AzkarReaderControls
-            canNext={neighbours.next !== null}
-            canPrevious={neighbours.previous !== null}
-            onNext={() => neighbours.next !== null && router.replace(duasHref.quranDetail(neighbours.next))}
-            onPrevious={() => neighbours.previous !== null && router.replace(duasHref.quranDetail(neighbours.previous))}
-          >
+          <DuaPagerControls pager={readingPager}>
             <DuaOpenInMushafButton label={t('duas.quran.openInMushaf')} surah={dua.surah} verseFrom={dua.verseFrom} />
-          </AzkarReaderControls>
+          </DuaPagerControls>
         </View>
       </ContentColumn>
     </Screen>

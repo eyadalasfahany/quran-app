@@ -85,6 +85,29 @@ export function getQuranicDuaVerses(db: SqlExecutor, dua: Pick<QuranicDuaSummary
   return getVerseRange(db, from, to);
 }
 
+/**
+ * The stored verse text of a Quranic dua, its verses joined with one space, exactly as stored (never trimmed or
+ * re-encoded). Empty when the verses are missing from the content pack.
+ */
+export function getQuranicDuaText(db: SqlExecutor, dua: Pick<QuranicDuaSummary, 'surah' | 'verseFrom' | 'verseTo'>): string {
+  return getQuranicDuaVerses(db, dua)
+    .map((verse) => verse.textUthmani)
+    .join(' ');
+}
+
+/** The title of a HadeethEnc dua group as received, or null when the group or its title is missing. */
+export function getPropheticGroupTitle(db: SqlExecutor, groupId: number): string | null {
+  const resourceId = activeDuasResourceId(db);
+  if (resourceId === -1) {
+    return null;
+  }
+  const row = db.get<{ title: string | null }>(
+    `SELECT title FROM dua_groups WHERE resource_id = ? AND id = ?`,
+    [resourceId, groupId],
+  );
+  return row?.title ?? null;
+}
+
 const PROPHETIC_SELECT = `
   SELECT
     i.dua_key AS duaKey,

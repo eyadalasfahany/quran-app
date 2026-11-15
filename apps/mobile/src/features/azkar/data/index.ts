@@ -33,6 +33,7 @@ export { listFavoriteCards } from './favorite-cards';
 export type { FavoriteCard } from './favorite-cards';
 export { resolveAzkarScope } from './scope-resolver';
 export type { ResolvedAzkarScope } from './scope-resolver';
+export { quranSegmentKey, resolveQuranVerses } from './quran-segments';
 export { firstArabicText } from './preview';
 export type { QuranPreviewRef } from './preview';
 export { listHisnDuaEntries, listHisnDuaFavorites, listHisnDuaTopics, searchHisnDuas } from './duas-bridge';

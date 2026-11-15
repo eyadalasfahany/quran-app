@@ -3,7 +3,7 @@ import { listHisnDuaEntries, listHisnDuaTopics, type QuranPreviewRef } from '@/f
 import { listBookHadith, listBooks } from '@/features/hadith/data';
 
 import { activeDuasResourceId } from './active-resource';
-import { listPropheticDuasInGroup, listQuranicDuas } from './content-repository';
+import { getQuranicDuaText, listPropheticDuasInGroup, listQuranicDuas } from './content-repository';
 import type { DuaCategory, DuaCategoryItem } from './model';
 
 /**
@@ -179,7 +179,7 @@ export function listDuaCategories(db: SqlExecutor): DuaCategory[] {
 
 /**
  * The cards of one category, in the category's order. An unknown or empty category returns []. A Quranic card carries
- * its reference only, never the verse text; a Hisn card carries the Azkar preview and references.
+ * its verse text and reference; a Hisn card carries the recited preview and references.
  */
 export function listDuaCategoryItems(
   db: SqlExecutor,
@@ -196,6 +196,7 @@ export function listDuaCategoryItems(
       return listQuranicDuas(db).map((dua) => ({
         kind: 'quran',
         duaKey: dua.duaKey,
+        text: getQuranicDuaText(db, dua),
         quranReference: quranReference({
           surah: dua.surah,
           verseFrom: dua.verseFrom,

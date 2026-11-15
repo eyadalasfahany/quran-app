@@ -35,8 +35,8 @@ const HADITH_GROUP: DuaCategory = {
 const HISN: DuaCategory = { id: 'hisn:morning', kind: 'hisn', titleKey: 'azkar.categories.morning', title: null, count: 2, sourceKind: 'azkar' };
 
 const QURAN_ITEMS: DuaCategoryItem[] = [
-  { kind: 'quran', duaKey: 'quran:1:1', quranReference: 'FIXTURE surah · ١' },
-  { kind: 'quran', duaKey: 'quran:2:3', quranReference: null },
+  { kind: 'quran', duaKey: 'quran:1:1', quranReference: 'FIXTURE surah · ١', text: 'FIXTURE quran text 1 — not a dua' },
+  { kind: 'quran', duaKey: 'quran:2:3', quranReference: null, text: 'FIXTURE quran text 2 — not a dua' },
 ];
 const HADITH_ITEMS: DuaCategoryItem[] = [{ kind: 'hadith', duaKey: 'hadeethenc:3', preview: 'FIXTURE preview 1 — not a dua' }];
 const HISN_ITEMS: DuaCategoryItem[] = [
@@ -71,20 +71,20 @@ describe('DuasCategoryScreen', () => {
       expect(screen.getByText('دعاءان')).toBeOnTheScreen();
     });
 
-    it('shows one card per dua with its reference as the text, and no Quran text', async () => {
+    it('shows one card per dua with its verse text and reference', async () => {
       setup(QURAN, QURAN_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="quran" />);
 
-      expect(screen.getByRole('button', { name: '١، FIXTURE surah · ١' })).toBeOnTheScreen();
-      expect(screen.getByRole('button', { name: '٢، من القرآن الكريم' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '١، FIXTURE quran text 1 — not a dua, FIXTURE surah · ١' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '٢، FIXTURE quran text 2 — not a dua, من القرآن الكريم' })).toBeOnTheScreen();
     });
 
     it('opens the Quranic detail from a card', async () => {
       setup(QURAN, QURAN_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="quran" />);
 
-      await fireEvent.press(screen.getByRole('button', { name: '١، FIXTURE surah · ١' }));
-      expect(router.push).toHaveBeenCalledWith('/duas/quran/quran%3A1%3A1');
+      await fireEvent.press(screen.getByRole('button', { name: '١، FIXTURE quran text 1 — not a dua, FIXTURE surah · ١' }));
+      expect(router.push).toHaveBeenCalledWith('/duas/category/quran/0');
     });
 
     it('shows no source text on the screen', async () => {
@@ -113,12 +113,12 @@ describe('DuasCategoryScreen', () => {
       expect(screen.getByRole('button', { name: '١، FIXTURE preview 1 — not a dua' })).toBeOnTheScreen();
     });
 
-    it('opens the prophetic detail from a card', async () => {
+    it('opens the prophetic detail from a card, at its position in the category', async () => {
       setup(HADITH_GROUP, HADITH_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="hadeethenc:3" />);
 
       await fireEvent.press(screen.getByRole('button', { name: '١، FIXTURE preview 1 — not a dua' }));
-      expect(router.push).toHaveBeenCalledWith('/duas/hadith/hadeethenc%3A3');
+      expect(router.push).toHaveBeenCalledWith('/duas/category/hadeethenc%3A3/0');
     });
 
     it('shows no source text on the screen', async () => {
@@ -205,12 +205,12 @@ describe('DuasCategoryScreen', () => {
       expect(screen.getByRole('button', { name: '١، FIXTURE preview 2 — not a dua' })).toBeOnTheScreen();
     });
 
-    it('opens the Azkar entry from a card (ADR 0091 §3)', async () => {
+    it('opens the Duas detail for the card, not the Azkar reader (ADR 0091 decision 11)', async () => {
       setup(HISN, HISN_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="hisn:morning" />);
 
       await fireEvent.press(screen.getByRole('button', { name: '١، FIXTURE preview 2 — not a dua' }));
-      expect(router.push).toHaveBeenCalledWith('/azkar/entry/FIXTURE%3Aentry-1');
+      expect(router.push).toHaveBeenCalledWith('/duas/category/hisn%3Amorning/0');
     });
 
     it('shows no source text on the screen, in English either', async () => {

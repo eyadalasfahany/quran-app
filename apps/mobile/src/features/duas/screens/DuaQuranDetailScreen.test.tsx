@@ -1,5 +1,8 @@
 import { screen } from '@testing-library/react-native';
 
+import { router } from 'expo-router';
+
+import { press } from '../../../../jest/azkar-ui-fixtures';
 import { renderUi } from '../../../../jest/render-ui';
 import * as duasHooks from '../data/hooks';
 import { DuaQuranDetailScreen } from './DuaQuranDetailScreen';
@@ -32,6 +35,53 @@ const FIXTURE = {
 
 // Source names and credits. The surah and verse line stays; none of these may render (developer, 15 Nov 2026).
 const SOURCE_TEXT = /المصادر|المصدر|المصدر والتفاصيل|HadeethEnc|حصن المسلم|Hisn|Source|فتح على/;
+
+describe('DuaQuranDetailScreen inside a Duas category', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mocked.useQuranicDua.mockReturnValue({ ...FIXTURE, position: 9, total: 74 });
+  });
+
+  it('counts within the category, not the whole list', async () => {
+    await renderUi(
+      <DuaQuranDetailScreen
+        duaKey={FIXTURE.duaKey}
+        pager={{ position: 1, total: 3, previousHref: null, nextHref: '/duas/category/quran/1' }}
+        title="FIXTURE category — not a dua"
+      />,
+    );
+
+    expect(screen.getByText('١ من ٣')).toBeOnTheScreen();
+    expect(screen.queryByText('٩ من ٧٤')).toBeNull();
+  });
+
+  it('titles the top bar with the category name, and keeps the surah line and the Mushaf button', async () => {
+    await renderUi(
+      <DuaQuranDetailScreen
+        duaKey={FIXTURE.duaKey}
+        pager={{ position: 1, total: 3, previousHref: null, nextHref: '/duas/category/quran/1' }}
+        title="FIXTURE category — not a dua"
+      />,
+    );
+
+    expect(screen.getByText('FIXTURE category — not a dua')).toBeOnTheScreen();
+    expect(screen.getByTestId('dua-quran-source-line')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'فتح في المصحف' })).toBeOnTheScreen();
+  });
+
+  it('pages to the next item of the category from the chip', async () => {
+    await renderUi(
+      <DuaQuranDetailScreen
+        duaKey={FIXTURE.duaKey}
+        pager={{ position: 1, total: 3, previousHref: null, nextHref: '/duas/category/quran/1' }}
+        title="FIXTURE category — not a dua"
+      />,
+    );
+
+    await press(screen.getByRole('button', { name: 'التالي' }));
+    expect(router.replace).toHaveBeenCalledWith('/duas/category/quran/1');
+  });
+});
 
 describe('DuaQuranDetailScreen', () => {
   beforeEach(() => {

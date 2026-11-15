@@ -3,7 +3,7 @@ import { normalizeForSearch } from '@/core/text/normalizeForSearch';
 
 import { activeAzkarResourceId } from './active-resource';
 import { getEntry } from './content-repository';
-import { firstArabicText, quranRefs, type QuranPreviewRef } from './preview';
+import { quranRefs, recitationPreview, type QuranPreviewRef } from './preview';
 import { escapeLike, mapMatchToOriginal, type MatchRange } from './search';
 
 /**
@@ -99,7 +99,7 @@ export function listHisnDuaEntries(db: SqlExecutor, topicId: string): HisnDuaEnt
     entries.push({
       entryKey: link.entryKey,
       chapterTitle: detail.chapter?.titleAr ?? null,
-      preview: firstArabicText(items),
+      preview: recitationPreview(items),
       quranRefs: quranRefs(items),
       bookNumber: detail.entry.sourceReference,
     });
@@ -181,11 +181,13 @@ export type HisnDuaFavorite = {
   createdAt: number;
   /** The chapter's Arabic title, or null. */
   chapterTitle: string | null;
-  /** The first Arabic text segment of the active variation, or null. Never Quran text. */
+  /** The recited text of the active variation (never instruction or narration), or null. Never Quran text. */
   preview: string | null;
   /** Every Quran passage of the entry in order (surah and verses only). */
   quranRefs: QuranPreviewRef[];
   bookNumber: string;
+  /** The first browse topic that holds the entry, in position order: the Duas topic its name comes from. */
+  topicId: string | null;
 };
 
 /**
@@ -205,6 +207,17 @@ export function listHisnDuaFavorites(
       [activeAzkarResourceId(db), entryKey],
     ) !== undefined;
 
+  const firstTopic = (entryId: number) =>
+    db.get<{ topicId: string }>(
+      `SELECT c.id AS topicId
+       FROM azkar_entry_categories ec
+       JOIN azkar_categories c ON c.resource_id = ec.resource_id AND c.id = ec.category_id AND c.kind = 'browse'
+       WHERE ec.resource_id = ? AND ec.entry_id = ?
+       ORDER BY c.position, c.id
+       LIMIT 1`,
+      [activeAzkarResourceId(db), entryId],
+    )?.topicId ?? null;
+
   const cards: HisnDuaFavorite[] = [];
   for (const favorite of favorites) {
     if (!isHisnDua(favorite.entryKey)) {
@@ -218,9 +231,10 @@ export function listHisnDuaFavorites(
       entryKey: favorite.entryKey,
       createdAt: favorite.createdAt,
       chapterTitle: detail.chapter?.titleAr ?? null,
-      preview: firstArabicText(detail.items),
+      preview: recitationPreview(detail.items),
       quranRefs: quranRefs(detail.items),
       bookNumber: detail.entry.sourceReference,
+      topicId: firstTopic(detail.entry.id),
     });
   }
   return cards;

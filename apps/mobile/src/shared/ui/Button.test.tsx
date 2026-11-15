@@ -100,3 +100,11 @@ describe('Button', () => {
     expect(rawColorLiterals('Button.tsx')).toEqual([]);
   });
 });
+
+describe('Button label centring', () => {
+  it.each(locales)('centres the label inside the pill in %s, so an empty-state action reads centred', async (locale) => {
+    const view = await renderUi(<Button label="تصفح" onPress={jest.fn()} testID="button" variant="primary" />, { locale });
+
+    expect(flatStyle(view.getByText('تصفح').props.style)).toMatchObject({ textAlign: 'center' });
+  });
+});

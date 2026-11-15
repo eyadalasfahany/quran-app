@@ -62,10 +62,10 @@ describe('AzkarFavoritesScreen', () => {
     ]);
     await renderUi(<AzkarFavoritesScreen />);
 
-    expect(screen.getByRole('button', { name: `١, ${PREVIEW}` })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: `١, ${PREVIEW}, الصباح` })).toBeOnTheScreen();
     expect(screen.getByTestId('azkar-favorite-2')).toBeOnTheScreen();
 
-    await press(screen.getByRole('button', { name: `١, ${PREVIEW}` }));
+    await press(screen.getByRole('button', { name: `١, ${PREVIEW}, الصباح` }));
     expect(router.push).toHaveBeenLastCalledWith('/azkar/entry/fixture%3Aentry-001');
   });
 

@@ -10,6 +10,8 @@ export const duasHref = {
   hadithDetail: (duaKey: string): Href => `/duas/hadith/${encodeURIComponent(duaKey)}` as Href,
   /** One Duas category page (ADR 0091): ids `quran`, `hadeethenc:<groupId>`, `hisn:<topicId>` or `hadithbook:<slug>:<bookNumber>`. */
   category: (id: string): Href => `/duas/category/${encodeURIComponent(id)}` as Href,
+  /** One dua of a category, by its 0-based position in it (`app/duas/category/[id]/[index]`). Its pager stays in the category. */
+  categoryItem: (categoryId: string, index: number): Href => `/duas/category/${encodeURIComponent(categoryId)}/${index}` as Href,
   favorites: '/duas/favorites' as Href,
   /** Duas search (screens/, #DuasSearch). */
   search: '/duas/search' as Href,

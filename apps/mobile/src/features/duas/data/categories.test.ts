@@ -3,7 +3,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { at, openAzkarContentDb } from '../../../../jest/azkar-test-db';
-import { seedHadithBookFixtures } from '../../../../jest/duas-pack-fixtures';
+import { seedHadithBookFixtures, seedQuranVerseFixtures } from '../../../../jest/duas-pack-fixtures';
 import { seedHisnFixture } from '../../../../jest/hisn-dua-fixtures';
 import { hadithBookCategoryId, listDuaCategories, listDuaCategoryItems, parseDuaCategoryId } from './categories';
 
@@ -170,21 +170,23 @@ describe('duas categories', () => {
   });
 
   describe('listDuaCategoryItems', () => {
-    it('lists the Quranic duas as references only, in Mushaf order', () => {
+    it('lists the Quranic duas with their stored verse text and reference, in Mushaf order', () => {
       seedDuasPack(executor);
+      seedQuranVerseFixtures(executor);
 
       expect(listDuaCategoryItems(executor, 'quran', fakeReference)).toEqual([
-        { kind: 'quran', duaKey: 'quran:1:1', quranReference: 'FIXTURE ref 1:1-1' },
-        { kind: 'quran', duaKey: 'quran:1:2', quranReference: 'FIXTURE ref 1:2-2' },
+        { kind: 'quran', duaKey: 'quran:1:1', text: 'FIXTURE verse 1:1 — not Quran', quranReference: 'FIXTURE ref 1:1-1' },
+        { kind: 'quran', duaKey: 'quran:1:2', text: 'FIXTURE verse 1:2 — not Quran', quranReference: 'FIXTURE ref 1:2-2' },
       ]);
     });
 
-    it('gives a Quranic card no reference when no formatter is passed', () => {
+    it('gives a Quranic card an empty text when its verses are missing, and no reference without a formatter', () => {
       seedDuasPack(executor);
 
       expect(at(listDuaCategoryItems(executor, 'quran'), 0)).toEqual({
         kind: 'quran',
         duaKey: 'quran:1:1',
+        text: '',
         quranReference: null,
       });
     });

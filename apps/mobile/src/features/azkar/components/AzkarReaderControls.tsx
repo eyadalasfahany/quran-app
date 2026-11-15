@@ -39,7 +39,7 @@ export function AzkarReaderControls({
         mirrorInRtl
         onPress={onPrevious}
         testID="azkar-reader-previous"
-        variant="surface"
+        variant="raised"
       />
       <View style={{ alignItems: 'center', flex: 1 }}>{children}</View>
       <IconButton
@@ -49,7 +49,7 @@ export function AzkarReaderControls({
         mirrorInRtl
         onPress={onNext}
         testID="azkar-reader-next"
-        variant="surface"
+        variant="raised"
       />
     </View>
   );

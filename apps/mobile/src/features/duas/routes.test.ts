@@ -25,6 +25,11 @@ describe('duasHref', () => {
     expect(duasHref.category('hisn:browse-a')).toBe('/duas/category/hisn%3Abrowse-a');
   });
 
+  it('builds a category item route from the id and the 0-based position', () => {
+    expect(duasHref.categoryItem('quran', 0)).toBe('/duas/category/quran/0');
+    expect(duasHref.categoryItem('hisn:browse-a', 4)).toBe('/duas/category/hisn%3Abrowse-a/4');
+  });
+
   it('opens the editor with an optional id', () => {
     expect(duasHref.mineEdit()).toBe('/duas/mine/edit');
     expect(duasHref.mineEdit('abc')).toBe('/duas/mine/edit?id=abc');

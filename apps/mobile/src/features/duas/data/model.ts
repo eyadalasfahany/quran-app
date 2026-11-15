@@ -86,12 +86,25 @@ export type HadithDuaItem = {
   preview: string;
 };
 
-/** A Quranic dua card: its surah and verses, never the verse text. */
+/**
+ * A Quranic dua card: the stored verse text in the Quran face (never truncated) and its surah and verses. `text` is
+ * empty when the verses are missing from the pack.
+ */
 export type QuranDuaItem = {
   kind: 'quran';
   duaKey: string;
+  text: string;
   quranReference: string | null;
 };
+
+/**
+ * A favourite's Duas category, for its muted line (the favourites list). A Quranic dua is «من القرآن الكريم», a Hisn
+ * dua its topic, a prophetic dua its HadeethEnc group title as received.
+ */
+export type DuaFavoriteCategory =
+  | { kind: 'quran' }
+  | { kind: 'hisn'; topicId: string }
+  | { kind: 'hadeethenc'; title: string | null };
 
 /** A hadith in a hadith-book category (ADR 0091 part 4). Opens the hadith reader. `preview` is the stored `text_ar`. */
 export type HadithEntryItem = {

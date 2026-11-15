@@ -125,3 +125,17 @@ export function seedHadithBookFixtures(executor: SqlExecutor): void {
     [DUAS_FIXTURE_RESOURCE_ID, DUAS_FIXTURE_RESOURCE_ID, DUAS_FIXTURE_RESOURCE_ID, DUAS_FIXTURE_RESOURCE_ID, DUAS_FIXTURE_RESOURCE_ID],
   );
 }
+
+/**
+ * Two placeholder verses (1:1 and 1:2) for the Quranic dua fixtures, so a card's verse text can be read. The text is a
+ * marked placeholder, never Quran.
+ */
+export function seedQuranVerseFixtures(executor: SqlExecutor): void {
+  for (const verseNumber of [1, 2]) {
+    executor.run(
+      `INSERT INTO verses (id, verse_key, chapter_id, verse_number, juz, hizb, rub_el_hizb, page, sajdah, text_uthmani, text_search)
+       VALUES (?, ?, 1, ?, 1, 1, 1, 1, 'none', ?, 'fixture')`,
+      [verseNumber, `1:${verseNumber}`, verseNumber, `FIXTURE verse 1:${verseNumber} — not Quran`],
+    );
+  }
+}
