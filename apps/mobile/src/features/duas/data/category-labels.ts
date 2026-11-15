@@ -12,13 +12,16 @@ import type { DuaCategory, DuaFavoriteCategory } from './model';
 
 /**
  * The category's name: its i18n name for `quran` and `hisn`, the HadeethEnc group title as received, and for a hadith
- * book its Arabic title, or the hadith feature's «كتاب {n}» when the title is empty (`hadith.untitled.book`).
+ * book its collection name (English in English, Arabic otherwise), or the hadith feature's «كتاب {n}» when the title is empty (`hadith.untitled.book`).
  */
 export function categoryName(category: DuaCategory, t: TFunction, locale: Locale): string {
   if (category.titleKey !== null) {
     return t(category.titleKey as never);
   }
   if (category.kind === 'hadithbook') {
+    if (locale === 'en' && category.titleEn) {
+      return category.titleEn;
+    }
     return category.title ?? t('hadith.untitled.book', { n: formatHadithNumber(category.bookNumber ?? '', locale) });
   }
   return category.title ?? '';

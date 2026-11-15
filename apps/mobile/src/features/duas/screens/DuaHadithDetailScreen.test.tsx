@@ -166,4 +166,14 @@ describe('DuaHadithDetailScreen', () => {
     await press(screen.getByRole('button', { name: 'حجم النص' }));
     expect(screen.getByTestId('azkar-text-size')).toBeOnTheScreen();
   });
+
+  // ADR 0092 decision 3: hadith duas stay text-only. No licensed recording exists, so no play control is drawn.
+  it('draws no play control, no download and no player bar for a hadith dua', async () => {
+    mocked.usePropheticDua.mockReturnValue(FIXTURE);
+    await renderUi(<DuaHadithDetailScreen duaKey={FIXTURE.duaKey} />);
+    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'إيقاف التسجيل مؤقتًا' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'تنزيل التسجيل' })).toBeNull();
+    expect(screen.queryByTestId('azkar-player-bar')).toBeNull();
+  });
 });

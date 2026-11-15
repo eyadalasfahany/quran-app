@@ -38,6 +38,13 @@ export function surahMatch(resourceId: number, chapterId: number): StartMatch {
   };
 }
 
+/** A verse range played from a dua: its tap only. The range is not a list item, so it has no loaded fallback. */
+export function rangeMatch(fromKey: string, toKey: string): StartMatch {
+  return {
+    target: (target) => target.kind === 'range' && target.fromKey === fromKey && target.toKey === toKey,
+  };
+}
+
 /** A recent listen: its tap, or that listen loading. */
 export function listenMatch(resourceId: number, chapterId: number): StartMatch {
   return {

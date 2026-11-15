@@ -14,6 +14,7 @@ import { listDuaCategories, listDuaCategoryItems } from './categories';
 import { listDuaFavoriteList, type DuaFavoriteListCard } from './favorite-cards';
 import { liveDuaFavoritesQuery, liveIsDuaFavoriteQuery, liveMyDuasQuery } from './live-queries';
 import { searchDuas, type DuaSearchResult } from './search';
+import { listDuaTopics, type DuaTopic } from './topics';
 import type { MyDua } from './my-duas-repository';
 import type {
   DuaCategory,
@@ -198,6 +199,21 @@ export function useDuaCategories(): DuaCategory[] {
       readOr<DuaCategory[]>([], () => {
         const { executor } = openContentDb();
         return listDuaCategories(executor);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [revision],
+  );
+}
+
+/** The Duas topics across sources (ADR 0092), in display order. Re-reads when the catalogue changes. */
+export function useDuaTopics(): DuaTopic[] {
+  const revision = useContentRevision();
+
+  return useMemo(
+    () =>
+      readOr<DuaTopic[]>([], () => {
+        const { executor } = openContentDb();
+        return listDuaTopics(executor);
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [revision],

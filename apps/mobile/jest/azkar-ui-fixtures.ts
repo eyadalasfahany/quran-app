@@ -18,6 +18,8 @@ export function textSegment(text: string | null, position = 1, itemId = 1): Azka
     quranSurah: null,
     quranVerseFrom: null,
     quranVerseTo: null,
+    wordFrom: null,
+    wordTo: null,
     textSearch: null,
   };
 }
@@ -32,6 +34,8 @@ export function quranSegment(from: number, to: number | null = null, position = 
     quranSurah: 1,
     quranVerseFrom: from,
     quranVerseTo: to,
+    wordFrom: null,
+    wordTo: null,
     textSearch: null,
   };
 }

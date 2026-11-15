@@ -102,7 +102,9 @@
     "DuaQuranDetail",
     "DuaQuranDetailAudio",
     "DuaQuranDetailNoSource",
+    "DuaQuranDetailNoTimings",
     "DuaQuranDetailPlaying",
+    "DuaQuranDetailStarting",
     "DuasCategory",
     "DuasCategoryQuran",
     "DuasFavorites",
@@ -2558,8 +2560,8 @@
   {
    "id": "DuaHadithDetail",
    "stack": "duas",
-   "caption": "دعاء نبوي · Arabic, rebased on DuaHadithDetailNoSource; no play button (no licensed recording) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء نبوي · Arabic, rebased on DuaHadithDetailNoSource; no play button (no licensed recording) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2632,8 +2634,8 @@
   {
    "id": "DuaHisnDetail",
    "stack": "duas",
-   "caption": "دعاء من حصن المسلم · text only: Azkar reader top bar, the dua text, save / share / Aa, previous and next chips; no counter, no source line (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء من حصن المسلم · text only: Azkar reader top bar, the dua text, save / share / Aa, previous and next chips; no counter, no source line (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2670,8 +2672,8 @@
   {
    "id": "DuaHisnDetailAudio",
    "stack": "duas",
-   "caption": "دعاء من حصن المسلم · with its recording (ADR 0092 decision 3): play and download in the action row (from AzkarReaderAudio), no counter ring (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء من حصن المسلم · with its recording (ADR 0092 decision 3): play and download in the action row (from AzkarReaderAudio), no counter ring (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2706,8 +2708,8 @@
   {
    "id": "DuaHisnDetailAudioOffline",
    "stack": "duas",
-   "caption": "دعاء من حصن المسلم · offline, not downloaded: «غير متاح دون اتصال» pill, no play control (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء من حصن المسلم · offline, not downloaded: «غير متاح دون اتصال» pill, no play control (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2742,8 +2744,8 @@
   {
    "id": "DuaHisnDetailAudioPlaying",
    "stack": "duas",
-   "caption": "دعاء من حصن المسلم · playing: pause in the action row and the Azkar player bar (AzkarPlayerBar) above it; the bar opens AzkarPlayer (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء من حصن المسلم · playing: pause in the action row and the Azkar player bar (AzkarPlayerBar) above it, both kept (developer); the bar opens AzkarPlayer (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2778,8 +2780,8 @@
   {
    "id": "DuaQuranDetail",
    "stack": "duas",
-   "caption": "دعاء قرآني · Arabic, rebased on DuaQuranDetailNoSource (surah · ayah line only) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء قرآني · Arabic, rebased on DuaQuranDetailNoSource (surah · ayah line only) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2816,8 +2818,8 @@
   {
    "id": "DuaQuranDetailAudio",
    "stack": "duas",
-   "caption": "دعاء قرآني · play button «تشغيل» in the action row beside Aa, share and save (ADR 0092 decision 3); «فتح في المصحف» stays in the pager row (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء قرآني · play button «تشغيل» in the action row beside Aa, share and save (ADR 0092 decision 3); «فتح في المصحف» stays in the pager row (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2886,10 +2888,48 @@
    ]
   },
   {
+   "id": "DuaQuranDetailNoTimings",
+   "stack": "duas",
+   "caption": "دعاء قرآني · reciter without ayah timings: «تشغيل» at the disabled opacity (0.45) and the PlayerErrorNotice under the action row (duas.quranPlay.noTimings), in page colours (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaQuranDetailNoTimings",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "DuaQuranDetailNoTimingsDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "DuaQuranDetailNoTimingsEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaQuranDetailNoTimingsEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaQuranDetailNoTimings",
+    "DuaQuranDetailNoTimingsDark",
+    "DuaQuranDetailNoTimingsEnglish"
+   ]
+  },
+  {
    "id": "DuaQuranDetailPlaying",
    "stack": "duas",
-   "caption": "دعاء قرآني · playing with the Quran player: the current ayah in the reader highlight (highlight-active, brand edge), «إيقاف» in the action row, the reader player bar above the actions (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "دعاء قرآني · playing with the Quran player: the current ayah in a plain highlight-active background wash (the app draws it on React Native nested Text, which cannot draw the reader’s rounded box or inset bar), «إيقاف» in the action row, the reader player bar above the actions; both pause controls kept (developer) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2922,9 +2962,47 @@
    ]
   },
   {
+   "id": "DuaQuranDetailStarting",
+   "stack": "duas",
+   "caption": "دعاء قرآني · starting: the play control shows the shared BufferingRing around the pause glyph (busy), as the reader’s play button does while audio loads (بانتظار الموافقة)",
+   "status": "awaiting-approval",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "DuaQuranDetailStarting",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "DuaQuranDetailStartingDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "DuaQuranDetailStartingEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "DuaQuranDetailStartingEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "DuaQuranDetailStarting",
+    "DuaQuranDetailStartingDark",
+    "DuaQuranDetailStartingEnglish"
+   ]
+  },
+  {
    "id": "DuasCategory",
    "stack": "duas",
-   "caption": "الأدعية · one category (الموت والمتوفى): the Azkar category card, number and dua text only, no sources (developer 15 Nov 2026); a Hisn row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026)",
+   "caption": "الأدعية · one category («الجنائز»): the Azkar category card, number and dua text only, no sources; a Hisn row opens DuaHisnDetail (approved 15 Nov 2026)",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -2962,8 +3040,8 @@
   {
    "id": "DuasCategoryQuran",
    "stack": "duas",
-   "caption": "الأدعية · «من القرآن الكريم»: Azkar item cards with the ring badge, the ayah in the Quran face and its surah · ayah line under it (as AzkarCategoryQuranRef) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · «من القرآن الكريم»: Azkar item cards with the ring badge, the ayah in the Quran face and its surah · ayah line under it (as AzkarCategoryQuranRef) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -2998,8 +3076,8 @@
   {
    "id": "DuasFavorites",
    "stack": "duas",
-   "caption": "الأدعية · المفضلة: Azkar favourite cards with the ring badge and the category under the text (from AzkarFavorites) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · المفضلة: Azkar favourite cards with the ring badge and the category under the text (from AzkarFavorites) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3034,8 +3112,8 @@
   {
    "id": "DuasFavoritesEmpty",
    "stack": "duas",
-   "caption": "الأدعية · المفضلة · empty (from AzkarFavoritesEmpty) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · المفضلة · empty (from AzkarFavoritesEmpty) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3070,8 +3148,8 @@
   {
    "id": "DuasHome",
    "stack": "duas",
-   "caption": "الأدعية · on the Azkar home layout (ADR 0092 decision 5): Azkar header, «أدعيتي» card, «التصنيفات» in the Azkar section title and Azkar topic tiles (body 600 name, caption count, 16 pt padding, 88 pt min height, 12 pt gap); first eight categories, «عرض الكل» expands in place; single-name topics from config/azkar_topics.php; no sources card, no Hisn source tiles; counts are mock (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · on the Azkar home layout (ADR 0092 decision 5): Azkar header, «أدعيتي» card, «التصنيفات» in the Azkar section title and Azkar tiles (body 600 name, caption count, 16 pt padding, 88 pt min height, 12 pt gap). Order: «من القرآن الكريم», the five hadith dua books (collection names from config/hadith_titles.php), the HadeethEnc groups (titles as received), then the single-name topics (config/azkar_topics.php); first eight shown, «عرض الكل» expands in place; no sources card, no credit line; counts are mock (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3108,8 +3186,8 @@
   {
    "id": "DuasHomeCategories",
    "stack": "duas",
-   "caption": "الأدعية · «عرض الكل» expanded in place: every category in the Azkar topic tiles, «عرض أقل» collapses; counts are mock (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · «عرض الكل» expanded in place: every category in the Azkar tiles (Quran, hadith books, HadeethEnc groups, topics), «عرض أقل» collapses; counts are mock (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3133,12 +3211,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "DuasHomeCategories",
-     "untranslated": 5
+     "untranslated": 8
     },
     "dark-ltr": {
      "how": "derived",
      "from": "DuasHomeCategories",
-     "untranslated": 5
+     "untranslated": 8
     }
    },
    "frames": [
@@ -3148,8 +3226,8 @@
   {
    "id": "DuasHomeCategoriesExpanded",
    "stack": "duas",
-   "caption": "الأدعية · expanded · 1194 × 834: tab rail with القائمة current, the phone layout in the 640 pt content column (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · expanded · 1194 × 834: tab rail with القائمة current, the phone layout in the 640 pt content column (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "window",
    "fixed": true,
    "drawnSize": "expanded",
@@ -3172,12 +3250,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "DuasHomeCategoriesExpanded",
-     "untranslated": 4
+     "untranslated": 8
     },
     "dark-ltr": {
      "how": "derived",
      "from": "DuasHomeCategoriesExpanded",
-     "untranslated": 4
+     "untranslated": 8
     }
    },
    "frames": [
@@ -3187,8 +3265,8 @@
   {
    "id": "DuasLoading",
    "stack": "duas",
-   "caption": "الأدعية · loading: skeleton of the header, «أدعيتي» card and tiles (from AzkarLoading) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · loading: skeleton of the header, «أدعيتي» card and tiles (from AzkarLoading) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3259,8 +3337,8 @@
   {
    "id": "DuasSearchEmpty",
    "stack": "duas",
-   "caption": "الأدعية · search, empty query: recent searches and the hint (from AzkarSearchEmpty; no scope chips in Duas) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · search, empty query: recent searches and the hint (from AzkarSearchEmpty; no scope chips in Duas) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3295,8 +3373,8 @@
   {
    "id": "DuasSearchNoResults",
    "stack": "duas",
-   "caption": "الأدعية · search, no results: «لا توجد نتائج مطابقة» (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · search, no results: «لا توجد نتائج مطابقة» (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3331,8 +3409,8 @@
   {
    "id": "DuasUnavailable",
    "stack": "duas",
-   "caption": "الأدعية · unavailable (direct route, from AzkarUnavailable) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "الأدعية · unavailable (direct route, from AzkarUnavailable) (approved 15 Nov 2026)",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -3352,12 +3430,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "DuasUnavailable",
-     "untranslated": 1
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "DuasUnavailable",
-     "untranslated": 1
+     "untranslated": 0
     }
    },
    "frames": [

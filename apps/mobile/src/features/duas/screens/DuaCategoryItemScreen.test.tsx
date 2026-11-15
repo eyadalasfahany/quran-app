@@ -20,6 +20,7 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('../data/hooks', () => ({
   useDuaCategories: jest.fn(),
   useDuaCategoryItems: jest.fn(),
+  useDuaTopics: jest.fn(),
 }));
 
 // The three detail screens are stubbed: each echoes the props it is given, so the test checks the dispatch and the pager.
@@ -67,6 +68,7 @@ const QURAN_ITEMS: DuaCategoryItem[] = [
 ];
 
 function setup(category: DuaCategory | undefined, items: DuaCategoryItem[]) {
+  mockedHooks.useDuaTopics.mockReturnValue([]);
   mockedHooks.useDuaCategories.mockReturnValue(category ? [category] : []);
   mockedHooks.useDuaCategoryItems.mockReturnValue(items);
 }
@@ -117,6 +119,15 @@ describe('DuaCategoryItemScreen', () => {
     await renderUi(<DuaCategoryItemScreen categoryId="hisn:morning" index={-1} />);
 
     expect(screen.queryByTestId('stub-hisn')).toBeNull();
+  });
+
+  it('titles a topic page with the topic name, and pages it within the topic', async () => {
+    mockedHooks.useDuaCategories.mockReturnValue([]);
+    mockedHooks.useDuaTopics.mockReturnValue([{ id: 'prayer', count: 3 }]);
+    mockedHooks.useDuaCategoryItems.mockReturnValue(ITEMS);
+    await renderUi(<DuaCategoryItemScreen categoryId="topic:prayer" index={2} />);
+
+    expect(screen.getByTestId('stub-hisn')).toHaveTextContent('FIXTURE:entry-3|3|3|الصلاة');
   });
 
   it('titles the shell with the Duas title for an unknown category', async () => {

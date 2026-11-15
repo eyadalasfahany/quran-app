@@ -48,6 +48,7 @@ describe('ERROR_KEYS', () => {
       'invalid-verse',
       'load-failed',
       'no-reciter',
+      'no-timings',
       'not-found',
       'not-installed',
       'offline',

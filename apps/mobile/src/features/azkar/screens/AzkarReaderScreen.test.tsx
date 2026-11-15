@@ -813,13 +813,31 @@ describe('the reader audio controls', () => {
     expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
   });
 
-  // Play/download in AzkarReaderActions are commented out (developer 4 Nov 2026). Restore when those controls return.
-  it('hides play in the actions row even for a playable recording, and keeps the mini bar gone', async () => {
+  it('shows play in the actions row for a playable recording, and no mini bar', async () => {
     contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
     await renderReader();
     expect(screen.queryByTestId('azkar-player-bar')).toBeNull();
-    expect(screen.queryByTestId('azkar-actions-play')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
+    expect(screen.getByTestId('azkar-actions-play')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'تشغيل التسجيل' })).toBeOnTheScreen();
+  });
+
+  it('starts the unit\'s playback from the actions row play control', async () => {
+    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1 })]);
+    await renderReader();
+    await press(screen.getByRole('button', { name: 'تشغيل التسجيل' }));
+    expect(mockStartPlayback).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows no download control for a recording that does not allow it', async () => {
+    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1, downloadAllowed: false })]);
+    await renderReader();
+    expect(screen.queryByRole('button', { name: 'تنزيل التسجيل' })).toBeNull();
+  });
+
+  it('shows the download control for a downloadable recording', async () => {
+    contentMock.listRecordingsForItems.mockReturnValue([makeRecording({ itemId: 1, downloadAllowed: true })]);
+    await renderReader();
+    expect(screen.getByRole('button', { name: 'تنزيل التسجيل' })).toBeOnTheScreen();
   });
 
   it('shows the offline message, and no play control, when the recording needs the network while offline', async () => {

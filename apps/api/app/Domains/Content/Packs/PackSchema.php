@@ -43,6 +43,7 @@ final class PackSchema
                 self::duaLinks(),
                 self::duaCollectionRefs(),
                 self::duaCollectionBooks(),
+                self::duaTopicLinks(),
             ],
             ResourceGroup::Names => [
                 self::namesLists(),
@@ -274,6 +275,9 @@ final class PackSchema
                 self::integer('quran_surah', nullable: true),
                 self::integer('quran_verse_from', nullable: true),
                 self::integer('quran_verse_to', nullable: true),
+                // ADR 0093: added without a pack version bump (VERSION stays 1). An older app ignores them.
+                self::integer('word_from', nullable: true),
+                self::integer('word_to', nullable: true),
                 self::text('text_search', nullable: true),
             ],
             primaryKey: ['resource_id', 'item_id', 'position'],
@@ -538,6 +542,27 @@ final class PackSchema
                 self::integer('item_id'),
                 self::text('collection_slug'),
                 self::text('hadith_number'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    /**
+     * ADR 0092 decision 2 (step 2b): one reviewed Duas topic per Quranic dua or hadith dua-book chapter. A hadith_chapter
+     * target_key is resolved on the device against the hadith packs; a quran target_key is a key of dua_items.
+     */
+    public static function duaTopicLinks(): PackTable
+    {
+        return new PackTable(
+            name: 'dua_topic_links',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('topic_id'),
+                self::text('target_kind'),
+                self::text('target_key'),
+                self::integer('position'),
             ],
             primaryKey: ['resource_id', 'id'],
             orderBy: ['resource_id', 'id'],

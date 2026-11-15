@@ -37,9 +37,9 @@ it('gives every azkar table the columns of the canonical contract in order', fun
         ->and(array_map(fn ($column): string => $column->name, $table->columns))->toBe($columns);
 })->with([
     'chapters' => ['azkar_chapters', ['resource_id', 'id', 'source_chapter_id', 'number', 'title_ar', 'title_en']],
-    'entries' => ['azkar_entries', ['resource_id', 'id', 'entry_key', 'chapter_id', 'position', 'source_reference', 'entry_type', 'occasion', 'timing_type', 'timing_prayer', 'timing_policy_id', 'review_status', 'source_version', 'imported_at']],
+    'entries' => ['azkar_entries', ['resource_id', 'id', 'entry_key', 'chapter_id', 'position', 'source_reference', 'entry_type', 'occasion', 'timing_type', 'timing_prayer', 'timing_policy_id', 'review_status', 'source_version', 'imported_at', 'home']],
     'items' => ['azkar_items', ['resource_id', 'id', 'entry_id', 'item_key', 'variation_key', 'position', 'kind', 'required_count', 'speaker', 'source_dua_id', 'text_en', 'transliteration', 'source_text_sha256', 'repeat_group', 'repeat_times']],
-    'segments' => ['azkar_segments', ['resource_id', 'item_id', 'position', 'kind', 'text_ar', 'quran_surah', 'quran_verse_from', 'quran_verse_to', 'text_search']],
+    'segments' => ['azkar_segments', ['resource_id', 'item_id', 'position', 'kind', 'text_ar', 'quran_surah', 'quran_verse_from', 'quran_verse_to', 'word_from', 'word_to', 'text_search']],
     'categories' => ['azkar_categories', ['resource_id', 'id', 'kind', 'position', 'occasion', 'progress_period']],
     'entry categories' => ['azkar_entry_categories', ['resource_id', 'category_id', 'entry_id', 'variation_key', 'position']],
     'notes' => ['azkar_notes', ['resource_id', 'id', 'entry_id', 'item_id', 'kind', 'text_ar', 'text_en', 'grader', 'source_type', 'source_name', 'source_reference', 'source_url', 'review_status']],

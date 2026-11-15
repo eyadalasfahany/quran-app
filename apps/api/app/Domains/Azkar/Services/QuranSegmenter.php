@@ -87,8 +87,10 @@ final class QuranSegmenter
      * Segments for an item. The references list holds one entry per span, in span order. An entry is one range, or a list
      * of ranges for a span that runs across surah boundaries; each range becomes its own quran segment.
      *
-     * @param  list<list<array{0: int, 1: int, 2: int|null}>>  $references
-     * @return list<array{position: int, kind: string, text_ar: string|null, quran_surah: int|null, quran_verse_from: int|null, quran_verse_to: int|null, text_search: string|null}>
+     * A range may carry a partial-verse pair as its fourth item (ADR 0093). Its word_from and word_to are null otherwise.
+     *
+     * @param  list<list<array{0: int, 1: int, 2: int|null, 3?: array{0: int|null, 1: int|null}}>>  $references
+     * @return list<array{position: int, kind: string, text_ar: string|null, quran_surah: int|null, quran_verse_from: int|null, quran_verse_to: int|null, word_from: int|null, word_to: int|null, text_search: string|null}>
      *
      * @throws ReligiousTextIntegrityException
      */
@@ -116,6 +118,8 @@ final class QuranSegmenter
                     'quran_surah' => null,
                     'quran_verse_from' => null,
                     'quran_verse_to' => null,
+                    'word_from' => null,
+                    'word_to' => null,
                     'text_search' => $this->normalizer->normalize($piece['text']),
                 ];
 
@@ -126,7 +130,9 @@ final class QuranSegmenter
             $spanIndex++;
             $rebuilt .= self::OPEN.$piece['text'].self::CLOSE;
 
-            foreach ($ranges as [$surah, $verseFrom, $verseTo]) {
+            foreach ($ranges as $range) {
+                [$surah, $verseFrom, $verseTo] = $range;
+                [$wordFrom, $wordTo] = $range[3] ?? [null, null];
                 $segments[] = [
                     'position' => count($segments) + 1,
                     'kind' => 'quran',
@@ -134,6 +140,8 @@ final class QuranSegmenter
                     'quran_surah' => $surah,
                     'quran_verse_from' => $verseFrom,
                     'quran_verse_to' => $verseTo,
+                    'word_from' => $wordFrom,
+                    'word_to' => $wordTo,
                     'text_search' => null,
                 ];
             }

@@ -36,6 +36,7 @@ use App\Domains\Duas\Models\DuaHadith;
 use App\Domains\Duas\Models\DuaItem;
 use App\Domains\Duas\Models\DuaLink;
 use App\Domains\Duas\Models\DuaQuranSpan;
+use App\Domains\Duas\Models\DuaTopicLink;
 use App\Domains\Hadith\Models\HadithBook;
 use App\Domains\Hadith\Models\HadithChapter;
 use App\Domains\Hadith\Models\HadithCollection;
@@ -117,6 +118,8 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
                 ->where('dua_collection_refs.review_status', 'reviewed'),
             'dua_collection_books' => DuaCollectionBook::query()->toBase()
                 ->where('dua_collection_books.resource_id', $resourceId),
+            'dua_topic_links' => DuaTopicLink::query()->toBase()
+                ->where('dua_topic_links.resource_id', $resourceId),
             'names_lists' => NamesList::query()->toBase()
                 ->where('names_lists.resource_id', $resourceId),
             'names' => Name::query()->toBase()

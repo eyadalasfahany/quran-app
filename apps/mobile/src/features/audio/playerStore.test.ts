@@ -297,3 +297,52 @@ describe('the surah-unavailable notice (ADR 0062)', () => {
     expect(usePlayerStore.getState().unavailable).toBeNull();
   });
 });
+
+describe('the verse range of a dua', () => {
+  const range = { chapterId: 2, fromVerseId: 9, toVerseId: 10 };
+
+  beforeEach(() => {
+    usePlayerStore.getState().reset();
+  });
+
+  it('is set and cleared on its own, and starts as none', () => {
+    expect(usePlayerStore.getState().rangePlay).toBeNull();
+
+    usePlayerStore.getState().setRangePlay(range);
+    expect(usePlayerStore.getState().rangePlay).toEqual(range);
+
+    usePlayerStore.getState().clearRangePlay();
+    expect(usePlayerStore.getState().rangePlay).toBeNull();
+  });
+
+  it.each([
+    ['beginLoad', (s: ReturnType<typeof usePlayerStore.getState>) => s.beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 1000 })],
+    ['markStopped', (s: ReturnType<typeof usePlayerStore.getState>) => s.markStopped()],
+    ['markFailed', (s: ReturnType<typeof usePlayerStore.getState>) => s.markFailed('load-failed')],
+    ['markUnavailable', (s: ReturnType<typeof usePlayerStore.getState>) => s.markUnavailable({ reciterId: 30, chapterId: 2 })],
+    ['restore', (s: ReturnType<typeof usePlayerStore.getState>) => s.restore({ reciterId: 30, chapterId: 1, positionMs: 0 })],
+    ['reset', (s: ReturnType<typeof usePlayerStore.getState>) => s.reset()],
+  ])('is cleared by %s', (_name, act) => {
+    usePlayerStore.getState().setRangePlay(range);
+
+    act(usePlayerStore.getState());
+
+    expect(usePlayerStore.getState().rangePlay).toBeNull();
+  });
+
+  it('is kept by a pause, a position change and a highlight change', () => {
+    usePlayerStore.getState().setRangePlay(range);
+
+    usePlayerStore.getState().markPaused();
+    usePlayerStore.getState().setPosition(1000);
+    usePlayerStore.getState().setActive(10, null);
+
+    expect(usePlayerStore.getState().rangePlay).toEqual(range);
+  });
+
+  it('gives a range start the range target kind', () => {
+    usePlayerStore.getState().beginStarting({ kind: 'range', fromKey: '2:2', toKey: '2:3' });
+
+    expect(usePlayerStore.getState().startingTarget).toEqual({ kind: 'range', fromKey: '2:2', toKey: '2:3' });
+  });
+});

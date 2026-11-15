@@ -40,6 +40,13 @@ Each step is one reviewable change. Each step runs the checks for every app it t
 - Step 5 answers (developer): separate listen (no «continue reading», no «Recently listened»), verse highlight only, second tap pauses, no repeat; a reciter without ayah timings disables the button with a hint. Plan: `docs/plans/quran-dua-playback.md`.
 - Step 6 answers (developer): app OTA first, then the API returns the entries; commit the generated word map; pause signs as stored; the developer reviews each range in `partial-verse-segments/words.md`; a non-contiguous quote stays excluded. Plan: `docs/plans/partial-verse-segments.md` (ADR 0093 to accept).
 
+## Developer approval (15 Nov 2026, «complete all and apply all»)
+
+- All step 7 frames approved; their «(بانتظار الموافقة)» marks are removed.
+- Frame choices: keep both pause controls (action row and player bar, as the built Azkar reader has them); DuasCategory title becomes «الجنائز»; the Duas home adds source tiles for the HadeethEnc groups (titles as received) and the five hadith dua books.
+- ADR 0093 (word-range segments) accepted. The proposed word ranges for entries 50, 206, 207, 235 and 236 are applied as `reviewed` («apply all», replacing the earlier choice to review them one by one). A quote that is not one contiguous run of words stays excluded.
+- Build order: step 2b (Duas topics in the pack) with the Duas home; then the other Duas screens and Hisn audio (step 4); Quranic playback (step 5); partial verses (step 6) after step 2b, because both add a `content.db` migration.
+
 ## Step 8 — Release
 - API deploy rebuilds the packs. App: `npx eas-cli fingerprint:compare`, then `eas update --channel production`. Steps 1–4 have no native change. Step 5 or 6 may change it: stop and report if the fingerprint differs.
 

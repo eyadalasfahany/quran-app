@@ -86,6 +86,10 @@ export type AzkarSegment = {
   quranSurah: number | null;
   quranVerseFrom: number | null;
   quranVerseTo: number | null;
+  /** ADR 0093: a word position in `quranVerseFrom` (null = from the start of the verse). */
+  wordFrom: number | null;
+  /** ADR 0093: a word position in the last verse of the segment (null = to its end). Both null = whole verses. */
+  wordTo: number | null;
   textSearch: string | null;
 };
 

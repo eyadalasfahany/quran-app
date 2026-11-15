@@ -25,6 +25,10 @@ final class DuasImportFingerprint
             'collection_books' => $plan->collectionBooks,
         ];
 
+        // ADR 0092 decision 10: the reviewed topic config is part of the content, so a change to it moves the fingerprint.
+        $payload['topics'] = config('duas_topics', []);
+        $payload['topic_links'] = $plan->topicLinks;
+
         return hash('sha256', json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 }

@@ -93,15 +93,15 @@ it('reports a file the server does not answer for, and keeps going', function ()
 });
 
 it('never fetches a track of an excluded entry (config azkar.excluded_entries)', function (): void {
-    // OD-050 is the file of entry 50, which is excluded (ADR 0031 §11, amended 1 Nov 2026).
-    azkarAudioTestManifest(['OD-050.mp3' => SYNC_ONE, 'OD-901.mp3' => SYNC_TWO]);
+    // OD-206 is the file of entry 206, which stays excluded (ADR 0031 §11; ADR 0093 keeps 206 and 207 out).
+    azkarAudioTestManifest(['OD-206.mp3' => SYNC_ONE, 'OD-901.mp3' => SYNC_TWO]);
     Http::fake(['audio.opendua.org/*' => Http::response(SYNC_TWO, 200)]);
 
     $result = app(AzkarAudioSync::class)->run();
 
     expect($result)->toMatchArray(['shipped' => 1, 'written' => 1]);
     Http::assertSent(fn ($request): bool => str_ends_with($request->url(), '/OD-901.mp3'));
-    Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'OD-050'));
+    Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'OD-206'));
 });
 
 it('copies the files from a folder with --from, and still checks each one', function (): void {

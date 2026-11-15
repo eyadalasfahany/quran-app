@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { type RangePlay } from './range-stop';
 import { REPEAT_COUNTS, type RepeatRange, type RepeatRequest } from './repeat';
 
 export const CHAPTER_COUNT = 114;
@@ -16,6 +17,8 @@ export type PlayerErrorCode =
   | 'not-found'
   | 'invalid-chapter'
   | 'invalid-verse'
+  /** A verse range (ADR 0092) needs ayah timings for its ends, and the reciter's file has none that fit. */
+  | 'no-timings'
   /** Not downloaded and the device is offline: the stream cannot start. */
   | 'offline'
   /** Downloaded, but not verified in the last 7 days, and the device is offline (the licence rule). */
@@ -29,7 +32,9 @@ export type PlayTarget =
   | { kind: 'verse'; verseKey: string }
   | { kind: 'reciter'; resourceId: number }
   | { kind: 'surah'; resourceId: number; chapterId: number }
-  | { kind: 'listen'; resourceId: number; chapterId: number };
+  | { kind: 'listen'; resourceId: number; chapterId: number }
+  /** A verse range played from a dua (ADR 0092 decision 3), by its verse keys. */
+  | { kind: 'range'; fromKey: string; toKey: string };
 
 export type PlayerState = {
   reciterId: number | null;
@@ -60,6 +65,11 @@ export type PlayerState = {
    * `surah-unavailable` error; the reader bar reads it (useMiniUnavailable) and it clears with any new load or stop.
    */
   unavailable: { reciterId: number; chapterId: number } | null;
+  /**
+   * The verse range now being played from a dua, or null. Set only by a range play (playVerseRange) and cleared by any
+   * other play, a stop, a failure or a surah change of the player's own (ADR 0092 decision 3). In memory only.
+   */
+  rangePlay: RangePlay | null;
 };
 
 export type LoadRequest = {
@@ -105,6 +115,9 @@ export type PlayerActions = {
   bumpPlayCommand: () => void;
   beginStarting: (target: PlayTarget) => void;
   clearStarting: () => void;
+  /** Marks the play as a verse range. Only the range play calls it, after its load began. */
+  setRangePlay: (range: RangePlay) => void;
+  clearRangePlay: () => void;
 };
 
 export const initialPlayerState: PlayerState = {
@@ -122,6 +135,7 @@ export const initialPlayerState: PlayerState = {
   playCommand: 0,
   startingTarget: null,
   unavailable: null,
+  rangePlay: null,
 };
 
 export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
@@ -138,6 +152,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       activeVerseId: null,
       activeWord: null,
       unavailable: null,
+      rangePlay: null,
     }),
   moveTo: ({ chapterId, durationMs }) =>
     set({
@@ -166,9 +181,18 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       repeat: null,
       startingTarget: null,
       unavailable: null,
+      rangePlay: null,
     }),
   markFailed: (code) =>
-    set({ status: 'error', error: code, activeVerseId: null, activeWord: null, startingTarget: null, unavailable: null }),
+    set({
+      status: 'error',
+      error: code,
+      activeVerseId: null,
+      activeWord: null,
+      startingTarget: null,
+      unavailable: null,
+      rangePlay: null,
+    }),
   markUnavailable: (unavailable) =>
     set({
       status: 'error',
@@ -177,6 +201,7 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       activeVerseId: null,
       activeWord: null,
       startingTarget: null,
+      rangePlay: null,
     }),
   setPosition: (positionMs) => set({ positionMs }),
   setDuration: (durationMs) => set({ durationMs }),
@@ -203,11 +228,14 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()((set) => ({
       activeWord: null,
       repeat: null,
       unavailable: null,
+      rangePlay: null,
     }),
   reset: () => set(initialPlayerState),
   bumpPlayCommand: () => set((state) => ({ playCommand: state.playCommand + 1 })),
   beginStarting: (startingTarget) => set({ startingTarget }),
   clearStarting: () => set({ startingTarget: null }),
+  setRangePlay: (rangePlay) => set({ rangePlay }),
+  clearRangePlay: () => set((state) => (state.rangePlay === null ? state : { rangePlay: null })),
 }));
 
 export function isChapterId(value: unknown): value is number {

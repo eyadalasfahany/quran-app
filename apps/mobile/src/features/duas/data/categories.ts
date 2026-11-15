@@ -1,10 +1,11 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { listHisnDuaEntries, listHisnDuaTopics, type QuranPreviewRef } from '@/features/azkar/data';
-import { listBookHadith, listBooks } from '@/features/hadith/data';
+import { getCollection, listBookHadith, listBooks } from '@/features/hadith/data';
 
 import { activeDuasResourceId } from './active-resource';
 import { getQuranicDuaText, listPropheticDuasInGroup, listQuranicDuas } from './content-repository';
 import type { DuaCategory, DuaCategoryItem } from './model';
+import { listDuaTopicItems } from './topics';
 
 /**
  * Duas categories (ADR 0091). Four kinds, in this order: the Quranic duas (one category), each HadeethEnc dua group
@@ -17,18 +18,29 @@ export const QURAN_DUA_CATEGORY_ID = 'quran';
 const HADEETHENC_PREFIX = 'hadeethenc:';
 const HISN_PREFIX = 'hisn:';
 const HADITH_BOOK_PREFIX = 'hadithbook:';
+const TOPIC_PREFIX = 'topic:';
 const COLLECTION_SLUG_PATTERN = /^[a-z0-9]+$/;
 
 export type ParsedDuaCategoryId =
   | { kind: 'quran' }
   | { kind: 'hadeethenc'; groupId: number }
   | { kind: 'hisn'; topicId: string }
-  | { kind: 'hadithbook'; collectionSlug: string; bookNumber: string };
+  | { kind: 'hadithbook'; collectionSlug: string; bookNumber: string }
+  | { kind: 'topic'; topicId: string };
+
+/** The route id of a Duas topic (ADR 0092 decision 10): `topic:<id>`. */
+export function duaTopicCategoryId(topicId: string): string {
+  return `${TOPIC_PREFIX}${topicId}`;
+}
 
 /** Reads a category id from the route. Returns null for an id no category can have. */
 export function parseDuaCategoryId(id: string): ParsedDuaCategoryId | null {
   if (id === QURAN_DUA_CATEGORY_ID) {
     return { kind: 'quran' };
+  }
+  if (id.startsWith(TOPIC_PREFIX)) {
+    const topicId = id.slice(TOPIC_PREFIX.length);
+    return topicId.length > 0 ? { kind: 'topic', topicId } : null;
   }
   if (id.startsWith(HADEETHENC_PREFIX)) {
     const raw = id.slice(HADEETHENC_PREFIX.length);
@@ -118,14 +130,18 @@ function listHadithBookCategories(db: SqlExecutor): DuaCategory[] {
   const categories: DuaCategory[] = [];
   for (const row of rows) {
     const book = findHadithBook(db, row.collectionSlug, row.bookNumber);
-    if (book === undefined || book.hadithCount < 1) {
+    const collection = getCollection(db, row.collectionSlug);
+    if (book === undefined || collection === undefined || book.hadithCount < 1) {
       continue;
     }
+    // The name is the collection's (Sahih al-Bukhari, Sunan an-Nasa'i…), so two books of one collection never repeat a
+    // name. The same names the hadith feature shows (its collection titles from the hadith pack).
     categories.push({
       id: hadithBookCategoryId(row.collectionSlug, row.bookNumber),
       kind: 'hadithbook',
       titleKey: null,
-      title: book.titleAr === null || book.titleAr.trim() === '' ? null : book.titleAr,
+      title: collection.titleAr === null || collection.titleAr.trim() === '' ? null : collection.titleAr,
+      titleEn: collection.titleEn,
       count: book.hadithCount,
       sourceKind: 'hadith',
       bookNumber: row.bookNumber,
@@ -223,6 +239,9 @@ export function listDuaCategoryItems(
         preview: hadith.textAr,
       }));
     }
+
+    case 'topic':
+      return listDuaTopicItems(db, parsed.topicId, quranReference);
 
     case 'hisn':
       return listHisnDuaEntries(db, parsed.topicId).map((entry) => ({

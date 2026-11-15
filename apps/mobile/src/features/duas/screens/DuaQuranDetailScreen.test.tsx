@@ -21,6 +21,25 @@ jest.mock('../data/hooks', () => ({
   useIsDuaFavorite: jest.fn(() => false),
 }));
 
+// The range play is the player's (ADR 0092 decision 3): the screen gets its state from this mock, not from the player.
+const mockPlay = {
+  state: 'idle' as string,
+  activeVerseId: null as number | null,
+  errorCode: null as string | null,
+  toggle: jest.fn(),
+};
+
+jest.mock('@/features/audio/hooks/useRangePlayback', () => ({
+  useRangePlayback: jest.fn(() => mockPlay),
+}));
+
+// The reader bar is the player's own; the screen only decides when it shows.
+jest.mock('@/features/audio/components/MiniPlayer', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { MiniPlayer: () => React.createElement(Text, { testID: 'mini-player-reader' }, 'FIXTURE reader bar — not a dua') };
+});
+
 const mocked = duasHooks as jest.Mocked<typeof duasHooks>;
 
 // Fixture position only: no Quran text is written here; the verses come from content.db, which the test leaves empty.
@@ -118,5 +137,77 @@ describe('DuaQuranDetailScreen', () => {
 
     expect(screen.getByRole('button', { name: 'إضافة إلى المفضلة' })).toBeOnTheScreen();
     expect(screen.queryByTestId('azkar-text-size')).toBeNull();
+  });
+});
+
+describe('DuaQuranDetailScreen range play', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockPlay.state = 'idle';
+    mockPlay.activeVerseId = null;
+    mockPlay.errorCode = null;
+    mocked.useQuranicDua.mockReturnValue(FIXTURE);
+  });
+
+  it('shows the play control in the action row, labelled تشغيل', async () => {
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    expect(screen.getByRole('button', { name: 'تشغيل' })).toBeOnTheScreen();
+  });
+
+  it('calls the range toggle when the play control is pressed', async () => {
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    await press(screen.getByRole('button', { name: 'تشغيل' }));
+
+    expect(mockPlay.toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows إيقاف and the reader bar while the range plays', async () => {
+    mockPlay.state = 'playing';
+    mockPlay.activeVerseId = 10;
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    expect(screen.getByRole('button', { name: 'إيقاف' })).toBeOnTheScreen();
+    expect(screen.getByTestId('mini-player-reader')).toBeOnTheScreen();
+  });
+
+  it('shows no reader bar while the range is idle', async () => {
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    expect(screen.queryByTestId('mini-player-reader')).toBeNull();
+  });
+
+  it('shows no reader bar while the range is paused', async () => {
+    mockPlay.state = 'paused';
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    expect(screen.queryByTestId('mini-player-reader')).toBeNull();
+  });
+
+  it('shows the player error for a failed play, in the player copy', async () => {
+    mockPlay.state = 'error';
+    mockPlay.errorCode = 'offline';
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    expect(screen.getByTestId('player-error')).toBeOnTheScreen();
+    expect(screen.getByText('غير متاح دون اتصال. حمّل السورة لتسمعها بدون إنترنت.')).toBeOnTheScreen();
+  });
+
+  it('disables the play control and shows the hint when the reciter has no timings', async () => {
+    mockPlay.state = 'unavailable';
+    mockPlay.errorCode = 'no-timings';
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    expect(screen.getByRole('button', { name: 'تشغيل' }).props.accessibilityState).toMatchObject({ disabled: true });
+    expect(screen.getByText('أوقات الآيات غير متوفرة لهذا القارئ.')).toBeOnTheScreen();
+  });
+
+  it('still opens the Mushaf reader at the first verse from the pager row', async () => {
+    await renderUi(<DuaQuranDetailScreen duaKey={FIXTURE.duaKey} />);
+
+    await press(screen.getByRole('button', { name: 'فتح في المصحف' }));
+
+    expect(router.push).toHaveBeenCalledWith('/read/2:1');
   });
 });

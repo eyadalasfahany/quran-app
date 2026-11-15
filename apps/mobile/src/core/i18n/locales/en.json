@@ -1214,6 +1214,8 @@
       "categoriesHeading": "Categories",
       "showAll": "Show all {{number}}",
       "showLess": "Show less",
+      "unavailableTitle": "Duas are not available yet",
+      "unavailableBody": "Content will be available once publishing permission is complete",
       "sourcesLine": "Sources: Quran · Hisn al-Muslim · HadeethEnc (HadeethEnc.com)"
     },
     "favorites": {
@@ -1293,6 +1295,11 @@
       "sourceLine": "{{surah}} · {{range}}",
       "shareSource": "Surah {{surah}} · {{range}}",
       "rowLabel": "{{surah}}, {{ayah}}"
+    },
+    "quranPlay": {
+      "play": "Play",
+      "pause": "Pause",
+      "noTimings": "Ayah timings are not available for this reciter."
     },
     "hadith": {
       "listTitle": "Prophetic duas",

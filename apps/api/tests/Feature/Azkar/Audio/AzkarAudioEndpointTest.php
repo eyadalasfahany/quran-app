@@ -22,10 +22,10 @@ beforeEach(function (): void {
     azkarAudioTestManifest([
         'OD-901.mp3' => ENDPOINT_BYTES,
         'OD-902-1.mp3' => ENDPOINT_BYTES,
-        'OD-050.mp3' => ENDPOINT_BYTES, // an excluded entry: never served, even when the file is on the disk
+        'OD-206.mp3' => ENDPOINT_BYTES, // an excluded entry: never served, even when the file is on the disk
     ]);
     Storage::disk('azkar_audio')->put('0.0.2/OD-901.mp3', ENDPOINT_BYTES);
-    Storage::disk('azkar_audio')->put('0.0.2/OD-050.mp3', ENDPOINT_BYTES);
+    Storage::disk('azkar_audio')->put('0.0.2/OD-206.mp3', ENDPOINT_BYTES);
     $this->withHeaders(['Accept' => 'application/json']);
 });
 
@@ -95,7 +95,7 @@ it('answers 404 problem details for a version other than the pinned one', functi
 
 it('answers 404 for a file name outside the shipped set, for an excluded entry and for a missing file', function (): void {
     $this->get('/api/v1/azkar/audio/0.0.2/OD-999.mp3')->assertNotFound()->assertJsonPath('code', 'not_found');
-    $this->get('/api/v1/azkar/audio/0.0.2/OD-050.mp3')->assertNotFound()->assertJsonPath('code', 'not_found');
+    $this->get('/api/v1/azkar/audio/0.0.2/OD-206.mp3')->assertNotFound()->assertJsonPath('code', 'not_found');
     $this->get('/api/v1/azkar/audio/0.0.2/OD-902-1.mp3')->assertNotFound()->assertJsonPath('code', 'not_found');
 });
 

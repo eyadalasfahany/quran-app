@@ -17,6 +17,7 @@ const messages: Record<PlayerErrorCode, string> = {
   'invalid-verse': ar.player.errors.invalidVerse,
   offline: ar.player.errors.offline,
   'verify-required': ar.player.errors.verifyRequired,
+  'no-timings': ar.duas.quranPlay.noTimings,
 };
 const codes = Object.keys(messages) as PlayerErrorCode[];
 

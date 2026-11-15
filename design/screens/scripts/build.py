@@ -139,6 +139,12 @@ ID_STACK: dict[str, str] = {
     "DuaHisnDetailAudio": "duas",
     "DuaHisnDetailAudioPlaying": "duas",
     "DuaHisnDetailAudioOffline": "duas",
+    "DuaQuranDetailStarting": "duas",
+    "DuaQuranDetailStartingDark": "duas",
+    "DuaQuranDetailStartingEnglish": "duas",
+    "DuaQuranDetailNoTimings": "duas",
+    "DuaQuranDetailNoTimingsDark": "duas",
+    "DuaQuranDetailNoTimingsEnglish": "duas",
 }
 
 STACK_BLURBS = {

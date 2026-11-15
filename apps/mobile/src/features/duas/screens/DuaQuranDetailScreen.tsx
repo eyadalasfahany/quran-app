@@ -11,10 +11,14 @@ import { Screen } from '@/shared/ui';
 import { AzkarReaderTopBar } from '@/features/azkar/components/AzkarReaderTopBar';
 import { AzkarTextSizeControl } from '@/features/azkar/components/AzkarTextSizeControl';
 import { useAzkarFontScale } from '@/features/azkar/data/hooks';
+import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
+import { PlayerErrorNotice } from '@/features/audio/components/PlayerErrorNotice';
+import { useRangePlayback } from '@/features/audio/hooks/useRangePlayback';
 import { getChapter } from '@/features/reader/data/chapters';
 
 import { DuaOpenInMushafButton } from '../components/DuaOpenInMushafButton';
 import { DuaPagerControls } from '../components/DuaPagerControls';
+import { DuaQuranPlayButton } from '../components/DuaQuranPlayButton';
 import { DuaQuranSourceLine } from '../components/DuaQuranSourceLine';
 import { DuaQuranText } from '../components/DuaQuranText';
 import { DuaReaderActions } from '../components/DuaReaderActions';
@@ -78,6 +82,11 @@ export function DuaQuranDetailScreen({
   const dua = useQuranicDua(duaKey);
   const [fontScale, setFontScale] = useAzkarFontScale();
   const [textSizeOpen, setTextSizeOpen] = useState(false);
+  // The dua's verse range, by its first and last verse key (ADR 0092 decision 3). Null until the dua is loaded.
+  const play = useRangePlayback(
+    dua === undefined ? null : `${dua.surah}:${dua.verseFrom}`,
+    dua === undefined ? null : `${dua.surah}:${dua.verseTo ?? dua.verseFrom}`,
+  );
 
   const verses = useMemo(() => {
     if (dua === undefined) {
@@ -87,7 +96,7 @@ export function DuaQuranDetailScreen({
     try {
       const { executor } = openContentDb();
 
-      return getQuranicDuaVerses(executor, dua).map((verse) => verse.textUthmani);
+      return getQuranicDuaVerses(executor, dua).map((verse) => ({ id: verse.id, textUthmani: verse.textUthmani }));
     } catch {
       return [];
     }
@@ -123,7 +132,7 @@ export function DuaQuranDetailScreen({
 
   const onShare = () => {
     const source = t('duas.quran.shareSource', { surah: surahName, range: verseRangeLabel(dua.verseFrom, dua.verseTo, locale) });
-    void Share.share({ message: duaQuranShareText(verses, source) });
+    void Share.share({ message: duaQuranShareText(verses.map((verse) => verse.textUthmani), source) });
   };
 
   return (
@@ -137,15 +146,18 @@ export function DuaQuranDetailScreen({
             title={listTitle}
           />
           <DuaScrollRegion contentContainerStyle={{ justifyContent: 'center' }}>
-            <DuaQuranText fontScale={fontScale} verses={verses} />
+            <DuaQuranText activeVerseId={play.activeVerseId} fontScale={fontScale} verses={verses} />
             <DuaQuranSourceLine text={sourceLine} />
           </DuaScrollRegion>
+          {play.state === 'playing' ? <MiniPlayer variant="reader" /> : null}
           <DuaReaderActions
             duaKey={dua.duaKey}
             onShare={onShare}
             onTextSize={() => setTextSizeOpen((open) => !open)}
+            play={<DuaQuranPlayButton onPress={play.toggle} state={play.state} />}
             textSizeOpen={textSizeOpen}
           />
+          {play.errorCode === null ? null : <PlayerErrorNotice code={play.errorCode} />}
           {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
           <DuaPagerControls pager={readingPager}>
             <DuaOpenInMushafButton label={t('duas.quran.openInMushaf')} surah={dua.surah} verseFrom={dua.verseFrom} />

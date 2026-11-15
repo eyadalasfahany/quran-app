@@ -87,6 +87,23 @@ describe('ReaderActionButtons', () => {
     expect(ids).toEqual(['azkar-share', 'azkar-text-size-toggle']);
   });
 
+  it('draws a trailing action after the text size control, and nothing when it is omitted', async () => {
+    const view = await renderUi(
+      <ReaderActionButtons
+        onShare={jest.fn()}
+        onTextSize={jest.fn()}
+        textSizeOpen={false}
+        testID="fixture-actions"
+        trailingAction={<IconButton icon={{ ios: 'bell', android: 'notifications' }} label="FIXTURE trailing" onPress={jest.fn()} testID="fixture-trail" />}
+      />,
+    );
+    expect(view.getByRole('button', { name: 'FIXTURE trailing' })).toBeOnTheScreen();
+    const ids = view.getByTestId('fixture-actions').children.map((child) =>
+      typeof child === 'object' && child !== null && 'props' in child ? child.props.testID : null,
+    );
+    expect(ids).toEqual(['azkar-share', 'azkar-text-size-toggle', 'fixture-trail']);
+  });
+
   it('uses theme tokens rather than raw colours', () => {
     expect(rawColorLiteralsInFeature('src/features/azkar/components/ReaderActionButtons.tsx')).toEqual([]);
   });

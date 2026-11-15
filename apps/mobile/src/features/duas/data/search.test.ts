@@ -36,10 +36,11 @@ describe('searchDuas', () => {
     seedHadithBookFixtures(executor);
     const labelByTitle = (category: DuaCategory) => category.title ?? category.id;
 
-    const result = searchDuas(executor, 'book title 80', labelByTitle);
+    const result = searchDuas(executor, 'FIXTURE collection', labelByTitle);
 
-    expect(result.categories.map((match) => match.category.id)).toEqual(['hadithbook:bukhari:80']);
-    expect(result.categories[0]?.category.kind).toBe('hadithbook');
+    // Both books of the two installed collections are named after their collection, so the name matches both.
+    expect(result.categories.map((match) => match.category.id)).toEqual(['hadithbook:bukhari:80', 'hadithbook:muslim:48']);
+    expect(result.categories.every((match) => match.category.kind === 'hadithbook')).toBe(true);
   });
 
   it('returns nothing for an empty or blank query', () => {

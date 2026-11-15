@@ -290,6 +290,9 @@ export const azkarSegments = sqliteTable(
     quranVerseFrom: integer('quran_verse_from'),
     quranVerseTo: integer('quran_verse_to'),
     textSearch: text('text_search'),
+    // ADR 0093: word positions of a partial-verse quran segment (null = whole verses). Added by 0019, so after text_search.
+    wordFrom: integer('word_from'),
+    wordTo: integer('word_to'),
   },
   (table) => [primaryKey({ columns: [table.resourceId, table.itemId, table.position] })],
 );
@@ -483,6 +486,24 @@ export const duaCollectionBooks = sqliteTable(
   (table) => [
     primaryKey({ columns: [table.resourceId, table.id] }),
     index('dua_collection_books_position_idx').on(table.resourceId, table.position),
+  ],
+);
+
+/** ADR 0092 decision 10 (step 2b): reviewed Duas topic links, one row per Quranic dua or hadith dua-book chapter. */
+export const duaTopicLinks = sqliteTable(
+  'dua_topic_links',
+  {
+    resourceId: integer('resource_id').notNull(),
+    id: integer('id').notNull(),
+    topicId: text('topic_id').notNull(),
+    targetKind: text('target_kind').notNull(),
+    targetKey: text('target_key').notNull(),
+    position: integer('position').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.resourceId, table.id] }),
+    index('dua_topic_links_target_idx').on(table.resourceId, table.targetKind, table.targetKey),
+    index('dua_topic_links_topic_idx').on(table.resourceId, table.topicId, table.position),
   ],
 );
 

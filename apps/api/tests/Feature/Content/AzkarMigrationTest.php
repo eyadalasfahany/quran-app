@@ -37,7 +37,7 @@ function azkarTableContract(): array
             'uniques' => ['azkar_items_item_key_unique'],
         ],
         'azkar_segments' => [
-            'columns' => ['resource_id', 'item_id', 'position', 'kind', 'text_ar?', 'quran_surah?', 'quran_verse_from?', 'quran_verse_to?', 'text_search?'],
+            'columns' => ['resource_id', 'item_id', 'position', 'kind', 'text_ar?', 'quran_surah?', 'quran_verse_from?', 'quran_verse_to?', 'word_from?', 'word_to?', 'text_search?'],
             'primary' => ['resource_id', 'item_id', 'position'],
             'indexes' => [],
             'uniques' => [],
@@ -109,6 +109,8 @@ it('creates the eight azkar tables with the canonical columns, keys and indexes'
         azkarMigration($name)->up();
     }
 
+    azkarMigration('add_word_range_to_azkar_segments_table')->up();
+
     foreach (azkarTableContract() as $table => $contract) {
         expect(Schema::hasTable($table))->toBeTrue()
             ->and(azkarColumnsOf($table))->toBe($contract['columns']);
@@ -161,7 +163,7 @@ it('drops every azkar table on down and restores it on up', function (): void {
 
     // The later azkar changes (widened imported_at, repeat columns, required_count_source, entry_class and home) are part
     // of the schema too. Without them a later test that imports into azkar_entries or azkar_items fails on a missing column.
-    foreach (['widen_azkar_entries_imported_at', 'add_repeat_columns_to_azkar_items_table', 'add_required_count_source_to_azkar_items_table', 'add_entry_class_and_home_to_azkar_entries_table'] as $name) {
+    foreach (['widen_azkar_entries_imported_at', 'add_repeat_columns_to_azkar_items_table', 'add_required_count_source_to_azkar_items_table', 'add_entry_class_and_home_to_azkar_entries_table', 'add_word_range_to_azkar_segments_table'] as $name) {
         azkarMigration($name)->up();
     }
 

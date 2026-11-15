@@ -212,11 +212,10 @@ return [
     // verses from content.db), so mapping them would show words the dhikr does not quote. Keyed by entry_key; the value
     // is the reason, shown in the import report.
     'excluded_entries' => [
-        'hisn-al-muslim:entry-000050' => 'quran_partial_verse',
+        // ADR 0093 (15 Nov 2026): 50, 235 and 236 are reviewed word ranges and come back. 206 and 207 have no exact word run
+        // (one quoted token is not a Quran word in the word map), so they stay excluded.
         'hisn-al-muslim:entry-000206' => 'quran_partial_verse',
         'hisn-al-muslim:entry-000207' => 'quran_partial_verse',
-        'hisn-al-muslim:entry-000235' => 'quran_partial_verse',
-        'hisn-al-muslim:entry-000236' => 'quran_partial_verse',
     ],
 
     // §7: occasion and timing from each chapter's own title. Chapters not listed keep every field null.

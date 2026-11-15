@@ -1,11 +1,11 @@
-import { playFromVerse } from './player';
+import { playFromVerse, playVerseRange } from './player';
 import { usePlayerStore } from './playerStore';
 import { downloadReciterPack } from './reciter-downloads';
-import { catalogueReciter, playVerse } from './play-verse';
+import { catalogueReciter, playRange, playVerse } from './play-verse';
 import { listReciters } from './data/reciters';
 import { getReciterId, setReciterId } from './settings';
 
-jest.mock('./player', () => ({ playFromVerse: jest.fn(() => Promise.resolve()) }));
+jest.mock('./player', () => ({ playFromVerse: jest.fn(() => Promise.resolve()), playVerseRange: jest.fn(() => Promise.resolve()) }));
 jest.mock('./reciter-downloads', () => ({ downloadReciterPack: jest.fn(() => Promise.resolve(true)) }));
 jest.mock('./settings', () => ({ getReciterId: jest.fn(() => null), setReciterId: jest.fn() }));
 jest.mock('./data/reciters', () => ({ listReciters: jest.fn(() => []) }));
@@ -106,5 +106,57 @@ describe('playVerse', () => {
     await playVerse('2:1');
 
     expect(playFromVerse).toHaveBeenCalledWith('2:1');
+  });
+});
+
+describe('playRange', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (getReciterId as jest.Mock).mockReturnValue(null);
+    usePlayerStore.getState().reset();
+  });
+
+  it('plays the range with the catalogue reciter, saving the choice', async () => {
+    (listReciters as jest.Mock).mockReturnValue([reciter(2, true, true)]);
+
+    await playRange('2:2', '2:3');
+
+    expect(setReciterId).toHaveBeenCalledWith(2);
+    expect(playVerseRange).toHaveBeenCalledWith('2:2', '2:3');
+    expect(downloadReciterPack).not.toHaveBeenCalled();
+  });
+
+  it('records the range as the starting target before the install begins', async () => {
+    (listReciters as jest.Mock).mockReturnValue([reciter(3, false, true)]);
+    let targetDuringInstall: unknown = undefined;
+    (downloadReciterPack as jest.Mock).mockImplementationOnce(() => {
+      targetDuringInstall = usePlayerStore.getState().startingTarget;
+      return Promise.resolve(true);
+    });
+
+    await playRange('2:2', '2:3');
+
+    expect(targetDuringInstall).toEqual({ kind: 'range', fromKey: '2:2', toKey: '2:3' });
+    expect(downloadReciterPack).toHaveBeenCalledWith(3);
+    expect(playVerseRange).toHaveBeenCalledWith('2:2', '2:3');
+  });
+
+  it('does not play when the install fails, and clears the target', async () => {
+    (listReciters as jest.Mock).mockReturnValue([reciter(3, false, true)]);
+    (downloadReciterPack as jest.Mock).mockResolvedValueOnce(false);
+
+    await playRange('2:2', '2:3');
+
+    expect(playVerseRange).not.toHaveBeenCalled();
+    expect(usePlayerStore.getState().startingTarget).toBeNull();
+  });
+
+  it('fails with no reciter in the catalogue, and plays nothing', async () => {
+    (listReciters as jest.Mock).mockReturnValue([]);
+
+    await playRange('2:2', '2:3');
+
+    expect(playVerseRange).not.toHaveBeenCalled();
+    expect(usePlayerStore.getState().error).toBe('no-reciter');
   });
 });

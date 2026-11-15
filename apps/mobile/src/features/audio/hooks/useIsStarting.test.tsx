@@ -8,6 +8,7 @@ import { initialPlayerState, usePlayerStore, type PlayTarget } from '../playerSt
 import {
   isStartingFor,
   listenMatch,
+  rangeMatch,
   reciterMatch,
   surahMatch,
   useIsStarting,
@@ -107,5 +108,19 @@ describe('useIsStarting', () => {
       usePlayerStore.getState().beginStarting(reciter);
     });
     expect(view.getByText('starting')).toBeTruthy();
+  });
+});
+
+describe('rangeMatch', () => {
+  it('matches only its own range start', () => {
+    const match = rangeMatch('2:2', '2:3');
+
+    expect(isStartingFor({ ...idle, startingTarget: { kind: 'range', fromKey: '2:2', toKey: '2:3' } }, match)).toBe(true);
+    expect(isStartingFor({ ...idle, startingTarget: { kind: 'range', fromKey: '2:2', toKey: '2:4' } }, match)).toBe(false);
+    expect(isStartingFor({ ...idle, startingTarget: verse }, match)).toBe(false);
+  });
+
+  it('does not fall back to the loaded surah while loading (a range is not a list item)', () => {
+    expect(isStartingFor({ ...idle, chapterId: 2, reciterId: 7, status: 'loading' }, rangeMatch('2:2', '2:3'))).toBe(false);
   });
 });

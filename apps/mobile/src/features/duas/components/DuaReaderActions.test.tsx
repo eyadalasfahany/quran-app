@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react-native';
+import { Text } from 'react-native';
 
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { renderUi } from '../../../../jest/render-ui';
@@ -57,5 +58,28 @@ describe('DuaReaderActions', () => {
     });
     expect(screen.getByRole('button', { name: 'Share' })).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Add to favourites' })).toBeOnTheScreen();
+  });
+});
+
+describe('DuaReaderActions play slot', () => {
+  it('draws the play control after text size, when a Quranic dua passes one', async () => {
+    await renderUi(
+      <DuaReaderActions
+        duaKey="quran:2:1"
+        onShare={jest.fn()}
+        onTextSize={jest.fn()}
+        play={<Text>FIXTURE play control — not a dua</Text>}
+        textSizeOpen={false}
+      />,
+    );
+
+    expect(screen.getByText('FIXTURE play control — not a dua')).toBeOnTheScreen();
+  });
+
+  it('draws no play control when none is passed, as for a hadith dua', async () => {
+    await renderUi(<DuaReaderActions duaKey="hadeethenc:1" onShare={jest.fn()} onTextSize={jest.fn()} textSizeOpen={false} />);
+
+    expect(screen.queryByRole('button', { name: 'تشغيل' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'إيقاف' })).toBeNull();
   });
 });

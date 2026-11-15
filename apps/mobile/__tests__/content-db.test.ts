@@ -408,6 +408,8 @@ describe('azkar migration (0008)', () => {
       'quran_verse_from',
       'quran_verse_to',
       'text_search',
+      'word_from',
+      'word_to',
     ],
     azkar_categories: ['resource_id', 'id', 'kind', 'position', 'occasion', 'progress_period'],
     azkar_entry_categories: ['resource_id', 'category_id', 'entry_id', 'variation_key', 'position'],

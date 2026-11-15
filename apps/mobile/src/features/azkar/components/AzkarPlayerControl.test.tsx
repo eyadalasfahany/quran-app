@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { renderUi } from '../../../../jest/render-ui';
@@ -27,6 +28,11 @@ describe('AzkarPlayerControl', () => {
   it('is labelled pause while playing', async () => {
     await renderUi(<AzkarPlayerControl onPress={jest.fn()} playing />);
     expect(screen.getByRole('button', { name: 'إيقاف التسجيل مؤقتًا' })).toBeTruthy();
+  });
+
+  it('keeps the play glyph pointing right in Arabic, as in English (ADR 0029)', async () => {
+    await renderUi(<AzkarPlayerControl onPress={jest.fn()} playing={false} />, { locale: 'ar' });
+    expect(StyleSheet.flatten(screen.getByTestId('azkar-player-control-play', hidden).props.style).transform).toBeUndefined();
   });
 
   it('calls onPress when tapped', async () => {

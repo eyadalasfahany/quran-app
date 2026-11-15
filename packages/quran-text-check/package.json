@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit -p .",
     "test": "node --test",
     "check": "node src/cli.ts",
-    "word-map:report": "node src/word-map-cli.ts"
+    "word-map:report": "node src/word-map-cli.ts",
+    "word-map:api": "node src/word-map-json-cli.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5"

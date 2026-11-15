@@ -8,6 +8,7 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
 import { Screen } from '@/shared/ui';
+import { AzkarOfflinePill, AzkarPlayerBar, useAzkarEntryPlayback } from '@/features/azkar';
 import { AzkarReaderTopBar } from '@/features/azkar/components/AzkarReaderTopBar';
 import { AzkarTextSizeControl } from '@/features/azkar/components/AzkarTextSizeControl';
 import {
@@ -29,9 +30,11 @@ import { duaHisnShareText } from '../data/share-text';
 import { duasHref, goBackOr } from '../routes';
 
 /**
- * A Hisn dua in Duas (screens/, #DuaHadithDetail; ADR 0091 decision 11). It shows the Azkar entry's text the way the
- * Azkar reader does, with the same layout as the prophetic dua: no counter, no source line, no details link, no audio.
- * It pages within its Duas category (`pager`). The favourite is the Azkar favourite of the entry.
+ * A Hisn dua in Duas (screens/, #DuaHisnDetailAudio; ADR 0091 decision 11, ADR 0092 decision 3). It shows the Azkar
+ * entry's text the way the Azkar reader does, with no counter, no source line and no details link. It pages within its
+ * Duas category (`pager`). The favourite is the Azkar favourite of the entry. The recording plays through the public
+ * Azkar playback API: download and play sit in the actions row, the player bar shows while it plays, and the offline
+ * pill replaces play when the recording needs the network. An entry with no recording draws none of these.
  */
 export function DuaHisnDetailScreen({
   entryKey,
@@ -63,6 +66,8 @@ export function DuaHisnDetailScreen({
           }),
     [entry, locale],
   );
+
+  const playback = useAzkarEntryPlayback({ entryKey, units, title });
 
   // Quran segments resolve from `verses` once per entry, as the Azkar reader does; nothing here reads SQL per render.
   const quranVerses = useMemo<ReadonlyMap<string, readonly string[]>>(() => {
@@ -117,12 +122,18 @@ export function DuaHisnDetailScreen({
               units={units}
             />
           </DuaScrollRegion>
-          <DuaHisnReaderActions
-            entryKey={entryKey}
-            onShare={onShare}
-            onTextSize={() => setTextSizeOpen((open) => !open)}
-            textSizeOpen={textSizeOpen}
-          />
+          <View style={{ gap: theme.space[3] }}>
+            {playback.bar === null ? null : <AzkarPlayerBar {...playback.bar} testID="dua-hisn-player-bar" />}
+            {playback.offline ? <AzkarOfflinePill testID="dua-hisn-offline" /> : null}
+            <DuaHisnReaderActions
+              entryKey={entryKey}
+              onShare={onShare}
+              onTextSize={() => setTextSizeOpen((open) => !open)}
+              playControl={playback.playControl}
+              recording={playback.recording}
+              textSizeOpen={textSizeOpen}
+            />
+          </View>
           {textSizeOpen ? <AzkarTextSizeControl onChange={setFontScale} value={fontScale} /> : null}
           <DuaPagerControls pager={pager} />
         </View>

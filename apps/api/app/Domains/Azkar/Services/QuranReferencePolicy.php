@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Azkar\Services;
 
+use App\Support\QuranText\QuranWordMap;
+
 /**
  * Decides which rows of the reviewed Quran reference map an import may use (ADR 0031 §4, §11).
  *
@@ -12,8 +14,11 @@ namespace App\Domains\Azkar\Services;
  *   Production blocks it.
  * - `unmatched`: no confident match. Always blocks the entry.
  *
- * A row holds one span's references: [surah, verse_from, verse_to|null, 'status', 'evidence', 'check'?, 'ranges'?].
+ * A row holds one span's references: [surah, verse_from, verse_to|null, 'status', 'evidence', 'check'?, 'ranges'?, 'words'?].
  * `ranges` is present only for a span that runs across surah boundaries, and lists every range in order.
+ * `words` is present only for a partial-verse span (ADR 0093): [word_from|null, word_to|null], positions in the
+ * verse(s) of the row. Both numbers are checked against the word counts of the Quran word map. A row never has both
+ * `words` and `ranges`, and a `words` pair of two nulls is refused (a whole verse has no `words` key).
  */
 final class QuranReferencePolicy
 {
@@ -31,11 +36,15 @@ final class QuranReferencePolicy
 
     public const string DECISION_INVALID = 'invalid';
 
+    public function __construct(
+        private readonly QuranWordMap $words,
+    ) {}
+
     /**
      * Parses one map row. Returns null when the row is malformed. An unmatched row may hold null references, because
      * it carries no range to use.
      *
-     * @return array{surah: int|null, from: int|null, to: int|null, status: string, evidence: string|null, ranges: list<array{0: int, 1: int, 2: int|null}>}|null
+     * @return array{surah: int|null, from: int|null, to: int|null, status: string, evidence: string|null, ranges: list<array{0: int, 1: int, 2: int|null, 3?: array{0: int|null, 1: int|null}}>}|null
      */
     public function parse(mixed $row): ?array
     {
@@ -67,11 +76,25 @@ final class QuranReferencePolicy
         $ranges = [[$surah, $from, $to]];
 
         if (array_key_exists('ranges', $row)) {
+            if (array_key_exists('words', $row)) {
+                return null;
+            }
+
             $ranges = $this->parseRanges($row['ranges']);
 
             if ($ranges === null || $ranges[0] !== [$surah, $from, $to]) {
                 return null;
             }
+        }
+
+        if (array_key_exists('words', $row)) {
+            $words = $this->parseWords($row['words'], $surah, $from, $to);
+
+            if ($words === null) {
+                return null;
+            }
+
+            $ranges = [[$surah, $from, $to, $words]];
         }
 
         return ['surah' => $surah, 'from' => $from, 'to' => $to, 'status' => $status, 'evidence' => $evidence, 'ranges' => $ranges];
@@ -103,6 +126,52 @@ final class QuranReferencePolicy
         }
 
         return $ranges;
+    }
+
+    /**
+     * ADR 0093: a partial-verse pair, checked against the word counts. The first number is a position in the first
+     * verse, the second a position in the last verse of the row (the same verse when `to` is null). A position is a
+     * whole word count; null means the start or the end of that verse. Every verse of the row must be in the map.
+     *
+     * @return array{0: int|null, 1: int|null}|null
+     */
+    private function parseWords(mixed $value, int $surah, int $from, ?int $to): ?array
+    {
+        if (! is_array($value) || ! array_is_list($value) || count($value) !== 2) {
+            return null;
+        }
+
+        [$wordFrom, $wordTo] = $value;
+
+        if ($wordFrom === null && $wordTo === null) {
+            return null;
+        }
+
+        if (($wordFrom !== null && (! is_int($wordFrom) || $wordFrom < 1)) || ($wordTo !== null && (! is_int($wordTo) || $wordTo < 1))) {
+            return null;
+        }
+
+        $lastAyah = $to ?? $from;
+
+        for ($ayah = $from; $ayah <= $lastAyah; $ayah++) {
+            if ($this->words->wordCount($surah, $ayah) === null) {
+                return null;
+            }
+        }
+
+        if ($wordFrom !== null && $wordFrom > (int) $this->words->wordCount($surah, $from)) {
+            return null;
+        }
+
+        if ($wordTo !== null && $wordTo > (int) $this->words->wordCount($surah, $lastAyah)) {
+            return null;
+        }
+
+        if ($to === null && $wordFrom !== null && $wordTo !== null && $wordTo < $wordFrom) {
+            return null;
+        }
+
+        return [$wordFrom, $wordTo];
     }
 
     /**

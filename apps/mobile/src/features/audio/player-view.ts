@@ -37,6 +37,8 @@ export const ERROR_KEYS = {
   'not-found': 'player.errors.notFound',
   'invalid-chapter': 'player.errors.invalidChapter',
   'invalid-verse': 'player.errors.invalidVerse',
+  // A verse range from a dua whose reciter has no timings for its ends (ADR 0092). The copy lives with the dua.
+  'no-timings': 'duas.quranPlay.noTimings',
   offline: 'player.errors.offline',
   'verify-required': 'player.errors.verifyRequired',
 } as const satisfies Record<PlayerErrorCode, string>;

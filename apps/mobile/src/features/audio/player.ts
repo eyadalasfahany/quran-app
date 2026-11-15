@@ -23,7 +23,9 @@ import { upsertRecentListen } from './data/recent-listens';
 import { listReciters, recitationIdForResource } from './data/reciters';
 import { timingsFitAudio, timingsFor, type AyahTiming } from './data/timings';
 import { clampSeek, isChapterId, usePlayerStore, type PlayerErrorCode } from './playerStore';
+import { rangeCheck, type RangeCheck } from './range-availability';
 import { endsEarly, isAyahRecorded, recordedRange, startsLate } from './partial-range';
+import { isRangeInTimings, rangeStopAction, type RangePlay } from './range-stop';
 import { resetRangeNoticeForTests, useRangeNoticeStore } from './range-notice';
 import { resetSkipNoticeForTests, useSkipNoticeStore } from './skip-notice';
 import {
@@ -71,6 +73,8 @@ const STATUS_INTERVAL_MS = 100;
 export const HIGHLIGHT_LAG_MS = 100;
 // Home's recent list (spec §12): the status tick saves the surah at most this often while it plays.
 const LISTEN_SAVE_INTERVAL_MS = 15_000;
+// A surah that ended by itself was within this much of its end on the last tick (ADR 0092 decision 3, surah-end case).
+const NATURAL_END_MS = 1_500;
 
 type Subscription = { remove: () => void };
 
@@ -368,6 +372,10 @@ function dropTimingsThatDoNotFit(chapterId: number, durationMs: number): void {
   trackTimings = { ...trackTimings, timings: [] };
   highlightFloor = null;
   store().setActive(null, null);
+  // A verse range cannot stop at its ends without these timings, so it ends and the surah plays as a surah (ADR 0092).
+  if (store().rangePlay?.chapterId === chapterId) {
+    store().clearRangePlay();
+  }
 }
 
 /** Ends the repeat: the range is forgotten and a seek still in flight is no longer waited for. */
@@ -425,6 +433,22 @@ function applyRepeat(active: Queue, chapterId: number, positionMs: number): void
     console.warn('Repeat seek failed.', error);
     store().markFailed('load-failed');
   });
+}
+
+/**
+ * Ends a verse range at the end of its last ayah (ADR 0092 decision 3). The range waits while a repeat is set: the repeat
+ * ends first, and then the range does. Returns true when it stopped playback.
+ */
+function applyRangeStop(chapterId: number, positionMs: number): boolean {
+  const range = store().rangePlay;
+  if (range === null || range.chapterId !== chapterId || store().repeat !== null || trackTimings?.chapterId !== chapterId) {
+    return false;
+  }
+  if (rangeStopAction(range, trackTimings.timings, positionMs) !== 'stop') {
+    return false;
+  }
+  stopPlayback();
+  return true;
 }
 
 /** Highlights the ayah and word at `positionMs` of the surah now playing. */
@@ -510,6 +534,10 @@ function listenKey(reciterId: number, chapterId: number): string {
  * stops playback.
  */
 function saveListen(reciterId: number, chapterId: number, positionMs: number): void {
+  // A dua's verse range is not a listen for Home's recent list (ADR 0092; developer, 15 Nov 2026).
+  if (store().rangePlay !== null) {
+    return;
+  }
   const now = Date.now();
   lastListenSave = { key: listenKey(reciterId, chapterId), at: now };
   try {
@@ -641,6 +669,16 @@ function onPlaylistStatus(status: AudioPlaylistStatus): void {
   if (current.status === 'playing' && status.playing && status.isLoaded && chapterId !== undefined) {
     applyRepeat(active, chapterId, Math.round(status.currentTime * 1000));
   }
+  if (
+    current.status === 'playing' &&
+    status.playing &&
+    status.isLoaded &&
+    chapterId !== undefined &&
+    pendingSeek === null &&
+    applyRangeStop(chapterId, Math.round(status.currentTime * 1000))
+  ) {
+    return;
+  }
   // While a seek is pending the position is the old one, so it must not be saved as a listen or kept as the last tick.
   // Android allows a foreground service to start only from the foreground, so a load plays before its seek (muted, see
   // loadChapter) while the app is still in front. That pre-play reports playing at the old position, so it must not mark
@@ -694,6 +732,17 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
     return;
   }
   const endedChapter = active.chapterIds[previousIndex];
+  // A verse range of a dua (ADR 0092) whose surah ended by itself ends with it, so the next surah does not play on. A surah
+  // change the person or the system made (lock screen) is not an end: it clears the range below and plays on.
+  const range = before.rangePlay;
+  const endedNaturally =
+    lastTick !== null && lastTick.chapterId === endedChapter && before.durationMs > 0 && lastTick.positionMs >= before.durationMs - NATURAL_END_MS;
+  if (range !== null && !fromUs && endedChapter === range.chapterId && endedNaturally) {
+    loadedChapterId = null;
+    active.playlist.pause();
+    stopPlayback();
+    return;
+  }
   if (lastTick !== null && lastTick.chapterId === endedChapter) {
     saveListen(lastTick.reciterId, lastTick.chapterId, lastTick.positionMs);
   }
@@ -703,6 +752,10 @@ function onTrackChanged({ previousIndex, currentIndex }: { previousIndex: number
   }
   const db = contentDb();
   store().moveTo({ chapterId, durationMs: rowDurationMs(db, active.reciterId, chapterId) });
+  // Any surah change ends a verse range, except the track change of the range's own load (loadChapter sets it).
+  if (!(fromUs && loadTarget === currentIndex)) {
+    store().clearRangePlay();
+  }
   // The playlist moved one index forward on its own while audio plays: any gap was surahs the reciter lacks.
   const playingNow = before.status === 'playing' || before.status === 'loading';
   if (playingNow && currentIndex === previousIndex + 1 && currentIndex !== loadTarget && endedChapter !== undefined) {
@@ -788,7 +841,7 @@ async function loadChapter(
   positionMs: number,
   reciterId: number | null,
   startVerseId?: number,
-  options?: { skippedFrom?: number; repeat?: RepeatRequest; rangeNotice?: 'start' | 'always' },
+  options?: { skippedFrom?: number; repeat?: RepeatRequest; rangeNotice?: 'start' | 'always'; range?: RangePlay },
 ): Promise<void> {
   loadSequence += 1;
   useSkipNoticeStore.getState().clear();
@@ -855,6 +908,10 @@ async function loadChapter(
     active.playlist.muted = positionMs > 0;
     loadedChapterId = chapterId;
     setTrackTimings(db, reciterId, chapterId);
+    // A verse range (ADR 0092) plays as a range only while its ends have timings in this file. Set after the track change.
+    if (options?.range !== undefined && trackTimings !== null && isRangeInTimings(options.range, trackTimings.timings)) {
+      store().setRangePlay(options.range);
+    }
     // Set after the track change, which clears the highlight: the requested ayah is shown at once, not after the first tick.
     if (startVerseId !== undefined) {
       store().setActive(startVerseId, null);
@@ -902,6 +959,7 @@ export function playChapter(chapterId: number, fromMs = 0): Promise<void> {
   return guarded(async () => {
     bumpPlayCommand();
     releaseRepeat();
+    store().clearRangePlay();
     await loadChapter(chapterId, fromMs, currentReciterId(contentDb()), undefined, fromMs === 0 ? { rangeNotice: 'start' } : undefined);
   });
 }
@@ -911,6 +969,7 @@ export function playFromVerse(verseKey: string): Promise<void> {
   return guarded(async () => {
     bumpPlayCommand();
     releaseRepeat();
+    store().clearRangePlay();
     const db = contentDb();
     const verse = getVerseByKey(db, verseKey);
     if (verse === undefined) {
@@ -939,12 +998,64 @@ export function playFromVerse(verseKey: string): Promise<void> {
 }
 
 /**
+ * Plays a dua's verse range from the start of its first ayah, and ends it at the end of its last (ADR 0092 decision 3).
+ * The same lookups and recorded-part check as playFromVerse, applied to both ends. Only this entry passes a range to
+ * loadChapter; any other play clears it.
+ */
+export function playVerseRange(fromKey: string, toKey: string): Promise<void> {
+  return guarded(async () => {
+    bumpPlayCommand();
+    releaseRepeat();
+    store().clearRangePlay();
+    const db = contentDb();
+    const reciterId = currentReciterId(db);
+    const check = rangeCheck(db, reciterId, fromKey, toKey);
+    if (check.code !== 'ok') {
+      failRange(check, db, reciterId, fromKey);
+      return;
+    }
+    const { chapterId, from, to, timings } = check;
+    const timing = timings.find((row) => row.verseId === from.id);
+    await loadChapter(chapterId, timing === undefined ? 0 : ayahSeekStartMs(timing), reciterId, from.id, {
+      range: { chapterId, fromVerseId: from.id, toVerseId: to.id },
+    });
+  });
+}
+
+/** Says why a verse range cannot play, with the player's own error codes. A dua shows the error; no range notice. */
+function failRange(check: Exclude<RangeCheck, { code: 'ok' }>, db: SqlExecutor, reciterId: number | null, fromKey: string): void {
+  switch (check.code) {
+    case 'surah-unavailable': {
+      const verse = getVerseByKey(db, fromKey);
+      if (reciterId !== null && verse !== undefined) {
+        failLookup('surah-unavailable', reciterId, verse.chapterId);
+      }
+      return;
+    }
+    case 'no-reciter':
+      store().markFailed('no-reciter');
+      return;
+    case 'not-installed':
+      store().markFailed('not-installed');
+      return;
+    case 'no-timings':
+      store().markFailed('no-timings');
+      return;
+    case 'not-recorded':
+    case 'invalid':
+      store().markFailed('invalid-verse');
+      return;
+  }
+}
+
+/**
  * Seeks to the start of the ayah before the one being recited. From the first ayah it goes to the last ayah of
  * the surah before, and from the first surah's first ayah it starts again. With no timings for this surah it
  * does what `previousSurah` does.
  */
 export function previousAyah(): Promise<void> {
   return guarded(async () => {
+    store().clearRangePlay();
     const state = store();
     if (state.chapterId === null) {
       return;
@@ -985,6 +1096,7 @@ export function previousAyah(): Promise<void> {
  */
 export function nextAyah(): Promise<void> {
   return guarded(async () => {
+    store().clearRangePlay();
     const state = store();
     if (state.chapterId === null) {
       return;
@@ -1064,7 +1176,7 @@ function ayahToKeep(db: SqlExecutor, chapterId: number, activeVerseId: number | 
 export async function switchReciter(resourceId: number, options?: { autoplay?: boolean }): Promise<SwitchOutcome> {
   setReciterId(resourceId);
   const state = store();
-  const { chapterId, status, repeat } = state;
+  const { chapterId, status, repeat, rangePlay } = state;
   const playing = status === 'playing' || status === 'loading';
   const autoplay = options?.autoplay === true;
   if (chapterId === null || (!playing && status !== 'paused' && !autoplay)) {
@@ -1097,6 +1209,7 @@ export async function switchReciter(resourceId: number, options?: { autoplay?: b
     await loadChapter(chapterId, positionMs, resourceId, verseId, {
       repeat: carried ?? undefined,
       rangeNotice: keptOutside ? 'always' : undefined,
+      range: rangePlay ?? undefined,
     });
     return 'switched';
   }
@@ -1111,6 +1224,10 @@ export async function switchReciter(resourceId: number, options?: { autoplay?: b
   }
   if (carried !== null) {
     setRepeat(carried);
+  }
+  // A verse range carries over too, when the new reciter's timings hold its ends.
+  if (rangePlay !== null && trackTimings !== null && isRangeInTimings(rangePlay, trackTimings.timings)) {
+    store().setRangePlay(rangePlay);
   }
   return 'switched';
 }
@@ -1165,7 +1282,7 @@ export function resume(): Promise<void> {
       store().markPlaying();
       return;
     }
-    await loadChapter(state.chapterId, state.positionMs, reciterFor(state));
+    await loadChapter(state.chapterId, state.positionMs, reciterFor(state), undefined, { range: state.rangePlay ?? undefined });
   });
 }
 
@@ -1190,6 +1307,7 @@ export function seek(positionMs: number): void {
 
 export function nextSurah(): Promise<void> {
   return guarded(async () => {
+    store().clearRangePlay();
     const state = store();
     if (state.chapterId === null) {
       return;
@@ -1224,6 +1342,7 @@ export function nextSurah(): Promise<void> {
 
 export function previousSurah(): Promise<void> {
   return guarded(async () => {
+    store().clearRangePlay();
     const state = store();
     if (state.chapterId === null) {
       return;

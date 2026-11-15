@@ -19,6 +19,7 @@ export function ReaderActionButtons({
   favorite = false,
   onToggleFavorite,
   leadingAction,
+  trailingAction,
   onShare,
   onTextSize,
   textSizeOpen,
@@ -30,6 +31,8 @@ export function ReaderActionButtons({
   onToggleFavorite?: () => void;
   /** A node drawn in the first slot instead of the bookmark. */
   leadingAction?: ReactNode;
+  /** Nodes drawn after the text size control (the Duas Hisn play and download controls, ADR 0092 decision 3). */
+  trailingAction?: ReactNode;
   onShare: () => void;
   onTextSize: () => void;
   textSizeOpen: boolean;
@@ -69,6 +72,7 @@ export function ReaderActionButtons({
           {t('azkar.reader.textSizeGlyph')}
         </UiText>
       </Pressable>
+      {trailingAction}
     </View>
   );
 }

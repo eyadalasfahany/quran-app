@@ -13,6 +13,7 @@ import {
 } from '@/core/db/content/schema';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import type { Locale } from '@/core/i18n/locale';
+import { getWords } from '@/features/reader/data/words';
 import { getVerseRange, verseKeyToId, type VerseRecord } from '@/features/reader/data/verses';
 
 import { activeAzkarResourceId } from './active-resource';
@@ -129,6 +130,8 @@ const SEGMENT_SELECT = `
     s.quran_surah AS quranSurah,
     s.quran_verse_from AS quranVerseFrom,
     s.quran_verse_to AS quranVerseTo,
+    s.word_from AS wordFrom,
+    s.word_to AS wordTo,
     s.text_search AS textSearch
   FROM azkar_segments s
 `;
@@ -370,6 +373,75 @@ export function getQuranSegmentVerses(
   return getVerseRange(db, from, to);
 }
 
+/**
+ * The text of a `quran` segment, one string per verse, for the Quran face (ADR 0093). A whole-verse segment gives each
+ * verse's stored text. A partial segment gives only the quoted words: each end verse keeps its words by position and
+ * joins them with one space (the seed's own join, asserted at build time), so the result is an exact slice of the
+ * stored verse. Nothing is trimmed or normalised. A partial segment never falls back to the whole verse: if a word or
+ * a position is missing, the result is [].
+ */
+export function getQuranSegmentTexts(
+  db: SqlExecutor,
+  segment: Pick<AzkarSegment, 'kind' | 'quranSurah' | 'quranVerseFrom' | 'quranVerseTo' | 'wordFrom' | 'wordTo'>,
+): string[] {
+  if (segment.wordFrom === null && segment.wordTo === null) {
+    return getQuranSegmentVerses(db, segment).map((verse) => verse.textUthmani);
+  }
+
+  return getPartialQuranTexts(db, segment);
+}
+
+function getPartialQuranTexts(
+  db: SqlExecutor,
+  segment: Pick<AzkarSegment, 'kind' | 'quranSurah' | 'quranVerseFrom' | 'quranVerseTo' | 'wordFrom' | 'wordTo'>,
+): string[] {
+  if (segment.kind !== 'quran' || segment.quranSurah === null || segment.quranVerseFrom === null) {
+    return [];
+  }
+
+  const lastAyah = segment.quranVerseTo ?? segment.quranVerseFrom;
+  const verses = getQuranSegmentVerses(db, segment);
+  const expectedCount = lastAyah - segment.quranVerseFrom + 1;
+  if (verses.length !== expectedCount || verses.some((verse) => verse.chapterId !== segment.quranSurah)) {
+    return [];
+  }
+
+  const texts: string[] = [];
+  const lastIndex = verses.length - 1;
+
+  for (const [index, verse] of verses.entries()) {
+    const isFirst = index === 0;
+    const isLast = index === lastIndex;
+
+    if (!isFirst && !isLast) {
+      texts.push(verse.textUthmani);
+      continue;
+    }
+
+    const rows = getWords(db, verse.id);
+    const words = rows.filter((word) => word.charType === 'word');
+    // A missing word must not shorten the verse: word positions run 1..n with no gap, and the end row sits at n + 1.
+    const end = rows.find((word) => word.charType === 'end');
+    if (words.some((word, index) => word.position !== index + 1) || end === undefined || end.position !== words.length + 1) {
+      return [];
+    }
+    const from = isFirst ? (segment.wordFrom ?? 1) : 1;
+    const to = isLast ? (segment.wordTo ?? words.length) : words.length;
+    if (words.length === 0 || from < 1 || from > to || to > words.length) {
+      return [];
+    }
+
+    const kept = words.filter((word) => word.position >= from && word.position <= to);
+    if (kept.length !== to - from + 1) {
+      return [];
+    }
+
+    texts.push(kept.map((word) => word.textUthmani).join(' '));
+  }
+
+  return texts;
+}
+
 /** One entry's alternative choice, as the reader needs it: the requested or first alternative, or a fixed link's. */
 type EntrySelection = { variations: AzkarVariation[]; activeVariation: string; items: AzkarItemDetail[] };
 
@@ -600,6 +672,8 @@ function asSegment(row: SegmentRow): AzkarSegment {
     quranSurah: row.quranSurah,
     quranVerseFrom: row.quranVerseFrom,
     quranVerseTo: row.quranVerseTo,
+    wordFrom: row.wordFrom,
+    wordTo: row.wordTo,
     textSearch: row.textSearch,
   };
 }

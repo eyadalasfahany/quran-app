@@ -113,6 +113,13 @@ final class DuasImporter
             $collectionBooks = [];
         }
 
+        // ADR 0092 decision 10: reviewed Duas topics (config/duas_topics.php) become dua_topic_links rows.
+        $topicConfig = config('duas_topics', []);
+
+        if (! is_array($topicConfig)) {
+            $topicConfig = [];
+        }
+
         $sourceId = $this->resources->sourceId('hadeethenc');
 
         if ($sourceId === null) {
@@ -132,6 +139,8 @@ final class DuasImporter
             hadeethSourceVersion: $hadeethSourceVersion,
             hadithGroups: $hadithGroupRows,
             hadithPrimaryGroup: $hadithPrimaryGroup,
+            topicConfig: $topicConfig,
+            knownTopicIds: array_map(strval(...), array_keys(config('azkar_topics.topics', []))),
         );
 
         $plan = $planned['plan'];

@@ -85,18 +85,23 @@ describe('AzkarReaderActions', () => {
     expect(screen.getByRole('button', { name: 'حجم النص' })).toBeOnTheScreen();
   });
 
-  // Play and download are commented out in AzkarReaderActions (developer 4 Nov 2026). Restore these when the controls return.
-  it('hides play even when playControl is set', async () => {
-    const { ui } = renderActions({
-      playControl: { playing: false, onToggle: jest.fn() },
-      recording: makeRecording({ downloadAllowed: false }),
-    });
+  it('shows play when playControl is set, and presses it', async () => {
+    const onToggle = jest.fn();
+    const { ui } = renderActions({ playControl: { playing: false, onToggle }, recording: makeRecording({ downloadAllowed: false }) });
     await renderUi(ui);
-    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
-    expect(screen.queryByTestId('azkar-actions-play')).toBeNull();
+    await press(screen.getByRole('button', { name: 'تشغيل التسجيل' }));
+    expect(screen.getByTestId('azkar-actions-play')).toBeOnTheScreen();
+    expect(onToggle).toHaveBeenCalledTimes(1);
   });
 
-  it('orders actions bookmark, share, text size only while play and download are commented out', async () => {
+  it('shows pause while the recording plays', async () => {
+    const { ui } = renderActions({ playControl: { playing: true, onToggle: jest.fn() } });
+    await renderUi(ui);
+    expect(screen.getByRole('button', { name: 'إيقاف التسجيل مؤقتًا' })).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'تشغيل التسجيل' })).toBeNull();
+  });
+
+  it('orders the row: favourite, share, text size, play, download', async () => {
     const { ui } = renderActions({
       playControl: { playing: false, onToggle: jest.fn() },
       recording: makeRecording({ downloadAllowed: true }),
@@ -104,13 +109,23 @@ describe('AzkarReaderActions', () => {
     await renderUi(ui);
     const row = screen.getByTestId('azkar-reader-actions');
     const ids = row.children.map((child) => (typeof child === 'object' && child !== null && 'props' in child ? child.props.testID : null));
-    expect(ids).toEqual(['azkar-favourite', 'azkar-share', 'azkar-text-size-toggle']);
+    expect(ids).toEqual(['azkar-favourite', 'azkar-share', 'azkar-text-size-toggle', 'azkar-actions-play', 'azkar-download-button']);
   });
 
-  it('hides download even for a downloadable licensed recording', async () => {
+  it('shows download for a downloadable licensed recording', async () => {
     const { ui } = renderActions({ recording: makeRecording({ downloadAllowed: true }) });
     await renderUi(ui);
+    expect(screen.getByRole('button', { name: 'تنزيل التسجيل' })).toBeOnTheScreen();
+  });
+
+  it('draws no download for a recording that does not allow it, even with play', async () => {
+    const { ui } = renderActions({
+      playControl: { playing: false, onToggle: jest.fn() },
+      recording: makeRecording({ downloadAllowed: false }),
+    });
+    await renderUi(ui);
     expect(screen.queryByRole('button', { name: 'تنزيل التسجيل' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'تشغيل التسجيل' })).toBeOnTheScreen();
   });
 
   it('renders the English labels', async () => {

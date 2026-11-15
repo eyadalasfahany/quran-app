@@ -1,6 +1,6 @@
 {
   "source": "screens/",
-  "frameCount": 267,
+  "frameCount": 273,
   "assetCount": 7,
   "bytesSavedVsInline": 5921200,
   "stacks": {
@@ -126,6 +126,12 @@
       "DuaQuranDetailEnglish",
       "DuaQuranDetailAudio",
       "DuaQuranDetailPlaying",
+      "DuaQuranDetailStarting",
+      "DuaQuranDetailStartingDark",
+      "DuaQuranDetailStartingEnglish",
+      "DuaQuranDetailNoTimings",
+      "DuaQuranDetailNoTimingsDark",
+      "DuaQuranDetailNoTimingsEnglish",
       "DuaHadithDetailNoSource",
       "DuaHadithDetail",
       "DuaHadithDetailDark",
@@ -1082,112 +1088,112 @@
     {
       "id": "DuasHome",
       "stack": "duas",
-      "caption": "الأدعية · on the Azkar home layout (ADR 0092 decision 5): Azkar header, «أدعيتي» card, «التصنيفات» in the Azkar section title and Azkar topic tiles (body 600 name, caption count, 16 pt padding, 88 pt min height, 12 pt gap); first eight categories, «عرض الكل» expands in place; single-name topics from config/azkar_topics.php; no sources card, no Hisn source tiles; counts are mock (بانتظار الموافقة)",
+      "caption": "الأدعية · on the Azkar home layout (ADR 0092 decision 5): Azkar header, «أدعيتي» card, «التصنيفات» in the Azkar section title and Azkar tiles (body 600 name, caption count, 16 pt padding, 88 pt min height, 12 pt gap). Order: «من القرآن الكريم», the five hadith dua books (collection names from config/hadith_titles.php), the HadeethEnc groups (titles as received), then the single-name topics (config/azkar_topics.php); first eight shown, «عرض الكل» expands in place; no sources card, no credit line; counts are mock (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasHome.html",
-      "bytes": 8709
+      "bytes": 8947
     },
     {
       "id": "DuasHomeDark",
       "stack": "duas",
-      "caption": "الأدعية · Dark, same layout as DuasHome (بانتظار الموافقة)",
+      "caption": "الأدعية · Dark, same layout as DuasHome (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "dark",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasHomeDark.html",
-      "bytes": 8327
+      "bytes": 8413
     },
     {
       "id": "DuasHomeEnglish",
       "stack": "duas",
-      "caption": "Duas home · English (LTR), same layout as DuasHome (بانتظار الموافقة)",
+      "caption": "Duas home · English (LTR), same layout as DuasHome (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "en",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasHomeEnglish.html",
-      "bytes": 8183
+      "bytes": 8268
     },
     {
       "id": "DuasHomeCategories",
       "stack": "duas",
-      "caption": "الأدعية · «عرض الكل» expanded in place: every category in the Azkar topic tiles, «عرض أقل» collapses; counts are mock (بانتظار الموافقة)",
+      "caption": "الأدعية · «عرض الكل» expanded in place: every category in the Azkar tiles (Quran, hadith books, HadeethEnc groups, topics), «عرض أقل» collapses; counts are mock (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasHomeCategories.html",
-      "bytes": 11429
+      "bytes": 15772
     },
     {
       "id": "DuasLoading",
       "stack": "duas",
-      "caption": "الأدعية · loading: skeleton of the header, «أدعيتي» card and tiles (from AzkarLoading) (بانتظار الموافقة)",
+      "caption": "الأدعية · loading: skeleton of the header, «أدعيتي» card and tiles (from AzkarLoading) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasLoading.html",
-      "bytes": 6923
+      "bytes": 6912
     },
     {
       "id": "DuasUnavailable",
       "stack": "duas",
-      "caption": "الأدعية · unavailable (direct route, from AzkarUnavailable) (بانتظار الموافقة)",
+      "caption": "الأدعية · unavailable (direct route, from AzkarUnavailable) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasUnavailable.html",
-      "bytes": 2118
+      "bytes": 2107
     },
     {
       "id": "DuasHomeCategoriesExpanded",
       "stack": "duas",
-      "caption": "الأدعية · expanded · 1194 × 834: tab rail with القائمة current, the phone layout in the 640 pt content column (بانتظار الموافقة)",
+      "caption": "الأدعية · expanded · 1194 × 834: tab rail with القائمة current, the phone layout in the 640 pt content column (approved 15 Nov 2026)",
       "size": "expanded",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasHomeCategoriesExpanded.html",
-      "bytes": 13464
+      "bytes": 15778
     },
     {
       "id": "DuasCategory",
       "stack": "duas",
-      "caption": "الأدعية · one category (الموت والمتوفى): the Azkar category card, number and dua text only, no sources (developer 15 Nov 2026); a Hisn row opens the Azkar reader (ADR 0091 D5) (approved 15 Nov 2026)",
+      "caption": "الأدعية · one category («الجنائز»): the Azkar category card, number and dua text only, no sources; a Hisn row opens DuaHisnDetail (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
       "status": "source",
       "path": "frames/duas/DuasCategory.html",
-      "bytes": 7688
+      "bytes": 7628
     },
     {
       "id": "DuasCategoryDark",
       "stack": "duas",
-      "caption": "الأدعية · one category · Dark (DuasCategory layout, topic «الجنائز») (بانتظار الموافقة)",
+      "caption": "الأدعية · one category · Dark (DuasCategory layout, topic «الجنائز») (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "dark",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasCategoryDark.html",
-      "bytes": 7603
+      "bytes": 7592
     },
     {
       "id": "DuasCategoryEnglish",
       "stack": "duas",
-      "caption": "Duas · one category · English (LTR) (DuasCategory layout, topic Funerals) (بانتظار الموافقة)",
+      "caption": "Duas · one category · English (LTR) (DuasCategory layout, topic Funerals) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "en",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasCategoryEnglish.html",
-      "bytes": 7560
+      "bytes": 7549
     },
     {
       "id": "DuasCategoryQuran",
       "stack": "duas",
-      "caption": "الأدعية · «من القرآن الكريم»: Azkar item cards with the ring badge, the ayah in the Quran face and its surah · ayah line under it (as AzkarCategoryQuranRef) (بانتظار الموافقة)",
+      "caption": "الأدعية · «من القرآن الكريم»: Azkar item cards with the ring badge, the ayah in the Quran face and its surah · ayah line under it (as AzkarCategoryQuranRef) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasCategoryQuran.html",
-      "bytes": 8548
+      "bytes": 8537
     },
     {
       "id": "DuasSearch",
@@ -1202,42 +1208,42 @@
     {
       "id": "DuasSearchEmpty",
       "stack": "duas",
-      "caption": "الأدعية · search, empty query: recent searches and the hint (from AzkarSearchEmpty; no scope chips in Duas) (بانتظار الموافقة)",
+      "caption": "الأدعية · search, empty query: recent searches and the hint (from AzkarSearchEmpty; no scope chips in Duas) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasSearchEmpty.html",
-      "bytes": 6190
+      "bytes": 6179
     },
     {
       "id": "DuasSearchNoResults",
       "stack": "duas",
-      "caption": "الأدعية · search, no results: «لا توجد نتائج مطابقة» (بانتظار الموافقة)",
+      "caption": "الأدعية · search, no results: «لا توجد نتائج مطابقة» (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasSearchNoResults.html",
-      "bytes": 2055
+      "bytes": 2044
     },
     {
       "id": "DuasFavorites",
       "stack": "duas",
-      "caption": "الأدعية · المفضلة: Azkar favourite cards with the ring badge and the category under the text (from AzkarFavorites) (بانتظار الموافقة)",
+      "caption": "الأدعية · المفضلة: Azkar favourite cards with the ring badge and the category under the text (from AzkarFavorites) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasFavorites.html",
-      "bytes": 8816
+      "bytes": 8805
     },
     {
       "id": "DuasFavoritesEmpty",
       "stack": "duas",
-      "caption": "الأدعية · المفضلة · empty (from AzkarFavoritesEmpty) (بانتظار الموافقة)",
+      "caption": "الأدعية · المفضلة · empty (from AzkarFavoritesEmpty) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuasFavoritesEmpty.html",
-      "bytes": 2407
+      "bytes": 2396
     },
     {
       "id": "DuaQuranDetailNoSource",
@@ -1252,52 +1258,112 @@
     {
       "id": "DuaQuranDetail",
       "stack": "duas",
-      "caption": "دعاء قرآني · Arabic, rebased on DuaQuranDetailNoSource (surah · ayah line only) (بانتظار الموافقة)",
+      "caption": "دعاء قرآني · Arabic, rebased on DuaQuranDetailNoSource (surah · ayah line only) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaQuranDetail.html",
-      "bytes": 5264
+      "bytes": 5253
     },
     {
       "id": "DuaQuranDetailDark",
       "stack": "duas",
-      "caption": "دعاء قرآني · Dark, rebased on DuaQuranDetailNoSource (بانتظار الموافقة)",
+      "caption": "دعاء قرآني · Dark, rebased on DuaQuranDetailNoSource (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "dark",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaQuranDetailDark.html",
-      "bytes": 5269
+      "bytes": 5258
     },
     {
       "id": "DuaQuranDetailEnglish",
       "stack": "duas",
-      "caption": "Quranic dua · English (LTR), rebased on DuaQuranDetailNoSource (بانتظار الموافقة)",
+      "caption": "Quranic dua · English (LTR), rebased on DuaQuranDetailNoSource (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "en",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaQuranDetailEnglish.html",
-      "bytes": 5205
+      "bytes": 5194
     },
     {
       "id": "DuaQuranDetailAudio",
       "stack": "duas",
-      "caption": "دعاء قرآني · play button «تشغيل» in the action row beside Aa, share and save (ADR 0092 decision 3); «فتح في المصحف» stays in the pager row (بانتظار الموافقة)",
+      "caption": "دعاء قرآني · play button «تشغيل» in the action row beside Aa, share and save (ADR 0092 decision 3); «فتح في المصحف» stays in the pager row (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaQuranDetailAudio.html",
-      "bytes": 5863
+      "bytes": 5852
     },
     {
       "id": "DuaQuranDetailPlaying",
       "stack": "duas",
-      "caption": "دعاء قرآني · playing with the Quran player: the current ayah in the reader highlight (highlight-active, brand edge), «إيقاف» in the action row, the reader player bar above the actions (بانتظار الموافقة)",
+      "caption": "دعاء قرآني · playing with the Quran player: the current ayah in a plain highlight-active background wash (the app draws it on React Native nested Text, which cannot draw the reader’s rounded box or inset bar), «إيقاف» in the action row, the reader player bar above the actions; both pause controls kept (developer) (approved 15 Nov 2026)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/duas/DuaQuranDetailPlaying.html",
+      "bytes": 7784
+    },
+    {
+      "id": "DuaQuranDetailStarting",
+      "stack": "duas",
+      "caption": "دعاء قرآني · starting: the play control shows the shared BufferingRing around the pause glyph (busy), as the reader’s play button does while audio loads (بانتظار الموافقة)",
       "size": "compact",
       "theme": "ar-light",
       "status": "awaiting-approval",
-      "path": "frames/duas/DuaQuranDetailPlaying.html",
-      "bytes": 7864
+      "path": "frames/duas/DuaQuranDetailStarting.html",
+      "bytes": 6272
+    },
+    {
+      "id": "DuaQuranDetailStartingDark",
+      "stack": "duas",
+      "caption": "دعاء قرآني · starting · Dark (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuaQuranDetailStartingDark.html",
+      "bytes": 6180
+    },
+    {
+      "id": "DuaQuranDetailStartingEnglish",
+      "stack": "duas",
+      "caption": "Quranic dua · starting · English (LTR) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "en",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuaQuranDetailStartingEnglish.html",
+      "bytes": 6111
+    },
+    {
+      "id": "DuaQuranDetailNoTimings",
+      "stack": "duas",
+      "caption": "دعاء قرآني · reciter without ayah timings: «تشغيل» at the disabled opacity (0.45) and the PlayerErrorNotice under the action row (duas.quranPlay.noTimings), in page colours (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuaQuranDetailNoTimings.html",
+      "bytes": 6236
+    },
+    {
+      "id": "DuaQuranDetailNoTimingsDark",
+      "stack": "duas",
+      "caption": "دعاء قرآني · no timings · Dark (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuaQuranDetailNoTimingsDark.html",
+      "bytes": 6121
+    },
+    {
+      "id": "DuaQuranDetailNoTimingsEnglish",
+      "stack": "duas",
+      "caption": "Quranic dua · no timings · English (LTR) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "en",
+      "status": "awaiting-approval",
+      "path": "frames/duas/DuaQuranDetailNoTimingsEnglish.html",
+      "bytes": 6059
     },
     {
       "id": "DuaHadithDetailNoSource",
@@ -1312,92 +1378,92 @@
     {
       "id": "DuaHadithDetail",
       "stack": "duas",
-      "caption": "دعاء نبوي · Arabic, rebased on DuaHadithDetailNoSource; no play button (no licensed recording) (بانتظار الموافقة)",
+      "caption": "دعاء نبوي · Arabic, rebased on DuaHadithDetailNoSource; no play button (no licensed recording) (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHadithDetail.html",
-      "bytes": 5909
+      "bytes": 5898
     },
     {
       "id": "DuaHadithDetailDark",
       "stack": "duas",
-      "caption": "دعاء نبوي · Dark, rebased on DuaHadithDetailNoSource (بانتظار الموافقة)",
+      "caption": "دعاء نبوي · Dark, rebased on DuaHadithDetailNoSource (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "dark",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHadithDetailDark.html",
-      "bytes": 5891
+      "bytes": 5880
     },
     {
       "id": "DuaHadithDetailEnglish",
       "stack": "duas",
-      "caption": "Prophetic dua · English (LTR), rebased on DuaHadithDetailNoSource (بانتظار الموافقة)",
+      "caption": "Prophetic dua · English (LTR), rebased on DuaHadithDetailNoSource (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "en",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHadithDetailEnglish.html",
-      "bytes": 5882
+      "bytes": 5871
     },
     {
       "id": "DuaHisnDetail",
       "stack": "duas",
-      "caption": "دعاء من حصن المسلم · text only: Azkar reader top bar, the dua text, save / share / Aa, previous and next chips; no counter, no source line (بانتظار الموافقة)",
+      "caption": "دعاء من حصن المسلم · text only: Azkar reader top bar, the dua text, save / share / Aa, previous and next chips; no counter, no source line (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHisnDetail.html",
-      "bytes": 4890
+      "bytes": 4879
     },
     {
       "id": "DuaHisnDetailDark",
       "stack": "duas",
-      "caption": "دعاء من حصن المسلم · Dark (بانتظار الموافقة)",
+      "caption": "دعاء من حصن المسلم · Dark (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "dark",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHisnDetailDark.html",
-      "bytes": 4809
+      "bytes": 4798
     },
     {
       "id": "DuaHisnDetailEnglish",
       "stack": "duas",
-      "caption": "Hisn al-Muslim dua · English (LTR); the dua text stays Arabic (بانتظار الموافقة)",
+      "caption": "Hisn al-Muslim dua · English (LTR); the dua text stays Arabic (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "en",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHisnDetailEnglish.html",
-      "bytes": 4807
+      "bytes": 4796
     },
     {
       "id": "DuaHisnDetailAudio",
       "stack": "duas",
-      "caption": "دعاء من حصن المسلم · with its recording (ADR 0092 decision 3): play and download in the action row (from AzkarReaderAudio), no counter ring (بانتظار الموافقة)",
+      "caption": "دعاء من حصن المسلم · with its recording (ADR 0092 decision 3): play and download in the action row (from AzkarReaderAudio), no counter ring (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHisnDetailAudio.html",
-      "bytes": 5968
+      "bytes": 5957
     },
     {
       "id": "DuaHisnDetailAudioPlaying",
       "stack": "duas",
-      "caption": "دعاء من حصن المسلم · playing: pause in the action row and the Azkar player bar (AzkarPlayerBar) above it; the bar opens AzkarPlayer (بانتظار الموافقة)",
+      "caption": "دعاء من حصن المسلم · playing: pause in the action row and the Azkar player bar (AzkarPlayerBar) above it, both kept (developer); the bar opens AzkarPlayer (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHisnDetailAudioPlaying.html",
-      "bytes": 8255
+      "bytes": 8267
     },
     {
       "id": "DuaHisnDetailAudioOffline",
       "stack": "duas",
-      "caption": "دعاء من حصن المسلم · offline, not downloaded: «غير متاح دون اتصال» pill, no play control (بانتظار الموافقة)",
+      "caption": "دعاء من حصن المسلم · offline, not downloaded: «غير متاح دون اتصال» pill, no play control (approved 15 Nov 2026)",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/duas/DuaHisnDetailAudioOffline.html",
-      "bytes": 6224
+      "bytes": 6213
     },
     {
       "id": "MyDuas",

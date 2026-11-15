@@ -16,6 +16,8 @@ function text(textAr: string | null, position = 1): AzkarSegment {
     quranSurah: null,
     quranVerseFrom: null,
     quranVerseTo: null,
+    wordFrom: null,
+    wordTo: null,
     textSearch: null,
   };
 }

@@ -60,13 +60,18 @@ export type DuaCategory = {
   kind: DuaCategoryKind;
   /** The i18n key of the name, for `quran` and `hisn` (`azkar.categories.<topicId>`). Null for `hadeethenc`. */
   titleKey: string | null;
-  /** The HadeethEnc group title as received, or the hadith book's Arabic title (null when empty). Null for `quran` and `hisn`. */
+  /** The HadeethEnc group title as received, or the hadith book's collection name in Arabic (null when empty). Null for `quran` and `hisn`. */
   title: string | null;
   /** The number of duas in the category. Always at least 1: an empty category is never listed. */
   count: number;
   sourceKind: DuaCategorySource;
   /** `hadithbook` only: the book number as stored (text). Names the book's fallback «كتاب {n}». */
   bookNumber?: string;
+  /**
+   * `hadithbook` only: the English name of the book's collection (the hadith pack's `title_en`), shown in English. Null
+   * when the pack has none. The Arabic name is `title`, which is the collection's name (not the book's).
+   */
+  titleEn?: string | null;
 };
 
 /** A Hisn dua card: an Azkar entry shown in Duas. Opens the Azkar reader (ADR 0091 §3). */
@@ -114,4 +119,20 @@ export type HadithEntryItem = {
   preview: string;
 };
 
-export type DuaCategoryItem = HisnDuaItem | HadithDuaItem | QuranDuaItem | HadithEntryItem;
+/**
+ * A hadith dua-book chapter in a topic (ADR 0092 decision 10). Opens the chapter in the hadith reader. `title` is the
+ * chapter's Arabic title (null when empty); `count` is its hadith count.
+ */
+export type HadithChapterItem = {
+  kind: 'hadith-chapter';
+  slug: string;
+  bookNumber: string;
+  chapterNumber: number;
+  /** The ids the hadith reader route needs (`hadithHref.chapter`). */
+  bookId: number;
+  chapterId: number;
+  title: string | null;
+  count: number;
+};
+
+export type DuaCategoryItem = HisnDuaItem | HadithDuaItem | QuranDuaItem | HadithEntryItem | HadithChapterItem;

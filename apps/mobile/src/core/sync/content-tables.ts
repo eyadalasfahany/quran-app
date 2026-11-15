@@ -225,6 +225,9 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
         integer('quran_surah', true),
         integer('quran_verse_from', true),
         integer('quran_verse_to', true),
+        // ADR 0093: added in pack builds after schema version 1; an older pack reads NULL (packSelectList).
+        integer('word_from', true),
+        integer('word_to', true),
         text('text_search', true),
       ]),
       table('azkar_categories', [
@@ -369,6 +372,14 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
         text('book_number'),
         integer('position'),
       ]),
+      table('dua_topic_links', [
+        integer('resource_id'),
+        integer('id'),
+        text('topic_id'),
+        text('target_kind'),
+        text('target_key'),
+        integer('position'),
+      ]),
     ],
     entities: [
       entity('dua_item', 'dua_items', ['id'], `DELETE FROM dua_items WHERE id = ? AND ${RESOURCE}`),
@@ -378,8 +389,10 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
       entity('dua_link', 'dua_links', ['id'], `DELETE FROM dua_links WHERE id = ? AND ${RESOURCE}`),
       entity('dua_collection_ref', 'dua_collection_refs', ['id'], `DELETE FROM dua_collection_refs WHERE id = ? AND ${RESOURCE}`),
       entity('dua_collection_book', 'dua_collection_books', ['id'], `DELETE FROM dua_collection_books WHERE id = ? AND ${RESOURCE}`),
+      entity('dua_topic_link', 'dua_topic_links', ['id'], `DELETE FROM dua_topic_links WHERE id = ? AND ${RESOURCE}`),
     ],
     deleteResourceSql: [
+      `DELETE FROM dua_topic_links WHERE ${RESOURCE}`,
       `DELETE FROM dua_collection_refs WHERE ${RESOURCE}`,
       `DELETE FROM dua_links WHERE ${RESOURCE}`,
       `DELETE FROM dua_quran_spans WHERE ${RESOURCE}`,

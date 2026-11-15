@@ -48,7 +48,7 @@ describe('resolveQuranVerses', () => {
   it('maps a quran segment that does not resolve to an empty list, never a fabricated text', () => {
     const missing = { itemId: 99, position: 1, kind: 'quran' as const, quranSurah: 114, quranVerseFrom: 6, quranVerseTo: null };
 
-    const resolved = resolveQuranVerses(executor, [{ segments: [{ ...missing, resourceId: -1, textAr: null, quranVerseTo: null, textSearch: null }] }]);
+    const resolved = resolveQuranVerses(executor, [{ segments: [{ ...missing, resourceId: -1, textAr: null, quranVerseTo: null, wordFrom: null, wordTo: null, textSearch: null }] }]);
 
     expect(resolved.get(quranSegmentKey(missing))).toEqual([]);
   });

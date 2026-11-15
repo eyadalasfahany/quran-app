@@ -160,6 +160,8 @@ const README_CONTRACT = [
           'quran_surah',
           'quran_verse_from',
           'quran_verse_to',
+          'word_from',
+          'word_to',
           'text_search',
         ],
       },
@@ -268,6 +270,10 @@ const README_CONTRACT = [
         name: 'dua_collection_books',
         columns: ['resource_id', 'id', 'collection_slug', 'book_number', 'position'],
       },
+      {
+        name: 'dua_topic_links',
+        columns: ['resource_id', 'id', 'topic_id', 'target_kind', 'target_key', 'position'],
+      },
     ],
     entities: [
       { entity: 'dua_item', key: 'id' },
@@ -277,6 +283,7 @@ const README_CONTRACT = [
       { entity: 'dua_link', key: 'id' },
       { entity: 'dua_collection_ref', key: 'id' },
       { entity: 'dua_collection_book', key: 'id' },
+      { entity: 'dua_topic_link', key: 'id' },
     ],
   },
   {
@@ -1093,6 +1100,127 @@ describe('content sync', () => {
       // Catalogue rewrite, then the pack import.
       expect(transactions()).toBe(2);
       expect(executor.get('SELECT value FROM meta WHERE key = ?', ['manifest_etag'])).toBeUndefined();
+    });
+  });
+
+  it('installs a duas pack built before dua_topic_links existed, with that table empty', async () => {
+    const bytes = gzipDatabase(86, (database) => {
+      for (const table of contentContract().find((group) => group.group === 'duas')?.tables ?? []) {
+        if (table.name !== 'dua_topic_links') {
+          database.exec(`CREATE TABLE ${table.name} (${table.columns.map((column) => `"${column}"`).join(', ')})`);
+        }
+      }
+    });
+    const hash = await sha256(bytes);
+    const entry = resource({
+      id: 86,
+      group: 'duas',
+      version: 1,
+      pack: { url: '/api/v1/content/packs/86/1', size_bytes: bytes.byteLength, sha256: hash },
+    });
+    const published = manifest([entry]);
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack: async (_url, toPath) => {
+            mkdirSync(parentDir(toPath), { recursive: true });
+            writeFileSync(toPath, bytes);
+          },
+        })),
+        selection: () => [86],
+      });
+
+      expect(report.resources).toEqual([{ resourceId: 86, status: 'pack-imported' }]);
+      expect(executor.get<{ count: number }>('SELECT COUNT(*) AS count FROM dua_topic_links WHERE resource_id = ?', [86])?.count).toBe(0);
+    });
+  });
+
+  /**
+   * An azkar pack with every azkar table of the contract. `segmentColumns` lets a test build the segment table as an
+   * older pack did (without the word range) or as today's pack does.
+   */
+  function azkarPackBytes(
+    resourceId: number,
+    segmentColumns: (columns: string[]) => string[],
+    segmentRows: Record<string, number | string | null>[],
+  ): Uint8Array {
+    return gzipDatabase(resourceId, (database) => {
+      for (const table of contentContract().find((group) => group.group === 'azkar')?.tables ?? []) {
+        const columns = table.name === 'azkar_segments' ? segmentColumns(table.columns) : table.columns;
+        database.exec(`CREATE TABLE ${table.name} (${columns.map((column) => `"${column}"`).join(', ')})`);
+        if (table.name === 'azkar_segments') {
+          const insert = database.prepare(
+            `INSERT INTO azkar_segments (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`,
+          );
+          for (const row of segmentRows) {
+            insert.run(...columns.map((column) => row[column] ?? null));
+          }
+        }
+      }
+    });
+  }
+
+  async function syncAzkarPack(executor: SqlExecutor, cacheDir: string, resourceId: number, bytes: Uint8Array) {
+    const hash = await sha256(bytes);
+    const entry = resource({
+      id: resourceId,
+      group: 'azkar',
+      version: 1,
+      pack: { url: `/api/v1/content/packs/${resourceId}/1`, size_bytes: bytes.byteLength, sha256: hash },
+    });
+    const published = manifest([entry]);
+
+    return syncContent({
+      ...(await deps(executor, cacheDir, {
+        getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+        getChanges: async () => {
+          throw new Error('changes');
+        },
+        downloadPack: async (_url, toPath) => {
+          mkdirSync(parentDir(toPath), { recursive: true });
+          writeFileSync(toPath, bytes);
+        },
+      })),
+      selection: () => [resourceId],
+    });
+  }
+
+  it('installs an azkar pack built before the word range existed, and its segments read NULL word positions', async () => {
+    const bytes = azkarPackBytes(
+      88,
+      (columns) => columns.filter((column) => column !== 'word_from' && column !== 'word_to'),
+      [{ resource_id: 88, item_id: 1, position: 1, kind: 'quran', quran_surah: 2, quran_verse_from: 158 }],
+    );
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const report = await syncAzkarPack(executor, cacheDir, 88, bytes);
+
+      expect(report.resources).toEqual([{ resourceId: 88, status: 'pack-imported' }]);
+      expect(executor.get<{ wordFrom: number | null; wordTo: number | null }>(
+        'SELECT word_from AS wordFrom, word_to AS wordTo FROM azkar_segments WHERE resource_id = ?',
+        [88],
+      )).toEqual({ wordFrom: null, wordTo: null });
+    });
+  });
+
+  it('installs an azkar pack with a partial-verse range, and keeps its word positions exactly', async () => {
+    const bytes = azkarPackBytes(89, (columns) => columns, [
+      { resource_id: 89, item_id: 1, position: 1, kind: 'quran', quran_surah: 2, quran_verse_from: 158, word_from: 1, word_to: 6 },
+    ]);
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      const report = await syncAzkarPack(executor, cacheDir, 89, bytes);
+
+      expect(report.resources).toEqual([{ resourceId: 89, status: 'pack-imported' }]);
+      expect(executor.get<{ wordFrom: number | null; wordTo: number | null }>(
+        'SELECT word_from AS wordFrom, word_to AS wordTo FROM azkar_segments WHERE resource_id = ?',
+        [89],
+      )).toEqual({ wordFrom: 1, wordTo: 6 });
     });
   });
 

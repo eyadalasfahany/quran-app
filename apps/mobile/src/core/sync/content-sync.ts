@@ -306,6 +306,9 @@ export async function importPack(
   }
 }
 
+/** Tables an older pack may lack (added after the pack schema version 1 shipped). A missing one installs as empty. */
+const OPTIONAL_PACK_TABLES: ReadonlySet<string> = new Set(['dua_topic_links']);
+
 function copyPack(db: SqlExecutor, path: string, resource: ContentManifestResource, checkedAt: number): void {
   const group = contentGroup(resource.group);
   if (group === undefined) {
@@ -322,6 +325,10 @@ function copyPack(db: SqlExecutor, path: string, resource: ContentManifestResour
         db.run(sql, [resource.id]);
       }
       for (const table of group.tables) {
+        // A table an older pack was built without installs as empty when it is optional (see OPTIONAL_PACK_TABLES).
+        if (OPTIONAL_PACK_TABLES.has(table.name) && !packHasTable(db, table.name)) {
+          continue;
+        }
         const columns = columnList(table);
         db.exec(`INSERT INTO ${table.name} (${columns}) SELECT ${packSelectList(db, table)} FROM pack.${table.name}`);
       }
@@ -341,6 +348,10 @@ function copyPack(db: SqlExecutor, path: string, resource: ContentManifestResour
  * The SELECT list for a table's pack copy. A nullable column that an older pack was built without (a column added
  * later, such as the ayah range of a partial surah) reads as NULL, so a pack built before the column still installs.
  */
+function packHasTable(db: SqlExecutor, name: string): boolean {
+  return db.all<{ name: string }>(`PRAGMA pack.table_info(${name})`).length > 0;
+}
+
 function packSelectList(db: SqlExecutor, table: ContentTable): string {
   const present = new Set(db.all<{ name: string }>(`PRAGMA pack.table_info(${table.name})`).map((row) => row.name));
   if (present.size === 0) {

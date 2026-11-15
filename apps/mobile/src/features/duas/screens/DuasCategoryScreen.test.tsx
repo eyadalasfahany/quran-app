@@ -1,6 +1,8 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
+import { hadithHref } from '@/features/hadith/routes';
+
 import { renderUi } from '../../../../jest/render-ui';
 import * as duasHooks from '../data/hooks';
 import type { DuaCategory, DuaCategoryItem } from '../data/model';
@@ -20,6 +22,7 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('../data/hooks', () => ({
   useDuaCategories: jest.fn(),
   useDuaCategoryItems: jest.fn(),
+  useDuaTopics: jest.fn(),
 }));
 
 // Fixture text only: no dua, verse or hadith is written here.
@@ -53,6 +56,7 @@ const HISN_ITEMS: DuaCategoryItem[] = [
 const SOURCE_TEXT = /المصادر|حصن المسلم|HadeethEnc|Hisn|القرآن الكريم ·|القرآن ·|· القرآن/;
 
 function setup(category: DuaCategory | undefined, items: DuaCategoryItem[]) {
+  mockedDuasHooks.useDuaTopics.mockReturnValue([]);
   mockedDuasHooks.useDuaCategories.mockReturnValue(category ? [category] : []);
   mockedDuasHooks.useDuaCategoryItems.mockReturnValue(items);
 }
@@ -60,6 +64,72 @@ function setup(category: DuaCategory | undefined, items: DuaCategoryItem[]) {
 describe('DuasCategoryScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('topic (ADR 0092 decision 10)', () => {
+    const TOPIC_ITEMS: DuaCategoryItem[] = [
+      { kind: 'quran', duaKey: 'quran:2:128', quranReference: 'FIXTURE ref', text: 'FIXTURE quran text topic' },
+      {
+        kind: 'hadith-chapter',
+        slug: 'bukhari',
+        bookNumber: '80',
+        chapterNumber: 3,
+        bookId: 80,
+        chapterId: 12,
+        title: 'FIXTURE chapter title',
+        count: 4,
+      },
+      {
+        kind: 'hisn',
+        entryKey: 'FIXTURE:entry-9',
+        chapterTitle: null,
+        preview: 'FIXTURE preview topic',
+        quranRefs: [],
+        bookNumber: '9',
+      },
+    ];
+
+    beforeEach(() => {
+      mockedDuasHooks.useDuaCategories.mockReturnValue([]);
+      mockedDuasHooks.useDuaTopics.mockReturnValue([{ id: 'prayer', count: 3 }]);
+      mockedDuasHooks.useDuaCategoryItems.mockReturnValue(TOPIC_ITEMS);
+    });
+
+    it('titles the screen with the topic name and its count, from the topic list', async () => {
+      await renderUi(<DuasCategoryScreen categoryId="topic:prayer" />);
+
+      expect(screen.getByRole('header', { name: 'الصلاة' })).toBeOnTheScreen();
+      expect(screen.getByText('٣ أدعية')).toBeOnTheScreen();
+    });
+
+    it('shows one card per item across the sources, numbered in the topic order', async () => {
+      await renderUi(<DuasCategoryScreen categoryId="topic:prayer" />);
+
+      expect(screen.getByRole('button', { name: '١, FIXTURE quran text topic, FIXTURE ref' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '٢, FIXTURE chapter title' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '٣, FIXTURE preview topic' })).toBeOnTheScreen();
+    });
+
+    it('opens the hadith chapter for a chapter card, in the hadith reader', async () => {
+      await renderUi(<DuasCategoryScreen categoryId="topic:prayer" />);
+
+      await fireEvent.press(screen.getByRole('button', { name: '٢, FIXTURE chapter title' }));
+      expect(router.push).toHaveBeenCalledWith(hadithHref.chapter('bukhari', 80, 12));
+    });
+
+    it('opens the Duas detail, paged within the topic, for a Quranic or Hisn card', async () => {
+      await renderUi(<DuasCategoryScreen categoryId="topic:prayer" />);
+
+      await fireEvent.press(screen.getByRole('button', { name: '٣, FIXTURE preview topic' }));
+      expect(router.push).toHaveBeenCalledWith('/duas/category/topic%3Aprayer/2');
+    });
+
+    it('shows the Duas title for a topic that is not listed', async () => {
+      mockedDuasHooks.useDuaTopics.mockReturnValue([]);
+      await renderUi(<DuasCategoryScreen categoryId="topic:unknown" />);
+
+      expect(screen.getByRole('header', { name: 'الأدعية' })).toBeOnTheScreen();
+    });
   });
 
   describe('quran category', () => {
@@ -75,15 +145,15 @@ describe('DuasCategoryScreen', () => {
       setup(QURAN, QURAN_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="quran" />);
 
-      expect(screen.getByRole('button', { name: '١، FIXTURE quran text 1 — not a dua, FIXTURE surah · ١' })).toBeOnTheScreen();
-      expect(screen.getByRole('button', { name: '٢، FIXTURE quran text 2 — not a dua, من القرآن الكريم' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '١, FIXTURE quran text 1 — not a dua, FIXTURE surah · ١' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '٢, FIXTURE quran text 2 — not a dua, من القرآن الكريم' })).toBeOnTheScreen();
     });
 
     it('opens the Quranic detail from a card', async () => {
       setup(QURAN, QURAN_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="quran" />);
 
-      await fireEvent.press(screen.getByRole('button', { name: '١، FIXTURE quran text 1 — not a dua, FIXTURE surah · ١' }));
+      await fireEvent.press(screen.getByRole('button', { name: '١, FIXTURE quran text 1 — not a dua, FIXTURE surah · ١' }));
       expect(router.push).toHaveBeenCalledWith('/duas/category/quran/0');
     });
 
@@ -110,14 +180,14 @@ describe('DuasCategoryScreen', () => {
 
       const preview = screen.getByText('FIXTURE preview 1 — not a dua');
       expect(preview.props.numberOfLines).toBe(2);
-      expect(screen.getByRole('button', { name: '١، FIXTURE preview 1 — not a dua' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '١, FIXTURE preview 1 — not a dua' })).toBeOnTheScreen();
     });
 
     it('opens the prophetic detail from a card, at its position in the category', async () => {
       setup(HADITH_GROUP, HADITH_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="hadeethenc:3" />);
 
-      await fireEvent.press(screen.getByRole('button', { name: '١، FIXTURE preview 1 — not a dua' }));
+      await fireEvent.press(screen.getByRole('button', { name: '١, FIXTURE preview 1 — not a dua' }));
       expect(router.push).toHaveBeenCalledWith('/duas/category/hadeethenc%3A3/0');
     });
 
@@ -158,15 +228,15 @@ describe('DuasCategoryScreen', () => {
 
       const text = screen.getByText('FIXTURE hadith text 80.1');
       expect(text.props.numberOfLines).toBe(2);
-      expect(screen.getByRole('button', { name: '١، FIXTURE hadith text 80.1' })).toBeOnTheScreen();
-      expect(screen.getByRole('button', { name: '٢، FIXTURE hadith text 80.2' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '١, FIXTURE hadith text 80.1' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '٢, FIXTURE hadith text 80.2' })).toBeOnTheScreen();
     });
 
     it('opens the hadith reader for the hadith a card shows', async () => {
       setup(BOOK, BOOK_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="hadithbook:bukhari:80" />);
 
-      await fireEvent.press(screen.getByRole('button', { name: '٢، FIXTURE hadith text 80.2' }));
+      await fireEvent.press(screen.getByRole('button', { name: '٢, FIXTURE hadith text 80.2' }));
       expect(router.push).toHaveBeenCalledWith('/hadith/bukhari/hadith/80.2');
     });
 
@@ -202,14 +272,14 @@ describe('DuasCategoryScreen', () => {
       expect(screen.getByText('FIXTURE preview 2 — not a dua')).toBeOnTheScreen();
       expect(screen.queryByText('FIXTURE chapter')).toBeNull();
       expect(screen.queryByText(/١٥٠|150/)).toBeNull();
-      expect(screen.getByRole('button', { name: '١، FIXTURE preview 2 — not a dua' })).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: '١, FIXTURE preview 2 — not a dua' })).toBeOnTheScreen();
     });
 
     it('opens the Duas detail for the card, not the Azkar reader (ADR 0091 decision 11)', async () => {
       setup(HISN, HISN_ITEMS);
       await renderUi(<DuasCategoryScreen categoryId="hisn:morning" />);
 
-      await fireEvent.press(screen.getByRole('button', { name: '١، FIXTURE preview 2 — not a dua' }));
+      await fireEvent.press(screen.getByRole('button', { name: '١, FIXTURE preview 2 — not a dua' }));
       expect(router.push).toHaveBeenCalledWith('/duas/category/hisn%3Amorning/0');
     });
 

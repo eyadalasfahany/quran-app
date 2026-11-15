@@ -24,6 +24,14 @@ final class AzkarImportFingerprint
     /** @var list<string> Entry columns that are left out of the input while null. */
     private const array OPTIONAL_ENTRY_KEYS = ['entry_class', 'home'];
 
+    /**
+     * ADR 0093: a partial-verse range joins a segment's input only when it is set. Without partial rows, every segment
+     * is the one an import had before these columns existed (no version bump).
+     *
+     * @var list<string>
+     */
+    private const array OPTIONAL_SEGMENT_KEYS = ['word_from', 'word_to'];
+
     public function of(string $sourceSha256, ImportPlan $plan): string
     {
         $entries = array_map(
@@ -41,12 +49,25 @@ final class AzkarImportFingerprint
             $plan->entries,
         );
 
+        $segments = array_map(
+            static function (array $segment): array {
+                foreach (self::OPTIONAL_SEGMENT_KEYS as $key) {
+                    if (($segment[$key] ?? null) === null) {
+                        unset($segment[$key]);
+                    }
+                }
+
+                return $segment;
+            },
+            $plan->segments,
+        );
+
         $payload = [
             'source_sha256' => $sourceSha256,
             'chapters' => $plan->chapters,
             'entries' => $entries,
             'items' => $plan->items,
-            'segments' => $plan->segments,
+            'segments' => $segments,
             'categories' => $plan->categories,
             'entry_categories' => $plan->entryCategories,
             'notes' => $plan->notes,

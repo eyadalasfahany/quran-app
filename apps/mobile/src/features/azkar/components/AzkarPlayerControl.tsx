@@ -76,7 +76,7 @@ export function AzkarPlayerControl({
         testID={testID}
       >
         <AnimatedView style={[{ position: 'absolute' }, playStyle]}>
-          <Icon color={theme.colors.onBrand} mirrorInRtl name={PLAY} size={glyph} testID={`${testID}-play`} />
+          <Icon color={theme.colors.onBrand} name={PLAY} size={glyph} testID={`${testID}-play`} />
         </AnimatedView>
         <AnimatedView style={[{ position: 'absolute' }, pauseStyle]}>
           <Icon color={theme.colors.onBrand} name={PAUSE} size={glyph} testID={`${testID}-pause`} />

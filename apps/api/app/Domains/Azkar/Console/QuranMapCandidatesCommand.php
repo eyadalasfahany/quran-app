@@ -10,11 +10,13 @@ use App\Domains\Azkar\Services\QuranReferenceCandidates;
 use App\Domains\Azkar\Services\QuranReferenceMapWriter;
 use App\Domains\Azkar\Services\QuranReferencePolicy;
 use App\Domains\Azkar\Services\QuranSpanMatcher;
+use App\Domains\Azkar\Services\QuranWordsSheet;
 use App\Domains\Azkar\Sources\AzkarSourceRegistry;
 use App\Domains\Azkar\Validation\CatalogueValidator;
 use App\Support\QuranText\SearchTextNormalizer;
 use App\Support\Storage\SourceCache;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
 
 /**
@@ -39,9 +41,10 @@ final class QuranMapCandidatesCommand extends Command
         {path? : The pinned OpenDua catalogue file (omit with --download)}
         {--download : Download the pinned catalogue into storage/app/azkar and verify its SHA-256 first}
         {--output= : Where to write the map (default config/azkar_quran_map.php, or config/azkar_hisnmuslim_quran_map.php)}
-        {--source= : opendua (default) or hisnmuslim}';
+        {--source= : opendua (default) or hisnmuslim}
+        {--words-sheet : Also write docs/plans/partial-verse-segments/words.md (keys, verses and word positions only; ADR 0093)}';
 
-    protected $description = 'Match each Quran span of the pinned catalogue to the Tanzil text and write candidate reference rows (ADR 0031 §11).';
+    protected $description = 'Match each Quran span of the pinned catalogue to the Tanzil text and write candidate reference rows (ADR 0031 §11, ADR 0093).';
 
     public function handle(
         CatalogueDownloader $downloader,
@@ -50,6 +53,7 @@ final class QuranMapCandidatesCommand extends Command
         QuranReferenceMapWriter $writer,
         SearchTextNormalizer $normalizer,
         AzkarSourceRegistry $sources,
+        QuranWordsSheet $wordsSheet,
     ): int {
         $requested = $this->option('source');
 
@@ -114,6 +118,13 @@ final class QuranMapCandidatesCommand extends Command
 
         $writer->write($output, $result['rows']);
 
+        if ((bool) $this->option('words-sheet')) {
+            $sheet = base_path('../../docs/plans/partial-verse-segments/words.md');
+            File::ensureDirectoryExists(dirname($sheet));
+            File::put($sheet, $wordsSheet->render($result['rows']));
+            $this->line('Word review sheet written to: '.$sheet);
+        }
+
         $this->printSummary($result['stats'], $result['items'], $result['rows'], $output);
 
         return self::SUCCESS;
@@ -135,6 +146,8 @@ final class QuranMapCandidatesCommand extends Command
             ['exact (simple text)', $stats['exact']],
             ['candidate (similarity at or above threshold)', $stats['candidate_similarity']],
             ['unmatched', $stats['unmatched']],
+            ['unmatched spans with one exact word run (ADR 0093)', $stats['words_exact']],
+            ['unmatched spans with several word runs (kept unmatched)', $stats['words_ambiguous']],
             ['spans across surah boundaries', $stats['multi_surah']],
             ['reviewed rows kept', $stats['reviewed_kept']],
             ['reviewed items kept whole (span count changed)', $stats['reviewed_conflicts']],

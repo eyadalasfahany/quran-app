@@ -6,7 +6,7 @@ use App\Domains\Content\Enums\ResourceGroup;
 use App\Domains\Content\Packs\PackSchema;
 use App\Domains\Content\Packs\PackTable;
 
-it('declares the seven duas tables in contract order', function (): void {
+it('declares the eight duas tables in contract order', function (): void {
     $tables = PackSchema::tablesFor(ResourceGroup::Duas);
 
     expect(array_map(fn (PackTable $table): string => $table->name, $tables))->toBe([
@@ -17,6 +17,7 @@ it('declares the seven duas tables in contract order', function (): void {
         'dua_links',
         'dua_collection_refs',
         'dua_collection_books',
+        'dua_topic_links',
     ]);
 });
 
@@ -42,6 +43,7 @@ it('gives every duas table the columns of the canonical contract in order', func
     'links' => ['dua_links', ['resource_id', 'id', 'item_id', 'hadeeth_id', 'entry_key']],
     'collection refs' => ['dua_collection_refs', ['resource_id', 'id', 'item_id', 'collection_slug', 'hadith_number']],
     'collection books' => ['dua_collection_books', ['resource_id', 'id', 'collection_slug', 'book_number', 'position']],
+    'topic links' => ['dua_topic_links', ['resource_id', 'id', 'topic_id', 'target_kind', 'target_key', 'position']],
 ]);
 
 it('omits server-only columns from the duas pack contract', function (): void {

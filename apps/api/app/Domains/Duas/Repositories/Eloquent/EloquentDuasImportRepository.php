@@ -12,6 +12,7 @@ use App\Domains\Duas\Models\DuaHadith;
 use App\Domains\Duas\Models\DuaItem;
 use App\Domains\Duas\Models\DuaLink;
 use App\Domains\Duas\Models\DuaQuranSpan;
+use App\Domains\Duas\Models\DuaTopicLink;
 use App\Domains\Duas\Repositories\Contracts\DuasImportRepository;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,6 +22,7 @@ final class EloquentDuasImportRepository implements DuasImportRepository
 
     public function replaceForResource(int $resourceId, DuasImportPlan $plan): void
     {
+        $this->delete(DuaTopicLink::class, $resourceId);
         $this->delete(DuaCollectionBook::class, $resourceId);
         $this->delete(DuaCollectionRef::class, $resourceId);
         $this->delete(DuaLink::class, $resourceId);
@@ -36,6 +38,7 @@ final class EloquentDuasImportRepository implements DuasImportRepository
         $this->insert(DuaLink::class, $resourceId, $plan->links);
         $this->insert(DuaCollectionRef::class, $resourceId, $plan->collectionRefs);
         $this->insert(DuaCollectionBook::class, $resourceId, $plan->collectionBooks);
+        $this->insert(DuaTopicLink::class, $resourceId, $plan->topicLinks);
     }
 
     /**

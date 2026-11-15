@@ -67,7 +67,7 @@ it('emits one quran segment per range for a span that runs across surahs, and st
     expect(array_map(fn (array $segment): string => $segment['kind'], $segments))->toBe(['text', 'quran', 'quran', 'text'])
         ->and(array_values(array_filter($segments, fn (array $segment): bool => $segment['kind'] === 'quran')))
         ->toBe([
-            ['position' => 2, 'kind' => 'quran', 'text_ar' => null, 'quran_surah' => 112, 'quran_verse_from' => 1, 'quran_verse_to' => 4, 'text_search' => null],
-            ['position' => 3, 'kind' => 'quran', 'text_ar' => null, 'quran_surah' => 113, 'quran_verse_from' => 1, 'quran_verse_to' => null, 'text_search' => null],
+            ['position' => 2, 'kind' => 'quran', 'text_ar' => null, 'quran_surah' => 112, 'quran_verse_from' => 1, 'quran_verse_to' => 4, 'word_from' => null, 'word_to' => null, 'text_search' => null],
+            ['position' => 3, 'kind' => 'quran', 'text_ar' => null, 'quran_surah' => 113, 'quran_verse_from' => 1, 'quran_verse_to' => null, 'word_from' => null, 'word_to' => null, 'text_search' => null],
         ]);
 });

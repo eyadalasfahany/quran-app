@@ -8,13 +8,18 @@ import { idToVerseKey } from '../data/verses';
 import { pageForVerse } from './page';
 import { writePlayedPlace } from './reading-anchor';
 
-/** While an ayah is playing, the continue-reading place follows it, even when the reader is showing another surah. */
+/**
+ * While an ayah is playing, the continue-reading place follows it, even when the reader is showing another surah. A
+ * dua's verse range does not move it (ADR 0092; developer, 15 Nov 2026): a dua listened to in Duas is not the Mushaf's
+ * place to continue from.
+ */
 export function usePlaybackReadingPlace(ready: boolean): void {
   const status = usePlayerStore((state) => state.status);
   const activeVerseId = usePlayerStore((state) => state.activeVerseId);
+  const ranged = usePlayerStore((state) => state.rangePlay !== null);
 
   useEffect(() => {
-    if (!ready || (status !== 'playing' && status !== 'loading') || activeVerseId === null) {
+    if (!ready || ranged || (status !== 'playing' && status !== 'loading') || activeVerseId === null) {
       return;
     }
     try {
@@ -27,5 +32,5 @@ export function usePlaybackReadingPlace(ready: boolean): void {
     } catch {
       // The content database is not open yet. The reader writes the same place once it is.
     }
-  }, [activeVerseId, ready, status]);
+  }, [activeVerseId, ranged, ready, status]);
 }

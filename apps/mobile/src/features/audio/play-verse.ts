@@ -1,7 +1,7 @@
 import { openContentDb } from '@/core/db/content/open';
 
 import { listReciters, type CatalogReciter } from './data/reciters';
-import { playFromVerse } from './player';
+import { playFromVerse, playVerseRange } from './player';
 import { usePlayerStore } from './playerStore';
 import { downloadReciterPack } from './reciter-downloads';
 import { getReciterId, setReciterId } from './settings';
@@ -42,4 +42,26 @@ export async function playVerse(verseKey: string): Promise<void> {
     setReciterId(reciter.resourceId);
   }
   await playFromVerse(verseKey);
+}
+
+/**
+ * Plays a verse range of a dua with the catalogue's reciter (ADR 0092 decision 3). The same reciter and pack handling as
+ * playVerse; the range ends by itself at its last ayah (playVerseRange).
+ */
+export async function playRange(fromKey: string, toKey: string): Promise<void> {
+  const store = usePlayerStore.getState();
+  store.beginStarting({ kind: 'range', fromKey, toKey });
+  const reciter = catalogueReciter();
+  if (reciter === null) {
+    store.markFailed('no-reciter');
+    return;
+  }
+  if (!reciter.installed && !(await downloadReciterPack(reciter.resourceId))) {
+    store.clearStarting();
+    return;
+  }
+  if (getReciterId() !== reciter.resourceId) {
+    setReciterId(reciter.resourceId);
+  }
+  await playVerseRange(fromKey, toKey);
 }

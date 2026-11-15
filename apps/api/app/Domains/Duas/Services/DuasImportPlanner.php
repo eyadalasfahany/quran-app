@@ -18,6 +18,7 @@ final class DuasImportPlanner
     public function __construct(
         private readonly QuranDuaReferencePolicy $quranPolicy,
         private readonly SearchTextNormalizer $normalizer,
+        private readonly DuasTopicPolicy $topicPolicy,
     ) {}
 
     /**
@@ -28,6 +29,8 @@ final class DuasImportPlanner
      * @param  array<array-key, mixed>  $hadithRecords  Unvalidated snapshot records, keyed by HadeethEnc id.
      * @param  list<array{id: int, source_category_id: int, title: string, position: int}>  $hadithGroups
      * @param  array<int, int>  $hadithPrimaryGroup
+     * @param  array<array-key, mixed>  $topicConfig  Unvalidated config/duas_topics.php: `quran` and `hadith_chapters` maps.
+     * @param  list<string>  $knownTopicIds  The ids of config azkar_topics.php `topics`.
      * @return array{plan: DuasImportPlan, issues: list<ImportIssue>}
      */
     public function plan(
@@ -41,6 +44,8 @@ final class DuasImportPlanner
         string $hadeethSourceVersion,
         array $hadithGroups = [],
         array $hadithPrimaryGroup = [],
+        array $topicConfig = [],
+        array $knownTopicIds = [],
     ): array {
         $issues = [];
         $stats = new DuasImportStats;
@@ -315,8 +320,34 @@ final class DuasImportPlanner
             $stats->booksAccepted++;
         }
 
+        $topicLinks = [];
+        $resolvedTopics = $this->topicPolicy->resolve($topicConfig, $knownTopicIds);
+
+        foreach ($resolvedTopics['invalid'] as $invalidKey) {
+            $issues[] = new ImportIssue(ImportIssue::ERROR, 'dua_topic_invalid', $invalidKey, null, $invalidKey);
+        }
+
+        foreach ($resolvedTopics['candidates'] as $candidateKey) {
+            $issues[] = new ImportIssue(ImportIssue::WARNING, 'dua_topic_candidate', $candidateKey, null, $candidateKey);
+        }
+
+        foreach ($resolvedTopics['links'] as $topicLink) {
+            // ADR 0092 decision 10: a Quranic dua that is rejected or absent has no item, so its topic row is skipped.
+            if ($topicLink['target_kind'] === DuasTopicPolicy::TARGET_QURAN && ! isset($acceptedKeys[$topicLink['target_key']])) {
+                continue;
+            }
+
+            $topicLinks[] = [
+                'id' => count($topicLinks) + 1,
+                'topic_id' => $topicLink['topic_id'],
+                'target_kind' => $topicLink['target_kind'],
+                'target_key' => $topicLink['target_key'],
+                'position' => count($topicLinks) + 1,
+            ];
+        }
+
         return [
-            'plan' => new DuasImportPlan($items, $quranSpans, $groups, $hadithRows, $links, $refs, $books, $stats),
+            'plan' => new DuasImportPlan($items, $quranSpans, $groups, $hadithRows, $links, $refs, $books, $topicLinks, $stats),
             'issues' => $issues,
         ];
     }

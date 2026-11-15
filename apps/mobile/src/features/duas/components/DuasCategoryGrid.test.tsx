@@ -8,19 +8,26 @@ function makeItems(count: number, onPress = jest.fn()): DuasCategoryGridItem[] {
   return Array.from({ length: count }, (_, index) => ({
     id: `fixture-${index + 1}`,
     name: `FIXTURE name ${index + 1}`,
-    caption: `FIXTURE caption ${index + 1}`,
+    countText: `FIXTURE count ${index + 1}`,
     onPress,
   }));
 }
 
 describe('DuasCategoryGrid', () => {
-  it('shows the heading and one tile per item', async () => {
+  it('shows the section heading and one Azkar topic tile per item', async () => {
     await renderUi(<DuasCategoryGrid heading="FIXTURE heading" items={makeItems(3)} />);
 
     expect(screen.getByRole('header', { name: 'FIXTURE heading' })).toBeOnTheScreen();
     expect(screen.getByTestId('duas-category-grid-tile-fixture-1')).toBeOnTheScreen();
     expect(screen.getByTestId('duas-category-grid-tile-fixture-2')).toBeOnTheScreen();
     expect(screen.getByTestId('duas-category-grid-tile-fixture-3')).toBeOnTheScreen();
+  });
+
+  it('draws each tile with its name and its count line', async () => {
+    await renderUi(<DuasCategoryGrid heading="FIXTURE heading" items={makeItems(1)} />);
+
+    expect(screen.getByText('FIXTURE name 1')).toBeOnTheScreen();
+    expect(screen.getByText('FIXTURE count 1')).toBeOnTheScreen();
   });
 
   it('calls the matching item when its tile is pressed', async () => {
@@ -30,13 +37,13 @@ describe('DuasCategoryGrid', () => {
       <DuasCategoryGrid
         heading="FIXTURE heading"
         items={[
-          { id: 'a', name: 'FIXTURE a', caption: 'FIXTURE caption a', onPress: onFirst },
-          { id: 'b', name: 'FIXTURE b', caption: 'FIXTURE caption b', onPress: onSecond },
+          { id: 'a', name: 'FIXTURE a', countText: 'FIXTURE count a', onPress: onFirst },
+          { id: 'b', name: 'FIXTURE b', countText: 'FIXTURE count b', onPress: onSecond },
         ]}
       />,
     );
 
-    await fireEvent.press(screen.getByRole('button', { name: 'FIXTURE b، FIXTURE caption b' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'FIXTURE b، FIXTURE count b' }));
     expect(onSecond).toHaveBeenCalledTimes(1);
     expect(onFirst).not.toHaveBeenCalled();
   });
@@ -75,7 +82,7 @@ describe('DuasCategoryGrid', () => {
     expect(screen.getByRole('button', { name: 'FIXTURE show less' }).props.accessibilityState).toMatchObject({ expanded: true });
   });
 
-  it('keeps an odd last tile in its own row', async () => {
+  it('keeps an odd last tile in its own row, beside an empty half', async () => {
     await renderUi(<DuasCategoryGrid heading="FIXTURE heading" items={makeItems(3)} />);
 
     expect(screen.getAllByRole('button')).toHaveLength(3);
@@ -84,7 +91,7 @@ describe('DuasCategoryGrid', () => {
   it('renders in English', async () => {
     await renderUi(<DuasCategoryGrid heading="FIXTURE heading" items={makeItems(1)} />, { locale: 'en' });
 
-    expect(screen.getByRole('button', { name: 'FIXTURE name 1, FIXTURE caption 1' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'FIXTURE name 1, FIXTURE count 1' })).toBeOnTheScreen();
   });
 
   it('uses no raw colour literals', () => {

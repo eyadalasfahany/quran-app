@@ -1214,6 +1214,8 @@
       "categoriesHeading": "التصنيفات",
       "showAll": "عرض الكل {{number}}",
       "showLess": "عرض أقل",
+      "unavailableTitle": "الأدعية غير متاحة بعد",
+      "unavailableBody": "يتوفر المحتوى عند اكتمال إذن النشر",
       "sourcesLine": "المصادر: القرآن الكريم · حصن المسلم · موسوعة الأحاديث النبوية (HadeethEnc.com)"
     },
     "favorites": {
@@ -1293,6 +1295,11 @@
       "sourceLine": "{{surah}} · {{range}}",
       "shareSource": "سورة {{surah}} · {{range}}",
       "rowLabel": "{{surah}}، {{ayah}}"
+    },
+    "quranPlay": {
+      "play": "تشغيل",
+      "pause": "إيقاف",
+      "noTimings": "أوقات الآيات غير متوفرة لهذا القارئ."
     },
     "hadith": {
       "listTitle": "الأدعية النبوية",

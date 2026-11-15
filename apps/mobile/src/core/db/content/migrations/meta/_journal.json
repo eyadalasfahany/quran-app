@@ -127,6 +127,20 @@
       "when": 1794750277133,
       "tag": "0017_azkar_entry_home",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1794771593606,
+      "tag": "0018_dua_topic_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1794773465579,
+      "tag": "0019_azkar_segment_word_range",
+      "breakpoints": true
     }
   ]
 }

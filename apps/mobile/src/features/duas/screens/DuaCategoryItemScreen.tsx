@@ -8,8 +8,8 @@ import { Screen } from '@/shared/ui';
 import { AzkarReaderTopBar } from '@/features/azkar/components/AzkarReaderTopBar';
 
 import { categoryPager } from '../data/category-pager';
-import { categoryName } from '../data/category-labels';
-import { useDuaCategories, useDuaCategoryItems } from '../data/hooks';
+import { duaCategoryHeading } from '../data/home-tiles';
+import { useDuaCategories, useDuaCategoryItems, useDuaTopics } from '../data/hooks';
 import { duasHref, goBackOr } from '../routes';
 import { DuaHadithDetailScreen } from './DuaHadithDetailScreen';
 import { DuaHisnDetailScreen } from './DuaHisnDetailScreen';
@@ -33,12 +33,12 @@ export function DuaCategoryItemScreen({
   const theme = useTheme();
   const locale = useLocale();
   const categories = useDuaCategories();
-  const category = categories.find((candidate) => candidate.id === categoryId);
+  const topics = useDuaTopics();
   const items = useDuaCategoryItems(categoryId);
   const item = index >= 0 ? items[index] : undefined;
-  const title = category === undefined ? t('duas.home.title') : categoryName(category, t, locale);
+  const title = duaCategoryHeading(categoryId, categories, topics, t, locale)?.title ?? t('duas.home.title');
 
-  if (item === undefined || item.kind === 'hadith-entry') {
+  if (item === undefined || item.kind === 'hadith-entry' || item.kind === 'hadith-chapter') {
     return (
       <Screen testID={testID}>
         <ContentColumn gutter={theme.size.gutterHome}>

@@ -32,6 +32,8 @@ return [
         'hisn-al-muslim:entry-000038' => ['type' => 'dua', 'status' => 'reviewed', 'evidence' => 'developer:hisn-chapter-title-2026-11-15'],
         'hisn-al-muslim:entry-000041' => ['type' => 'dua', 'status' => 'reviewed', 'evidence' => 'developer:hisn-chapter-title-2026-11-15'],
         'hisn-al-muslim:entry-000048' => ['type' => 'dua', 'status' => 'reviewed', 'evidence' => 'developer:sheet-2026-11-15'],
+        // ADR 0093 (15 Nov 2026): returns with the word range; the type of its chapter's other entry (chapter 21, entry 51).
+        'hisn-al-muslim:entry-000050' => ['type' => 'dua', 'status' => 'reviewed', 'evidence' => 'developer:2026-11-15'],
         'hisn-al-muslim:entry-000052' => ['type' => 'dhikr', 'status' => 'reviewed', 'evidence' => 'developer:sheet-2026-11-15'],
         'hisn-al-muslim:entry-000053' => ['type' => 'dua', 'status' => 'reviewed', 'evidence' => 'developer:sheet-2026-11-15'],
         'hisn-al-muslim:entry-000055' => ['type' => 'dua', 'status' => 'reviewed', 'evidence' => 'developer:sheet-2026-11-15'],

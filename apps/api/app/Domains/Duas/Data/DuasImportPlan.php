@@ -21,6 +21,7 @@ final class DuasImportPlan extends Data
      * @param  list<Row>  $links
      * @param  list<Row>  $collectionRefs
      * @param  list<Row>  $collectionBooks
+     * @param  list<Row>  $topicLinks
      */
     public function __construct(
         public readonly array $items,
@@ -30,6 +31,7 @@ final class DuasImportPlan extends Data
         public readonly array $links,
         public readonly array $collectionRefs,
         public readonly array $collectionBooks,
+        public readonly array $topicLinks,
         public readonly DuasImportStats $stats,
     ) {}
 }

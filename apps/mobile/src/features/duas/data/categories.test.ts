@@ -254,7 +254,7 @@ describe('duas categories', () => {
       ]);
     });
 
-    it('names a book by its Arabic title, sources its count from the book, and marks it as a hadith source', () => {
+    it('names a book by its collection (Arabic), sources its count from the book, and marks it as a hadith source', () => {
       seedDuasPack(executor);
       seedHadithBookFixtures(executor);
 
@@ -264,16 +264,18 @@ describe('duas categories', () => {
         id: 'hadithbook:bukhari:80',
         kind: 'hadithbook',
         titleKey: null,
-        title: 'FIXTURE book title 80',
+        title: 'FIXTURE collection',
+        titleEn: null,
         count: 2,
         sourceKind: 'hadith',
         bookNumber: '80',
       });
     });
 
-    it('gives a book with an empty Arabic title no title, so the UI shows the fallback name', () => {
+    it('gives a book whose collection has an empty Arabic title no title, so the UI shows the fallback name', () => {
       seedDuasPack(executor);
       seedHadithBookFixtures(executor);
+      executor.run("UPDATE hadith_collections SET title_ar = '' WHERE slug = 'muslim'", []);
 
       const muslim = listDuaCategories(executor).find((category) => category.id === 'hadithbook:muslim:48');
 
