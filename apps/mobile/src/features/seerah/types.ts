@@ -98,6 +98,8 @@ export type SeerahMapPosition = {
   y: number;
   labelPriority: number;
   labelSide: SeerahLabelSide;
+  /** The place's own marker is drawn in the level's art at this position (a mosque, the Kaaba): a cluster that holds it sits on it. */
+  artLandmark: boolean;
 };
 
 export type SeerahMapZoom = {
@@ -143,6 +145,8 @@ export type SeerahMapPin = {
   ageMax: number | null;
   labelPriority: number;
   labelSide: SeerahLabelSide;
+  /** See SeerahMapPosition: a cluster that holds this place is drawn on its marker. */
+  artLandmark: boolean;
   /** Book order of the place's first event, the last label tie-break. */
   order: number;
   dimmed: boolean;

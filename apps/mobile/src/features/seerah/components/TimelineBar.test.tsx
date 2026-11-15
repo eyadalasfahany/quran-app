@@ -8,6 +8,9 @@ import { press } from '../../../../jest/azkar-ui-fixtures';
 
 import { TimelineBar } from './TimelineBar';
 
+let mockGlass = false;
+jest.mock('@/core/theme', () => ({ ...jest.requireActual<object>('@/core/theme'), useGlass: () => mockGlass }));
+
 const counts = Array.from({ length: 64 }, (_, age) => (age === 55 ? 8 : age === 54 ? 1 : 0));
 const milestones = [
   { age: 0, eventId: 'e1', key: 'birth', labelAr: 'المولد' },
@@ -39,6 +42,26 @@ describe('TimelineBar', () => {
     expect(screen.getByText('عمره ٥٥ سنة')).toBeOnTheScreen();
     expect(screen.getByText('الكهولة · ٨ أحداث')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'الكل' })).toBeOnTheScreen();
+  });
+
+  it('names the milestone of the selected age (frame SeerahMapRegionYear)', async () => {
+    await bar({ focus: 53 }).view;
+    expect(screen.getByText('عمره ٥٣ سنة')).toBeOnTheScreen();
+    expect(screen.getByText('الكهولة · الهجرة · لا أحداث', { exact: false })).toBeOnTheScreen();
+  });
+
+  it.each([
+    ['dark', 'dark'],
+    ['light', 'light'],
+    ['sepia', 'light'],
+  ] as const)('draws its glass in the app theme, not the system one (%s)', async (theme, scheme) => {
+    mockGlass = true;
+    try {
+      await renderGesture(<TimelineBar {...base} focus={null} onFocusChange={jest.fn()} />, { theme });
+      expect(screen.getByTestId('timeline-bar-glass', hidden).props.colorScheme).toBe(scheme);
+    } finally {
+      mockGlass = false;
+    }
   });
 
   it('shows the unspecified bucket in its own words', async () => {

@@ -1,13 +1,14 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 import { usePanGesture, usePinchGesture } from 'react-native-gesture-handler';
-import { setUpTests, useReducedMotion } from 'react-native-reanimated';
+import { advanceAnimationByTime, getAnimatedStyle, setUpTests, useReducedMotion } from 'react-native-reanimated';
 
-import { locales } from '../../../../jest/render-ui';
+import { flatStyle, locales } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { renderGesture } from '../../../../jest/seerah-ui';
 
 import { makePin, regionLevelFixture } from '../fixtures';
+import { focusView } from '../logic';
 import type { SeerahMapPin } from '../types';
 import { SeerahMap, type SeerahMapProps } from './SeerahMap';
 
@@ -63,12 +64,26 @@ async function mountMap(pins: SeerahMapPin[], props: Partial<SeerahMapProps> = {
   await act(async () => {
     fireEvent(screen.getByTestId('seerah-map'), 'layout', { nativeEvent: { layout: { height: 844, width: 390, x: 0, y: 0 } } });
   });
+  await flushArt();
   return { ...callbacks, view };
 }
 
+/** The art, pins and routes mount a frame after the map's frame (see SeerahMap): let that frame pass. */
+async function flushArt() {
+  await act(async () => {
+    if ('clock' in setTimeout) {
+      jest.advanceTimersByTime(50);
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  });
+}
+
+type GestureCallbacks = { onActivate: (e?: unknown) => void; onUpdate: (e: unknown) => void; onDeactivate: (e: unknown) => void };
+
 function gestures() {
-  const pan = jest.mocked(usePanGesture).mock.lastCall?.[0] as unknown as { onUpdate: (e: unknown) => void; onDeactivate: (e: unknown) => void };
-  const pinch = jest.mocked(usePinchGesture).mock.lastCall?.[0] as unknown as { onUpdate: (e: unknown) => void; onDeactivate: (e: unknown) => void };
+  const pan = jest.mocked(usePanGesture).mock.lastCall?.[0] as unknown as GestureCallbacks;
+  const pinch = jest.mocked(usePinchGesture).mock.lastCall?.[0] as unknown as GestureCallbacks;
   return { pan, pinch };
 }
 
@@ -99,15 +114,17 @@ describe('SeerahMap', () => {
   });
 
   it('a tap on a city opens its map and a tap on an event reports the place and the zoom', async () => {
+    jest.mocked(useReducedMotion).mockReturnValue(true);
     const { onCityOpen, onPinPress } = await mountMap([madinah, makkah, badr]);
-    await press(screen.getByTestId('seerah-map-pin-madinah'));
-    expect(onCityOpen).toHaveBeenCalledWith('madinah', 'madinah');
     await press(screen.getByTestId('seerah-map-pin-badr'));
     expect(onPinPress).toHaveBeenCalledWith('badr', 0.6);
+    await press(screen.getByTestId('seerah-map-pin-madinah'));
+    expect(onCityOpen).toHaveBeenCalledWith('madinah', 'madinah');
   });
 
   it('a city with one event still opens its map on a tap', async () => {
     const city = makePin({ count: 1, eventTitle: 'حدث واحد', name: 'المدينة', opensLevel: 'madinah', placeId: 'madinah', x: 878, y: 1053.3 });
+    jest.mocked(useReducedMotion).mockReturnValue(true);
     const { onCityOpen, onPinPress } = await mountMap([city]);
     await press(screen.getByTestId('seerah-map-pin-madinah'));
     expect(onCityOpen).toHaveBeenCalledWith('madinah', 'madinah');
@@ -142,13 +159,14 @@ describe('SeerahMap', () => {
     expect(screen.getByTestId('seerah-map-pin-b')).toBeOnTheScreen();
   });
 
-  it('hides the label that collides and keeps the one with the higher priority', async () => {
+  it('moves the label that collides to the other side of its pin and keeps the stronger one in place', async () => {
     // Not 44 pt apart in a line, so they stay separate pins, but the weak label runs into the strong one.
     const strong = makePin({ count: 2, labelPriority: 90, name: 'اسم طويل جدا للموضع القوي', opensLevel: null, placeId: 'strong', x: 878, y: 1000 });
     const weak = makePin({ count: 2, labelPriority: 10, name: 'اسم طويل جدا للموضع الضعيف', opensLevel: null, placeId: 'weak', x: 878 - 50 / 0.6, y: 1000 + 30 / 0.6 });
     await mountMap([strong, weak]);
     expect(screen.getByTestId('seerah-map-label-strong', hidden)).toBeOnTheScreen();
-    expect(screen.queryByTestId('seerah-map-label-weak', hidden)).toBeNull();
+    // `end` is the default side; the weak label now sits on the start side (right-aligned, left of its pin).
+    expect(flatStyle(screen.getByTestId('seerah-map-label-weak', hidden).props.style)).toMatchObject({ alignItems: 'flex-end' });
     expect(screen.getByTestId('seerah-map-pin-weak')).toBeOnTheScreen();
   });
 
@@ -227,12 +245,12 @@ describe('SeerahMap', () => {
     expect(onCityOpen).not.toHaveBeenCalled();
   });
 
-  it('pans to the focused pin, centred, at the level zoom (Reduce Motion: at once)', async () => {
-    // Window 390 x 844; 0.6 per unit; the badr pin (803, 1122) is in the middle of the window, clamped inside the art.
+  it('centres the focused pin in the visible area at the zoom middle (Reduce Motion: at once)', async () => {
+    // Window 390 x 844; the visible area is y 112 to 624, so its centre is (195, 368). Zoom: (0.6 + 2.4) / 2 = 1.5.
     jest.mocked(useReducedMotion).mockReturnValue(true);
     await mountMap([madinah, makkah, badr], { focusPlaceId: 'badr' });
     expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({
-      transform: [{ translateX: 195 - 803 * 0.6 }, { translateY: 422 - 1122 * 0.6 }, { scale: 0.6 }],
+      transform: [{ translateX: 195 - 803 * 1.5 }, { translateY: 368 - 1122 * 1.5 }, { scale: 1.5 }],
     });
   });
 
@@ -255,6 +273,175 @@ describe('SeerahMap', () => {
     await ar.view.unmount();
     await mountMap([madinah, makkah], {}, 'en');
     expect(JSON.stringify(screen.getByTestId('seerah-map-item-madinah').props.style)).toBe(arStyle);
+  });
+
+  it('lays the map space and the edge-chip overlay out physically (LTR), so Egypt stays on the west side in Arabic', async () => {
+    await mountMap([badr, makkah, madinah], {}, 'ar');
+    expect(flatStyle(screen.getByTestId('seerah-map-space').props.style)).toMatchObject({ direction: 'ltr' });
+    expect(flatStyle(screen.getByTestId('seerah-map-edges').props.style)).toMatchObject({ direction: 'ltr' });
+    expect(flatStyle(screen.getByTestId('seerah-map-layer').props.style)).toMatchObject({ left: 0, position: 'absolute' });
+  });
+
+  describe('edge chips point where they say', () => {
+    // Pin P at the middle of a 1644 x 2400 art, zoom 0.6: the window is centred on it. E sits beyond one window edge.
+    const wide = { viewbox: [0, 0, 1644, 2400] as const };
+    const groups = [
+      { arabic: 'شمالًا', direction: 'north', english: 'north', x: 800, y: 163.3 },
+      { arabic: 'جنوبًا', direction: 'south', english: 'south', x: 800, y: 2236.7 },
+      { arabic: 'غربًا', direction: 'west', english: 'west', x: 141.7, y: 1200 },
+      { arabic: 'شرقًا', direction: 'east', english: 'east', x: 1458.3, y: 1200 },
+    ] as const;
+
+    it.each(groups)('the $direction chip says «$arabic» in Arabic and «$english» in English, and draws the $direction arrow', async (group) => {
+      for (const locale of locales) {
+        const mounted = await mountMap(
+          [makePin({ count: 1, name: 'مكة', placeId: 'p', x: 800, y: 1200 }), makePin({ count: 7, kind: 'region', name: 'الشام', opensLevel: null, placeId: 'sham', x: group.x, y: group.y })],
+          wide,
+          locale,
+        );
+        const word = locale === 'ar' ? `خارج الشاشة ${group.arabic}` : `off screen to the ${group.english}`;
+        const chip = screen.getByRole('button', { name: new RegExp(`الشام.*${word}`) });
+        expect(chip).toBeOnTheScreen();
+        const arrow = screen.getByTestId(`seerah-map-edge-sham-arrow`, hidden);
+        // A geographic arrow never mirrors, in either language.
+        expect(flatStyle(arrow.props.style).transform).toBeUndefined();
+        await mounted.view.unmount();
+      }
+    });
+  });
+
+  describe('a tap centres its item in the visible area and zooms (Reduce Motion: at once)', () => {
+    const size = { height: 844, width: 390 };
+    const content = { height: 2400, width: 1644 };
+    const visible = { height: 844 - 112 - 220, width: 390, x: 0, y: 112 };
+    const zoom = regionLevelFixture.zoom;
+    const reduce = () => jest.mocked(useReducedMotion).mockReturnValue(true);
+
+    it('a tap on an event pin lands on focusView at the zoom middle', async () => {
+      reduce();
+      await mountMap([madinah, makkah, badr]);
+      await press(screen.getByTestId('seerah-map-pin-badr'));
+      const expected = focusView({ x: 803, y: 1122 }, (zoom.default + zoom.max) / 2, visible, content, size, zoom);
+      expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({
+        transform: [{ translateX: expected.tx }, { translateY: expected.ty }, { scale: expected.scale }],
+      });
+    });
+
+    it('a tap on a cluster centres the cluster between the header and the timeline, zoomed in', async () => {
+      reduce();
+      const a = makePin({ count: 2, name: 'أ', opensLevel: null, placeId: 'a', x: 878, y: 1000 });
+      const b = makePin({ count: 3, name: 'ب', opensLevel: null, placeId: 'b', x: 918, y: 1000 });
+      await mountMap([a, b]);
+      await press(screen.getByRole('button', { name: '٢ مواضع متقاربة، ٥ أحداث. يكبّر الخريطة' }));
+      const animated = (getAnimatedStyle as unknown as (component: unknown) => { transform: Record<string, number>[] })(
+        screen.getByTestId('seerah-map-layer'),
+      );
+      const transform = animated.transform;
+      const [tx, ty] = [transform[0]?.translateX ?? 0, transform[1]?.translateY ?? 0];
+      expect(transform[2]?.scale).toBe((zoom.default + zoom.max) / 2);
+      // The cluster's content point is at the visible centre: y 1000, x between the two pins.
+      expect((368 - ty) / 1.5).toBeCloseTo(1000, 0);
+      expect((195 - tx) / 1.5).toBeGreaterThanOrEqual(878);
+      expect((195 - tx) / 1.5).toBeLessThanOrEqual(918);
+    });
+
+    it('a cluster tapped below the middle zoom spreads; tapped again from there it lists its places', async () => {
+      reduce();
+      const a = makePin({ count: 2, name: 'أ', opensLevel: null, placeId: 'a', x: 878, y: 1000 });
+      const b = makePin({ count: 3, name: 'ب', opensLevel: null, placeId: 'b', x: 900, y: 1000 });
+      const onClusterOpen = jest.fn();
+      await mountMap([a, b], { onClusterOpen });
+      const name = '٢ مواضع متقاربة، ٥ أحداث. يكبّر الخريطة';
+      await press(screen.getByRole('button', { name }));
+      expect(onClusterOpen).not.toHaveBeenCalled();
+      await press(screen.getByRole('button', { name }));
+      expect(onClusterOpen).toHaveBeenCalledWith(['b', 'a']);
+    });
+
+    it('a tap on an edge chip centres the region the same way', async () => {
+      reduce();
+      const sham = makePin({ count: 7, kind: 'region', name: 'الشام', opensLevel: null, placeId: 'sham', x: 878, y: 100 });
+      await mountMap([madinah, makkah, sham]);
+      await press(screen.getByRole('button', { name: 'الشام، ٧ أحداث، خارج الشاشة شمالًا' }));
+      const expected = focusView({ x: 878, y: 100 }, (zoom.default + zoom.max) / 2, visible, content, size, zoom);
+      expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({
+        transform: [{ translateX: expected.tx }, { translateY: expected.ty }, { scale: expected.scale }],
+      });
+    });
+  });
+
+  describe('crisp overlay', () => {
+    it('is skipped at or under 1×, where the art layer is already sharp', async () => {
+      await mountMap([madinah, makkah]);
+      await act(async () => {
+        gestures().pan.onDeactivate({});
+      });
+      await act(async () => {
+        for (let frame = 0; frame < 150; frame += 1) {
+          advanceAnimationByTime();
+        }
+      });
+      expect(screen.queryByTestId('seerah-map-crisp', hidden)).toBeNull();
+    });
+
+    it('is drawn at once when the map opens past 1× (a city level)', async () => {
+      await mountMap([madinah, makkah], { zoom: { ...regionLevelFixture.zoom, default: 1.5 } });
+      expect(screen.getByTestId('seerah-map-crisp', hidden)).toBeTruthy();
+    });
+
+    it('is shown with the visible rectangle once a pan settles, and hidden on the first frame of the next gesture', async () => {
+      await mountMap([madinah, makkah], { zoom: { ...regionLevelFixture.zoom, default: 1.5 } });
+      await act(async () => {
+        gestures().pan.onActivate({});
+      });
+      // Hidden on the UI thread at once, while the overlay stays mounted (a settle redraws it in place).
+      expect(screen.getByTestId('seerah-map-crisp-layer', hidden)).toHaveAnimatedStyle({ opacity: 0 });
+      expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({ opacity: 1 });
+      await act(async () => {
+        gestures().pan.onDeactivate({});
+      });
+      await act(async () => {
+        for (let frame = 0; frame < 150; frame += 1) {
+          advanceAnimationByTime();
+        }
+      });
+      const overlay = screen.getByTestId('seerah-map-crisp', hidden);
+      // The native Svg gets the viewBox as its parts: origin, size, alignment (meet is 0).
+      expect(overlay.props.vbWidth).toBeGreaterThan(0);
+      expect(overlay.props.vbHeight).toBeGreaterThan(0);
+      expect(overlay.props.align).toBe('xMinYMin');
+      expect(overlay.props.meetOrSlice).toBe(0);
+      expect(screen.getByTestId('seerah-map-crisp-layer', hidden)).toHaveAnimatedStyle({ opacity: 1 });
+      // The zoomed route layer hides under the crisp routes.
+      expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({ opacity: 0 });
+      await act(async () => {
+        gestures().pan.onActivate({});
+      });
+      expect(screen.getByTestId('seerah-map-crisp-layer', hidden)).toHaveAnimatedStyle({ opacity: 0 });
+    });
+
+    // Regression: the spring's end callback once captured its JS callback before it was defined, so the UI thread
+    // scheduled `undefined` and the app aborted about one spring after any pin, cluster or edge-chip tap.
+    const a = makePin({ count: 2, name: 'أ', opensLevel: null, placeId: 'a', x: 878, y: 1000 });
+    const b = makePin({ count: 3, name: 'ب', opensLevel: null, placeId: 'b', x: 918, y: 1000 });
+    const sham = makePin({ count: 7, kind: 'region', name: 'الشام', opensLevel: null, placeId: 'sham', x: 878, y: 100 });
+    it.each([
+      ['an event pin', [madinah, makkah, badr], () => screen.getByTestId('seerah-map-pin-badr')],
+      ['a cluster', [a, b], () => screen.getByRole('button', { name: '٢ مواضع متقاربة، ٥ أحداث. يكبّر الخريطة' })],
+      ['an edge chip', [madinah, makkah, sham], () => screen.getByTestId('seerah-map-edge-sham')],
+    ] as const)('is drawn once the spring after a tap on %s settles (motion on)', async (_name, pins, target) => {
+      jest.useFakeTimers();
+      try {
+        await mountMap([...pins]);
+        await press(target());
+        await act(async () => {
+          jest.advanceTimersByTime(3000);
+        });
+        expect(screen.getByTestId('seerah-map-crisp', hidden)).toBeTruthy();
+      } finally {
+        jest.useRealTimers();
+      }
+    });
   });
 
   it('has no raw colour literal', () => {

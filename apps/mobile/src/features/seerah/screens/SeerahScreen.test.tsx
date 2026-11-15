@@ -9,7 +9,7 @@ import { storage, storageKeys } from '@/core/storage/mmkv';
 import { resetHadithDownloads, useHadithDownloads } from '@/features/hadith/downloads';
 import { setWindowSize, resetWindowSize } from '../../../../jest/window-size';
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { renderGesture } from '../../../../jest/seerah-ui';
+import { renderGesture as renderGestureBase } from '../../../../jest/seerah-ui';
 import { locales } from '../../../../jest/render-ui';
 import { eventsFixture, milestonesFixture, paragraphsFixture, placesFixture, regionLevelFixture } from '../fixtures';
 import { useSeerahBook, useSeerahCatalogEntry, useSeerahEvent, useSeerahReady, useSeerahWorld } from '../hooks';
@@ -23,6 +23,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), canGoBack: jest.fn(() => true), navigate: jest.fn(), push: jest.fn(), replace: jest.fn() },
+  useIsFocused: jest.fn(() => true),
 }));
 jest.mock('@/core/network/useOnline', () => ({ useOnline: jest.fn(() => true) }));
 jest.mock('react-native-reanimated', () => {
@@ -43,6 +44,19 @@ jest.mock('../hooks', () => ({
 }));
 
 setUpTests();
+
+/** Renders the screen, then lets the frame pass after which the map mounts its art, pins and routes (see SeerahMap). */
+async function renderGesture(...args: Parameters<typeof renderGestureBase>) {
+  const view = await renderGestureBase(...args);
+  await act(async () => {
+    if ('clock' in setTimeout) {
+      jest.advanceTimersByTime(50);
+    } else {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  });
+  return view;
+}
 
 const BOOK: SeerahBook = {
   attributionAr: 'x',
@@ -212,9 +226,24 @@ describe('SeerahScreen', () => {
       // Reduce Motion: the view is written at once. The badr pin (803, 1122) at the region's 0.6 zoom, on a 390 x 844 window.
       jest.mocked(useReducedMotion).mockReturnValue(true);
       await renderGesture(<SeerahScreen initialPlace="badr" initialView="map" />);
+      // The visible area in the test is y 52 (under the header) to 636 (above the timeline): its centre is 344, at the zoom middle 1.5.
       expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({
-        transform: [{ translateX: 195 - 803 * 0.6 }, { translateY: 422 - 1122 * 0.6 }, { scale: 0.6 }],
+        transform: [{ translateX: 195 - 803 * 1.5 }, { translateY: 344 - 1122 * 1.5 }, { scale: 1.5 }],
       });
+    });
+
+    it('draws the header and the timeline first, and mounts the art, pins and routes a frame later', async () => {
+      jest.useFakeTimers();
+      await renderGestureBase(<SeerahScreen initialView="map" />);
+      expect(screen.getByTestId('seerah-map-header')).toBeOnTheScreen();
+      expect(screen.getByTestId('timeline-bar')).toBeOnTheScreen();
+      expect(screen.queryByTestId('seerah-map-art-svg', { includeHiddenElements: true })).toBeNull();
+      expect(screen.queryByTestId('seerah-map-pin-badr')).toBeNull();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+      expect(screen.getByTestId('seerah-map-art-svg', { includeHiddenElements: true })).toBeTruthy();
+      expect(screen.getByTestId('seerah-map-pin-badr')).toBeOnTheScreen();
     });
 
     it('opens the map from the route parameter even when the list is remembered', async () => {
@@ -265,6 +294,14 @@ describe('SeerahScreen', () => {
       expect(screen.getByTestId('seerah-event-callout')).toBeOnTheScreen();
       await press(screen.getByRole('button', { name: /^فتح/ }));
       expect(router.push).toHaveBeenCalledWith('/seerah/event/e006');
+    });
+
+    it('titles «أخرى» without placing its events «at this spot»', async () => {
+      await renderGesture(<SeerahScreen />);
+      await press(screen.getByRole('button', { name: /^أخرى/ }));
+      expect(screen.getByTestId('seerah-spot-sheet')).toBeOnTheScreen();
+      expect(screen.queryByText(/في هذا الموضع/)).toBeNull();
+      expect(screen.getByText(/· بترتيب العمر$/)).toBeOnTheScreen();
     });
 
     it('pushes an event from the spot sheet on the next frame, after the sheet has closed', async () => {

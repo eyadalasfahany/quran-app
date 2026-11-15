@@ -24,13 +24,16 @@ final class RecordReader
     ) {}
 
     /**
-     * Reports unknown, missing and out-of-order keys. The record must hold exactly these keys, in this order (V2).
+     * Reports unknown, missing and out-of-order keys. The record must hold exactly these keys, in this order (V2), then
+     * any of the `$optional` keys it has, in their order.
      *
      * @param  list<string>  $keys
+     * @param  list<string>  $optional
      */
-    public function expectKeys(array $keys): void
+    public function expectKeys(array $keys, array $optional = []): void
     {
         $actual = array_keys($this->record);
+        $keys = [...$keys, ...array_values(array_intersect($optional, $actual))];
 
         if ($actual === $keys) {
             return;
@@ -102,6 +105,24 @@ final class RecordReader
         $this->issues->error($this->rule, $this->where, $key.' must be a number');
 
         return 0.0;
+    }
+
+    /** An optional boolean: absent is false. */
+    public function optionalBool(string $key): bool
+    {
+        if (! array_key_exists($key, $this->record)) {
+            return false;
+        }
+
+        $value = $this->record[$key];
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        $this->issues->error($this->rule, $this->where, $key.' must be true or false');
+
+        return false;
     }
 
     public function int(string $key): int

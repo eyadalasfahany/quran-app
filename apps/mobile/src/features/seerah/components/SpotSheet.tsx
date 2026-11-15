@@ -1,15 +1,17 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
+import { SheetScrollView } from '@/features/reader/components/SheetScrollView';
 import { SheetHeader } from '@/shared/ui';
 
 import { EventListCard, type EventListItem } from './EventListCard';
+import { useSeerahSheetClose, useSheetBottomPadding } from './SeerahSheet';
 
 /**
- * The small sheet for one crowded spot (frame SeerahClusterSheet): more than six events at the deepest zoom open here, in
- * order of age. It is the only list the map shows. The sheet's own transparent modal and detents belong to the screen; this
- * is the card: a grabber, the place and its count, a close button and the rows.
+ * The sheet for one crowded spot, or for «أخرى» (frame SeerahClusterSheet): its events in order of age. The hosting
+ * SeerahSheet draws the card and the grabber; this is the header (the place, its count, close) and the rows, which scroll
+ * with the sheet's drag (all of them reachable at the full detent) above the home indicator.
  */
 export function SpotSheet({
   title,
@@ -17,6 +19,7 @@ export function SpotSheet({
   rows,
   onRowPress,
   onClose,
+  nearby = false,
   testID = 'seerah-spot-sheet',
 }: {
   title: string;
@@ -25,48 +28,30 @@ export function SpotSheet({
   rows: readonly EventListItem[];
   onRowPress: (id: string) => void;
   onClose: () => void;
+  /** The events of several places (a cluster, «أخرى»): the subtitle does not say «at this spot», and each row names its place. */
+  nearby?: boolean;
   testID?: string;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const close = useSeerahSheetClose(onClose);
+  const bottom = useSheetBottomPadding();
 
   return (
-    <View
-      style={{
-        backgroundColor: theme.colors.surface,
-        borderTopLeftRadius: theme.radius.xl,
-        borderTopRightRadius: theme.radius.xl,
-        gap: theme.space[3],
-        maxHeight: '60%',
-        paddingBottom: theme.space[6],
-        paddingHorizontal: theme.space[4],
-        paddingTop: theme.space[2],
-      }}
-      testID={testID}
-    >
-      <View
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        style={{
-          alignSelf: 'center',
-          backgroundColor: theme.colors.lineStrong,
-          borderRadius: theme.size.grabberRadius,
-          height: theme.size.grabberHeight,
-          width: theme.size.grabberWidth,
-        }}
-        testID={`${testID}-grabber`}
-      />
-      <SheetHeader
-        closeLabel={t('seerah.close')}
-        onClose={onClose}
-        size="large"
-        subtitle={t('seerah.spot.subtitle', { events: eventsLabel })}
-        testID={`${testID}-header`}
-        title={title}
-      />
-      <ScrollView>
+    <View style={{ flex: 1 }} testID={testID}>
+      <View style={{ paddingBottom: 10, paddingHorizontal: theme.space[4], paddingTop: theme.space[2] }}>
+        <SheetHeader
+          closeLabel={t('seerah.close')}
+          onClose={close}
+          size="display"
+          subtitle={t(nearby ? 'seerah.spot.subtitleNearby' : 'seerah.spot.subtitle', { events: eventsLabel })}
+          testID={`${testID}-header`}
+          title={title}
+        />
+      </View>
+      <SheetScrollView contentContainerStyle={{ paddingBottom: bottom, paddingHorizontal: theme.space[4] }} testID={`${testID}-scroll`}>
         <EventListCard onRowPress={onRowPress} rows={rows} testID={`${testID}-rows`} />
-      </ScrollView>
+      </SheetScrollView>
     </View>
   );
 }

@@ -98,7 +98,7 @@ export function seerahPackRows(): HadithPackRows {
     seerah_map_positions: [
       { resource_id: R, level: 'region', place_id: 2, x: 897.7, y: 1357.8, label_priority: 100, label_side: 'end' },
       { resource_id: R, level: 'region', place_id: 4, x: 878, y: 1053.3, label_priority: 100, label_side: 'start' },
-      { resource_id: R, level: 'makkah', place_id: 3, x: 800, y: 700, label_priority: 50, label_side: 'end' },
+      { resource_id: R, level: 'makkah', place_id: 3, x: 800, y: 700, label_priority: 50, label_side: 'end', art_landmark: 1 },
     ],
     seerah_routes: [{ resource_id: R, id: 1, slug: 'r-hijra', kind: 'hijra', name_ar: '[رحلة تجريبية]' }],
     seerah_route_stops: [

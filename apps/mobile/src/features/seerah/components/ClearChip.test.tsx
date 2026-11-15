@@ -24,9 +24,11 @@ describe('ClearChip', () => {
     expect(screen.getByRole('button', { name: 'الكل' }).props.accessibilityHint).toBe('Shows every age');
   });
 
-  it('is at least 44 pt', async () => {
+  it('is a 36 pt pill that reaches a 44 pt target with its hit slop', async () => {
     await renderUi(<ClearChip label="الكل" onPress={jest.fn()} testID="clear" />);
-    expect(flatStyle(screen.getByTestId('clear').props.style).minHeight).toBe(44);
+    const chip = screen.getByTestId('clear');
+    expect(flatStyle(chip.props.style).minHeight).toBe(36);
+    expect(Number(flatStyle(chip.props.style).minHeight) + 2 * Number(chip.props.hitSlop)).toBe(44);
   });
 
   it('has no raw colour literal', () => {

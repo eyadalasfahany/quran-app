@@ -19,14 +19,20 @@ describe('YearHistogram', () => {
   it('scales a bar by its year and leaves a hairline for a year without events', async () => {
     await renderUi(<YearHistogram heights={heights} testID="hist" thickness={40} />);
     expect(flatStyle(screen.getByTestId('hist-bar-10', hidden).props.style).height).toBe(40);
-    expect(flatStyle(screen.getByTestId('hist-bar-20', hidden).props.style).height).toBe(20);
-    expect(flatStyle(screen.getByTestId('hist-bar-0', hidden).props.style).height).toBe(2);
+    // An empty year is a 2.5 pt stub; a year with events grows from it (frame SeerahMapRegion).
+    expect(flatStyle(screen.getByTestId('hist-bar-20', hidden).props.style).height).toBe(2.5 + 0.5 * 37.5);
+    expect(flatStyle(screen.getByTestId('hist-bar-0', hidden).props.style).height).toBe(2.5);
   });
 
   it('turns the focused bar brand and fades the rest', async () => {
     await renderUi(<YearHistogram focusAge={10} heights={heights} testID="hist" />);
-    expect(flatStyle(screen.getByTestId('hist-bar-10', hidden).props.style)).toMatchObject({ backgroundColor: themes.light.colors.brand, opacity: 0.9 });
-    expect(flatStyle(screen.getByTestId('hist-bar-20', hidden).props.style).opacity).toBeLessThan(0.9);
+    expect(flatStyle(screen.getByTestId('hist-bar-10', hidden).props.style)).toMatchObject({ backgroundColor: themes.light.colors.brand, opacity: 1 });
+    expect(flatStyle(screen.getByTestId('hist-bar-20', hidden).props.style).opacity).toBe(0.16);
+  });
+
+  it('draws idle bars in brand at 42%', async () => {
+    await renderUi(<YearHistogram heights={heights} testID="hist" />);
+    expect(flatStyle(screen.getByTestId('hist-bar-20', hidden).props.style)).toMatchObject({ backgroundColor: themes.light.colors.brand, opacity: 0.42 });
   });
 
   it('grows bars along the cross axis when vertical', async () => {

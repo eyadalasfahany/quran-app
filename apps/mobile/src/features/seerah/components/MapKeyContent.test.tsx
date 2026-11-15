@@ -7,6 +7,11 @@ import { themes } from '@/core/theme';
 
 import { MapKeyContent } from './MapKeyContent';
 
+jest.mock('react-native-safe-area-context', () => {
+  const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
+  return { ...actual, useSafeAreaInsets: () => ({ bottom: 34, left: 0, right: 0, top: 47 }) };
+});
+
 describe('MapKeyContent', () => {
   it.each(locales)('has the title, the three sections and a close button (%s)', async (locale) => {
     const onClose = jest.fn();

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AccessibilityInfo } from "react-native";
 
 import { useContentDb } from "@/core/db/content/open";
+import { useCatalogVersion } from "@/core/sync/catalog-version";
 
 import type { SeerahView } from "../components/ListToggle";
 import {
@@ -76,17 +77,29 @@ export function useSeerahCatalogEntry(): SeerahCatalogEntry | undefined {
   );
 }
 
+// The world is static per pack version: read once per catalogue revision and kept for the session, so opening the screen
+// again does not touch content.db.
+let worldCache: { revision: number; world: SeerahWorld } | null = null;
+
 /** The whole map: the book has a few hundred events and about eighty places, so one read serves every screen. */
 export function useSeerahWorld(): SeerahWorld {
+  const revision = useCatalogVersion((state) => state.version);
   return useSeerahContent(
     EMPTY_WORLD,
-    (db) => ({
-      places: listSeerahPlaces(db),
-      events: listSeerahEvents(db),
-      levels: listSeerahMapLevels(db),
-      routes: listSeerahRoutes(db),
-      milestones: listSeerahMilestones(db),
-    }),
+    (db) => {
+      if (worldCache?.revision === revision) {
+        return worldCache.world;
+      }
+      const world = {
+        places: listSeerahPlaces(db),
+        events: listSeerahEvents(db),
+        levels: listSeerahMapLevels(db),
+        routes: listSeerahRoutes(db),
+        milestones: listSeerahMilestones(db),
+      };
+      worldCache = { revision, world };
+      return world;
+    },
     [],
   );
 }

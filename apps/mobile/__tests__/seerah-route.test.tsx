@@ -3,9 +3,9 @@ import { useLocalSearchParams } from 'expo-router';
 
 import { ThemeProvider } from '@/core/theme';
 
-import { renderUi } from '../../jest/render-ui';
+import { renderUi } from '../jest/render-ui';
 
-import SeerahRoute from './index';
+import SeerahRoute from '../app/seerah/index';
 
 jest.mock('expo-router', () => ({ useLocalSearchParams: jest.fn() }));
 

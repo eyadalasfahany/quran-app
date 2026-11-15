@@ -136,6 +136,16 @@ it('writes the drawn positions and the level of each map', function (): void {
         ->and($position)->toMatchArray(['level' => 'region', 'x' => 700.0, 'y' => 200.0, 'label_priority' => 90, 'label_side' => 'end']);
 });
 
+it('writes art_landmark 1 for a place whose marker the art draws, and 0 where the layout leaves it out', function (): void {
+    [$rows] = seerahRowsFixture();
+
+    $landmark = seerahRowWhere($rows->rows('seerah_places'), 'slug', 'fx-landmark');
+    $region = seerahRowWhere($rows->rows('seerah_places'), 'slug', 'fx-region');
+
+    expect(seerahRowWhere($rows->rows('seerah_map_positions'), 'place_id', $landmark['id'])['art_landmark'])->toBe(1)
+        ->and(seerahRowWhere($rows->rows('seerah_map_positions'), 'place_id', $region['id'])['art_landmark'])->toBe(0);
+});
+
 it('keeps each quote with its event and paragraph, one row per quote', function (): void {
     [$rows] = seerahRowsFixture();
 

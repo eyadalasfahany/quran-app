@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $y
  * @property int $label_priority
  * @property string $label_side
+ * @property bool $art_landmark
  */
 final class SeerahMapPosition extends Model
 {
@@ -40,6 +41,7 @@ final class SeerahMapPosition extends Model
             'resource_id' => 'integer',
             'place_id' => 'integer',
             'label_priority' => 'integer',
+            'art_landmark' => 'boolean',
             'x' => 'float',
             'y' => 'float',
         ];

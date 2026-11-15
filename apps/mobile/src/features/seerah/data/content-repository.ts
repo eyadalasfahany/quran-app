@@ -141,8 +141,8 @@ export function listSeerahMapLevels(db: SqlExecutor): SeerahMapLevel[] {
   );
   return levels.map((level) => {
     const positions = db
-      .all<{ placeId: number; x: number; y: number; labelPriority: number; labelSide: string }>(
-        `SELECT m.place_id AS placeId, m.x, m.y, m.label_priority AS labelPriority, m.label_side AS labelSide
+      .all<{ placeId: number; x: number; y: number; labelPriority: number; labelSide: string; artLandmark: number | null }>(
+        `SELECT m.place_id AS placeId, m.x, m.y, m.label_priority AS labelPriority, m.label_side AS labelSide, m.art_landmark AS artLandmark
          FROM seerah_map_positions m ${installed('m')} WHERE m.level = ? ORDER BY m.rowid`,
         [level.level],
       )
@@ -150,7 +150,17 @@ export function listSeerahMapLevels(db: SqlExecutor): SeerahMapLevel[] {
         const placeId = slugs.get(row.placeId);
         return placeId === undefined
           ? []
-          : [{ placeId, x: row.x, y: row.y, labelPriority: row.labelPriority, labelSide: row.labelSide as SeerahLabelSide }];
+          : [
+              {
+                // NULL, from a pack built before the column, means no marker.
+                artLandmark: row.artLandmark === 1,
+                labelPriority: row.labelPriority,
+                labelSide: row.labelSide as SeerahLabelSide,
+                placeId,
+                x: row.x,
+                y: row.y,
+              },
+            ];
       });
     const routePaths = db
       .all<{ routeId: number; d: string }>(

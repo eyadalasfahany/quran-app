@@ -34,8 +34,15 @@ describe('MapPin', () => {
     await renderUi(<MapPin label="x" onPress={jest.fn()} testID="pin" variant="empty" />);
     expect(flatStyle(screen.getByTestId('pin-dot').props.style)).toMatchObject({
       backgroundColor: themes.light.colors.surfaceRaised,
-      height: 12,
+      height: 9,
     });
+  });
+
+  it('draws the single dot as a 14 pt circle in a 3 pt raised ring, never a rounded square', async () => {
+    await renderUi(<MapPin label="x" onPress={jest.fn()} testID="pin" />);
+    const dot = flatStyle(screen.getByTestId('pin-dot').props.style);
+    expect(dot).toMatchObject({ borderWidth: 3, height: 20, width: 20 });
+    expect(dot.borderRadius).toBe(10);
   });
 
   it('draws the dashed gold edge only when uncertain', async () => {

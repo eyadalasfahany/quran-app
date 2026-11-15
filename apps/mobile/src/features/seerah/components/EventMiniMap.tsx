@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
-import Svg, { SvgXml } from 'react-native-svg';
+import Svg, { SvgAst } from 'react-native-svg';
 
 import { useTheme } from '@/core/theme';
 import { Icon, UiText, arabicTextDirection, useContrastColors } from '@/shared/ui';
 
 import type { SeerahRouteKind } from '../types';
+
+import { parsedArt } from '../art/parsed-art';
+import { useAfterFrame, useArtReady } from '../hooks/useArtReady';
 
 import { RouteLine } from './RouteLine';
 
@@ -40,6 +43,8 @@ export function EventMiniMap({
   const theme = useTheme();
   const colors = useContrastColors();
   const [width, setWidth] = useState(0);
+  // The art (a whole level's SVG) mounts after the page's push and its first frame; its parse is cached per level.
+  const artShown = useAfterFrame(useArtReady());
   const miniScale = useSharedValue(ZOOM);
   // Only the window around the place is drawn: the strip shows a few hundred units of the art at ZOOM points per unit, not
   // the whole art scaled down. Centred on the place, the same size as the strip (so the art is not stretched).
@@ -62,7 +67,9 @@ export function EventMiniMap({
       testID={testID}
     >
       <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={`${testID}-art`}>
-        {crop === null ? null : <SvgXml height={HEIGHT} testID={`${testID}-art-svg`} viewBox={crop} width={width} xml={art} />}
+        {crop === null || !artShown ? null : (
+          <SvgAst ast={parsedArt(art)} override={{ height: HEIGHT, testID: `${testID}-art-svg`, viewBox: crop, width }} />
+        )}
         {route === null || crop === null ? null : (
           <Svg height={HEIGHT} style={{ position: 'absolute' }} viewBox={crop} width={width}>
             <RouteLine d={route.d} kind={route.kind} scale={miniScale} />

@@ -205,7 +205,7 @@ Six entries (المولد، البعثة، الهجرة، بدر، الفتح، 
   "viewbox": [0, 0, 1000, 1000],
   "art": "design-assets/seerah/map-makkah.svg",
   "positions": [
-    { "place": "makkah.kaaba", "x": 512, "y": 498, "label_priority": 100, "label_side": "end" }
+    { "place": "makkah.kaaba", "x": 512, "y": 498, "label_priority": 100, "label_side": "end", "art_landmark": true }
   ],
   "route_paths": [
     { "route": "r-hijra", "segment": ["makkah", "makkah.thawr"], "d": "M …" }
@@ -213,7 +213,7 @@ Six entries (المولد، البعثة، الهجرة، بدر، الفتح، 
 }
 ```
 
-`label_priority` (0–100) decides which label survives a collision; ties break by event count then book order. Layouts are reviewed **visually** (the report draws them, and the frames approve the art), not by reading numbers.
+`label_priority` (0–100) decides which label survives a collision; ties break by event count then book order. `art_landmark` is optional (absent is false), after the fixed keys: `true` only when the level's art draws the place's own marker centred on this position (the Kaaba, the Prophet's Mosque, Quba). A cluster that holds such a place is drawn on it (ADR 0089, amendment). Layouts are reviewed **visually** (the report draws them, and the frames approve the art), not by reading numbers.
 
 ## `reviews/<batch>.json` (developer only)
 

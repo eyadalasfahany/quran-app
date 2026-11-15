@@ -845,7 +845,7 @@ final class PackSchema
     }
 
     /**
-     * Where each place is drawn on one map, with its label priority and side.
+     * Where each place is drawn on one map, with its label priority and side, and whether the art draws its marker.
      */
     public static function seerahMapPositions(): PackTable
     {
@@ -859,6 +859,8 @@ final class PackSchema
                 self::real('y'),
                 self::integer('label_priority'),
                 self::text('label_side'),
+                // 1 when the place's marker is drawn in the art (ADR 0089). Nullable: a pack built before it reads NULL.
+                self::integer('art_landmark', nullable: true),
             ],
             primaryKey: ['resource_id', 'level', 'place_id'],
             orderBy: ['resource_id', 'level', 'place_id'],

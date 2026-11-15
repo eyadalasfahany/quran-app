@@ -15,6 +15,11 @@ export function ageText(t: TFunction, age: number): string {
   return t('seerah.age.label', { age: num(age) });
 }
 
+/** «عمره ٥٤» / "Age 54": the map label's age line, without the unit (frame SeerahMapRegion). */
+export function ageShortText(t: TFunction, age: number): string {
+  return t('seerah.age.short', { age: num(age) });
+}
+
 /** «عمره ٤٣–٤٤ سنة» for a range, the single age when both ends are equal. */
 export function ageRangeText(t: TFunction, from: number, to: number): string {
   return from === to ? ageText(t, from) : t('seerah.age.range', { from: num(from), to: num(to) });

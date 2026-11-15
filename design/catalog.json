@@ -6467,12 +6467,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahClusterSheet",
-     "untranslated": 11
+     "untranslated": 4
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahClusterSheet",
-     "untranslated": 11
+     "untranslated": 4
     }
    },
    "frames": [
@@ -6541,12 +6541,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahEventOther",
-     "untranslated": 6
+     "untranslated": 4
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahEventOther",
-     "untranslated": 6
+     "untranslated": 4
     }
    },
    "frames": [
@@ -6580,12 +6580,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahExpanded",
-     "untranslated": 8
+     "untranslated": 7
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahExpanded",
-     "untranslated": 8
+     "untranslated": 7
     }
    },
    "frames": [
@@ -6619,12 +6619,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahExpandedCity",
-     "untranslated": 12
+     "untranslated": 8
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahExpandedCity",
-     "untranslated": 12
+     "untranslated": 8
     }
    },
    "frames": [
@@ -6693,12 +6693,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahMapKey",
-     "untranslated": 23
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahMapKey",
-     "untranslated": 23
+     "untranslated": 0
     }
    },
    "frames": [
@@ -6840,12 +6840,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahMapRegionYear",
-     "untranslated": 2
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahMapRegionYear",
-     "untranslated": 2
+     "untranslated": 1
     }
    },
    "frames": [
@@ -6876,12 +6876,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahMenu",
-     "untranslated": 1
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahMenu",
-     "untranslated": 1
+     "untranslated": 0
     }
    },
    "frames": [
@@ -6912,12 +6912,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahSources",
-     "untranslated": 3
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahSources",
-     "untranslated": 3
+     "untranslated": 0
     }
    },
    "frames": [
@@ -6948,12 +6948,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateDownload",
-     "untranslated": 3
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateDownload",
-     "untranslated": 3
+     "untranslated": 1
     }
    },
    "frames": [
@@ -6984,12 +6984,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateDownloading",
-     "untranslated": 2
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateDownloading",
-     "untranslated": 2
+     "untranslated": 1
     }
    },
    "frames": [
@@ -7020,12 +7020,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateEmptyYear",
-     "untranslated": 4
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateEmptyYear",
-     "untranslated": 4
+     "untranslated": 1
     }
    },
    "frames": [
@@ -7056,12 +7056,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateError",
-     "untranslated": 2
+     "untranslated": 1
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateError",
-     "untranslated": 2
+     "untranslated": 1
     }
    },
    "frames": [
@@ -7092,12 +7092,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahStateOffline",
-     "untranslated": 3
+     "untranslated": 0
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahStateOffline",
-     "untranslated": 3
+     "untranslated": 0
     }
    },
    "frames": [
@@ -7128,12 +7128,12 @@
     "light-ltr": {
      "how": "derived",
      "from": "SeerahTimeline",
-     "untranslated": 8
+     "untranslated": 6
     },
     "dark-ltr": {
      "how": "derived",
      "from": "SeerahTimeline",
-     "untranslated": 8
+     "untranslated": 6
     }
    },
    "frames": [

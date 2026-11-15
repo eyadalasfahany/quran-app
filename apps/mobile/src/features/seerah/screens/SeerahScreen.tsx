@@ -2,9 +2,11 @@ import { router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useScreenInsets } from '@/core/layout/useScreenInsets';
 import { useWindowClass } from '@/core/layout';
+import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { formatPackSizeMb } from '@/features/hadith/format';
@@ -15,6 +17,7 @@ import { EventCallout } from '../components/EventCallout';
 import type { EventListItem } from '../components/EventListCard';
 import { MapHeader } from '../components/MapHeader';
 import { MapKeyContent } from '../components/MapKeyContent';
+import { MapTopFade } from '../components/MapTopFade';
 import { SeerahBackdrop } from '../components/SeerahBackdrop';
 import { SeerahListView } from '../components/SeerahListView';
 import { SeerahMap } from '../components/SeerahMap';
@@ -36,6 +39,7 @@ import {
   sortByAge,
 } from '../logic';
 import {
+  useArtReady,
   useSeerahBook,
   useSeerahCatalogEntry,
   useSeerahDownload,
@@ -50,7 +54,13 @@ import { SeerahEventPane } from './SeerahEventPane';
 const REGION = 'region';
 const PANEL_WIDTH = 440;
 const VERTICAL_TIMELINE_WIDTH = 150;
-const TIMELINE_CLEARANCE = 232;
+// Frame SeerahMapRegion: the timeline card (136 pt) floats 28 pt above the bottom edge, and the bottom chip stack ends 44 pt
+// above the card.
+const TIMELINE_CLEARANCE = 208;
+// Cards docked over the map (the empty-year card, the callout) end 30 pt above the timeline card (frame SeerahStateEmptyYear).
+const DOCK_BOTTOM = 194;
+// The header row's bottom under the top inset: 8 pt down, 44 pt tall.
+const HEADER_BOTTOM = 52;
 
 /**
  * The Seerah screen (frames SeerahMapRegion, SeerahMapMakkah, SeerahMapMadinah, SeerahTimeline, SeerahList, SeerahExpanded,
@@ -81,16 +91,20 @@ export function SeerahScreen({
   const world = useSeerahWorld();
   const download = useSeerahDownload(catalog);
   const [view, toggleView, chooseView] = useSeerahViewChoice(initialView);
+  // Held here, not in the map: a level change remounts the map and must not wait for a push that never comes.
+  const artReady = useArtReady();
 
   const [levelId, setLevelId] = useState(REGION);
   const [focus, setFocus] = useState<SeerahFocus>(initialAge);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [focusPlaceId, setFocusPlaceId] = useState<string | null>(null);
   const [callout, setCallout] = useState<SeerahEvent | null>(null);
-  const [spot, setSpot] = useState<{ title: string; events: SeerahEvent[] } | null>(null);
+  // `places`: the events of several places, each row naming its place; `other`: the «أخرى» bucket (no place to name).
+  const [spot, setSpot] = useState<{ title: string; events: SeerahEvent[]; kind: 'spot' | 'places' | 'other' } | null>(null);
   const [keyOpen, setKeyOpen] = useState(false);
   const [openEventId, setOpenEventId] = useState<string | null>(null);
   const [placeApplied, setPlaceApplied] = useState(false);
+  const [calloutHeight, setCalloutHeight] = useState(0);
 
   const index = useMemo(() => buildYearIndex(world.events), [world.events]);
   const names = useMemo(() => new Map(world.places.map((place) => [place.id, place.nameAr])), [world.places]);
@@ -124,19 +138,20 @@ export function SeerahScreen({
     }
   }
 
-  const eventRow = (event: SeerahEvent): EventListItem => ({
-    id: event.id,
-    subtitle: event.ageFrom === null ? t('seerah.age.unspecified') : ageRangeText(t, event.ageFrom, event.ageTo ?? event.ageFrom),
-    title: event.titleAr,
-  });
+  // A sheet of several places names each row's place, so no event reads as being at another place (ADR 0089, Context).
+  const eventRow = (event: SeerahEvent, withPlace: boolean): EventListItem => {
+    const age = event.ageFrom === null ? t('seerah.age.unspecified') : ageRangeText(t, event.ageFrom, event.ageTo ?? event.ageFrom);
+    return { id: event.id, subtitle: withPlace ? `${age} · ${placeName(event.placeId)}` : age, title: event.titleAr };
+  };
 
   const openEvent = (id: string) => {
-    setCallout(null);
     setSpot(null);
-    // The list is a full screen: its rows always push the event page, whatever the window.
+    // The list is a full screen: its rows always push the event page, whatever the window. The callout stays under the
+    // pushed page (it is there on the way back), so the push never waits for the map to render again.
     if (windowClass === 'compact' || view === 'list') {
       router.push(seerahHref.event(id));
     } else {
+      setCallout(null);
       setOpenEventId(id);
     }
   };
@@ -148,9 +163,9 @@ export function SeerahScreen({
     requestAnimationFrame(() => openEvent(id));
   };
 
-  const showSpot = (title: string, events: SeerahEvent[]) => {
+  const showSpot = (title: string, events: SeerahEvent[], kind: 'spot' | 'places' | 'other' = 'spot') => {
     setCallout(null);
-    setSpot({ events: sortByAge(events), title });
+    setSpot({ events: sortByAge(events), kind, title });
   };
 
   const onPinPress = (placeId: string) => {
@@ -164,6 +179,19 @@ export function SeerahScreen({
     } else if (events.length > 1) {
       showSpot(placeName(placeId), events);
     }
+  };
+
+  const onClusterOpen = (placeIds: string[]) => {
+    if (level === undefined || placeIds[0] === undefined) {
+      return;
+    }
+    const events = placeIds.flatMap((placeId) => eventsOfPin({ events: world.events, focus, level, placeId, places: world.places }));
+    const unique = [...new Map(events.map((event) => [event.id, event])).values()];
+    showSpot(
+      placeIds.length === 1 ? placeName(placeIds[0]) : t('seerah.spot.nearbyTitle', { places: formatNumber(placeIds.length, locale) }),
+      unique,
+      placeIds.length > 1 ? 'places' : 'spot',
+    );
   };
 
   const showOnMap = (placeId: string) => {
@@ -217,7 +245,7 @@ export function SeerahScreen({
 
   if (view === 'list') {
     return (
-      <Screen testID={testID}>
+      <Screen testID={testID} topInset={false}>
         <SeerahListView
           events={world.events}
           onBack={backToMenu}
@@ -251,14 +279,17 @@ export function SeerahScreen({
     />
   );
 
+  // The callout docks above the timeline; the map keeps its centred point and its edge chips clear of it.
+  const calloutLift = (expanded ? theme.space[4] : DOCK_BOTTOM) + calloutHeight;
   const map =
     art === null ? null : (
       <SeerahMap
         areaLabels={level.areaLabels}
         art={art}
+        artReady={artReady}
         dimmedRouteIds={dimmedRoutes}
         focusPlaceId={focusPlaceId}
-        insets={{ bottom: expanded ? theme.space[8] : TIMELINE_CLEARANCE, top: insets.top + 80 }}
+        insets={{ bottom: Math.max(expanded ? theme.space[8] : TIMELINE_CLEARANCE, callout !== null ? calloutLift : 0), top: insets.top + HEADER_BOTTOM }}
         key={level.id}
         levelId={level.id}
         onBackToRegion={() => setLevelId(REGION)}
@@ -267,7 +298,8 @@ export function SeerahScreen({
           setCallout(null);
           setSelectedPlaceId(null);
         }}
-        onOtherPress={() => showSpot(t('seerah.map.other.name'), otherEvents(world.events, focus))}
+        onClusterOpen={onClusterOpen}
+        onOtherPress={() => showSpot(t('seerah.map.other.name'), otherEvents(world.events, focus), 'other')}
         onPinPress={onPinPress}
         otherCount={otherCount(world.events, focus)}
         pins={pins}
@@ -279,11 +311,12 @@ export function SeerahScreen({
     );
 
   const nearest = typeof focus === 'number' ? nearestAgeWithEvents(index, focus) : null;
-  const dock = { bottom: expanded ? theme.space[4] : TIMELINE_CLEARANCE, left: theme.space[4], position: 'absolute', right: theme.space[4] } as const;
+  const dock = { bottom: expanded ? theme.space[4] : DOCK_BOTTOM, left: theme.space[4], position: 'absolute', right: theme.space[4] } as const;
 
   const mapArea = (
     <View style={{ flex: 1 }}>
       {map}
+      <MapTopFade height={insets.top + HEADER_BOTTOM + theme.space[6]} />
       <View pointerEvents="box-none" style={{ end: theme.space[4], position: 'absolute', start: theme.space[4], top: insets.top + theme.space[2] }}>
         <MapHeader
           levelChip={isCity ? { label: t('seerah.map.levelRegion'), onPress: () => setLevelId(REGION) } : undefined}
@@ -296,7 +329,7 @@ export function SeerahScreen({
         />
       </View>
       {callout !== null ? (
-        <View pointerEvents="box-none" style={{ ...dock, alignItems: 'center' }}>
+        <View onLayout={(event) => setCalloutHeight(event.nativeEvent.layout.height)} pointerEvents="box-none" style={{ ...dock, alignItems: 'center' }}>
           <EventCallout
             onOpen={() => openEvent(callout.id)}
             subtitle={[callout.ageFrom === null ? t('seerah.age.unspecified') : ageText(t, callout.ageFrom), placeName(callout.placeId)].join(' · ')}
@@ -310,7 +343,7 @@ export function SeerahScreen({
         </View>
       ) : null}
       {expanded ? null : (
-        <View pointerEvents="box-none" style={{ bottom: insets.bottom + theme.space[2], end: theme.space[3], position: 'absolute', start: theme.space[3] }}>
+        <View pointerEvents="box-none" style={{ bottom: theme.size.pillInset, end: theme.space[3], position: 'absolute', start: theme.space[3] }}>
           {timeline}
         </View>
       )}
@@ -337,37 +370,40 @@ export function SeerahScreen({
     );
 
   return (
-    <Screen testID={testID} topInset={false}>
-      <View style={{ flex: 1, flexDirection: 'row' }}>
-        {expanded ? (
-          <View style={{ paddingBottom: insets.bottom + theme.space[3], paddingTop: insets.top + theme.space[3], width: VERTICAL_TIMELINE_WIDTH }}>
-            {timeline}
-          </View>
-        ) : null}
-        {mapArea}
-        {expanded && openEventId !== null ? (
-          <View style={{ paddingTop: insets.top, width: PANEL_WIDTH }} testID="seerah-event-panel">
-            {openEventPane(() => setOpenEventId(null))}
-          </View>
-        ) : null}
-      </View>
-      <SeerahSheet onClose={() => setKeyOpen(false)} visible={keyOpen}>
-        <MapKeyContent onClose={() => setKeyOpen(false)} />
-      </SeerahSheet>
-      <SeerahSheet card={false} onClose={() => setSpot(null)} visible={spot !== null}>
-        {spot === null ? null : (
-          <SpotSheet
-            eventsLabel={eventCountText(t, spot.events.length)}
-            onClose={() => setSpot(null)}
-            onRowPress={openFromSpot}
-            rows={spot.events.map(eventRow)}
-            title={spot.title}
-          />
-        )}
-      </SeerahSheet>
-      <SeerahSheet detent="large" onClose={() => setOpenEventId(null)} visible={windowClass === 'medium' && openEventId !== null}>
-        {openEventPane(() => setOpenEventId(null))}
-      </SeerahSheet>
-    </Screen>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Screen testID={testID} topInset={false}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {expanded ? (
+            <View style={{ paddingBottom: insets.bottom + theme.space[3], paddingTop: insets.top + theme.space[3], width: VERTICAL_TIMELINE_WIDTH }}>
+              {timeline}
+            </View>
+          ) : null}
+          {mapArea}
+          {expanded && openEventId !== null ? (
+            <View style={{ paddingTop: insets.top, width: PANEL_WIDTH }} testID="seerah-event-panel">
+              {openEventPane(() => setOpenEventId(null))}
+            </View>
+          ) : null}
+        </View>
+        <SeerahSheet detent="large" onClose={() => setKeyOpen(false)} visible={keyOpen}>
+          <MapKeyContent onClose={() => setKeyOpen(false)} />
+        </SeerahSheet>
+        <SeerahSheet onClose={() => setSpot(null)} visible={spot !== null}>
+          {spot === null ? null : (
+            <SpotSheet
+              eventsLabel={eventCountText(t, spot.events.length)}
+              onClose={() => setSpot(null)}
+              onRowPress={openFromSpot}
+              nearby={spot.kind !== 'spot'}
+              rows={spot.events.map((event) => eventRow(event, spot.kind === 'places'))}
+              title={spot.title}
+            />
+          )}
+        </SeerahSheet>
+        <SeerahSheet detent="large" onClose={() => setOpenEventId(null)} visible={windowClass === 'medium' && openEventId !== null}>
+          {openEventPane(() => setOpenEventId(null))}
+        </SeerahSheet>
+      </Screen>
+    </GestureHandlerRootView>
   );
 }

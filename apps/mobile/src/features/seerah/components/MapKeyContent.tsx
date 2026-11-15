@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import Svg from 'react-native-svg';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
+import { SheetScrollView } from '@/features/reader/components/SheetScrollView';
 import { Card, SheetHeader, UiText } from '@/shared/ui';
 
 import { LIFE_STAGES } from '../logic';
@@ -14,6 +15,7 @@ import { EdgeChip } from './EdgeChip';
 import { MapKeyRow } from './MapKeyRow';
 import { MapPin } from './MapPin';
 import { RouteLine } from './RouteLine';
+import { useSeerahSheetClose, useSheetBottomPadding } from './SeerahSheet';
 
 const noop = () => undefined;
 const ROUTES: SeerahRouteKind[] = ['hijra', 'taif', 'trip', 'habasha', 'ghazwa'];
@@ -28,6 +30,8 @@ export function MapKeyContent({ onClose, testID = 'seerah-map-key' }: { onClose:
   const { t } = useTranslation();
   const theme = useTheme();
   const locale = useLocale();
+  const close = useSeerahSheetClose(onClose);
+  const bottom = useSheetBottomPadding();
   const caption = (key: 'places' | 'routes' | 'timeline') => (
     <UiText accessibilityRole="header" tone="muted" variant="caption" weight={600}>
       {t(`seerah.key.${key}`)}
@@ -43,9 +47,9 @@ export function MapKeyContent({ onClose, testID = 'seerah-map-key' }: { onClose:
   return (
     <View style={{ flex: 1, gap: theme.space[3] }} testID={testID}>
       <View style={{ paddingHorizontal: theme.space[4] }}>
-        <SheetHeader closeLabel={t('seerah.close')} onClose={onClose} title={t('seerah.map.key')} />
+        <SheetHeader closeLabel={t('seerah.close')} displaySize={24} onClose={close} size="display" title={t('seerah.map.key')} />
       </View>
-      <ScrollView contentContainerStyle={{ gap: theme.space[2], paddingBottom: theme.space[8], paddingHorizontal: theme.space[4] }}>
+      <SheetScrollView contentContainerStyle={{ gap: theme.space[2], paddingBottom: bottom, paddingHorizontal: theme.space[4] }} testID={`${testID}-scroll`}>
         {caption('places')}
         <Card padding={1} radius="lg">
           <MapKeyRow hint={t('seerah.key.cityHint')} symbol={<ClusterPin count={56} label="" onPress={noop} variant="city" />} testID={`${testID}-city`} title={t('seerah.key.city')} />
@@ -53,8 +57,8 @@ export function MapKeyContent({ onClose, testID = 'seerah-map-key' }: { onClose:
           <MapKeyRow hint={t('seerah.key.singleHint')} symbol={<MapPin label="" onPress={noop} />} testID={`${testID}-single`} title={t('seerah.key.single')} />
           <MapKeyRow hint={t('seerah.key.approximateHint')} symbol={<MapPin label="" onPress={noop} uncertain />} testID={`${testID}-approximate`} title={t('seerah.key.approximate')} />
           <MapKeyRow hint={t('seerah.key.emptyHint')} symbol={<MapPin label="" onPress={noop} variant="empty" />} testID={`${testID}-empty`} title={t('seerah.key.empty')} />
-          <MapKeyRow hint={t('seerah.key.otherHint')} symbol={<EdgeChip accessibilityLabel="" count={0} direction="other" label="" onPress={noop} />} testID={`${testID}-other`} title={t('seerah.key.other')} />
-          <MapKeyRow hint={t('seerah.key.edgeHint')} symbol={<EdgeChip accessibilityLabel="" count={0} direction="north" label="" onPress={noop} />} testID={`${testID}-edge`} title={t('seerah.key.edge')} />
+          <MapKeyRow hint={t('seerah.key.otherHint')} symbol={<EdgeChip accessibilityLabel="" count={0} direction="other" label="" onPress={noop} symbol />} testID={`${testID}-other`} title={t('seerah.key.other')} />
+          <MapKeyRow hint={t('seerah.key.edgeHint')} symbol={<EdgeChip accessibilityLabel="" count={0} direction="north" label="" onPress={noop} symbol />} testID={`${testID}-edge`} title={t('seerah.key.edge')} />
         </Card>
         {caption('routes')}
         <Card padding={1} radius="lg">
@@ -93,7 +97,7 @@ export function MapKeyContent({ onClose, testID = 'seerah-map-key' }: { onClose:
             {t('seerah.key.milestonesNote')}
           </UiText>
         </Card>
-      </ScrollView>
+      </SheetScrollView>
     </View>
   );
 }

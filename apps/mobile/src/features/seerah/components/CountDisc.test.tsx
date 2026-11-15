@@ -14,14 +14,26 @@ describe('CountDisc', () => {
     expect(screen.getByText(locale === 'ar' ? '٥٦' : '56', hidden)).toBeOnTheScreen();
   });
 
-  it('is a brand disc of the given size, with a raised ring', async () => {
+  it('is a 30 pt brand disc inside a 2 pt raised ring, the count at 13 (frame SeerahMapKey)', async () => {
     await renderUi(<CountDisc count={3} size={30} testID="disc" />);
     expect(flatStyle(screen.getByTestId('disc', hidden).props.style)).toMatchObject({
       backgroundColor: themes.light.colors.brand,
       borderColor: themes.light.colors.surfaceRaised,
-      height: 30,
-      width: 30,
+      borderWidth: 2,
+      height: 34,
+      width: 34,
     });
+    expect(flatStyle(screen.getByText('٣', hidden).props.style)).toMatchObject({ fontSize: 13 });
+  });
+
+  it.each(locales)('centres its digits on both axes, one or two of them (%s)', async (locale) => {
+    for (const count of [4, 51]) {
+      const view = await renderUi(<CountDisc count={count} testID="disc" />, { locale });
+      expect(flatStyle(screen.getByTestId('disc', hidden).props.style)).toMatchObject({ alignItems: 'center', justifyContent: 'center' });
+      const digits = screen.getByText(new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en').format(count), hidden);
+      expect(flatStyle(digits.props.style)).toMatchObject({ includeFontPadding: false, paddingTop: 2, textAlign: 'center', textAlignVertical: 'center' });
+      await view.unmount();
+    }
   });
 
   it('is decorative: the control around it carries the label', async () => {

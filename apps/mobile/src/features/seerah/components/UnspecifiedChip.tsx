@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
-import { UiText } from '@/shared/ui';
+import { UiText, useContrastColors } from '@/shared/ui';
 
 /**
  * The «غير محدد» bucket at the end of the timeline: the number of events whose time the book does not state, in a dashed
@@ -13,6 +13,7 @@ export function UnspecifiedChip({
   label,
   accessibilityLabel,
   selected,
+  dimmed = false,
   onPress,
   testID,
 }: {
@@ -20,40 +21,47 @@ export function UnspecifiedChip({
   label: string;
   accessibilityLabel: string;
   selected: boolean;
+  /** An age is selected: the bucket fades (frame SeerahMapRegionYear). */
+  dimmed?: boolean;
   onPress: () => void;
   testID?: string;
 }) {
   const theme = useTheme();
   const locale = useLocale();
 
+  const colors = useContrastColors();
+
+  // Frame SeerahMapRegion: a 52 × 38 dashed box (radius 10) whose bottom sits 21 pt above the slider's bottom, the count
+  // at 13 bold, and the name at 11 on the bands' baseline. It fades while an age is selected.
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={{ alignItems: 'center', gap: theme.space[1], minHeight: theme.size.touchTarget + 18, minWidth: theme.size.touchTarget + 16 }}
+      style={{ alignItems: 'center', height: 74, opacity: dimmed ? theme.opacity.disabled : 1, width: 52 }}
       testID={testID}
     >
       <View
         style={{
           alignItems: 'center',
           backgroundColor: selected ? theme.colors.highlightActive : 'transparent',
-          borderColor: selected ? theme.colors.brand : theme.colors.line,
-          borderRadius: theme.radius.md,
+          borderColor: selected ? theme.colors.brand : colors.lineStrong,
+          borderRadius: 10,
           borderStyle: 'dashed',
           borderWidth: theme.stroke.focus,
-          height: theme.size.touchTarget,
+          height: 38,
           justifyContent: 'center',
-          width: theme.size.touchTarget + 16,
+          marginTop: 15,
+          width: 52,
         }}
         testID={testID ? `${testID}-box` : undefined}
       >
-        <UiText scale="bar" tone={selected ? 'brand' : 'ink'} variant="headline" weight={700}>
+        <UiText scale="bar" style={{ fontSize: 13, lineHeight: 15 }} tone={selected ? 'brand' : 'muted'} variant="caption" weight={700}>
           {formatNumber(count, locale)}
         </UiText>
       </View>
-      <UiText numberOfLines={1} scale="bar" tone="muted" variant="label" weight={selected ? 700 : 500}>
+      <UiText numberOfLines={1} scale="bar" style={{ fontSize: 11, left: -8, lineHeight: 14, position: 'absolute', right: -8, textAlign: 'center', top: 59 }} tone="muted" variant="label" weight={selected ? 700 : 500}>
         {label}
       </UiText>
     </Pressable>

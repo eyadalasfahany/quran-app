@@ -2,12 +2,13 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
-import { BackButton, GlassSurface, Icon, IconButton, TitlePill, UiText } from '@/shared/ui';
+import { BackButton, GlassSurface, Icon, IconButton, UiText } from '@/shared/ui';
 
 import { ListToggle, type SeerahView } from './ListToggle';
 
 const INFO_ICON = { ios: 'info.circle', android: 'info' } as const;
-const CHEVRON = { ios: 'chevron.right', android: 'chevron_right' } as const;
+// The level chip goes back up to the region: a back chevron at its start (frame SeerahMapMadinah), mirrored in RTL.
+const CHEVRON = { ios: 'chevron.left', android: 'chevron_left' } as const;
 
 /**
  * The transparent header over the map (frames SeerahMapRegion, SeerahMapMakkah): back, the title pill with the level's
@@ -49,19 +50,29 @@ export function MapHeader({
           testID={`${testID}-level`}
         >
           <GlassSurface
+        colorScheme={theme.name === 'dark' ? 'dark' : 'light'}
             radius="pill"
             style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[1], minHeight: theme.size.touchTarget, paddingHorizontal: theme.space[4] }}
           >
+            <Icon color={theme.colors.brand} mirrorInRtl name={CHEVRON} size={theme.size.iconSm} testID={`${testID}-level-chevron`} />
             <UiText scale="bar" tone="brand" variant="headline">
               {levelChip.label}
             </UiText>
-            <Icon color={theme.colors.brand} mirrorInRtl name={CHEVRON} size={theme.size.iconSm} />
           </GlassSurface>
         </Pressable>
       )}
       <View style={{ flex: 1 }}>
-        <GlassSurface radius="pill" style={{ justifyContent: 'center', minHeight: theme.size.touchTarget }}>
-          <TitlePill subtitle={subtitle} title={title} />
+        {/* Frame SeerahMapRegion: a 44 pt pill, the title in Amiri 18 over a 12 pt subtitle, 2 pt above and below. */}
+        <GlassSurface
+        colorScheme={theme.name === 'dark' ? 'dark' : 'light'} radius="pill" style={{ justifyContent: 'center', minHeight: theme.size.touchTarget, paddingHorizontal: theme.space[3], paddingVertical: 2 }}>
+          <View accessibilityLabel={`${title}, ${subtitle}`} accessibilityRole="header" accessible style={{ alignItems: 'center' }} testID={`${testID}-title`}>
+            <UiText numberOfLines={1} scale="bar" style={{ fontSize: 18, lineHeight: 22 }} variant="displaySm">
+              {title}
+            </UiText>
+            <UiText numberOfLines={1} scale="bar" style={{ fontSize: 12, lineHeight: 15 }} tone="muted" variant="label" weight={400}>
+              {subtitle}
+            </UiText>
+          </View>
         </GlassSurface>
       </View>
       <IconButton icon={INFO_ICON} label={t('seerah.map.key')} onPress={onOpenKey} testID={`${testID}-key`} variant="raised" />

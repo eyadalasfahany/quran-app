@@ -75,3 +75,16 @@ Listed with defaults in `docs/plans/phase-8.md`, «Questions for the developer»
 - The review gate is a mandatory step with a sign-off per period; no pack is built in production without a release-mode validator pass (100% of records approved and not stale, every section covered or excluded, no open flag).
 - The map art is the largest unknown (plan risk R1). It is drawn and approved as frames before code (ADR 0087).
 - If ADR 0076 is not accepted, the `openiti` row in `content_sources` does not exist yet; the Seerah import migration must create it idempotently or wait (plan, dependencies).
+
+## Amendment, 15 Nov 2026 (developer)
+
+- **Smaller edge chips.** The chip's name is 13 px at weight 600 (was 14), the count disc 18 pt (was 22 in the frames, 30 in code), the chip 36 pt tall (was 44) with a 4 pt hit slop to the 44 pt target, and the stack gap 4 pt (was 8). Frames: `SeerahMapRegion`, `SeerahMapRegionDark`, `SeerahMapRegionEnglish`, `SeerahMapRegionYear`, `SeerahExpanded`. No new token: the chip is the 44 pt target less `space[1]` on each side (the hit slop), and the count pill is `size.iconSm` tall.
+- **A tap centres and zooms on the item.** Pins, clusters, edge chips and list or timeline events with a place centre in the visible area (between the header and the timeline card, and above an open callout) at `max(current, target)`, where the target is the city threshold for a city pin and the middle of the zoom range otherwise. A city pin then opens its map.
+- **Crisp art.** After a pan, pinch or tap settles, the art is drawn again at screen resolution over the map, under the pins; a new gesture removes it at once. At or below 1× the art is already sharp, so no redraw is made there.
+- **Edge arrows are physical.** They never mirror in either language; the group, the spoken direction and the arrow come from one value.
+- **Clusters sit on a real place, and on the art's landmark first** (developer, 15 Nov 2026). A distance cluster is drawn at its anchor member, never at a centroid between places. The anchor is the member whose own marker the level's art draws at its position (`art_landmark`), then the one with the most events, then book order, then id. Why: on the Madinah map, بيت عائشة (2 events) outranked مسجده الشريف (1), so the cluster sat about 7 pt off the mosque the art draws. `art_landmark` is an optional key of a layout position (absent is false), carried by the importer into `seerah_map_positions` and the pack as a nullable integer, so a pack built before it installs and reads as no landmark. Flagged from the art, where a marker is centred on the position: `madinah.masjid`, `madinah.quba`, `makkah.kaaba`. A cluster pin has no place label, because it is still several places.
+- **Settled on the device** (developer, 15 Nov 2026):
+  - A cluster tapped at or past mid zoom opens its events in the sheet, titled «N مواضع متقاربة» with each row naming its place. Below mid zoom it only centres and zooms.
+  - Places near a city merge into one cluster drawn 44 pt below the city pin, even though that spot isn't geographic.
+  - Seerah sheets use the reader's `SheetHost` and open at its 50% detent (ADR 0020), not the frames' ~42%.
+  - The event page hides its scroll indicators, like every `SheetScrollView`.

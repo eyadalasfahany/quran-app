@@ -1,6 +1,6 @@
 import { withSpring, type SharedValue, type WithSpringConfig } from 'react-native-reanimated';
 
-import { clampView, pinchView, type MapView, type Size } from '../logic';
+import { clampView, pinchView, visibleContentRect, type MapView, type Rect, type Size } from '../logic';
 import type { SeerahMapZoom } from '../types';
 
 /** The map's live transform: three shared values the UI thread reads. Helpers here write them (outside the component). */
@@ -18,11 +18,37 @@ export function writeView(values: ViewValues, view: MapView): void {
   values.ty.value = view.ty;
 }
 
-/** Moves to `view` with a spring on every value. */
-export function springView(values: ViewValues, view: MapView, config: WithSpringConfig): void {
+/** Moves to `view` with a spring on every value. `onSettled` runs on the UI thread once the spring finishes (not when interrupted). */
+export function springView(values: ViewValues, view: MapView, config: WithSpringConfig, onSettled?: () => void): void {
+  'worklet';
   values.scale.value = withSpring(view.scale, config);
   values.tx.value = withSpring(view.tx, config);
-  values.ty.value = withSpring(view.ty, config);
+  values.ty.value = withSpring(view.ty, config, (finished) => {
+    'worklet';
+    if (finished && onSettled !== undefined) {
+      onSettled();
+    }
+  });
+}
+
+/**
+ * After a pan or pinch: the view (already clamped during the gesture) settles with a spring, and `onSettled` gets the
+ * visible content rectangle once it has. The crisp overlay is drawn from that rectangle.
+ */
+export function settleValues(
+  values: ViewValues,
+  content: Size,
+  viewport: Size,
+  config: WithSpringConfig,
+  onSettled: (rect: Rect) => void,
+): void {
+  'worklet';
+  const view = clampView(readView(values), content, viewport);
+  const rect = visibleContentRect(view, viewport, content);
+  springView(values, view, config, () => {
+    'worklet';
+    onSettled(rect);
+  });
 }
 
 /** One pan step: moves by the finger's change and keeps the art covering the window. */

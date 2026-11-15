@@ -42,11 +42,12 @@ export function TimelineHeader({
 
   return (
     <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[1], minHeight: theme.size.touchTarget }} testID={testID}>
-      <View style={{ flex: 1, minWidth: 0, paddingStart: theme.space[2] }}>
-        <UiText accessibilityRole="header" numberOfLines={1} scale="bar" variant="headline">
+      {/* Frame SeerahMapRegion: the title at 16 over a one-line 12 pt detail, 6 pt in from the start. */}
+      <View style={{ flex: 1, minWidth: 0, paddingStart: 6 }}>
+        <UiText accessibilityRole="header" numberOfLines={1} scale="bar" style={horizontal ? { fontSize: 16, lineHeight: 21 } : null} variant="headline">
           {title}
         </UiText>
-        <UiText numberOfLines={2} scale="bar" tone="muted" variant="label" weight={400}>
+        <UiText numberOfLines={horizontal ? 1 : 2} scale="bar" tone="muted" variant="label" weight={400}>
           {subtitle}
         </UiText>
       </View>
@@ -55,6 +56,7 @@ export function TimelineHeader({
       ) : null}
       <IconButton
         icon={horizontal ? PREV_H : PREV_V}
+        iconSize={theme.size.iconMd}
         label={t('seerah.timeline.previous')}
         mirrorInRtl={horizontal}
         onPress={onPrevious}
@@ -62,6 +64,7 @@ export function TimelineHeader({
       />
       <IconButton
         icon={horizontal ? NEXT_H : NEXT_V}
+        iconSize={theme.size.iconMd}
         label={t('seerah.timeline.next')}
         mirrorInRtl={horizontal}
         onPress={onNext}

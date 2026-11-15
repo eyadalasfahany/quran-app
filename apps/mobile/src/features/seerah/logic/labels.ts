@@ -10,6 +10,8 @@ export type LabelCandidate = {
   priority: number;
   count: number;
   order: number;
+  /** From the pin's centre to the label's near edge; the default clears the 44 pt target. */
+  offset?: number;
 };
 
 export type LabelRect = { left: number; top: number; right: number; bottom: number };
@@ -20,10 +22,27 @@ export const PIN_RADIUS = 22;
 
 export function labelRect(candidate: LabelCandidate): LabelRect {
   const top = candidate.y - candidate.height / 2;
+  const offset = candidate.offset ?? PIN_RADIUS + LABEL_GAP;
   // `end` is the right of the pin and `start` the left: the map is not mirrored.
   return candidate.side === 'end'
-    ? { left: candidate.x + PIN_RADIUS + LABEL_GAP, top, right: candidate.x + PIN_RADIUS + LABEL_GAP + candidate.width, bottom: top + candidate.height }
-    : { left: candidate.x - PIN_RADIUS - LABEL_GAP - candidate.width, top, right: candidate.x - PIN_RADIUS - LABEL_GAP, bottom: top + candidate.height };
+    ? { left: candidate.x + offset, top, right: candidate.x + offset + candidate.width, bottom: top + candidate.height }
+    : { left: candidate.x - offset - candidate.width, top, right: candidate.x - offset, bottom: top + candidate.height };
+}
+
+/**
+ * The side a label is drawn on: its own side, unless its box would leave the window (the Makkah label at the left edge),
+ * then the other side when that one fits. Neither fits: its own side.
+ */
+export function fitLabelSide(candidate: LabelCandidate, viewport: { width: number }): 'start' | 'end' {
+  const fits = (side: 'start' | 'end') => {
+    const rect = labelRect({ ...candidate, side });
+    return rect.left >= 0 && rect.right <= viewport.width;
+  };
+  if (fits(candidate.side)) {
+    return candidate.side;
+  }
+  const other = candidate.side === 'start' ? 'end' : 'start';
+  return fits(other) ? other : candidate.side;
 }
 
 function overlaps(a: LabelRect, b: LabelRect): boolean {
@@ -47,23 +66,28 @@ export function estimateLabelWidth(text: string, fontSize: number): number {
 export function placeLabels(
   candidates: readonly LabelCandidate[],
   pins: readonly { x: number; y: number }[] = candidates,
-): { visible: string[]; hidden: string[] } {
+): { visible: string[]; hidden: string[]; sides: Record<string, 'start' | 'end'> } {
   const ordered = [...candidates].sort(
     (a, b) => b.priority - a.priority || b.count - a.count || a.order - b.order || a.id.localeCompare(b.id),
   );
   const shown: LabelRect[] = [];
   const visible: string[] = [];
   const hidden: string[] = [];
+  const sides: Record<string, 'start' | 'end'> = {};
+  const free = (rect: LabelRect, own: { x: number; y: number }) =>
+    !pins.some((pin) => !(pin.x === own.x && pin.y === own.y) && overlaps(rect, pinRect(pin))) && !shown.some((other) => overlaps(rect, other));
   for (const candidate of ordered) {
-    const rect = labelRect(candidate);
-    const ownPin = candidate;
-    const blockedByPin = pins.some((pin) => pin !== ownPin && !(pin.x === ownPin.x && pin.y === ownPin.y) && overlaps(rect, pinRect(pin)));
-    if (blockedByPin || shown.some((other) => overlaps(rect, other))) {
+    // Its own side first, then the other side, before the label is hidden.
+    const side = [candidate.side, candidate.side === 'end' ? 'start' : 'end'].find((option) =>
+      free(labelRect({ ...candidate, side: option as 'start' | 'end' }), candidate),
+    ) as 'start' | 'end' | undefined;
+    if (side === undefined) {
       hidden.push(candidate.id);
     } else {
-      shown.push(rect);
+      shown.push(labelRect({ ...candidate, side }));
       visible.push(candidate.id);
+      sides[candidate.id] = side;
     }
   }
-  return { visible, hidden };
+  return { visible, hidden, sides };
 }

@@ -33,10 +33,22 @@ describe('StageChips', () => {
 
   it('draws «غير محدد» on a dashed edge, brand when selected', async () => {
     const idle = await renderUi(<StageChips choices={choices} onSelect={jest.fn()} selected={null} />);
-    expect(flatStyle(screen.getByTestId('seerah-stage-chips-unspecified').props.style)).toMatchObject({ borderStyle: 'dashed', minHeight: 44 });
+    const idleChip = screen.getByTestId('seerah-stage-chips-unspecified');
+    expect(flatStyle(idleChip.props.style)).toMatchObject({ borderStyle: 'dashed', minHeight: 36 });
+    expect(Number(flatStyle(idleChip.props.style).minHeight) + 2 * Number(idleChip.props.hitSlop)).toBe(44);
     await idle.unmount();
     await renderUi(<StageChips choices={choices} onSelect={jest.fn()} selected="unspecified" />);
     expect(flatStyle(screen.getByTestId('seerah-stage-chips-unspecified').props.style).backgroundColor).toBe(themes.light.colors.brandSurface);
+  });
+
+  it('draws the frame chip: 14 pt text on the raised surface, the selected one filled in brand at weight 600', async () => {
+    await renderUi(<StageChips choices={choices} onSelect={jest.fn()} selected="maturity" />);
+    expect(flatStyle(screen.getByTestId('seerah-stage-chips-childhood').props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.surfaceRaised,
+      borderRadius: 18,
+    });
+    expect(flatStyle(screen.getByTestId('seerah-stage-chips-maturity').props.style).backgroundColor).toBe(themes.light.colors.brandSurface);
+    expect(flatStyle(screen.getByText('الكهولة').props.style)).toMatchObject({ color: themes.light.colors.onBrandSurface, fontSize: 14 });
   });
 
   it('labels the group «الفترات» and scrolls sideways', async () => {

@@ -66,6 +66,22 @@ it('stores the coordinates as REAL numbers', function (): void {
     expect($city)->toMatchArray(['kind' => 'real', 'lat' => 21.4, 'lng' => 39.8]);
 });
 
+it('packs the art landmark flag as an INTEGER 1 or 0', function (): void {
+    seerahFixtureImport();
+    $resource = Resource::query()->where('group', 'seerah')->firstOrFail();
+    $pdo = seerahPackOpen(Storage::disk('local')->get(seerahPackOf($resource->id)->path));
+
+    $flags = $pdo->query(
+        'SELECT p.slug, typeof(m.art_landmark) AS kind, m.art_landmark FROM seerah_map_positions m JOIN seerah_places p ON p.id = m.place_id ORDER BY p.slug'
+    )->fetchAll();
+
+    expect($flags)->toBe([
+        ['slug' => 'fx-city', 'kind' => 'integer', 'art_landmark' => 0],
+        ['slug' => 'fx-landmark', 'kind' => 'integer', 'art_landmark' => 1],
+        ['slug' => 'fx-region', 'kind' => 'integer', 'art_landmark' => 0],
+    ]);
+});
+
 it('packs no review, provenance or import column', function (): void {
     seerahFixtureImport();
     $resource = Resource::query()->where('group', 'seerah')->firstOrFail();

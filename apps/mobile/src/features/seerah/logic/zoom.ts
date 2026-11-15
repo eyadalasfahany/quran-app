@@ -115,3 +115,28 @@ export function ringPositions(count: number, radius: number): Point[] {
     return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
   });
 }
+
+export type Rect = { x: number; y: number; width: number; height: number };
+
+/**
+ * The view that centres `point` in `visibleRect` (the window between the header and the timeline) at `targetScale`, kept
+ * inside the art's edges. Pass `max(currentScale, target)` as the target to never zoom out. A clamp at an edge moves the
+ * point off centre; it stays on screen.
+ */
+export function focusView(point: Point, targetScale: number, visibleRect: Rect, content: Size, size: Size, zoom: Pick<SeerahMapZoom, 'min' | 'max'>): MapView {
+  const scale = clampScale(targetScale, zoom);
+  const centred = centerOn(point, scale, { height: visibleRect.height, width: visibleRect.width });
+  return clampView({ scale, tx: centred.tx + visibleRect.x, ty: centred.ty + visibleRect.y }, content, size);
+}
+
+/** The content rectangle the window shows at `view`, clipped to the art. */
+export function visibleContentRect(view: MapView, size: Size, content: Size): Rect {
+  'worklet';
+  const topLeft = toContent(view, { x: 0, y: 0 });
+  const bottomRight = toContent(view, { x: size.width, y: size.height });
+  const left = Math.max(0, topLeft.x);
+  const top = Math.max(0, topLeft.y);
+  const right = Math.min(content.width, bottomRight.x);
+  const bottom = Math.min(content.height, bottomRight.y);
+  return { height: Math.max(0, bottom - top), width: Math.max(0, right - left), x: left, y: top };
+}

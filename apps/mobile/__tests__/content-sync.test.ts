@@ -467,7 +467,7 @@ const README_CONTRACT = [
       },
       {
         name: 'seerah_map_positions',
-        columns: ['resource_id', 'level', 'place_id', 'x', 'y', 'label_priority', 'label_side'],
+        columns: ['resource_id', 'level', 'place_id', 'x', 'y', 'label_priority', 'label_side', 'art_landmark'],
       },
       {
         name: 'seerah_routes',

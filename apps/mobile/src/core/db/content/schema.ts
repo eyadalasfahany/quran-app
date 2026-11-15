@@ -783,6 +783,8 @@ export const seerahMapPositions = sqliteTable(
     y: real('y').notNull(),
     labelPriority: integer('label_priority').notNull(),
     labelSide: text('label_side').notNull(),
+    // 1 when the place's own marker is drawn in the level's art (ADR 0089, amendment); NULL from a pack built before it.
+    artLandmark: integer('art_landmark'),
   },
   (table) => [primaryKey({ columns: [table.resourceId, table.level, table.placeId] })],
 );

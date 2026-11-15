@@ -131,7 +131,7 @@ The timeline is organised by the Prophet's ﷺ age, one tick per year from 0 to 
 | `seerah_event_places` | secondary place of an event | `event_id`, `place_id` |
 | `seerah_routes`, `seerah_route_stops` | journey and its stops | `kind`, `name_ar`, `position` |
 | `seerah_milestones` | the six markers | `key`, `label_ar`, `event_id` |
-| `seerah_map_levels`, `seerah_map_layers`, `seerah_map_positions`, `seerah_map_route_paths` | one drawn map, its SVG layers, its pin and label positions, its route curves | `viewbox`, `path_d`, `style_token`, `x`, `y`, `label_priority`, `label_side` |
+| `seerah_map_levels`, `seerah_map_layers`, `seerah_map_positions`, `seerah_map_route_paths` | one drawn map, its SVG layers, its pin and label positions, its route curves | `viewbox`, `path_d`, `style_token`, `x`, `y`, `label_priority`, `label_side`, `art_landmark` |
 
 Review data (sign-offs, hashes) and evidence quotes **stay in the repo and the report**; they are not in MySQL or the pack in v1 (a highlight of the evidence in the event page is a later addition and would add paragraph-range rows). The pack is about 0.6 MB of Arabic text plus a few hundred rows; gzipped it is expected to be under 0.3 MB (assumption from the file sizes above; step 24 measures it).
 

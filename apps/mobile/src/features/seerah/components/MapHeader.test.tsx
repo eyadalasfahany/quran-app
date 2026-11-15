@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react-native';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 
@@ -37,6 +37,19 @@ describe('MapHeader', () => {
     await press(screen.getByRole('button', { name: 'العودة إلى خريطة المنطقة' }));
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(screen.getByText('المنطقة')).toBeOnTheScreen();
+  });
+
+  it('draws the frame title pill: Amiri 18 over a 12 pt subtitle in a 44 pt pill', async () => {
+    await renderUi(<MapHeader {...base} />);
+    expect(flatStyle(screen.getByText('السيرة النبوية').props.style)).toMatchObject({ fontSize: 18 });
+    expect(flatStyle(screen.getByText('الجزيرة العربية').props.style)).toMatchObject({ fontSize: 12 });
+    expect(screen.getByRole('header').props.accessibilityLabel).toBe('السيرة النبوية, الجزيرة العربية');
+  });
+
+  it.each(locales)('the level chip starts with a back chevron that mirrors in RTL (%s)', async (locale) => {
+    await renderUi(<MapHeader {...base} levelChip={{ label: 'المنطقة', onPress: jest.fn() }} />, { locale });
+    const chevron = screen.getByTestId('seerah-map-header-level-chevron', { includeHiddenElements: true });
+    expect(flatStyle(chevron.props.style).transform).toEqual(locale === 'ar' ? [{ scaleX: -1 }] : undefined);
   });
 
   it('the list view offers the map', async () => {

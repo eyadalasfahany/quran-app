@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync } from 'node:sqlite';
+import { gunzipSync, gzipSync } from 'node:zlib';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { writeCatalog } from '@/core/sync/content-sync';
@@ -127,6 +128,9 @@ describe('seerah content repository', () => {
       expect(region.parentPlaceId).toBe('arabia');
       expect(region.positions.map((position) => position.placeId)).toEqual(['makkah', 'madinah']);
       expect(region.positions[1]?.labelSide).toBe('start');
+      // The art draws the Kaaba (art_landmark 1); a NULL flag, as in the region rows here, is no landmark.
+      expect(region.positions.map((position) => position.artLandmark)).toEqual([false, false]);
+      expect(at(levels, 1).positions.map((position) => position.artLandmark)).toEqual([true]);
       expect(region.routePaths).toEqual([{ routeId: 'r-hijra', kind: 'hijra', d: 'M897.7,1357.8 L878,1053.3' }]);
       expect(region.zoom.cityThreshold).not.toBeNull();
       expect(region.areaLabels).toHaveLength(1);
@@ -246,6 +250,32 @@ describe('seerah pack install', () => {
     }
   });
 
+  it('installs a pack built before art_landmark existed: every position reads as no landmark', async () => {
+    const cacheDir = mkdtempSync(join(tmpdir(), 'seerah-cache-'));
+    const opened = openAzkarContentDb();
+    try {
+      const pack = withoutColumn(gzipHadithPack(SEERAH_RESOURCE_ID, seerahPackRows(), 'seerah'), 'seerah_map_positions', 'art_landmark');
+      const manifestResource = resource({
+        id: SEERAH_RESOURCE_ID,
+        group: 'seerah',
+        key: 'nur-al-yaqin',
+        pack: {
+          url: `/api/v1/content/packs/${SEERAH_RESOURCE_ID}/1`,
+          size_bytes: pack.length,
+          sha256: createHash('sha256').update(pack).digest('hex'),
+        },
+      });
+      const deps = installDeps(opened.executor, cacheDir, apiWith(manifestBody([manifestResource]), serveFrom(new Map([[SEERAH_RESOURCE_ID, pack]]))));
+      expect(await installResourceWith(deps, SEERAH_RESOURCE_ID)).toEqual({ status: 'installed' });
+      const positions = listSeerahMapLevels(opened.executor).flatMap((level) => level.positions);
+      expect(positions.length).toBeGreaterThan(0);
+      expect(positions.every((position) => position.artLandmark === false)).toBe(true);
+    } finally {
+      opened.database.close();
+      rmSync(cacheDir, { force: true, recursive: true });
+    }
+  });
+
   it('leaves nothing behind when the pack fails its checksum', async () => {
     const cacheDir = mkdtempSync(join(tmpdir(), 'seerah-cache-'));
     const opened = openAzkarContentDb();
@@ -267,3 +297,18 @@ describe('seerah pack install', () => {
     }
   });
 });
+
+/** A gzipped pack with one column dropped from one table: what a pack built before that column was added looks like. */
+function withoutColumn(pack: Uint8Array, table: string, column: string): Uint8Array {
+  const directory = mkdtempSync(join(tmpdir(), 'seerah-old-pack-'));
+  const path = join(directory, 'pack.sqlite');
+  try {
+    writeFileSync(path, gunzipSync(pack));
+    const database = new DatabaseSync(path);
+    database.exec(`ALTER TABLE ${table} DROP COLUMN ${column}`);
+    database.close();
+    return new Uint8Array(gzipSync(readFileSync(path)));
+  } finally {
+    rmSync(directory, { force: true, recursive: true });
+  }
+}

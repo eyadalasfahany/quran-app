@@ -32,6 +32,7 @@ class SeerahMapPositionFactory extends Factory
             'y' => 500.0,
             'label_priority' => 50,
             'label_side' => 'end',
+            'art_landmark' => false,
         ];
     }
 }

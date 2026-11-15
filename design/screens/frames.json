@@ -2729,7 +2729,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegion.html",
-      "bytes": 39974
+      "bytes": 39971
     },
     {
       "id": "SeerahMapRegionDark",
@@ -2739,7 +2739,7 @@
       "theme": "dark",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegionDark.html",
-      "bytes": 39927
+      "bytes": 39924
     },
     {
       "id": "SeerahMapRegionEnglish",
@@ -2749,7 +2749,7 @@
       "theme": "en",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegionEnglish.html",
-      "bytes": 39602
+      "bytes": 39599
     },
     {
       "id": "SeerahMapRegionYear",
@@ -2759,7 +2759,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahMapRegionYear.html",
-      "bytes": 38406
+      "bytes": 38405
     },
     {
       "id": "SeerahMapMakkah",
@@ -2959,7 +2959,7 @@
       "theme": "ar-light",
       "status": "awaiting-approval",
       "path": "frames/seerah/SeerahExpanded.html",
-      "bytes": 47524
+      "bytes": 47523
     },
     {
       "id": "SeerahExpandedCity",

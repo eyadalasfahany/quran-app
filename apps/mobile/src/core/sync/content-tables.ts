@@ -641,6 +641,8 @@ export const CONTENT_GROUPS: readonly ContentGroupSchema[] = [
         real('y'),
         integer('label_priority'),
         text('label_side'),
+        // Added after the first Seerah packs: an older pack has no such column and reads NULL (not a landmark).
+        integer('art_landmark', true),
       ]),
       table('seerah_routes', [
         integer('resource_id'),

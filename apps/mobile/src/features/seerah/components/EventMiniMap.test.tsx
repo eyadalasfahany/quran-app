@@ -12,9 +12,13 @@ import { EventMiniMap } from './EventMiniMap';
 const ART = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
 const base = { art: ART, onPress: jest.fn(), placeName: 'بدر', point: { x: 803, y: 1122 } };
 
+/** Lays the strip out, then lets the frame pass after which the art mounts (it waits for the page's first frame). */
 async function layOut() {
   await act(async () => {
     fireEvent(screen.getByTestId('seerah-event-minimap'), 'layout', { nativeEvent: { layout: { height: 168, width: 358, x: 0, y: 0 } } });
+  });
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50));
   });
 }
 
@@ -55,6 +59,18 @@ describe('EventMiniMap', () => {
     await layOut();
     const svg = screen.getByTestId('seerah-event-minimap-art-svg').props;
     expect(svg.vbWidth * svg.vbHeight).toBeLessThan((1644 * 2400) / 10);
+  });
+
+  it('mounts the art a frame after the page, not with it', async () => {
+    await renderUi(<EventMiniMap {...base} />);
+    await act(async () => {
+      fireEvent(screen.getByTestId('seerah-event-minimap'), 'layout', { nativeEvent: { layout: { height: 168, width: 358, x: 0, y: 0 } } });
+    });
+    expect(screen.queryByTestId('seerah-event-minimap-art-svg')).toBeNull();
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(screen.getByTestId('seerah-event-minimap-art-svg')).toBeTruthy();
   });
 
   it('draws nothing of the art before the strip has a width', async () => {

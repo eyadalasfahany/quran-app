@@ -158,7 +158,7 @@ final class SeerahFixture
                 'viewbox' => [0, 0, 1000, 1000],
                 'art' => 'design-assets/seerah/FIXTURE.svg',
                 'positions' => [
-                    ['place' => 'fx-landmark', 'x' => 500, 'y' => 500, 'label_priority' => 70, 'label_side' => 'end'],
+                    ['place' => 'fx-landmark', 'x' => 500, 'y' => 500, 'label_priority' => 70, 'label_side' => 'end', 'art_landmark' => true],
                 ],
                 'route_paths' => [],
             ],

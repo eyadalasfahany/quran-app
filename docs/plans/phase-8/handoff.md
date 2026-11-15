@@ -74,3 +74,4 @@ An independent code review of the mobile feature found no crash path; its nine f
 - `StartupConfigTest` counted `hadith:import` inside `hadith:import-explanations`.
 - `composer audit` failed on a new Laravel advisory: `laravel/framework` 13.38 → 13.42.
 - The Contract workflow had no database, and Scramble now reads the schema: it now runs MySQL and migrates first.
+- developer, 15 Nov 2026: smaller edge chips; a tap centres and zooms on the item (ADR 0089 amendment).

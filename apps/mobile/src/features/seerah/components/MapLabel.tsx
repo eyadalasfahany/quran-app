@@ -3,18 +3,29 @@ import { View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { UiText, arabicTextDirection } from '@/shared/ui';
 
-export type MapLabelEmphasis = 'place' | 'city';
+export type MapLabelEmphasis = 'event' | 'place' | 'city' | 'landmark';
+
+/** The gap from a pin's centre to its label's near edge, per kind (frames SeerahMapRegion, SeerahMapMakkah). */
+export const LABEL_OFFSET: Record<MapLabelEmphasis, number> = { city: 24, event: 14, landmark: 10, place: 20 };
 
 /**
  * A place name or an event title beside its pin, with a soft halo in the page colour so it reads over the art. It is
  * never a touch target and is hidden from screen readers: the pin carries the label. Arabic text stays right to left
- * in the English UI. `side` is the screen side of the pin (the map is not mirrored).
+ * in the English UI. `side` is the screen side of the pin (the map is not mirrored). Frames: an event title or a place is
+ * 13 at weight 600 with its age line at 12; a city is Amiri 20 bold; a landmark with no events is 12, muted.
  */
+const TITLE = {
+  city: null,
+  event: { fontSize: 13, lineHeight: 17 },
+  landmark: { fontSize: 12, lineHeight: 17 },
+  place: { fontSize: 13, lineHeight: 17 },
+} as const;
+
 export function MapLabel({
   title,
   subtitle,
   side = 'end',
-  emphasis = 'place',
+  emphasis = 'event',
   dimmed = false,
   testID,
 }: {
@@ -46,13 +57,22 @@ export function MapLabel({
       <UiText
         numberOfLines={2}
         scale="bar"
-        style={[arabicTextDirection, halo, { textAlign: side === 'end' ? 'left' : 'right' }, emphasis === 'city' ? { fontSize: 20, lineHeight: 26 } : { fontSize: 17, lineHeight: 22 }]}
-        variant="displaySm"
+        style={[arabicTextDirection, halo, { textAlign: side === 'end' ? 'left' : 'right' }, TITLE[emphasis]]}
+        tone={emphasis === 'landmark' ? 'muted' : 'ink'}
+        variant={emphasis === 'city' ? 'displaySm' : 'caption'}
+        weight={emphasis === 'city' ? 700 : emphasis === 'landmark' ? 500 : 600}
       >
         {title}
       </UiText>
       {subtitle ? (
-        <UiText numberOfLines={1} scale="bar" style={[halo, { textAlign: side === 'end' ? 'left' : 'right' }]} tone="muted" variant="label" weight={400}>
+        <UiText
+          numberOfLines={1}
+          scale="bar"
+          style={[halo, { lineHeight: 15, textAlign: side === 'end' ? 'left' : 'right' }]}
+          tone="muted"
+          variant="label"
+          weight={500}
+        >
           {subtitle}
         </UiText>
       ) : null}

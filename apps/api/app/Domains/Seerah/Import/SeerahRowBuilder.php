@@ -158,6 +158,7 @@ final class SeerahRowBuilder
                     'y' => $position->y,
                     'label_priority' => $position->labelPriority,
                     'label_side' => $position->labelSide,
+                    'art_landmark' => $position->artLandmark ? 1 : 0,
                 ];
             }
 

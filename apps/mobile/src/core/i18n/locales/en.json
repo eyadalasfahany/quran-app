@@ -1886,6 +1886,7 @@
     "stageRangeShort": "{{from}}–{{to}}",
     "age": {
       "label": "Age {{age}}",
+      "short": "age {{age}}",
       "range": "Age {{from}}–{{to}}",
       "unspecified": "Age not stated",
       "unspecifiedTitle": "Age not stated",
@@ -1936,6 +1937,7 @@
       "value": "{{age}}, {{events}}",
       "valueAll": "{{age}}, {{events}}",
       "subtitle": "{{stage}} · {{events}}",
+      "subtitleMilestone": "{{stage}} · {{milestone}} · {{events}}",
       "all": "All",
       "allHint": "Shows every age",
       "unspecified": "Not stated",
@@ -1989,6 +1991,8 @@
     },
     "spot": {
       "subtitle": "{{events}} at this spot · by age",
+      "subtitleNearby": "{{events}} · by age",
+      "nearbyTitle": "{{places}} places close together",
       "grabber": "Sheet handle"
     },
     "states": {

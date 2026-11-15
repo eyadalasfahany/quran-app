@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
+import { SheetScrollView } from '@/features/reader/components/SheetScrollView';
 
 import { OTHER_PLACE_ID, type SeerahEvent, type SeerahParagraph } from '../types';
 
@@ -48,7 +49,8 @@ export function EventPage({
   const uncertain = event.certainty === 'approximate' || event.certainty === 'developer_assigned';
 
   return (
-    <ScrollView
+    // In the medium window's sheet the page scrolls with the sheet's drag; elsewhere this is a plain scroll view.
+    <SheetScrollView
       contentContainerStyle={{ gap: theme.space[4], paddingBottom: bottomInset, paddingHorizontal: theme.space[4] }}
       testID={testID}
     >
@@ -69,6 +71,6 @@ export function EventPage({
         <AlsoPlaces onPress={onAlsoPlacePress} places={alsoPlaces} />
         <SourceLine page={sourcePage} />
       </View>
-    </ScrollView>
+    </SheetScrollView>
   );
 }

@@ -2,11 +2,11 @@ import { Pressable, View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
-/** The pin's drawn diameter: the solid dot of a single event. The touch target around it is `size.touchTarget`. */
-export const DOT_SIZE = 18;
-const EMPTY_SIZE = 12;
+/** The pin's drawn diameter (frame SeerahMapKey): a 14 pt dot of a single event inside a 3 pt raised ring. The touch target around it is `size.touchTarget`. */
+export const DOT_SIZE = 14;
+const EMPTY_SIZE = 9;
 const HALO_SIZE = 56;
-const UNCERTAIN_SIZE = 30;
+const UNCERTAIN_SIZE = 27;
 
 export type MapPinVariant = 'single' | 'empty';
 
@@ -95,8 +95,10 @@ export function MapPin({
             : {
                 backgroundColor: theme.colors.brand,
                 borderColor: theme.colors.surfaceRaised,
-                borderRadius: DOT_SIZE / 2,
+                // The radius of the whole disc, ring included: half the dot alone drew a rounded square.
+                borderRadius: DOT_SIZE / 2 + theme.size.selectedRingGap,
                 borderWidth: theme.size.selectedRingGap,
+                boxShadow: `0 1px 3px ${theme.colors.coverShadow}`,
                 height: DOT_SIZE + theme.size.selectedRingGap * 2,
                 width: DOT_SIZE + theme.size.selectedRingGap * 2,
               }

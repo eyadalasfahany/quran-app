@@ -47,21 +47,26 @@ export function TimelineBar({
 
   const title =
     age !== null ? ageText(t, age) : focus === 'unspecified' ? t('seerah.age.unspecifiedTitle') : t('seerah.age.all');
-  const subtitle =
-    age !== null
-      ? t('seerah.timeline.subtitle', { stage: stageName(t, age) ?? '', events: eventCountText(t, counts[age] ?? 0) })
-      : focus === 'unspecified'
-        ? t('seerah.timeline.unspecifiedSubtitle', { events: eventCountText(t, unspecifiedCount) })
-        : t('seerah.timeline.hint', { events: eventCountText(t, totalCount) });
-
   const labelled = milestones.map((mark) => ({
     ...mark,
     labelAr: t(`seerah.timeline.milestones.${mark.key}` as 'seerah.timeline.milestones.birth', { defaultValue: mark.labelAr }),
   }));
+  // Frame SeerahMapRegionYear: «الكهولة · الهجرة · ٩ أحداث», the milestone named when the age has one.
+  const milestone = age === null ? undefined : labelled.find((mark) => mark.age === age);
+  const subtitle =
+    age !== null
+      ? milestone !== undefined
+        ? t('seerah.timeline.subtitleMilestone', { stage: stageName(t, age) ?? '', milestone: milestone.labelAr, events: eventCountText(t, counts[age] ?? 0) })
+        : t('seerah.timeline.subtitle', { stage: stageName(t, age) ?? '', events: eventCountText(t, counts[age] ?? 0) })
+      : focus === 'unspecified'
+        ? t('seerah.timeline.unspecifiedSubtitle', { events: eventCountText(t, unspecifiedCount) })
+        : t('seerah.timeline.hint', { events: eventCountText(t, totalCount) });
 
   return (
-    <GlassSurface radius="xl" style={horizontal ? undefined : { flex: 1 }} testID={testID}>
-      <View style={[{ gap: theme.space[1], padding: theme.space[2], paddingTop: theme.space[2] }, horizontal ? null : { flex: 1 }]}>
+    <GlassSurface
+        colorScheme={theme.name === 'dark' ? 'dark' : 'light'} radius="xl" style={horizontal ? undefined : { flex: 1 }} testID={testID}>
+      {/* Frame SeerahMapRegion: 6 pt above, 8 around, 2 between the title row and the slider. */}
+      <View style={[{ gap: horizontal ? 2 : theme.space[1], padding: theme.space[2], paddingTop: horizontal ? 6 : theme.space[2] }, horizontal ? null : { flex: 1 }]}>
         <TimelineHeader
           onClear={() => onFocusChange(null)}
           onNext={() => onFocusChange(stepFocus(focus, 1))}
@@ -72,8 +77,8 @@ export function TimelineBar({
           testID={`${testID}-header`}
           title={title}
         />
-        <View style={[{ flexDirection: horizontal ? 'row' : 'column', gap: theme.space[2] }, horizontal ? null : { flex: 1 }]}>
-          <View style={[horizontal ? { flex: 1, marginStart: theme.space[3], marginEnd: theme.space[2] } : { flex: 1, marginHorizontal: theme.space[3] }]}>
+        <View style={[{ flexDirection: horizontal ? 'row' : 'column', gap: horizontal ? 10 : theme.space[2] }, horizontal ? { marginEnd: 6, marginStart: 14 } : { flex: 1 }]}>
+          <View style={[horizontal ? { flex: 1 } : { flex: 1, marginHorizontal: theme.space[3] }]}>
             <TimelineScrubber
               age={age}
               counts={counts}
@@ -86,6 +91,7 @@ export function TimelineBar({
           <UnspecifiedChip
             accessibilityLabel={t('seerah.timeline.unspecifiedLabel', { events: eventCountText(t, unspecifiedCount) })}
             count={unspecifiedCount}
+            dimmed={age !== null}
             label={t('seerah.timeline.unspecified')}
             onPress={() => onFocusChange(focus === 'unspecified' ? null : 'unspecified')}
             selected={focus === 'unspecified'}

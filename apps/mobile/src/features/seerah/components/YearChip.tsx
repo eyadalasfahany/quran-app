@@ -19,7 +19,8 @@ export function YearChip({ age, stageName, testID }: { age: number; stageName: s
       pointerEvents="none"
       testID={testID}
     >
-      <GlassSurface radius="lg" style={{ alignItems: 'center', minWidth: 72, paddingHorizontal: theme.space[3], paddingVertical: theme.space[2] }}>
+      <GlassSurface
+        colorScheme={theme.name === 'dark' ? 'dark' : 'light'} radius="lg" style={{ alignItems: 'center', minWidth: 72, paddingHorizontal: theme.space[3], paddingVertical: theme.space[2] }}>
         <UiText scale="bar" style={{ color: theme.colors.brand }} variant="title" weight={700}>
           {formatNumber(age, locale)}
         </UiText>

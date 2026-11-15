@@ -1919,6 +1919,7 @@
     "stageRangeShort": "{{from}}–{{to}}",
     "age": {
       "label": "عمره {{age}} سنة",
+      "short": "عمره {{age}}",
       "range": "عمره {{from}}–{{to}} سنة",
       "unspecified": "العمر غير محدد",
       "unspecifiedTitle": "عمر غير محدد",
@@ -1973,6 +1974,7 @@
       "value": "{{age}}، {{events}}",
       "valueAll": "{{age}}، {{events}}",
       "subtitle": "{{stage}} · {{events}}",
+      "subtitleMilestone": "{{stage}} · {{milestone}} · {{events}}",
       "all": "الكل",
       "allHint": "يعرض كل الأعمار",
       "unspecified": "غير محدد",
@@ -2026,6 +2028,8 @@
     },
     "spot": {
       "subtitle": "{{events}} في هذا الموضع · بترتيب العمر",
+      "subtitleNearby": "{{events}} · بترتيب العمر",
+      "nearbyTitle": "{{places}} مواضع متقاربة",
       "grabber": "مقبض اللوحة"
     },
     "states": {

@@ -3,9 +3,13 @@ import { screen } from '@testing-library/react-native';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { press } from '../../../../jest/azkar-ui-fixtures';
-import { themes } from '@/core/theme';
 
 import { SpotSheet } from './SpotSheet';
+
+jest.mock('react-native-safe-area-context', () => {
+  const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
+  return { ...actual, useSafeAreaInsets: () => ({ bottom: 34, left: 0, right: 0, top: 47 }) };
+});
 
 const rows = [
   { id: 'e1', subtitle: 'عمره ٣٥ سنة', title: 'عنوان ١' },
@@ -19,6 +23,12 @@ describe('SpotSheet', () => {
     expect(screen.getByRole('header')).toHaveTextContent('الكعبة');
     expect(screen.getByText(locale === 'ar' ? '١١ حدثًا في هذا الموضع · بترتيب العمر' : '11 events at this spot · by age')).toBeOnTheScreen();
     expect(screen.getAllByRole('button', { name: /عنوان/ })).toHaveLength(2);
+  });
+
+  it('does not say «at this spot» for the events of several places', async () => {
+    await renderUi(<SpotSheet {...base} nearby title="٣ مواضع متقاربة" />);
+    expect(screen.getByText('١١ حدثًا · بترتيب العمر')).toBeOnTheScreen();
+    expect(screen.queryByText(/في هذا الموضع/)).toBeNull();
   });
 
   it('closes', async () => {
@@ -35,19 +45,10 @@ describe('SpotSheet', () => {
     expect(onRowPress).toHaveBeenCalledWith('e1');
   });
 
-  it('draws a grabber for the sheet and hides it from screen readers', async () => {
+  it('pads its list clear of the home indicator and scrolls it with the sheet', async () => {
     await renderUi(<SpotSheet {...base} />);
-    const grabber = screen.getByTestId('seerah-spot-sheet-grabber', { includeHiddenElements: true });
-    expect(grabber.props.accessibilityElementsHidden).toBe(true);
-    expect(flatStyle(grabber.props.style)).toMatchObject({ height: 5, width: 40 });
-  });
-
-  it('rounds the top corners on the surface colour', async () => {
-    await renderUi(<SpotSheet {...base} />);
-    expect(flatStyle(screen.getByTestId('seerah-spot-sheet').props.style)).toMatchObject({
-      backgroundColor: themes.light.colors.surface,
-      borderTopLeftRadius: themes.light.radius.xl,
-    });
+    const scroll = screen.getByTestId('seerah-spot-sheet-scroll');
+    expect(Number(flatStyle(scroll.props.contentContainerStyle).paddingBottom)).toBeGreaterThanOrEqual(16);
   });
 
   it('has no raw colour literal', () => {

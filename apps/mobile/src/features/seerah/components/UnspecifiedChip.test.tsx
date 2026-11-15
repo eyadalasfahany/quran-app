@@ -28,7 +28,7 @@ describe('UnspecifiedChip', () => {
 
   it('draws a dashed box, brand when selected', async () => {
     const idle = await renderUi(<UnspecifiedChip {...base} testID="chip" />);
-    expect(flatStyle(screen.getByTestId('chip-box').props.style)).toMatchObject({ borderStyle: 'dashed', borderColor: themes.light.colors.line });
+    expect(flatStyle(screen.getByTestId('chip-box').props.style)).toMatchObject({ borderStyle: 'dashed', borderColor: themes.light.colors.lineStrong, height: 38, width: 52 });
     await idle.unmount();
     await renderUi(<UnspecifiedChip {...base} selected testID="chip" />);
     expect(flatStyle(screen.getByTestId('chip-box').props.style)).toMatchObject({ borderStyle: 'dashed', borderColor: themes.light.colors.brand });
@@ -37,8 +37,8 @@ describe('UnspecifiedChip', () => {
   it('is at least 44 pt', async () => {
     await renderUi(<UnspecifiedChip {...base} testID="chip" />);
     const style = flatStyle(screen.getByTestId('chip').props.style);
-    expect(style.minHeight).toBeGreaterThanOrEqual(44);
-    expect(style.minWidth).toBeGreaterThanOrEqual(44);
+    expect(style.height).toBeGreaterThanOrEqual(44);
+    expect(style.width).toBeGreaterThanOrEqual(44);
     expect(hidden.includeHiddenElements).toBe(true);
   });
 

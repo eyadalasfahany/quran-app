@@ -2,6 +2,7 @@ import { act, fireEvent, screen } from '@testing-library/react-native';
 import { AccessibilityInfo, I18nManager } from 'react-native';
 import { usePanGesture } from 'react-native-gesture-handler';
 
+import { themes } from '@/core/theme';
 import { flatStyle, locales } from '../../../../jest/render-ui';
 import { renderGesture } from '../../../../jest/seerah-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -163,6 +164,14 @@ describe('TimelineScrubber', () => {
     await idle.unmount();
     await scrubber({ age: 10 }).view;
     expect(flatStyle(screen.getByTestId('scrub-handle', hidden).props.style).backgroundColor).not.toBe(idleFill);
+  });
+
+  it('draws the selected handle as a solid brand disc inside a light ring (frames SeerahTimeline, SeerahMapRegionYear)', async () => {
+    await scrubber({ age: 10 }).view;
+    expect(flatStyle(screen.getByTestId('scrub-handle', hidden).props.style)).toMatchObject({
+      backgroundColor: themes.light.colors.brand,
+      borderColor: themes.light.colors.surfaceRaised,
+    });
   });
 
   it('draws a label and a diamond for each milestone', async () => {

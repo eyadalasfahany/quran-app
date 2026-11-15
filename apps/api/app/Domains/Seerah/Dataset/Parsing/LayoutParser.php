@@ -18,6 +18,9 @@ final class LayoutParser
 
     private const array POSITION_KEYS = ['place', 'x', 'y', 'label_priority', 'label_side'];
 
+    /** `art_landmark`: the place's own marker is drawn in the level's art, centred on this position. Absent is false. */
+    private const array POSITION_OPTIONAL_KEYS = ['art_landmark'];
+
     private const array ROUTE_PATH_KEYS = ['route', 'segment', 'd'];
 
     /**
@@ -41,7 +44,7 @@ final class LayoutParser
             art: $reader->string('art'),
             positions: $reader->objectList('positions', function (array $item, string $at) use ($issues): MapPosition {
                 $position = new RecordReader($item, $at, 'V7', $issues);
-                $position->expectKeys(self::POSITION_KEYS);
+                $position->expectKeys(self::POSITION_KEYS, self::POSITION_OPTIONAL_KEYS);
 
                 return new MapPosition(
                     place: $position->string('place'),
@@ -49,6 +52,7 @@ final class LayoutParser
                     y: $position->float('y'),
                     labelPriority: $position->int('label_priority'),
                     labelSide: $position->string('label_side'),
+                    artLandmark: $position->optionalBool('art_landmark'),
                 );
             }),
             routePaths: $reader->objectList('route_paths', function (array $item, string $at) use ($issues): RoutePath {

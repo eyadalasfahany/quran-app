@@ -165,6 +165,19 @@ it('V7 fails when a place used by an event is not drawn, and when a drawn positi
     expect(seerahRuleIssues(seerahRevalidate($directory, $build, $files), 'V7'))->not->toBeEmpty();
 });
 
+it('V7 accepts art_landmark after the fixed position keys, and fails when it is not true or false', function (): void {
+    [$directory, $build, $files] = seerahFixtureOnDisk();
+    $files['map/layout.region.json']['positions'][0]['art_landmark'] = false;
+
+    expect(seerahRuleIssues(seerahRevalidate($directory, $build, $files), 'V2'))->toBeEmpty()
+        ->and(seerahRuleIssues(seerahRevalidate($directory, $build, $files), 'V7'))->toBeEmpty();
+
+    [$directory, $build, $files] = seerahFixtureOnDisk();
+    $files['map/layout.region.json']['positions'][0]['art_landmark'] = 'yes';
+
+    expect(seerahRuleIssues(seerahRevalidate($directory, $build, $files), 'V7'))->not->toBeEmpty();
+});
+
 it('V7 fails when the drawing puts a northern place to the south', function (): void {
     [$directory, $build, $files] = seerahFixtureOnDisk();
     $files['map/layout.region.json']['positions'][0]['y'] = 900;

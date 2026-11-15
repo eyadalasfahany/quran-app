@@ -119,6 +119,7 @@ export function buildMapPins(input: BuildPinsInput): SeerahMapPin[] {
       ageMax: ages.length > 0 ? Math.max(...ages) : null,
       labelPriority: position.labelPriority,
       labelSide: position.labelSide,
+      artLandmark: position.artLandmark,
       order: shown.length > 0 ? Math.min(...shown.map((event) => event.position)) : Number.MAX_SAFE_INTEGER,
       dimmed: input.focus !== null && own.length > 0 && focused.length === 0,
       uncertain: shown.some((event) => event.certainty === 'approximate' || event.certainty === 'developer_assigned'),

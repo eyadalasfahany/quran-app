@@ -4,8 +4,8 @@ import { useTheme } from '@/core/theme';
 
 import { CountDisc } from './CountDisc';
 
-const DISC_SIZE = 34;
 const HALO_SIZE = 56;
+const CITY_RING = 37;
 
 export type ClusterPinVariant = 'cluster' | 'city';
 
@@ -64,20 +64,21 @@ export function ClusterPin({
         />
       ) : null}
       {variant === 'city' ? (
+        // The frame's gold ring sits right outside the disc's raised ring: 30 + 2 × 2 + 2 × 1.5.
         <View
           pointerEvents="none"
           style={{
             borderColor: theme.colors.gold,
-            borderRadius: theme.size.touchTarget / 2,
+            borderRadius: CITY_RING / 2,
             borderWidth: theme.stroke.frame,
-            height: theme.size.touchTarget,
+            height: CITY_RING,
             position: 'absolute',
-            width: theme.size.touchTarget,
+            width: CITY_RING,
           }}
           testID={testID ? `${testID}-ring` : undefined}
         />
       ) : null}
-      <CountDisc count={count} size={variant === 'city' ? DISC_SIZE : DISC_SIZE - 2} />
+      <CountDisc count={count} />
     </Pressable>
   );
 }

@@ -62,6 +62,8 @@ const CONTRACT: Expected[] = [
     columns: [
       ['resource_id', 'integer', false], ['level', 'text', false], ['place_id', 'integer', false], ['x', 'real', false],
       ['y', 'real', false], ['label_priority', 'integer', false], ['label_side', 'text', false],
+      // Migration 0018 (ADR 0089 amendment): nullable, so a pack built before it still installs.
+      ['art_landmark', 'integer', true],
     ],
   },
   {

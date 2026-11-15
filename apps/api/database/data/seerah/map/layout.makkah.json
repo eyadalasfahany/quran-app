@@ -57,7 +57,8 @@
       "x": 730,
       "y": 760,
       "label_priority": 54,
-      "label_side": "end"
+      "label_side": "end",
+      "art_landmark": true
     },
     {
       "place": "makkah.mina",

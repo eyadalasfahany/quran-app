@@ -40,9 +40,12 @@ export function SheetHost({
   children,
   testID = 'sheet-host',
   initialDetent,
+  onClosed,
 }: {
   children: ReactNode;
   testID?: string;
+  /** Runs once the close animation ends. Omitted, the sheet is a route and leaves it (`router.back`); a sheet in an in-screen `Modal` (Seerah) hides itself here. */
+  onClosed?: () => void;
   /** The detent the sheet opens at, when its content needs the room (a long editor). Omitted, it opens at mid. A short window always opens at full. */
   initialDetent?: 'mid' | 'full';
 }) {
@@ -105,8 +108,12 @@ export function SheetHost({
   }, [motion, opening, springConfig]);
 
   const leaveRoute = useCallback(() => {
-    router.back();
-  }, []);
+    if (onClosed === undefined) {
+      router.back();
+    } else {
+      onClosed();
+    }
+  }, [onClosed]);
 
   const close = useCallback(() => {
     if (closing.current) {

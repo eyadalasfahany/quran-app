@@ -152,6 +152,20 @@ describe('SheetHost', () => {
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 
+  it('calls onClosed instead of leaving the route when it is hosted in a screen (Seerah)', async () => {
+    const onClosed = jest.fn();
+    const view = await renderUi(
+      <SheetHost onClosed={onClosed}>
+        <Text>إعدادات</Text>
+      </SheetHost>,
+    );
+    await settle();
+    await fireEvent.press(view.getByTestId('sheet-backdrop'));
+    await settle();
+    expect(onClosed).toHaveBeenCalledTimes(1);
+    expect(router.back).not.toHaveBeenCalled();
+  });
+
   it('expands to full and collapses back to mid through the sheet context', async () => {
     const view = await renderUi(
       <SheetHost>

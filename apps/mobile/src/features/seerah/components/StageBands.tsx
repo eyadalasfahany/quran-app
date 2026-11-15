@@ -44,7 +44,7 @@ export function StageBands({
     >
       {stageBands().map((band) => {
         const faded = activeStage !== null && activeStage !== band.key;
-        const opacity = faded ? theme.opacity.focusAside + 0.15 : 1;
+        const opacity = faded ? theme.opacity.disabled : 1;
         return (
           <View
             key={band.key}
@@ -74,9 +74,10 @@ export function StageBands({
               numberOfLines={1}
               scale="bar"
               style={[
-                { opacity },
+                // The name keeps full strength; only the band fades (frame SeerahMapRegionYear).
+                { opacity: 1 },
                 horizontal
-                  ? { marginTop: BAND_THICKNESS + 2 }
+                  ? { fontSize: 11, lineHeight: 14, marginHorizontal: -6, marginTop: BAND_THICKNESS + 2 }
                   : { marginStart: BAND_THICKNESS + 8, position: 'absolute', top: 0 },
                 activeStage === band.key ? { color: theme.colors.brand } : null,
               ]}

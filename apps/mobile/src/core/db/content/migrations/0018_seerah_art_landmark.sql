@@ -1,0 +1,1 @@
+ALTER TABLE `seerah_map_positions` ADD `art_landmark` integer;

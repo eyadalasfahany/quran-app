@@ -6,7 +6,7 @@ const makkahLevel: SeerahMapLevel = {
   ...regionLevelFixture,
   id: 'makkah',
   parentPlaceId: 'makkah',
-  positions: [{ placeId: 'makkah.kaaba', x: 1, y: 1, labelPriority: 1, labelSide: 'end' }],
+  positions: [{ artLandmark: true, labelPriority: 1, labelSide: 'end', placeId: 'makkah.kaaba', x: 1, y: 1 }],
 };
 const levels = [regionLevelFixture, makkahLevel];
 

@@ -8,11 +8,13 @@ import { UiText } from './UiText';
 const CLOSE = { ios: 'xmark', android: 'close' } as const;
 
 // The title row of a sheet or side panel, with its close button at the end.
-// 'large' titles a whole sheet (Reader settings); 'compact' names the ayah a panel is about.
+// 'large' titles a whole sheet (Reader settings); 'compact' names the ayah a panel is about; 'display' is the Amiri title of the
+// Seerah sheets (frames SeerahClusterSheet 22/28, SeerahMapKey 24/30) over a 13 pt subtitle.
 export function SheetHeader({
   title,
   subtitle,
   size = 'large',
+  displaySize = 22,
   onClose,
   closeLabel,
   closeTone = 'fill',
@@ -20,7 +22,9 @@ export function SheetHeader({
 }: {
   title: string;
   subtitle?: string | null;
-  size?: 'large' | 'compact';
+  size?: 'large' | 'compact' | 'display';
+  /** The Amiri title's size with `size="display"`; its line height is size + 6. */
+  displaySize?: number;
   onClose?: () => void;
   closeLabel?: string;
   /** Close button fill: `fill` is fillSecondary (Ayah actions, Tafsir); `track` is fillTrack (Reader settings). */
@@ -34,13 +38,14 @@ export function SheetHeader({
       <View style={{ flex: 1 }}>
         <UiText
           accessibilityRole="header"
+          style={size === 'display' ? { fontSize: displaySize, lineHeight: displaySize + 6 } : undefined}
           testID={testID ? `${testID}-title` : undefined}
-          variant={size === 'large' ? 'title' : 'headline'}
+          variant={size === 'display' ? 'displaySm' : size === 'large' ? 'title' : 'headline'}
         >
           {title}
         </UiText>
         {subtitle ? (
-          <UiText testID={testID ? `${testID}-subtitle` : undefined} tone="muted" variant="label" weight={400}>
+          <UiText testID={testID ? `${testID}-subtitle` : undefined} tone="muted" variant={size === 'display' ? 'caption' : 'label'} weight={400}>
             {subtitle}
           </UiText>
         ) : null}

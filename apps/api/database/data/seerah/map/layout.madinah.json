@@ -64,14 +64,16 @@
       "x": 800,
       "y": 760,
       "label_priority": 36,
-      "label_side": "end"
+      "label_side": "end",
+      "art_landmark": true
     },
     {
       "place": "madinah.quba",
       "x": 854.8,
       "y": 1029.3,
       "label_priority": 48,
-      "label_side": "end"
+      "label_side": "end",
+      "art_landmark": true
     },
     {
       "place": "madinah.uhud",

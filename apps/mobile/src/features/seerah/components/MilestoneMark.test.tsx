@@ -30,9 +30,12 @@ describe('MilestoneMark', () => {
     expect(mark.props.pointerEvents).toBe('none');
   });
 
-  it('fades when dimmed', async () => {
-    await renderUi(<MilestoneMark dimmed label="x" part="label" testID="mark" />);
-    expect(flatStyle(screen.getByTestId('mark', hidden).props.style).opacity).toBe(themes.light.opacity.disabled);
+  it('fades to 55% when dimmed, and the selected milestone is bold (frame SeerahMapRegionYear)', async () => {
+    const dimmed = await renderUi(<MilestoneMark dimmed label="x" part="label" testID="mark" />);
+    expect(flatStyle(screen.getByTestId('mark', hidden).props.style).opacity).toBe(0.55);
+    await dimmed.unmount();
+    await renderUi(<MilestoneMark label="x" part="label" selected testID="mark" />);
+    expect(flatStyle(screen.getByText('x', hidden).props.style)).toMatchObject({ fontSize: 11, fontFamily: 'IBMPlexSansArabic-Bold' });
   });
 
   it('has no raw colour literal', () => {
