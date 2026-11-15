@@ -1,16 +1,18 @@
 {
   "source": "screens/",
-  "frameCount": 267,
-  "assetCount": 13,
-  "bytesSavedVsInline": 15738190,
+  "frameCount": 274,
+  "assetCount": 15,
+  "bytesSavedVsInline": 21421235,
   "stacks": {
     "core": [
       "Main",
       "MainLandscapeRail",
       "Mushaf",
+      "MushafPlaybackRiwayah",
       "MushafFullscreenEnter",
       "MushafFullscreen",
       "AyahSheet",
+      "AyahSheetRiwayah",
       "Player",
       "PlayerReciters",
       "PlayerReciterDownloading",
@@ -22,11 +24,13 @@
       "SearchEmpty",
       "SearchHadithEmpty",
       "Reading",
+      "ReadingOtherRiwayah",
       "ReadingMiniIdle",
       "ReadingMiniCollapsed",
       "ReadingMiniUnavailable",
       "ReadingMiniSkipped",
       "Focus",
+      "FocusOtherRiwayah",
       "Tafsir",
       "TafsirFull",
       "TafsirDownload"
@@ -37,6 +41,8 @@
       "SalahDark",
       "Qibla",
       "QiblaLandscape",
+      "RecitersRiwayahRow",
+      "RecitersRiwayahHeader",
       "ReciterSurahsUnavailable",
       "SettingsSuggestCard",
       "SuggestSheet",
@@ -147,6 +153,7 @@
     ],
     "onboarding": [
       "OnboardLanguage",
+      "OnboardTour",
       "OnboardScript",
       "OnboardReciter"
     ],
@@ -349,7 +356,17 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/Mushaf.html",
-      "bytes": 13961
+      "bytes": 8368
+    },
+    {
+      "id": "MushafPlaybackRiwayah",
+      "stack": "core",
+      "caption": "Mushaf · Hafs pages while a Hafs reciter plays for a reader who chose Warsh (ADR 0090 decision 12, step 9b Q6) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/core/MushafPlaybackRiwayah.html",
+      "bytes": 8438
     },
     {
       "id": "MushafFullscreenEnter",
@@ -380,6 +397,16 @@
       "status": "source",
       "path": "frames/core/AyahSheet.html",
       "bytes": 11517
+    },
+    {
+      "id": "AyahSheetRiwayah",
+      "stack": "core",
+      "caption": "Ayah actions · ayah in Warsh (non-Hafs): reference and riwayah in the header, no text card, highlight row, and only حفظ and ملاحظة (ADR 0090, step 9 Part F) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/core/AyahSheetRiwayah.html",
+      "bytes": 6927
     },
     {
       "id": "Player",
@@ -419,7 +446,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/ReaderSettings.html",
-      "bytes": 13885
+      "bytes": 14179
     },
     {
       "id": "SurahIndex",
@@ -472,6 +499,16 @@
       "bytes": 25191
     },
     {
+      "id": "ReadingOtherRiwayah",
+      "stack": "reading",
+      "caption": "Reading mode · Warsh chosen: the title pill names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/reading/ReadingOtherRiwayah.html",
+      "bytes": 25560
+    },
+    {
       "id": "ReadingMiniIdle",
       "stack": "reading",
       "caption": "Reading · mini player idle (plays from the top ayah on screen)",
@@ -520,6 +557,16 @@
       "status": "source",
       "path": "frames/reading/Focus.html",
       "bytes": 7670
+    },
+    {
+      "id": "FocusOtherRiwayah",
+      "stack": "reading",
+      "caption": "Focus mode · Warsh chosen: the position line names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/reading/FocusOtherRiwayah.html",
+      "bytes": 8329
     },
     {
       "id": "Tafsir",
@@ -620,6 +667,26 @@
       "status": "source",
       "path": "frames/audio/Reciters.html",
       "bytes": 24454
+    },
+    {
+      "id": "RecitersRiwayahRow",
+      "stack": "salah",
+      "caption": "Listen › Reciters · each row names its riwayah on the second line (ADR 0090 decision 12, step 9b Part C, option a) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/salah/RecitersRiwayahRow.html",
+      "bytes": 25548
+    },
+    {
+      "id": "RecitersRiwayahHeader",
+      "stack": "salah",
+      "caption": "Listen › Reciters · one muted line above the list, rows unchanged (ADR 0090 decision 12, step 9b Part C, option b) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/salah/RecitersRiwayahHeader.html",
+      "bytes": 24756
     },
     {
       "id": "ReciterSurahsUnavailable",
@@ -1429,27 +1496,37 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardLanguage.html",
-      "bytes": 5079
+      "bytes": 5085
+    },
+    {
+      "id": "OnboardTour",
+      "stack": "onboarding",
+      "caption": "Onboarding 2 · ما في طيبة · the app's sections",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/onboarding/OnboardTour.html",
+      "bytes": 13796
     },
     {
       "id": "OnboardScript",
       "stack": "onboarding",
-      "caption": "Onboarding 2 · Script",
+      "caption": "Onboarding 3 · Script",
       "size": "compact",
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardScript.html",
-      "bytes": 9119
+      "bytes": 8779
     },
     {
       "id": "OnboardReciter",
       "stack": "onboarding",
-      "caption": "Onboarding 3 · Reciter",
+      "caption": "Onboarding 4 · Reciter",
       "size": "compact",
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardReciter.html",
-      "bytes": 12318
+      "bytes": 12339
     },
     {
       "id": "Khatma",
@@ -1619,7 +1696,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/LoadingMushaf.html",
-      "bytes": 14003
+      "bytes": 7932
     },
     {
       "id": "PlayerBuffering",

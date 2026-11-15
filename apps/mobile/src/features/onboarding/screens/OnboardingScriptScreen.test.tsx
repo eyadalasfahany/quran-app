@@ -10,7 +10,9 @@ import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { OnboardingScriptScreen } from './OnboardingScriptScreen';
 
-jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn(), replace: jest.fn() } }));
+jest.mock('expo-router', () => ({
+  router: { back: jest.fn(), canGoBack: jest.fn(() => false), push: jest.fn(), replace: jest.fn() },
+}));
 
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
@@ -34,6 +36,20 @@ describe('OnboardingScriptScreen', () => {
       expect(screen.getByTestId(`mushaf-${key}`)).toBeOnTheScreen();
     }
     expect(screen.getAllByRole('radio')).toHaveLength(5);
+  });
+
+  it('shows step 3 of 4', async () => {
+    await renderUi(<OnboardingScriptScreen />, { locale: 'en' });
+
+    expect(screen.getByLabelText('Step 3 of 4')).toBeOnTheScreen();
+  });
+
+  it('goes back to the tour when there is nothing to go back to', async () => {
+    const view = await renderUi(<OnboardingScriptScreen />);
+
+    await fireEvent.press(view.getByTestId('onboarding-back'));
+
+    expect(router.replace).toHaveBeenCalledWith('/(onboarding)/tour');
   });
 
   it('shows the Hafs preview above the picker', async () => {

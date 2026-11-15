@@ -1,6 +1,9 @@
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
-/** `[word position, start ms, end ms]`, as stored in `recitation_timings.segments`. */
+/**
+ * `[word position, start ms, end ms]`. The position is the app's word index (Tanzil tokens), mapped from Quran.com's
+ * numbering where they differ (see `toAppWordPositions`).
+ */
 export type WordSegment = [position: number, startMs: number, endMs: number];
 
 export type AyahTiming = {
@@ -31,8 +34,9 @@ export function timingsFor(db: SqlExecutor, audioFileId: number): AyahTiming[] {
     [audioFileId],
   );
   // A partial surah (ADR 0077 amendment) has one timing per recorded ayah, first_ayah to last_ayah.
-  const surah = db.get<{ versesCount: number }>(
-    `SELECT COALESCE(chapter_audio_files.last_ayah, chapters.verses_count) - COALESCE(chapter_audio_files.first_ayah, 1) + 1 AS versesCount
+  const surah = db.get<{ versesCount: number; audioUrl: string }>(
+    `SELECT COALESCE(chapter_audio_files.last_ayah, chapters.verses_count) - COALESCE(chapter_audio_files.first_ayah, 1) + 1 AS versesCount,
+       chapter_audio_files.audio_url AS audioUrl
      FROM chapter_audio_files
      JOIN chapters ON chapters.id = chapter_audio_files.chapter_id
      WHERE chapter_audio_files.id = ?`,
@@ -42,13 +46,52 @@ export function timingsFor(db: SqlExecutor, audioFileId: number): AyahTiming[] {
     return [];
   }
   return validTimings(
-    rows.map((row) => ({
-      verseId: row.verseId,
-      startMs: row.startMs,
-      endMs: row.endMs,
-      segments: parseSegments(row.segments),
-    })),
+    rows.map((row) =>
+      toAppWordPositions(
+        {
+          verseId: row.verseId,
+          startMs: row.startMs,
+          endMs: row.endMs,
+          segments: parseSegments(row.segments),
+        },
+        surah.audioUrl,
+      ),
+    ),
   );
+}
+
+/**
+ * Quran.com numbers these four ayahs one word fewer than the Tanzil text, which splits one QF word in two
+ * (`qfPosition` stays the first app word). Taybah's own timings already use the Tanzil numbering.
+ */
+export const QF_SPLIT_WORDS: ReadonlyMap<number, { qfPosition: number; qfWords: number }> = new Map([
+  [188, { qfPosition: 3, qfWords: 13 }],
+  [1166, { qfPosition: 4, qfWords: 11 }],
+  [1744, { qfPosition: 8, qfWords: 19 }],
+  [3918, { qfPosition: 3, qfWords: 3 }],
+]);
+
+/**
+ * Maps a Quran.com timing's word positions to the app's Tanzil word indexes. Returns the timing unchanged unless the
+ * audio is not Taybah-hosted, the ayah is in QF_SPLIT_WORDS and its positions really use QF's numbering. Times never change.
+ */
+export function toAppWordPositions(timing: AyahTiming, audioUrl: string): AyahTiming {
+  const split = QF_SPLIT_WORDS.get(timing.verseId);
+  const segments = timing.segments;
+  if (
+    audioUrl.startsWith('https://audio.taybah-app.com/') ||
+    split === undefined ||
+    segments === null ||
+    !segments.every(([position]) => position <= split.qfWords)
+  ) {
+    return timing;
+  }
+  return {
+    ...timing,
+    segments: segments.map(
+      ([position, startMs, endMs]): WordSegment => [position > split.qfPosition ? position + 1 : position, startMs, endMs],
+    ),
+  };
 }
 
 /** A last timing may end this much after the audio does (rounding, a trailing breath) and still match it. */

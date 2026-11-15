@@ -23,8 +23,8 @@ Never open `common/styles.css` or many frames unless asked.
 
 ## Stats
 
-- **267** frames · **24** stacks · **13** deduped image assets
-- Base64 stripped from markup (~**15369 KB** not repeated per Salah frame)
+- **274** frames · **24** stacks · **15** deduped image assets
+- Base64 stripped from markup (~**20919 KB** not repeated per Salah frame)
 
 ## Layout
 

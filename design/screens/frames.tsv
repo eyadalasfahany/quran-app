@@ -116,8 +116,9 @@ DailyGoalsSheet	home	compact	ar-light	source	Daily goals · sheet
 HomeDailyProgressEmpty	home	compact	ar-light	source	Home · daily progress · empty state
 HomeNextPrayerNoLocation	home	compact	ar-light	source	Home · next prayer · no location
 OnboardLanguage	onboarding	compact	ar-light	source	Onboarding 1 · Language
-OnboardScript	onboarding	compact	ar-light	source	Onboarding 2 · Script
-OnboardReciter	onboarding	compact	ar-light	source	Onboarding 3 · Reciter
+OnboardTour	onboarding	compact	ar-light	source	Onboarding 2 · ما في طيبة · the app's sections
+OnboardScript	onboarding	compact	ar-light	source	Onboarding 3 · Script
+OnboardReciter	onboarding	compact	ar-light	source	Onboarding 4 · Reciter
 Khatma	account	compact	ar-light	source	Khatma planner
 Downloads	account	compact	ar-light	source	Downloads &amp; storage
 Account	account	compact	ar-light	source	Account (signed in)

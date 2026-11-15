@@ -269,6 +269,7 @@ export interface components {
                 };
                 changes_since_min_version: number;
                 is_default: boolean;
+                has_word_boxes: boolean;
             }[];
         };
         /** HadithBooksResource */
@@ -407,7 +408,7 @@ export interface components {
          * ServedResourceGroup
          * @enum {string}
          */
-        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar" | "names" | "duas" | "hadith_collections" | "hadith_explanations" | "seerah";
+        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar" | "names" | "duas" | "hadith_collections" | "hadith_explanations" | "seerah" | "svg_mushafs";
         /** StoreSuggestionRequest */
         StoreSuggestionRequest: {
             name?: string | null;
@@ -608,7 +609,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/gzip": string;
+                    "application/octet-stream": string;
                 };
             };
             /** @description The resource or pack version was not found. */

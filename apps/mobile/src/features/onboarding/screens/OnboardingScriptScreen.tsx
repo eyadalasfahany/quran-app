@@ -40,7 +40,7 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
         >
           <OnboardingTopBar
             backLabel={t('onboarding.back')}
-            onBack={() => goBackOr('/(onboarding)/language' as Href)}
+            onBack={() => goBackOr('/(onboarding)/tour' as Href)}
             onSkip={() => router.push('/(onboarding)/reciter')}
             skipLabel={t('onboarding.skip')}
           />
@@ -60,8 +60,8 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
         <OnboardingFooter
           continueLabel={t('onboarding.continue')}
           onContinue={continueNext}
-          step={2}
-          stepLabel={t('onboarding.stepOfThree', { step: 2, total: 3 })}
+          step={3}
+          stepLabel={t('onboarding.stepOfFour', { step: 3, total: 4 })}
         />
       </ContentColumn>
     </Screen>

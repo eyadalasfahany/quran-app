@@ -1295,16 +1295,30 @@
     "skip": "Skip",
     "continue": "Continue",
     "startReading": "Start reading",
-    "stepOfThree": "Step {{step}} of {{total}}",
+    "stepOfFour": "Step {{step}} of {{total}}",
     "language": {
       "title": "Taybah",
-      "tagline": "Your Quran, calmly. Read, listen and memorize.",
-      "taglineEn": "Your Quran, calmly. Read, listen and memorize.",
+      "tagline": "Your Quran, prayers and adhkar, calmly.",
+      "taglineEn": "Your Quran, prayers and adhkar, calmly.",
       "groupLabel": "App language",
       "arabic": "Arabic",
       "arabicDetail": "Default",
       "english": "English",
       "englishDetail": "Interface only"
+    },
+    "tour": {
+      "title": "What's in Taybah",
+      "subtitle": "Everything you need for your day, in one app.",
+      "quran": { "name": "The Holy Quran", "line": "Mushaf, reading and focus, with tafsir" },
+      "listen": { "name": "Listen", "line": "Many reciters, and the text follows the recitation" },
+      "prayer": { "name": "Prayer and Qibla", "line": "Prayer times, adhan and the Qibla direction" },
+      "azkar": { "name": "Adhkar", "line": "Today's adhkar with a counter and reminders" },
+      "duas": { "name": "Duas", "line": "Duas from the Quran and the Sunnah" },
+      "hadith": { "name": "Hadith", "line": "Complete hadith collections" },
+      "seerah": { "name": "Seerah", "line": "A map and timeline of the Prophet's ﷺ life" },
+      "hijri": { "name": "Hijri calendar and moon", "line": "Hijri date and moon phases" },
+      "khatma": { "name": "Khatma and reminders", "line": "A khatma plan and daily reminders" },
+      "tools": { "name": "Tools", "line": "Widgets on your home screen" }
     },
     "script": {
       "title": "Choose your mushaf",

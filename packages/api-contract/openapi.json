@@ -293,7 +293,7 @@
                     "200": {
                         "description": "",
                         "content": {
-                            "application/gzip": {
+                            "application/octet-stream": {
                                 "schema": {
                                     "type": "string",
                                     "format": "binary"
@@ -1174,6 +1174,9 @@
                                 },
                                 "is_default": {
                                     "type": "boolean"
+                                },
+                                "has_word_boxes": {
+                                    "type": "boolean"
                                 }
                             },
                             "required": [
@@ -1190,7 +1193,8 @@
                                 "version",
                                 "pack",
                                 "changes_since_min_version",
-                                "is_default"
+                                "is_default",
+                                "has_word_boxes"
                             ]
                         }
                     }
@@ -1904,7 +1908,8 @@
                     "duas",
                     "hadith_collections",
                     "hadith_explanations",
-                    "seerah"
+                    "seerah",
+                    "svg_mushafs"
                 ],
                 "title": "ServedResourceGroup"
             },

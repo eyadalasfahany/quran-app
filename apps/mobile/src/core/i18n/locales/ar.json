@@ -1295,16 +1295,30 @@
     "skip": "تخطي",
     "continue": "متابعة",
     "startReading": "ابدأ القراءة",
-    "stepOfThree": "الخطوة {{step}} من {{total}}",
+    "stepOfFour": "الخطوة {{step}} من {{total}}",
     "language": {
       "title": "طيبة",
-      "tagline": "مصحفك، بهدوء. اقرأ واستمع واحفظ.",
-      "taglineEn": "Your Quran, calmly. Read, listen and memorize.",
+      "tagline": "مصحفك وصلاتك وأذكارك، بهدوء.",
+      "taglineEn": "Your Quran, prayers and adhkar, calmly.",
       "groupLabel": "لغة التطبيق · App language",
       "arabic": "العربية",
       "arabicDetail": "الافتراضية",
       "english": "English",
       "englishDetail": "Interface only"
+    },
+    "tour": {
+      "title": "ما في طيبة",
+      "subtitle": "كل ما تحتاجه في يومك، في تطبيق واحد.",
+      "quran": { "name": "القرآن الكريم", "line": "المصحف والقراءة والتركيز، مع التفسير" },
+      "listen": { "name": "الاستماع", "line": "قرّاء كثيرون، والكلمة تتبع التلاوة" },
+      "prayer": { "name": "الصلاة والقبلة", "line": "المواقيت والأذان واتجاه القبلة" },
+      "azkar": { "name": "الأذكار", "line": "أذكار اليوم بعدّاد وتذكير" },
+      "duas": { "name": "الأدعية", "line": "أدعية من القرآن والسنة" },
+      "hadith": { "name": "الحديث", "line": "كتب الحديث كاملة" },
+      "seerah": { "name": "السيرة النبوية", "line": "خريطة وخط زمني لحياته ﷺ" },
+      "hijri": { "name": "التقويم الهجري والقمر", "line": "التاريخ الهجري وأطوار القمر" },
+      "khatma": { "name": "الختمة والتذكير", "line": "خطة ختمة وتذكيرات يومية" },
+      "tools": { "name": "الأدوات", "line": "الودجت على الشاشة الرئيسية" }
     },
     "script": {
       "title": "اختر المصحف",

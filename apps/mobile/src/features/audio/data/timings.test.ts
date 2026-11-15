@@ -1,8 +1,24 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
 import type { SqlExecutor } from '@/core/db/sql-executor';
 
 import { activeTimingIndex, activeWordPosition } from '../active-ayah';
-import { parseSegments, timingsFitAudio, timingsFor, validTimings, type AyahTiming } from './timings';
+import {
+  QF_SPLIT_WORDS,
+  parseSegments,
+  timingsFitAudio,
+  timingsFor,
+  toAppWordPositions,
+  validTimings,
+  type AyahTiming,
+  type WordSegment,
+} from './timings';
 import { openAudioTestDb } from './test-db';
+
+const QF_URL = 'https://verses.quran.foundation/audio/1.mp3';
+const TAYBAH_URL = 'https://audio.taybah-app.com/audio/mp3quran/86/002-x.mp3';
 
 const row = (verseId: number, startMs: number, endMs: number, segments: AyahTiming['segments'] = null): AyahTiming => ({
   endMs,
@@ -23,15 +39,15 @@ afterEach(() => {
 });
 
 // File 100 is surah 1 here, with two ayahs, so two timing rows cover it.
-function insertFile(audioFileId: number, chapterId: number, versesCount: number) {
+function insertFile(audioFileId: number, chapterId: number, versesCount: number, audioUrl = 'https://example.test/1.mp3') {
   executor.run(
     `INSERT INTO chapters (id, name_arabic, name_simple, name_en, revelation_place, revelation_order, verses_count, bismillah_pre, page_start, page_end)
      VALUES (?, 'الفاتحة', 'Al-Fatihah', 'The Opener', 'makkah', 5, ?, 0, 1, 1)`,
     [chapterId, versesCount],
   );
   executor.run(
-    "INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, size_bytes, duration_ms, format) VALUES (?, 1, ?, 'https://example.test/1.mp3', 1, 2000, 'mp3')",
-    [audioFileId, chapterId],
+    'INSERT INTO chapter_audio_files (id, recitation_id, chapter_id, audio_url, size_bytes, duration_ms, format) VALUES (?, 1, ?, ?, 1, 2000, \'mp3\')',
+    [audioFileId, chapterId, audioUrl],
   );
 }
 
@@ -144,6 +160,114 @@ describe('timingsFor on a partial surah (ADR 0077 amendment)', () => {
 
     insertTiming(100, 5, 3000, 4000);
     expect(timingsFor(executor, 100)).toEqual([]);
+  });
+});
+
+describe('toAppWordPositions', () => {
+  const qfRow = (verseId: number, segments: AyahTiming['segments']): AyahTiming => ({
+    endMs: 9000,
+    segments,
+    startMs: 0,
+    verseId,
+  });
+  const qf188Segments: WordSegment[] = Array.from({ length: 13 }, (_, index): WordSegment => [
+    index + 1,
+    index * 100,
+    index * 100 + 100,
+  ]);
+
+  it('shifts the positions after the split word for a QF-hosted ayah and keeps the times', () => {
+    const mapped = toAppWordPositions(qfRow(188, qf188Segments), QF_URL);
+
+    expect(mapped.segments?.map(([position]) => position)).toEqual([1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+    expect(mapped.segments?.map(([, start, end]) => [start, end])).toEqual(qf188Segments.map(([, start, end]) => [start, end]));
+    expect(mapped.segments?.[2]).toEqual([3, 200, 300]);
+    expect(mapped.segments?.[3]).toEqual([5, 300, 400]);
+    expect(mapped.segments?.[12]).toEqual([14, 1200, 1300]);
+  });
+
+  it('leaves a Taybah-hosted ayah unchanged', () => {
+    const taybahSegments: AyahTiming['segments'] = Array.from({ length: 14 }, (_, index) => [index + 1, index, index + 1]);
+    const timing = qfRow(188, taybahSegments);
+
+    expect(toAppWordPositions(timing, TAYBAH_URL)).toEqual(timing);
+  });
+
+  it('leaves a QF ayah unchanged when its largest position is already the Tanzil count', () => {
+    const timing = qfRow(188, [[1, 0, 100], [14, 100, 200]]);
+
+    expect(toAppWordPositions(timing, QF_URL)).toEqual(timing);
+  });
+
+  it('leaves a verse outside the table unchanged', () => {
+    const timing = qfRow(5, [[1, 0, 100], [4, 100, 200]]);
+
+    expect(toAppWordPositions(timing, QF_URL)).toEqual(timing);
+  });
+
+  it('leaves a timing without segments unchanged', () => {
+    const timing = qfRow(188, null);
+
+    expect(toAppWordPositions(timing, QF_URL)).toEqual(timing);
+  });
+
+  it('leaves verse 3918 unchanged when nothing follows the split word', () => {
+    const timing = qfRow(3918, [[1, 0, 100], [2, 100, 200], [3, 200, 300]]);
+
+    expect(toAppWordPositions(timing, QF_URL).segments).toEqual([[1, 0, 100], [2, 100, 200], [3, 200, 300]]);
+  });
+
+});
+
+describe('timingsFor with QF-numbered segments', () => {
+  it('maps the QF positions of verse 3918 (37:130) in a QF-hosted file', () => {
+    insertFile(400, 37, 182, QF_URL);
+    executor.run('UPDATE chapter_audio_files SET first_ayah = 130, last_ayah = 130 WHERE id = 400');
+    insertTiming(400, 3918, 0, 3000, '[[1,0,1000],[2,1000,2000],[3,2000,3000]]');
+
+    expect(timingsFor(executor, 400)).toEqual([
+      { endMs: 3000, segments: [[1, 0, 1000], [2, 1000, 2000], [3, 2000, 3000]], startMs: 0, verseId: 3918 },
+    ]);
+  });
+
+  it('maps verse 188 (2:181) in a QF-hosted file and keeps the Taybah file unchanged', () => {
+    insertFile(500, 2, 286, QF_URL);
+    executor.run('UPDATE chapter_audio_files SET first_ayah = 181, last_ayah = 181 WHERE id = 500');
+    insertTiming(500, 188, 0, 9000, '[[3,0,1000],[4,1000,2000],[13,8000,9000]]');
+
+    expect(timingsFor(executor, 500)[0]?.segments).toEqual([
+      [3, 0, 1000],
+      [5, 1000, 2000],
+      [14, 8000, 9000],
+    ]);
+
+    insertFile(501, 3, 286, TAYBAH_URL);
+    executor.run('UPDATE chapter_audio_files SET first_ayah = 181, last_ayah = 181 WHERE id = 501');
+    insertTiming(501, 188, 0, 9000, '[[3,0,1000],[4,1000,2000],[14,8000,9000]]');
+
+    expect(timingsFor(executor, 501)[0]?.segments).toEqual([
+      [3, 0, 1000],
+      [4, 1000, 2000],
+      [14, 8000, 9000],
+    ]);
+  });
+});
+
+describe('QF_SPLIT_WORDS against the Tanzil seed', () => {
+  const seedPath = join(process.cwd(), 'assets/db/tanzil-seed.db');
+
+  it('has one more Tanzil word than QF word for each split ayah', () => {
+    expect(existsSync(seedPath)).toBe(true);
+    const seed = new DatabaseSync(seedPath, { readOnly: true });
+    try {
+      const count = seed.prepare("SELECT COUNT(*) AS n FROM words WHERE verse_id = ? AND char_type = 'word'");
+      for (const [verseId, { qfWords }] of QF_SPLIT_WORDS) {
+        const row = count.get(verseId) as { n: number } | undefined;
+        expect({ verseId, words: row?.n }).toEqual({ verseId, words: qfWords + 1 });
+      }
+    } finally {
+      seed.close();
+    }
   });
 });
 
