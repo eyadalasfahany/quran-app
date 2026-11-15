@@ -14,6 +14,7 @@ function resource(
     author_name: null,
     author_ar: null,
     is_default: false,
+    has_word_boxes: false,
     style: null,
     changes_since_min_version: 1,
     key: 'fixture-key',
@@ -112,42 +113,28 @@ describe('reader settings', () => {
     expect(JSON.parse(storage.getString(storageKeys.readerSettings) ?? '{}')).toEqual({
       fontScale: 1.3,
       mode: 'focus',
-      quranFont: 'amiriQuran',
+      mushaf: 'hafs',
       tafsirChosen: true,
       tafsirId: 21,
       version: 1,
     });
   });
 
-  it('defaults the Quran font to Amiri Quran', () => {
-    expect(useReaderSettings.getState().quranFont).toBe('amiriQuran');
-    expect(readReaderSettings().quranFont).toBe('amiriQuran');
+  it('defaults the mushaf to Hafs', () => {
+    expect(useReaderSettings.getState().mushaf).toBe('hafs');
+    expect(readReaderSettings().mushaf).toBe('hafs');
   });
 
-  it('reads Amiri Quran from a blob saved before the font setting existed', () => {
-    storage.set(storageKeys.readerSettings, JSON.stringify({ fontScale: 1.2, mode: 'mushaf', version: 1 }));
-    resetReaderSettingsStore();
-    expect(useReaderSettings.getState().quranFont).toBe('amiriQuran');
-    expect(useReaderSettings.getState().fontScale).toBe(1.2);
-  });
-
-  it.each(['kfgqpc', 42, null, 'AmiriQuran'])('falls back to Amiri Quran for an unknown font %p', (quranFont) => {
-    storage.set(storageKeys.readerSettings, JSON.stringify({ mode: 'focus', quranFont, version: 1 }));
-    resetReaderSettingsStore();
-    expect(useReaderSettings.getState().quranFont).toBe('amiriQuran');
-    expect(useReaderSettings.getState().mode).toBe('focus');
-  });
-
-  it('persists the chosen Quran font and leaves the other settings alone', () => {
+  it('persists the chosen mushaf and leaves the other settings alone', () => {
     useReaderSettings.getState().setMode('mushaf');
     useReaderSettings.getState().setFontScale(1.4);
     storage.set(storageKeys.selectedResourceIds, JSON.stringify([1, 21, 30]));
 
-    useReaderSettings.getState().setQuranFont('scheherazadeNew');
-    expect(useReaderSettings.getState().quranFont).toBe('scheherazadeNew');
+    useReaderSettings.getState().setMushaf('warsh');
+    expect(useReaderSettings.getState().mushaf).toBe('warsh');
 
     resetReaderSettingsStore();
-    expect(useReaderSettings.getState().quranFont).toBe('scheherazadeNew');
+    expect(useReaderSettings.getState().mushaf).toBe('warsh');
     expect(useReaderSettings.getState().mode).toBe('mushaf');
     expect(useReaderSettings.getState().fontScale).toBe(1.4);
     expect(selectedResourceIds(resources)).toEqual([1, 21, 30]);

@@ -10,6 +10,7 @@ use App\Domains\Content\Models\ContentPack;
 use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Repositories\Contracts\ContentPackRepository;
 use App\Domains\Content\Repositories\Contracts\PackSnapshotRepository;
+use App\Domains\Mushaf\Packs\SvgMushafPackBuilder;
 use App\Domains\Names\Exceptions\NamesSourceLockedException;
 use App\Domains\Names\Services\NamesSourceGate;
 use Carbon\CarbonImmutable;
@@ -26,6 +27,8 @@ final class PackBuilder
         private readonly DuasPackReadiness $duas,
         private readonly NamesSourceGate $namesGate,
         private readonly HadithPackReadiness $hadith,
+        private readonly SeerahPackReadiness $seerah,
+        private readonly SvgMushafPackBuilder $svgMushafs,
     ) {}
 
     public function build(Resource $resource): ContentPackData
@@ -62,6 +65,16 @@ final class PackBuilder
         if ($resource->group === ResourceGroup::HadithCollections) {
             // ADR 0076 «Rule, 7 Nov 2026»: an incomplete hadith collection is not packed.
             $this->hadith->assertReady($resource->id);
+        }
+
+        if ($resource->group === ResourceGroup::Seerah) {
+            // ADR 0091: no Seerah pack unless the importer has written the book.
+            $this->seerah->assertReady($resource->id);
+        }
+
+        if ($resource->group === ResourceGroup::SvgMushafs) {
+            // ADR 0090: the input is the source cache, not the database, and the pack is stored uncompressed.
+            return $this->svgMushafs->build($resource);
         }
 
         $temp = storage_path('app/tmp/pack-'.$resource->id.'-'.$resource->version.'-'.bin2hex(random_bytes(8)).'.sqlite');

@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $row_count
  * @property int $schema_version
  * @property CarbonImmutable $built_at
+ * @property bool $has_word_boxes
  */
 #[Fillable([
     'resource_id',
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'row_count',
     'schema_version',
     'built_at',
+    'has_word_boxes',
 ])]
 final class ContentPack extends Model
 {
@@ -45,6 +47,7 @@ final class ContentPack extends Model
             'row_count' => 'integer',
             'schema_version' => 'integer',
             'built_at' => 'immutable_datetime',
+            'has_word_boxes' => 'boolean',
         ];
     }
 

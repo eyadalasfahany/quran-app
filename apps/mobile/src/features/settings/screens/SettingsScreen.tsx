@@ -30,7 +30,7 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
   const { t } = useTranslation();
   const locale = useLocale();
   const theme = useTheme();
-  const quranFont = useReaderSettings((state) => state.quranFont);
+  const mushaf = useReaderSettings((state) => state.mushaf);
   const activePlan = useActivePlan().data[0] ?? null;
   const khatmaValue = useMemo(() => {
     if (activePlan === null) {
@@ -66,9 +66,9 @@ export function SettingsScreen({ testID = 'settings-screen' }: { testID?: string
           <DiscoverTipCard id="app.settings" />
           <LanguageSection />
           <ReadingSection
-            fontValue={t(`reader.settings.fonts.${quranFont}.name`)}
+            mushafValue={t(`reader.mushafs.${mushaf}.name`)}
             onPressAppearance={() => router.push('/reader-settings' as Href)}
-            onPressQuranFont={() => router.push('/reader-settings' as Href)}
+            onPressMushaf={() => router.push('/reader-settings' as Href)}
           />
           <ListeningSection
             downloadsTrailing={formattedTotal}

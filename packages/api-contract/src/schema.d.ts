@@ -182,6 +182,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/seerah/books": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["v1.seerah.books.index"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/suggestions": {
         parameters: {
             query?: never;
@@ -253,6 +269,7 @@ export interface components {
                 };
                 changes_since_min_version: number;
                 is_default: boolean;
+                has_word_boxes: boolean;
             }[];
         };
         /** HadithBooksResource */
@@ -369,11 +386,29 @@ export interface components {
          * @enum {string}
          */
         HealthStatus: "ok" | "unavailable";
+        /** SeerahBooksResource */
+        SeerahBooksResource: {
+            data: {
+                resource_id: number;
+                slug: string;
+                title_ar: string;
+                author_ar: string;
+                edition_ar: string;
+                attribution_ar: string;
+                attribution_en: string;
+                sections_count: number;
+                paragraphs_count: number;
+                places_count: number;
+                events_count: number;
+                routes_count: number;
+            }[];
+            next_cursor: null;
+        };
         /**
          * ServedResourceGroup
          * @enum {string}
          */
-        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar" | "names" | "duas" | "hadith_collections" | "hadith_explanations";
+        ServedResourceGroup: "quran_core" | "mushafs" | "tafsirs" | "recitations" | "chapter_recitations" | "hadith" | "azkar" | "names" | "duas" | "hadith_collections" | "hadith_explanations" | "seerah" | "svg_mushafs";
         /** StoreSuggestionRequest */
         StoreSuggestionRequest: {
             name?: string | null;
@@ -574,7 +609,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/gzip": string;
+                    "application/octet-stream": string;
                 };
             };
             /** @description The resource or pack version was not found. */
@@ -848,6 +883,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResource"];
+                };
+            };
+        };
+    };
+    "v1.seerah.books.index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description `SeerahBooksResource` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeerahBooksResource"];
+                };
+            };
+            /** @description Not modified. */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": null;
                 };
             };
         };

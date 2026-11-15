@@ -6,30 +6,28 @@ import { ScrollView, View } from 'react-native';
 
 import { ContentColumn } from '@/core/layout';
 import { useTheme } from '@/core/theme';
-import type { ReaderMode } from '@/features/reader/anchor/reading-anchor';
+import { MushafPicker } from '@/features/reader/components/MushafPicker';
+import type { MushafKey } from '@/features/reader/mushafs';
 import { useReaderSettings } from '@/features/reader/settings';
+import { MushafPreviewCard } from '@/features/onboarding/components/MushafPreviewCard';
 import { OnboardingFooter } from '@/features/onboarding/components/OnboardingFooter';
 import { OnboardingTopBar } from '@/features/onboarding/components/OnboardingTopBar';
-import { ScriptPreviewCard } from '@/features/onboarding/components/ScriptPreviewCard';
-import { OnboardingRadioCard, Screen, UiText } from '@/shared/ui';
-
-const MODES: ReaderMode[] = ['mushaf', 'reading', 'focus'];
+import { Screen, UiText } from '@/shared/ui';
 
 export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testID?: string }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const savedMode = useReaderSettings((state) => state.mode);
-  const setMode = useReaderSettings((state) => state.setMode);
-  const [mode, setLocalMode] = useState<ReaderMode>(savedMode);
+  const savedMushaf = useReaderSettings((state) => state.mushaf);
+  const setMushaf = useReaderSettings((state) => state.setMushaf);
+  const [mushaf, setLocalMushaf] = useState<MushafKey>(savedMushaf);
 
   const continueNext = () => {
-    setMode(mode);
+    setMushaf(mushaf);
     router.push('/(onboarding)/reciter');
   };
 
   return (
     <Screen testID={testID}>
-      {/* The column caps the content at 720 on wide windows (spec §4). Its gutter is 0: the phone layout keeps its own padding. */}
       <ContentColumn gutter={0} testID={`${testID}-column`}>
         <ScrollView
           contentContainerStyle={{
@@ -42,7 +40,7 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
         >
           <OnboardingTopBar
             backLabel={t('onboarding.back')}
-            onBack={() => goBackOr('/(onboarding)/language' as Href)}
+            onBack={() => goBackOr('/(onboarding)/tour' as Href)}
             onSkip={() => router.push('/(onboarding)/reciter')}
             skipLabel={t('onboarding.skip')}
           />
@@ -52,28 +50,18 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
               {t('onboarding.script.subtitle')}
             </UiText>
           </View>
-          <ScriptPreviewCard mode={mode} />
-          <View
-            accessibilityLabel={t('onboarding.script.modeGroup')}
-            accessibilityRole="radiogroup"
-            style={{ gap: theme.space[2] }}
-          >
-            {MODES.map((key) => (
-              <OnboardingRadioCard
-                key={key}
-                onPress={() => setLocalMode(key)}
-                selected={mode === key}
-                testID={`onboarding-mode-${key}`}
-                title={t(`reader.settings.modes.${key}`)}
-              />
-            ))}
-          </View>
+          <MushafPreviewCard />
+          <MushafPicker
+            accessibilityLabel={t('reader.mushafs.group')}
+            onChange={setLocalMushaf}
+            value={mushaf}
+          />
         </ScrollView>
         <OnboardingFooter
           continueLabel={t('onboarding.continue')}
           onContinue={continueNext}
-          step={2}
-          stepLabel={t('onboarding.stepOfThree', { step: 2, total: 3 })}
+          step={3}
+          stepLabel={t('onboarding.stepOfFour', { step: 3, total: 4 })}
         />
       </ContentColumn>
     </Screen>

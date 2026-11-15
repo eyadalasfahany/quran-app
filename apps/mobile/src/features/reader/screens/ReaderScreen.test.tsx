@@ -2,6 +2,7 @@ import { act, fireEvent } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import { useSegments } from 'expo-router';
 import { Dimensions } from 'react-native';
+import { usePinchGesture } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import type { SqlExecutor } from '@/core/db/sql-executor';
@@ -66,6 +67,56 @@ jest.mock('../HafsMushafList', () => {
     },
   };
 });
+// The Madinah container stands in: its list and card are tested alone. The pack's state is set per test.
+type MockContainerProps = {
+  mushafKey: string;
+  onReadNow?: () => void;
+  anchorVerseKey: string;
+  onTopAyah?: (page: number, verseKey: string) => void;
+  onUserScrollStart?: () => void;
+};
+let mockContainerProps: MockContainerProps | undefined;
+jest.mock('../components/MushafSvgContainer', () => {
+  const { createElement } = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>('react-native');
+  return {
+    MushafSvgContainer: (props: MockContainerProps & { testID?: string }) => {
+      mockContainerProps = props;
+      return createElement(View, { testID: 'svg-container' });
+    },
+  };
+});
+
+// The Mushaf pinch is the real gesture; a test drives the callbacks the screen hands it.
+jest.mock('react-native-gesture-handler', () => {
+  const actual = jest.requireActual<typeof import('react-native-gesture-handler')>('react-native-gesture-handler');
+  return { ...actual, usePinchGesture: jest.fn(actual.usePinchGesture) };
+});
+
+// A pinch on the Mushaf from its start to the given scale.
+async function pinchMushaf(scale: number) {
+  const config = jest.mocked(usePinchGesture).mock.lastCall?.[0];
+  if (config?.onActivate === undefined || typeof config.onUpdate !== 'function') {
+    throw new Error('the Mushaf has no pinch');
+  }
+  const { onActivate, onUpdate } = config;
+  await act(async () => {
+    onActivate({} as never);
+    onUpdate({ scale } as never);
+  });
+}
+
+// The pack's manifest entry and install state, per test; absent in the manifest by default (the Hafs list shows).
+let mockSvgPack: { availableVersion: number | null; reader: unknown; status: string } = {
+  availableVersion: null,
+  reader: null,
+  status: 'absent',
+};
+jest.mock('@/core/mushaf-pack', () => ({
+  ...jest.requireActual<typeof import('@/core/mushaf-pack')>('@/core/mushaf-pack'),
+  useSvgMushafPack: () => ({ cancel: jest.fn(), download: jest.fn(), progress: 0, sizeBytes: null, ...mockSvgPack }),
+}));
+
 // The reading list stands in for FlashList's scroll-to-anchor, which Jest can't run; the props it was given are checked.
 let mockReadingProps:
   | {
@@ -141,6 +192,171 @@ describe('ReaderScreen', () => {
     mockBookmarks = [];
     mockHighlights = new Map();
     mockExecutor = undefined;
+    mockSvgPack = { availableVersion: null, reader: null, status: 'absent' };
+    mockContainerProps = undefined;
+  });
+
+  describe('Madinah pages (ADR 0090 decision 4)', () => {
+    beforeEach(() => {
+      mockMushafProps = undefined;
+      mockContainerProps = undefined;
+      mockSvgPack = { availableVersion: null, reader: null, status: 'absent' };
+    });
+
+    it('keeps the Hafs list while the pack is not in the manifest', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+      expect(mockMushafProps).toBeDefined();
+      expect(mockContainerProps).toBeUndefined();
+    });
+
+    it('shows the Madinah container for the shown riwayah once the pack is listed', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+      expect(mockContainerProps?.mushafKey).toBe('hafs');
+      expect(mockMushafProps).toBeUndefined();
+    });
+
+    it('the read-now action of the card switches to Reading, and keeps the anchor ayah', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+      await act(async () => {
+        mockContainerProps?.onReadNow?.();
+      });
+      expect(useReaderSettings.getState().mode).toBe('reading');
+      expect(mockContainerProps?.anchorVerseKey).toBe('2:255');
+    });
+
+    it('shows the flowed Hafs text above 1×, with its own page numbers, even with the Hafs pages installed', async () => {
+      const { executor } = await openReaderTestContent();
+      mockExecutor = executor;
+      // The pack's pages would put 2:255 on page 600; the flowed text keeps `verses.page`.
+      mockSvgPack = { availableVersion: 1, reader: { pageForAyah: () => 600 }, status: 'installed' };
+      useReaderSettings.getState().setMode('mushaf');
+      useReaderSettings.getState().setFontScale(1.2);
+      const view = await renderUi(reader());
+
+      expect(mockMushafProps).toBeDefined();
+      expect(mockContainerProps).toBeUndefined();
+      const title = view.getByTestId('reader-title');
+      expect(title).toHaveTextContent(new RegExp(formatNumber(pageForVerse(executor, '2:255')!, 'ar')));
+      expect(title).not.toHaveTextContent(new RegExp(formatNumber(600, 'ar')));
+    });
+
+    it('keeps the printed pages at 1× and below', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMode('mushaf');
+      useReaderSettings.getState().setFontScale(0.8);
+      await renderUi(reader());
+      expect(mockContainerProps?.mushafKey).toBe('hafs');
+      expect(mockMushafProps).toBeUndefined();
+    });
+
+    it('keeps another riwayah on its printed pages at every size', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMushaf('warsh');
+      useReaderSettings.getState().setMode('mushaf');
+      useReaderSettings.getState().setFontScale(1.6);
+      await renderUi(reader());
+      expect(mockContainerProps?.mushafKey).toBe('warsh');
+      expect(mockMushafProps).toBeUndefined();
+    });
+
+    it('a pinch past 1× on the Hafs pages grows the text and switches to the flowed text', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+      expect(mockContainerProps).toBeDefined();
+
+      await pinchMushaf(1.5);
+      expect(useReaderSettings.getState().fontScale).toBe(1.5);
+      expect(mockMushafProps).toBeDefined();
+    });
+
+    it('a pinch on another riwayah stops at 1×', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      useReaderSettings.getState().setMushaf('warsh');
+      useReaderSettings.getState().setMode('mushaf');
+      await renderUi(reader());
+
+      await pinchMushaf(1.5);
+      expect(useReaderSettings.getState().fontScale).toBe(1);
+      await pinchMushaf(0.88);
+      expect(useReaderSettings.getState().fontScale).toBe(0.9);
+    });
+
+    describe('the place across the switch', () => {
+      beforeEach(() => {
+        usePlayerStore.getState().reset();
+      });
+
+      afterEach(() => {
+        usePlayerStore.getState().reset();
+      });
+
+      it('opens the new view at the ayah the reader scrolled to, while audio keeps the saved place', async () => {
+        const { executor } = await openReaderTestContent();
+        mockExecutor = executor;
+        mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+        useReaderSettings.getState().setMode('mushaf');
+        usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 2, positionMs: 0, durationMs: 48_000 });
+        usePlayerStore.getState().markPlaying();
+        usePlayerStore.setState({ activeVerseId: verseKeyToId(executor, '2:256') ?? null });
+        const view = await renderUi(reader('2:256'));
+        expect(mockContainerProps?.anchorVerseKey).toBe('2:256');
+
+        // The reader drags away from the recitation, and the scroll ends with 2:260 at the top.
+        await act(async () => {
+          mockContainerProps?.onUserScrollStart?.();
+        });
+        await act(async () => {
+          mockContainerProps?.onTopAyah?.(pageForVerse(executor, '2:260')!, '2:260');
+        });
+        expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
+
+        // A pinch past 1× mounts the flowed text there, and back at 1× the pages open there too.
+        await act(async () => {
+          useReaderSettings.getState().setFontScale(1.2);
+        });
+        expect(mockMushafProps?.anchorVerseKey).toBe('2:260');
+        await act(async () => {
+          useReaderSettings.getState().setFontScale(1);
+        });
+        expect(mockContainerProps?.anchorVerseKey).toBe('2:260');
+        expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
+
+        // Following again returns to the recitation.
+        await act(async () => {
+          fireEvent.press(view.getByRole('button', { name: 'العودة إلى الآية الحالية' }));
+        });
+        expect(mockContainerProps?.anchorVerseKey).toBe('2:256');
+      });
+
+      it('opens the new view at the scrolled place when nothing plays', async () => {
+        const { executor } = await openReaderTestContent();
+        mockExecutor = executor;
+        mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+        useReaderSettings.getState().setMode('mushaf');
+        await renderUi(reader());
+
+        await act(async () => {
+          mockContainerProps?.onTopAyah?.(pageForVerse(executor, '2:260')!, '2:260');
+        });
+        await act(async () => {
+          useReaderSettings.getState().setFontScale(1.2);
+        });
+        expect(mockMushafProps?.anchorVerseKey).toBe('2:260');
+      });
+    });
   });
 
   it('keeps the anchor ayah when the reading mode changes', async () => {

@@ -504,6 +504,12 @@ function bindColumn(column: ContentColumn, value: unknown): SqlValue {
     }
     throw new Error(`Column ${column.name} is not an integer.`);
   }
+  if (column.kind === 'real') {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    throw new Error(`Column ${column.name} is not a number.`);
+  }
   if (typeof value === 'string') {
     return value;
   }

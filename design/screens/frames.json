@@ -1,16 +1,18 @@
 {
   "source": "screens/",
-  "frameCount": 273,
-  "assetCount": 7,
-  "bytesSavedVsInline": 5921200,
+  "frameCount": 307,
+  "assetCount": 15,
+  "bytesSavedVsInline": 21423179,
   "stacks": {
     "core": [
       "Main",
       "MainLandscapeRail",
       "Mushaf",
+      "MushafPlaybackRiwayah",
       "MushafFullscreenEnter",
       "MushafFullscreen",
       "AyahSheet",
+      "AyahSheetRiwayah",
       "Player",
       "PlayerReciters",
       "PlayerReciterDownloading",
@@ -22,11 +24,13 @@
       "SearchEmpty",
       "SearchHadithEmpty",
       "Reading",
+      "ReadingOtherRiwayah",
       "ReadingMiniIdle",
       "ReadingMiniCollapsed",
       "ReadingMiniUnavailable",
       "ReadingMiniSkipped",
       "Focus",
+      "FocusOtherRiwayah",
       "Tafsir",
       "TafsirFull",
       "TafsirDownload"
@@ -37,6 +41,8 @@
       "SalahDark",
       "Qibla",
       "QiblaLandscape",
+      "RecitersRiwayahRow",
+      "RecitersRiwayahHeader",
       "ReciterSurahsUnavailable",
       "SettingsSuggestCard",
       "SuggestSheet",
@@ -180,6 +186,7 @@
     ],
     "onboarding": [
       "OnboardLanguage",
+      "OnboardTour",
       "OnboardScript",
       "OnboardReciter"
     ],
@@ -322,6 +329,35 @@
       "DiscoverScreen",
       "DiscoverTip",
       "DiscoverWidgetSheet"
+    ],
+    "seerah": [
+      "SeerahMapRegion",
+      "SeerahMapRegionDark",
+      "SeerahMapRegionEnglish",
+      "SeerahMapRegionYear",
+      "SeerahMapMakkah",
+      "SeerahMapMakkahDark",
+      "SeerahMapMadinah",
+      "SeerahCluster",
+      "SeerahClusterSheet",
+      "SeerahEvent",
+      "SeerahEventDark",
+      "SeerahEventEnglish",
+      "SeerahEventOther",
+      "SeerahList",
+      "SeerahListDark",
+      "SeerahListEnglish",
+      "SeerahMapKey",
+      "SeerahTimeline",
+      "SeerahStateDownload",
+      "SeerahStateDownloading",
+      "SeerahStateOffline",
+      "SeerahStateError",
+      "SeerahStateEmptyYear",
+      "SeerahExpanded",
+      "SeerahExpandedCity",
+      "SeerahMenu",
+      "SeerahSources"
     ]
   },
   "frames": [
@@ -353,7 +389,17 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/Mushaf.html",
-      "bytes": 14048
+      "bytes": 8432
+    },
+    {
+      "id": "MushafPlaybackRiwayah",
+      "stack": "core",
+      "caption": "Mushaf · Hafs pages while a Hafs reciter plays for a reader who chose Warsh (ADR 0090 decision 12, step 9b Q6) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/core/MushafPlaybackRiwayah.html",
+      "bytes": 8502
     },
     {
       "id": "MushafFullscreenEnter",
@@ -384,6 +430,16 @@
       "status": "source",
       "path": "frames/core/AyahSheet.html",
       "bytes": 11603
+    },
+    {
+      "id": "AyahSheetRiwayah",
+      "stack": "core",
+      "caption": "Ayah actions · ayah in Warsh (non-Hafs): reference and riwayah in the header, no text card, highlight row, and only حفظ and ملاحظة (ADR 0090, step 9 Part F) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/core/AyahSheetRiwayah.html",
+      "bytes": 6980
     },
     {
       "id": "Player",
@@ -423,7 +479,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/core/ReaderSettings.html",
-      "bytes": 13991
+      "bytes": 14279
     },
     {
       "id": "SurahIndex",
@@ -476,6 +532,16 @@
       "bytes": 25283
     },
     {
+      "id": "ReadingOtherRiwayah",
+      "stack": "reading",
+      "caption": "Reading mode · Warsh chosen: the title pill names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/reading/ReadingOtherRiwayah.html",
+      "bytes": 25652
+    },
+    {
       "id": "ReadingMiniIdle",
       "stack": "reading",
       "caption": "Reading · mini player idle (plays from the top ayah on screen)",
@@ -524,6 +590,16 @@
       "status": "source",
       "path": "frames/reading/Focus.html",
       "bytes": 7719
+    },
+    {
+      "id": "FocusOtherRiwayah",
+      "stack": "reading",
+      "caption": "Focus mode · Warsh chosen: the position line names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/reading/FocusOtherRiwayah.html",
+      "bytes": 8378
     },
     {
       "id": "Tafsir",
@@ -624,6 +700,26 @@
       "status": "source",
       "path": "frames/audio/Reciters.html",
       "bytes": 24601
+    },
+    {
+      "id": "RecitersRiwayahRow",
+      "stack": "salah",
+      "caption": "Listen › Reciters · each row names its riwayah on the second line (ADR 0090 decision 12, step 9b Part C, option a) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/salah/RecitersRiwayahRow.html",
+      "bytes": 25702
+    },
+    {
+      "id": "RecitersRiwayahHeader",
+      "stack": "salah",
+      "caption": "Listen › Reciters · one muted line above the list, rows unchanged (ADR 0090 decision 12, step 9b Part C, option b) (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/salah/RecitersRiwayahHeader.html",
+      "bytes": 24904
     },
     {
       "id": "ReciterSurahsUnavailable",
@@ -1763,27 +1859,37 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardLanguage.html",
-      "bytes": 5117
+      "bytes": 5119
+    },
+    {
+      "id": "OnboardTour",
+      "stack": "onboarding",
+      "caption": "Onboarding 2 · ما في طيبة · the app's sections",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "source",
+      "path": "frames/onboarding/OnboardTour.html",
+      "bytes": 13887
     },
     {
       "id": "OnboardScript",
       "stack": "onboarding",
-      "caption": "Onboarding 2 · Script",
+      "caption": "Onboarding 3 · Script",
       "size": "compact",
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardScript.html",
-      "bytes": 9188
+      "bytes": 8843
     },
     {
       "id": "OnboardReciter",
       "stack": "onboarding",
-      "caption": "Onboarding 3 · Reciter",
+      "caption": "Onboarding 4 · Reciter",
       "size": "compact",
       "theme": "ar-light",
       "status": "source",
       "path": "frames/onboarding/OnboardReciter.html",
-      "bytes": 12408
+      "bytes": 12425
     },
     {
       "id": "Khatma",
@@ -1953,7 +2059,7 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/states/LoadingMushaf.html",
-      "bytes": 14075
+      "bytes": 7981
     },
     {
       "id": "PlayerBuffering",
@@ -3053,7 +3159,277 @@
       "theme": "ar-light",
       "status": "source",
       "path": "frames/hadith/HadithCollSources.html",
-      "bytes": 7319
+      "bytes": 8686
+    },
+    {
+      "id": "SeerahMapRegion",
+      "stack": "seerah",
+      "caption": "الخريطة · المنطقة (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapRegion.html",
+      "bytes": 39972
+    },
+    {
+      "id": "SeerahMapRegionDark",
+      "stack": "seerah",
+      "caption": "الخريطة · المنطقة · داكن (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapRegionDark.html",
+      "bytes": 39925
+    },
+    {
+      "id": "SeerahMapRegionEnglish",
+      "stack": "seerah",
+      "caption": "Map · region · English UI, map labels stay Arabic (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "en",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapRegionEnglish.html",
+      "bytes": 39600
+    },
+    {
+      "id": "SeerahMapRegionYear",
+      "stack": "seerah",
+      "caption": "الخريطة · عمر محدد: ٥٣ سنة (الهجرة)، والباقي باهت (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapRegionYear.html",
+      "bytes": 38406
+    },
+    {
+      "id": "SeerahMapMakkah",
+      "stack": "seerah",
+      "caption": "خريطة مكة · المعالم والأحداث، تجميع وإخفاء أسماء متزاحمة، نافذة حدث (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapMakkah.html",
+      "bytes": 33090
+    },
+    {
+      "id": "SeerahMapMakkahDark",
+      "stack": "seerah",
+      "caption": "خريطة مكة · داكن (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapMakkahDark.html",
+      "bytes": 32944
+    },
+    {
+      "id": "SeerahMapMadinah",
+      "stack": "seerah",
+      "caption": "خريطة المدينة · المعالم والأحداث، موضع تقريبي (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapMadinah.html",
+      "bytes": 29588
+    },
+    {
+      "id": "SeerahCluster",
+      "stack": "seerah",
+      "caption": "مجموعة تنفتح على حلقة (٦ أحداث أو أقل) · دار الأرقم (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahCluster.html",
+      "bytes": 33520
+    },
+    {
+      "id": "SeerahClusterSheet",
+      "stack": "seerah",
+      "caption": "أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب العمر (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahClusterSheet.html",
+      "bytes": 13891
+    },
+    {
+      "id": "SeerahEvent",
+      "stack": "seerah",
+      "caption": "صفحة الحدث · نص الكتاب، العمر (والسنة الهجرية تفصيلًا) والمكان، السابق والتالي، المصدر (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahEvent.html",
+      "bytes": 11282
+    },
+    {
+      "id": "SeerahEventDark",
+      "stack": "seerah",
+      "caption": "صفحة الحدث · داكن (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahEventDark.html",
+      "bytes": 11151
+    },
+    {
+      "id": "SeerahEventEnglish",
+      "stack": "seerah",
+      "caption": "Event page · English UI, the book stays Arabic (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "en",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahEventEnglish.html",
+      "bytes": 10960
+    },
+    {
+      "id": "SeerahEventOther",
+      "stack": "seerah",
+      "caption": "صفحة الحدث · المكان «أخرى» والعمر «غير محدد» (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahEventOther.html",
+      "bytes": 9642
+    },
+    {
+      "id": "SeerahList",
+      "stack": "seerah",
+      "caption": "«عرض كقائمة» · مجمّعة بالفترة والسنة، و«غير محدد» في آخرها (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahList.html",
+      "bytes": 10415
+    },
+    {
+      "id": "SeerahListDark",
+      "stack": "seerah",
+      "caption": "«عرض كقائمة» · داكن (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "dark",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahListDark.html",
+      "bytes": 10351
+    },
+    {
+      "id": "SeerahListEnglish",
+      "stack": "seerah",
+      "caption": "List view · English UI (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "en",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahListEnglish.html",
+      "bytes": 10132
+    },
+    {
+      "id": "SeerahMapKey",
+      "stack": "seerah",
+      "caption": "مفتاح الخريطة · الرموز والطرق (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMapKey.html",
+      "bytes": 14850
+    },
+    {
+      "id": "SeerahTimeline",
+      "stack": "seerah",
+      "caption": "الخط الزمني · الحالات: دون اختيار، السحب، سنة مختارة، غير محدد (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahTimeline.html",
+      "bytes": 80290
+    },
+    {
+      "id": "SeerahStateDownload",
+      "stack": "seerah",
+      "caption": "السيرة غير منزّلة · الحجم وزر التنزيل (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahStateDownload.html",
+      "bytes": 4550
+    },
+    {
+      "id": "SeerahStateDownloading",
+      "stack": "seerah",
+      "caption": "جارٍ التنزيل (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahStateDownloading.html",
+      "bytes": 3992
+    },
+    {
+      "id": "SeerahStateOffline",
+      "stack": "seerah",
+      "caption": "دون اتصال ولم تُنزَّل بعد (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahStateOffline.html",
+      "bytes": 4484
+    },
+    {
+      "id": "SeerahStateError",
+      "stack": "seerah",
+      "caption": "تعذّر فتح البيانات (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahStateError.html",
+      "bytes": 4292
+    },
+    {
+      "id": "SeerahStateEmptyYear",
+      "stack": "seerah",
+      "caption": "سنة بلا أحداث (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahStateEmptyYear.html",
+      "bytes": 33192
+    },
+    {
+      "id": "SeerahExpanded",
+      "stack": "seerah",
+      "caption": "نافذة واسعة ١١٩٤ × ٨٣٤ · الخط الزمني عموديًا في البداية، الخريطة، صفحة الحدث في النهاية (بانتظار الموافقة)",
+      "size": "expanded",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahExpanded.html",
+      "bytes": 47524
+    },
+    {
+      "id": "SeerahExpandedCity",
+      "stack": "seerah",
+      "caption": "نافذة واسعة · خريطة المدينة وسنة مختارة (بانتظار الموافقة)",
+      "size": "expanded",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahExpandedCity.html",
+      "bytes": 37800
+    },
+    {
+      "id": "SeerahMenu",
+      "stack": "seerah",
+      "caption": "القائمة · بطاقة السيرة النبوية (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahMenu.html",
+      "bytes": 15574
+    },
+    {
+      "id": "SeerahSources",
+      "stack": "seerah",
+      "caption": "الإعدادات · المصادر والشكر · صف السيرة وخريطتها (بانتظار الموافقة)",
+      "size": "compact",
+      "theme": "ar-light",
+      "status": "awaiting-approval",
+      "path": "frames/seerah/SeerahSources.html",
+      "bytes": 8422
     }
   ]
 }

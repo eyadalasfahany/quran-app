@@ -9,6 +9,7 @@ import { firstVerseOfPage, pageForVerse } from '@/features/reader/anchor/page';
 import type { HighlightColor } from '@/shared/ui';
 
 import { HafsPage } from './components/HafsPage';
+import { MushafScrollView } from './components/MushafScrollView';
 import { listChapters } from './data/chapters';
 import { paragraphOf, paragraphWordOffset, type SurahRun } from './mushaf-paragraph';
 import { topVisibleVerseKey, type MeasuredRun } from './mushaf-top-ayah';
@@ -365,6 +366,7 @@ export function HafsMushafList({
           onViewableItemsChanged={onViewableItemsChanged}
           ref={listRef}
           renderItem={renderPage}
+          renderScrollComponent={MushafScrollView}
           viewabilityConfig={{ itemVisiblePercentThreshold: 20 }}
         />
       </View>

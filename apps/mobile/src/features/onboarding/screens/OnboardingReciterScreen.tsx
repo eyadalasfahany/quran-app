@@ -106,8 +106,8 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
         <OnboardingFooter
           continueLabel={t('onboarding.startReading')}
           onContinue={finishOnboarding}
-          step={3}
-          stepLabel={t('onboarding.stepOfThree', { step: 3, total: 3 })}
+          step={4}
+          stepLabel={t('onboarding.stepOfFour', { step: 4, total: 4 })}
         />
       </ContentColumn>
     </Screen>

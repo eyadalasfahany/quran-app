@@ -45,6 +45,18 @@ use App\Domains\Hadith\Models\HadithExplanation;
 use App\Domains\Hadith\Models\HadithExplanationLink;
 use App\Domains\Hadith\Models\HadithGrade;
 use App\Domains\Hadith\Models\HadithRefAlias;
+use App\Domains\Seerah\Models\SeerahBook;
+use App\Domains\Seerah\Models\SeerahEvent;
+use App\Domains\Seerah\Models\SeerahEventEvidence;
+use App\Domains\Seerah\Models\SeerahMapLevel;
+use App\Domains\Seerah\Models\SeerahMapPosition;
+use App\Domains\Seerah\Models\SeerahMapRoutePath;
+use App\Domains\Seerah\Models\SeerahMilestone;
+use App\Domains\Seerah\Models\SeerahParagraph;
+use App\Domains\Seerah\Models\SeerahPlace;
+use App\Domains\Seerah\Models\SeerahRoute;
+use App\Domains\Seerah\Models\SeerahRouteStop;
+use App\Domains\Seerah\Models\SeerahSection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -145,6 +157,30 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
                 ->where('hadith_explanations.resource_id', $resourceId),
             'hadith_explanation_links' => HadithExplanationLink::query()->toBase()
                 ->where('hadith_explanation_links.resource_id', $resourceId),
+            'seerah_books' => SeerahBook::query()->toBase()
+                ->where('seerah_books.resource_id', $resourceId),
+            'seerah_sections' => SeerahSection::query()->toBase()
+                ->where('seerah_sections.resource_id', $resourceId),
+            'seerah_paragraphs' => SeerahParagraph::query()->toBase()
+                ->where('seerah_paragraphs.resource_id', $resourceId),
+            'seerah_places' => SeerahPlace::query()->toBase()
+                ->where('seerah_places.resource_id', $resourceId),
+            'seerah_map_levels' => SeerahMapLevel::query()->toBase()
+                ->where('seerah_map_levels.resource_id', $resourceId),
+            'seerah_map_positions' => SeerahMapPosition::query()->toBase()
+                ->where('seerah_map_positions.resource_id', $resourceId),
+            'seerah_routes' => SeerahRoute::query()->toBase()
+                ->where('seerah_routes.resource_id', $resourceId),
+            'seerah_route_stops' => SeerahRouteStop::query()->toBase()
+                ->where('seerah_route_stops.resource_id', $resourceId),
+            'seerah_map_route_paths' => SeerahMapRoutePath::query()->toBase()
+                ->where('seerah_map_route_paths.resource_id', $resourceId),
+            'seerah_events' => SeerahEvent::query()->toBase()
+                ->where('seerah_events.resource_id', $resourceId),
+            'seerah_event_evidence' => SeerahEventEvidence::query()->toBase()
+                ->where('seerah_event_evidence.resource_id', $resourceId),
+            'seerah_milestones' => SeerahMilestone::query()->toBase()
+                ->where('seerah_milestones.resource_id', $resourceId),
             default => throw new PackBuildException('Unknown pack table ['.$table->name.'].'),
         };
 
@@ -230,7 +266,7 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
     }
 
     /**
-     * @return array<string, int|string|null>
+     * @return array<string, int|float|string|null>
      */
     private function normalize(PackTable $table, stdClass $row): array
     {
@@ -247,7 +283,7 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
         return $normalized;
     }
 
-    private function cell(PackColumn $column, mixed $value): int|string|null
+    private function cell(PackColumn $column, mixed $value): int|float|string|null
     {
         if ($value === null) {
             if ($column->nullable) {
@@ -271,6 +307,19 @@ final class EloquentPackSnapshotRepository implements PackSnapshotRepository
             }
 
             throw new PackBuildException('Pack column ['.$column->name.'] is not an integer.');
+        }
+
+        if ($column->real) {
+            // MySQL returns DECIMAL columns as strings; a REAL column accepts any number-shaped value.
+            if (is_float($value) || is_int($value)) {
+                return (float) $value;
+            }
+
+            if (is_string($value) && is_numeric($value)) {
+                return (float) $value;
+            }
+
+            throw new PackBuildException('Pack column ['.$column->name.'] is not a number.');
         }
 
         if (is_string($value)) {

@@ -63,6 +63,20 @@ final class PackSchema
                 self::hadithExplanations(),
                 self::hadithExplanationLinks(),
             ],
+            ResourceGroup::Seerah => [
+                self::seerahBooks(),
+                self::seerahSections(),
+                self::seerahParagraphs(),
+                self::seerahPlaces(),
+                self::seerahMapLevels(),
+                self::seerahMapPositions(),
+                self::seerahRoutes(),
+                self::seerahRouteStops(),
+                self::seerahMapRoutePaths(),
+                self::seerahEvents(),
+                self::seerahEventEvidence(),
+                self::seerahMilestones(),
+            ],
             default => throw new PackBuildException('Resource group ['.$group->value.'] has no pack schema.'),
         };
     }
@@ -744,9 +758,279 @@ final class PackSchema
         );
     }
 
+    /**
+     * ADR 0091: the book and its counts. Import provenance and the source hashes stay server-side.
+     */
+    public static function seerahBooks(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_books',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('slug'),
+                self::text('title_ar'),
+                self::text('author_ar'),
+                self::text('edition_ar'),
+                self::text('attribution_ar'),
+                self::text('attribution_en'),
+                self::integer('sections_count'),
+                self::integer('paragraphs_count'),
+                self::integer('places_count'),
+                self::integer('events_count'),
+                self::integer('routes_count'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    /**
+     * The book's headings in book order. `code` is the source id (s003); `id` is its number.
+     */
+    public static function seerahSections(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_sections',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('code'),
+                self::text('level'),
+                self::text('title_ar'),
+                self::integer('page'),
+                self::integer('position'),
+                self::integer('paragraph_from', nullable: true),
+                self::integer('paragraph_to', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    /**
+     * The canonical paragraphs, byte for byte. `id` is the paragraph number (p00123 is 123).
+     */
+    public static function seerahParagraphs(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_paragraphs',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::integer('section_id'),
+                self::integer('position'),
+                self::integer('page'),
+                self::text('text_ar'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    /**
+     * The gazetteer. Real-world coordinates are REAL; flags are a JSON list of {code, note}.
+     */
+    public static function seerahPlaces(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_places',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('slug'),
+                self::integer('parent_id', nullable: true),
+                self::text('kind'),
+                self::text('name_ar'),
+                self::real('lat', nullable: true),
+                self::real('lng', nullable: true),
+                self::text('geo_precision', nullable: true),
+                self::text('flags'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    /**
+     * One drawn map: the region, then each city with landmarks. `viewbox` is «x y width height».
+     */
+    public static function seerahMapLevels(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_map_levels',
+            columns: [
+                self::integer('resource_id'),
+                self::text('level'),
+                self::integer('parent_place_id'),
+                self::text('viewbox'),
+                self::text('art'),
+            ],
+            primaryKey: ['resource_id', 'level'],
+            orderBy: ['resource_id', 'level'],
+        );
+    }
+
+    /**
+     * Where each place is drawn on one map, with its label priority and side, and whether the art draws its marker.
+     */
+    public static function seerahMapPositions(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_map_positions',
+            columns: [
+                self::integer('resource_id'),
+                self::text('level'),
+                self::integer('place_id'),
+                self::real('x'),
+                self::real('y'),
+                self::integer('label_priority'),
+                self::text('label_side'),
+                // 1 when the place's marker is drawn in the art (ADR 0091). Nullable: a pack built before it reads NULL.
+                self::integer('art_landmark', nullable: true),
+            ],
+            primaryKey: ['resource_id', 'level', 'place_id'],
+            orderBy: ['resource_id', 'level', 'place_id'],
+        );
+    }
+
+    public static function seerahRoutes(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_routes',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('slug'),
+                self::text('kind'),
+                self::text('name_ar'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    public static function seerahRouteStops(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_route_stops',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('route_id'),
+                self::integer('position'),
+                self::integer('place_id'),
+            ],
+            primaryKey: ['resource_id', 'route_id', 'position'],
+            orderBy: ['resource_id', 'route_id', 'position'],
+        );
+    }
+
+    /**
+     * The drawn curve of one route segment on one map.
+     */
+    public static function seerahMapRoutePaths(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_map_route_paths',
+            columns: [
+                self::integer('resource_id'),
+                self::text('level'),
+                self::integer('route_id'),
+                self::integer('from_place_id'),
+                self::integer('to_place_id'),
+                self::text('path_d'),
+            ],
+            primaryKey: ['resource_id', 'level', 'route_id', 'from_place_id', 'to_place_id'],
+            orderBy: ['resource_id', 'level', 'route_id', 'from_place_id', 'to_place_id'],
+        );
+    }
+
+    /**
+     * One event per heading. `position` is book order; `also` is a JSON list of place ids; `flags` a JSON list of {code, note}.
+     * A year bucket «غير محدد» has null ages and era (ADR 0091, 14 Nov 2026).
+     */
+    public static function seerahEvents(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_events',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('id'),
+                self::text('slug'),
+                self::integer('position'),
+                self::integer('section_id'),
+                self::integer('paragraph_from', nullable: true),
+                self::integer('paragraph_to', nullable: true),
+                self::text('title_ar'),
+                self::text('kind'),
+                self::integer('place_id', nullable: true),
+                self::text('place_basis', nullable: true),
+                self::text('also'),
+                self::integer('age_from', nullable: true),
+                self::integer('age_to', nullable: true),
+                self::text('era', nullable: true),
+                self::integer('hijri_from', nullable: true),
+                self::integer('hijri_to', nullable: true),
+                self::text('year_basis', nullable: true),
+                self::text('certainty', nullable: true),
+                self::integer('route_id', nullable: true),
+                self::text('flags'),
+            ],
+            primaryKey: ['resource_id', 'id'],
+            orderBy: ['resource_id', 'id'],
+        );
+    }
+
+    /**
+     * The quotes that justify an event's place or year: exact substrings of the paragraph they name.
+     */
+    public static function seerahEventEvidence(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_event_evidence',
+            columns: [
+                self::integer('resource_id'),
+                self::integer('event_id'),
+                self::text('kind'),
+                self::integer('position'),
+                self::integer('paragraph_id'),
+                self::text('quote_ar'),
+            ],
+            primaryKey: ['resource_id', 'event_id', 'kind', 'position'],
+            orderBy: ['resource_id', 'event_id', 'kind', 'position'],
+        );
+    }
+
+    /**
+     * The named markers of the timeline; each points at an event, and its age and year are read from that event.
+     */
+    public static function seerahMilestones(): PackTable
+    {
+        return new PackTable(
+            name: 'seerah_milestones',
+            columns: [
+                self::integer('resource_id'),
+                self::text('milestone_key'),
+                self::text('label_ar'),
+                self::integer('event_id'),
+                self::integer('position'),
+            ],
+            primaryKey: ['resource_id', 'milestone_key'],
+            orderBy: ['resource_id', 'position'],
+        );
+    }
+
     private static function integer(string $name, bool $nullable = false): PackColumn
     {
         return new PackColumn($name, integer: true, nullable: $nullable);
+    }
+
+    /**
+     * A REAL column (ADR 0091): coordinates and drawn positions.
+     */
+    private static function real(string $name, bool $nullable = false): PackColumn
+    {
+        return new PackColumn($name, integer: false, nullable: $nullable, real: true);
     }
 
     private static function text(string $name, bool $nullable = false): PackColumn

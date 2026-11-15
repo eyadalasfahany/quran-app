@@ -47,9 +47,9 @@ it('creates the content mirror tables and seeds two sources idempotently alongsi
 
     // The azkar migration adds the pending opendua row (ADR 0031); the names migration adds the pending
     // names-tirmidhi row (ADR 0043 A2); the MP3Quran migration adds the mp3quran row (ADR 0061); the Way2Quran migration adds the way2quran row (ADR 0074); the hadith migrations add fawazahmed0
-    // and the pending sunnahcom row (ADR 0042); the step 6b.1 migration adds openiti and hadithapicom (ADR 0076); the gap-report migration adds meeatif and hadithjson (ADR 0076); the seeder adds qf and tanzil.
-    expect(ContentSource::query()->count())->toBe(14)
-        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['fawazahmed0', 'hadeethenc', 'hadithapicom', 'hadithjson', 'hisnmuslim', 'meeatif', 'mp3quran', 'names-tirmidhi', 'opendua', 'openiti', 'qf', 'sunnahcom', 'tanzil', 'way2quran']);
+    // and the pending sunnahcom row (ADR 0042); the step 6b.1 migration adds openiti and hadithapicom (ADR 0076); the gap-report migration adds meeatif and hadithjson (ADR 0076); the seeder adds qf and tanzil; the SVG mushaf migration adds quran_ws (ADR 0090).
+    expect(ContentSource::query()->count())->toBe(15)
+        ->and(ContentSource::query()->orderBy('code')->pluck('code')->all())->toBe(['fawazahmed0', 'hadeethenc', 'hadithapicom', 'hadithjson', 'hisnmuslim', 'meeatif', 'mp3quran', 'names-tirmidhi', 'opendua', 'openiti', 'qf', 'quran_ws', 'sunnahcom', 'tanzil', 'way2quran']);
 });
 
 it('stores quran text in the binary collation and no other text column', function (): void {
@@ -91,6 +91,18 @@ it('stores quran text in the binary collation and no other text column', functio
         'hadith_explanations.words_ar',
         // Names of Allah are source text stored byte-for-byte (ADR 0043 A2), like the dua source columns.
         'names.name_ar',
+        // ADR 0091: the Seerah book's text and its editorial labels, byte-for-byte (the paragraphs are the book's own text).
+        'seerah_books.attribution_ar',
+        'seerah_books.author_ar',
+        'seerah_books.edition_ar',
+        'seerah_books.title_ar',
+        'seerah_event_evidence.quote_ar',
+        'seerah_events.title_ar',
+        'seerah_milestones.label_ar',
+        'seerah_paragraphs.text_ar',
+        'seerah_places.name_ar',
+        'seerah_routes.name_ar',
+        'seerah_sections.title_ar',
         'tafsir_entries.html',
         'word_layouts.glyph',
     ]);

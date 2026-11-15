@@ -36,6 +36,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     author_name: 'Author',
     author_ar: null,
     is_default: false,
+    has_word_boxes: false,
     style: null,
     language_code: 'ar',
     direction: 'rtl',
@@ -364,7 +365,7 @@ describe('installResource', () => {
       expect(installed).toEqual({ status: 'installed' });
 
       // The reader later chooses another tafsir. The override drops 85 from the base selection.
-      writeReaderSettings({ mode: 'reading', fontScale: 1, quranFont: 'amiriQuran', tafsirChosen: true, tafsirId: 86 });
+      writeReaderSettings({ mode: 'reading', fontScale: 1, mushaf: 'hafs', tafsirChosen: true, tafsirId: 86 });
 
       const report = await syncContent(syncDeps(executor, cacheDir, apiWith(body, serveFrom(packs)), selectedResourceIds));
 

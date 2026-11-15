@@ -196,6 +196,51 @@
       "switchToReading": "Read in Reading mode",
       "retry": "Try again"
     },
+    "mushafDownload": {
+      "title": "Download the Mushaf",
+      "subtitle": "Mushaf {{name}} · {{size}}",
+      "subtitleNoSize": "Mushaf {{name}}",
+      "progressLabel": "Download progress",
+      "readWhileDownloading": "You can read in Reading mode while it downloads.",
+      "readNow": "Read now",
+      "cancel": "Cancel download",
+      "download": "Download",
+      "downloadWithData": "Download on mobile data",
+      "retry": "Try again",
+      "waitingWifi": "Waiting for Wi-Fi.",
+      "error": {
+        "network": "Could not connect. Try again.",
+        "checksum": "The file is damaged. Download it again.",
+        "size": "The file size is not what was expected.",
+        "import": "Could not install the file.",
+        "unavailable": "The Mushaf is not available right now.",
+        "storage": "Not enough free space on this device."
+      },
+      "pageError": "This page could not be loaded.",
+      "pageRetry": "Try again"
+    },
+    "mushafs": {
+      "publisher": "King Fahd Complex",
+      "year": "{{year}} AH",
+      "downloaded": "Downloaded",
+      "size": "{{mb}} MB",
+      "hafs": {
+        "name": "Hafs from Asim"
+      },
+      "warsh": {
+        "name": "Warsh from Nafi"
+      },
+      "qalun": {
+        "name": "Qalun from Nafi"
+      },
+      "shubah": {
+        "name": "Shu'bah from Asim"
+      },
+      "duri": {
+        "name": "Al-Duri from Abu Amr"
+      },
+      "group": "Choose a mushaf"
+    },
     "sources": {
       "title": "Sources",
       "qfFonts": "Quran fonts provided by Quran Foundation",
@@ -339,17 +384,7 @@
       "fontScale": "Text size",
       "decreaseFont": "Decrease text size",
       "increaseFont": "Increase text size",
-      "fontLabel": "Quran font",
-      "fonts": {
-        "amiriQuran": {
-          "name": "Amiri",
-          "subtitle": "Uthmani script, Amiri Quran font"
-        },
-        "scheherazadeNew": {
-          "name": "Scheherazade",
-          "subtitle": "Uthmani script, Scheherazade New font"
-        }
-      },
+      "mushaf": "Mushaf",
       "decreaseGlyph": "A−",
       "increaseGlyph": "A+",
       "themeLabel": "Appearance",
@@ -879,7 +914,7 @@
       "en": "English"
     },
     "reading": {
-      "quranFont": "Quran font",
+      "mushaf": "Mushaf",
       "appearance": "Reading mode and appearance",
       "appearanceValue": "Mushaf · Auto",
       "darkAfterMaghrib": "Dark mode automatically after Maghrib",
@@ -1345,22 +1380,34 @@
     "skip": "Skip",
     "continue": "Continue",
     "startReading": "Start reading",
-    "stepOfThree": "Step {{step}} of {{total}}",
+    "stepOfFour": "Step {{step}} of {{total}}",
     "language": {
       "title": "Taybah",
-      "tagline": "Your Quran, calmly. Read, listen and memorize.",
-      "taglineEn": "Your Quran, calmly. Read, listen and memorize.",
+      "tagline": "Your Quran, prayers and adhkar, calmly.",
+      "taglineEn": "Your Quran, prayers and adhkar, calmly.",
       "groupLabel": "App language",
       "arabic": "Arabic",
       "arabicDetail": "Default",
       "english": "English",
       "englishDetail": "Interface only"
     },
+    "tour": {
+      "title": "What's in Taybah",
+      "subtitle": "Everything you need for your day, in one app.",
+      "quran": { "name": "The Holy Quran", "line": "Mushaf, reading and focus, with tafsir" },
+      "listen": { "name": "Listen", "line": "Many reciters, and the text follows the recitation" },
+      "prayer": { "name": "Prayer and Qibla", "line": "Prayer times, adhan and the Qibla direction" },
+      "azkar": { "name": "Adhkar", "line": "Today's adhkar with a counter and reminders" },
+      "duas": { "name": "Duas", "line": "Duas from the Quran and the Sunnah" },
+      "hadith": { "name": "Hadith", "line": "Complete hadith collections" },
+      "seerah": { "name": "Seerah", "line": "A map and timeline of the Prophet's ﷺ life" },
+      "hijri": { "name": "Hijri calendar and moon", "line": "Hijri date and moon phases" },
+      "khatma": { "name": "Khatma and reminders", "line": "A khatma plan and daily reminders" },
+      "tools": { "name": "Tools", "line": "Widgets on your home screen" }
+    },
     "script": {
-      "title": "How do you like to read?",
-      "subtitle": "Choose a display mode. You can change it anytime in Settings.",
-      "previewCaption": "Preview: Uthmani · Hafs",
-      "modeGroup": "Display mode"
+      "title": "Choose your mushaf",
+      "subtitle": "You can change it later in Settings."
     },
     "reciter": {
       "title": "Choose your reciter",
@@ -1953,6 +2000,212 @@
     "chapters": {
       "run": "Hadith {{first}}–{{last}}",
       "runSingle": "Hadith {{n}}"
+    }
+  },
+  "seerah": {
+    "title": "Seerah",
+    "regionSubtitle": "Arabia",
+    "bookSubtitle": "Nur al-Yaqin · al-Khudari",
+    "back": "Back",
+    "close": "Close",
+    "stages": {
+      "childhood": "Childhood",
+      "adolescence": "Teens",
+      "youth": "Youth",
+      "maturity": "Maturity"
+    },
+    "stageRange": "age {{from}} to {{to}}",
+    "stageRangeShort": "{{from}}–{{to}}",
+    "age": {
+      "label": "Age {{age}}",
+      "short": "age {{age}}",
+      "range": "Age {{from}}–{{to}}",
+      "unspecified": "Age not stated",
+      "unspecifiedTitle": "Age not stated",
+      "all": "All ages",
+      "bucket": "Not stated"
+    },
+    "era": {
+      "bh": "{{year}} BH",
+      "ah": "{{year}} AH"
+    },
+    "eventCount_one": "1 event",
+    "eventCount_other": "{{formatted}} events",
+    "map": {
+      "label": "Seerah map",
+      "key": "Map key",
+      "toList": "Show as list",
+      "toMap": "Show as map",
+      "levelRegion": "Region",
+      "levelRegionLabel": "Back to the region map",
+      "pin": {
+        "single": "{{title}}, {{age}}",
+        "place": "{{name}}, {{events}}",
+        "placeAge": "{{name}}, {{events}}, {{age}}",
+        "city": "{{label}}, opens the map of {{name}}",
+        "approximate": "{{label}}, approximate place or time",
+        "empty": "{{name}}, landmark with no events",
+        "cluster": "{{places}} places close together, {{events}}. Zooms in",
+        "hint": "Double tap to open"
+      },
+      "edge": {
+        "north": "{{name}}, {{events}}, off screen to the north",
+        "south": "{{name}}, {{events}}, off screen to the south",
+        "west": "{{name}}, {{events}}, off screen to the west",
+        "east": "{{name}}, {{events}}, off screen to the east",
+        "hint": "Double tap to go there"
+      },
+      "other": {
+        "name": "Other",
+        "label": "Other: events with no place stated, {{events}}"
+      }
+    },
+    "timeline": {
+      "group": "Timeline: the Prophet’s age, {{from}} to {{to}}",
+      "hint": "{{events}} · drag to choose an age",
+      "previous": "Previous age",
+      "next": "Next age",
+      "handle": "Age",
+      "value": "{{age}}, {{events}}",
+      "valueAll": "{{age}}, {{events}}",
+      "subtitle": "{{stage}} · {{events}}",
+      "subtitleMilestone": "{{stage}} · {{milestone}} · {{events}}",
+      "all": "All",
+      "allHint": "Shows every age",
+      "unspecified": "Not stated",
+      "unspecifiedLabel": "Not stated, {{events}}",
+      "unspecifiedSubtitle": "{{events}} the book gives no time for",
+      "chip": "{{age}}, {{stage}}",
+      "milestones": {
+        "birth": "Birth",
+        "marriage": "Marriage",
+        "bitha": "Revelation",
+        "hijra": "Hijra",
+        "badr": "Badr",
+        "fath": "Conquest",
+        "death": "Death"
+      }
+    },
+    "event": {
+      "back": "Back to the map",
+      "onMap": "On the map",
+      "showOnMap": "Show on the map: {{place}}",
+      "ageChipLabel": "{{age}}, {{era}}. Shows this age on the map",
+      "ageChipLabelPlain": "{{age}}. Shows this age on the map",
+      "placeChipLabel": "Place: {{name}}. Shows it on the map",
+      "alsoPlaces": "Also mentioned:",
+      "alsoPlacesLabel": "Also mentioned: {{names}}",
+      "source": "Source: «نور اليقين في سيرة سيد المرسلين», Muhammad al-Khudari · p. {{page}} · OpenITI edition",
+      "sourceNoPage": "Source: «نور اليقين في سيرة سيد المرسلين», Muhammad al-Khudari · OpenITI edition",
+      "pager": {
+        "label": "Between events",
+        "previous": "Previous",
+        "next": "Next",
+        "previousLabel": "Previous: {{title}}",
+        "nextLabel": "Next: {{title}}",
+        "position": "{{index}} of {{total}}"
+      },
+      "notes": {
+        "placeNotStatedTitle": "The book does not state where this happened",
+        "placeNotStatedBody": "So it is not on the map, and is shown under “Other”.",
+        "yearNotStatedTitle": "The book does not state when this happened",
+        "yearNotStatedBody": "So it has no age, and is shown at the end of the timeline under “Not stated”, between the two events next to it in the book.",
+        "uncertainTitle": "Approximate place or time",
+        "uncertainBody": "The book does not give this exactly."
+      },
+      "notFoundTitle": "This event is not available",
+      "notFoundBody": "Seerah may not be downloaded on this device."
+    },
+    "list": {
+      "periods": "Periods",
+      "unspecifiedNote": "Events the book gives no time for, in book order.",
+      "rowUnspecified": "{{place}} · age not stated"
+    },
+    "spot": {
+      "subtitle": "{{events}} at this spot · by age",
+      "subtitleNearby": "{{events}} · by age",
+      "nearbyTitle": "{{places}} places close together",
+      "grabber": "Sheet handle"
+    },
+    "states": {
+      "downloadTitle": "Seerah on the map",
+      "downloadBody": "The events of «نور اليقين في سيرة سيد المرسلين» by al-Khudari, with their places and years, from the birth to the death, with the book’s text.",
+      "downloadMeta": "{{size}} · works offline after the download",
+      "downloadAction": "Download Seerah",
+      "downloadingTitle": "Downloading…",
+      "downloadingMeta": "{{done}} of {{total}} · you can leave this screen, and the download finishes.",
+      "downloadingAction": "Cancel download",
+      "offlineTitle": "No internet connection",
+      "offlineBody": "Downloading Seerah needs a connection once. After that the map and the text work offline.",
+      "offlineAction": "Try again",
+      "errorTitle": "Seerah could not be opened",
+      "errorBody": "The Seerah file on your device is incomplete. Download it again ({{size}}).",
+      "errorAction": "Download again",
+      "emptyYearTitle": "No events at this age",
+      "emptyYearBody": "The book gives no event at age {{age}}.",
+      "emptyYearAction": "Nearest age: {{age}}",
+      "progress": "Download progress"
+    },
+    "key": {
+      "places": "Places",
+      "routes": "Routes",
+      "timeline": "Timeline: the Prophet’s age",
+      "city": "A city with its own map",
+      "cityHint": "The gold ring: tap to open its map",
+      "cluster": "Several events at one place",
+      "clusterHint": "The number is how many; tap to zoom in or list them",
+      "single": "One event",
+      "singleHint": "Its title and age beside it",
+      "approximate": "Approximate place or time",
+      "approximateHint": "The dashed edge; the event page explains it",
+      "empty": "Landmark with no events",
+      "emptyHint": "For orientation only",
+      "other": "Other",
+      "otherHint": "Events the book gives no place for",
+      "edge": "Off screen",
+      "edgeHint": "Events in this direction; tap to go there",
+      "milestonesNote": "Marks: birth, marriage to Khadija, the first revelation, the Hijra, the death",
+      "route": {
+        "hijra": {
+          "title": "The Hijra",
+          "hint": "From Makkah to Madinah"
+        },
+        "taif": {
+          "title": "The Taif journey",
+          "hint": "There and back"
+        },
+        "trip": {
+          "title": "The Sham journeys",
+          "hint": "Trade journeys"
+        },
+        "habasha": {
+          "title": "The migration to Abyssinia",
+          "hint": "The Companions crossing the sea"
+        },
+        "ghazwa": {
+          "title": "The campaigns",
+          "hint": "From Madinah to the campaign’s place"
+        }
+      }
+    },
+    "callout": {
+      "open": "Open",
+      "openLabel": "Open: {{title}}"
+    },
+    "menu": {
+      "caption": "Seerah",
+      "title": "Seerah",
+      "subtitle": "On the map and the timeline"
+    },
+    "sources": {
+      "openiti": {
+        "title": "OpenITI · “Nur al-Yaqin” by al-Khudari",
+        "subtitle": "Text of the Seerah book · CC BY-NC-SA 4.0 · Changes made: only the automatic markup was removed"
+      },
+      "naturalEarth": {
+        "title": "Natural Earth",
+        "subtitle": "Coastlines of the Seerah map · Public domain"
+      }
     }
   }
 }

@@ -35,7 +35,6 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Network | `expo-network` | \~58.0.4 | Wi-Fi-only audio downloads |
 | Pack checksum | `expo-crypto` | \~58.0.7 | SHA-256 of downloaded packs |
 | Reading fonts | Amiri and Amiri Quran (bundled assets, SIL OFL) | 1.003 | Default Quran font for the Mushaf, Reading and Focus modes, plus surah names and display type. Older than 12 months: accepted for a stable typeface (ADR 0011, ADR 0048) |
-| Quran font (second choice) | Scheherazade New (bundled asset, SIL OFL 1.1), `github.com/silnrsi/font-scheherazade` | 4.500 (released 2026-04-15) | Optional Quran font in the reader settings picker; Regular weight only. Inside the 12-month rule. Release zip SHA-512 checked against the release's `SHA512SUMS.txt` (ADR 0048) |
 | Mushaf fonts (unused, kept) | QCF V2 page fonts, loaded at runtime from `verses.quran.foundation` | QF CDN | Not used by the reader screen since ADR 0048; code kept until the developer decides. When used: fetched on first use, cached on the device, revalidated every 30 days; never served by our API; credit "Quran fonts provided by Quran Foundation" (ADR 0011) |
 | Pack decompression | `fflate` | 0.8.3 | Gunzips content packs on the device; pure JS, fastest available (ADR 0008) |
 | Server data | `@tanstack/react-query` | 5.105.0 | Caching, retries and background refetch for API calls |
@@ -56,9 +55,10 @@ The app is Expo SDK 58 (React Native 0.88, React 19.3, development builds throug
 | Recitation alignment (dev-only tool `tools/recitation-align`, ADR 0060) | `jonatasgrosman/wav2vec2-large-xlsr-53-arabic` (rev `af46c2d8531b8dcbb5e23b952f739b372c2e5d2d`), `tarteel-ai/whisper-base-ar-quran` (rev `5c3c53fdf9272c4f6ee0bee09a1e5a4a615ee25c`) | Apache-2.0; last updated December 2022 | Run on the developer's machine to time recitation audio; never shipped, never on the server. Older than 12 months: exempt (developer, 4 Nov 2026, ADR 0060) |
 | Tafsir rendering | `@native-html/render` | 1.0.4 | Renders sanitized tafsir HTML. Replaces `react-native-render-html`, which has had no release since January 2022 |
 | Vector ornaments | `react-native-svg` | 15.16.0 | The surah cartouche's pointed frame and the Continue reading rosette, drawn in with Reanimated animated props; the version SDK 58 pins |
+| Mushaf page renderer | `@shopify/react-native-skia` | 2.14.0 | Draws the quran-svg Madinah pages as one path per page recorded into an `SkPicture`. It held 60 fps where `react-native-svg` stalled 222–312 ms (ADR 0090, plan step 1). This is the version SDK 58 pins, last published 1 Oct 2026. Native, so adding it is a store build |
 | Clipboard | `expo-clipboard` | \~58.0.4 | Copies an ayah, exactly as stored, with its marker and reference from the ayah actions |
 | Navigation bar | `expo-navigation-bar` | \~58.0.4 | Hides Android's navigation bar in Mushaf full screen (ADR 0071) |
-| Fonts | `expo-font` | \~58.0.10 | Bundles Amiri, Scheherazade New and IBM Plex Sans Arabic |
+| Fonts | `expo-font` | \~58.0.10 | Bundles Amiri and IBM Plex Sans Arabic (Scheherazade New removed, ADR 0090) |
 | Errors | `@sentry/react-native` | \~8.28.0 | Crash and error reporting, at the version SDK 58 pins |
 | Updates and builds | `expo-updates`, `eas-cli` | \~58.0.18; 26.0.0; CI pins `eas-cli` 27.5.0 in `mobile.yml` | Over-the-air JavaScript fixes and store builds |
 | Store release | fastlane (Ruby gem, CI only) | 2.241.2 (released 2026-10-26); Ruby 3.4 | What's New on both stores, App Review submission, Play upload (ADR 0079). Lives in `infra/store-release`, not in the app |
@@ -112,7 +112,9 @@ Quran Foundation (QF) is the primary source, synced through its Content Sync API
 | Recitation audio + verse/word timing | QF Content Sync `chapter_recitations` | Timing synced; audio streamed or downloaded per surah | Audio is QF content; offline download rules to confirm with QF |
 | Mushaf fonts (QCF page fonts, IndoPak) | QF font files | Not used by the app (ADR 0048); the QCF code is kept | Would be allowed only inside the app, with an active Developer Console account and visible QF credit ([fonts terms](https://api-docs.quran.com/legal/mushaf-fonts-and-images/)) |
 | KFGQPC Hafs Uthmanic Script | The King Fahd Complex's own font, not a QF font | Not used (rejected, ADR 0048) | Misrenders Tanzil's encoding in 67% of verses; its embedded EULA forbids modifying or reproducing the font |
-| Scheherazade New, Amiri Quran | SIL fonts (OFL 1.1) | Bundled in the app binary | OFL licence file ships with each font; no QF terms apply |
+| Amiri Quran (Scheherazade New removed, ADR 0090) | SIL font (OFL 1.1) | Bundled in the app binary | OFL licence file ships with the font; no QF terms apply |
+| Word positions per page and line (seven riwayat), used only to place word boxes on the SVG pages | [quran-ws/quran-text](https://github.com/quran-ws/quran-text) at commit `7bdefdea` (package 0.1.0, «Beta»), built from KFGQPC's 2026 packages | Read by the API at build time; only derived word boxes (keys and coordinates) are committed and packed (ADR 0090) | CC BY 4.0, attribution waived inside a product; republishing the data needs «quran-text by quran-ws — https://github.com/quran-ws/quran-text — CC BY 4.0» plus a note that it was changed. The text is under KFGQPC's terms and is never stored by us |
+| Mushaf page artwork (Madinah mushaf: Hafs 1441H, Warsh 1442H, Qalun, Shu'bah and al-Duri 1443H) and ayah polygons | [quran-ws/quran-svg](https://github.com/quran-ws/quran-svg) v1.1.1 (tag commit `3ff27b46`). quran.ws traced the artwork from the King Fahd Complex's «Digital Mushaf master files» | Imported by the API, each file checked, then packed per riwayah. A pack downloads when its Mushaf is first opened (ADR 0090). 604 pages per riwayah: Hafs 373 MB raw / 63 MB brotli, Warsh 346 / 73, Qalun 308 / 78, Shu'bah 311 / 69, al-Duri 304 / 67 | **Artwork:** the Complex's free-use statement (personal, business, government, digital, websites and software, worldwide; printing mushafs for sale is reserved to the Complex), reproduced in the repo's `LICENSE` and `NOTICE.md`. Drawn as received; only the fill colour follows the theme. Verified against the printed mushaf by the developer (12 Nov 2026). **Polygons and metadata:** CC BY 4.0, attribution waived inside a product. **Tools:** MIT. Given «as is». Credit the Complex and quran.ws in Sources, with no permission wording |
 | Fallback Quran text for first launch with no network | [Tanzil](https://tanzil.net/docs/text_license) Uthmani text | Bundled in the app binary | CC BY 3.0, verbatim copies only, credit and link to tanzil.net |
 
 Monetization is allowed without a separate licence (paid app, subscriptions, ads, donations) as long as QF content is only shown to end users and never resold or exposed as a dataset or API. Training ML models on QF content needs written consent.
@@ -338,6 +340,20 @@ The first Hadith release is **full collections** (collection → book → hadith
 - **Review (amended for Phase 7 collections, ADR 0042):** there is no content reviewer for these collections; the developer decides the Arabic names, the source-line wording and the gap list. The content plan's "the content reviewer signs off on the Hadith section" is not applied to them. Azkar's own reviewer rules (ADR 0031) are unchanged.
 - **Tables (deferred):** `hadith_categories`, `hadiths`, `hadith_translations`, `daily_hadiths` stay as the HadeethEnc design.
 
+## Seerah (proposed, ADR 0091, Phase 8)
+
+One book for v1: «نور اليقين في سيرة سيد المرسلين» by محمد الخضري بك (d. 1345 AH / 1927; the author's text is public domain). Shown as an interactive map and timeline; the event page shows the book's text verbatim. Ibn Hisham may follow; الرحيق المختوم is out (copyright).
+
+| Source | What it gives us | Access | Terms we must follow | Use |
+| --- | --- | --- | --- | --- |
+| OpenITI `OpenITI/1350AH`, folder `data/1345IbnCafifiKhudari/1345IbnCafifiKhudari.NurYaqin/` (candidate ref `6d0c197e84a46a3cadbd36a045d09cb2bc9aa71e`, checked 14 Nov 2026) | Full Arabic text. Candidate versions: `JK009247-ara1` (مكتبة الإيمان 1419هـ, cleaned of paratext; SHA-256 `f8ce38b3…3683`), `Shamela0023692-ara1` (دار الفيحاء 1425هـ; `5d9bbdbd…1895c`), `ShamAY0034443-ara1` (19 headings, unusable) | GitHub raw, pinned; committed copy in the repo | CC BY-NC-SA 4.0 per the Zenodo record (ADR 0076; not stated in the GitHub repo); Shamela-derived upstream unclear (RB21); editor's additions may be in copyright. Credit and «changes made» on the Sources screen | **Chosen: `Shamela0023692-ara1`** (14 Nov 2026; `JK009247` is corrupt, see `docs/plans/phase-8.md` «Edition decided»). Licence accepted as CC BY-NC-SA 4.0 with credit; the Shamela upstream question stays open (RB21) |
+| Wikidata | Coordinates of places | Public | CC0 | Place coordinates, source recorded per place; no OpenStreetMap (ODbL ShareAlike) |
+| Natural Earth | Coastline and relief for the hand-stylised region map | Public download | Public domain | Map art base; no modern borders |
+
+- **Rules:** no AI-written summaries; event titles are the book's headings; place and year come from the book's words; what the book does not state goes to the «أخرى» place or the «غير محدد» year bucket and is flagged (never invented). Every section of the book is covered by an event or an exclusion with a reason.
+- **Review:** a generated report and hash-bound sign-offs (`docs/plans/phase-8/data-format.md`); the developer is the reviewer (no content reviewer, as for hadith).
+- **Permissions to request (non-blocking):** OpenITI or the Shamela side, in writing, for the NonCommercial and ShareAlike terms (Q2).
+
 ## Languages & localization
 
 Arabic is the default interface language and English is the second; Quran text is always right-to-left whatever the interface language.
@@ -434,7 +450,7 @@ All reading is served from the device database; the network is only used for syn
 - **Backend cache:** Redis in front of the mirror for API responses to the app. Nothing derived from QF is cached longer than 7 days outside the Content Sync mirror.
 - **Device storage:** SQLite (`expo-sqlite` or `op-sqlite`) with one content pack per script and per language. Users download only what they pick.
 - **Fonts and display types:** the user picks a script and a display mode in settings, and the choice is applied instantly.
-  - Scripts: Uthmani in Amiri Quran (default) or Scheherazade New, both bundled and applied everywhere Quran text shows (ADR 0048). IndoPak Nastaleeq and Uthmani Tajweed come later, when their content exists.
+  - Scripts: Uthmani in Amiri Quran, bundled and applied everywhere Quran text shows (ADR 0090, which removed Scheherazade New). Mushaf mode shows the printed Madinah pages instead (ADR 0090). IndoPak Nastaleeq and Uthmani Tajweed come later, when their content exists.
   - Display modes: Mushaf (Tanzil text on the 604 printed pages, flowed by width), Reading (ayah list), Focus (one ayah, large).
   - QCF page fonts (one font per page, 604 files) are no longer used by the reader screen (ADR 0048).
 - **Vertical scrolling:** every mode scrolls down continuously, with pages stacked and a thin page / juz divider between them. The list is virtualized (FlashList), measured per page so jumping to any ayah lands exactly.
@@ -546,7 +562,7 @@ Team split: backend developers own the sync job, mirror and API; the Next.js dev
 - [ ] May the app keep its offline copy by syncing from our backend's mirror, which itself uses Content Sync?
 - [ ] May downloaded recitation audio be kept on the device beyond 7 days, and does it count as Content Sync content?
 - [ ] What are the production rate limits for Content Sync and the Content API?
-- [x] Quran fonts: Amiri Quran and Scheherazade New (both OFL) are bundled; KFGQPC is rejected and QCF is unused (ADR 0048). Open only if QCF or IndoPak returns: which of those QF font files are approved for bundling, and the exact credit wording?
+- [x] Quran fonts: Amiri Quran (OFL) is bundled; Scheherazade New was removed by ADR 0090; KFGQPC is rejected and QCF is unused (ADR 0048). Open only if QCF or IndoPak returns: which of those QF font files are approved for bundling, and the exact credit wording?
 
 ## Sources
 

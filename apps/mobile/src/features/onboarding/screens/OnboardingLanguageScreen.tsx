@@ -21,7 +21,7 @@ export function OnboardingLanguageScreen({ testID = 'onboarding-language' }: { t
 
   const continueNext = () => {
     setLocale(locale);
-    router.push('/(onboarding)/script');
+    router.push('/(onboarding)/tour');
   };
 
   return (
@@ -76,7 +76,7 @@ export function OnboardingLanguageScreen({ testID = 'onboarding-language' }: { t
           continueLabel={t('onboarding.continue')}
           onContinue={continueNext}
           step={1}
-          stepLabel={t('onboarding.stepOfThree', { step: 1, total: 3 })}
+          stepLabel={t('onboarding.stepOfFour', { step: 1, total: 4 })}
         />
       </ContentColumn>
     </Screen>

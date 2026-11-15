@@ -19,6 +19,9 @@ jest.mock('react-native-gesture-handler/lib/module/handlers/gestures/installUIRu
   installUIRuntimeBindings: () => undefined,
 }));
 
+// Skia's native module cannot run under Jest; the recording stand-in logs what the Madinah page draws (ADR 0090).
+jest.mock('@shopify/react-native-skia', () => jest.requireActual('./jest/skia-mock'));
+
 jest.mock('@shopify/flash-list', () => ({
   FlashList: jest.requireActual<typeof import('react-native')>('react-native').FlatList,
 }));

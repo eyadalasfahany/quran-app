@@ -35,6 +35,11 @@ export const storageKeys = {
     searchRecent: 'duas.searchRecent',
   },
 
+  // Seerah: the view the reader chose, `map` or `list` (ADR 0091). Absent until they choose; a screen reader suggests the list.
+  seerah: {
+    view: 'seerah.view',
+  },
+
   updates: {
     /** Epoch ms of the last foreground update check (at most every 6 hours). */
     lastCheckAt: 'updates.lastCheckAt',
@@ -59,6 +64,11 @@ export const storageKeys = {
     state: 'sibha.state',
     // JSON: the local date and the taps counted on it.
     today: 'sibha.today',
+  },
+
+  // SVG mushaf packs (ADR 0090). One JSON record per riwayah: the installed version, its checksum and its word-box flag.
+  svgMushaf: {
+    installed: (key: string) => `svgMushaf.installed.${key}`,
   },
 
   // Discover Taybah (ADR 0053). Local only; cleared with the other personal data.

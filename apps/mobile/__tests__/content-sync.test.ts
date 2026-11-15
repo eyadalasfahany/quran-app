@@ -416,6 +416,117 @@ const README_CONTRACT = [
     ],
     entities: [],
   },
+  {
+    group: 'seerah',
+    tables: [
+      {
+        name: 'seerah_books',
+        columns: [
+          'resource_id',
+          'id',
+          'slug',
+          'title_ar',
+          'author_ar',
+          'edition_ar',
+          'attribution_ar',
+          'attribution_en',
+          'sections_count',
+          'paragraphs_count',
+          'places_count',
+          'events_count',
+          'routes_count',
+        ],
+      },
+      {
+        name: 'seerah_sections',
+        columns: [
+          'resource_id',
+          'id',
+          'code',
+          'level',
+          'title_ar',
+          'page',
+          'position',
+          'paragraph_from',
+          'paragraph_to',
+        ],
+      },
+      {
+        name: 'seerah_paragraphs',
+        columns: ['resource_id', 'id', 'section_id', 'position', 'page', 'text_ar'],
+      },
+      {
+        name: 'seerah_places',
+        columns: [
+          'resource_id',
+          'id',
+          'slug',
+          'parent_id',
+          'kind',
+          'name_ar',
+          'lat',
+          'lng',
+          'geo_precision',
+          'flags',
+        ],
+      },
+      {
+        name: 'seerah_map_levels',
+        columns: ['resource_id', 'level', 'parent_place_id', 'viewbox', 'art'],
+      },
+      {
+        name: 'seerah_map_positions',
+        columns: ['resource_id', 'level', 'place_id', 'x', 'y', 'label_priority', 'label_side', 'art_landmark'],
+      },
+      {
+        name: 'seerah_routes',
+        columns: ['resource_id', 'id', 'slug', 'kind', 'name_ar'],
+      },
+      {
+        name: 'seerah_route_stops',
+        columns: ['resource_id', 'route_id', 'position', 'place_id'],
+      },
+      {
+        name: 'seerah_map_route_paths',
+        columns: ['resource_id', 'level', 'route_id', 'from_place_id', 'to_place_id', 'path_d'],
+      },
+      {
+        name: 'seerah_events',
+        columns: [
+          'resource_id',
+          'id',
+          'slug',
+          'position',
+          'section_id',
+          'paragraph_from',
+          'paragraph_to',
+          'title_ar',
+          'kind',
+          'place_id',
+          'place_basis',
+          'also',
+          'age_from',
+          'age_to',
+          'era',
+          'hijri_from',
+          'hijri_to',
+          'year_basis',
+          'certainty',
+          'route_id',
+          'flags',
+        ],
+      },
+      {
+        name: 'seerah_event_evidence',
+        columns: ['resource_id', 'event_id', 'kind', 'position', 'paragraph_id', 'quote_ar'],
+      },
+      {
+        name: 'seerah_milestones',
+        columns: ['resource_id', 'milestone_key', 'label_ar', 'event_id', 'position'],
+      },
+    ],
+    entities: [],
+  },
 ];
 
 type TafsirRow = { groupTafsirId: number; html: string };
@@ -438,6 +549,7 @@ function resource(overrides: Partial<ContentManifestResource> & Pick<ContentMani
     changes_since_min_version: 1,
     key: 'fixture-key',
     is_default: false,
+    has_word_boxes: false,
     style: null,
     ...overrides,
   };
@@ -1468,6 +1580,41 @@ describe('content sync', () => {
           `SELECT resource_id AS resourceId FROM installed_resources WHERE "group" = 'azkar'`,
         ),
       ).toEqual([{ resourceId: 2 }]);
+    });
+  });
+
+  it('ignores an svg_mushafs resource: no install, no report entry, and an unrelated installed resource stays', async () => {
+    const svgEntry = resource({
+      id: 77,
+      group: 'svg_mushafs',
+      key: 'hafs',
+      version: 1,
+      pack: { url: '/api/v1/content/packs/77/1', size_bytes: 1, sha256: 'abc' },
+    });
+    const published = manifest([svgEntry, resource({ id: 2, group: 'tafsirs', version: 1 })]);
+    const downloadPack = jest.fn(async () => {
+      throw new Error('no pack is needed');
+    });
+
+    await withContentDb(async ({ executor, cacheDir }) => {
+      executor.run(
+        `INSERT INTO installed_resources (resource_id, "group", version, sha256, last_checked_at) VALUES (2, 'tafsirs', 1, 'hash', 0)`,
+      );
+      const report = await syncContent({
+        ...(await deps(executor, cacheDir, {
+          getManifest: async () => ({ status: 200, etag: published.etag, manifest: published.body }),
+          getChanges: async () => {
+            throw new Error('changes');
+          },
+          downloadPack,
+        })),
+        selection: () => [2],
+      });
+
+      expect(report.resources).toEqual([{ resourceId: 2, status: 'unchanged' }]);
+      expect(downloadPack).not.toHaveBeenCalled();
+      expect(executor.all('SELECT resource_id AS resourceId FROM installed_resources WHERE resource_id = 77')).toEqual([]);
+      expect(executor.all('SELECT resource_id AS resourceId FROM installed_resources WHERE resource_id = 2')).toEqual([{ resourceId: 2 }]);
     });
   });
 

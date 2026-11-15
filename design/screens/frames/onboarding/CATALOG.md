@@ -2,13 +2,14 @@
 
 First launch
 
-3 frames · review page: `design/onboarding/<Screen>/index.html` (ADR 0087)
+4 frames · review page: `design/onboarding/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
 | `OnboardLanguage` | compact | ar-light | source | Onboarding 1 · Language |
-| `OnboardScript` | compact | ar-light | source | Onboarding 2 · Script |
-| `OnboardReciter` | compact | ar-light | source | Onboarding 3 · Reciter |
+| `OnboardTour` | compact | ar-light | source | Onboarding 2 · ما في طيبة · the app's sections |
+| `OnboardScript` | compact | ar-light | source | Onboarding 3 · Script |
+| `OnboardReciter` | compact | ar-light | source | Onboarding 4 · Reciter |
 
 ## Model rule
 Read this file only. Open `frames/onboarding/<id>.html` only for visual/HTML review of one frame.

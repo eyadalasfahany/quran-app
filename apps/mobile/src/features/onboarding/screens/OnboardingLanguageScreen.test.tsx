@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
+import { fireEvent, screen } from '@testing-library/react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
@@ -16,10 +17,23 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-const TAGLINE = 'مصحفك، بهدوء. اقرأ واستمع واحفظ.';
-const TAGLINE_EN = 'Your Quran, calmly. Read, listen and memorize.';
+const TAGLINE = 'مصحفك وصلاتك وأذكارك، بهدوء.';
+const TAGLINE_EN = 'Your Quran, prayers and adhkar, calmly.';
 
 describe('OnboardingLanguageScreen', () => {
+  beforeEach(() => {
+    jest.mocked(router.push).mockClear();
+  });
+
+  it('continues to the tour, step 1 of 4', async () => {
+    const view = await renderUi(<OnboardingLanguageScreen />, { locale: 'en' });
+
+    expect(screen.getByLabelText('Step 1 of 4')).toBeOnTheScreen();
+    await fireEvent.press(view.getByTestId('onboarding-continue'));
+
+    expect(router.push).toHaveBeenCalledWith('/(onboarding)/tour');
+  });
+
   it('shows the English tagline once in English, not twice', async () => {
     await renderUi(<OnboardingLanguageScreen />, { locale: 'en' });
 

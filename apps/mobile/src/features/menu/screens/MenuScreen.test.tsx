@@ -41,6 +41,11 @@ jest.mock('@/features/hadith/availability', () => ({
   useHadithHomeEntry: () => mockHadith,
 }));
 
+let mockSeerahCard = false;
+jest.mock('@/features/seerah/availability', () => ({
+  useSeerahMenuCard: () => mockSeerahCard,
+}));
+
 jest.mock('@/features/duas/data/hooks', () => ({
   ...jest.requireActual('@/features/duas/data/hooks'),
   useDuasAvailable: jest.fn(() => true),
@@ -117,6 +122,7 @@ describe('MenuScreen', () => {
     withDuas(true);
     mockHadith.tile = false;
     mockHadith.menuCard = false;
+    mockSeerahCard = false;
     jest.mocked(getVerseByKey).mockReturnValue(reading as never);
     jest.mocked(getChapter).mockReturnValue({ nameArabic: 'البقرة', nameSimple: 'Al-Baqarah' } as never);
     storage.set(storageKeys.readerLastVerseKey, '2:255');
@@ -409,6 +415,20 @@ describe('MenuScreen columns (ADR 0036)', () => {
     await renderUi(<MenuScreen />);
 
     expect(screen.getByTestId('menu-grid-column-2')).toBeOnTheScreen();
+  });
+
+  describe('Seerah card', () => {
+    it('hides the Seerah card until the pack is installed or listed', async () => {
+      await renderUi(<MenuScreen />);
+      expect(screen.queryByTestId('menu-card-seerah')).toBeNull();
+    });
+
+    it('opens the Seerah map from its card', async () => {
+      mockSeerahCard = true;
+      await renderUi(<MenuScreen />);
+      await fireEvent.press(screen.getByTestId('menu-card-seerah'));
+      expect(router.push).toHaveBeenLastCalledWith('/seerah');
+    });
   });
 
   describe('Hadith card', () => {

@@ -2,14 +2,14 @@ import { View } from 'react-native';
 
 import { useTheme } from '@/core/theme';
 
-/** Three-step onboarding progress (screens/, OnboardLanguage–OnboardReciter). */
+/** Four-step onboarding progress (screens/, OnboardLanguage–OnboardReciter). */
 export function OnboardingStepIndicator({
   step,
   accessibilityLabel,
   testID = 'onboarding-step-indicator',
 }: {
   /** 1-based active step. */
-  step: 1 | 2 | 3;
+  step: 1 | 2 | 3 | 4;
   accessibilityLabel: string;
   testID?: string;
 }) {
@@ -24,7 +24,7 @@ export function OnboardingStepIndicator({
       style={{ flexDirection: 'row', gap: 6 }}
       testID={testID}
     >
-      {[1, 2, 3].map((index) => (
+      {[1, 2, 3, 4].map((index) => (
         <View
           key={index}
           style={{

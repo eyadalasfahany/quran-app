@@ -10,7 +10,7 @@ export function OnboardingFooter({
   onContinue,
   testID = 'onboarding-footer',
 }: {
-  step: 1 | 2 | 3;
+  step: 1 | 2 | 3 | 4;
   stepLabel: string;
   continueLabel: string;
   onContinue: () => void;

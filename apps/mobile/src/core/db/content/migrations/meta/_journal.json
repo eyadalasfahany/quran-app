@@ -141,6 +141,13 @@
       "when": 1794773465579,
       "tag": "0019_azkar_segment_word_range",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1794783066869,
+      "tag": "0020_seerah_tables",
+      "breakpoints": true
     }
   ]
 }

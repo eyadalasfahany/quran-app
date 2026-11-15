@@ -8,6 +8,7 @@ import { openContentDb } from '@/core/db/content/open';
 import type { SqlExecutor } from '@/core/db/sql-executor';
 import { formatNumber, type Locale } from '@/core/i18n';
 import { useWindowClass } from '@/core/layout';
+import { useSvgMushafPack, type SvgMushafKey, type SvgMushafPackReader } from '@/core/mushaf-pack';
 import { useTheme } from '@/core/theme';
 import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
 import { nextAyah, pause, previousAyah } from '@/features/audio/player';
@@ -24,9 +25,11 @@ import { resolveInitialAnchor, writePlayedPlace, writeReadingAnchor } from '../a
 import { pageForVerse } from '../anchor/page';
 import { useReadingAnchor } from '../anchor/useReadingAnchor';
 import { AdaptiveReaderLayout } from '../components/AdaptiveReaderLayout';
+import { MushafSvgContainer } from '../components/MushafSvgContainer';
 import { FocusChrome } from '../components/FocusChrome';
 import { FocusReader } from '../components/FocusReader';
 import { MushafFullscreenExit } from '../components/MushafFullscreenExit';
+import { MushafPinch } from '../components/MushafPinch';
 import { ReaderModeFade } from '../components/ReaderModeFade';
 import { READER_TOOLBAR_CLEARANCE, ReaderToolbar } from '../components/ReaderToolbar';
 import { ResumePill } from '../components/ResumePill';
@@ -38,6 +41,9 @@ import { panelPlacementFor, panelStripWidth } from '../layout';
 import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
 import type { ReaderMode } from '../anchor/reading-anchor';
+import { mushafView } from '../mushaf-svg/mushaf-view';
+import { shownMushafKey } from '../mushaf-svg/shown-mushaf';
+import { useChosenMushafKey } from '../mushaf-svg/useChosenMushafKey';
 import { useMushafFullscreen } from '../useMushafFullscreen';
 import { useReaderMiniFootprint } from '../useReaderMiniFootprint';
 import { useReaderSelection } from '../selection';
@@ -48,6 +54,7 @@ import { useDiscoverState } from '@/features/discover/hooks/useDiscover';
 import type { DiscoverId } from '@/features/discover/registry';
 
 import { useReaderSettings } from '../settings';
+import { FONT_SCALE_MAX } from '../settings-model';
 import { useRecitation } from '../useRecitation';
 import { useRecitationFollow } from '../useRecitationFollow';
 
@@ -73,6 +80,12 @@ function recitedKeyNow(): string | null {
   } catch {
     return null;
   }
+}
+
+// The page an ayah starts on in the installed Madinah pack (ADR 0090 W6): the pack's regions, not `verses.page`.
+function packPageOf(reader: SvgMushafPackReader, verseKey: string): number | undefined {
+  const [surah, ayah] = verseKey.split(':').map(Number);
+  return surah === undefined || ayah === undefined ? undefined : (reader.pageForAyah(surah, ayah) ?? undefined);
 }
 
 function loadChrome(executor: SqlExecutor, verseKey: string, locale: Locale): ReaderChrome {
@@ -139,6 +152,10 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
     markPlace ? resolveInitialAnchor({ verseKey }).verseKey : null,
   );
   const [bookmarkOverride, setBookmarkOverride] = useState<{ verseId: number; value: boolean } | null>(null);
+  // The ayah at the top of the Mushaf after the last hand scroll, with the view key it was read against. While audio
+  // plays or a surah was opened away the anchor stays put, so this is where a Mushaf view mounted by a pinch across 1×
+  // opens. It holds only while the view key is unchanged; following and a mode change drop it.
+  const [mushafTop, setMushafTop] = useState<{ verseKey: string; viewKey: string } | null>(null);
   // A pin (Focus's current ayah, or the resume pill's target) belongs to the mode that set it. Another
   // mode opens at the saved place, which already holds that ayah.
   const [pinMode, setPinMode] = useState(mode);
@@ -146,6 +163,7 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
     setPinMode(mode);
     setPinnedVerseKey(null);
     setPlaceVerseKey(null);
+    setMushafTop(null);
   }
 
   const executor = useMemo(() => {
@@ -167,12 +185,35 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
   const playing = status === 'playing';
   const active = status === 'playing' || status === 'loading';
   const followKey = follow.following && playing ? recitedVerseKey : null;
+  if (followKey !== null && mushafTop !== null) {
+    setMushafTop(null);
+  }
+  // The Madinah pages show once the riwayah's pack is in the manifest or installed (ADR 0090 decision 4). While
+  // they show in Mushaf mode, the page numbers come from the pack (Q2); Reading and Focus keep `verses.page`.
+  const chosenMushaf = useChosenMushafKey();
+  const shownMushaf: SvgMushafKey = shownMushafKey({ chosen: chosenMushaf, playing: active, reciterRiwayah: null });
+  const svgPack = useSvgMushafPack(shownMushaf);
+  const svgShown = svgPack.availableVersion !== null || svgPack.status === 'installed';
+  const svgReader = svgShown ? svgPack.reader : null;
+  // Above 1× Hafs flows as text (developer, 15 Nov 2026), and its pages are `verses.page` again.
+  const view = mushafView({ fontScale, mushafKey: shownMushaf, svgShown });
+  const packPages = mode === 'mushaf' && view === 'svg' && svgReader !== null;
+  const pageOfVerse = useCallback(
+    (verseKey: string): number | undefined => {
+      if (packPages && svgReader !== null) {
+        return packPageOf(svgReader, verseKey);
+      }
+      return executor === null ? undefined : pageForVerse(executor, verseKey);
+    },
+    [executor, packPages, svgReader],
+  );
 
   const placement = panelPlacementFor(width, windowClass);
   const routeVerseKey = resolveInitialAnchor({ verseKey }).verseKey;
   // The page on screen: the recited ayah while following, otherwise the surah that was opened or the saved place.
   const viewKey = followKey ?? pinnedVerseKey ?? (openedAway ? routeVerseKey : anchor.verseKey);
   const focusKey = viewKey;
+  const mushafAnchorKey = mushafTop !== null && mushafTop.viewKey === viewKey ? mushafTop.verseKey : viewKey;
   const { setVisible } = anchor;
   // Listening owns the continue-reading place whenever an ayah is playing, including when this screen is showing
   // another surah. The reader's own scroll writes the place only while nothing is playing.
@@ -180,12 +221,12 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
     if (!active || recitedVerseKey === null) {
       return;
     }
-    const page = executor === null ? null : (pageForVerse(executor, recitedVerseKey) ?? null);
+    const page = pageOfVerse(recitedVerseKey) ?? null;
     writePlayedPlace(recitedVerseKey, page);
     if (follow.following) {
       setVisible({ page, verseKey: recitedVerseKey });
     }
-  }, [active, executor, follow.following, recitedVerseKey, setVisible]);
+  }, [active, follow.following, pageOfVerse, recitedVerseKey, setVisible]);
   const chrome = useMemo(
     () =>
       executor === null
@@ -193,6 +234,7 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
         : loadChrome(executor, viewKey, locale),
     [executor, viewKey, locale],
   );
+  const chromePage = packPages ? (svgReader === null ? null : (packPageOf(svgReader, viewKey) ?? chrome.page)) : chrome.page;
   const focusPosition =
     chrome.place === null
       ? chrome.title
@@ -202,9 +244,9 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
           total: formatNumber(chrome.place.total, locale),
         });
   const subtitle =
-    chrome.page === null || chrome.juz === null
+    chromePage === null || chrome.juz === null
       ? undefined
-      : t('reader.toolbar.place', { juz: formatNumber(chrome.juz, locale), page: formatNumber(chrome.page, locale) });
+      : t('reader.toolbar.place', { juz: formatNumber(chrome.juz, locale), page: formatNumber(chromePage, locale) });
 
   useEffect(() => {
     if (anchor.mode !== mode) {
@@ -212,20 +254,20 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
     }
     // setMode persists whatever verse the anchor held. Playing keeps the recited ayah in front of that.
     if (active && recitedVerseKey !== null) {
-      writePlayedPlace(recitedVerseKey, executor === null ? null : (pageForVerse(executor, recitedVerseKey) ?? null));
+      writePlayedPlace(recitedVerseKey, pageOfVerse(recitedVerseKey) ?? null);
     }
-  }, [active, anchor, executor, mode, recitedVerseKey]);
+  }, [active, anchor, mode, pageOfVerse, recitedVerseKey]);
 
   useEffect(() => {
     // Following sets the recited ayah's page itself (above); this would write the stale anchor over it.
     if (executor === null || mode !== 'mushaf' || anchor.page !== null || followKey !== null || openedAway || active) {
       return;
     }
-    const page = pageForVerse(executor, anchor.verseKey);
+    const page = pageOfVerse(anchor.verseKey);
     if (page !== undefined) {
       anchor.setVisible({ page, verseKey: anchor.verseKey });
     }
-  }, [active, anchor, executor, followKey, mode, openedAway]);
+  }, [active, anchor, executor, followKey, mode, openedAway, pageOfVerse]);
 
   const storedBookmarked = useMemo(() => {
     if (chrome.verseId === null) {
@@ -309,6 +351,40 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
 
   const { tourStep } = useDiscoverState();
   const readerTourStep = tourStep !== null && (READER_TOUR_STEPS as readonly DiscoverId[]).includes(tourStep);
+
+  // The props the Mushaf views share (the Madinah list and the Hafs list take the same ones).
+  const mushafShared = {
+    anchorVerseKey: mushafAnchorKey,
+    bottomInset: 0,
+    contentBottomInset: fullscreen ? 0 : mini.footprint,
+    followKey,
+    highlightsByVerseId: drawnHighlights,
+    khatmaMarkerVerseId,
+    onOpenAyahActions: selectVerse,
+    onSelectVerseKey: selectVerse,
+    onTopAyah: (page: number, verseKey: string) => {
+      setVisibleVerseKey(verseKey);
+      setMushafTop({ verseKey, viewKey });
+      // While audio plays, listening keeps the continue-reading place.
+      if (followKey === null && !active) {
+        anchor.setVisible({ page, verseKey });
+      }
+    },
+    onUserScrollStart: () => {
+      setPlaceVerseKey(null);
+      follow.onUserScrollStart();
+    },
+    onVisiblePage: (page: number, key: string) => {
+      // A page report never moves the place: only a hand scroll does, when it ends (ADR 0073).
+      setVisibleVerseKey(pageOfVerse(viewKey) === page ? viewKey : key);
+      haptics.onPage(page, surahStartPages.has(page));
+    },
+    placeVerseKey,
+    recitedVerseKey,
+    recitedWord: activeWord,
+    testID: 'reader-mushaf',
+    topInset: fullscreen ? 0 : topInset,
+  };
 
   return (
     <Screen accessibilityLabel={viewKey} surface="surfacePage" testID="reader-screen" topInset={false}>
@@ -403,38 +479,21 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
         <View style={{ flex: 1 }}>
           <ReaderModeFade mode={mode === 'mushaf' ? 'mushaf' : 'text'}>
             {executor !== null && mode === 'mushaf' ? (
-              <HafsMushafList
-                anchorVerseKey={viewKey}
-                bottomInset={0}
-                contentBottomInset={fullscreen ? 0 : mini.footprint}
-                fontScale={fontScale}
-                followKey={followKey}
-                highlightsByVerseId={drawnHighlights}
-                khatmaMarkerVerseId={khatmaMarkerVerseId}
-                onOpenAyahActions={selectVerse}
-                onSelectVerseKey={selectVerse}
-                placeVerseKey={placeVerseKey}
-                onUserScrollStart={() => {
-                  setPlaceVerseKey(null);
-                  follow.onUserScrollStart();
-                }}
-                onVisiblePage={(page, key) => {
-                  // A page report never moves the place: only a hand scroll does, when it ends (ADR 0073).
-                  setVisibleVerseKey(pageForVerse(executor, viewKey) === page ? viewKey : key);
-                  haptics.onPage(page, surahStartPages.has(page));
-                }}
-                onTopAyah={(page, verseKey) => {
-                  setVisibleVerseKey(verseKey);
-                  // While audio plays, listening keeps the continue-reading place.
-                  if (followKey === null && !active) {
-                    anchor.setVisible({ page, verseKey });
-                  }
-                }}
-                recitedVerseKey={recitedVerseKey}
-                recitedWord={activeWord}
-                testID="reader-mushaf"
-                topInset={fullscreen ? 0 : topInset}
-              />
+              // Another riwayah has no flowed text, so its pinch stops at 1×.
+              <MushafPinch maxScale={view === 'svg' && shownMushaf !== 'hafs' ? 1 : FONT_SCALE_MAX}>
+                {view === 'svg' ? (
+                  <MushafSvgContainer
+                    {...mushafShared}
+                    mushafKey={shownMushaf}
+                    onReadNow={() => setMode('reading')}
+                  />
+                ) : (
+                  <HafsMushafList
+                    {...mushafShared}
+                    fontScale={fontScale}
+                  />
+                )}
+              </MushafPinch>
             ) : null}
             {executor !== null && mode === 'focus' ? (
               <FocusReader

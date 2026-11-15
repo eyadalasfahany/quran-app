@@ -31,7 +31,8 @@ final class ContentManifestEntryResource extends JsonResource
      *     version: int,
      *     pack: array{url: string, size_bytes: int, sha256: string},
      *     changes_since_min_version: int,
-     *     is_default: bool
+     *     is_default: bool,
+     *     has_word_boxes: bool
      * }
      */
     public function toArray(Request $request): array
@@ -58,6 +59,7 @@ final class ContentManifestEntryResource extends JsonResource
             ],
             'changes_since_min_version' => $this->resource->changesSinceMinVersion,
             'is_default' => $this->resource->isDefault,
+            'has_word_boxes' => $this->resource->hasWordBoxes,
         ];
     }
 }

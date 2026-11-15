@@ -1,0 +1,77 @@
+import { View } from 'react-native';
+
+import { useTheme } from '@/core/theme';
+import { useContrastColors } from '@/shared/ui';
+
+import { AGE_COUNT } from '../logic';
+
+import type { TimelineOrientation } from './timeline-axis';
+
+const MIN_BAR = 3;
+const EMPTY_BAR = 2.5;
+
+/**
+ * Events per age as a row of 64 bars (a column on the vertical bar). `heights` are fractions of the tallest year, from
+ * `histogramHeights`. With a focus age the other bars fade and its bar turns brand. Decorative.
+ */
+export function YearHistogram({
+  heights,
+  orientation = 'horizontal',
+  focusAge = null,
+  thickness = 36,
+  testID,
+}: {
+  heights: readonly number[];
+  orientation?: TimelineOrientation;
+  focusAge?: number | null;
+  /** The longest bar, in points. */
+  thickness?: number;
+  testID?: string;
+}) {
+  const theme = useTheme();
+  const colors = useContrastColors();
+  const horizontal = orientation === 'horizontal';
+
+  return (
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      pointerEvents="none"
+      style={{
+        alignItems: horizontal ? 'flex-end' : 'flex-start',
+        flex: 1,
+        flexDirection: horizontal ? 'row' : 'column',
+      }}
+      testID={testID}
+    >
+      {Array.from({ length: AGE_COUNT }, (_, age) => {
+        const fraction = heights[age] ?? 0;
+        // Frame SeerahMapRegion: an empty year is a 2.5 pt stub in the line colour; a year with events grows from there.
+        const length = fraction > 0 ? Math.max(MIN_BAR, EMPTY_BAR + fraction * (thickness - EMPTY_BAR)) : EMPTY_BAR;
+        const selected = focusAge === age;
+        return (
+          <View
+            key={age}
+            style={{
+              alignItems: horizontal ? 'center' : 'flex-start',
+              flex: 1,
+              justifyContent: horizontal ? 'flex-end' : 'center',
+            }}
+          >
+            <View
+              style={[
+                {
+                  backgroundColor: fraction > 0 ? theme.colors.brand : colors.lineStrong,
+                  // Idle bars at 42%; with a focus age its bar is solid and the rest fall to 16%.
+                  opacity: fraction === 0 ? 1 : selected ? 1 : focusAge !== null ? 0.16 : 0.42,
+                },
+                horizontal ? { borderTopLeftRadius: 1, borderTopRightRadius: 1, height: length, width: '76%' } : { height: '70%', width: length },
+              ]}
+              testID={testID ? `${testID}-bar-${age}` : undefined}
+            />
+          </View>
+        );
+      })}
+    </View>
+  );
+}

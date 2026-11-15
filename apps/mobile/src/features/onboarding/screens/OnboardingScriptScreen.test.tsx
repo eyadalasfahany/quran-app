@@ -1,4 +1,8 @@
-import { screen } from '@testing-library/react-native';
+import { router } from 'expo-router';
+import { fireEvent, screen } from '@testing-library/react-native';
+
+import { storage, storageKeys } from '@/core/storage/mmkv';
+import { resetReaderSettingsStore, useReaderSettings } from '@/features/reader/settings';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { featureComponentLiterals } from '../../../../jest/ui-source';
@@ -6,7 +10,9 @@ import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { OnboardingScriptScreen } from './OnboardingScriptScreen';
 
-jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn(), replace: jest.fn() } }));
+jest.mock('expo-router', () => ({
+  router: { back: jest.fn(), canGoBack: jest.fn(() => false), push: jest.fn(), replace: jest.fn() },
+}));
 
 jest.mock('react-native-safe-area-context', () => {
   const actual = jest.requireActual<typeof import('react-native-safe-area-context')>('react-native-safe-area-context');
@@ -17,12 +23,58 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 describe('OnboardingScriptScreen', () => {
-  it.each(locales)('renders the three reading modes in %s', async (locale) => {
+  beforeEach(() => {
+    storage.remove(storageKeys.readerSettings);
+    resetReaderSettingsStore();
+    jest.mocked(router.push).mockClear();
+  });
+
+  it.each(locales)('renders the five mushafs in %s', async (locale) => {
     await renderUi(<OnboardingScriptScreen />, { locale });
 
-    expect(screen.getByTestId('onboarding-mode-mushaf')).toBeOnTheScreen();
-    expect(screen.getByTestId('onboarding-mode-reading')).toBeOnTheScreen();
-    expect(screen.getByTestId('onboarding-mode-focus')).toBeOnTheScreen();
+    for (const key of ['hafs', 'warsh', 'qalun', 'shubah', 'duri']) {
+      expect(screen.getByTestId(`mushaf-${key}`)).toBeOnTheScreen();
+    }
+    expect(screen.getAllByRole('radio')).toHaveLength(5);
+  });
+
+  it('shows step 3 of 4', async () => {
+    await renderUi(<OnboardingScriptScreen />, { locale: 'en' });
+
+    expect(screen.getByLabelText('Step 3 of 4')).toBeOnTheScreen();
+  });
+
+  it('goes back to the tour when there is nothing to go back to', async () => {
+    const view = await renderUi(<OnboardingScriptScreen />);
+
+    await fireEvent.press(view.getByTestId('onboarding-back'));
+
+    expect(router.replace).toHaveBeenCalledWith('/(onboarding)/tour');
+  });
+
+  it('shows the Hafs preview above the picker', async () => {
+    await renderUi(<OnboardingScriptScreen />);
+
+    expect(screen.getByTestId('onboarding-mushaf-preview')).toBeOnTheScreen();
+  });
+
+  it('saves the chosen mushaf on continue and leaves the reading mode at its default', async () => {
+    const view = await renderUi(<OnboardingScriptScreen />);
+
+    await fireEvent.press(view.getByTestId('mushaf-warsh'));
+    await fireEvent.press(view.getByTestId('onboarding-continue'));
+
+    expect(useReaderSettings.getState().mushaf).toBe('warsh');
+    expect(useReaderSettings.getState().mode).toBe('reading');
+    expect(router.push).toHaveBeenCalledWith('/(onboarding)/reciter');
+  });
+
+  it('keeps Hafs when continuing without a change', async () => {
+    const view = await renderUi(<OnboardingScriptScreen />);
+
+    await fireEvent.press(view.getByTestId('onboarding-continue'));
+
+    expect(useReaderSettings.getState().mushaf).toBe('hafs');
   });
 
   it('caps the content in a 720 pt column on a 1366 pt window, so the radio cards do not stretch', async () => {

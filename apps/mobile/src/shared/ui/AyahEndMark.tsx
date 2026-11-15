@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Text } from 'react-native';
 
 import { formatNumber, type Locale } from '@/core/i18n';
-import { quranFonts, useQuranFont, useTheme } from '@/core/theme';
+import { quranFontFamily, useTheme } from '@/core/theme';
 
 // The brackets and digits carry no strong direction, so standing alone they would lay out left to right
 // and swap sides. A leading right-to-left mark sets the direction on iOS and Android alike.
@@ -44,7 +44,6 @@ export function AyahEndMark({
 }) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
-  const font = useQuranFont();
   const locale: Locale = i18n.language === 'en' ? 'en' : 'ar';
   const accessibility = decorative
     ? { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' as const }
@@ -64,7 +63,7 @@ export function AyahEndMark({
       style={[
         {
           color: active ? theme.colors.brand : theme.colors.gold,
-          fontFamily: quranFonts[font].family,
+          fontFamily: quranFontFamily,
         },
         size === undefined ? null : { fontSize: size, lineHeight: Math.round(size * MARK_LINE_HEIGHT) },
       ]}

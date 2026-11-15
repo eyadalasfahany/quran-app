@@ -78,4 +78,10 @@ describe('SheetHeader', () => {
   it('has no raw colour literals', () => {
     expect(rawColorLiterals('SheetHeader.tsx')).toEqual([]);
   });
+  it('draws the Seerah sheets\' Amiri title over a 13 pt subtitle with size display', async () => {
+    const view = await renderUi(<SheetHeader displaySize={24} size="display" subtitle="sub" testID="h" title="عنوان" />);
+    expect(flatStyle(view.getByTestId('h-title').props.style)).toMatchObject({ fontSize: 24, lineHeight: 30 });
+    expect(String(flatStyle(view.getByTestId('h-title').props.style).fontFamily)).toContain('Amiri');
+    expect(flatStyle(view.getByTestId('h-subtitle').props.style)).toMatchObject({ fontSize: 13 });
+  });
 });

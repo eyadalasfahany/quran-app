@@ -2,16 +2,18 @@
 
 Token-cheap inventory. **Models: read this or `frames.tsv`, not HTML frames.**
 
-Total: **273** frames · **23** stacks
+Total: **307** frames · **24** stacks
 
 | id | stack | size | theme | status | caption |
 |---|---|---|---|---|---|
 | `Main` | core | compact | ar-light | source | Home |
 | `MainLandscapeRail` | core | compact-short | ar-light | awaiting-approval | الرئيسية · أفقي، الشريط الرأسي ٨٤٤ × ٣٩٠ (بانتظار الموافقة) |
 | `Mushaf` | core | compact | ar-light | source | Mushaf page · Uthmani Hafs (the app draws the ﴿ ﴾ end-of-ayah marks inline, so the recited one turns brand) |
+| `MushafPlaybackRiwayah` | core | compact | ar-light | awaiting-approval | Mushaf · Hafs pages while a Hafs reciter plays for a reader who chose Warsh (ADR 0090 decision 12, step 9b Q6) (بانتظار الموافقة) |
 | `MushafFullscreenEnter` | core | compact | ar-light | source | Mushaf · full screen button in the tools pill (ADR 0071) |
 | `MushafFullscreen` | core | compact | ar-light | source | Mushaf · full screen: no toolbar, player, status bar or Android navigation bar; the exit button sits where the full screen button was; audio keeps playing (ADR 0071) |
 | `AyahSheet` | core | compact | ar-light | source | Ayah actions · mid detent (50%) |
+| `AyahSheetRiwayah` | core | compact | ar-light | awaiting-approval | Ayah actions · ayah in Warsh (non-Hafs): reference and riwayah in the header, no text card, highlight row, and only حفظ and ملاحظة (ADR 0090, step 9 Part F) (بانتظار الموافقة) |
 | `Player` | core | compact | ar-light | source | Player |
 | `PlayerReciters` | core | compact | ar-light | source | Player, no artwork (ADR 0062 option b). Reciter name, surah, ayah card, progress, transport and the utility bar (repeat, ayah range, sleep timer; speed removed). Reciters list always visible under the controls: current reciter selected (checkmark); installed row is a button that switches reciter; not-downloaded row has a 44 pt download button; a reciter without the current surah (37) is disabled with «غير متوفرة لهذه السورة». Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062) |
 | `PlayerReciterDownloading` | core | compact | ar-light | source | Player, no artwork. After tapping download on «محمود خليل الحصري»: that row shows the progress bar (player colours) and a 44 pt stop button. Caption annotation: «يبدأ التشغيل تلقائيًا عند انتهاء التنزيل» (when the download finishes, the player switches to that reciter and auto-plays from the current ayah). Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062) |
@@ -21,11 +23,13 @@ Total: **273** frames · **23** stacks
 | `SearchEmpty` | reading | compact | ar-light | source | البحث · القرآن، بلا كلمة بحث |
 | `SearchHadithEmpty` | reading | compact | ar-light | source | البحث · الحديث، بلا كلمة بحث |
 | `Reading` | reading | compact | ar-light | source | Reading mode |
+| `ReadingOtherRiwayah` | reading | compact | ar-light | awaiting-approval | Reading mode · Warsh chosen: the title pill names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة) |
 | `ReadingMiniIdle` | reading | compact | ar-light | source | Reading · mini player idle (plays from the top ayah on screen) |
 | `ReadingMiniCollapsed` | reading | compact | ar-light | source | Reading · mini player collapsed (drag down to hide, drag up or tap to show) |
 | `ReadingMiniUnavailable` | reading | compact | ar-light | source | Reading · mini player, surah unavailable for the reciter (surah 37 الصافات with إسلام صبحي; play was pressed, nothing plays, no progress state). Info glyph and message; «تغيير القارئ» opens the reciter picker (44 pt target). Idle reader rule (ADR 0059) so the bar stays on the reader. Approved 4 Nov 2026 (ADR 0062) |
 | `ReadingMiniSkipped` | reading | compact | ar-light | source | Mini player, playing · continuous play skipped surah 37 (moved 36 → 38). Shows surah ص playing normally, plus a secondary line «تخطّي الصافات · غير متوفرة بصوت إسلام صبحي». The notice is transient: it shows for about 4 s, then the line disappears. VoiceOver announces it (role=status, polite). Approved 4 Nov 2026 (ADR 0062) |
 | `Focus` | reading | compact | ar-light | source | Focus mode |
+| `FocusOtherRiwayah` | reading | compact | ar-light | awaiting-approval | Focus mode · Warsh chosen: the position line names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة) |
 | `Tafsir` | reading | compact | ar-light | source | Tafsir · mid detent (50%) |
 | `TafsirFull` | reading | compact | ar-light | source | Tafsir · full detent |
 | `TafsirDownload` | reading | compact | ar-light | source | Tafsir · not downloaded · mid detent (50%) |
@@ -36,6 +40,8 @@ Total: **273** frames · **23** stacks
 | `QiblaLandscape` | salah | compact-short | ar-light | awaiting-approval | اتجاه القبلة · أفقي، ٨٤٤ × ٣٩٠ (بانتظار الموافقة) |
 | `MyQuran` | my-quran | compact | ar-light | source | My Quran |
 | `Reciters` | audio | compact | ar-light | source | Reciters |
+| `RecitersRiwayahRow` | salah | compact | ar-light | awaiting-approval | Listen › Reciters · each row names its riwayah on the second line (ADR 0090 decision 12, step 9b Part C, option a) (بانتظار الموافقة) |
+| `RecitersRiwayahHeader` | salah | compact | ar-light | awaiting-approval | Listen › Reciters · one muted line above the list, rows unchanged (ADR 0090 decision 12, step 9b Part C, option b) (بانتظار الموافقة) |
 | `ReciterSurahsUnavailable` | salah | compact | ar-light | source | Listen › إسلام صبحي · surah list, rows 35–41 (same row styling as SurahIndex; header as Reciters). Surahs 37 الصافات, 39 الزمر and 40 غافر are missing from this reciter: dimmed (ink-muted), trailing label «غير متوفرة» instead of the play or download control, not tappable (no link, aria-disabled). Others are normal. Approved 4 Nov 2026 (ADR 0062) |
 | `Settings` | settings | compact | ar-light | source | Settings |
 | `AdhanSoundPicker` | settings | compact | ar-light | source | صوت الأذان |
@@ -150,8 +156,9 @@ Total: **273** frames · **23** stacks
 | `HomeDailyProgressEmpty` | home | compact | ar-light | source | Home · daily progress · empty state |
 | `HomeNextPrayerNoLocation` | home | compact | ar-light | source | Home · next prayer · no location |
 | `OnboardLanguage` | onboarding | compact | ar-light | source | Onboarding 1 · Language |
-| `OnboardScript` | onboarding | compact | ar-light | source | Onboarding 2 · Script |
-| `OnboardReciter` | onboarding | compact | ar-light | source | Onboarding 3 · Reciter |
+| `OnboardTour` | onboarding | compact | ar-light | source | Onboarding 2 · ما في طيبة · the app's sections |
+| `OnboardScript` | onboarding | compact | ar-light | source | Onboarding 3 · Script |
+| `OnboardReciter` | onboarding | compact | ar-light | source | Onboarding 4 · Reciter |
 | `Khatma` | account | compact | ar-light | source | Khatma planner |
 | `Downloads` | account | compact | ar-light | source | Downloads &amp; storage |
 | `Account` | account | compact | ar-light | source | Account (signed in) |
@@ -279,3 +286,30 @@ Total: **273** frames · **23** stacks
 | `HadithCollMenuDark` | hadith | compact | dark | awaiting-approval | Menu · new cards · Hadith entry · dark (ADR 0089, بانتظار الموافقة) |
 | `HadithCollMenuEnglish` | hadith | compact | en | awaiting-approval | Menu · new cards · Hadith entry · English (ADR 0089, بانتظار الموافقة) |
 | `HadithCollSources` | hadith | compact | ar-light | source | Settings · المصادر والشكر · Hadith row added |
+| `SeerahMapRegion` | seerah | compact | ar-light | awaiting-approval | الخريطة · المنطقة (بانتظار الموافقة) |
+| `SeerahMapRegionDark` | seerah | compact | dark | awaiting-approval | الخريطة · المنطقة · داكن (بانتظار الموافقة) |
+| `SeerahMapRegionEnglish` | seerah | compact | en | awaiting-approval | Map · region · English UI, map labels stay Arabic (بانتظار الموافقة) |
+| `SeerahMapRegionYear` | seerah | compact | ar-light | awaiting-approval | الخريطة · عمر محدد: ٥٣ سنة (الهجرة)، والباقي باهت (بانتظار الموافقة) |
+| `SeerahMapMakkah` | seerah | compact | ar-light | awaiting-approval | خريطة مكة · المعالم والأحداث، تجميع وإخفاء أسماء متزاحمة، نافذة حدث (بانتظار الموافقة) |
+| `SeerahMapMakkahDark` | seerah | compact | dark | awaiting-approval | خريطة مكة · داكن (بانتظار الموافقة) |
+| `SeerahMapMadinah` | seerah | compact | ar-light | awaiting-approval | خريطة المدينة · المعالم والأحداث، موضع تقريبي (بانتظار الموافقة) |
+| `SeerahCluster` | seerah | compact | ar-light | awaiting-approval | مجموعة تنفتح على حلقة (٦ أحداث أو أقل) · دار الأرقم (بانتظار الموافقة) |
+| `SeerahClusterSheet` | seerah | compact | ar-light | awaiting-approval | أكثر من ٦ أحداث في موضع واحد: ورقة الموضع بترتيب العمر (بانتظار الموافقة) |
+| `SeerahEvent` | seerah | compact | ar-light | awaiting-approval | صفحة الحدث · نص الكتاب، العمر (والسنة الهجرية تفصيلًا) والمكان، السابق والتالي، المصدر (بانتظار الموافقة) |
+| `SeerahEventDark` | seerah | compact | dark | awaiting-approval | صفحة الحدث · داكن (بانتظار الموافقة) |
+| `SeerahEventEnglish` | seerah | compact | en | awaiting-approval | Event page · English UI, the book stays Arabic (بانتظار الموافقة) |
+| `SeerahEventOther` | seerah | compact | ar-light | awaiting-approval | صفحة الحدث · المكان «أخرى» والعمر «غير محدد» (بانتظار الموافقة) |
+| `SeerahList` | seerah | compact | ar-light | awaiting-approval | «عرض كقائمة» · مجمّعة بالفترة والسنة، و«غير محدد» في آخرها (بانتظار الموافقة) |
+| `SeerahListDark` | seerah | compact | dark | awaiting-approval | «عرض كقائمة» · داكن (بانتظار الموافقة) |
+| `SeerahListEnglish` | seerah | compact | en | awaiting-approval | List view · English UI (بانتظار الموافقة) |
+| `SeerahMapKey` | seerah | compact | ar-light | awaiting-approval | مفتاح الخريطة · الرموز والطرق (بانتظار الموافقة) |
+| `SeerahTimeline` | seerah | compact | ar-light | awaiting-approval | الخط الزمني · الحالات: دون اختيار، السحب، سنة مختارة، غير محدد (بانتظار الموافقة) |
+| `SeerahStateDownload` | seerah | compact | ar-light | awaiting-approval | السيرة غير منزّلة · الحجم وزر التنزيل (بانتظار الموافقة) |
+| `SeerahStateDownloading` | seerah | compact | ar-light | awaiting-approval | جارٍ التنزيل (بانتظار الموافقة) |
+| `SeerahStateOffline` | seerah | compact | ar-light | awaiting-approval | دون اتصال ولم تُنزَّل بعد (بانتظار الموافقة) |
+| `SeerahStateError` | seerah | compact | ar-light | awaiting-approval | تعذّر فتح البيانات (بانتظار الموافقة) |
+| `SeerahStateEmptyYear` | seerah | compact | ar-light | awaiting-approval | سنة بلا أحداث (بانتظار الموافقة) |
+| `SeerahExpanded` | seerah | expanded | ar-light | awaiting-approval | نافذة واسعة ١١٩٤ × ٨٣٤ · الخط الزمني عموديًا في البداية، الخريطة، صفحة الحدث في النهاية (بانتظار الموافقة) |
+| `SeerahExpandedCity` | seerah | expanded | ar-light | awaiting-approval | نافذة واسعة · خريطة المدينة وسنة مختارة (بانتظار الموافقة) |
+| `SeerahMenu` | seerah | compact | ar-light | awaiting-approval | القائمة · بطاقة السيرة النبوية (بانتظار الموافقة) |
+| `SeerahSources` | seerah | compact | ar-light | awaiting-approval | الإعدادات · المصادر والشكر · صف السيرة وخريطتها (بانتظار الموافقة) |

@@ -12,6 +12,7 @@ function resource(
     author_name: null,
     author_ar: null,
     is_default: false,
+    has_word_boxes: false,
     style: null,
     language_code: null,
     direction: null,
