@@ -16,6 +16,7 @@ use App\Domains\Mushaf\WordBoxes\LineOrder;
 use App\Domains\Mushaf\WordBoxes\PageContours;
 use App\Domains\Mushaf\WordBoxes\WordBoxOverrides;
 use App\Domains\Mushaf\WordBoxes\WordSplitter;
+use App\Support\FilePath;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
@@ -587,7 +588,7 @@ final class WordBoxBuilder
     {
         $path = sprintf((string) config('mushaf.word_box_files.'.$kind), $key);
 
-        return str_starts_with($path, '/') ? $path : resource_path($path);
+        return FilePath::isAbsolute($path) ? $path : resource_path($path);
     }
 
     /**

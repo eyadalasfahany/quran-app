@@ -6,6 +6,7 @@ namespace App\Domains\Content\Console;
 
 use App\Domains\Content\Enums\TaybahTimingKind;
 use App\Domains\Content\Services\TaybahTimingImporter;
+use App\Support\FilePath;
 use Illuminate\Console\Command;
 
 /**
@@ -85,6 +86,6 @@ final class ImportRecitationTimingsCommand extends Command
 
     private function absolutePath(string $path): string
     {
-        return str_starts_with($path, '/') ? $path : base_path($path);
+        return FilePath::isAbsolute($path) ? $path : base_path($path);
     }
 }

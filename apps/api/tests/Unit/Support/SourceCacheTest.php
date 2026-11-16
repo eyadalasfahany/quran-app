@@ -38,5 +38,5 @@ it('defaults to a directory under storage/app/private so it lives on the volume'
     $shippedDefault = (require config_path('content_sources.php'))['cache_root'];
 
     expect($shippedDefault)->toBe(storage_path('app/private/sources'))
-        ->and(str_starts_with($shippedDefault, storage_path('app/private').DIRECTORY_SEPARATOR))->toBeTrue();
+        ->and(str_starts_with($shippedDefault, storage_path('app/private/')))->toBeTrue();
 });

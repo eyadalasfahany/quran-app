@@ -14,6 +14,7 @@ use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Domains\Content\Services\Mp3QuranImporter;
 use App\Domains\Content\Services\RecitationSegmentsFlagService;
 use App\Domains\Content\Services\ResourceVersionService;
+use App\Support\FilePath;
 use Illuminate\Console\Command;
 
 /**
@@ -98,6 +99,6 @@ final class ImportWay2QuranCommand extends Command
 
     private function absolutePath(string $path): string
     {
-        return str_starts_with($path, '/') ? $path : base_path($path);
+        return FilePath::isAbsolute($path) ? $path : base_path($path);
     }
 }

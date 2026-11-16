@@ -215,6 +215,30 @@ Why: an app that has not taken the update does not know `word_from` and `word_to
 
 Check after the deploy: `php artisan azkar:import --report` shows 265 of 267 entries, and the Azkar import report lists no `quran_reference_candidate` warnings in production.
 
+## Madinah SVG mushafs (ADR 0090): first time and after a pin change
+
+Until these run, the server's manifest has no `svg_mushafs` resource, and the app shows the flowed Tanzil text in Mushaf mode instead of the printed pages. They are not in `start-web.sh`: the first run downloads about 1.6 GB, which would break the 600 s health check. Run them by hand over `railway ssh`, from `/app`, after the deploy that carries the code:
+
+```bash
+php -d memory_limit=-1 artisan mushaf:import hafs      # A1–A3; caches the pinned SVGs on the volume
+php -d memory_limit=-1 artisan mushaf:import warsh
+php -d memory_limit=-1 artisan mushaf:import qalun
+php -d memory_limit=-1 artisan mushaf:import shubah
+php -d memory_limit=-1 artisan mushaf:import duri
+php -d memory_limit=-1 artisan mushaf:build-word-boxes hafs   # must print «Status: approved» (digest 8944a6b3…)
+php -d memory_limit=-1 artisan mushaf:publish hafs     # must print «has_word_boxes: yes»
+php -d memory_limit=-1 artisan mushaf:publish warsh
+php -d memory_limit=-1 artisan mushaf:publish qalun
+php -d memory_limit=-1 artisan mushaf:publish shubah
+php -d memory_limit=-1 artisan mushaf:publish duri
+```
+
+- **Re-running is safe.** The SVGs are cached on the volume (`storage/app/private/sources/svg-mushaf/<commit>/`, ADR 0068), so a second import reads the cache. `mushaf:publish` bumps nothing when the pages, regions and word boxes are unchanged.
+- **Volume space.** Allow about 2 GB for the cache and about 450 MB for the five packs.
+- **Hafs refuses to publish** unless `mushaf:build-word-boxes` printed `approved`. Never pass `--without-word-boxes` in production; it is refused there.
+- **Release order.** The packs are harmless to older apps, so the API can go first. The new view needs `@shopify/react-native-skia`, which came after the 1.0.3 store build, so the app ships as a **store build**, not an EAS Update.
+- **Check:** `php artisan tinker --execute 'echo App\Domains\Content\Models\Resource::query()->where("group", "svg_mushafs")->get(["source_key","version"])->toJson();'` lists the five keys, each at version 1 or above.
+
 ## Checking a deploy
 
 - **Pre-deploy log:** `migrate` only.

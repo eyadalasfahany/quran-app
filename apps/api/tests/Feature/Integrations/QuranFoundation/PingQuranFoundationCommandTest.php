@@ -39,7 +39,7 @@ it('prints the environment and counts without secrets or record text', function 
     });
 
     expect($status)->toBe(0)
-        ->and(Artisan::output())->toBe("environment: prelive\nhttp: 200\nmutations: 2\nsnapshot_records: 3\n")
+        ->and(Artisan::output())->toBe(implode(PHP_EOL, ['environment: prelive', 'http: 200', 'mutations: 2', 'snapshot_records: 3']).PHP_EOL)
         ->and(Artisan::output())->not->toContain('prelive-access-token')
         ->and(Artisan::output())->not->toContain('test-client-id')
         ->and(Artisan::output())->not->toContain('test-client-secret')
@@ -56,7 +56,7 @@ it('prints the http status when the sync is rejected and omits the token', funct
     $status = Artisan::call('qf:ping');
 
     expect($status)->toBe(1)
-        ->and(Artisan::output())->toBe("environment: prelive\nhttp: 422\nmutations: 0\nsnapshot_records: 0\n")
+        ->and(Artisan::output())->toBe(implode(PHP_EOL, ['environment: prelive', 'http: 422', 'mutations: 0', 'snapshot_records: 0']).PHP_EOL)
         ->and(Artisan::output())->not->toContain('prelive-access-token')
         ->and(Artisan::output())->not->toContain('test-client-id')
         ->and(Artisan::output())->not->toContain('resources is required');

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { DatabaseSync } from 'node:sqlite';
 import { NetworkStateType, type NetworkState } from 'expo-network';
 
 import { openNodeSqlite } from '../../../jest/node-sqlite-executor';
@@ -30,7 +31,23 @@ beforeEach(() => {
   storage.remove(storageKeys.svgMushaf.installed('hafs'));
 });
 
+// Every database a test opens, closed before the temp root is removed (Windows cannot delete an open SQLite file).
+const openDatabases: DatabaseSync[] = [];
+
+function open(path: string): ReturnType<typeof openNodeSqlite> {
+  const opened = openNodeSqlite(path);
+  openDatabases.push(opened.database);
+  return opened;
+}
+
 afterEach(() => {
+  for (const database of openDatabases.splice(0)) {
+    try {
+      database.close();
+    } catch {
+      // Already closed by the pack reader.
+    }
+  }
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -81,7 +98,7 @@ type Setup = {
 };
 
 function setup(): Setup {
-  const { database, executor } = openNodeSqlite(join(root, 'catalog.db'));
+  const { database, executor } = open(join(root, 'catalog.db'));
   database.exec(
     `CREATE TABLE catalog_resources (resource_id INTEGER PRIMARY KEY, "group" TEXT NOT NULL, name TEXT, name_ar TEXT, author_name TEXT,
       author_ar TEXT, language_code TEXT, direction TEXT, version INTEGER NOT NULL, pack_size_bytes INTEGER NOT NULL,
@@ -134,7 +151,7 @@ function setup(): Setup {
     files,
     sha256File: (path) => Promise.resolve(sha256Of(local(path))),
     openPack: (path) => {
-      const opened = openNodeSqlite(local(path));
+      const opened = open(local(path));
       return new SvgMushafPackReader(opened.executor, () => opened.database.close());
     },
     network: () => Promise.resolve(network),

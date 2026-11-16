@@ -394,7 +394,7 @@ it('leaves the previous pack and manifest unchanged when a build cannot be store
 
         (new Filesystem)->deleteDirectory($root);
     }
-});
+})->skipOnWindows(); // A read-only folder (chmod 0555) does not block writes on Windows.
 
 it('queues a pack build when resource content changes', function (): void {
     Queue::fake();
@@ -417,6 +417,8 @@ function withContentPack(string $gzipped, callable $assert): void
     $path = tempnam(sys_get_temp_dir(), 'content-pack-');
     expect($path)->toBeString();
 
+    $pdo = null;
+
     try {
         file_put_contents($path, $raw);
         $pdo = new PDO('sqlite:'.$path, null, null, [
@@ -425,6 +427,10 @@ function withContentPack(string $gzipped, callable $assert): void
         ]);
         $assert($pdo);
     } finally {
+        // Close the connection first: Windows cannot delete a file SQLite still holds open.
+        $pdo = null;
+        gc_collect_cycles();
+
         if (is_file($path)) {
             unlink($path);
         }
