@@ -205,14 +205,20 @@ describe("force update on iOS in the real route tree", () => {
     expect(screen.queryByTestId(CARD, SHOWN)).toBeNull();
   });
 
-  it("holds the dialog back while a sheet is open, then shows it after router.back() and a foreground check", async () => {
+  it("closes a sheet that is open when the answer arrives, then shows the dialog on the tabs without a foreground", async () => {
     mockGetBootstrap.mockResolvedValue(bootstrap("1.0.1"));
     const view = await renderAppAndLaunchCheck();
 
     await act(async () => {
       router.push("/reader-settings");
     });
-    mockGetBootstrap.mockResolvedValue(bootstrap("1.0.2"));
+    // The foreground check's answer is held back until the sheet is open, as a slow network would hold it.
+    let answer: (value: BootstrapResponse) => void = () => undefined;
+    mockGetBootstrap.mockReturnValueOnce(
+      new Promise<BootstrapResponse>((resolve) => {
+        answer = resolve;
+      }),
+    );
     await foreground();
 
     expect(mockGetBootstrap).toHaveBeenCalledTimes(2);
@@ -220,11 +226,10 @@ describe("force update on iOS in the real route tree", () => {
     expect(screen.queryByTestId(CARD, SHOWN)).toBeNull();
 
     await act(async () => {
-      router.back();
+      answer(bootstrap("1.0.2"));
     });
-    await foreground();
+    await settle();
 
-    expect(mockGetBootstrap).toHaveBeenCalledTimes(3);
     expect(view.getSegments()[0]).toBe("(main)");
     expect(await screen.findByTestId(CARD, { ...SHOWN, timeout: 10_000 })).toBeOnTheScreen();
   });

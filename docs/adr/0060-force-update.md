@@ -1,5 +1,7 @@
 # 0060 — Force update: a blocking pop-up below the API's minimum version
 
+> **Amended by ADR 0094 (16 Nov 2026).** The minimum is the live store version (`app-stores:refresh`), not the `MIN_APP_VERSION_*` variables. Every downloaded OTA also shows the pop-up, with a restart button. On iOS the hook closes the screens above the tabs instead of waiting for the next foreground (replaces decision 5).
+
 Date: 2026-11-05 · Status: **proposed** · Branch: `main` · Rests on ADR 0022 (Railway service variables), ADR 0034 (ConfirmDialog for in-app confirmations); the offline rule is non-negotiable 4 in `CLAUDE.md`
 
 ## Context

@@ -40,11 +40,6 @@ export const storageKeys = {
     view: 'seerah.view',
   },
 
-  updates: {
-    /** Epoch ms of the last foreground update check (at most every 6 hours). */
-    lastCheckAt: 'updates.lastCheckAt',
-  },
-
   // Azkar preferences (phase 6, step 5). Personal, local only; not cleared by content updates.
   azkar: {
     fontScale: 'azkar.fontScale',

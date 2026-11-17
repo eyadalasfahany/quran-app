@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react-native';
-import { Linking } from 'react-native';
+import * as Updates from 'expo-updates';
+import { I18nManager, Linking } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -31,10 +32,12 @@ jest.mock('expo-glass-effect', () => ({
 
 const mockUseForceUpdate = useForceUpdate as unknown as jest.Mock;
 const mockReduceMotion = useReducedMotion as unknown as jest.Mock;
+const mockReloadAsync = Updates.reloadAsync as jest.MockedFunction<typeof Updates.reloadAsync>;
 
 // The card fades in, so until its animation ends it is hidden to the query, as a dialog is mid-open on a device.
 const SHOWN = { includeHiddenElements: true } as const;
-const STORE_URL = 'https://apps.apple.com/app/id6828097265';
+const STORE_UPDATE = { kind: 'store', storeUrl: 'https://apps.apple.com/app/id6828097265' } as const;
+const OTA_UPDATE = { kind: 'ota' } as const;
 
 const copy = {
   ar: { action: 'تحديث الآن', message: 'صدر إصدار جديد من طيبة. حدّث التطبيق للمتابعة.', title: 'يلزم تحديث التطبيق' },
@@ -45,6 +48,19 @@ const copy = {
   },
 } as const;
 
+const otaCopy = {
+  ar: {
+    action: 'إعادة التشغيل',
+    message: 'نُزِّل تحديث جديد لطيبة. أعد تشغيل التطبيق للمتابعة.',
+    title: 'تحديث جديد جاهز',
+  },
+  en: {
+    action: 'Restart',
+    message: 'A new update for Taybah has downloaded. Restart the app to continue.',
+    title: 'Update ready',
+  },
+} as const;
+
 describe('ForceUpdateGate', () => {
   let openURL: jest.SpyInstance;
 
@@ -52,6 +68,7 @@ describe('ForceUpdateGate', () => {
     mockUseForceUpdate.mockReturnValue(null);
     mockReduceMotion.mockReturnValue(false);
     mockLiquidGlass.mockReturnValue(false);
+    mockReloadAsync.mockReset().mockResolvedValue(undefined);
     openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     // Linking.openURL is already a mock in the React Native jest setup, so restoring it keeps its earlier calls.
     openURL.mockClear();
@@ -68,8 +85,8 @@ describe('ForceUpdateGate', () => {
     expect(view.queryByTestId('force-update-dialog', SHOWN)).toBeNull();
   });
 
-  it('shows the dialog when an update is required', async () => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+  it('shows the dialog when a store update is required', async () => {
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
 
     expect(view.getByTestId('force-update-dialog-title', SHOWN)).toBeOnTheScreen();
@@ -78,7 +95,7 @@ describe('ForceUpdateGate', () => {
   });
 
   it('shows a single action and no cancel button', async () => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
 
     expect(view.getAllByRole('button', SHOWN)).toHaveLength(1);
@@ -87,16 +104,17 @@ describe('ForceUpdateGate', () => {
   });
 
   it('opens the store link when the action is pressed', async () => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
 
     fireEvent.press(view.getByRole('button', { name: 'Update now', ...SHOWN }));
 
-    expect(openURL).toHaveBeenCalledWith(STORE_URL);
+    expect(openURL).toHaveBeenCalledWith(STORE_UPDATE.storeUrl);
+    expect(mockReloadAsync).not.toHaveBeenCalled();
   });
 
   it('neither closes nor opens anything when the scrim is pressed', async () => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
 
     fireEvent.press(view.getByTestId('force-update-dialog-scrim', SHOWN));
@@ -106,7 +124,7 @@ describe('ForceUpdateGate', () => {
   });
 
   it('neither closes nor opens anything on Android back', async () => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
 
     fireEvent(view.getByTestId('force-update-dialog'), 'requestClose');
@@ -116,7 +134,7 @@ describe('ForceUpdateGate', () => {
   });
 
   it.each(locales)('renders the title, message and action in %s', async (locale) => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale });
 
     expect(view.getByText(copy[locale].title, SHOWN)).toBeOnTheScreen();
@@ -125,7 +143,7 @@ describe('ForceUpdateGate', () => {
   });
 
   it.each(locales)('marks the title as a header and the card as a modal in %s', async (locale) => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale });
 
     expect(view.getByRole('header', { name: copy[locale].title, ...SHOWN })).toBeOnTheScreen();
@@ -133,9 +151,75 @@ describe('ForceUpdateGate', () => {
   });
 
   it('keeps the action at least 44 pt high', async () => {
-    mockUseForceUpdate.mockReturnValue(STORE_URL);
+    mockUseForceUpdate.mockReturnValue(STORE_UPDATE);
     const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
 
     expect(flatStyle(view.getByRole('button', { name: 'Update now', ...SHOWN }).props.style).minHeight).toBe(48);
+  });
+
+  describe('when an OTA update has downloaded', () => {
+    it('shows the restart copy instead of the store copy', async () => {
+      mockUseForceUpdate.mockReturnValue(OTA_UPDATE);
+      const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
+
+      expect(view.getByText(otaCopy.en.title, SHOWN)).toBeOnTheScreen();
+      expect(view.getByText(otaCopy.en.message, SHOWN)).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: otaCopy.en.action, ...SHOWN })).toBeOnTheScreen();
+      expect(view.queryByText('Update required', SHOWN)).toBeNull();
+    });
+
+    it('reloads the app into the update when the action is pressed, and does not open the store', async () => {
+      mockUseForceUpdate.mockReturnValue(OTA_UPDATE);
+      const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
+
+      fireEvent.press(view.getByRole('button', { name: 'Restart', ...SHOWN }));
+
+      expect(mockReloadAsync).toHaveBeenCalledTimes(1);
+      expect(openURL).not.toHaveBeenCalled();
+    });
+
+    it('has no cancel button, so the restart dialog offers one action only', async () => {
+      mockUseForceUpdate.mockReturnValue(OTA_UPDATE);
+      const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
+
+      expect(view.getAllByRole('button', SHOWN)).toHaveLength(1);
+      expect(view.queryByTestId('force-update-dialog-cancel', SHOWN)).toBeNull();
+    });
+
+    it('neither reloads nor closes when the scrim is pressed', async () => {
+      mockUseForceUpdate.mockReturnValue(OTA_UPDATE);
+      const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
+
+      fireEvent.press(view.getByTestId('force-update-dialog-scrim', SHOWN));
+
+      expect(mockReloadAsync).not.toHaveBeenCalled();
+      expect(view.getByText(otaCopy.en.title, SHOWN)).toBeOnTheScreen();
+    });
+
+    it('neither reloads nor closes on Android back', async () => {
+      mockUseForceUpdate.mockReturnValue(OTA_UPDATE);
+      const view = await renderUi(<ForceUpdateGate />, { locale: 'en' });
+
+      fireEvent(view.getByTestId('force-update-dialog'), 'requestClose');
+
+      expect(mockReloadAsync).not.toHaveBeenCalled();
+      expect(view.getByText(otaCopy.en.title, SHOWN)).toBeOnTheScreen();
+    });
+
+    it.each(locales)('renders the restart title, message and action in %s', async (locale) => {
+      mockUseForceUpdate.mockReturnValue(OTA_UPDATE);
+      const view = await renderUi(<ForceUpdateGate />, { locale });
+
+      expect(view.getByRole('header', { name: otaCopy[locale].title, ...SHOWN })).toBeOnTheScreen();
+      expect(view.getByText(otaCopy[locale].message, SHOWN)).toBeOnTheScreen();
+      expect(view.getByRole('button', { name: otaCopy[locale].action, ...SHOWN })).toBeOnTheScreen();
+    });
+
+    it.each(locales)('lays the restart dialog out for direction %s', async (locale) => {
+      mockUseForceUpdate.mockReturnValue(OTA_UPDATE);
+      await renderUi(<ForceUpdateGate />, { locale });
+
+      expect(I18nManager.isRTL).toBe(locale === 'ar');
+    });
   });
 });

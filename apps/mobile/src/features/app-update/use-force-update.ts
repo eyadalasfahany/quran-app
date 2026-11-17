@@ -1,56 +1,59 @@
 import * as Application from 'expo-application';
-import { useSegments } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { router, useSegments } from 'expo-router';
+import * as Updates from 'expo-updates';
+import { useEffect, useState } from 'react';
 import { AppState, Platform } from 'react-native';
 
 import { getBootstrap } from '@/core/api';
 
 import { isUpdateRequired } from './version';
 
-/** The first route segment of the five tabs (`app/(main)/`). Any other first segment is a screen above the tabs. */
+/** The first route segment of the five tabs (`app/(main)/`). */
 const MAIN_GROUP = '(main)';
+/** Onboarding is a pushed stack with no sheets, so the pop-up can show over it. */
+const ONBOARDING_GROUP = '(onboarding)';
 
-/**
- * The store link while this install is below the API's minimum version, otherwise null (ADR 0060).
- *
- * The check runs once after launch and again on each return to the foreground. It never blocks launch: the answer
- * arrives in the background and the app keeps working until then.
- */
-export function useForceUpdate(): string | null {
+/** A store update when this binary is below the live store version, or an OTA update that has downloaded (ADR 0060, 0094). */
+export type ForceUpdate = { kind: 'store'; storeUrl: string } | { kind: 'ota' };
+
+export function useForceUpdate(): ForceUpdate | null {
   const [storeUrl, setStoreUrl] = useState<string | null>(null);
+  const { isUpdatePending } = Updates.useUpdates();
   const segments = useSegments();
-  const onTabs = useRef(true);
+  const first = segments[0] as string | undefined;
 
   useEffect(() => {
-    onTabs.current = (segments[0] as string | undefined) === MAIN_GROUP;
-  }, [segments]);
-
-  useEffect(() => {
-    async function check(): Promise<void> {
+    async function checkStore(): Promise<void> {
       try {
         const platform = Platform.OS === 'android' ? 'android' : 'ios';
         const bootstrap = await getBootstrap();
-        // The marketing version (app.config.ts `version`), read from the installed binary, not the EAS Update manifest.
-        if (!isUpdateRequired(Application.nativeApplicationVersion, bootstrap.min_app_version[platform])) {
-          setStoreUrl(null);
-          return;
-        }
-        // iOS can't present a root Modal while a sheet is presented (React Native presents from the root view controller,
-        // and it fails silently). Hold back on any screen above the tabs and try again on the next launch or foreground.
-        // `router.canDismiss()` can't be used here: the root layout's anchor makes it true on every tab.
-        if (Platform.OS === 'ios' && !onTabs.current) {
-          return;
-        }
-        setStoreUrl(bootstrap.store_url[platform]);
+        // The marketing version of the installed binary, not the EAS Update manifest.
+        const required = isUpdateRequired(Application.nativeApplicationVersion, bootstrap.min_app_version[platform]);
+        setStoreUrl(required ? bootstrap.store_url[platform] : null);
       } catch {
-        // Offline is normal: the app stays usable and the next launch or foreground tries again.
+        // Offline is normal: fail open, the next launch or foreground tries again.
+      }
+    }
+    async function checkOta(): Promise<void> {
+      if (!Updates.isEnabled) {
+        return;
+      }
+      try {
+        const result = await Updates.checkForUpdateAsync();
+        if (result.isAvailable) {
+          await Updates.fetchUpdateAsync();
+        }
+      } catch {
+        // Offline is normal.
       }
     }
 
-    void check();
+    // At launch expo-updates already checks for an OTA (`checkAutomatically: 'ON_LOAD'`).
+    void checkStore();
     const subscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
-        void check();
+        void checkStore();
+        void checkOta();
       }
     });
     return () => {
@@ -58,5 +61,20 @@ export function useForceUpdate(): string | null {
     };
   }, []);
 
-  return storeUrl;
+  // The store update wins: an OTA cannot fix a binary that is too old.
+  const update: ForceUpdate | null =
+    storeUrl !== null ? { kind: 'store', storeUrl } : Updates.isEnabled && isUpdatePending ? { kind: 'ota' } : null;
+  // iOS can't present a root Modal over a presented sheet (it fails silently), and a pushed root screen can't be told
+  // apart from one. So on iOS the pop-up waits until the tabs are showing, and the hook closes the screens above them.
+  const covered = Platform.OS === 'ios' && first !== MAIN_GROUP && first !== ONBOARDING_GROUP;
+  const needed = update !== null;
+
+  useEffect(() => {
+    // `first` is undefined while the index route redirects: nothing to close yet, and the next segments render retries.
+    if (needed && covered && first !== undefined && router.canDismiss()) {
+      router.dismissAll();
+    }
+  }, [needed, covered, first]);
+
+  return covered ? null : update;
 }

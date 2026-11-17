@@ -11,7 +11,6 @@ import { resetNetworkStateForTests, useNetworkStatus } from '@/core/network/netw
 import { themes } from '@/core/theme';
 import { openAudioTestDb } from '@/features/audio/data/test-db';
 import { usePlayerStore } from '@/features/audio/playerStore';
-import { useUpdateStrip } from '@/core/updates/useUpdateStrip';
 
 import { MainShell } from './MainShell';
 import { miniPlayerBottom, miniPlayerHiddenTabsBottom } from './tab-bar-clearance';
@@ -60,10 +59,6 @@ jest.mock('expo-symbols', () => {
   return { SymbolView: () => createElement(View, {} as ComponentProps<typeof View>) };
 });
 
-jest.mock('@/core/updates/useUpdateStrip', () => ({
-  useUpdateStrip: jest.fn(() => ({ visible: false, update: () => undefined })),
-}));
-
 jest.mock('expo-glass-effect', () => ({
   ...jest.requireActual('expo-glass-effect'),
   isLiquidGlassAvailable: () => false,
@@ -86,10 +81,6 @@ function shell() {
 function RailInsetProbe() {
   return <Text testID="rail-inset">{String(useTabRailSideInset())}</Text>;
 }
-
-const updateReadyArabic = 'تحديث جديد جاهز. أعد التشغيل لتطبيق التحسينات';
-const hiddenUpdate = { visible: false, update: () => undefined };
-const visibleUpdate = { visible: true, update: () => undefined };
 
 const playing = { reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 };
 
@@ -285,49 +276,15 @@ describe('MainShell', () => {
     }
   });
 
-  it('draws the update notice hidden by default', async () => {
-    const view = await renderUi(shell());
-
-    expect(view.queryByTestId('update-banner', { includeHiddenElements: true })).toBeNull();
-    expect(view.queryByLabelText(updateReadyArabic)).toBeNull();
-  });
-
-  it('shows the update notice in the dock while an update is ready', async () => {
-    jest.mocked(useUpdateStrip).mockReturnValue(visibleUpdate);
-    try {
-      const view = await renderUi(shell());
-
-      expect(view.getByLabelText(updateReadyArabic)).toBeOnTheScreen();
-      expect(view.getByRole('button', { name: 'تحديث' })).toBeOnTheScreen();
-    } finally {
-      jest.mocked(useUpdateStrip).mockReturnValue(hiddenUpdate);
-    }
-  });
-
-  it('shows the offline and update notices together in the same dock', async () => {
+  it('lets the dock pass presses through to the screen while the offline notice is shown', async () => {
     resetNetworkStateForTests();
     useNetworkStatus.setState({ online: false });
-    jest.mocked(useUpdateStrip).mockReturnValue(visibleUpdate);
-    try {
-      const view = await renderUi(shell());
-
-      const dock = view.getByTestId('offline-strip-dock');
-      expect(dock).toContainElement(view.getByTestId('offline-banner'));
-      expect(dock).toContainElement(view.getByTestId('update-banner'));
-    } finally {
-      resetNetworkStateForTests();
-      jest.mocked(useUpdateStrip).mockReturnValue(hiddenUpdate);
-    }
-  });
-
-  it('lets the update strip take presses while the dock passes the rest through', async () => {
-    jest.mocked(useUpdateStrip).mockReturnValue(visibleUpdate);
     try {
       const view = await renderUi(shell());
 
       expect(view.getByTestId('offline-strip-dock').props.pointerEvents).toBe('box-none');
     } finally {
-      jest.mocked(useUpdateStrip).mockReturnValue(hiddenUpdate);
+      resetNetworkStateForTests();
     }
   });
 

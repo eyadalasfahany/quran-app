@@ -2,7 +2,12 @@
   "forceUpdate": {
     "title": "Update required",
     "message": "A new version of Taybah is available. Update the app to continue.",
-    "action": "Update now"
+    "action": "Update now",
+    "ota": {
+      "title": "Update ready",
+      "message": "A new update for Taybah has downloaded. Restart the app to continue.",
+      "action": "Restart"
+    }
   },
   "tabs": {
     "home": "Home",

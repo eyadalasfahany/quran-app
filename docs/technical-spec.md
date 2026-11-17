@@ -476,7 +476,7 @@ Content moves in three hops: QF Content Sync → backend mirror → pack or chan
 
 One JSON API under `/api/v1`, used only by our app. These rules apply to every endpoint in section 9.
 
-- **Versioning:** the major version is in the path. Additive changes (new fields, new endpoints) never bump it; the app ignores unknown fields. `GET /bootstrap` returns per-platform `min_app_version`, which is the live store version the API looks up from Apple and the Play Store page every 15 minutes, and `store_url`; older builds show a blocking update pop-up (ADR 0060).
+- **Versioning:** the major version is in the path. Additive changes (new fields, new endpoints) never bump it; the app ignores unknown fields. `GET /bootstrap` returns per-platform `min_app_version`, which is the live store version the API looks up from Apple and the Play Store page every 15 minutes, and `store_url`; older builds show a blocking update pop-up (ADR 0060, 0094).
 - **Required headers:** `X-Device-Id` (the install UUID, generated on first launch and kept in secure storage), `X-App-Version`, `X-Platform` (`ios` / `android`), `Accept-Language` (`ar` or `en`). `Authorization: Bearer <token>` only on authenticated routes.
 - **Auth:** Sanctum personal access tokens, one per device, no expiry, revocable from the devices list. Guests call public endpoints with no token.
 - **Envelope:** success responses return the resource directly (`{...}`) or a list as `{ "data": [...], "next_cursor": "..." | null }`. No wrapping `success` flags.
@@ -821,7 +821,7 @@ Reminders are local; only the daily hadith (deferred, ADR 0042) and rare announc
 
 One App Store app (ADR 0016): TestFlight and store builds share `com.taybahapp.taybah` and the `production` EAS profile. The `.dev` bundle ID keeps development builds beside it on a test device. The profile's `EXPO_PUBLIC_API_URL` is an EAS environment variable (`production` environment) and points at the production API on Railway (ADR 0022).
 
-- **OTA update strip:** when an EAS Update has downloaded, the main tabs show «تحديث جديد جاهز» with «تحديث» (reloads it; there is no dismiss); the app also checks for updates on return to the foreground at most every 6 hours.
+- **OTA updates are forced (ADR 0094):** when an EAS Update has downloaded, the force-update pop-up shows «تحديث جديد جاهز» with one button, «إعادة التشغيل» (reloads into it; there is no dismiss). The app checks at launch and on every return to the foreground. A pending store update takes precedence.
 
 **Configuration and secrets**
 

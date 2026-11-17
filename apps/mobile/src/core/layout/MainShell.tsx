@@ -6,10 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MiniPlayer } from '@/features/audio/components/MiniPlayer';
 import { MINI_PLAYER_SIDE } from '@/features/audio/mini-player-metrics';
 import { useOnline } from '@/core/network/useOnline';
-import { useUpdateStrip } from '@/core/updates/useUpdateStrip';
 import { useTheme } from '@/core/theme';
 import { spring } from '@/core/theme/motion';
-import { OfflineBanner, UpdateBanner } from '@/shared/ui';
+import { OfflineBanner } from '@/shared/ui';
 
 import { useContentGutter } from './content-gutter-store';
 import { TabBarScrollSync } from './TabBarScrollSync';
@@ -39,10 +38,9 @@ export function MainShell({ children }: { children: ReactNode }) {
     playerSlide.value = withSpring(tabsScrollHidden ? 1 : 0, spring());
   }, [tabsScrollHidden, playerSlide]);
   const playerDock = useAnimatedStyle(() => ({ transform: [{ translateY: playerSlide.value * playerDrop }] }));
-  // The offline and OTA update notices float in one dock under the status bar. They never push the screens down:
+  // The offline notice floats in the dock under the status bar. It never pushes the screens down:
   // a native tab ignores a content margin on iOS (ADR 0085).
   const online = useOnline();
-  const updateStrip = useUpdateStrip();
 
   return (
     <TabRailContext.Provider value={railSide}>
@@ -50,7 +48,7 @@ export function MainShell({ children }: { children: ReactNode }) {
         <TabBarScrollSync />
         <View style={{ flex: 1 }}>
           {children}
-          {/* box-none: the notices pass touches through to the screen, and their buttons still take them. */}
+          {/* box-none: the dock passes touches through to the screen, and the offline notice still takes its own. */}
           <View
             pointerEvents="box-none"
             style={{
@@ -63,7 +61,6 @@ export function MainShell({ children }: { children: ReactNode }) {
             testID="offline-strip-dock"
           >
             <OfflineBanner visible={!online} />
-            <UpdateBanner onUpdate={updateStrip.update} visible={updateStrip.visible} />
           </View>
         </View>
         {/* The mini player floats above the bottom bar on a phone, and clears the rail on its start side in a rail window. */}
