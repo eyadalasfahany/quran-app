@@ -7,6 +7,7 @@ namespace App\Domains\Mushaf;
 use App\Domains\Mushaf\Console\BuildWordBoxesCommand;
 use App\Domains\Mushaf\Console\ImportSvgMushafCommand;
 use App\Domains\Mushaf\Console\PublishSvgMushafCommand;
+use App\Domains\Mushaf\Console\SetupMushafCommand;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafPackRepository;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafRepository;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafWordBoxRepository;
@@ -30,6 +31,7 @@ final class MushafServiceProvider extends ServiceProvider
             ImportSvgMushafCommand::class,
             BuildWordBoxesCommand::class,
             PublishSvgMushafCommand::class,
+            SetupMushafCommand::class,
         ]);
     }
 }

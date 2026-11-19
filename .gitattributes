@@ -1,3 +1,12 @@
+# Check out text files with LF on every OS. The committed blobs are LF; with
+# core.autocrlf=true a Windows checkout turned them into CRLF, which broke
+# `pint --test`, check-screens and the word-map report test.
+* text=auto eol=lf
+
 packages/quran-text-check/data/*.txt -text
 packages/quran-text-check/data/*.xml -text
 apps/mobile/assets/db/*.db binary
+
+# Upstream licence files committed with CRLF: keep their bytes as shipped.
+IBM-Plex-Sans-Arabic/LICENSE.txt -text
+apps/mobile/assets/fonts/IBMPlexSansArabic/LICENSE.txt -text

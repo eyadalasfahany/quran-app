@@ -9,6 +9,9 @@ use App\Domains\Content\Console\EnsureContentPacksCommand;
 use App\Domains\Content\Console\ImportMp3QuranCommand;
 use App\Domains\Content\Console\ImportRecitationTimingsCommand;
 use App\Domains\Content\Console\ImportWay2QuranCommand;
+use App\Domains\Content\Console\SetupAllContentCommand;
+use App\Domains\Content\Console\SetupQuranCommand;
+use App\Domains\Content\Console\SetupRecitationsCommand;
 use App\Domains\Content\Console\SyncContentCommand;
 use App\Domains\Content\Console\VerifyRecitationTimingsCommand;
 use App\Domains\Content\Events\ResourceContentChanged;
@@ -96,6 +99,9 @@ final class ContentServiceProvider extends ServiceProvider
             VerifyRecitationTimingsCommand::class,
             ImportMp3QuranCommand::class,
             ImportWay2QuranCommand::class,
+            SetupQuranCommand::class,
+            SetupRecitationsCommand::class,
+            SetupAllContentCommand::class,
         ]);
 
         Event::listen(ResourceContentChanged::class, QueuePackBuild::class);

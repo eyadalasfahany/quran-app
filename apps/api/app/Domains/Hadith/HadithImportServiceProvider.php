@@ -12,6 +12,7 @@ use App\Domains\Hadith\Console\MapExplanationsCommand;
 use App\Domains\Hadith\Console\MatchBookTitlesCommand;
 use App\Domains\Hadith\Console\MatchChaptersCommand;
 use App\Domains\Hadith\Console\MatchSectionTitlesCommand;
+use App\Domains\Hadith\Console\SetupHadithCommand;
 use App\Domains\Hadith\Repositories\Contracts\HadithExplanationRepository;
 use App\Domains\Hadith\Repositories\Contracts\HadithImportRepository;
 use App\Domains\Hadith\Repositories\Eloquent\EloquentHadithExplanationRepository;
@@ -43,6 +44,7 @@ final class HadithImportServiceProvider extends ServiceProvider
             ExplanationsSnapshotCommand::class,
             MapExplanationsCommand::class,
             ImportExplanationsCommand::class,
+            SetupHadithCommand::class,
         ]);
     }
 }

@@ -3,7 +3,7 @@
 // and images are files under design-assets/, never inlined as base64.
 // Usage: node scripts/check-screens.mjs ../../screens
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 
 const dir = resolve(process.argv[2]);
 const read = (f) => readFileSync(f, 'utf8');
@@ -21,7 +21,8 @@ const files = [];
 const walk = (d) => {
   for (const e of readdirSync(d, { withFileTypes: true })) {
     if (e.isDirectory()) walk(join(d, e.name));
-    else if (e.name.endsWith('.html')) files.push(relative(dir, join(d, e.name)));
+    // index.html uses `/`, so compare with forward slashes on Windows too.
+    else if (e.name.endsWith('.html')) files.push(relative(dir, join(d, e.name)).split(sep).join('/'));
   }
 };
 walk(join(dir, 'frames'));

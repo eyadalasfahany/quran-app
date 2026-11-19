@@ -1,7 +1,7 @@
 // Runs `npm audit` and fails on any high or critical advisory that isn't in .github/audit-allowlist.json.
 // Every allowlist entry needs a reason and a reviewBy date. An expired or unused entry also fails,
 // so an exception can't outlive the problem it covers.
-import { execFileSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -57,7 +57,8 @@ export function evaluate(advisories, allowlist, today) {
 
 function runAudit() {
   try {
-    return execFileSync('npm', ['audit', '--json'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    // A fixed command string runs through the shell, so npm.cmd resolves on Windows too.
+    return execSync('npm audit --json', { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   } catch (error) {
     // npm audit exits 1 whenever it finds anything; the report is still on stdout.
     if (typeof error.stdout === 'string' && error.stdout.trim() !== '') return error.stdout;

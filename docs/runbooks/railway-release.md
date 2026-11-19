@@ -155,6 +155,28 @@ The volume holds the packs and the 238 Azkar recordings (about 55 MiB). Choose a
 - The Quran reference map only accepts rows marked `reviewed` in production (`config/azkar_quran_map.php`). A `candidate` or `unmatched` row blocks its entry.
 - No Azkar pack is built by the pre-deploy container (`--defer-pack`).
 
+## One command per feature (ADR 0095)
+
+Each feature has one setup command. It runs that feature's import steps in order, with the same flags the runbook used by hand. Run them over `railway ssh` from `/app`.
+
+| Feature | Command | What it runs |
+| --- | --- | --- |
+| Quran (QF) | `php artisan quran:setup` | `qf:ping`, `content:sync` for every group in `quran.sync.groups` (or `--group=`), `content:ensure-packs` |
+| Recitations | `php artisan recitations:setup` | `mp3quran:import --defer-pack`, `way2quran:import --defer-pack` (only when the manifest file exists), `recitation-timings:import --defer-pack`, `content:ensure-packs` |
+| Azkar | `php artisan azkar:setup` | `azkar:audio-sync`, `azkar:audio-verify` (`--skip-audio` to leave out), pinned snapshots, `azkar:import --download --defer-pack`, `content:ensure-packs` |
+| Duas | `php artisan duas:setup` | `duas:snapshot hadeethenc --pinned`, `duas:import --download`, `content:ensure-packs` |
+| Hadith | `php artisan hadith:setup` | `hadith:import --download --defer-pack`, `hadith:explanations-snapshot --pinned`, `hadith:import-explanations` (`--skip-explanations` to leave out), `content:ensure-packs` |
+| Mushaf (SVG) | `php artisan mushaf:setup` | `mushaf:import` per edition, `mushaf:build-word-boxes hafs`, `mushaf:publish` per edition, `content:ensure-packs` (memory limit lifted) |
+| All | `php artisan content:setup` | The six setups above, in that order. `--skip=<feature>` leaves a feature out. A failed feature does not stop the rest; the command exits 1 and prints a summary. |
+
+The full first run, in one go:
+
+```bash
+php artisan content:setup
+```
+
+Prerequisites: the volume is attached, the variables are set (see Environment above), and the code is deployed. The first run takes hours: the mushaf editions download about 1.6 GB, and the HadeethEnc explanations take about an hour (add `--skip-explanations` to start without them). `names:import` and `seerah:import --release` are not part of it: production refuses them until the developer signs off the content (ADR 0043, ADR 0091).
+
 ## First QF production sync
 
 **Deploy the sync fixes first** (1 Nov 2026). Production QF returns bootstrap mutations unsorted, and some Arabic tafsirs (90, 93, and all of 925) have records with a null `group_tafsir_id`. A build without the ordering fix in `ContentSyncService` and the group-leader fallback in `TafsirsHandler` fails `content:sync tafsirs` on production. In the chapter reciters, 3, 5 and 19 each carry a "Dua.mp3" file with no chapter and no URL, and 168 has four ayah timings with no valid range (33:7, 33:8, 36:40, 101:3). `ChapterRecitationsHandler` skips both with a warning. A build without that fails `content:sync chapter_recitations`.

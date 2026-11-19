@@ -500,6 +500,18 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
         };
     };
     "v1.bootstrap": {
@@ -518,6 +530,18 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BootstrapResource"];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
                 };
             };
         };
@@ -561,6 +585,18 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
         };
     };
     "v1.content.manifest": {
@@ -588,6 +624,18 @@ export interface operations {
                 };
                 content: {
                     "application/json": null;
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
                 };
             };
         };
@@ -624,6 +672,18 @@ export interface operations {
                         status: number;
                         code: string;
                         detail?: string | null;
+                    };
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
                     };
                 };
             };
@@ -677,6 +737,18 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
         };
     };
     "v1.hadith.chapters.index": {
@@ -728,6 +800,18 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
         };
     };
     "v1.hadith.collections.index": {
@@ -755,6 +839,18 @@ export interface operations {
                 };
                 content: {
                     "application/json": null;
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
                 };
             };
         };
@@ -809,6 +905,18 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationException"];
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
         };
     };
     "v1.hadith.entries.show": {
@@ -853,6 +961,18 @@ export interface operations {
                         status: number;
                         code: string;
                         detail?: string | null;
+                    };
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
                     };
                 };
             };
@@ -914,6 +1034,18 @@ export interface operations {
                     "application/json": null;
                 };
             };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
+                };
+            };
         };
     };
     "v1.suggestions.store": {
@@ -969,6 +1101,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": {
+                        /** @description Error overview. */
+                        message: string;
+                    };
                     "application/problem+json": {
                         type: string;
                         title: string;
