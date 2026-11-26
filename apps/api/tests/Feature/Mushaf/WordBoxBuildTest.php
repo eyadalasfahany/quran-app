@@ -390,13 +390,13 @@ it('refuses a malformed overrides file', function (): void {
     app(WordBoxBuilder::class)->build('hafs');
 })->throws(SvgMushafSourceException::class, 'must use each contour index once');
 
-it('reads only keys, lines and letter counts from quran-text, and skips unnumbered words', function (): void {
+it('reads only keys, lines, letter counts and body counts from quran-text, and skips unnumbered words', function (): void {
     installWordBoxPage(words: [[1, 1, 0, 1, 4], ...WORD_BOX_WORDS]);
 
     $words = app(QuranTextSource::class)->words('hafs', true);
 
     expect($words[1][1])->toHaveCount(3)
-        ->and($words[1][1][0])->toBe(['surah' => 1, 'ayah' => 1, 'position' => 1, 'letters' => 4])
+        ->and($words[1][1][0])->toBe(['surah' => 1, 'ayah' => 1, 'position' => 1, 'letters' => 4, 'bodies' => 0])
         ->and($words[1][2])->toHaveCount(3);
 });
 

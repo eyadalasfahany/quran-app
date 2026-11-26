@@ -43,6 +43,8 @@ return [
         'base_height_share' => 0.25,
         'no_base_penalty' => 1000.0,
         'out_of_span_penalty' => 500.0,
+        // Cost per full-height contour more or fewer than a word's letter bodies (counted from its printed text). 0 turns it off.
+        'body_penalty' => (float) env('MUSHAF_BODY_PENALTY', 0.0),
         'span_tolerance' => 0.5,
         'polygon_snap' => 5.0, // pages 1-2 only: polygon corners this close in y are one line edge
         // A line's path is cut where a contour's x-centre falls back by more than this. 120 rather than 60: W2 162 against 156,

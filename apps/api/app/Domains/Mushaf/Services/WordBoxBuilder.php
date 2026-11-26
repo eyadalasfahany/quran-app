@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\File;
  * @phpstan-import-type WordBoxRow from SvgMushafWordBoxRepository
  * @phpstan-import-type QuranTextWord from QuranTextSource
  *
- * @phpstan-type Settings array{base_height_share: float, no_base_penalty: float, out_of_span_penalty: float, span_tolerance: float, polygon_snap: float, line_order_jump: float, min_width: float, low: float, high: float}
+ * @phpstan-type Settings array{base_height_share: float, no_base_penalty: float, out_of_span_penalty: float, body_penalty: float, span_tolerance: float, polygon_snap: float, line_order_jump: float, min_width: float, low: float, high: float}
  * @phpstan-type PageResult array{boxes: list<SheetBox>, bands: array<int, array{0: float, 1: float}>, counts: array<string, int>, notes: list<string>, checks: list<string>, flagged: array<int, list<Box>>, widths: list<float>, ratios: list<float>, overrides: array<int, bool>}
  */
 final class WordBoxBuilder
@@ -343,7 +343,7 @@ final class WordBoxBuilder
      * One page's boxes and checks, and its contour inputs (ADR 0090 step 13 A1, A3).
      *
      * @param  list<array{surah: int, ayah: int, polygon: string}>  $regions
-     * @param  array<int, list<array{surah: int, ayah: int, position: int, letters: int|null}>>  $lines  line => its words
+     * @param  array<int, list<array{surah: int, ayah: int, position: int, letters: int|null, bodies: int}>>  $lines  line => its words
      * @param  array<string, int>  $splits  "surah:ayah:position" => the app words it covers
      * @param  array<string, float>  $settings
      * @return array{boxes: list<array{line: int, surah: int, ayah: int, position: int, label: string, x0: float, y0: float, x1: float, y1: float, contours: list<int>, flags: list<string>}>, bands: array<int, array{0: float, 1: float}>, counts: array<string, int>, notes: list<string>, checks: list<string>, flagged: array<int, list<array{0: float, 1: float, 2: float, 3: float}>>, widths: list<float>, ratios: list<float>, overrides: array<int, bool>, contourPage: array{contours: list<array{0: float, 1: float, 2: float, 3: float}>, lineOf: list<int|null>, words: list<array{surah: int, ayah: int, position: int, apps: list<int>, line: int, contours: list<int>, x0: float, x1: float}>, loose: list<array{contour: int, loose: int, line: int, attach: string|null, ornament: bool}>}}
@@ -454,7 +454,8 @@ final class WordBoxBuilder
             }
 
             if ($groups === null) {
-                $ranges = WordSplitter::split($contours, $spans, $base, $tolerance, $settings['no_base_penalty'], $settings['out_of_span_penalty']);
+                $bodies = array_map(fn (array $word): int => $word['bodies'], $words);
+                $ranges = WordSplitter::split($contours, $spans, $base, $tolerance, $settings['no_base_penalty'], $settings['out_of_span_penalty'], $bodies, $settings['body_penalty']);
                 $groups = $ranges === null ? null : array_map(fn (array $r): array => range($r[0], $r[1] - 1), $ranges);
             }
 
@@ -678,6 +679,12 @@ final class WordBoxBuilder
     private function digest(array $rows): string
     {
         $config = (array) config('mushaf.word_boxes');
+
+        // The body penalty came after the approval; while it is off it must not change the approved digest.
+        if ((float) ($config['body_penalty'] ?? 0.0) === 0.0) {
+            unset($config['body_penalty']);
+        }
+
         self::sortKeys($config);
 
         $boxes = array_map(fn (array $row): array => [
@@ -749,6 +756,7 @@ final class WordBoxBuilder
             'base_height_share' => (float) config('mushaf.word_boxes.base_height_share'),
             'no_base_penalty' => (float) config('mushaf.word_boxes.no_base_penalty'),
             'out_of_span_penalty' => (float) config('mushaf.word_boxes.out_of_span_penalty'),
+            'body_penalty' => (float) config('mushaf.word_boxes.body_penalty'),
             'span_tolerance' => (float) config('mushaf.word_boxes.span_tolerance'),
             'polygon_snap' => (float) config('mushaf.word_boxes.polygon_snap'),
             'line_order_jump' => (float) config('mushaf.word_boxes.line_order_jump'),

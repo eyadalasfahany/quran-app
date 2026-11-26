@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Mushaf\Exceptions\SvgMushafSourceException;
+use App\Domains\Mushaf\Sources\QuranTextSource;
 use App\Domains\Mushaf\WordBoxes\LineBands;
 use App\Domains\Mushaf\WordBoxes\LineOrder;
 use App\Domains\Mushaf\WordBoxes\PageContours;
@@ -240,7 +241,32 @@ describe('split', function (): void {
             ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 0.0, 500.0))->toBe([[0, 2], [2, 3]]);
     });
 
+    it('keeps a detached letter with its own word when the body counts are given', function (): void {
+        // The middle contour is a separate letter body nearer the left word, but it starts the right word.
+        $contours = [[0.0, 0.0, 10.0, 10.0], [11.0, 0.0, 14.0, 10.0], [20.0, 0.0, 30.0, 10.0]];
+        $base = [true, true, true];
+
+        expect(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0))->toBe([[0, 2], [2, 3]])
+            ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 0.0))->toBe([[0, 2], [2, 3]])
+            ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 6.0))->toBe([[0, 1], [1, 3]]);
+    });
+
     it('cannot split fewer contours than words', function (): void {
         expect(WordSplitter::split([[0.0, 0.0, 1.0, 1.0]], [null, null], [true], 0.5, 1000.0, 500.0))->toBeNull();
     });
+});
+
+describe('letter bodies', function (): void {
+    // Placeholder letter strings, not Quran words.
+    it('starts a body after every letter that does not join the next one', function (string $text, int $bodies): void {
+        expect(QuranTextSource::bodies($text))->toBe($bodies);
+    })->with([
+        'one joined run' => ['بسم', 1],
+        'a non-joining letter first' => ['وبس', 2],
+        'non-joining letters in a row' => ['ادر', 3],
+        'marks are not letters' => ['بَسۡ', 1],
+        'a lone hamza is not a body' => ['ءا', 1],
+        'a joined hamza seat is a letter' => ['بئر', 1],
+        'empty' => ['', 0],
+    ]);
 });

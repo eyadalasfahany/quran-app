@@ -8,7 +8,8 @@ namespace App\Domains\Mushaf\WordBoxes;
  * Splits a line's contours, in path order, into one contiguous group per word (ADR 0090, the spike's `words7.py`). Path order
  * runs left to right, so group k is the k-th word from the left, which is reverse reading order. The dynamic program minimises
  * the sum over groups of: the group's width, plus a penalty when no contour in it is full height, plus a penalty when its x-centre
- * is outside its word's span.
+ * is outside its word's span, plus (when bodies are given) a penalty for each full-height contour more or fewer than the word's text
+ * has letter bodies, so a detached letter goes with its own word rather than the nearer neighbour.
  *
  * @phpstan-import-type Box from SvgPathBounds
  */
@@ -18,9 +19,10 @@ final class WordSplitter
      * @param  list<Box>  $contours  the line's contours in path order
      * @param  list<array{0: float, 1: float}|null>  $spans  each word's allowed x-range, left to right; null when it has none
      * @param  list<bool>  $base  whether each contour is full height
+     * @param  list<int>|null  $bodies  each word's letter-body count from its text, left to right; null leaves the count out
      * @return list<array{0: int, 1: int}>|null [start, end) contour indexes per group, left to right; null with fewer contours than words
      */
-    public static function split(array $contours, array $spans, array $base, float $tolerance, float $noBasePenalty, float $outOfSpanPenalty): ?array
+    public static function split(array $contours, array $spans, array $base, float $tolerance, float $noBasePenalty, float $outOfSpanPenalty, ?array $bodies = null, float $bodyPenalty = 0.0): ?array
     {
         $m = count($contours);
         $n = count($spans);
@@ -46,12 +48,18 @@ final class WordSplitter
                 $lo = INF;
                 $hi = -INF;
                 $has = false;
+                $tall = 0;
 
                 for ($j = $i; $j <= $last; $j++) {
                     $lo = min($lo, $contours[$j][0]);
                     $hi = max($hi, $contours[$j][2]);
                     $has = $has || $base[$j];
+                    $tall += $base[$j] ? 1 : 0;
                     $cost = ($hi - $lo) + ($has ? 0.0 : $noBasePenalty);
+
+                    if ($bodies !== null && $bodyPenalty > 0.0) {
+                        $cost += $bodyPenalty * abs($tall - $bodies[$k - 1]);
+                    }
                     $centre = ($lo + $hi) / 2;
 
                     if ($span === null || $centre < $span[0] - $tolerance || $centre > $span[1] + $tolerance) {
