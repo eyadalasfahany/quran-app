@@ -20,11 +20,13 @@ final class WordSplitter
      * @param  list<array{0: float, 1: float}|null>  $spans  each word's allowed x-range, left to right; null when it has none
      * @param  list<bool>  $base  whether each contour is full height
      * @param  list<int>|null  $bodies  each word's letter-body count from its text, left to right; null leaves the count out
+     * @param  list<bool>|null  $isBody  whether each contour counts as a letter body; null counts the full-height ones
      * @return list<array{0: int, 1: int}>|null [start, end) contour indexes per group, left to right; null with fewer contours than words
      */
-    public static function split(array $contours, array $spans, array $base, float $tolerance, float $noBasePenalty, float $outOfSpanPenalty, ?array $bodies = null, float $bodyPenalty = 0.0): ?array
+    public static function split(array $contours, array $spans, array $base, float $tolerance, float $noBasePenalty, float $outOfSpanPenalty, ?array $bodies = null, float $bodyPenalty = 0.0, ?array $isBody = null): ?array
     {
         $m = count($contours);
+        $isBody ??= $base;
         $n = count($spans);
 
         if ($n === 0 || $m < $n) {
@@ -54,7 +56,7 @@ final class WordSplitter
                     $lo = min($lo, $contours[$j][0]);
                     $hi = max($hi, $contours[$j][2]);
                     $has = $has || $base[$j];
-                    $tall += $base[$j] ? 1 : 0;
+                    $tall += $isBody[$j] ? 1 : 0;
                     $cost = ($hi - $lo) + ($has ? 0.0 : $noBasePenalty);
 
                     if ($bodies !== null && $bodyPenalty > 0.0) {

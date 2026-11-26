@@ -251,6 +251,15 @@ describe('split', function (): void {
             ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 6.0))->toBe([[0, 1], [1, 3]]);
     });
 
+    it('counts letter bodies from the given flags rather than full height', function (): void {
+        // The middle contour is short (not full height) but is a letter body of the right word.
+        $contours = [[0.0, 0.0, 10.0, 10.0], [11.0, 3.0, 14.0, 8.0], [20.0, 0.0, 30.0, 10.0]];
+        $base = [true, false, true];
+
+        expect(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 6.0))->toBe([[0, 2], [2, 3]])
+            ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 6.0, [true, true, true]))->toBe([[0, 1], [1, 3]]);
+    });
+
     it('cannot split fewer contours than words', function (): void {
         expect(WordSplitter::split([[0.0, 0.0, 1.0, 1.0]], [null, null], [true], 0.5, 1000.0, 500.0))->toBeNull();
     });

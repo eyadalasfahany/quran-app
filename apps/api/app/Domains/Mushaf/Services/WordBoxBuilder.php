@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\File;
  * @phpstan-import-type WordBoxRow from SvgMushafWordBoxRepository
  * @phpstan-import-type QuranTextWord from QuranTextSource
  *
- * @phpstan-type Settings array{base_height_share: float, no_base_penalty: float, out_of_span_penalty: float, body_penalty: float, span_tolerance: float, polygon_snap: float, line_order_jump: float, min_width: float, low: float, high: float}
+ * @phpstan-type Settings array{base_height_share: float, no_base_penalty: float, out_of_span_penalty: float, body_penalty: float, body_min_share: float, body_baseline_share: float, span_tolerance: float, polygon_snap: float, line_order_jump: float, min_width: float, low: float, high: float}
  * @phpstan-type PageResult array{boxes: list<SheetBox>, bands: array<int, array{0: float, 1: float}>, counts: array<string, int>, notes: list<string>, checks: list<string>, flagged: array<int, list<Box>>, widths: list<float>, ratios: list<float>, overrides: array<int, bool>}
  */
 final class WordBoxBuilder
@@ -455,8 +455,37 @@ final class WordBoxBuilder
 
             if ($groups === null) {
                 $bodies = array_map(fn (array $word): int => $word['bodies'], $words);
-                $ranges = WordSplitter::split($contours, $spans, $base, $tolerance, $settings['no_base_penalty'], $settings['out_of_span_penalty'], $bodies, $settings['body_penalty']);
+                $isBody = self::letterBodies($contours, $base, $y0, $y1, $settings['body_min_share'], $settings['body_baseline_share']);
+                $ranges = WordSplitter::split($contours, $spans, $base, $tolerance, $settings['no_base_penalty'], $settings['out_of_span_penalty'], $bodies, $settings['body_penalty'], $isBody);
                 $groups = $ranges === null ? null : array_map(fn (array $r): array => range($r[0], $r[1] - 1), $ranges);
+
+                // Where the path draws a word ahead of its place, the groups come out of left-to-right order and every label on
+                // the line shifts. Split again over the contours sorted by x-centre and keep that when it runs in order.
+                if ($groups !== null && $settings['body_penalty'] > 0.0 && ! self::inOrder($groups, $contours)) {
+                    $byX = array_keys($contours);
+                    usort($byX, fn (int $a, int $b): int => ($contours[$a][0] + $contours[$a][2]) <=> ($contours[$b][0] + $contours[$b][2]) ?: $a <=> $b);
+                    $pick = fn (array $values): array => array_map(fn (int $i): mixed => $values[$i], $byX);
+                    $sorted = WordSplitter::split($pick($contours), $spans, $pick($base), $tolerance, $settings['no_base_penalty'], $settings['out_of_span_penalty'], $bodies, $settings['body_penalty'], $pick($isBody));
+                    $retry = $sorted === null ? null : array_map(fn (array $r): array => array_map(fn (int $i): int => $byX[$i], range($r[0], $r[1] - 1)), $sorted);
+
+                    if ($retry !== null && self::inOrder($retry, $contours)) {
+                        $groups = array_map(function (array $group): array {
+                            sort($group);
+
+                            return $group;
+                        }, $retry);
+                        $lineNotes[$line][] = 'split again in x order: the path draws a word out of place';
+                    }
+                }
+
+                if ($groups !== null && $settings['body_penalty'] > 0.0) {
+                    $attached = self::attachMarks($groups, $contours, $isBody, array_map(fn (array $word): string => $word['surah'].':'.$word['ayah'], $words));
+
+                    // A mark move never puts a word outside its ayah's span; such a line keeps its marks where the split put them.
+                    if (self::spanMisses($attached, $contours, $spans, $tolerance) <= self::spanMisses($groups, $contours, $spans, $tolerance)) {
+                        $groups = $attached;
+                    }
+                }
             }
 
             if ($groups === null) {
@@ -680,9 +709,10 @@ final class WordBoxBuilder
     {
         $config = (array) config('mushaf.word_boxes');
 
-        // The body penalty came after the approval; while it is off it must not change the approved digest.
+        // The letter-body settings came after the approval; while the penalty is off they change nothing, so the approved
+        // digest must not see them.
         if ((float) ($config['body_penalty'] ?? 0.0) === 0.0) {
-            unset($config['body_penalty']);
+            unset($config['body_penalty'], $config['body_min_share'], $config['body_baseline_share']);
         }
 
         self::sortKeys($config);
@@ -757,6 +787,8 @@ final class WordBoxBuilder
             'no_base_penalty' => (float) config('mushaf.word_boxes.no_base_penalty'),
             'out_of_span_penalty' => (float) config('mushaf.word_boxes.out_of_span_penalty'),
             'body_penalty' => (float) config('mushaf.word_boxes.body_penalty'),
+            'body_min_share' => (float) config('mushaf.word_boxes.body_min_share'),
+            'body_baseline_share' => (float) config('mushaf.word_boxes.body_baseline_share'),
             'span_tolerance' => (float) config('mushaf.word_boxes.span_tolerance'),
             'polygon_snap' => (float) config('mushaf.word_boxes.polygon_snap'),
             'line_order_jump' => (float) config('mushaf.word_boxes.line_order_jump'),
@@ -764,6 +796,151 @@ final class WordBoxBuilder
             'low' => (float) config('mushaf.word_boxes.width_per_letter.low'),
             'high' => (float) config('mushaf.word_boxes.width_per_letter.high'),
         ];
+    }
+
+    /**
+     * Moves a mark to the word whose letter it sits over. The split follows path order, so a mark drawn next to the following
+     * word's contours can land in that word. A mark (a contour that is not a letter body) moves only when its x-centre is over a
+     * letter body of exactly one other word of the same ayah and over none of its own word's.
+     *
+     * @param  list<list<int>>  $groups
+     * @param  list<array{0: float, 1: float, 2: float, 3: float}>  $contours
+     * @param  list<bool>  $isBody
+     * @param  list<string>  $ayahs  each word's surah:ayah, left to right
+     * @return list<list<int>>
+     */
+    private static function attachMarks(array $groups, array $contours, array $isBody, array $ayahs): array
+    {
+        $groupOf = [];
+
+        foreach ($groups as $k => $group) {
+            foreach ($group as $index) {
+                $groupOf[$index] = $k;
+            }
+        }
+
+        $moves = [];
+
+        foreach ($groupOf as $mark => $own) {
+            if ($isBody[$mark]) {
+                continue;
+            }
+
+            $centre = ($contours[$mark][0] + $contours[$mark][2]) / 2;
+            $hosts = [];
+
+            foreach ($groupOf as $body => $k) {
+                if ($isBody[$body] && $contours[$body][0] <= $centre && $centre <= $contours[$body][2]) {
+                    $hosts[$k] = true;
+                }
+            }
+
+            if (! isset($hosts[$own]) && count($hosts) === 1 && $ayahs[(int) array_key_first($hosts)] === $ayahs[$own]) {
+                $moves[$mark] = (int) array_key_first($hosts);
+            }
+        }
+
+        foreach ($moves as $mark => $to) {
+            $from = $groupOf[$mark];
+
+            if (count($groups[$from]) > 1) {
+                $groups[$from] = array_values(array_diff($groups[$from], [$mark]));
+                $groups[$to][] = $mark;
+                sort($groups[$to]);
+            }
+        }
+
+        return $groups;
+    }
+
+    /**
+     * How many groups have their x-centre outside their word's span (or have no span).
+     *
+     * @param  list<list<int>>  $groups
+     * @param  list<array{0: float, 1: float, 2: float, 3: float}>  $contours
+     * @param  list<array{0: float, 1: float}|null>  $spans
+     */
+    private static function spanMisses(array $groups, array $contours, array $spans, float $tolerance): int
+    {
+        $misses = 0;
+
+        foreach ($groups as $k => $group) {
+            $lo = INF;
+            $hi = -INF;
+
+            foreach ($group as $index) {
+                $lo = min($lo, $contours[$index][0]);
+                $hi = max($hi, $contours[$index][2]);
+            }
+
+            $centre = ($lo + $hi) / 2;
+            $span = $spans[$k];
+
+            if ($span === null || $centre < $span[0] - $tolerance || $centre > $span[1] + $tolerance) {
+                $misses++;
+            }
+        }
+
+        return $misses;
+    }
+
+    /**
+     * Whether a line's groups run left to right: each group's x-centre is left of the next one's.
+     *
+     * @param  list<list<int>>  $groups
+     * @param  list<array{0: float, 1: float, 2: float, 3: float}>  $contours
+     */
+    private static function inOrder(array $groups, array $contours): bool
+    {
+        $previous = -INF;
+
+        foreach ($groups as $group) {
+            $lo = INF;
+            $hi = -INF;
+
+            foreach ($group as $index) {
+                $lo = min($lo, $contours[$index][0]);
+                $hi = max($hi, $contours[$index][2]);
+            }
+
+            if (($lo + $hi) / 2 <= $previous) {
+                return false;
+            }
+
+            $previous = ($lo + $hi) / 2;
+        }
+
+        return true;
+    }
+
+    /**
+     * Which of a line's contours count as letter bodies for the body penalty: every full-height contour, and a shorter one (at
+     * least `$minShare` of the line) that crosses the level `$baselineShare` of the line above the baseline. The
+     * baseline is the median bottom of the full-height contours. Marks float above or below the baseline, so they do not cross it.
+     *
+     * @param  list<array{0: float, 1: float, 2: float, 3: float}>  $contours
+     * @param  list<bool>  $base
+     * @return list<bool>
+     */
+    private static function letterBodies(array $contours, array $base, float $y0, float $y1, float $minShare, float $baselineShare): array
+    {
+        $height = $y1 - $y0;
+        $bottoms = [];
+
+        foreach ($contours as $index => $contour) {
+            if ($base[$index]) {
+                $bottoms[] = $contour[3];
+            }
+        }
+
+        $level = ($bottoms === [] ? ($y0 + $y1) / 2 : self::median($bottoms)) - $baselineShare * $height;
+
+        return array_map(
+            fn (array $contour, bool $tall): bool => $tall
+                || ($minShare * $height <= $contour[3] - $contour[1] && $contour[1] <= $level && $level <= $contour[3]),
+            $contours,
+            $base,
+        );
     }
 
     /**
