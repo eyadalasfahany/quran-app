@@ -1,6 +1,35 @@
 # Madinah SVG mushaf (plan)
 
-Status: accepted (developer, 12 Nov 2026), step 0 in progress · Branch: `main` (moved from the worktree branch `ft/madinah-svg-mushaf` on 15 Nov 2026, developer) · ADR: `docs/adr/0090-madinah-svg-mushaf.md` (proposed) · Spike scripts: `docs/plans/madinah-svg-mushaf/spike/` (throwaway; the method is described in the ADR)
+Status: accepted (developer, 12 Nov 2026); step 13 Part C next (see «Where things stand») · Branch: `main` (moved from the worktree branch `ft/madinah-svg-mushaf` on 15 Nov 2026, developer) · ADR: `docs/adr/0090-madinah-svg-mushaf.md` (proposed) · Spike scripts: `docs/plans/madinah-svg-mushaf/spike/` (throwaway; the method is described in the ADR)
+
+## Where things stand (26 Nov 2026; read this first)
+
+All of the below is committed on `main` (`03418c75`). A new session starts here, then reads the step file it works on.
+
+**Done and committed (not yet released to production):**
+- Steps 0–9b: import, word boxes (Hafs approved, digest `8944a6b3…`), packs, frames, Skia renderer, picker, other riwayat, reciter riwayah.
+- Step 12: compact pages (TQP1, 1/32 grid, raw deflate; ADR 0090 amendments 24 and 26 Nov).
+- Step 13 Parts 0, A and B: frames, the API word-contour map (`word-contours-hafs.json`, digest `b256ecd9669b7d0731d081d1862270f1d9af50a0ee01fb04e52e4aba16907e36`, status **pending_review**), and the device's zoom (re-wrap 100–200%, no sideways scroll).
+- ADR 0090 amendment items 1–13. Item 13 (26 Nov): the selected riwayah's pack updates by itself in the background; an ayah tapped on a non-Hafs page opens only a reference and a note (frame `AyahSheetRiwayahUnavailable`) until the ayah map and per-riwayah marks exist.
+- al-Duri is hidden in every picker and not published (`config/mushaf.php`, `publish => false`).
+
+**Next: step 13 Part C** (`step-13-page-zoom.md`, «Part C»):
+1. **C0, the developer's review sheet.** Run the device's `layoutPage` on the contour and box data and the decoded pages; draw the printed page beside the 200% re-wrap for at least 30 spread pages plus every page with a loose attachment (48), a sajda line (page 293), a 1:1 or W8 line, and the hizb ornaments (pages 472, 499, 517). Hand it over as a link. **The developer approves; never set `mushaf.approved_word_contours` yourself.**
+2. After approval: set `approved_word_contours.hafs` to the digest, re-run `mushaf:build-word-boxes hafs` (the only step that sets the status to `approved`), then C1–C3 (sizes, decode speed on device, baseline).
+
+**Production rules until then:**
+- Do not run `mushaf:setup` or `mushaf:publish` in production. Locally the simulator uses a pack built with `mushaf:publish hafs --with-pending-contours` (refused in production).
+- Release order after approval: `docs/runbooks/railway-release.md` (re-run `mushaf:import {key}` per riwayah after the compact-format deploy, then publish).
+- The app side needs a store build (Skia came after 1.0.3): no `eas update` for this work.
+
+**Environment:** the pipeline needs the local stack (PHP 8.5, MySQL, Node 26, the pinned quran-svg cache). The Claude Code cloud image has PHP 8.3, PostgreSQL and Node 22, so a cloud session would need a setup script and a full re-import before Part C0. Running it locally is the tested path.
+
+**Later, waiting for the developer:**
+- Step 14: word boxes (then zoom) for Warsh, Qalun and Shu'bah; al-Duri's numbering (a, b, c).
+- Step 15 and ADR 0100 (draft): the riwayah's own text in Reading and Focus. Fonts answered (KFGQPC qira'at fonts, unmodified); D2–D12 open, among them the ayah map (D7) that would bring back play and tafsir from non-Hafs pages.
+- ADR 0090 «Open questions» (zoom justification, no-pack fallback, pages 1–2 at zoom, copy).
+
+**Known limits, not yet checked on a device:** a very fast fling can still show a skeleton for a moment (inflating a page costs about 40 ms in a Hermes dev build); the 200% page slices and the Warsh ayah sheet were checked on the iPhone simulator only, not the iPad; the background pack update is covered by tests, not yet watched on a device.
 
 ## Rests on
 

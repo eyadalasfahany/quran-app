@@ -1,5 +1,7 @@
 # Step 13 — Page zoom in Mushaf mode: the printed word shapes re-wrap into bigger, shorter lines (ADR 0090, amendment of 26 Nov 2026, item 9)
 
+**Status (26 Nov 2026):** Parts 0, A and B done and committed (`03418c75`). **Part C is next**; the contour data is `pending_review` until the developer approves the C0 sheet.
+
 Branch: `main` (check with `git branch --show-current`). Stage and commit nothing. Read `.claude/agent-rules.md`, root `CLAUDE.md`, `apps/api/CLAUDE.md` (and `apps/api/.ai/rules/index.md`) and `apps/mobile/CLAUDE.md` first. Do the parts in order: **0 (checks and frames), A (API), B (device), C (measure and gate)**. One part per review. Part B may start only after Part A's gate passes, because the device reads the new pack tables.
 
 **Depends on:** step 7 (Skia page), step 8 (settings), step 12 (TQP1: the pack and the decoder it builds on). **Step 11 (release) waits for it.** Written 26 Nov 2026 by the planner; implementation goes to a Haiku subagent from this brief, and the orchestrator reviews against it.
