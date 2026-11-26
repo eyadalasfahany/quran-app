@@ -124,6 +124,22 @@ export function buildLayoutInput({ boxes, runs, blocks, origin, continuing }: In
     }
   }
 
+  // A keep-together run (kind 5) marks its words, from position `first` for `count` positions, with the run's ord. A position
+  // that another word covers (15:7) marks that word.
+  for (const block of blocks) {
+    if (block.kind !== 5) {
+      continue;
+    }
+    for (let position = block.first; position < block.first + block.count; position += 1) {
+      const unit = words.find(
+        (word) => word.surah === block.surah && word.ayah === block.ayah && word.position <= position && position < word.position + word.covers,
+      );
+      if (unit !== undefined) {
+        unit.keep = block.ord;
+      }
+    }
+  }
+
   const bands = new Map<number, { y0: number; y1: number }>();
   for (const box of boxes) {
     const shifted = shift(box);

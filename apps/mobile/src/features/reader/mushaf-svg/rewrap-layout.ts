@@ -42,6 +42,11 @@ export type WordUnit = {
   mark: { first: number; count: number; bounds: Rect } | null;
   /** A sajda line over this word (contour_blocks kind 3): an annotation, never drawn on its own. */
   sajda: { first: number; count: number; bounds: Rect } | null;
+  /**
+   * The keep-together run this word belongs to (contour_blocks kind 5, its ord): the artwork draws these neighbouring words
+   * as one shape, so the zoomed layout never breaks a line between them.
+   */
+  keep?: number | null;
 };
 
 /** A title, basmala or other full-line art (contour_blocks kind 1): centred, on its own line, never broken. */
@@ -116,25 +121,46 @@ function naturalGap(prev: Piece, next: Piece): number {
 }
 
 /**
- * Splits one printed line into pieces. Words whose box overlaps a sajda line by at least half their width join one piece
- * (rigid, unbreakable, keeping their printed offsets); every other word is its own piece.
+ * Splits one printed line into pieces. Words whose box overlaps a sajda line by at least half their width join one piece,
+ * and so do the words of one keep-together run (rigid, unbreakable, keeping their printed offsets); a word in both joins
+ * the two pieces into one. Every other word is its own piece.
  */
 function piecesOfLine(words: readonly WordUnit[], band: Band): Piece[] {
   const sajdas = words.flatMap((word) => (word.sajda === null ? [] : [word.sajda.bounds]));
   const overlapsSajda = (word: WordUnit) =>
     word.box.x1 > word.box.x0 &&
     sajdas.some((sajda) => overlapX(word.box, sajda) >= 0.5 * (word.box.x1 - word.box.x0));
-  const fused = words.filter(overlapsSajda);
-  const rest = words.filter((word) => !fused.includes(word));
+  // Each word starts in its own group; the sajda words and each keep-together run are merged.
+  const parent = words.map((_, index) => index);
+  const find = (index: number): number => (parent[index] === index ? index : (parent[index] = find(parent[index]!)));
+  const join = (a: number, b: number) => {
+    parent[find(a)] = find(b);
+  };
+  const sajdaWords = words.flatMap((word, index) => (overlapsSajda(word) ? [index] : []));
+  sajdaWords.slice(1).forEach((index) => join(index, sajdaWords[0]!));
+  const runs = new Map<number, number>();
+  words.forEach((word, index) => {
+    if (word.keep === undefined || word.keep === null) {
+      return;
+    }
+    const first = runs.get(word.keep);
+    if (first === undefined) {
+      runs.set(word.keep, index);
+    } else {
+      join(index, first);
+    }
+  });
+  const groups = new Map<number, WordUnit[]>();
+  words.forEach((word, index) => groups.set(find(index), [...(groups.get(find(index)) ?? []), word]));
+  const sajdaRoot = sajdaWords.length > 0 ? find(sajdaWords[0]!) : null;
   const pieceOf = (members: WordUnit[], extra: Rect[]): Piece => {
     const ext = [...members.map(extentOf), ...extra].reduce(union);
     return { band, cx: (ext.x0 + ext.x1) / 2, cy: (band.y0 + band.y1) / 2, ext, line: members[0]!.line, members };
   };
-  const pieces = rest.map((word) => pieceOf([word], []));
-  if (fused.length > 0) {
-    const touching = sajdas.filter((sajda) => fused.some((word) => overlapX(word.box, sajda) > 0));
-    pieces.push(pieceOf(fused, touching));
-  }
+  const pieces = [...groups.entries()].map(([root, members]) => {
+    const touching = root === sajdaRoot ? sajdas.filter((sajda) => members.some((word) => overlapX(word.box, sajda) > 0)) : [];
+    return pieceOf(members, touching);
+  });
   return pieces.sort((a, b) => b.ext.x1 - a.ext.x1);
 }
 

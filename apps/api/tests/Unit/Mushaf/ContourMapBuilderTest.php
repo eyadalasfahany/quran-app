@@ -208,3 +208,21 @@ it('names a word by its app positions and gives 15:7 contour rows for the first 
 it('keeps the map rule as the digest version: the algorithm is 1', function (): void {
     expect(ContourMapBuilder::ALGORITHM)->toBe(1);
 });
+
+it('adds a keep-together block per run, sorted after the other kinds, and leaves the gates and words alone', function (): void {
+    $map = new ContourMap([], [
+        ['page' => 2, 'kind' => 2, 'ord' => 0, 'surah' => 1, 'ayah' => 1, 'first' => 0, 'count' => 1, 'x0' => 0, 'y0' => 0, 'x1' => 1, 'y1' => 1],
+    ], ['W9' => 0, 'W10' => 0, 'W11' => 0], [], [], 0, 0, 0);
+
+    $kept = ContourMapBuilder::withKeepTogether($map, [
+        2 => [['surah' => 1, 'ayah' => 1, 'first' => 3, 'count' => 2, 'box' => [10.0, 20.0, 30.5, 40.0]]],
+        1 => [['surah' => 1, 'ayah' => 2, 'first' => 1, 'count' => 3, 'box' => [1.0, 2.0, 3.0, 4.0]]],
+    ]);
+
+    expect($kept->blockRows)->toBe([
+        ['page' => 1, 'kind' => 5, 'ord' => 0, 'surah' => 1, 'ayah' => 2, 'first' => 1, 'count' => 3, 'x0' => 32, 'y0' => 64, 'x1' => 96, 'y1' => 128],
+        ['page' => 2, 'kind' => 2, 'ord' => 0, 'surah' => 1, 'ayah' => 1, 'first' => 0, 'count' => 1, 'x0' => 0, 'y0' => 0, 'x1' => 1, 'y1' => 1],
+        ['page' => 2, 'kind' => 5, 'ord' => 0, 'surah' => 1, 'ayah' => 1, 'first' => 3, 'count' => 2, 'x0' => 320, 'y0' => 640, 'x1' => 976, 'y1' => 1280],
+    ])->and($kept->checks)->toBe($map->checks)
+        ->and($kept->wordRows)->toBe([]);
+});

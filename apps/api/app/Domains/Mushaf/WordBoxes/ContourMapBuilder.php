@@ -79,6 +79,31 @@ final class ContourMapBuilder
         return new ContourMap($wordRows, $blockRows, $checks, $issues, $attachments, $sajdaLines, $sajdaPages, $hizb);
     }
 
+    /** Block kind of a keep-together run: neighbouring words the zoomed layout never breaks a line between. */
+    public const int KEEP_TOGETHER = 5;
+
+    /**
+     * The map with a keep-together block (kind 5) per run: surah and ayah of the run, `first` its first app position and
+     * `count` how many positions it covers; the bounds are the union of the words' boxes. The rows claim no contour, so W10 is
+     * unchanged.
+     *
+     * @param  array<int, list<array{surah: int, ayah: int, first: int, count: int, box: array{0: float, 1: float, 2: float, 3: float}}>>  $runs  page => runs
+     */
+    public static function withKeepTogether(ContourMap $map, array $runs): ContourMap
+    {
+        $blockRows = $map->blockRows;
+
+        foreach ($runs as $page => $list) {
+            foreach ($list as $ord => $run) {
+                $blockRows[] = self::block($page, self::KEEP_TOGETHER, $ord, $run['surah'], $run['ayah'], $run['first'], $run['count'], $run['box']);
+            }
+        }
+
+        usort($blockRows, fn (array $a, array $b): int => [$a['page'], $a['kind'], $a['ord']] <=> [$b['page'], $b['kind'], $b['ord']]);
+
+        return new ContourMap($map->wordRows, $blockRows, $map->checks, $map->issues, $map->attachments, $map->sajdaLines, $map->sajdaPages, $map->hizbOrnaments);
+    }
+
     /**
      * @param  PageInput  $input
      * @param  array<string, LastWord>  $lastWords

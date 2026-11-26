@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\File;
  * @phpstan-import-type WordBoxRow from SvgMushafWordBoxRepository
  * @phpstan-import-type QuranTextWord from QuranTextSource
  *
- * @phpstan-type Settings array{base_height_share: float, no_base_penalty: float, out_of_span_penalty: float, body_penalty: float, body_min_share: float, body_baseline_share: float, span_tolerance: float, polygon_snap: float, line_order_jump: float, min_width: float, low: float, high: float}
+ * @phpstan-type Settings array{base_height_share: float, no_base_penalty: float, out_of_span_penalty: float, body_penalty: float, body_min_share: float, body_baseline_share: float, join_narrow: float, join_wide: float, span_tolerance: float, polygon_snap: float, line_order_jump: float, min_width: float, low: float, high: float}
  * @phpstan-type PageResult array{boxes: list<SheetBox>, bands: array<int, array{0: float, 1: float}>, counts: array<string, int>, notes: list<string>, checks: list<string>, flagged: array<int, list<Box>>, widths: list<float>, ratios: list<float>, overrides: array<int, bool>}
  */
 final class WordBoxBuilder
@@ -103,6 +103,7 @@ final class WordBoxBuilder
         $widths = [];
         $ratios = [];
         $applied = [];
+        $joined = [];
 
         for ($page = 1; $page <= $pageCount; $page++) {
             $svg = $this->downloader->bytes($folder, sprintf('svg/%03d.svg', $page), true);
@@ -122,6 +123,7 @@ final class WordBoxBuilder
             array_push($widths, ...$result['widths']);
             array_push($ratios, ...$result['ratios']);
             $pageBoxes[$page] = $result['boxes'];
+            $joined[$page] = $result['joined'];
             $pageBands[$page] = $result['bands'];
 
             if ($result['checks'] !== []) {
@@ -187,7 +189,7 @@ final class WordBoxBuilder
             $lastBoxes[$ayahKey] = ['page' => $last['page'], 'box' => $boxAt[$ayahKey.':'.$last['position']] ?? [0.0, 0.0, 0.0, 0.0]];
         }
 
-        $contours = ContourMapBuilder::build($inputs, $lastBoxes, $settings['polygon_snap'], $lineHeight, true);
+        $contours = ContourMapBuilder::withKeepTogether(ContourMapBuilder::build($inputs, $lastBoxes, $settings['polygon_snap'], $lineHeight, true), $joined);
         $contourDigest = $this->contourDigest($contours, $digest);
         $contourFailed = array_filter($contours->checks, fn (int $count): bool => $count > 0) !== [];
         $approvedContours = config('mushaf.approved_word_contours.'.$key);
@@ -346,14 +348,14 @@ final class WordBoxBuilder
      * @param  array<int, list<array{surah: int, ayah: int, position: int, letters: int|null, bodies: int}>>  $lines  line => its words
      * @param  array<string, int>  $splits  "surah:ayah:position" => the app words it covers
      * @param  array<string, float>  $settings
-     * @return array{boxes: list<array{line: int, surah: int, ayah: int, position: int, label: string, x0: float, y0: float, x1: float, y1: float, contours: list<int>, flags: list<string>}>, bands: array<int, array{0: float, 1: float}>, counts: array<string, int>, notes: list<string>, checks: list<string>, flagged: array<int, list<array{0: float, 1: float, 2: float, 3: float}>>, widths: list<float>, ratios: list<float>, overrides: array<int, bool>, contourPage: array{contours: list<array{0: float, 1: float, 2: float, 3: float}>, lineOf: list<int|null>, words: list<array{surah: int, ayah: int, position: int, apps: list<int>, line: int, contours: list<int>, x0: float, x1: float}>, loose: list<array{contour: int, loose: int, line: int, attach: string|null, ornament: bool}>}}
+     * @return array{boxes: list<array{line: int, surah: int, ayah: int, position: int, label: string, x0: float, y0: float, x1: float, y1: float, contours: list<int>, flags: list<string>}>, bands: array<int, array{0: float, 1: float}>, counts: array<string, int>, notes: list<string>, checks: list<string>, flagged: array<int, list<array{0: float, 1: float, 2: float, 3: float}>>, widths: list<float>, ratios: list<float>, overrides: array<int, bool>, joined: list<array{surah: int, ayah: int, first: int, count: int, box: array{0: float, 1: float, 2: float, 3: float}}>, contourPage: array{contours: list<array{0: float, 1: float, 2: float, 3: float}>, lineOf: list<int|null>, words: list<array{surah: int, ayah: int, position: int, apps: list<int>, line: int, contours: list<int>, x0: float, x1: float}>, loose: list<array{contour: int, loose: int, line: int, attach: string|null, ornament: bool}>}}
      */
     private function page(int $page, string $svg, array $regions, array $lines, WordBoxOverrides $overrides, array $splits, float $lineHeight, array $settings): array
     {
         $counts = array_fill_keys(self::CHECKS, 0);
         $notes = [];
         $checks = [];
-        $empty = ['boxes' => [], 'bands' => [], 'flagged' => [], 'widths' => [], 'ratios' => [], 'overrides' => []];
+        $empty = ['boxes' => [], 'bands' => [], 'flagged' => [], 'widths' => [], 'ratios' => [], 'overrides' => [], 'joined' => []];
 
         $inRegions = array_unique(array_map(fn (array $region): string => $region['surah'].':'.$region['ayah'], $regions));
         $inText = [];
@@ -404,6 +406,7 @@ final class WordBoxBuilder
 
         $boxes = [];
         $letters = [];
+        $bodyCounts = [];
         $lineNotes = [];
         $lineContours = [];
         $cleanLines = [];
@@ -433,6 +436,7 @@ final class WordBoxBuilder
 
             $spans = array_map(fn (array $word): ?array => $bands->span($word['surah'], $word['ayah'], $centreY, $tolerance), $words);
             $base = array_map(fn (array $c): bool => $c[3] - $c[1] >= $settings['base_height_share'] * ($y1 - $y0), $contours);
+            $isBody = self::letterBodies($contours, $base, $y0, $y1, $settings['body_min_share'], $settings['body_baseline_share']);
             $groups = null;
             $reviewed = false;
             $override = $overrides->for($page, $line);
@@ -455,7 +459,6 @@ final class WordBoxBuilder
 
             if ($groups === null) {
                 $bodies = array_map(fn (array $word): int => $word['bodies'], $words);
-                $isBody = self::letterBodies($contours, $base, $y0, $y1, $settings['body_min_share'], $settings['body_baseline_share']);
                 $ranges = WordSplitter::split($contours, $spans, $base, $tolerance, $settings['no_base_penalty'], $settings['out_of_span_penalty'], $bodies, $settings['body_penalty'], $isBody);
                 $groups = $ranges === null ? null : array_map(fn (array $r): array => range($r[0], $r[1] - 1), $ranges);
 
@@ -549,6 +552,7 @@ final class WordBoxBuilder
                     'x0' => round($lo, 2) + 0.0, 'x1' => round($hi, 2) + 0.0,
                 ];
                 $letters[] = $word['letters'];
+                $bodyCounts[] = ['text' => $word['bodies'], 'drawn' => count(array_filter($indexes, fn (int $t): bool => $isBody[$t]))];
             }
 
             if (count($lineBoxes) >= 2 && ! ($lineBoxes[0]['x0'] < $lineBoxes[count($lineBoxes) - 1]['x0'])) {
@@ -613,6 +617,8 @@ final class WordBoxBuilder
             }
         }
 
+        $joined = $settings['body_penalty'] > 0.0 ? self::keepTogether($boxes, $wordContours, $perLetter, $median, $bodyCounts, $settings['join_narrow'], $settings['join_wide']) : [];
+
         ksort($lineNotes);
         $flagged = [];
 
@@ -644,7 +650,7 @@ final class WordBoxBuilder
 
         return [
             'boxes' => $boxes, 'bands' => $pageBands, 'counts' => $counts, 'notes' => $notes, 'checks' => array_values(array_unique($checks)),
-            'flagged' => $flagged, 'widths' => $widths, 'ratios' => $ratios, 'overrides' => $applied,
+            'flagged' => $flagged, 'widths' => $widths, 'ratios' => $ratios, 'overrides' => $applied, 'joined' => $joined,
             'contourPage' => ['contours' => $pageContours, 'lineOf' => $lineOf, 'words' => $wordContours, 'loose' => $looseContours],
         ];
     }
@@ -712,7 +718,7 @@ final class WordBoxBuilder
         // The letter-body settings came after the approval; while the penalty is off they change nothing, so the approved
         // digest must not see them.
         if ((float) ($config['body_penalty'] ?? 0.0) === 0.0) {
-            unset($config['body_penalty'], $config['body_min_share'], $config['body_baseline_share']);
+            unset($config['body_penalty'], $config['body_min_share'], $config['body_baseline_share'], $config['join_narrow'], $config['join_wide']);
         }
 
         self::sortKeys($config);
@@ -789,6 +795,8 @@ final class WordBoxBuilder
             'body_penalty' => (float) config('mushaf.word_boxes.body_penalty'),
             'body_min_share' => (float) config('mushaf.word_boxes.body_min_share'),
             'body_baseline_share' => (float) config('mushaf.word_boxes.body_baseline_share'),
+            'join_narrow' => (float) config('mushaf.word_boxes.join_narrow'),
+            'join_wide' => (float) config('mushaf.word_boxes.join_wide'),
             'span_tolerance' => (float) config('mushaf.word_boxes.span_tolerance'),
             'polygon_snap' => (float) config('mushaf.word_boxes.polygon_snap'),
             'line_order_jump' => (float) config('mushaf.word_boxes.line_order_jump'),
@@ -851,6 +859,78 @@ final class WordBoxBuilder
         }
 
         return $groups;
+    }
+
+    /**
+     * The runs of neighbouring words that the zoomed layout must keep on one line (ADR 0090, keep-together blocks). Two
+     * neighbouring words of one ayah on one printed line join a run when one box lies inside the other, or when one is too
+     * narrow for its letters and has fewer letter bodies than its text while the other is too wide: the artwork draws part of
+     * the first word joined to the second, so no split can part them. Chained pairs make one run, in app positions.
+     *
+     * @param  list<array{line: int, surah: int, ayah: int, position: int, x0: float, y0: float, x1: float, y1: float}>  $boxes
+     * @param  list<array{apps: list<int>}>  $wordContours  in the same order as the boxes
+     * @param  array<int, float>  $perLetter
+     * @param  list<array{text: int, drawn: int}>  $bodyCounts  in the same order as the boxes
+     * @return list<array{surah: int, ayah: int, first: int, count: int, box: array{0: float, 1: float, 2: float, 3: float}}>
+     */
+    private static function keepTogether(array $boxes, array $wordContours, array $perLetter, float $median, array $bodyCounts, float $narrow, float $wide): array
+    {
+        $ratio = fn (int $i): ?float => isset($perLetter[$i]) && $median > 0.0 ? $perLetter[$i] / $median : null;
+        $joinedTo = [];
+
+        for ($i = 0; $i + 1 < count($boxes); $i++) {
+            $a = $boxes[$i];
+            $b = $boxes[$i + 1];
+
+            if ($a['line'] !== $b['line'] || $a['surah'] !== $b['surah'] || $a['ayah'] !== $b['ayah'] || abs($a['position'] - $b['position']) !== 1) {
+                continue;
+            }
+
+            $nested = ($a['x0'] <= $b['x0'] && $b['x1'] <= $a['x1']) || ($b['x0'] <= $a['x0'] && $a['x1'] <= $b['x1']);
+            $joinedShape = false;
+
+            foreach ([[$i, $i + 1], [$i + 1, $i]] as [$thin, $broad]) {
+                $thinRatio = $ratio($thin);
+                $broadRatio = $ratio($broad);
+                $joinedShape = $joinedShape || ($thinRatio !== null && $broadRatio !== null && $thinRatio <= $narrow && $broadRatio >= $wide
+                    && $bodyCounts[$thin]['drawn'] < $bodyCounts[$thin]['text']);
+            }
+
+            if ($nested || $joinedShape) {
+                $joinedTo[$i] = $i + 1;
+            }
+        }
+
+        $runs = [];
+
+        foreach (array_keys($boxes) as $i) {
+            if (! isset($joinedTo[$i]) || in_array($i, $joinedTo, true)) {
+                continue;
+            }
+
+            $members = [$i];
+
+            while (isset($joinedTo[$members[count($members) - 1]])) {
+                $members[] = $joinedTo[$members[count($members) - 1]];
+            }
+
+            $apps = array_merge(...array_map(fn (int $m): array => $wordContours[$m]['apps'], $members));
+
+            if ($apps === []) {
+                continue;
+            }
+
+            $first = min($apps);
+            $runs[] = [
+                'surah' => $boxes[$i]['surah'], 'ayah' => $boxes[$i]['ayah'], 'first' => $first, 'count' => max($apps) - $first + 1,
+                'box' => [
+                    min(array_map(fn (int $m): float => $boxes[$m]['x0'], $members)), min(array_map(fn (int $m): float => $boxes[$m]['y0'], $members)),
+                    max(array_map(fn (int $m): float => $boxes[$m]['x1'], $members)), max(array_map(fn (int $m): float => $boxes[$m]['y1'], $members)),
+                ],
+            ];
+        }
+
+        return $runs;
     }
 
     /**

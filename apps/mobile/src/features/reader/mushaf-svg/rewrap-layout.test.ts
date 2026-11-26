@@ -22,7 +22,7 @@ function word(
   line: number,
   x0: number,
   x1: number,
-  extra: Partial<Pick<WordUnit, 'surah' | 'ayah' | 'covers' | 'mark' | 'sajda'>> = {},
+  extra: Partial<Pick<WordUnit, 'surah' | 'ayah' | 'covers' | 'mark' | 'sajda' | 'keep'>> = {},
 ): WordUnit {
   const band = bandOf(line);
   return {
@@ -219,6 +219,32 @@ describe('layoutPage: covers, marks, sajda fusion, regions and hizb', () => {
     // B and C are one unit: C sits 30 units right of B, as printed, and on the same line.
     expect(c.x0 - b.x0).toBeCloseTo(30, 6);
     expect(c.y0).toBeCloseTo(b.y0, 6);
+  });
+
+  it('never breaks a line inside a keep-together run, and keeps its printed offsets', () => {
+    // B = 132, so A = 66 at zoom 2: two 30-unit words with their 4-unit gap fit (64), three do not. Without the run the
+    // break falls between words 2 and 3.
+    const words = [word(1, 0, 0, 30), word(2, 0, 34, 64), word(3, 0, 68, 98), word(4, 0, 102, 132)];
+    const apart = layoutPage(page(words), 2);
+    expect(apart.wordRect(1, 1, 2)!.line).not.toBe(apart.wordRect(1, 1, 3)!.line);
+
+    const kept = [word(1, 0, 0, 30), word(2, 0, 34, 64, { keep: 0 }), word(3, 0, 68, 98, { keep: 0 }), word(4, 0, 102, 132)];
+    const layout = layoutPage(page(kept), 2);
+    const b = layout.wordRect(1, 1, 2)!;
+    const c = layout.wordRect(1, 1, 3)!;
+    expect(c.line).toBe(b.line);
+    expect(c.x0 - b.x0).toBeCloseTo(34, 6);
+  });
+
+  it('joins a keep-together run and a sajda piece that share a word into one piece', () => {
+    const sajda = { bounds: { x0: 0, x1: 30, y0: 20, y1: 21 }, count: 1, first: 99 };
+    const words = [word(1, 0, 0, 30, { sajda }), word(2, 0, 34, 64, { keep: 1 }), word(3, 0, 68, 98, { keep: 1 })];
+    const both = [word(1, 0, 0, 30, { keep: 1, sajda }), word(2, 0, 34, 64, { keep: 1 }), word(3, 0, 68, 98)];
+    const layout = layoutPage(page(both), 1);
+    const a = layout.wordRect(1, 1, 1)!;
+    const b = layout.wordRect(1, 1, 2)!;
+    expect(b.x0 - a.x0).toBeCloseTo(34, 6);
+    expect(layoutPage(page(words), 1).placed).toHaveLength(3);
   });
 
   it('a sajda piece wider than the line scales as one unit, keeping the ratio of its words', () => {

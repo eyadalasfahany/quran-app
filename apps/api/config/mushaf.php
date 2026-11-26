@@ -50,6 +50,10 @@ return [
         // float above or below the baseline and do not).
         'body_min_share' => 0.2,
         'body_baseline_share' => 0.12,
+        // Keep-together runs for the zoomed layout: a word at most `join_narrow` x the page's median width per letter that has
+        // fewer letter bodies than its text, next to a word at least `join_wide` x that median, is drawn joined to it.
+        'join_narrow' => 0.7,
+        'join_wide' => 1.4,
         'span_tolerance' => 0.5,
         'polygon_snap' => 5.0, // pages 1-2 only: polygon corners this close in y are one line edge
         // A line's path is cut where a contour's x-centre falls back by more than this. 120 rather than 60: W2 162 against 156,
