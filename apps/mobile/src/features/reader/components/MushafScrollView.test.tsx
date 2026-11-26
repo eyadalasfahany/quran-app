@@ -44,7 +44,7 @@ describe('MushafScrollView', () => {
 
   it('inside a Mushaf pinch, its native scroll runs alongside the pinch, so one finger still scrolls', async () => {
     await renderUi(
-      <MushafPinch maxScale={1.6}>
+      <MushafPinch zoomAvailable>
         <MushafScrollView testID="scroll" />
       </MushafPinch>,
     );

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Modal, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { useTheme } from '@/core/theme';
 import { SheetHost } from '@/features/reader/components/SheetHost';
 import { useSheet } from '@/features/reader/components/sheet-context';
@@ -36,7 +37,7 @@ export function SeerahSheet({
   }
 
   return (
-    <Modal animationType="none" onRequestClose={onClose} transparent visible>
+    <Modal animationType="none" onRequestClose={onClose} supportedOrientations={MODAL_ORIENTATIONS} transparent visible>
       <SheetHost initialDetent={detent === 'large' ? 'full' : 'mid'} onClosed={onClose} testID={testID}>
         <View
           style={{

@@ -57,7 +57,7 @@ export function AyahStepper({
       style={{ alignItems: 'center', bottom: theme.size.pillInset, left: 0, position: 'absolute', right: 0 }}
       testID={testID}
     >
-      <GlassSurface
+      <GlassSurface interactive
         radius="pill"
         style={{
           alignItems: 'center',

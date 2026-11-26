@@ -17,18 +17,25 @@ describe('MushafPicker', () => {
     jest.mocked(Haptics.selectionAsync).mockClear();
   });
 
-  it.each(locales)('renders the five riwayat in order with their names (%s)', async (locale) => {
+  it.each(locales)('renders the four offered riwayat in order with their names (%s)', async (locale) => {
     const view = await renderUi(<MushafPicker accessibilityLabel="group" onChange={() => undefined} value="hafs" />, {
       locale,
     });
     const radios = view.getAllByRole('radio');
 
-    expect(radios).toHaveLength(5);
-    expect(radios.map((radio) => radio.props.testID)).toEqual(['mushaf-hafs', 'mushaf-warsh', 'mushaf-qalun', 'mushaf-shubah', 'mushaf-duri']);
-    for (const key of ['hafs', 'warsh', 'qalun', 'shubah', 'duri'] as const) {
+    expect(radios).toHaveLength(4);
+    expect(radios.map((radio) => radio.props.testID)).toEqual(['mushaf-hafs', 'mushaf-warsh', 'mushaf-qalun', 'mushaf-shubah']);
+    for (const key of ['hafs', 'warsh', 'qalun', 'shubah'] as const) {
       expect(view.getByTestId(`mushaf-${key}`)).toBeOnTheScreen();
       expect(view.getByText(names[locale][key])).toBeOnTheScreen();
     }
+  });
+
+  it.each(locales)('does not offer al-Duri (%s)', async (locale) => {
+    const view = await renderUi(<MushafPicker accessibilityLabel="group" onChange={() => undefined} value="hafs" />, { locale });
+
+    expect(view.queryByTestId('mushaf-duri')).toBeNull();
+    expect(view.queryByText(names[locale].duri)).toBeNull();
   });
 
   it('is a labelled radio group with the chosen mushaf checked', async () => {
@@ -45,9 +52,9 @@ describe('MushafPicker', () => {
     const onChange = jest.fn();
     const view = await renderUi(<MushafPicker accessibilityLabel="group" onChange={onChange} value="hafs" />);
 
-    await fireEvent.press(view.getByTestId('mushaf-duri'));
+    await fireEvent.press(view.getByTestId('mushaf-shubah'));
 
-    expect(onChange).toHaveBeenCalledWith('duri');
+    expect(onChange).toHaveBeenCalledWith('shubah');
     expect(Haptics.selectionAsync).toHaveBeenCalledTimes(1);
   });
 
@@ -67,8 +74,8 @@ describe('MushafPicker', () => {
     });
 
     expect(view.getByText(locale === 'ar' ? 'مجمع الملك فهد · ١٤٤١هـ' : 'King Fahd Complex · 1441 AH')).toBeOnTheScreen();
-    // Qalun, Shu'bah and al-Duri share the 1443H edition.
-    expect(view.getAllByText(locale === 'ar' ? 'مجمع الملك فهد · ١٤٤٣هـ' : 'King Fahd Complex · 1443 AH')).toHaveLength(3);
+    // Qalun and Shu'bah share the 1443H edition (al-Duri is hidden).
+    expect(view.getAllByText(locale === 'ar' ? 'مجمع الملك فهد · ١٤٤٣هـ' : 'King Fahd Complex · 1443 AH')).toHaveLength(2);
   });
 
   it('adds the download state when a mushaf is downloaded', async () => {

@@ -95,7 +95,7 @@ The timeline is organised by the Prophet's ﷺ age, one tick per year from 0 to 
 | --- | --- |
 | D1 | Book for v1: «نور اليقين» (الخضري بك). Ibn Hisham later as an expanded reference; الرحيق المختوم out. |
 | D2 | Source: OpenITI first (as ADR 0076), else Shamela or Wikisource. Confirm the edition, pin it, record licence and source in `docs/content-plan.md`. A source that cannot be confirmed is a blocker (here: **not** a blocker; the edition choice and the licence are open, Q1 and Q2). |
-| D3 | Screen: timeline age 0 to 63 (lunar years; «ق.هـ» before the Hijra, «هـ» after; milestones المولد، البعثة، الهجرة، بدر، الفتح، الوفاة), vertical bar on the start side on expanded windows, horizontal on compact; dragging highlights the year's places, routes and events and dims the rest. |
+| D3 | Screen: timeline age 0 to 63 (lunar years; «ق.هـ» before the Hijra, «هـ» after; milestones المولد، البعثة، الهجرة، بدر، الفتح، الوفاة), horizontal bar at the bottom on every window, centred and capped at 720 pt on wide ones (ADR 0096); dragging highlights the year's places, routes and events and dims the rest. |
 | D4 | The map is the whole screen: our own hand-drawn SVG, offline, from design tokens; routes (الهجرة، الطائف، رحلة الشام، الغزوات). Semantic zoom: region (cities and routes), tap a city for its hand-drawn map with landmarks; each event is a pin on its landmark; clusters with a count; label priority and reveal on zoom; 44 pt hit targets; no event list under the map on mobile. |
 | D5 | Event page: the book's text verbatim, year, place, previous and next. |
 | D6 | Accessibility: an optional «عرض كقائمة» toggle as the screen-reader alternative; the map stays the main view. |
@@ -182,7 +182,7 @@ OpenITI file (pinned, SHA-256)                       step 2
 | --- | --- |
 | compact (phone portrait) | Map full-bleed under a transparent header (title, level chip, list toggle). Horizontal timeline docked at the bottom above the tab bar with a floating chip for the selected year. Tap a pin: a small callout (title, year, «فتح»); open: the event page as a full-screen push. |
 | medium (large phone landscape and small tablet, foldable half-open) | Horizontal timeline; the event page as a bottom sheet with detents (the pattern ADR 0048-series sheets use in the reader). |
-| expanded (iPad, unfolded foldable, wide landscape) | The app's sidebar shell; **vertical timeline bar on the start side** (right in Arabic), map fills the rest, the event page as a **side panel on the end side**. |
+| expanded (iPad, unfolded foldable, wide landscape) | The app's sidebar shell; **the timeline bar at the bottom** like compact, centred and capped at 720 pt (ADR 0096), map fills the rest, the event page as a **side panel on the end side**. |
 | short height (landscape phone) | Thin overlay scrubber over the bottom of the map; the same event sheet. |
 
 All of it keys off `useWindowClass()`; nothing branches on `Platform.isPad` or a device name. The frames are drawn for `sizes=compact,medium,expanded,landscape`.
@@ -206,8 +206,8 @@ New section `seerah` in `screens/frames/seerah/`, ids prefixed `Seerah`, each wi
 | `SeerahCluster` | Fan-out ring and the spot sheet. |
 | `SeerahEvent` (+ `Dark`, `English`) | Event page with placeholder paragraphs, year and place chips, previous and next, source line, the «year not stated» note. |
 | `SeerahList` (+ `Dark`, `English`) | «عرض كقائمة». |
-| `SeerahExpanded`, `SeerahExpandedCity` | Sidebar shell, vertical bar on the start side, map, side panel. |
-| `SeerahStates` | Not downloaded (size, button), downloading, offline with a pack, load error, a year with no events. |
+| `SeerahExpanded`, `SeerahExpandedCity` | Sidebar shell, map, side panel. The vertical bar they draw is replaced by the bottom bar (ADR 0096); redraw pending. |
+| `SeerahStates` | Downloading (no Cancel; the pack downloads automatically, ADR 0097), offline with a pack, load error, a year with no events. «Not downloaded» (`SeerahStateDownload`) is retired. |
 | Existing, updated | Menu cards, sidebar entry, `Sources` credit row (OpenITI, edition, licence, changes made). |
 
 English UI: the book is Arabic, so the book's text, headings and place names stay Arabic; labels and chrome are English (as for hadith chapter titles, `phase-7.md` step 8b). English place names (`name_en`) need the developer's yes (Q19).
@@ -263,7 +263,7 @@ Each step is one reviewable change; a step brief (`phase-8/step-NN-*.md`) is wri
 | 28 | Mobile data layer | `content.db` migration, pack install, repositories (events by year, by place subtree, previous/next, paragraphs of a span), fixtures | 24 | |
 | 29 | Pure logic | `logic/`: age and era labels, focus filter, tree roll-up and distance clustering, label collision, zoom thresholds, year → events index; heavy unit tests | 27 | |
 | 30 | Components | One file and one test each (list above) | 8, 29 | |
-| 31 | Screens, routes, entry | The two routes, i18n, Menu card, sidebar entry, Sources credit, download state through the existing downloads screen | 28, 30 | |
+| 31 | Screens, routes, entry | The two routes, i18n, Menu card, sidebar entry, Sources credit, the pack downloaded automatically (ADR 0097) | 28, 30 | |
 | 32 | List view and accessibility | «عرض كقائمة», pin and timeline labels, screen-reader order, suggest-on-screen-reader | 31 | |
 | 33 | Hardening | Offline, resize keeps place and year, Reduce Motion, Dynamic Type, English UI, light, sepia, dark | 32 | |
 | 34 | Exit check | Checks, visual review against the frames on iPhone 17 and an expanded window, device and window matrix, one Maestro flow, release-blocker audit | 33, 26 | |
@@ -299,7 +299,7 @@ Steps 7 and 8 can run in parallel with 2 to 6 (frames need no real data). Steps 
 | 31 | Jest screen and route tests (`routes.test.ts` with `satisfies keyof paths`); Menu card and sidebar only with an installed pack; every string in `ar.json` and `en.json`; no hard-coded text; the Sources credit equals `content_sources`. |
 | 32 | Jest: list shows every event once in book order; the toggle persists; dimmed pins are out of the accessibility order; timeline `adjustable` actions change the year. Manual: VoiceOver and TalkBack pass. |
 | 33 | Jest: offline, loading, error, retry; resize keeps place and year; Reduce Motion uses a cross-fade; Dynamic Type at the largest sizes. |
-| 34 | `composer qa`; `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`; contract drift-free; screenshots vs `frame-shot.py` at 390 × 844; the expanded window; the device and window matrix rows for phones, iPad and foldable; one Maestro flow (open Seerah, tap a city, tap an event, next, back) in Arabic and English; airplane mode. |
+| 34 | `composer qa`; `npm run lint && npx tsc --noEmit && npm test && npx expo-doctor`; contract drift-free; screenshots vs `frame-shot.py` at 390 × 844; the expanded window; the device and window matrix rows for phones, iPad and foldable; one Maestro flow (open Seerah with no download tap, tap a city, tap an event, next, back) in Arabic and English; airplane mode. |
 | 35 | `npx eas-cli fingerprint:compare` clean; `node .github/scripts/npm-audit.mjs` unchanged (no dependency changes). |
 
 ## Cut lines

@@ -7,7 +7,10 @@ use App\Domains\Content\Jobs\BuildContentPackJob;
 use App\Domains\Content\Models\ContentPack;
 use App\Domains\Content\Models\ContentSource;
 use App\Domains\Content\Models\Resource;
+use App\Domains\Mushaf\Packs\SvgMushafPackBuilder;
+use App\Domains\Mushaf\Services\SvgMushafPublisher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
@@ -87,5 +90,79 @@ it('builds nothing and queues the pack with --defer-pack', function (): void {
     $this->artisan('mushaf:publish', ['key' => 'warsh', '--defer-pack' => true])->assertExitCode(0);
 
     Queue::assertPushed(BuildContentPackJob::class, 1);
+    expect(ContentPack::query()->count())->toBe(0);
+});
+
+it('refuses to publish page digests from before TQP1 and names the way out', function (): void {
+    $mushaf = svgPackSeedEdition('warsh');
+    DB::table('svg_mushaf_pages')->where('svg_mushaf_id', $mushaf->id)->update(['tqp_sha256' => null]);
+
+    $this->artisan('mushaf:publish', ['key' => 'warsh'])
+        ->expectsOutputToContain('Run mushaf:import again: the page digests are from before TQP1.')
+        ->assertExitCode(1);
+
+    expect(ContentPack::query()->count())->toBe(0);
+});
+
+it('puts the page format in the publish fingerprint, so a format change bumps the version', function (): void {
+    $mushaf = svgPackSeedEdition('warsh');
+    $publisher = app(SvgMushafPublisher::class);
+    $fingerprint = new ReflectionMethod(SvgMushafPublisher::class, 'fingerprint');
+
+    $resource = $publisher->publish('warsh', false, false);
+
+    expect($resource->import_fingerprint)->toBe($fingerprint->invoke($publisher, $mushaf, false, SvgMushafPackBuilder::FORMAT))
+        ->and($fingerprint->invoke($publisher, $mushaf, false, 'tqp1-deflate-n16'))->not->toBe($resource->import_fingerprint);
+});
+
+it('refuses the hidden al-Duri edition unless it is forced locally, and never forces it in production', function (): void {
+    svgPackSeedEdition('duri');
+
+    $this->artisan('mushaf:publish', ['key' => 'duri', '--without-word-boxes' => true])
+        ->expectsOutputToContain('is hidden for now')
+        ->assertExitCode(1);
+
+    expect(ContentPack::query()->count())->toBe(0);
+
+    $this->artisan('mushaf:publish', ['key' => 'duri', '--without-word-boxes' => true, '--include-hidden' => true])
+        ->assertExitCode(0);
+
+    expect(ContentPack::query()->count())->toBe(1);
+
+    app()['env'] = 'production';
+
+    $this->artisan('mushaf:publish', ['key' => 'duri', '--without-word-boxes' => true, '--include-hidden' => true])
+        ->expectsOutputToContain('--include-hidden is for local and test use and is refused in production.')
+        ->assertExitCode(1);
+});
+
+it('bumps the Hafs version when the contour map is approved, and not when it is republished unchanged', function (): void {
+    $mushaf = svgPackSeedEdition('hafs');
+    $boxDigest = hash('sha256', 'FIXTURE word-box digest');
+    svgPackApproveHafs($mushaf, $boxDigest);
+    $contourDigest = hash('sha256', 'FIXTURE contour digest');
+    svgPackSeedContours($mushaf, 'pending_review', $contourDigest);
+
+    $publisher = app(SvgMushafPublisher::class);
+
+    expect($publisher->publish('hafs', false, false)->version)->toBe(1)
+        ->and($publisher->publish('hafs', false, false)->version)->toBe(1);
+
+    svgPackApproveContours($mushaf->refresh(), $contourDigest);
+
+    expect($publisher->publish('hafs', false, false)->version)->toBe(2)
+        ->and($publisher->publish('hafs', false, false)->version)->toBe(2);
+});
+
+it('refuses --with-pending-contours in production', function (): void {
+    $mushaf = svgPackSeedEdition('hafs');
+    svgPackApproveHafs($mushaf, hash('sha256', 'FIXTURE word-box digest'));
+    svgPackSeedContours($mushaf, 'pending_review', hash('sha256', 'FIXTURE contour digest'));
+    app()['env'] = 'production';
+
+    $this->artisan('mushaf:publish', ['key' => 'hafs', '--with-pending-contours' => true])
+        ->expectsOutputToContain('--with-pending-contours is for local and test use and is refused in production.')
+        ->assertExitCode(1);
+
     expect(ContentPack::query()->count())->toBe(0);
 });

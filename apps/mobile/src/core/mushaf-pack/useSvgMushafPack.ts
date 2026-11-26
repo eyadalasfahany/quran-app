@@ -45,9 +45,12 @@ const runningDownloads = new Map<SvgMushafKey, Promise<SvgMushafInstallResult>>(
 
 /**
  * The state of one riwayah's pack for the UI: what is installed, what the catalogue offers, and the live download.
- * Installed records are not part of the content sync. An update is taken only by an explicit `download()` (ADR 0090, Q7).
+ * Installed records are not part of the content sync. The selected riwayah's update is downloaded by itself
+ * (auto-download.ts, ADR 0090 amendment 26 Nov, item 13); while it downloads, the installed version stays readable.
  */
 export function useSvgMushafPack(key: SvgMushafKey): SvgMushafPackState {
+  // The reads below must run every render (they follow the store subscriptions above); the React Compiler would cache them by argument.
+  'use no memo';
   // Subscribing re-renders the hook when the catalogue or an install changes; the reads below are cheap and run each render.
   useCatalogVersion((state) => state.version);
   useSvgMushafPackStore((state) => state.revision);
@@ -56,7 +59,10 @@ export function useSvgMushafPack(key: SvgMushafKey): SvgMushafPackState {
   const installed = readInstalled(key);
   const catalog = readCatalog(key);
   const status = statusOf(transient, installed !== undefined);
-  const reader = useMemo(() => (status === 'installed' ? readReader(key) : null), [key, status]);
+  const installedVersion = installed?.version ?? null;
+  // Re-opened when an update lands, so the new version (and its word data) shows without a restart.
+  const openVersion = status === 'installed' ? installedVersion : null;
+  const reader = useMemo(() => (openVersion === null ? null : readReader(key)), [key, openVersion]);
 
   const availableVersion = catalog?.version ?? null;
 
@@ -64,12 +70,12 @@ export function useSvgMushafPack(key: SvgMushafKey): SvgMushafPackState {
     status,
     progress: status === 'downloading' || status === 'verifying' ? transient.progress : 0,
     error: status === 'failed' ? transient.error : null,
-    installedVersion: installed?.version ?? null,
+    installedVersion,
     availableVersion,
     updateAvailable: installed !== undefined && availableVersion !== null && availableVersion > installed.version,
     sizeBytes: catalog?.sizeBytes ?? null,
     hasWordBoxes: installed?.hasWordBoxes ?? false,
-    download: (options) => download(key, options),
+    download: (options) => startSvgMushafDownload(key, options),
     cancel: () => abortSvgMushafController(key),
     remove: () => {
       removeSvgMushaf(key);
@@ -80,7 +86,8 @@ export function useSvgMushafPack(key: SvgMushafKey): SvgMushafPackState {
   };
 }
 
-function download(key: SvgMushafKey, options?: { allowCellular?: boolean }): Promise<SvgMushafInstallResult> {
+/** Starts one riwayah's download, or returns the running one. The UI's «تنزيل» and the auto-download both come here. */
+export function startSvgMushafDownload(key: SvgMushafKey, options?: { allowCellular?: boolean }): Promise<SvgMushafInstallResult> {
   const running = runningDownloads.get(key);
   if (running !== undefined) {
     return running;
@@ -121,8 +128,19 @@ function download(key: SvgMushafKey, options?: { allowCellular?: boolean }): Pro
   return promise;
 }
 
+/** The catalogue offers a newer version than the installed one. */
+export function isSvgMushafUpdateAvailable(key: SvgMushafKey): boolean {
+  const installed = readInstalled(key);
+  const available = readCatalog(key)?.version ?? null;
+  return installed !== undefined && available !== null && available > installed.version;
+}
+
+export function isSvgMushafDownloadRunning(key: SvgMushafKey): boolean {
+  return runningDownloads.has(key);
+}
+
 /** The installed record, when its file is still there. A record whose file is gone is cleared and reads as absent. */
-function readInstalled(key: SvgMushafKey): InstalledSvgMushaf | undefined {
+export function readInstalled(key: SvgMushafKey): InstalledSvgMushaf | undefined {
   const record = getInstalledSvgMushaf(key);
   if (record === undefined) {
     return undefined;
@@ -156,6 +174,10 @@ function readReader(key: SvgMushafKey): SvgMushafPackReader | null {
 }
 
 function statusOf(transient: SvgMushafTransient, installed: boolean): SvgMushafPackStatus {
+  // An update of an installed pack runs in the background: its pages stay on screen until the new version lands.
+  if (installed) {
+    return 'installed';
+  }
   switch (transient.phase) {
     case 'downloading':
       return 'downloading';

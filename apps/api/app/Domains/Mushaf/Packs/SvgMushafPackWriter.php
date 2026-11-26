@@ -48,7 +48,7 @@ final class SvgMushafPackWriter
     {
         $this->connection()->exec(<<<'SQL'
             CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-            CREATE TABLE pages (page INTEGER PRIMARY KEY, svgz BLOB NOT NULL);
+            CREATE TABLE pages (page INTEGER PRIMARY KEY, tqp BLOB NOT NULL, origin_x REAL NOT NULL, origin_y REAL NOT NULL);
             CREATE TABLE regions (
               page INTEGER NOT NULL, surah INTEGER NOT NULL, ayah INTEGER NOT NULL,
               label_x REAL, label_y REAL, polygon TEXT NOT NULL,
@@ -61,6 +61,17 @@ final class SvgMushafPackWriter
               PRIMARY KEY (surah, ayah, position)
             ) WITHOUT ROWID;
             CREATE INDEX word_boxes_page ON word_boxes (page, line);
+            CREATE TABLE word_contours (
+              surah INTEGER NOT NULL, ayah INTEGER NOT NULL, position INTEGER NOT NULL,
+              first INTEGER NOT NULL, count INTEGER NOT NULL, flag INTEGER NOT NULL,
+              PRIMARY KEY (surah, ayah, position, first)
+            ) WITHOUT ROWID;
+            CREATE TABLE contour_blocks (
+              page INTEGER NOT NULL, kind INTEGER NOT NULL, ord INTEGER NOT NULL,
+              surah INTEGER NOT NULL, ayah INTEGER NOT NULL, first INTEGER NOT NULL, count INTEGER NOT NULL,
+              x0 INTEGER NOT NULL, y0 INTEGER NOT NULL, x1 INTEGER NOT NULL, y1 INTEGER NOT NULL,
+              PRIMARY KEY (page, kind, ord)
+            ) WITHOUT ROWID;
             SQL);
     }
 
@@ -79,11 +90,17 @@ final class SvgMushafPackWriter
     /**
      * The bytes are stored exactly as given: they are already gzip, and are never re-encoded here.
      */
-    public function insertPage(int $page, string $svgz): void
+    /**
+     * @param  float  $originX  The raw viewBox min-x: regions and word boxes stay in raw page units.
+     * @param  float  $originY  The raw viewBox min-y.
+     */
+    public function insertPage(int $page, string $tqp, float $originX, float $originY): void
     {
-        $statement = $this->connection()->prepare('INSERT INTO pages (page, svgz) VALUES (?, ?)');
+        $statement = $this->connection()->prepare('INSERT INTO pages (page, tqp, origin_x, origin_y) VALUES (?, ?, ?, ?)');
         $statement->bindValue(1, $page, PDO::PARAM_INT);
-        $statement->bindValue(2, $svgz, PDO::PARAM_LOB);
+        $statement->bindValue(2, $tqp, PDO::PARAM_LOB);
+        $statement->bindValue(3, $originX);
+        $statement->bindValue(4, $originY);
         $statement->execute();
     }
 
@@ -103,6 +120,26 @@ final class SvgMushafPackWriter
     {
         $statement = $this->connection()->prepare('INSERT INTO word_boxes (page, line, surah, ayah, position, x0, y0, x1, y1) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $statement->execute([$row['page'], $row['line'], $row['surah'], $row['ayah'], $row['position'], $row['x0'], $row['y0'], $row['x1'], $row['y1']]);
+    }
+
+    /**
+     * @param  array{surah: int, ayah: int, position: int, first: int, count: int, flag: int}  $row
+     */
+    public function insertWordContour(array $row): void
+    {
+        $statement = $this->connection()->prepare('INSERT INTO word_contours (surah, ayah, position, first, count, flag) VALUES (?, ?, ?, ?, ?, ?)');
+        $statement->execute([$row['surah'], $row['ayah'], $row['position'], $row['first'], $row['count'], $row['flag']]);
+    }
+
+    /**
+     * Bounds are integers in 1/32 page units (ADR 0090 step 13 A3).
+     *
+     * @param  array{page: int, kind: int, ord: int, surah: int, ayah: int, first: int, count: int, x0: int, y0: int, x1: int, y1: int}  $row
+     */
+    public function insertContourBlock(array $row): void
+    {
+        $statement = $this->connection()->prepare('INSERT INTO contour_blocks (page, kind, ord, surah, ayah, first, count, x0, y0, x1, y1) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $statement->execute([$row['page'], $row['kind'], $row['ord'], $row['surah'], $row['ayah'], $row['first'], $row['count'], $row['x0'], $row['y0'], $row['x1'], $row['y1']]);
     }
 
     public function close(): void

@@ -10,6 +10,7 @@ const RECORD: InstalledSvgMushaf = {
   sha256: 'abc',
   sizeBytes: 100,
   hasWordBoxes: false,
+  pageFormat: 'tqp1-deflate-n32',
   installedAt: 1_700_000_000_000,
 };
 
@@ -42,6 +43,13 @@ describe('installed svg mushaf store', () => {
 
   it('reads a record that names another key as absent', () => {
     storage.set(storageKeys.svgMushaf.installed('hafs'), JSON.stringify({ ...RECORD, key: 'warsh' }));
+
+    expect(getInstalledSvgMushaf('hafs')).toBeUndefined();
+  });
+
+  it('reads a record from before TQP1 (no page format) as absent, so the Mushaf shows as not installed', () => {
+    const { pageFormat: _old, ...schema1 } = RECORD;
+    storage.set(storageKeys.svgMushaf.installed('hafs'), JSON.stringify(schema1));
 
     expect(getInstalledSvgMushaf('hafs')).toBeUndefined();
   });

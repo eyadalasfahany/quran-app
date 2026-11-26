@@ -24,6 +24,7 @@ import { Screen } from '@/shared/ui';
 import { resolveInitialAnchor, writePlayedPlace, writeReadingAnchor } from '../anchor/reading-anchor';
 import { pageForVerse } from '../anchor/page';
 import { useReadingAnchor } from '../anchor/useReadingAnchor';
+import { useReaderMiniCollapse } from '../mini-bar-collapse';
 import { AdaptiveReaderLayout } from '../components/AdaptiveReaderLayout';
 import { MushafSvgContainer } from '../components/MushafSvgContainer';
 import { FocusChrome } from '../components/FocusChrome';
@@ -42,6 +43,7 @@ import { AyahPanelContent } from '../panels/AyahPanelContent';
 import { ReadingList } from '../ReadingList';
 import type { ReaderMode } from '../anchor/reading-anchor';
 import { mushafView } from '../mushaf-svg/mushaf-view';
+import { effectiveZoom, zoomAvailable } from '../mushaf-svg/mushaf-zoom';
 import { shownMushafKey } from '../mushaf-svg/shown-mushaf';
 import { useChosenMushafKey } from '../mushaf-svg/useChosenMushafKey';
 import { useMushafFullscreen } from '../useMushafFullscreen';
@@ -54,7 +56,6 @@ import { useDiscoverState } from '@/features/discover/hooks/useDiscover';
 import type { DiscoverId } from '@/features/discover/registry';
 
 import { useReaderSettings } from '../settings';
-import { FONT_SCALE_MAX } from '../settings-model';
 import { useRecitation } from '../useRecitation';
 import { useRecitationFollow } from '../useRecitationFollow';
 
@@ -126,6 +127,7 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
   // Mushaf full screen hides the toolbar, the player bar and the status bar; audio keeps playing (ADR 0071).
   const { fullscreen, enter, exit } = useMushafFullscreen(mode);
   const fontScale = useReaderSettings((state) => state.fontScale);
+  const mushafZoom = useReaderSettings((state) => state.mushafZoom);
   const tafsirId = useReaderSettings((state) => state.tafsirId);
   const selection = useReaderSelection();
   const inlineTafsirOpen = useReaderSelection((state) => state.inlineTafsirOpen);
@@ -147,7 +149,7 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
   const showMiniBar = mini.shown;
   const [visibleVerseKey, setVisibleVerseKey] = useState<string | null>(null);
   const [pinnedVerseKey, setPinnedVerseKey] = useState<string | null>(null);
-  // Opened from a continue-reading control, Mushaf marks the saved ayah until the first drag or a mode change (ADR 0070).
+  // Opened from a continue-reading control, Mushaf and Reading mark the saved ayah until the first drag or a mode change (ADR 0070).
   const [placeVerseKey, setPlaceVerseKey] = useState<string | null>(() =>
     markPlace ? resolveInitialAnchor({ verseKey }).verseKey : null,
   );
@@ -195,8 +197,11 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
   const svgPack = useSvgMushafPack(shownMushaf);
   const svgShown = svgPack.availableVersion !== null || svgPack.status === 'installed';
   const svgReader = svgShown ? svgPack.reader : null;
-  // Above 1× Hafs flows as text (developer, 15 Nov 2026), and its pages are `verses.page` again.
-  const view = mushafView({ fontScale, mushafKey: shownMushaf, svgShown });
+  // The printed pages show whenever the pack does; zoom re-wraps them where the pack has word data (item 9). Without
+  // the pack, the flowed Tanzil text is the fallback and its pages are `verses.page`.
+  const view = mushafView({ svgShown });
+  const zoomOn = zoomAvailable(svgReader);
+  const zoom = effectiveZoom(mushafZoom, zoomOn);
   const packPages = mode === 'mushaf' && view === 'svg' && svgReader !== null;
   const pageOfVerse = useCallback(
     (verseKey: string): number | undefined => {
@@ -299,12 +304,15 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
     enter();
   };
 
-  const selectVerse = (key: string) => {
-    useReaderSelection.getState().selectVerse(key, placement);
+  // A tap on a non-Hafs page carries its riwayah: its ayah numbers are that riwayah's own (RiwayahAyahUnavailable).
+  const openVerse = (key: string, riwayah: SvgMushafKey) => {
+    useReaderSelection.getState().selectVerse(key, placement, riwayah);
     if (placement === 'sheet') {
-      router.push(`/ayah/${key}` as Href);
+      router.push((riwayah === 'hafs' ? `/ayah/${key}` : `/ayah/${key}?riwayah=${riwayah}`) as Href);
     }
   };
+  const selectVerse = (key: string) => openVerse(key, 'hafs');
+  const selectShownVerse = (key: string) => openVerse(key, shownMushaf);
 
   const onReadingTafsir = (key: string) => {
     useReaderSelection.getState().selectVerse(key, placement);
@@ -372,6 +380,8 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
     },
     onUserScrollStart: () => {
       setPlaceVerseKey(null);
+      // A hand scroll collapses a bar the reader opened in a short window (ADR 0090 amendment, item 8).
+      useReaderMiniCollapse.getState().setShortOpen(false);
       follow.onUserScrollStart();
     },
     onVisiblePage: (page: number, key: string) => {
@@ -404,7 +414,9 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
         panel={
           <SidePanel
             onClose={() => useReaderSelection.getState().closePanel()}
-            onTabChange={(tab) => useReaderSelection.getState().setPanelTab(tab)}
+            onTabChange={
+              selection.riwayah === 'hafs' ? (tab) => useReaderSelection.getState().setPanelTab(tab) : undefined
+            }
             tab={selection.panelTab}
           >
             <AyahPanelContent
@@ -412,6 +424,7 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
               onKhatmaMarked={onKhatmaMarked}
               onTabChange={(tab) => useReaderSelection.getState().setPanelTab(tab)}
               onVerseChange={(key) => useReaderSelection.getState().selectVerse(key, placement)}
+              riwayah={selection.riwayah}
               tab={selection.panelTab}
               verseKey={selection.verseKey ?? visibleVerseKey ?? viewKey}
             />
@@ -453,7 +466,11 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
               mode={mode}
               onEnterFullscreen={enterFullscreen}
               windowClass={windowClass}
-              onAyahActions={() => selectVerse(selection.verseKey ?? visibleVerseKey ?? viewKey)}
+              onAyahActions={() =>
+                selection.verseKey === null
+                  ? openVerse(visibleVerseKey ?? viewKey, mode === 'mushaf' && view === 'svg' ? shownMushaf : 'hafs')
+                  : openVerse(selection.verseKey, selection.riwayah)
+              }
               onBack={leaveReader}
               onBookmarkPage={() => {
                 if (chrome.verseId === null) {
@@ -479,13 +496,16 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
         <View style={{ flex: 1 }}>
           <ReaderModeFade mode={mode === 'mushaf' ? 'mushaf' : 'text'}>
             {executor !== null && mode === 'mushaf' ? (
-              // Another riwayah has no flowed text, so its pinch stops at 1×.
-              <MushafPinch maxScale={view === 'svg' && shownMushaf !== 'hafs' ? 1 : FONT_SCALE_MAX}>
+              // A pinch sets the page zoom where the riwayah has word data; elsewhere it does nothing.
+              <MushafPinch zoomAvailable={zoomOn}>
                 {view === 'svg' ? (
                   <MushafSvgContainer
                     {...mushafShared}
                     mushafKey={shownMushaf}
+                    onOpenAyahActions={selectShownVerse}
+                    onSelectVerseKey={selectShownVerse}
                     onReadNow={() => setMode('reading')}
+                    zoom={zoom}
                   />
                 ) : (
                   <HafsMushafList
@@ -537,7 +557,11 @@ export function ReaderScreen({ verseKey, markPlace = false }: { verseKey: string
                 onPause={pause}
                 onPlayVerseKey={(key) => void playVerse(key)}
                 onSelectVerseKey={selectVerse}
-                onUserScrollStart={follow.onUserScrollStart}
+                onUserScrollStart={() => {
+                  setPlaceVerseKey(null);
+                  follow.onUserScrollStart();
+                }}
+                placeVerseKey={placeVerseKey}
                 onVisibleVerseKey={(key) => {
                   setVisibleVerseKey(key);
                   if (followKey === null && !active) {

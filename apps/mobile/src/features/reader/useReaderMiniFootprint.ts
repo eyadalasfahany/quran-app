@@ -1,3 +1,5 @@
+import { useWindowDimensions } from 'react-native';
+
 import {
   MINI_PLAYER_CAPSULE,
   MINI_PLAYER_CAPSULE_FOOTPRINT,
@@ -12,7 +14,9 @@ import { useMiniPlayerVisible } from '@/features/audio/hooks/useMiniPlayerVisibl
 import { useMiniUnavailable } from '@/features/audio/hooks/useMiniUnavailable';
 import { useSkipNoticeShown } from '@/features/audio/skip-notice';
 
-import { useReaderMiniCollapse } from './mini-bar-collapse';
+import { isShortWindowHeight } from '@/core/layout/window-class';
+
+import { drawnCollapsed, useReaderMiniCollapse } from './mini-bar-collapse';
 import { useReaderSettings } from './settings';
 
 // The one source for where the reader's mini element sits and what the reader clears for it. The dock, the resume
@@ -65,7 +69,10 @@ export function readerMiniFootprint(shown: boolean, collapsed: boolean, unavaila
 
 export function useReaderMiniFootprint(): ReaderMiniFootprint {
   const mode = useReaderSettings((state) => state.mode);
-  const collapsed = useReaderMiniCollapse((state) => state.collapsed);
+  const { height } = useWindowDimensions();
+  const stored = useReaderMiniCollapse((state) => state.collapsed);
+  const shortOpen = useReaderMiniCollapse((state) => state.shortOpen);
+  const collapsed = drawnCollapsed(isShortWindowHeight(height), stored, shortOpen);
   const visible = useMiniPlayerVisible('reader');
   const unavailable = useMiniUnavailable() !== null;
   const notice = useSkipNoticeShown();

@@ -111,6 +111,24 @@ describe('line order', function (): void {
     it('reports a line whose left edges still fall back too far', function () use ($contour): void {
         expect(LineOrder::normalise([$contour(10, 20), $contour(100, 110), $contour(20, 180)], 60.0)['contiguous'])->toBeFalse();
     });
+
+    it('gives the input position of every normalised contour, a permutation of the input', function () use ($contour): void {
+        $reversed = LineOrder::normalise([$contour(70, 90), $contour(40, 60), $contour(10, 30)], 120.0);
+        $stray = [$contour(10, 25), $contour(40, 55), $contour(300, 310), $contour(70, 85)];
+        $merged = LineOrder::normalise($stray, 120.0);
+
+        expect($reversed['order'])->toBe([2, 1, 0])
+            ->and($merged['order'])->toBe([0, 1, 3, 2])
+            ->and($merged['contours'])->toBe([$contour(10, 25), $contour(40, 55), $contour(70, 85), $contour(300, 310)])
+            ->and(LineOrder::normalise([], 120.0)['order'])->toBe([])
+            ->and(LineOrder::normalise([$contour(1, 2)], 120.0)['order'])->toBe([0]);
+
+        foreach ([$reversed, $merged] as $order) {
+            $sorted = $order['order'];
+            sort($sorted);
+            expect($sorted)->toBe(range(0, count($order['order']) - 1));
+        }
+    });
 });
 
 describe('overrides', function (): void {
@@ -124,7 +142,7 @@ describe('overrides', function (): void {
     it('reads groups per page and line', function () use ($file): void {
         $path = $file(['12:3' => ['contours' => 3, 'groups' => [[0, 2], [1]], 'reason' => 'FIXTURE']]);
 
-        expect(WordBoxOverrides::fromFile($path)->for(12, 3))->toBe(['contours' => 3, 'groups' => [[0, 2], [1]], 'loose' => [], 'reason' => 'FIXTURE'])
+        expect(WordBoxOverrides::fromFile($path)->for(12, 3))->toBe(['contours' => 3, 'groups' => [[0, 2], [1]], 'loose' => [], 'reason' => 'FIXTURE', 'attach' => [], 'ornaments' => []])
             ->and(WordBoxOverrides::fromFile($path)->for(12, 4))->toBeNull()
             ->and(WordBoxOverrides::fromFile('/nonexistent/overrides.json')->lines)->toBe([]);
 
@@ -135,7 +153,7 @@ describe('overrides', function (): void {
         $path = $file(['12:3' => ['contours' => 4, 'groups' => [[0], [2, 3]], 'loose' => [1], 'reason' => 'FIXTURE']], ['12:4' => 'FIXTURE note']);
         $overrides = WordBoxOverrides::fromFile($path);
 
-        expect($overrides->for(12, 3))->toBe(['contours' => 4, 'groups' => [[0], [2, 3]], 'loose' => [1], 'reason' => 'FIXTURE'])
+        expect($overrides->for(12, 3))->toBe(['contours' => 4, 'groups' => [[0], [2, 3]], 'loose' => [1], 'reason' => 'FIXTURE', 'attach' => [], 'ornaments' => []])
             ->and($overrides->for(12, 4))->toBeNull()
             ->and($overrides->needsDeveloper)->toBe(['12:4' => 'FIXTURE note']);
 

@@ -425,14 +425,15 @@ describe('SheetHost', () => {
           <Text>إعدادات</Text>
         </SheetHost>,
       );
-      const column = flatStyle(view.getByTestId('sheet-host-column').props.style);
+      const card = flatStyle(view.getByTestId('sheet-host').props.style);
 
       if (windowClass === 'compact') {
-        expect(column.maxWidth).toBeUndefined();
-        expect(flatStyle(view.getByTestId('sheet-host').props.style).alignItems).toBeUndefined();
+        expect(card).toMatchObject({ left: 0, right: 0 });
+        expect(card.width).toBeUndefined();
       } else {
-        expect(column).toMatchObject({ maxWidth: 560, width: '100%' });
-        expect(flatStyle(view.getByTestId('sheet-host').props.style)).toMatchObject({ alignItems: 'center' });
+        // The card layer is only as wide as the card, so taps beside it reach the backdrop.
+        expect(card).toMatchObject({ start: (width - 560) / 2, width: 560 });
+        expect(card.right).toBeUndefined();
       }
     });
 
@@ -444,7 +445,7 @@ describe('SheetHost', () => {
         </SheetHost>,
       );
 
-      expect(flatStyle(view.getByTestId('sheet-host-column').props.style)).toMatchObject({ maxWidth: 560, width: '100%' });
+      expect(flatStyle(view.getByTestId('sheet-host').props.style)).toMatchObject({ start: 95, width: 560 });
       expect(view.getByText('إعدادات')).toBeOnTheScreen();
     });
 
@@ -456,8 +457,7 @@ describe('SheetHost', () => {
         </SheetHost>,
       );
 
-      expect(flatStyle(view.getByTestId('sheet-host-column').props.style)).toMatchObject({ maxWidth: 560, width: '100%' });
-      expect(flatStyle(view.getByTestId('sheet-host').props.style)).toMatchObject({ alignItems: 'center' });
+      expect(flatStyle(view.getByTestId('sheet-host').props.style)).toMatchObject({ start: 142, width: 560 });
     });
 
     it('opens at mid on a normal height, as ADR 0020 draws it', async () => {

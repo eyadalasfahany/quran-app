@@ -8,8 +8,9 @@ import type { SkPicture } from '@shopify/react-native-skia';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useScreenReaderEnabled } from '@/shared/useScreenReaderEnabled';
 import { resetSkiaCalls, skiaCalls } from '../../../../jest/skia-mock';
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { buildRegionGeometry, type PageRegionGeometry } from '../mushaf-svg/region-geometry';
+import type { PageLayout } from '../mushaf-svg/rewrap-layout';
 import type { SvgPageModel } from '../mushaf-svg/svg-page-model';
 import { MushafSvgPage, type MushafSvgPageProps } from './MushafSvgPage';
 
@@ -127,6 +128,25 @@ describe('MushafSvgPage', () => {
     expect(paths).toEqual([colours.highlightRose]);
   });
 
+  it('washes the ayah the reader has open, and the reader colour on it still wins', async () => {
+    await renderUi(page({ pressedVerseKey: '1:2' }));
+    const paths = drawnOps().filter((call) => call.op === 'Path').map((call) => call.color);
+    expect(paths).toEqual([colours.highlightActive]);
+  });
+
+  it('the reader colour on the pressed ayah wins over its wash', async () => {
+    await renderUi(page({ highlightByVerseKey: new Map([['1:2', 'rose']]), pressedVerseKey: '1:2' }));
+    const paths = drawnOps().filter((call) => call.op === 'Path').map((call) => call.color);
+    expect(paths).toEqual([colours.highlightRose]);
+  });
+
+  it('washes a pressed ayah of a non-Hafs riwayah by its own key', async () => {
+    const warsh = buildRegionGeometry([{ ayah: 1, labelX: 1, labelY: 1, polygon: RECT(0, 0, 100, 10), surah: 2 }]);
+    await renderUi(page({ pressedVerseKey: '2:1', regions: warsh }));
+    const paths = drawnOps().filter((call) => call.op === 'Path').map((call) => call.color);
+    expect(paths).toEqual([colours.highlightActive]);
+  });
+
   it('draws no pill without a word box, and none when no word is recited', async () => {
     await renderUi(page({ recitedVerseKey: '1:1', recitedWord: 9 }));
     expect(drawnOps().some((call) => call.op === 'RoundedRect')).toBe(false);
@@ -175,6 +195,13 @@ describe('MushafSvgPage', () => {
     expect(onSelectVerseKey).toHaveBeenCalledWith('1:2');
   });
 
+  it('with a screen reader, the pressed ayah is selected', async () => {
+    jest.mocked(useScreenReaderEnabled).mockReturnValue(true);
+    await renderUi(page({ pressedVerseKey: '1:2' }));
+    expect(screen.getByLabelText('label 1:2').props.accessibilityState).toEqual({ selected: true });
+    expect(screen.getByLabelText('label 1:1').props.accessibilityState).toEqual({ selected: false });
+  });
+
   it('without a screen reader, no ayah buttons are mounted', async () => {
     await renderUi(page());
     expect(screen.queryAllByRole('button')).toHaveLength(0);
@@ -187,7 +214,7 @@ describe('MushafSvgPage', () => {
     const arabic = rootTransform();
     resetSkiaCalls();
     await renderUi(page({ recitedVerseKey: '1:1', recitedWord: 1 }), { locale: 'en' });
-    expect(arabic).toBe('[{"scale":1}]');
+    expect(arabic).toBe('[{"translateY":0},{"scale":1}]');
     expect(rootTransform()).toBe(arabic);
   });
 
@@ -204,5 +231,54 @@ describe('MushafSvgPage', () => {
     expect(themes.light.colors.ink).not.toBe(themes.dark.colors.ink);
     const source = readFileSync(join(__dirname, 'MushafSvgPage.tsx'), 'utf8');
     expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
+});
+
+// A zoomed page: the layout's own units replace the printed 345 × 550 (FIXTURE — not artwork: placeholder regions only).
+function zoomedLayout(unitsWidth: number, unitsHeight: number): PageLayout {
+  return { lines: [], placed: [], regions, unitsHeight, unitsWidth, wordRect: () => null } as unknown as PageLayout;
+}
+
+describe('MushafSvgPage at a zoom', () => {
+  it('scales the canvas to the laid-out units, so the page keeps its column width', async () => {
+    resetSkiaCalls();
+    await renderUi(page({ width: 345, zoomed: { layout: zoomedLayout(172.5, 275), picture: pictureOf } }));
+    const group = skiaCalls.find((call) => call.op === 'Group' && typeof call.transform === 'string');
+    expect(JSON.parse(group?.transform as string)).toEqual([{ translateY: 0 }, { scale: 2 }]);
+  });
+
+  it('draws a page taller than one GPU texture as stacked slices, each under the limit (200% crashed in Metal)', async () => {
+    resetSkiaCalls();
+    // 345 wide, 172.5 × 1200 units: 2400 pt tall, over CANVAS_SLICE_MAX.
+    const view = await renderUi(page({ width: 345, zoomed: { layout: zoomedLayout(172.5, 1200), picture: pictureOf } }));
+    expect(view.getByTestId('page-slice-1')).toBeTruthy();
+    expect(view.queryByTestId('page-slice-2')).toBeNull();
+    // The mock keeps a style object as 'object'; the slice height is the page height over the slice count.
+    expect(skiaCalls.filter((call) => call.op === 'Canvas')).toHaveLength(2);
+    const shifts = skiaCalls
+      .filter((call) => call.op === 'Group' && typeof call.transform === 'string')
+      .map((call) => JSON.parse(call.transform as string)[0]);
+    expect(shifts).toEqual(expect.arrayContaining([{ translateY: 0 }, { translateY: -1200 }]));
+  });
+
+  it('takes its height from the laid-out page, not the printed 550 units', async () => {
+    const view = await renderUi(page({ width: 345, zoomed: { layout: zoomedLayout(172.5, 400), picture: pictureOf } }));
+    expect(flatStyle(view.getByTestId('page').props.style)).toMatchObject({ height: 800, width: 345 });
+  });
+
+  it('draws the printed page exactly as before when no zoom is given', async () => {
+    resetSkiaCalls();
+    const view = await renderUi(page({ width: 345, zoomed: null }));
+    const group = skiaCalls.find((call) => call.op === 'Group' && typeof call.transform === 'string');
+    expect(JSON.parse(group?.transform as string)).toEqual([{ translateY: 0 }, { scale: 1 }]);
+    expect(flatStyle(view.getByTestId('page').props.style)).toMatchObject({ height: 550, width: 345 });
+  });
+
+  it('draws the zoomed picture for the reader’s ink, not the printed one', async () => {
+    const zoomedInk = jest.fn((colour: string) => pictureOf(`zoom-${colour}`));
+    resetSkiaCalls();
+    await renderUi(page({ zoomed: { layout: zoomedLayout(172.5, 275), picture: zoomedInk } }));
+    expect(zoomedInk).toHaveBeenCalledWith(colours.ink);
+    expect(skiaCalls.some((call) => call.op === 'Picture' && String(call.pictureColor ?? '').startsWith('zoom-'))).toBe(true);
   });
 });

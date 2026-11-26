@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Domains\Mushaf\Enums\WordBoxesStatus;
 use App\Domains\Mushaf\Models\SvgMushaf;
+use App\Domains\Mushaf\Packs\Tqp\TqpEncoder;
+use App\Domains\Mushaf\Sources\SvgMushafDownloader;
 use App\Domains\Mushaf\Sources\SvgMushafStore;
 use App\Support\Storage\SourceCache;
 use Illuminate\Support\Facades\DB;
@@ -11,12 +13,24 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\ParallelTesting;
 
 /*
-| Synthetic SVG mushaf editions for the pack tests (ADR 0090). Page bytes are placeholder gzip text («FIXTURE page N»), polygons
-| are a unit square and coordinates are plain numbers. No Quran artwork or text. The editions live in their own cache folders
-| (`mushafs/fixture-pack-{key}`), so a real import in the same cache is never touched.
+| Synthetic SVG mushaf editions for the pack tests (ADR 0090). Each page is a small synthetic SVG («FIXTURE — not artwork»), drawn
+| from its key and page number so every page differs; polygons are a unit square and coordinates are plain numbers. No Quran
+| artwork or text. The editions live in their own cache folders (`mushafs/fixture-pack-{key}`), so a real import in the same
+| cache is never touched.
 */
 
 const SVG_PACK_FIXTURE_POLYGON = 'M 0 0 L 1 0 L 1 1 L 0 1 Z';
+
+const SVG_PACK_FIXTURE_PAGES = 3;
+
+/** Page 2 has a non-zero viewBox origin, as Hafs pages 1 and 2 do, so the pack's origin columns are exercised. */
+function svgPackFixtureSvg(string $key, int $page): string
+{
+    $viewBox = $page === 2 ? '-10.5 -20.25 345 550' : '0 0 345 550';
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'.$viewBox.'"><!-- FIXTURE — not artwork: '.$key.' page '.$page.' -->'
+        .'<g transform="translate(0 0)"><g id="content"><path d="M 0 0 L '.$page.' 0 L '.$page.' 1 Z"/></g></g></svg>';
+}
 
 /**
  * Each parallel test process gets its own fixture files, so one file's teardown never deletes another's.
@@ -35,7 +49,8 @@ function svgPackFixtureManifest(): string
 
 function svgPackFixtureBase(string $key): string
 {
-    return 'mushafs/fixture-pack'.svgPackFixtureSuffix().'-'.$key;
+    // The cache folder is the edition's source folder, which is what the pack builder reads (it differs from the key for duri).
+    return 'mushafs/fixture-pack'.svgPackFixtureSuffix().'-'.config('mushaf.editions.'.$key.'.folder');
 }
 
 function svgPackFixtureCacheDirectory(string $key): string
@@ -51,7 +66,7 @@ function svgPackFixtureTearDown(): void
 
     File::delete(resource_path(svgPackFixtureManifest()));
 
-    foreach (glob(resource_path('svg-mushaf/test-pack'.svgPackFixtureSuffix().'-boxes-*.json')) ?: [] as $file) {
+    foreach (array_merge(glob(resource_path('svg-mushaf/test-pack'.svgPackFixtureSuffix().'-boxes-*.json')) ?: [], glob(resource_path('svg-mushaf/test-pack'.svgPackFixtureSuffix().'-contours-*.json')) ?: []) as $file) {
         File::delete($file);
     }
 }
@@ -76,19 +91,25 @@ function svgPackSeedEdition(string $key, int $pages = 2): SvgMushaf
     ]);
 
     $store = app(SvgMushafStore::class);
+    $encoder = new TqpEncoder;
     $now = now()->format('Y-m-d H:i:s.u');
 
     for ($page = 1; $page <= $pages; $page++) {
-        $gz = (string) gzencode('FIXTURE page '.$page.' — not artwork', 9);
-        $store->write(svgPackFixtureBase($key), sprintf('svg/%03d.svg.gz', $page), $gz);
+        $relative = sprintf('svg/%03d.svg', $page);
+        $svg = svgPackFixtureSvg($key, $page);
+        $store->write(svgPackFixtureBase($key), $relative, $svg);
+        $gzip = $store->writeGzip(svgPackFixtureBase($key), $relative, $svg);
+        $container = $encoder->container($svg);
 
         DB::table('svg_mushaf_pages')->insert([
             'svg_mushaf_id' => $mushaf->id,
             'page' => $page,
-            'svg_blob_sha' => str_repeat('a', 40),
-            'svg_bytes' => 10,
-            'gz_sha256' => hash('sha256', $gz),
-            'gz_bytes' => strlen($gz),
+            'svg_blob_sha' => SvgMushafDownloader::blobSha($svg),
+            'svg_bytes' => strlen($svg),
+            'gz_sha256' => $gzip['sha256'],
+            'gz_bytes' => $gzip['bytes'],
+            'tqp_sha256' => hash('sha256', $container),
+            'tqp_bytes' => strlen($container),
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -111,14 +132,23 @@ function svgPackSeedEdition(string $key, int $pages = 2): SvgMushaf
 }
 
 /**
- * Points the config at a manifest that names every fixture edition's base folder. The downloader reads only the bases.
+ * Points the config at a manifest that pins every fixture page (A1: the page SVG's blob SHA and size). The pins are a function of
+ * the key and page, so every edition can be seeded in any order and the manifest never changes between tests. The JSON pins are
+ * placeholders: the pack reads only the SVGs.
  */
 function svgPackWriteManifest(): void
 {
     $editions = [];
 
     foreach (['hafs', 'warsh', 'qalun', 'shubah', 'duri'] as $key) {
-        $editions[$key] = ['base' => svgPackFixtureBase($key)];
+        $pages = [];
+
+        for ($page = 1; $page <= SVG_PACK_FIXTURE_PAGES; $page++) {
+            $svg = svgPackFixtureSvg($key, $page);
+            $pages[] = [SvgMushafDownloader::blobSha($svg), strlen($svg), SvgMushafDownloader::blobSha(''), 0];
+        }
+
+        $editions[(string) config('mushaf.editions.'.$key.'.folder')] = ['base' => svgPackFixtureBase($key), 'pages' => $pages];
     }
 
     File::ensureDirectoryExists(dirname(resource_path(svgPackFixtureManifest())));
@@ -141,4 +171,34 @@ function svgPackApproveHafs(SvgMushaf $mushaf, string $digest): void
         'mushaf.word_box_files.output' => 'svg-mushaf/test-pack'.svgPackFixtureSuffix().'-boxes-%s.json',
     ]);
     File::put(resource_path('svg-mushaf/test-pack'.svgPackFixtureSuffix().'-boxes-hafs.json'), json_encode(['digest' => $digest], JSON_THROW_ON_ERROR));
+}
+
+/**
+ * Marks the contour map approved: the status, the pin in config and a committed-file stand-in whose digest matches (ADR 0090 A3).
+ */
+function svgPackApproveContours(SvgMushaf $mushaf, string $digest): void
+{
+    $mushaf->forceFill(['contours_status' => WordBoxesStatus::Approved, 'contours_digest' => $digest])->save();
+    config([
+        'mushaf.approved_word_contours.hafs' => $digest,
+        'mushaf.word_box_files.contour_output' => 'svg-mushaf/test-pack'.svgPackFixtureSuffix().'-contours-%s.json',
+    ]);
+    File::put(resource_path('svg-mushaf/test-pack'.svgPackFixtureSuffix().'-contours-hafs.json'), json_encode(['digest' => $digest], JSON_THROW_ON_ERROR));
+}
+
+/**
+ * One word run and one title block on page 1 of an edition, so a pack that carries contours has rows to show. Synthetic numbers.
+ */
+function svgPackSeedContours(SvgMushaf $mushaf, string $status, string $digest): void
+{
+    $mushaf->forceFill(['contours_status' => $status, 'contours_digest' => $digest])->save();
+
+    DB::table('svg_mushaf_word_contours')->insert([
+        'svg_mushaf_id' => $mushaf->id, 'surah' => 1, 'ayah' => 1, 'position' => 1, 'first' => 0, 'count' => 1, 'flag' => 0,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('svg_mushaf_contour_blocks')->insert([
+        'svg_mushaf_id' => $mushaf->id, 'page' => 1, 'kind' => 1, 'ord' => 0, 'surah' => 0, 'ayah' => 0, 'first' => 1, 'count' => 1,
+        'x0' => 32, 'y0' => 64, 'x1' => 320, 'y1' => 96, 'created_at' => now(), 'updated_at' => now(),
+    ]);
 }

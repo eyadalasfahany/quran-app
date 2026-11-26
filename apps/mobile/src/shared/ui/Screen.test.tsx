@@ -51,6 +51,13 @@ describe('Screen', () => {
     expect(flatStyle(view.getByTestId('screen').props.style)).toMatchObject({ paddingEnd: 44, paddingStart: 12 });
   });
 
+  it.each(locales)('lets a full-bleed view run under the side insets with sideInsets={false} (%s)', async (locale) => {
+    mockInsets = { bottom: 21, left: 62, right: 62, top: 0 };
+    const view = await renderUi(<Screen sideInsets={false} testID="screen" topInset={false} />, { locale });
+
+    expect(flatStyle(view.getByTestId('screen').props.style)).toMatchObject({ paddingEnd: 0, paddingStart: 0, paddingTop: 0 });
+  });
+
   it('has no side padding on a portrait window without insets', async () => {
     const view = await renderUi(<Screen testID="screen" />);
 

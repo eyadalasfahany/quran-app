@@ -22,9 +22,11 @@ export function OnboardingFooter({
     <View
       style={{
         alignItems: 'center',
+        backgroundColor: theme.colors.surface,
         gap: theme.space[4],
         paddingBottom: theme.space[6],
         paddingHorizontal: step === 1 ? theme.space[6] : theme.space[5],
+        paddingTop: theme.space[3],
       }}
       testID={testID}
     >

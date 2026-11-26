@@ -3,7 +3,9 @@ import { Modal, Platform, Pressable, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { getWidgetInfo, requestPinWidget } from 'react-native-android-widget';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { useTheme } from '@/core/theme';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
 import { Button, UiText } from '@/shared/ui';
 
 import type { WidgetAddCatalogId } from '../data/widget-add-catalog';
@@ -172,6 +174,7 @@ export function WidgetAddTrigger({
       <Modal
         animationType="fade"
         onRequestClose={() => setAddStepsVisible(false)}
+        supportedOrientations={MODAL_ORIENTATIONS}
         transparent
         visible={addStepsVisible}
       >
@@ -183,10 +186,13 @@ export function WidgetAddTrigger({
           <Pressable
             onPress={(event) => event.stopPropagation()}
             style={{
+              alignSelf: 'center',
               backgroundColor: theme.colors.surfaceRaised,
               borderRadius: theme.radius.xl,
               maxHeight: '80%',
+              maxWidth: SHEET_CARD_MAX_WIDTH,
               padding: theme.space[5],
+              width: '100%',
             }}
             testID={testID ? `${testID}-add-steps-card` : undefined}
           >

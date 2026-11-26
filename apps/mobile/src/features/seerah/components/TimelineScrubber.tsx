@@ -21,6 +21,11 @@ import { YearHistogram } from './YearHistogram';
 // double chevron; selected, a brand disc in a 3 pt raised ring, with a 2 pt brand line from the track up the histogram.
 const HANDLE = 22;
 const TICK_AGES = [10, 20, 30, 40, 50, 60] as const;
+// A milestone name's box on the horizontal bar. The frame's 60 pt box lets its text run over (nowrap); a native label can't,
+// so the box is wide enough for the longest name («Revelation», about 60 pt at 11) and the text stays centred on its mark.
+// Even on a 402 pt phone the nearest marks (the revelation at 40, the hijra at 53) sit about 57 pt apart, more than the
+// half-widths of their names.
+const LABEL_BOX = 96;
 
 // The cross-axis lanes (top offsets on the horizontal bar, start offsets on the vertical one), in points. Horizontal is the
 // frame's 74 pt slider: milestone names at 2, bars standing on 44, the track at 45, the bands at 51 and their names at 59.
@@ -141,9 +146,9 @@ export function TimelineScrubber({
               <View
                 key={mark.key}
                 style={[
-                  { position: 'absolute', width: 60 },
+                  { position: 'absolute', width: horizontal ? LABEL_BOX : 60 },
                   edge === 'start' ? { alignItems: 'flex-start', start: 0 } : edge === 'end' ? { alignItems: 'flex-end', end: 0 } : alongStart(orientation, ageToFraction(mark.age)),
-                  horizontal ? (edge === null ? { marginStart: -30 } : null) : { marginTop: -8, width: 56 },
+                  horizontal ? (edge === null ? { marginStart: -LABEL_BOX / 2 } : null) : { marginTop: -8, width: 56 },
                 ]}
               >
                 <MilestoneMark

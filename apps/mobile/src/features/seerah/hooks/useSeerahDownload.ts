@@ -7,24 +7,23 @@ import { useHadithDownloads } from "@/features/hadith/downloads";
 import type { SeerahCatalogEntry } from "../data";
 
 export type SeerahDownloadView =
-  | { kind: "download" }
   | { kind: "downloading"; progress: number }
   | { kind: "offline" }
   | { kind: "error" };
 
 /**
  * The install of the Seerah pack, through the same store the hadith downloads use (one install per resource, progress that
- * survives a remount, Wi-Fi only respected). Without the catalogue entry there is nothing to install: offline says why.
+ * survives a remount), over any network (ADR 0097). The pack downloads with no tap, so a listed pack that is not installed
+ * and has nothing running reads as downloading at 0: the screen's auto-install starts in the same commit. There is no
+ * cancel. Without the catalogue entry there is nothing to install: offline says why, and the retry re-syncs the catalogue.
  */
 export function useSeerahDownload(entry: SeerahCatalogEntry | undefined): {
   view: SeerahDownloadView;
   start: () => void;
-  cancel: () => void;
 } {
   const online = useOnline();
   const byId = useHadithDownloads((state) => state.byId);
   const begin = useHadithDownloads((state) => state.start);
-  const stop = useHadithDownloads((state) => state.cancel);
   const resourceId = entry?.resourceId;
   const running = resourceId === undefined ? undefined : byId[resourceId];
 
@@ -32,16 +31,11 @@ export function useSeerahDownload(entry: SeerahCatalogEntry | undefined): {
   // and the entry arrives with it.
   const start = useCallback(() => {
     if (resourceId !== undefined) {
-      void begin(resourceId);
+      void begin(resourceId, { anyNetwork: true });
     } else {
       void runDeviceContentSync();
     }
   }, [begin, resourceId]);
-  const cancel = useCallback(() => {
-    if (resourceId !== undefined) {
-      stop(resourceId);
-    }
-  }, [stop, resourceId]);
 
   let view: SeerahDownloadView;
   if (running?.status === "downloading" || running?.status === "waiting") {
@@ -53,8 +47,11 @@ export function useSeerahDownload(entry: SeerahCatalogEntry | undefined): {
         : { kind: "error" };
   } else if (entry === undefined) {
     view = online ? { kind: "error" } : { kind: "offline" };
+  } else if (!online) {
+    view = { kind: "offline" };
   } else {
-    view = !online ? { kind: "offline" } : { kind: "download" };
+    // Installed with nothing to show is a broken pack (the error card's retry downloads it again); otherwise it is starting.
+    view = entry.installed ? { kind: "error" } : { kind: "downloading", progress: 0 };
   }
-  return { view, start, cancel };
+  return { view, start };
 }

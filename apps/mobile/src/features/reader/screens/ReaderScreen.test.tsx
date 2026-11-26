@@ -70,6 +70,7 @@ jest.mock('../HafsMushafList', () => {
 // The Madinah container stands in: its list and card are tested alone. The pack's state is set per test.
 type MockContainerProps = {
   mushafKey: string;
+  zoom?: number;
   onReadNow?: () => void;
   anchorVerseKey: string;
   onTopAyah?: (page: number, verseKey: string) => void;
@@ -127,6 +128,7 @@ let mockReadingProps:
       onSelectVerseKey?: (verseKey: string) => void;
       onUserScrollStart?: () => void;
       onVisibleVerseKey?: (verseKey: string) => void;
+      placeVerseKey?: string | null;
       showInlineTafsir?: boolean;
       testID?: string;
     }
@@ -232,27 +234,24 @@ describe('ReaderScreen', () => {
       expect(mockContainerProps?.anchorVerseKey).toBe('2:255');
     });
 
-    it('shows the flowed Hafs text above 1×, with its own page numbers, even with the Hafs pages installed', async () => {
-      const { executor } = await openReaderTestContent();
-      mockExecutor = executor;
-      // The pack's pages would put 2:255 on page 600; the flowed text keeps `verses.page`.
-      mockSvgPack = { availableVersion: 1, reader: { pageForAyah: () => 600 }, status: 'installed' };
+    it('keeps the printed Hafs pages above 1×, with the pack’s page numbers, and passes the zoom on', async () => {
+      mockExecutor = (await openReaderTestContent()).executor;
+      // The pack's pages would put 2:255 on page 600. Word data is in the pack, so the zoom reaches the container.
+      mockSvgPack = { availableVersion: 1, reader: { hasWordBoxes: true, hasWordContours: true, pageForAyah: () => 600 }, status: 'installed' };
       useReaderSettings.getState().setMode('mushaf');
-      useReaderSettings.getState().setFontScale(1.2);
+      useReaderSettings.getState().setMushafZoom(1.5);
       const view = await renderUi(reader());
 
-      expect(mockMushafProps).toBeDefined();
-      expect(mockContainerProps).toBeUndefined();
-      const title = view.getByTestId('reader-title');
-      expect(title).toHaveTextContent(new RegExp(formatNumber(pageForVerse(executor, '2:255')!, 'ar')));
-      expect(title).not.toHaveTextContent(new RegExp(formatNumber(600, 'ar')));
+      expect(mockMushafProps).toBeUndefined();
+      expect(mockContainerProps?.zoom).toBe(1.5);
+      expect(view.getByTestId('reader-title')).toHaveTextContent(new RegExp(formatNumber(600, 'ar')));
     });
 
-    it('keeps the printed pages at 1× and below', async () => {
+    it('keeps the printed pages at every text size, and the text size does not change the view', async () => {
       mockExecutor = (await openReaderTestContent()).executor;
       mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
       useReaderSettings.getState().setMode('mushaf');
-      useReaderSettings.getState().setFontScale(0.8);
+      useReaderSettings.getState().setFontScale(1.6);
       await renderUi(reader());
       expect(mockContainerProps?.mushafKey).toBe('hafs');
       expect(mockMushafProps).toBeUndefined();
@@ -269,19 +268,24 @@ describe('ReaderScreen', () => {
       expect(mockMushafProps).toBeUndefined();
     });
 
-    it('a pinch past 1× on the Hafs pages grows the text and switches to the flowed text', async () => {
+    it('a pinch on the Hafs pages sets the page zoom in steps where the pack has word data', async () => {
       mockExecutor = (await openReaderTestContent()).executor;
-      mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
+      mockSvgPack = {
+        availableVersion: 1,
+        reader: { hasWordBoxes: true, hasWordContours: true, pageForAyah: () => 1 },
+        status: 'installed',
+      };
       useReaderSettings.getState().setMode('mushaf');
       await renderUi(reader());
       expect(mockContainerProps).toBeDefined();
 
       await pinchMushaf(1.5);
-      expect(useReaderSettings.getState().fontScale).toBe(1.5);
-      expect(mockMushafProps).toBeDefined();
+      expect(useReaderSettings.getState().mushafZoom).toBe(1.5);
+      expect(mockContainerProps?.zoom).toBe(1.5);
+      expect(mockMushafProps).toBeUndefined();
     });
 
-    it('a pinch on another riwayah stops at 1×', async () => {
+    it('a pinch does nothing on a riwayah without word data, which stays at 100%', async () => {
       mockExecutor = (await openReaderTestContent()).executor;
       mockSvgPack = { availableVersion: 1, reader: null, status: 'downloading' };
       useReaderSettings.getState().setMushaf('warsh');
@@ -289,9 +293,8 @@ describe('ReaderScreen', () => {
       await renderUi(reader());
 
       await pinchMushaf(1.5);
-      expect(useReaderSettings.getState().fontScale).toBe(1);
-      await pinchMushaf(0.88);
-      expect(useReaderSettings.getState().fontScale).toBe(0.9);
+      expect(useReaderSettings.getState().mushafZoom).toBe(1);
+      expect(mockContainerProps?.zoom).toBe(1);
     });
 
     describe('the place across the switch', () => {
@@ -323,13 +326,13 @@ describe('ReaderScreen', () => {
         });
         expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
 
-        // A pinch past 1× mounts the flowed text there, and back at 1× the pages open there too.
+        // A zoom change keeps the page where the reader scrolled to, as a rotation does.
         await act(async () => {
-          useReaderSettings.getState().setFontScale(1.2);
+          useReaderSettings.getState().setMushafZoom(1.25);
         });
-        expect(mockMushafProps?.anchorVerseKey).toBe('2:260');
+        expect(mockContainerProps?.anchorVerseKey).toBe('2:260');
         await act(async () => {
-          useReaderSettings.getState().setFontScale(1);
+          useReaderSettings.getState().setMushafZoom(1);
         });
         expect(mockContainerProps?.anchorVerseKey).toBe('2:260');
         expect(storage.getString(storageKeys.readerLastVerseKey)).toBe('2:256');
@@ -352,9 +355,9 @@ describe('ReaderScreen', () => {
           mockContainerProps?.onTopAyah?.(pageForVerse(executor, '2:260')!, '2:260');
         });
         await act(async () => {
-          useReaderSettings.getState().setFontScale(1.2);
+          useReaderSettings.getState().setMushafZoom(1.25);
         });
-        expect(mockMushafProps?.anchorVerseKey).toBe('2:260');
+        expect(mockContainerProps?.anchorVerseKey).toBe('2:260');
       });
     });
   });
@@ -476,6 +479,24 @@ describe('ReaderScreen', () => {
     });
     expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
     expect(Haptics.impactAsync).toHaveBeenCalledWith('light');
+  });
+
+  it('gives Reading mode the continue-reading ayah, and a hand scroll clears it', async () => {
+    mockExecutor = (await openReaderTestContent()).executor;
+    useReaderSettings.getState().setMode('reading');
+    await renderUi(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <ReaderScreen markPlace verseKey="2:255" />
+      </SafeAreaProvider>,
+    );
+
+    expect(mockReadingProps?.placeVerseKey).toBe('2:255');
+
+    await act(async () => {
+      mockReadingProps?.onUserScrollStart?.();
+    });
+
+    expect(mockReadingProps?.placeVerseKey).toBeNull();
   });
 
   it('toggles inline tafsir in reading mode without opening the tafsir sheet', async () => {

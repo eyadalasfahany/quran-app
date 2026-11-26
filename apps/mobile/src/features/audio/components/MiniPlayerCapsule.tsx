@@ -18,10 +18,13 @@ export function MiniPlayerCapsule({
   fraction,
   showProgress,
   onExpand,
+  trailing = false,
 }: {
   fraction: number;
   showProgress: boolean;
   onExpand: () => void;
+  /** Sits in the bottom trailing corner (the end edge, so left in Arabic) instead of centred (ADR 0090 amendment, item 8). */
+  trailing?: boolean;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -38,7 +41,10 @@ export function MiniPlayerCapsule({
   });
 
   return (
-    <Animated.View style={[{ alignItems: 'center' }, enter.container]} testID="mini-player-capsule-dock">
+    <Animated.View
+      style={[{ alignItems: trailing ? 'flex-end' : 'center' }, enter.container]}
+      testID="mini-player-capsule-dock"
+    >
       <GestureDetector gesture={pan}>
         <Pressable
           accessibilityLabel={t('player.mini.show')}
@@ -52,7 +58,7 @@ export function MiniPlayerCapsule({
           }}
           testID="mini-player-capsule"
         >
-          <GlassSurface
+          <GlassSurface interactive
             radius="pill"
             style={{
               alignItems: 'center',

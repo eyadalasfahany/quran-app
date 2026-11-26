@@ -114,10 +114,7 @@ describe('IconButton', () => {
       <IconButton icon={back} label="Back" onPress={() => undefined} testID="back" variant="glass" />,
     );
 
-    const layer = view.getByTestId('back-glass');
-    const [surface] = layer.children;
-
-    expect(flatStyle(typeof surface === 'object' ? surface.props.style : undefined)).toMatchObject({
+    expect(flatStyle(view.getByTestId('back-glass').props.style)).toMatchObject({
       backgroundColor: colors.glassFallback,
     });
   });
@@ -127,26 +124,45 @@ describe('IconButton', () => {
       <IconButton frosted icon={back} label="Exit" onPress={() => undefined} testID="exit" variant="glass" />,
     );
 
-    const layer = view.getByTestId('exit-glass');
-    const [surface] = layer.children;
-
-    expect(flatStyle(typeof surface === 'object' ? surface.props.style : undefined)).toMatchObject({
+    expect(flatStyle(view.getByTestId('exit-glass').props.style)).toMatchObject({
       backgroundColor: colors.glassFill,
       borderColor: colors.glassStroke,
       boxShadow: themes.light.shadows.glass,
     });
   });
 
-  it('draws the glass inside the button, where it never takes the touch', async () => {
+  it('makes the glass the button face, with the glyph inside it, and still takes the press', async () => {
     const onPress = jest.fn();
     const view = await renderUi(
       <IconButton icon={back} label="Back" onPress={onPress} testID="back" variant="glass" />,
     );
 
-    expect(view.getByTestId('back-glass').props.pointerEvents).toBe('none');
     expect(view.getByTestId('back')).toContainElement(view.getByTestId('back-glass'));
+    expect(view.getByTestId('back-glass')).toContainElement(view.getByTestId('back-icon', { includeHiddenElements: true }));
     await fireEvent.press(view.getByTestId('back'));
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['raised', 'filled', 'track', 'surface', 'glass'] as const)(
+    'draws the %s variant as interactive Liquid Glass where the platform has it',
+    async (variant) => {
+      mockLiquidGlass.mockReturnValue(true);
+      const view = await renderUi(
+        <IconButton icon={back} label="Back" onPress={() => undefined} testID="back" variant={variant} />,
+      );
+
+      expect(view.getByTestId('back-glass', { includeHiddenElements: true }).props.isInteractive).toBe(true);
+      expect(flatStyle(view.getByRole('button').props.style).backgroundColor).toBe('transparent');
+      mockLiquidGlass.mockReturnValue(false);
+    },
+  );
+
+  it('keeps a plain button plain over Liquid Glass, since it sits inside a glass toolbar group', async () => {
+    mockLiquidGlass.mockReturnValue(true);
+    const view = await renderUi(<IconButton icon={back} label="Back" onPress={() => undefined} testID="back" />);
+
+    expect(view.queryByTestId('back-glass', { includeHiddenElements: true })).toBeNull();
+    mockLiquidGlass.mockReturnValue(false);
   });
 
   it('marks a toggled-on button as selected and tints it brand', async () => {

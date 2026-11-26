@@ -8,29 +8,27 @@ import { themes } from '@/core/theme';
 import { SeerahStateView } from './SeerahStateView';
 
 describe('SeerahStateView', () => {
-  it.each(locales)('download: title, body, size line and the download button (%s)', async (locale) => {
-    await renderUi(<SeerahStateView kind="download" onAction={jest.fn()} sizeLabel={locale === 'ar' ? '٢٫٤ م.ب' : '2.4 MB'} />, { locale });
-    expect(screen.getByRole('header')).toHaveTextContent(locale === 'ar' ? 'السيرة على الخريطة' : 'Seerah on the map');
-    expect(screen.getByText(locale === 'ar' ? '٢٫٤ م.ب · يعمل دون إنترنت بعد التنزيل' : '2.4 MB · works offline after the download')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: locale === 'ar' ? 'تنزيل السيرة' : 'Download Seerah' })).toBeOnTheScreen();
-  });
-
-  it('download calls onAction', async () => {
-    const onAction = jest.fn();
-    await renderUi(<SeerahStateView kind="download" onAction={onAction} sizeLabel="٢٫٤ م.ب" />);
-    await press(screen.getByRole('button', { name: 'تنزيل السيرة' }));
-    expect(onAction).toHaveBeenCalledTimes(1);
-  });
-
-  it('downloading: a progress bar with its value, the done-of-total line and cancel', async () => {
-    const onAction = jest.fn();
-    await renderUi(<SeerahStateView doneLabel="١٫٤ م.ب" kind="downloading" onAction={onAction} progress={0.58} sizeLabel="٢٫٤ م.ب" />);
+  it.each(locales)('downloading: a progress bar with its value, the done-of-total line and no button (%s)', async (locale) => {
+    await renderUi(
+      <SeerahStateView
+        doneLabel={locale === 'ar' ? '١٫٤ م.ب' : '1.4 MB'}
+        kind="downloading"
+        onAction={jest.fn()}
+        progress={0.58}
+        sizeLabel={locale === 'ar' ? '٢٫٤ م.ب' : '2.4 MB'}
+      />,
+      { locale },
+    );
     const bar = screen.getByRole('progressbar');
     expect(bar.props.accessibilityValue).toMatchObject({ max: 100, min: 0, now: 58 });
+    expect(bar.props.accessibilityLabel).toBeTruthy();
     expect(flatStyle(screen.getByTestId('seerah-state-view-progress-fill').props.style).width).toBe('58%');
-    expect(screen.getByText('١٫٤ م.ب من ٢٫٤ م.ب · يمكنك مغادرة الشاشة، ويكتمل التنزيل.')).toBeOnTheScreen();
-    await press(screen.getByRole('button', { name: 'إلغاء التنزيل' }));
-    expect(onAction).toHaveBeenCalledTimes(1);
+    if (locale === 'ar') {
+      expect(screen.getByText('١٫٤ م.ب من ٢٫٤ م.ب · يمكنك مغادرة الشاشة، ويكتمل التنزيل.')).toBeOnTheScreen();
+    }
+    // ADR 0097 decision 7: the download cannot be cancelled, so even a passed onAction draws no button.
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByTestId('seerah-state-view-action')).toBeNull();
   });
 
   it('downloading clamps the progress to 0..100', async () => {
@@ -45,9 +43,16 @@ describe('SeerahStateView', () => {
   });
 
   it('error: says the file is incomplete with its size and offers to download again', async () => {
-    await renderUi(<SeerahStateView kind="error" onAction={jest.fn()} sizeLabel="٢٫٤ م.ب" />);
+    const onAction = jest.fn();
+    await renderUi(<SeerahStateView kind="error" onAction={onAction} sizeLabel="٢٫٤ م.ب" />);
     expect(screen.getByText('ملف السيرة على جهازك ناقص. أعد تنزيله (٢٫٤ م.ب).')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'إعادة التنزيل' })).toBeOnTheScreen();
+    await press(screen.getByRole('button', { name: 'إعادة التنزيل' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('error keeps its action in English', async () => {
+    await renderUi(<SeerahStateView kind="error" onAction={jest.fn()} sizeLabel="2.4 MB" />, { locale: 'en' });
+    expect(screen.getByTestId('seerah-state-view-action')).toBeOnTheScreen();
   });
 
   it('draws no button without onAction', async () => {

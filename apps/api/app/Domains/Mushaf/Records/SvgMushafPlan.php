@@ -7,7 +7,7 @@ namespace App\Domains\Mushaf\Records;
 /**
  * Everything one import writes, built only after checks A1 and A2 pass.
  *
- * @phpstan-type PageRow array{page: int, svg_blob_sha: string, svg_bytes: int, gz_sha256: string, gz_bytes: int}
+ * @phpstan-type PageRow array{page: int, svg_blob_sha: string, svg_bytes: int, gz_sha256: string, gz_bytes: int, tqp_sha256: string, tqp_bytes: int}
  * @phpstan-type RegionRow array{page: int, surah: int, ayah: int, label_x: float|null, label_y: float|null, polygon: string}
  */
 final readonly class SvgMushafPlan

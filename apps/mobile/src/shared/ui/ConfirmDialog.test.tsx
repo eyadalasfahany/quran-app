@@ -5,6 +5,7 @@ import { useReducedMotion, withSpring, withTiming } from 'react-native-reanimate
 // @ts-expect-error React Native's internal renderer proxy has no type declarations; the focus test stubs its node lookup.
 import * as RendererProxy from 'react-native/Libraries/ReactNative/RendererProxy';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { ThemeProvider, themes } from '@/core/theme';
 
 import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
@@ -91,6 +92,12 @@ describe('ConfirmDialog', () => {
     const view = await renderUi(dialog({ visible: false }), { locale: 'en' });
 
     expect(view.queryByText('Reset the counter?', SHOWN)).toBeNull();
+  });
+
+  it('keeps every orientation, so a landscape iPhone is not turned to portrait when it opens', async () => {
+    const view = await renderUi(dialog(), { locale: 'en' });
+
+    expect(JSON.stringify(view.toJSON())).toContain(`"supportedOrientations":${JSON.stringify(MODAL_ORIENTATIONS)}`);
   });
 
   it('renders optional children between the message and the actions', async () => {
@@ -312,6 +319,13 @@ describe('ConfirmDialog', () => {
     const view = await renderUi(dialog(), { locale: 'en' });
 
     expect(view.getByTestId('confirm-dialog-scrim-glass', SHOWN)).toBeOnTheScreen();
+  });
+
+  it('tints the scrim glass with the app theme, not the system appearance', async () => {
+    mockLiquidGlass.mockReturnValue(true);
+    const view = await renderUi(dialog(), { locale: 'en', theme: 'dark' });
+
+    expect(view.getByTestId('confirm-dialog-scrim-glass', SHOWN).props.colorScheme).toBe('dark');
   });
 
   it('dims with no native blur where Liquid Glass is unavailable', async () => {

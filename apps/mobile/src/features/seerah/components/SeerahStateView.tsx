@@ -5,15 +5,16 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { Button, Card, Icon, UiText } from '@/shared/ui';
 
-export type SeerahStateKind = 'download' | 'downloading' | 'offline' | 'error' | 'emptyYear';
+export type SeerahStateKind = 'downloading' | 'offline' | 'error' | 'emptyYear';
 
 const DOWNLOAD = { ios: 'arrow.down.to.line', android: 'download' } as const;
 
 /**
- * The cards that stand in for the map's content (frames SeerahStateDownload, …Downloading, …Offline, …Error,
- * …EmptyYear): the pack is not downloaded (size, button), is downloading (progress, cancel), needs a connection, failed to
- * open, or the chosen age has no events (a button to the nearest age). The screen draws the map under it and docks the card
- * at the bottom. The action shows when `onAction` is given and, for `emptyYear`, a `nearestAge` exists.
+ * The cards that stand in for the map's content (frames SeerahStateDownloading, …Offline, …Error, …EmptyYear): the pack is
+ * downloading (progress, no button: it downloads with no tap and cannot be cancelled, ADR 0097), needs a connection, failed
+ * to open, or the chosen age has no events (a button to the nearest age). The screen draws the map under it and docks the
+ * card at the bottom. The action shows for `offline` and `error` when `onAction` is given and, for `emptyYear`, when a
+ * `nearestAge` exists; `downloading` never draws one.
  */
 export function SeerahStateView({
   kind,
@@ -26,7 +27,7 @@ export function SeerahStateView({
   testID = 'seerah-state-view',
 }: {
   kind: SeerahStateKind;
-  /** The pack's size, «٢٫٤ م.ب»; used by `download` and `error`. */
+  /** The pack's size, «٢٫٤ م.ب»; used by `downloading` and `error`. */
   sizeLabel?: string;
   /** 0..1, for `downloading`. */
   progress?: number;
@@ -68,17 +69,12 @@ export function SeerahStateView({
   }
 
   const copy = ({
-    download: { action: 'seerah.states.downloadAction', body: 'seerah.states.downloadBody', title: 'seerah.states.downloadTitle' },
-    downloading: { action: 'seerah.states.downloadingAction', body: null, title: 'seerah.states.downloadingTitle' },
+    // No action: the download cannot be cancelled (ADR 0097).
+    downloading: { action: null, body: null, title: 'seerah.states.downloadingTitle' },
     offline: { action: 'seerah.states.offlineAction', body: 'seerah.states.offlineBody', title: 'seerah.states.offlineTitle' },
     error: { action: 'seerah.states.errorAction', body: 'seerah.states.errorBody', title: 'seerah.states.errorTitle' },
   } as const)[kind];
-  const meta =
-    kind === 'download'
-      ? t('seerah.states.downloadMeta', { size })
-      : kind === 'downloading'
-        ? t('seerah.states.downloadingMeta', { done: doneLabel ?? '', total: size })
-        : null;
+  const meta = kind === 'downloading' ? t('seerah.states.downloadingMeta', { done: doneLabel ?? '', total: size }) : null;
 
   return (
     <Card padding={5} radius="xl" testID={testID}>
@@ -114,15 +110,8 @@ export function SeerahStateView({
             </UiText>
           </View>
         )}
-        {onAction === undefined ? null : (
-          <Button
-            icon={kind === 'download' ? DOWNLOAD : undefined}
-            label={t(copy.action)}
-            onPress={onAction}
-            stretch
-            testID={`${testID}-action`}
-            variant={kind === 'downloading' ? 'secondary' : 'primary'}
-          />
+        {onAction === undefined || copy.action === null ? null : (
+          <Button label={t(copy.action)} onPress={onAction} stretch testID={`${testID}-action`} variant="primary" />
         )}
       </View>
     </Card>

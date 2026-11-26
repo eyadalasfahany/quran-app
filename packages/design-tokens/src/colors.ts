@@ -91,6 +91,17 @@ export type ColorTokens = {
   coverPageEdge: string;
   coverShadow: string;
   coverShadowSoft: string;
+  /** Menu section icon tiles and their ink (screens/frames/menu, MenuSections*). */
+  tileGreen: string;
+  tileGreenInk: string;
+  tileGold: string;
+  tileGoldInk: string;
+  tileBlue: string;
+  tileBlueInk: string;
+  tileRose: string;
+  tileRoseInk: string;
+  tileNeutral: string;
+  tileNeutralInk: string;
 };
 
 export type ShadowTokens = {
@@ -178,6 +189,16 @@ export const colors: Record<ThemeName, ColorTokens> = {
     coverPageEdge: '#efe6d2',
     coverShadow: 'rgba(19, 35, 31, 0.28)',
     coverShadowSoft: 'rgba(19, 35, 31, 0.14)',
+    tileGreen: '#dcebe2',
+    tileGreenInk: '#1f4d40',
+    tileGold: '#f5e7c4',
+    tileGoldInk: '#7e5f1e',
+    tileBlue: '#dbe6f2',
+    tileBlueInk: '#243b5e',
+    tileRose: '#f3dcdc',
+    tileRoseInk: '#7a2f3a',
+    tileNeutral: '#efe8d8',
+    tileNeutralInk: '#44524d',
   },
   sepia: {
     surface: '#f1e6cf',
@@ -258,6 +279,16 @@ export const colors: Record<ThemeName, ColorTokens> = {
     coverPageEdge: '#efe6d2',
     coverShadow: 'rgba(19, 35, 31, 0.28)',
     coverShadowSoft: 'rgba(19, 35, 31, 0.14)',
+    tileGreen: '#d9e3c8',
+    tileGreenInk: '#2f5236',
+    tileGold: '#ecd9a8',
+    tileGoldInk: '#6e521c',
+    tileBlue: '#d3dfe1',
+    tileBlueInk: '#2a4655',
+    tileRose: '#efd5c8',
+    tileRoseInk: '#6b2f26',
+    tileNeutral: '#e9dcc0',
+    tileNeutralInk: '#54452f',
   },
   dark: {
     surface: '#0e1715',
@@ -338,6 +369,16 @@ export const colors: Record<ThemeName, ColorTokens> = {
     coverPageEdge: '#efe6d2',
     coverShadow: 'rgba(19, 35, 31, 0.28)',
     coverShadowSoft: 'rgba(19, 35, 31, 0.14)',
+    tileGreen: '#1d4033',
+    tileGreenInk: '#8fd1b0',
+    tileGold: '#3f3318',
+    tileGoldInk: '#e6c77e',
+    tileBlue: '#1c3249',
+    tileBlueInk: '#9cc3e6',
+    tileRose: '#432629',
+    tileRoseInk: '#eaa9b0',
+    tileNeutral: '#24332f',
+    tileNeutralInk: '#c3cdc8',
   },
 };
 

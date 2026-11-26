@@ -1,5 +1,7 @@
-import { act, fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { I18nManager } from 'react-native';
+import { usePanGesture } from 'react-native-gesture-handler';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { locales } from '../../../../jest/render-ui';
 import { renderGesture } from '../../../../jest/seerah-ui';
@@ -7,6 +9,25 @@ import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 
 import { TimelineBar } from './TimelineBar';
+
+jest.mock('react-native-gesture-handler', () => {
+  const actual = jest.requireActual<typeof import('react-native-gesture-handler')>('react-native-gesture-handler');
+  return { ...actual, usePanGesture: jest.fn(actual.usePanGesture) };
+});
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated');
+  return { __esModule: true, ...actual, default: actual.default, useReducedMotion: jest.fn(() => false) };
+});
+
+type CardPan = { activeOffsetY?: unknown; onDeactivate: (event: { translationY: number; velocityY: number }) => void };
+// The card's collapse pan: the one with a vertical activation offset (the scrubber's starts at once).
+function cardPan(): CardPan {
+  const config = jest.mocked(usePanGesture).mock.calls.map((call) => call[0] as unknown as CardPan).findLast((item) => item.activeOffsetY !== undefined);
+  if (config === undefined) {
+    throw new Error('no collapse pan');
+  }
+  return config;
+}
 
 let mockGlass = false;
 jest.mock('@/core/theme', () => ({ ...jest.requireActual<object>('@/core/theme'), useGlass: () => mockGlass }));
@@ -141,5 +162,56 @@ describe('TimelineBar', () => {
 
   it('has no raw colour literal', () => {
     expect(rawColorLiteralsInFeature('src/features/seerah/components/TimelineBar.tsx')).toEqual([]);
+  });
+
+  describe('hiding, like the mini player', () => {
+    afterEach(async () => {
+      jest.mocked(useReducedMotion).mockReturnValue(false);
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+    });
+
+    it('without onCollapse draws no hint, no drag strip and no hide action', async () => {
+      await bar().view;
+      expect(screen.queryByTestId('mini-player-chevron', hidden)).toBeNull();
+      expect(screen.queryByTestId('timeline-bar-drag-strip')).toBeNull();
+      expect(screen.getByRole('header').props.accessibilityActions).toBeUndefined();
+    });
+
+    it.each(locales)('draws the ⌄ hint and gives the title the hide action (%s)', async (locale) => {
+      await bar({ onCollapse: jest.fn() }, locale).view;
+      expect(screen.getByTestId('mini-player-chevron', hidden).props.pointerEvents).toBe('none');
+      expect(screen.getByRole('header').props.accessibilityActions).toEqual([
+        { label: locale === 'ar' ? 'إخفاء الخط الزمني' : 'Hide timeline', name: 'collapse' },
+      ]);
+    });
+
+    it('a short drag on the title row springs back; the scrubber keeps its own drag', async () => {
+      const onCollapse = jest.fn();
+      await bar({ onCollapse }).view;
+      expect(screen.getByTestId('timeline-bar-drag-strip')).toContainElement(screen.getByTestId('timeline-bar-header'));
+      expect(screen.getByTestId('timeline-bar-drag-strip')).not.toContainElement(screen.getByRole('adjustable'));
+      await act(async () => cardPan().onDeactivate({ translationY: 20, velocityY: 0 }));
+      expect(onCollapse).not.toHaveBeenCalled();
+    });
+
+    it('Reduce Motion: the hide action swaps at once, with no slide', async () => {
+      jest.mocked(useReducedMotion).mockReturnValue(true);
+      const onCollapse = jest.fn();
+      await bar({ onCollapse }).view;
+      await act(async () => {
+        fireEvent(screen.getByRole('header'), 'accessibilityAction', { nativeEvent: { actionName: 'collapse' } });
+      });
+      expect(onCollapse).toHaveBeenCalledTimes(1);
+    });
+
+    // Last: the collapse runs a spring whose callback outlives the test.
+    it('a drag down past half the card hides it once the card has slid away', async () => {
+      const onCollapse = jest.fn();
+      await bar({ onCollapse }).view;
+      await act(async () => cardPan().onDeactivate({ translationY: 80, velocityY: 0 }));
+      await waitFor(() => expect(onCollapse).toHaveBeenCalledTimes(1));
+    });
   });
 });

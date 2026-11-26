@@ -179,3 +179,21 @@ describe("OnboardingTourScreen", () => {
     ).toEqual([]);
   });
 });
+
+const WINDOWS = {
+  short: [874, 402],
+  tall: [390, 844],
+} as const;
+
+describe.each(Object.entries(WINDOWS))('in a %s window', (_name, [width, height]) => {
+  beforeEach(() => setWindowSize(width, height));
+  afterEach(() => resetWindowSize());
+
+  it.each(locales)('keeps the footer below a scrolling body in %s', async (locale) => {
+    const view = await renderUi(<OnboardingTourScreen />, { locale });
+
+    expect(view.getByTestId('onboarding-footer')).toBeOnTheScreen();
+    expect(view.getByTestId('onboarding-tour-scroll')).toBeOnTheScreen();
+    expect(view.getByTestId('onboarding-tour-scroll').type).toBe('RCTScrollView');
+  });
+});

@@ -24,11 +24,10 @@ describe('MushafFullscreenExit', () => {
   it('draws frosted glass so the disc is not mistaken for an ayah wash', async () => {
     const view = await renderUi(<MushafFullscreenExit onExit={() => undefined} />);
 
-    const layer = view.getByTestId('mushaf-fullscreen-exit-button-glass');
-    const [surface] = layer.children;
+    const surface = view.getByTestId('mushaf-fullscreen-exit-button-glass', { includeHiddenElements: true });
     const { colors, shadows } = themes.light;
 
-    expect(flatStyle(typeof surface === 'object' ? surface.props.style : undefined)).toMatchObject({
+    expect(flatStyle(surface.props.style)).toMatchObject({
       backgroundColor: colors.glassFill,
       borderColor: colors.glassStroke,
       boxShadow: shadows.glass,

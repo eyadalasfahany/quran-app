@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable $imported_at
  * @property WordBoxesStatus $word_boxes_status
  * @property string|null $word_boxes_digest
+ * @property WordBoxesStatus $contours_status
+ * @property string|null $contours_digest
  */
 final class SvgMushaf extends Model
 {
@@ -40,6 +42,7 @@ final class SvgMushaf extends Model
             'ayah_count' => 'integer',
             'imported_at' => 'immutable_datetime',
             'word_boxes_status' => WordBoxesStatus::class,
+            'contours_status' => WordBoxesStatus::class,
         ];
     }
 

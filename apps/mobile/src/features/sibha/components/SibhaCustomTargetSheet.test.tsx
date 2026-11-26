@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import { Platform } from 'react-native';
 
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
-import { renderUi } from '../../../../jest/render-ui';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { SibhaCustomTargetSheet } from './SibhaCustomTargetSheet';
 
 // Records the props the avoiding view is given: React Native strips `behavior` before the host view, so the tree can't show it.
@@ -39,6 +40,13 @@ describe('SibhaCustomTargetSheet', () => {
     expect(rendered.getByRole('header', { name: 'هدف مخصص' })).toBeOnTheScreen();
     expect(rendered.getByText('أدخل عددًا من ١ إلى ٩٩٩٩')).toBeOnTheScreen();
     expect(rendered.getByLabelText('عدد التسبيحات')).toBeOnTheScreen();
+  });
+
+  it('centres the card and caps its width at the sheet width', async () => {
+    const { view } = renderSheet();
+    const rendered = await view;
+
+    expect(flatStyle(rendered.getByTestId('sibha-custom-sheet-card').props.style).maxWidth).toBe(SHEET_CARD_MAX_WIDTH);
   });
 
   it('renders nothing when hidden', async () => {

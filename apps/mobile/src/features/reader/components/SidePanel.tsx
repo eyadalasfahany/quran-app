@@ -18,7 +18,8 @@ export function SidePanel({
   testID = 'reader-side-panel',
 }: {
   tab: PanelTab;
-  onTabChange: (tab: PanelTab) => void;
+  /** Without it the panel shows no tabs (an ayah on a non-Hafs page has none). */
+  onTabChange?: (tab: PanelTab) => void;
   onClose: () => void;
   children?: ReactNode;
   testID?: string;
@@ -44,7 +45,7 @@ export function SidePanel({
           variant="surface"
         />
       </View>
-      <PanelTabs onChange={onTabChange} testID="reader-panel-tabs" value={tab} />
+      {onTabChange === undefined ? null : <PanelTabs onChange={onTabChange} testID="reader-panel-tabs" value={tab} />}
       <View style={{ flex: 1, paddingTop: theme.space[4] }}>{children}</View>
     </GlassSurface>
   );

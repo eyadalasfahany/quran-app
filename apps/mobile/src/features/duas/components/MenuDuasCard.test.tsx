@@ -10,11 +10,12 @@ describe('MenuDuasCard', () => {
     expect(MENU_DUAS_ICON).toEqual({ ios: 'hands.sparkles', android: 'volunteer_activism' });
   });
 
-  it('shows the Duas title, caption and subtitle in Arabic', async () => {
+  it('shows the Duas title and subtitle in Arabic', async () => {
     const view = await renderUi(<MenuDuasCard onPress={jest.fn()} />);
 
     expect(view.getByText('الأدعية')).toBeOnTheScreen();
-    expect(view.getByText('الدعاء')).toBeOnTheScreen();
+    // The caption is spoken, not drawn: the menu section's title stands in for it.
+    expect(view.queryByText('الدعاء')).toBeNull();
     expect(view.getByText('من القرآن والسنة وأدعيتك')).toBeOnTheScreen();
   });
 
@@ -31,7 +32,8 @@ describe('MenuDuasCard', () => {
     const view = await renderUi(<MenuDuasCard onPress={jest.fn()} />, { locale: 'en' });
 
     expect(view.getByText('Duas')).toBeOnTheScreen();
-    expect(view.getByText('Supplication')).toBeOnTheScreen();
+    // The caption is spoken, not drawn: the menu section's title stands in for it.
+    expect(view.queryByText('Supplication')).toBeNull();
     expect(view.getByText('Quran, Sunnah and yours')).toBeOnTheScreen();
   });
 

@@ -2,8 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { useTheme } from '@/core/theme';
 import { useSlideUp } from '@/core/theme/motion';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
 import { WidgetAddTrigger } from '@/features/widgets/components/WidgetAddTrigger';
 import { Button, Card, UiText, useContrastColors } from '@/shared/ui';
 
@@ -38,7 +40,7 @@ export function DiscoverWidgetSheet({
   const motion = useSlideUp();
 
   return (
-    <Modal animationType="none" onRequestClose={onClose} transparent visible={visible}>
+    <Modal animationType="none" onRequestClose={onClose} supportedOrientations={MODAL_ORIENTATIONS} transparent visible={visible}>
       <View accessibilityViewIsModal style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Pressable
           accessibilityLabel={t('discover.close')}
@@ -51,14 +53,18 @@ export function DiscoverWidgetSheet({
           entering={motion.entering}
           exiting={motion.exiting}
           style={{
+            alignSelf: 'center',
             backgroundColor: theme.colors.surfaceRaised,
             borderTopLeftRadius: theme.radius.xl,
             borderTopRightRadius: theme.radius.xl,
             maxHeight: '85%',
+            maxWidth: SHEET_CARD_MAX_WIDTH,
             paddingBottom: theme.space[8],
             paddingHorizontal: theme.space[5],
             paddingTop: theme.space[3],
+            width: '100%',
           }}
+          testID="discover-widget-card"
         >
           <ScrollView contentContainerStyle={{ gap: theme.space[4] }}>
             <View style={{ alignSelf: 'center', backgroundColor: colors.lineStrong, borderRadius: 3, height: 5, width: 36 }} />

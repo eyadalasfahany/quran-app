@@ -33,6 +33,8 @@ export function useReciterCatalogue(ready: boolean): {
   selectedId: number | null;
   playingId: number | null;
 } {
+  // The reads below must run every render (they follow the store subscriptions above); the React Compiler would cache them by argument.
+  'use no memo';
   // Subscribing to installedVersion and the catalogue version re-renders after an install or a catalogue sync,
   // which reads the catalogue again (on first launch the sync lands after this tab mounted).
   useReciterDownloads((state) => state.installedVersion);

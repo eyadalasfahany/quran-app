@@ -2,10 +2,12 @@
 
 Index, search, reading/focus modes, tafsir
 
-15 frames · review page: `design/reading/<Screen>/index.html` (ADR 0087)
+18 frames · review page: `design/reading/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
+| `ReaderSettingsMushafZoom` | compact | ar-light | source | Reader settings · Mushaf page zoom 150% stepper. Approved by the developer, 26 Nov 2026 |
+| `ReaderSettingsMushafZoomUnavailable` | compact | ar-light | source | Reader settings · zoom needs word data (riwayah without it). Approved by the developer, 26 Nov 2026 |
 | `SurahIndex` | compact | ar-light | source | Surah index |
 | `Search` | compact | ar-light | source | Search |
 | `SearchEmpty` | compact | ar-light | source | البحث · القرآن، بلا كلمة بحث |
@@ -14,6 +16,7 @@ Index, search, reading/focus modes, tafsir
 | `ReadingOtherRiwayah` | compact | ar-light | awaiting-approval | Reading mode · Warsh chosen: the title pill names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة) |
 | `ReadingMiniIdle` | compact | ar-light | source | Reading · mini player idle (plays from the top ayah on screen) |
 | `ReadingMiniCollapsed` | compact | ar-light | source | Reading · mini player collapsed (drag down to hide, drag up or tap to show) |
+| `ReadingMiniCollapsedLandscape` | medium | ar-light | source | Reading · landscape phone: mini player collapsed to the corner capsule (ADR 0090 amendment 26 Nov, item 8) Approved by the developer, 26 Nov 2026 |
 | `ReadingMiniUnavailable` | compact | ar-light | source | Reading · mini player, surah unavailable for the reciter (surah 37 الصافات with إسلام صبحي; play was pressed, nothing plays, no progress state). Info glyph and message; «تغيير القارئ» opens the reciter picker (44 pt target). Idle reader rule (ADR 0059) so the bar stays on the reader. Approved 4 Nov 2026 (ADR 0062) |
 | `ReadingMiniSkipped` | compact | ar-light | source | Mini player, playing · continuous play skipped surah 37 (moved 36 → 38). Shows surah ص playing normally, plus a secondary line «تخطّي الصافات · غير متوفرة بصوت إسلام صبحي». The notice is transient: it shows for about 4 s, then the line disappears. VoiceOver announces it (role=status, polite). Approved 4 Nov 2026 (ADR 0062) |
 | `Focus` | compact | ar-light | source | Focus mode |

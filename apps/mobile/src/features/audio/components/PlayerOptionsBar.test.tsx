@@ -134,9 +134,10 @@ describe('PlayerOptionsBar', () => {
     const bar = flatStyle(view.getByTestId('player-options').props.style);
 
     expect(bar.backgroundColor).toBeUndefined();
-    expect(view.getByTestId('player-options-glass', { includeHiddenElements: true })).toBeOnTheScreen();
+    // The bar is interactive glass itself (it holds the option buttons), so the glass view carries the testID.
+    expect(view.getByTestId('player-options').props.isInteractive).toBe(true);
     // The player is dark in every app theme, so the light theme must not tint its glass light.
-    expect(view.getByTestId('player-options-glass', { includeHiddenElements: true }).props.colorScheme).toBe('dark');
+    expect(view.getByTestId('player-options').props.colorScheme).toBe('dark');
   });
 
   it('shows the range label without numbers when no surah is loaded', async () => {

@@ -25,11 +25,19 @@ import { timing, useTheme } from '@/core/theme';
 import { highlightFill, useContrastColors, type HighlightColor } from '@/shared/ui';
 import { useScreenReaderEnabled } from '@/shared/useScreenReaderEnabled';
 
-import { pageHeightFor, scaleFor, toPage, toScreen } from '../mushaf-svg/page-layout';
+import { PAGE_VIEWBOX, pageHeightFor, scaleFor, toPage, toScreen } from '../mushaf-svg/page-layout';
 import { regionAt, type PageRegionGeometry } from '../mushaf-svg/region-geometry';
+import type { PageLayout } from '../mushaf-svg/rewrap-layout';
 import type { SvgPageModel } from '../mushaf-svg/svg-page-model';
 import { pillMove, pillRectFor } from '../mushaf-svg/word-pill-rect';
 import { MushafPageSkeleton } from './MushafPageSkeleton';
+
+/**
+ * The tallest canvas, in points. One Skia canvas is one GPU texture, and Metal refuses a texture over 8192 px on the
+ * simulator (16384 on devices); a page zoomed to 200% outgrew it and aborted the app. Taller pages draw as stacked slices.
+ * 2048 pt stays under 8192 px at 3× screens.
+ */
+export const CANVAS_SLICE_MAX = 2048;
 
 export type MushafSvgPageProps = {
   page: number;
@@ -41,9 +49,16 @@ export type MushafSvgPageProps = {
   wordBoxes: readonly WordBox[];
   /** The page's pictures for one colour (PagePictureCache, through the loader). Null until recorded. */
   pictureOf: (color: string) => SkPicture | null;
+  /**
+   * The zoomed page (rewrap-layout.ts): its layout, whose size replaces the printed 345 × 550, and its picture for one
+   * colour. Null draws the printed page at 100%.
+   */
+  zoomed?: { layout: PageLayout; picture: (color: string) => SkPicture | null } | null;
   highlightByVerseKey?: ReadonlyMap<string, HighlightColor>;
   placeVerseKey?: string | null;
   recitedVerseKey?: string | null;
+  /** The ayah the reader has open in a sheet or the side panel (pressedVerseKey). */
+  pressedVerseKey?: string | null;
   recitedWord?: number | null;
   khatmaMarkerVerseKey?: string | null;
   ayahLabel: (region: PageRegionGeometry) => string;
@@ -64,9 +79,11 @@ export function MushafSvgPage({
   regions,
   wordBoxes,
   pictureOf,
+  zoomed = null,
   highlightByVerseKey,
   placeVerseKey = null,
   recitedVerseKey = null,
+  pressedVerseKey = null,
   recitedWord = null,
   khatmaMarkerVerseKey = null,
   ayahLabel,
@@ -79,11 +96,16 @@ export function MushafSvgPage({
   const colors = useContrastColors();
   const reduceMotion = useReducedMotion();
   const screenReader = useScreenReaderEnabled();
-  const height = pageHeightFor(width);
-  const scale = scaleFor(width);
+  // A zoomed page is laid out in its own units (rewrap-layout.ts); at 100% the units are the printed page's.
+  const unitsWidth = zoomed === null ? PAGE_VIEWBOX.width : zoomed.layout.unitsWidth;
+  const unitsHeight = zoomed === null ? PAGE_VIEWBOX.height : zoomed.layout.unitsHeight;
+  const height = pageHeightFor(width, unitsWidth, unitsHeight);
+  const scale = scaleFor(width, unitsWidth);
   const corner = theme.radius.sm / scale;
+  const slices = Math.max(1, Math.ceil(height / CANVAS_SLICE_MAX));
+  const sliceHeight = height / slices;
 
-  const ink = model === null ? null : pictureOf(colors.ink);
+  const ink = model === null ? null : zoomed === null ? pictureOf(colors.ink) : zoomed.picture(colors.ink);
   const recitedBox = useMemo(
     () =>
       recitedVerseKey === null || recitedWord === null
@@ -93,7 +115,12 @@ export function MushafSvgPage({
     [recitedVerseKey, recitedWord, wordBoxes],
   );
   // The light word is only drawn while a pill is; without boxes there is no pill and no light picture.
-  const light = recitedBox === null ? null : pictureOf(colors.onBrandSurface);
+  const light =
+    recitedBox === null
+      ? null
+      : zoomed === null
+        ? pictureOf(colors.onBrandSurface)
+        : zoomed.picture(colors.onBrandSurface);
 
   // The pill's rectangle lives in shared values, so the pill and the light word's clip read the same numbers.
   const pillX = useSharedValue(0);
@@ -139,13 +166,16 @@ export function MushafSvgPage({
   // the place and audio washes, which sit above it.
   const ownColour = (verseKey: string) => highlightFill(colors, highlightByVerseKey?.get(verseKey) ?? null);
   const baseFill = (verseKey: string) =>
-    ownColour(verseKey) ?? (khatmaMarkerVerseKey === verseKey && recitedVerseKey !== verseKey ? colors.highlightGold : undefined);
+    ownColour(verseKey) ??
+    (khatmaMarkerVerseKey === verseKey && recitedVerseKey !== verseKey ? colors.highlightGold : undefined);
   const washFill = (verseKey: string) =>
-    ownColour(verseKey) === undefined && (verseKey === recitedVerseKey || verseKey === placeVerseKey)
+    ownColour(verseKey) === undefined &&
+    (verseKey === recitedVerseKey || verseKey === placeVerseKey || verseKey === pressedVerseKey)
       ? colors.highlightActive
       : undefined;
 
-  const appear = useSharedValue(reduceMotion ? 1 : 0);
+  // Only a row that showed the skeleton fades in; a row mounted with its page ready draws at once (no blank during a fling).
+  const appear = useSharedValue(reduceMotion || model !== null ? 1 : 0);
   useLayoutEffect(() => {
     if (!reduceMotion && model !== null) {
       appear.value = withTiming(1, timing('fast'));
@@ -154,7 +184,7 @@ export function MushafSvgPage({
   const appearStyle = useAnimatedStyle(() => ({ opacity: appear.value }));
 
   const pressAt = (event: GestureResponderEvent) => {
-    const point = toPage({ x: event.nativeEvent.locationX, y: event.nativeEvent.locationY }, width);
+    const point = toPage({ x: event.nativeEvent.locationX, y: event.nativeEvent.locationY }, width, unitsWidth);
     return regionAt(regions, point.x, point.y);
   };
 
@@ -185,51 +215,77 @@ export function MushafSvgPage({
         style={{ height, width }}
         testID={testID ? `${testID}-press` : undefined}
       >
-        <Canvas accessible={false} importantForAccessibility="no" style={{ height, width }}>
-          <Group transform={[{ scale }]}>
-            {shapes.map(({ region, path }) => {
-              const fill = baseFill(region.verseKey);
-              return fill === undefined ? null : (
-                <Path color={fill} key={`base-${region.verseKey}`} path={path}>
-                  <CornerPathEffect r={corner} />
-                </Path>
-              );
-            })}
-            {shapes.map(({ region, path }) => {
-              const fill = washFill(region.verseKey);
-              return fill === undefined ? null : (
-                <Path color={fill} key={`wash-${region.verseKey}`} path={path}>
-                  <CornerPathEffect r={corner} />
-                </Path>
-              );
-            })}
-            {recitedBox === null ? null : (
-              <RoundedRect color={colors.brandSurface} height={pillH} r={corner} width={pillW} x={pillX} y={pillY} />
-            )}
-            <Picture picture={ink} />
-            {recitedBox !== null && light !== null ? (
-              <Group clip={pillClip}>
-                <Picture picture={light} />
+        {/* No touches on the slices: the press location stays relative to the whole page. */}
+        <View pointerEvents="none" style={{ height, width }}>
+          {Array.from({ length: slices }, (_, slice) => (
+            <Canvas
+              accessible={false}
+              importantForAccessibility="no"
+              key={slice}
+              style={{ height: sliceHeight, width }}
+              testID={testID ? `${testID}-slice-${slice}` : undefined}
+            >
+              <Group transform={[{ translateY: -slice * sliceHeight }, { scale }]}>
+                {shapes.map(({ region, path }) => {
+                  const fill = baseFill(region.verseKey);
+                  return fill === undefined ? null : (
+                    <Path color={fill} key={`base-${region.verseKey}`} path={path}>
+                      <CornerPathEffect r={corner} />
+                    </Path>
+                  );
+                })}
+                {shapes.map(({ region, path }) => {
+                  const fill = washFill(region.verseKey);
+                  return fill === undefined ? null : (
+                    <Path color={fill} key={`wash-${region.verseKey}`} path={path}>
+                      <CornerPathEffect r={corner} />
+                    </Path>
+                  );
+                })}
+                {recitedBox === null ? null : (
+                  <RoundedRect
+                    color={colors.brandSurface}
+                    height={pillH}
+                    r={corner}
+                    width={pillW}
+                    x={pillX}
+                    y={pillY}
+                  />
+                )}
+                <Picture picture={ink} />
+                {recitedBox !== null && light !== null ? (
+                  <Group clip={pillClip}>
+                    <Picture picture={light} />
+                  </Group>
+                ) : null}
               </Group>
-            ) : null}
-          </Group>
-        </Canvas>
+            </Canvas>
+          ))}
+        </View>
         {screenReader
           ? regions.map((region) => {
               const isRecited = region.verseKey === recitedVerseKey;
+              const isPressed = region.verseKey === pressedVerseKey;
               const colour = highlightByVerseKey?.get(region.verseKey);
-              const label = colour === undefined ? ayahLabel(region) : `${ayahLabel(region)} ${t(`ui.highlight.${colour}`)}`;
-              const box = toScreen(region.bounds, width);
+              const label =
+                colour === undefined ? ayahLabel(region) : `${ayahLabel(region)} ${t(`ui.highlight.${colour}`)}`;
+              const box = toScreen(region.bounds, width, unitsWidth);
               return (
                 <Pressable
                   accessibilityHint={isRecited ? t('player.nowPlaying') : undefined}
                   accessibilityLabel={label}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: isRecited }}
+                  accessibilityState={{ selected: isRecited || isPressed }}
                   key={`ayah-${region.verseKey}`}
                   onLongPress={() => onOpenAyahActions?.(region.verseKey)}
                   onPress={() => onSelectVerseKey?.(region.verseKey)}
-                  style={{ height: box.y1 - box.y0, left: box.x0, position: 'absolute', top: box.y0, width: box.x1 - box.x0 }}
+                  style={{
+                    height: box.y1 - box.y0,
+                    left: box.x0,
+                    position: 'absolute',
+                    top: box.y0,
+                    width: box.x1 - box.x0,
+                  }}
                   testID={testID ? `${testID}-ayah-${region.verseKey}` : undefined}
                 />
               );

@@ -24,6 +24,7 @@ export function TimelineHeader({
   onClear,
   onPrevious,
   onNext,
+  onCollapse,
   testID,
 }: {
   title: string;
@@ -34,6 +35,8 @@ export function TimelineHeader({
   onClear: () => void;
   onPrevious: () => void;
   onNext: () => void;
+  /** The timeline can be hidden (the card's drag down): the title carries the «hide» action for screen readers. */
+  onCollapse?: () => void;
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -44,7 +47,19 @@ export function TimelineHeader({
     <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[1], minHeight: theme.size.touchTarget }} testID={testID}>
       {/* Frame SeerahMapRegion: the title at 16 over a one-line 12 pt detail, 6 pt in from the start. */}
       <View style={{ flex: 1, minWidth: 0, paddingStart: 6 }}>
-        <UiText accessibilityRole="header" numberOfLines={1} scale="bar" style={horizontal ? { fontSize: 16, lineHeight: 21 } : null} variant="headline">
+        <UiText
+          accessibilityActions={onCollapse === undefined ? undefined : [{ label: t('seerah.timeline.hide'), name: 'collapse' }]}
+          accessibilityRole="header"
+          numberOfLines={1}
+          onAccessibilityAction={(event) => {
+            if (event.nativeEvent.actionName === 'collapse') {
+              onCollapse?.();
+            }
+          }}
+          scale="bar"
+          style={horizontal ? { fontSize: 16, lineHeight: 21 } : null}
+          variant="headline"
+        >
           {title}
         </UiText>
         <UiText numberOfLines={horizontal ? 1 : 2} scale="bar" tone="muted" variant="label" weight={400}>

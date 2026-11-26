@@ -16,13 +16,14 @@ return [
     'pages' => 604,
 
     // App key => source folder, print year (Hijri), expected total ayahs (null = check against surah.json only). The names are
-    // display names for the pack's resource row (ADR 0090 decision 2), not Quran text.
+    // display names for the pack's resource row (ADR 0090 decision 2), not Quran text. `publish` false hides an edition from
+    // mushaf:setup and from mushaf:publish (ADR 0090 item 12); `mushaf:publish --include-hidden` publishes it locally only.
     'editions' => [
-        'hafs' => ['folder' => 'hafs', 'edition_year' => 1441, 'expected_ayahs' => 6236, 'name' => 'Hafs from Asim', 'name_ar' => 'حفص عن عاصم'],
-        'warsh' => ['folder' => 'warsh', 'edition_year' => 1442, 'expected_ayahs' => null, 'name' => 'Warsh from Nafi', 'name_ar' => 'ورش عن نافع'],
-        'qalun' => ['folder' => 'qalon', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => 'Qalun from Nafi', 'name_ar' => 'قالون عن نافع'],
-        'shubah' => ['folder' => 'shubah', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => "Shu'bah from Asim", 'name_ar' => 'شعبة عن عاصم'],
-        'duri' => ['folder' => 'douri', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => 'Al-Duri from Abu Amr', 'name_ar' => 'الدوري عن أبي عمرو'],
+        'hafs' => ['folder' => 'hafs', 'edition_year' => 1441, 'expected_ayahs' => 6236, 'name' => 'Hafs from Asim', 'name_ar' => 'حفص عن عاصم', 'publish' => true],
+        'warsh' => ['folder' => 'warsh', 'edition_year' => 1442, 'expected_ayahs' => null, 'name' => 'Warsh from Nafi', 'name_ar' => 'ورش عن نافع', 'publish' => true],
+        'qalun' => ['folder' => 'qalon', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => 'Qalun from Nafi', 'name_ar' => 'قالون عن نافع', 'publish' => true],
+        'shubah' => ['folder' => 'shubah', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => "Shu'bah from Asim", 'name_ar' => 'شعبة عن عاصم', 'publish' => true],
+        'duri' => ['folder' => 'douri', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => 'Al-Duri from Abu Amr', 'name_ar' => 'الدوري عن أبي عمرو', 'publish' => false],
     ],
 
     // quran-ws/quran-text: one row per word with its page and line (`data/mushaf/{key}.csv.gz`). Only keys, page, line,
@@ -63,6 +64,7 @@ return [
     'word_box_files' => [
         'output' => 'svg-mushaf/word-boxes-%s.json',
         'overrides' => 'svg-mushaf/word-box-overrides-%s.json',
+        'contour_output' => 'svg-mushaf/word-contours-%s.json',
     ],
 
     // The reviewed word-box digest per edition. Only the developer sets it, after checking every page of the review sheet.
@@ -70,5 +72,9 @@ return [
     'approved_word_boxes' => [
         'hafs' => '8944a6b3f72874e9a77ea8e708f7d06b68f6741ee55f1d606167870835a04553',
     ],
+
+    // The reviewed contour-map digest per edition (ADR 0090 step 13 A3, decision 7). Set only by the developer after the review
+    // sheet of step 13 C0. Not approved yet: the map stays pending_review until then.
+    'approved_word_contours' => [],
 
 ];

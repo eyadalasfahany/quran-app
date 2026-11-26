@@ -85,7 +85,7 @@ export function EdgeChip({
       style={{ alignSelf: 'flex-start', opacity: dimmed ? theme.opacity.disabled : 1 }}
       testID={testID}
     >
-      <GlassSurface
+      <GlassSurface interactive
         colorScheme={theme.name === 'dark' ? 'dark' : 'light'}
         radius="pill"
         style={{

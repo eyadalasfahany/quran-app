@@ -18,6 +18,8 @@ export function ReadingAyahRow({
   textImlaei,
   fontScale = 1,
   recited = false,
+  placeMarked = false,
+  pressed = false,
   khatmaMarked = false,
   activeWord = null,
   audioAvailable = false,
@@ -41,6 +43,10 @@ export function ReadingAyahRow({
   fontScale?: number;
   /** The ayah the player is reciting: the neutral wash, the brand marker and rule (ADR 0012). */
   recited?: boolean;
+  /** The continue-reading place: the grey wash only, until the reader scrolls by hand. */
+  placeMarked?: boolean;
+  /** The ayah whose actions sheet or side panel is open: the grey wash, and selected for VoiceOver. */
+  pressed?: boolean;
   /** The ayah marked as the khatma position when it is not recited. */
   khatmaMarked?: boolean;
   /** The recited word (1-based), when the ayah has word segments. */
@@ -80,7 +86,8 @@ export function ReadingAyahRow({
       : `${labelText} ${ayahLabel} ${t(`ui.highlight.${highlightColor}`)}${khatmaSuffix ? ` ${khatmaSuffix}` : ''}`;
 
   // The user's colour wins the fill; the recited wash shows only on an ayah without one (ADR 0012).
-  const quranBackground = highlightFill(colors, highlightColor) ?? (active ? colors.highlightActive : 'transparent');
+  const quranBackground =
+    highlightFill(colors, highlightColor) ?? (active || placeMarked || pressed ? colors.highlightActive : 'transparent');
 
   // The header's buttons sit outside the text's Pressable, so each one stays reachable by screen readers.
   return (
@@ -102,7 +109,7 @@ export function ReadingAyahRow({
         accessibilityHint={recited ? t('player.nowPlaying') : undefined}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
-        accessibilityState={{ selected: active }}
+        accessibilityState={{ selected: active || pressed }}
         onLongPress={onLongPress}
         onPress={onPress}
         testID={testID}

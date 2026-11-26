@@ -71,7 +71,7 @@ export function EventPager({
   };
 
   return (
-    <GlassSurface radius="xl" style={{ alignItems: 'center', flexDirection: 'row', padding: theme.space[1] }} testID={testID}>
+    <GlassSurface interactive radius="xl" style={{ alignItems: 'center', flexDirection: 'row', padding: theme.space[1] }} testID={testID}>
       {slot(previous, 'previous')}
       <UiText scale="bar" tone="muted" variant="label" weight={400}>
         {t('seerah.event.pager.position', { index: formatNumber(index, locale), total: formatNumber(total, locale) })}

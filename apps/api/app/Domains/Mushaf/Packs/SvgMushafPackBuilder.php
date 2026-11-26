@@ -10,11 +10,13 @@ use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\PackBuildException;
 use App\Domains\Content\Packs\PackSchema;
 use App\Domains\Content\Repositories\Contracts\ContentPackRepository;
+use App\Domains\Mushaf\Exceptions\SvgMushafSourceException;
 use App\Domains\Mushaf\Models\SvgMushaf;
+use App\Domains\Mushaf\Packs\Tqp\TqpPageBlob;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafPackRepository;
 use App\Domains\Mushaf\Services\WordBoxApproval;
+use App\Domains\Mushaf\Services\WordContourApproval;
 use App\Domains\Mushaf\Sources\SvgMushafDownloader;
-use App\Domains\Mushaf\Sources\SvgMushafStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Storage;
@@ -26,14 +28,19 @@ use Throwable;
  */
 final class SvgMushafPackBuilder
 {
+    /** The page encoding the pack carries (ADR 0090 amendment of 26 Nov 2026). Part of the publish fingerprint. */
+    public const string FORMAT = 'tqp1-deflate-n32';
+
     public function __construct(
         private readonly SvgMushafPackRepository $mushafs,
         private readonly ContentPackRepository $packs,
-        private readonly SvgMushafStore $store,
         private readonly SvgMushafDownloader $downloader,
     ) {}
 
-    public function build(Resource $resource): ContentPackData
+    /**
+     * @param  bool  $withPendingContours  the local-only flag of `mushaf:publish --with-pending-contours`: writes a map pending review
+     */
+    public function build(Resource $resource, bool $withPendingContours = false): ContentPackData
     {
         $existing = $this->packs->findForVersion($resource->id, $resource->version);
 
@@ -53,6 +60,7 @@ final class SvgMushafPackBuilder
         }
 
         $approved = WordBoxApproval::isApproved($mushaf);
+        $contours = WordContourApproval::writes($mushaf, $withPendingContours);
         $temp = storage_path('app/tmp/svg-mushaf-'.$resource->id.'-'.$resource->version.'-'.bin2hex(random_bytes(8)).'.sqlite');
         $path = 'packs/'.$resource->id.'/'.$resource->version.'.sqlite';
         $writer = null;
@@ -61,7 +69,7 @@ final class SvgMushafPackBuilder
         try {
             $builtAt = CarbonImmutable::now('UTC');
             $writer = SvgMushafPackWriter::create($temp);
-            $rowCount = $this->write($writer, $resource, $mushaf, $approved, $builtAt);
+            $rowCount = $this->write($writer, $resource, $mushaf, $approved, $contours, $builtAt);
             $writer->close();
             $writer = null;
 
@@ -105,13 +113,13 @@ final class SvgMushafPackBuilder
     /**
      * @return int<0, max> the rows written
      */
-    private function write(SvgMushafPackWriter $writer, Resource $resource, SvgMushaf $mushaf, bool $approved, CarbonImmutable $builtAt): int
+    private function write(SvgMushafPackWriter $writer, Resource $resource, SvgMushaf $mushaf, bool $approved, bool $contours, CarbonImmutable $builtAt): int
     {
         $writer->begin();
         $writer->createSchema();
 
         $meta = [
-            'pack_schema_version' => (string) PackSchema::VERSION,
+            'pack_schema_version' => (string) PackSchema::SVG_MUSHAF_VERSION,
             'resource_id' => (string) $resource->id,
             'group' => $resource->group->value,
             'version' => (string) $resource->version,
@@ -121,31 +129,30 @@ final class SvgMushafPackBuilder
             'source_commit' => $mushaf->source_commit,
             'page_count' => (string) $mushaf->page_count,
             'has_word_boxes' => $approved ? '1' : '0',
+            'has_word_contours' => $contours ? '1' : '0',
+            'page_format' => self::FORMAT,
         ];
 
         if ($approved) {
             $meta['word_boxes_digest'] = (string) $mushaf->word_boxes_digest;
         }
 
+        if ($contours) {
+            $meta['word_contours_digest'] = (string) $mushaf->contours_digest;
+        }
+
         $writer->writeMeta($meta);
 
         $rowCount = 0;
-        $base = $this->downloader->base((string) $mushaf->folder);
 
         foreach ($this->mushafs->pages($mushaf->id) as $page) {
-            $relative = sprintf('svg/%03d.svg.gz', $page['page']);
+            $encoded = TqpPageBlob::build($this->pageSvg((string) $mushaf->folder, $page['page']));
 
-            if (! $this->store->has($base, $relative)) {
-                throw new PackBuildException(sprintf('Page %d of the SVG mushaf is missing or changed in the source cache. Run mushaf:import.', $page['page']));
+            if ($page['tqp_sha256'] === null || ! hash_equals($page['tqp_sha256'], $encoded['container_sha256'])) {
+                throw new PackBuildException(sprintf('Page %d: the encoded page changed since import. Run mushaf:import.', $page['page']));
             }
 
-            $bytes = $this->store->read($base, $relative);
-
-            if (strlen($bytes) !== $page['gz_bytes'] || ! hash_equals($page['gz_sha256'], hash('sha256', $bytes))) {
-                throw new PackBuildException(sprintf('Page %d of the SVG mushaf is missing or changed in the source cache. Run mushaf:import.', $page['page']));
-            }
-
-            $writer->insertPage($page['page'], $bytes);
+            $writer->insertPage($page['page'], $encoded['blob'], $encoded['origin_x'], $encoded['origin_y']);
             $rowCount++;
         }
 
@@ -161,9 +168,33 @@ final class SvgMushafPackBuilder
             }
         }
 
+        if ($contours) {
+            foreach ($this->mushafs->wordContours($mushaf->id) as $run) {
+                $writer->insertWordContour($run);
+                $rowCount++;
+            }
+
+            foreach ($this->mushafs->contourBlocks($mushaf->id) as $block) {
+                $writer->insertContourBlock($block);
+                $rowCount++;
+            }
+        }
+
         $writer->commit();
 
         return $rowCount;
+    }
+
+    /**
+     * The cached raw page, checked by A1 on every read. A changed or missing file is a stale import, not a build failure.
+     */
+    private function pageSvg(string $folder, int $page): string
+    {
+        try {
+            return $this->downloader->bytes($folder, sprintf('svg/%03d.svg', $page), true);
+        } catch (SvgMushafSourceException) {
+            throw new PackBuildException(sprintf('Page %d of the SVG mushaf is missing or changed in the source cache. Run mushaf:import.', $page));
+        }
     }
 
     private function store(string $path, string $temp): void
@@ -198,7 +229,7 @@ final class SvgMushafPackBuilder
             'size_bytes' => (int) filesize($temp),
             'sha256' => (string) hash_file('sha256', $temp),
             'row_count' => $rowCount,
-            'schema_version' => PackSchema::VERSION,
+            'schema_version' => PackSchema::SVG_MUSHAF_VERSION,
             'built_at' => $builtAt,
             'has_word_boxes' => $approved,
         ]);

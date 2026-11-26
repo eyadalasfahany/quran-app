@@ -1,7 +1,8 @@
 import { FlashList, type FlashListRef, type ListRenderItemInfo } from '@shopify/flash-list';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View, type LayoutChangeEvent } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { openContentDb } from '@/core/db/content/open';
@@ -10,14 +11,17 @@ import type { SvgMushafKey, SvgMushafPackReader } from '@/core/mushaf-pack';
 import { useTheme } from '@/core/theme';
 import { PageDivider, useContrastColors, type HighlightColor } from '@/shared/ui';
 
+import { pressedVerseKey, useReaderSelection } from './selection';
+
 import { MushafPageError } from './components/MushafPageError';
 import { MushafScrollView } from './components/MushafScrollView';
 import { MushafSvgPage } from './components/MushafSvgPage';
 import { getVerseByKey, idToVerseKey } from './data/verses';
 import { offsetForAyah, topAyahAt } from './mushaf-svg/ayah-anchor';
 import { ayahLabelFor } from './mushaf-svg/ayah-label';
-import { MUSHAF_FRAME_SIDE, pageHeightFor, pageItemHeight, pageWidthFor, scaleFor } from './mushaf-svg/page-layout';
+import { MUSHAF_FRAME_SIDE, PAGE_VIEWBOX, pageHeightFor, pageItemHeight, pageWidthFor, scaleFor } from './mushaf-svg/page-layout';
 import type { PageRegionGeometry } from './mushaf-svg/region-geometry';
+import type { PageLayout } from './mushaf-svg/rewrap-layout';
 import { useBoxFollow } from './mushaf-svg/useBoxFollow';
 import { useMushafPageLoader } from './mushaf-svg/useMushafPageLoader';
 import { extendPageWindow, MUSHAF_PAGE_COUNT, pageWindowFrom, pagesIn, type PageWindow } from './page-window';
@@ -42,6 +46,8 @@ export type MushafSvgListProps = {
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   khatmaMarkerVerseId?: number | null;
   placeVerseKey?: string | null;
+  /** The effective page zoom (ADR 0090 amendment, item 9): 1 draws the printed page; above 1 the page is re-wrapped. */
+  zoom?: number;
   onVisiblePage?: (page: number, verseKey: string) => void;
   onTopAyah?: (page: number, verseKey: string) => void;
   onSelectVerseKey?: (verseKey: string) => void;
@@ -74,6 +80,7 @@ export function MushafSvgList({
   highlightsByVerseId,
   khatmaMarkerVerseId = null,
   placeVerseKey = null,
+  zoom = 1,
   onVisiblePage,
   onTopAyah,
   onSelectVerseKey,
@@ -87,12 +94,42 @@ export function MushafSvgList({
   const colors = useContrastColors();
   const reduceMotion = useReducedMotion();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  // The reader's column: inside the safe area, and without the sidebar or docked panel. Null until the first layout.
+  const [columnWidth, setColumnWidth] = useState<number | null>(null);
   const listRef = useRef<FlashListRef<number>>(null);
   const executor = useMemo(() => openContentDb().executor, []);
   const loader = useMushafPageLoader(reader, mushafKey);
-  const pageWidth = pageWidthFor(windowWidth, 2 * theme.space[4] + 2 * MUSHAF_FRAME_SIDE);
+  // The measured column already excludes the safe-area insets; only the pre-layout window width needs them taken off.
+  const pageWidth =
+    columnWidth === null
+      ? pageWidthFor(windowWidth, insets.left + insets.right + 2 * theme.space[4] + 2 * MUSHAF_FRAME_SIDE)
+      : pageWidthFor(columnWidth, 2 * theme.space[4] + 2 * MUSHAF_FRAME_SIDE);
+  const onColumnLayout = useCallback((event: LayoutChangeEvent) => setColumnWidth(event.nativeEvent.layout.width), []);
   const scale = scaleFor(pageWidth);
   const isHafs = mushafKey === 'hafs';
+
+  // The page's geometry: its laid-out units at a zoom above 1, else the printed page. Pages without contour data stay at 100%.
+  const layoutOf = useCallback((page: number): PageLayout | null => (zoom > 1 ? loader.layout(page, zoom) : null), [loader, zoom]);
+  const unitsOf = useCallback(
+    (page: number) => {
+      const layout = layoutOf(page);
+      return layout === null ? { height: PAGE_VIEWBOX.height, width: PAGE_VIEWBOX.width } : { height: layout.unitsHeight, width: layout.unitsWidth };
+    },
+    [layoutOf],
+  );
+  const scaleOf = useCallback((page: number) => scaleFor(pageWidth, unitsOf(page).width), [pageWidth, unitsOf]);
+  const regionsOf = useCallback(
+    (page: number): readonly PageRegionGeometry[] => layoutOf(page)?.regions ?? loader.regions(page),
+    [layoutOf, loader],
+  );
+  const wordBoxesOf = useCallback(
+    (page: number) => {
+      const layout = layoutOf(page);
+      return layout === null ? loader.wordBoxes(page) : layout.lines.flatMap((line) => line.wordRects);
+    },
+    [layoutOf, loader],
+  );
 
   // The page the anchor ayah starts on, from the pack (W6). Without it, the list opens on page 1.
   const anchorPage = useMemo(() => {
@@ -150,28 +187,38 @@ export function MushafSvgList({
     setPageWindow(pageWindowFrom(anchorPage));
   }, [anchorPage, anchorVerseKey, followKey, reduceMotion]);
 
-  // A size change (rotation, a split view) re-anchors the reader on the same ayah, with no animation.
-  const widthRef = useRef(pageWidth);
+  // A size change (rotation, a split view) or a zoom change re-anchors the reader on the same ayah, with no animation.
+  const geometryKey = `${pageWidth}:${zoom}`;
+  const geometryRef = useRef(geometryKey);
   useLayoutEffect(() => {
-    if (widthRef.current === pageWidth) {
+    if (geometryRef.current === geometryKey) {
       return;
     }
-    widthRef.current = pageWidth;
+    geometryRef.current = geometryKey;
     visiblePage.current = anchorPage;
     settling.current = true;
     pendingScroll.current = { animated: false, page: anchorPage, verseKey: anchorVerseKey };
     setPageWindow(pageWindowFrom(anchorPage));
-  }, [anchorPage, anchorVerseKey, pageWidth]);
+  }, [anchorPage, anchorVerseKey, geometryKey, pageWidth]);
 
   // The artwork's top inside a page's item: the divider above it (when there is one) and the frame's top side.
   const artworkTopIn = useCallback(
     (index: number, page: number) => {
+      const { width: unitsWidth, height: unitsHeight } = unitsOf(page);
       const itemHeight =
-        listRef.current?.getLayout(index)?.height ?? pageItemHeight(pageWidth, page > 1 ? DIVIDER_ESTIMATE : 0);
-      return itemHeight - pageHeightFor(pageWidth) - MUSHAF_FRAME_SIDE;
+        listRef.current?.getLayout(index)?.height ??
+        pageItemHeight(pageWidth, page > 1 ? DIVIDER_ESTIMATE : 0, unitsWidth, unitsHeight);
+      return itemHeight - pageHeightFor(pageWidth, unitsWidth, unitsHeight) - MUSHAF_FRAME_SIDE;
     },
-    [pageWidth],
+    [pageWidth, unitsOf],
   );
+
+  // The laid-out pages around the viewable ones are computed in idle slots at the new zoom (B5).
+  useEffect(() => {
+    if (zoom > 1) {
+      loader.prefetchLayouts(pages, zoom);
+    }
+  }, [loader, pages, zoom]);
 
   useEffect(() => {
     const pending = pendingScroll.current;
@@ -189,7 +236,9 @@ export function MushafSvgList({
       const parts = parseVerseKey(pending.verseKey);
       // A surah's first ayah keeps the page top: its title is the page's first line.
       const line =
-        parts === null || parts.ayah === 1 ? 0 : (offsetForAyah(loader.regions(pending.page), pending.verseKey, pageWidth) ?? 0);
+        parts === null || parts.ayah === 1
+          ? 0
+          : (offsetForAyah(regionsOf(pending.page), pending.verseKey, pageWidth, unitsOf(pending.page).width) ?? 0);
       markProgrammatic();
       void Promise.resolve(
         list.scrollToIndex({ animated: pending.animated, index, viewOffset: artworkTopIn(index, pending.page) + line }),
@@ -204,7 +253,7 @@ export function MushafSvgList({
   }, [pages, pageWidth]);
 
   // The recited word's box, or the ayah's first line, is the line the follow keeps in view (ADR 0023, 0037).
-  const followRegions = useMemo(() => (followPage === null ? [] : loader.regions(followPage)), [followPage, loader]);
+  const followRegions = useMemo(() => (followPage === null ? [] : regionsOf(followPage)), [followPage, regionsOf]);
   const followLine = useMemo<{ y0: number; y1: number } | null>(() => {
     if (followPage === null || recitedVerseKey === null) {
       return null;
@@ -212,13 +261,13 @@ export function MushafSvgList({
     const box =
       recitedWord === null
         ? undefined
-        : loader.wordBoxes(followPage).find((item) => `${item.surah}:${item.ayah}` === recitedVerseKey && item.position === recitedWord);
+        : wordBoxesOf(followPage).find((item) => `${item.surah}:${item.ayah}` === recitedVerseKey && item.position === recitedWord);
     if (box !== undefined) {
       return { y0: box.y0, y1: box.y1 };
     }
     const first = followRegions.find((region) => region.verseKey === recitedVerseKey)?.lines[0];
     return first === undefined ? null : { y0: first.y0, y1: first.y1 };
-  }, [followPage, followRegions, loader, recitedVerseKey, recitedWord]);
+  }, [followPage, followRegions, wordBoxesOf, recitedVerseKey, recitedWord]);
   const followIndex = followPage === null ? -1 : pages.indexOf(followPage);
 
   const follow = useBoxFollow({
@@ -238,7 +287,7 @@ export function MushafSvgList({
       return layout.y + list.getFirstItemOffset() + artworkTopIn(followIndex, followPage ?? 1) - list.getAbsoluteLastScrollOffset();
     },
     reduceMotion,
-    scale,
+    scale: followPage === null ? scale : scaleOf(followPage),
     scrollTo: (offset, animated) => {
       markProgrammatic();
       listRef.current?.scrollToOffset({ animated, offset });
@@ -261,6 +310,8 @@ export function MushafSvgList({
   }, [executor, highlightsByVerseId, isHafs]);
   const khatmaKey = isHafs && khatmaMarkerVerseId !== null ? (idToVerseKey(executor, khatmaMarkerVerseId) ?? null) : null;
   const placeKey = isHafs ? placeVerseKey : null;
+  // Taps come from this riwayah's own regions, so the open ayah's key matches on every riwayah.
+  const pressedKey = useReaderSelection(pressedVerseKey);
 
   // A theme change drops the pictures of the old ink (the paths stay); the rows then record the new ones.
   const [ink, setInk] = useState(colors.ink);
@@ -269,9 +320,16 @@ export function MushafSvgList({
     loader.clearPictures();
   }
 
-  // The pages around the viewable ones are loaded in idle slots, nearest first.
+  // The pages around the viewable ones are loaded in idle slots, nearest first, reaching further in the scroll direction
+  // so a fling finds its pages decoded.
+  const lastPrefetch = useRef<number | null>(null);
   const prefetchAround = useCallback(
-    (page: number) => loader.prefetch([page, page + 1, page - 1, page + 2].filter((item) => item >= 1 && item <= MUSHAF_PAGE_COUNT)),
+    (page: number) => {
+      const step = lastPrefetch.current !== null && page < lastPrefetch.current ? -1 : 1;
+      lastPrefetch.current = page;
+      const order = [page, page + step, page - step, page + 2 * step, page + 3 * step, page - 2 * step, page + 4 * step];
+      loader.prefetch(order.filter((item) => item >= 1 && item <= MUSHAF_PAGE_COUNT));
+    },
     [loader],
   );
   useEffect(() => {
@@ -320,10 +378,10 @@ export function MushafSvgList({
       return;
     }
     const picked = under as { page: number; artworkTop: number };
-    const yInPage = (scrollOffset - picked.artworkTop) / scale;
+    const yInPage = (scrollOffset - picked.artworkTop) / scaleOf(picked.page);
     const first = reader.firstAyahOnPage(picked.page);
     const verseKey =
-      topAyahAt(loader.regions(picked.page), yInPage) ?? (first === null ? null : `${first.surah}:${first.ayah}`);
+      topAyahAt(regionsOf(picked.page), yInPage) ?? (first === null ? null : `${first.surah}:${first.ayah}`);
     const parts = verseKey === null ? null : parseVerseKey(verseKey);
     if (verseKey === null || parts === null) {
       return;
@@ -331,12 +389,21 @@ export function MushafSvgList({
     const page = reader.pageForAyah(parts.surah, parts.ayah) ?? picked.page;
     visiblePage.current = page;
     onTopAyah?.(page, verseKey);
-  }, [artworkTopIn, loader, onTopAyah, pages, reader, scale]);
+  }, [artworkTopIn, onTopAyah, pages, reader, regionsOf, scaleOf]);
 
   // Rows repaint when the page data, the marks, the recited word or the ink change (FlashList's extraData).
   const extraData = useMemo(
-    () => ({ colors: colors.ink, highlightByVerseKey, khatmaKey, placeKey, recitedVerseKey, recitedWord, version: loader.version }),
-    [colors.ink, highlightByVerseKey, khatmaKey, loader.version, placeKey, recitedVerseKey, recitedWord],
+    () => ({ colors: colors.ink, highlightByVerseKey, khatmaKey, pressedKey, placeKey, recitedVerseKey, recitedWord, version: loader.version, zoom }),
+    [colors.ink, highlightByVerseKey, khatmaKey, loader.version, pressedKey, placeKey, recitedVerseKey, recitedWord, zoom],
+  );
+
+  // The zoomed page of a row: its layout, and its picture per colour (null at 100%: the printed page is drawn).
+  const zoomedOf = useCallback(
+    (page: number) => {
+      const layout = layoutOf(page);
+      return layout === null ? null : { layout, picture: (colour: string) => loader.zoomedPicture(page, zoom, colour) };
+    },
+    [layoutOf, loader, zoom],
   );
 
   const renderPage = useCallback(
@@ -370,27 +437,31 @@ export function MushafSvgList({
                 page={page}
                 pictureOf={(colour) => loader.pictureOf(page, colour)}
                 placeVerseKey={placeKey}
+                pressedVerseKey={pressedKey}
                 recitedVerseKey={recitedVerseKey}
                 recitedWord={recitedWord}
-                regions={loader.regions(page)}
+                regions={regionsOf(page)}
                 testID={testID ? `${testID}-page-${page}` : undefined}
                 width={pageWidth}
-                wordBoxes={loader.wordBoxes(page)}
+                wordBoxes={wordBoxesOf(page)}
+                zoomed={zoomedOf(page)}
               />
             )}
           </View>
         </View>
       );
     },
-    [executor, highlightByVerseKey, khatmaKey, loader, locale, mushafKey, onOpenAyahActions, onSelectVerseKey, pageWidth, placeKey, reader, recitedVerseKey, recitedWord, t, testID],
+    [executor, highlightByVerseKey, khatmaKey, loader, locale, mushafKey, onOpenAyahActions, onSelectVerseKey, pageWidth, pressedKey, placeKey, reader, recitedVerseKey, recitedWord, regionsOf, t, testID, wordBoxesOf, zoomedOf],
   );
 
   return (
-    <View style={{ flex: 1, paddingBottom: bottomInset, paddingTop: topInset }} testID={testID}>
+    <View onLayout={onColumnLayout} style={{ flex: 1, paddingBottom: bottomInset, paddingTop: topInset }} testID={testID}>
       <View {...follow.viewportProps} style={{ flex: 1 }}>
         <FlashList
           contentContainerStyle={{ paddingBottom: contentBottomInset, paddingHorizontal: theme.space[4] }}
           data={pages}
+          // One page beyond the viewport is mounted ahead, so a fast scroll does not show unrendered space.
+          drawDistance={pageHeightFor(pageWidth)}
           extraData={extraData}
           keyExtractor={(page) => String(page)}
           maintainVisibleContentPosition={{}}

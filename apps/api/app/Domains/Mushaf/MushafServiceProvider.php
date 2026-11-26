@@ -8,9 +8,11 @@ use App\Domains\Mushaf\Console\BuildWordBoxesCommand;
 use App\Domains\Mushaf\Console\ImportSvgMushafCommand;
 use App\Domains\Mushaf\Console\PublishSvgMushafCommand;
 use App\Domains\Mushaf\Console\SetupMushafCommand;
+use App\Domains\Mushaf\Repositories\Contracts\SvgMushafContourRepository;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafPackRepository;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafRepository;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafWordBoxRepository;
+use App\Domains\Mushaf\Repositories\Eloquent\EloquentSvgMushafContourRepository;
 use App\Domains\Mushaf\Repositories\Eloquent\EloquentSvgMushafPackRepository;
 use App\Domains\Mushaf\Repositories\Eloquent\EloquentSvgMushafRepository;
 use App\Domains\Mushaf\Repositories\Eloquent\EloquentSvgMushafWordBoxRepository;
@@ -23,6 +25,7 @@ final class MushafServiceProvider extends ServiceProvider
         $this->app->bind(SvgMushafRepository::class, EloquentSvgMushafRepository::class);
         $this->app->bind(SvgMushafWordBoxRepository::class, EloquentSvgMushafWordBoxRepository::class);
         $this->app->bind(SvgMushafPackRepository::class, EloquentSvgMushafPackRepository::class);
+        $this->app->bind(SvgMushafContourRepository::class, EloquentSvgMushafContourRepository::class);
     }
 
     public function boot(): void

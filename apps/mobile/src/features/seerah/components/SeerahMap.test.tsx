@@ -1,4 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen, within } from '@testing-library/react-native';
 import { usePanGesture, usePinchGesture } from 'react-native-gesture-handler';
 import { advanceAnimationByTime, getAnimatedStyle, setUpTests, useReducedMotion } from 'react-native-reanimated';
 
@@ -6,6 +6,7 @@ import { flatStyle, locales } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { press } from '../../../../jest/azkar-ui-fixtures';
 import { renderGesture } from '../../../../jest/seerah-ui';
+import { resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
 import { makePin, regionLevelFixture } from '../fixtures';
 import { focusView } from '../logic';
@@ -181,6 +182,130 @@ describe('SeerahMap', () => {
     expect(screen.getByTestId('seerah-map-pin-sham')).toBeOnTheScreen();
   });
 
+  it('centres a focused pin between the side insets', async () => {
+    jest.mocked(useReducedMotion).mockReturnValue(true);
+    await mountMap([madinah, makkah, badr], { focusPlaceId: 'badr', insets: { bottom: 220, left: 0, right: 62, top: 112 } });
+    // The visible area is x 0 to 328 (390 − 62), so its centre is x 164.
+    expect(screen.getByTestId('seerah-map-layer')).toHaveAnimatedStyle({
+      transform: [{ translateX: 164 - 803 * 1.5 }, { translateY: 368 - 1122 * 1.5 }, { scale: 1.5 }],
+    });
+  });
+
+  describe('edge-chip stacks in a short window', () => {
+    // P at the middle of the art, zoom 0.6; two regions beyond the north edge, one beyond the south, one beyond the east,
+    // and «أخرى»: four chips on the start side, one on the end side.
+    const centre = makePin({ count: 1, name: 'مكة', placeId: 'p', x: 800, y: 1200 });
+    const region = (placeId: string, x: number, y: number) => makePin({ count: 2, kind: 'region', name: placeId, opensLevel: null, placeId, x, y });
+    const regions = [region('n1', 700, 100), region('n2', 900, 100), region('s1', 800, 2300), region('e1', 1600, 1200)];
+    const style = (stack: string) => flatStyle(screen.getByTestId(`seerah-map-edges-${stack}`).props.style);
+
+    const landscape = async () => {
+      setWindowSize(874, 402);
+      // The iPhone's 62 pt side safe areas: the art runs under them, the chips stay inside them.
+      await mountMap([centre, ...regions], { insets: { bottom: 208, left: 62, right: 62, top: 52 }, otherCount: 3 });
+      await act(async () => {
+        fireEvent(screen.getByTestId('seerah-map'), 'layout', { nativeEvent: { layout: { height: 402, width: 874, x: 0, y: 0 } } });
+      });
+    };
+
+    it('gathers the chips in one scrolling column per side, inside the band and the side insets (874 × 402)', async () => {
+      try {
+        await landscape();
+        expect(screen.getAllByRole('button', { name: /خارج الشاشة/ })).toHaveLength(4);
+        // Band: 64 (header 52 + 12) to 194 (402 − 208). Both columns start at its top and end at its foot at the latest.
+        // Each column is padded by the chips' shadow reach (32 around, 40 below) and moved out by as much, so the chips
+        // still sit 16 pt in from the inset and span the band, and their shadow is not clipped square by the scroll view.
+        expect(style('start')).toMatchObject({ left: 62 + 16 - 32, maxHeight: 130 + 32 + 40, position: 'absolute', top: 64 - 32 });
+        expect(style('end')).toMatchObject({ maxHeight: 130 + 32 + 40, position: 'absolute', right: 62 + 16 - 32, top: 64 - 32 });
+        for (const side of ['start', 'end']) {
+          expect(flatStyle(screen.getByTestId(`seerah-map-edges-${side}-scroll`).props.contentContainerStyle)).toMatchObject({
+            paddingBottom: 40,
+            paddingHorizontal: 32,
+            paddingTop: 32,
+          });
+        }
+        expect(screen.queryByTestId('seerah-map-edges-north')).toBeNull();
+        expect(screen.queryByTestId('seerah-map-edges-south')).toBeNull();
+        // Start side: north, then west, then «أخرى» and south; end side: east. Narrow columns, no rows.
+        const startScroll = screen.getByTestId('seerah-map-edges-start-scroll');
+        expect(startScroll.props.showsVerticalScrollIndicator).toBe(false);
+        expect(flatStyle(startScroll.props.contentContainerStyle).flexDirection).toBeUndefined();
+        expect(within(startScroll).getAllByRole('button').map((chip) => chip.props.testID)).toEqual([
+          'seerah-map-edge-n1',
+          'seerah-map-edge-n2',
+          'seerah-map-other',
+          'seerah-map-edge-s1',
+        ]);
+        expect(screen.getByTestId('seerah-map-edges-end-scroll')).toContainElement(screen.getByTestId('seerah-map-edge-e1'));
+      } finally {
+        resetWindowSize();
+      }
+    });
+
+    it('uses a column\'s visible box as the obstacle: a pin under it is not drawn', async () => {
+      try {
+        await landscape();
+        expect(screen.getByTestId('seerah-map-pin-p')).toBeOnTheScreen();
+        // P sits at the window's middle (437, 201). Only the shadow padding reaches it: it stays drawn.
+        const layOutStart = async (width: number) => {
+          await act(async () => {
+            fireEvent(screen.getByTestId('seerah-map-edges-start'), 'layout', { nativeEvent: { layout: { height: 160 + 72, width: width + 64, x: 46, y: 32 } } });
+          });
+        };
+        await layOutStart(340);
+        expect(screen.getByTestId('seerah-map-pin-p')).toBeOnTheScreen();
+        // The chips' own area (x 78 to 478, y 64 to 224) over it hides it.
+        await layOutStart(400);
+        expect(screen.queryByTestId('seerah-map-pin-p', hidden)).toBeNull();
+      } finally {
+        resetWindowSize();
+      }
+    });
+
+    it('keeps the stacked columns of the phone in portrait', async () => {
+      await mountMap([centre, ...regions], { insets: { bottom: 208, top: 114 }, otherCount: 3 });
+      expect(screen.getAllByRole('button', { name: /خارج الشاشة/ }).length).toBeGreaterThan(0);
+      expect(style('north').flexDirection).toBeUndefined();
+      expect(style('south').flexDirection).toBeUndefined();
+      expect(style('east')).toMatchObject({ top: '42%' });
+      expect(screen.queryByTestId('seerah-map-edges-start')).toBeNull();
+    });
+  });
+
+  describe('edge-chip stacks are obstacles', () => {
+    // One event pin alone: the map centres it, at screen (195, 422) in the 390 × 844 window. Its label starts on the end side.
+    const lone = makePin({ count: 1, eventTitle: 'حدث', labelPriority: 50, name: 'موضع', opensLevel: null, placeId: 'p', x: 800, y: 1200 });
+    const layOut = async (stack: string, layout: { x: number; y: number; width: number; height: number }) => {
+      await act(async () => {
+        fireEvent(screen.getByTestId(`seerah-map-edges-${stack}`), 'layout', { nativeEvent: { layout } });
+      });
+    };
+
+    it.each(locales)('moves a label off a chip stack to the other side of its pin (%s)', async (locale) => {
+      await mountMap([lone], {}, locale);
+      expect(flatStyle(screen.getByTestId('seerah-map-label-p', hidden).props.style)).toMatchObject({ alignItems: 'flex-start' });
+      await layOut('east', { height: 44, width: 170, x: 205, y: 400 });
+      expect(flatStyle(screen.getByTestId('seerah-map-label-p', hidden).props.style)).toMatchObject({ alignItems: 'flex-end' });
+      expect(screen.getByTestId('seerah-map-pin-p')).toBeOnTheScreen();
+    });
+
+    it('hides a label with a chip stack on both sides, and keeps its pin', async () => {
+      await mountMap([lone]);
+      await layOut('east', { height: 44, width: 170, x: 205, y: 400 });
+      await layOut('west', { height: 44, width: 170, x: 15, y: 400 });
+      expect(screen.queryByTestId('seerah-map-label-p', hidden)).toBeNull();
+      expect(screen.getByTestId('seerah-map-pin-p')).toBeOnTheScreen();
+    });
+
+    it('does not draw a pin under a chip stack, where the chip would take its tap; a pan brings it back', async () => {
+      await mountMap([lone]);
+      await layOut('south', { height: 80, width: 120, x: 150, y: 400 });
+      expect(screen.queryByTestId('seerah-map-pin-p', hidden)).toBeNull();
+      await layOut('south', { height: 0, width: 0, x: 16, y: 636 });
+      expect(screen.getByTestId('seerah-map-pin-p')).toBeOnTheScreen();
+    });
+  });
+
   it('draws the «أخرى» chip only when events have no place, and reports its tap', async () => {
     const none = await mountMap([madinah]);
     expect(screen.queryByTestId('seerah-map-other')).toBeNull();
@@ -280,6 +405,36 @@ describe('SeerahMap', () => {
     expect(flatStyle(screen.getByTestId('seerah-map-space').props.style)).toMatchObject({ direction: 'ltr' });
     expect(flatStyle(screen.getByTestId('seerah-map-edges').props.style)).toMatchObject({ direction: 'ltr' });
     expect(flatStyle(screen.getByTestId('seerah-map-layer').props.style)).toMatchObject({ left: 0, position: 'absolute' });
+  });
+
+  it('covers a window wider than the art at its default scale, with no blank strip at either side (iPad landscape)', async () => {
+    await mountMap([madinah, makkah, badr]);
+    await act(async () => {
+      fireEvent(screen.getByTestId('seerah-map'), 'layout', { nativeEvent: { layout: { height: 834, width: 1210, x: 0, y: 0 } } });
+    });
+    const { transform } = (getAnimatedStyle as unknown as (component: unknown) => { transform: Record<string, number>[] })(
+      screen.getByTestId('seerah-map-layer'),
+    );
+    const scale = transform[2]?.scale ?? 0;
+    const tx = transform[0]?.translateX ?? 1;
+    // 1644 × 0.6 = 986 pt would leave 112 pt of blank page; the cover scale is 1210 / 1644.
+    expect(scale).toBeCloseTo(1210 / 1644);
+    expect(tx).toBeLessThanOrEqual(0);
+    expect(tx + 1644 * scale).toBeGreaterThanOrEqual(1210 - 0.01);
+  });
+
+  it('starts at the cover scale when it opens in a wide window', async () => {
+    setWindowSize(1210, 834);
+    try {
+      await mountMap([madinah, makkah, badr]);
+      const { transform } = (getAnimatedStyle as unknown as (component: unknown) => { transform: Record<string, number>[] })(
+        screen.getByTestId('seerah-map-layer'),
+      );
+      // The first view is sized from the window (1210 wide), before the map's own layout arrives.
+      expect(transform[2]?.scale).toBeCloseTo(1210 / 1644);
+    } finally {
+      resetWindowSize();
+    }
   });
 
   describe('edge chips point where they say', () => {

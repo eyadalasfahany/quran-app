@@ -40,10 +40,20 @@ describe('GlassSurface', () => {
 
     expect(view.getByTestId('surface-glass').props.glassEffectStyle).toBe('regular');
     expect(view.getByTestId('surface-glass').props.pointerEvents).toBe('none');
-    expect(view.getByTestId('surface-glass').props.colorScheme).toBe('auto');
+    expect(view.getByTestId('surface-glass').props.colorScheme).toBe('light');
     expect(flatStyle(surface.props.style)).toMatchObject({ borderRadius: themes.light.radius.xl });
     expect(flatStyle(surface.props.style).backgroundColor).toBeUndefined();
     expect(view.getByText('محتوى')).toBeOnTheScreen();
+  });
+
+  it.each([
+    ['dark', 'dark'],
+    ['sepia', 'light'],
+  ] as const)('follows the app theme %s, not the system appearance, when no scheme is given', async (theme, scheme) => {
+    mockLiquidGlass.mockReturnValue(true);
+    const view = await renderUi(<GlassSurface testID="surface" />, { theme });
+
+    expect(view.getByTestId('surface-glass', { includeHiddenElements: true }).props.colorScheme).toBe(scheme);
   });
 
   it('passes a fixed appearance to the native glass for a surface that is always dark', async () => {

@@ -31,6 +31,7 @@ final class SvgMushafPage extends Model
             'page' => 'integer',
             'svg_bytes' => 'integer',
             'gz_bytes' => 'integer',
+            'tqp_bytes' => 'integer',
         ];
     }
 

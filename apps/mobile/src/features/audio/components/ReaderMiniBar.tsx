@@ -27,7 +27,7 @@ import { PAUSE_ICON, PLAY_ICON } from './player-icons';
 
 // Slides the bar down out of the reader and calls `onCollapse` once it is off screen. Under Reduce Motion there is
 // no slide: the bar switches at once, and only its content fades in on the capsule.
-function collapseMotion(
+export function collapseMotion(
   dragY: SharedValue<number>,
   travel: number,
   config: ReturnType<typeof spring>,
@@ -110,7 +110,7 @@ export function ReaderMiniBar({
     <Animated.View style={[{ width: '100%' }, enter.container]}>
       <GestureDetector gesture={pan}>
         <Animated.View style={dragStyle}>
-          <GlassSurface
+          <GlassSurface interactive
             radius="lg"
             style={{
               alignItems: 'center',

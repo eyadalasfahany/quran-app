@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 
 import { locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
@@ -39,6 +39,17 @@ describe('TimelineHeader', () => {
   it('uses the same labels on the vertical bar', async () => {
     await renderUi(<TimelineHeader {...base} orientation="vertical" />);
     expect(screen.getByRole('button', { name: 'العمر السابق' })).toBeOnTheScreen();
+  });
+
+  it.each(locales)('gives the title the hide action only when the timeline can be hidden (%s)', async (locale) => {
+    const onCollapse = jest.fn();
+    const plain = await renderUi(<TimelineHeader {...base} />, { locale });
+    expect(screen.getByRole('header').props.accessibilityActions).toBeUndefined();
+    await plain.unmount();
+    await renderUi(<TimelineHeader {...base} onCollapse={onCollapse} />, { locale });
+    expect(screen.getByRole('header').props.accessibilityActions).toEqual([{ label: locale === 'ar' ? 'إخفاء الخط الزمني' : 'Hide timeline', name: 'collapse' }]);
+    fireEvent(screen.getByRole('header'), 'accessibilityAction', { nativeEvent: { actionName: 'collapse' } });
+    expect(onCollapse).toHaveBeenCalledTimes(1);
   });
 
   it('has no raw colour literal', () => {

@@ -99,6 +99,16 @@ describe('content selection', () => {
     expect(selectedResourceIds(listed)).toEqual([1, 2, 30, 50]);
   });
 
+  it('does not auto-select Seerah, even when the manifest lists it (ADR 0097: the on-demand install brings it)', () => {
+    const listed = [...resources, resource({ id: 60, group: 'seerah' })];
+
+    expect(defaultSelectedResourceIds(listed)).toEqual([1, 2, 30]);
+    expect(selectedResourceIds(listed)).not.toContain(60);
+
+    storage.set(storageKeys.selectedResourceIds, JSON.stringify([99]));
+    expect(selectedResourceIds(listed)).toEqual([99]);
+  });
+
   it('does not auto-select a hadith collection, even when the manifest lists it', () => {
     const listed = [...resources, resource({ id: 40, group: 'hadith_collections' })];
 

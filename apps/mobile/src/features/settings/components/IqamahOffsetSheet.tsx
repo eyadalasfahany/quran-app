@@ -2,8 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
 import { IQAMAH_OFFSET_OPTIONS, type IqamahOffsetMinutes } from '@/features/salah/data/iqamah-offset';
 import { Icon, SheetHeader, UiText, type IconName } from '@/shared/ui';
 
@@ -31,19 +33,22 @@ export function IqamahOffsetSheet({
   const insets = useSafeAreaInsets();
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+    <Modal animationType="fade" onRequestClose={onClose} supportedOrientations={MODAL_ORIENTATIONS} transparent visible={visible}>
       <View style={{ backgroundColor: theme.colors.scrim, flex: 1, justifyContent: 'flex-end' }} testID={testID}>
         <Pressable accessible={false} onPress={onClose} style={{ bottom: 0, left: 0, position: 'absolute', right: 0, top: 0 }} testID={`${testID}-backdrop`} />
         <View
           accessibilityViewIsModal
           style={{
+            alignSelf: 'center',
             backgroundColor: theme.colors.surfacePage,
             borderTopLeftRadius: theme.radius.lg,
             borderTopRightRadius: theme.radius.lg,
             gap: theme.space[2],
+            maxWidth: SHEET_CARD_MAX_WIDTH,
             paddingBottom: Math.max(insets.bottom, theme.space[4]),
             paddingHorizontal: theme.space[4],
             paddingTop: theme.space[3],
+            width: '100%',
           }}
         >
           <SheetHeader closeLabel={t('common.cancel')} closeTone="track" onClose={onClose} testID={`${testID}-header`} title={t('salah.iqamahOffset.sheetTitle')} />

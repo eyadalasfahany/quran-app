@@ -84,6 +84,19 @@ describe('AyahPanelContent', () => {
     resetTafsirDownloads();
   });
 
+  it('shows only the reference and a note for an ayah tapped on a Warsh page: no Hafs text, actions or tafsir', async () => {
+    // Warsh 1:2 is not Hafs 1:2 (Warsh counts no basmala in al-Fatiha): nothing from the Hafs ayah may show.
+    const view = await renderUi(
+      <AyahPanelContent executor={withTafsir} onVerseChange={jest.fn()} riwayah="warsh" store={openUserTestStore().store} tab="actions" verseKey="1:2" />,
+    );
+
+    expect(view.getByRole('header', { name: 'الفاتحة · الآية ٢' })).toBeOnTheScreen();
+    expect(view.getByText('ورش عن نافع')).toBeOnTheScreen();
+    expect(view.getByTestId('ayah-panel-content-riwayah-note')).toBeOnTheScreen();
+    expect(view.queryByTestId('ayah-panel-content-actions')).toBeNull();
+    expect(view.queryByTestId('ayah-panel-content-header-subtitle')).toBeNull();
+  });
+
   it.each(locales)('shows the header with the surah name for the locale in %s', async (locale) => {
     const view = await renderUi(
       <AyahPanelContent executor={withTafsir} onVerseChange={jest.fn()} store={openUserTestStore().store} tab="actions" verseKey="1:2" />,

@@ -174,6 +174,21 @@ describe('TimelineScrubber', () => {
     });
   });
 
+  it.each(locales)('gives a centred milestone name a 96 pt box, so «Revelation» is not cut on a phone or an iPad (%s)', async (locale) => {
+    const four = [
+      { age: 0, eventId: 'e1', key: 'birth', labelAr: 'Birth' },
+      { age: 40, eventId: 'e3', key: 'bitha', labelAr: 'Revelation' },
+      { age: 53, eventId: 'e2', key: 'hijra', labelAr: 'Hijra' },
+      { age: 62, eventId: 'e4', key: 'death', labelAr: 'Death' },
+    ];
+    await scrubber({ milestones: four }, locale).view;
+    const box = flatStyle(screen.getByTestId('scrub-label-bitha', hidden).parent?.props.style);
+    expect(box).toMatchObject({ marginStart: -48, position: 'absolute', start: `${(40.5 / 64) * 100}%`, width: 96 });
+    // The edge names stay pinned to the axis ends.
+    expect(flatStyle(screen.getByTestId('scrub-label-death', hidden).parent?.props.style)).toMatchObject({ alignItems: 'flex-end', end: 0 });
+    expect(screen.getByText('Revelation', hidden).props.numberOfLines).toBe(1);
+  });
+
   it('draws a label and a diamond for each milestone', async () => {
     await scrubber().view;
     expect(screen.getByText('المولد', hidden)).toBeOnTheScreen();

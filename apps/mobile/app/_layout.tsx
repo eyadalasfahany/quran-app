@@ -15,6 +15,7 @@ import { useUserDb } from '@/core/db/user/open';
 import { ensureDirection } from '@/core/i18n';
 import { modalLikeScreenOptions, pushScreenOptions } from '@/core/layout/push-screen-options';
 import { useContentSync } from '@/core/sync/use-content-sync';
+import { useAutoMushafDownload } from '@/core/mushaf-pack/useAutoMushafDownload';
 import { bundledFonts, ThemeProvider, themes, useResolvedTheme } from '@/core/theme';
 import { useDownloadManagerStartup } from '@/features/audio/hooks/useDownloadManagerStartup';
 import { useRestorePlayerSession } from '@/features/audio/hooks/useRestorePlayerSession';
@@ -22,6 +23,7 @@ import { useAzkarRemindersForeground } from '@/features/azkar/reminders/use-azka
 import { resyncAzkarReminders } from '@/features/azkar/reminders/resync';
 import { DefaultBellsExactAlarmPrompt } from '@/features/salah/components/DefaultBellsExactAlarmPrompt';
 import { usePrayerNotificationsSync } from '@/features/salah/hooks/usePrayerNotificationsSync';
+import { runContentSyncThenSeerah } from '@/features/seerah/auto-install';
 import { useReminderGoalsSync } from '@/features/reminders/hooks/useReminderGoalsSync';
 import { usePlaybackReadingPlace } from '@/features/reader/anchor/usePlaybackReadingPlace';
 import { sheetScreenOptions } from '@/features/reader/form-sheet';
@@ -54,7 +56,9 @@ export default function RootLayout() {
   const [splashFinished, setSplashFinished] = useState(false);
   const content = useContentDbBootstrap();
   const user = useUserDb();
-  useContentSync();
+  // The Seerah pack installs after each sync run settles (ADR 0097); core/sync does not import the feature.
+  useContentSync(runContentSyncThenSeerah);
+  useAutoMushafDownload();
   usePlaybackReadingPlace(content.ready);
   useRestorePlayerSession(content.ready);
   useDownloadManagerStartup(content.ready && user.ready);

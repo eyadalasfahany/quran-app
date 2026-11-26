@@ -3,6 +3,7 @@ import { Dimensions } from 'react-native';
 import { setUpTests } from 'react-native-reanimated';
 
 import { locales, renderUi } from '../../../../jest/render-ui';
+import { resetReaderSelection, useReaderSelection } from '../selection';
 import { AyahSheetScreen } from './AyahSheetScreen';
 
 jest.mock('expo-router', () => ({ router: { back: jest.fn(), push: jest.fn() }, useIsFocused: () => true }));
@@ -36,6 +37,7 @@ async function settle() {
 describe('AyahSheetScreen', () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    resetReaderSelection();
   });
 
   afterEach(() => {
@@ -64,5 +66,23 @@ describe('AyahSheetScreen', () => {
     await settle();
 
     expect(view.getByTestId('sheet-host')).toHaveAnimatedStyle({ top: MID });
+  });
+
+  it('marks its ayah as the sheet verse while it is open, and clears it on unmount', async () => {
+    const view = await renderUi(<AyahSheetScreen initialTab="actions" verseKey="1:2" />, { locale: 'en' });
+    expect(useReaderSelection.getState().sheetVerseKey).toBe('1:2');
+
+    await act(async () => {
+      view.unmount();
+    });
+    expect(useReaderSelection.getState().sheetVerseKey).toBeNull();
+  });
+
+  it('does not clear a newer sheet verse on unmount', async () => {
+    const view = await renderUi(<AyahSheetScreen initialTab="actions" verseKey="1:2" />, { locale: 'en' });
+    useReaderSelection.getState().setSheetVerseKey('2:255');
+
+    view.unmount();
+    expect(useReaderSelection.getState().sheetVerseKey).toBe('2:255');
   });
 });

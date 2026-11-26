@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { themes } from '@/core/theme';
 
 import { SeerahSheet } from './SeerahSheet';
@@ -51,6 +52,16 @@ describe('SeerahSheet', () => {
       borderTopLeftRadius: 28,
     });
     expect(flatStyle(screen.getByTestId('seerah-sheet-grabber', hidden).props.style)).toMatchObject({ height: 5, width: 36 });
+  });
+
+  it('keeps every orientation, so a landscape iPhone is not turned to portrait when it opens', async () => {
+    await renderUi(
+      <SeerahSheet onClose={jest.fn()} visible>
+        <Text>content</Text>
+      </SeerahSheet>,
+    );
+    expect(JSON.stringify(screen.toJSON())).toContain(`"supportedOrientations":${JSON.stringify(MODAL_ORIENTATIONS)}`);
+    expect(MODAL_ORIENTATIONS).toEqual(expect.arrayContaining(['portrait', 'landscape-left', 'landscape-right']));
   });
 
   it('renders nothing when hidden', async () => {

@@ -8,7 +8,7 @@ First launch
 |---|---|---|---|---|
 | `OnboardLanguage` | compact | ar-light | source | Onboarding 1 · Language |
 | `OnboardTour` | compact | ar-light | source | Onboarding 2 · ما في طيبة · the app's sections |
-| `OnboardScript` | compact | ar-light | source | Onboarding 3 · Script |
+| `OnboardScript` | compact | ar-light | source | Onboarding 3 · Script · al-Duri hidden (ADR 0090 item 12). Approved by the developer, 26 Nov 2026 |
 | `OnboardReciter` | compact | ar-light | source | Onboarding 4 · Reciter |
 
 ## Model rule

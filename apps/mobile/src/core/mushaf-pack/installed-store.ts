@@ -1,6 +1,6 @@
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
-import type { InstalledSvgMushaf, SvgMushafKey } from './types';
+import { SVG_MUSHAF_PAGE_FORMAT, type InstalledSvgMushaf, type SvgMushafKey } from './types';
 
 /** The installed record of one riwayah, or undefined. A malformed or wrong-key record reads as undefined. */
 export function getInstalledSvgMushaf(key: SvgMushafKey): InstalledSvgMushaf | undefined {
@@ -19,6 +19,7 @@ export function getInstalledSvgMushaf(key: SvgMushafKey): InstalledSvgMushaf | u
       typeof value.sha256 !== 'string' ||
       typeof value.sizeBytes !== 'number' ||
       typeof value.hasWordBoxes !== 'boolean' ||
+      value.pageFormat !== SVG_MUSHAF_PAGE_FORMAT ||
       typeof value.installedAt !== 'number'
     ) {
       return undefined;

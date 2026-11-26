@@ -187,3 +187,47 @@ describe('useReaderMiniFootprint while a skip notice shows', () => {
     expect(result.current).toMatchObject({ footprint: 108, height: 68 });
   });
 });
+
+function setWindowSize(width: number, height: number) {
+  Dimensions.set({
+    screen: { fontScale: 1, height, scale: 1, width },
+    window: { fontScale: 1, height, scale: 1, width },
+  });
+}
+
+describe('useReaderMiniFootprint in a short window (ADR 0090 amendment, item 8)', () => {
+  beforeEach(() => {
+    setWindowSize(874, 402);
+    usePlayerStore.getState().reset();
+    usePlayerStore.getState().beginLoad({ reciterId: 30, chapterId: 1, positionMs: 0, durationMs: 48_000 });
+    usePlayerStore.getState().markPlaying();
+    useReaderMiniCollapse.getState().setCollapsed(false);
+    useReaderMiniCollapse.getState().setShortOpen(false);
+    useReaderSettings.setState({ mode: 'reading' });
+  });
+
+  afterEach(() => {
+    setWindowSize(390, 844);
+    useReaderMiniCollapse.getState().setShortOpen(false);
+  });
+
+  it('reserves only the capsule by default, even when the saved choice is expanded', async () => {
+    const { result } = await renderHook(() => useReaderMiniFootprint());
+    expect(result.current).toMatchObject({ bottom: 18, collapsed: true, footprint: MINI_PLAYER_CAPSULE_FOOTPRINT, height: 44 });
+  });
+
+  it('reserves the full bar once the reader opens it, and the capsule again after a scroll', async () => {
+    const { result } = await renderHook(() => useReaderMiniFootprint());
+    await act(async () => useReaderMiniCollapse.getState().setShortOpen(true));
+    expect(result.current).toMatchObject({ collapsed: false, footprint: MINI_PLAYER_READER_FOOTPRINT });
+    await act(async () => useReaderMiniCollapse.getState().setShortOpen(false));
+    expect(result.current).toMatchObject({ collapsed: true, footprint: MINI_PLAYER_CAPSULE_FOOTPRINT });
+  });
+
+  it('a tall window ignores the short-window tap and keeps the saved choice', async () => {
+    setWindowSize(390, 844);
+    useReaderMiniCollapse.getState().setShortOpen(true);
+    const { result } = await renderHook(() => useReaderMiniFootprint());
+    expect(result.current).toMatchObject({ collapsed: false, footprint: MINI_PLAYER_READER_FOOTPRINT });
+  });
+});

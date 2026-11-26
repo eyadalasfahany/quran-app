@@ -1,4 +1,5 @@
 import { type Href, router } from 'expo-router';
+import { startSvgMushafDownload } from '@/core/mushaf-pack/useSvgMushafPack';
 import { goBackOr } from '@/core/navigation/go-back';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +24,7 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
 
   const continueNext = () => {
     setMushaf(mushaf);
+    void startSvgMushafDownload(mushaf);
     router.push('/(onboarding)/reciter');
   };
 
@@ -30,6 +32,7 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
     <Screen testID={testID}>
       <ContentColumn gutter={0} testID={`${testID}-column`}>
         <ScrollView
+          testID={`${testID}-scroll`}
           contentContainerStyle={{
             gap: theme.space[4],
             paddingBottom: theme.space[4],
@@ -41,7 +44,10 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
           <OnboardingTopBar
             backLabel={t('onboarding.back')}
             onBack={() => goBackOr('/(onboarding)/tour' as Href)}
-            onSkip={() => router.push('/(onboarding)/reciter')}
+            onSkip={() => {
+              void startSvgMushafDownload('hafs');
+              router.push('/(onboarding)/reciter');
+            }}
             skipLabel={t('onboarding.skip')}
           />
           <View style={{ gap: 6 }}>
@@ -50,7 +56,7 @@ export function OnboardingScriptScreen({ testID = 'onboarding-script' }: { testI
               {t('onboarding.script.subtitle')}
             </UiText>
           </View>
-          <MushafPreviewCard />
+          <MushafPreviewCard mushaf={mushaf} />
           <MushafPicker
             accessibilityLabel={t('reader.mushafs.group')}
             onChange={setLocalMushaf}

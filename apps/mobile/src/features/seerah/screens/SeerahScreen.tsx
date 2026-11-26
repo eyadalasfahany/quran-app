@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { I18nManager, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useScreenInsets } from '@/core/layout/useScreenInsets';
@@ -10,9 +10,11 @@ import { formatNumber } from '@/core/i18n';
 import { useLocale } from '@/core/i18n/useLocale';
 import { useTheme } from '@/core/theme';
 import { formatPackSizeMb } from '@/features/hadith/format';
+import { MINI_PLAYER_CAPSULE, MINI_PLAYER_CAPSULE_FOOTPRINT } from '@/features/audio/mini-player-metrics';
 import { BackButton, Screen } from '@/shared/ui';
 
 import { seerahArtFor } from '../art/seerah-art';
+import { autoInstallSeerah } from '../auto-install';
 import { EventCallout } from '../components/EventCallout';
 import type { EventListItem } from '../components/EventListCard';
 import { MapHeader } from '../components/MapHeader';
@@ -25,7 +27,8 @@ import { SeerahSheet } from '../components/SeerahSheet';
 import { SeerahStateView, type SeerahStateKind } from '../components/SeerahStateView';
 import { SpotSheet } from '../components/SpotSheet';
 import { TimelineBar } from '../components/TimelineBar';
-import { ageRangeText, ageText, eventCountText } from '../format';
+import { TimelineCapsule } from '../components/TimelineCapsule';
+import { ageRangeText, ageText, eventCountText, focusTitle } from '../format';
 import {
   buildMapPins,
   buildYearIndex,
@@ -48,12 +51,15 @@ import {
   useSeerahWorld,
 } from '../hooks';
 import { goBackOr, seerahHref } from '../routes';
+import { useTimelineCollapse } from '../timeline-collapse';
 import type { SeerahEvent, SeerahFocus } from '../types';
 import { SeerahEventPane } from './SeerahEventPane';
 
 const REGION = 'region';
 const PANEL_WIDTH = 440;
-const VERTICAL_TIMELINE_WIDTH = 150;
+// On a wide window the bottom timeline, the callout and the empty-year card keep a centred column, like the reading
+// column cap (developer, 26 Nov 2026: the iPad keeps the phone's bottom timeline).
+const DOCK_MAX_WIDTH = 720;
 // Frame SeerahMapRegion: the timeline card (136 pt) floats 28 pt above the bottom edge, and the bottom chip stack ends 44 pt
 // above the card.
 const TIMELINE_CLEARANCE = 208;
@@ -64,10 +70,12 @@ const HEADER_BOTTOM = 52;
 
 /**
  * The Seerah screen (frames SeerahMapRegion, SeerahMapMakkah, SeerahMapMadinah, SeerahTimeline, SeerahList, SeerahExpanded,
- * SeerahState*): the map with its timeline, or the list, or the card that says why there is none (not downloaded, downloading,
- * offline, failed). Layout follows the window class: compact is the map full-bleed with the timeline at the bottom and the
- * event as a full-screen push; medium opens the event in a bottom sheet; expanded puts the vertical timeline on the start
- * side and the event in a side panel on the end side. Everything it shows comes from content.db: no tap waits on the network.
+ * SeerahState*): the map with its timeline, or the list, or the card that says why there is none (downloading, offline,
+ * failed). The pack downloads with no tap (ADR 0097): opening the screen, or the catalogue entry arriving while it is open,
+ * starts the install in the background. Layout follows the window class: compact is the map full-bleed with the timeline
+ * at the bottom and the event as a full-screen push; medium opens the event in a bottom sheet; expanded puts the event in a
+ * side panel on the end side. Every width keeps the timeline at the bottom (developer, 26 Nov 2026), centred and capped on a wide window.
+ * Everything it shows comes from content.db: no tap waits on the network.
  */
 export function SeerahScreen({
   initialView = null,
@@ -90,9 +98,15 @@ export function SeerahScreen({
   const catalog = useSeerahCatalogEntry();
   const world = useSeerahWorld();
   const download = useSeerahDownload(catalog);
+  const seerahId = catalog?.resourceId;
+  // Keyed on the id, never on the entry: an install bumps the catalogue, and a pack that always fails must not loop.
+  useEffect(() => {
+    autoInstallSeerah();
+  }, [seerahId]);
   const [view, toggleView, chooseView] = useSeerahViewChoice(initialView);
   // Held here, not in the map: a level change remounts the map and must not wait for a push that never comes.
   const artReady = useArtReady();
+  const [timelineCollapsed, setTimelineCollapsed] = useTimelineCollapse();
 
   const [levelId, setLevelId] = useState(REGION);
   const [focus, setFocus] = useState<SeerahFocus>(initialAge);
@@ -228,7 +242,7 @@ export function SeerahScreen({
         <SeerahStateView
           doneLabel={doneLabel}
           kind={kind}
-          onAction={kind === 'downloading' ? download.cancel : download.start}
+          onAction={kind === 'downloading' ? undefined : download.start}
           progress={download.view.kind === 'downloading' ? download.view.progress : 0}
           sizeLabel={sizeLabel}
         />
@@ -264,23 +278,41 @@ export function SeerahScreen({
   const emptyYear = typeof focus === 'number' && (index.counts[focus] ?? 0) === 0;
   const expanded = windowClass === 'expanded';
 
-  const timeline = (
+  const focusCount = focus === null ? total : focus === 'unspecified' ? index.unspecifiedCount : (index.counts[focus] ?? 0);
+  const capsuleLabel = t('seerah.timeline.capsule', { events: eventCountText(t, focusCount), title: focusTitle(t, focus) });
+  const timeline = timelineCollapsed ? (
+    <TimelineCapsule
+      accessibilityLabel={t('seerah.timeline.show', { focus: capsuleLabel })}
+      label={capsuleLabel}
+      onExpand={() => setTimelineCollapsed(false)}
+    />
+  ) : (
     <TimelineBar
       counts={index.counts}
       focus={focus}
       milestones={marks}
+      onCollapse={() => setTimelineCollapsed(true)}
       onFocusChange={(next) => {
         setFocus(next);
         setCallout(null);
       }}
-      orientation={expanded ? 'vertical' : 'horizontal'}
       totalCount={total}
       unspecifiedCount={index.unspecifiedCount}
     />
   );
 
+  // Hidden, the timeline leaves only its capsule (18 pt above the safe area, 44 tall), so the map, the bottom chips and the
+  // docked cards take its space back (developer, 26 Nov 2026).
+  const capsuleClearance = insets.bottom + MINI_PLAYER_CAPSULE_FOOTPRINT + theme.space[3];
+  const bottomClearance = timelineCollapsed ? capsuleClearance : TIMELINE_CLEARANCE;
+  const dockBottom = timelineCollapsed ? capsuleClearance : DOCK_BOTTOM;
   // The callout docks above the timeline; the map keeps its centred point and its edge chips clear of it.
-  const calloutLift = (expanded ? theme.space[4] : DOCK_BOTTOM) + calloutHeight;
+  const calloutLift = dockBottom + calloutHeight;
+  // The map runs under the side safe areas (a phone in landscape) and its controls keep clear of them. With the event
+  // panel open the map's end edge is the panel, which clears the end inset itself.
+  const panelOpen = expanded && openEventId !== null;
+  const mapStart = insets.start;
+  const mapEnd = panelOpen ? 0 : insets.end;
   const map =
     art === null ? null : (
       <SeerahMap
@@ -289,7 +321,13 @@ export function SeerahScreen({
         artReady={artReady}
         dimmedRouteIds={dimmedRoutes}
         focusPlaceId={focusPlaceId}
-        insets={{ bottom: Math.max(expanded ? theme.space[8] : TIMELINE_CLEARANCE, callout !== null ? calloutLift : 0), top: insets.top + HEADER_BOTTOM }}
+        insets={{
+          bottom: Math.max(bottomClearance, callout !== null ? calloutLift : 0),
+          // The map is never mirrored: its side insets are physical.
+          left: I18nManager.isRTL ? mapEnd : mapStart,
+          right: I18nManager.isRTL ? mapStart : mapEnd,
+          top: insets.top + HEADER_BOTTOM,
+        }}
         key={level.id}
         levelId={level.id}
         onBackToRegion={() => setLevelId(REGION)}
@@ -311,25 +349,28 @@ export function SeerahScreen({
     );
 
   const nearest = typeof focus === 'number' ? nearestAgeWithEvents(index, focus) : null;
-  const dock = { bottom: expanded ? theme.space[4] : DOCK_BOTTOM, left: theme.space[4], position: 'absolute', right: theme.space[4] } as const;
+  const dock = { alignItems: 'center', bottom: dockBottom, end: theme.space[4] + mapEnd, position: 'absolute', start: theme.space[4] + mapStart } as const;
+  const column = { maxWidth: DOCK_MAX_WIDTH, width: '100%' } as const;
 
   const mapArea = (
     <View style={{ flex: 1 }}>
       {map}
       <MapTopFade height={insets.top + HEADER_BOTTOM + theme.space[6]} />
-      <View pointerEvents="box-none" style={{ end: theme.space[4], position: 'absolute', start: theme.space[4], top: insets.top + theme.space[2] }}>
+      <View pointerEvents="box-none" style={{ end: theme.space[4] + mapEnd, position: 'absolute', start: theme.space[4] + mapStart, top: insets.top + theme.space[2] }} testID="seerah-map-header-row">
         <MapHeader
           levelChip={isCity ? { label: t('seerah.map.levelRegion'), onPress: () => setLevelId(REGION) } : undefined}
           onBack={backToMenu}
           onOpenKey={() => setKeyOpen(true)}
           onToggleView={toggleView}
+          // Frame SeerahExpanded: a compact centred title pill on a wide window; phones stretch it.
+          titleFit={windowClass === 'compact' ? 'fill' : 'hug'}
           subtitle={isCity ? `${t('seerah.title')} · ${eventCountText(t, pins.reduce((sum, pin) => sum + pin.count, 0))}` : t('seerah.regionSubtitle')}
           title={isCity ? cityPlaceName : t('seerah.title')}
           view="map"
         />
       </View>
       {callout !== null ? (
-        <View onLayout={(event) => setCalloutHeight(event.nativeEvent.layout.height)} pointerEvents="box-none" style={{ ...dock, alignItems: 'center' }}>
+        <View onLayout={(event) => setCalloutHeight(event.nativeEvent.layout.height)} pointerEvents="box-none" style={dock}>
           <EventCallout
             onOpen={() => openEvent(callout.id)}
             subtitle={[callout.ageFrom === null ? t('seerah.age.unspecified') : ageText(t, callout.ageFrom), placeName(callout.placeId)].join(' · ')}
@@ -339,14 +380,18 @@ export function SeerahScreen({
       ) : null}
       {emptyYear && typeof focus === 'number' ? (
         <View pointerEvents="box-none" style={dock}>
-          <SeerahStateView age={focus} kind="emptyYear" nearestAge={nearest} onAction={nearest === null ? undefined : () => setFocus(nearest)} />
+          <View pointerEvents="box-none" style={column}>
+            <SeerahStateView age={focus} kind="emptyYear" nearestAge={nearest} onAction={nearest === null ? undefined : () => setFocus(nearest)} />
+          </View>
         </View>
       ) : null}
-      {expanded ? null : (
-        <View pointerEvents="box-none" style={{ bottom: theme.size.pillInset, end: theme.space[3], position: 'absolute', start: theme.space[3] }}>
+      <View
+        pointerEvents="box-none"
+        style={{ alignItems: 'center', bottom: timelineCollapsed ? insets.bottom + MINI_PLAYER_CAPSULE.bottom : theme.size.pillInset, end: theme.space[3] + mapEnd, position: 'absolute', start: theme.space[3] + mapStart }} testID="seerah-timeline-row">
+        <View pointerEvents="box-none" style={column} testID="seerah-timeline-dock">
           {timeline}
         </View>
-      )}
+      </View>
     </View>
   );
 
@@ -358,6 +403,7 @@ export function SeerahScreen({
         onNavigate={setOpenEventId}
         onShowAge={(age) => {
           setFocus(age);
+          setTimelineCollapsed(false);
           setOpenEventId(null);
           chooseView('map');
         }}
@@ -371,16 +417,11 @@ export function SeerahScreen({
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Screen testID={testID} topInset={false}>
+      <Screen sideInsets={false} testID={testID} topInset={false}>
         <View style={{ flex: 1, flexDirection: 'row' }}>
-          {expanded ? (
-            <View style={{ paddingBottom: insets.bottom + theme.space[3], paddingTop: insets.top + theme.space[3], width: VERTICAL_TIMELINE_WIDTH }}>
-              {timeline}
-            </View>
-          ) : null}
           {mapArea}
-          {expanded && openEventId !== null ? (
-            <View style={{ paddingTop: insets.top, width: PANEL_WIDTH }} testID="seerah-event-panel">
+          {panelOpen ? (
+            <View style={{ paddingEnd: insets.end, paddingTop: insets.top, width: PANEL_WIDTH + insets.end }} testID="seerah-event-panel">
               {openEventPane(() => setOpenEventId(null))}
             </View>
           ) : null}

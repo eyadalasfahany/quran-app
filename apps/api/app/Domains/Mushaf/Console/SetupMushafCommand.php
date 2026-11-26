@@ -83,11 +83,20 @@ final class SetupMushafCommand extends Command
             return null;
         }
 
-        if ($requested === []) {
-            return $known;
+        $selected = $requested === [] ? $known : array_values(array_intersect($known, $requested));
+        $visible = [];
+
+        foreach ($selected as $key) {
+            if (($configured[$key]['publish'] ?? true) === false) {
+                $this->line('Skipped hidden edition: '.$key.' (ADR 0090 item 12).');
+
+                continue;
+            }
+
+            $visible[] = $key;
         }
 
-        return array_values(array_intersect($known, $requested));
+        return $visible;
     }
 
     /**

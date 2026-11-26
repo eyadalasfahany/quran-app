@@ -118,6 +118,7 @@ export function OnboardingTourScreen({
       {/* The column caps the content at 720 on wide windows (spec §4). Its gutter is 0: the phone layout keeps its own padding. */}
       <ContentColumn gutter={0} testID={`${testID}-column`}>
         <ScrollView
+          testID={`${testID}-scroll`}
           contentContainerStyle={{
             gap: theme.space[4],
             paddingBottom: theme.space[4],

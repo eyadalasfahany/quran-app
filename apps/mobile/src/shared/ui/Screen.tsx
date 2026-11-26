@@ -6,11 +6,13 @@ import { useScreenInsets } from '@/core/layout/useScreenInsets';
 import { useTheme } from '@/core/theme';
 
 // The root of a tab or stack screen: the screen surface inside the safe area. The side insets (a notch in landscape)
-// are reading-direction aware, so the content clears them on either side.
+// are reading-direction aware, so the content clears them on either side. `sideInsets={false}` lets a full-bleed view (the
+// Seerah map) run under them; that screen then keeps its own controls clear of them.
 export function Screen({
   children,
   surface = 'surface',
   topInset = true,
+  sideInsets = true,
   accessibilityLabel,
   testID,
 }: {
@@ -18,6 +20,7 @@ export function Screen({
   // The reader sits on surfacePage; every other screen on surface.
   surface?: 'surface' | 'surfacePage';
   topInset?: boolean;
+  sideInsets?: boolean;
   accessibilityLabel?: string;
   testID?: string;
 }) {
@@ -32,8 +35,8 @@ export function Screen({
       style={{
         backgroundColor: theme.colors[surface],
         flex: 1,
-        paddingEnd: insets.end,
-        paddingStart: insets.start + railSide,
+        paddingEnd: sideInsets ? insets.end : 0,
+        paddingStart: (sideInsets ? insets.start : 0) + railSide,
         paddingTop: topInset ? insets.top : 0,
       }}
       testID={testID}

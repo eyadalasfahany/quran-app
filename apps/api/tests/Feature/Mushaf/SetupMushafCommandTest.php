@@ -75,8 +75,24 @@ function fakeMushafSetupSteps(Application $app, array $exitCodesByStep = []): Ar
  */
 function mushafSetupConfiguredKeys(): array
 {
-    return array_map(strval(...), array_keys(config('mushaf.editions')));
+    $visible = array_filter(config('mushaf.editions'), fn (array $edition): bool => ($edition['publish'] ?? true) !== false);
+
+    return array_map(strval(...), array_keys($visible));
 }
+
+it('skips the hidden al-Duri edition in every step, even when it is asked for by name', function (): void {
+    $calls = fakeMushafSetupSteps($this->app);
+
+    $this->artisan('mushaf:setup', ['--key' => ['duri', 'warsh']])
+        ->expectsOutputToContain('Skipped hidden edition: duri')
+        ->assertExitCode(0);
+
+    expect($calls->getArrayCopy())->toBe([
+        'mushaf:import warsh',
+        'mushaf:publish warsh',
+        'content:ensure-packs',
+    ]);
+});
 
 it('is registered as mushaf:setup', function (): void {
     expect(Artisan::all())->toHaveKey('mushaf:setup');

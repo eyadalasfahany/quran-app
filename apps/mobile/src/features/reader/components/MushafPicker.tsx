@@ -6,7 +6,7 @@ import { formatNumber, useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
 import { OnboardingRadioCard } from '@/shared/ui';
 
-import { MUSHAF_EDITION_YEAR, MUSHAF_KEYS, type MushafKey } from '../mushafs';
+import { MUSHAF_EDITION_YEAR, PICKABLE_MUSHAF_KEYS, type MushafKey } from '../mushafs';
 
 const BYTES_PER_MEGABYTE = 1_000_000;
 
@@ -60,7 +60,7 @@ export function MushafPicker({
 
   return (
     <View accessibilityLabel={accessibilityLabel} accessibilityRole="radiogroup" style={{ gap: theme.space[2] }} testID={testID}>
-      {MUSHAF_KEYS.map((mushaf) => (
+      {PICKABLE_MUSHAF_KEYS.map((mushaf) => (
         <OnboardingRadioCard
           density="compact"
           key={mushaf}

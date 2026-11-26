@@ -8,6 +8,7 @@ import type { ReaderMode } from './anchor/reading-anchor';
 import type { MushafKey } from './mushafs';
 import {
   clampFontScale,
+  clampMushafZoom,
   readReaderSettings,
   resourceChoiceChanged,
   writeReaderSettings,
@@ -20,6 +21,7 @@ export type { ReaderSettings } from './settings-model';
 type ReaderSettingsStore = LoadedReaderSettings & {
   setMode: (mode: ReaderMode) => void;
   setFontScale: (fontScale: number) => void;
+  setMushafZoom: (mushafZoom: number) => void;
   setMushaf: (mushaf: MushafKey) => void;
   setTafsirId: (tafsirId: number | null) => void;
 };
@@ -66,7 +68,7 @@ export function persistResourceChoice(previous: ReaderChoice, next: ReaderChoice
 }
 
 function commit(current: LoadedReaderSettings, next: LoadedReaderSettings): void {
-  const saved = { ...next, fontScale: clampFontScale(next.fontScale) };
+  const saved = { ...next, fontScale: clampFontScale(next.fontScale), mushafZoom: clampMushafZoom(next.mushafZoom) };
   writeReaderSettings(saved);
   if (resourceChoiceChanged(choiceOf(current), choiceOf(saved))) {
     persistResourceChoice(choiceOf(current), choiceOf(saved), openExecutor());
@@ -81,6 +83,9 @@ export const useReaderSettings = create<ReaderSettingsStore>(() => ({
   },
   setFontScale: (fontScale) => {
     commit(useReaderSettings.getState(), { ...useReaderSettings.getState(), fontScale });
+  },
+  setMushafZoom: (mushafZoom) => {
+    commit(useReaderSettings.getState(), { ...useReaderSettings.getState(), mushafZoom });
   },
   setMushaf: (mushaf) => {
     commit(useReaderSettings.getState(), { ...useReaderSettings.getState(), mushaf });

@@ -150,7 +150,7 @@ export function MiniPlayer({ variant }: { variant: MiniPlayerVariant }) {
   const subtitle = notPlaying ? captioned(shownSurah, shownAyah) : shownSurah;
 
   return (
-    <GlassSurface
+    <GlassSurface interactive
       radius="lg"
       style={{
         alignItems: 'center',

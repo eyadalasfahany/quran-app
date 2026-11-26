@@ -90,3 +90,9 @@ Listed with defaults in `docs/plans/phase-8.md`, «Questions for the developer»
   - Places near a city merge into one cluster drawn 44 pt below the city pin, even though that spot isn't geographic.
   - Seerah sheets use the reader's `SheetHost` and open at its 50% detent (ADR 0020), not the frames' ~42%.
   - The event page hides its scroll indicators, like every `SheetScrollView`.
+
+## Amendments, 26 Nov 2026 (developer)
+
+- **Timeline at the bottom on every width:** ADR 0096 replaces the vertical bar on expanded windows.
+- **Pack downloads automatically:** ADR 0097 replaces decision 2's «download sheet». The pack installs with no tap, the downloading card has no Cancel, and the `SeerahStateDownload` frame is retired.
+- **Edge chips:** map labels and pins keep clear of the chip stacks. In a short window (a landscape phone) each stack becomes a row between the header and the timeline.

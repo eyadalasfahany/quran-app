@@ -56,6 +56,30 @@ final class BuildWordBoxesCommand extends Command
         $this->line('Status: '.$build->status->value);
         $this->line(sprintf('Output: %s (%d bytes)', $build->output, $build->outputBytes));
 
+        if ($build->contours !== null) {
+            foreach ($build->contours->issues as $issue) {
+                $this->line($issue);
+            }
+
+            $this->line(sprintf('Contour gates: W9 %d, W10 %d, W11 %d; sajda lines %d on %d pages; hizb ornaments %d; loose attachments %d',
+                $build->contours->checks['W9'], $build->contours->checks['W10'], $build->contours->checks['W11'],
+                $build->contours->sajdaLines, $build->contours->sajdaPages, $build->contours->hizbOrnaments, count($build->contours->attachments)));
+            foreach ($build->contours->attachments as $attachment) {
+                $this->line(sprintf('Loose %d:%d contour %d (box %s) -> %s (%s, %.2f)', $attachment['page'], $attachment['line'], $attachment['loose'],
+                    implode(',', $attachment['box']), $attachment['target'], $attachment['mode'], $attachment['distance']));
+            }
+
+            $this->line('Contour digest: '.(string) $build->contourDigest);
+            $this->line('Contour status: '.(string) $build->contourStatus?->value);
+            $this->line('Contour output: '.$build->contourOutput);
+
+            $failedGates = array_keys(array_filter($build->contours->checks, fn (int $count): bool => $count > 0));
+
+            if ($build->contourStatus === WordBoxesStatus::Failed) {
+                $this->error(sprintf('Contour map failed gate %s (ADR 0090 A3); see the issues above.', implode(', ', $failedGates)));
+            }
+        }
+
         $directory = $this->option('sheet');
 
         if (is_string($directory) && $directory !== '') {
@@ -64,6 +88,8 @@ final class BuildWordBoxesCommand extends Command
             $this->line(sprintf('Review sheet: %d flagged and %d sampled pages in %s/index.html', $listed['flagged'], $listed['sampled'], rtrim($directory, '/')));
         }
 
-        return $build->status === WordBoxesStatus::Failed ? self::FAILURE : self::SUCCESS;
+        $contourFailed = $build->contourStatus === WordBoxesStatus::Failed;
+
+        return $build->status === WordBoxesStatus::Failed || $contourFailed ? self::FAILURE : self::SUCCESS;
     }
 }

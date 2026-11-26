@@ -1,6 +1,7 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import { Dimensions } from 'react-native';
 
-import { renderUi } from '../../../../jest/render-ui';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 import { rawColorLiteralsInFeature } from '../../../../jest/feature-ui-source';
 import { useReaderMiniCollapse } from '@/features/reader/mini-bar-collapse';
 
@@ -20,9 +21,15 @@ function element() {
   );
 }
 
+function setWindowSize(width: number, height: number) {
+  Dimensions.set({ screen: { fontScale: 1, height, scale: 1, width }, window: { fontScale: 1, height, scale: 1, width } });
+}
+
 describe('ReaderMiniPlayer', () => {
   afterEach(() => {
     useReaderMiniCollapse.getState().setCollapsed(false);
+    useReaderMiniCollapse.getState().setShortOpen(false);
+    setWindowSize(390, 844);
   });
 
   it('draws the bar while expanded', async () => {
@@ -102,5 +109,59 @@ describe('ReaderMiniPlayer', () => {
 
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/audio/components/ReaderMiniPlayer.tsx')).toEqual([]);
+  });
+
+  describe('short window: landscape phone (ADR 0090 amendment, item 8)', () => {
+    beforeEach(() => {
+      setWindowSize(874, 402);
+      useReaderMiniCollapse.getState().setCollapsed(false);
+      useReaderMiniCollapse.getState().setShortOpen(false);
+    });
+
+    it('starts collapsed even when the saved choice is expanded', async () => {
+      const view = await renderUi(element());
+
+      expect(view.queryByTestId('mini-player-reader')).toBeNull();
+      expect(view.getByTestId('mini-player-capsule')).toBeOnTheScreen();
+      expect(useReaderMiniCollapse.getState().collapsed).toBe(false);
+    });
+
+    it.each(['ar', 'en'] as const)('sits the capsule in the bottom trailing corner (%s)', async (locale) => {
+      const view = await renderUi(element(), { locale });
+
+      // The dock spans the slot between the edge gutters; flex-end is the end edge, which Yoga mirrors in Arabic.
+      expect(flatStyle(view.getByTestId('mini-player-capsule-dock').props.style).alignItems).toBe('flex-end');
+    });
+
+    it('tapping the capsule expands the bar, and a hand scroll collapses it again', async () => {
+      const view = await renderUi(element());
+
+      await act(async () => fireEvent.press(view.getByRole('button', { name: 'إظهار المشغّل' })));
+      expect(view.getByTestId('mini-player-reader')).toBeOnTheScreen();
+      expect(useReaderMiniCollapse.getState().collapsed).toBe(false);
+
+      await act(async () => useReaderMiniCollapse.getState().setShortOpen(false));
+      expect(view.queryByTestId('mini-player-reader')).toBeNull();
+      expect(view.getByTestId('mini-player-capsule')).toBeOnTheScreen();
+    });
+  });
+
+  describe('tall window', () => {
+    it('keeps the capsule centred and does not start it collapsed', async () => {
+      setWindowSize(390, 844);
+      useReaderMiniCollapse.getState().setCollapsed(false);
+      const view = await renderUi(element());
+
+      expect(view.getByTestId('mini-player-reader')).toBeOnTheScreen();
+      expect(view.queryByTestId('mini-player-capsule')).toBeNull();
+    });
+
+    it('keeps the capsule centred when collapsed', async () => {
+      setWindowSize(390, 844);
+      useReaderMiniCollapse.getState().setCollapsed(true);
+      const view = await renderUi(element());
+
+      expect(flatStyle(view.getByTestId('mini-player-capsule-dock').props.style).alignItems).toBe('center');
+    });
   });
 });

@@ -111,6 +111,38 @@ describe('useHadithDownloads', () => {
     expect(useHadithDownloads.getState().byId[RESOURCE]).toEqual({ status: 'waiting', progress: 0, reason: 'wifi' });
   });
 
+  it('starts on cellular with Wi-Fi only on when the caller asks for any network', async () => {
+    jest.mocked(getWifiOnlyDownloads).mockReturnValue(true);
+    onWifi(false);
+    deferInstalls();
+    await act(async () => {
+      void useHadithDownloads.getState().start(RESOURCE, { anyNetwork: true });
+      await Promise.resolve();
+    });
+    expect(installResource).toHaveBeenCalledTimes(1);
+    expect(useHadithDownloads.getState().byId[RESOURCE]).toEqual({ status: 'downloading', progress: 0 });
+  });
+
+  it('still waits on cellular with Wi-Fi only on when any network is not asked for', async () => {
+    jest.mocked(getWifiOnlyDownloads).mockReturnValue(true);
+    onWifi(false);
+    deferInstalls();
+    await act(async () => {
+      await useHadithDownloads.getState().start(RESOURCE, { anyNetwork: false });
+    });
+    expect(installResource).not.toHaveBeenCalled();
+    expect(useHadithDownloads.getState().byId[RESOURCE]?.status).toBe('waiting');
+  });
+
+  it('does not start twice with any network either', async () => {
+    deferInstalls();
+    void act(() => useHadithDownloads.getState().start(RESOURCE, { anyNetwork: true }));
+    await act(async () => {
+      await useHadithDownloads.getState().start(RESOURCE, { anyNetwork: true });
+    });
+    expect(installResource).toHaveBeenCalledTimes(1);
+  });
+
   it('starts on Wi-Fi when Wi-Fi only is on', async () => {
     jest.mocked(getWifiOnlyDownloads).mockReturnValue(true);
     onWifi(true);

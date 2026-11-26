@@ -14,7 +14,9 @@ final class PublishSvgMushafCommand extends Command
     protected $signature = 'mushaf:publish
         {key : the riwayah key, for example hafs}
         {--defer-pack : queue the pack build instead of building it now}
-        {--without-word-boxes : publish pages and regions only (local and test use; refused in production)}';
+        {--without-word-boxes : publish pages and regions only (local and test use; refused in production)}
+        {--include-hidden : publish an edition hidden in config (local and test use; refused in production)}
+        {--with-pending-contours : local only: include the contour map while it is pending review (refused in production)}';
 
     protected $description = 'Publish an imported SVG mushaf as a content resource and build its pack (ADR 0090).';
 
@@ -25,6 +27,8 @@ final class PublishSvgMushafCommand extends Command
                 (string) $this->argument('key'),
                 (bool) $this->option('defer-pack'),
                 (bool) $this->option('without-word-boxes'),
+                (bool) $this->option('include-hidden'),
+                (bool) $this->option('with-pending-contours'),
             );
         } catch (SvgMushafException|PackBuildException $exception) {
             $this->error($exception->getMessage());

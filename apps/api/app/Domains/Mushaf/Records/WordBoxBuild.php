@@ -43,5 +43,9 @@ final readonly class WordBoxBuild
         public array $overrides = [],
         public array $needsDeveloper = [],
         public array $wordLines = [],
+        public ?ContourMap $contours = null,
+        public ?string $contourDigest = null,
+        public ?WordBoxesStatus $contourStatus = null,
+        public string $contourOutput = '',
     ) {}
 }

@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 
 import { setLocale, type Locale } from '@/core/i18n';
 import { ContentColumn } from '@/core/layout';
+import { isShortWindowHeight } from '@/core/layout/window-class';
 import { useTheme } from '@/core/theme';
 import { OnboardingFooter } from '@/features/onboarding/components/OnboardingFooter';
 import { OnboardingHeroPattern } from '@/features/onboarding/components/OnboardingHeroPattern';
@@ -15,6 +16,8 @@ export function OnboardingLanguageScreen({ testID = 'onboarding-language' }: { t
   const { t } = useTranslation();
   const theme = useTheme();
   const [locale, setLocalLocale] = useState<Locale>(() => suggestLocale());
+  // A landscape phone has no room for the hero pattern: it is decorative, so it is dropped rather than shrunk.
+  const short = isShortWindowHeight(useWindowDimensions().height);
 
   const tagline = t('onboarding.language.tagline');
   const taglineEn = t('onboarding.language.taglineEn');
@@ -28,50 +31,55 @@ export function OnboardingLanguageScreen({ testID = 'onboarding-language' }: { t
     <Screen testID={testID}>
       {/* The column caps the content at 720 on wide windows (spec §4). Its gutter is 0: the phone layout keeps its own padding. */}
       <ContentColumn gutter={0} testID={`${testID}-column`}>
-        <OnboardingHeroPattern />
-        <View
-          style={{
-            flex: 1,
-            gap: theme.space[4],
-            marginTop: -theme.space[8],
-            paddingHorizontal: theme.space[6],
-          }}
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: theme.space[4] }}
+          style={{ flex: 1 }}
+          testID={`${testID}-scroll`}
         >
-          <View style={{ alignItems: 'center', gap: 6 }}>
-            <UiText align="center" variant="displayLg">
-              {t('onboarding.language.title')}
-            </UiText>
-            <UiText align="center" tone="muted" variant="body">
-              {tagline}
-            </UiText>
-            {/* The second line is the English gloss under the Arabic tagline; in English it would repeat the first. */}
-            {taglineEn !== tagline ? (
-              <UiText align="center" tone="muted" variant="caption">
-                {taglineEn}
-              </UiText>
-            ) : null}
-          </View>
+          {short ? null : <OnboardingHeroPattern />}
           <View
-            accessibilityLabel={t('onboarding.language.groupLabel')}
-            accessibilityRole="radiogroup"
-            style={{ gap: theme.space[2] }}
+            style={{
+              gap: theme.space[4],
+              marginTop: short ? theme.space[6] : -theme.space[8],
+              paddingHorizontal: theme.space[6],
+            }}
           >
-            <OnboardingRadioCard
-              detail={t('onboarding.language.arabicDetail')}
-              onPress={() => setLocalLocale('ar')}
-              selected={locale === 'ar'}
-              testID="onboarding-locale-ar"
-              title={t('onboarding.language.arabic')}
-            />
-            <OnboardingRadioCard
-              detail={t('onboarding.language.englishDetail')}
-              onPress={() => setLocalLocale('en')}
-              selected={locale === 'en'}
-              testID="onboarding-locale-en"
-              title={t('onboarding.language.english')}
-            />
+            <View style={{ alignItems: 'center', gap: 6 }}>
+              <UiText align="center" variant="displayLg">
+                {t('onboarding.language.title')}
+              </UiText>
+              <UiText align="center" tone="muted" variant="body">
+                {tagline}
+              </UiText>
+              {/* The second line is the English gloss under the Arabic tagline; in English it would repeat the first. */}
+              {taglineEn !== tagline ? (
+                <UiText align="center" tone="muted" variant="caption">
+                  {taglineEn}
+                </UiText>
+              ) : null}
+            </View>
+            <View
+              accessibilityLabel={t('onboarding.language.groupLabel')}
+              accessibilityRole="radiogroup"
+              style={{ gap: theme.space[2] }}
+            >
+              <OnboardingRadioCard
+                detail={t('onboarding.language.arabicDetail')}
+                onPress={() => setLocalLocale('ar')}
+                selected={locale === 'ar'}
+                testID="onboarding-locale-ar"
+                title={t('onboarding.language.arabic')}
+              />
+              <OnboardingRadioCard
+                detail={t('onboarding.language.englishDetail')}
+                onPress={() => setLocalLocale('en')}
+                selected={locale === 'en'}
+                testID="onboarding-locale-en"
+                title={t('onboarding.language.english')}
+              />
+            </View>
           </View>
-        </View>
+        </ScrollView>
         <OnboardingFooter
           continueLabel={t('onboarding.continue')}
           onContinue={continueNext}

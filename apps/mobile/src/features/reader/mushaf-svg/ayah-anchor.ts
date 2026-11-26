@@ -6,10 +6,15 @@ import type { PageRegionGeometry } from './region-geometry';
  * The top of the ayah's first line on the page that holds its start, in screen units from the artwork's top.
  * Null when the ayah has no region with a label on these regions.
  */
-export function offsetForAyah(regions: readonly PageRegionGeometry[], verseKey: string, width: number): number | null {
+export function offsetForAyah(
+  regions: readonly PageRegionGeometry[],
+  verseKey: string,
+  width: number,
+  unitsWidth?: number,
+): number | null {
   const region = regions.find((item) => item.verseKey === verseKey && !item.continues);
   const first = region?.lines[0];
-  return first === undefined ? null : first.y0 * scaleFor(width);
+  return first === undefined ? null : first.y0 * scaleFor(width, unitsWidth);
 }
 
 /**

@@ -18,14 +18,16 @@ describe('MenuMoonCard', () => {
 
   it('shows the Crescent eyebrow, the title and the conjunction line in Arabic', async () => {
     const view = await renderUi(<MenuMoonCard onPress={jest.fn()} preview="الاقتران خلال ٧ ساعات" />);
-    expect(view.getByText('الهلال')).toBeOnTheScreen();
+    // The caption is spoken, not drawn: the menu section's title stands in for it.
+    expect(view.queryByText('الهلال')).toBeNull();
     expect(view.getByText('رؤية الهلال')).toBeOnTheScreen();
     expect(view.getByText('الاقتران خلال ٧ ساعات')).toBeOnTheScreen();
   });
 
   it('shows the Crescent eyebrow and the title in English', async () => {
     const view = await renderUi(<MenuMoonCard onPress={jest.fn()} preview="Conjunction 7 hours ago" />, { locale: 'en' });
-    expect(view.getByText('Crescent')).toBeOnTheScreen();
+    // The caption is spoken, not drawn: the menu section's title stands in for it.
+    expect(view.queryByText('Crescent')).toBeNull();
     expect(view.getByText('Moon sighting')).toBeOnTheScreen();
     expect(view.getByText('Conjunction 7 hours ago')).toBeOnTheScreen();
   });

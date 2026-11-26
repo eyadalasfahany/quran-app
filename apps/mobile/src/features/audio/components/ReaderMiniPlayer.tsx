@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
+import { useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { useReaderMiniCollapse } from '@/features/reader/mini-bar-collapse';
+import { isShortWindowHeight } from '@/core/layout/window-class';
+import { drawnCollapsed, setDrawnCollapsed, useReaderMiniCollapse } from '@/features/reader/mini-bar-collapse';
 
 import { MiniPlayerCapsule } from './MiniPlayerCapsule';
 import { ReaderMiniBar } from './ReaderMiniBar';
@@ -38,13 +41,30 @@ export function ReaderMiniPlayer({
   /** Which notice `notice` is: the skip notice (default) or the partial-range notice (ADR 0077 amendment). */
   noticeKind?: 'skip' | 'range';
 }) {
-  const collapsed = useReaderMiniCollapse((state) => state.collapsed);
-  const setCollapsed = useReaderMiniCollapse((state) => state.setCollapsed);
+  const { height } = useWindowDimensions();
+  const short = isShortWindowHeight(height);
+  const stored = useReaderMiniCollapse((state) => state.collapsed);
+  const shortOpen = useReaderMiniCollapse((state) => state.shortOpen);
+  const setShortOpen = useReaderMiniCollapse((state) => state.setShortOpen);
+  const collapsed = drawnCollapsed(short, stored, shortOpen);
+  const setCollapsed = (next: boolean) => setDrawnCollapsed(short, next);
+
+  // Leaving a short window forgets the tap, so the next short window starts collapsed again.
+  useEffect(() => {
+    if (!short) {
+      setShortOpen(false);
+    }
+  }, [short, setShortOpen]);
 
   return (
     <GestureHandlerRootView>
       {collapsed ? (
-        <MiniPlayerCapsule fraction={fraction} onExpand={() => setCollapsed(false)} showProgress={!idle} />
+        <MiniPlayerCapsule
+          fraction={fraction}
+          onExpand={() => setCollapsed(false)}
+          showProgress={!idle}
+          trailing={short}
+        />
       ) : unavailable !== undefined ? (
         <ReaderMiniUnavailable
           message={unavailable.message}

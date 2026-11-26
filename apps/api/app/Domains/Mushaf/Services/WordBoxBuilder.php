@@ -7,10 +7,14 @@ namespace App\Domains\Mushaf\Services;
 use App\Domains\Mushaf\Enums\WordBoxesStatus;
 use App\Domains\Mushaf\Exceptions\SvgMushafSourceException;
 use App\Domains\Mushaf\Exceptions\UnknownSvgMushafException;
+use App\Domains\Mushaf\Packs\Tqp\TqpSubpaths;
+use App\Domains\Mushaf\Records\ContourMap;
 use App\Domains\Mushaf\Records\WordBoxBuild;
+use App\Domains\Mushaf\Repositories\Contracts\SvgMushafContourRepository;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafWordBoxRepository;
 use App\Domains\Mushaf\Sources\QuranTextSource;
 use App\Domains\Mushaf\Sources\SvgMushafDownloader;
+use App\Domains\Mushaf\WordBoxes\ContourMapBuilder;
 use App\Domains\Mushaf\WordBoxes\LineBands;
 use App\Domains\Mushaf\WordBoxes\LineOrder;
 use App\Domains\Mushaf\WordBoxes\PageContours;
@@ -51,6 +55,7 @@ final class WordBoxBuilder
         private readonly SvgMushafDownloader $downloader,
         private readonly QuranTextSource $quranText,
         private readonly SvgMushafWordBoxRepository $repository,
+        private readonly SvgMushafContourRepository $contourRepository,
     ) {}
 
     /**
@@ -75,6 +80,9 @@ final class WordBoxBuilder
         $words = self::moveWords($words, $overrides->wordLines);
         $splits = $this->splits();
 
+        $lastWords = $this->lastWords($words);
+        $inputs = [];
+        $subpaths = new TqpSubpaths;
         $heights = [];
 
         foreach ($regions as $pageRegions) {
@@ -99,6 +107,12 @@ final class WordBoxBuilder
         for ($page = 1; $page <= $pageCount; $page++) {
             $svg = $this->downloader->bytes($folder, sprintf('svg/%03d.svg', $page), true);
             $result = $this->page($page, $svg, $regions[$page] ?? [], $words[$page] ?? [], $overrides, $splits, $lineHeight, $settings);
+            $map = $subpaths->map($svg, $page);
+            $inputs[$page] = [
+                'contours' => $result['contourPage']['contours'], 'lineOf' => $result['contourPage']['lineOf'],
+                'words' => $result['contourPage']['words'], 'loose' => $result['contourPage']['loose'],
+                'subpaths' => $map['subpaths'], 'content' => $map['content'], 'marks' => $map['marks'], 'regions' => $regions[$page] ?? [],
+            ];
 
             foreach ($result['counts'] as $check => $count) {
                 $counts[$check] += $count;
@@ -158,9 +172,40 @@ final class WordBoxBuilder
             default => WordBoxesStatus::PendingReview,
         };
 
-        DB::transaction(fn () => $this->repository->replace($editionId, $rows, $status, $digest));
+        // The contour map has its own digest and approval; a failed gate here never changes the word boxes (ADR 0090 A3).
+        $boxAt = [];
+
+        foreach ($pageBoxes as $boxes) {
+            foreach ($boxes as $box) {
+                $boxAt[$box['surah'].':'.$box['ayah'].':'.$box['position']] = [$box['x0'], $box['y0'], $box['x1'], $box['y1']];
+            }
+        }
+
+        $lastBoxes = [];
+
+        foreach ($lastWords as $ayahKey => $last) {
+            $lastBoxes[$ayahKey] = ['page' => $last['page'], 'box' => $boxAt[$ayahKey.':'.$last['position']] ?? [0.0, 0.0, 0.0, 0.0]];
+        }
+
+        $contours = ContourMapBuilder::build($inputs, $lastBoxes, $settings['polygon_snap'], $lineHeight, true);
+        $contourDigest = $this->contourDigest($contours, $digest);
+        $contourFailed = array_filter($contours->checks, fn (int $count): bool => $count > 0) !== [];
+        $approvedContours = config('mushaf.approved_word_contours.'.$key);
+
+        $contourStatus = match (true) {
+            $contourFailed => WordBoxesStatus::Failed,
+            is_string($approvedContours) && hash_equals($approvedContours, $contourDigest) => WordBoxesStatus::Approved,
+            default => WordBoxesStatus::PendingReview,
+        };
+
+        DB::transaction(function () use ($editionId, $rows, $status, $digest, $contours, $contourStatus, $contourDigest): void {
+            $this->repository->replace($editionId, $rows, $status, $digest);
+            $this->contourRepository->replace($editionId, $contours->wordRows, $contours->blockRows, $contourStatus, $contourDigest);
+        });
         $output = self::file('output', $key);
         $bytes = $this->writeOutput($output, $key, $digest, $status, $rows, $pageBands);
+        $contourOutput = self::file('contour_output', $key);
+        $this->writeContourOutput($contourOutput, $key, $contourDigest, $contourStatus, $digest, $contours);
 
         return new WordBoxBuild(
             key: $key,
@@ -180,7 +225,71 @@ final class WordBoxBuilder
             overrides: $reviewed,
             needsDeveloper: $overrides->needsDeveloper,
             wordLines: $overrides->wordLines,
+            contours: $contours,
+            contourDigest: $contourDigest,
+            contourStatus: $contourStatus,
+            contourOutput: $contourOutput,
         );
+    }
+
+    /**
+     * The last word of each ayah in quran-text (the highest position), keyed "surah:ayah", with its page.
+     *
+     * @param  array<int, array<int, list<array{surah: int, ayah: int, position: int}>>>  $words  page => line => the line's words
+     * @return array<string, array{page: int, position: int, surah: int, ayah: int}>
+     */
+    private function lastWords(array $words): array
+    {
+        $last = [];
+
+        foreach ($words as $page => $lines) {
+            foreach ($lines as $list) {
+                foreach ($list as $word) {
+                    $key = $word['surah'].':'.$word['ayah'];
+
+                    if (! isset($last[$key]) || $word['position'] > $last[$key]['position']) {
+                        $last[$key] = ['page' => (int) $page, 'position' => (int) $word['position'], 'surah' => (int) $word['surah'], 'ayah' => (int) $word['ayah']];
+                    }
+                }
+            }
+        }
+
+        return $last;
+    }
+
+    /**
+     * SHA-256 over the contour rows, the word-box digest they belong to and the algorithm version (ADR 0090 A3 decision 7).
+     */
+    private function contourDigest(ContourMap $contours, string $boxDigest): string
+    {
+        return hash('sha256', json_encode([
+            'commit' => (string) config('mushaf.commit'),
+            'quran_text_commit' => (string) config('mushaf.quran_text.commit'),
+            'word_boxes_digest' => $boxDigest,
+            'algorithm' => ContourMapBuilder::ALGORITHM,
+            'words' => array_map(fn (array $row): array => [$row['surah'], $row['ayah'], $row['position'], $row['first'], $row['count'], $row['flag']], $contours->wordRows),
+            'blocks' => array_map(fn (array $row): array => [$row['page'], $row['kind'], $row['ord'], $row['surah'], $row['ayah'], $row['first'], $row['count'], $row['x0'], $row['y0'], $row['x1'], $row['y1']], $contours->blockRows),
+        ], JSON_THROW_ON_ERROR));
+    }
+
+    private function writeContourOutput(string $path, string $key, string $digest, WordBoxesStatus $status, string $boxDigest, ContourMap $contours): void
+    {
+        $json = json_encode([
+            'edition' => $key,
+            'quran_svg_commit' => (string) config('mushaf.commit'),
+            'quran_text_commit' => (string) config('mushaf.quran_text.commit'),
+            'word_boxes_digest' => $boxDigest,
+            'digest' => $digest,
+            'status' => $status->value,
+            'attribution' => self::ATTRIBUTION,
+            'word' => ['surah', 'ayah', 'position', 'first', 'count', 'flag'],
+            'block' => ['page', 'kind', 'ord', 'surah', 'ayah', 'first', 'count', 'x0', 'y0', 'x1', 'y1'],
+            'words' => array_map(fn (array $row): array => [$row['surah'], $row['ayah'], $row['position'], $row['first'], $row['count'], $row['flag']], $contours->wordRows),
+            'blocks' => array_map(fn (array $row): array => [$row['page'], $row['kind'], $row['ord'], $row['surah'], $row['ayah'], $row['first'], $row['count'], $row['x0'], $row['y0'], $row['x1'], $row['y1']], $contours->blockRows),
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES)."\n";
+
+        File::ensureDirectoryExists(dirname($path));
+        File::put($path, $json);
     }
 
     /**
@@ -230,6 +339,15 @@ final class WordBoxBuilder
      *
      * @throws SvgMushafSourceException
      */
+    /**
+     * One page's boxes and checks, and its contour inputs (ADR 0090 step 13 A1, A3).
+     *
+     * @param  list<array{surah: int, ayah: int, polygon: string}>  $regions
+     * @param  array<int, list<array{surah: int, ayah: int, position: int, letters: int|null}>>  $lines  line => its words
+     * @param  array<string, int>  $splits  "surah:ayah:position" => the app words it covers
+     * @param  array<string, float>  $settings
+     * @return array{boxes: list<array{line: int, surah: int, ayah: int, position: int, label: string, x0: float, y0: float, x1: float, y1: float, contours: list<int>, flags: list<string>}>, bands: array<int, array{0: float, 1: float}>, counts: array<string, int>, notes: list<string>, checks: list<string>, flagged: array<int, list<array{0: float, 1: float, 2: float, 3: float}>>, widths: list<float>, ratios: list<float>, overrides: array<int, bool>, contourPage: array{contours: list<array{0: float, 1: float, 2: float, 3: float}>, lineOf: list<int|null>, words: list<array{surah: int, ayah: int, position: int, apps: list<int>, line: int, contours: list<int>, x0: float, x1: float}>, loose: list<array{contour: int, loose: int, line: int, attach: string|null, ornament: bool}>}}
+     */
     private function page(int $page, string $svg, array $regions, array $lines, WordBoxOverrides $overrides, array $splits, float $lineHeight, array $settings): array
     {
         $counts = array_fill_keys(self::CHECKS, 0);
@@ -263,18 +381,26 @@ final class WordBoxBuilder
             $checks[] = 'W1';
             $notes[] = sprintf('W1 page %d: %d text lines in the regions, %d quran-text lines', $page, count($bands->bands), count($lines));
 
-            return $empty + ['counts' => $counts, 'notes' => $notes, 'checks' => $checks];
+            return $empty + ['counts' => $counts, 'notes' => $notes, 'checks' => $checks, 'contourPage' => ['contours' => PageContours::fromSvg($svg), 'lineOf' => [], 'words' => [], 'loose' => []]];
         }
 
         $perBand = array_fill(0, count($bands->bands), []);
+        $perBandIndex = array_fill(0, count($bands->bands), []);
+        $pageContours = PageContours::fromSvg($svg);
+        $bandOf = [];
 
-        foreach (PageContours::fromSvg($svg) as $contour) {
+        foreach ($pageContours as $index => $contour) {
             $band = $bands->bandAt(($contour[1] + $contour[3]) / 2);
+            $bandOf[$index] = $band;
 
             if ($band !== null) {
                 $perBand[$band][] = $contour;
+                $perBandIndex[$band][] = $index;
             }
         }
+
+        $wordContours = [];
+        $looseContours = [];
 
         $boxes = [];
         $letters = [];
@@ -296,6 +422,8 @@ final class WordBoxBuilder
             $order = LineOrder::normalise($perBand[$index], $settings['line_order_jump']);
             $contours = $order['contours'];
             $lineContours[$line] = $contours;
+            // normalised position => index in the page's content list (the TQP subpath map is keyed by it)
+            $documentIndex = array_map(fn (int $p): int => $perBandIndex[$index][$p], $order['order']);
             $clean = true;
 
             if (! $order['contiguous']) {
@@ -340,6 +468,13 @@ final class WordBoxBuilder
 
             $lineBoxes = [];
 
+            foreach ($reviewed ? $override['loose'] : [] as $loose) {
+                $looseContours[] = [
+                    'contour' => $documentIndex[$loose], 'loose' => $loose, 'line' => $line,
+                    'attach' => $override['attach'][$loose] ?? null, 'ornament' => in_array($loose, $override['ornaments'] ?? [], true),
+                ];
+            }
+
             foreach ($groups as $k => $indexes) {
                 $lo = INF;
                 $hi = -INF;
@@ -376,6 +511,12 @@ final class WordBoxBuilder
                 $lineBoxes[] = [
                     'line' => $line, 'surah' => $word['surah'], 'ayah' => $word['ayah'], 'position' => $word['position'], 'label' => $label,
                     'x0' => round($lo, 2) + 0.0, 'y0' => $y0, 'x1' => round($hi, 2) + 0.0, 'y1' => $y1, 'contours' => $indexes, 'flags' => $flags,
+                ];
+                $wordContours[] = [
+                    'line' => $line, 'surah' => $word['surah'], 'ayah' => $word['ayah'], 'position' => $word['position'],
+                    'apps' => $this->appPositions($word['surah'], $word['ayah'], $word['position'], $splits),
+                    'contours' => array_map(fn (int $t): int => $documentIndex[$t], $indexes),
+                    'x0' => round($lo, 2) + 0.0, 'x1' => round($hi, 2) + 0.0,
                 ];
                 $letters[] = $word['letters'];
             }
@@ -464,9 +605,17 @@ final class WordBoxBuilder
             }
         }
 
+        $lineOf = [];
+        $printedLines = array_keys($lines);
+
+        foreach ($bandOf as $band) {
+            $lineOf[] = $band === null ? null : $printedLines[$band];
+        }
+
         return [
             'boxes' => $boxes, 'bands' => $pageBands, 'counts' => $counts, 'notes' => $notes, 'checks' => array_values(array_unique($checks)),
             'flagged' => $flagged, 'widths' => $widths, 'ratios' => $ratios, 'overrides' => $applied,
+            'contourPage' => ['contours' => $pageContours, 'lineOf' => $lineOf, 'words' => $wordContours, 'loose' => $looseContours],
         ];
     }
 

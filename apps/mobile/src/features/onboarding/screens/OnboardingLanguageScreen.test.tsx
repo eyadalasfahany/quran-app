@@ -70,3 +70,47 @@ describe('OnboardingLanguageScreen', () => {
     expect(featureComponentLiterals('features/onboarding/screens/OnboardingLanguageScreen.tsx')).toEqual([]);
   });
 });
+
+const WINDOWS = {
+  short: [874, 402],
+  tall: [390, 844],
+} as const;
+
+describe.each(Object.entries(WINDOWS))('in a %s window', (_name, [width, height]) => {
+  beforeEach(() => setWindowSize(width, height));
+  afterEach(() => resetWindowSize());
+
+  it.each(locales)('keeps the footer below a scrolling body in %s', async (locale) => {
+    const view = await renderUi(<OnboardingLanguageScreen />, { locale });
+
+    expect(view.getByTestId('onboarding-footer')).toBeOnTheScreen();
+    expect(view.getByTestId('onboarding-language-scroll')).toBeOnTheScreen();
+    expect(view.getByTestId('onboarding-language-scroll').type).toBe('RCTScrollView');
+  });
+});
+
+describe('OnboardingLanguageScreen hero', () => {
+  it('drops the decorative hero in a short window, so the language cards fit', async () => {
+    setWindowSize(874, 402);
+    try {
+      const view = await renderUi(<OnboardingLanguageScreen />, { locale: 'en' });
+
+      expect(view.queryByTestId('onboarding-hero-pattern')).toBeNull();
+      expect(view.getByTestId('onboarding-locale-en')).toBeOnTheScreen();
+    } finally {
+      resetWindowSize();
+    }
+  });
+
+  it('keeps the decorative hero in a tall window', async () => {
+    setWindowSize(390, 844);
+    try {
+      const view = await renderUi(<OnboardingLanguageScreen />, { locale: 'en' });
+
+      // The hero is hidden from accessibility by design, so the query looks past that.
+      expect(view.getByTestId('onboarding-hero-pattern', { includeHiddenElements: true })).toBeOnTheScreen();
+    } finally {
+      resetWindowSize();
+    }
+  });
+});

@@ -15,6 +15,7 @@ import { reciterDisplayName, type ReciterEntry } from '@/features/audio/reciter-
 import { setReciterId } from '@/features/audio/settings';
 import { useReciterCatalogue } from '@/features/audio/hooks/useReciterCatalogue';
 import { completeOnboarding } from '@/features/onboarding/onboarding-state';
+import { onboardingReciterChoices } from '@/features/onboarding/reciter-choices';
 import { OnboardingFooter } from '@/features/onboarding/components/OnboardingFooter';
 import { OnboardingReciterRow } from '@/features/onboarding/components/OnboardingReciterRow';
 import { OnboardingTopBar } from '@/features/onboarding/components/OnboardingTopBar';
@@ -34,10 +35,16 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
   const locale = useLocale();
   const theme = useTheme();
   const { ready } = useContentDb();
-  const { reciters, selectedId, playingId } = useReciterCatalogue(ready);
+  const catalogue = useReciterCatalogue(ready);
+  const { playingId } = catalogue;
   const startState = useStartState();
 
-  const rows = useMemo(() => reciters.slice(0, ONBOARDING_RECITER_COUNT), [reciters]);
+  // Trial reciters stay out of onboarding; the player and settings still list them.
+  const { choices, selectedId } = useMemo(
+    () => onboardingReciterChoices(catalogue.reciters, catalogue.selectedId ?? null),
+    [catalogue.reciters, catalogue.selectedId],
+  );
+  const rows = useMemo(() => choices.slice(0, ONBOARDING_RECITER_COUNT), [choices]);
 
   const renderRow = (item: ReciterEntry) => {
     const name = reciterDisplayName(item, locale, t('listen.unnamed'));
@@ -72,6 +79,7 @@ export function OnboardingReciterScreen({ testID = 'onboarding-reciter' }: { tes
       {/* The column caps the content at 720 on wide windows (spec §4). Its gutter is 0: the phone layout keeps its own padding. */}
       <ContentColumn gutter={0} testID={`${testID}-column`}>
         <ScrollView
+          testID={`${testID}-scroll`}
           contentContainerStyle={{
             gap: theme.space[4],
             paddingBottom: theme.space[4],

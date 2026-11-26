@@ -6,8 +6,9 @@ import { ThemeProvider, themes } from '@/core/theme';
 import type { HighlightColor } from '@/features/library/data/model';
 
 import { openReaderTestContent } from '../../../jest/reader-test-db';
-import { flatStyle, renderUi } from '../../../jest/render-ui';
+import { flatStyle, locales, renderUi } from '../../../jest/render-ui';
 import { getVerseByKey, getVerseRange } from './data/verses';
+import { resetReaderSelection, useReaderSelection } from './selection';
 import { ReadingList } from './ReadingList';
 import type { ReadingRow } from './reading-list-types';
 import { resolveCenterId, verseWindowBounds } from './reading-window';
@@ -629,5 +630,86 @@ describe('ReadingList word follow', () => {
       textNode!.props.onTextLayout({ nativeEvent: { lines: [{ height: lineHeight, text: verse!.textUthmani, y: 0 }] } });
     });
     expect(flashListTestState.offsetCalls).toEqual([]);
+  });
+});
+
+describe('ReadingList place and pressed wash', () => {
+  afterEach(() => {
+    resetReaderSelection();
+  });
+
+  function washOf(view: Awaited<ReturnType<typeof renderUi>>, text: string) {
+    return flatStyle(view.getByText(text).parent!.props.style).backgroundColor;
+  }
+
+  it.each(locales)('washes the continue-reading ayah grey (%s)', async (locale) => {
+    const verse = getVerseByKey(mockTestExecutor, '18:10');
+    const view = await renderUi(
+      <ReadingList anchorVerseKey="18:10" mode="reading" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} placeVerseKey="18:10" testID="list" />,
+      { locale },
+    );
+    await waitFor(() => {
+      expect(washOf(view, verse!.textUthmani)).toBe(themes.light.colors.highlightActive);
+    });
+  });
+
+  it('washes the ayah whose actions panel is open, and marks it selected', async () => {
+    const verse = getVerseByKey(mockTestExecutor, '18:10');
+    useReaderSelection.setState({ panelOpen: true, verseKey: '18:10' });
+    const view = await renderUi(
+      <ReadingList anchorVerseKey="18:10" mode="reading" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />,
+    );
+    await waitFor(() => {
+      expect(washOf(view, verse!.textUthmani)).toBe(themes.light.colors.highlightActive);
+    });
+    expect(view.getByTestId('list-ayah-18:10').props.accessibilityState).toMatchObject({ selected: true });
+  });
+
+  it('washes the ayah of an open sheet when the panel is closed', async () => {
+    const verse = getVerseByKey(mockTestExecutor, '18:10');
+    useReaderSelection.setState({ panelOpen: false, sheetVerseKey: '18:10' });
+    const view = await renderUi(
+      <ReadingList anchorVerseKey="18:10" mode="reading" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />,
+    );
+    await waitFor(() => {
+      expect(washOf(view, verse!.textUthmani)).toBe(themes.light.colors.highlightActive);
+    });
+  });
+
+  it('repaints the pressed ayah when the open panel changes', async () => {
+    const verse = getVerseByKey(mockTestExecutor, '18:10');
+    const view = await renderUi(
+      <ReadingList anchorVerseKey="18:10" mode="reading" onOpenAyahActions={() => undefined} onSelectVerseKey={() => undefined} testID="list" />,
+    );
+    await waitFor(() => {
+      expect(view.getByText(verse!.textUthmani)).toBeOnTheScreen();
+    });
+    expect(washOf(view, verse!.textUthmani)).not.toBe(themes.light.colors.highlightActive);
+
+    await act(async () => {
+      useReaderSelection.setState({ panelOpen: true, verseKey: '18:10' });
+    });
+
+    await waitFor(() => {
+      expect(washOf(view, verse!.textUthmani)).toBe(themes.light.colors.highlightActive);
+    });
+  });
+
+  it('keeps the reader’s own highlight colour over the grey wash', async () => {
+    const verse = getVerseByKey(mockTestExecutor, '18:10');
+    const view = await renderUi(
+      <ReadingList
+        anchorVerseKey="18:10"
+        highlightsByVerseId={new Map([[verse!.id, 'rose']])}
+        mode="reading"
+        onOpenAyahActions={() => undefined}
+        onSelectVerseKey={() => undefined}
+        placeVerseKey="18:10"
+        testID="list"
+      />,
+    );
+    await waitFor(() => {
+      expect(washOf(view, verse!.textUthmani)).toBe(themes.light.colors.highlightRose);
+    });
   });
 });

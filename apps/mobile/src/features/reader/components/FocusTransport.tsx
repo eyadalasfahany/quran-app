@@ -89,7 +89,7 @@ export function FocusTransport({
   const labelStyle = { lineHeight: theme.size.focusLabelLineHeight };
 
   return (
-    <GlassSurface radius="pill" style={{ alignSelf: 'center' }} testID={testID}>
+    <GlassSurface interactive radius="pill" style={{ alignSelf: 'center' }} testID={testID}>
       <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[1], padding: theme.space[1] }}>
         <Pressable
           accessibilityLabel={repeating ? t('player.repeat.title') : t('reader.focus.repeat')}

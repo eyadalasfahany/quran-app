@@ -7,12 +7,15 @@
    "screens": [
     "AyahSheet",
     "AyahSheetRiwayah",
+    "AyahSheetRiwayahUnavailable",
     "Main",
     "MainLandscapeRail",
     "Mushaf",
     "MushafFullscreen",
     "MushafFullscreenEnter",
     "MushafPlaybackRiwayah",
+    "MushafZoom150",
+    "MushafZoom200",
     "Player",
     "PlayerReciterDownloading",
     "PlayerReciters",
@@ -26,8 +29,11 @@
    "screens": [
     "Focus",
     "FocusOtherRiwayah",
+    "ReaderSettingsMushafZoom",
+    "ReaderSettingsMushafZoomUnavailable",
     "Reading",
     "ReadingMiniCollapsed",
+    "ReadingMiniCollapsedLandscape",
     "ReadingMiniIdle",
     "ReadingMiniSkipped",
     "ReadingMiniUnavailable",
@@ -274,7 +280,8 @@
    "blurb": "Menu cards and the home Hijri line",
    "screens": [
     "HomeHijriDate",
-    "MenuNewCards"
+    "MenuNewCards",
+    "MenuSections"
    ]
   },
   {
@@ -377,7 +384,6 @@
     "SeerahMapRegionYear",
     "SeerahMenu",
     "SeerahSources",
-    "SeerahStateDownload",
     "SeerahStateDownloading",
     "SeerahStateEmptyYear",
     "SeerahStateError",
@@ -462,6 +468,42 @@
    },
    "frames": [
     "AyahSheetRiwayah"
+   ]
+  },
+  {
+   "id": "AyahSheetRiwayahUnavailable",
+   "stack": "core",
+   "caption": "Ayah actions · ayah in Warsh (non-Hafs) until its ayah map and marks exist: reference and riwayah in the header, one note, no tabs or actions (play, tafsir and marks would land on the Hafs ayah with the same number). Approved by the developer, 26 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "AyahSheetRiwayahUnavailable",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "AyahSheetRiwayahUnavailable",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "AyahSheetRiwayahUnavailable",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "AyahSheetRiwayahUnavailable",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "AyahSheetRiwayahUnavailable"
    ]
   },
   {
@@ -696,6 +738,78 @@
    ]
   },
   {
+   "id": "MushafZoom150",
+   "stack": "core",
+   "caption": "Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text). Approved by the developer, 26 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "MushafZoom150",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "MushafZoom150",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "MushafZoom150",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "MushafZoom150",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "MushafZoom150"
+   ]
+  },
+  {
+   "id": "MushafZoom200",
+   "stack": "core",
+   "caption": "Mushaf page zoom 200% · the same page, about 4 to 5 words a line, two ragged lines. Approved by the developer, 26 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "MushafZoom200",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "MushafZoom200",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "MushafZoom200",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "MushafZoom200",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "MushafZoom200"
+   ]
+  },
+  {
    "id": "Player",
    "stack": "core",
    "caption": "Player",
@@ -806,7 +920,7 @@
   {
    "id": "ReaderSettings",
    "stack": "core",
-   "caption": "Reader settings · mid detent (50%)",
+   "caption": "Reader settings · mid detent (50%) · al-Duri hidden (ADR 0090 item 12). Approved by the developer, 26 Nov 2026",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -912,6 +1026,78 @@
    ]
   },
   {
+   "id": "ReaderSettingsMushafZoom",
+   "stack": "reading",
+   "caption": "Reader settings · Mushaf page zoom 150% stepper. Approved by the developer, 26 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "ReaderSettingsMushafZoom",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "ReaderSettingsMushafZoom",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "ReaderSettingsMushafZoom",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "ReaderSettingsMushafZoom",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "ReaderSettingsMushafZoom"
+   ]
+  },
+  {
+   "id": "ReaderSettingsMushafZoomUnavailable",
+   "stack": "reading",
+   "caption": "Reader settings · zoom needs word data (riwayah without it). Approved by the developer, 26 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "ReaderSettingsMushafZoomUnavailable",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "ReaderSettingsMushafZoomUnavailable",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "ReaderSettingsMushafZoomUnavailable",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "ReaderSettingsMushafZoomUnavailable",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "ReaderSettingsMushafZoomUnavailable"
+   ]
+  },
+  {
    "id": "Reading",
    "stack": "reading",
    "caption": "Reading mode",
@@ -981,6 +1167,45 @@
    },
    "frames": [
     "ReadingMiniCollapsed"
+   ]
+  },
+  {
+   "id": "ReadingMiniCollapsedLandscape",
+   "stack": "reading",
+   "caption": "Reading · landscape phone: mini player collapsed to the corner capsule (ADR 0090 amendment 26 Nov, item 8) Approved by the developer, 26 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": true,
+   "drawnSize": "medium",
+   "window": [
+    874,
+    402
+   ],
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "ReadingMiniCollapsedLandscape",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "ReadingMiniCollapsedLandscape",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "ReadingMiniCollapsedLandscape",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "ReadingMiniCollapsedLandscape",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "ReadingMiniCollapsedLandscape"
    ]
   },
   {
@@ -4361,7 +4586,7 @@
   {
    "id": "OnboardScript",
    "stack": "onboarding",
-   "caption": "Onboarding 3 · Script",
+   "caption": "Onboarding 3 · Script · al-Duri hidden (ADR 0090 item 12). Approved by the developer, 26 Nov 2026",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -6457,6 +6682,44 @@
    ]
   },
   {
+   "id": "MenuSections",
+   "stack": "entry-points",
+   "caption": "Menu · sections and colour · Arabic · Approved by the developer, 26 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "MenuSections",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "drawn",
+     "from": "MenuSectionsDark",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "drawn",
+     "from": "MenuSectionsEnglish",
+     "untranslated": 0
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "MenuSectionsEnglish",
+     "untranslated": 0
+    }
+   },
+   "frames": [
+    "MenuSections",
+    "MenuSectionsDark",
+    "MenuSectionsEnglish"
+   ]
+  },
+  {
    "id": "AndroidWidgets",
    "stack": "widgets",
    "caption": "Android home screen widgets · 2×2 and 4×2 · Light",
@@ -8121,42 +8384,6 @@
    },
    "frames": [
     "SeerahSources"
-   ]
-  },
-  {
-   "id": "SeerahStateDownload",
-   "stack": "seerah",
-   "caption": "السيرة غير منزّلة · الحجم وزر التنزيل (بانتظار الموافقة)",
-   "status": "awaiting-approval",
-   "kind": "phone",
-   "fixed": false,
-   "drawnSize": "compact",
-   "window": null,
-   "sizeFrames": {},
-   "variants": {
-    "light-rtl": {
-     "how": "drawn",
-     "from": "SeerahStateDownload",
-     "untranslated": 0
-    },
-    "dark-rtl": {
-     "how": "derived",
-     "from": "SeerahStateDownload",
-     "untranslated": 0
-    },
-    "light-ltr": {
-     "how": "derived",
-     "from": "SeerahStateDownload",
-     "untranslated": 1
-    },
-    "dark-ltr": {
-     "how": "derived",
-     "from": "SeerahStateDownload",
-     "untranslated": 1
-    }
-   },
-   "frames": [
-    "SeerahStateDownload"
    ]
   },
   {

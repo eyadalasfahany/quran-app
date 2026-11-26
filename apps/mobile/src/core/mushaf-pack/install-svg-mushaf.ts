@@ -15,7 +15,7 @@ import { sha256File } from './hash-file';
 import { getInstalledSvgMushaf, setInstalledSvgMushaf } from './installed-store';
 import { svgMushafPackDirectory, svgMushafPackPath, svgMushafPartPath } from './paths';
 import type { SvgMushafPackReader } from './SvgMushafPackReader';
-import type { SvgMushafInstallResult, SvgMushafKey } from './types';
+import { SVG_MUSHAF_PAGE_FORMAT, type SvgMushafInstallResult, type SvgMushafKey } from './types';
 
 /** Filesystem seam: the device wraps expo-file-system, the tests wrap a temporary directory. */
 export type SvgMushafFiles = {
@@ -235,6 +235,7 @@ async function downloadVerifyAndSwitch(
     sha256: resource.pack.sha256,
     sizeBytes: resource.pack.size_bytes,
     hasWordBoxes,
+    pageFormat: SVG_MUSHAF_PAGE_FORMAT,
     installedAt: deps.now(),
   });
   closeSvgMushafPack(key);

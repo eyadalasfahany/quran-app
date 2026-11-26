@@ -3,7 +3,8 @@ import { join } from 'node:path';
 
 import { fireEvent } from '@testing-library/react-native';
 
-import { locales, renderUi } from '../../../../jest/render-ui';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
+import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 
 import { DiscoverWidgetSheet } from './DiscoverWidgetSheet';
 
@@ -37,6 +38,11 @@ describe('DiscoverWidgetSheet', () => {
     fireEvent.press(view.getByTestId('discover-widget-scrim'));
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(onRead).not.toHaveBeenCalled();
+  });
+
+  it('centres the card and caps its width at the sheet width', async () => {
+    const view = await renderUi(<DiscoverWidgetSheet onClose={() => undefined} onRead={() => undefined} visible />, { locale: 'ar' });
+    expect(flatStyle(view.getByTestId('discover-widget-card').props.style).maxWidth).toBe(SHEET_CARD_MAX_WIDTH);
   });
 
   it('renders nothing while hidden', async () => {

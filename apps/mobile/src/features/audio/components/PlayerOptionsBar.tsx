@@ -51,7 +51,7 @@ export function PlayerOptionsBar({ versesCount }: { versesCount: number }) {
 
   return (
     <>
-      <GlassSurface
+      <GlassSurface interactive
         // The player is dark in every app theme, so its glass must not follow the light appearance.
         colorScheme="dark"
         radius="xl"

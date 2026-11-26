@@ -6,7 +6,9 @@ namespace App\Domains\Mushaf\Services;
 
 use App\Domains\Mushaf\Exceptions\SvgMushafCheckException;
 use App\Domains\Mushaf\Exceptions\SvgMushafSourceException;
+use App\Domains\Mushaf\Exceptions\TqpEncodeException;
 use App\Domains\Mushaf\Exceptions\UnknownSvgMushafException;
+use App\Domains\Mushaf\Packs\Tqp\TqpEncoder;
 use App\Domains\Mushaf\Records\SvgMushafImportReport;
 use App\Domains\Mushaf\Records\SvgMushafPlan;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafRepository;
@@ -27,6 +29,7 @@ final class SvgMushafImporter
         private readonly SvgMushafDownloader $downloader,
         private readonly SvgMushafStore $store,
         private readonly SvgMushafRepository $repository,
+        private readonly TqpEncoder $encoder,
     ) {}
 
     /**
@@ -44,10 +47,12 @@ final class SvgMushafImporter
         $ayahCounts = $this->ayahCounts($folder, $offline);
         $found = [];
         $regions = [];
+        $tqp = [];
 
-        // Pass 1: every page SVG (checked and cached) and every page JSON. Page SVG bytes are not kept.
+        // Pass 1: every page SVG (checked and cached), its TQP1 container digest, and every page JSON. Only digests are kept.
         for ($page = 1; $page <= $pageCount; $page++) {
-            $this->downloader->bytes($folder, $this->svgPath($page), $offline);
+            $svg = $this->downloader->bytes($folder, $this->svgPath($page), $offline);
+            $tqp[$page] = $this->tqpDigest($svg, $page);
 
             foreach ($this->pageRegions($this->downloader->bytes($folder, $this->jsonPath($page), $offline), $page) as $region) {
                 $regions[] = $region;
@@ -57,7 +62,7 @@ final class SvgMushafImporter
 
         $total = $this->assertAyahCounts($key, $ayahCounts, $found, $edition['expected_ayahs']);
 
-        // Pass 2, only after A2: gzip each page beside its cached SVG and record the gzip digest.
+        // Pass 2, only after A2 and the encoding of every page: gzip each page beside its cached SVG and record the gzip digest.
         $pages = [];
         $svgBytes = 0;
         $gzipBytes = 0;
@@ -74,6 +79,8 @@ final class SvgMushafImporter
                 'svg_bytes' => $pin['bytes'],
                 'gz_sha256' => $gzip['sha256'],
                 'gz_bytes' => $gzip['bytes'],
+                'tqp_sha256' => $tqp[$page]['sha256'],
+                'tqp_bytes' => $tqp[$page]['bytes'],
             ];
             $svgBytes += $pin['bytes'];
             $gzipBytes += $gzip['bytes'];
@@ -267,6 +274,22 @@ final class SvgMushafImporter
         }
 
         return $total;
+    }
+
+    /**
+     * @return array{sha256: string, bytes: int}
+     *
+     * @throws SvgMushafCheckException when the page cannot be encoded
+     */
+    private function tqpDigest(string $svg, int $page): array
+    {
+        try {
+            $container = $this->encoder->container($svg);
+        } catch (TqpEncodeException $exception) {
+            throw new SvgMushafCheckException('Page '.$page.': '.$exception->getMessage());
+        }
+
+        return ['sha256' => hash('sha256', $container), 'bytes' => strlen($container)];
     }
 
     private function svgPath(int $page): string

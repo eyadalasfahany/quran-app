@@ -33,7 +33,7 @@ function installedFile(version: number): void {
 }
 
 function record(version: number) {
-  return { key: 'hafs' as const, resourceId: 9, version, sha256: 'abc', sizeBytes: 1, hasWordBoxes: true, installedAt: 1 };
+  return { key: 'hafs' as const, resourceId: 9, version, sha256: 'abc', sizeBytes: 1, hasWordBoxes: true, pageFormat: 'tqp1-deflate-n32', installedAt: 1 };
 }
 
 function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
@@ -61,6 +61,16 @@ beforeEach(() => {
 });
 
 describe('useSvgMushafPack', () => {
+  it('shows a riwayah whose installed record is from before TQP1 as absent, with the download offered', async () => {
+    installedFile(2);
+    storage.set(storageKeys.svgMushaf.installed('hafs'), JSON.stringify({ ...record(2), pageFormat: undefined }));
+
+    const { result } = await renderHook(() => useSvgMushafPack('hafs'));
+
+    expect(result.current).toMatchObject({ availableVersion: 2, installedVersion: null, reader: null, status: 'absent' });
+    expect(mockOpen).not.toHaveBeenCalled();
+  });
+
   it('goes from absent, through downloading with progress, to installed', async () => {
     const download = deferred<SvgMushafInstallResult>();
     mockInstall.mockImplementation((_key, options) => {
@@ -121,7 +131,7 @@ describe('useSvgMushafPack', () => {
     expect(storage.getString(storageKeys.svgMushaf.installed('hafs'))).toBeUndefined();
   });
 
-  it('offers an update when the catalogue has a higher version, and takes it only on download', async () => {
+  it('offers an update when the catalogue has a higher version; the hook itself starts nothing (auto-download.ts does)', async () => {
     setInstalledSvgMushaf(record(1));
     installedFile(1);
     mockCatalogRow = { version: 2, pack_size_bytes: 90 };
@@ -130,6 +140,41 @@ describe('useSvgMushafPack', () => {
 
     expect(result.current).toMatchObject({ status: 'installed', installedVersion: 1, availableVersion: 2, updateAvailable: true });
     expect(mockInstall).not.toHaveBeenCalled();
+  });
+
+  it('keeps the installed pages while an update downloads, then opens the new version without a restart', async () => {
+    const oldReader = { close: jest.fn(), version: 1 };
+    const newReader = { close: jest.fn(), version: 2 };
+    mockOpen.mockReturnValue(oldReader as never);
+    setInstalledSvgMushaf(record(1));
+    installedFile(1);
+    const download = deferred<SvgMushafInstallResult>();
+    mockInstall.mockImplementation((_key, options) => {
+      options?.onProgress?.(0.5);
+      return download.promise.then((result) => {
+        setInstalledSvgMushaf(record(2));
+        installedFile(2);
+        mockOpen.mockReturnValue(newReader as never);
+        return result;
+      });
+    });
+
+    const { result } = await renderHook(() => useSvgMushafPack('hafs'));
+    let pending: Promise<SvgMushafInstallResult> | undefined;
+    await act(async () => {
+      pending = result.current.download();
+    });
+    // Mid-update: still installed, still the old reader (the reader keeps its page, no download card).
+    expect(result.current).toMatchObject({ status: 'installed', installedVersion: 1 });
+    expect(result.current.reader).toBe(oldReader);
+
+    await act(async () => {
+      download.resolve({ status: 'installed' });
+      await pending;
+    });
+
+    expect(result.current).toMatchObject({ status: 'installed', installedVersion: 2, updateAvailable: false });
+    expect(result.current.reader).toBe(newReader);
   });
 
   it('gives the reader only once the pack is installed', async () => {

@@ -6,6 +6,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
+
 import { LocationPickerSheet, resultsMaxHeight } from './LocationPickerSheet';
 
 // Records the props the avoiding view is given: React Native strips `behavior` before the host view, so the tree can't show it.
@@ -122,6 +124,11 @@ describe('LocationPickerSheet keyboard and height (ADR 0036)', () => {
 
     expect(view.getByTestId('salah-location-sheet-keyboard')).toBeTruthy();
     expect(view.getByTestId('salah-location-sheet-search')).toBeTruthy();
+  });
+
+  it('centres the card and caps its width at the sheet width', async () => {
+    const view = await renderUi(sheet());
+    expect(flatStyle(view.getByTestId('salah-location-sheet-card').props.style).maxWidth).toBe(SHEET_CARD_MAX_WIDTH);
   });
 
   it('caps the results at 320 on a tall window', async () => {

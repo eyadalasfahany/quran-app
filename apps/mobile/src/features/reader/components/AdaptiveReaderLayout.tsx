@@ -194,7 +194,11 @@ export function AdaptiveReaderLayout({
           {panel}
         </View>
       ) : null}
-      <View pointerEvents="box-none" style={{ left: 0, position: 'absolute', right: 0, top: 0 }}>
+      <View
+        pointerEvents="box-none"
+        style={{ end: strip, position: 'absolute', start: 0, top: 0 }}
+        testID="reader-toolbar-slot"
+      >
         {toolbar}
       </View>
     </View>

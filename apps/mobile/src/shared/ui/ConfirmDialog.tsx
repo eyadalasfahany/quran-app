@@ -18,10 +18,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { spring, timing, useGlass, useTheme } from '@/core/theme';
 
 import { ConfirmDialogActions } from './ConfirmDialogActions';
 import { ConfirmDialogIcon } from './ConfirmDialogIcon';
+import { glassSchemeFor } from './GlassSurface';
 import type { IconName } from './Icon';
 import { UiText } from './UiText';
 import { useContrastColors } from './useContrastColors';
@@ -127,6 +129,7 @@ export function ConfirmDialog({
       onRequestClose={onCancel}
       onShow={focusTitle}
       statusBarTranslucent
+      supportedOrientations={MODAL_ORIENTATIONS}
       transparent
       visible={mounted}
     >
@@ -134,7 +137,7 @@ export function ConfirmDialog({
         <Animated.View style={[StyleSheet.absoluteFill, scrimStyle]}>
           {nativeGlass ? (
             <GlassView
-              colorScheme="auto"
+              colorScheme={glassSchemeFor(theme.name)}
               glassEffectStyle="regular"
               pointerEvents="none"
               style={StyleSheet.absoluteFill}

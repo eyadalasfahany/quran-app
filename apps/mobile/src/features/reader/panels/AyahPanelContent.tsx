@@ -28,7 +28,10 @@ import { tafsirAuthorName, tafsirDisplayName, tafsirRowSubtitle } from './panel-
 import type { TafsirDownloadItem } from './TafsirDownloadList';
 import { useTafsirDownloads } from './tafsir-downloads';
 import { TafsirPanel, type TafsirPanelLayout } from './TafsirPanel';
-import { chapterDisplayName } from '@/features/reader/data/chapters';
+import { chapterDisplayName, getChapter } from '@/features/reader/data/chapters';
+import type { SvgMushafKey } from '@/core/mushaf-pack';
+
+import { RiwayahAyahUnavailable } from './RiwayahAyahUnavailable';
 
 function openContentExecutor(): SqlExecutor | null {
   try {
@@ -58,9 +61,12 @@ export function AyahPanelContent({
   store,
   layout = 'panel',
   onKhatmaMarked,
+  riwayah = 'hafs',
   testID = 'ayah-panel-content',
 }: {
   verseKey: string;
+  // The riwayah of the page the ayah was tapped on. Not Hafs: its own numbering, so only a note shows (no Hafs data).
+  riwayah?: SvgMushafKey;
   tab: PanelTab;
   // Lets the actions grid open the tafsir tab.
   onTabChange?: (tab: PanelTab) => void;
@@ -150,6 +156,21 @@ export function AyahPanelContent({
         setReloads((count) => count + 1);
       });
   };
+
+  if (riwayah !== 'hafs') {
+    const [surah = 0, ayah = 0] = verseKey.split(':').map(Number);
+    // Surah numbers are shared by every riwayah; only the ayah number is the riwayah's own.
+    const chapter = executor === null ? undefined : getChapter(executor, surah);
+    return (
+      <RiwayahAyahUnavailable
+        onClose={onClose}
+        riwayah={riwayah}
+        surahName={chapter === undefined ? verseKey : chapterDisplayName(chapter, locale)}
+        testID={`${testID}-riwayah`}
+        verseNumber={ayah}
+      />
+    );
+  }
 
   if (executor === null || data === null) {
     return (

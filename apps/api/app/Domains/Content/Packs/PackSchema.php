@@ -13,6 +13,9 @@ final class PackSchema
 {
     public const int VERSION = 1;
 
+    /** SVG mushaf packs: TQP1 pages, raw deflate (ADR 0090 amendment of 26 Nov 2026). */
+    public const int SVG_MUSHAF_VERSION = 2;
+
     public const int CHUNK = 1000;
 
     /**

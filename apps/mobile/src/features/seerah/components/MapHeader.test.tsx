@@ -46,6 +46,19 @@ describe('MapHeader', () => {
     expect(screen.getByRole('header').props.accessibilityLabel).toBe('السيرة النبوية, الجزيرة العربية');
   });
 
+  it('stretches the title pill between the buttons by default (phones)', async () => {
+    await renderUi(<MapHeader {...base} />);
+    const slot = flatStyle(screen.getByTestId('seerah-map-header-title-slot').props.style);
+    expect(slot).toMatchObject({ flex: 1 });
+    expect(slot.alignItems).toBeUndefined();
+  });
+
+  it.each(locales)('hugs and centres the title pill on the expanded window (frame SeerahExpanded) (%s)', async (locale) => {
+    await renderUi(<MapHeader {...base} titleFit="hug" />, { locale });
+    expect(flatStyle(screen.getByTestId('seerah-map-header-title-slot').props.style)).toMatchObject({ alignItems: 'center', flex: 1 });
+    expect(screen.getByRole('header')).toBeOnTheScreen();
+  });
+
   it.each(locales)('the level chip starts with a back chevron that mirrors in RTL (%s)', async (locale) => {
     await renderUi(<MapHeader {...base} levelChip={{ label: 'المنطقة', onPress: jest.fn() }} />, { locale });
     const chevron = screen.getByTestId('seerah-map-header-level-chevron', { includeHiddenElements: true });

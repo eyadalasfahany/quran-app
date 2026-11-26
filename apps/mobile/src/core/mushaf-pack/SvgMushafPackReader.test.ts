@@ -1,4 +1,3 @@
-import { gunzipSync } from 'fflate';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -25,21 +24,35 @@ function openReader(path: string): { reader: SvgMushafPackReader; close: () => v
   return { reader: new SvgMushafPackReader(executor, () => database.close()), close: () => database.close() };
 }
 
-function packAt(name: string, withWordBoxes: boolean, meta?: Record<string, string>): string {
+function packAt(
+  name: string,
+  withWordBoxes: boolean,
+  meta?: Record<string, string>,
+  legacySchema1 = false,
+  extra: { origin?: { x: number; y: number }; withoutOrigins?: boolean; withContours?: boolean } = {},
+): string {
   const path = join(directory, name);
-  buildSvgMushafPackFile(path, { key: 'hafs', resourceId: 9, version: 2, withWordBoxes, meta });
+  buildSvgMushafPackFile(path, { key: 'hafs', legacySchema1, meta, resourceId: 9, version: 2, withWordBoxes, ...extra });
   return path;
 }
 
 describe('SvgMushafPackReader', () => {
-  it('returns the stored page bytes exactly, and null for a page the pack does not have', () => {
+  it('returns the stored page blob and its origin, and null for a page the pack does not have', () => {
     const { reader, close } = openReader(packAt('boxes.db', false));
 
-    const bytes = reader.getPage(1);
-    expect(bytes).toBeInstanceOf(Uint8Array);
-    expect(new TextDecoder().decode(gunzipSync(bytes as Uint8Array))).toBe('FIXTURE page 1 — not artwork');
+    const page = reader.getPage(1);
+    expect(page?.blob).toBeInstanceOf(Uint8Array);
+    expect(new TextDecoder().decode(page!.blob.subarray(0, 4))).toBe('TQP1');
+    expect(page?.origin).toEqual({ x: 0, y: 0 });
     expect(reader.getPage(0)).toBeNull();
     expect(reader.getPage(3)).toBeNull();
+    close();
+  });
+
+  it('returns the viewBox origin each page was stored with (the raw space of its regions and word boxes)', () => {
+    const { reader, close } = openReader(packAt('origin.db', false, undefined, false, { origin: { x: -10.5, y: -20.25 } }));
+
+    expect(reader.getPage(1)?.origin).toEqual({ x: -10.5, y: -20.25 });
     close();
   });
 
@@ -76,6 +89,54 @@ describe('SvgMushafPackReader', () => {
     close();
   });
 
+  it('a pack without the contour tables has no zoom data and reads none', () => {
+    const { reader, close } = openReader(packAt('no-contours.db', true));
+
+    expect(reader.hasWordContours).toBe(false);
+    expect(reader.wordContoursForPage(1)).toEqual([]);
+    expect(reader.contourBlocksForPage(1)).toEqual([]);
+    close();
+  });
+
+  it('a pack that flags contours but has no tables (a pre-step-13 build) reads none and never throws', () => {
+    const { reader, close } = openReader(packAt('flag-only-contours.db', true, { has_word_contours: '1' }));
+
+    expect(reader.hasWordContours).toBe(false);
+    expect(reader.wordContoursForPage(1)).toEqual([]);
+    close();
+  });
+
+  it('a pack with tables but the flag off has no contour data for the reader', () => {
+    const { reader, close } = openReader(packAt('pending-contours.db', true, { has_word_contours: '0' }, false, { withContours: true }));
+
+    expect(reader.hasWordContours).toBe(false);
+    expect(reader.wordContoursForPage(1)).toEqual([]);
+    close();
+  });
+
+  it('reads the contour runs of a page in order, with the loose flag, for words whose box is on that page', () => {
+    const { reader, close } = openReader(packAt('contours.db', true, undefined, false, { withContours: true }));
+
+    expect(reader.hasWordContours).toBe(true);
+    expect(reader.wordContoursForPage(1)).toEqual([
+      { ayah: 1, count: 2, first: 0, loose: false, position: 1, surah: 1 },
+      { ayah: 1, count: 1, first: 4, loose: false, position: 1, surah: 1 },
+      { ayah: 1, count: 1, first: 9, loose: true, position: 1, surah: 1 },
+    ]);
+    // The run of position 2 has no word box on page 1 (its box is position 1), so the join leaves it out.
+    expect(reader.wordContoursForPage(2)).toEqual([]);
+    close();
+  });
+
+  it('reads blocks with their bounds back in page units (the stored 1/32 integers divided by 32)', () => {
+    const { reader, close } = openReader(packAt('blocks.db', true, undefined, false, { withContours: true }));
+
+    expect(reader.contourBlocksForPage(1)).toEqual([
+      { ayah: 0, count: 1, first: 7, kind: 1, ord: 0, page: 1, surah: 0, x0: 10, x1: 340, y0: 15, y1: 16 },
+    ]);
+    close();
+  });
+
   it('maps an ayah to the page it starts on, and null for an ayah not in the pack', () => {
     const { reader, close } = openReader(packAt('map.db', false));
 
@@ -100,6 +161,22 @@ describe('SvgMushafPackReader', () => {
     close();
   });
 
+  it('refuses a schema-2 pack whose pages table has no origin columns', () => {
+    const { reader, close } = openReader(packAt('no-origin.db', false, undefined, false, { withoutOrigins: true }));
+    expect(() => reader.verify({ key: 'hafs', resourceId: 9, version: 2 })).toThrow('does not match its record');
+    close();
+  });
+
+  it('refuses a schema-1 pack and a pack with another page format, before any page is read', () => {
+    const legacy = openReader(packAt('legacy.db', false, undefined, true));
+    expect(() => legacy.reader.verify({ key: 'hafs', resourceId: 9, version: 2 })).toThrow('does not match its record');
+    legacy.close();
+
+    const otherFormat = openReader(packAt('format.db', false, { page_format: 'tqp1-lzma-n16' }));
+    expect(() => otherFormat.reader.verify({ key: 'hafs', resourceId: 9, version: 2 })).toThrow('does not match its record');
+    otherFormat.close();
+  });
+
   it('verifies the key, resource, version, schema and page count, and throws on any mismatch', () => {
     const { reader, close } = openReader(packAt('verify.db', false));
 
@@ -109,7 +186,7 @@ describe('SvgMushafPackReader', () => {
     expect(() => reader.verify({ key: 'hafs', resourceId: 9, version: 3 })).toThrow('does not match its record');
     close();
 
-    const wrongSchema = openReader(packAt('schema.db', false, { pack_schema_version: '2' }));
+    const wrongSchema = openReader(packAt('schema.db', false, { pack_schema_version: '3' }));
     expect(() => wrongSchema.reader.verify({ key: 'hafs', resourceId: 9, version: 2 })).toThrow('does not match its record');
     wrongSchema.close();
 

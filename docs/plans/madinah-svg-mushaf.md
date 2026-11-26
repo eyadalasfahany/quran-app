@@ -13,7 +13,7 @@ Status: accepted (developer, 12 Nov 2026), step 0 in progress · Branch: `main` 
 ## Rules
 
 - **Nothing ships until it is complete.** No riwayah ships before its import checks (A1–A3) pass. A4 was done by the developer (12 Nov 2026). Hafs also needs the word-box gate (W1–W6) to pass on all 604 pages. Until both hold, the current Mushaf stays.
-- **Quran artwork is never edited.** Recolouring the fill is a theme, not an edit: the paths are drawn as received.
+- **Quran artwork is never edited.** The cached raw SVG stays byte for byte as downloaded, and word boxes are built from it. Recolouring the fill is a theme, not an edit. **Since the 24 Nov 2026 amendment** (ADR 0090), the pack's render geometry is baked and snapped to a 1/32 grid (below visibility, signed off by the developer in A4's redo); the drawn page is no longer «as received».
 - **`word_layouts` stays on the server.** Only the derived boxes reach devices, in packs.
 - **No Quran text in fixtures, frames or reports.** Use keys, counts and coordinates only. Frames use placeholders, as Phase 7 does.
 - **One step at a time.** Each step is small enough to review. Implementation goes to a Haiku subagent with a brief; the orchestrator reviews the result against this plan and the frames.
@@ -185,8 +185,28 @@ Behaviour:
 - Fix the copy in `website/features.html` and add credits to `website/sources.html`.
 - Add the Sources credit and i18n strings in the app: the King Fahd Complex for the pages, noting they were checked against the printed mushaf, and quran.ws for the polygons. The developer confirms the copy.
 
+### 12. Compact pages (ADR 0090 amendments, 24 and 26 Nov 2026): brief `madinah-svg-mushaf/step-12-compact-pages.md`
+
+- TQP1 baked geometry on a 1/32 grid, raw deflate (level 9), pack schema 2, no new package (LZMA was tried and dropped: 263 ms against 23 ms a page on Hermes).
+- Parts: 0 checks (scope parity), A API, B device, C real sizes for all five riwayat (pages-only: Hafs 38.19 MB, Warsh 41.90, Qalun 43.55, Shu'bah 39.83, al-Duri 38.65), the timed 60 fps gate, the A4 re-sign-off sheet.
+- **Exit:** Hafs pack at about 38 MB (stop above 40 MB), the gate passes, the developer re-signs A4.
+
+### 13. Page zoom by re-wrapping the printed word shapes (ADR 0090 amendment, 26 Nov 2026, items 9 and 10): brief `madinah-svg-mushaf/step-13-page-zoom.md`
+
+- Rewritten 26 Nov 2026 after the developer's «I don't want scroll X»: at 100% the exact printed page; up to 200% in 25% steps the page's own word shapes (each word = the contours the builder assigned to it) are laid out again in shorter lines on the same width. No sideways scroll, no font. Parts: A API (carry contour indexes through the builder, `contour_runs` table, W9 and W10, review sheet, its own approval), B device (layout, word paths, zoom setting, stepper, anchor), C measure and gate. **Implementation-ready; frames pre-approved.**
+- **Model:** Haiku for the implementation; Opus for the review of Part A's builder change (digest `8944a6b3…` must not move).
+
+### 14. Word boxes and contour maps for Warsh, Qalun, Shu'bah and al-Duri: plan `madinah-svg-mushaf/step-14-riwayah-word-boxes.md`
+
+- The developer's choice (26 Nov 2026): the other riwayat get word boxes first; until approved, a riwayah stays at 100% with zoom unavailable. Source: quran-ws/quran-text at the pinned commit (per-word page and line). **Not implementation-ready:** al-Duri's numbering (artwork 6,218 against the text's 6,217) is the developer's call; publish order and review load are open.
+
+### 15. The chosen riwayah's own text in Reading and Focus: plan `madinah-svg-mushaf/step-15-riwayah-reading-focus.md` and draft ADR 0100
+
+- The developer's instruction (26 Nov 2026). Needs a font, orthography and licence decision first (Amiri Quran cannot render Warsh, Qalun or al-Duri). **Waiting for the developer.**
+
 ### 11. Release
 
+- **Waits for steps 12 and 13.** Download sizes in the table above are superseded by the step 12 measurements. Step 12 adds no native change; the store build is needed for Skia (see the runbook).
 - **Production:** the coordinator runs `mushaf:import` for each riwayah, then `mushaf:publish` (developer, 12 Nov 2026). Only after approval. Runbook entry in `docs/runbooks/`.
 
 - Run the mobile and API gates.

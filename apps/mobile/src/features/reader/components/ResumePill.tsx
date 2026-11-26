@@ -10,7 +10,7 @@ export function ResumePill({ onPress, testID = 'reader-resume' }: { onPress: () 
   const label = t('reader.resume.label');
 
   return (
-    <GlassSurface radius="pill" testID={testID}>
+    <GlassSurface interactive radius="pill" testID={testID}>
       <Pressable
         accessibilityLabel={label}
         accessibilityRole="button"

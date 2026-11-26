@@ -15,7 +15,7 @@ import type { InstalledSvgMushaf } from './types';
 const packs = 'file:///documents/packs';
 
 function record(key: 'hafs' | 'warsh', version: number): InstalledSvgMushaf {
-  return { key, resourceId: 9, version, sha256: 'abc', sizeBytes: 1, hasWordBoxes: false, installedAt: 1 };
+  return { key, resourceId: 9, version, sha256: 'abc', sizeBytes: 1, hasWordBoxes: false, pageFormat: 'tqp1-deflate-n32', installedAt: 1 };
 }
 
 function writeFakeFile(path: string): void {

@@ -16,7 +16,8 @@ export type HadithDownloadEntry = {
 
 type HadithDownloadsState = {
   byId: Record<number, HadithDownloadEntry>;
-  start: (resourceId: number) => Promise<void>;
+  /** `anyNetwork` skips the Wi-Fi only gate (the Seerah pack, ADR 0097); hadith and audio leave it off. */
+  start: (resourceId: number, options?: { anyNetwork?: boolean }) => Promise<void>;
   cancel: (resourceId: number) => void;
 };
 
@@ -69,7 +70,7 @@ export const useHadithDownloads = create<HadithDownloadsState>((set, get) => {
 
   return {
     byId: {},
-    start: async (id) => {
+    start: async (id, options) => {
       if (controllers.has(id)) {
         return;
       }
@@ -77,7 +78,7 @@ export const useHadithDownloads = create<HadithDownloadsState>((set, get) => {
       controllers.set(id, controller);
       setEntry(id, { status: 'downloading', progress: 0 });
 
-      if (getWifiOnlyDownloads()) {
+      if (options?.anyNetwork !== true && getWifiOnlyDownloads()) {
         const network = await getNetworkStateAsync().catch(() => null);
         if (controller.signal.aborted) {
           removeEntry(id);

@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { formatNumber, i18n, type Locale } from '@/core/i18n';
 
 import { eraOfAge, stageOfAge } from './logic';
+import type { SeerahFocus } from './types';
 
 /** «عمره ٥٤ سنة» / "Age 54". */
 // Numbers follow the interface language now showing (the same source `useLocale` reads), not the saved choice.
@@ -29,6 +30,11 @@ export function ageRangeText(t: TFunction, from: number, to: number): string {
 export function eraText(t: TFunction, age: number): string | null {
   const era = eraOfAge(age);
   return era === null ? null : t(`seerah.era.${era.era}`, { year: num(era.year) });
+}
+
+/** The timeline's title for a focus: «كل الأعمار», «عمره ٥٤ سنة» or «عمر غير محدد». */
+export function focusTitle(t: TFunction, focus: SeerahFocus): string {
+  return typeof focus === 'number' ? ageText(t, focus) : focus === 'unspecified' ? t('seerah.age.unspecifiedTitle') : t('seerah.age.all');
 }
 
 /** «٥ أحداث», «حدثان», «١٦٢ حدثًا»: the plural form follows the count. */

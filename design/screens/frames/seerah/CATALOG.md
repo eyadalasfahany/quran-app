@@ -2,7 +2,7 @@
 
 Seerah map, timeline, event page, list
 
-27 frames · review page: `design/seerah/<Screen>/index.html` (ADR 0087)
+26 frames · review page: `design/seerah/<Screen>/index.html` (ADR 0087)
 
 | id | size | theme | status | caption |
 |---|---|---|---|---|
@@ -24,7 +24,6 @@ Seerah map, timeline, event page, list
 | `SeerahListEnglish` | compact | en | awaiting-approval | List view · English UI (بانتظار الموافقة) |
 | `SeerahMapKey` | compact | ar-light | awaiting-approval | مفتاح الخريطة · الرموز والطرق (بانتظار الموافقة) |
 | `SeerahTimeline` | compact | ar-light | awaiting-approval | الخط الزمني · الحالات: دون اختيار، السحب، سنة مختارة، غير محدد (بانتظار الموافقة) |
-| `SeerahStateDownload` | compact | ar-light | awaiting-approval | السيرة غير منزّلة · الحجم وزر التنزيل (بانتظار الموافقة) |
 | `SeerahStateDownloading` | compact | ar-light | awaiting-approval | جارٍ التنزيل (بانتظار الموافقة) |
 | `SeerahStateOffline` | compact | ar-light | awaiting-approval | دون اتصال ولم تُنزَّل بعد (بانتظار الموافقة) |
 | `SeerahStateError` | compact | ar-light | awaiting-approval | تعذّر فتح البيانات (بانتظار الموافقة) |

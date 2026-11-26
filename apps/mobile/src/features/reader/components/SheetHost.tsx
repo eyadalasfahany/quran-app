@@ -51,7 +51,7 @@ export function SheetHost({
 }) {
   const theme = useTheme();
   const focused = useIsFocused();
-  const { height } = useWindowDimensions();
+  const { height, width: windowWidth } = useWindowDimensions();
   // Width decides the card shape, not the layout class: a landscape phone is wide, so it gets the centred card (ADR 0036).
   const widthClass = useWidthClass();
   const centred = widthClass !== 'compact';
@@ -212,14 +212,21 @@ export function SheetHost({
             accessibilityViewIsModal
             onAccessibilityEscape={close}
             style={[
-              { bottom: 0, left: 0, position: 'absolute', right: 0 },
-              centred ? { alignItems: 'center' } : null,
+              // Only as wide as the card, so a tap beside it reaches the backdrop and closes the sheet.
+              centred
+                ? {
+                    bottom: 0,
+                    position: 'absolute',
+                    start: Math.max(0, (windowWidth - SHEET_CARD_MAX_WIDTH) / 2),
+                    width: Math.min(windowWidth, SHEET_CARD_MAX_WIDTH),
+                  }
+                : { bottom: 0, left: 0, position: 'absolute', right: 0 },
               cardStyle,
             ]}
             testID={testID}
           >
             <View
-              style={{ flex: 1, maxWidth: centred ? SHEET_CARD_MAX_WIDTH : undefined, width: '100%' }}
+              style={{ flex: 1, width: '100%' }}
               testID={`${testID}-column`}
             >
               {children}

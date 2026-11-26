@@ -41,7 +41,7 @@ export function AzkarPlayerOptionsBar({
   const { t } = useTranslation();
 
   return (
-    <GlassSurface radius="xl" style={{ flexDirection: 'row', gap: 4, padding: 6 }} testID={testID}>
+    <GlassSurface interactive radius="xl" style={{ flexDirection: 'row', gap: 4, padding: 6 }} testID={testID}>
       <AzkarPlayerOptionButton
         accessibilityLabel={t('azkar.player.repeat.option')}
         active={repeatOpen}

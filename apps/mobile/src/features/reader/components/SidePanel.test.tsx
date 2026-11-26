@@ -23,6 +23,12 @@ describe('SidePanel', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('shows no tabs without a tab handler (an ayah on a non-Hafs page)', async () => {
+    const view = await renderUi(<SidePanel onClose={() => undefined} tab="actions" />);
+    expect(view.queryByTestId('reader-panel-tabs-actions')).toBeNull();
+    expect(view.getByTestId('reader-panel-close')).toBeOnTheScreen();
+  });
+
   it('has no raw colour literals', () => {
     expect(rawColorLiteralsInFeature('src/features/reader/components/SidePanel.tsx')).toEqual([]);
   });

@@ -6,10 +6,16 @@ export const READER_SETTINGS_VERSION = 1;
 export const FONT_SCALE_MIN = 0.8;
 export const FONT_SCALE_MAX = 1.6;
 export const FONT_SCALE_STEP = 0.1;
+/** Mushaf page zoom (ADR 0090 amendment, 26 Nov 2026, item 9): 100% to 200% in 25% steps. */
+export const MUSHAF_ZOOM_MIN = 1;
+export const MUSHAF_ZOOM_MAX = 2;
+export const MUSHAF_ZOOM_STEP = 0.25;
 
 export type ReaderSettings = {
   mode: ReaderMode;
   fontScale: number;
+  /** Page zoom in Mushaf mode; one global value for every riwayah (clamped to [1, 2], snapped to 0.25). */
+  mushafZoom: number;
   mushaf: MushafKey;
   tafsirId: number | null;
 };
@@ -32,6 +38,7 @@ type PersistedReaderSettings = {
   version?: unknown;
   mode?: unknown;
   fontScale?: unknown;
+  mushafZoom?: unknown;
   mushaf?: unknown;
   tafsirChosen?: unknown;
   tafsirId?: unknown;
@@ -41,6 +48,7 @@ export function defaultReaderSettings(): LoadedReaderSettings {
   return {
     mode: 'reading',
     fontScale: 1,
+    mushafZoom: MUSHAF_ZOOM_MIN,
     mushaf: DEFAULT_MUSHAF,
     tafsirId: null,
     tafsirChosen: false,
@@ -53,6 +61,14 @@ export function clampFontScale(value: unknown): number {
   const steps = Math.round((clamped - FONT_SCALE_MIN) / FONT_SCALE_STEP);
   const snapped = FONT_SCALE_MIN + steps * FONT_SCALE_STEP;
   return Math.round(snapped * 10) / 10;
+}
+
+/** A stored zoom, snapped to 25% steps in [1, 2]. A missing or non-numeric value reads as 1. */
+export function clampMushafZoom(value: unknown): number {
+  const numeric = typeof value === 'number' && Number.isFinite(value) ? value : MUSHAF_ZOOM_MIN;
+  const clamped = Math.min(MUSHAF_ZOOM_MAX, Math.max(MUSHAF_ZOOM_MIN, numeric));
+  const steps = Math.round((clamped - MUSHAF_ZOOM_MIN) / MUSHAF_ZOOM_STEP);
+  return Math.round((MUSHAF_ZOOM_MIN + steps * MUSHAF_ZOOM_STEP) * 100) / 100;
 }
 
 export function migrateReaderSettings(raw: unknown): LoadedReaderSettings {
@@ -68,6 +84,7 @@ export function migrateReaderSettings(raw: unknown): LoadedReaderSettings {
   return {
     mode: isReaderMode(blob.mode) ? blob.mode : defaults.mode,
     fontScale: clampFontScale(blob.fontScale),
+    mushafZoom: clampMushafZoom(blob.mushafZoom),
     // A blob without a mushaf (or with a legacy quranFont, ADR 0090) reads the default; the old key is never written back.
     mushaf: isMushafKey(blob.mushaf) ? blob.mushaf : defaults.mushaf,
     tafsirChosen,
@@ -100,6 +117,7 @@ export function writeReaderSettings(settings: LoadedReaderSettings): void {
     version: READER_SETTINGS_VERSION,
     mode: settings.mode,
     fontScale: clampFontScale(settings.fontScale),
+    mushafZoom: clampMushafZoom(settings.mushafZoom),
     mushaf: settings.mushaf,
     tafsirChosen: settings.tafsirChosen,
     tafsirId: settings.tafsirId,

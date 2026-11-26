@@ -3,6 +3,7 @@ import {
   centerOn,
   clampScale,
   clampView,
+  coverScale,
   edgeDirection,
   fanOutActive,
   isOnScreen,
@@ -25,6 +26,12 @@ describe('scale', () => {
     [9, 2.4],
   ])('clamps %p to %p', (scale, expected) => {
     expect(clampScale(scale, region)).toBe(expected);
+  });
+
+  it('covers a wide window by its width and a tall one by its height', () => {
+    const art = { width: 1644, height: 2400 };
+    expect(coverScale(art, { width: 1210, height: 834 })).toBeCloseTo(1210 / 1644);
+    expect(coverScale(art, viewport)).toBeCloseTo(844 / 2400);
   });
 });
 

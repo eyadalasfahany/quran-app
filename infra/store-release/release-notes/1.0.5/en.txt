@@ -1,0 +1,6 @@
+Better large screens and landscape:
+- Sheets sit centred on wide screens and close when you tap the dimmed area around them.
+- Sheets and dialogs no longer turn the device to portrait.
+- The reader toolbar no longer covers the side panel, and its close button is visible.
+- The city picker, iqamah offset and other sheets keep a comfortable width on large screens.
+Plus other fixes and improvements.

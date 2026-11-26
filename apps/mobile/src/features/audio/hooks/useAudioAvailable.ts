@@ -9,6 +9,8 @@ import { catalogueReciter } from '../play-verse';
  * still counts, because playing installs it. Subscribes to installs and to the saved choice, so it re-reads both.
  */
 export function useAudioAvailable(): boolean {
+  // The reads below must run every render (they follow the store subscriptions above); the React Compiler would cache them by argument.
+  'use no memo';
   useReciterDownloads((state) => state.installedVersion);
   useCatalogVersion((state) => state.version);
   useAudioSettings((state) => state.reciterId);

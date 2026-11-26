@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- FIXTURE — not artwork. Synthetic page with deltas that need the escape list (step 12, Part B). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 550">
+<g transform="translate(0 0)">
+<g id="content">
+<path d="M 1024 0 L 0 0 L 1100 1 Z M -1024 -1 L 1023.96875 0 Z"/>
+</g>
+</g>
+</svg>

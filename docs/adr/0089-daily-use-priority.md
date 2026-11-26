@@ -64,3 +64,5 @@ The frames did not follow this ranking:
   - `design/home/HomeAzkarLower/index.html?theme=both&dir=rtl&sizes=compact`
   - `design/hadith/HadithCollMenu/index.html?theme=both&dir=both&sizes=compact`
   - `design/salah/Salah/index.html?theme=both&dir=rtl&sizes=compact`
+
+Amended by ADR 0099 (26 Nov 2026): the Menu groups its cards into colour sections in this daily-use order, and adds the المسبحة card.

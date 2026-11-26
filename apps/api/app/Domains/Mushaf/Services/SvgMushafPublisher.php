@@ -11,9 +11,11 @@ use App\Domains\Content\Models\Resource;
 use App\Domains\Content\Packs\PackBuilder;
 use App\Domains\Content\Repositories\Contracts\ResourceRepository;
 use App\Domains\Content\Services\ResourceVersionService;
+use App\Domains\Mushaf\Enums\WordBoxesStatus;
 use App\Domains\Mushaf\Exceptions\SvgMushafException;
 use App\Domains\Mushaf\Exceptions\UnknownSvgMushafException;
 use App\Domains\Mushaf\Models\SvgMushaf;
+use App\Domains\Mushaf\Packs\SvgMushafPackBuilder;
 use App\Domains\Mushaf\Repositories\Contracts\SvgMushafPackRepository;
 use Illuminate\Support\Facades\DB;
 
@@ -30,15 +32,25 @@ final class SvgMushafPublisher
         private readonly ResourceRepository $resources,
         private readonly ResourceVersionService $versions,
         private readonly PackBuilder $packs,
+        private readonly SvgMushafPackBuilder $svgPacks,
     ) {}
 
     /**
      * @throws UnknownSvgMushafException
      * @throws SvgMushafException
      */
-    public function publish(string $key, bool $deferPack, bool $withoutWordBoxes): Resource
+    public function publish(string $key, bool $deferPack, bool $withoutWordBoxes, bool $includeHidden = false, bool $withPendingContours = false): Resource
     {
         $edition = $this->edition($key);
+
+        if ($includeHidden && app()->environment('production')) {
+            throw new SvgMushafException('--include-hidden is for local and test use and is refused in production.');
+        }
+
+        if (($edition['publish'] ?? true) === false && ! $includeHidden) {
+            throw new SvgMushafException('The mushaf ['.$key.'] is hidden for now (ADR 0090 item 12) and is not published. Pass --include-hidden to publish it locally.');
+        }
+
         $mushaf = $this->mushafs->findByKey($key);
 
         if ($mushaf === null) {
@@ -63,6 +75,18 @@ final class SvgMushafPublisher
             throw new SvgMushafException('Hafs is not published until its word boxes are approved. Pass --without-word-boxes to publish pages and regions only.');
         }
 
+        if ($withPendingContours && app()->environment('production')) {
+            throw new SvgMushafException('--with-pending-contours is for local and test use and is refused in production.');
+        }
+
+        if ($withPendingContours && $deferPack) {
+            throw new SvgMushafException('--with-pending-contours cannot be combined with --defer-pack: the local pack is built now.');
+        }
+
+        if ($withPendingContours && $mushaf->contours_status !== WordBoxesStatus::PendingReview) {
+            throw new SvgMushafException('--with-pending-contours needs a contour map pending review: run mushaf:build-word-boxes '.$key.' first. A failed map is never published.');
+        }
+
         $sourceId = $this->resources->sourceId(self::SOURCE_CODE);
 
         if ($sourceId === null) {
@@ -83,7 +107,9 @@ final class SvgMushafPublisher
                 'is_active' => true,
             ]);
 
-        $fingerprint = $this->fingerprint($mushaf, $approved);
+        $contoursWritten = WordContourApproval::writes($mushaf, $withPendingContours);
+        $contours = $contoursWritten ? (WordContourApproval::isApproved($mushaf) ? 'approved' : 'local-pending').':'.$mushaf->contours_digest : null;
+        $fingerprint = $this->fingerprint($mushaf, $approved, SvgMushafPackBuilder::FORMAT, $contours);
 
         if ($resource->import_fingerprint !== null && hash_equals($resource->import_fingerprint, $fingerprint)) {
             return $resource;
@@ -94,6 +120,8 @@ final class SvgMushafPublisher
         // The fingerprint is stored only after the pack is built or queued, so a failed build is retried by the next publish.
         if ($deferPack) {
             BuildContentPackJob::dispatch($resource->id);
+        } elseif ($withPendingContours) {
+            $this->svgPacks->build($resource, true);
         } else {
             $this->packs->build($resource);
         }
@@ -117,12 +145,16 @@ final class SvgMushafPublisher
     /**
      * Covers every page digest in page order and every region in order, so an edit to either one bumps the version.
      */
-    private function fingerprint(SvgMushaf $mushaf, bool $includeBoxes): string
+    private function fingerprint(SvgMushaf $mushaf, bool $includeBoxes, string $format, ?string $contours = null): string
     {
         $pages = hash_init('sha256');
 
         foreach ($this->mushafs->pages($mushaf->id) as $page) {
-            hash_update($pages, $page['page'].':'.$page['gz_sha256']."\n");
+            if ($page['tqp_sha256'] === null) {
+                throw new SvgMushafException('Run mushaf:import again: the page digests are from before TQP1.');
+            }
+
+            hash_update($pages, $page['page'].':'.$page['tqp_sha256']."\n");
         }
 
         $regions = hash_init('sha256');
@@ -138,17 +170,25 @@ final class SvgMushafPublisher
             ])."\n");
         }
 
-        return hash('sha256', json_encode([
+        $parts = [
+            $format,
             $mushaf->source_commit,
             $mushaf->page_count,
             hash_final($pages),
             hash_final($regions),
             $includeBoxes ? $mushaf->word_boxes_digest : 'none',
-        ], JSON_THROW_ON_ERROR));
+        ];
+
+        // Only a pack that carries contour rows adds this part, so every other pack keeps its fingerprint.
+        if ($contours !== null) {
+            $parts[] = $contours;
+        }
+
+        return hash('sha256', json_encode($parts, JSON_THROW_ON_ERROR));
     }
 
     /**
-     * @return array{folder: string, edition_year: int, expected_ayahs: int|null, name: string, name_ar: string}
+     * @return array{folder: string, edition_year: int, expected_ayahs: int|null, name: string, name_ar: string, publish?: bool}
      *
      * @throws UnknownSvgMushafException
      */

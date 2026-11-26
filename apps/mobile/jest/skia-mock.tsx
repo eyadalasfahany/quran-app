@@ -22,8 +22,44 @@ const FillType = { EvenOdd: 1, Winding: 0 } as const;
 
 function pathBuilder() {
   const builder = {
+    moveTo(x: number, y: number) {
+      skiaCalls.push({ op: 'moveTo', x, y });
+      return builder;
+    },
+    lineTo(x: number, y: number) {
+      skiaCalls.push({ op: 'lineTo', x, y });
+      return builder;
+    },
+    quadTo(...args: number[]) {
+      skiaCalls.push({ args, op: 'quadTo' });
+      return builder;
+    },
+    cubicTo(...args: number[]) {
+      skiaCalls.push({ args, op: 'cubicTo' });
+      return builder;
+    },
     addPoly(points: readonly { x: number; y: number }[], close: boolean) {
       skiaCalls.push({ close, op: 'addPoly', points: points.length });
+      return builder;
+    },
+    rMoveTo(x: number, y: number) {
+      skiaCalls.push({ op: 'rMoveTo', x, y });
+      return builder;
+    },
+    rLineTo(x: number, y: number) {
+      skiaCalls.push({ op: 'rLineTo', x, y });
+      return builder;
+    },
+    rQuadTo(...args: number[]) {
+      skiaCalls.push({ args, op: 'rQuadTo' });
+      return builder;
+    },
+    rCubicTo(...args: number[]) {
+      skiaCalls.push({ args, op: 'rCubicTo' });
+      return builder;
+    },
+    close() {
+      skiaCalls.push({ op: 'close' });
       return builder;
     },
     addPath(path: FakePath, matrix?: FakeMatrix) {
@@ -78,6 +114,11 @@ const Skia = {
       beginRecording: (rect: unknown) => {
         skiaCalls.push({ op: 'beginRecording', rect });
         return {
+          save: () => skiaCalls.push({ op: 'save' }),
+          concat(matrix: FakeMatrix) {
+            skiaCalls.push({ matrix: matrix.values, op: 'concat' });
+          },
+          restore: () => skiaCalls.push({ op: 'restore' }),
           drawPath(drawn: FakePath, paint: { color: string }) {
             path = drawn;
             color = paint.color;

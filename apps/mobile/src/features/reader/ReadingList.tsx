@@ -27,6 +27,7 @@ import type { ReadingRow } from './reading-list-types';
 import { FOLLOW_VIEW_POSITION, recitedWordOffset } from './word-follow';
 import { usePlayerStore } from '@/features/audio/playerStore';
 import { useWordFollow } from './useWordFollow';
+import { pressedVerseKey, useReaderSelection } from './selection';
 import {
   anchorRowIndex,
   buildReadingRows,
@@ -51,6 +52,8 @@ export type ReadingListProps = {
   playing?: boolean;
   /** The ayah to bring into view: set while the reader follows the recitation, null otherwise. */
   followKey?: string | null;
+  /** The continue-reading ayah: grey until the reader scrolls by hand (ReaderScreen clears it). */
+  placeVerseKey?: string | null;
   highlightsByVerseId?: ReadonlyMap<number, HighlightColor>;
   khatmaMarkerVerseId?: number | null;
   horizontalGutter?: number;
@@ -84,6 +87,7 @@ export function ReadingList({
   audioAvailable = false,
   playing = false,
   followKey = null,
+  placeVerseKey = null,
   highlightsByVerseId = NO_HIGHLIGHTS,
   khatmaMarkerVerseId = null,
   horizontalGutter = 0,
@@ -325,11 +329,13 @@ export function ReadingList({
   // The ayah whose play was tapped and has not started yet (ADR 0046). A verse has no loaded-item fallback, so the tap alone marks it.
   const startingTarget = usePlayerStore((state) => state.startingTarget);
   const startingVerseKey = startingTarget?.kind === 'verse' ? startingTarget.verseKey : null;
+  // The ayah whose actions sheet or side panel is open (the same key Mushaf washes).
+  const pressedKey = useReaderSelection(pressedVerseKey);
 
   // FlashList repaints rows only when data or extraData changes; renderItem reads these.
   const rowExtraData = useMemo(
-    () => ({ activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey, showInlineTafsir, startingVerseKey, tafsirId }),
-    [activeWord, audioAvailable, followKey, highlightsByVerseId, playing, recitedVerseKey, showInlineTafsir, startingVerseKey, tafsirId],
+    () => ({ activeWord, audioAvailable, followKey, highlightsByVerseId, placeVerseKey, playing, pressedKey, recitedVerseKey, showInlineTafsir, startingVerseKey, tafsirId }),
+    [activeWord, audioAvailable, followKey, highlightsByVerseId, placeVerseKey, playing, pressedKey, recitedVerseKey, showInlineTafsir, startingVerseKey, tafsirId],
   );
 
   const renderItem = ({ item }: ListRenderItemInfo<ReadingRow>) => {
@@ -386,7 +392,9 @@ export function ReadingList({
           onOpenTafsir={openTafsir}
           onPlay={play}
           onPress={() => onSelectVerseKey(verse.verseKey)}
+          placeMarked={placeVerseKey === verse.verseKey}
           playing={recitedPlaying}
+          pressed={pressedKey === verse.verseKey}
           recited={recited}
           rowRef={followKey === verse.verseKey ? setFollowedRow : undefined}
           starting={startingVerseKey === verse.verseKey}

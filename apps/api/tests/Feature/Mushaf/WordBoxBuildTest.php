@@ -55,6 +55,7 @@ beforeEach(function (): void {
         'mushaf.approved_word_boxes.hafs' => null,
         'mushaf.word_box_files.output' => $out.'/word-boxes-%s.json',
         'mushaf.word_box_files.overrides' => $out.'/overrides-%s.json',
+        'mushaf.word_box_files.contour_output' => $out.'/word-contours-%s.json',
     ]);
 });
 
@@ -349,7 +350,11 @@ it('moves a word quran-text puts on the wrong line to the line the artwork draws
     $directory = storage_path('framework/testing/word-box-sheet-'.getmypid());
     File::deleteDirectory($directory);
 
-    $this->artisan('mushaf:build-word-boxes', ['key' => 'hafs', '--sheet' => $directory])->expectsOutputToContain('Status: pending_review')->assertSuccessful();
+    // The one-page fixture also fails the contour gates (no ornaments, no sajda lines), so the command exits non-zero.
+    $this->artisan('mushaf:build-word-boxes', ['key' => 'hafs', '--sheet' => $directory])
+        ->expectsOutputToContain('Status: pending_review')
+        ->expectsOutputToContain('Contour map failed gate W9, W11')
+        ->assertFailed();
 
     expect($broken->status)->toBe(WordBoxesStatus::Failed)
         ->and(storedWordBoxes()['1:1:3'])->toBe([10.0, 0.0, 30.0, 20.0, 1])
@@ -425,6 +430,19 @@ it('exits non-zero on a failed gate and writes a review sheet with contour indic
     File::deleteDirectory($directory);
 });
 
+it('exits non-zero when the contour map fails, naming the gate, although the word boxes pass', function (): void {
+    installWordBoxPage();
+
+    $this->artisan('mushaf:build-word-boxes', ['key' => 'hafs'])
+        ->expectsOutputToContain('Status: pending_review')
+        ->expectsOutputToContain('Contour status: failed')
+        ->expectsOutputToContain('Contour map failed gate W9, W11 (ADR 0090 A3)')
+        ->assertFailed();
+
+    expect(SvgMushaf::query()->firstOrFail()->word_boxes_status)->toBe(WordBoxesStatus::PendingReview)
+        ->and(SvgMushafWordBox::query()->count())->toBe(6);
+});
+
 it('opens the review sheet with every override, the lines left to the developer and the sample, linked to their lines', function (): void {
     installWordBoxPage();
     writeWordBoxOverrides(
@@ -436,7 +454,8 @@ it('opens the review sheet with every override, the lines left to the developer 
 
     $this->artisan('mushaf:build-word-boxes', ['key' => 'hafs', '--sheet' => $directory])
         ->expectsOutputToContain('Needs developer: 1:2: FIXTURE left to the developer')
-        ->assertSuccessful();
+        ->expectsOutputToContain('Contour map failed gate W9, W11')
+        ->assertFailed();
 
     $index = File::get($directory.'/index.html');
 

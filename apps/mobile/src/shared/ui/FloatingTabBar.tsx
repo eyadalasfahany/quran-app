@@ -53,7 +53,7 @@ export function FloatingTabBar({ label, children }: { label: string; children?: 
         style={{ bottom: 0, justifyContent: 'center', position: 'absolute', start: TAB_RAIL.offset + insets.start, top: 0 }}
         testID="floating-tab-bar-dock"
       >
-        <GlassSurface
+        <GlassSurface interactive
           accessibilityLabel={label}
           accessibilityRole="tablist"
           style={{
@@ -75,7 +75,7 @@ export function FloatingTabBar({ label, children }: { label: string; children?: 
 
   return (
     <Animated.View pointerEvents={scrollHidden ? 'none' : 'box-none'} testID="floating-tab-bar-dock" style={dockStyle}>
-      <GlassSurface
+      <GlassSurface interactive
         accessibilityLabel={label}
         accessibilityRole="tablist"
         style={{

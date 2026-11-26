@@ -19,6 +19,19 @@
   },
   "menu": {
     "title": "القائمة",
+    "sections": {
+      "continue": "تابع",
+      "worship": "العبادة",
+      "quran": "القرآن",
+      "learn": "المعرفة",
+      "calendar": "التقويم",
+      "app": "التطبيق"
+    },
+    "sibha": {
+      "caption": "التسبيح",
+      "title": "المسبحة",
+      "today": "اليوم {{count}} تسبيحة"
+    },
     "searchLabel": "بحث",
     "card": {
       "hint": "افتح {{title}}"
@@ -60,11 +73,6 @@
       "caption": "العلامات",
       "title": "مصحفي",
       "subtitle": "العلامات والتظليلات والملاحظات"
-    },
-    "search": {
-      "captionQuran": "في القرآن",
-      "captionQuranAndAzkar": "في القرآن والأذكار",
-      "title": "البحث"
     },
     "settings": {
       "caption": "التطبيق",
@@ -339,6 +347,7 @@
       "actionsLabel": "إجراءات الآية",
       "play": "تشغيل من هنا",
       "audioUnavailable": "التلاوة غير متاحة بعد",
+      "riwayahUnavailable": "أدوات الآية غير متاحة بعد في هذه الرواية.",
       "tafsir": "التفسير",
       "bookmark": "حفظ",
       "bookmarked": "محفوظة",
@@ -389,6 +398,10 @@
       "fontScale": "حجم خط المصحف",
       "decreaseFont": "تصغير الخط",
       "increaseFont": "تكبير الخط",
+      "mushafZoom": "تكبير الصفحة",
+      "zoomIn": "تكبير الصفحة",
+      "zoomOut": "تصغير الصفحة",
+      "mushafZoomUnavailable": "التكبير متاح للروايات التي تتوفر بياناتها كلمةً كلمة. هذه الرواية ستدعمه لاحقًا.",
       "mushaf": "المصحف",
       "decreaseGlyph": "أ−",
       "increaseGlyph": "أ+",
@@ -1416,7 +1429,7 @@
     },
     "reciter": {
       "title": "اختر قارئك",
-      "subtitle": "استمع قبل الاختيار. التلاوة تُبث مباشرة ولا يُنزّل شيء الآن.",
+      "subtitle": "استمع قبل الاختيار. التلاوة تُبث مباشرة ولا تُنزَّل الآن.",
       "groupLabel": "القارئ الافتراضي"
     }
   },
@@ -2114,6 +2127,9 @@
       "subtitleMilestone": "{{stage}} · {{milestone}} · {{events}}",
       "all": "الكل",
       "allHint": "يعرض كل الأعمار",
+      "hide": "إخفاء الخط الزمني",
+      "show": "إظهار الخط الزمني، {{focus}}",
+      "capsule": "{{title}} · {{events}}",
       "unspecified": "غير محدد",
       "unspecifiedLabel": "غير محدد، {{events}}",
       "unspecifiedSubtitle": "{{events}} لم يذكر الكتاب وقتها",
@@ -2170,13 +2186,8 @@
       "grabber": "مقبض اللوحة"
     },
     "states": {
-      "downloadTitle": "السيرة على الخريطة",
-      "downloadBody": "أحداث كتاب «نور اليقين في سيرة سيد المرسلين» للخضري في أماكنها وسنواتها، من المولد إلى الوفاة، مع نص الكتاب.",
-      "downloadMeta": "{{size}} · يعمل دون إنترنت بعد التنزيل",
-      "downloadAction": "تنزيل السيرة",
       "downloadingTitle": "جارٍ التنزيل…",
       "downloadingMeta": "{{done}} من {{total}} · يمكنك مغادرة الشاشة، ويكتمل التنزيل.",
-      "downloadingAction": "إلغاء التنزيل",
       "offlineTitle": "لا يوجد اتصال بالإنترنت",
       "offlineBody": "تنزيل السيرة يحتاج إلى اتصال مرة واحدة. بعدها تعمل الخريطة والنص دون إنترنت.",
       "offlineAction": "إعادة المحاولة",

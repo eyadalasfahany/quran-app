@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
 import { Icon, SearchField, SheetHeader, UiText, type IconName } from '@/shared/ui';
 
 import { searchCities, type City } from '../data/cities';
@@ -55,7 +57,7 @@ export function LocationPickerSheet({
   const results = useMemo(() => searchCities(query), [query]);
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+    <Modal animationType="fade" onRequestClose={onClose} supportedOrientations={MODAL_ORIENTATIONS} transparent visible={visible}>
       {/* The sheet rises with the keyboard, so the search field stays in view (ADR 0036). */}
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} testID={`${testID}-keyboard`}>
       <View style={{ backgroundColor: theme.colors.scrim, flex: 1, justifyContent: 'flex-end' }} testID={testID}>
@@ -64,14 +66,18 @@ export function LocationPickerSheet({
         <View
           accessibilityViewIsModal
           style={{
+            alignSelf: 'center',
             backgroundColor: theme.colors.surfacePage,
             borderTopLeftRadius: theme.radius.lg,
             borderTopRightRadius: theme.radius.lg,
             gap: theme.space[3],
+            maxWidth: SHEET_CARD_MAX_WIDTH,
             paddingBottom: Math.max(insets.bottom, theme.space[4]),
             paddingHorizontal: theme.space[4],
             paddingTop: theme.space[3],
+            width: '100%',
           }}
+          testID={`${testID}-card`}
         >
           <SheetHeader closeLabel={t('salah.location.close')} closeTone="track" onClose={onClose} testID={`${testID}-header`} title={t('salah.location.title')} />
           <Pressable

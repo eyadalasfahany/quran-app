@@ -8,6 +8,7 @@ use App\Domains\Mushaf\Exceptions\UnknownSvgMushafException;
 use App\Domains\Mushaf\Models\SvgMushaf;
 use App\Domains\Mushaf\Models\SvgMushafAyahRegion;
 use App\Domains\Mushaf\Models\SvgMushafPage;
+use App\Domains\Mushaf\Packs\Tqp\TqpEncoder;
 use App\Domains\Mushaf\Services\SvgMushafImporter;
 use App\Domains\Mushaf\Sources\SvgMushafDownloader;
 use App\Support\Storage\SourceCache;
@@ -71,12 +72,19 @@ function svgMushafFixtureFiles(bool $missingAyah = false, array $runOn = []): ar
     }
 
     return [
-        $base.'/svg/001.svg' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 550"><!-- FIXTURE page 1 --></svg>',
-        $base.'/svg/002.svg' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 550"><!-- FIXTURE page 2 --></svg>',
+        $base.'/svg/001.svg' => svgMushafFixturePage(1),
+        $base.'/svg/002.svg' => svgMushafFixturePage(2),
         $base.'/json/001.json' => json_encode([$region(1, 1), $region(1, 2), $region(2, 1), $region(2, 2)], JSON_THROW_ON_ERROR),
         $base.'/json/002.json' => json_encode($page2, JSON_THROW_ON_ERROR),
         $base.'/json/surah.json' => json_encode($surahs, JSON_THROW_ON_ERROR),
     ];
+}
+
+/** A synthetic page (FIXTURE — not artwork) with the root group and content the TQP1 encoder needs. */
+function svgMushafFixturePage(int $page): string
+{
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 550"><!-- FIXTURE page '.$page.' — not artwork -->'
+        .'<g transform="translate(0 0)"><g id="content"><path d="M 0 0 L 1 0 L 1 1 Z"/></g></g></svg>';
 }
 
 function svgMushafFixtureBlobSha(string $bytes): string
@@ -241,6 +249,36 @@ it('imports a good fixture: row counts, ayah count, gzip beside each page, and i
         ->and($page1->gz_bytes)->toBe(filesize($gzip))
         ->and(gzdecode(File::get($gzip)))->toBe($files[SVG_MUSHAF_FIXTURE_BASE.'/svg/001.svg'])
         ->and($page1->svg_blob_sha)->toBe(svgMushafFixtureBlobSha($files[SVG_MUSHAF_FIXTURE_BASE.'/svg/001.svg']));
+});
+
+it('records the TQP1 container digest and size of each page', function (): void {
+    $files = svgMushafFixtureFiles();
+    installSvgMushafManifest($files);
+    fakeSvgMushafSource($files);
+
+    app(SvgMushafImporter::class)->import('warsh', false);
+
+    foreach ([1, 2] as $page) {
+        $container = (new TqpEncoder)->container($files[SVG_MUSHAF_FIXTURE_BASE.'/svg/00'.$page.'.svg']);
+        $row = SvgMushafPage::query()->where('page', $page)->sole();
+
+        expect($row->tqp_sha256)->toBe(hash('sha256', $container))
+            ->and($row->tqp_bytes)->toBe(strlen($container));
+    }
+});
+
+it('refuses a page with an arc, names it, and writes nothing, not even the gzip of an earlier page', function (): void {
+    $files = svgMushafFixtureFiles();
+    $files[SVG_MUSHAF_FIXTURE_BASE.'/svg/002.svg'] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 550"><!-- FIXTURE page 2 — not artwork -->'
+        .'<g transform="translate(0 0)"><g id="content"><path d="M 0 0 A 1 1 0 0 1 5 5"/></g></g></svg>';
+    installSvgMushafManifest($files);
+    fakeSvgMushafSource($files);
+
+    expect(fn () => app(SvgMushafImporter::class)->import('warsh', false))
+        ->toThrow(SvgMushafCheckException::class, 'Page 2: The path has an arc');
+
+    expect(File::exists(svgMushafCachePath('svg/001.svg.gz')))->toBeFalse()
+        ->and(svgMushafCounts())->toBe(['mushafs' => 0, 'pages' => 0, 'regions' => 0]);
 });
 
 it('imports a continuation entry without a label point and counts its ayah once', function (): void {

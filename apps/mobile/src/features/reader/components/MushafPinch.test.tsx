@@ -50,7 +50,7 @@ describe('MushafPinch', () => {
 
   it.each(locales)('renders its content and hands the pinch to it (%s)', async (locale) => {
     await renderUi(
-      <MushafPinch maxScale={1.6}>
+      <MushafPinch zoomAvailable>
         <PinchProbe />
       </MushafPinch>,
       { locale },
@@ -58,43 +58,52 @@ describe('MushafPinch', () => {
     expect(screen.getByLabelText('probe')).toHaveTextContent('pinch');
   });
 
-  it('runs on the JS thread, since it only sets the size', async () => {
-    await renderUi(<MushafPinch maxScale={1.6}>{null}</MushafPinch>);
+  it('runs on the JS thread, since it only sets the zoom', async () => {
+    await renderUi(<MushafPinch zoomAvailable>{null}</MushafPinch>);
     expect(pinchConfig().runOnJS).toBe(true);
   });
 
-  it('steps the reader text size from the size the pinch began at', async () => {
-    useReaderSettings.getState().setFontScale(1.2);
-    await renderUi(<MushafPinch maxScale={1.6}>{null}</MushafPinch>);
+  it('steps the page zoom in 25% steps from the zoom the pinch began at', async () => {
+    useReaderSettings.getState().setMushafZoom(1.25);
+    await renderUi(<MushafPinch zoomAvailable>{null}</MushafPinch>);
 
     await pinch(1.25);
-    expect(useReaderSettings.getState().fontScale).toBe(1.5);
+    expect(useReaderSettings.getState().mushafZoom).toBe(1.5);
 
     await pinch(0.5);
-    expect(useReaderSettings.getState().fontScale).toBe(0.8);
+    expect(useReaderSettings.getState().mushafZoom).toBe(1);
   });
 
-  it('commits only when the snapped size changes', async () => {
-    await renderUi(<MushafPinch maxScale={1.6}>{null}</MushafPinch>);
+  it('commits only when the snapped zoom changes', async () => {
+    await renderUi(<MushafPinch zoomAvailable>{null}</MushafPinch>);
     const commits: number[] = [];
-    const unsubscribe = useReaderSettings.subscribe((state) => commits.push(state.fontScale));
+    const unsubscribe = useReaderSettings.subscribe((state) => commits.push(state.mushafZoom));
 
-    await pinch(1.01, 1.02, 1.03, 1.06, 1.07, 1.08, 1.12, 1.2);
+    await pinch(1.05, 1.1, 1.2, 1.3, 1.4, 1.6);
     unsubscribe();
-    expect(commits).toEqual([1.1, 1.2]);
+    expect(commits).toEqual([1.25, 1.5]);
   });
 
-  it('stops at its cap: another riwayah’s pages do not grow past 1×', async () => {
-    await renderUi(<MushafPinch maxScale={1}>{null}</MushafPinch>);
+  it('stops at 200%', async () => {
+    await renderUi(<MushafPinch zoomAvailable>{null}</MushafPinch>);
+    await pinch(3);
+    expect(useReaderSettings.getState().mushafZoom).toBe(2);
+  });
+
+  it('does nothing where zoom is not available (a riwayah without word data)', async () => {
+    await renderUi(<MushafPinch zoomAvailable={false}>{null}</MushafPinch>);
+    const commits: number[] = [];
+    const unsubscribe = useReaderSettings.subscribe((state) => commits.push(state.mushafZoom));
+
     await pinch(1.5);
-    expect(useReaderSettings.getState().fontScale).toBe(1);
-    await pinch(0.88);
-    expect(useReaderSettings.getState().fontScale).toBe(0.9);
+    unsubscribe();
+    expect(commits).toEqual([]);
+    expect(useReaderSettings.getState().mushafZoom).toBe(1);
   });
 
-  it('adds no accessibility element of its own; the font sizer stays the accessible way to resize', async () => {
+  it('adds no accessibility element of its own; the zoom stepper stays the accessible way to zoom', async () => {
     await renderUi(
-      <MushafPinch maxScale={1.6}>
+      <MushafPinch zoomAvailable>
         <PinchProbe />
       </MushafPinch>,
     );

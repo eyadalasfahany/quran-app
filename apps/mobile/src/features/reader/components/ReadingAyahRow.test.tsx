@@ -322,3 +322,44 @@ describe('ReadingAyahRow recitation', () => {
     expect(onPlay).not.toHaveBeenCalled();
   });
 });
+
+describe('ReadingAyahRow place and pressed wash', () => {
+  function row(props: Partial<React.ComponentProps<typeof ReadingAyahRow>>) {
+    return (
+      <ReadingAyahRow
+        onPress={() => undefined}
+        testID="row"
+        textImlaei="text"
+        textUthmani="ٱللَّهُ"
+        verseNumber={1}
+        {...props}
+      />
+    );
+  }
+
+  function quranStyle(view: Awaited<ReturnType<typeof renderUi>>) {
+    return flatStyle(view.getByText('ٱللَّهُ').parent!.props.style);
+  }
+
+  it.each(locales)('washes the continue-reading ayah grey with no brand rule (%s)', async (locale) => {
+    const view = await renderUi(row({ placeMarked: true }), { locale });
+    expect(quranStyle(view)).toMatchObject({ backgroundColor: colors.highlightActive, borderStartWidth: 0 });
+    expect(view.getByTestId('row').props.accessibilityState).toMatchObject({ selected: false });
+  });
+
+  it.each(locales)('washes the pressed ayah grey and marks it selected (%s)', async (locale) => {
+    const view = await renderUi(row({ pressed: true }), { locale });
+    expect(quranStyle(view)).toMatchObject({ backgroundColor: colors.highlightActive });
+    expect(view.getByTestId('row').props.accessibilityState).toMatchObject({ selected: true });
+  });
+
+  it('keeps the transparent background when neither place nor pressed', async () => {
+    const view = await renderUi(row({}));
+    expect(quranStyle(view)).toMatchObject({ backgroundColor: 'transparent' });
+  });
+
+  it('lets the reader’s own highlight colour win over the grey', async () => {
+    const view = await renderUi(row({ highlightColor: 'rose', pressed: true, placeMarked: true }));
+    expect(quranStyle(view)).toMatchObject({ backgroundColor: colors.highlightRose });
+  });
+});

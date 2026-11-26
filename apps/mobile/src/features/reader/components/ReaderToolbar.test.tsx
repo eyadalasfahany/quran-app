@@ -84,7 +84,7 @@ describe('ReaderToolbar', () => {
 
   it.each(locales)('points Back toward the leading edge: left in English, mirrored right in Arabic (%s)', async (locale) => {
     const view = await renderUi(<ReaderToolbar {...props} />, { locale });
-    const icon = view.getByTestId('reader-back').children.at(-1);
+    const icon = view.getByTestId('reader-back-icon', { includeHiddenElements: true });
     const [symbol] = typeof icon === 'object' ? icon.children : [];
     expect(typeof symbol === 'object' ? symbol.props.name : undefined).toBe('chevron.left');
     expect(flatStyle(typeof icon === 'object' ? icon.props.style : undefined).transform).toEqual(

@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { fireEvent } from '@testing-library/react-native';
 
-import { themes } from '@/core/theme';
 import { storage, storageKeys } from '@/core/storage/mmkv';
 
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
@@ -58,11 +57,33 @@ describe('ReaderSettingsSheet', () => {
     expect(view.getByTestId('mushaf-warsh').props.accessibilityState?.checked).toBe(true);
   });
 
-  it.each(locales)('names the five riwayat in %s', async (locale) => {
+  // al-Duri is hidden from the pickers until its numbering is settled (ADR 0090 amendment, item 12).
+  it.each(locales)('names the four pickable riwayat in %s', async (locale) => {
     const view = await renderUi(<ReaderSettingsSheet />, { locale });
     expect(view.getByText(locale === 'ar' ? 'حفص عن عاصم' : 'Hafs from Asim')).toBeOnTheScreen();
-    expect(view.getByText(locale === 'ar' ? 'الدوري عن أبي عمرو' : 'Al-Duri from Abu Amr')).toBeOnTheScreen();
-    expect(view.getAllByRole('radio')).toHaveLength(5);
+    expect(view.queryByText(locale === 'ar' ? 'الدوري عن أبي عمرو' : 'Al-Duri from Abu Amr')).toBeNull();
+    expect(view.getAllByRole('radio')).toHaveLength(4);
+  });
+
+  it('shows the page zoom in Mushaf mode, with its hint where the riwayah has no word data', async () => {
+    useReaderSettings.getState().setMode('mushaf');
+    const view = await renderUi(<ReaderSettingsSheet />, { locale: 'en' });
+    expect(view.getByTestId('reader-mushaf-zoom-percent')).toHaveTextContent('100%');
+    expect(view.queryByTestId('reader-font-percent')).toBeNull();
+    expect(
+      view.getByText('Zoom is available for riwayat that have word-by-word data. This riwayah will get it later.'),
+    ).toBeOnTheScreen();
+    // Under the row, not inside it: beside the stepper it overflowed the sheet on the iPhone.
+    const row = view.getByTestId('reader-mushaf-zoom').parent;
+    expect(view.getByTestId('reader-mushaf-zoom-unavailable')).toBeOnTheScreen();
+    expect(row).not.toContainElement(view.getByTestId('reader-mushaf-zoom-unavailable'));
+  });
+
+  it('shows the text size in Reading, not the page zoom', async () => {
+    useReaderSettings.getState().setMode('reading');
+    const view = await renderUi(<ReaderSettingsSheet />, { locale: 'en' });
+    expect(view.getByTestId('reader-font-percent')).toBeOnTheScreen();
+    expect(view.queryByTestId('reader-mushaf-zoom-percent')).toBeNull();
   });
 
   it('shows no Quran preview behind the controls', async () => {
@@ -98,16 +119,15 @@ describe('ReaderSettingsSheet', () => {
     expect(router.back).toHaveBeenCalledTimes(1);
   });
 
-  it('draws the muted 36 pt grabber and the track-filled close button of the settings frame', async () => {
+  it('draws the muted 36 pt grabber and the close button as interactive glass (developer, 26 Nov 2026)', async () => {
     const view = await renderUi(<ReaderSettingsSheet />);
 
     expect(flatStyle(view.getByTestId('reader-settings-sheet-grabber').props.style)).toMatchObject({
       opacity: 0.4,
       width: 36,
     });
-    expect(flatStyle(view.getByTestId('reader-settings-close').props.style).backgroundColor).toBe(
-      themes.light.colors.fillTrack,
-    );
+    // The frame's track-filled ✕ is Liquid Glass where the platform has it; IconButton tests the solid fallback.
+    expect(view.getByTestId('reader-settings-close-glass', { includeHiddenElements: true }).props.isInteractive).toBe(true);
   });
 
   it('uses theme tokens only', () => {

@@ -19,6 +19,19 @@
   },
   "menu": {
     "title": "Menu",
+    "sections": {
+      "continue": "Continue",
+      "worship": "Worship",
+      "quran": "Quran",
+      "learn": "Learn",
+      "calendar": "Calendar",
+      "app": "App"
+    },
+    "sibha": {
+      "caption": "Tasbih",
+      "title": "Misbaha",
+      "today": "Today {{count}} tasbih"
+    },
     "searchLabel": "Search",
     "card": {
       "hint": "Opens {{title}}"
@@ -60,11 +73,6 @@
       "caption": "Marks",
       "title": "My Quran",
       "subtitle": "Marks, highlights and notes"
-    },
-    "search": {
-      "captionQuran": "In the Quran",
-      "captionQuranAndAzkar": "In the Quran and Azkar",
-      "title": "Search"
     },
     "settings": {
       "caption": "App",
@@ -339,6 +347,7 @@
       "actionsLabel": "Ayah actions",
       "play": "Play from here",
       "audioUnavailable": "Recitation isn't available yet",
+      "riwayahUnavailable": "Ayah actions aren’t available yet in this riwayah.",
       "tafsir": "Tafsir",
       "bookmark": "Bookmark",
       "bookmarked": "Bookmarked",
@@ -389,6 +398,10 @@
       "fontScale": "Text size",
       "decreaseFont": "Decrease text size",
       "increaseFont": "Increase text size",
+      "mushafZoom": "Page zoom",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "mushafZoomUnavailable": "Zoom is available for riwayat that have word-by-word data. This riwayah will get it later.",
       "mushaf": "Mushaf",
       "decreaseGlyph": "A−",
       "increaseGlyph": "A+",
@@ -1416,7 +1429,7 @@
     },
     "reciter": {
       "title": "Choose your reciter",
-      "subtitle": "Listen before you choose. Recitation streams live; nothing is downloaded now.",
+      "subtitle": "Listen before you choose. Recitation streams live and is not downloaded now.",
       "groupLabel": "Default reciter"
     }
   },
@@ -2077,6 +2090,9 @@
       "subtitleMilestone": "{{stage}} · {{milestone}} · {{events}}",
       "all": "All",
       "allHint": "Shows every age",
+      "hide": "Hide timeline",
+      "show": "Show timeline, {{focus}}",
+      "capsule": "{{title}} · {{events}}",
       "unspecified": "Not stated",
       "unspecifiedLabel": "Not stated, {{events}}",
       "unspecifiedSubtitle": "{{events}} the book gives no time for",
@@ -2133,13 +2149,8 @@
       "grabber": "Sheet handle"
     },
     "states": {
-      "downloadTitle": "Seerah on the map",
-      "downloadBody": "The events of «نور اليقين في سيرة سيد المرسلين» by al-Khudari, with their places and years, from the birth to the death, with the book’s text.",
-      "downloadMeta": "{{size}} · works offline after the download",
-      "downloadAction": "Download Seerah",
       "downloadingTitle": "Downloading…",
       "downloadingMeta": "{{done}} of {{total}} · you can leave this screen, and the download finishes.",
-      "downloadingAction": "Cancel download",
       "offlineTitle": "No internet connection",
       "offlineBody": "Downloading Seerah needs a connection once. After that the map and the text work offline.",
       "offlineAction": "Try again",

@@ -1,7 +1,7 @@
 import { size } from '@quran/design-tokens';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
-import { useTheme } from '@/core/theme';
+import { useGlass, useTheme } from '@/core/theme';
 
 import { GlassSurface } from './GlassSurface';
 import { Icon, type IconName } from './Icon';
@@ -59,7 +59,22 @@ export function IconButton({
     glass: 'transparent',
     raised: theme.colors.surfaceRaised,
   }[variant];
-  const raised = variant === 'raised';
+  // Every round button except `plain` (which sits inside a glass toolbar group) is interactive Liquid Glass where the
+  // platform has it (developer, 26 Nov 2026). Without native glass each variant keeps its solid look; `glass` keeps its
+  // glassFallback disc.
+  const nativeGlass = useGlass();
+  const glassy = variant === 'glass' || (nativeGlass && variant !== 'plain');
+  const raised = variant === 'raised' && !glassy;
+
+  const glyphView = (
+    <Icon
+      color={glyph}
+      mirrorInRtl={mirrorInRtl}
+      name={icon}
+      size={iconSize}
+      testID={testID ? `${testID}-icon` : undefined}
+    />
+  );
 
   return (
     <Pressable
@@ -71,7 +86,7 @@ export function IconButton({
       onPress={onPress}
       style={({ pressed: touching }) => ({
         alignItems: 'center',
-        backgroundColor: pressed || touching ? theme.colors.glassSelected : resting,
+        backgroundColor: pressed || touching ? theme.colors.glassSelected : glassy ? 'transparent' : resting,
         borderColor: raised ? colors.line : undefined,
         borderRadius: theme.radius.pill,
         borderWidth: raised ? theme.stroke.hairline : 0,
@@ -82,31 +97,30 @@ export function IconButton({
       })}
       testID={testID}
     >
-      {variant === 'glass' ? (
-        <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={testID ? `${testID}-glass` : undefined}>
-          <GlassSurface
-            radius="pill"
-            style={[
-              StyleSheet.absoluteFill,
-              frosted
-                ? {
-                    backgroundColor: theme.colors.glassFill,
-                    borderColor: theme.colors.glassStroke,
-                    borderWidth: StyleSheet.hairlineWidth,
-                    boxShadow: theme.shadows.glass,
-                  }
-                : null,
-            ]}
-          />
-        </View>
-      ) : null}
-      <Icon
-        color={glyph}
-        mirrorInRtl={mirrorInRtl}
-        name={icon}
-        size={iconSize}
-        testID={testID ? `${testID}-icon` : undefined}
-      />
+      {glassy ? (
+        // Interactive glass is the button face, with the glyph inside it, so it bubbles and stretches under the finger.
+        <GlassSurface
+          interactive
+          radius="pill"
+          style={[
+            StyleSheet.absoluteFill,
+            { alignItems: 'center', justifyContent: 'center' },
+            frosted
+              ? {
+                  backgroundColor: theme.colors.glassFill,
+                  borderColor: theme.colors.glassStroke,
+                  borderWidth: StyleSheet.hairlineWidth,
+                  boxShadow: theme.shadows.glass,
+                }
+              : null,
+          ]}
+          testID={testID ? `${testID}-glass` : undefined}
+        >
+          {glyphView}
+        </GlassSurface>
+      ) : (
+        glyphView
+      )}
     </Pressable>
   );
 }

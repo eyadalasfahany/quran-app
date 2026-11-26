@@ -8,37 +8,40 @@ import {
   type PinchGestureConfig,
 } from 'react-native-gesture-handler';
 
-import { pinchFontScale } from '../mushaf-svg/mushaf-view';
+import { pinchMushafZoom } from '../mushaf-svg/mushaf-zoom';
 import { useReaderSettings } from '../settings';
 
 /** The Mushaf pinch, for the lists' scroll view to run alongside (`MushafScrollView`). Null outside a `MushafPinch`. */
 export const MushafPinchContext = createContext<PinchGesture | null>(null);
 
 /**
- * A pinch on the Mushaf changes the reader's text size, the same setting as the font sizer, in its 0.1 steps (developer,
- * 15 Nov 2026). It wraps both Mushaf views, above the switch between them, so a pinch that crosses 1× keeps running
- * while the view under the fingers changes. The size snaps, so nothing animates; the sizer stays the accessible way to
- * resize.
+ * A pinch on the Mushaf sets the page zoom (ADR 0090 amendment, item 9) in 25% steps: the zoom at the pinch's start times
+ * the pinch scale, snapped, and written to the store only when the step changes. It does nothing where zoom is not
+ * available (a riwayah without word data stays at 100%). It wraps the Mushaf view, so a pinch keeps running alongside the
+ * list's scroll view (MushafScrollView). The stepper in the reader settings is the accessible way to zoom.
  */
-export function MushafPinch({ children, maxScale }: { children: ReactNode; maxScale: number }) {
-  const cap = useRef(maxScale);
+export function MushafPinch({ children, zoomAvailable }: { children: ReactNode; zoomAvailable: boolean }) {
+  const available = useRef(zoomAvailable);
   useEffect(() => {
-    cap.current = maxScale;
-  }, [maxScale]);
-  // The size when the pinch began, and the last size it committed: a step commits only when the snapped size changes.
+    available.current = zoomAvailable;
+  }, [zoomAvailable]);
+  // The zoom when the pinch began, and the last zoom it committed.
   const start = useRef(1);
   const last = useRef(1);
   const config = useMemo<PinchGestureConfig>(
     () => ({
       onActivate: () => {
-        start.current = useReaderSettings.getState().fontScale;
+        start.current = useReaderSettings.getState().mushafZoom;
         last.current = start.current;
       },
       onUpdate: (event) => {
-        const next = pinchFontScale(start.current, event.scale, cap.current);
+        if (!available.current) {
+          return;
+        }
+        const next = pinchMushafZoom(start.current, event.scale);
         if (next !== last.current) {
           last.current = next;
-          useReaderSettings.getState().setFontScale(next);
+          useReaderSettings.getState().setMushafZoom(next);
         }
       },
       runOnJS: true,

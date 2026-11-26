@@ -365,7 +365,7 @@ describe('installResource', () => {
       expect(installed).toEqual({ status: 'installed' });
 
       // The reader later chooses another tafsir. The override drops 85 from the base selection.
-      writeReaderSettings({ mode: 'reading', fontScale: 1, mushaf: 'hafs', tafsirChosen: true, tafsirId: 86 });
+      writeReaderSettings({ mode: 'reading', fontScale: 1, mushafZoom: 1, mushaf: 'hafs', tafsirChosen: true, tafsirId: 86 });
 
       const report = await syncContent(syncDeps(executor, cacheDir, apiWith(body, serveFrom(packs)), selectedResourceIds));
 

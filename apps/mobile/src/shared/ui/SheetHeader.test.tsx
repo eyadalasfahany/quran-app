@@ -7,6 +7,13 @@ import { themes } from '@/core/theme';
 
 import { SheetHeader } from './SheetHeader';
 
+const mockLiquidGlass = jest.fn(() => true);
+
+jest.mock('expo-glass-effect', () => ({
+  ...jest.requireActual('expo-glass-effect'),
+  isLiquidGlassAvailable: () => mockLiquidGlass(),
+}));
+
 describe('SheetHeader', () => {
   it('renders a large header title with a close button', async () => {
     const onClose = jest.fn();
@@ -33,19 +40,32 @@ describe('SheetHeader', () => {
     });
   });
 
-  it('draws the close button on fillSecondary by default', async () => {
+  it('draws the close button as interactive Liquid Glass where the platform has it', async () => {
+    const view = await renderUi(
+      <SheetHeader closeLabel="Close" onClose={() => undefined} testID="header" title="title" />,
+    );
+
+    expect(view.getByTestId('header-close-glass', { includeHiddenElements: true }).props.isInteractive).toBe(true);
+  });
+
+  it('draws the close button on fillSecondary by default without Liquid Glass', async () => {
+    mockLiquidGlass.mockReturnValue(false);
     const view = await renderUi(<SheetHeader closeLabel="Close" onClose={() => undefined} title="title" />);
+    mockLiquidGlass.mockReturnValue(true);
 
     expect(flatStyle(view.getByRole('button', { name: 'Close' }).props.style).backgroundColor).toBe(
       themes.light.colors.fillSecondary,
     );
   });
 
-  it('draws the close button on fillTrack when closeTone is track', async () => {
+  it('draws the close button on fillTrack when closeTone is track, without Liquid Glass', async () => {
+    mockLiquidGlass.mockReturnValue(false);
     const view = await renderUi(
       <SheetHeader closeLabel="Close" closeTone="track" onClose={() => undefined} title="title" />,
     );
     const close = view.getByRole('button', { name: 'Close' });
+
+    mockLiquidGlass.mockReturnValue(true);
 
     expect(flatStyle(close.props.style).backgroundColor).toBe(themes.light.colors.fillTrack);
     expect(flatStyle(close.props.style)).toMatchObject({ height: 44, width: 44 });

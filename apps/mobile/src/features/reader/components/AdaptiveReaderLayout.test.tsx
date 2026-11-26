@@ -127,6 +127,18 @@ describe('AdaptiveReaderLayout', () => {
     expect(onMoveToPanel).toHaveBeenCalledWith('2:255');
   });
 
+  it('keeps the toolbar clear of a docked panel, ending where the panel strip starts', async () => {
+    const view = await renderUi(layout(1366));
+
+    expect(flatStyle(view.getByTestId('reader-toolbar-slot').props.style).end).toBe(panelStripWidth());
+  });
+
+  it('spans the toolbar across the full width when the docked panel is closed', async () => {
+    const view = await renderUi(layout(1366, { panelOpen: false }));
+
+    expect(flatStyle(view.getByTestId('reader-toolbar-slot').props.style).end).toBe(0);
+  });
+
   it('draws the panel at the side-panel width token', async () => {
     const view = await renderUi(layout(1366));
 

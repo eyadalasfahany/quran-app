@@ -1,4 +1,4 @@
-import { resetReaderSelection, useReaderSelection } from './selection';
+import { pressedVerseKey, resetReaderSelection, useReaderSelection } from './selection';
 
 describe('reader selection', () => {
   beforeEach(() => {
@@ -42,5 +42,33 @@ describe('reader selection', () => {
     useReaderSelection.getState().toggleInlineTafsir();
     resetReaderSelection();
     expect(useReaderSelection.getState().inlineTafsirOpen).toBe(false);
+  });
+
+  it('sets and clears the sheet verse, and resets with the store', () => {
+    useReaderSelection.getState().setSheetVerseKey('1:2');
+    expect(useReaderSelection.getState().sheetVerseKey).toBe('1:2');
+
+    useReaderSelection.getState().setSheetVerseKey(null);
+    expect(useReaderSelection.getState().sheetVerseKey).toBeNull();
+
+    useReaderSelection.getState().setSheetVerseKey('1:3');
+    resetReaderSelection();
+    expect(useReaderSelection.getState().sheetVerseKey).toBeNull();
+  });
+
+  it('the pressed ayah is the sheet verse when the panel is closed, and the panel verse when it is open', () => {
+    useReaderSelection.getState().setSheetVerseKey('1:2');
+    useReaderSelection.getState().selectVerse('2:255', 'docked');
+    expect(pressedVerseKey(useReaderSelection.getState())).toBe('2:255');
+
+    useReaderSelection.getState().closePanel();
+    expect(pressedVerseKey(useReaderSelection.getState())).toBe('1:2');
+  });
+
+  it('has no pressed ayah when neither the sheet nor the panel is open', () => {
+    expect(pressedVerseKey(useReaderSelection.getState())).toBeNull();
+
+    useReaderSelection.getState().selectVerse('2:255', 'sheet');
+    expect(pressedVerseKey(useReaderSelection.getState())).toBeNull();
   });
 });

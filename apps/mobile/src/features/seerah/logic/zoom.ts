@@ -39,6 +39,11 @@ export function clampView(view: MapView, content: Size, viewport: Size): MapView
   };
 }
 
+/** The smallest scale at which the art covers the whole window, so no edge of the art (and no blank) shows. */
+export function coverScale(content: Size, viewport: Size): number {
+  return Math.max(viewport.width / content.width, viewport.height / content.height);
+}
+
 /** A pinch: the point under the fingers stays under the fingers while the scale changes. */
 export function pinchView(view: MapView, scaleChange: number, focal: Point, zoom: Pick<SeerahMapZoom, 'min' | 'max'>): MapView {
   'worklet';

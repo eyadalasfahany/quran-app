@@ -114,6 +114,7 @@ describe('reader settings', () => {
       fontScale: 1.3,
       mode: 'focus',
       mushaf: 'hafs',
+      mushafZoom: 1,
       tafsirChosen: true,
       tafsirId: 21,
       version: 1,

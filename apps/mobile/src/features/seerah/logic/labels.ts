@@ -49,6 +49,11 @@ function overlaps(a: LabelRect, b: LabelRect): boolean {
   return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 }
 
+/** Whether a screen point lies inside a box (a pin under an edge-chip stack). */
+export function insideRect(point: { x: number; y: number }, rect: LabelRect): boolean {
+  return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
+}
+
 function pinRect(pin: { x: number; y: number }): LabelRect {
   return { left: pin.x - PIN_RADIUS, top: pin.y - PIN_RADIUS, right: pin.x + PIN_RADIUS, bottom: pin.y + PIN_RADIUS };
 }
@@ -60,12 +65,14 @@ export function estimateLabelWidth(text: string, fontSize: number): number {
 
 /**
  * Greedy label placement in screen space. Candidates are taken by `priority`, then event count, then book order, then
- * id (so the result is deterministic). A label is shown when its box overlaps no label already shown and no pin;
- * otherwise it is hidden until a deeper zoom spreads the pins. Run when a gesture ends, never per frame.
+ * id (so the result is deterministic). A label is shown when its box overlaps no label already shown, no pin and no
+ * obstacle (the edge-chip stacks drawn over the map); otherwise it is hidden until a pan or a deeper zoom frees it. Run
+ * when a gesture ends, never per frame.
  */
 export function placeLabels(
   candidates: readonly LabelCandidate[],
   pins: readonly { x: number; y: number }[] = candidates,
+  obstacles: readonly LabelRect[] = [],
 ): { visible: string[]; hidden: string[]; sides: Record<string, 'start' | 'end'> } {
   const ordered = [...candidates].sort(
     (a, b) => b.priority - a.priority || b.count - a.count || a.order - b.order || a.id.localeCompare(b.id),
@@ -75,7 +82,9 @@ export function placeLabels(
   const hidden: string[] = [];
   const sides: Record<string, 'start' | 'end'> = {};
   const free = (rect: LabelRect, own: { x: number; y: number }) =>
-    !pins.some((pin) => !(pin.x === own.x && pin.y === own.y) && overlaps(rect, pinRect(pin))) && !shown.some((other) => overlaps(rect, other));
+    !pins.some((pin) => !(pin.x === own.x && pin.y === own.y) && overlaps(rect, pinRect(pin))) &&
+    !shown.some((other) => overlaps(rect, other)) &&
+    !obstacles.some((box) => overlaps(rect, box));
   for (const candidate of ordered) {
     // Its own side first, then the other side, before the label is hidden.
     const side = [candidate.side, candidate.side === 'end' ? 'start' : 'end'].find((option) =>

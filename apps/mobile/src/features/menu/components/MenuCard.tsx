@@ -4,15 +4,15 @@ import { Pressable, View } from 'react-native';
 import { useTheme } from '@/core/theme';
 import { Icon, UiText, useContrastColors, type IconName } from '@/shared/ui';
 
+import { useMenuSectionTone } from './MenuSection';
+import { menuToneColors, type MenuTone } from './menuTone';
+
 const TRACK_HEIGHT = 4;
-// The card's title is Amiri 22 (screens/, #Menu). No display token has that size, so the size is set here
-// as the Khatma header does; the family and weight still come from the display scale.
-const TITLE_SIZE = 22;
-const TITLE_LINE_HEIGHT = 29;
 
 /**
- * One card of the menu (screens/, #Menu): the icon and a small caption, the Amiri title, an optional
- * preview line and an optional thin progress bar. The whole card is one button.
+ * One card of the menu (screens/frames/menu, #MenuSections): a coloured icon tile, the Amiri title, an optional preview
+ * line and an optional thin progress bar. The tile takes the section's colour unless `tone` is given. The caption is not
+ * drawn (the section title stands in for it); VoiceOver still reads it before the title. The whole card is one button.
  */
 export function MenuCard({
   icon,
@@ -20,21 +20,25 @@ export function MenuCard({
   title,
   preview,
   progress,
+  tone,
   onPress,
   testID,
 }: {
   icon: IconName;
-  caption: string;
+  caption?: string;
   title: string;
   preview?: string;
   /** 0 to 1. Omitted, no bar is drawn. */
   progress?: number;
+  tone?: MenuTone;
   onPress: () => void;
   testID: string;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const colors = useContrastColors();
+  const sectionTone = useMenuSectionTone();
+  const { tile, ink } = menuToneColors(theme.colors, tone ?? sectionTone);
   const fraction = progress === undefined ? 0 : Math.min(Math.max(progress, 0), 1);
   const label = [caption, title, preview].filter((part) => part !== undefined && part !== '').join(', ');
 
@@ -49,40 +53,46 @@ export function MenuCard({
         borderColor: colors.line,
         borderRadius: theme.radius.hero,
         borderWidth: theme.stroke.hairline,
-        gap: theme.space[2],
+        flex: 1,
+        gap: theme.space[3],
         opacity: pressed ? theme.opacity.pressed : 1,
         padding: theme.space[4],
       })}
       testID={testID}
     >
-      <View style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[2] }}>
-        <Icon color={theme.colors.brand} name={icon} />
-        {/* Shrinks so a long caption ("In the Quran and Azkar") wraps inside the card instead of running past it. */}
-        <UiText style={{ flexShrink: 1 }} testID={`${testID}-caption`} tone="muted" variant="caption">
-          {caption}
-        </UiText>
+      <View
+        style={{
+          alignItems: 'center',
+          backgroundColor: tile,
+          borderRadius: theme.radius.md,
+          height: theme.size.touchTarget,
+          justifyContent: 'center',
+          width: theme.size.touchTarget,
+        }}
+        testID={`${testID}-tile`}
+      >
+        <Icon color={ink} name={icon} size={theme.size.iconLg} />
       </View>
-      <UiText style={{ fontSize: TITLE_SIZE, lineHeight: TITLE_LINE_HEIGHT }} variant="displaySm">
-        {title}
-      </UiText>
-      {preview ? (
-        <UiText testID={`${testID}-preview`} tone="muted" variant="subhead">
-          {preview}
-        </UiText>
-      ) : null}
+      <View style={{ gap: theme.space[1] }}>
+        <UiText variant="displaySm">{title}</UiText>
+        {preview ? (
+          <UiText numberOfLines={2} testID={`${testID}-preview`} tone="muted" variant="subhead">
+            {preview}
+          </UiText>
+        ) : null}
+      </View>
       {progress === undefined ? null : (
         <View
           style={{
             backgroundColor: colors.line,
             borderRadius: TRACK_HEIGHT / 2,
             height: TRACK_HEIGHT,
-            marginTop: theme.space[1],
             overflow: 'hidden',
           }}
         >
           <View
             style={{
-              backgroundColor: theme.colors.goldOnBrandSurface,
+              backgroundColor: ink,
               borderRadius: TRACK_HEIGHT / 2,
               height: TRACK_HEIGHT,
               width: `${Math.round(fraction * 100)}%`,

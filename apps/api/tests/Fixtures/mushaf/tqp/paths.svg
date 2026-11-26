@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 550"><!-- FIXTURE — not artwork: path grammar -->
+<g transform="translate(0 0)"><g id="content">
+<path d="M 0 0 H 10 V 10 L 2e1 -2.5E-1 M 1-2 3-4 m 5 5 l 1 1 z m 2 2 L 0 0"/>
+<path d="M 0 0 C 1 1 2 2 3 3 S 5 5 6 6 M 1 1 S 2 2 3 3 M 0 0 Q 1 1 2 0 T 4 0 M 0 0 T 4 0"/>
+</g></g>
+</svg>

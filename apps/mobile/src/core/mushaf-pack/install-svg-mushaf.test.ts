@@ -60,9 +60,9 @@ function sha256Of(path: string): string {
 }
 
 /** A pack file for the given version, and the manifest entry that describes it. */
-function packFixture(version: number, options: { key?: string; withWordBoxes?: boolean; sha?: string; size?: number } = {}) {
+function packFixture(version: number, options: { key?: string; withWordBoxes?: boolean; sha?: string; size?: number; legacySchema1?: boolean } = {}) {
   const file = join(fixtures, `hafs-${version}-${options.key ?? 'hafs'}.db`);
-  buildSvgMushafPackFile(file, { key: options.key ?? 'hafs', resourceId: 9, version, withWordBoxes: options.withWordBoxes });
+  buildSvgMushafPackFile(file, { key: options.key ?? 'hafs', legacySchema1: options.legacySchema1, resourceId: 9, version, withWordBoxes: options.withWordBoxes });
   const resource: ContentManifestResource = {
     id: 9,
     group: 'svg_mushafs',
@@ -198,7 +198,7 @@ describe('installSvgMushafWith', () => {
     expect(result).toEqual({ status: 'installed' });
     expect(progress.at(-1)).toBe(1);
     expect(existsSync(local('file:///documents/packs/svg-mushaf-hafs-1.db'))).toBe(true);
-    expect(installedStore.getInstalledSvgMushaf('hafs')).toMatchObject({ version: 1, hasWordBoxes: true, resourceId: 9 });
+    expect(installedStore.getInstalledSvgMushaf('hafs')).toMatchObject({ version: 1, hasWordBoxes: true, pageFormat: 'tqp1-deflate-n32', resourceId: 9 });
 
     const again = await installSvgMushafWith(s.deps, 'hafs');
     expect(again).toEqual({ status: 'installed' });
@@ -228,6 +228,20 @@ describe('installSvgMushafWith', () => {
 
     expect(await installSvgMushafWith(s.deps, 'hafs')).toEqual({ status: 'failed', reason: 'size' });
     expect(existsSync(local('file:///documents/packs/svg-mushaf-hafs-1.db.part'))).toBe(false);
+  });
+
+  it('refuses a schema-1 pack (no TQP1 pages), removes it, and keeps the old version', async () => {
+    const s = setup();
+    const good = packFixture(1);
+    useDownloads(s, { pack: good, resource: good.resource });
+    await installSvgMushafWith(s.deps, 'hafs');
+
+    const old = packFixture(2, { legacySchema1: true });
+    useDownloads(s, { pack: old, resource: old.resource });
+
+    expect(await installSvgMushafWith(s.deps, 'hafs')).toEqual({ status: 'failed', reason: 'import' });
+    expect(existsSync(local('file:///documents/packs/svg-mushaf-hafs-2.db'))).toBe(false);
+    expect(installedStore.getInstalledSvgMushaf('hafs')?.version).toBe(1);
   });
 
   it('refuses a pack that names another riwayah, removes it, and keeps the old version', async () => {

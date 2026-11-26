@@ -1,7 +1,8 @@
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { Platform } from 'react-native';
 
-import { renderUi } from '../../../../jest/render-ui';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
+import { flatStyle, renderUi } from '../../../../jest/render-ui';
 
 import { storage } from '@/core/storage/mmkv';
 
@@ -50,6 +51,7 @@ describe('WidgetAddTrigger', () => {
     await fireEvent.press(view.getByTestId('add-lock-dialog-confirm'));
 
     await waitFor(() => expect(view.getByTestId('add-lock-add-steps-card')).toBeTruthy());
+    expect(flatStyle(view.getByTestId('add-lock-add-steps-card').props.style).maxWidth).toBe(SHEET_CARD_MAX_WIDTH);
     expect(mockWidgetNative().requestPinWidget).not.toHaveBeenCalled();
   });
 

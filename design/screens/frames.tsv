@@ -2,15 +2,20 @@ id	stack	size	theme	status	caption
 Main	core	compact	ar-light	source	Home
 MainLandscapeRail	core	compact-short	ar-light	awaiting-approval	الرئيسية · أفقي، الشريط الرأسي ٨٤٤ × ٣٩٠ (بانتظار الموافقة)
 Mushaf	core	compact	ar-light	source	Mushaf page · Uthmani Hafs (the app draws the ﴿ ﴾ end-of-ayah marks inline, so the recited one turns brand)
+MushafZoom150	core	compact	ar-light	source	Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text). Approved by the developer, 26 Nov 2026
+MushafZoom200	core	compact	ar-light	source	Mushaf page zoom 200% · the same page, about 4 to 5 words a line, two ragged lines. Approved by the developer, 26 Nov 2026
 MushafPlaybackRiwayah	core	compact	ar-light	awaiting-approval	Mushaf · Hafs pages while a Hafs reciter plays for a reader who chose Warsh (ADR 0090 decision 12, step 9b Q6) (بانتظار الموافقة)
 MushafFullscreenEnter	core	compact	ar-light	source	Mushaf · full screen button in the tools pill (ADR 0071)
 MushafFullscreen	core	compact	ar-light	source	Mushaf · full screen: no toolbar, player, status bar or Android navigation bar; the exit button sits where the full screen button was; audio keeps playing (ADR 0071)
 AyahSheet	core	compact	ar-light	source	Ayah actions · mid detent (50%)
 AyahSheetRiwayah	core	compact	ar-light	awaiting-approval	Ayah actions · ayah in Warsh (non-Hafs): reference and riwayah in the header, no text card, highlight row, and only حفظ and ملاحظة (ADR 0090, step 9 Part F) (بانتظار الموافقة)
+AyahSheetRiwayahUnavailable	core	compact	ar-light	source	Ayah actions · ayah in Warsh (non-Hafs) until its ayah map and marks exist: reference and riwayah in the header, one note, no tabs or actions (play, tafsir and marks would land on the Hafs ayah with the same number). Approved by the developer, 26 Nov 2026
 Player	core	compact	ar-light	source	Player
 PlayerReciters	core	compact	ar-light	source	Player, no artwork (ADR 0062 option b). Reciter name, surah, ayah card, progress, transport and the utility bar (repeat, ayah range, sleep timer; speed removed). Reciters list always visible under the controls: current reciter selected (checkmark); installed row is a button that switches reciter; not-downloaded row has a 44 pt download button; a reciter without the current surah (37) is disabled with «غير متوفرة لهذه السورة». Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062)
 PlayerReciterDownloading	core	compact	ar-light	source	Player, no artwork. After tapping download on «محمود خليل الحصري»: that row shows the progress bar (player colours) and a 44 pt stop button. Caption annotation: «يبدأ التشغيل تلقائيًا عند انتهاء التنزيل» (when the download finishes, the player switches to that reciter and auto-plays from the current ayah). Switching reciter keeps the place: same surah, start of the current ayah, new reciter timings, play or pause state and repeat kept; no timings («بدون تتبع») starts the surah from the beginning (ADR 0062 decision 6). Approved 4 Nov 2026 (ADR 0062)
-ReaderSettings	core	compact	ar-light	source	Reader settings · mid detent (50%)
+ReaderSettings	core	compact	ar-light	source	Reader settings · mid detent (50%) · al-Duri hidden (ADR 0090 item 12). Approved by the developer, 26 Nov 2026
+ReaderSettingsMushafZoom	reading	compact	ar-light	source	Reader settings · Mushaf page zoom 150% stepper. Approved by the developer, 26 Nov 2026
+ReaderSettingsMushafZoomUnavailable	reading	compact	ar-light	source	Reader settings · zoom needs word data (riwayah without it). Approved by the developer, 26 Nov 2026
 SurahIndex	reading	compact	ar-light	source	Surah index
 Search	reading	compact	ar-light	source	Search
 SearchEmpty	reading	compact	ar-light	source	البحث · القرآن، بلا كلمة بحث
@@ -19,6 +24,7 @@ Reading	reading	compact	ar-light	source	Reading mode
 ReadingOtherRiwayah	reading	compact	ar-light	awaiting-approval	Reading mode · Warsh chosen: the title pill names Hafs, the text shown (step 9 Part G) (بانتظار الموافقة)
 ReadingMiniIdle	reading	compact	ar-light	source	Reading · mini player idle (plays from the top ayah on screen)
 ReadingMiniCollapsed	reading	compact	ar-light	source	Reading · mini player collapsed (drag down to hide, drag up or tap to show)
+ReadingMiniCollapsedLandscape	reading	medium	ar-light	source	Reading · landscape phone: mini player collapsed to the corner capsule (ADR 0090 amendment 26 Nov, item 8) Approved by the developer, 26 Nov 2026
 ReadingMiniUnavailable	reading	compact	ar-light	source	Reading · mini player, surah unavailable for the reciter (surah 37 الصافات with إسلام صبحي; play was pressed, nothing plays, no progress state). Info glyph and message; «تغيير القارئ» opens the reciter picker (44 pt target). Idle reader rule (ADR 0059) so the bar stays on the reader. Approved 4 Nov 2026 (ADR 0062)
 ReadingMiniSkipped	reading	compact	ar-light	source	Mini player, playing · continuous play skipped surah 37 (moved 36 → 38). Shows surah ص playing normally, plus a secondary line «تخطّي الصافات · غير متوفرة بصوت إسلام صبحي». The notice is transient: it shows for about 4 s, then the line disappears. VoiceOver announces it (role=status, polite). Approved 4 Nov 2026 (ADR 0062)
 Focus	reading	compact	ar-light	source	Focus mode
@@ -150,7 +156,7 @@ HomeDailyProgressEmpty	home	compact	ar-light	source	Home · daily progress · em
 HomeNextPrayerNoLocation	home	compact	ar-light	source	Home · next prayer · no location
 OnboardLanguage	onboarding	compact	ar-light	source	Onboarding 1 · Language
 OnboardTour	onboarding	compact	ar-light	source	Onboarding 2 · ما في طيبة · the app's sections
-OnboardScript	onboarding	compact	ar-light	source	Onboarding 3 · Script
+OnboardScript	onboarding	compact	ar-light	source	Onboarding 3 · Script · al-Duri hidden (ADR 0090 item 12). Approved by the developer, 26 Nov 2026
 OnboardReciter	onboarding	compact	ar-light	source	Onboarding 4 · Reciter
 Khatma	account	compact	ar-light	source	Khatma planner
 Downloads	account	compact	ar-light	source	Downloads &amp; storage
@@ -209,6 +215,9 @@ MenuNewCardsDark	entry-points	compact	dark	source	Menu · new cards · dark
 MenuNewCardsEnglish	entry-points	compact	en	source	Menu · new cards · English (LTR)
 HomeHijriDate	entry-points	compact	ar-light	source	Home · Hijri date line · Arabic
 HomeHijriDateDark	entry-points	compact	dark	source	Home · Hijri date line · dark
+MenuSections	entry-points	compact	ar-light	source	Menu · sections and colour · Arabic · Approved by the developer, 26 Nov 2026
+MenuSectionsDark	entry-points	compact	dark	source	Menu · sections and colour · Dark · Approved by the developer, 26 Nov 2026
+MenuSectionsEnglish	entry-points	compact	en	source	Menu · sections and colour · English (LTR) · Approved by the developer, 26 Nov 2026
 DiscoverCard	discover	compact	ar-light	awaiting-approval	Home · Discover card · in progress · Arabic · Light · awaiting approval
 DiscoverCardNew	discover	compact	ar-light	awaiting-approval	Home · Discover card · only new rows marked جديد · Arabic · Light · awaiting approval
 DiscoverCardDone	discover	compact	ar-light	awaiting-approval	Home · Discover card · all done (أحسنت) · Arabic · Light · awaiting approval
@@ -297,7 +306,6 @@ SeerahListDark	seerah	compact	dark	awaiting-approval	«عرض كقائمة» · 
 SeerahListEnglish	seerah	compact	en	awaiting-approval	List view · English UI (بانتظار الموافقة)
 SeerahMapKey	seerah	compact	ar-light	awaiting-approval	مفتاح الخريطة · الرموز والطرق (بانتظار الموافقة)
 SeerahTimeline	seerah	compact	ar-light	awaiting-approval	الخط الزمني · الحالات: دون اختيار، السحب، سنة مختارة، غير محدد (بانتظار الموافقة)
-SeerahStateDownload	seerah	compact	ar-light	awaiting-approval	السيرة غير منزّلة · الحجم وزر التنزيل (بانتظار الموافقة)
 SeerahStateDownloading	seerah	compact	ar-light	awaiting-approval	جارٍ التنزيل (بانتظار الموافقة)
 SeerahStateOffline	seerah	compact	ar-light	awaiting-approval	دون اتصال ولم تُنزَّل بعد (بانتظار الموافقة)
 SeerahStateError	seerah	compact	ar-light	awaiting-approval	تعذّر فتح البيانات (بانتظار الموافقة)

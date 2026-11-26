@@ -15,7 +15,11 @@ use JsonException;
  * line from the artwork goes under `word_lines`, keyed "surah:ayah:position": its page, the line quran-text gives, the line the
  * artwork draws it on and the reason. A missing file means no corrections.
  *
- * @phpstan-type Override array{contours: int, groups: list<list<int>>, loose: list<int>, reason: string}
+ * `attach` (optional) maps a loose contour index to the "surah:ayah:position" of the word it belongs to, which wins over the
+ * geometric rule of ContourMapBuilder. `ornaments` (optional) lists the loose indexes that are hizb ornaments: each becomes its
+ * own block in the margin, never part of a word (ADR 0090 amendment of 26 Nov 2026, item 12, step 13 A3).
+ *
+ * @phpstan-type Override array{contours: int, groups: list<list<int>>, loose: list<int>, reason: string, attach: array<int, string>, ornaments: list<int>}
  * @phpstan-type WordLine array{page: int, from: int, to: int, reason: string}
  */
 final readonly class WordBoxOverrides
@@ -95,7 +99,20 @@ final readonly class WordBoxOverrides
                 throw new SvgMushafSourceException('The word-box override ['.$key.'] leaves contours out.');
             }
 
-            $lines[(string) $key] = ['contours' => $entry['contours'], 'groups' => $clean, 'loose' => $loose, 'reason' => $entry['reason']];
+            $attachments = self::attachments($entry['attach'] ?? [], $loose, (string) $key);
+            $ornaments = $entry['ornaments'] ?? [];
+
+            if (! is_array($ornaments) || ! array_is_list($ornaments)) {
+                throw new SvgMushafSourceException('The word-box override ['.$key.'] has a malformed "ornaments" list.');
+            }
+
+            foreach ($ornaments as $index) {
+                if (! is_int($index) || ! in_array($index, $loose, true)) {
+                    throw new SvgMushafSourceException('The word-box override ['.$key.'] lists an ornament that is not one of its loose contours.');
+                }
+            }
+
+            $lines[(string) $key] = ['contours' => $entry['contours'], 'groups' => $clean, 'loose' => $loose, 'reason' => $entry['reason'], 'attach' => $attachments, 'ornaments' => $ornaments];
         }
 
         $notes = $decoded['needs_developer'] ?? [];
@@ -140,6 +157,32 @@ final readonly class WordBoxOverrides
         }
 
         return new self($lines, $needsDeveloper, $wordLines);
+    }
+
+    /**
+     * @param  mixed  $attach  loose contour index => "surah:ayah:position"
+     * @param  list<int>  $loose
+     * @return array<int, string>
+     *
+     * @throws SvgMushafSourceException
+     */
+    private static function attachments(mixed $attach, array $loose, string $key): array
+    {
+        if (! is_array($attach) || (array_is_list($attach) && $attach !== [])) {
+            throw new SvgMushafSourceException('The word-box override ['.$key.'] has a malformed "attach" object.');
+        }
+
+        $attachments = [];
+
+        foreach ($attach as $index => $target) {
+            if (! is_string($target) || preg_match('/^\d+:\d+:\d+$/', $target) !== 1 || ! in_array((int) $index, $loose, true)) {
+                throw new SvgMushafSourceException('The word-box override ['.$key.'] must attach a loose contour to a "surah:ayah:position" word.');
+            }
+
+            $attachments[(int) $index] = $target;
+        }
+
+        return $attachments;
     }
 
     /**

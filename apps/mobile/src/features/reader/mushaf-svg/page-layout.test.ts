@@ -1,5 +1,3 @@
-import { MUSHAF_PAGE_MAX } from '@/features/reader/layout';
-
 import {
   MUSHAF_FRAME_SIDE,
   pageHeightFor,
@@ -17,8 +15,14 @@ describe('pageWidthFor', () => {
     expect(pageWidthFor(390, 2 * 16 + 2 * MUSHAF_FRAME_SIDE)).toBeCloseTo(358, 5);
   });
 
-  it('caps the width at 600 on a wide window', () => {
-    expect(pageWidthFor(1024, 2 * 16 + 2 * MUSHAF_FRAME_SIDE)).toBe(MUSHAF_PAGE_MAX);
+  it('takes the full column: no cap on a wide window (item 7)', () => {
+    expect(pageWidthFor(1024, 2 * 16 + 2 * MUSHAF_FRAME_SIDE)).toBe(992);
+    expect(pageWidthFor(874, 2 * 16 + 2 * MUSHAF_FRAME_SIDE)).toBe(842);
+  });
+
+  it('takes the safe-area insets off a landscape column (item 7)', () => {
+    // 874 pt landscape: 62 pt Dynamic Island side on the left, 62 on the right, plus 2 × 16 gutters.
+    expect(pageWidthFor(874, 62 + 62 + 2 * 16 + 2 * MUSHAF_FRAME_SIDE)).toBe(718);
   });
 
   it('never goes below 0', () => {

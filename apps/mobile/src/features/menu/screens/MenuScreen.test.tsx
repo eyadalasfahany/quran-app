@@ -9,6 +9,8 @@ import { getVerseByKey } from '@/features/reader/data/verses';
 import { qiblaBearing } from '@/features/salah/data/prayer-times';
 import { usePrayerLocation } from '@/features/salah/hooks';
 
+import { colors } from '@quran/design-tokens';
+
 import { flatStyle, locales, renderUi } from '../../../../jest/render-ui';
 import { LANDSCAPE_PHONE, resetWindowSize, setWindowSize } from '../../../../jest/window-size';
 
@@ -151,7 +153,8 @@ describe('MenuScreen', () => {
   it('shows the next prayer with its clock time', async () => {
     await renderUi(<MenuScreen />, { locale: 'en' });
 
-    expect(screen.getByTestId('menu-card-salah-preview')).toHaveTextContent(/\d{1,2}:\d{2} (AM|PM) · in /);
+    expect(screen.getByTestId('menu-card-salah-time')).toHaveTextContent(/^\d{1,2}:\d{2} (AM|PM)$/);
+    expect(screen.getByTestId('menu-card-salah-remaining')).toHaveTextContent(/^in /);
   });
 
   it('shows a neutral prayer subtitle without a location', async () => {
@@ -203,12 +206,22 @@ describe('MenuScreen', () => {
       expect(screen.queryByTestId('menu-card-continue-azkar')).toBeNull();
     });
 
-    it('puts the continue cards first in the grid', async () => {
+    it('puts the continue cards side by side in the continue section', async () => {
       withAzkar(true, categoryScope, 12);
       await renderUi(<MenuScreen />);
 
-      expect(screen.getByTestId('menu-grid-column-0')).toContainElement(screen.getByTestId('menu-card-continue-reading'));
-      expect(screen.getByTestId('menu-grid-column-1')).toContainElement(screen.getByTestId('menu-card-continue-azkar'));
+      const row = screen.getByTestId('menu-section-continue-row-0');
+      expect(row).toContainElement(screen.getByTestId('menu-card-continue-reading'));
+      expect(row).toContainElement(screen.getByTestId('menu-card-continue-azkar'));
+    });
+
+    it('hides the continue section and its title with nothing to continue', async () => {
+      storage.remove(storageKeys.readerLastVerseKey);
+      withAzkar(true, null);
+      await renderUi(<MenuScreen />);
+
+      expect(screen.queryByTestId('menu-section-continue')).toBeNull();
+      expect(screen.queryByText('تابع')).toBeNull();
     });
   });
 
@@ -292,44 +305,39 @@ describe('MenuScreen', () => {
     expect(router.navigate).toHaveBeenLastCalledWith('/(main)/(my-quran)');
   });
 
-  describe('search card caption', () => {
-    it('reads «في القرآن والأذكار» once Azkar content is installed', async () => {
-      withAzkar(true);
-      await renderUi(<MenuScreen />);
-
-      expect(within(screen.getByTestId('menu-card-search')).getByText('في القرآن والأذكار')).toBeOnTheScreen();
-    });
-
-    it('reads «في القرآن» without Azkar content', async () => {
-      withAzkar(false);
-      await renderUi(<MenuScreen />);
-
-      expect(within(screen.getByTestId('menu-card-search')).getByText('في القرآن')).toBeOnTheScreen();
-      expect(within(screen.getByTestId('menu-card-search')).queryByText('في القرآن والأذكار')).toBeNull();
-    });
-
-    it('reads "In the Quran and Azkar" in English once Azkar content is installed', async () => {
-      withAzkar(true);
-      await renderUi(<MenuScreen />, { locale: 'en' });
-
-      expect(within(screen.getByTestId('menu-card-search')).getByText('In the Quran and Azkar')).toBeOnTheScreen();
-    });
-
-    it('reads "In the Quran" in English without Azkar content', async () => {
-      withAzkar(false);
-      await renderUi(<MenuScreen />, { locale: 'en' });
-
-      expect(within(screen.getByTestId('menu-card-search')).getByText('In the Quran')).toBeOnTheScreen();
-    });
-  });
-
-  it('opens search from its card and from the header button', async () => {
+  it('has no search card: the header button opens search', async () => {
     await renderUi(<MenuScreen />);
 
-    await fireEvent.press(screen.getByTestId('menu-card-search'));
-    expect(router.push).toHaveBeenLastCalledWith('/search');
+    expect(screen.queryByTestId('menu-card-search')).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'بحث' }));
     expect(router.push).toHaveBeenLastCalledWith('/search');
+  });
+
+  it.each([
+    ['ar', ['العبادة', 'القرآن', 'المعرفة', 'التقويم', 'التطبيق']],
+    ['en', ['Worship', 'Quran', 'Learn', 'Calendar', 'App']],
+  ] as const)('titles the sections as headers in daily-use order in %s', async (locale, titles) => {
+    withAzkar(true);
+    await renderUi(<MenuScreen />, { locale });
+
+    // Headers come in tree order: the screen title first, then the section titles.
+    const headers = screen.getAllByRole('header').map((node) => String(node.props.children));
+    expect(headers.filter((name) => (titles as readonly string[]).includes(name))).toEqual(titles);
+  });
+
+  it('shows the misbaha card with today\'s count, opening /sibha', async () => {
+    await renderUi(<MenuScreen />);
+
+    expect(screen.getByTestId('menu-card-sibha-preview')).toHaveTextContent('اليوم ٠ تسبيحة');
+    await fireEvent.press(screen.getByTestId('menu-card-sibha'));
+    expect(router.push).toHaveBeenLastCalledWith('/sibha');
+  });
+
+  it('gives the worship cards the gold tile', async () => {
+    await renderUi(<MenuScreen />);
+
+    expect(flatStyle(screen.getByTestId('menu-card-qibla-tile').props.style).backgroundColor).toBe(colors.light.tileGold);
+    expect(flatStyle(screen.getByTestId('menu-card-mushaf-tile').props.style).backgroundColor).toBe(colors.light.tileGreen);
   });
 
   describe('search button in the header (as Home)', () => {
@@ -339,7 +347,7 @@ describe('MenuScreen', () => {
       const list = screen.getByTestId('menu-scroll');
       expect(within(list).getByTestId('menu-title')).toBeOnTheScreen();
       expect(within(screen.getByTestId('menu-title')).getByTestId('menu-search')).toBeOnTheScreen();
-      expect(within(list).getByTestId('menu-grid-column-0')).toBeOnTheScreen();
+      expect(within(list).getByTestId('menu-section-worship')).toBeOnTheScreen();
     });
 
     it('is not a floating button any more', async () => {
@@ -406,15 +414,16 @@ describe('MenuScreen columns (ADR 0036)', () => {
     setWindowSize(390, 844);
     await renderUi(<MenuScreen />);
 
-    expect(screen.getByTestId('menu-grid-column-1')).toBeOnTheScreen();
-    expect(screen.queryByTestId('menu-grid-column-2')).toBeNull();
+    const row = screen.getByTestId('menu-section-quran-row-0');
+    expect(row).toContainElement(screen.getByTestId('menu-card-khatma'));
+    expect(row).not.toContainElement(screen.getByTestId('menu-card-listen'));
   });
 
   it('lays the cards out in three columns on a landscape phone, which is wide', async () => {
     setWindowSize(844, 390);
     await renderUi(<MenuScreen />);
 
-    expect(screen.getByTestId('menu-grid-column-2')).toBeOnTheScreen();
+    expect(screen.getByTestId('menu-section-quran-row-0')).toContainElement(screen.getByTestId('menu-card-listen'));
   });
 
   describe('Seerah card', () => {

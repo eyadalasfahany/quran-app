@@ -38,6 +38,8 @@ export const storageKeys = {
   // Seerah: the view the reader chose, `map` or `list` (ADR 0091). Absent until they choose; a screen reader suggests the list.
   seerah: {
     view: 'seerah.view',
+    // Whether the reader hid the map's age timeline to its corner capsule (developer, 26 Nov 2026). Tall windows only.
+    timelineCollapsed: 'seerah.timelineCollapsed',
   },
 
   // Azkar preferences (phase 6, step 5). Personal, local only; not cleared by content updates.

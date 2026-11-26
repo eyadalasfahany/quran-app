@@ -1,10 +1,11 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { gzipSync } from 'fflate';
 import { useReducedMotion } from 'react-native-reanimated';
 import type { SvgMushafPackReader } from '@/core/mushaf-pack';
 import { ThemeProvider, themes } from '@/core/theme';
 import { renderUi } from '../../../jest/render-ui';
+import { resetReaderSelection, useReaderSelection } from './selection';
 import { resetSkiaCalls, skiaCalls } from '../../../jest/skia-mock';
+import { tqpBlobFor } from './mushaf-svg/__fixtures__/tqp/blob';
 import { MushafSvgList, type MushafSvgListProps } from './MushafSvgList';
 import { MUSHAF_FRAME_SIDE, pageHeightFor, pageWidthFor, scaleFor } from './mushaf-svg/page-layout';
 
@@ -46,6 +47,9 @@ jest.mock('@shopify/flash-list', () => {
   return { FlashList };
 });
 
+const mockInsets = { value: { bottom: 0, left: 0, right: 0, top: 0 } };
+jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => mockInsets.value }));
+
 jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
   __esModule: true,
   default: () => ({ fontScale: 1, height: 844, scale: 1, width: mockWidth.value }),
@@ -85,10 +89,8 @@ const mockWidth = { value: 390 };
 
 
 
-// Placeholder pack: each page is a tiny synthetic SVG; the regions are placeholder rectangles in page units.
-const svg = (tag: string) =>
-  `<svg viewBox="0 0 345 550"><g transform="matrix(1 0 0 -1 0 550)"><g id="content"><g transform="translate(0 0)"><path d="${tag}"/></g></g></g></svg>`;
-const good = (page: number) => gzipSync(new TextEncoder().encode(svg(`M ${page} 0 Z`)));
+// Placeholder pack: each page is one moveto and a close (a TQP1 blob); the regions are placeholder rectangles in page units.
+const good = (page: number) => tqpBlobFor([0, 4], [page, 0]);
 const RECT = (y0: number, y1: number) => `M 0 ${y0} L 100 ${y0} L 100 ${y1} L 0 ${y1} Z`;
 
 const pageState = { boxes: [] as { ayah: number; line: number; position: number; surah: number; x0: number; x1: number; y0: number; y1: number }[], corrupt: new Set<number>() };
@@ -96,7 +98,7 @@ const pageState = { boxes: [] as { ayah: number; line: number; position: number;
 function fakeReader(): SvgMushafPackReader {
   return {
     firstAyahOnPage: (page: number) => (page === 12 ? { ayah: 1, surah: 2 } : page === 13 ? { ayah: 2, surah: 2 } : { ayah: 1, surah: 1 }),
-    getPage: (page: number) => (pageState.corrupt.has(page) ? new Uint8Array([1, 2, 3]) : good(page)),
+    getPage: (page: number) => (pageState.corrupt.has(page) ? { blob: new Uint8Array([1, 2, 3]), origin: { x: 0, y: 0 } } : { blob: good(page), origin: { x: 0, y: 0 } }),
     pageCount: 604,
     pageForAyah: (surah: number, ayah: number) => (surah === 2 && (ayah === 1 || ayah === 2) ? 12 : surah === 1 && ayah === 1 ? 1 : null),
     regionsForPage: (page: number) =>
@@ -132,6 +134,7 @@ beforeEach(() => {
   mockList.offsetCalls.length = 0;
   mockList.itemHeight = 600;
   mockWidth.value = 390;
+  mockInsets.value = { bottom: 0, left: 0, right: 0, top: 0 };
   pageState.boxes = [];
   pageState.corrupt = new Set();
   jest.mocked(useReducedMotion).mockReturnValue(false);
@@ -231,6 +234,17 @@ describe('MushafSvgList', () => {
     expect(onOpenAyahActions).toHaveBeenCalledWith('2:2');
   });
 
+  it('the ayah the reader has open reaches its page as the wash', async () => {
+    useReaderSelection.getState().setSheetVerseKey('2:1');
+    try {
+      await renderUi(list({ anchorVerseKey: '2:1' }));
+      const washes = skiaCalls.filter((call) => call.op === 'Path').map((call) => call.color);
+      expect(washes).toContain(themes.light.colors.highlightActive);
+    } finally {
+      resetReaderSelection();
+    }
+  });
+
   it('a page that cannot be loaded shows its error row, and retry loads it again', async () => {
     pageState.corrupt.add(13);
     await renderUi(list({ anchorVerseKey: '2:1' }));
@@ -262,7 +276,8 @@ describe('MushafSvgList', () => {
     await renderUi(list({ anchorVerseKey: '2:1' }), { locale: 'ar' });
     const arabic = skiaCalls.find((call) => call.op === 'Group' && call.transform !== undefined)?.transform;
     expect(arabic).toBe(english);
-    expect(arabic).toBe(JSON.stringify([{ scale: 600 / 345 }]));
+    // The page takes the full column now (no 600 cap): 1024 window − 2 × 16 gutters.
+    expect(arabic).toBe(JSON.stringify([{ translateY: 0 }, { scale: (1024 - 2 * 16) / 345 }]));
   });
 
   it('re-anchors on the same ayah when the window size changes, without animating', async () => {
@@ -275,8 +290,35 @@ describe('MushafSvgList', () => {
     expect(mockList.indexCalls[mockList.indexCalls.length - 1]!.animated).toBe(false);
   });
 
-  it('the page width is 358 on a 390 window (no frame) and 600 on a 1024 window', () => {
+  it('the page width is 358 on a 390 window (no frame)', () => {
     expect(pageWidthFor(390, 2 * 16 + 2 * MUSHAF_FRAME_SIDE)).toBeCloseTo(358, 5);
-    expect(pageWidthFor(1024, 2 * 16 + 2 * MUSHAF_FRAME_SIDE)).toBe(600);
+  });
+
+  it('the page width follows the list column, not the window, and is not capped at 600 (item 7)', async () => {
+    mockWidth.value = 1024;
+    const view = await renderUi(list({ anchorVerseKey: '2:1' }));
+    await waitFor(() => expect(mockList.indexCalls.length).toBeGreaterThan(0));
+    fireEvent(view.getByTestId('list'), 'layout', { nativeEvent: { layout: { height: 800, width: 874, x: 0, y: 0 } } });
+    // 874 column − 2 × 16 gutters = 842, not the 600 cap and not the 1024 window.
+    await waitFor(() => expect(mockList.indexCalls.at(-1)!.viewOffset).toBeCloseTo(artworkTop(842), 6));
+  });
+
+  it('does not take the safe-area insets off a measured column twice (item 7)', async () => {
+    mockInsets.value = { bottom: 0, left: 62, right: 62, top: 0 };
+    const view = await renderUi(list({ anchorVerseKey: '2:1' }));
+    await waitFor(() => expect(mockList.indexCalls.length).toBeGreaterThan(0));
+    // Measured on the iPhone 17 Pro simulator in landscape: the column is already inside the insets.
+    fireEvent(view.getByTestId('list'), 'layout', { nativeEvent: { layout: { height: 402, width: 750, x: 62, y: 0 } } });
+    // 750 − 2 × 16 = 718, not 594.
+    await waitFor(() => expect(mockList.indexCalls.at(-1)!.viewOffset).toBeCloseTo(artworkTop(718), 6));
+  });
+
+  it('before the first layout, takes the insets off the window width (item 7)', async () => {
+    mockWidth.value = 874;
+    mockInsets.value = { bottom: 0, left: 62, right: 62, top: 0 };
+    await renderUi(list({ anchorVerseKey: '2:1' }));
+    await waitFor(() => expect(mockList.indexCalls.length).toBeGreaterThan(0));
+    // 874 − 62 − 62 − 2 × 16 = 718.
+    expect(mockList.indexCalls[0]!.viewOffset).toBeCloseTo(artworkTop(718), 6);
   });
 });

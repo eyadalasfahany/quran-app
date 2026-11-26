@@ -13,7 +13,8 @@ const CHEVRON = { ios: 'chevron.left', android: 'chevron_left' } as const;
 /**
  * The transparent header over the map (frames SeerahMapRegion, SeerahMapMakkah): back, the title pill with the level's
  * subtitle, the map key and the list toggle. On a city map `levelChip` replaces back with the «المنطقة» chip that returns to
- * the region (a pinch out does the same). Everything is a 44 pt target on glass.
+ * the region (a pinch out does the same). Everything is a 44 pt target on glass. `titleFit="hug"` is the wide
+ * window's compact centred title pill (frame SeerahExpanded); phones stretch it between the buttons.
  */
 export function MapHeader({
   title,
@@ -23,6 +24,7 @@ export function MapHeader({
   onOpenKey,
   view = 'map',
   onToggleView,
+  titleFit = 'fill',
   testID = 'seerah-map-header',
 }: {
   title: string;
@@ -33,6 +35,7 @@ export function MapHeader({
   onOpenKey: () => void;
   view?: SeerahView;
   onToggleView: () => void;
+  titleFit?: 'fill' | 'hug';
   testID?: string;
 }) {
   const { t } = useTranslation();
@@ -49,7 +52,7 @@ export function MapHeader({
           onPress={levelChip.onPress}
           testID={`${testID}-level`}
         >
-          <GlassSurface
+          <GlassSurface interactive
         colorScheme={theme.name === 'dark' ? 'dark' : 'light'}
             radius="pill"
             style={{ alignItems: 'center', flexDirection: 'row', gap: theme.space[1], minHeight: theme.size.touchTarget, paddingHorizontal: theme.space[4] }}
@@ -61,10 +64,11 @@ export function MapHeader({
           </GlassSurface>
         </Pressable>
       )}
-      <View style={{ flex: 1 }}>
-        {/* Frame SeerahMapRegion: a 44 pt pill, the title in Amiri 18 over a 12 pt subtitle, 2 pt above and below. */}
+      <View style={titleFit === 'hug' ? { alignItems: 'center', flex: 1, minWidth: 0 } : { flex: 1 }} testID={`${testID}-title-slot`}>
+        {/* Frame SeerahMapRegion: a 44 pt pill, the title in Amiri 18 over a 12 pt subtitle, 2 pt above and below.
+            Frame SeerahExpanded: the pill hugs its text, 22 pt in from each side, centred in the space. */}
         <GlassSurface
-        colorScheme={theme.name === 'dark' ? 'dark' : 'light'} radius="pill" style={{ justifyContent: 'center', minHeight: theme.size.touchTarget, paddingHorizontal: theme.space[3], paddingVertical: 2 }}>
+        colorScheme={theme.name === 'dark' ? 'dark' : 'light'} radius="pill" style={{ justifyContent: 'center', maxWidth: '100%', minHeight: theme.size.touchTarget, paddingHorizontal: titleFit === 'hug' ? 22 : theme.space[3], paddingVertical: 2 }}>
           <View accessibilityLabel={`${title}, ${subtitle}`} accessibilityRole="header" accessible style={{ alignItems: 'center' }} testID={`${testID}-title`}>
             <UiText numberOfLines={1} scale="bar" style={{ fontSize: 18, lineHeight: 22 }} variant="displaySm">
               {title}

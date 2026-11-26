@@ -1,4 +1,4 @@
-import { estimateLabelWidth, fitLabelSide, labelRect, placeLabels, type LabelCandidate } from './labels';
+import { estimateLabelWidth, fitLabelSide, insideRect, labelRect, placeLabels, type LabelCandidate } from './labels';
 
 const label = (id: string, x: number, priority: number, extra: Partial<LabelCandidate> = {}): LabelCandidate => ({
   id,
@@ -14,6 +14,32 @@ const label = (id: string, x: number, priority: number, extra: Partial<LabelCand
 });
 
 describe('placeLabels', () => {
+  // An edge-chip stack at the right edge of a 390 pt window, over the labels' row (y 100).
+  const chips = { left: 260, top: 80, right: 374, bottom: 120 };
+
+  it('moves a label off an edge-chip stack to the other side of its pin', () => {
+    // «a» at x 200: its end label (228 to 308) runs under the chips, so it goes to the start side.
+    const result = placeLabels([label('a', 200, 10)], undefined, [chips]);
+    expect(result.visible).toEqual(['a']);
+    expect(result.sides).toEqual({ a: 'start' });
+  });
+
+  it('hides a label that meets an edge-chip stack on both sides', () => {
+    const result = placeLabels([label('a', 300, 10)], undefined, [{ left: 150, top: 80, right: 374, bottom: 120 }]);
+    expect(result.hidden).toEqual(['a']);
+  });
+
+  it('ignores an empty stack and a stack off the label row', () => {
+    const empty = { left: 260, top: 80, right: 260, bottom: 80 };
+    const below = { left: 260, top: 200, right: 374, bottom: 240 };
+    expect(placeLabels([label('a', 200, 10)], undefined, [empty, below]).sides).toEqual({ a: 'end' });
+  });
+
+  it('tells a point under a stack from one beside it', () => {
+    expect(insideRect({ x: 300, y: 100 }, chips)).toBe(true);
+    expect(insideRect({ x: 250, y: 100 }, chips)).toBe(false);
+  });
+
   it('keeps both labels when they do not collide', () => {
     const result = placeLabels([label('a', 0, 10), label('b', 400, 10)]);
     expect(result.visible.sort()).toEqual(['a', 'b']);

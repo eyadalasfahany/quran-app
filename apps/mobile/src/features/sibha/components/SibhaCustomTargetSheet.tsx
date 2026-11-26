@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, TextInput, View } from 'react-native';
 
+import { MODAL_ORIENTATIONS } from '@/core/layout/modal-orientations';
 import { useLocale } from '@/core/i18n';
 import { useTheme } from '@/core/theme';
+import { SHEET_CARD_MAX_WIDTH } from '@/features/reader/form-sheet';
 import { Button, UiText, uiTextProps, useContrastColors } from '@/shared/ui';
 
 import { parseSibhaNumber, SIBHA_MAX } from '../data/model';
@@ -50,7 +52,7 @@ export function SibhaCustomTargetSheet({
   const display = locale === 'ar' ? text.replace(/\d/g, (digit) => String.fromCharCode(0x0660 + Number(digit))) : text;
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} statusBarTranslucent transparent visible={visible}>
+    <Modal animationType="fade" onRequestClose={onClose} statusBarTranslucent supportedOrientations={MODAL_ORIENTATIONS} transparent visible={visible}>
       {/* The card rises with the keyboard, so the number field stays in view on a short window (ADR 0036). */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -67,13 +69,17 @@ export function SibhaCustomTargetSheet({
         />
         <View
           style={{
+            alignSelf: 'center',
             backgroundColor: theme.colors.surfaceRaised,
             borderColor: colors.line,
             borderRadius: theme.radius.xl,
             borderWidth: theme.stroke.hairline,
             gap: theme.space[4],
+            maxWidth: SHEET_CARD_MAX_WIDTH,
             padding: theme.space[5],
+            width: '100%',
           }}
+          testID={`${testID}-card`}
         >
           <UiText accessibilityRole="header" variant="headline">
             {t('sibha.customTitle')}

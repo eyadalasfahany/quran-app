@@ -31,10 +31,17 @@ describe("useSeerahDownload", () => {
     (useOnline as jest.Mock).mockReturnValue(true);
   });
 
-  it("offers the download when online with a catalogue entry", async () => {
+  it("shows a listed, not installed, idle pack as downloading at 0 when online", async () => {
     expect(
       (await renderHook(() => useSeerahDownload(ENTRY))).result.current.view,
-    ).toEqual({ kind: "download" });
+    ).toEqual({ kind: "downloading", progress: 0 });
+  });
+
+  it("shows an installed pack with nothing to read as the error, never a spinner", async () => {
+    expect(
+      (await renderHook(() => useSeerahDownload({ ...ENTRY, installed: true })))
+        .result.current.view,
+    ).toEqual({ kind: "error" });
   });
 
   it("says offline without a connection, and an error without an entry while online", async () => {
@@ -81,15 +88,20 @@ describe("useSeerahDownload", () => {
     expect(result.current.view).toEqual({ kind: "downloading", progress: 0 });
   });
 
-  it("cancels a running install", async () => {
-    const { result } = await renderHook(() => useSeerahDownload(ENTRY));
-    await act(async () => {
-      result.current.start();
-    });
-    const signal = (installResource as jest.Mock).mock.calls[0]?.[1]
-      ?.signal as AbortSignal;
-    await act(async () => result.current.cancel());
-    expect(signal.aborted).toBe(true);
+  it("starts over any network and has no cancel", async () => {
+    const original = useHadithDownloads.getState().start;
+    const start = jest.fn(original);
+    useHadithDownloads.setState({ start });
+    try {
+      const { result } = await renderHook(() => useSeerahDownload(ENTRY));
+      await act(async () => {
+        result.current.start();
+      });
+      expect(start).toHaveBeenCalledWith(5, { anyNetwork: true });
+      expect(result.current).not.toHaveProperty("cancel");
+    } finally {
+      useHadithDownloads.setState({ start: original });
+    }
   });
 
   it("shows a failed install as an error, or offline when the network was the reason", async () => {

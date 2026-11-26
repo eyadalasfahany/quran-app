@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
+import { ScrollView, StyleSheet, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { GestureDetector, usePanGesture, usePinchGesture, useSimultaneousGestures } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue } from 'react-native-reanimated';
 import Svg, { SvgAst } from 'react-native-svg';
@@ -16,12 +16,15 @@ import { useAfterFrame } from '../hooks/useArtReady';
 import { ageRangeText, ageShortText, eventCountText } from '../format';
 import {
   centerOn,
+  clampScale,
   clampView,
   clusterPins,
+  coverScale,
   edgeDirection,
   estimateLabelWidth,
   fitLabelSide,
   focusView,
+  insideRect,
   isOnScreen,
   levelSwitch,
   placeLabels,
@@ -29,6 +32,7 @@ import {
   toScreen,
   visibleContentRect,
   type EdgeDirection,
+  type LabelRect,
   type MapView,
   type PinCluster,
   type Point,
@@ -47,6 +51,10 @@ import { RouteLine } from './RouteLine';
 const OFFSCREEN_MARGIN = 60;
 const CITY_CENTRE_RADIUS = 90;
 const LABEL_WIDTH = 220;
+// Room around a scrolling chip column for the chips' glass shadow (0 8 32): the scroll view clips at its bounds, so the
+// column is padded by the shadow's reach and moved out by the same amount; the chips stay where they were.
+const SHADOW_PAD = 32;
+const SHADOW_PAD_BOTTOM = 40;
 
 export type SeerahMapProps = {
   /** `region`, `makkah` or `madinah`. Key the map by it, so a level change remounts (the cross-fade) and starts at the level's own view. */
@@ -70,9 +78,10 @@ export type SeerahMapProps = {
   focusPlaceId?: string | null;
   /**
    * The map is drawn under the header and the timeline (and under an open callout): the visible area is the window
-   * between `top` and `size - bottom`, and edge chips keep clear of it.
+   * between `top` and `size - bottom`, and edge chips keep clear of it. `left` and `right` are the side safe areas the art
+   * runs under (a phone in landscape); they are physical sides, as the map is never mirrored.
    */
-  insets?: { top: number; bottom: number };
+  insets?: { top: number; bottom: number; left?: number; right?: number };
   /** A single place (or one event) was tapped; `scale` is the scale before the tap, so the screen can tell the fan-out is active. */
   onPinPress: (placeId: string, scale: number) => void;
   /** A city with its own map was tapped, or pinched into. */
@@ -92,6 +101,8 @@ export type SeerahMapProps = {
 };
 
 type Item = { cluster: PinCluster; pin: SeerahMapPin | null; screen: { x: number; y: number } };
+/** The four edge-chip stacks («أخرى» shares the south stack), or the two scrolling columns of a short window. */
+type ChipStack = 'north' | 'west' | 'east' | 'south' | 'start' | 'end';
 
 /** What a pin's label is: the city with its own map, a single event's title, a place with several events, or a landmark. */
 function labelKind(pin: SeerahMapPin): MapLabelEmphasis {
@@ -138,9 +149,16 @@ export function SeerahMap({
   const window = useWindowDimensions();
   const [size, setSize] = useState({ height: window.height, width: window.width });
   const content = useMemo(() => ({ height: viewbox[3] - viewbox[1], width: viewbox[2] - viewbox[0] }), [viewbox]);
+  const insetLeft = insets.left ?? 0;
+  const insetRight = insets.right ?? 0;
   const visibleRect = useMemo<Rect>(
-    () => ({ height: Math.max(1, size.height - insets.top - insets.bottom), width: size.width, x: 0, y: insets.top }),
-    [insets.bottom, insets.top, size.height, size.width],
+    () => ({
+      height: Math.max(1, size.height - insets.top - insets.bottom),
+      width: Math.max(1, size.width - insetLeft - insetRight),
+      x: insetLeft,
+      y: insets.top,
+    }),
+    [insetLeft, insetRight, insets.bottom, insets.top, size.height, size.width],
   );
   const midScale = (zoom.default + zoom.max) / 2;
 
@@ -157,9 +175,11 @@ export function SeerahMap({
         };
   });
 
+  // A window wider than the art at its default scale (an iPad in landscape) starts at the scale that covers it: below
+  // that the art sits centred with its border and blank page showing at both sides.
   const initial = useMemo(
-    () => clampView(centerOn(startCentre, zoom.default, size), content, size),
-    [startCentre, zoom.default, size, content],
+    () => clampView(centerOn(startCentre, clampScale(Math.max(zoom.default, coverScale(content, size)), zoom), size), content, size),
+    [startCentre, zoom, size, content],
   );
   const [view, setView] = useState<MapView>(initial);
   // The art layer is a bitmap of the whole map at 1×: past 1× it blurs, so the visible part is drawn again at screen
@@ -182,6 +202,20 @@ export function SeerahMap({
   // lags behind the moving map while React catches up; React state only mounts and unmounts it.
   const crispOn = useSharedValue(0);
   const springConfig = spring();
+  // The edge-chip stacks as laid out over the map (screen space). Labels keep clear of them and a pin under one is not drawn,
+  // so nothing peeks out from behind a chip or loses its tap to it.
+  const [chipBoxes, setChipBoxes] = useState<Partial<Record<ChipStack, LabelRect>>>({});
+  const measureStack = (stack: ChipStack, pad = { bottom: 0, side: 0, top: 0 }) => (event: LayoutChangeEvent) => {
+    const { height, width, x, y } = event.nativeEvent.layout;
+    // A padded column's obstacle is the chips' area, not the room left for their shadow.
+    const box = { bottom: y + height - pad.bottom, left: x + pad.side, right: x + width - pad.side, top: y + pad.top };
+    setChipBoxes((previous) => {
+      const old = previous[stack];
+      return old !== undefined && old.left === box.left && old.top === box.top && old.right === box.right && old.bottom === box.bottom
+        ? previous
+        : { ...previous, [stack]: box };
+    });
+  };
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { height, width } = event.nativeEvent.layout;
@@ -191,7 +225,7 @@ export function SeerahMap({
     const middle = toContent(view, { x: size.width / 2, y: size.height / 2 });
     const next = { height, width };
     setSize(next);
-    const resized = clampView(centerOn(middle, view.scale, next), content, next);
+    const resized = clampView(centerOn(middle, clampScale(Math.max(view.scale, coverScale(content, next)), zoom), next), content, next);
     writeView(values, resized);
     setView(resized);
     applyCrisp(crispFor(resized, next));
@@ -332,15 +366,33 @@ export function SeerahMap({
     transform: [{ translateX: tx.value }, { translateY: ty.value }, { scale: scale.value }],
   }));
 
-  const { items, edges, labels, sides } = useMemo(() => {
+  // The chip stacks run down the start edge (frame SeerahMapRegion) and the east one from 42% down. In a short window (a
+  // phone in landscape) the band between the header and the timeline can't hold them, so the chips gather in one narrow
+  // column per side, each scrolling within the band: north, west, «أخرى» and south on the start side, east on the end side.
+  const chipHeight = theme.size.touchTarget - 2 * theme.space[1];
+  const bandTop = insets.top + theme.space[3];
+  const bandBottom = size.height - insets.bottom;
+
+  const { items, edges, labels, sides, squeezed } = useMemo(() => {
     const placed = pins.map((pin) => ({ pin, screen: toScreen(view, pin) }));
-    const visible = placed.filter(({ screen }) => isOnScreen(screen, size, OFFSCREEN_MARGIN));
     const edgeChips = placed
       .filter(({ pin, screen }) => pin.kind === 'region' && pin.count > 0 && !isOnScreen(screen, size))
       .flatMap(({ pin, screen }) => {
         const direction = edgeDirection(screen, size);
         return direction === null ? [] : [{ direction, pin }];
       });
+    const columnHeight = (count: number) => (count === 0 ? 0 : count * chipHeight + (count - 1) * theme.space[1]);
+    const eastCount = edgeChips.filter((chip) => chip.direction === 'east').length;
+    const startCount = edgeChips.length - eastCount + (otherCount > 0 ? 1 : 0);
+    const columns =
+      columnHeight(startCount) + 2 * theme.space[3] > bandBottom - bandTop || size.height * 0.42 + columnHeight(eastCount) > bandBottom;
+    // Labels keep clear of the chips' visible boxes and a pin under one is not drawn.
+    const obstacles = (columns ? [chipBoxes.start, chipBoxes.end] : [chipBoxes.north, chipBoxes.west, chipBoxes.east, chipBoxes.south]).filter(
+      (box): box is LabelRect => box !== undefined,
+    );
+    const visible = placed.filter(
+      ({ screen }) => isOnScreen(screen, size, OFFSCREEN_MARGIN) && !obstacles.some((box) => insideRect(screen, box)),
+    );
     const counted = visible.filter(({ pin }) => pin.count > 0);
     const clusters = clusterPins(
       counted.map(({ pin, screen }) => ({
@@ -384,14 +436,15 @@ export function SeerahMap({
       };
       return [{ ...base, side: fitLabelSide(base, size) }];
     });
-    const labelled = placeLabels(candidates, all.map((item) => item.screen));
+    const labelled = placeLabels(candidates, all.map((item) => item.screen), obstacles);
     return {
       edges: edgeChips,
       items: all,
       labels: new Set(labelled.visible),
       sides: new Map(Object.entries(labelled.sides)),
+      squeezed: columns,
     };
-  }, [pins, size, view]);
+  }, [bandBottom, bandTop, chipBoxes, chipHeight, otherCount, pins, size, theme.space, view]);
 
   const pinLabel = (pin: SeerahMapPin): string => {
     const events = eventCountText(t, pin.count);
@@ -468,6 +521,12 @@ export function SeerahMap({
 
   const edgeGroups: Record<EdgeDirection, typeof edges> = { east: [], north: [], south: [], west: [] };
   edges.forEach((edge) => edgeGroups[edge.direction].push(edge));
+  const stack = { gap: theme.space[1], position: 'absolute' } as const;
+  // A scrolling column: the chips start at the band's top and end at its foot at the latest; the padding around them is
+  // the shadow's room (SHADOW_PAD), outside the band.
+  const column = { maxHeight: bandBottom - bandTop + SHADOW_PAD + SHADOW_PAD_BOTTOM, position: 'absolute', top: bandTop - SHADOW_PAD } as const;
+  const columnContent = { gap: theme.space[1], paddingBottom: SHADOW_PAD_BOTTOM, paddingHorizontal: SHADOW_PAD, paddingTop: SHADOW_PAD } as const;
+  const columnPad = { bottom: SHADOW_PAD_BOTTOM, side: SHADOW_PAD, top: SHADOW_PAD };
   const renderEdge = ({ direction, pin }: (typeof edges)[number]) => (
     <EdgeChip
       accessibilityHint={t('seerah.map.edge.hint')}
@@ -481,6 +540,19 @@ export function SeerahMap({
       testID={`${testID}-edge-${pin.placeId}`}
     />
   );
+
+  const otherChip =
+    otherCount > 0 ? (
+      <EdgeChip
+        accessibilityHint={t('seerah.map.edge.hint')}
+        accessibilityLabel={t('seerah.map.other.label', { events: eventCountText(t, otherCount) })}
+        count={otherCount}
+        direction="other"
+        label={t('seerah.map.other.name')}
+        onPress={onOtherPress}
+        testID={`${testID}-other`}
+      />
+    ) : null;
 
   const layerBox = { height: content.height, left: 0, position: 'absolute', top: 0, transformOrigin: 'top left', width: content.width } as const;
 
@@ -593,29 +665,50 @@ export function SeerahMap({
       </GestureDetector>
       {artShown ? (
         <View pointerEvents="box-none" style={[StyleSheet.absoluteFill, { direction: 'ltr' }]} testID={`${testID}-edges`}>
-          <View pointerEvents="box-none" style={{ gap: theme.space[1], left: theme.space[4], position: 'absolute', top: insets.top + theme.space[3] }}>
-            {edgeGroups.north.map(renderEdge)}
-          </View>
-          <View pointerEvents="box-none" style={{ gap: theme.space[1], left: theme.space[4], position: 'absolute', top: '42%' }}>
-            {edgeGroups.west.map(renderEdge)}
-          </View>
-          <View pointerEvents="box-none" style={{ gap: theme.space[1], position: 'absolute', right: theme.space[4], top: '42%' }}>
-            {edgeGroups.east.map(renderEdge)}
-          </View>
-          <View pointerEvents="box-none" style={{ bottom: insets.bottom, gap: theme.space[1], left: theme.space[4], position: 'absolute' }}>
-            {otherCount > 0 ? (
-              <EdgeChip
-                accessibilityHint={t('seerah.map.edge.hint')}
-                accessibilityLabel={t('seerah.map.other.label', { events: eventCountText(t, otherCount) })}
-                count={otherCount}
-                direction="other"
-                label={t('seerah.map.other.name')}
-                onPress={onOtherPress}
-                testID={`${testID}-other`}
-              />
-            ) : null}
-            {edgeGroups.south.map(renderEdge)}
-          </View>
+          {squeezed ? (
+            <>
+              {/* The column's box is its visible part: it ends at the band's foot and scrolls past it; only it takes the drag. */}
+              <View
+                pointerEvents="box-none"
+                style={{ ...column, left: insetLeft + theme.space[4] - SHADOW_PAD }}
+                onLayout={measureStack('start', columnPad)}
+                testID={`${testID}-edges-start`}
+              >
+                <ScrollView contentContainerStyle={{ ...columnContent, alignItems: 'flex-start' }} showsVerticalScrollIndicator={false} testID={`${testID}-edges-start-scroll`}>
+                  {edgeGroups.north.map(renderEdge)}
+                  {edgeGroups.west.map(renderEdge)}
+                  {otherChip}
+                  {edgeGroups.south.map(renderEdge)}
+                </ScrollView>
+              </View>
+              <View
+                pointerEvents="box-none"
+                style={{ ...column, right: insetRight + theme.space[4] - SHADOW_PAD }}
+                onLayout={measureStack('end', columnPad)}
+                testID={`${testID}-edges-end`}
+              >
+                <ScrollView contentContainerStyle={{ ...columnContent, alignItems: 'flex-end' }} showsVerticalScrollIndicator={false} testID={`${testID}-edges-end-scroll`}>
+                  {edgeGroups.east.map(renderEdge)}
+                </ScrollView>
+              </View>
+            </>
+          ) : (
+            <>
+              <View pointerEvents="box-none" style={{ ...stack, left: insetLeft + theme.space[4], top: bandTop }} onLayout={measureStack('north')} testID={`${testID}-edges-north`}>
+                {edgeGroups.north.map(renderEdge)}
+              </View>
+              <View pointerEvents="box-none" style={{ ...stack, left: insetLeft + theme.space[4], top: '42%' }} onLayout={measureStack('west')} testID={`${testID}-edges-west`}>
+                {edgeGroups.west.map(renderEdge)}
+              </View>
+              <View pointerEvents="box-none" style={{ ...stack, right: insetRight + theme.space[4], top: '42%' }} onLayout={measureStack('east')} testID={`${testID}-edges-east`}>
+                {edgeGroups.east.map(renderEdge)}
+              </View>
+              <View pointerEvents="box-none" style={{ ...stack, bottom: insets.bottom, left: insetLeft + theme.space[4] }} onLayout={measureStack('south')} testID={`${testID}-edges-south`}>
+                {otherChip}
+                {edgeGroups.south.map(renderEdge)}
+              </View>
+            </>
+          )}
         </View>
       ) : null}
     </Animated.View>
