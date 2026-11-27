@@ -50,9 +50,9 @@ describe('mushaf page zoom in the reader settings blob', () => {
     expect(migrateReaderSettings({ mushafZoom: 'big' }).mushafZoom).toBe(1);
   });
 
-  it('snaps a stored zoom to 25% steps and clamps it to [1, 2]', () => {
+  it('snaps a stored zoom to 25% steps and clamps it to [1, 3]', () => {
     expect(migrateReaderSettings({ mushafZoom: 1.37 }).mushafZoom).toBe(1.25);
-    expect(migrateReaderSettings({ mushafZoom: 5 }).mushafZoom).toBe(2);
+    expect(migrateReaderSettings({ mushafZoom: 5 }).mushafZoom).toBe(3);
     expect(migrateReaderSettings({ mushafZoom: 0.4 }).mushafZoom).toBe(1);
   });
 

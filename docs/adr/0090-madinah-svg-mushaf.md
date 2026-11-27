@@ -408,7 +408,7 @@ The developer chose, over «no zoom» and «sideways scroll», to build word box
 - Each zoomed line is centred on the page, with the words' printed spacing (the developer's reference screenshot). This replaces right-aligned and justified zoomed lines (step 13 open question 1).
 - Zoom runs from 100% (the exact printed page, the minimum) to 300% in 25% steps; at 300% about two words a line.
 - No tajweed colours: the Mushaf draws the printed artwork, which has none.
-- Frames `MushafZoom150` and `MushafZoom200` are redrawn and `MushafZoom300` is new, all «(بانتظار الموافقة)»; the layout code (`rewrap-layout.ts`, `MUSHAF_ZOOM_MAX`) changes after the developer approves them.
+- Frames `MushafZoom150` and `MushafZoom200` are redrawn and `MushafZoom300` is new; the developer approved all three on 27 Nov 2026. The layout code follows them: `rewrap-layout.ts` centres every zoomed line with its printed gaps (no stretched gaps, no justified or right-aligned lines), and `MUSHAF_ZOOM_MAX` is 3.
 
 ### 16. Word boxes and contour maps for Shu'bah, Warsh and Qalun (developer, 27 Nov 2026: «this should be done to all riwayahs»)
 
@@ -426,7 +426,7 @@ The developer chose, over «no zoom» and «sideways scroll», to build word box
 
 ### Open questions for the developer
 
-1. **Page zoom justification** (step 13 Q1), the **no-pack fallback** (Q2), **pages 1 and 2** centred at zoom (Q3), and the **copy** (Q4).
+1. The **no-pack fallback** (Q2), **pages 1 and 2** centred at zoom (Q3), and the **copy** (Q4).
 2. **al-Duri's numbering** (step 14 a, b, c), and the publish order and review load for the four riwayat (step 14 Q2, Q3).
 3. **Reading and Focus text** (ADR 0100 and step 15): font, orthography, the Complex's EULA reading, text sign-off, labels, place across riwayat, search scope, tafsir.
-4. From the 24 Nov list, still open: the A4 re-sign-off (now at 1,290, 2,580 and 4,200 px); real-artwork fixtures (step 12 uses synthetic pages); dropping the `gz_sha256`, `gz_bytes` and `.svg.gz` leftovers (destructive, later). Closed: «has anything shipped read the packs» (no), brotli (not needed), and the old zoom questions 1 to 5 (panning, persistence, stepper, accessibility, frames: answered by item 9).
+4. From the 24 Nov list, still open: the A4 re-sign-off (now at 1,290, 2,580 and 4,200 px); real-artwork fixtures (step 12 uses synthetic pages); dropping the `gz_sha256`, `gz_bytes` and `.svg.gz` leftovers (destructive, later). Closed: page zoom justification (item 15, centred lines); «has anything shipped read the packs» (no), brotli (not needed), and the old zoom questions 1 to 5 (panning, persistence, stepper, accessibility, frames: answered by item 9).

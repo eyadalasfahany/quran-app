@@ -15,12 +15,6 @@ export const GAP_MIN = -1.5;
 export const GAP_MAX = 4.0;
 /** A gap between units that were not neighbours (a printed line break). */
 export const GAP_BETWEEN_LINES = 1.6;
-/** A line whose gaps would each grow by more than this stays ragged (right-aligned), not justified. */
-export const GAP_STRETCH_MAX = 6.0;
-/** A paragraph whose non-last printed lines are all narrower than this share of B is centred and ragged. */
-export const CENTRED_BELOW = 0.8;
-/** A paragraph's printed last line at least this full is justified; a shorter one is right-aligned. */
-export const FULL_LAST_LINE = 0.97;
 /** The line pitch when the page has no text lines (Hafs: 36.3). */
 export const DEFAULT_PITCH = 36.3;
 const EPS = 1e-9;
@@ -261,8 +255,6 @@ function packFromRight(rightEdge: number, widths: readonly number[], gaps: reado
   return lefts;
 }
 
-type Mode = 'justify' | 'right' | 'centre';
-
 export function layoutPage(input: LayoutInput, zoom: number): PageLayout {
   const z = zoom;
   const words = input.words;
@@ -299,12 +291,7 @@ export function layoutPage(input: LayoutInput, zoom: number): PageLayout {
     Lx = 0;
   }
   const available = B / z;
-  const rightEdge = (Lx + B) / z;
   const centreX = (Lx + B / 2) / z;
-  const printedWidthOf = (line: number) => {
-    const group = lineGroups.get(line) ?? [];
-    return group.length === 0 ? 0 : Math.max(...group.map((word) => word.box.x1)) - Math.min(...group.map((word) => word.box.x0));
-  };
 
   // Printed items in reading order: text lines top to bottom, blocks slotted in by their centre.
   const lines = [...lineGroups.keys()]
@@ -396,12 +383,6 @@ export function layoutPage(input: LayoutInput, zoom: number): PageLayout {
     const paragraphItems = segment.lines;
     const pieces = paragraphItems.flatMap((item) => (item.kind === 'line' ? item.pieces : []));
     const gaps = pieces.slice(1).map((piece, k) => naturalGap(pieces[k]!, piece));
-    const printedLines = paragraphItems.map((item) => (item.kind === 'line' ? item.line : -1));
-    const lastLine = printedLines[printedLines.length - 1]!;
-    const nonLast = printedLines.slice(0, -1);
-    // A one-line paragraph has no non-last line to judge, so it follows the last-line rule.
-    const paragraphCentred = nonLast.length > 0 && nonLast.every((line) => printedWidthOf(line) < CENTRED_BELOW * B);
-    const lastFull = printedWidthOf(lastLine) >= FULL_LAST_LINE * B;
 
     if (previousBottom !== null) {
       cursor += Math.max(0, itemTop(paragraphItems[0]!) - previousBottom);
@@ -411,35 +392,15 @@ export function layoutPage(input: LayoutInput, zoom: number): PageLayout {
 
     ranges.forEach((range, index) => {
       const count = range.last - range.first + 1;
-      const isLast = index === ranges.length - 1;
       const scales = pieces.slice(range.first, range.last + 1).map((piece, k) => {
         const extent = extents[range.first + k]!;
         return extent > available && count === 1 ? available / extent : 1;
       });
       const widths = pieces.slice(range.first, range.last + 1).map((piece, k) => extents[range.first + k]! * scales[k]!);
       const lineGaps = gaps.slice(range.first, range.last);
+      // Every zoomed line is centred with its printed gaps (developer, 27 Nov 2026, ADR 0090 item 15; frames MushafZoom150 to 300).
       const natural = widths.reduce((sum, width) => sum + width, 0) + lineGaps.reduce((sum, gap) => sum + gap, 0);
-      const slack = available - natural;
-      const spread = count >= 2 ? slack / (count - 1) : Infinity;
-      const justifiable = count >= 2 && slack >= -EPS && spread <= GAP_STRETCH_MAX;
-
-      let mode: Mode;
-      if (paragraphCentred) {
-        mode = 'centre';
-      } else if (isLast) {
-        mode = justifiable && lastFull ? 'justify' : 'right';
-      } else {
-        mode = justifiable ? 'justify' : 'right';
-      }
-
-      let finalGaps = lineGaps;
-      let right = rightEdge;
-      if (mode === 'justify') {
-        finalGaps = lineGaps.map((gap) => gap + spread);
-      } else if (mode === 'centre') {
-        right = centreX + natural / 2;
-      }
-      const lefts = packFromRight(right, widths, finalGaps);
+      const lefts = packFromRight(centreX + natural / 2, widths, lineGaps);
 
       const top = cursor;
       const lineIndex = laidLines.length;

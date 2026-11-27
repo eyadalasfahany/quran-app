@@ -741,8 +741,8 @@
   {
    "id": "MushafZoom150",
    "stack": "core",
-   "caption": "Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 item 14) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -777,8 +777,8 @@
   {
    "id": "MushafZoom200",
    "stack": "core",
-   "caption": "Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",
@@ -813,8 +813,8 @@
   {
    "id": "MushafZoom300",
    "stack": "core",
-   "caption": "Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة)",
-   "status": "awaiting-approval",
+   "caption": "Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
+   "status": "source",
    "kind": "phone",
    "fixed": false,
    "drawnSize": "compact",

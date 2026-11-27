@@ -9,9 +9,9 @@ Total: **316** frames · **24** stacks
 | `Main` | core | compact | ar-light | source | Home |
 | `MainLandscapeRail` | core | compact-short | ar-light | awaiting-approval | الرئيسية · أفقي، الشريط الرأسي ٨٤٤ × ٣٩٠ (بانتظار الموافقة) |
 | `Mushaf` | core | compact | ar-light | source | Mushaf page · Uthmani Hafs (the app draws the ﴿ ﴾ end-of-ayah marks inline, so the recited one turns brand) |
-| `MushafZoom150` | core | compact | ar-light | awaiting-approval | Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 item 14) (بانتظار الموافقة) |
-| `MushafZoom200` | core | compact | ar-light | awaiting-approval | Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة) |
-| `MushafZoom300` | core | compact | ar-light | awaiting-approval | Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة) |
+| `MushafZoom150` | core | compact | ar-light | source | Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026 |
+| `MushafZoom200` | core | compact | ar-light | source | Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026 |
+| `MushafZoom300` | core | compact | ar-light | source | Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026 |
 | `MushafPlaybackRiwayah` | core | compact | ar-light | awaiting-approval | Mushaf · Hafs pages while a Hafs reciter plays for a reader who chose Warsh (ADR 0090 decision 12, step 9b Q6) (بانتظار الموافقة) |
 | `MushafFullscreenEnter` | core | compact | ar-light | source | Mushaf · full screen button in the tools pill (ADR 0071) |
 | `MushafFullscreen` | core | compact | ar-light | source | Mushaf · full screen: no toolbar, player, status bar or Android navigation bar; the exit button sits where the full screen button was; audio keeps playing (ADR 0071) |

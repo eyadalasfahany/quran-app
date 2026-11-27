@@ -1,7 +1,6 @@
 // Synthetic pages only: FIXTURE — not artwork. Words, blocks and bands are invented numbers.
 import {
   breakParagraph,
-  CENTRED_BELOW,
   GAP_BETWEEN_LINES,
   layoutPage,
   runsOf,
@@ -90,18 +89,21 @@ describe('breakParagraph (minimum raggedness, synthetic widths)', () => {
   });
 });
 
-describe('layoutPage: justification and the gap cap', () => {
-  it('justifies a non-last line to the full width when its gaps stay under the cap', () => {
-    // Zoom 2: A = 100. Three 30-unit words with 4-unit gaps are 98 (spread 1). Two paragraphs: the block keeps line 0 separate.
+describe('layoutPage: centred lines with their printed gaps (ADR 0090 item 15)', () => {
+  const centreOf = (rects: readonly { x0: number; x1: number }[]) =>
+    (Math.min(...rects.map((rect) => rect.x0)) + Math.max(...rects.map((rect) => rect.x1))) / 2;
+
+  it('centres every line on the column and never stretches its gaps', () => {
+    // Zoom 2: A = 100. Three 30-unit words with 4-unit gaps are 98 wide, centred on 50: from 1 to 99.
     const layout = layoutPage(page([...fullLine(0), ...fullLine(1, 10)], { blocks: [BETWEEN] }), 2);
     const first = layout.lines[0]!.wordRects;
-    expect(Math.max(...first.map((rect) => rect.x1))).toBeCloseTo(100, 4);
-    expect(Math.min(...first.map((rect) => rect.x0))).toBeCloseTo(0, 4);
+    expect(Math.min(...first.map((rect) => rect.x0))).toBeCloseTo(1, 4);
+    expect(Math.max(...first.map((rect) => rect.x1))).toBeCloseTo(99, 4);
   });
 
-  it('keeps a line ragged (right-aligned, natural gaps) when its gaps would pass the cap', () => {
-    // Line 0 is 200 wide (B), so A = 100 at zoom 2. Line 1 holds 40, 40 and 25-unit pieces with no printed gap:
-    // the best break is [40, 40] + [25]; the first line would need 20 units of slack per gap (> 6), so it stays ragged.
+  it('keeps a short line centred with its natural gaps', () => {
+    // Line 0 is 200 wide (B), so A = 100 at zoom 2. Line 1 holds 40, 40 and 25-unit pieces with no printed gap: the best
+    // break is [40, 40] + [25]; the first line is 80 wide, centred on 50 (from 10 to 90), the two words touching.
     const words = [
       word(1, 0, 0, 200, { ayah: 9 }),
       word(2, 1, 70, 110, { ayah: 1 }),
@@ -111,29 +113,21 @@ describe('layoutPage: justification and the gap cap', () => {
     const layout = layoutPage(page(words, { blocks: [BETWEEN] }), 2);
     const a = layout.wordRect(1, 1, 2)!;
     const b = layout.wordRect(1, 2, 3)!;
-    expect(a.x1).toBeCloseTo(100, 4);
-    // Ragged: b ends where a starts (natural gap 0), not 20 units further left as a justified line would.
+    expect(a.x1).toBeCloseTo(90, 4);
     expect(b.x1).toBeCloseTo(a.x0, 4);
+    expect(b.x0).toBeCloseTo(10, 4);
   });
 
-  it('justifies a paragraph last line only when the printed last line was full', () => {
-    // Zoom 2, A = 100. Three 30-unit words with 4-unit printed gaps: the natural line is 98 (spread 1).
+  it('centres a paragraph last line too, full or short in print', () => {
     const threeWords = (line: number, ayahBase: number, spanEnd: number) => [
       word(1, line, 0, 30, { ayah: ayahBase + 1 }),
       word(2, line, 34, 64, { ayah: ayahBase + 2 }),
       word(3, line, spanEnd - 30, spanEnd, { ayah: ayahBase + 3 }),
     ];
-    // Full printed last line (x from 0 to 200): justified, so the gap grows from 4 to 5.
-    const full = layoutPage(page([...fullLine(0), ...threeWords(1, 20, 200)], { blocks: [BETWEEN] }), 2);
-    const fullLast = full.lines[full.lines.length - 1]!.wordRects;
-    expect(Math.max(...fullLast.map((rect) => rect.x1))).toBeCloseTo(100, 4);
-    expect(Math.min(...fullLast.map((rect) => rect.x0))).toBeCloseTo(0, 4);
-
-    // Short printed last line (x from 0 to 98): right-aligned, the printed gap of 4 is kept.
-    const short = layoutPage(page([...fullLine(0), ...threeWords(1, 20, 98)], { blocks: [BETWEEN] }), 2);
-    const shortLast = short.lines[short.lines.length - 1]!.wordRects;
-    expect(Math.max(...shortLast.map((rect) => rect.x1))).toBeCloseTo(100, 4);
-    expect(Math.min(...shortLast.map((rect) => rect.x0))).toBeCloseTo(2, 4);
+    for (const spanEnd of [200, 98]) {
+      const layout = layoutPage(page([...fullLine(0), ...threeWords(1, 20, spanEnd)], { blocks: [BETWEEN] }), 2);
+      expect(centreOf(layout.lines[layout.lines.length - 1]!.wordRects)).toBeCloseTo(50, 4);
+    }
   });
 
   it('keeps a negative printed gap between neighbours', () => {
@@ -170,9 +164,8 @@ describe('layoutPage: blocks, centring and paragraphs', () => {
     expect(placed.cx + placed.dx).toBeCloseTo(50, 4);
   });
 
-  it('centres a paragraph whose non-last printed lines are short', () => {
-    // Line 0 is 60 wide (under 80% of B = 200), line 1 is full: line 0 is centred on (0 + 100) / 2 = 50.
-    expect(60 / 200).toBeLessThan(CENTRED_BELOW);
+  it('centres a short printed line like any other', () => {
+    // Line 0 is 60 wide, line 1 is full: line 0 is centred on (0 + 100) / 2 = 50.
     const short = [word(1, 0, 70, 80, { ayah: 1 }), word(2, 0, 80, 90, { ayah: 2 }), word(3, 0, 90, 130, { ayah: 3 })];
     const layout = layoutPage(page([...short, ...fullLine(1, 10)]), 2);
     const laid = layout.lines[0]!.wordRects;

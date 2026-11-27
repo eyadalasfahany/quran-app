@@ -9,9 +9,9 @@ Home, mushaf, ayah sheet, player, reader settings
 | `Main` | compact | ar-light | source | Home |
 | `MainLandscapeRail` | compact-short | ar-light | awaiting-approval | الرئيسية · أفقي، الشريط الرأسي ٨٤٤ × ٣٩٠ (بانتظار الموافقة) |
 | `Mushaf` | compact | ar-light | source | Mushaf page · Uthmani Hafs (the app draws the ﴿ ﴾ end-of-ayah marks inline, so the recited one turns brand) |
-| `MushafZoom150` | compact | ar-light | awaiting-approval | Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 item 14) (بانتظار الموافقة) |
-| `MushafZoom200` | compact | ar-light | awaiting-approval | Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة) |
-| `MushafZoom300` | compact | ar-light | awaiting-approval | Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة) |
+| `MushafZoom150` | compact | ar-light | source | Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026 |
+| `MushafZoom200` | compact | ar-light | source | Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026 |
+| `MushafZoom300` | compact | ar-light | source | Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026 |
 | `MushafPlaybackRiwayah` | compact | ar-light | awaiting-approval | Mushaf · Hafs pages while a Hafs reciter plays for a reader who chose Warsh (ADR 0090 decision 12, step 9b Q6) (بانتظار الموافقة) |
 | `MushafFullscreenEnter` | compact | ar-light | source | Mushaf · full screen button in the tools pill (ADR 0071) |
 | `MushafFullscreen` | compact | ar-light | source | Mushaf · full screen: no toolbar, player, status bar or Android navigation bar; the exit button sits where the full screen button was; audio keeps playing (ADR 0071) |

@@ -403,32 +403,32 @@
     {
       "id": "MushafZoom150",
       "stack": "core",
-      "caption": "Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 item 14) (بانتظار الموافقة)",
+      "caption": "Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/core/MushafZoom150.html",
-      "bytes": 14184
+      "bytes": 14198
     },
     {
       "id": "MushafZoom200",
       "stack": "core",
-      "caption": "Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة)",
+      "caption": "Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/core/MushafZoom200.html",
-      "bytes": 12397
+      "bytes": 12411
     },
     {
       "id": "MushafZoom300",
       "stack": "core",
-      "caption": "Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 item 14) (بانتظار الموافقة)",
+      "caption": "Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
       "size": "compact",
       "theme": "ar-light",
-      "status": "awaiting-approval",
+      "status": "source",
       "path": "frames/core/MushafZoom300.html",
-      "bytes": 9369
+      "bytes": 9383
     },
     {
       "id": "MushafPlaybackRiwayah",
