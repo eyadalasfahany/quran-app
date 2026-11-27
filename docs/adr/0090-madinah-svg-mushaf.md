@@ -424,6 +424,14 @@ The developer chose, over «no zoom» and «sideways scroll», to build word box
 - **What the checks cannot see:** a split shifted by a letter where the letter counts still balance, so each word holds a neighbour's letter but stays in order and inside its ayah (seen on the final data: Shu'bah 3:185:20–21 on page 74, «إ» with «الدنيا»; Qalun 2:113–114 on page 18, «ٱلَّذِ|ينَ» and «يُذۡ|كَرَ»). The builder's flags for the final data: Shu'bah W4 143, W5 63, W8 745 lines; Warsh W4 272, W5 198, W8 64; Qalun W4 1,408, W5 975, W8 703 (W5 still uses Hafs' width-per-letter bounds; the plan calibrates them per riwayah). The developer's visual review finds these, as Hafs's did (212 reviewed lines); the builder's flags (W4 narrow box, W5 width per letter, W8 nested or out-of-order line) point at the lines to look at first. A riwayah's zoom stays off until its digests are approved, so none of this reaches a reader before that review. Sajda lines: 15 on 15 pages in Shu'bah; 0 in Warsh and Qalun, whose prints mark the sajda without the overline. Both digests of each riwayah are `pending_review`: the developer approves them as for Hafs.
 - **al-Duri** is imported (6,218 ayah regions) and not built: its artwork counts 31 ayahs in al-Mulk and quran-text's al-Duri text 30 (step 14 RB-A). It is left out of `word_box_riwayat` until the developer decides.
 
+### 17. Approved: the zoom frames, Hafs's revised data, and Shu'bah, Warsh and Qalun as built (developer, 27 Nov 2026)
+
+- The developer approved the frames `MushafZoom150`, `MushafZoom200` and `MushafZoom300` (item 15), Hafs's revised split and keep-together runs (item 14), and the other three riwayat's data as built (item 16), without the line-by-line review Hafs had. The shifted letters item 16 names (Shu'bah 3:185 on page 74, Qalun 2:113–114 on page 18) ship as they are; a later correction needs a new approval.
+- Hafs now builds with `mushaf.word_boxes.body_penalty` 6 (was 0). Approved digests in `config/mushaf.php`, word boxes and contour map:
+  - Hafs `01adf3d1…` and `2b9916fa…` (replacing `8944a6b3…` and the never-approved `b256ecd9…`);
+  - Shu'bah `8c9e4faf…` and `7c691113…`; Warsh `465a909b…` and `3ba7359d…`; Qalun `a81d626f…` and `51a5df6f…`.
+- al-Duri stays unbuilt until its numbering is decided.
+
 ### Open questions for the developer
 
 1. The **no-pack fallback** (Q2), **pages 1 and 2** centred at zoom (Q3), and the **copy** (Q4).
