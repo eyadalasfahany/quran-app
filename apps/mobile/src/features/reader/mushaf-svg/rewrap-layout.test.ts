@@ -22,7 +22,7 @@ function word(
   line: number,
   x0: number,
   x1: number,
-  extra: Partial<Pick<WordUnit, 'surah' | 'ayah' | 'covers' | 'mark' | 'sajda' | 'keep'>> = {},
+  extra: Partial<Pick<WordUnit, 'surah' | 'ayah' | 'covers' | 'mark' | 'sajda' | 'keep' | 'keepNext'>> = {},
 ): WordUnit {
   const band = bandOf(line);
   return {
@@ -245,6 +245,22 @@ describe('layoutPage: covers, marks, sajda fusion, regions and hizb', () => {
     const b = layout.wordRect(1, 1, 2)!;
     expect(b.x0 - a.x0).toBeCloseTo(34, 6);
     expect(layoutPage(page(words), 1).placed).toHaveLength(3);
+  });
+
+  it('draws every run of a block that the source draws in several runs', () => {
+    expect(runsOf({ bounds: BETWEEN.bounds, count: 1, first: 0, more: [{ count: 2, first: 7 }] })).toEqual([
+      { count: 1, first: 0 },
+      { count: 2, first: 7 },
+    ]);
+  });
+
+  it('keeps a word marked keepNext with the next word in reading order, across an ayah', () => {
+    const words = [word(1, 0, 0, 30, { ayah: 2 }), word(9, 0, 34, 64, { ayah: 1, keepNext: true }), word(8, 0, 68, 98, { ayah: 1 }), word(7, 0, 102, 132, { ayah: 1 })];
+    const layout = layoutPage(page(words), 2);
+    const last = layout.wordRect(1, 1, 9)!;
+    const first = layout.wordRect(1, 2, 1)!;
+    expect(first.line).toBe(last.line);
+    expect(last.x0 - first.x0).toBeCloseTo(34, 6);
   });
 
   it('a sajda piece wider than the line scales as one unit, keeping the ratio of its words', () => {

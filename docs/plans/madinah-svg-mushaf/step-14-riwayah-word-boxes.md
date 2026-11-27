@@ -1,6 +1,6 @@
 # Step 14 — Word boxes and contour maps for Warsh, Qalun, Shu'bah and al-Duri (ADR 0090, amendment of 26 Nov 2026, items 9 and 10)
 
-Status: **plan, not implementation-ready.** One blocker needs the developer (al-Duri's ayah numbering, below); everything else is specified. Branch `main`; stage and commit nothing. Read `.claude/agent-rules.md`, root `CLAUDE.md` and `apps/api/CLAUDE.md` first. Written 26 Nov 2026 by the planner.
+Status (27 Nov 2026): **Shu'bah, Warsh and Qalun built** on branch `claude/zen-clarke-kf8665` (ADR 0090 item 16): every hard gate passes, both digests `pending_review`, waiting for the developer's approval. **al-Duri is imported and waits for its numbering decision** (RB-A below). Original status: plan, not implementation-ready. Branch `main`; stage and commit nothing. Read `.claude/agent-rules.md`, root `CLAUDE.md` and `apps/api/CLAUDE.md` first. Written 26 Nov 2026 by the planner.
 
 **Why this step exists.** Developer, 26 Nov 2026: the other riwayat get word boxes first, because page zoom (step 13) re-wraps the printed word shapes and cannot work without word data. Until a riwayah has approved word boxes **and** an approved contour map, its page stays at 100% and zoom is unavailable there (ADR 0090 amendment item 10).
 

@@ -44,12 +44,13 @@ export type WordContourRun = {
 };
 
 /**
- * A block (kind 1), ayah ornament (2), sajda line (3), hizb ornament (4) or keep-together run (5) of one page, in raw viewBox space with its
+ * A block (kind 1), ayah ornament (2), sajda line (3), hizb ornament (4), keep-together run (5) or a further run of a block
+ * (6, its `ayah` is the block's ord) or a word kept with the next word across an ayah mark (7) of one page, in raw viewBox space with its
  * bounds in page units (the stored 1/32 integers divided by CONTOUR_GRID). `surah` and `ayah` are 0 for a block.
  */
 export type ContourBlock = {
   page: number;
-  kind: 1 | 2 | 3 | 4 | 5;
+  kind: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   ord: number;
   surah: number;
   ayah: number;

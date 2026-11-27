@@ -47,10 +47,15 @@ export type WordUnit = {
    * as one shape, so the zoomed layout never breaks a line between them.
    */
   keep?: number | null;
+  /** Kept with the next word in reading order (contour_blocks kind 7): the two are drawn as printed across an ayah mark. */
+  keepNext?: boolean;
 };
 
-/** A title, basmala or other full-line art (contour_blocks kind 1): centred, on its own line, never broken. */
-export type BlockUnit = { first: number; count: number; bounds: Rect };
+/**
+ * A title, basmala or other full-line art (contour_blocks kind 1): centred, on its own line, never broken. `more` holds its
+ * further runs when the source draws it in several (kind 6 rows).
+ */
+export type BlockUnit = { first: number; count: number; bounds: Rect; more?: readonly { first: number; count: number }[] };
 
 /** A hizb ornament (contour_blocks kind 4): drawn in the margin beside the line that holds its anchor word. */
 export type HizbUnit = { first: number; count: number; bounds: Rect; surah: number; ayah: number };
@@ -148,6 +153,14 @@ function piecesOfLine(words: readonly WordUnit[], band: Band): Piece[] {
       runs.set(word.keep, index);
     } else {
       join(index, first);
+    }
+  });
+  // A word kept with the next word (kind 7) joins the word that follows it in reading order on this line.
+  const order = words.map((word, index) => ({ index, word })).sort((a, b) => a.word.surah - b.word.surah || a.word.ayah - b.word.ayah || a.word.position - b.word.position);
+  order.forEach((item, k) => {
+    const next = order[k + 1];
+    if (item.word.keepNext === true && next !== undefined) {
+      join(item.index, next.index);
     }
   });
   const groups = new Map<number, WordUnit[]>();
@@ -548,5 +561,6 @@ export function runsOf(unit: WordUnit | BlockUnit | HizbUnit): readonly { first:
     }
     return runs;
   }
-  return [{ count: unit.count, first: unit.first }];
+  const more = 'more' in unit && unit.more !== undefined ? unit.more : [];
+  return [{ count: unit.count, first: unit.first }, ...more];
 }

@@ -100,12 +100,12 @@ final class QuranTextSource
                 continue;
             }
 
-            $letters = preg_match_all('/\p{L}/u', (string) ($fields[$index['rasm_imlai']] ?? ''));
+            $letters = self::letters((string) ($fields[$index['rasm_imlai']] ?? ''), (string) ($fields[$index['text']] ?? ''));
             $words[$numbers['page']][$numbers['line']][] = [
                 'surah' => $numbers['surah'],
                 'ayah' => $numbers['ayah'],
                 'position' => $numbers['position_in_ayah'],
-                'letters' => is_int($letters) && $letters > 0 ? $letters : null,
+                'letters' => $letters > 0 ? $letters : null,
                 'bodies' => self::bodies((string) ($fields[$index['text']] ?? '')),
             ];
         }
@@ -113,6 +113,17 @@ final class QuranTextSource
         fclose($stream);
 
         return $words;
+    }
+
+    /**
+     * The word's letter count for W5: its imlāʾī spelling where the file has one (Hafs), otherwise its printed text, counting
+     * letters but not modifier letters such as the superscript alef (the other riwayat have no imlāʾī column).
+     */
+    public static function letters(string $imlai, string $text): int
+    {
+        $count = (int) preg_match_all('/\p{L}/u', $imlai);
+
+        return $count > 0 ? $count : (int) preg_match_all('/(?!\p{Lm})\p{L}/u', $text);
     }
 
     /**

@@ -60,17 +60,28 @@ export function buildLayoutInput({ boxes, runs, blocks, origin, continuing }: In
   }
 
   const blockUnits: BlockUnit[] = [];
+  const blockByOrd = new Map<number, BlockUnit>();
   const hizbs: HizbUnit[] = [];
   for (const block of blocks) {
     const bounds = shift(block);
     if (block.kind === 1) {
-      blockUnits.push({ bounds, count: block.count, first: block.first });
+      const unit: BlockUnit = { bounds, count: block.count, first: block.first };
+      blockUnits.push(unit);
+      blockByOrd.set(block.ord, unit);
     } else if (block.kind === 2) {
       // The ayah ornament follows the last word of its ayah on this page.
       const word = lastUnitOfAyah.get(keyOf(block.surah, block.ayah));
       if (word !== undefined && word.mark === null) {
         word.mark = { bounds, count: block.count, first: block.first };
       }
+    }
+  }
+
+  // A block the source draws in several runs: each further run (kind 6) joins the block its `ayah` names.
+  for (const block of blocks) {
+    const owner = block.kind === 6 ? blockByOrd.get(block.ayah) : undefined;
+    if (owner !== undefined) {
+      owner.more = [...(owner.more ?? []), { count: block.count, first: block.first }];
     }
   }
 
@@ -137,6 +148,19 @@ export function buildLayoutInput({ boxes, runs, blocks, origin, continuing }: In
       if (unit !== undefined) {
         unit.keep = block.ord;
       }
+    }
+  }
+
+  // A word kept with the next word across an ayah mark (kind 7): `first` is its position.
+  for (const block of blocks) {
+    if (block.kind !== 7) {
+      continue;
+    }
+    const unit = words.find(
+      (word) => word.surah === block.surah && word.ayah === block.ayah && word.position <= block.first && block.first < word.position + word.covers,
+    );
+    if (unit !== undefined) {
+      unit.keepNext = true;
     }
   }
 

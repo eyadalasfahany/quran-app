@@ -114,4 +114,42 @@ final class KeepTogether
 
         return $runs;
     }
+
+    /**
+     * The links across an ayah mark: an ayah's last word and the next ayah's first word on the same line whose letters
+     * interleave in print, or that share an unclear mark (the other riwayat draw a sign after the ayah ornament that the last
+     * word reaches over). A run cannot hold two ayahs, so each link is its own row: «keep this word with the next word».
+     *
+     * @param  list<array{line: int, surah: int, ayah: int, position: int, x0: float, y0: float, x1: float, y1: float}>  $boxes  left to right per line
+     * @param  list<array{apps: list<int>}>  $wordContours  in the same order as the boxes
+     * @param  list<array{text: int, drawn: int, centres: list<float>}>  $bodyCounts  in the same order as the boxes
+     * @param  list<bool>  $sharedMarks  per box: it shares an unclear mark with the next box on its line
+     * @return list<array{surah: int, ayah: int, position: int, box: array{0: float, 1: float, 2: float, 3: float}}>
+     */
+    public static function links(array $boxes, array $wordContours, array $bodyCounts, array $sharedMarks): array
+    {
+        $links = [];
+
+        for ($i = 0; $i + 1 < count($boxes); $i++) {
+            $later = $boxes[$i];
+            $earlier = $boxes[$i + 1];
+
+            if ($later['line'] !== $earlier['line'] || $later['surah'] !== $earlier['surah'] || $later['ayah'] !== $earlier['ayah'] + 1 || $later['position'] !== 1) {
+                continue;
+            }
+
+            $interleaved = $bodyCounts[$i]['centres'] !== [] && $bodyCounts[$i + 1]['centres'] !== []
+                && max($bodyCounts[$i]['centres']) > min($bodyCounts[$i + 1]['centres']);
+            $apps = $wordContours[$i + 1]['apps'];
+
+            if (($interleaved || ($sharedMarks[$i] ?? false)) && $apps !== []) {
+                $links[] = [
+                    'surah' => $earlier['surah'], 'ayah' => $earlier['ayah'], 'position' => max($apps),
+                    'box' => [min($later['x0'], $earlier['x0']), min($later['y0'], $earlier['y0']), max($later['x1'], $earlier['x1']), max($later['y1'], $earlier['y1'])],
+                ];
+            }
+        }
+
+        return $links;
+    }
 }

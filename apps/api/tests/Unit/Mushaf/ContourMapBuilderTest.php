@@ -226,3 +226,36 @@ it('adds a keep-together block per run, sorted after the other kinds, and leaves
     ])->and($kept->checks)->toBe($map->checks)
         ->and($kept->wordRows)->toBe([]);
 });
+
+it('keeps a title the source draws in two runs as one block: a kind 1 row and a kind 6 row naming it', function (): void {
+    // The title's two pieces (c0, c2) are split in path order by a word's contour (c1), as the other riwayat draw them.
+    $input = contourPageInput(
+        contours: [
+            [50.0, 10.0, 150.0, 20.0], [200.0, 45.0, 260.0, 60.0], [160.0, 12.0, 300.0, 20.0],
+            [100.0, 45.0, 150.0, 60.0], [200.0, 85.0, 260.0, 105.0], [100.0, 85.0, 150.0, 105.0],
+        ],
+        lineOf: [null, 1, null, 1, 2, 2],
+        words: [
+            ['surah' => 1, 'ayah' => 1, 'position' => 1, 'apps' => [1], 'line' => 1, 'contours' => [1], 'x0' => 200.0, 'x1' => 260.0],
+            ['surah' => 1, 'ayah' => 1, 'position' => 2, 'apps' => [2], 'line' => 1, 'contours' => [3], 'x0' => 100.0, 'x1' => 150.0],
+            ['surah' => 1, 'ayah' => 1, 'position' => 3, 'apps' => [3], 'line' => 2, 'contours' => [4], 'x0' => 200.0, 'x1' => 260.0],
+            ['surah' => 1, 'ayah' => 1, 'position' => 4, 'apps' => [4], 'line' => 2, 'contours' => [5], 'x0' => 100.0, 'x1' => 150.0],
+        ],
+        loose: [],
+    );
+
+    $map = buildContourMap($input);
+    $blocks = array_values(array_filter($map->blockRows, fn (array $row): bool => in_array($row['kind'], [1, 6], true)));
+
+    expect($map->checks['W10'])->toBe(0)
+        ->and(array_map(fn (array $row): array => [$row['kind'], $row['ord'], $row['ayah'], $row['first'], $row['count']], $blocks))
+        ->toBe([[1, 0, 0, 1, 1], [6, 0, 0, 3, 1]]);
+});
+
+it('lets a subpath that draws nothing (an empty moveto) stay unclaimed, and only that', function (): void {
+    $input = contourPageInput();
+    $input['subpaths']++;
+
+    expect(buildContourMap($input)->checks['W10'])->toBe(1)
+        ->and(buildContourMap([...$input, 'empty' => [$input['subpaths'] - 1]])->checks['W10'])->toBe(0);
+});

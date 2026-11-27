@@ -21,9 +21,11 @@ final class WordSplitter
      * @param  list<bool>  $base  whether each contour is full height
      * @param  list<int>|null  $bodies  each word's letter-body count from its text, left to right; null leaves the count out
      * @param  list<bool>|null  $isBody  whether each contour counts as a letter body; null counts the full-height ones
+     * @param  float  $contourSpanPenalty  cost per contour whose own centre is outside its word's span (0 checks only the group's
+     *                                     centre): a contour drawn in one ayah's region cannot belong to a word of another
      * @return list<array{0: int, 1: int}>|null [start, end) contour indexes per group, left to right; null with fewer contours than words
      */
-    public static function split(array $contours, array $spans, array $base, float $tolerance, float $noBasePenalty, float $outOfSpanPenalty, ?array $bodies = null, float $bodyPenalty = 0.0, ?array $isBody = null): ?array
+    public static function split(array $contours, array $spans, array $base, float $tolerance, float $noBasePenalty, float $outOfSpanPenalty, ?array $bodies = null, float $bodyPenalty = 0.0, ?array $isBody = null, float $contourSpanPenalty = 0.0): ?array
     {
         $m = count($contours);
         $isBody ??= $base;
@@ -51,13 +53,18 @@ final class WordSplitter
                 $hi = -INF;
                 $has = false;
                 $tall = 0;
+                $outside = 0;
 
                 for ($j = $i; $j <= $last; $j++) {
                     $lo = min($lo, $contours[$j][0]);
                     $hi = max($hi, $contours[$j][2]);
                     $has = $has || $base[$j];
                     $tall += $isBody[$j] ? 1 : 0;
+                    $own = ($contours[$j][0] + $contours[$j][2]) / 2;
+                    $outside += $span !== null && ($own < $span[0] - $tolerance || $own > $span[1] + $tolerance) ? 1 : 0;
                     $cost = ($hi - $lo) + ($has ? 0.0 : $noBasePenalty);
+
+                    $cost += $contourSpanPenalty * $outside;
 
                     if ($bodies !== null && $bodyPenalty > 0.0) {
                         $cost += $bodyPenalty * abs($tall - $bodies[$k - 1]);

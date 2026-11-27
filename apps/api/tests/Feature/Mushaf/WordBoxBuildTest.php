@@ -408,8 +408,9 @@ it('refuses a quran-text file that does not match its pin', function (): void {
     app(QuranTextSource::class)->words('hafs', false);
 })->throws(SvgMushafSourceException::class, 'does not match its pinned size and blob SHA');
 
-it('refuses a mushaf other than Hafs', function (): void {
-    app(WordBoxBuilder::class)->build('warsh');
+it('refuses a riwayah with no entry in mushaf.word_box_riwayat', function (): void {
+    // al-Duri waits for the developer's numbering decision (step 14, RB-A).
+    app(WordBoxBuilder::class)->build('duri');
 })->throws(UnknownSvgMushafException::class);
 
 it('exits non-zero on a failed gate and writes a review sheet with contour indices for flagged lines', function (): void {

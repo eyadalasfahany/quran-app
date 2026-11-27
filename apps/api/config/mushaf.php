@@ -20,9 +20,9 @@ return [
     // mushaf:setup and from mushaf:publish (ADR 0090 item 12); `mushaf:publish --include-hidden` publishes it locally only.
     'editions' => [
         'hafs' => ['folder' => 'hafs', 'edition_year' => 1441, 'expected_ayahs' => 6236, 'name' => 'Hafs from Asim', 'name_ar' => 'حفص عن عاصم', 'publish' => true],
-        'warsh' => ['folder' => 'warsh', 'edition_year' => 1442, 'expected_ayahs' => null, 'name' => 'Warsh from Nafi', 'name_ar' => 'ورش عن نافع', 'publish' => true],
-        'qalun' => ['folder' => 'qalon', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => 'Qalun from Nafi', 'name_ar' => 'قالون عن نافع', 'publish' => true],
-        'shubah' => ['folder' => 'shubah', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => "Shu'bah from Asim", 'name_ar' => 'شعبة عن عاصم', 'publish' => true],
+        'warsh' => ['folder' => 'warsh', 'edition_year' => 1442, 'expected_ayahs' => 6214, 'name' => 'Warsh from Nafi', 'name_ar' => 'ورش عن نافع', 'publish' => true],
+        'qalun' => ['folder' => 'qalon', 'edition_year' => 1443, 'expected_ayahs' => 6214, 'name' => 'Qalun from Nafi', 'name_ar' => 'قالون عن نافع', 'publish' => true],
+        'shubah' => ['folder' => 'shubah', 'edition_year' => 1443, 'expected_ayahs' => 6236, 'name' => "Shu'bah from Asim", 'name_ar' => 'شعبة عن عاصم', 'publish' => true],
         'duri' => ['folder' => 'douri', 'edition_year' => 1443, 'expected_ayahs' => null, 'name' => 'Al-Duri from Abu Amr', 'name_ar' => 'الدوري عن أبي عمرو', 'publish' => false],
     ],
 
@@ -80,6 +80,21 @@ return [
 
     // The reviewed word-box digest per edition. Only the developer sets it, after checking every page of the review sheet.
     // Hafs: approved by the developer on 15 Nov 2026 (review sheet v3, every box matching the app's word index).
+    // The riwayat whose words are followed word by word (ADR 0090 amendment item 10, step 14), and what differs per riwayah.
+    // Hafs keeps its settings in `word_boxes` above (its approved digest hashes that block); the others add theirs here:
+    // `position_splits` (none: their positions are quran-text's own), `debris_extent` (a content contour this small in both
+    // directions is source debris: left out of the split and the box, attached as a loose contour to the nearest word) and
+    // `width_per_letter` (W5 flags only; Hafs' values until calibrated on a riwayah's first run) and `body_penalty` (the
+    // letter-body rules of ADR 0090 item 14, on for these from their first build; Hafs reads `word_boxes.body_penalty`, 0 until
+    // the developer approves its revised split). al-Duri waits for the
+    // developer's numbering decision (step 14, RB-A) and is not listed.
+    'word_box_riwayat' => [
+        'hafs' => [],
+        'shubah' => ['body_penalty' => 6.0, 'position_splits' => [], 'debris_extent' => 0.03, 'width_per_letter' => ['low' => 0.17, 'high' => 3.3]],
+        'warsh' => ['body_penalty' => 6.0, 'position_splits' => [], 'debris_extent' => 0.03, 'width_per_letter' => ['low' => 0.17, 'high' => 3.3]],
+        'qalun' => ['body_penalty' => 6.0, 'position_splits' => [], 'debris_extent' => 0.03, 'width_per_letter' => ['low' => 0.17, 'high' => 3.3]],
+    ],
+
     'approved_word_boxes' => [
         'hafs' => '8944a6b3f72874e9a77ea8e708f7d06b68f6741ee55f1d606167870835a04553',
     ],

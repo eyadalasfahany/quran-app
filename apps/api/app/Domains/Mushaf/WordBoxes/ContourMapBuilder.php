@@ -23,7 +23,7 @@ use App\Domains\Mushaf\Records\ContourMap;
  * @phpstan-type Loose array{contour: int, loose: int, line: int, attach: string|null, ornament: bool}
  * @phpstan-type Mark array{first: int, count: int, box: Box}
  * @phpstan-type Region array{surah: int, ayah: int, polygon: string}
- * @phpstan-type PageInput array{contours: list<Box>, lineOf: list<int|null>, words: list<Word>, loose: list<Loose>, subpaths: int, content: list<int>, marks: list<Mark>, regions: list<Region>}
+ * @phpstan-type PageInput array{contours: list<Box>, lineOf: list<int|null>, words: list<Word>, loose: list<Loose>, subpaths: int, content: list<int>, marks: list<Mark>, regions: list<Region>, empty?: list<int>}
  * @phpstan-type LastWord array{page: int, box: Box}
  */
 final class ContourMapBuilder
@@ -79,6 +79,12 @@ final class ContourMapBuilder
         return new ContourMap($wordRows, $blockRows, $checks, $issues, $attachments, $sajdaLines, $sajdaPages, $hizb);
     }
 
+    /** Block kind of a further run of a kind 1 block (its `ayah` is the block's ord). */
+    public const int BLOCK_CONTINUATION = 6;
+
+    /** Block kind of a link across an ayah mark: the word at (surah, ayah, first) is kept with the next word in reading order. */
+    public const int KEEP_WITH_NEXT = 7;
+
     /** Block kind of a keep-together run: neighbouring words the zoomed layout never breaks a line between. */
     public const int KEEP_TOGETHER = 5;
 
@@ -88,10 +94,17 @@ final class ContourMapBuilder
      * unchanged.
      *
      * @param  array<int, list<array{surah: int, ayah: int, first: int, count: int, box: array{0: float, 1: float, 2: float, 3: float}}>>  $runs  page => runs
+     * @param  array<int, list<array{surah: int, ayah: int, position: int, box: array{0: float, 1: float, 2: float, 3: float}}>>  $links  page => links across an ayah mark (kind 7)
      */
-    public static function withKeepTogether(ContourMap $map, array $runs): ContourMap
+    public static function withKeepTogether(ContourMap $map, array $runs, array $links = []): ContourMap
     {
         $blockRows = $map->blockRows;
+
+        foreach ($links as $page => $list) {
+            foreach ($list as $ord => $link) {
+                $blockRows[] = self::block($page, self::KEEP_WITH_NEXT, $ord, $link['surah'], $link['ayah'], $link['position'], 1, $link['box']);
+            }
+        }
 
         foreach ($runs as $page => $list) {
             foreach ($list as $ord => $run) {
@@ -235,29 +248,44 @@ final class ContourMapBuilder
             }
         }
 
+        $continuation = 0;
+
         foreach ($clusters as $ord => $cluster) {
             $subs = array_map(fn (int $c): int => $input['content'][$c], $cluster['members']);
             sort($subs);
-            $runs = self::runs($subs);
+            // A gap between the block's subpaths that holds only subpaths drawing nothing (empty movetos of the source) is
+            // part of the block's run.
+            $empty = array_flip($input['empty'] ?? []);
+            $filled = [];
 
-            if (count($runs) !== 1) {
-                $w10++;
-                $issues[] = sprintf('W10 page %d: block %d is not one run of subpaths', $page, $ord);
+            foreach ($subs as $k => $sub) {
+                $filled[] = $sub;
+                $next = $subs[$k + 1] ?? null;
 
-                continue;
+                if ($next !== null && $next > $sub + 1 && array_filter(range($sub + 1, $next - 1), fn (int $g): bool => ! isset($empty[$g])) === []) {
+                    array_push($filled, ...range($sub + 1, $next - 1));
+                }
             }
 
+            $runs = self::runs($filled);
             $box = null;
 
             foreach ($cluster['members'] as $c) {
                 $box = self::union($box, $contours[$c]);
             }
 
-            foreach ($subs as $sub) {
+            foreach ($filled as $sub) {
                 $claims[$sub]++;
             }
 
+            // The block's first run is its kind 1 row. Where the source draws a title in several runs (the other riwayat
+            // interleave it with the text lines), each further run is a kind 6 row whose `ayah` names its block's ord, so the
+            // block is still one unit.
             $blocks[] = self::block($page, 1, $ord, 0, 0, $runs[0]['first'], $runs[0]['count'], $box);
+
+            foreach (array_slice($runs, 1) as $run) {
+                $blocks[] = self::block($page, self::BLOCK_CONTINUATION, $continuation++, 0, $ord, $run['first'], $run['count'], $box);
+            }
         }
 
         // Ayah marks: each ayah whose last word is on this page gets exactly one ornament inside its rectangles.
@@ -331,9 +359,12 @@ final class ContourMapBuilder
             }
         }
 
-        // Integrity: every subpath is claimed exactly once by a word run, a block, an ayah mark or an ornament.
+        // Integrity: every subpath is claimed exactly once by a word run, a block, an ayah mark or an ornament. A subpath that
+        // draws nothing (an empty moveto of the source: Qalun, Shu'bah) may also stay unclaimed.
+        $empty = array_flip($input['empty'] ?? []);
+
         foreach ($claims as $sub => $count) {
-            if ($count !== 1) {
+            if ($count !== 1 && ! ($count === 0 && isset($empty[$sub]))) {
                 $w10++;
                 $issues[] = sprintf('W10 page %d: subpath %d is claimed %d times', $page, $sub, $count);
             }
