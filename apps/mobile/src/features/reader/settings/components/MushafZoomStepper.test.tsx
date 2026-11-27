@@ -62,9 +62,9 @@ describe('MushafZoomStepper', () => {
     expect(view.getByLabelText(locale === 'ar' ? 'تكبير الصفحة' : 'Zoom in')).toBeOnTheScreen();
   });
 
-  it('disables the increase step at 200%', async () => {
+  it('disables the increase step at 300%', async () => {
     const onChange = jest.fn();
-    const view = await renderUi(<MushafZoomStepper onChange={onChange} value={2} />);
+    const view = await renderUi(<MushafZoomStepper onChange={onChange} value={3} />);
     expect(stepProps(view, 'increase').accessibilityState).toMatchObject({ disabled: true });
     expect(stepProps(view, 'decrease').accessibilityState).toMatchObject({ disabled: false });
     fireEvent.press(view.getByTestId('reader-mushaf-zoom-increase'));

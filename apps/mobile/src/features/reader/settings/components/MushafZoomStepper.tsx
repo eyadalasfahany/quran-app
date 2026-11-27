@@ -22,7 +22,7 @@ function glyphStyle(size: number): { fontSize: number; lineHeight: number } {
 }
 
 /**
- * The Mushaf page zoom (ADR 0090 amendment, item 9): 100% to 200% in 25% steps. Shows the zoom as a percentage. `disabled`
+ * The Mushaf page zoom (ADR 0090 amendment, items 9 and 15): 100% to 300% in 25% steps. Shows the zoom as a percentage. `disabled`
  * is the riwayah without word data: both steps are off and the row's hint says why.
  */
 export function MushafZoomStepper({

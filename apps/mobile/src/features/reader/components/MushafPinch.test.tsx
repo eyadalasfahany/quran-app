@@ -84,10 +84,10 @@ describe('MushafPinch', () => {
     expect(commits).toEqual([1.25, 1.5]);
   });
 
-  it('stops at 200%', async () => {
+  it('stops at 300%', async () => {
     await renderUi(<MushafPinch zoomAvailable>{null}</MushafPinch>);
-    await pinch(3);
-    expect(useReaderSettings.getState().mushafZoom).toBe(2);
+    await pinch(4);
+    expect(useReaderSettings.getState().mushafZoom).toBe(3);
   });
 
   it('does nothing where zoom is not available (a riwayah without word data)', async () => {

@@ -16,6 +16,7 @@
     "MushafPlaybackRiwayah",
     "MushafZoom150",
     "MushafZoom200",
+    "MushafZoom300",
     "Player",
     "PlayerReciterDownloading",
     "PlayerReciters",
@@ -740,7 +741,7 @@
   {
    "id": "MushafZoom150",
    "stack": "core",
-   "caption": "Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text). Approved by the developer, 26 Nov 2026",
+   "caption": "Mushaf page zoom 150% · Hafs, compact, placeholder words (no Quran text); each line centred, words never broken (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -776,7 +777,7 @@
   {
    "id": "MushafZoom200",
    "stack": "core",
-   "caption": "Mushaf page zoom 200% · the same page, about 4 to 5 words a line, two ragged lines. Approved by the developer, 26 Nov 2026",
+   "caption": "Mushaf page zoom 200% · the same page, 3 to 4 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
    "status": "source",
    "kind": "phone",
    "fixed": false,
@@ -807,6 +808,42 @@
    },
    "frames": [
     "MushafZoom200"
+   ]
+  },
+  {
+   "id": "MushafZoom300",
+   "stack": "core",
+   "caption": "Mushaf page zoom 300% · the largest step, 2 to 3 words a line, each line centred (ADR 0090 items 14 and 15). Approved by the developer, 27 Nov 2026",
+   "status": "source",
+   "kind": "phone",
+   "fixed": false,
+   "drawnSize": "compact",
+   "window": null,
+   "sizeFrames": {},
+   "variants": {
+    "light-rtl": {
+     "how": "drawn",
+     "from": "MushafZoom300",
+     "untranslated": 0
+    },
+    "dark-rtl": {
+     "how": "derived",
+     "from": "MushafZoom300",
+     "untranslated": 0
+    },
+    "light-ltr": {
+     "how": "derived",
+     "from": "MushafZoom300",
+     "untranslated": 1
+    },
+    "dark-ltr": {
+     "how": "derived",
+     "from": "MushafZoom300",
+     "untranslated": 1
+    }
+   },
+   "frames": [
+    "MushafZoom300"
    ]
   },
   {

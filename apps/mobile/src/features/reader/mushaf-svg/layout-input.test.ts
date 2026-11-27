@@ -107,6 +107,34 @@ describe('buildLayoutInput (synthetic rows, FIXTURE — not artwork)', () => {
     expect(second!.count).toBe(1);
   });
 
+  it('marks the words of a keep-together run with its ord, through a covered position, and no other word', () => {
+    const more = [...boxes, box(0, 1, 1, 3, 70, 90)];
+    const keep = block(5, { ayah: 1, count: 2, first: 2, ord: 4, surah: 1 });
+    const input = buildLayoutInput({ blocks: [keep], boxes: more, continuing: new Set(), origin, runs: [...runs, run(1, 1, 3, 12, 1)] });
+    // Position 2 is covered by position 1, so the run (positions 2 and 3) marks words 1 and 3.
+    const marked = input.words.filter((item) => item.keep === 4).map((item) => `${item.ayah}:${item.position}`);
+    expect(marked).toEqual(['1:1', '1:3']);
+    expect(input.words.find((item) => item.ayah === 2)!.keep ?? null).toBeNull();
+  });
+
+  it('joins the further runs of a block (kind 6) to the block its ayah names, as one unit', () => {
+    const title = block(1, { count: 3, first: 40, ord: 2 });
+    const more = [block(6, { ayah: 2, count: 2, first: 50, ord: 0 }), block(6, { ayah: 2, count: 1, first: 60, ord: 1 })];
+    const input = buildLayoutInput({ blocks: [title, ...more], boxes, continuing: new Set(), origin, runs });
+    expect(input.blocks).toHaveLength(1);
+    expect(input.blocks[0]!.more).toEqual([
+      { count: 2, first: 50 },
+      { count: 1, first: 60 },
+    ]);
+  });
+
+  it('marks a word kept with the next word across an ayah mark (kind 7), and no other', () => {
+    const link = block(7, { ayah: 1, count: 1, first: 2, ord: 0, surah: 1 });
+    const input = buildLayoutInput({ blocks: [link], boxes, continuing: new Set(), origin, runs });
+    // Position 2 is covered by position 1.
+    expect(input.words.filter((item) => item.keepNext === true).map((item) => `${item.ayah}:${item.position}`)).toEqual(['1:1']);
+  });
+
   it('is empty when the pack has no contour rows', () => {
     const input = buildLayoutInput({ blocks: [], boxes, continuing: new Set(), origin, runs: [] });
     expect(input.words).toEqual([]);

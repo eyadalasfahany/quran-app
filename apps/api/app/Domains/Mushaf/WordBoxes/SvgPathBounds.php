@@ -27,11 +27,36 @@ final class SvgPathBounds
      */
     public static function contours(string $d): array
     {
+        return self::parse($d)['boxes'];
+    }
+
+    /**
+     * Each drawn subpath's outline points (endpoints and written control points, the same points that make its box), in the
+     * same order as contours().
+     *
+     * @return list<list<array{0: float, 1: float}>>
+     *
+     * @throws SvgMushafSourceException
+     */
+    public static function points(string $d): array
+    {
+        return self::parse($d)['points'];
+    }
+
+    /**
+     * @return array{boxes: list<Box>, points: list<list<array{0: float, 1: float}>>}
+     *
+     * @throws SvgMushafSourceException
+     */
+    private static function parse(string $d): array
+    {
         preg_match_all(self::TOKEN, $d, $matches);
         $tokens = $matches[0];
         $count = count($tokens);
 
         $boxes = [];
+        $points = [];
+        $open = []; // the open subpath's points
         $cmd = null;
         $x = $y = $sx = $sy = 0.0;
         $box = null; // the open subpath's [x0, y0, x1, y1]
@@ -49,6 +74,7 @@ final class SvgPathBounds
                 if ($lower === 'z') {
                     if ($box !== null && $drawn) {
                         $boxes[] = $box;
+                        $points[] = $open;
                     }
 
                     $x = $sx;
@@ -86,6 +112,7 @@ final class SvgPathBounds
             if ($c === 'm') {
                 if ($box !== null && $drawn) {
                     $boxes[] = $box;
+                    $points[] = $open;
                 }
 
                 $x = $relative ? $x + $args[0] : $args[0];
@@ -93,6 +120,7 @@ final class SvgPathBounds
                 $sx = $x;
                 $sy = $y;
                 $box = [$x, $y, $x, $y];
+                $open = [[$x, $y]];
                 $drawn = false;
                 $cmd = $relative ? 'l' : 'L';
 
@@ -100,7 +128,11 @@ final class SvgPathBounds
             }
 
             // A drawing command after `z` starts a new subpath at the current point.
-            $box ??= [$x, $y, $x, $y];
+            if ($box === null) {
+                $box = [$x, $y, $x, $y];
+                $open = [[$x, $y]];
+            }
+
             $drawn = true;
 
             if ($c === 'h') {
@@ -118,6 +150,7 @@ final class SvgPathBounds
                     $px = $relative ? $x + $args[$k] : $args[$k];
                     $py = $relative ? $y + $args[$k + 1] : $args[$k + 1];
                     $box = self::extend($box, $px, $py);
+                    $open[] = [$px, $py];
                 }
 
                 $x = $px;
@@ -127,13 +160,15 @@ final class SvgPathBounds
             }
 
             $box = self::extend($box, $x, $y);
+            $open[] = [$x, $y];
         }
 
         if ($box !== null && $drawn) {
             $boxes[] = $box;
+            $points[] = $open;
         }
 
-        return $boxes;
+        return ['boxes' => $boxes, 'points' => $points];
     }
 
     /**

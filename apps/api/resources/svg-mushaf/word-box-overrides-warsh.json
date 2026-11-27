@@ -1,0 +1,6 @@
+{
+  "note": "Corrections for the Warsh word boxes, keyed \"page:line\". Each entry gives the line's contour count, the contour indices of each word left to right (indices in the review sheet's normalized line order), contours that belong to no word (loose), and the reason. needs_developer lists lines the review could not settle. word_lines moves a word, keyed \"surah:ayah:position\", to the line the artwork draws it on. Keys and numbers only.",
+  "overrides": {},
+  "needs_developer": {},
+  "word_lines": {}
+}

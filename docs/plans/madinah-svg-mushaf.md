@@ -9,9 +9,15 @@ All of the below is committed on `main` (`03418c75`). A new session starts here,
 **Done and committed (not yet released to production):**
 - Steps 0–9b: import, word boxes (Hafs approved, digest `8944a6b3…`), packs, frames, Skia renderer, picker, other riwayat, reciter riwayah.
 - Step 12: compact pages (TQP1, 1/32 grid, raw deflate; ADR 0090 amendments 24 and 26 Nov).
-- Step 13 Parts 0, A and B: frames, the API word-contour map (`word-contours-hafs.json`, digest `b256ecd9669b7d0731d081d1862270f1d9af50a0ee01fb04e52e4aba16907e36`, status **pending_review**), and the device's zoom (re-wrap 100–200%, no sideways scroll).
+- Step 13 Parts 0, A and B: frames, the API word-contour map (`word-contours-hafs.json`, digest `b256ecd9669b7d0731d081d1862270f1d9af50a0ee01fb04e52e4aba16907e36`, status **pending_review**), and the device's zoom (re-wrap, now 100–300% with centred lines, no sideways scroll).
 - ADR 0090 amendment items 1–13. Item 13 (26 Nov): the selected riwayah's pack updates by itself in the background; an ayah tapped on a non-Hafs page opens only a reference and a note (frame `AyahSheetRiwayahUnavailable`) until the ayah map and per-riwayah marks exist.
 - al-Duri is hidden in every picker and not published (`config/mushaf.php`, `publish => false`).
+
+**C0 review, first run (26 Nov 2026, cloud session on MySQL, branch `claude/zen-clarke-kf8665`):** the sheet failed on the approved word boxes (detached letters given to the neighbouring word, 181 lines with shifted labels, marks following path order: 886 words out of sequence at 200%). ADR 0090 amendment item 14 adds a revised split and keep-together runs (contour_blocks kind 5), behind `mushaf.word_boxes.body_penalty` (0 = the approved data, unchanged). At 6: 0 words out of sequence, 0 neighbours with interleaved letters apart, all gates pass, about 12,000 boxes change and 3,261 keep-together runs (neighbouring words stay as printed, developer 27 Nov 2026). **Waiting for the developer:** the zoom frames (centred lines, 100% to 300%: `MushafZoom150`, `MushafZoom200`, `MushafZoom300`), then approve turning it on (set `body_penalty` to 6, rebuild, approve both new digests).
+
+**Step 14, 27 Nov 2026 (ADR 0090 item 16):** Shu'bah, Warsh and Qalun have word boxes and contour maps built with the same rules (`resources/svg-mushaf/word-boxes-{key}.json`, `word-contours-{key}.json`, all `pending_review`); every hard gate passes and the 200% check is clean on all 604 pages of each. al-Duri waits for its numbering decision.
+
+**Approved, 27 Nov 2026 (developer; ADR 0090 item 17):** the zoom frames (centred lines, 100% to 300%; app code done), Hafs's revised data (`body_penalty` 6; digests `01adf3d1…` and `2b9916fa…`) and Shu'bah, Warsh and Qalun as built. All four riwayat build with status **approved** for both word boxes and contours. Part C0 is done; C1–C3 and the release remain.
 
 **Next: step 13 Part C** (`step-13-page-zoom.md`, «Part C»):
 1. **C0, the developer's review sheet.** Run the device's `layoutPage` on the contour and box data and the decoded pages; draw the printed page beside the 200% re-wrap for at least 30 spread pages plus every page with a loose attachment (48), a sajda line (page 293), a 1:1 or W8 line, and the hizb ornaments (pages 472, 499, 517). Hand it over as a link. **The developer approves; never set `mushaf.approved_word_contours` yourself.**
@@ -27,7 +33,7 @@ All of the below is committed on `main` (`03418c75`). A new session starts here,
 **Later, waiting for the developer:**
 - Step 14: word boxes (then zoom) for Warsh, Qalun and Shu'bah; al-Duri's numbering (a, b, c).
 - Step 15 and ADR 0100 (draft): the riwayah's own text in Reading and Focus. Fonts answered (KFGQPC qira'at fonts, unmodified); D2–D12 open, among them the ayah map (D7) that would bring back play and tafsir from non-Hafs pages.
-- ADR 0090 «Open questions» (zoom justification, no-pack fallback, pages 1–2 at zoom, copy).
+- ADR 0090 «Open questions» (no-pack fallback, pages 1–2 at zoom, copy).
 
 **Known limits, not yet checked on a device:** a very fast fling can still show a skeleton for a moment (inflating a page costs about 40 ms in a Hermes dev build); the 200% page slices and the Warsh ayah sheet were checked on the iPhone simulator only, not the iPad; the background pack update is covered by tests, not yet watched on a device.
 

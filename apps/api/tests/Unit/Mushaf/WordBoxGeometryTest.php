@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Mushaf\Exceptions\SvgMushafSourceException;
+use App\Domains\Mushaf\Sources\QuranTextSource;
 use App\Domains\Mushaf\WordBoxes\LineBands;
 use App\Domains\Mushaf\WordBoxes\LineOrder;
 use App\Domains\Mushaf\WordBoxes\PageContours;
@@ -240,7 +241,62 @@ describe('split', function (): void {
             ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 0.0, 500.0))->toBe([[0, 2], [2, 3]]);
     });
 
+    it('keeps a detached letter with its own word when the body counts are given', function (): void {
+        // The middle contour is a separate letter body nearer the left word, but it starts the right word.
+        $contours = [[0.0, 0.0, 10.0, 10.0], [11.0, 0.0, 14.0, 10.0], [20.0, 0.0, 30.0, 10.0]];
+        $base = [true, true, true];
+
+        expect(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0))->toBe([[0, 2], [2, 3]])
+            ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 0.0))->toBe([[0, 2], [2, 3]])
+            ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 6.0))->toBe([[0, 1], [1, 3]]);
+    });
+
+    it('counts letter bodies from the given flags rather than full height', function (): void {
+        // The middle contour is short (not full height) but is a letter body of the right word.
+        $contours = [[0.0, 0.0, 10.0, 10.0], [11.0, 3.0, 14.0, 8.0], [20.0, 0.0, 30.0, 10.0]];
+        $base = [true, false, true];
+
+        expect(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 6.0))->toBe([[0, 2], [2, 3]])
+            ->and(WordSplitter::split($contours, [null, null], $base, 0.5, 1000.0, 500.0, [1, 2], 6.0, [true, true, true]))->toBe([[0, 1], [1, 3]]);
+    });
+
+    it('keeps a contour drawn in one ayah\'s span out of a word of the next ayah when the contour penalty is on', function (): void {
+        // Word 0 (left, the next ayah) has span 0-40; word 1 (right) has span 40-100. Contour 1 (x 41-44) is in word 1's span
+        // but nearer word 0's contour.
+        $contours = [[10.0, 0.0, 39.0, 10.0], [41.0, 0.0, 44.0, 10.0], [70.0, 0.0, 99.0, 10.0]];
+        $base = [true, true, true];
+        $spans = [[0.0, 40.0], [40.0, 100.0]];
+
+        expect(WordSplitter::split($contours, $spans, $base, 0.5, 1000.0, 500.0))->toBe([[0, 2], [2, 3]])
+            ->and(WordSplitter::split($contours, $spans, $base, 0.5, 1000.0, 500.0, null, 0.0, null, 50.0))->toBe([[0, 1], [1, 3]]);
+    });
+
     it('cannot split fewer contours than words', function (): void {
         expect(WordSplitter::split([[0.0, 0.0, 1.0, 1.0]], [null, null], [true], 0.5, 1000.0, 500.0))->toBeNull();
     });
+});
+
+describe('letter counts', function (): void {
+    // Placeholder letter strings, not Quran words.
+    it('counts the imlai spelling when there is one, otherwise the printed letters without modifier letters', function (): void {
+        expect(QuranTextSource::letters('بسم', 'ب'))->toBe(3)
+            ->and(QuranTextSource::letters('', 'بَسۡمٰ'))->toBe(3)
+            ->and(QuranTextSource::letters('', "ب\u{0640}ـ"))->toBe(1)
+            ->and(QuranTextSource::letters('', ''))->toBe(0);
+    });
+});
+
+describe('letter bodies', function (): void {
+    // Placeholder letter strings, not Quran words.
+    it('starts a body after every letter that does not join the next one', function (string $text, int $bodies): void {
+        expect(QuranTextSource::bodies($text))->toBe($bodies);
+    })->with([
+        'one joined run' => ['بسم', 1],
+        'a non-joining letter first' => ['وبس', 2],
+        'non-joining letters in a row' => ['ادر', 3],
+        'marks are not letters' => ['بَسۡ', 1],
+        'a lone hamza is not a body' => ['ءا', 1],
+        'a joined hamza seat is a letter' => ['بئر', 1],
+        'empty' => ['', 0],
+    ]);
 });

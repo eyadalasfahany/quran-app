@@ -24,8 +24,11 @@ final class TqpSubpaths
     public function __construct(private readonly TqpPathParser $paths = new TqpPathParser) {}
 
     /**
-     * @return array{content: list<int>, marks: list<Mark>, subpaths: int} content[c] is the subpath of the c-th content contour
-     *                                                                     (PageContours' index); marks are the ayah-mark groups in order
+     * @return array{content: list<int>, marks: list<Mark>, subpaths: int, empty: list<int>} content[c] is the subpath of the c-th
+     *                                                                                       content contour (PageContours' index);
+     *                                                                                       marks are the ayah-mark groups in order;
+     *                                                                                       empty are content subpaths that draw
+     *                                                                                       nothing (a moveto with no drawing)
      *
      * @throws SvgMushafSourceException
      */
@@ -42,7 +45,10 @@ final class TqpSubpaths
 
         $counter = 0;
         $content = [];
-        $marks = [];
+        $empty = [];
+        $markFirst = [];
+        $markCount = [];
+        $markBox = [];
         $seenGroups = [];
         $openGroup = null;
 
@@ -58,6 +64,9 @@ final class TqpSubpaths
 
             if ($piece['section'] === 'content') {
                 array_push($content, ...$subpaths['contours']);
+                if ($counter > $start) {
+                    array_push($empty, ...array_values(array_diff(range($start, $counter - 1), $subpaths['contours'])));
+                }
                 $openGroup = null;
 
                 continue;
@@ -75,22 +84,27 @@ final class TqpSubpaths
                 }
 
                 $seenGroups[$group] = true;
-                $marks[] = ['first' => $start, 'count' => 0, 'box' => null];
+                $markFirst[] = $start;
+                $markCount[] = 0;
+                $markBox[] = null;
                 $openGroup = $group;
             }
 
-            $last = count($marks) - 1;
-            $marks[$last]['count'] += $counter - $start;
-            $marks[$last]['box'] = $this->union($marks[$last]['box'], $this->pieceBoxes($piece, $originX, $originY));
+            $last = count($markFirst) - 1;
+            $markCount[$last] += $counter - $start;
+            $markBox[$last] = $this->union($markBox[$last], $this->pieceBoxes($piece, $originX, $originY));
         }
 
         return [
             'content' => $content,
-            'marks' => array_values(array_map(
-                static fn (array $mark): array => ['first' => $mark['first'], 'count' => $mark['count'], 'box' => $mark['box'] ?? [0.0, 0.0, 0.0, 0.0]],
-                $marks,
-            )),
+            'marks' => array_map(
+                static fn (int $first, int $count, ?array $box): array => ['first' => $first, 'count' => $count, 'box' => $box ?? [0.0, 0.0, 0.0, 0.0]],
+                $markFirst,
+                $markCount,
+                $markBox,
+            ),
             'subpaths' => $counter,
+            'empty' => $empty,
         ];
     }
 

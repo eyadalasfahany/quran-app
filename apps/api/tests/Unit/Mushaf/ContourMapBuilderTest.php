@@ -208,3 +208,54 @@ it('names a word by its app positions and gives 15:7 contour rows for the first 
 it('keeps the map rule as the digest version: the algorithm is 1', function (): void {
     expect(ContourMapBuilder::ALGORITHM)->toBe(1);
 });
+
+it('adds a keep-together block per run, sorted after the other kinds, and leaves the gates and words alone', function (): void {
+    $map = new ContourMap([], [
+        ['page' => 2, 'kind' => 2, 'ord' => 0, 'surah' => 1, 'ayah' => 1, 'first' => 0, 'count' => 1, 'x0' => 0, 'y0' => 0, 'x1' => 1, 'y1' => 1],
+    ], ['W9' => 0, 'W10' => 0, 'W11' => 0], [], [], 0, 0, 0);
+
+    $kept = ContourMapBuilder::withKeepTogether($map, [
+        2 => [['surah' => 1, 'ayah' => 1, 'first' => 3, 'count' => 2, 'box' => [10.0, 20.0, 30.5, 40.0]]],
+        1 => [['surah' => 1, 'ayah' => 2, 'first' => 1, 'count' => 3, 'box' => [1.0, 2.0, 3.0, 4.0]]],
+    ]);
+
+    expect($kept->blockRows)->toBe([
+        ['page' => 1, 'kind' => 5, 'ord' => 0, 'surah' => 1, 'ayah' => 2, 'first' => 1, 'count' => 3, 'x0' => 32, 'y0' => 64, 'x1' => 96, 'y1' => 128],
+        ['page' => 2, 'kind' => 2, 'ord' => 0, 'surah' => 1, 'ayah' => 1, 'first' => 0, 'count' => 1, 'x0' => 0, 'y0' => 0, 'x1' => 1, 'y1' => 1],
+        ['page' => 2, 'kind' => 5, 'ord' => 0, 'surah' => 1, 'ayah' => 1, 'first' => 3, 'count' => 2, 'x0' => 320, 'y0' => 640, 'x1' => 976, 'y1' => 1280],
+    ])->and($kept->checks)->toBe($map->checks)
+        ->and($kept->wordRows)->toBe([]);
+});
+
+it('keeps a title the source draws in two runs as one block: a kind 1 row and a kind 6 row naming it', function (): void {
+    // The title's two pieces (c0, c2) are split in path order by a word's contour (c1), as the other riwayat draw them.
+    $input = contourPageInput(
+        contours: [
+            [50.0, 10.0, 150.0, 20.0], [200.0, 45.0, 260.0, 60.0], [160.0, 12.0, 300.0, 20.0],
+            [100.0, 45.0, 150.0, 60.0], [200.0, 85.0, 260.0, 105.0], [100.0, 85.0, 150.0, 105.0],
+        ],
+        lineOf: [null, 1, null, 1, 2, 2],
+        words: [
+            ['surah' => 1, 'ayah' => 1, 'position' => 1, 'apps' => [1], 'line' => 1, 'contours' => [1], 'x0' => 200.0, 'x1' => 260.0],
+            ['surah' => 1, 'ayah' => 1, 'position' => 2, 'apps' => [2], 'line' => 1, 'contours' => [3], 'x0' => 100.0, 'x1' => 150.0],
+            ['surah' => 1, 'ayah' => 1, 'position' => 3, 'apps' => [3], 'line' => 2, 'contours' => [4], 'x0' => 200.0, 'x1' => 260.0],
+            ['surah' => 1, 'ayah' => 1, 'position' => 4, 'apps' => [4], 'line' => 2, 'contours' => [5], 'x0' => 100.0, 'x1' => 150.0],
+        ],
+        loose: [],
+    );
+
+    $map = buildContourMap($input);
+    $blocks = array_values(array_filter($map->blockRows, fn (array $row): bool => in_array($row['kind'], [1, 6], true)));
+
+    expect($map->checks['W10'])->toBe(0)
+        ->and(array_map(fn (array $row): array => [$row['kind'], $row['ord'], $row['ayah'], $row['first'], $row['count']], $blocks))
+        ->toBe([[1, 0, 0, 1, 1], [6, 0, 0, 3, 1]]);
+});
+
+it('lets a subpath that draws nothing (an empty moveto) stay unclaimed, and only that', function (): void {
+    $input = contourPageInput();
+    $input['subpaths']++;
+
+    expect(buildContourMap($input)->checks['W10'])->toBe(1)
+        ->and(buildContourMap([...$input, 'empty' => [$input['subpaths'] - 1]])->checks['W10'])->toBe(0);
+});

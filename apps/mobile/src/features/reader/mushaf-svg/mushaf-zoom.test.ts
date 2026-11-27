@@ -14,8 +14,8 @@ describe('clampMushafZoom (settings)', () => {
     expect(clampMushafZoom(1.75)).toBe(1.75);
   });
 
-  it('clamps to [1, 2]', () => {
-    expect(clampMushafZoom(3)).toBe(2);
+  it('clamps to [1, 3]', () => {
+    expect(clampMushafZoom(4)).toBe(3);
     expect(clampMushafZoom(0.5)).toBe(1);
     expect(clampMushafZoom(-4)).toBe(1);
   });
@@ -29,7 +29,7 @@ describe('pinchMushafZoom', () => {
 
   it('holds at the limits', () => {
     expect(pinchMushafZoom(1, 0.4)).toBe(1);
-    expect(pinchMushafZoom(2, 3)).toBe(2);
+    expect(pinchMushafZoom(2, 3)).toBe(3);
   });
 });
 
@@ -38,7 +38,8 @@ describe('stepMushafZoom', () => {
     expect(stepMushafZoom(1, 1)).toBe(1.25);
     expect(stepMushafZoom(1.25, -1)).toBe(1);
     expect(stepMushafZoom(1, -1)).toBe(1);
-    expect(stepMushafZoom(2, 1)).toBe(2);
+    expect(stepMushafZoom(2, 1)).toBe(2.25);
+    expect(stepMushafZoom(3, 1)).toBe(3);
   });
 });
 

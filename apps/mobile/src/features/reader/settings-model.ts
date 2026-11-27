@@ -6,9 +6,9 @@ export const READER_SETTINGS_VERSION = 1;
 export const FONT_SCALE_MIN = 0.8;
 export const FONT_SCALE_MAX = 1.6;
 export const FONT_SCALE_STEP = 0.1;
-/** Mushaf page zoom (ADR 0090 amendment, 26 Nov 2026, item 9): 100% to 200% in 25% steps. */
+/** Mushaf page zoom (ADR 0090 amendment, 26 Nov 2026, item 9; 300% since 27 Nov 2026, item 15): 100% to 300% in 25% steps. */
 export const MUSHAF_ZOOM_MIN = 1;
-export const MUSHAF_ZOOM_MAX = 2;
+export const MUSHAF_ZOOM_MAX = 3;
 export const MUSHAF_ZOOM_STEP = 0.25;
 
 export type ReaderSettings = {

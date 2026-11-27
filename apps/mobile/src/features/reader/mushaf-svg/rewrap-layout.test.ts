@@ -1,7 +1,6 @@
 // Synthetic pages only: FIXTURE — not artwork. Words, blocks and bands are invented numbers.
 import {
   breakParagraph,
-  CENTRED_BELOW,
   GAP_BETWEEN_LINES,
   layoutPage,
   runsOf,
@@ -22,7 +21,7 @@ function word(
   line: number,
   x0: number,
   x1: number,
-  extra: Partial<Pick<WordUnit, 'surah' | 'ayah' | 'covers' | 'mark' | 'sajda'>> = {},
+  extra: Partial<Pick<WordUnit, 'surah' | 'ayah' | 'covers' | 'mark' | 'sajda' | 'keep' | 'keepNext'>> = {},
 ): WordUnit {
   const band = bandOf(line);
   return {
@@ -90,18 +89,21 @@ describe('breakParagraph (minimum raggedness, synthetic widths)', () => {
   });
 });
 
-describe('layoutPage: justification and the gap cap', () => {
-  it('justifies a non-last line to the full width when its gaps stay under the cap', () => {
-    // Zoom 2: A = 100. Three 30-unit words with 4-unit gaps are 98 (spread 1). Two paragraphs: the block keeps line 0 separate.
+describe('layoutPage: centred lines with their printed gaps (ADR 0090 item 15)', () => {
+  const centreOf = (rects: readonly { x0: number; x1: number }[]) =>
+    (Math.min(...rects.map((rect) => rect.x0)) + Math.max(...rects.map((rect) => rect.x1))) / 2;
+
+  it('centres every line on the column and never stretches its gaps', () => {
+    // Zoom 2: A = 100. Three 30-unit words with 4-unit gaps are 98 wide, centred on 50: from 1 to 99.
     const layout = layoutPage(page([...fullLine(0), ...fullLine(1, 10)], { blocks: [BETWEEN] }), 2);
     const first = layout.lines[0]!.wordRects;
-    expect(Math.max(...first.map((rect) => rect.x1))).toBeCloseTo(100, 4);
-    expect(Math.min(...first.map((rect) => rect.x0))).toBeCloseTo(0, 4);
+    expect(Math.min(...first.map((rect) => rect.x0))).toBeCloseTo(1, 4);
+    expect(Math.max(...first.map((rect) => rect.x1))).toBeCloseTo(99, 4);
   });
 
-  it('keeps a line ragged (right-aligned, natural gaps) when its gaps would pass the cap', () => {
-    // Line 0 is 200 wide (B), so A = 100 at zoom 2. Line 1 holds 40, 40 and 25-unit pieces with no printed gap:
-    // the best break is [40, 40] + [25]; the first line would need 20 units of slack per gap (> 6), so it stays ragged.
+  it('keeps a short line centred with its natural gaps', () => {
+    // Line 0 is 200 wide (B), so A = 100 at zoom 2. Line 1 holds 40, 40 and 25-unit pieces with no printed gap: the best
+    // break is [40, 40] + [25]; the first line is 80 wide, centred on 50 (from 10 to 90), the two words touching.
     const words = [
       word(1, 0, 0, 200, { ayah: 9 }),
       word(2, 1, 70, 110, { ayah: 1 }),
@@ -111,29 +113,21 @@ describe('layoutPage: justification and the gap cap', () => {
     const layout = layoutPage(page(words, { blocks: [BETWEEN] }), 2);
     const a = layout.wordRect(1, 1, 2)!;
     const b = layout.wordRect(1, 2, 3)!;
-    expect(a.x1).toBeCloseTo(100, 4);
-    // Ragged: b ends where a starts (natural gap 0), not 20 units further left as a justified line would.
+    expect(a.x1).toBeCloseTo(90, 4);
     expect(b.x1).toBeCloseTo(a.x0, 4);
+    expect(b.x0).toBeCloseTo(10, 4);
   });
 
-  it('justifies a paragraph last line only when the printed last line was full', () => {
-    // Zoom 2, A = 100. Three 30-unit words with 4-unit printed gaps: the natural line is 98 (spread 1).
+  it('centres a paragraph last line too, full or short in print', () => {
     const threeWords = (line: number, ayahBase: number, spanEnd: number) => [
       word(1, line, 0, 30, { ayah: ayahBase + 1 }),
       word(2, line, 34, 64, { ayah: ayahBase + 2 }),
       word(3, line, spanEnd - 30, spanEnd, { ayah: ayahBase + 3 }),
     ];
-    // Full printed last line (x from 0 to 200): justified, so the gap grows from 4 to 5.
-    const full = layoutPage(page([...fullLine(0), ...threeWords(1, 20, 200)], { blocks: [BETWEEN] }), 2);
-    const fullLast = full.lines[full.lines.length - 1]!.wordRects;
-    expect(Math.max(...fullLast.map((rect) => rect.x1))).toBeCloseTo(100, 4);
-    expect(Math.min(...fullLast.map((rect) => rect.x0))).toBeCloseTo(0, 4);
-
-    // Short printed last line (x from 0 to 98): right-aligned, the printed gap of 4 is kept.
-    const short = layoutPage(page([...fullLine(0), ...threeWords(1, 20, 98)], { blocks: [BETWEEN] }), 2);
-    const shortLast = short.lines[short.lines.length - 1]!.wordRects;
-    expect(Math.max(...shortLast.map((rect) => rect.x1))).toBeCloseTo(100, 4);
-    expect(Math.min(...shortLast.map((rect) => rect.x0))).toBeCloseTo(2, 4);
+    for (const spanEnd of [200, 98]) {
+      const layout = layoutPage(page([...fullLine(0), ...threeWords(1, 20, spanEnd)], { blocks: [BETWEEN] }), 2);
+      expect(centreOf(layout.lines[layout.lines.length - 1]!.wordRects)).toBeCloseTo(50, 4);
+    }
   });
 
   it('keeps a negative printed gap between neighbours', () => {
@@ -170,9 +164,8 @@ describe('layoutPage: blocks, centring and paragraphs', () => {
     expect(placed.cx + placed.dx).toBeCloseTo(50, 4);
   });
 
-  it('centres a paragraph whose non-last printed lines are short', () => {
-    // Line 0 is 60 wide (under 80% of B = 200), line 1 is full: line 0 is centred on (0 + 100) / 2 = 50.
-    expect(60 / 200).toBeLessThan(CENTRED_BELOW);
+  it('centres a short printed line like any other', () => {
+    // Line 0 is 60 wide, line 1 is full: line 0 is centred on (0 + 100) / 2 = 50.
     const short = [word(1, 0, 70, 80, { ayah: 1 }), word(2, 0, 80, 90, { ayah: 2 }), word(3, 0, 90, 130, { ayah: 3 })];
     const layout = layoutPage(page([...short, ...fullLine(1, 10)]), 2);
     const laid = layout.lines[0]!.wordRects;
@@ -219,6 +212,48 @@ describe('layoutPage: covers, marks, sajda fusion, regions and hizb', () => {
     // B and C are one unit: C sits 30 units right of B, as printed, and on the same line.
     expect(c.x0 - b.x0).toBeCloseTo(30, 6);
     expect(c.y0).toBeCloseTo(b.y0, 6);
+  });
+
+  it('never breaks a line inside a keep-together run, and keeps its printed offsets', () => {
+    // B = 132, so A = 66 at zoom 2: two 30-unit words with their 4-unit gap fit (64), three do not. Without the run the
+    // break falls between words 2 and 3.
+    const words = [word(1, 0, 0, 30), word(2, 0, 34, 64), word(3, 0, 68, 98), word(4, 0, 102, 132)];
+    const apart = layoutPage(page(words), 2);
+    expect(apart.wordRect(1, 1, 2)!.line).not.toBe(apart.wordRect(1, 1, 3)!.line);
+
+    const kept = [word(1, 0, 0, 30), word(2, 0, 34, 64, { keep: 0 }), word(3, 0, 68, 98, { keep: 0 }), word(4, 0, 102, 132)];
+    const layout = layoutPage(page(kept), 2);
+    const b = layout.wordRect(1, 1, 2)!;
+    const c = layout.wordRect(1, 1, 3)!;
+    expect(c.line).toBe(b.line);
+    expect(c.x0 - b.x0).toBeCloseTo(34, 6);
+  });
+
+  it('joins a keep-together run and a sajda piece that share a word into one piece', () => {
+    const sajda = { bounds: { x0: 0, x1: 30, y0: 20, y1: 21 }, count: 1, first: 99 };
+    const words = [word(1, 0, 0, 30, { sajda }), word(2, 0, 34, 64, { keep: 1 }), word(3, 0, 68, 98, { keep: 1 })];
+    const both = [word(1, 0, 0, 30, { keep: 1, sajda }), word(2, 0, 34, 64, { keep: 1 }), word(3, 0, 68, 98)];
+    const layout = layoutPage(page(both), 1);
+    const a = layout.wordRect(1, 1, 1)!;
+    const b = layout.wordRect(1, 1, 2)!;
+    expect(b.x0 - a.x0).toBeCloseTo(34, 6);
+    expect(layoutPage(page(words), 1).placed).toHaveLength(3);
+  });
+
+  it('draws every run of a block that the source draws in several runs', () => {
+    expect(runsOf({ bounds: BETWEEN.bounds, count: 1, first: 0, more: [{ count: 2, first: 7 }] })).toEqual([
+      { count: 1, first: 0 },
+      { count: 2, first: 7 },
+    ]);
+  });
+
+  it('keeps a word marked keepNext with the next word in reading order, across an ayah', () => {
+    const words = [word(1, 0, 0, 30, { ayah: 2 }), word(9, 0, 34, 64, { ayah: 1, keepNext: true }), word(8, 0, 68, 98, { ayah: 1 }), word(7, 0, 102, 132, { ayah: 1 })];
+    const layout = layoutPage(page(words), 2);
+    const last = layout.wordRect(1, 1, 9)!;
+    const first = layout.wordRect(1, 2, 1)!;
+    expect(first.line).toBe(last.line);
+    expect(last.x0 - first.x0).toBeCloseTo(34, 6);
   });
 
   it('a sajda piece wider than the line scales as one unit, keeping the ratio of its words', () => {

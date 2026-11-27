@@ -15,7 +15,7 @@ final readonly class ContourMap
 {
     /**
      * @param  list<WordRow>  $wordRows  word runs: flag 0 for the builder's own contours, 1 for a loose attachment
-     * @param  list<BlockRow>  $blockRows  kind 1 blocks, 2 ayah marks, 3 sajda lines, 4 hizb ornaments; bounds in 1/32 page units
+     * @param  list<BlockRow>  $blockRows  kind 1 blocks, 2 ayah marks, 3 sajda lines, 4 hizb ornaments, 5 keep-together runs, 6 further runs of a kind 1 block, 7 a word kept with the next word across an ayah mark; bounds in 1/32 page units
      * @param  array{W9: int, W10: int, W11: int}  $checks  failing units per gate
      * @param  list<string>  $issues  one printable line per failing unit
      * @param  list<Attachment>  $attachments  every loose contour attached to a word, for the review sheet

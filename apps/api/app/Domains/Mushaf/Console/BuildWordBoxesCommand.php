@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
 final class BuildWordBoxesCommand extends Command
 {
     protected $signature = 'mushaf:build-word-boxes
-        {key=hafs : only hafs is followed word by word}
+        {key=hafs : a riwayah listed in mushaf.word_box_riwayat}
         {--sheet= : directory to write the review sheet}
         {--sample= : random unflagged pages in the sheet (default: mushaf.word_boxes.review_sample)}';
 

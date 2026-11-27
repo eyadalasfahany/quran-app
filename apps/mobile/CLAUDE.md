@@ -66,7 +66,7 @@ Spec: `docs/technical-spec.md` §4 (structure and responsive layout), §6 (SQLit
 - `useGlass()` is true only when Liquid Glass is available and Reduce Transparency is off. Otherwise a glass surface is solid `glassFallback` with a `line` hairline.
 - Compact: sheets. Medium: centered column, large sheets. Expanded: centered column plus a persistent side panel.
 - Ayah actions and tafsir render in the side panel when it exists and as sheets otherwise; the routes are the same.
-- Reading and Focus columns cap at about 720 pt. Mushaf page width is the reader's column minus the safe-area insets and gutters, no 600 cap (ADR 0090 amendment, item 7). Page zoom (`mushafZoom`, 100% to 200%) re-wraps the page's word shapes on that same width; it never scrolls sideways (ADR 0090 amendment, item 9).
+- Reading and Focus columns cap at about 720 pt. Mushaf page width is the reader's column minus the safe-area insets and gutters, no 600 cap (ADR 0090 amendment, item 7). Page zoom (`mushafZoom`, 100% to 300%) re-wraps the page's word shapes into centred lines on that same width; it never scrolls sideways (ADR 0090 amendment, items 9 and 15).
 - Any resize, rotation, fold or unfold must keep the top visible verse via `useReadingAnchor`.
 - No orientation locks. iPad declares all four orientations.
 

@@ -14,13 +14,19 @@ use JsonException;
  * (check A1) before use, and cached like the quran-svg files. Only the word's keys, page, line and the letter count of its
  * imlāʾī spelling are read; no text is kept, logged or returned.
  *
- * @phpstan-type QuranTextWord array{surah: int, ayah: int, position: int, letters: int|null}
+ * @phpstan-type QuranTextWord array{surah: int, ayah: int, position: int, letters: int|null, bodies: int}
  */
 final class QuranTextSource
 {
     private const string FOLDER = 'data/mushaf';
 
-    private const array COLUMNS = ['surah', 'ayah', 'position_in_ayah', 'page', 'line', 'rasm_imlai'];
+    private const array COLUMNS = ['surah', 'ayah', 'position_in_ayah', 'page', 'line', 'rasm_imlai', 'text'];
+
+    /** Letters that never join the letter after them, so the next letter starts a new body (ADR 0090, word-box split). */
+    private const string NON_JOINING = 'اأإآٱدذرزوؤةء';
+
+    /** A body that is a lone hamza is mark-sized, never full height. */
+    private const string LONE_HAMZA = 'ء';
 
     private const int TIMEOUT_SECONDS = 60;
 
@@ -94,18 +100,52 @@ final class QuranTextSource
                 continue;
             }
 
-            $letters = preg_match_all('/\p{L}/u', (string) ($fields[$index['rasm_imlai']] ?? ''));
+            $letters = self::letters((string) ($fields[$index['rasm_imlai']] ?? ''), (string) ($fields[$index['text']] ?? ''));
             $words[$numbers['page']][$numbers['line']][] = [
                 'surah' => $numbers['surah'],
                 'ayah' => $numbers['ayah'],
                 'position' => $numbers['position_in_ayah'],
-                'letters' => is_int($letters) && $letters > 0 ? $letters : null,
+                'letters' => $letters > 0 ? $letters : null,
+                'bodies' => self::bodies((string) ($fields[$index['text']] ?? '')),
             ];
         }
 
         fclose($stream);
 
         return $words;
+    }
+
+    /**
+     * The word's letter count for W5: its imlāʾī spelling where the file has one (Hafs), otherwise its printed text, counting
+     * letters but not modifier letters such as the superscript alef (the other riwayat have no imlāʾī column).
+     */
+    public static function letters(string $imlai, string $text): int
+    {
+        $count = (int) preg_match_all('/\p{L}/u', $imlai);
+
+        return $count > 0 ? $count : (int) preg_match_all('/(?!\p{Lm})\p{L}/u', $text);
+    }
+
+    /**
+     * How many separate letter bodies the printed word has: a body starts at the first letter and after every letter that does not
+     * join the next one. Marks (combining characters and small letters) are not letters here. A lone hamza is left out, as it is
+     * mark-sized. Only the count is kept; the text itself is not.
+     */
+    public static function bodies(string $text): int
+    {
+        preg_match_all('/\p{Lo}/u', $text, $matches);
+        $bodies = 0;
+        $start = true;
+
+        foreach ($matches[0] as $letter) {
+            if ($start && $letter !== self::LONE_HAMZA) {
+                $bodies++;
+            }
+
+            $start = str_contains(self::NON_JOINING, $letter);
+        }
+
+        return $bodies;
     }
 
     /**

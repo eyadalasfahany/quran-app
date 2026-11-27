@@ -61,6 +61,46 @@ final class PageContours
     }
 
     /**
+     * Each content contour's outline points on the page, in the same order as fromSvg().
+     *
+     * @return list<list<array{0: float, 1: float}>>
+     *
+     * @throws SvgMushafSourceException
+     */
+    public static function pointsFromSvg(string $svg): array
+    {
+        $document = new DOMDocument;
+
+        if ($svg === '' || ! @$document->loadXML($svg, LIBXML_NONET | LIBXML_COMPACT)) {
+            throw new SvgMushafSourceException('A page SVG is not well-formed XML.');
+        }
+
+        $xpath = new DOMXPath($document);
+        $content = $xpath->query('//*[@id="content"]');
+
+        if ($content === false || $content->length !== 1 || ! $content->item(0) instanceof DOMElement) {
+            throw new SvgMushafSourceException('A page SVG has no single <g id="content">.');
+        }
+
+        $paths = $xpath->query('.//*[local-name()="path"]', $content->item(0));
+        $all = [];
+
+        foreach ($paths === false ? [] : $paths as $path) {
+            if (! $path instanceof DOMElement) {
+                continue;
+            }
+
+            $m = self::chain($path);
+
+            foreach (SvgPathBounds::points($path->getAttribute('d')) as $list) {
+                $all[] = array_map(fn (array $p): array => [$m[0] * $p[0] + $m[2] * $p[1] + $m[4], $m[1] * $p[0] + $m[3] * $p[1] + $m[5]], $list);
+            }
+        }
+
+        return $all;
+    }
+
+    /**
      * Parses a transform attribute: `matrix`, `translate` and `scale`, applied right to left as SVG does.
      *
      * @return Matrix
