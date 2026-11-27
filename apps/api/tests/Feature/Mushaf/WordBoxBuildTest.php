@@ -279,6 +279,8 @@ it('only flags W4 and W5', function (string $check, Closure $arrange, string $ke
 ]);
 
 it('flags W8 when a box lies inside another, and an override fixes the split', function (): void {
+    // The split as approved before ADR 0090 item 14 (no letter-body rule), so the path-order split stands and W8 fires.
+    config(['mushaf.word_boxes.body_penalty' => 0.0]);
     // Line 1: word 2 is drawn in two pieces, and its second piece comes last in the path.
     $contours = [[1, 10.0, 30.0, 16.0], [1, 40.0, 60.0, 16.0], [1, 75.0, 90.0, 16.0], [1, 45.0, 49.0, 16.0], ...array_slice(WORD_BOX_CONTOURS, 3)];
     installWordBoxPage(contours: $contours);
@@ -469,4 +471,17 @@ it('opens the review sheet with every override, the lines left to the developer 
         ->and(File::get($directory.'/page-001.html'))->toContain('id="line-1"')->toContain('id="line-2"');
 
     File::deleteDirectory($directory);
+});
+
+it('splits a word drawn out of place in x order when the letter-body rule is on (ADR 0090 item 14)', function (): void {
+    config(['mushaf.word_boxes.body_penalty' => 6.0]);
+    $contours = [[1, 10.0, 30.0, 16.0], [1, 40.0, 60.0, 16.0], [1, 75.0, 90.0, 16.0], [1, 45.0, 49.0, 16.0], ...array_slice(WORD_BOX_CONTOURS, 3)];
+    installWordBoxPage(contours: $contours);
+
+    $build = app(WordBoxBuilder::class)->build('hafs');
+
+    expect($build->counts['W8'])->toBe(0)
+        ->and($build->counts['overrides applied'])->toBe(0)
+        ->and(storedWordBoxes()['1:1:2'])->toBe([40.0, 0.0, 60.0, 20.0, 1])
+        ->and(storedWordBoxes()['1:1:1'])->toBe([75.0, 0.0, 90.0, 20.0, 1]);
 });

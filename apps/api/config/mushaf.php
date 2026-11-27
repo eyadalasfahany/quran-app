@@ -43,8 +43,9 @@ return [
         'base_height_share' => 0.25,
         'no_base_penalty' => 1000.0,
         'out_of_span_penalty' => 500.0,
-        // Cost per full-height contour more or fewer than a word's letter bodies (counted from its printed text). 0 turns it off.
-        'body_penalty' => (float) env('MUSHAF_BODY_PENALTY', 0.0),
+        // Cost per letter body more or fewer than a word's text has (ADR 0090 items 14 and 16; approved by the developer, 27 Nov
+        // 2026). 0 turns the letter-body rules off.
+        'body_penalty' => 6.0,
         // For the body count only: a contour shorter than full height still counts as a letter body when it is at least this
         // share of the line high and crosses the level this share of the line above the baseline (a short dal or ra does; marks
         // float above or below the baseline and do not).
@@ -95,12 +96,21 @@ return [
         'qalun' => ['body_penalty' => 6.0, 'position_splits' => [], 'debris_extent' => 0.03, 'width_per_letter' => ['low' => 0.17, 'high' => 3.3]],
     ],
 
+    // Approved by the developer, 27 Nov 2026 (ADR 0090 items 14 and 16): Hafs's revised split, and Shu'bah, Warsh and Qalun as built.
     'approved_word_boxes' => [
-        'hafs' => '8944a6b3f72874e9a77ea8e708f7d06b68f6741ee55f1d606167870835a04553',
+        'hafs' => '01adf3d1719083ed1a3b96a399e240039d7b6d46bf6c410ab06ffca6046a2d46',
+        'shubah' => '8c9e4fafbde2cfa163b2eb55691b9549751b3ffb607424507e59af5fe21503e4',
+        'warsh' => '465a909b1f85f97865215803b5fe4efb5cea66a835455beccdc852807c53d630',
+        'qalun' => 'a81d626f742ae89600517702a57789f1229e808564926dd7450daf728a7fc53f',
     ],
 
     // The reviewed contour-map digest per edition (ADR 0090 step 13 A3, decision 7). Set only by the developer after the review
-    // sheet of step 13 C0. Not approved yet: the map stays pending_review until then.
-    'approved_word_contours' => [],
+    // sheet of step 13 C0. Approved by the developer, 27 Nov 2026 (ADR 0090 items 14 and 16).
+    'approved_word_contours' => [
+        'hafs' => '2b9916fadcb1f2ca528680162cbdbaa31560c28d171860e61a6838d7e57c24c3',
+        'shubah' => '7c69111316900326a6ef424836fca6bd0d05f01f3380a1b822648c752d2ea3a2',
+        'warsh' => '3ba7359df70335e1ad3060d507edcc95d6a81bc6e51f624a6877c8b3d2b576e7',
+        'qalun' => '51a5df6f737dbf83e5c8d7b6c527b431841ece99147cf4a9f555defbd133ee29',
+    ],
 
 ];
