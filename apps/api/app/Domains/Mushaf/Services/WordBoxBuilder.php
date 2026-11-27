@@ -15,6 +15,7 @@ use App\Domains\Mushaf\Repositories\Contracts\SvgMushafWordBoxRepository;
 use App\Domains\Mushaf\Sources\QuranTextSource;
 use App\Domains\Mushaf\Sources\SvgMushafDownloader;
 use App\Domains\Mushaf\WordBoxes\ContourMapBuilder;
+use App\Domains\Mushaf\WordBoxes\KeepTogether;
 use App\Domains\Mushaf\WordBoxes\LineBands;
 use App\Domains\Mushaf\WordBoxes\LineOrder;
 use App\Domains\Mushaf\WordBoxes\PageContours;
@@ -48,6 +49,15 @@ final class WordBoxBuilder
     private const array CHECKS = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W8', 'W5 skipped', 'overrides applied', 'overrides refused'];
 
     private const array HARD = ['W1', 'W2', 'W3', 'W6', 'overrides refused'];
+
+    /** A mark looks straight down or up within its own width plus this margin on each side (page units). */
+    private const float MARK_COLUMN = 0.5;
+
+    /** A mark is shared when the other word's letter is within this distance of it, straight above or below (page units). */
+    private const float MARK_SHARED_REACH = 3.0;
+
+    /** ... and no more than this many times as far as its own word's nearest letter. */
+    private const float MARK_SHARED_RATIO = 2.0;
 
     private const array PERCENTILES = [0.5, 1.0, 2.0, 5.0, 50.0, 95.0, 98.0, 99.0, 99.5];
 
@@ -389,6 +399,7 @@ final class WordBoxBuilder
         $perBand = array_fill(0, count($bands->bands), []);
         $perBandIndex = array_fill(0, count($bands->bands), []);
         $pageContours = PageContours::fromSvg($svg);
+        $pagePoints = $settings['body_penalty'] > 0.0 ? PageContours::pointsFromSvg($svg) : [];
         $bandOf = [];
 
         foreach ($pageContours as $index => $contour) {
@@ -407,6 +418,7 @@ final class WordBoxBuilder
         $boxes = [];
         $letters = [];
         $bodyCounts = [];
+        $sharedMarks = [];
         $lineNotes = [];
         $lineContours = [];
         $cleanLines = [];
@@ -480,15 +492,6 @@ final class WordBoxBuilder
                         $lineNotes[$line][] = 'split again in x order: the path draws a word out of place';
                     }
                 }
-
-                if ($groups !== null && $settings['body_penalty'] > 0.0) {
-                    $attached = self::attachMarks($groups, $contours, $isBody, array_map(fn (array $word): string => $word['surah'].':'.$word['ayah'], $words));
-
-                    // A mark move never puts a word outside its ayah's span; such a line keeps its marks where the split put them.
-                    if (self::spanMisses($attached, $contours, $spans, $tolerance) <= self::spanMisses($groups, $contours, $spans, $tolerance)) {
-                        $groups = $attached;
-                    }
-                }
             }
 
             if ($groups === null) {
@@ -552,7 +555,18 @@ final class WordBoxBuilder
                     'x0' => round($lo, 2) + 0.0, 'x1' => round($hi, 2) + 0.0,
                 ];
                 $letters[] = $word['letters'];
-                $bodyCounts[] = ['text' => $word['bodies'], 'drawn' => count(array_filter($indexes, fn (int $t): bool => $isBody[$t]))];
+                $bodyIndexes = array_values(array_filter($indexes, fn (int $t): bool => $isBody[$t]));
+                $bodyCounts[] = [
+                    'text' => $word['bodies'], 'drawn' => count($bodyIndexes),
+                    'centres' => array_map(fn (int $t): float => ($contours[$t][0] + $contours[$t][2]) / 2, $bodyIndexes),
+                ];
+            }
+
+            // Neighbours that share an unclear mark (it sits about as close to the other word's letter as to its own word's) are
+            // kept together, so the mark shows where it is printed whichever word holds it (6:6).
+            foreach (array_keys($groups) as $k) {
+                $sharedMarks[] = $settings['body_penalty'] > 0.0 && isset($groups[$k + 1]) && $words[$k]['surah'] === $words[$k + 1]['surah'] && $words[$k]['ayah'] === $words[$k + 1]['ayah']
+                    && self::shareMark($groups[$k], $groups[$k + 1], $contours, $isBody, array_map(fn (int $t): array => $pagePoints[$documentIndex[$t]] ?? [], array_keys($contours)));
             }
 
             if (count($lineBoxes) >= 2 && ! ($lineBoxes[0]['x0'] < $lineBoxes[count($lineBoxes) - 1]['x0'])) {
@@ -617,7 +631,7 @@ final class WordBoxBuilder
             }
         }
 
-        $joined = $settings['body_penalty'] > 0.0 ? self::keepTogether($boxes, $wordContours, $perLetter, $median, $bodyCounts, $settings['join_narrow'], $settings['join_wide']) : [];
+        $joined = $settings['body_penalty'] > 0.0 ? KeepTogether::runs($boxes, $wordContours, $perLetter, $median, $bodyCounts, $sharedMarks, $settings['join_narrow'], $settings['join_wide']) : [];
 
         ksort($lineNotes);
         $flagged = [];
@@ -807,161 +821,86 @@ final class WordBoxBuilder
     }
 
     /**
-     * Moves a mark to the word whose letter it sits over. The split follows path order, so a mark drawn next to the following
-     * word's contours can land in that word. A mark (a contour that is not a letter body) moves only when its x-centre is over a
-     * letter body of exactly one other word of the same ayah and over none of its own word's.
+     * Whether two neighbouring words share an unclear mark: a mark of one sits, straight above or below, within MARK_SHARED_REACH
+     * of the other word's letter and no more than MARK_SHARED_RATIO times as far from it as from its own word's nearest letter.
      *
-     * @param  list<list<int>>  $groups
+     * @param  list<int>  $a
+     * @param  list<int>  $b
      * @param  list<array{0: float, 1: float, 2: float, 3: float}>  $contours
      * @param  list<bool>  $isBody
-     * @param  list<string>  $ayahs  each word's surah:ayah, left to right
-     * @return list<list<int>>
+     * @param  list<list<array{0: float, 1: float}>>  $outlines
      */
-    private static function attachMarks(array $groups, array $contours, array $isBody, array $ayahs): array
+    private static function shareMark(array $a, array $b, array $contours, array $isBody, array $outlines): bool
     {
-        $groupOf = [];
+        foreach ([[$a, $b], [$b, $a]] as [$own, $other]) {
+            foreach ($own as $mark) {
+                if ($isBody[$mark]) {
+                    continue;
+                }
 
-        foreach ($groups as $k => $group) {
-            foreach ($group as $index) {
-                $groupOf[$index] = $k;
-            }
-        }
+                $toOwn = INF;
+                $toOther = INF;
 
-        $moves = [];
+                foreach ($own as $body) {
+                    if ($isBody[$body]) {
+                        $toOwn = min($toOwn, self::verticalGap($contours[$mark], $outlines[$body]));
+                    }
+                }
 
-        foreach ($groupOf as $mark => $own) {
-            if ($isBody[$mark]) {
-                continue;
-            }
+                foreach ($other as $body) {
+                    if ($isBody[$body]) {
+                        $toOther = min($toOther, self::verticalGap($contours[$mark], $outlines[$body]));
+                    }
+                }
 
-            $centre = ($contours[$mark][0] + $contours[$mark][2]) / 2;
-            $hosts = [];
-
-            foreach ($groupOf as $body => $k) {
-                if ($isBody[$body] && $contours[$body][0] <= $centre && $centre <= $contours[$body][2]) {
-                    $hosts[$k] = true;
+                if ($toOther <= self::MARK_SHARED_REACH && $toOther <= self::MARK_SHARED_RATIO * $toOwn) {
+                    return true;
                 }
             }
-
-            if (! isset($hosts[$own]) && count($hosts) === 1 && $ayahs[(int) array_key_first($hosts)] === $ayahs[$own]) {
-                $moves[$mark] = (int) array_key_first($hosts);
-            }
         }
 
-        foreach ($moves as $mark => $to) {
-            $from = $groupOf[$mark];
-
-            if (count($groups[$from]) > 1) {
-                $groups[$from] = array_values(array_diff($groups[$from], [$mark]));
-                $groups[$to][] = $mark;
-                sort($groups[$to]);
-            }
-        }
-
-        return $groups;
+        return false;
     }
 
     /**
-     * The runs of neighbouring words that the zoomed layout must keep on one line (ADR 0090, keep-together blocks). Two
-     * neighbouring words of one ayah on one printed line join a run when one box lies inside the other, or when one is too
-     * narrow for its letters and has fewer letter bodies than its text while the other is too wide: the artwork draws part of
-     * the first word joined to the second, so no split can part them. Chained pairs make one run, in app positions.
+     * How far a mark is from a letter straight above or below it: the smallest vertical gap between the mark's box and the
+     * letter's outline within the mark's own width (with MARK_COLUMN on each side). Outline at the mark's own height is beside
+     * it and does not count. The outline is followed between its points,
+     * so a long stroke crossing the column counts. INF when the letter never passes under or over the mark.
      *
-     * @param  list<array{line: int, surah: int, ayah: int, position: int, x0: float, y0: float, x1: float, y1: float}>  $boxes
-     * @param  list<array{apps: list<int>}>  $wordContours  in the same order as the boxes
-     * @param  array<int, float>  $perLetter
-     * @param  list<array{text: int, drawn: int}>  $bodyCounts  in the same order as the boxes
-     * @return list<array{surah: int, ayah: int, first: int, count: int, box: array{0: float, 1: float, 2: float, 3: float}}>
+     * @param  array{0: float, 1: float, 2: float, 3: float}  $mark
+     * @param  list<array{0: float, 1: float}>  $outline
      */
-    private static function keepTogether(array $boxes, array $wordContours, array $perLetter, float $median, array $bodyCounts, float $narrow, float $wide): array
+    private static function verticalGap(array $mark, array $outline): float
     {
-        $ratio = fn (int $i): ?float => isset($perLetter[$i]) && $median > 0.0 ? $perLetter[$i] / $median : null;
-        $joinedTo = [];
+        $left = $mark[0] - self::MARK_COLUMN;
+        $right = $mark[2] + self::MARK_COLUMN;
+        $gap = INF;
+        $count = count($outline);
 
-        for ($i = 0; $i + 1 < count($boxes); $i++) {
-            $a = $boxes[$i];
-            $b = $boxes[$i + 1];
+        for ($i = 0; $i < $count; $i++) {
+            [$x0, $y0] = $outline[$i];
+            [$x1, $y1] = $outline[($i + 1) % $count];
+            $lo = max($left, min($x0, $x1));
+            $hi = min($right, max($x0, $x1));
 
-            if ($a['line'] !== $b['line'] || $a['surah'] !== $b['surah'] || $a['ayah'] !== $b['ayah'] || abs($a['position'] - $b['position']) !== 1) {
+            if ($lo > $hi) {
                 continue;
             }
 
-            $nested = ($a['x0'] <= $b['x0'] && $b['x1'] <= $a['x1']) || ($b['x0'] <= $a['x0'] && $a['x1'] <= $b['x1']);
-            $joinedShape = false;
-
-            foreach ([[$i, $i + 1], [$i + 1, $i]] as [$thin, $broad]) {
-                $thinRatio = $ratio($thin);
-                $broadRatio = $ratio($broad);
-                $joinedShape = $joinedShape || ($thinRatio !== null && $broadRatio !== null && $thinRatio <= $narrow && $broadRatio >= $wide
-                    && $bodyCounts[$thin]['drawn'] < $bodyCounts[$thin]['text']);
-            }
-
-            if ($nested || $joinedShape) {
-                $joinedTo[$i] = $i + 1;
+            // The segment's y at both ends of its part inside the column.
+            foreach ([$lo, $hi] as $x) {
+                $y = $x1 === $x0 ? min($y0, $y1) : $y0 + ($y1 - $y0) * ($x - $x0) / ($x1 - $x0);
+                // A point at the mark's own height is beside it, not under or over it.
+                if ($y > $mark[3]) {
+                    $gap = min($gap, $y - $mark[3]);
+                } elseif ($y < $mark[1]) {
+                    $gap = min($gap, $mark[1] - $y);
+                }
             }
         }
 
-        $runs = [];
-
-        foreach (array_keys($boxes) as $i) {
-            if (! isset($joinedTo[$i]) || in_array($i, $joinedTo, true)) {
-                continue;
-            }
-
-            $members = [$i];
-
-            while (isset($joinedTo[$members[count($members) - 1]])) {
-                $members[] = $joinedTo[$members[count($members) - 1]];
-            }
-
-            $apps = array_merge(...array_map(fn (int $m): array => $wordContours[$m]['apps'], $members));
-
-            if ($apps === []) {
-                continue;
-            }
-
-            $first = min($apps);
-            $runs[] = [
-                'surah' => $boxes[$i]['surah'], 'ayah' => $boxes[$i]['ayah'], 'first' => $first, 'count' => max($apps) - $first + 1,
-                'box' => [
-                    min(array_map(fn (int $m): float => $boxes[$m]['x0'], $members)), min(array_map(fn (int $m): float => $boxes[$m]['y0'], $members)),
-                    max(array_map(fn (int $m): float => $boxes[$m]['x1'], $members)), max(array_map(fn (int $m): float => $boxes[$m]['y1'], $members)),
-                ],
-            ];
-        }
-
-        return $runs;
-    }
-
-    /**
-     * How many groups have their x-centre outside their word's span (or have no span).
-     *
-     * @param  list<list<int>>  $groups
-     * @param  list<array{0: float, 1: float, 2: float, 3: float}>  $contours
-     * @param  list<array{0: float, 1: float}|null>  $spans
-     */
-    private static function spanMisses(array $groups, array $contours, array $spans, float $tolerance): int
-    {
-        $misses = 0;
-
-        foreach ($groups as $k => $group) {
-            $lo = INF;
-            $hi = -INF;
-
-            foreach ($group as $index) {
-                $lo = min($lo, $contours[$index][0]);
-                $hi = max($hi, $contours[$index][2]);
-            }
-
-            $centre = ($lo + $hi) / 2;
-            $span = $spans[$k];
-
-            if ($span === null || $centre < $span[0] - $tolerance || $centre > $span[1] + $tolerance) {
-                $misses++;
-            }
-        }
-
-        return $misses;
+        return $gap;
     }
 
     /**
